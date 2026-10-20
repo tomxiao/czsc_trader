@@ -1,0 +1,2613 @@
+{
+  "schema_version": 1,
+  "status": "FAIL",
+  "blocking_findings": [
+    {
+      "case_id": "S001-v1",
+      "finding": "AttributeError: 'str' object has no attribute 'date'"
+    },
+    {
+      "case_id": "S001-v2",
+      "finding": "AttributeError: 'str' object has no attribute 'date'"
+    },
+    {
+      "case_id": "S002-v1-common",
+      "finding": "AttributeError: 'str' object has no attribute 'date'"
+    },
+    {
+      "case_id": "S002-v1-boundary",
+      "finding": "AttributeError: 'str' object has no attribute 'date'"
+    },
+    {
+      "case_id": "S007-v1-seed",
+      "finding": "AttributeError: 'str' object has no attribute 'date'"
+    },
+    {
+      "case_id": "S011-v1",
+      "finding": "AttributeError: 'str' object has no attribute 'date'"
+    },
+    {
+      "case_id": "S007-v1-incremental",
+      "finding": "AttributeError: 'str' object has no attribute 'date'"
+    },
+    {
+      "case_id": "S011-v1-common",
+      "finding": "AttributeError: 'str' object has no attribute 'date'"
+    },
+    {
+      "reference": "S001-v1",
+      "finding": "missing complete actual cycles in both modes or case integrity failure"
+    },
+    {
+      "reference": "S001-v2",
+      "finding": "missing complete actual cycles in both modes or case integrity failure"
+    },
+    {
+      "reference": "S002-v1",
+      "finding": "missing complete actual cycles in both modes or case integrity failure"
+    },
+    {
+      "reference": "S007-v1",
+      "finding": "missing complete actual cycles in both modes or case integrity failure"
+    },
+    {
+      "reference": "S011-v1",
+      "finding": "missing complete actual cycles in both modes or case integrity failure"
+    }
+  ],
+  "per_case": [
+    {
+      "case_id": "S001-v1",
+      "reference": "S001-v1",
+      "window": [
+        "2026-06-01",
+        "2026-09-02"
+      ],
+      "blocking_findings": [
+        "AttributeError: 'str' object has no attribute 'date'"
+      ],
+      "artifact_hashes_checked": 32,
+      "status": "FAIL"
+    },
+    {
+      "case_id": "S001-v2",
+      "reference": "S001-v2",
+      "window": [
+        "2026-06-01",
+        "2026-09-02"
+      ],
+      "blocking_findings": [
+        "AttributeError: 'str' object has no attribute 'date'"
+      ],
+      "artifact_hashes_checked": 32,
+      "status": "FAIL"
+    },
+    {
+      "case_id": "S002-v1-common",
+      "reference": "S002-v1",
+      "window": [
+        "2026-06-01",
+        "2026-09-02"
+      ],
+      "blocking_findings": [
+        "AttributeError: 'str' object has no attribute 'date'"
+      ],
+      "artifact_hashes_checked": 32,
+      "status": "FAIL"
+    },
+    {
+      "case_id": "S002-v1-boundary",
+      "reference": "S002-v1",
+      "window": [
+        "2026-08-06",
+        "2026-08-14"
+      ],
+      "blocking_findings": [
+        "AttributeError: 'str' object has no attribute 'date'"
+      ],
+      "artifact_hashes_checked": 32,
+      "status": "FAIL"
+    },
+    {
+      "case_id": "S003-v1",
+      "reference": "S003-v1",
+      "window": [
+        "2026-06-01",
+        "2026-09-02"
+      ],
+      "blocking_findings": [],
+      "artifact_hashes_checked": 32,
+      "price_limit_scope": "EXISTING_OVERLAY_CAPABILITY_BOUNDARY; RAW_5M_CHECKPOINTS_VERIFIED",
+      "modes": {
+        "WINDOW": {
+          "five_ledgers_exact_business_values": true,
+          "identity_bijections": {
+            "decision_id": 20,
+            "order_id": 39,
+            "cycle_id": 20,
+            "fill_id": 39
+          },
+          "referential_integrity_and_fill_cash_position_reconciliation": "PASS",
+          "metrics": {
+            "old": {
+              "fills": 39,
+              "closed": 19,
+              "open": 0,
+              "trade_rows": 19,
+              "fees": 203.113596,
+              "terminal_cash": 58758.986403999974,
+              "terminal_quantity": 5300,
+              "terminal_equity": 99839.28640399998,
+              "daily_rows": 67,
+              "max_independent_cash_reconciliation_residual_cny": "2.06885E-11",
+              "cycle_positions_not_listed_as_trade_rows": {
+                "CYC-E1CAE5527570620D66F3": 5300
+              }
+            },
+            "new": {
+              "fills": 39,
+              "closed": 19,
+              "open": 0,
+              "trade_rows": 19,
+              "fees": 203.113596,
+              "terminal_cash": 58758.986403999974,
+              "terminal_quantity": 5300,
+              "terminal_equity": 99839.28640399998,
+              "daily_rows": 67,
+              "max_independent_cash_reconciliation_residual_cny": "2.06885E-11",
+              "cycle_positions_not_listed_as_trade_rows": {
+                "CYC-58BD1CB19A986D672A88": 5300
+              }
+            }
+          },
+          "nonzero_probes": {
+            "successful_quantities": {
+              "600": 4
+            },
+            "successful_categories": [
+              "ENTRY",
+              "EXIT",
+              "HOLD_CASH",
+              "HOLD_POSITION"
+            ],
+            "expected_invalid_overlay_200": 4,
+            "coverage_sufficient": true,
+            "all_plan_business_fields_equal": true
+          },
+          "complete_actual_trade_cycle_coverage": true,
+          "status": "PASS"
+        },
+        "CONTINUOUS": {
+          "five_ledgers_exact_business_values": true,
+          "identity_bijections": {
+            "decision_id": 20,
+            "order_id": 39,
+            "cycle_id": 20,
+            "fill_id": 39
+          },
+          "referential_integrity_and_fill_cash_position_reconciliation": "PASS",
+          "metrics": {
+            "old": {
+              "fills": 39,
+              "closed": 19,
+              "open": 0,
+              "trade_rows": 19,
+              "fees": 203.113596,
+              "terminal_cash": 58758.986403999974,
+              "terminal_quantity": 5300,
+              "terminal_equity": 99839.28640399998,
+              "daily_rows": 67,
+              "max_independent_cash_reconciliation_residual_cny": "2.06885E-11",
+              "cycle_positions_not_listed_as_trade_rows": {
+                "CYC-E1CAE5527570620D66F3": 5300
+              }
+            },
+            "new": {
+              "fills": 39,
+              "closed": 19,
+              "open": 0,
+              "trade_rows": 19,
+              "fees": 203.113596,
+              "terminal_cash": 58758.986403999974,
+              "terminal_quantity": 5300,
+              "terminal_equity": 99839.28640399998,
+              "daily_rows": 67,
+              "max_independent_cash_reconciliation_residual_cny": "2.06885E-11",
+              "cycle_positions_not_listed_as_trade_rows": {
+                "CYC-58BD1CB19A986D672A88": 5300
+              }
+            }
+          },
+          "nonzero_probes": {
+            "successful_quantities": {
+              "600": 4
+            },
+            "successful_categories": [
+              "ENTRY",
+              "EXIT",
+              "HOLD_CASH",
+              "HOLD_POSITION"
+            ],
+            "expected_invalid_overlay_200": 4,
+            "coverage_sufficient": true,
+            "all_plan_business_fields_equal": true
+          },
+          "complete_actual_trade_cycle_coverage": true,
+          "status": "PASS"
+        }
+      },
+      "status": "PASS",
+      "driver_recorded_status": "PASS"
+    },
+    {
+      "case_id": "S007-v1-seed",
+      "reference": "S007-v1",
+      "window": [
+        "2026-06-01",
+        "2026-09-02"
+      ],
+      "blocking_findings": [
+        "AttributeError: 'str' object has no attribute 'date'"
+      ],
+      "artifact_hashes_checked": 32,
+      "status": "FAIL"
+    },
+    {
+      "case_id": "S011-v1",
+      "reference": "S011-v1",
+      "window": [
+        "2026-10-08",
+        "2026-10-15"
+      ],
+      "blocking_findings": [
+        "AttributeError: 'str' object has no attribute 'date'"
+      ],
+      "artifact_hashes_checked": 32,
+      "status": "FAIL"
+    },
+    {
+      "case_id": "S007-v1-incremental",
+      "reference": "S007-v1",
+      "window": [
+        "2026-09-03",
+        "2026-09-30"
+      ],
+      "blocking_findings": [
+        "AttributeError: 'str' object has no attribute 'date'"
+      ],
+      "artifact_hashes_checked": 32,
+      "status": "FAIL"
+    },
+    {
+      "case_id": "S011-v1-common",
+      "reference": "S011-v1",
+      "window": [
+        "2026-06-01",
+        "2026-09-02"
+      ],
+      "blocking_findings": [
+        "AttributeError: 'str' object has no attribute 'date'"
+      ],
+      "artifact_hashes_checked": 32,
+      "status": "FAIL"
+    }
+  ],
+  "per_reference": [
+    {
+      "reference": "S001-v1",
+      "status": "FAIL",
+      "complete_trade_cycle_cases_by_mode": {
+        "WINDOW": [],
+        "CONTINUOUS": []
+      },
+      "all_selected_case_business_equivalence_passed": false
+    },
+    {
+      "reference": "S001-v2",
+      "status": "FAIL",
+      "complete_trade_cycle_cases_by_mode": {
+        "WINDOW": [],
+        "CONTINUOUS": []
+      },
+      "all_selected_case_business_equivalence_passed": false
+    },
+    {
+      "reference": "S002-v1",
+      "status": "FAIL",
+      "complete_trade_cycle_cases_by_mode": {
+        "WINDOW": [],
+        "CONTINUOUS": []
+      },
+      "all_selected_case_business_equivalence_passed": false
+    },
+    {
+      "reference": "S003-v1",
+      "status": "PASS",
+      "complete_trade_cycle_cases_by_mode": {
+        "WINDOW": [
+          "S003-v1"
+        ],
+        "CONTINUOUS": [
+          "S003-v1"
+        ]
+      },
+      "all_selected_case_business_equivalence_passed": true
+    },
+    {
+      "reference": "S007-v1",
+      "status": "FAIL",
+      "complete_trade_cycle_cases_by_mode": {
+        "WINDOW": [],
+        "CONTINUOUS": []
+      },
+      "all_selected_case_business_equivalence_passed": false
+    },
+    {
+      "reference": "S011-v1",
+      "status": "FAIL",
+      "complete_trade_cycle_cases_by_mode": {
+        "WINDOW": [],
+        "CONTINUOUS": []
+      },
+      "all_selected_case_business_equivalence_passed": false
+    }
+  ],
+  "source_config": {
+    "path": "research/S014/experiments/EX053_20261020/protocols/market_equivalence_cases.json",
+    "sha256": "f87c9178dfd25033007c124ace8338c69d0ae2323e17c11ef611940049a99a1c"
+  },
+  "executed_driver": {
+    "path": ".tmp/market-driver-executed-20261020.py",
+    "sha256": "e7bd588143d2dfbb93fb5fcb20126cf5b9bfebee9c5161677e1f5a2e964d86d9",
+    "current_source_is_successor": true,
+    "note": "Current driver fixes CLOSED counting and adds trade_rows. This review authenticates the preserved actually executed driver, never reassigns old runs to the successor, and corrects counts from immutable CSV without new accounts."
+  },
+  "frozen_originals": {
+    "baseline": ".tmp/srt_window_contract_review_baseline.json",
+    "checked_files": 70,
+    "changed_files": []
+  },
+  "independent_count_corrections": [],
+  "authenticated_public_fetch_checks": [
+    {
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "588080.SH",
+      "frequency": "30m",
+      "start": "2020-11-16",
+      "end": "2026-09-01",
+      "content_sha256": "e301405114ac1724b997b507a13bb090ad436e429f57ff938bd1b7c61d14c282",
+      "rows": 11256,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2020-11-16",
+      "end": "2026-09-01",
+      "content_sha256": "f7708067d7f6a0fdfb5b59d6ba9b8760de7690e49ce4ed9d1a8f0cb7fe905902",
+      "rows": 1407,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "588080.SH",
+      "frequency": "weekly",
+      "start": "2020-11-16",
+      "end": "2026-09-01",
+      "content_sha256": "393992ae5c4b528cb974685c6be4c7301e8cadd2d61c39e14a1ce0191d288c33",
+      "rows": 297,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2020-11-16",
+      "end": "2026-09-01",
+      "content_sha256": "a201de22b4ede055d045cc78076420334c6d71c53b7ae0da41c6dd2e6f92008b",
+      "rows": 1407,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "dataset": "calendar.trading_sessions",
+      "symbol": "SSE",
+      "frequency": "daily",
+      "start": "2020-11-16",
+      "end": "2026-09-22",
+      "content_sha256": "07f1adc82ef741f7358f9eb49f06147a1e3f3414df3d3f7b8e8ce99cb858f0b7",
+      "rows": 2137,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "588080.SH",
+      "frequency": "30m",
+      "start": "2020-11-16",
+      "end": "2026-09-01",
+      "content_sha256": "e301405114ac1724b997b507a13bb090ad436e429f57ff938bd1b7c61d14c282",
+      "rows": 11256,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2020-11-16",
+      "end": "2026-09-01",
+      "content_sha256": "f7708067d7f6a0fdfb5b59d6ba9b8760de7690e49ce4ed9d1a8f0cb7fe905902",
+      "rows": 1407,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "588080.SH",
+      "frequency": "weekly",
+      "start": "2020-11-16",
+      "end": "2026-09-01",
+      "content_sha256": "393992ae5c4b528cb974685c6be4c7301e8cadd2d61c39e14a1ce0191d288c33",
+      "rows": 297,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2020-11-16",
+      "end": "2026-09-01",
+      "content_sha256": "a201de22b4ede055d045cc78076420334c6d71c53b7ae0da41c6dd2e6f92008b",
+      "rows": 1407,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "dataset": "calendar.trading_sessions",
+      "symbol": "SSE",
+      "frequency": "daily",
+      "start": "2020-11-16",
+      "end": "2026-09-22",
+      "content_sha256": "07f1adc82ef741f7358f9eb49f06147a1e3f3414df3d3f7b8e8ce99cb858f0b7",
+      "rows": 2137,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2026-05-29",
+      "end": "2026-09-02",
+      "content_sha256": "2ec5ce2b64af9eea10c42d04c24fa836695dc6e468bacffb08976de86b94cae6",
+      "rows": 68,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "dataset": "etf.unadjusted_intraday",
+      "symbol": "588080.SH",
+      "frequency": "30m",
+      "start": "2026-06-01",
+      "end": "2026-09-02",
+      "content_sha256": "4efdb59791bb3ce78ff4d9cfd1f1e6bcfeeb3b3c08ab25d3feddd2f64f608b96",
+      "rows": 536,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-limits",
+      "prepared": {
+        "space_id": "e1358429-6181-43cb-829c-6e286e3f25c8",
+        "preparation_id": "6043658d-1d88-4110-80f6-2c9f3defae17",
+        "manifest_sha256": "b68443e4a683eb68a9b0c6347b28b630df84ac4afea2f1858b01e3c80ff42733"
+      },
+      "dataset": "security.price_limits",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2026-06-01",
+      "end": "2026-09-02",
+      "content_sha256": "1796ee8b4ed2a8e6f82e128d215dd9f15248d53004ff796cf6c954b730e6470b",
+      "rows": 67,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "588080.SH",
+      "frequency": "30m",
+      "start": "2020-11-16",
+      "end": "2026-09-01",
+      "content_sha256": "e301405114ac1724b997b507a13bb090ad436e429f57ff938bd1b7c61d14c282",
+      "rows": 11256,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2020-11-16",
+      "end": "2026-09-01",
+      "content_sha256": "f7708067d7f6a0fdfb5b59d6ba9b8760de7690e49ce4ed9d1a8f0cb7fe905902",
+      "rows": 1407,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "588080.SH",
+      "frequency": "weekly",
+      "start": "2020-11-16",
+      "end": "2026-09-01",
+      "content_sha256": "393992ae5c4b528cb974685c6be4c7301e8cadd2d61c39e14a1ce0191d288c33",
+      "rows": 297,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2020-11-16",
+      "end": "2026-09-01",
+      "content_sha256": "a201de22b4ede055d045cc78076420334c6d71c53b7ae0da41c6dd2e6f92008b",
+      "rows": 1407,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "dataset": "calendar.trading_sessions",
+      "symbol": "SSE",
+      "frequency": "daily",
+      "start": "2020-11-16",
+      "end": "2026-09-22",
+      "content_sha256": "07f1adc82ef741f7358f9eb49f06147a1e3f3414df3d3f7b8e8ce99cb858f0b7",
+      "rows": 2137,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "588080.SH",
+      "frequency": "30m",
+      "start": "2020-11-16",
+      "end": "2026-09-01",
+      "content_sha256": "e301405114ac1724b997b507a13bb090ad436e429f57ff938bd1b7c61d14c282",
+      "rows": 11256,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2020-11-16",
+      "end": "2026-09-01",
+      "content_sha256": "f7708067d7f6a0fdfb5b59d6ba9b8760de7690e49ce4ed9d1a8f0cb7fe905902",
+      "rows": 1407,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "588080.SH",
+      "frequency": "weekly",
+      "start": "2020-11-16",
+      "end": "2026-09-01",
+      "content_sha256": "393992ae5c4b528cb974685c6be4c7301e8cadd2d61c39e14a1ce0191d288c33",
+      "rows": 297,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2020-11-16",
+      "end": "2026-09-01",
+      "content_sha256": "a201de22b4ede055d045cc78076420334c6d71c53b7ae0da41c6dd2e6f92008b",
+      "rows": 1407,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "dataset": "calendar.trading_sessions",
+      "symbol": "SSE",
+      "frequency": "daily",
+      "start": "2020-11-16",
+      "end": "2026-09-22",
+      "content_sha256": "07f1adc82ef741f7358f9eb49f06147a1e3f3414df3d3f7b8e8ce99cb858f0b7",
+      "rows": 2137,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2026-05-29",
+      "end": "2026-09-02",
+      "content_sha256": "2ec5ce2b64af9eea10c42d04c24fa836695dc6e468bacffb08976de86b94cae6",
+      "rows": 68,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "dataset": "etf.unadjusted_intraday",
+      "symbol": "588080.SH",
+      "frequency": "30m",
+      "start": "2026-06-01",
+      "end": "2026-09-02",
+      "content_sha256": "4efdb59791bb3ce78ff4d9cfd1f1e6bcfeeb3b3c08ab25d3feddd2f64f608b96",
+      "rows": 536,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-limits",
+      "prepared": {
+        "space_id": "e1358429-6181-43cb-829c-6e286e3f25c8",
+        "preparation_id": "6043658d-1d88-4110-80f6-2c9f3defae17",
+        "manifest_sha256": "b68443e4a683eb68a9b0c6347b28b630df84ac4afea2f1858b01e3c80ff42733"
+      },
+      "dataset": "security.price_limits",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2026-06-01",
+      "end": "2026-09-02",
+      "content_sha256": "1796ee8b4ed2a8e6f82e128d215dd9f15248d53004ff796cf6c954b730e6470b",
+      "rows": 67,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "510500.SH",
+      "frequency": "daily",
+      "start": "2025-03-05",
+      "end": "2026-09-01",
+      "content_sha256": "14add77882f1de50299cb646fed2c96245ba1880c40fcdfae265d530dfd2e3c2",
+      "rows": 366,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "510500.SH",
+      "frequency": "daily",
+      "start": "2026-05-29",
+      "end": "2026-09-01",
+      "content_sha256": "f0b089f6edabd6a55a4832434c1813668abc38c3170847b07e4e73c2935f04cf",
+      "rows": 67,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "calendar.trading_sessions",
+      "symbol": "SSE",
+      "frequency": "daily",
+      "start": "2024-10-09",
+      "end": "2026-09-22",
+      "content_sha256": "cfb4bb9e5a16f259690302e5ccfe2b5f472426e4b279615ca9b00d3241a761f0",
+      "rows": 714,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "510500.SH",
+      "frequency": "daily",
+      "start": "2025-03-05",
+      "end": "2026-09-01",
+      "content_sha256": "14add77882f1de50299cb646fed2c96245ba1880c40fcdfae265d530dfd2e3c2",
+      "rows": 366,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "510500.SH",
+      "frequency": "daily",
+      "start": "2026-05-29",
+      "end": "2026-09-01",
+      "content_sha256": "f0b089f6edabd6a55a4832434c1813668abc38c3170847b07e4e73c2935f04cf",
+      "rows": 67,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "calendar.trading_sessions",
+      "symbol": "SSE",
+      "frequency": "daily",
+      "start": "2024-10-09",
+      "end": "2026-09-22",
+      "content_sha256": "cfb4bb9e5a16f259690302e5ccfe2b5f472426e4b279615ca9b00d3241a761f0",
+      "rows": 714,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "510500.SH",
+      "frequency": "daily",
+      "start": "2026-05-29",
+      "end": "2026-09-02",
+      "content_sha256": "06e9c17af8af0cabe3e37f89ca4b1172a25b7fe6127b48aaf6a09f49e6f6096d",
+      "rows": 68,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "etf.unadjusted_intraday",
+      "symbol": "510500.SH",
+      "frequency": "30m",
+      "start": "2026-06-01",
+      "end": "2026-09-02",
+      "content_sha256": "e68629b60c24a478cc11dfe21ea8d754a947cec0d39c8d770dafd2226ea38cbe",
+      "rows": 536,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-limits",
+      "prepared": {
+        "space_id": "e1358429-6181-43cb-829c-6e286e3f25c8",
+        "preparation_id": "6043658d-1d88-4110-80f6-2c9f3defae17",
+        "manifest_sha256": "b68443e4a683eb68a9b0c6347b28b630df84ac4afea2f1858b01e3c80ff42733"
+      },
+      "dataset": "security.price_limits",
+      "symbol": "510500.SH",
+      "frequency": "daily",
+      "start": "2026-06-01",
+      "end": "2026-09-02",
+      "content_sha256": "1bf2f8b34e25fab2b77f9eb5b74bc8a2132432ed67bf262ae6c129e497176496",
+      "rows": 67,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "510500.SH",
+      "frequency": "daily",
+      "start": "2025-05-15",
+      "end": "2026-08-13",
+      "content_sha256": "700a3601bd8cef1ecad468f496f97be31c32287779b1f3acb58ddeaf47b14616",
+      "rows": 306,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "510500.SH",
+      "frequency": "daily",
+      "start": "2026-08-05",
+      "end": "2026-08-13",
+      "content_sha256": "8198ab589d78ed3e205eeee2686d5bdff844fbdfe182621764aa3a8fdc449dba",
+      "rows": 7,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "calendar.trading_sessions",
+      "symbol": "SSE",
+      "frequency": "daily",
+      "start": "2024-12-14",
+      "end": "2026-09-03",
+      "content_sha256": "7b3c74bc980897c82b9c8159d9cab2b0d4c26a20b5e4be45c8a35e1e3dbbef7a",
+      "rows": 629,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "510500.SH",
+      "frequency": "daily",
+      "start": "2025-05-15",
+      "end": "2026-08-13",
+      "content_sha256": "700a3601bd8cef1ecad468f496f97be31c32287779b1f3acb58ddeaf47b14616",
+      "rows": 306,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "510500.SH",
+      "frequency": "daily",
+      "start": "2026-08-05",
+      "end": "2026-08-13",
+      "content_sha256": "8198ab589d78ed3e205eeee2686d5bdff844fbdfe182621764aa3a8fdc449dba",
+      "rows": 7,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "calendar.trading_sessions",
+      "symbol": "SSE",
+      "frequency": "daily",
+      "start": "2024-12-14",
+      "end": "2026-09-03",
+      "content_sha256": "7b3c74bc980897c82b9c8159d9cab2b0d4c26a20b5e4be45c8a35e1e3dbbef7a",
+      "rows": 629,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "510500.SH",
+      "frequency": "daily",
+      "start": "2026-08-05",
+      "end": "2026-08-14",
+      "content_sha256": "6c5f3a8f2455c83227c736c23f59ceb5878a9f5c860ac219eb255904db84bcd3",
+      "rows": 8,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "etf.unadjusted_intraday",
+      "symbol": "510500.SH",
+      "frequency": "30m",
+      "start": "2026-08-06",
+      "end": "2026-08-14",
+      "content_sha256": "ebb91d99c813cde62ad7f887fbe15c92af30fee91fcc1c5962ffcc2453a86c64",
+      "rows": 56,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-limits",
+      "prepared": {
+        "space_id": "e1358429-6181-43cb-829c-6e286e3f25c8",
+        "preparation_id": "6043658d-1d88-4110-80f6-2c9f3defae17",
+        "manifest_sha256": "b68443e4a683eb68a9b0c6347b28b630df84ac4afea2f1858b01e3c80ff42733"
+      },
+      "dataset": "security.price_limits",
+      "symbol": "510500.SH",
+      "frequency": "daily",
+      "start": "2026-08-06",
+      "end": "2026-08-14",
+      "content_sha256": "6924614b4daa2c102709a5160a69072f1f73fcb625a5858ff65fec5fbe657ba2",
+      "rows": 7,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "510500.SH",
+      "frequency": "daily",
+      "start": "2026-05-29",
+      "end": "2026-09-01",
+      "content_sha256": "e8c41d55c9cb1b668508526f8a40be68672cb02a894ad9f69abafcf76bc7968c",
+      "rows": 67,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "strategy.feature_evidence",
+      "symbol": "S003-v1",
+      "frequency": "daily",
+      "start": "2026-03-02",
+      "end": "2026-09-01",
+      "content_sha256": "63b3273abd147a5bdc607137288ca838eaffa4a3a8ddbb3762d25fb08460e8b8",
+      "rows": 127,
+      "vendor": "repository"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "510500.SH",
+      "frequency": "daily",
+      "start": "2026-05-29",
+      "end": "2026-09-01",
+      "content_sha256": "f0b089f6edabd6a55a4832434c1813668abc38c3170847b07e4e73c2935f04cf",
+      "rows": 67,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "calendar.trading_sessions",
+      "symbol": "SSE",
+      "frequency": "daily",
+      "start": "2026-01-01",
+      "end": "2026-09-22",
+      "content_sha256": "5b8d5dbdd0cd6145872ddbd2dc093099f8d4ae7412360763c880740a3083ff37",
+      "rows": 265,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "510500.SH",
+      "frequency": "daily",
+      "start": "2026-05-29",
+      "end": "2026-09-01",
+      "content_sha256": "e8c41d55c9cb1b668508526f8a40be68672cb02a894ad9f69abafcf76bc7968c",
+      "rows": 67,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "strategy.feature_evidence",
+      "symbol": "S003-v1",
+      "frequency": "daily",
+      "start": "2026-03-02",
+      "end": "2026-09-01",
+      "content_sha256": "63b3273abd147a5bdc607137288ca838eaffa4a3a8ddbb3762d25fb08460e8b8",
+      "rows": 127,
+      "vendor": "repository"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "510500.SH",
+      "frequency": "daily",
+      "start": "2026-05-29",
+      "end": "2026-09-01",
+      "content_sha256": "f0b089f6edabd6a55a4832434c1813668abc38c3170847b07e4e73c2935f04cf",
+      "rows": 67,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "calendar.trading_sessions",
+      "symbol": "SSE",
+      "frequency": "daily",
+      "start": "2026-01-01",
+      "end": "2026-09-22",
+      "content_sha256": "5b8d5dbdd0cd6145872ddbd2dc093099f8d4ae7412360763c880740a3083ff37",
+      "rows": 265,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "510500.SH",
+      "frequency": "daily",
+      "start": "2026-05-29",
+      "end": "2026-09-02",
+      "content_sha256": "06e9c17af8af0cabe3e37f89ca4b1172a25b7fe6127b48aaf6a09f49e6f6096d",
+      "rows": 68,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "etf.unadjusted_intraday",
+      "symbol": "510500.SH",
+      "frequency": "30m",
+      "start": "2026-06-01",
+      "end": "2026-09-02",
+      "content_sha256": "e68629b60c24a478cc11dfe21ea8d754a947cec0d39c8d770dafd2226ea38cbe",
+      "rows": 536,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "dataset": "etf.unadjusted_intraday",
+      "symbol": "510500.SH",
+      "frequency": "5m",
+      "start": "2026-06-01",
+      "end": "2026-09-02",
+      "content_sha256": "222655d1323bb67c7a37a1667e34a45d331389d14244066092c8025a5f1406fa",
+      "rows": 3216,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S007/assets/data",
+      "prepared": {
+        "space_id": "c8d5b376-8a46-4e24-9291-3d959f9cc3d9",
+        "preparation_id": "1163a2ae-8705-4b69-84fa-ccfb8daece87",
+        "manifest_sha256": "cd678f283c3c811d42d8f81fc205d1c0da3759b15b6fbe755b87875972470eca"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2026-05-29",
+      "end": "2026-09-01",
+      "content_sha256": "faccba62e477c523fdae43a5f7753e9824679dbf89554f6816ad31bf081d8978",
+      "rows": 67,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S007/assets/data",
+      "prepared": {
+        "space_id": "c8d5b376-8a46-4e24-9291-3d959f9cc3d9",
+        "preparation_id": "1163a2ae-8705-4b69-84fa-ccfb8daece87",
+        "manifest_sha256": "cd678f283c3c811d42d8f81fc205d1c0da3759b15b6fbe755b87875972470eca"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2026-05-29",
+      "end": "2026-09-01",
+      "content_sha256": "f52abdeae2aee5bfafe99c5faf9b319599fcc06af613e1dedd618a06f36840a4",
+      "rows": 67,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S007/assets/data",
+      "prepared": {
+        "space_id": "c8d5b376-8a46-4e24-9291-3d959f9cc3d9",
+        "preparation_id": "1163a2ae-8705-4b69-84fa-ccfb8daece87",
+        "manifest_sha256": "cd678f283c3c811d42d8f81fc205d1c0da3759b15b6fbe755b87875972470eca"
+      },
+      "dataset": "strategy.feature_evidence",
+      "symbol": "S007-v1",
+      "frequency": "daily",
+      "start": "2021-01-04",
+      "end": "2026-09-01",
+      "content_sha256": "124819f7d6df9021273df9005372f1620b5c7acb97272605e9ee4531f38fe090",
+      "rows": 1373,
+      "vendor": "repository"
+    },
+    {
+      "space": "research/S007/assets/data",
+      "prepared": {
+        "space_id": "c8d5b376-8a46-4e24-9291-3d959f9cc3d9",
+        "preparation_id": "1163a2ae-8705-4b69-84fa-ccfb8daece87",
+        "manifest_sha256": "cd678f283c3c811d42d8f81fc205d1c0da3759b15b6fbe755b87875972470eca"
+      },
+      "dataset": "calendar.trading_sessions",
+      "symbol": "SSE",
+      "frequency": "daily",
+      "start": "2020-12-01",
+      "end": "2026-09-22",
+      "content_sha256": "2cd88b84bb380efa49f9231485199216ea5caa30481f3c21804406d751933e55",
+      "rows": 2122,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S007/assets/data",
+      "prepared": {
+        "space_id": "c8d5b376-8a46-4e24-9291-3d959f9cc3d9",
+        "preparation_id": "1163a2ae-8705-4b69-84fa-ccfb8daece87",
+        "manifest_sha256": "cd678f283c3c811d42d8f81fc205d1c0da3759b15b6fbe755b87875972470eca"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2026-05-29",
+      "end": "2026-09-01",
+      "content_sha256": "faccba62e477c523fdae43a5f7753e9824679dbf89554f6816ad31bf081d8978",
+      "rows": 67,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S007/assets/data",
+      "prepared": {
+        "space_id": "c8d5b376-8a46-4e24-9291-3d959f9cc3d9",
+        "preparation_id": "1163a2ae-8705-4b69-84fa-ccfb8daece87",
+        "manifest_sha256": "cd678f283c3c811d42d8f81fc205d1c0da3759b15b6fbe755b87875972470eca"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2026-05-29",
+      "end": "2026-09-01",
+      "content_sha256": "f52abdeae2aee5bfafe99c5faf9b319599fcc06af613e1dedd618a06f36840a4",
+      "rows": 67,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S007/assets/data",
+      "prepared": {
+        "space_id": "c8d5b376-8a46-4e24-9291-3d959f9cc3d9",
+        "preparation_id": "1163a2ae-8705-4b69-84fa-ccfb8daece87",
+        "manifest_sha256": "cd678f283c3c811d42d8f81fc205d1c0da3759b15b6fbe755b87875972470eca"
+      },
+      "dataset": "strategy.feature_evidence",
+      "symbol": "S007-v1",
+      "frequency": "daily",
+      "start": "2021-01-04",
+      "end": "2026-09-01",
+      "content_sha256": "124819f7d6df9021273df9005372f1620b5c7acb97272605e9ee4531f38fe090",
+      "rows": 1373,
+      "vendor": "repository"
+    },
+    {
+      "space": "research/S007/assets/data",
+      "prepared": {
+        "space_id": "c8d5b376-8a46-4e24-9291-3d959f9cc3d9",
+        "preparation_id": "1163a2ae-8705-4b69-84fa-ccfb8daece87",
+        "manifest_sha256": "cd678f283c3c811d42d8f81fc205d1c0da3759b15b6fbe755b87875972470eca"
+      },
+      "dataset": "calendar.trading_sessions",
+      "symbol": "SSE",
+      "frequency": "daily",
+      "start": "2020-12-01",
+      "end": "2026-09-22",
+      "content_sha256": "2cd88b84bb380efa49f9231485199216ea5caa30481f3c21804406d751933e55",
+      "rows": 2122,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S007/assets/data",
+      "prepared": {
+        "space_id": "c8d5b376-8a46-4e24-9291-3d959f9cc3d9",
+        "preparation_id": "1163a2ae-8705-4b69-84fa-ccfb8daece87",
+        "manifest_sha256": "cd678f283c3c811d42d8f81fc205d1c0da3759b15b6fbe755b87875972470eca"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2026-05-29",
+      "end": "2026-09-02",
+      "content_sha256": "440bed7d2d58318e8b3806c4071411e2e90a84d7f7c5c74a7621275025c3863a",
+      "rows": 68,
+      "vendor": "tushare"
+    },
+    {
+      "space": "research/S007/assets/data",
+      "prepared": {
+        "space_id": "c8d5b376-8a46-4e24-9291-3d959f9cc3d9",
+        "preparation_id": "1163a2ae-8705-4b69-84fa-ccfb8daece87",
+        "manifest_sha256": "cd678f283c3c811d42d8f81fc205d1c0da3759b15b6fbe755b87875972470eca"
+      },
+      "dataset": "etf.unadjusted_intraday",
+      "symbol": "588080.SH",
+      "frequency": "30m",
+      "start": "2026-06-01",
+      "end": "2026-09-02",
+      "content_sha256": "b94a1687ccd492a9f9189d6ec9664958d53f46b0b266445801d6c0bd2500e27f",
+      "rows": 536,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-limits",
+      "prepared": {
+        "space_id": "e1358429-6181-43cb-829c-6e286e3f25c8",
+        "preparation_id": "6043658d-1d88-4110-80f6-2c9f3defae17",
+        "manifest_sha256": "b68443e4a683eb68a9b0c6347b28b630df84ac4afea2f1858b01e3c80ff42733"
+      },
+      "dataset": "security.price_limits",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2026-06-01",
+      "end": "2026-09-02",
+      "content_sha256": "1796ee8b4ed2a8e6f82e128d215dd9f15248d53004ff796cf6c954b730e6470b",
+      "rows": 67,
+      "vendor": "tushare"
+    },
+    {
+      "space": "data/backtest",
+      "prepared": {
+        "space_id": "193c252b-f841-4625-84d0-5dfdf69b437f",
+        "preparation_id": "25afacb9-4614-49bb-b81c-6a1eb2be98c6",
+        "manifest_sha256": "7d49acc33100904bb1b52d9d459e23a6f9a678873cb07ab17fcf78c96c06b8bd"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "159326.SZ",
+      "frequency": "30m",
+      "start": "2024-12-26",
+      "end": "2026-10-14",
+      "content_sha256": "ebfa8e734500b827b5b732a3e457682b2e23834f17e2a5ebe52727b5023948fd",
+      "rows": 3464,
+      "vendor": "tushare"
+    },
+    {
+      "space": "data/backtest",
+      "prepared": {
+        "space_id": "193c252b-f841-4625-84d0-5dfdf69b437f",
+        "preparation_id": "25afacb9-4614-49bb-b81c-6a1eb2be98c6",
+        "manifest_sha256": "7d49acc33100904bb1b52d9d459e23a6f9a678873cb07ab17fcf78c96c06b8bd"
+      },
+      "dataset": "calendar.trading_sessions",
+      "symbol": "SSE",
+      "frequency": "daily",
+      "start": "2024-12-26",
+      "end": "2026-11-04",
+      "content_sha256": "3654de9fb134d2313be4b17fd330f034d2bafdcf146f49fbced99a46cbacca4c",
+      "rows": 679,
+      "vendor": "tushare"
+    },
+    {
+      "space": "data/backtest",
+      "prepared": {
+        "space_id": "193c252b-f841-4625-84d0-5dfdf69b437f",
+        "preparation_id": "25afacb9-4614-49bb-b81c-6a1eb2be98c6",
+        "manifest_sha256": "7d49acc33100904bb1b52d9d459e23a6f9a678873cb07ab17fcf78c96c06b8bd"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "159326.SZ",
+      "frequency": "daily",
+      "start": "2024-12-26",
+      "end": "2026-10-14",
+      "content_sha256": "b5eaa0d9eeb7cd11e75ce961e22a63e7e6db964ee4dac40d59592423f1f1ebf0",
+      "rows": 433,
+      "vendor": "tushare"
+    },
+    {
+      "space": "data/backtest",
+      "prepared": {
+        "space_id": "193c252b-f841-4625-84d0-5dfdf69b437f",
+        "preparation_id": "25afacb9-4614-49bb-b81c-6a1eb2be98c6",
+        "manifest_sha256": "7d49acc33100904bb1b52d9d459e23a6f9a678873cb07ab17fcf78c96c06b8bd"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "159326.SZ",
+      "frequency": "daily",
+      "start": "2024-12-26",
+      "end": "2026-10-14",
+      "content_sha256": "bb4ab9b61212c8f762f27d48b64701612d2847a924b0102e16a617445a376fb8",
+      "rows": 433,
+      "vendor": "tushare"
+    },
+    {
+      "space": "data/backtest",
+      "prepared": {
+        "space_id": "193c252b-f841-4625-84d0-5dfdf69b437f",
+        "preparation_id": "25afacb9-4614-49bb-b81c-6a1eb2be98c6",
+        "manifest_sha256": "7d49acc33100904bb1b52d9d459e23a6f9a678873cb07ab17fcf78c96c06b8bd"
+      },
+      "dataset": "index.domestic_close_turnover_daily",
+      "symbol": "000300.SH",
+      "frequency": "daily",
+      "start": "2024-12-26",
+      "end": "2026-10-14",
+      "content_sha256": "319943b0cb160ea1bf4c6b3d5c9b187fc22c5429a9fe5ca251170a04d77eb9d8",
+      "rows": 433,
+      "vendor": "tushare"
+    },
+    {
+      "space": "data/backtest",
+      "prepared": {
+        "space_id": "193c252b-f841-4625-84d0-5dfdf69b437f",
+        "preparation_id": "25afacb9-4614-49bb-b81c-6a1eb2be98c6",
+        "manifest_sha256": "7d49acc33100904bb1b52d9d459e23a6f9a678873cb07ab17fcf78c96c06b8bd"
+      },
+      "dataset": "index.global_daily",
+      "symbol": "SPX",
+      "frequency": "daily",
+      "start": "2024-12-16",
+      "end": "2026-10-14",
+      "content_sha256": "125927ac8752b85e2298c0a1709ffddd7e6b65d2191df682d833a28372f8b0e7",
+      "rows": 458,
+      "vendor": "tushare"
+    },
+    {
+      "space": "data/backtest",
+      "prepared": {
+        "space_id": "193c252b-f841-4625-84d0-5dfdf69b437f",
+        "preparation_id": "25afacb9-4614-49bb-b81c-6a1eb2be98c6",
+        "manifest_sha256": "7d49acc33100904bb1b52d9d459e23a6f9a678873cb07ab17fcf78c96c06b8bd"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "159326.SZ",
+      "frequency": "30m",
+      "start": "2024-12-26",
+      "end": "2026-10-14",
+      "content_sha256": "ebfa8e734500b827b5b732a3e457682b2e23834f17e2a5ebe52727b5023948fd",
+      "rows": 3464,
+      "vendor": "tushare"
+    },
+    {
+      "space": "data/backtest",
+      "prepared": {
+        "space_id": "193c252b-f841-4625-84d0-5dfdf69b437f",
+        "preparation_id": "25afacb9-4614-49bb-b81c-6a1eb2be98c6",
+        "manifest_sha256": "7d49acc33100904bb1b52d9d459e23a6f9a678873cb07ab17fcf78c96c06b8bd"
+      },
+      "dataset": "calendar.trading_sessions",
+      "symbol": "SSE",
+      "frequency": "daily",
+      "start": "2024-12-26",
+      "end": "2026-11-04",
+      "content_sha256": "3654de9fb134d2313be4b17fd330f034d2bafdcf146f49fbced99a46cbacca4c",
+      "rows": 679,
+      "vendor": "tushare"
+    },
+    {
+      "space": "data/backtest",
+      "prepared": {
+        "space_id": "193c252b-f841-4625-84d0-5dfdf69b437f",
+        "preparation_id": "25afacb9-4614-49bb-b81c-6a1eb2be98c6",
+        "manifest_sha256": "7d49acc33100904bb1b52d9d459e23a6f9a678873cb07ab17fcf78c96c06b8bd"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "159326.SZ",
+      "frequency": "daily",
+      "start": "2024-12-26",
+      "end": "2026-10-14",
+      "content_sha256": "b5eaa0d9eeb7cd11e75ce961e22a63e7e6db964ee4dac40d59592423f1f1ebf0",
+      "rows": 433,
+      "vendor": "tushare"
+    },
+    {
+      "space": "data/backtest",
+      "prepared": {
+        "space_id": "193c252b-f841-4625-84d0-5dfdf69b437f",
+        "preparation_id": "25afacb9-4614-49bb-b81c-6a1eb2be98c6",
+        "manifest_sha256": "7d49acc33100904bb1b52d9d459e23a6f9a678873cb07ab17fcf78c96c06b8bd"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "159326.SZ",
+      "frequency": "daily",
+      "start": "2024-12-26",
+      "end": "2026-10-14",
+      "content_sha256": "bb4ab9b61212c8f762f27d48b64701612d2847a924b0102e16a617445a376fb8",
+      "rows": 433,
+      "vendor": "tushare"
+    },
+    {
+      "space": "data/backtest",
+      "prepared": {
+        "space_id": "193c252b-f841-4625-84d0-5dfdf69b437f",
+        "preparation_id": "25afacb9-4614-49bb-b81c-6a1eb2be98c6",
+        "manifest_sha256": "7d49acc33100904bb1b52d9d459e23a6f9a678873cb07ab17fcf78c96c06b8bd"
+      },
+      "dataset": "index.domestic_close_turnover_daily",
+      "symbol": "000300.SH",
+      "frequency": "daily",
+      "start": "2024-12-26",
+      "end": "2026-10-14",
+      "content_sha256": "319943b0cb160ea1bf4c6b3d5c9b187fc22c5429a9fe5ca251170a04d77eb9d8",
+      "rows": 433,
+      "vendor": "tushare"
+    },
+    {
+      "space": "data/backtest",
+      "prepared": {
+        "space_id": "193c252b-f841-4625-84d0-5dfdf69b437f",
+        "preparation_id": "25afacb9-4614-49bb-b81c-6a1eb2be98c6",
+        "manifest_sha256": "7d49acc33100904bb1b52d9d459e23a6f9a678873cb07ab17fcf78c96c06b8bd"
+      },
+      "dataset": "index.global_daily",
+      "symbol": "SPX",
+      "frequency": "daily",
+      "start": "2024-12-16",
+      "end": "2026-10-14",
+      "content_sha256": "125927ac8752b85e2298c0a1709ffddd7e6b65d2191df682d833a28372f8b0e7",
+      "rows": 458,
+      "vendor": "tushare"
+    },
+    {
+      "space": "data/backtest",
+      "prepared": {
+        "space_id": "193c252b-f841-4625-84d0-5dfdf69b437f",
+        "preparation_id": "25afacb9-4614-49bb-b81c-6a1eb2be98c6",
+        "manifest_sha256": "7d49acc33100904bb1b52d9d459e23a6f9a678873cb07ab17fcf78c96c06b8bd"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "159326.SZ",
+      "frequency": "daily",
+      "start": "2026-09-30",
+      "end": "2026-10-15",
+      "content_sha256": "3e04f52150ba45ee216d4f69645ae494db0fbdb63c93fd7c9f5963dafb386762",
+      "rows": 7,
+      "vendor": "tushare"
+    },
+    {
+      "space": "data/backtest",
+      "prepared": {
+        "space_id": "193c252b-f841-4625-84d0-5dfdf69b437f",
+        "preparation_id": "25afacb9-4614-49bb-b81c-6a1eb2be98c6",
+        "manifest_sha256": "7d49acc33100904bb1b52d9d459e23a6f9a678873cb07ab17fcf78c96c06b8bd"
+      },
+      "dataset": "etf.unadjusted_intraday",
+      "symbol": "159326.SZ",
+      "frequency": "30m",
+      "start": "2026-10-08",
+      "end": "2026-10-15",
+      "content_sha256": "e6839bce43ac91a9ea225a5a0a6b6959a7e1985e9141d2bd64974534ce90d7b0",
+      "rows": 48,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-limits",
+      "prepared": {
+        "space_id": "e1358429-6181-43cb-829c-6e286e3f25c8",
+        "preparation_id": "6043658d-1d88-4110-80f6-2c9f3defae17",
+        "manifest_sha256": "b68443e4a683eb68a9b0c6347b28b630df84ac4afea2f1858b01e3c80ff42733"
+      },
+      "dataset": "security.price_limits",
+      "symbol": "159326.SZ",
+      "frequency": "daily",
+      "start": "2026-10-08",
+      "end": "2026-10-15",
+      "content_sha256": "b8904ad91e4facc06c8cde86258b07f50b41107c9e3eaa7d27bf253dfe44c3b2",
+      "rows": 6,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s007-data",
+      "prepared": {
+        "space_id": "eaf34247-0192-422d-9573-a573a4f22d9d",
+        "preparation_id": "ed0b5a0c-997c-43a4-9e5c-d9e499923b6f",
+        "manifest_sha256": "78738bbeec1b0a445eac17873d947bf999b24d8ce59c4de6548a2a95e8b27ff7"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2026-08-06",
+      "end": "2026-09-29",
+      "content_sha256": "240e32e2134defb9dbfcb7b9c0dcb2cc54d22df57429ee22d7e6a35f88652803",
+      "rows": 38,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s007-data",
+      "prepared": {
+        "space_id": "eaf34247-0192-422d-9573-a573a4f22d9d",
+        "preparation_id": "ed0b5a0c-997c-43a4-9e5c-d9e499923b6f",
+        "manifest_sha256": "78738bbeec1b0a445eac17873d947bf999b24d8ce59c4de6548a2a95e8b27ff7"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2026-09-02",
+      "end": "2026-09-29",
+      "content_sha256": "c224ae9e8c13400a9d214ff06003340f9613e07fb88c1f5ccd3b0d3370f3f324",
+      "rows": 19,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s007-data",
+      "prepared": {
+        "space_id": "eaf34247-0192-422d-9573-a573a4f22d9d",
+        "preparation_id": "ed0b5a0c-997c-43a4-9e5c-d9e499923b6f",
+        "manifest_sha256": "78738bbeec1b0a445eac17873d947bf999b24d8ce59c4de6548a2a95e8b27ff7"
+      },
+      "dataset": "strategy.feature_evidence",
+      "symbol": "S007-v1",
+      "frequency": "daily",
+      "start": "2021-01-04",
+      "end": "2026-09-02",
+      "content_sha256": "a200b0f5768e0e9cdc6e6f384965f77014427ca81933fe7a3c113d4f3fd91a5c",
+      "rows": 1374,
+      "vendor": "repository"
+    },
+    {
+      "space": ".tmp/window-market-s007-data",
+      "prepared": {
+        "space_id": "eaf34247-0192-422d-9573-a573a4f22d9d",
+        "preparation_id": "ed0b5a0c-997c-43a4-9e5c-d9e499923b6f",
+        "manifest_sha256": "78738bbeec1b0a445eac17873d947bf999b24d8ce59c4de6548a2a95e8b27ff7"
+      },
+      "dataset": "index.daily_basic",
+      "symbol": "399006.SZ",
+      "frequency": "daily",
+      "start": "2026-08-06",
+      "end": "2026-09-29",
+      "content_sha256": "6b64836abc53de47665686c09809b6b437b116ac357eab87dffa1dd9a9752b6b",
+      "rows": 38,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s007-data",
+      "prepared": {
+        "space_id": "eaf34247-0192-422d-9573-a573a4f22d9d",
+        "preparation_id": "ed0b5a0c-997c-43a4-9e5c-d9e499923b6f",
+        "manifest_sha256": "78738bbeec1b0a445eac17873d947bf999b24d8ce59c4de6548a2a95e8b27ff7"
+      },
+      "dataset": "etf.share_size",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2026-08-06",
+      "end": "2026-09-28",
+      "content_sha256": "10a3c487c0d53e956581753c6c9ab1133d7e96db863449cb7c8ac916bda274c2",
+      "rows": 37,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s007-data",
+      "prepared": {
+        "space_id": "eaf34247-0192-422d-9573-a573a4f22d9d",
+        "preparation_id": "ed0b5a0c-997c-43a4-9e5c-d9e499923b6f",
+        "manifest_sha256": "78738bbeec1b0a445eac17873d947bf999b24d8ce59c4de6548a2a95e8b27ff7"
+      },
+      "dataset": "macro.shibor_daily",
+      "symbol": null,
+      "frequency": "daily",
+      "start": "2026-08-06",
+      "end": "2026-09-29",
+      "content_sha256": "50244bbf643e102f99c367b796998be51186d80753872020d3bbf5e98f14404f",
+      "rows": 39,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s007-data",
+      "prepared": {
+        "space_id": "eaf34247-0192-422d-9573-a573a4f22d9d",
+        "preparation_id": "ed0b5a0c-997c-43a4-9e5c-d9e499923b6f",
+        "manifest_sha256": "78738bbeec1b0a445eac17873d947bf999b24d8ce59c4de6548a2a95e8b27ff7"
+      },
+      "dataset": "index.global_daily",
+      "symbol": "SPX",
+      "frequency": "daily",
+      "start": "2026-07-30",
+      "end": "2026-09-29",
+      "content_sha256": "64ff280115e9bc45699df1abbec28b2efcc4df42d2d06c84241035113f145379",
+      "rows": 43,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s007-data",
+      "prepared": {
+        "space_id": "eaf34247-0192-422d-9573-a573a4f22d9d",
+        "preparation_id": "ed0b5a0c-997c-43a4-9e5c-d9e499923b6f",
+        "manifest_sha256": "78738bbeec1b0a445eac17873d947bf999b24d8ce59c4de6548a2a95e8b27ff7"
+      },
+      "dataset": "calendar.trading_sessions",
+      "symbol": "SSE",
+      "frequency": "daily",
+      "start": "2020-12-01",
+      "end": "2026-10-20",
+      "content_sha256": "df35ac5d8a54dc351aead906394d5b2042d9b8769e519e4024f7c6639ca02ac2",
+      "rows": 2150,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s007-data",
+      "prepared": {
+        "space_id": "eaf34247-0192-422d-9573-a573a4f22d9d",
+        "preparation_id": "ed0b5a0c-997c-43a4-9e5c-d9e499923b6f",
+        "manifest_sha256": "78738bbeec1b0a445eac17873d947bf999b24d8ce59c4de6548a2a95e8b27ff7"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2026-08-06",
+      "end": "2026-09-29",
+      "content_sha256": "240e32e2134defb9dbfcb7b9c0dcb2cc54d22df57429ee22d7e6a35f88652803",
+      "rows": 38,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s007-data",
+      "prepared": {
+        "space_id": "eaf34247-0192-422d-9573-a573a4f22d9d",
+        "preparation_id": "ed0b5a0c-997c-43a4-9e5c-d9e499923b6f",
+        "manifest_sha256": "78738bbeec1b0a445eac17873d947bf999b24d8ce59c4de6548a2a95e8b27ff7"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2026-09-02",
+      "end": "2026-09-29",
+      "content_sha256": "c224ae9e8c13400a9d214ff06003340f9613e07fb88c1f5ccd3b0d3370f3f324",
+      "rows": 19,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s007-data",
+      "prepared": {
+        "space_id": "eaf34247-0192-422d-9573-a573a4f22d9d",
+        "preparation_id": "ed0b5a0c-997c-43a4-9e5c-d9e499923b6f",
+        "manifest_sha256": "78738bbeec1b0a445eac17873d947bf999b24d8ce59c4de6548a2a95e8b27ff7"
+      },
+      "dataset": "strategy.feature_evidence",
+      "symbol": "S007-v1",
+      "frequency": "daily",
+      "start": "2021-01-04",
+      "end": "2026-09-02",
+      "content_sha256": "a200b0f5768e0e9cdc6e6f384965f77014427ca81933fe7a3c113d4f3fd91a5c",
+      "rows": 1374,
+      "vendor": "repository"
+    },
+    {
+      "space": ".tmp/window-market-s007-data",
+      "prepared": {
+        "space_id": "eaf34247-0192-422d-9573-a573a4f22d9d",
+        "preparation_id": "ed0b5a0c-997c-43a4-9e5c-d9e499923b6f",
+        "manifest_sha256": "78738bbeec1b0a445eac17873d947bf999b24d8ce59c4de6548a2a95e8b27ff7"
+      },
+      "dataset": "index.daily_basic",
+      "symbol": "399006.SZ",
+      "frequency": "daily",
+      "start": "2026-08-06",
+      "end": "2026-09-29",
+      "content_sha256": "6b64836abc53de47665686c09809b6b437b116ac357eab87dffa1dd9a9752b6b",
+      "rows": 38,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s007-data",
+      "prepared": {
+        "space_id": "eaf34247-0192-422d-9573-a573a4f22d9d",
+        "preparation_id": "ed0b5a0c-997c-43a4-9e5c-d9e499923b6f",
+        "manifest_sha256": "78738bbeec1b0a445eac17873d947bf999b24d8ce59c4de6548a2a95e8b27ff7"
+      },
+      "dataset": "etf.share_size",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2026-08-06",
+      "end": "2026-09-28",
+      "content_sha256": "10a3c487c0d53e956581753c6c9ab1133d7e96db863449cb7c8ac916bda274c2",
+      "rows": 37,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s007-data",
+      "prepared": {
+        "space_id": "eaf34247-0192-422d-9573-a573a4f22d9d",
+        "preparation_id": "ed0b5a0c-997c-43a4-9e5c-d9e499923b6f",
+        "manifest_sha256": "78738bbeec1b0a445eac17873d947bf999b24d8ce59c4de6548a2a95e8b27ff7"
+      },
+      "dataset": "macro.shibor_daily",
+      "symbol": null,
+      "frequency": "daily",
+      "start": "2026-08-06",
+      "end": "2026-09-29",
+      "content_sha256": "50244bbf643e102f99c367b796998be51186d80753872020d3bbf5e98f14404f",
+      "rows": 39,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s007-data",
+      "prepared": {
+        "space_id": "eaf34247-0192-422d-9573-a573a4f22d9d",
+        "preparation_id": "ed0b5a0c-997c-43a4-9e5c-d9e499923b6f",
+        "manifest_sha256": "78738bbeec1b0a445eac17873d947bf999b24d8ce59c4de6548a2a95e8b27ff7"
+      },
+      "dataset": "index.global_daily",
+      "symbol": "SPX",
+      "frequency": "daily",
+      "start": "2026-07-30",
+      "end": "2026-09-29",
+      "content_sha256": "64ff280115e9bc45699df1abbec28b2efcc4df42d2d06c84241035113f145379",
+      "rows": 43,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s007-data",
+      "prepared": {
+        "space_id": "eaf34247-0192-422d-9573-a573a4f22d9d",
+        "preparation_id": "ed0b5a0c-997c-43a4-9e5c-d9e499923b6f",
+        "manifest_sha256": "78738bbeec1b0a445eac17873d947bf999b24d8ce59c4de6548a2a95e8b27ff7"
+      },
+      "dataset": "calendar.trading_sessions",
+      "symbol": "SSE",
+      "frequency": "daily",
+      "start": "2020-12-01",
+      "end": "2026-10-20",
+      "content_sha256": "df35ac5d8a54dc351aead906394d5b2042d9b8769e519e4024f7c6639ca02ac2",
+      "rows": 2150,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s007-data",
+      "prepared": {
+        "space_id": "eaf34247-0192-422d-9573-a573a4f22d9d",
+        "preparation_id": "ed0b5a0c-997c-43a4-9e5c-d9e499923b6f",
+        "manifest_sha256": "78738bbeec1b0a445eac17873d947bf999b24d8ce59c4de6548a2a95e8b27ff7"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2026-09-02",
+      "end": "2026-09-30",
+      "content_sha256": "e725f83d2bb23ee87bd79186b4ddd25f84ecd550c7da0df4c8d4f5d28bf3a76c",
+      "rows": 20,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s007-data",
+      "prepared": {
+        "space_id": "eaf34247-0192-422d-9573-a573a4f22d9d",
+        "preparation_id": "ed0b5a0c-997c-43a4-9e5c-d9e499923b6f",
+        "manifest_sha256": "78738bbeec1b0a445eac17873d947bf999b24d8ce59c4de6548a2a95e8b27ff7"
+      },
+      "dataset": "etf.unadjusted_intraday",
+      "symbol": "588080.SH",
+      "frequency": "30m",
+      "start": "2026-09-03",
+      "end": "2026-09-30",
+      "content_sha256": "282dc10d59b147e3219401b14aa0de8b5940985b759c86a60772437f8d123277",
+      "rows": 152,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-limits",
+      "prepared": {
+        "space_id": "e1358429-6181-43cb-829c-6e286e3f25c8",
+        "preparation_id": "6043658d-1d88-4110-80f6-2c9f3defae17",
+        "manifest_sha256": "b68443e4a683eb68a9b0c6347b28b630df84ac4afea2f1858b01e3c80ff42733"
+      },
+      "dataset": "security.price_limits",
+      "symbol": "588080.SH",
+      "frequency": "daily",
+      "start": "2026-09-03",
+      "end": "2026-09-30",
+      "content_sha256": "7856195aa62f8c1baa75fd9a9c8ef8b2ee3fb4b58cfc97c8e21863bfe4a0ddc6",
+      "rows": 19,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s011-expanded-data",
+      "prepared": {
+        "space_id": "2b1f67e7-86b1-44de-8686-81bc03374503",
+        "preparation_id": "be84f926-b33b-4bdb-8202-6e97f8f16297",
+        "manifest_sha256": "47649db39598a5eae9d69a6b1566e7e5261605818f5279c87b013c813be239eb"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "159326.SZ",
+      "frequency": "30m",
+      "start": "2024-12-26",
+      "end": "2026-09-01",
+      "content_sha256": "b58e075dba801ecf07d0bfacee95b99b710a5c55d19d09652621ce4aa88142ad",
+      "rows": 3264,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s011-expanded-data",
+      "prepared": {
+        "space_id": "2b1f67e7-86b1-44de-8686-81bc03374503",
+        "preparation_id": "be84f926-b33b-4bdb-8202-6e97f8f16297",
+        "manifest_sha256": "47649db39598a5eae9d69a6b1566e7e5261605818f5279c87b013c813be239eb"
+      },
+      "dataset": "calendar.trading_sessions",
+      "symbol": "SSE",
+      "frequency": "daily",
+      "start": "2024-12-26",
+      "end": "2026-09-22",
+      "content_sha256": "2e3be9255fb491d959b6c13a26c004511af54834d08a7fe1f3b395bb774de70c",
+      "rows": 636,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s011-expanded-data",
+      "prepared": {
+        "space_id": "2b1f67e7-86b1-44de-8686-81bc03374503",
+        "preparation_id": "be84f926-b33b-4bdb-8202-6e97f8f16297",
+        "manifest_sha256": "47649db39598a5eae9d69a6b1566e7e5261605818f5279c87b013c813be239eb"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "159326.SZ",
+      "frequency": "daily",
+      "start": "2024-12-26",
+      "end": "2026-09-01",
+      "content_sha256": "e4226e7592bf111337f6cd2f4203d5bdeb16c3f39656de87999775e293be3723",
+      "rows": 408,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s011-expanded-data",
+      "prepared": {
+        "space_id": "2b1f67e7-86b1-44de-8686-81bc03374503",
+        "preparation_id": "be84f926-b33b-4bdb-8202-6e97f8f16297",
+        "manifest_sha256": "47649db39598a5eae9d69a6b1566e7e5261605818f5279c87b013c813be239eb"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "159326.SZ",
+      "frequency": "daily",
+      "start": "2024-12-26",
+      "end": "2026-09-01",
+      "content_sha256": "7dd33f31b8d669697c09c8092ee27feba020bc1c07daae8b454b80808865fb28",
+      "rows": 408,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s011-expanded-data",
+      "prepared": {
+        "space_id": "2b1f67e7-86b1-44de-8686-81bc03374503",
+        "preparation_id": "be84f926-b33b-4bdb-8202-6e97f8f16297",
+        "manifest_sha256": "47649db39598a5eae9d69a6b1566e7e5261605818f5279c87b013c813be239eb"
+      },
+      "dataset": "index.domestic_close_turnover_daily",
+      "symbol": "000300.SH",
+      "frequency": "daily",
+      "start": "2024-12-26",
+      "end": "2026-09-01",
+      "content_sha256": "6e66c58dc1fe21567b6f7c3bbd2136e9419660e93669404aa43a1a82e0f37133",
+      "rows": 408,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s011-expanded-data",
+      "prepared": {
+        "space_id": "2b1f67e7-86b1-44de-8686-81bc03374503",
+        "preparation_id": "be84f926-b33b-4bdb-8202-6e97f8f16297",
+        "manifest_sha256": "47649db39598a5eae9d69a6b1566e7e5261605818f5279c87b013c813be239eb"
+      },
+      "dataset": "index.global_daily",
+      "symbol": "SPX",
+      "frequency": "daily",
+      "start": "2024-12-16",
+      "end": "2026-09-01",
+      "content_sha256": "2a338a048087cc3cf280ab84aad3f4e9ac5ddd109ec51d6a970f9a31da52cb51",
+      "rows": 428,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s011-expanded-data",
+      "prepared": {
+        "space_id": "2b1f67e7-86b1-44de-8686-81bc03374503",
+        "preparation_id": "be84f926-b33b-4bdb-8202-6e97f8f16297",
+        "manifest_sha256": "47649db39598a5eae9d69a6b1566e7e5261605818f5279c87b013c813be239eb"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "159326.SZ",
+      "frequency": "30m",
+      "start": "2024-12-26",
+      "end": "2026-09-01",
+      "content_sha256": "b58e075dba801ecf07d0bfacee95b99b710a5c55d19d09652621ce4aa88142ad",
+      "rows": 3264,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s011-expanded-data",
+      "prepared": {
+        "space_id": "2b1f67e7-86b1-44de-8686-81bc03374503",
+        "preparation_id": "be84f926-b33b-4bdb-8202-6e97f8f16297",
+        "manifest_sha256": "47649db39598a5eae9d69a6b1566e7e5261605818f5279c87b013c813be239eb"
+      },
+      "dataset": "calendar.trading_sessions",
+      "symbol": "SSE",
+      "frequency": "daily",
+      "start": "2024-12-26",
+      "end": "2026-09-22",
+      "content_sha256": "2e3be9255fb491d959b6c13a26c004511af54834d08a7fe1f3b395bb774de70c",
+      "rows": 636,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s011-expanded-data",
+      "prepared": {
+        "space_id": "2b1f67e7-86b1-44de-8686-81bc03374503",
+        "preparation_id": "be84f926-b33b-4bdb-8202-6e97f8f16297",
+        "manifest_sha256": "47649db39598a5eae9d69a6b1566e7e5261605818f5279c87b013c813be239eb"
+      },
+      "dataset": "etf.ohlcv",
+      "symbol": "159326.SZ",
+      "frequency": "daily",
+      "start": "2024-12-26",
+      "end": "2026-09-01",
+      "content_sha256": "e4226e7592bf111337f6cd2f4203d5bdeb16c3f39656de87999775e293be3723",
+      "rows": 408,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s011-expanded-data",
+      "prepared": {
+        "space_id": "2b1f67e7-86b1-44de-8686-81bc03374503",
+        "preparation_id": "be84f926-b33b-4bdb-8202-6e97f8f16297",
+        "manifest_sha256": "47649db39598a5eae9d69a6b1566e7e5261605818f5279c87b013c813be239eb"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "159326.SZ",
+      "frequency": "daily",
+      "start": "2024-12-26",
+      "end": "2026-09-01",
+      "content_sha256": "7dd33f31b8d669697c09c8092ee27feba020bc1c07daae8b454b80808865fb28",
+      "rows": 408,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s011-expanded-data",
+      "prepared": {
+        "space_id": "2b1f67e7-86b1-44de-8686-81bc03374503",
+        "preparation_id": "be84f926-b33b-4bdb-8202-6e97f8f16297",
+        "manifest_sha256": "47649db39598a5eae9d69a6b1566e7e5261605818f5279c87b013c813be239eb"
+      },
+      "dataset": "index.domestic_close_turnover_daily",
+      "symbol": "000300.SH",
+      "frequency": "daily",
+      "start": "2024-12-26",
+      "end": "2026-09-01",
+      "content_sha256": "6e66c58dc1fe21567b6f7c3bbd2136e9419660e93669404aa43a1a82e0f37133",
+      "rows": 408,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s011-expanded-data",
+      "prepared": {
+        "space_id": "2b1f67e7-86b1-44de-8686-81bc03374503",
+        "preparation_id": "be84f926-b33b-4bdb-8202-6e97f8f16297",
+        "manifest_sha256": "47649db39598a5eae9d69a6b1566e7e5261605818f5279c87b013c813be239eb"
+      },
+      "dataset": "index.global_daily",
+      "symbol": "SPX",
+      "frequency": "daily",
+      "start": "2024-12-16",
+      "end": "2026-09-01",
+      "content_sha256": "2a338a048087cc3cf280ab84aad3f4e9ac5ddd109ec51d6a970f9a31da52cb51",
+      "rows": 428,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s011-expanded-data",
+      "prepared": {
+        "space_id": "2b1f67e7-86b1-44de-8686-81bc03374503",
+        "preparation_id": "be84f926-b33b-4bdb-8202-6e97f8f16297",
+        "manifest_sha256": "47649db39598a5eae9d69a6b1566e7e5261605818f5279c87b013c813be239eb"
+      },
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "159326.SZ",
+      "frequency": "daily",
+      "start": "2026-05-29",
+      "end": "2026-09-02",
+      "content_sha256": "1d8e5b2d3aa379e8fce82c68887be848f881f8317cb0a01f84186fd16af801ee",
+      "rows": 68,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-s011-expanded-data",
+      "prepared": {
+        "space_id": "2b1f67e7-86b1-44de-8686-81bc03374503",
+        "preparation_id": "be84f926-b33b-4bdb-8202-6e97f8f16297",
+        "manifest_sha256": "47649db39598a5eae9d69a6b1566e7e5261605818f5279c87b013c813be239eb"
+      },
+      "dataset": "etf.unadjusted_intraday",
+      "symbol": "159326.SZ",
+      "frequency": "30m",
+      "start": "2026-06-01",
+      "end": "2026-09-02",
+      "content_sha256": "f040372cab1d242c8df66b1b061ae87024262049e28243e2c910c4da82078caf",
+      "rows": 536,
+      "vendor": "tushare"
+    },
+    {
+      "space": ".tmp/window-market-limits",
+      "prepared": {
+        "space_id": "e1358429-6181-43cb-829c-6e286e3f25c8",
+        "preparation_id": "6043658d-1d88-4110-80f6-2c9f3defae17",
+        "manifest_sha256": "b68443e4a683eb68a9b0c6347b28b630df84ac4afea2f1858b01e3c80ff42733"
+      },
+      "dataset": "security.price_limits",
+      "symbol": "159326.SZ",
+      "frequency": "daily",
+      "start": "2026-06-01",
+      "end": "2026-09-02",
+      "content_sha256": "53a8c289f60bad55efa1b90197832df000b346ec72442102e989933e3cf5fe4b",
+      "rows": 67,
+      "vendor": "tushare"
+    }
+  ],
+  "checked_file_sha256": {
+    "research/S014/experiments/EX053_20261020/protocols/market_equivalence_cases.json": "f87c9178dfd25033007c124ace8338c69d0ae2323e17c11ef611940049a99a1c",
+    ".tmp/market-driver-executed-20261020.py": "e7bd588143d2dfbb93fb5fcb20126cf5b9bfebee9c5161677e1f5a2e964d86d9",
+    "strategies/.registry.lock": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+    "strategies/registry.json": "a6051d96bef55c7bd466febb556be0ce4e2579a99650c02c0f276f51e5aad50b",
+    "strategies/deployments/S001-v1.json": "4fbf64151d043f1df44201d3b8592cac2537111561d226fed0d9c36837f26653",
+    "strategies/deployments/S001-v2.json": "3b41f5ce68ae101fcc205c72d64e8f56c34420b7b27adf9cc63b934277119a74",
+    "strategies/deployments/S002-v1.json": "6cf3cce5a5db41fa85c500084d755c08fd6f406c60f9123057dec456d71d013d",
+    "strategies/deployments/S003-v1.json": "7febda76cbb07f034a4afa149721c7601c7c01e988a0193de0cc9e387c81cc1b",
+    "strategies/deployments/S007-v1.json": "28d43662f68f186a2036550a5c4770706544cd9120877458be120848a0ad6e89",
+    "strategies/deployments/S011-v1.json": "97d858135a43057fee9a00f8d0ee1abdf147bdd1ad3e338f458532be4bacfb4b",
+    "strategies/S001/evidence.jsonl": "855faf4e3a394fbba0594882ffcef49d2a8115df59256d0a75afe9064b808693",
+    "strategies/S001/family.json": "474f44cf484c3243c08e3a63bf321c7250818d30f2161914b891883e0f35d85f",
+    "strategies/S001/lifecycle.jsonl": "1a1835c723a250ca72bba498977a19d7d5686f399631da358cf225bf7533aea3",
+    "strategies/S002/evidence.jsonl": "899fcae9ffa1c632807752356f8bcfcf7b7835b49a4bd6bfbf9d3c838b33cdb7",
+    "strategies/S002/family.json": "110a537650cdd0a6f65b72d218d59f280c016ebf2fcb02ceb0d15dd3f470e080",
+    "strategies/S002/freeze_approvals.jsonl": "23e7106eac8f76d942d3cbadb51fb003ef764f23ccf09be6e37ab2a45c911961",
+    "strategies/S002/lifecycle.jsonl": "ccad35cddc0a2dca785433498f147edbe96b21e14b03a3311b082283931898d1",
+    "strategies/S003/evidence.jsonl": "2338b83391601be2bae31d398dd91024c43be3b30dcd698f35fe0063b50c1249",
+    "strategies/S003/family.json": "372cc0d9835fa0ed4025c80bcd8135022b0f7a9db1150a14f46c4cdfaae260e5",
+    "strategies/S003/freeze_approvals.jsonl": "e7f3854fa9087510ce3035b1498297da8e8eca96a698212cf8e1c5014c721746",
+    "strategies/S003/lifecycle.jsonl": "674c3d24e5d9dfd1680ebfbe50b52ccb771d67f88e10d00969f261df218649d0",
+    "strategies/S007/evidence.jsonl": "2397089afdaf863d157fcbc1739f22b3a144c386dda153545e33f5a849cbef38",
+    "strategies/S007/family.json": "56142e98d6f099db2c750235b163f54b014977f84a82ebd47c3357ce5ffde0e4",
+    "strategies/S007/freeze_approvals.jsonl": "86485c0d3b2d425d23d202b9c13298ef654bb6093ed0ec7b5ea31197f803ddb3",
+    "strategies/S007/lifecycle.jsonl": "cda669d6ac2716ba3f05edd7ef5e1a94dbde8cf36489c2eca42c30364f2632de",
+    "strategies/S011/family.json": "c8b2a9553f0d1befd7043729eb242ba235f679c8dbecf1ed75e1f71b8849f68c",
+    "strategies/S011/lifecycle.jsonl": "3c3847e3a3396e41dfd40bc9e15edc564ffeb443c34942e432387bb81c1e18ae",
+    "strategies/S001/versions/v1.json": "1ed1c945457f492041a6141ac814705f7c45e4f2e00bb83c83639fb0bea4241d",
+    "strategies/S001/versions/v2.json": "4b00073a89f32d3482ed88eb64f06da75a436b94e45837b142b06489569c258a",
+    "strategies/S001/releases/v1/release_manifest.json": "c9c4aa87155a5abe4b05da411b64310af632232028534ae9bbff5ac0ca0e208f",
+    "strategies/S001/releases/v1/runtime_binding.json": "a677f9445b124187fda52eac8d8e7a679b201bce799ced34aae683f6fd4f52d6",
+    "strategies/S001/releases/v2/release_manifest.json": "9feb8ea6d38bd3874bc8de88bf09ba82a0db072cb63f90292a035fd70c78b5b6",
+    "strategies/S001/releases/v2/runtime_binding.json": "1d084c012e0fa757ac16b072dd99970e8f31aec1f8fd2eb7a75fda39ccfdfe76",
+    "strategies/S001/releases/v1/runtime/strategy_runtime/calculation.py": "edd27ec4d3d5641320ada2774a5661520b35639dc704bcf9e71cf1162dc25571",
+    "strategies/S001/releases/v1/runtime/strategy_runtime/execution_rules.py": "1e6811b991c5b8e836e633a4c73e68fc68240899e75cd0950dbbd95798b62549",
+    "strategies/S001/releases/v1/runtime/strategy_runtime/strategies/s001_common.py": "3d91f8a4b0fa08873cfeaae1c72d9433d552410a04675dcc61c51db250ec4418",
+    "strategies/S001/releases/v1/runtime/strategy_runtime/strategies/s001_v1.py": "fd5f58edd9b24d162bdd33347a9da02077caf293bf9d59fa1664840ed221ea00",
+    "strategies/S001/releases/v1/runtime/strategy_runtime/strategies/__init__.py": "a8b904669fafea540f7db7814a9bfac747a4781c88eddb6955bb7dd3f80ee3dd",
+    "strategies/S001/releases/v2/runtime/strategy_runtime/calculation.py": "edd27ec4d3d5641320ada2774a5661520b35639dc704bcf9e71cf1162dc25571",
+    "strategies/S001/releases/v2/runtime/strategy_runtime/execution_rules.py": "1e6811b991c5b8e836e633a4c73e68fc68240899e75cd0950dbbd95798b62549",
+    "strategies/S001/releases/v2/runtime/strategy_runtime/strategies/s001_common.py": "3d91f8a4b0fa08873cfeaae1c72d9433d552410a04675dcc61c51db250ec4418",
+    "strategies/S001/releases/v2/runtime/strategy_runtime/strategies/s001_v2.py": "c742183ed93db27c66de28f2a4456c3a17f335d728c5dbcebd4c73980e24e675",
+    "strategies/S001/releases/v2/runtime/strategy_runtime/strategies/__init__.py": "a8b904669fafea540f7db7814a9bfac747a4781c88eddb6955bb7dd3f80ee3dd",
+    "strategies/S002/versions/v1.json": "c52d19efc5a9ea4963cc2d7c273b3024225f4620eab36b77956c24b14af5ef1d",
+    "strategies/S002/releases/v1/release_manifest.json": "9bc89ee6fdc79807dd5c54ab4a259e9238459626cd2b09024727901e053ed49f",
+    "strategies/S002/releases/v1/runtime_binding.json": "1ba6165bc54ec5b195e0ef5fab8a3bf2cff8051584e1e8f624750519795b65a0",
+    "strategies/S002/releases/v1/runtime/strategy_runtime/calculation.py": "edd27ec4d3d5641320ada2774a5661520b35639dc704bcf9e71cf1162dc25571",
+    "strategies/S002/releases/v1/runtime/strategy_runtime/execution_rules.py": "1e6811b991c5b8e836e633a4c73e68fc68240899e75cd0950dbbd95798b62549",
+    "strategies/S002/releases/v1/runtime/strategy_runtime/strategies/s002_v1.py": "ec91599d968f4cd8a951b3db13961d369b1f2a526efb50db5cecc34e65de92ad",
+    "strategies/S002/releases/v1/runtime/strategy_runtime/strategies/__init__.py": "a8b904669fafea540f7db7814a9bfac747a4781c88eddb6955bb7dd3f80ee3dd",
+    "strategies/S003/versions/v1.json": "954bf07d7643cd649f6279af2c76ea9c9781c5a7c1b117d7d41fd81165558716",
+    "strategies/S003/releases/v1/release_manifest.json": "5380f2578692e79ae005e294a09fbf8e25743ba1027f11dafc19efff81e2cfd2",
+    "strategies/S003/releases/v1/runtime_binding.json": "385d7989eb83046f617a760e2423ae8ead7909306c5b77e62f193428637ce5fc",
+    "strategies/S003/releases/v1/runtime/strategy_runtime/calculation.py": "edd27ec4d3d5641320ada2774a5661520b35639dc704bcf9e71cf1162dc25571",
+    "strategies/S003/releases/v1/runtime/strategy_runtime/execution_rules.py": "1e6811b991c5b8e836e633a4c73e68fc68240899e75cd0950dbbd95798b62549",
+    "strategies/S003/releases/v1/runtime/strategy_runtime/resources/s003_v1_seed.csv.gz": "6a60c143617fcf6597ccd475782849763cb413e4cf47b7c45199f720c988d86c",
+    "strategies/S003/releases/v1/runtime/strategy_runtime/strategies/s003_v1.py": "24743fd31d3386af6b547db315d11d69d407a93f0c9baf18f327eafb9091dfc3",
+    "strategies/S003/releases/v1/runtime/strategy_runtime/strategies/__init__.py": "a8b904669fafea540f7db7814a9bfac747a4781c88eddb6955bb7dd3f80ee3dd",
+    "strategies/S007/credentials/SGC-S007-002.jsonl": "62228cebad7d719915519b5c5d5c979cf491c6a5e456c0e2c07355768112deab",
+    "strategies/S007/versions/v1.json": "6a87136bfc7a81bb7aaebc0a8c39b15efb5ce00ec640d2066f59498213b31477",
+    "strategies/S007/releases/v1/release_manifest.json": "c9c2477c4e46cef9bf5a38a0524dc103bde17112987c92ce3793625fb1e9eb8c",
+    "strategies/S007/releases/v1/runtime_binding.json": "c6278697074604686a00894221dde2f8d735887250cd972bed1743920cf9090f",
+    "strategies/S007/releases/v1/runtime/strategy_runtime/calculation.py": "edd27ec4d3d5641320ada2774a5661520b35639dc704bcf9e71cf1162dc25571",
+    "strategies/S007/releases/v1/runtime/strategy_runtime/execution_rules.py": "1e6811b991c5b8e836e633a4c73e68fc68240899e75cd0950dbbd95798b62549",
+    "strategies/S007/releases/v1/runtime/strategy_runtime/resources/s007_v1_seed.csv.gz": "32282766b0f65be661dfad9bd0f0f5c683ef84eef4ae2817a195730d03b59a39",
+    "strategies/S007/releases/v1/runtime/strategy_runtime/strategies/s007_v1.py": "20228a4f4573345da5e7cb11108802d1fcee9c075386a8f4e7fb62601c45eda8",
+    "strategies/S007/releases/v1/runtime/strategy_runtime/strategies/__init__.py": "a8b904669fafea540f7db7814a9bfac747a4781c88eddb6955bb7dd3f80ee3dd",
+    "strategies/S011/versions/v1.json": "62f17c210abb264b97ea3fdbb8724aa41d36cc547645ebbc0cd7fd587ce60d84",
+    "strategies/S011/releases/v1/release_manifest.json": "3ce81906fdf2213f359f241edf5ef86ed47886f979167bf27c9130ecc9090a53",
+    "strategies/S011/releases/v1/runtime_binding.json": "9693343ec084e5a737c19bc66946d17e3c6f0fcbb54a767a0e8b0654b1e009e2",
+    "strategies/S011/releases/v1/src/strategy_runtime/calculation.py": "edd27ec4d3d5641320ada2774a5661520b35639dc704bcf9e71cf1162dc25571",
+    "strategies/S011/releases/v1/src/strategy_runtime/strategies/s011_reversal.py": "222961ae22eedeeac94c4461ab9ffb9cfc818f1990eb6ee1cc8ac07a457e6b96",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/result.json": "964d09ddda2256bca14d3821298f6bd3be71638974ed673f6ec31bbab1b24941",
+    ".tmp/window-contract-final-migrations/S001-v1/candidate_payload.json": "8f9c0e8e8d4b89d53f8050f7630778fe8f6775fc6b7e3efb15456baf50bab2bf",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/execution_inputs.json": "1b5364eedb14889e761b1fe73113332fb42657d516c16b11b69e98dcf83884ff",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/market_rules.json": "95039d4b2be1c681856a03ca4c266cc56d1f333e4946d79da5104942585d78c9",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/new_binding.json": "a24aa6123f3407d8242cbe07daf7232a817e87cdbc5a676544bb9f0669859729",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/new_CONTINUOUS_account_daily.csv": "92004b8296697a4d1a2beea8fcbadf711a22c30377402b5f17a5107f0a6a25b9",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/new_CONTINUOUS_decisions.csv": "e1ab586fcbbfb674e8aa98e4b3bcfd14e4a1dd17e187bc9f54326c4045f28c53",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/new_CONTINUOUS_fills.csv": "3777612f2a371ed3860937e5204e51d6f7196fab132acc1858eaa7afac506a3a",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/new_CONTINUOUS_orders.csv": "8e9031e373fc3370448c1ecf5b655d0f7fbb25d98a76719ebd5658f5cf4e3ac7",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/new_CONTINUOUS_signals_full.csv": "8560b40111de1c7c54ae92cee90a33e6f17cc1ae4a587bf1160b26039caaf200",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/new_CONTINUOUS_trades.csv": "e5b31a96ab7be8169365ad5e086ec3dae66b16811f32c933d4fb4bc4b540cbeb",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/new_derived_plan.json": "ba8563b665ad2c3714cf671074defec9459e782022edcdfbf0652ee422ac905e",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/new_WINDOW_account_daily.csv": "fde79df8d28bd5cc78f52c8a0a13a62059e5e9e58371eeb28c78efae368e8755",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/new_WINDOW_decisions.csv": "0161fb7ca332d0c2d6d023000726cd2e1611b691c7d69a17ed044fb51394f1d6",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/new_WINDOW_fills.csv": "bd9a530223a17bc85564d7fe0cb79e07a4a9081f529845c20b26ccc70492edb4",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/new_WINDOW_orders.csv": "d73995526f6383eb06e0a742d1c043f672ef0f4e7bac58dfc5e4bebb2ad0189c",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/new_WINDOW_signals_full.csv": "94ca685a9bcfd8da2e5df72c21b0a757689934940553aaf187e4c73b1b3a31a2",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/new_WINDOW_trades.csv": "cc44a752a41d1fdaafaf37199bd529f2580da7fed37b0b11cc4ab1dd95d550ae",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/nonzero_plan_probes_CONTINUOUS.json": "98241567ff5982d2a200cc3b6d4c282cfcacabcb139090ca1d0ca1b3b81f8297",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/nonzero_plan_probes_WINDOW.json": "7756746ba277e31cd78fd9c7286167df7a7c5e221b0b28a5962080ffe02b44b2",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/old_binding.json": "6ef7624fb51106a6b564e3d882f6306fb41d6daf6950a3352dd902720d4210a9",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/old_CONTINUOUS_account_daily.csv": "92004b8296697a4d1a2beea8fcbadf711a22c30377402b5f17a5107f0a6a25b9",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/old_CONTINUOUS_decisions.csv": "a8cb03fd361c72b1e143a78c7929af8a052ed648fb2bebf2ae6a434791b70a5d",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/old_CONTINUOUS_fills.csv": "90c02d9a37dc3349c9879993e486f8a3f73a2a5ac0df53d57b9229661e65e43c",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/old_CONTINUOUS_orders.csv": "c344a5699bbd41a61eb4ec008f74edc0033e2fb2b1f0369545a889012541ff65",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/old_CONTINUOUS_signals_full.csv": "8560b40111de1c7c54ae92cee90a33e6f17cc1ae4a587bf1160b26039caaf200",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/old_CONTINUOUS_trades.csv": "a853512cfee11d01298422c5075d24bd8bffb62efb009ee43b9172a94b8a5ac3",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/old_derived_plan.json": "d030208176bb053fa987b65d887730edc6c9e4e37098c6610087ecb73b461680",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/old_WINDOW_account_daily.csv": "fde79df8d28bd5cc78f52c8a0a13a62059e5e9e58371eeb28c78efae368e8755",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/old_WINDOW_decisions.csv": "9e745b97bf4983588a3ba4e735e6807edef2ad07f2d129b31130c2c768dfdf9a",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/old_WINDOW_fills.csv": "73224e59910a60045f42498241a3cbea3ca21f486219b687d4f1c7f0f83e1b30",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/old_WINDOW_orders.csv": "226659a2540b3b44f6ad18c1bd5137def2f1f99480711c04fe1f9f74d272b1b6",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/old_WINDOW_signals_full.csv": "94ca685a9bcfd8da2e5df72c21b0a757689934940553aaf187e4c73b1b3a31a2",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v1/old_WINDOW_trades.csv": "8d069e5bc6058bf78468cd416a8debf87cbc3bf152fc8b3ad4777c52e7484eda",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/result.json": "b2fa047fab6cb2fb47cd08591eeb2e50d3a1956adb1ba197e369e2acfc06fd89",
+    ".tmp/window-contract-final-migrations/S001-v2-C9902/candidate_payload.json": "f67acab99e89285c5ec3289e92ba31e810a881d1f6df3687798b6e9bb32dc045",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/execution_inputs.json": "1b5364eedb14889e761b1fe73113332fb42657d516c16b11b69e98dcf83884ff",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/market_rules.json": "95039d4b2be1c681856a03ca4c266cc56d1f333e4946d79da5104942585d78c9",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/new_binding.json": "f79aa87f6e9e4fdc1ef38cbe9bae720d67399ea0a81885365829a1ff8253f5c9",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/new_CONTINUOUS_account_daily.csv": "bf0bf8ef3e844859a2222181bf825c8f08e05d311455033deba0dc804428c72c",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/new_CONTINUOUS_decisions.csv": "bf42d59ff05c37b0af8cdd7d64d9e8a14657230c771fbf65002f07d9f473ef4a",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/new_CONTINUOUS_fills.csv": "5a6834c9d59981340194b10b23025131bdc8da93e59f35b8cd2e2a2155bfc371",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/new_CONTINUOUS_orders.csv": "22b4c99a75433746070bb5571480c2ea4639137f0ad8512e6fd0076c62ca3d2e",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/new_CONTINUOUS_signals_full.csv": "f680864fec83bb560f610f894588351d25b9d0000bec07f335f586da7eb31bb1",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/new_CONTINUOUS_trades.csv": "9b43c39cfedc4c55b73b0986d6a914467f9922f1fd2853f47911a18b35865d01",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/new_derived_plan.json": "c8e2b3c65548cd1e7d367a13d0865493046ba9aae36c5900dfda1a9e26b5aa8a",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/new_WINDOW_account_daily.csv": "1c23e63cc99b5a9c1ffcd2c0e444ebd18047845c7339c16d2a544785f3bc38d8",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/new_WINDOW_decisions.csv": "d23a37030cd7549e1c8936c8e30175d9a9ef7c80ff0d7b4e5c92075d327b462a",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/new_WINDOW_fills.csv": "9012942e4e508a9d3f505cc3751b4c19fa32e7f159adb90ce6b9ccfaa79331b9",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/new_WINDOW_orders.csv": "5daefa96d24dac1e89af5f808c799a09e7bf92bb33ac94037afdb71482950409",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/new_WINDOW_signals_full.csv": "f562bcf74ea05d10cc6cf25a8aa11bf0a43f5e1a763abc0e2aeca3305713215e",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/new_WINDOW_trades.csv": "8814778290c4c1ede507b6ef6856d26fb82aae3691041c4f900759b449405323",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/nonzero_plan_probes_CONTINUOUS.json": "f063520c0fe7a3c72e86bdd4dd052a03de1b9369f99a589f1d918ad55a5df326",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/nonzero_plan_probes_WINDOW.json": "14ecef0f80090bfdc6f32311c0026414c696d8f5bd198f17dde98661f9f0b5b1",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/old_binding.json": "fff26430ccbb66ede2d4ba6511e076f68f5583d926ba24dc4d7420464ffcb252",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/old_CONTINUOUS_account_daily.csv": "bf0bf8ef3e844859a2222181bf825c8f08e05d311455033deba0dc804428c72c",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/old_CONTINUOUS_decisions.csv": "e76fd69770ceb2e8a7469b300723678cdd43391135cb18ab82e65c88e3fb430b",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/old_CONTINUOUS_fills.csv": "fe8e64f3727999597ac538b81c4cf03ded2c430da12901dee4cd4fe33cae4dbb",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/old_CONTINUOUS_orders.csv": "4e5e88969fc64d7c6afc67c9fab0eba62fcae994972c20ee94832ebd8282a90b",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/old_CONTINUOUS_signals_full.csv": "f680864fec83bb560f610f894588351d25b9d0000bec07f335f586da7eb31bb1",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/old_CONTINUOUS_trades.csv": "9e17597a59247991f61dcd3cfe988df50c349ee0296b425835dede7673428907",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/old_derived_plan.json": "04d29754dba432e3704ea1fd55a234e110e5f955faa3034f61288f2abf18352e",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/old_WINDOW_account_daily.csv": "1c23e63cc99b5a9c1ffcd2c0e444ebd18047845c7339c16d2a544785f3bc38d8",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/old_WINDOW_decisions.csv": "da825c48e63a7c963be2c4e2820032ef1fe2e8e29b80b90256558b35b9efb43a",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/old_WINDOW_fills.csv": "1e9db7775cf179e810ab8f02407be7a28e4edd0698bb724ee6c88674ac285e9f",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/old_WINDOW_orders.csv": "48e751a8dd205470d03dc932a6a06a2e15191428aefc8f3bfa711856175c4a64",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/old_WINDOW_signals_full.csv": "f562bcf74ea05d10cc6cf25a8aa11bf0a43f5e1a763abc0e2aeca3305713215e",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S001-v2/old_WINDOW_trades.csv": "340a73fe957b5c73b3a2892231442a57e365961e8287accfcab1bb6176c46bee",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/result.json": "2a9aef5d8f0b2171fcaaea18574b7d4878d02fa0ea5c471d5cf61ba19f779245",
+    ".tmp/window-contract-real-market-r2/S002-v1-C9902/candidate_payload.json": "d0bb00cd17146129f47c6214b965e193f38edbbddb8c244f3b8501a7271f75f9",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/execution_inputs.json": "8b395c218d5baea998e16f3b3c84dbfef0c75c046d9b3bb0e75fbc3f412aec29",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/market_rules.json": "093326c0dd5d74e7019ed4787830db83a6fd0d4e0b7c3b9b09725a7590bf09d9",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/new_binding.json": "28e1b019b1226f1b42a8f9a5392627e21deb69ea6bf13de4e46f7f757c588465",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/new_CONTINUOUS_account_daily.csv": "6b76253d9991e23b3fd925f97ea9a15d85ec9541734a16d83fb20eb8cd7e8981",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/new_CONTINUOUS_decisions.csv": "3f0a557139e212add7b05831f62127ad50e9ac8584227827ab2adf6197132d80",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/new_CONTINUOUS_fills.csv": "b9a1a990674753a9aa61144cda63bfd582ec8f07d336811a3c3bb4a07e8136aa",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/new_CONTINUOUS_orders.csv": "a482417133fa053b8549e6140a146687612305f65bb447120ba24aa37d83d43c",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/new_CONTINUOUS_signals_full.csv": "510b033ccfc37d1d95f52e5ae35bfd583e265954c97fb929008fb8f65a206e96",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/new_CONTINUOUS_trades.csv": "dafc9a1c075dac809527167799ba6b2d2b8d28a688fa1e06f390c07959a75665",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/new_derived_plan.json": "1bd7ead8ff813063d56885dfcd0dcfe471038238ad42a32825666202d0ddd235",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/new_WINDOW_account_daily.csv": "6b76253d9991e23b3fd925f97ea9a15d85ec9541734a16d83fb20eb8cd7e8981",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/new_WINDOW_decisions.csv": "3f0a557139e212add7b05831f62127ad50e9ac8584227827ab2adf6197132d80",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/new_WINDOW_fills.csv": "b9a1a990674753a9aa61144cda63bfd582ec8f07d336811a3c3bb4a07e8136aa",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/new_WINDOW_orders.csv": "a482417133fa053b8549e6140a146687612305f65bb447120ba24aa37d83d43c",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/new_WINDOW_signals_full.csv": "510b033ccfc37d1d95f52e5ae35bfd583e265954c97fb929008fb8f65a206e96",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/new_WINDOW_trades.csv": "dafc9a1c075dac809527167799ba6b2d2b8d28a688fa1e06f390c07959a75665",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/nonzero_plan_probes_CONTINUOUS.json": "51b762639eea1773cd96841eb6004c85556322be5b430eaaf1602d243ff82ce1",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/nonzero_plan_probes_WINDOW.json": "51b762639eea1773cd96841eb6004c85556322be5b430eaaf1602d243ff82ce1",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/old_binding.json": "c3d7cee0821bf158e47635f778c9d990e5cef53e9d3a9ed36bb3bfea3c4864eb",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/old_CONTINUOUS_account_daily.csv": "6b76253d9991e23b3fd925f97ea9a15d85ec9541734a16d83fb20eb8cd7e8981",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/old_CONTINUOUS_decisions.csv": "3c6dfaef1463ab84cb4ee6c5040885661abf79abac27197b9c09e9fc3956a633",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/old_CONTINUOUS_fills.csv": "df1f06b98e28236e6edd3ab17d68879508c4a780258b25faca1e05a3cd73517b",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/old_CONTINUOUS_orders.csv": "11c9bf89849b6f530a82a46123040485302617cd9ac8d33f535ef08e32cad4b2",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/old_CONTINUOUS_signals_full.csv": "5357db28b327e3b166767be6990bdea6f3e49ae30a7d5c6a906e58a1f8189805",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/old_CONTINUOUS_trades.csv": "55acbf7eb70fc1d9a573b173f77244bb185214b72799ad40ea4e6e4e4e006c1b",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/old_derived_plan.json": "78b6778b65d493761a207253585e96bcb50dfc66ed0c3f42c45cda98affa7a09",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/old_WINDOW_account_daily.csv": "6b76253d9991e23b3fd925f97ea9a15d85ec9541734a16d83fb20eb8cd7e8981",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/old_WINDOW_decisions.csv": "3c6dfaef1463ab84cb4ee6c5040885661abf79abac27197b9c09e9fc3956a633",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/old_WINDOW_fills.csv": "df1f06b98e28236e6edd3ab17d68879508c4a780258b25faca1e05a3cd73517b",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/old_WINDOW_orders.csv": "11c9bf89849b6f530a82a46123040485302617cd9ac8d33f535ef08e32cad4b2",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/old_WINDOW_signals_full.csv": "510b033ccfc37d1d95f52e5ae35bfd583e265954c97fb929008fb8f65a206e96",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-common/old_WINDOW_trades.csv": "55acbf7eb70fc1d9a573b173f77244bb185214b72799ad40ea4e6e4e4e006c1b",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/result.json": "0efdc3fd13af24eed74fe4124c053d263c2b4e493f6cd20ce38be2a5c86d02e9",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/execution_inputs.json": "ca0c5c4382a55bc2efb7ff2f83dd570124502154dc8c289bdbec55ab47c0b6b2",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/market_rules.json": "f0deb38eaa974af7d786be92df608286da807d6d2640699f35af2e69358765ee",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/new_binding.json": "6ae0e15952479bb6cdf38a6695a7a18bfa4597b5ed65c396008c020aa5206eb8",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/new_CONTINUOUS_account_daily.csv": "514192ca4769d9bf34221afcf7fc6829f29212e41cef7fe836fbcc1a0316bddd",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/new_CONTINUOUS_decisions.csv": "8eb5e4271e4e37c79d48dcc2bfccc9720b27425c3b3024d4f0536a0fcaa48ecb",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/new_CONTINUOUS_fills.csv": "9442ce89fe40409b020cfb99857932ba240894426816969b41775a1772d5d568",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/new_CONTINUOUS_orders.csv": "a5fa85dddcebfcea735f67686d0f61a902dfc68c58c66092e1ea92c0204a8c66",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/new_CONTINUOUS_signals_full.csv": "56936ebbfa09559b623234eab93de3369cf7e3503df564438eecd31763d5d53b",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/new_CONTINUOUS_trades.csv": "ec702986172d7a834bc10197ce0e974330d52bf8bb26a232590f12c7cba4ff27",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/new_derived_plan.json": "15fe03187ed403b47b0a60466c04cf42a7681aec51f787c2f84b4c6fe142b7d2",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/new_WINDOW_account_daily.csv": "267fcbcb19497a4e5c5d647c0804d45ba702e4877634a7d8b9df72d91a564f64",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/new_WINDOW_decisions.csv": "3fd43f277667dda4f1af485c102a0cd8ca355841f1f4cd5c2bd1e1b7765e5cf5",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/new_WINDOW_fills.csv": "bd5e7a52fd613724e57f647069b58c904fa67573c2d2a387f4de802ba61cb39b",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/new_WINDOW_orders.csv": "25a9096e42f543247186aa9769287c27dcec1a35967c59c8ba83d6c83800ca80",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/new_WINDOW_signals_full.csv": "46e9b7248219147059aa971a3306edff8573dcf9ca620834b2a1aa5603b6b8e9",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/new_WINDOW_trades.csv": "5d8f0cf5484033dd30555e81e51a8efacc7426ef1bb77d5a981575ab4211db8c",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/nonzero_plan_probes_CONTINUOUS.json": "16d2af89217638dbc734e7025ec56e41c07f8c907e937f19efc46d09bf3f8e2d",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/nonzero_plan_probes_WINDOW.json": "96e1f52720b07afce15cf0be1984b8748bc611980773f92f38894cb6986f2424",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/old_binding.json": "ac657aa144bf9623b419e5c086d120f6a9052aad7045366f0f13be3982472742",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/old_CONTINUOUS_account_daily.csv": "514192ca4769d9bf34221afcf7fc6829f29212e41cef7fe836fbcc1a0316bddd",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/old_CONTINUOUS_decisions.csv": "ab8258f9145d8e057ab341778f8a5db2a6410087d4fca52a45815ef30e41ff13",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/old_CONTINUOUS_fills.csv": "e21e066464d94bb49ad6b90da61b1c40d1a8ebbd73b241bef591e247c899ab01",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/old_CONTINUOUS_orders.csv": "085ba82f33617a75f682290bec294c1e409994aa58ae9eed83f86998c45571b8",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/old_CONTINUOUS_signals_full.csv": "c5e395e61c8910dafe3c9636eebbcb433882a211b345c609db56b8fe023080aa",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/old_CONTINUOUS_trades.csv": "72af2b69427f511f8a4b5b8acf6162d9e362f292601b792db26a82010aeaeeb4",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/old_derived_plan.json": "53cb7640ebc6246f00c9adf2891b905fa4c26fe21fd59b8c93f327a63e301add",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/old_WINDOW_account_daily.csv": "267fcbcb19497a4e5c5d647c0804d45ba702e4877634a7d8b9df72d91a564f64",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/old_WINDOW_decisions.csv": "dc764c375557c34a64779338add721497042ef5abf23937346985eb33799c3d2",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/old_WINDOW_fills.csv": "bd5e7a52fd613724e57f647069b58c904fa67573c2d2a387f4de802ba61cb39b",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/old_WINDOW_orders.csv": "25a9096e42f543247186aa9769287c27dcec1a35967c59c8ba83d6c83800ca80",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/old_WINDOW_signals_full.csv": "46e9b7248219147059aa971a3306edff8573dcf9ca620834b2a1aa5603b6b8e9",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S002-v1-boundary/old_WINDOW_trades.csv": "5d8f0cf5484033dd30555e81e51a8efacc7426ef1bb77d5a981575ab4211db8c",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/result.json": "3e2d0923c195c7a19647d80dff967ba4e9f1a6fabad83d76f89e60c1d1f9f405",
+    ".tmp/window-contract-final-migrations/S003-v1/candidate_payload.json": "d922f546d27cecd1bac738e79c78ba9f9cbf1d4a8c511b1716dfa53a5ea5d6de",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/execution_inputs.json": "0259c7eea857aeba0e773875ff3336496a5166bd27c659914dd7fce7326ef712",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/market_rules.json": "53734d08388ee6cf2317386b2e9bdf4cdb8efb37428bd482abf1cec10b6cdd3f",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_binding.json": "82a5a671ad673f64572290d5f9891566e698f67f6c77820afb00cce4ab962213",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_CONTINUOUS_account_daily.csv": "178e9550ffbee56037ef5a13a5d56ca646989d4632c2c7d9b70b9826e0c0444a",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_CONTINUOUS_decisions.csv": "70cacc4e19d02917ee3b1261ad5af8e613d2c832e2d4610fceb3fd7e10e82e45",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_CONTINUOUS_fills.csv": "e916f152aaf35095fce9d63523c38d63078e40ddbc7e93a0531146190c625450",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_CONTINUOUS_orders.csv": "762cb2f42d45efcfba9594d3701a42b541aac20dc12027e476730a5c44890b3f",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_CONTINUOUS_signals_full.csv": "13a57fa22ead0b13cc5d1254562fcd41fc4550032035ae802e446fdbb93eb087",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_CONTINUOUS_trades.csv": "a43941f3df5972f9f9dda419067c7c9861eabe4751c496074ac3f79e24783e1e",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_derived_plan.json": "a5c71b80976f7524f338888432afee4da0c13ae2f6de6192f69e0f018652f9ea",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_WINDOW_account_daily.csv": "178e9550ffbee56037ef5a13a5d56ca646989d4632c2c7d9b70b9826e0c0444a",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_WINDOW_decisions.csv": "70cacc4e19d02917ee3b1261ad5af8e613d2c832e2d4610fceb3fd7e10e82e45",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_WINDOW_fills.csv": "e916f152aaf35095fce9d63523c38d63078e40ddbc7e93a0531146190c625450",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_WINDOW_orders.csv": "762cb2f42d45efcfba9594d3701a42b541aac20dc12027e476730a5c44890b3f",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_WINDOW_signals_full.csv": "bd646e8de207b632a1167fe9d21133673bc13d152de53a782637e3bd8c634592",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_WINDOW_trades.csv": "a43941f3df5972f9f9dda419067c7c9861eabe4751c496074ac3f79e24783e1e",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/nonzero_plan_probes_CONTINUOUS.json": "2febeed1ff6279661855482aaf9770b9656d9a9067d4b7db3fab4a95973d22b0",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/nonzero_plan_probes_WINDOW.json": "2febeed1ff6279661855482aaf9770b9656d9a9067d4b7db3fab4a95973d22b0",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_binding.json": "5b16df7b77c210c729794b38c87f48fd384b22f2f46d5e64ffd2bf1ddfc5ca90",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_CONTINUOUS_account_daily.csv": "178e9550ffbee56037ef5a13a5d56ca646989d4632c2c7d9b70b9826e0c0444a",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_CONTINUOUS_decisions.csv": "f28fcd161ab2bd5c6b9622d6702d7c3decb5c85ed8203d550408c050c761319f",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_CONTINUOUS_fills.csv": "e6ede832968ae4c2b2fc9957dfc0612f3ff7f0ec76615106dc615363a293ec4f",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_CONTINUOUS_orders.csv": "e29c7bf5d268fb98b6f985a0d30a4d1c7bed97c123e7858503c158c2eaed6de0",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_CONTINUOUS_signals_full.csv": "13a57fa22ead0b13cc5d1254562fcd41fc4550032035ae802e446fdbb93eb087",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_CONTINUOUS_trades.csv": "c32939e2bd2c20268b7542d11faff2723444188559faefd593dc8a2ec92b1075",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_derived_plan.json": "66715f76720fd9e452a7af1df783297e6528266d0cbe6b8ebe1da34eb7919d38",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_WINDOW_account_daily.csv": "178e9550ffbee56037ef5a13a5d56ca646989d4632c2c7d9b70b9826e0c0444a",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_WINDOW_decisions.csv": "f28fcd161ab2bd5c6b9622d6702d7c3decb5c85ed8203d550408c050c761319f",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_WINDOW_fills.csv": "e6ede832968ae4c2b2fc9957dfc0612f3ff7f0ec76615106dc615363a293ec4f",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_WINDOW_orders.csv": "e29c7bf5d268fb98b6f985a0d30a4d1c7bed97c123e7858503c158c2eaed6de0",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_WINDOW_signals_full.csv": "bd646e8de207b632a1167fe9d21133673bc13d152de53a782637e3bd8c634592",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_WINDOW_trades.csv": "c32939e2bd2c20268b7542d11faff2723444188559faefd593dc8a2ec92b1075",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/result.json": "4ced35250ccc767b5b42c746a2c4c2b0525a8bc7cf1360626b4a49ac7e779da2",
+    ".tmp/window-contract-final-migrations/S007-v1/candidate_payload.json": "6d45536eddc09a4119f5771a9f932b21e9ea3a677ef24967c147c2aa56aaa13e",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/execution_inputs.json": "1062e8d1fca9ad94104c61710b9498fdf955bf5afdc7a27c5bd350faadc03c83",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/market_rules.json": "95039d4b2be1c681856a03ca4c266cc56d1f333e4946d79da5104942585d78c9",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/new_binding.json": "25a40f032cdbef446a4dae38daf8d8899f446addd7632753894f8ce29ef6ff45",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/new_CONTINUOUS_account_daily.csv": "cfcbbc9f9080dafd8186e23bd0129ebfc2cf1b3e984d2f7869a80f887561973c",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/new_CONTINUOUS_decisions.csv": "f237b345a3520dd4f1a397e8f5923e44b7fe15beb957882d597787194240bd46",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/new_CONTINUOUS_fills.csv": "1151c5287d38d780f8da1dd72730f3b34e03fc958ef8ae5be5afcc0d395dce72",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/new_CONTINUOUS_orders.csv": "995c83eac55ccdde2276b766d338b846e46feafe8baa03a175b2d404db701305",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/new_CONTINUOUS_signals_full.csv": "01361d8b0cde719615b4fc10afb95dfc6f6a764819c543c230481080661ca8d8",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/new_CONTINUOUS_trades.csv": "6448b7cbdc3fa8028cfdbbde73ac9e67f62611f88e3e908101c7acaf3203392a",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/new_derived_plan.json": "b0130c12ad6102833dc7eebe21cf82476af65db3392840ecd65caccf98dcfaef",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/new_WINDOW_account_daily.csv": "cfcbbc9f9080dafd8186e23bd0129ebfc2cf1b3e984d2f7869a80f887561973c",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/new_WINDOW_decisions.csv": "f237b345a3520dd4f1a397e8f5923e44b7fe15beb957882d597787194240bd46",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/new_WINDOW_fills.csv": "1151c5287d38d780f8da1dd72730f3b34e03fc958ef8ae5be5afcc0d395dce72",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/new_WINDOW_orders.csv": "995c83eac55ccdde2276b766d338b846e46feafe8baa03a175b2d404db701305",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/new_WINDOW_signals_full.csv": "1d9c97abf95841e0863cb4e69f64221b868e482632db1ee5922dd583642945fe",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/new_WINDOW_trades.csv": "6448b7cbdc3fa8028cfdbbde73ac9e67f62611f88e3e908101c7acaf3203392a",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/nonzero_plan_probes_CONTINUOUS.json": "6835e28288816f4d6aa4c7bff30c20fb5fc8dd4f5d43fabef09d16790b60d460",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/nonzero_plan_probes_WINDOW.json": "6835e28288816f4d6aa4c7bff30c20fb5fc8dd4f5d43fabef09d16790b60d460",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/old_binding.json": "b9dec864e675b9e64f2280f677ef917bb24ad6291f7fa4b4f8bb0ede0492a0a2",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/old_CONTINUOUS_account_daily.csv": "cfcbbc9f9080dafd8186e23bd0129ebfc2cf1b3e984d2f7869a80f887561973c",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/old_CONTINUOUS_decisions.csv": "8c72a79205d68dbe8ad9cc3305cf978bbecd4622432f21b91a4beffbbdd5e908",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/old_CONTINUOUS_fills.csv": "ed6fb35b5dd9ee1c4bce184321daae079186d1f46d1e4b061e453f0883a363ea",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/old_CONTINUOUS_orders.csv": "f16b9793c3708727957f13ebe88d565ee310acb3baffb7cb063b1cd2fb008416",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/old_CONTINUOUS_signals_full.csv": "01361d8b0cde719615b4fc10afb95dfc6f6a764819c543c230481080661ca8d8",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/old_CONTINUOUS_trades.csv": "ed59adba55a8e2c5fa03b916f3de00c7b7180fdb7d97fa6295dd6097826a5d6a",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/old_derived_plan.json": "baf269d3065e1880e00df804858f208f3de3f8152c7b7de706f07a48672e6787",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/old_WINDOW_account_daily.csv": "cfcbbc9f9080dafd8186e23bd0129ebfc2cf1b3e984d2f7869a80f887561973c",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/old_WINDOW_decisions.csv": "8c72a79205d68dbe8ad9cc3305cf978bbecd4622432f21b91a4beffbbdd5e908",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/old_WINDOW_fills.csv": "ed6fb35b5dd9ee1c4bce184321daae079186d1f46d1e4b061e453f0883a363ea",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/old_WINDOW_orders.csv": "f16b9793c3708727957f13ebe88d565ee310acb3baffb7cb063b1cd2fb008416",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/old_WINDOW_signals_full.csv": "1d9c97abf95841e0863cb4e69f64221b868e482632db1ee5922dd583642945fe",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-seed/old_WINDOW_trades.csv": "ed59adba55a8e2c5fa03b916f3de00c7b7180fdb7d97fa6295dd6097826a5d6a",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/result.json": "5a3b64e42bdcafddce978c184f472e84fda30c9ea1286cbce309e0d63285dd7d",
+    ".tmp/window-contract-final-migrations/S011-v1/candidate_payload.json": "69fd658161e26990407f0660246a68fff6204316b7065e3aa3452d77affeac87",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/execution_inputs.json": "6eb9b7b822089acb7ebaccb8ac12fd2f936f0b8fe314c4b55d8b6add23a6b7b8",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/market_rules.json": "ae3e3433d2c48120f1c867b9d90dec8e997168c787d12e3677851e4cf37b727a",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/new_binding.json": "381b4f13d09575ccdfe825fd3224aae03189cf498207bc061c60a386c87fc0b4",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/new_CONTINUOUS_account_daily.csv": "dd4a59bac8267ac661f3be2ab4e6a8ad04c74ef540154546c1a8653a086357ba",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/new_CONTINUOUS_decisions.csv": "066e17b10d908af62645f63be7295f289a1bd539268916f15d1f1547a6c7bd05",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/new_CONTINUOUS_fills.csv": "18525b897f81b84e52e5c0f93900d4747a0fd552ed615356058c7344db990e8d",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/new_CONTINUOUS_orders.csv": "bb05fc4d587400dbe98270d6772db9ed891aa50db5db9c3b2eaffe803c08e0cc",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/new_CONTINUOUS_signals_full.csv": "531fd179f675cd6b4adeb0ead6c0c4f4435c6e3570201175af1ad8351343bde0",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/new_CONTINUOUS_trades.csv": "bcd4fc6912bc7b1b0bd74b6e9a09961be914817e80825938939161bf71c45336",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/new_derived_plan.json": "36f013d7d271ae83d17eb2174cf468f601f488de29c47589ba8b5acf7715736d",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/new_WINDOW_account_daily.csv": "dd4a59bac8267ac661f3be2ab4e6a8ad04c74ef540154546c1a8653a086357ba",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/new_WINDOW_decisions.csv": "d02ad504060aa004ae8b9cc1a52395e63a2ca3cc9977c86b32df8128a9ffbfc0",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/new_WINDOW_fills.csv": "18525b897f81b84e52e5c0f93900d4747a0fd552ed615356058c7344db990e8d",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/new_WINDOW_orders.csv": "bb05fc4d587400dbe98270d6772db9ed891aa50db5db9c3b2eaffe803c08e0cc",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/new_WINDOW_signals_full.csv": "4f42bb018a8df6c13591359e71b9078831879516ec561a95a19473e088e77d34",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/new_WINDOW_trades.csv": "bcd4fc6912bc7b1b0bd74b6e9a09961be914817e80825938939161bf71c45336",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/nonzero_plan_probes_CONTINUOUS.json": "506f1ad845b8c078cfa9b2e6ff5b4c9fa737909e232269ef5c743d930c46ec88",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/nonzero_plan_probes_WINDOW.json": "6edde99e0af59671756ecfe66e3ce879701eb38ca6aa9d6e2e0a0dd361d390dd",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/old_binding.json": "57d7c9f2b53491dbd851f81c2dd7f18b43e3542e212f0f42bfa2b0cab8d75acf",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/old_CONTINUOUS_account_daily.csv": "dd4a59bac8267ac661f3be2ab4e6a8ad04c74ef540154546c1a8653a086357ba",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/old_CONTINUOUS_decisions.csv": "e9c3366ce6ead8057e7f6aabda26ba10a0dc4a1d253ae140eaf3540654e039c0",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/old_CONTINUOUS_fills.csv": "166dba0528e6a11f267433f6719d06fbcaa7775b03131c8a7048d4c46542201e",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/old_CONTINUOUS_orders.csv": "e92f9480a7423aae731271288d6d9849875897ba7fc8fd1579bf1b923583b614",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/old_CONTINUOUS_signals_full.csv": "531fd179f675cd6b4adeb0ead6c0c4f4435c6e3570201175af1ad8351343bde0",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/old_CONTINUOUS_trades.csv": "b1514a690459cdc68e8b038f54d4d38b670db4610b21f65f07945db028a40f42",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/old_derived_plan.json": "75ab0306bb4c80d08f680b4ae3f914c3d30a23d332ae3007ba0d14bfd5aef0bb",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/old_WINDOW_account_daily.csv": "dd4a59bac8267ac661f3be2ab4e6a8ad04c74ef540154546c1a8653a086357ba",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/old_WINDOW_decisions.csv": "b7b09bf76835a59c9f46bda997054609e7b5e7cbe3b726217bd9f3a22ec9d34c",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/old_WINDOW_fills.csv": "166dba0528e6a11f267433f6719d06fbcaa7775b03131c8a7048d4c46542201e",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/old_WINDOW_orders.csv": "e92f9480a7423aae731271288d6d9849875897ba7fc8fd1579bf1b923583b614",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/old_WINDOW_signals_full.csv": "4f42bb018a8df6c13591359e71b9078831879516ec561a95a19473e088e77d34",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1/old_WINDOW_trades.csv": "b1514a690459cdc68e8b038f54d4d38b670db4610b21f65f07945db028a40f42",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/result.json": "46fc2ca2af7c8c2dff5eede05dca08822734e4ad4fa3bf4778a005a7c44ad67a",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/execution_inputs.json": "24714c2601b52b298896ca145c2aeefee9dbfaa05b28cec793de3661970e688c",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/market_rules.json": "f82bb8c130166017180f458b1919239c606e25f074f6d55e51cce395de603a11",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/new_binding.json": "0ebb83cfa2ced9a182d5f9103c6be1ee5b2a22e3c59c2fbf8696155abbf03c38",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/new_CONTINUOUS_account_daily.csv": "c5e49c4767e25c990058e6dc76a48442e0ebb6b88e65519e9b5670e8c1f47458",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/new_CONTINUOUS_decisions.csv": "89376f2739e81fa1879aeb60b0f5036192f21267f8a7a5d01c15986a914c2e20",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/new_CONTINUOUS_fills.csv": "af3dcba3b9a8dad74e535f4639e8f405d1e6b575ccdcc8d4f182d5c8eb65a13a",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/new_CONTINUOUS_orders.csv": "c2d4218e185820951b2df98328b0c65655990b7661f6bd1269526bab2c1b9f92",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/new_CONTINUOUS_signals_full.csv": "7f83a3a4288954644f485488a767b851e8ecd6a6c349b46a9fa519c14a71f778",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/new_CONTINUOUS_trades.csv": "825caa1681ed7c347d0fd0d9e50468844d75796dbec834a145cc65946f6ba7a8",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/new_derived_plan.json": "63f726549f6fd5bc73456246badf4619e198157ce4d2850dd9fb5448b2ccc6e4",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/new_WINDOW_account_daily.csv": "c5e49c4767e25c990058e6dc76a48442e0ebb6b88e65519e9b5670e8c1f47458",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/new_WINDOW_decisions.csv": "89376f2739e81fa1879aeb60b0f5036192f21267f8a7a5d01c15986a914c2e20",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/new_WINDOW_fills.csv": "af3dcba3b9a8dad74e535f4639e8f405d1e6b575ccdcc8d4f182d5c8eb65a13a",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/new_WINDOW_orders.csv": "c2d4218e185820951b2df98328b0c65655990b7661f6bd1269526bab2c1b9f92",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/new_WINDOW_signals_full.csv": "5b860ef730d9ca332db0e511f329bacd57296a114244e92fa7ef3af4fafb17aa",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/new_WINDOW_trades.csv": "825caa1681ed7c347d0fd0d9e50468844d75796dbec834a145cc65946f6ba7a8",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/nonzero_plan_probes_CONTINUOUS.json": "0bcd4707c8a8a4c98ce858ec0c56b217b8c8a58b5791b256d8982db70710ddd3",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/nonzero_plan_probes_WINDOW.json": "0bcd4707c8a8a4c98ce858ec0c56b217b8c8a58b5791b256d8982db70710ddd3",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/old_binding.json": "7e789e461d9f5cf5f990a2bd03f1bb2c883a64d1176ebc1b13eef1c587c7cc1f",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/old_CONTINUOUS_account_daily.csv": "c5e49c4767e25c990058e6dc76a48442e0ebb6b88e65519e9b5670e8c1f47458",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/old_CONTINUOUS_decisions.csv": "7a85064e46d080db39e6a55279bd404a6eaf6f51721cfc2b0e13da360f166858",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/old_CONTINUOUS_fills.csv": "767e8baf2514c94f30260b1d4bafe75fdbad010e93475ec0933dbd5d93fa71b9",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/old_CONTINUOUS_orders.csv": "b7e18f465c15e4aacc3da459d15177ec83fc12a019e68a250a7d38270e4d1864",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/old_CONTINUOUS_signals_full.csv": "7f83a3a4288954644f485488a767b851e8ecd6a6c349b46a9fa519c14a71f778",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/old_CONTINUOUS_trades.csv": "38f742a28a39eb5a28c5927bf8d82f3c11562bc5b1f082bb7efaead9c56c3af3",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/old_derived_plan.json": "6810cc345225f769f0a9418db32e83b71625cf54b1a6328f3becde3d0ba12092",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/old_WINDOW_account_daily.csv": "c5e49c4767e25c990058e6dc76a48442e0ebb6b88e65519e9b5670e8c1f47458",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/old_WINDOW_decisions.csv": "7a85064e46d080db39e6a55279bd404a6eaf6f51721cfc2b0e13da360f166858",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/old_WINDOW_fills.csv": "767e8baf2514c94f30260b1d4bafe75fdbad010e93475ec0933dbd5d93fa71b9",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/old_WINDOW_orders.csv": "b7e18f465c15e4aacc3da459d15177ec83fc12a019e68a250a7d38270e4d1864",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/old_WINDOW_signals_full.csv": "5b860ef730d9ca332db0e511f329bacd57296a114244e92fa7ef3af4fafb17aa",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S007-v1-incremental/old_WINDOW_trades.csv": "38f742a28a39eb5a28c5927bf8d82f3c11562bc5b1f082bb7efaead9c56c3af3",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/result.json": "20eaa9267a1b0a0546f997637b0d3cb5cddb9813b6fa5d29e7b9803a4b35a8aa",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/execution_inputs.json": "4cb9471f00d27de87f0fe1fc4c25537e74a9eb551c850733be182dfd053c45c8",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/market_rules.json": "98b611c08816dc562b6eddf883d9a0350ba35db4a85c536e1fc54e569fde9e0c",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/new_binding.json": "0905ab3bd5563107e64e6e89392e7c3fcb57275267dc4f77b1fd1085c8c7b9cd",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/new_CONTINUOUS_account_daily.csv": "bf458f89985d5647d80f8db0a0ef4688802c1080617c43397d1a7635a6c27826",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/new_CONTINUOUS_decisions.csv": "e097968c40c6e4d57684a6040659bc34460ea42b97d7340955fcbcba7e6294e8",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/new_CONTINUOUS_fills.csv": "1cbdc51f1952bbd8f50917fa8fc8690e09debee13a107c89e29e44927ca11b63",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/new_CONTINUOUS_orders.csv": "d9a00a5401f4d67847b6dbc9a0008db79fdfba6e194fd3067b38907dd66525fb",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/new_CONTINUOUS_signals_full.csv": "20fd519101a7c4f4432dad288b02578cbe1d840da667a75d75bcf50c39eaa64c",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/new_CONTINUOUS_trades.csv": "0b43f4023f804c10aeb9f811c7a9023eb9e9de2128c4d706b3cc64d8c51b7e6b",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/new_derived_plan.json": "37736017afe908186917325f8d08060fa6eb589a26638ddc34043c5a3cfaa70a",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/new_WINDOW_account_daily.csv": "bf458f89985d5647d80f8db0a0ef4688802c1080617c43397d1a7635a6c27826",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/new_WINDOW_decisions.csv": "e097968c40c6e4d57684a6040659bc34460ea42b97d7340955fcbcba7e6294e8",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/new_WINDOW_fills.csv": "1cbdc51f1952bbd8f50917fa8fc8690e09debee13a107c89e29e44927ca11b63",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/new_WINDOW_orders.csv": "d9a00a5401f4d67847b6dbc9a0008db79fdfba6e194fd3067b38907dd66525fb",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/new_WINDOW_signals_full.csv": "59335224bbdcf3c4d0e6f2d54c00cab5d8767b0880991b8bfe00c1b8274f4779",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/new_WINDOW_trades.csv": "0b43f4023f804c10aeb9f811c7a9023eb9e9de2128c4d706b3cc64d8c51b7e6b",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/nonzero_plan_probes_CONTINUOUS.json": "ff241a0266016a1fe5927c7ccebea2f1be879ddd0945473e7f4a7f15b4684587",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/nonzero_plan_probes_WINDOW.json": "ff241a0266016a1fe5927c7ccebea2f1be879ddd0945473e7f4a7f15b4684587",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/old_binding.json": "9d1cfca23d1057abc0edb065f634f3351e694ca8b793c06f1ea986c7519ead3d",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/old_CONTINUOUS_account_daily.csv": "bf458f89985d5647d80f8db0a0ef4688802c1080617c43397d1a7635a6c27826",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/old_CONTINUOUS_decisions.csv": "0356929ac636e30a02d080a6108758b2fb39538396f3d4b108d484fed663c84f",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/old_CONTINUOUS_fills.csv": "21730110bd2afe730a95514d5097aa3d2821e6c33665bd33d5d87484f9a6d1af",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/old_CONTINUOUS_orders.csv": "c94a5d51c8080a7a4d223d9c18d07280b7aaac239da3f627738bc356a56433ee",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/old_CONTINUOUS_signals_full.csv": "20fd519101a7c4f4432dad288b02578cbe1d840da667a75d75bcf50c39eaa64c",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/old_CONTINUOUS_trades.csv": "184ee2f61941d49d032dda5592b789545f1a00552042e2135af3edb6a7c1abd4",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/old_derived_plan.json": "7e969dffd01c4af30695bd6204c218535050d1726162df2eebe36f030c45ad9f",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/old_WINDOW_account_daily.csv": "bf458f89985d5647d80f8db0a0ef4688802c1080617c43397d1a7635a6c27826",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/old_WINDOW_decisions.csv": "0356929ac636e30a02d080a6108758b2fb39538396f3d4b108d484fed663c84f",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/old_WINDOW_fills.csv": "21730110bd2afe730a95514d5097aa3d2821e6c33665bd33d5d87484f9a6d1af",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/old_WINDOW_orders.csv": "c94a5d51c8080a7a4d223d9c18d07280b7aaac239da3f627738bc356a56433ee",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/old_WINDOW_signals_full.csv": "59335224bbdcf3c4d0e6f2d54c00cab5d8767b0880991b8bfe00c1b8274f4779",
+    "research/S014/experiments/EX053_20261020/others/market_equivalence/S011-v1-common/old_WINDOW_trades.csv": "184ee2f61941d49d032dda5592b789545f1a00552042e2135af3edb6a7c1abd4"
+  },
+  "verification_scope": {
+    "cases": 9,
+    "modes_per_case": 2,
+    "ledger_pair_comparisons": 10,
+    "strategy_decisions_executed": 0,
+    "new_accounts_executed": 0,
+    "vendor_requests": 0,
+    "production_writes": 0,
+    "real_pte_switches": 0,
+    "frozen_versions_created": 0
+  },
+  "numerical_comparison": {
+    "old_new_csv": "EXACT_ALL_NONIDENTITY_CSV_CELLS",
+    "independent_cash_equity_reconciliation_tolerance_cny": "0.000001"
+  },
+  "limitations": [
+    "Offline authenticated-market SRT/TXE equivalence, not Futu order/fill-channel equivalence or production activation.",
+    "S003 keeps the prior overlay inability to apply MarketExecutionRules; authentic raw 5m checkpoints are verified separately.",
+    "S003 trade rows enumerate rotations; standing core quantity is reported separately and is not mislabeled as an OPEN rotation trade.",
+    "S011 short window has only an OPEN last-day entry, so its two modes do not count toward complete-cycle coverage; S011 common window supplies that coverage.",
+    "S002 boundary WINDOW stays flat and is coverage-insufficient; S002 common window supplies full-cycle coverage in both modes.",
+    "No original case evidence file was modified."
+  ]
+}

@@ -83,6 +83,14 @@ def _rewrite(source: str, reference: str, class_name: str) -> str:
         "    def calculate_context_history(self, inputs, context: HistoryCalculationContext):\n"
         "        sessions = context.sessions\n"
     )
+    if reference == "S002-v1":
+        if body.count("            states.reindex(requested),") != 1:
+            raise ValueError("reviewed S002 market-intent replay differs")
+        body = body.replace(
+            "            states.reindex(requested),",
+            "            states if context.mode is SignalHistoryMode.CONTINUOUS else states.reindex(requested),",
+        )
+        body = body.replace("        return history\n", "        return history.reindex(requested)\n")
     edits = [(old.lineno - 1, old.end_lineno, header + body)]
     if window is not None:
         edits.append((window.lineno - 1, window.end_lineno, ""))
@@ -94,7 +102,10 @@ def _rewrite(source: str, reference: str, class_name: str) -> str:
     transformed = "".join(lines)
     insertion = next(item.end_lineno for item in tree.body if isinstance(item, ast.ImportFrom) and item.module == "__future__")
     transformed_lines = transformed.splitlines(keepends=True)
-    transformed_lines.insert(insertion, "from strategy_runtime import HistoryCalculationContext, StrategyImplementationV2\n")
+    names = "HistoryCalculationContext, StrategyImplementationV2"
+    if reference == "S002-v1":
+        names += ", SignalHistoryMode"
+    transformed_lines.insert(insertion, f"from strategy_runtime import {names}\n")
     result = "".join(transformed_lines)
     compile(result, reference, "exec")
     return result

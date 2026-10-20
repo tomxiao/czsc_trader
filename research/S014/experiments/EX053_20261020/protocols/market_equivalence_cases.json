@@ -1,0 +1,488 @@
+{
+  "scope": "DEVELOPMENT_REAL_MARKET_EQUIVALENCE_ONLY",
+  "cases": [
+    {
+      "case_id": "S001-v1",
+      "reference": "S001-v1",
+      "candidate": {
+        "candidate_id": "C9901",
+        "payload_path": ".tmp/window-contract-final-migrations/S001-v1/candidate_payload.json",
+        "source_root": ".tmp/window-contract-final-migrations/S001-v1/strategy_runtime"
+      },
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "start": "2026-06-01",
+      "end": "2026-09-02",
+      "execution_requests": {
+        "daily": {
+          "dataset": "etf.unadjusted_daily",
+          "symbol": "588080.SH",
+          "start": "2026-05-29",
+          "end": "2026-09-02",
+          "required_cutoff": "2026-09-02",
+          "frequency": "daily",
+          "parameters": {},
+          "coverage": null
+        },
+        "intraday": {
+          "dataset": "etf.unadjusted_intraday",
+          "symbol": "588080.SH",
+          "start": "2026-06-01",
+          "end": "2026-09-02",
+          "required_cutoff": "2026-09-02",
+          "frequency": "30m",
+          "parameters": {},
+          "coverage": null
+        }
+      },
+      "limits": {
+        "space": ".tmp/window-market-limits",
+        "prepared": {
+          "space_id": "e1358429-6181-43cb-829c-6e286e3f25c8",
+          "preparation_id": "6043658d-1d88-4110-80f6-2c9f3defae17",
+          "manifest_sha256": "b68443e4a683eb68a9b0c6347b28b630df84ac4afea2f1858b01e3c80ff42733"
+        },
+        "request": {
+          "dataset": "security.price_limits",
+          "symbol": "588080.SH",
+          "start": "2026-06-01",
+          "end": "2026-09-02",
+          "required_cutoff": "2026-09-02",
+          "frequency": "daily",
+          "parameters": {},
+          "coverage": null
+        }
+      }
+    },
+    {
+      "case_id": "S001-v2",
+      "reference": "S001-v2",
+      "candidate": {
+        "candidate_id": "C9902",
+        "payload_path": ".tmp/window-contract-final-migrations/S001-v2-C9902/candidate_payload.json",
+        "source_root": ".tmp/window-contract-final-migrations/S001-v2-C9902/strategy_runtime"
+      },
+      "space": ".tmp/window-market-s001/data",
+      "prepared": {
+        "space_id": "c141d322-5d20-405b-be1e-81944a0500ed",
+        "preparation_id": "02bc5ba9-21c6-47f2-af41-059e28dde469",
+        "manifest_sha256": "207396d3707c6a8ea58265e4385a46141f473b4c098861c79fbfa191c011fd6e"
+      },
+      "start": "2026-06-01",
+      "end": "2026-09-02",
+      "execution_requests": {
+        "daily": {
+          "dataset": "etf.unadjusted_daily",
+          "symbol": "588080.SH",
+          "start": "2026-05-29",
+          "end": "2026-09-02",
+          "required_cutoff": "2026-09-02",
+          "frequency": "daily",
+          "parameters": {},
+          "coverage": null
+        },
+        "intraday": {
+          "dataset": "etf.unadjusted_intraday",
+          "symbol": "588080.SH",
+          "start": "2026-06-01",
+          "end": "2026-09-02",
+          "required_cutoff": "2026-09-02",
+          "frequency": "30m",
+          "parameters": {},
+          "coverage": null
+        }
+      },
+      "limits": {
+        "space": ".tmp/window-market-limits",
+        "prepared": {
+          "space_id": "e1358429-6181-43cb-829c-6e286e3f25c8",
+          "preparation_id": "6043658d-1d88-4110-80f6-2c9f3defae17",
+          "manifest_sha256": "b68443e4a683eb68a9b0c6347b28b630df84ac4afea2f1858b01e3c80ff42733"
+        },
+        "request": {
+          "dataset": "security.price_limits",
+          "symbol": "588080.SH",
+          "start": "2026-06-01",
+          "end": "2026-09-02",
+          "required_cutoff": "2026-09-02",
+          "frequency": "daily",
+          "parameters": {},
+          "coverage": null
+        }
+      }
+    },
+    {
+      "case_id": "S002-v1-common",
+      "reference": "S002-v1",
+      "candidate": {
+        "candidate_id": "C9902",
+        "payload_path": ".tmp/window-contract-real-market-r2/S002-v1-C9902/candidate_payload.json",
+        "source_root": ".tmp/window-contract-real-market-r2/S002-v1-C9902/strategy_runtime"
+      },
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "start": "2026-06-01",
+      "end": "2026-09-02",
+      "execution_requests": {
+        "daily": {
+          "dataset": "etf.unadjusted_daily",
+          "symbol": "510500.SH",
+          "start": "2026-05-29",
+          "end": "2026-09-02",
+          "required_cutoff": "2026-09-02",
+          "frequency": "daily",
+          "parameters": {},
+          "coverage": null
+        },
+        "intraday": {
+          "dataset": "etf.unadjusted_intraday",
+          "symbol": "510500.SH",
+          "start": "2026-06-01",
+          "end": "2026-09-02",
+          "required_cutoff": "2026-09-02",
+          "frequency": "30m",
+          "parameters": {},
+          "coverage": null
+        }
+      },
+      "limits": {
+        "space": ".tmp/window-market-limits",
+        "prepared": {
+          "space_id": "e1358429-6181-43cb-829c-6e286e3f25c8",
+          "preparation_id": "6043658d-1d88-4110-80f6-2c9f3defae17",
+          "manifest_sha256": "b68443e4a683eb68a9b0c6347b28b630df84ac4afea2f1858b01e3c80ff42733"
+        },
+        "request": {
+          "dataset": "security.price_limits",
+          "symbol": "510500.SH",
+          "start": "2026-06-01",
+          "end": "2026-09-02",
+          "required_cutoff": "2026-09-02",
+          "frequency": "daily",
+          "parameters": {},
+          "coverage": null
+        }
+      }
+    },
+    {
+      "case_id": "S002-v1-boundary",
+      "reference": "S002-v1",
+      "candidate": {
+        "candidate_id": "C9902",
+        "payload_path": ".tmp/window-contract-real-market-r2/S002-v1-C9902/candidate_payload.json",
+        "source_root": ".tmp/window-contract-real-market-r2/S002-v1-C9902/strategy_runtime"
+      },
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "start": "2026-08-06",
+      "end": "2026-08-14",
+      "execution_requests": {
+        "daily": {
+          "dataset": "etf.unadjusted_daily",
+          "symbol": "510500.SH",
+          "start": "2026-08-05",
+          "end": "2026-08-14",
+          "required_cutoff": "2026-08-14",
+          "frequency": "daily",
+          "parameters": {},
+          "coverage": null
+        },
+        "intraday": {
+          "dataset": "etf.unadjusted_intraday",
+          "symbol": "510500.SH",
+          "start": "2026-08-06",
+          "end": "2026-08-14",
+          "required_cutoff": "2026-08-14",
+          "frequency": "30m",
+          "parameters": {},
+          "coverage": null
+        }
+      },
+      "limits": {
+        "space": ".tmp/window-market-limits",
+        "prepared": {
+          "space_id": "e1358429-6181-43cb-829c-6e286e3f25c8",
+          "preparation_id": "6043658d-1d88-4110-80f6-2c9f3defae17",
+          "manifest_sha256": "b68443e4a683eb68a9b0c6347b28b630df84ac4afea2f1858b01e3c80ff42733"
+        },
+        "request": {
+          "dataset": "security.price_limits",
+          "symbol": "510500.SH",
+          "start": "2026-08-06",
+          "end": "2026-08-14",
+          "required_cutoff": "2026-08-14",
+          "frequency": "daily",
+          "parameters": {},
+          "coverage": null
+        }
+      }
+    },
+    {
+      "case_id": "S003-v1",
+      "reference": "S003-v1",
+      "candidate": {
+        "candidate_id": "C9901",
+        "payload_path": ".tmp/window-contract-final-migrations/S003-v1/candidate_payload.json",
+        "source_root": ".tmp/window-contract-final-migrations/S003-v1/strategy_runtime"
+      },
+      "space": "research/S003/assets/data",
+      "prepared": {
+        "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+        "preparation_id": "c91e1ade-dc1c-4647-b92a-9a849d819676",
+        "manifest_sha256": "21e4a03acbace2e12228ad861e1ca9dfc49117b45206e6c9c5e0d4ebfaa5ce09"
+      },
+      "start": "2026-06-01",
+      "end": "2026-09-02",
+      "execution_requests": {
+        "daily": {
+          "dataset": "etf.unadjusted_daily",
+          "symbol": "510500.SH",
+          "start": "2026-05-29",
+          "end": "2026-09-02",
+          "required_cutoff": "2026-09-02",
+          "frequency": "daily"
+        },
+        "intraday": {
+          "dataset": "etf.unadjusted_intraday",
+          "symbol": "510500.SH",
+          "start": "2026-06-01",
+          "end": "2026-09-02",
+          "required_cutoff": "2026-09-02",
+          "frequency": "30m"
+        },
+        "five_minute": {
+          "dataset": "etf.unadjusted_intraday",
+          "symbol": "510500.SH",
+          "start": "2026-06-01",
+          "end": "2026-09-02",
+          "required_cutoff": "2026-09-02",
+          "frequency": "5m"
+        }
+      }
+    },
+    {
+      "case_id": "S007-v1-seed",
+      "reference": "S007-v1",
+      "candidate": {
+        "candidate_id": "C9901",
+        "payload_path": ".tmp/window-contract-final-migrations/S007-v1/candidate_payload.json",
+        "source_root": ".tmp/window-contract-final-migrations/S007-v1/strategy_runtime"
+      },
+      "space": "research/S007/assets/data",
+      "prepared": {
+        "space_id": "c8d5b376-8a46-4e24-9291-3d959f9cc3d9",
+        "preparation_id": "1163a2ae-8705-4b69-84fa-ccfb8daece87",
+        "manifest_sha256": "cd678f283c3c811d42d8f81fc205d1c0da3759b15b6fbe755b87875972470eca"
+      },
+      "start": "2026-06-01",
+      "end": "2026-09-02",
+      "execution_requests": {
+        "daily": {
+          "dataset": "etf.unadjusted_daily",
+          "symbol": "588080.SH",
+          "start": "2026-05-29",
+          "end": "2026-09-02",
+          "required_cutoff": "2026-09-02",
+          "frequency": "daily"
+        },
+        "intraday": {
+          "dataset": "etf.unadjusted_intraday",
+          "symbol": "588080.SH",
+          "start": "2026-06-01",
+          "end": "2026-09-02",
+          "required_cutoff": "2026-09-02",
+          "frequency": "30m"
+        }
+      },
+      "limits": {
+        "space": ".tmp/window-market-limits",
+        "prepared": {
+          "space_id": "e1358429-6181-43cb-829c-6e286e3f25c8",
+          "preparation_id": "6043658d-1d88-4110-80f6-2c9f3defae17",
+          "manifest_sha256": "b68443e4a683eb68a9b0c6347b28b630df84ac4afea2f1858b01e3c80ff42733"
+        },
+        "request": {
+          "dataset": "security.price_limits",
+          "symbol": "588080.SH",
+          "start": "2026-06-01",
+          "end": "2026-09-02",
+          "required_cutoff": "2026-09-02",
+          "frequency": "daily",
+          "parameters": {},
+          "coverage": null
+        }
+      }
+    },
+    {
+      "case_id": "S011-v1",
+      "reference": "S011-v1",
+      "candidate": {
+        "candidate_id": "C9901",
+        "payload_path": ".tmp/window-contract-final-migrations/S011-v1/candidate_payload.json",
+        "source_root": ".tmp/window-contract-final-migrations/S011-v1/strategy_runtime"
+      },
+      "space": "data/backtest",
+      "prepared": {
+        "space_id": "193c252b-f841-4625-84d0-5dfdf69b437f",
+        "preparation_id": "25afacb9-4614-49bb-b81c-6a1eb2be98c6",
+        "manifest_sha256": "7d49acc33100904bb1b52d9d459e23a6f9a678873cb07ab17fcf78c96c06b8bd"
+      },
+      "start": "2026-10-08",
+      "end": "2026-10-15",
+      "execution_requests": {
+        "daily": {
+          "dataset": "etf.unadjusted_daily",
+          "symbol": "159326.SZ",
+          "start": "2026-09-30",
+          "end": "2026-10-15",
+          "required_cutoff": "2026-10-15",
+          "frequency": "daily"
+        },
+        "intraday": {
+          "dataset": "etf.unadjusted_intraday",
+          "symbol": "159326.SZ",
+          "start": "2026-10-08",
+          "end": "2026-10-15",
+          "required_cutoff": "2026-10-15",
+          "frequency": "30m"
+        }
+      },
+      "limits": {
+        "space": ".tmp/window-market-limits",
+        "prepared": {
+          "space_id": "e1358429-6181-43cb-829c-6e286e3f25c8",
+          "preparation_id": "6043658d-1d88-4110-80f6-2c9f3defae17",
+          "manifest_sha256": "b68443e4a683eb68a9b0c6347b28b630df84ac4afea2f1858b01e3c80ff42733"
+        },
+        "request": {
+          "dataset": "security.price_limits",
+          "symbol": "159326.SZ",
+          "start": "2026-10-08",
+          "end": "2026-10-15",
+          "required_cutoff": "2026-10-15",
+          "frequency": "daily",
+          "parameters": {},
+          "coverage": null
+        }
+      }
+    },
+    {
+      "case_id": "S007-v1-incremental",
+      "reference": "S007-v1",
+      "candidate": {
+        "candidate_id": "C9901",
+        "payload_path": ".tmp/window-contract-final-migrations/S007-v1/candidate_payload.json",
+        "source_root": ".tmp/window-contract-final-migrations/S007-v1/strategy_runtime"
+      },
+      "space": ".tmp/window-market-s007-data",
+      "prepared": {
+        "space_id": "eaf34247-0192-422d-9573-a573a4f22d9d",
+        "preparation_id": "ed0b5a0c-997c-43a4-9e5c-d9e499923b6f",
+        "manifest_sha256": "78738bbeec1b0a445eac17873d947bf999b24d8ce59c4de6548a2a95e8b27ff7"
+      },
+      "start": "2026-09-03",
+      "end": "2026-09-30",
+      "execution_requests": {
+        "daily": {
+          "dataset": "etf.unadjusted_daily",
+          "symbol": "588080.SH",
+          "start": "2026-09-02",
+          "end": "2026-09-30",
+          "required_cutoff": "2026-09-30",
+          "frequency": "daily"
+        },
+        "intraday": {
+          "dataset": "etf.unadjusted_intraday",
+          "symbol": "588080.SH",
+          "start": "2026-09-03",
+          "end": "2026-09-30",
+          "required_cutoff": "2026-09-30",
+          "frequency": "30m"
+        }
+      },
+      "limits": {
+        "space": ".tmp/window-market-limits",
+        "prepared": {
+          "space_id": "e1358429-6181-43cb-829c-6e286e3f25c8",
+          "preparation_id": "6043658d-1d88-4110-80f6-2c9f3defae17",
+          "manifest_sha256": "b68443e4a683eb68a9b0c6347b28b630df84ac4afea2f1858b01e3c80ff42733"
+        },
+        "request": {
+          "dataset": "security.price_limits",
+          "symbol": "588080.SH",
+          "start": "2026-09-03",
+          "end": "2026-09-30",
+          "required_cutoff": "2026-09-30",
+          "frequency": "daily",
+          "parameters": {},
+          "coverage": null
+        }
+      }
+    },
+    {
+      "case_id": "S011-v1-common",
+      "reference": "S011-v1",
+      "candidate": {
+        "candidate_id": "C9901",
+        "payload_path": ".tmp/window-contract-final-migrations/S011-v1/candidate_payload.json",
+        "source_root": ".tmp/window-contract-final-migrations/S011-v1/strategy_runtime"
+      },
+      "space": ".tmp/window-market-s011-expanded-data",
+      "prepared": {
+        "space_id": "2b1f67e7-86b1-44de-8686-81bc03374503",
+        "preparation_id": "be84f926-b33b-4bdb-8202-6e97f8f16297",
+        "manifest_sha256": "47649db39598a5eae9d69a6b1566e7e5261605818f5279c87b013c813be239eb"
+      },
+      "start": "2026-06-01",
+      "end": "2026-09-02",
+      "execution_requests": {
+        "daily": {
+          "dataset": "etf.unadjusted_daily",
+          "symbol": "159326.SZ",
+          "start": "2026-05-29",
+          "end": "2026-09-02",
+          "required_cutoff": "2026-09-02",
+          "frequency": "daily"
+        },
+        "intraday": {
+          "dataset": "etf.unadjusted_intraday",
+          "symbol": "159326.SZ",
+          "start": "2026-06-01",
+          "end": "2026-09-02",
+          "required_cutoff": "2026-09-02",
+          "frequency": "30m"
+        }
+      },
+      "limits": {
+        "space": ".tmp/window-market-limits",
+        "prepared": {
+          "space_id": "e1358429-6181-43cb-829c-6e286e3f25c8",
+          "preparation_id": "6043658d-1d88-4110-80f6-2c9f3defae17",
+          "manifest_sha256": "b68443e4a683eb68a9b0c6347b28b630df84ac4afea2f1858b01e3c80ff42733"
+        },
+        "request": {
+          "dataset": "security.price_limits",
+          "symbol": "159326.SZ",
+          "start": "2026-06-01",
+          "end": "2026-09-02",
+          "required_cutoff": "2026-09-02",
+          "frequency": "daily",
+          "parameters": {},
+          "coverage": null
+        }
+      }
+    }
+  ]
+}

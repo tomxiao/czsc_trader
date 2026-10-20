@@ -1,0 +1,824 @@
+{
+  "cases": [
+    {
+      "signal_date": "2026-06-09",
+      "trading_date": "2026-06-10",
+      "category": "ENTRY",
+      "quantity": 600,
+      "cash": "12345.67",
+      "cycle_target": 600,
+      "status": "EXACT_PUBLIC_PLAN",
+      "valuation": {
+        "basis": "UNADJUSTED",
+        "raw_signal_close": 8.27
+      },
+      "old": {
+        "strategy": {
+          "strategy_id": "S003",
+          "reference_id": "S003-v1",
+          "release_hash": "eb0ebf6c80385f8c9d0d34fa466059ab9364055af79b7bf0fe2f9168f683d174",
+          "runtime_sha256": "a5a1eeec990ebbc738c5c1ca711ceccecc3e0a66d098367a9b9bbe0159b033a9",
+          "symbol": "510500.SH"
+        },
+        "signal_identity": "bc209d135b01513660584d137cef92baf4556fbcaa0c06fa703a6c68c6368030",
+        "plan_identity": "4d3ff2edc2c72616240f7d0d5ceda2f8be4e5e752778b05f544f362235d01c82",
+        "symbol": "510500.SH",
+        "signal_date": "2026-06-09",
+        "trading_date": "2026-06-10",
+        "generated_at": "2026-06-09T20:31:00+08:00",
+        "expected_portfolio_revision": 7,
+        "expected_state_revision": 11,
+        "actual_quantity": 600,
+        "target_quantity": 600,
+        "cycle_target_quantity": 600,
+        "target_position": 1.0,
+        "action": "ROTATE",
+        "plan_mode": "CORE_EVENT_INTRADAY_ROTATION",
+        "capital_mode": "full_available_cash",
+        "allocation_fraction": "1",
+        "orders": [],
+        "legs": [
+          {
+            "sequence": 0,
+            "role": "ROTATION_ENTRY",
+            "checkpoint": "OPEN",
+            "submit_after": "09:30:00",
+            "submit_before": "09:35:00",
+            "order": {
+              "side": "BUY",
+              "quantity": 600,
+              "order_type": "LIMIT",
+              "limit_price": "9.097"
+            },
+            "dependency_sequence": null,
+            "dependency_required_status": null
+          },
+          {
+            "sequence": 1,
+            "role": "ROTATION_EXIT",
+            "checkpoint": "11:30_CLOSE",
+            "submit_after": "11:29:00",
+            "submit_before": "11:30:00",
+            "order": {
+              "side": "SELL",
+              "quantity": 600,
+              "order_type": "MARKET",
+              "limit_price": "8.27"
+            },
+            "dependency_sequence": 0,
+            "dependency_required_status": "FILLED_ALL"
+          }
+        ],
+        "available_cash": "12345.67",
+        "fee_rate": "0.00012",
+        "estimated_order_cost": "5458.855",
+        "unallocated_cash": "6886.815",
+        "references": {
+          "signal_price": "2.763007",
+          "execution_price": "8.27",
+          "signal_basis": "ADJUSTED_CLOSE",
+          "execution_basis": "UNADJUSTED_CLOSE",
+          "pricing": {
+            "basis": "UNADJUSTED",
+            "anchor_date": null,
+            "anchor_factor": null
+          },
+          "price_scale": "1"
+        },
+        "required_capabilities": {
+          "order_types": [
+            "LIMIT",
+            "MARKET"
+          ],
+          "checkpoints": [
+            "11:30_CLOSE",
+            "OPEN"
+          ]
+        },
+        "input_identities": {
+          "adjusted_daily": "e8c41d55c9cb1b668508526f8a40be68672cb02a894ad9f69abafcf76bc7968c",
+          "constituent_moneyflow_seed": "63b3273abd147a5bdc607137288ca838eaffa4a3a8ddbb3762d25fb08460e8b8",
+          "execution_daily": "f0b089f6edabd6a55a4832434c1813668abc38c3170847b07e4e73c2935f04cf",
+          "trading_calendar": "5b8d5dbdd0cd6145872ddbd2dc093099f8d4ae7412360763c880740a3083ff37"
+        },
+        "price_identities": {
+          "adjusted_daily": "9cbc1af7957c1f9e9af6475e83dfb78d4b274cc84d25c3aefe4380a85e22af3e",
+          "execution_daily": "c014d480b2fd45a573facd56e041b163b33666f9839b2ed8fe2240f2f4dfbc05",
+          "pricing": "57570ee49e9e42a4a283cd8f791883931cf45a5aae7a79634584e768a184a407"
+        },
+        "evidence": {
+          "action": "INTRADAY_LONG_OVERLAY",
+          "moneyflow_breadth": 0.6574039817212796,
+          "observed_weight_ratio": 1.0,
+          "signal_active": true,
+          "signal_date": "2026-06-09",
+          "threshold": 0.4909341253149309
+        }
+      },
+      "new": {
+        "strategy": {
+          "strategy_id": "S003",
+          "reference_id": "S003-C9901",
+          "release_hash": "679031d67e334e7b3cad3e6b20bd1684e9e0c329ba25ede250d017f36f309c65",
+          "runtime_sha256": "e90d691efbb4adc1469882f49d17bdc6c3e5cd0b7e1de94b76263340e2e90feb",
+          "symbol": "510500.SH"
+        },
+        "signal_identity": "b632a027462f2cafaea129ce8066c19dab23e95ec268f26f676dff7d00a3e5d4",
+        "plan_identity": "4031b2f82297b63ff9a6be88b6531d829f425c306fe3032b1bc97daa18cc6fe9",
+        "symbol": "510500.SH",
+        "signal_date": "2026-06-09",
+        "trading_date": "2026-06-10",
+        "generated_at": "2026-06-09T20:31:00+08:00",
+        "expected_portfolio_revision": 7,
+        "expected_state_revision": 11,
+        "actual_quantity": 600,
+        "target_quantity": 600,
+        "cycle_target_quantity": 600,
+        "target_position": 1.0,
+        "action": "ROTATE",
+        "plan_mode": "CORE_EVENT_INTRADAY_ROTATION",
+        "capital_mode": "full_available_cash",
+        "allocation_fraction": "1",
+        "orders": [],
+        "legs": [
+          {
+            "sequence": 0,
+            "role": "ROTATION_ENTRY",
+            "checkpoint": "OPEN",
+            "submit_after": "09:30:00",
+            "submit_before": "09:35:00",
+            "order": {
+              "side": "BUY",
+              "quantity": 600,
+              "order_type": "LIMIT",
+              "limit_price": "9.097"
+            },
+            "dependency_sequence": null,
+            "dependency_required_status": null
+          },
+          {
+            "sequence": 1,
+            "role": "ROTATION_EXIT",
+            "checkpoint": "11:30_CLOSE",
+            "submit_after": "11:29:00",
+            "submit_before": "11:30:00",
+            "order": {
+              "side": "SELL",
+              "quantity": 600,
+              "order_type": "MARKET",
+              "limit_price": "8.27"
+            },
+            "dependency_sequence": 0,
+            "dependency_required_status": "FILLED_ALL"
+          }
+        ],
+        "available_cash": "12345.67",
+        "fee_rate": "0.00012",
+        "estimated_order_cost": "5458.855",
+        "unallocated_cash": "6886.815",
+        "references": {
+          "signal_price": "2.763007",
+          "execution_price": "8.27",
+          "signal_basis": "ADJUSTED_CLOSE",
+          "execution_basis": "UNADJUSTED_CLOSE",
+          "pricing": {
+            "basis": "UNADJUSTED",
+            "anchor_date": null,
+            "anchor_factor": null
+          },
+          "price_scale": "1"
+        },
+        "required_capabilities": {
+          "order_types": [
+            "LIMIT",
+            "MARKET"
+          ],
+          "checkpoints": [
+            "11:30_CLOSE",
+            "OPEN"
+          ]
+        },
+        "input_identities": {
+          "adjusted_daily": "e8c41d55c9cb1b668508526f8a40be68672cb02a894ad9f69abafcf76bc7968c",
+          "constituent_moneyflow_seed": "63b3273abd147a5bdc607137288ca838eaffa4a3a8ddbb3762d25fb08460e8b8",
+          "execution_daily": "f0b089f6edabd6a55a4832434c1813668abc38c3170847b07e4e73c2935f04cf",
+          "trading_calendar": "5b8d5dbdd0cd6145872ddbd2dc093099f8d4ae7412360763c880740a3083ff37"
+        },
+        "price_identities": {
+          "adjusted_daily": "9cbc1af7957c1f9e9af6475e83dfb78d4b274cc84d25c3aefe4380a85e22af3e",
+          "execution_daily": "c014d480b2fd45a573facd56e041b163b33666f9839b2ed8fe2240f2f4dfbc05",
+          "pricing": "57570ee49e9e42a4a283cd8f791883931cf45a5aae7a79634584e768a184a407"
+        },
+        "evidence": {
+          "action": "INTRADAY_LONG_OVERLAY",
+          "moneyflow_breadth": 0.6574039817212796,
+          "observed_weight_ratio": 1.0,
+          "signal_active": true,
+          "signal_date": "2026-06-09",
+          "threshold": 0.4909341253149309
+        }
+      }
+    },
+    {
+      "signal_date": "2026-06-09",
+      "trading_date": "2026-06-10",
+      "category": "ENTRY",
+      "quantity": 200,
+      "cash": "99.50",
+      "cycle_target": 600,
+      "status": "EXPECTED_INVALID_CORE_QUANTITY_BOUNDARY",
+      "valuation": {
+        "basis": "UNADJUSTED",
+        "raw_signal_close": 8.27
+      },
+      "old": {
+        "type": "RuntimeContractError",
+        "message": "intraday overlay account differs from core quantity"
+      },
+      "new": {
+        "type": "RuntimeContractError",
+        "message": "intraday overlay account differs from core quantity"
+      }
+    },
+    {
+      "signal_date": "2026-06-10",
+      "trading_date": "2026-06-11",
+      "category": "EXIT",
+      "quantity": 600,
+      "cash": "12345.67",
+      "cycle_target": 600,
+      "status": "EXACT_PUBLIC_PLAN",
+      "valuation": {
+        "basis": "UNADJUSTED",
+        "raw_signal_close": 8.171
+      },
+      "old": {
+        "strategy": {
+          "strategy_id": "S003",
+          "reference_id": "S003-v1",
+          "release_hash": "eb0ebf6c80385f8c9d0d34fa466059ab9364055af79b7bf0fe2f9168f683d174",
+          "runtime_sha256": "a5a1eeec990ebbc738c5c1ca711ceccecc3e0a66d098367a9b9bbe0159b033a9",
+          "symbol": "510500.SH"
+        },
+        "signal_identity": "8dc95d607c237af7982e0c4b69e8507583cbc65a988aaeceb2197c2831e08b86",
+        "plan_identity": "d7cbc346fd4135c91b9ed2fdbf3334c938399cc69a3f91bcc8e77240a36acd00",
+        "symbol": "510500.SH",
+        "signal_date": "2026-06-10",
+        "trading_date": "2026-06-11",
+        "generated_at": "2026-06-10T20:31:00+08:00",
+        "expected_portfolio_revision": 7,
+        "expected_state_revision": 11,
+        "actual_quantity": 600,
+        "target_quantity": 600,
+        "cycle_target_quantity": 600,
+        "target_position": 0.0,
+        "action": "HOLD",
+        "plan_mode": "NONE",
+        "capital_mode": "full_available_cash",
+        "allocation_fraction": "1",
+        "orders": [],
+        "legs": [],
+        "available_cash": "12345.67",
+        "fee_rate": "0.00012",
+        "estimated_order_cost": "0.0",
+        "unallocated_cash": "12345.67",
+        "references": {
+          "signal_price": "2.7299311",
+          "execution_price": "8.171",
+          "signal_basis": "ADJUSTED_CLOSE",
+          "execution_basis": "UNADJUSTED_CLOSE",
+          "pricing": {
+            "basis": "UNADJUSTED",
+            "anchor_date": null,
+            "anchor_factor": null
+          },
+          "price_scale": "1"
+        },
+        "required_capabilities": {
+          "order_types": [],
+          "checkpoints": []
+        },
+        "input_identities": {
+          "adjusted_daily": "e8c41d55c9cb1b668508526f8a40be68672cb02a894ad9f69abafcf76bc7968c",
+          "constituent_moneyflow_seed": "63b3273abd147a5bdc607137288ca838eaffa4a3a8ddbb3762d25fb08460e8b8",
+          "execution_daily": "f0b089f6edabd6a55a4832434c1813668abc38c3170847b07e4e73c2935f04cf",
+          "trading_calendar": "5b8d5dbdd0cd6145872ddbd2dc093099f8d4ae7412360763c880740a3083ff37"
+        },
+        "price_identities": {
+          "adjusted_daily": "9cbc1af7957c1f9e9af6475e83dfb78d4b274cc84d25c3aefe4380a85e22af3e",
+          "execution_daily": "c014d480b2fd45a573facd56e041b163b33666f9839b2ed8fe2240f2f4dfbc05",
+          "pricing": "57570ee49e9e42a4a283cd8f791883931cf45a5aae7a79634584e768a184a407"
+        },
+        "evidence": {
+          "action": "NO_EVENT",
+          "moneyflow_breadth": 0.3019288649794514,
+          "observed_weight_ratio": 1.0,
+          "signal_active": false,
+          "signal_date": "2026-06-10",
+          "threshold": 0.49690769459461037
+        }
+      },
+      "new": {
+        "strategy": {
+          "strategy_id": "S003",
+          "reference_id": "S003-C9901",
+          "release_hash": "679031d67e334e7b3cad3e6b20bd1684e9e0c329ba25ede250d017f36f309c65",
+          "runtime_sha256": "e90d691efbb4adc1469882f49d17bdc6c3e5cd0b7e1de94b76263340e2e90feb",
+          "symbol": "510500.SH"
+        },
+        "signal_identity": "a03e824677245255b6b22dccee14e7bed0280f6b2e00c71a542500b1361c0c2a",
+        "plan_identity": "74b4f6a20f01c8d1b55c68b5f8afce4b3bffa46de7c0530d3049dd14ecd88642",
+        "symbol": "510500.SH",
+        "signal_date": "2026-06-10",
+        "trading_date": "2026-06-11",
+        "generated_at": "2026-06-10T20:31:00+08:00",
+        "expected_portfolio_revision": 7,
+        "expected_state_revision": 11,
+        "actual_quantity": 600,
+        "target_quantity": 600,
+        "cycle_target_quantity": 600,
+        "target_position": 0.0,
+        "action": "HOLD",
+        "plan_mode": "NONE",
+        "capital_mode": "full_available_cash",
+        "allocation_fraction": "1",
+        "orders": [],
+        "legs": [],
+        "available_cash": "12345.67",
+        "fee_rate": "0.00012",
+        "estimated_order_cost": "0.0",
+        "unallocated_cash": "12345.67",
+        "references": {
+          "signal_price": "2.7299311",
+          "execution_price": "8.171",
+          "signal_basis": "ADJUSTED_CLOSE",
+          "execution_basis": "UNADJUSTED_CLOSE",
+          "pricing": {
+            "basis": "UNADJUSTED",
+            "anchor_date": null,
+            "anchor_factor": null
+          },
+          "price_scale": "1"
+        },
+        "required_capabilities": {
+          "order_types": [],
+          "checkpoints": []
+        },
+        "input_identities": {
+          "adjusted_daily": "e8c41d55c9cb1b668508526f8a40be68672cb02a894ad9f69abafcf76bc7968c",
+          "constituent_moneyflow_seed": "63b3273abd147a5bdc607137288ca838eaffa4a3a8ddbb3762d25fb08460e8b8",
+          "execution_daily": "f0b089f6edabd6a55a4832434c1813668abc38c3170847b07e4e73c2935f04cf",
+          "trading_calendar": "5b8d5dbdd0cd6145872ddbd2dc093099f8d4ae7412360763c880740a3083ff37"
+        },
+        "price_identities": {
+          "adjusted_daily": "9cbc1af7957c1f9e9af6475e83dfb78d4b274cc84d25c3aefe4380a85e22af3e",
+          "execution_daily": "c014d480b2fd45a573facd56e041b163b33666f9839b2ed8fe2240f2f4dfbc05",
+          "pricing": "57570ee49e9e42a4a283cd8f791883931cf45a5aae7a79634584e768a184a407"
+        },
+        "evidence": {
+          "action": "NO_EVENT",
+          "moneyflow_breadth": 0.3019288649794514,
+          "observed_weight_ratio": 1.0,
+          "signal_active": false,
+          "signal_date": "2026-06-10",
+          "threshold": 0.49690769459461037
+        }
+      }
+    },
+    {
+      "signal_date": "2026-06-10",
+      "trading_date": "2026-06-11",
+      "category": "EXIT",
+      "quantity": 200,
+      "cash": "99.50",
+      "cycle_target": 600,
+      "status": "EXPECTED_INVALID_CORE_QUANTITY_BOUNDARY",
+      "valuation": {
+        "basis": "UNADJUSTED",
+        "raw_signal_close": 8.171
+      },
+      "old": {
+        "type": "RuntimeContractError",
+        "message": "intraday overlay account differs from core quantity"
+      },
+      "new": {
+        "type": "RuntimeContractError",
+        "message": "intraday overlay account differs from core quantity"
+      }
+    },
+    {
+      "signal_date": "2026-06-15",
+      "trading_date": "2026-06-16",
+      "category": "HOLD_POSITION",
+      "quantity": 600,
+      "cash": "12345.67",
+      "cycle_target": 600,
+      "status": "EXACT_PUBLIC_PLAN",
+      "valuation": {
+        "basis": "UNADJUSTED",
+        "raw_signal_close": 8.544
+      },
+      "old": {
+        "strategy": {
+          "strategy_id": "S003",
+          "reference_id": "S003-v1",
+          "release_hash": "eb0ebf6c80385f8c9d0d34fa466059ab9364055af79b7bf0fe2f9168f683d174",
+          "runtime_sha256": "a5a1eeec990ebbc738c5c1ca711ceccecc3e0a66d098367a9b9bbe0159b033a9",
+          "symbol": "510500.SH"
+        },
+        "signal_identity": "972d5522dd2ac73cf821f07d74c6a54ddd74fe1149c2cc88796ebd97964c3cf3",
+        "plan_identity": "bc20f8a88c6099491481781ab2e8f0fadae1060a952ff6fea27405fdfd09184a",
+        "symbol": "510500.SH",
+        "signal_date": "2026-06-15",
+        "trading_date": "2026-06-16",
+        "generated_at": "2026-06-15T20:31:00+08:00",
+        "expected_portfolio_revision": 7,
+        "expected_state_revision": 11,
+        "actual_quantity": 600,
+        "target_quantity": 600,
+        "cycle_target_quantity": 600,
+        "target_position": 1.0,
+        "action": "ROTATE",
+        "plan_mode": "CORE_EVENT_INTRADAY_ROTATION",
+        "capital_mode": "full_available_cash",
+        "allocation_fraction": "1",
+        "orders": [],
+        "legs": [
+          {
+            "sequence": 0,
+            "role": "ROTATION_ENTRY",
+            "checkpoint": "OPEN",
+            "submit_after": "09:30:00",
+            "submit_before": "09:35:00",
+            "order": {
+              "side": "BUY",
+              "quantity": 600,
+              "order_type": "LIMIT",
+              "limit_price": "9.398"
+            },
+            "dependency_sequence": null,
+            "dependency_required_status": null
+          },
+          {
+            "sequence": 1,
+            "role": "ROTATION_EXIT",
+            "checkpoint": "11:30_CLOSE",
+            "submit_after": "11:29:00",
+            "submit_before": "11:30:00",
+            "order": {
+              "side": "SELL",
+              "quantity": 600,
+              "order_type": "MARKET",
+              "limit_price": "8.544"
+            },
+            "dependency_sequence": 0,
+            "dependency_required_status": "FILLED_ALL"
+          }
+        ],
+        "available_cash": "12345.67",
+        "fee_rate": "0.00012",
+        "estimated_order_cost": "5639.4767",
+        "unallocated_cash": "6706.1933",
+        "references": {
+          "signal_price": "2.8545504000000004",
+          "execution_price": "8.544",
+          "signal_basis": "ADJUSTED_CLOSE",
+          "execution_basis": "UNADJUSTED_CLOSE",
+          "pricing": {
+            "basis": "UNADJUSTED",
+            "anchor_date": null,
+            "anchor_factor": null
+          },
+          "price_scale": "1"
+        },
+        "required_capabilities": {
+          "order_types": [
+            "LIMIT",
+            "MARKET"
+          ],
+          "checkpoints": [
+            "11:30_CLOSE",
+            "OPEN"
+          ]
+        },
+        "input_identities": {
+          "adjusted_daily": "e8c41d55c9cb1b668508526f8a40be68672cb02a894ad9f69abafcf76bc7968c",
+          "constituent_moneyflow_seed": "63b3273abd147a5bdc607137288ca838eaffa4a3a8ddbb3762d25fb08460e8b8",
+          "execution_daily": "f0b089f6edabd6a55a4832434c1813668abc38c3170847b07e4e73c2935f04cf",
+          "trading_calendar": "5b8d5dbdd0cd6145872ddbd2dc093099f8d4ae7412360763c880740a3083ff37"
+        },
+        "price_identities": {
+          "adjusted_daily": "9cbc1af7957c1f9e9af6475e83dfb78d4b274cc84d25c3aefe4380a85e22af3e",
+          "execution_daily": "c014d480b2fd45a573facd56e041b163b33666f9839b2ed8fe2240f2f4dfbc05",
+          "pricing": "57570ee49e9e42a4a283cd8f791883931cf45a5aae7a79634584e768a184a407"
+        },
+        "evidence": {
+          "action": "INTRADAY_LONG_OVERLAY",
+          "moneyflow_breadth": 0.6518143729938904,
+          "observed_weight_ratio": 1.0,
+          "signal_active": true,
+          "signal_date": "2026-06-15",
+          "threshold": 0.5113875546547355
+        }
+      },
+      "new": {
+        "strategy": {
+          "strategy_id": "S003",
+          "reference_id": "S003-C9901",
+          "release_hash": "679031d67e334e7b3cad3e6b20bd1684e9e0c329ba25ede250d017f36f309c65",
+          "runtime_sha256": "e90d691efbb4adc1469882f49d17bdc6c3e5cd0b7e1de94b76263340e2e90feb",
+          "symbol": "510500.SH"
+        },
+        "signal_identity": "34ff41141f7dae540377d5bf1400d4f76e7985d7eb6bfe2e6aee6480e8b4c618",
+        "plan_identity": "79c2da756312f41b22464924fd509241335749b719762585f80bde1a92405f25",
+        "symbol": "510500.SH",
+        "signal_date": "2026-06-15",
+        "trading_date": "2026-06-16",
+        "generated_at": "2026-06-15T20:31:00+08:00",
+        "expected_portfolio_revision": 7,
+        "expected_state_revision": 11,
+        "actual_quantity": 600,
+        "target_quantity": 600,
+        "cycle_target_quantity": 600,
+        "target_position": 1.0,
+        "action": "ROTATE",
+        "plan_mode": "CORE_EVENT_INTRADAY_ROTATION",
+        "capital_mode": "full_available_cash",
+        "allocation_fraction": "1",
+        "orders": [],
+        "legs": [
+          {
+            "sequence": 0,
+            "role": "ROTATION_ENTRY",
+            "checkpoint": "OPEN",
+            "submit_after": "09:30:00",
+            "submit_before": "09:35:00",
+            "order": {
+              "side": "BUY",
+              "quantity": 600,
+              "order_type": "LIMIT",
+              "limit_price": "9.398"
+            },
+            "dependency_sequence": null,
+            "dependency_required_status": null
+          },
+          {
+            "sequence": 1,
+            "role": "ROTATION_EXIT",
+            "checkpoint": "11:30_CLOSE",
+            "submit_after": "11:29:00",
+            "submit_before": "11:30:00",
+            "order": {
+              "side": "SELL",
+              "quantity": 600,
+              "order_type": "MARKET",
+              "limit_price": "8.544"
+            },
+            "dependency_sequence": 0,
+            "dependency_required_status": "FILLED_ALL"
+          }
+        ],
+        "available_cash": "12345.67",
+        "fee_rate": "0.00012",
+        "estimated_order_cost": "5639.4767",
+        "unallocated_cash": "6706.1933",
+        "references": {
+          "signal_price": "2.8545504000000004",
+          "execution_price": "8.544",
+          "signal_basis": "ADJUSTED_CLOSE",
+          "execution_basis": "UNADJUSTED_CLOSE",
+          "pricing": {
+            "basis": "UNADJUSTED",
+            "anchor_date": null,
+            "anchor_factor": null
+          },
+          "price_scale": "1"
+        },
+        "required_capabilities": {
+          "order_types": [
+            "LIMIT",
+            "MARKET"
+          ],
+          "checkpoints": [
+            "11:30_CLOSE",
+            "OPEN"
+          ]
+        },
+        "input_identities": {
+          "adjusted_daily": "e8c41d55c9cb1b668508526f8a40be68672cb02a894ad9f69abafcf76bc7968c",
+          "constituent_moneyflow_seed": "63b3273abd147a5bdc607137288ca838eaffa4a3a8ddbb3762d25fb08460e8b8",
+          "execution_daily": "f0b089f6edabd6a55a4832434c1813668abc38c3170847b07e4e73c2935f04cf",
+          "trading_calendar": "5b8d5dbdd0cd6145872ddbd2dc093099f8d4ae7412360763c880740a3083ff37"
+        },
+        "price_identities": {
+          "adjusted_daily": "9cbc1af7957c1f9e9af6475e83dfb78d4b274cc84d25c3aefe4380a85e22af3e",
+          "execution_daily": "c014d480b2fd45a573facd56e041b163b33666f9839b2ed8fe2240f2f4dfbc05",
+          "pricing": "57570ee49e9e42a4a283cd8f791883931cf45a5aae7a79634584e768a184a407"
+        },
+        "evidence": {
+          "action": "INTRADAY_LONG_OVERLAY",
+          "moneyflow_breadth": 0.6518143729938904,
+          "observed_weight_ratio": 1.0,
+          "signal_active": true,
+          "signal_date": "2026-06-15",
+          "threshold": 0.5113875546547355
+        }
+      }
+    },
+    {
+      "signal_date": "2026-06-15",
+      "trading_date": "2026-06-16",
+      "category": "HOLD_POSITION",
+      "quantity": 200,
+      "cash": "99.50",
+      "cycle_target": 600,
+      "status": "EXPECTED_INVALID_CORE_QUANTITY_BOUNDARY",
+      "valuation": {
+        "basis": "UNADJUSTED",
+        "raw_signal_close": 8.544
+      },
+      "old": {
+        "type": "RuntimeContractError",
+        "message": "intraday overlay account differs from core quantity"
+      },
+      "new": {
+        "type": "RuntimeContractError",
+        "message": "intraday overlay account differs from core quantity"
+      }
+    },
+    {
+      "signal_date": "2026-05-29",
+      "trading_date": "2026-06-01",
+      "category": "HOLD_CASH",
+      "quantity": 600,
+      "cash": "12345.67",
+      "cycle_target": 600,
+      "status": "EXACT_PUBLIC_PLAN",
+      "valuation": {
+        "basis": "UNADJUSTED",
+        "raw_signal_close": 8.443
+      },
+      "old": {
+        "strategy": {
+          "strategy_id": "S003",
+          "reference_id": "S003-v1",
+          "release_hash": "eb0ebf6c80385f8c9d0d34fa466059ab9364055af79b7bf0fe2f9168f683d174",
+          "runtime_sha256": "a5a1eeec990ebbc738c5c1ca711ceccecc3e0a66d098367a9b9bbe0159b033a9",
+          "symbol": "510500.SH"
+        },
+        "signal_identity": "dc0e1b52188d85aa652ecc36230466553adadb9cd4a84c6f755ff83d90465c1a",
+        "plan_identity": "7befedbf2afe0a176e0b3055e1c28e6f910532f77a32f2dbb0b39466dbcc3e22",
+        "symbol": "510500.SH",
+        "signal_date": "2026-05-29",
+        "trading_date": "2026-06-01",
+        "generated_at": "2026-05-29T20:31:00+08:00",
+        "expected_portfolio_revision": 7,
+        "expected_state_revision": 11,
+        "actual_quantity": 600,
+        "target_quantity": 600,
+        "cycle_target_quantity": 600,
+        "target_position": 0.0,
+        "action": "HOLD",
+        "plan_mode": "NONE",
+        "capital_mode": "full_available_cash",
+        "allocation_fraction": "1",
+        "orders": [],
+        "legs": [],
+        "available_cash": "12345.67",
+        "fee_rate": "0.00012",
+        "estimated_order_cost": "0.0",
+        "unallocated_cash": "12345.67",
+        "references": {
+          "signal_price": "2.8208063",
+          "execution_price": "8.443",
+          "signal_basis": "ADJUSTED_CLOSE",
+          "execution_basis": "UNADJUSTED_CLOSE",
+          "pricing": {
+            "basis": "UNADJUSTED",
+            "anchor_date": null,
+            "anchor_factor": null
+          },
+          "price_scale": "1"
+        },
+        "required_capabilities": {
+          "order_types": [],
+          "checkpoints": []
+        },
+        "input_identities": {
+          "adjusted_daily": "e8c41d55c9cb1b668508526f8a40be68672cb02a894ad9f69abafcf76bc7968c",
+          "constituent_moneyflow_seed": "63b3273abd147a5bdc607137288ca838eaffa4a3a8ddbb3762d25fb08460e8b8",
+          "execution_daily": "f0b089f6edabd6a55a4832434c1813668abc38c3170847b07e4e73c2935f04cf",
+          "trading_calendar": "5b8d5dbdd0cd6145872ddbd2dc093099f8d4ae7412360763c880740a3083ff37"
+        },
+        "price_identities": {
+          "adjusted_daily": "9cbc1af7957c1f9e9af6475e83dfb78d4b274cc84d25c3aefe4380a85e22af3e",
+          "execution_daily": "c014d480b2fd45a573facd56e041b163b33666f9839b2ed8fe2240f2f4dfbc05",
+          "pricing": "57570ee49e9e42a4a283cd8f791883931cf45a5aae7a79634584e768a184a407"
+        },
+        "evidence": {
+          "action": "NO_EVENT",
+          "moneyflow_breadth": 0.2684131586841315,
+          "observed_weight_ratio": 1.0,
+          "signal_active": false,
+          "signal_date": "2026-05-29",
+          "threshold": 0.5122192046754596
+        }
+      },
+      "new": {
+        "strategy": {
+          "strategy_id": "S003",
+          "reference_id": "S003-C9901",
+          "release_hash": "679031d67e334e7b3cad3e6b20bd1684e9e0c329ba25ede250d017f36f309c65",
+          "runtime_sha256": "e90d691efbb4adc1469882f49d17bdc6c3e5cd0b7e1de94b76263340e2e90feb",
+          "symbol": "510500.SH"
+        },
+        "signal_identity": "b07b4fa660cead557162ff57dc98ca8d4ef40d0fe5ee3c3616e27fbc5c7c496c",
+        "plan_identity": "9e29b745f4d98cc8d5d3cd5f99e8378dd860e402c68ab77df18daa216e4d669a",
+        "symbol": "510500.SH",
+        "signal_date": "2026-05-29",
+        "trading_date": "2026-06-01",
+        "generated_at": "2026-05-29T20:31:00+08:00",
+        "expected_portfolio_revision": 7,
+        "expected_state_revision": 11,
+        "actual_quantity": 600,
+        "target_quantity": 600,
+        "cycle_target_quantity": 600,
+        "target_position": 0.0,
+        "action": "HOLD",
+        "plan_mode": "NONE",
+        "capital_mode": "full_available_cash",
+        "allocation_fraction": "1",
+        "orders": [],
+        "legs": [],
+        "available_cash": "12345.67",
+        "fee_rate": "0.00012",
+        "estimated_order_cost": "0.0",
+        "unallocated_cash": "12345.67",
+        "references": {
+          "signal_price": "2.8208063",
+          "execution_price": "8.443",
+          "signal_basis": "ADJUSTED_CLOSE",
+          "execution_basis": "UNADJUSTED_CLOSE",
+          "pricing": {
+            "basis": "UNADJUSTED",
+            "anchor_date": null,
+            "anchor_factor": null
+          },
+          "price_scale": "1"
+        },
+        "required_capabilities": {
+          "order_types": [],
+          "checkpoints": []
+        },
+        "input_identities": {
+          "adjusted_daily": "e8c41d55c9cb1b668508526f8a40be68672cb02a894ad9f69abafcf76bc7968c",
+          "constituent_moneyflow_seed": "63b3273abd147a5bdc607137288ca838eaffa4a3a8ddbb3762d25fb08460e8b8",
+          "execution_daily": "f0b089f6edabd6a55a4832434c1813668abc38c3170847b07e4e73c2935f04cf",
+          "trading_calendar": "5b8d5dbdd0cd6145872ddbd2dc093099f8d4ae7412360763c880740a3083ff37"
+        },
+        "price_identities": {
+          "adjusted_daily": "9cbc1af7957c1f9e9af6475e83dfb78d4b274cc84d25c3aefe4380a85e22af3e",
+          "execution_daily": "c014d480b2fd45a573facd56e041b163b33666f9839b2ed8fe2240f2f4dfbc05",
+          "pricing": "57570ee49e9e42a4a283cd8f791883931cf45a5aae7a79634584e768a184a407"
+        },
+        "evidence": {
+          "action": "NO_EVENT",
+          "moneyflow_breadth": 0.2684131586841315,
+          "observed_weight_ratio": 1.0,
+          "signal_active": false,
+          "signal_date": "2026-05-29",
+          "threshold": 0.5122192046754596
+        }
+      }
+    },
+    {
+      "signal_date": "2026-05-29",
+      "trading_date": "2026-06-01",
+      "category": "HOLD_CASH",
+      "quantity": 200,
+      "cash": "99.50",
+      "cycle_target": 600,
+      "status": "EXPECTED_INVALID_CORE_QUANTITY_BOUNDARY",
+      "valuation": {
+        "basis": "UNADJUSTED",
+        "raw_signal_close": 8.443
+      },
+      "old": {
+        "type": "RuntimeContractError",
+        "message": "intraday overlay account differs from core quantity"
+      },
+      "new": {
+        "type": "RuntimeContractError",
+        "message": "intraday overlay account differs from core quantity"
+      }
+    }
+  ],
+  "absent_market_categories": [],
+  "successful_nonzero_cases": {
+    "600": 4,
+    "200": 0
+  },
+  "expected_invalid_core_quantity_cases": 4,
+  "failures": [],
+  "coverage_sufficient": true
+}

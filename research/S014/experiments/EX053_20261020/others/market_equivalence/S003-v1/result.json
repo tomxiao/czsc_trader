@@ -1,0 +1,310 @@
+{
+  "status": "PASS",
+  "reference": "S003-v1",
+  "case_id": "S003-v1",
+  "identity": {
+    "payload_path": ".tmp/window-contract-final-migrations/S003-v1/candidate_payload.json",
+    "payload_sha256": "d922f546d27cecd1bac738e79c78ba9f9cbf1d4a8c511b1716dfa53a5ea5d6de",
+    "old_identity": {
+      "strategy_id": "S003",
+      "reference_id": "S003-v1",
+      "release_hash": "eb0ebf6c80385f8c9d0d34fa466059ab9364055af79b7bf0fe2f9168f683d174",
+      "runtime_sha256": "a5a1eeec990ebbc738c5c1ca711ceccecc3e0a66d098367a9b9bbe0159b033a9",
+      "symbol": "510500.SH"
+    },
+    "new_identity": {
+      "strategy_id": "S003",
+      "reference_id": "S003-C9901",
+      "release_hash": "679031d67e334e7b3cad3e6b20bd1684e9e0c329ba25ede250d017f36f309c65",
+      "runtime_sha256": "e90d691efbb4adc1469882f49d17bdc6c3e5cd0b7e1de94b76263340e2e90feb",
+      "symbol": "510500.SH"
+    }
+  },
+  "window": {
+    "start": "2026-06-01",
+    "end": "2026-09-02"
+  },
+  "initial_cash": 100000.0,
+  "initial_quantity": 0,
+  "modes": {
+    "WINDOW": {
+      "status": "PASS",
+      "extra_history_rows": {
+        "old": 0,
+        "new": 0
+      },
+      "signals": {
+        "name": "WINDOW.signals",
+        "rows": 67,
+        "columns": 6,
+        "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+      },
+      "ledgers": {
+        "checks": [
+          {
+            "name": "decisions",
+            "rows": 20,
+            "columns": 10,
+            "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+          },
+          {
+            "name": "orders",
+            "rows": 39,
+            "columns": 13,
+            "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+          },
+          {
+            "name": "fills",
+            "rows": 39,
+            "columns": 12,
+            "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+          },
+          {
+            "name": "account_daily",
+            "rows": 67,
+            "columns": 11,
+            "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+          },
+          {
+            "name": "trades",
+            "rows": 19,
+            "columns": 8,
+            "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+          }
+        ],
+        "identity_bijections": {
+          "decision_id": 20,
+          "order_id": 39,
+          "cycle_id": 20,
+          "fill_id": 39
+        }
+      },
+      "actual_fills": {
+        "old": 39,
+        "new": 39
+      },
+      "closed_trades": {
+        "old": 19,
+        "new": 19
+      },
+      "nonzero_plans": {
+        "cases": 8,
+        "absent_market_categories": [],
+        "successful_nonzero_cases": {
+          "600": 4,
+          "200": 0
+        },
+        "expected_invalid_core_quantity_cases": 4,
+        "coverage_sufficient": true
+      }
+    },
+    "CONTINUOUS": {
+      "status": "PASS",
+      "extra_history_rows": {
+        "old": 0,
+        "new": 0
+      },
+      "signals": {
+        "name": "CONTINUOUS.signals",
+        "rows": 127,
+        "columns": 6,
+        "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+      },
+      "ledgers": {
+        "checks": [
+          {
+            "name": "decisions",
+            "rows": 20,
+            "columns": 10,
+            "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+          },
+          {
+            "name": "orders",
+            "rows": 39,
+            "columns": 13,
+            "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+          },
+          {
+            "name": "fills",
+            "rows": 39,
+            "columns": 12,
+            "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+          },
+          {
+            "name": "account_daily",
+            "rows": 67,
+            "columns": 11,
+            "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+          },
+          {
+            "name": "trades",
+            "rows": 19,
+            "columns": 8,
+            "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+          }
+        ],
+        "identity_bijections": {
+          "decision_id": 20,
+          "order_id": 39,
+          "cycle_id": 20,
+          "fill_id": 39
+        }
+      },
+      "actual_fills": {
+        "old": 39,
+        "new": 39
+      },
+      "closed_trades": {
+        "old": 19,
+        "new": 19
+      },
+      "nonzero_plans": {
+        "cases": 8,
+        "absent_market_categories": [],
+        "successful_nonzero_cases": {
+          "600": 4,
+          "200": 0
+        },
+        "expected_invalid_core_quantity_cases": 4,
+        "coverage_sufficient": true
+      }
+    }
+  },
+  "scope": "REAL_AUTHENTICATED_MARKET_PUBLIC_SRT_PLAN_AT_AND_TXE",
+  "limits": [
+    "Migration equivalence on declared market windows, not an unseen alpha holdout or production activation.",
+    "Market-intent decision semantics only; no claim of confirmed-fill-dependent strategy support."
+  ],
+  "config_sha256": "f87c9178dfd25033007c124ace8338c69d0ae2323e17c11ef611940049a99a1c",
+  "driver_sha256": "e7bd588143d2dfbb93fb5fcb20126cf5b9bfebee9c5161677e1f5a2e964d86d9",
+  "artifacts": [
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/execution_inputs.json",
+      "sha256": "0259c7eea857aeba0e773875ff3336496a5166bd27c659914dd7fce7326ef712"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/market_rules.json",
+      "sha256": "53734d08388ee6cf2317386b2e9bdf4cdb8efb37428bd482abf1cec10b6cdd3f"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_binding.json",
+      "sha256": "82a5a671ad673f64572290d5f9891566e698f67f6c77820afb00cce4ab962213"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_CONTINUOUS_account_daily.csv",
+      "sha256": "178e9550ffbee56037ef5a13a5d56ca646989d4632c2c7d9b70b9826e0c0444a"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_CONTINUOUS_decisions.csv",
+      "sha256": "70cacc4e19d02917ee3b1261ad5af8e613d2c832e2d4610fceb3fd7e10e82e45"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_CONTINUOUS_fills.csv",
+      "sha256": "e916f152aaf35095fce9d63523c38d63078e40ddbc7e93a0531146190c625450"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_CONTINUOUS_orders.csv",
+      "sha256": "762cb2f42d45efcfba9594d3701a42b541aac20dc12027e476730a5c44890b3f"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_CONTINUOUS_signals_full.csv",
+      "sha256": "13a57fa22ead0b13cc5d1254562fcd41fc4550032035ae802e446fdbb93eb087"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_CONTINUOUS_trades.csv",
+      "sha256": "a43941f3df5972f9f9dda419067c7c9861eabe4751c496074ac3f79e24783e1e"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_derived_plan.json",
+      "sha256": "a5c71b80976f7524f338888432afee4da0c13ae2f6de6192f69e0f018652f9ea"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_WINDOW_account_daily.csv",
+      "sha256": "178e9550ffbee56037ef5a13a5d56ca646989d4632c2c7d9b70b9826e0c0444a"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_WINDOW_decisions.csv",
+      "sha256": "70cacc4e19d02917ee3b1261ad5af8e613d2c832e2d4610fceb3fd7e10e82e45"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_WINDOW_fills.csv",
+      "sha256": "e916f152aaf35095fce9d63523c38d63078e40ddbc7e93a0531146190c625450"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_WINDOW_orders.csv",
+      "sha256": "762cb2f42d45efcfba9594d3701a42b541aac20dc12027e476730a5c44890b3f"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_WINDOW_signals_full.csv",
+      "sha256": "bd646e8de207b632a1167fe9d21133673bc13d152de53a782637e3bd8c634592"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/new_WINDOW_trades.csv",
+      "sha256": "a43941f3df5972f9f9dda419067c7c9861eabe4751c496074ac3f79e24783e1e"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/nonzero_plan_probes_CONTINUOUS.json",
+      "sha256": "2febeed1ff6279661855482aaf9770b9656d9a9067d4b7db3fab4a95973d22b0"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/nonzero_plan_probes_WINDOW.json",
+      "sha256": "2febeed1ff6279661855482aaf9770b9656d9a9067d4b7db3fab4a95973d22b0"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_binding.json",
+      "sha256": "5b16df7b77c210c729794b38c87f48fd384b22f2f46d5e64ffd2bf1ddfc5ca90"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_CONTINUOUS_account_daily.csv",
+      "sha256": "178e9550ffbee56037ef5a13a5d56ca646989d4632c2c7d9b70b9826e0c0444a"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_CONTINUOUS_decisions.csv",
+      "sha256": "f28fcd161ab2bd5c6b9622d6702d7c3decb5c85ed8203d550408c050c761319f"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_CONTINUOUS_fills.csv",
+      "sha256": "e6ede832968ae4c2b2fc9957dfc0612f3ff7f0ec76615106dc615363a293ec4f"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_CONTINUOUS_orders.csv",
+      "sha256": "e29c7bf5d268fb98b6f985a0d30a4d1c7bed97c123e7858503c158c2eaed6de0"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_CONTINUOUS_signals_full.csv",
+      "sha256": "13a57fa22ead0b13cc5d1254562fcd41fc4550032035ae802e446fdbb93eb087"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_CONTINUOUS_trades.csv",
+      "sha256": "c32939e2bd2c20268b7542d11faff2723444188559faefd593dc8a2ec92b1075"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_derived_plan.json",
+      "sha256": "66715f76720fd9e452a7af1df783297e6528266d0cbe6b8ebe1da34eb7919d38"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_WINDOW_account_daily.csv",
+      "sha256": "178e9550ffbee56037ef5a13a5d56ca646989d4632c2c7d9b70b9826e0c0444a"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_WINDOW_decisions.csv",
+      "sha256": "f28fcd161ab2bd5c6b9622d6702d7c3decb5c85ed8203d550408c050c761319f"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_WINDOW_fills.csv",
+      "sha256": "e6ede832968ae4c2b2fc9957dfc0612f3ff7f0ec76615106dc615363a293ec4f"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_WINDOW_orders.csv",
+      "sha256": "e29c7bf5d268fb98b6f985a0d30a4d1c7bed97c123e7858503c158c2eaed6de0"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_WINDOW_signals_full.csv",
+      "sha256": "bd646e8de207b632a1167fe9d21133673bc13d152de53a782637e3bd8c634592"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/market_equivalence/S003-v1/old_WINDOW_trades.csv",
+      "sha256": "c32939e2bd2c20268b7542d11faff2723444188559faefd593dc8a2ec92b1075"
+    }
+  ]
+}

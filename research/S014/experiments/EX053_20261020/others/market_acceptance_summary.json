@@ -1,0 +1,559 @@
+{
+  "status": "PASS_ON_DECLARED_REAL_WINDOWS",
+  "versions": 6,
+  "cases": 9,
+  "mode_comparisons": 18,
+  "executed_accounts": 36,
+  "reference_coverage": {
+    "S001-v1": {
+      "WINDOW": true,
+      "CONTINUOUS": true
+    },
+    "S001-v2": {
+      "WINDOW": true,
+      "CONTINUOUS": true
+    },
+    "S002-v1": {
+      "WINDOW": true,
+      "CONTINUOUS": true
+    },
+    "S003-v1": {
+      "WINDOW": true,
+      "CONTINUOUS": true
+    },
+    "S007-v1": {
+      "WINDOW": true,
+      "CONTINUOUS": true
+    },
+    "S011-v1": {
+      "WINDOW": true,
+      "CONTINUOUS": true
+    }
+  },
+  "records": [
+    {
+      "case_id": "S001-v1",
+      "reference": "S001-v1",
+      "status": "PASS",
+      "window": {
+        "start": "2026-06-01",
+        "end": "2026-09-02"
+      },
+      "modes": {
+        "WINDOW": {
+          "status": "PASS",
+          "sessions": 67,
+          "fills": 8,
+          "closed_trades": 4,
+          "open_trades": 0,
+          "complete_cycle_coverage": true,
+          "fees": 430.32030000000003,
+          "ending_cash": 113250.87970000002,
+          "ending_quantity": 0,
+          "ending_equity": 113250.87970000002,
+          "nonzero_plan_coverage": {
+            "cases": 8,
+            "absent_market_categories": [],
+            "successful_nonzero_cases": {
+              "600": 4,
+              "200": 4
+            },
+            "expected_invalid_core_quantity_cases": 0,
+            "coverage_sufficient": true
+          }
+        },
+        "CONTINUOUS": {
+          "status": "PASS",
+          "sessions": 67,
+          "fills": 8,
+          "closed_trades": 4,
+          "open_trades": 0,
+          "complete_cycle_coverage": true,
+          "fees": 423.27965,
+          "ending_cash": 111174.22035,
+          "ending_quantity": 0,
+          "ending_equity": 111174.22035,
+          "nonzero_plan_coverage": {
+            "cases": 8,
+            "absent_market_categories": [],
+            "successful_nonzero_cases": {
+              "600": 4,
+              "200": 4
+            },
+            "expected_invalid_core_quantity_cases": 0,
+            "coverage_sufficient": true
+          }
+        }
+      },
+      "cycle_coverage_status": "PASS"
+    },
+    {
+      "case_id": "S001-v2",
+      "reference": "S001-v2",
+      "status": "PASS",
+      "window": {
+        "start": "2026-06-01",
+        "end": "2026-09-02"
+      },
+      "modes": {
+        "WINDOW": {
+          "status": "PASS",
+          "sessions": 67,
+          "fills": 10,
+          "closed_trades": 5,
+          "open_trades": 0,
+          "complete_cycle_coverage": true,
+          "fees": 535.7414500000001,
+          "ending_cash": 119190.15855000002,
+          "ending_quantity": 0,
+          "ending_equity": 119190.15855000002,
+          "nonzero_plan_coverage": {
+            "cases": 8,
+            "absent_market_categories": [],
+            "successful_nonzero_cases": {
+              "600": 4,
+              "200": 4
+            },
+            "expected_invalid_core_quantity_cases": 0,
+            "coverage_sufficient": true
+          }
+        },
+        "CONTINUOUS": {
+          "status": "PASS",
+          "sessions": 67,
+          "fills": 10,
+          "closed_trades": 5,
+          "open_trades": 0,
+          "complete_cycle_coverage": true,
+          "fees": 526.81735,
+          "ending_cash": 116983.88265000001,
+          "ending_quantity": 0,
+          "ending_equity": 116983.88265000001,
+          "nonzero_plan_coverage": {
+            "cases": 8,
+            "absent_market_categories": [],
+            "successful_nonzero_cases": {
+              "600": 4,
+              "200": 4
+            },
+            "expected_invalid_core_quantity_cases": 0,
+            "coverage_sufficient": true
+          }
+        }
+      },
+      "cycle_coverage_status": "PASS"
+    },
+    {
+      "case_id": "S002-v1-common",
+      "reference": "S002-v1",
+      "status": "PASS",
+      "window": {
+        "start": "2026-06-01",
+        "end": "2026-09-02"
+      },
+      "modes": {
+        "WINDOW": {
+          "status": "PASS",
+          "sessions": 67,
+          "fills": 2,
+          "closed_trades": 1,
+          "open_trades": 0,
+          "complete_cycle_coverage": true,
+          "fees": 102.13415,
+          "ending_cash": 105046.16585,
+          "ending_quantity": 0,
+          "ending_equity": 105046.16585,
+          "nonzero_plan_coverage": {
+            "cases": 8,
+            "absent_market_categories": [],
+            "successful_nonzero_cases": {
+              "600": 4,
+              "200": 4
+            },
+            "expected_invalid_core_quantity_cases": 0,
+            "coverage_sufficient": true
+          }
+        },
+        "CONTINUOUS": {
+          "status": "PASS",
+          "sessions": 67,
+          "fills": 2,
+          "closed_trades": 1,
+          "open_trades": 0,
+          "complete_cycle_coverage": true,
+          "fees": 102.13415,
+          "ending_cash": 105046.16585,
+          "ending_quantity": 0,
+          "ending_equity": 105046.16585,
+          "nonzero_plan_coverage": {
+            "cases": 8,
+            "absent_market_categories": [],
+            "successful_nonzero_cases": {
+              "600": 4,
+              "200": 4
+            },
+            "expected_invalid_core_quantity_cases": 0,
+            "coverage_sufficient": true
+          }
+        }
+      },
+      "cycle_coverage_status": "PASS"
+    },
+    {
+      "case_id": "S002-v1-boundary",
+      "reference": "S002-v1",
+      "status": "COVERAGE_INSUFFICIENT",
+      "window": {
+        "start": "2026-08-06",
+        "end": "2026-08-14"
+      },
+      "modes": {
+        "WINDOW": {
+          "status": "COVERAGE_INSUFFICIENT",
+          "sessions": 7,
+          "fills": 0,
+          "closed_trades": 0,
+          "open_trades": 0,
+          "complete_cycle_coverage": false,
+          "fees": 0.0,
+          "ending_cash": 100000.0,
+          "ending_quantity": 0,
+          "ending_equity": 100000.0,
+          "nonzero_plan_coverage": {
+            "cases": 2,
+            "absent_market_categories": [
+              "ENTRY",
+              "EXIT",
+              "HOLD_POSITION"
+            ],
+            "successful_nonzero_cases": {
+              "600": 1,
+              "200": 1
+            },
+            "expected_invalid_core_quantity_cases": 0,
+            "coverage_sufficient": true
+          }
+        },
+        "CONTINUOUS": {
+          "status": "PASS",
+          "sessions": 7,
+          "fills": 2,
+          "closed_trades": 1,
+          "open_trades": 0,
+          "complete_cycle_coverage": true,
+          "fees": 99.96805,
+          "ending_cash": 102986.13195000001,
+          "ending_quantity": 0,
+          "ending_equity": 102986.13195000001,
+          "nonzero_plan_coverage": {
+            "cases": 8,
+            "absent_market_categories": [],
+            "successful_nonzero_cases": {
+              "600": 4,
+              "200": 4
+            },
+            "expected_invalid_core_quantity_cases": 0,
+            "coverage_sufficient": true
+          }
+        }
+      },
+      "cycle_coverage_status": "COVERAGE_INSUFFICIENT"
+    },
+    {
+      "case_id": "S003-v1",
+      "reference": "S003-v1",
+      "status": "PASS",
+      "window": {
+        "start": "2026-06-01",
+        "end": "2026-09-02"
+      },
+      "modes": {
+        "WINDOW": {
+          "status": "PASS",
+          "sessions": 67,
+          "fills": 39,
+          "closed_trades": 19,
+          "open_trades": 0,
+          "complete_cycle_coverage": true,
+          "fees": 203.11359599999997,
+          "ending_cash": 58758.986403999974,
+          "ending_quantity": 5300,
+          "ending_equity": 99839.28640399998,
+          "nonzero_plan_coverage": {
+            "cases": 8,
+            "absent_market_categories": [],
+            "successful_nonzero_cases": {
+              "600": 4,
+              "200": 0
+            },
+            "expected_invalid_core_quantity_cases": 4,
+            "coverage_sufficient": true
+          }
+        },
+        "CONTINUOUS": {
+          "status": "PASS",
+          "sessions": 67,
+          "fills": 39,
+          "closed_trades": 19,
+          "open_trades": 0,
+          "complete_cycle_coverage": true,
+          "fees": 203.11359599999997,
+          "ending_cash": 58758.986403999974,
+          "ending_quantity": 5300,
+          "ending_equity": 99839.28640399998,
+          "nonzero_plan_coverage": {
+            "cases": 8,
+            "absent_market_categories": [],
+            "successful_nonzero_cases": {
+              "600": 4,
+              "200": 0
+            },
+            "expected_invalid_core_quantity_cases": 4,
+            "coverage_sufficient": true
+          }
+        }
+      },
+      "cycle_coverage_status": "PASS"
+    },
+    {
+      "case_id": "S007-v1-seed",
+      "reference": "S007-v1",
+      "status": "PASS",
+      "window": {
+        "start": "2026-06-01",
+        "end": "2026-09-02"
+      },
+      "modes": {
+        "WINDOW": {
+          "status": "PASS",
+          "sessions": 67,
+          "fills": 10,
+          "closed_trades": 5,
+          "open_trades": 0,
+          "complete_cycle_coverage": true,
+          "fees": 840.3489,
+          "ending_cash": 108211.5511,
+          "ending_quantity": 0,
+          "ending_equity": 108211.5511,
+          "nonzero_plan_coverage": {
+            "cases": 8,
+            "absent_market_categories": [],
+            "successful_nonzero_cases": {
+              "600": 4,
+              "200": 4
+            },
+            "expected_invalid_core_quantity_cases": 0,
+            "coverage_sufficient": true
+          }
+        },
+        "CONTINUOUS": {
+          "status": "PASS",
+          "sessions": 67,
+          "fills": 10,
+          "closed_trades": 5,
+          "open_trades": 0,
+          "complete_cycle_coverage": true,
+          "fees": 840.3489,
+          "ending_cash": 108211.5511,
+          "ending_quantity": 0,
+          "ending_equity": 108211.5511,
+          "nonzero_plan_coverage": {
+            "cases": 8,
+            "absent_market_categories": [],
+            "successful_nonzero_cases": {
+              "600": 4,
+              "200": 4
+            },
+            "expected_invalid_core_quantity_cases": 0,
+            "coverage_sufficient": true
+          }
+        }
+      },
+      "cycle_coverage_status": "PASS"
+    },
+    {
+      "case_id": "S011-v1",
+      "reference": "S011-v1",
+      "status": "PASS",
+      "window": {
+        "start": "2026-10-08",
+        "end": "2026-10-15"
+      },
+      "modes": {
+        "WINDOW": {
+          "status": "PASS",
+          "sessions": 6,
+          "fills": 1,
+          "closed_trades": 0,
+          "open_trades": 1,
+          "complete_cycle_coverage": false,
+          "fees": 97.62339999999999,
+          "ending_cash": 2278.976600000009,
+          "ending_quantity": 67700,
+          "ending_equity": 99225.3766,
+          "nonzero_plan_coverage": {
+            "cases": 4,
+            "absent_market_categories": [
+              "EXIT",
+              "HOLD_POSITION"
+            ],
+            "successful_nonzero_cases": {
+              "600": 2,
+              "200": 2
+            },
+            "expected_invalid_core_quantity_cases": 0,
+            "coverage_sufficient": true
+          }
+        },
+        "CONTINUOUS": {
+          "status": "PASS",
+          "sessions": 6,
+          "fills": 1,
+          "closed_trades": 0,
+          "open_trades": 1,
+          "complete_cycle_coverage": false,
+          "fees": 97.62339999999999,
+          "ending_cash": 2278.976600000009,
+          "ending_quantity": 67700,
+          "ending_equity": 99225.3766,
+          "nonzero_plan_coverage": {
+            "cases": 4,
+            "absent_market_categories": [
+              "EXIT",
+              "HOLD_POSITION"
+            ],
+            "successful_nonzero_cases": {
+              "600": 2,
+              "200": 2
+            },
+            "expected_invalid_core_quantity_cases": 0,
+            "coverage_sufficient": true
+          }
+        }
+      },
+      "cycle_coverage_status": "COVERAGE_INSUFFICIENT"
+    },
+    {
+      "case_id": "S007-v1-incremental",
+      "reference": "S007-v1",
+      "status": "PASS",
+      "window": {
+        "start": "2026-09-03",
+        "end": "2026-09-30"
+      },
+      "modes": {
+        "WINDOW": {
+          "status": "PASS",
+          "sessions": 19,
+          "fills": 4,
+          "closed_trades": 2,
+          "open_trades": 0,
+          "complete_cycle_coverage": true,
+          "fees": 331.14880000000005,
+          "ending_cash": 100235.25120000003,
+          "ending_quantity": 0,
+          "ending_equity": 100235.25120000003,
+          "nonzero_plan_coverage": {
+            "cases": 6,
+            "absent_market_categories": [
+              "HOLD_POSITION"
+            ],
+            "successful_nonzero_cases": {
+              "600": 3,
+              "200": 3
+            },
+            "expected_invalid_core_quantity_cases": 0,
+            "coverage_sufficient": true
+          }
+        },
+        "CONTINUOUS": {
+          "status": "PASS",
+          "sessions": 19,
+          "fills": 4,
+          "closed_trades": 2,
+          "open_trades": 0,
+          "complete_cycle_coverage": true,
+          "fees": 331.14880000000005,
+          "ending_cash": 100235.25120000003,
+          "ending_quantity": 0,
+          "ending_equity": 100235.25120000003,
+          "nonzero_plan_coverage": {
+            "cases": 6,
+            "absent_market_categories": [
+              "HOLD_POSITION"
+            ],
+            "successful_nonzero_cases": {
+              "600": 3,
+              "200": 3
+            },
+            "expected_invalid_core_quantity_cases": 0,
+            "coverage_sufficient": true
+          }
+        }
+      },
+      "cycle_coverage_status": "PASS"
+    },
+    {
+      "case_id": "S011-v1-common",
+      "reference": "S011-v1",
+      "status": "PASS",
+      "window": {
+        "start": "2026-06-01",
+        "end": "2026-09-02"
+      },
+      "modes": {
+        "WINDOW": {
+          "status": "PASS",
+          "sessions": 67,
+          "fills": 20,
+          "closed_trades": 10,
+          "open_trades": 0,
+          "complete_cycle_coverage": true,
+          "fees": 2045.2376,
+          "ending_cash": 101202.36240000006,
+          "ending_quantity": 0,
+          "ending_equity": 101202.36240000006,
+          "nonzero_plan_coverage": {
+            "cases": 8,
+            "absent_market_categories": [],
+            "successful_nonzero_cases": {
+              "600": 4,
+              "200": 4
+            },
+            "expected_invalid_core_quantity_cases": 0,
+            "coverage_sufficient": true
+          }
+        },
+        "CONTINUOUS": {
+          "status": "PASS",
+          "sessions": 67,
+          "fills": 20,
+          "closed_trades": 10,
+          "open_trades": 0,
+          "complete_cycle_coverage": true,
+          "fees": 2045.2376,
+          "ending_cash": 101202.36240000006,
+          "ending_quantity": 0,
+          "ending_equity": 101202.36240000006,
+          "nonzero_plan_coverage": {
+            "cases": 8,
+            "absent_market_categories": [],
+            "successful_nonzero_cases": {
+              "600": 4,
+              "200": 4
+            },
+            "expected_invalid_core_quantity_cases": 0,
+            "coverage_sufficient": true
+          }
+        }
+      },
+      "cycle_coverage_status": "PASS"
+    }
+  ],
+  "raw_counter_correction": "Executed driver field closed_trades counted all trade rows, including OPEN. This summary counts only CSV status=CLOSED; original results are preserved. Comparison and coverage statuses never depended on that raw counter.",
+  "protected_frozen_files": 70,
+  "frozen_files_unchanged": true,
+  "candidate_registration_performed": false,
+  "freeze_performed": false,
+  "production_access_performed": false
+}

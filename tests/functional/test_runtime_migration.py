@@ -131,7 +131,15 @@ def _synthetic_features(reference, implementations, monkeypatch):
             panel = pd.DataFrame({"tail": -wave, "market": -wave,
                                   "spx": wave, "risk5": 0.03}, index=dates)
             monkeypatch.setitem(namespace, "features", lambda *args, panel=panel: panel)
-    calculation_dates = dates[dates >= "2025-02-05"] if reference == "S011-v1" else dates
+    if reference == "S011-v1":
+        calculation_dates = dates[dates >= "2025-02-05"]
+    elif reference == "S002-v1":
+        # Its real FULL_PUBLICATION_REPLAY scope requests decision dates after
+        # 300-session indicator warm-up; continuous intent starts in that input
+        # publication, not at the first requested output row.
+        calculation_dates = dates[-60:]
+    else:
+        calculation_dates = dates
     return inputs, calculation_dates
 
 
@@ -148,6 +156,7 @@ def test_synthetic_kernel_equivalence_retains_market_intent_across_windows(prepa
     sessions = context.sessions
     expected = (old.calculate_history(inputs, sessions) if mode is SignalHistoryMode.CONTINUOUS
                 else old.calculate_window_history(inputs, sessions))
+    expected = expected.reindex(sessions)
     actual = new.calculate_context_history(inputs, context)
     pd.testing.assert_frame_equal(actual, new.calculate_context_history(inputs, context))
     pd.testing.assert_frame_equal(actual, expected, check_names=False, check_freq=False, check_index_type=False)

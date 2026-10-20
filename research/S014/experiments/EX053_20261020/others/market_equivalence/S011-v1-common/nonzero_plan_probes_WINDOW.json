@@ -1,0 +1,1372 @@
+{
+  "cases": [
+    {
+      "signal_date": "2026-05-29",
+      "trading_date": "2026-06-01",
+      "category": "ENTRY",
+      "quantity": 600,
+      "cash": "12345.67",
+      "cycle_target": 600,
+      "status": "EXACT_PUBLIC_PLAN",
+      "valuation": {
+        "basis": "UNADJUSTED",
+        "raw_signal_close": 2.06
+      },
+      "old": {
+        "strategy": {
+          "strategy_id": "S011",
+          "reference_id": "S011-v1",
+          "release_hash": "369b89c170906d74ac884cd1f9b08d22e5ba773998d8be1b58086784e4c12f2c",
+          "runtime_sha256": "7ca3f70a3487c715ab0ec3b561c347dc0ff68c65027ebb4c5107a97de13ab20d",
+          "symbol": "159326.SZ"
+        },
+        "signal_identity": "985957b304f70ad60abcb43e52517ee8d01d2980cc73ca25e64d794f814b2463",
+        "plan_identity": "3944d65913917317bcc39f1e770a7b09d371f93e2340895b8d0c29ad69432d17",
+        "symbol": "159326.SZ",
+        "signal_date": "2026-05-29",
+        "trading_date": "2026-06-01",
+        "generated_at": "2026-05-29T20:31:00+08:00",
+        "expected_portfolio_revision": 7,
+        "expected_state_revision": 11,
+        "actual_quantity": 600,
+        "target_quantity": 600,
+        "cycle_target_quantity": 600,
+        "target_position": 1.0,
+        "action": "HOLD",
+        "plan_mode": "NONE",
+        "capital_mode": "full_available_cash",
+        "allocation_fraction": "1.0",
+        "orders": [],
+        "legs": [],
+        "available_cash": "12345.67",
+        "fee_rate": "0.001",
+        "estimated_order_cost": "0.0",
+        "unallocated_cash": "12345.67",
+        "references": {
+          "signal_price": "2.06",
+          "execution_price": "2.06",
+          "signal_basis": "ADJUSTED_CLOSE",
+          "execution_basis": "UNADJUSTED_CLOSE",
+          "pricing": {
+            "basis": "UNADJUSTED",
+            "anchor_date": null,
+            "anchor_factor": null
+          },
+          "price_scale": "1"
+        },
+        "required_capabilities": {
+          "order_types": [],
+          "checkpoints": []
+        },
+        "input_identities": {
+          "bars": "b58e075dba801ecf07d0bfacee95b99b710a5c55d19d09652621ce4aa88142ad",
+          "calendar": "2e3be9255fb491d959b6c13a26c004511af54834d08a7fe1f3b395bb774de70c",
+          "daily": "e4226e7592bf111337f6cd2f4203d5bdeb16c3f39656de87999775e293be3723",
+          "execution": "7dd33f31b8d669697c09c8092ee27feba020bc1c07daae8b454b80808865fb28",
+          "market": "6e66c58dc1fe21567b6f7c3bbd2136e9419660e93669404aa43a1a82e0f37133",
+          "spx": "2a338a048087cc3cf280ab84aad3f4e9ac5ddd109ec51d6a970f9a31da52cb51"
+        },
+        "price_identities": {
+          "adjusted_daily": "4434fa65f4e2c298f88f5e3c1276079abb568d8f6af1930643fc1d95ab98bef4",
+          "execution_daily": "e4e9c5b914435b2942eda85cb6c258f58ebdc926b7e0a0da3f6d7b26110fd3ad",
+          "pricing": "57570ee49e9e42a4a283cd8f791883931cf45a5aae7a79634584e768a184a407"
+        },
+        "evidence": {
+          "action": "BUY",
+          "intent_age": 0,
+          "market": -0.004495531360024674,
+          "reason": "PRESSURE_ENTRY",
+          "risk5": 0.02821991862660514,
+          "score": 0.34230769230769226,
+          "signal_date": "2026-05-29",
+          "spx": 0.0058,
+          "spx_decision_time": "2026-05-29",
+          "spx_source_time": "2026-05-28",
+          "spx_staleness_days": 1,
+          "tail": -0.011990407673860837
+        }
+      },
+      "new": {
+        "strategy": {
+          "strategy_id": "S011",
+          "reference_id": "S011-C9901",
+          "release_hash": "15b4d77bfef79ec4874ef62eb475f081eb6b7ff3e8f76e23bd67fdaf75f09876",
+          "runtime_sha256": "b5a104ed1e42b9100885ce784fb412987913cfcc56f6950152b5a39c9acdcbef",
+          "symbol": "159326.SZ"
+        },
+        "signal_identity": "177a44c55fb19999b1d5c26f2923b05762dd0542077b4483fc56061caa004b59",
+        "plan_identity": "0ef87140bbe5cf6c5346416603708c898460bfd8f3cc7ad800c4783e48df664f",
+        "symbol": "159326.SZ",
+        "signal_date": "2026-05-29",
+        "trading_date": "2026-06-01",
+        "generated_at": "2026-05-29T20:31:00+08:00",
+        "expected_portfolio_revision": 7,
+        "expected_state_revision": 11,
+        "actual_quantity": 600,
+        "target_quantity": 600,
+        "cycle_target_quantity": 600,
+        "target_position": 1.0,
+        "action": "HOLD",
+        "plan_mode": "NONE",
+        "capital_mode": "full_available_cash",
+        "allocation_fraction": "1.0",
+        "orders": [],
+        "legs": [],
+        "available_cash": "12345.67",
+        "fee_rate": "0.001",
+        "estimated_order_cost": "0.0",
+        "unallocated_cash": "12345.67",
+        "references": {
+          "signal_price": "2.06",
+          "execution_price": "2.06",
+          "signal_basis": "ADJUSTED_CLOSE",
+          "execution_basis": "UNADJUSTED_CLOSE",
+          "pricing": {
+            "basis": "UNADJUSTED",
+            "anchor_date": null,
+            "anchor_factor": null
+          },
+          "price_scale": "1"
+        },
+        "required_capabilities": {
+          "order_types": [],
+          "checkpoints": []
+        },
+        "input_identities": {
+          "bars": "b58e075dba801ecf07d0bfacee95b99b710a5c55d19d09652621ce4aa88142ad",
+          "calendar": "2e3be9255fb491d959b6c13a26c004511af54834d08a7fe1f3b395bb774de70c",
+          "daily": "e4226e7592bf111337f6cd2f4203d5bdeb16c3f39656de87999775e293be3723",
+          "execution": "7dd33f31b8d669697c09c8092ee27feba020bc1c07daae8b454b80808865fb28",
+          "market": "6e66c58dc1fe21567b6f7c3bbd2136e9419660e93669404aa43a1a82e0f37133",
+          "spx": "2a338a048087cc3cf280ab84aad3f4e9ac5ddd109ec51d6a970f9a31da52cb51"
+        },
+        "price_identities": {
+          "adjusted_daily": "4434fa65f4e2c298f88f5e3c1276079abb568d8f6af1930643fc1d95ab98bef4",
+          "execution_daily": "e4e9c5b914435b2942eda85cb6c258f58ebdc926b7e0a0da3f6d7b26110fd3ad",
+          "pricing": "57570ee49e9e42a4a283cd8f791883931cf45a5aae7a79634584e768a184a407"
+        },
+        "evidence": {
+          "action": "BUY",
+          "intent_age": 0,
+          "market": -0.004495531360024674,
+          "reason": "PRESSURE_ENTRY",
+          "risk5": 0.02821991862660514,
+          "score": 0.34230769230769226,
+          "signal_date": "2026-05-29",
+          "spx": 0.0058,
+          "spx_decision_time": "2026-05-29",
+          "spx_source_time": "2026-05-28",
+          "spx_staleness_days": 1,
+          "tail": -0.011990407673860837
+        }
+      }
+    },
+    {
+      "signal_date": "2026-05-29",
+      "trading_date": "2026-06-01",
+      "category": "ENTRY",
+      "quantity": 200,
+      "cash": "99.50",
+      "cycle_target": 600,
+      "status": "EXACT_PUBLIC_PLAN",
+      "valuation": {
+        "basis": "UNADJUSTED",
+        "raw_signal_close": 2.06
+      },
+      "old": {
+        "strategy": {
+          "strategy_id": "S011",
+          "reference_id": "S011-v1",
+          "release_hash": "369b89c170906d74ac884cd1f9b08d22e5ba773998d8be1b58086784e4c12f2c",
+          "runtime_sha256": "7ca3f70a3487c715ab0ec3b561c347dc0ff68c65027ebb4c5107a97de13ab20d",
+          "symbol": "159326.SZ"
+        },
+        "signal_identity": "985957b304f70ad60abcb43e52517ee8d01d2980cc73ca25e64d794f814b2463",
+        "plan_identity": "959942896241343f3029cbcc1ea05b3ffddb9a729e0afad3ca792e177e6ed6d6",
+        "symbol": "159326.SZ",
+        "signal_date": "2026-05-29",
+        "trading_date": "2026-06-01",
+        "generated_at": "2026-05-29T20:31:00+08:00",
+        "expected_portfolio_revision": 7,
+        "expected_state_revision": 11,
+        "actual_quantity": 200,
+        "target_quantity": 200,
+        "cycle_target_quantity": 600,
+        "target_position": 1.0,
+        "action": "HOLD",
+        "plan_mode": "NONE",
+        "capital_mode": "full_available_cash",
+        "allocation_fraction": "1.0",
+        "orders": [],
+        "legs": [],
+        "available_cash": "99.50",
+        "fee_rate": "0.001",
+        "estimated_order_cost": "0.0",
+        "unallocated_cash": "99.5",
+        "references": {
+          "signal_price": "2.06",
+          "execution_price": "2.06",
+          "signal_basis": "ADJUSTED_CLOSE",
+          "execution_basis": "UNADJUSTED_CLOSE",
+          "pricing": {
+            "basis": "UNADJUSTED",
+            "anchor_date": null,
+            "anchor_factor": null
+          },
+          "price_scale": "1"
+        },
+        "required_capabilities": {
+          "order_types": [],
+          "checkpoints": []
+        },
+        "input_identities": {
+          "bars": "b58e075dba801ecf07d0bfacee95b99b710a5c55d19d09652621ce4aa88142ad",
+          "calendar": "2e3be9255fb491d959b6c13a26c004511af54834d08a7fe1f3b395bb774de70c",
+          "daily": "e4226e7592bf111337f6cd2f4203d5bdeb16c3f39656de87999775e293be3723",
+          "execution": "7dd33f31b8d669697c09c8092ee27feba020bc1c07daae8b454b80808865fb28",
+          "market": "6e66c58dc1fe21567b6f7c3bbd2136e9419660e93669404aa43a1a82e0f37133",
+          "spx": "2a338a048087cc3cf280ab84aad3f4e9ac5ddd109ec51d6a970f9a31da52cb51"
+        },
+        "price_identities": {
+          "adjusted_daily": "4434fa65f4e2c298f88f5e3c1276079abb568d8f6af1930643fc1d95ab98bef4",
+          "execution_daily": "e4e9c5b914435b2942eda85cb6c258f58ebdc926b7e0a0da3f6d7b26110fd3ad",
+          "pricing": "57570ee49e9e42a4a283cd8f791883931cf45a5aae7a79634584e768a184a407"
+        },
+        "evidence": {
+          "action": "BUY",
+          "intent_age": 0,
+          "market": -0.004495531360024674,
+          "reason": "PRESSURE_ENTRY",
+          "risk5": 0.02821991862660514,
+          "score": 0.34230769230769226,
+          "signal_date": "2026-05-29",
+          "spx": 0.0058,
+          "spx_decision_time": "2026-05-29",
+          "spx_source_time": "2026-05-28",
+          "spx_staleness_days": 1,
+          "tail": -0.011990407673860837
+        }
+      },
+      "new": {
+        "strategy": {
+          "strategy_id": "S011",
+          "reference_id": "S011-C9901",
+          "release_hash": "15b4d77bfef79ec4874ef62eb475f081eb6b7ff3e8f76e23bd67fdaf75f09876",
+          "runtime_sha256": "b5a104ed1e42b9100885ce784fb412987913cfcc56f6950152b5a39c9acdcbef",
+          "symbol": "159326.SZ"
+        },
+        "signal_identity": "177a44c55fb19999b1d5c26f2923b05762dd0542077b4483fc56061caa004b59",
+        "plan_identity": "c02775234accbf21aa7820e99769f70c515928615e6151aa11a75ac7defaad3e",
+        "symbol": "159326.SZ",
+        "signal_date": "2026-05-29",
+        "trading_date": "2026-06-01",
+        "generated_at": "2026-05-29T20:31:00+08:00",
+        "expected_portfolio_revision": 7,
+        "expected_state_revision": 11,
+        "actual_quantity": 200,
+        "target_quantity": 200,
+        "cycle_target_quantity": 600,
+        "target_position": 1.0,
+        "action": "HOLD",
+        "plan_mode": "NONE",
+        "capital_mode": "full_available_cash",
+        "allocation_fraction": "1.0",
+        "orders": [],
+        "legs": [],
+        "available_cash": "99.50",
+        "fee_rate": "0.001",
+        "estimated_order_cost": "0.0",
+        "unallocated_cash": "99.5",
+        "references": {
+          "signal_price": "2.06",
+          "execution_price": "2.06",
+          "signal_basis": "ADJUSTED_CLOSE",
+          "execution_basis": "UNADJUSTED_CLOSE",
+          "pricing": {
+            "basis": "UNADJUSTED",
+            "anchor_date": null,
+            "anchor_factor": null
+          },
+          "price_scale": "1"
+        },
+        "required_capabilities": {
+          "order_types": [],
+          "checkpoints": []
+        },
+        "input_identities": {
+          "bars": "b58e075dba801ecf07d0bfacee95b99b710a5c55d19d09652621ce4aa88142ad",
+          "calendar": "2e3be9255fb491d959b6c13a26c004511af54834d08a7fe1f3b395bb774de70c",
+          "daily": "e4226e7592bf111337f6cd2f4203d5bdeb16c3f39656de87999775e293be3723",
+          "execution": "7dd33f31b8d669697c09c8092ee27feba020bc1c07daae8b454b80808865fb28",
+          "market": "6e66c58dc1fe21567b6f7c3bbd2136e9419660e93669404aa43a1a82e0f37133",
+          "spx": "2a338a048087cc3cf280ab84aad3f4e9ac5ddd109ec51d6a970f9a31da52cb51"
+        },
+        "price_identities": {
+          "adjusted_daily": "4434fa65f4e2c298f88f5e3c1276079abb568d8f6af1930643fc1d95ab98bef4",
+          "execution_daily": "e4e9c5b914435b2942eda85cb6c258f58ebdc926b7e0a0da3f6d7b26110fd3ad",
+          "pricing": "57570ee49e9e42a4a283cd8f791883931cf45a5aae7a79634584e768a184a407"
+        },
+        "evidence": {
+          "action": "BUY",
+          "intent_age": 0,
+          "market": -0.004495531360024674,
+          "reason": "PRESSURE_ENTRY",
+          "risk5": 0.02821991862660514,
+          "score": 0.34230769230769226,
+          "signal_date": "2026-05-29",
+          "spx": 0.0058,
+          "spx_decision_time": "2026-05-29",
+          "spx_source_time": "2026-05-28",
+          "spx_staleness_days": 1,
+          "tail": -0.011990407673860837
+        }
+      }
+    },
+    {
+      "signal_date": "2026-06-02",
+      "trading_date": "2026-06-03",
+      "category": "EXIT",
+      "quantity": 600,
+      "cash": "12345.67",
+      "cycle_target": 600,
+      "status": "EXACT_PUBLIC_PLAN",
+      "valuation": {
+        "basis": "UNADJUSTED",
+        "raw_signal_close": 2.073
+      },
+      "old": {
+        "strategy": {
+          "strategy_id": "S011",
+          "reference_id": "S011-v1",
+          "release_hash": "369b89c170906d74ac884cd1f9b08d22e5ba773998d8be1b58086784e4c12f2c",
+          "runtime_sha256": "7ca3f70a3487c715ab0ec3b561c347dc0ff68c65027ebb4c5107a97de13ab20d",
+          "symbol": "159326.SZ"
+        },
+        "signal_identity": "d36bf9197e73fac4e7de198f12630ed676d2b191ea869d51be8b53e3c8678610",
+        "plan_identity": "fda8537af865396df25abb6097b00042d74b0f4f357fd4ac94790f9b8aa5cc64",
+        "symbol": "159326.SZ",
+        "signal_date": "2026-06-02",
+        "trading_date": "2026-06-03",
+        "generated_at": "2026-06-02T20:31:00+08:00",
+        "expected_portfolio_revision": 7,
+        "expected_state_revision": 11,
+        "actual_quantity": 600,
+        "target_quantity": 0,
+        "cycle_target_quantity": 600,
+        "target_position": 0.0,
+        "action": "SELL",
+        "plan_mode": "NONE",
+        "capital_mode": "full_available_cash",
+        "allocation_fraction": "1.0",
+        "orders": [
+          {
+            "side": "SELL",
+            "quantity": 600,
+            "order_type": "MARKET",
+            "limit_price": "2.073"
+          }
+        ],
+        "legs": [],
+        "available_cash": "12345.67",
+        "fee_rate": "0.001",
+        "estimated_order_cost": "0.0",
+        "unallocated_cash": "12345.67",
+        "references": {
+          "signal_price": "2.073",
+          "execution_price": "2.073",
+          "signal_basis": "ADJUSTED_CLOSE",
+          "execution_basis": "UNADJUSTED_CLOSE",
+          "pricing": {
+            "basis": "UNADJUSTED",
+            "anchor_date": null,
+            "anchor_factor": null
+          },
+          "price_scale": "1"
+        },
+        "required_capabilities": {
+          "order_types": [
+            "MARKET"
+          ],
+          "checkpoints": []
+        },
+        "input_identities": {
+          "bars": "b58e075dba801ecf07d0bfacee95b99b710a5c55d19d09652621ce4aa88142ad",
+          "calendar": "2e3be9255fb491d959b6c13a26c004511af54834d08a7fe1f3b395bb774de70c",
+          "daily": "e4226e7592bf111337f6cd2f4203d5bdeb16c3f39656de87999775e293be3723",
+          "execution": "7dd33f31b8d669697c09c8092ee27feba020bc1c07daae8b454b80808865fb28",
+          "market": "6e66c58dc1fe21567b6f7c3bbd2136e9419660e93669404aa43a1a82e0f37133",
+          "spx": "2a338a048087cc3cf280ab84aad3f4e9ac5ddd109ec51d6a970f9a31da52cb51"
+        },
+        "price_identities": {
+          "adjusted_daily": "4434fa65f4e2c298f88f5e3c1276079abb568d8f6af1930643fc1d95ab98bef4",
+          "execution_daily": "e4e9c5b914435b2942eda85cb6c258f58ebdc926b7e0a0da3f6d7b26110fd3ad",
+          "pricing": "57570ee49e9e42a4a283cd8f791883931cf45a5aae7a79634584e768a184a407"
+        },
+        "evidence": {
+          "action": "SELL",
+          "intent_age": 2,
+          "market": 0.014512756098171264,
+          "reason": "PRESSURE_RELEASED",
+          "risk5": 0.03178641030834572,
+          "score": 0.0007326007326007352,
+          "signal_date": "2026-06-02",
+          "spx": 0.0026,
+          "spx_decision_time": "2026-06-02",
+          "spx_source_time": "2026-06-01",
+          "spx_staleness_days": 1,
+          "tail": -0.004800768122899757
+        }
+      },
+      "new": {
+        "strategy": {
+          "strategy_id": "S011",
+          "reference_id": "S011-C9901",
+          "release_hash": "15b4d77bfef79ec4874ef62eb475f081eb6b7ff3e8f76e23bd67fdaf75f09876",
+          "runtime_sha256": "b5a104ed1e42b9100885ce784fb412987913cfcc56f6950152b5a39c9acdcbef",
+          "symbol": "159326.SZ"
+        },
+        "signal_identity": "91562894b18032b8327ec82b75f95ca78214d327067cdab2ee630d823c77d0fb",
+        "plan_identity": "11230c4f89bed6605d843e4b7ff6f5c6189f9b7566c8959c91e90be7ba209ad3",
+        "symbol": "159326.SZ",
+        "signal_date": "2026-06-02",
+        "trading_date": "2026-06-03",
+        "generated_at": "2026-06-02T20:31:00+08:00",
+        "expected_portfolio_revision": 7,
+        "expected_state_revision": 11,
+        "actual_quantity": 600,
+        "target_quantity": 0,
+        "cycle_target_quantity": 600,
+        "target_position": 0.0,
+        "action": "SELL",
+        "plan_mode": "NONE",
+        "capital_mode": "full_available_cash",
+        "allocation_fraction": "1.0",
+        "orders": [
+          {
+            "side": "SELL",
+            "quantity": 600,
+            "order_type": "MARKET",
+            "limit_price": "2.073"
+          }
+        ],
+        "legs": [],
+        "available_cash": "12345.67",
+        "fee_rate": "0.001",
+        "estimated_order_cost": "0.0",
+        "unallocated_cash": "12345.67",
+        "references": {
+          "signal_price": "2.073",
+          "execution_price": "2.073",
+          "signal_basis": "ADJUSTED_CLOSE",
+          "execution_basis": "UNADJUSTED_CLOSE",
+          "pricing": {
+            "basis": "UNADJUSTED",
+            "anchor_date": null,
+            "anchor_factor": null
+          },
+          "price_scale": "1"
+        },
+        "required_capabilities": {
+          "order_types": [
+            "MARKET"
+          ],
+          "checkpoints": []
+        },
+        "input_identities": {
+          "bars": "b58e075dba801ecf07d0bfacee95b99b710a5c55d19d09652621ce4aa88142ad",
+          "calendar": "2e3be9255fb491d959b6c13a26c004511af54834d08a7fe1f3b395bb774de70c",
+          "daily": "e4226e7592bf111337f6cd2f4203d5bdeb16c3f39656de87999775e293be3723",
+          "execution": "7dd33f31b8d669697c09c8092ee27feba020bc1c07daae8b454b80808865fb28",
+          "market": "6e66c58dc1fe21567b6f7c3bbd2136e9419660e93669404aa43a1a82e0f37133",
+          "spx": "2a338a048087cc3cf280ab84aad3f4e9ac5ddd109ec51d6a970f9a31da52cb51"
+        },
+        "price_identities": {
+          "adjusted_daily": "4434fa65f4e2c298f88f5e3c1276079abb568d8f6af1930643fc1d95ab98bef4",
+          "execution_daily": "e4e9c5b914435b2942eda85cb6c258f58ebdc926b7e0a0da3f6d7b26110fd3ad",
+          "pricing": "57570ee49e9e42a4a283cd8f791883931cf45a5aae7a79634584e768a184a407"
+        },
+        "evidence": {
+          "action": "SELL",
+          "intent_age": 2,
+          "market": 0.014512756098171264,
+          "reason": "PRESSURE_RELEASED",
+          "risk5": 0.03178641030834572,
+          "score": 0.0007326007326007352,
+          "signal_date": "2026-06-02",
+          "spx": 0.0026,
+          "spx_decision_time": "2026-06-02",
+          "spx_source_time": "2026-06-01",
+          "spx_staleness_days": 1,
+          "tail": -0.004800768122899757
+        }
+      }
+    },
+    {
+      "signal_date": "2026-06-02",
+      "trading_date": "2026-06-03",
+      "category": "EXIT",
+      "quantity": 200,
+      "cash": "99.50",
+      "cycle_target": 600,
+      "status": "EXACT_PUBLIC_PLAN",
+      "valuation": {
+        "basis": "UNADJUSTED",
+        "raw_signal_close": 2.073
+      },
+      "old": {
+        "strategy": {
+          "strategy_id": "S011",
+          "reference_id": "S011-v1",
+          "release_hash": "369b89c170906d74ac884cd1f9b08d22e5ba773998d8be1b58086784e4c12f2c",
+          "runtime_sha256": "7ca3f70a3487c715ab0ec3b561c347dc0ff68c65027ebb4c5107a97de13ab20d",
+          "symbol": "159326.SZ"
+        },
+        "signal_identity": "d36bf9197e73fac4e7de198f12630ed676d2b191ea869d51be8b53e3c8678610",
+        "plan_identity": "a1ae5c4893d04db9a8a9412c9ae3078c778931d283f6c82488e91c7766457812",
+        "symbol": "159326.SZ",
+        "signal_date": "2026-06-02",
+        "trading_date": "2026-06-03",
+        "generated_at": "2026-06-02T20:31:00+08:00",
+        "expected_portfolio_revision": 7,
+        "expected_state_revision": 11,
+        "actual_quantity": 200,
+        "target_quantity": 0,
+        "cycle_target_quantity": 600,
+        "target_position": 0.0,
+        "action": "SELL",
+        "plan_mode": "NONE",
+        "capital_mode": "full_available_cash",
+        "allocation_fraction": "1.0",
+        "orders": [
+          {
+            "side": "SELL",
+            "quantity": 200,
+            "order_type": "MARKET",
+            "limit_price": "2.073"
+          }
+        ],
+        "legs": [],
+        "available_cash": "99.50",
+        "fee_rate": "0.001",
+        "estimated_order_cost": "0.0",
+        "unallocated_cash": "99.5",
+        "references": {
+          "signal_price": "2.073",
+          "execution_price": "2.073",
+          "signal_basis": "ADJUSTED_CLOSE",
+          "execution_basis": "UNADJUSTED_CLOSE",
+          "pricing": {
+            "basis": "UNADJUSTED",
+            "anchor_date": null,
+            "anchor_factor": null
+          },
+          "price_scale": "1"
+        },
+        "required_capabilities": {
+          "order_types": [
+            "MARKET"
+          ],
+          "checkpoints": []
+        },
+        "input_identities": {
+          "bars": "b58e075dba801ecf07d0bfacee95b99b710a5c55d19d09652621ce4aa88142ad",
+          "calendar": "2e3be9255fb491d959b6c13a26c004511af54834d08a7fe1f3b395bb774de70c",
+          "daily": "e4226e7592bf111337f6cd2f4203d5bdeb16c3f39656de87999775e293be3723",
+          "execution": "7dd33f31b8d669697c09c8092ee27feba020bc1c07daae8b454b80808865fb28",
+          "market": "6e66c58dc1fe21567b6f7c3bbd2136e9419660e93669404aa43a1a82e0f37133",
+          "spx": "2a338a048087cc3cf280ab84aad3f4e9ac5ddd109ec51d6a970f9a31da52cb51"
+        },
+        "price_identities": {
+          "adjusted_daily": "4434fa65f4e2c298f88f5e3c1276079abb568d8f6af1930643fc1d95ab98bef4",
+          "execution_daily": "e4e9c5b914435b2942eda85cb6c258f58ebdc926b7e0a0da3f6d7b26110fd3ad",
+          "pricing": "57570ee49e9e42a4a283cd8f791883931cf45a5aae7a79634584e768a184a407"
+        },
+        "evidence": {
+          "action": "SELL",
+          "intent_age": 2,
+          "market": 0.014512756098171264,
+          "reason": "PRESSURE_RELEASED",
+          "risk5": 0.03178641030834572,
+          "score": 0.0007326007326007352,
+          "signal_date": "2026-06-02",
+          "spx": 0.0026,
+          "spx_decision_time": "2026-06-02",
+          "spx_source_time": "2026-06-01",
+          "spx_staleness_days": 1,
+          "tail": -0.004800768122899757
+        }
+      },
+      "new": {
+        "strategy": {
+          "strategy_id": "S011",
+          "reference_id": "S011-C9901",
+          "release_hash": "15b4d77bfef79ec4874ef62eb475f081eb6b7ff3e8f76e23bd67fdaf75f09876",
+          "runtime_sha256": "b5a104ed1e42b9100885ce784fb412987913cfcc56f6950152b5a39c9acdcbef",
+          "symbol": "159326.SZ"
+        },
+        "signal_identity": "91562894b18032b8327ec82b75f95ca78214d327067cdab2ee630d823c77d0fb",
+        "plan_identity": "2534574a92beaf15ed6e235522e80e089f68860dfdea14404a9dedab41aae474",
+        "symbol": "159326.SZ",
+        "signal_date": "2026-06-02",
+        "trading_date": "2026-06-03",
+        "generated_at": "2026-06-02T20:31:00+08:00",
+        "expected_portfolio_revision": 7,
+        "expected_state_revision": 11,
+        "actual_quantity": 200,
+        "target_quantity": 0,
+        "cycle_target_quantity": 600,
+        "target_position": 0.0,
+        "action": "SELL",
+        "plan_mode": "NONE",
+        "capital_mode": "full_available_cash",
+        "allocation_fraction": "1.0",
+        "orders": [
+          {
+            "side": "SELL",
+            "quantity": 200,
+            "order_type": "MARKET",
+            "limit_price": "2.073"
+          }
+        ],
+        "legs": [],
+        "available_cash": "99.50",
+        "fee_rate": "0.001",
+        "estimated_order_cost": "0.0",
+        "unallocated_cash": "99.5",
+        "references": {
+          "signal_price": "2.073",
+          "execution_price": "2.073",
+          "signal_basis": "ADJUSTED_CLOSE",
+          "execution_basis": "UNADJUSTED_CLOSE",
+          "pricing": {
+            "basis": "UNADJUSTED",
+            "anchor_date": null,
+            "anchor_factor": null
+          },
+          "price_scale": "1"
+        },
+        "required_capabilities": {
+          "order_types": [
+            "MARKET"
+          ],
+          "checkpoints": []
+        },
+        "input_identities": {
+          "bars": "b58e075dba801ecf07d0bfacee95b99b710a5c55d19d09652621ce4aa88142ad",
+          "calendar": "2e3be9255fb491d959b6c13a26c004511af54834d08a7fe1f3b395bb774de70c",
+          "daily": "e4226e7592bf111337f6cd2f4203d5bdeb16c3f39656de87999775e293be3723",
+          "execution": "7dd33f31b8d669697c09c8092ee27feba020bc1c07daae8b454b80808865fb28",
+          "market": "6e66c58dc1fe21567b6f7c3bbd2136e9419660e93669404aa43a1a82e0f37133",
+          "spx": "2a338a048087cc3cf280ab84aad3f4e9ac5ddd109ec51d6a970f9a31da52cb51"
+        },
+        "price_identities": {
+          "adjusted_daily": "4434fa65f4e2c298f88f5e3c1276079abb568d8f6af1930643fc1d95ab98bef4",
+          "execution_daily": "e4e9c5b914435b2942eda85cb6c258f58ebdc926b7e0a0da3f6d7b26110fd3ad",
+          "pricing": "57570ee49e9e42a4a283cd8f791883931cf45a5aae7a79634584e768a184a407"
+        },
+        "evidence": {
+          "action": "SELL",
+          "intent_age": 2,
+          "market": 0.014512756098171264,
+          "reason": "PRESSURE_RELEASED",
+          "risk5": 0.03178641030834572,
+          "score": 0.0007326007326007352,
+          "signal_date": "2026-06-02",
+          "spx": 0.0026,
+          "spx_decision_time": "2026-06-02",
+          "spx_source_time": "2026-06-01",
+          "spx_staleness_days": 1,
+          "tail": -0.004800768122899757
+        }
+      }
+    },
+    {
+      "signal_date": "2026-06-01",
+      "trading_date": "2026-06-02",
+      "category": "HOLD_POSITION",
+      "quantity": 600,
+      "cash": "12345.67",
+      "cycle_target": 600,
+      "status": "EXACT_PUBLIC_PLAN",
+      "valuation": {
+        "basis": "UNADJUSTED",
+        "raw_signal_close": 2.062
+      },
+      "old": {
+        "strategy": {
+          "strategy_id": "S011",
+          "reference_id": "S011-v1",
+          "release_hash": "369b89c170906d74ac884cd1f9b08d22e5ba773998d8be1b58086784e4c12f2c",
+          "runtime_sha256": "7ca3f70a3487c715ab0ec3b561c347dc0ff68c65027ebb4c5107a97de13ab20d",
+          "symbol": "159326.SZ"
+        },
+        "signal_identity": "413f3d244f8ce579062bdbeffd8942e312651199945a4fdeb645508903080553",
+        "plan_identity": "a8720fbfd21fafbfb8efc15ce7c42197145095b01b2185a9195b43a082af806c",
+        "symbol": "159326.SZ",
+        "signal_date": "2026-06-01",
+        "trading_date": "2026-06-02",
+        "generated_at": "2026-06-01T20:31:00+08:00",
+        "expected_portfolio_revision": 7,
+        "expected_state_revision": 11,
+        "actual_quantity": 600,
+        "target_quantity": 600,
+        "cycle_target_quantity": 600,
+        "target_position": 1.0,
+        "action": "HOLD",
+        "plan_mode": "NONE",
+        "capital_mode": "full_available_cash",
+        "allocation_fraction": "1.0",
+        "orders": [],
+        "legs": [],
+        "available_cash": "12345.67",
+        "fee_rate": "0.001",
+        "estimated_order_cost": "0.0",
+        "unallocated_cash": "12345.67",
+        "references": {
+          "signal_price": "2.062",
+          "execution_price": "2.062",
+          "signal_basis": "ADJUSTED_CLOSE",
+          "execution_basis": "UNADJUSTED_CLOSE",
+          "pricing": {
+            "basis": "UNADJUSTED",
+            "anchor_date": null,
+            "anchor_factor": null
+          },
+          "price_scale": "1"
+        },
+        "required_capabilities": {
+          "order_types": [],
+          "checkpoints": []
+        },
+        "input_identities": {
+          "bars": "b58e075dba801ecf07d0bfacee95b99b710a5c55d19d09652621ce4aa88142ad",
+          "calendar": "2e3be9255fb491d959b6c13a26c004511af54834d08a7fe1f3b395bb774de70c",
+          "daily": "e4226e7592bf111337f6cd2f4203d5bdeb16c3f39656de87999775e293be3723",
+          "execution": "7dd33f31b8d669697c09c8092ee27feba020bc1c07daae8b454b80808865fb28",
+          "market": "6e66c58dc1fe21567b6f7c3bbd2136e9419660e93669404aa43a1a82e0f37133",
+          "spx": "2a338a048087cc3cf280ab84aad3f4e9ac5ddd109ec51d6a970f9a31da52cb51"
+        },
+        "price_identities": {
+          "adjusted_daily": "4434fa65f4e2c298f88f5e3c1276079abb568d8f6af1930643fc1d95ab98bef4",
+          "execution_daily": "e4e9c5b914435b2942eda85cb6c258f58ebdc926b7e0a0da3f6d7b26110fd3ad",
+          "pricing": "57570ee49e9e42a4a283cd8f791883931cf45a5aae7a79634584e768a184a407"
+        },
+        "evidence": {
+          "action": "HOLD",
+          "intent_age": 1,
+          "market": -0.009784242267255161,
+          "reason": "HOLD",
+          "risk5": 0.03170582235681198,
+          "score": 0.27692307692307694,
+          "signal_date": "2026-06-01",
+          "spx": 0.0022,
+          "spx_decision_time": "2026-06-01",
+          "spx_source_time": "2026-05-29",
+          "spx_staleness_days": 3,
+          "tail": -0.002418964683115754
+        }
+      },
+      "new": {
+        "strategy": {
+          "strategy_id": "S011",
+          "reference_id": "S011-C9901",
+          "release_hash": "15b4d77bfef79ec4874ef62eb475f081eb6b7ff3e8f76e23bd67fdaf75f09876",
+          "runtime_sha256": "b5a104ed1e42b9100885ce784fb412987913cfcc56f6950152b5a39c9acdcbef",
+          "symbol": "159326.SZ"
+        },
+        "signal_identity": "c401a61f1f9905c1fd236d6756b91fd20cfde543f3f705af68f382abe9d3084a",
+        "plan_identity": "e7a5f143e5aa5983bba157cbffa193d54cf14953d39872ca91271e3779086317",
+        "symbol": "159326.SZ",
+        "signal_date": "2026-06-01",
+        "trading_date": "2026-06-02",
+        "generated_at": "2026-06-01T20:31:00+08:00",
+        "expected_portfolio_revision": 7,
+        "expected_state_revision": 11,
+        "actual_quantity": 600,
+        "target_quantity": 600,
+        "cycle_target_quantity": 600,
+        "target_position": 1.0,
+        "action": "HOLD",
+        "plan_mode": "NONE",
+        "capital_mode": "full_available_cash",
+        "allocation_fraction": "1.0",
+        "orders": [],
+        "legs": [],
+        "available_cash": "12345.67",
+        "fee_rate": "0.001",
+        "estimated_order_cost": "0.0",
+        "unallocated_cash": "12345.67",
+        "references": {
+          "signal_price": "2.062",
+          "execution_price": "2.062",
+          "signal_basis": "ADJUSTED_CLOSE",
+          "execution_basis": "UNADJUSTED_CLOSE",
+          "pricing": {
+            "basis": "UNADJUSTED",
+            "anchor_date": null,
+            "anchor_factor": null
+          },
+          "price_scale": "1"
+        },
+        "required_capabilities": {
+          "order_types": [],
+          "checkpoints": []
+        },
+        "input_identities": {
+          "bars": "b58e075dba801ecf07d0bfacee95b99b710a5c55d19d09652621ce4aa88142ad",
+          "calendar": "2e3be9255fb491d959b6c13a26c004511af54834d08a7fe1f3b395bb774de70c",
+          "daily": "e4226e7592bf111337f6cd2f4203d5bdeb16c3f39656de87999775e293be3723",
+          "execution": "7dd33f31b8d669697c09c8092ee27feba020bc1c07daae8b454b80808865fb28",
+          "market": "6e66c58dc1fe21567b6f7c3bbd2136e9419660e93669404aa43a1a82e0f37133",
+          "spx": "2a338a048087cc3cf280ab84aad3f4e9ac5ddd109ec51d6a970f9a31da52cb51"
+        },
+        "price_identities": {
+          "adjusted_daily": "4434fa65f4e2c298f88f5e3c1276079abb568d8f6af1930643fc1d95ab98bef4",
+          "execution_daily": "e4e9c5b914435b2942eda85cb6c258f58ebdc926b7e0a0da3f6d7b26110fd3ad",
+          "pricing": "57570ee49e9e42a4a283cd8f791883931cf45a5aae7a79634584e768a184a407"
+        },
+        "evidence": {
+          "action": "HOLD",
+          "intent_age": 1,
+          "market": -0.009784242267255161,
+          "reason": "HOLD",
+          "risk5": 0.03170582235681198,
+          "score": 0.27692307692307694,
+          "signal_date": "2026-06-01",
+          "spx": 0.0022,
+          "spx_decision_time": "2026-06-01",
+          "spx_source_time": "2026-05-29",
+          "spx_staleness_days": 3,
+          "tail": -0.002418964683115754
+        }
+      }
+    },
+    {
+      "signal_date": "2026-06-01",
+      "trading_date": "2026-06-02",
+      "category": "HOLD_POSITION",
+      "quantity": 200,
+      "cash": "99.50",
+      "cycle_target": 600,
+      "status": "EXACT_PUBLIC_PLAN",
+      "valuation": {
+        "basis": "UNADJUSTED",
+        "raw_signal_close": 2.062
+      },
+      "old": {
+        "strategy": {
+          "strategy_id": "S011",
+          "reference_id": "S011-v1",
+          "release_hash": "369b89c170906d74ac884cd1f9b08d22e5ba773998d8be1b58086784e4c12f2c",
+          "runtime_sha256": "7ca3f70a3487c715ab0ec3b561c347dc0ff68c65027ebb4c5107a97de13ab20d",
+          "symbol": "159326.SZ"
+        },
+        "signal_identity": "413f3d244f8ce579062bdbeffd8942e312651199945a4fdeb645508903080553",
+        "plan_identity": "f0638ef7835f647a7f3835f4359b448b3b2ada75c3b94a55e631d069033fd298",
+        "symbol": "159326.SZ",
+        "signal_date": "2026-06-01",
+        "trading_date": "2026-06-02",
+        "generated_at": "2026-06-01T20:31:00+08:00",
+        "expected_portfolio_revision": 7,
+        "expected_state_revision": 11,
+        "actual_quantity": 200,
+        "target_quantity": 200,
+        "cycle_target_quantity": 600,
+        "target_position": 1.0,
+        "action": "HOLD",
+        "plan_mode": "NONE",
+        "capital_mode": "full_available_cash",
+        "allocation_fraction": "1.0",
+        "orders": [],
+        "legs": [],
+        "available_cash": "99.50",
+        "fee_rate": "0.001",
+        "estimated_order_cost": "0.0",
+        "unallocated_cash": "99.5",
+        "references": {
+          "signal_price": "2.062",
+          "execution_price": "2.062",
+          "signal_basis": "ADJUSTED_CLOSE",
+          "execution_basis": "UNADJUSTED_CLOSE",
+          "pricing": {
+            "basis": "UNADJUSTED",
+            "anchor_date": null,
+            "anchor_factor": null
+          },
+          "price_scale": "1"
+        },
+        "required_capabilities": {
+          "order_types": [],
+          "checkpoints": []
+        },
+        "input_identities": {
+          "bars": "b58e075dba801ecf07d0bfacee95b99b710a5c55d19d09652621ce4aa88142ad",
+          "calendar": "2e3be9255fb491d959b6c13a26c004511af54834d08a7fe1f3b395bb774de70c",
+          "daily": "e4226e7592bf111337f6cd2f4203d5bdeb16c3f39656de87999775e293be3723",
+          "execution": "7dd33f31b8d669697c09c8092ee27feba020bc1c07daae8b454b80808865fb28",
+          "market": "6e66c58dc1fe21567b6f7c3bbd2136e9419660e93669404aa43a1a82e0f37133",
+          "spx": "2a338a048087cc3cf280ab84aad3f4e9ac5ddd109ec51d6a970f9a31da52cb51"
+        },
+        "price_identities": {
+          "adjusted_daily": "4434fa65f4e2c298f88f5e3c1276079abb568d8f6af1930643fc1d95ab98bef4",
+          "execution_daily": "e4e9c5b914435b2942eda85cb6c258f58ebdc926b7e0a0da3f6d7b26110fd3ad",
+          "pricing": "57570ee49e9e42a4a283cd8f791883931cf45a5aae7a79634584e768a184a407"
+        },
+        "evidence": {
+          "action": "HOLD",
+          "intent_age": 1,
+          "market": -0.009784242267255161,
+          "reason": "HOLD",
+          "risk5": 0.03170582235681198,
+          "score": 0.27692307692307694,
+          "signal_date": "2026-06-01",
+          "spx": 0.0022,
+          "spx_decision_time": "2026-06-01",
+          "spx_source_time": "2026-05-29",
+          "spx_staleness_days": 3,
+          "tail": -0.002418964683115754
+        }
+      },
+      "new": {
+        "strategy": {
+          "strategy_id": "S011",
+          "reference_id": "S011-C9901",
+          "release_hash": "15b4d77bfef79ec4874ef62eb475f081eb6b7ff3e8f76e23bd67fdaf75f09876",
+          "runtime_sha256": "b5a104ed1e42b9100885ce784fb412987913cfcc56f6950152b5a39c9acdcbef",
+          "symbol": "159326.SZ"
+        },
+        "signal_identity": "c401a61f1f9905c1fd236d6756b91fd20cfde543f3f705af68f382abe9d3084a",
+        "plan_identity": "74b94fbfb9a724f9918daaeb60e6c263c565658f8a1abfb87f13f6e437ad7f82",
+        "symbol": "159326.SZ",
+        "signal_date": "2026-06-01",
+        "trading_date": "2026-06-02",
+        "generated_at": "2026-06-01T20:31:00+08:00",
+        "expected_portfolio_revision": 7,
+        "expected_state_revision": 11,
+        "actual_quantity": 200,
+        "target_quantity": 200,
+        "cycle_target_quantity": 600,
+        "target_position": 1.0,
+        "action": "HOLD",
+        "plan_mode": "NONE",
+        "capital_mode": "full_available_cash",
+        "allocation_fraction": "1.0",
+        "orders": [],
+        "legs": [],
+        "available_cash": "99.50",
+        "fee_rate": "0.001",
+        "estimated_order_cost": "0.0",
+        "unallocated_cash": "99.5",
+        "references": {
+          "signal_price": "2.062",
+          "execution_price": "2.062",
+          "signal_basis": "ADJUSTED_CLOSE",
+          "execution_basis": "UNADJUSTED_CLOSE",
+          "pricing": {
+            "basis": "UNADJUSTED",
+            "anchor_date": null,
+            "anchor_factor": null
+          },
+          "price_scale": "1"
+        },
+        "required_capabilities": {
+          "order_types": [],
+          "checkpoints": []
+        },
+        "input_identities": {
+          "bars": "b58e075dba801ecf07d0bfacee95b99b710a5c55d19d09652621ce4aa88142ad",
+          "calendar": "2e3be9255fb491d959b6c13a26c004511af54834d08a7fe1f3b395bb774de70c",
+          "daily": "e4226e7592bf111337f6cd2f4203d5bdeb16c3f39656de87999775e293be3723",
+          "execution": "7dd33f31b8d669697c09c8092ee27feba020bc1c07daae8b454b80808865fb28",
+          "market": "6e66c58dc1fe21567b6f7c3bbd2136e9419660e93669404aa43a1a82e0f37133",
+          "spx": "2a338a048087cc3cf280ab84aad3f4e9ac5ddd109ec51d6a970f9a31da52cb51"
+        },
+        "price_identities": {
+          "adjusted_daily": "4434fa65f4e2c298f88f5e3c1276079abb568d8f6af1930643fc1d95ab98bef4",
+          "execution_daily": "e4e9c5b914435b2942eda85cb6c258f58ebdc926b7e0a0da3f6d7b26110fd3ad",
+          "pricing": "57570ee49e9e42a4a283cd8f791883931cf45a5aae7a79634584e768a184a407"
+        },
+        "evidence": {
+          "action": "HOLD",
+          "intent_age": 1,
+          "market": -0.009784242267255161,
+          "reason": "HOLD",
+          "risk5": 0.03170582235681198,
+          "score": 0.27692307692307694,
+          "signal_date": "2026-06-01",
+          "spx": 0.0022,
+          "spx_decision_time": "2026-06-01",
+          "spx_source_time": "2026-05-29",
+          "spx_staleness_days": 3,
+          "tail": -0.002418964683115754
+        }
+      }
+    },
+    {
+      "signal_date": "2026-06-03",
+      "trading_date": "2026-06-04",
+      "category": "HOLD_CASH",
+      "quantity": 600,
+      "cash": "12345.67",
+      "cycle_target": 600,
+      "status": "EXACT_PUBLIC_PLAN",
+      "valuation": {
+        "basis": "UNADJUSTED",
+        "raw_signal_close": 2.092
+      },
+      "old": {
+        "strategy": {
+          "strategy_id": "S011",
+          "reference_id": "S011-v1",
+          "release_hash": "369b89c170906d74ac884cd1f9b08d22e5ba773998d8be1b58086784e4c12f2c",
+          "runtime_sha256": "7ca3f70a3487c715ab0ec3b561c347dc0ff68c65027ebb4c5107a97de13ab20d",
+          "symbol": "159326.SZ"
+        },
+        "signal_identity": "972b09787dc261d75101781d70e3dc6fc6d12e1c38604e4e88091cce3e04196d",
+        "plan_identity": "14aa94430b24bb69c3200c7905e4f132995e0ba27cc4de6dd8598e2da25f6110",
+        "symbol": "159326.SZ",
+        "signal_date": "2026-06-03",
+        "trading_date": "2026-06-04",
+        "generated_at": "2026-06-03T20:31:00+08:00",
+        "expected_portfolio_revision": 7,
+        "expected_state_revision": 11,
+        "actual_quantity": 600,
+        "target_quantity": 0,
+        "cycle_target_quantity": 600,
+        "target_position": 0.0,
+        "action": "SELL",
+        "plan_mode": "NONE",
+        "capital_mode": "full_available_cash",
+        "allocation_fraction": "1.0",
+        "orders": [
+          {
+            "side": "SELL",
+            "quantity": 600,
+            "order_type": "MARKET",
+            "limit_price": "2.092"
+          }
+        ],
+        "legs": [],
+        "available_cash": "12345.67",
+        "fee_rate": "0.001",
+        "estimated_order_cost": "0.0",
+        "unallocated_cash": "12345.67",
+        "references": {
+          "signal_price": "2.092",
+          "execution_price": "2.092",
+          "signal_basis": "ADJUSTED_CLOSE",
+          "execution_basis": "UNADJUSTED_CLOSE",
+          "pricing": {
+            "basis": "UNADJUSTED",
+            "anchor_date": null,
+            "anchor_factor": null
+          },
+          "price_scale": "1"
+        },
+        "required_capabilities": {
+          "order_types": [
+            "MARKET"
+          ],
+          "checkpoints": []
+        },
+        "input_identities": {
+          "bars": "b58e075dba801ecf07d0bfacee95b99b710a5c55d19d09652621ce4aa88142ad",
+          "calendar": "2e3be9255fb491d959b6c13a26c004511af54834d08a7fe1f3b395bb774de70c",
+          "daily": "e4226e7592bf111337f6cd2f4203d5bdeb16c3f39656de87999775e293be3723",
+          "execution": "7dd33f31b8d669697c09c8092ee27feba020bc1c07daae8b454b80808865fb28",
+          "market": "6e66c58dc1fe21567b6f7c3bbd2136e9419660e93669404aa43a1a82e0f37133",
+          "spx": "2a338a048087cc3cf280ab84aad3f4e9ac5ddd109ec51d6a970f9a31da52cb51"
+        },
+        "price_identities": {
+          "adjusted_daily": "4434fa65f4e2c298f88f5e3c1276079abb568d8f6af1930643fc1d95ab98bef4",
+          "execution_daily": "e4e9c5b914435b2942eda85cb6c258f58ebdc926b7e0a0da3f6d7b26110fd3ad",
+          "pricing": "57570ee49e9e42a4a283cd8f791883931cf45a5aae7a79634584e768a184a407"
+        },
+        "evidence": {
+          "action": "HOLD",
+          "intent_age": 2,
+          "market": 0.004934318523100112,
+          "reason": "CASH",
+          "risk5": 0.03090733669224152,
+          "score": 0.11318681318681313,
+          "signal_date": "2026-06-03",
+          "spx": 0.0013,
+          "spx_decision_time": "2026-06-03",
+          "spx_source_time": "2026-06-02",
+          "spx_staleness_days": 1,
+          "tail": -0.007590132827324458
+        }
+      },
+      "new": {
+        "strategy": {
+          "strategy_id": "S011",
+          "reference_id": "S011-C9901",
+          "release_hash": "15b4d77bfef79ec4874ef62eb475f081eb6b7ff3e8f76e23bd67fdaf75f09876",
+          "runtime_sha256": "b5a104ed1e42b9100885ce784fb412987913cfcc56f6950152b5a39c9acdcbef",
+          "symbol": "159326.SZ"
+        },
+        "signal_identity": "747554a31b5f4cdc14d391cd6408b8d51187cb349e26f80be01c8c50d4fbaf06",
+        "plan_identity": "525287d328457fd0051e8d08dd6d1121e8b86d5988916e9028499e958a094ca7",
+        "symbol": "159326.SZ",
+        "signal_date": "2026-06-03",
+        "trading_date": "2026-06-04",
+        "generated_at": "2026-06-03T20:31:00+08:00",
+        "expected_portfolio_revision": 7,
+        "expected_state_revision": 11,
+        "actual_quantity": 600,
+        "target_quantity": 0,
+        "cycle_target_quantity": 600,
+        "target_position": 0.0,
+        "action": "SELL",
+        "plan_mode": "NONE",
+        "capital_mode": "full_available_cash",
+        "allocation_fraction": "1.0",
+        "orders": [
+          {
+            "side": "SELL",
+            "quantity": 600,
+            "order_type": "MARKET",
+            "limit_price": "2.092"
+          }
+        ],
+        "legs": [],
+        "available_cash": "12345.67",
+        "fee_rate": "0.001",
+        "estimated_order_cost": "0.0",
+        "unallocated_cash": "12345.67",
+        "references": {
+          "signal_price": "2.092",
+          "execution_price": "2.092",
+          "signal_basis": "ADJUSTED_CLOSE",
+          "execution_basis": "UNADJUSTED_CLOSE",
+          "pricing": {
+            "basis": "UNADJUSTED",
+            "anchor_date": null,
+            "anchor_factor": null
+          },
+          "price_scale": "1"
+        },
+        "required_capabilities": {
+          "order_types": [
+            "MARKET"
+          ],
+          "checkpoints": []
+        },
+        "input_identities": {
+          "bars": "b58e075dba801ecf07d0bfacee95b99b710a5c55d19d09652621ce4aa88142ad",
+          "calendar": "2e3be9255fb491d959b6c13a26c004511af54834d08a7fe1f3b395bb774de70c",
+          "daily": "e4226e7592bf111337f6cd2f4203d5bdeb16c3f39656de87999775e293be3723",
+          "execution": "7dd33f31b8d669697c09c8092ee27feba020bc1c07daae8b454b80808865fb28",
+          "market": "6e66c58dc1fe21567b6f7c3bbd2136e9419660e93669404aa43a1a82e0f37133",
+          "spx": "2a338a048087cc3cf280ab84aad3f4e9ac5ddd109ec51d6a970f9a31da52cb51"
+        },
+        "price_identities": {
+          "adjusted_daily": "4434fa65f4e2c298f88f5e3c1276079abb568d8f6af1930643fc1d95ab98bef4",
+          "execution_daily": "e4e9c5b914435b2942eda85cb6c258f58ebdc926b7e0a0da3f6d7b26110fd3ad",
+          "pricing": "57570ee49e9e42a4a283cd8f791883931cf45a5aae7a79634584e768a184a407"
+        },
+        "evidence": {
+          "action": "HOLD",
+          "intent_age": 2,
+          "market": 0.004934318523100112,
+          "reason": "CASH",
+          "risk5": 0.03090733669224152,
+          "score": 0.11318681318681313,
+          "signal_date": "2026-06-03",
+          "spx": 0.0013,
+          "spx_decision_time": "2026-06-03",
+          "spx_source_time": "2026-06-02",
+          "spx_staleness_days": 1,
+          "tail": -0.007590132827324458
+        }
+      }
+    },
+    {
+      "signal_date": "2026-06-03",
+      "trading_date": "2026-06-04",
+      "category": "HOLD_CASH",
+      "quantity": 200,
+      "cash": "99.50",
+      "cycle_target": 600,
+      "status": "EXACT_PUBLIC_PLAN",
+      "valuation": {
+        "basis": "UNADJUSTED",
+        "raw_signal_close": 2.092
+      },
+      "old": {
+        "strategy": {
+          "strategy_id": "S011",
+          "reference_id": "S011-v1",
+          "release_hash": "369b89c170906d74ac884cd1f9b08d22e5ba773998d8be1b58086784e4c12f2c",
+          "runtime_sha256": "7ca3f70a3487c715ab0ec3b561c347dc0ff68c65027ebb4c5107a97de13ab20d",
+          "symbol": "159326.SZ"
+        },
+        "signal_identity": "972b09787dc261d75101781d70e3dc6fc6d12e1c38604e4e88091cce3e04196d",
+        "plan_identity": "835b8db485e231877214f1a6467f75701ef3ce9dd4d5f4ddf9ab991c202f63e3",
+        "symbol": "159326.SZ",
+        "signal_date": "2026-06-03",
+        "trading_date": "2026-06-04",
+        "generated_at": "2026-06-03T20:31:00+08:00",
+        "expected_portfolio_revision": 7,
+        "expected_state_revision": 11,
+        "actual_quantity": 200,
+        "target_quantity": 0,
+        "cycle_target_quantity": 600,
+        "target_position": 0.0,
+        "action": "SELL",
+        "plan_mode": "NONE",
+        "capital_mode": "full_available_cash",
+        "allocation_fraction": "1.0",
+        "orders": [
+          {
+            "side": "SELL",
+            "quantity": 200,
+            "order_type": "MARKET",
+            "limit_price": "2.092"
+          }
+        ],
+        "legs": [],
+        "available_cash": "99.50",
+        "fee_rate": "0.001",
+        "estimated_order_cost": "0.0",
+        "unallocated_cash": "99.5",
+        "references": {
+          "signal_price": "2.092",
+          "execution_price": "2.092",
+          "signal_basis": "ADJUSTED_CLOSE",
+          "execution_basis": "UNADJUSTED_CLOSE",
+          "pricing": {
+            "basis": "UNADJUSTED",
+            "anchor_date": null,
+            "anchor_factor": null
+          },
+          "price_scale": "1"
+        },
+        "required_capabilities": {
+          "order_types": [
+            "MARKET"
+          ],
+          "checkpoints": []
+        },
+        "input_identities": {
+          "bars": "b58e075dba801ecf07d0bfacee95b99b710a5c55d19d09652621ce4aa88142ad",
+          "calendar": "2e3be9255fb491d959b6c13a26c004511af54834d08a7fe1f3b395bb774de70c",
+          "daily": "e4226e7592bf111337f6cd2f4203d5bdeb16c3f39656de87999775e293be3723",
+          "execution": "7dd33f31b8d669697c09c8092ee27feba020bc1c07daae8b454b80808865fb28",
+          "market": "6e66c58dc1fe21567b6f7c3bbd2136e9419660e93669404aa43a1a82e0f37133",
+          "spx": "2a338a048087cc3cf280ab84aad3f4e9ac5ddd109ec51d6a970f9a31da52cb51"
+        },
+        "price_identities": {
+          "adjusted_daily": "4434fa65f4e2c298f88f5e3c1276079abb568d8f6af1930643fc1d95ab98bef4",
+          "execution_daily": "e4e9c5b914435b2942eda85cb6c258f58ebdc926b7e0a0da3f6d7b26110fd3ad",
+          "pricing": "57570ee49e9e42a4a283cd8f791883931cf45a5aae7a79634584e768a184a407"
+        },
+        "evidence": {
+          "action": "HOLD",
+          "intent_age": 2,
+          "market": 0.004934318523100112,
+          "reason": "CASH",
+          "risk5": 0.03090733669224152,
+          "score": 0.11318681318681313,
+          "signal_date": "2026-06-03",
+          "spx": 0.0013,
+          "spx_decision_time": "2026-06-03",
+          "spx_source_time": "2026-06-02",
+          "spx_staleness_days": 1,
+          "tail": -0.007590132827324458
+        }
+      },
+      "new": {
+        "strategy": {
+          "strategy_id": "S011",
+          "reference_id": "S011-C9901",
+          "release_hash": "15b4d77bfef79ec4874ef62eb475f081eb6b7ff3e8f76e23bd67fdaf75f09876",
+          "runtime_sha256": "b5a104ed1e42b9100885ce784fb412987913cfcc56f6950152b5a39c9acdcbef",
+          "symbol": "159326.SZ"
+        },
+        "signal_identity": "747554a31b5f4cdc14d391cd6408b8d51187cb349e26f80be01c8c50d4fbaf06",
+        "plan_identity": "0cfda59b06997ff331136d7b5031e2ab48eb9f7a3fd3b3af0bc42745b7b74429",
+        "symbol": "159326.SZ",
+        "signal_date": "2026-06-03",
+        "trading_date": "2026-06-04",
+        "generated_at": "2026-06-03T20:31:00+08:00",
+        "expected_portfolio_revision": 7,
+        "expected_state_revision": 11,
+        "actual_quantity": 200,
+        "target_quantity": 0,
+        "cycle_target_quantity": 600,
+        "target_position": 0.0,
+        "action": "SELL",
+        "plan_mode": "NONE",
+        "capital_mode": "full_available_cash",
+        "allocation_fraction": "1.0",
+        "orders": [
+          {
+            "side": "SELL",
+            "quantity": 200,
+            "order_type": "MARKET",
+            "limit_price": "2.092"
+          }
+        ],
+        "legs": [],
+        "available_cash": "99.50",
+        "fee_rate": "0.001",
+        "estimated_order_cost": "0.0",
+        "unallocated_cash": "99.5",
+        "references": {
+          "signal_price": "2.092",
+          "execution_price": "2.092",
+          "signal_basis": "ADJUSTED_CLOSE",
+          "execution_basis": "UNADJUSTED_CLOSE",
+          "pricing": {
+            "basis": "UNADJUSTED",
+            "anchor_date": null,
+            "anchor_factor": null
+          },
+          "price_scale": "1"
+        },
+        "required_capabilities": {
+          "order_types": [
+            "MARKET"
+          ],
+          "checkpoints": []
+        },
+        "input_identities": {
+          "bars": "b58e075dba801ecf07d0bfacee95b99b710a5c55d19d09652621ce4aa88142ad",
+          "calendar": "2e3be9255fb491d959b6c13a26c004511af54834d08a7fe1f3b395bb774de70c",
+          "daily": "e4226e7592bf111337f6cd2f4203d5bdeb16c3f39656de87999775e293be3723",
+          "execution": "7dd33f31b8d669697c09c8092ee27feba020bc1c07daae8b454b80808865fb28",
+          "market": "6e66c58dc1fe21567b6f7c3bbd2136e9419660e93669404aa43a1a82e0f37133",
+          "spx": "2a338a048087cc3cf280ab84aad3f4e9ac5ddd109ec51d6a970f9a31da52cb51"
+        },
+        "price_identities": {
+          "adjusted_daily": "4434fa65f4e2c298f88f5e3c1276079abb568d8f6af1930643fc1d95ab98bef4",
+          "execution_daily": "e4e9c5b914435b2942eda85cb6c258f58ebdc926b7e0a0da3f6d7b26110fd3ad",
+          "pricing": "57570ee49e9e42a4a283cd8f791883931cf45a5aae7a79634584e768a184a407"
+        },
+        "evidence": {
+          "action": "HOLD",
+          "intent_age": 2,
+          "market": 0.004934318523100112,
+          "reason": "CASH",
+          "risk5": 0.03090733669224152,
+          "score": 0.11318681318681313,
+          "signal_date": "2026-06-03",
+          "spx": 0.0013,
+          "spx_decision_time": "2026-06-03",
+          "spx_source_time": "2026-06-02",
+          "spx_staleness_days": 1,
+          "tail": -0.007590132827324458
+        }
+      }
+    }
+  ],
+  "absent_market_categories": [],
+  "successful_nonzero_cases": {
+    "600": 4,
+    "200": 4
+  },
+  "expected_invalid_core_quantity_cases": 0,
+  "failures": [],
+  "coverage_sufficient": true
+}
