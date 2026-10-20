@@ -1,0 +1,146 @@
+{
+  "status": "AUTHORIZED_TWO_FIXED_FIRST_SHOCK_D0_PERMISSION_PROFILES",
+  "execution_authorized": true,
+  "fixed_parameters": [
+    {
+      "permission_profile": "ORIGINAL_C9502_CONTROL"
+    },
+    {
+      "permission_profile": "AGE_PRIOR_TREND_PERMISSION"
+    }
+  ],
+  "candidate_ids": [
+    "S014-C9520",
+    "S014-C9521"
+  ],
+  "planned_account_count": 2,
+  "no_blind_retries": true,
+  "baseline_account_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX050_20261020"
+    },
+    "evidence_id": "83327564961b13c1bc8e36cdf4e5c78ad35896a7e26f8595b6c3215889533ac9.json",
+    "sha256": "83327564961b13c1bc8e36cdf4e5c78ad35896a7e26f8595b6c3215889533ac9",
+    "media_type": "application/json",
+    "name": "shock-state-policy-002-first_shock_after_entry_day_hold",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  },
+  "baseline_result_hash": "63b4ce767292ebdfaa71e23f56981eda61e08f5bbf2e6de6c8814bd6da5a2757",
+  "baseline_control": "Fresh control exact EX050002/C9502 all original observed/financial projections with linked IDs only; new nine permission flags present finite and independently reviewed.",
+  "rule": "Own first eligible positiveP SHOCK: original control holds if actualage>=1. Treatment holds iff actualage>=1 and priorMA20>priorMA20lag5 and sourceClose[D-1]>=priorMA20, same runtimeHFQ. Required unknown operands only treatment age>=1 explicitly fail. Once holdTRUE independent cycle SHOCKoff latch, FALSE original nextE SELL; never daily reclassify.",
+  "preserved": "All original C9502 cost/support/GRACE/H10/inheritedpending/reservation/actualcompletion strictloss one-shot planned i+11 feedback/fees/1%LimitBuyHold/publicfills/lots unchanged. No EX051 priceanchor or new deterioration rule.",
+  "formal_observations": [
+    "permission_trend_profile",
+    "permission_required_today",
+    "permission_s1_evaluated",
+    "permission_s1_known",
+    "permission_s1_true",
+    "permission_granted",
+    "permission_refused",
+    "permission_age_qualified",
+    "permission_first_index"
+  ],
+  "observability_semantics": "required_today event only; evaluated/known/true/index freeze until actualBUY/SELL reset. granted/refused describe firstSHOCK hold/exit including age0 and control: S1-specific refusal counts require evaluated & age_qualified & treatment. Existing priorMAs formal; priorClose independently rebuilt from exact bound prepared source, no new raw field assumed formal.",
+  "full_execution_window": [
+    "2020-01-02",
+    "2026-10-15"
+  ],
+  "original_annual_acceptance_years": [
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "2026_role": "Original partial2026 nonannualized hard return/DD goal retained plus all prior6years and full1642session frequency>=3closed/60. No new veto or goal change.",
+  "source_cutoff": "Original lastD10/14->lastE10/15, no new bars.",
+  "audit_mapping": "Dheld uses actualdaily[D], prewindow2019-12-31 cash100000/qty0; valid_session maps nextE and E daily.signaldate D. Perpolicy ownactual completion/sign history, no frozen BASE futurefeedback.",
+  "first_differences": "New permission state evaluated/granted/refused separate from first originalmutable-column divergence, first targetD and first actual cash/qty/equity E. Constantprofile flags never economic divergence.",
+  "selection_disclosure": "Posthoc explicitly reopened exactly one originalS1 x AGE permission interaction after seen EX049 negative pooledS1/EX050 no-combination decision/EX051 failed later repairs. Original evidence immutable, positive2021FebFALSE sacrificed opportunity and TRUE bad2023Feb/2024Jan retained; no pristinevalidation, reversedS1 or threshold/ANDORgrid.",
+  "local_publication": "Only repositorylocal assets/evidence/EX052_20261020 and .tmp/evidence-publication; empty Providers/socket+requests denied. Pinned offline input content/providerrevision unchanged.",
+  "new_model_fits": 0,
+  "new_supplier_calls": 0,
+  "formal_candidate_registrations": 0,
+  "authorization": {
+    "path": "research/S014/materials/20261020_followthrough_exit_diagnosis/authorization.json",
+    "sha256": "b9bc947ed85aa328bd7aa0eeaa329c2419c0d815803373714efed870f3876c58"
+  },
+  "method": {
+    "path": "research/S014/materials/20261020_followthrough_exit_diagnosis/permission_decision.json",
+    "sha256": "e4854b3b2b738b09b0670d8422410f1ee2ce43258f36226aba16617e09f530ca"
+  },
+  "baseline_integrity": {
+    "path": "research/S014/materials/20261020_followthrough_exit_diagnosis/baseline_integrity.json",
+    "sha256": "b9c50087480975fac8e9b891ebd9fa32d42963b208c269c60acfd393730ef789"
+  },
+  "source_bindings": {
+    "path": "research/S014/materials/20261019_2025_action_method_review/method/source_bindings.json",
+    "sha256": "905dd1861b3ff8c7104387b11ae879412f53179c973d042bcbacc13b919d6e47"
+  },
+  "independent_method_review": {
+    "path": "research/S014/materials/20261020_followthrough_exit_diagnosis/review/permission_locked_method_review.json",
+    "sha256": "874c5c2c893577324fd8d0bf20ca79e053da9e0c79091bdd215aab7173c97a04"
+  },
+  "evaluation_protocol": {
+    "path": "research/S014/materials/20261020_followthrough_exit_diagnosis/accounting/permission_evaluation_protocol.json",
+    "sha256": "f5ec38f7903d70448976d44da715b5deb3e29e78aa6dcc029bede8d15fe76ec0"
+  },
+  "observability_review": {
+    "path": "research/S014/materials/20261020_followthrough_exit_diagnosis/review/permission_source_review.json",
+    "sha256": "280f2476df276f76c0f2a01bcea8cc0df6d3f72f9b0d3d03d5977553d75f9848"
+  },
+  "independent_source_review": {
+    "path": "research/S014/materials/20261020_followthrough_exit_diagnosis/accounting/permission_source_review.json",
+    "sha256": "be40851e4820c293144dbcea4094fab0612f89a29cee108a9515dd7f6b4b2a7c"
+  },
+  "previous_final": {
+    "path": "research/S014/experiments/EX051_20261020/others/final_verification.json",
+    "sha256": "6e7b178c48adecf6ebd184ac57700bc0d4244c18b70017da04b0f64de19fc6bf"
+  },
+  "original_population_review": {
+    "path": "research/S014/materials/20261020_followthrough_exit_diagnosis/accounting/original_hold_population_review.json",
+    "sha256": "243d9c8a1f9a8b1e9ee13463b878187e1076dd2528963f97a56d5a04470864e0"
+  },
+  "previous_source": {
+    "path": "research/S014/experiments/EX050_20261020/src/strategy_runtime/strategies/shock_state_policy.py",
+    "sha256": "ac4fcdbdc5c46b1d43f31f53dda2de0635fea8f4f0cff8889a083a86f87e76f3"
+  },
+  "previous_control_receipt": {
+    "path": "research/S014/experiments/EX050_20261020/others/accounts/run-002.json",
+    "sha256": "7e05e9f99e11562df9e355340cc2e2905c7d5ff21c98497174c03e4e6ef99019"
+  },
+  "previous_control_review": {
+    "path": "research/S014/materials/20261020_shock_state_diagnosis/accounting/policy_account_002_independent_review.json",
+    "sha256": "a45adbdf991b0d6b1343ed06aa217a0c77b729cab525d86bad87068bfb217f35"
+  },
+  "corrected_audit_source": {
+    "path": "research/S014/experiments/EX050_20261020/src/audit_accounts.py",
+    "sha256": "07a23131db5a81e726b3b53ac8e44bf4e9e6cfea190541a8e5534e84f72e4b78"
+  },
+  "fixture_source": {
+    "path": "research/S014/experiments/EX043_20261019/src/precheck.py",
+    "sha256": "9f134a546ea4debf06fdb721fca62f1ec9c3086c74735b069e6faeffdefeec46"
+  },
+  "helper_source": {
+    "path": "research/S014/experiments/EX041_20261019/src/precheck.py",
+    "sha256": "90cf0833e9d009ffb7eca86e55ff8abcfc9295217ea8943684f28ee0a22b5d5a"
+  },
+  "shared_account_audit": {
+    "path": "research/S014/experiments/EX040_20261019/src/audit_accounts.py",
+    "sha256": "256c09cabbd7d562b085cf8599c4fac9d9bcfa422d94fde6fb501ac30721bbd3"
+  },
+  "input_provider_source": {
+    "path": "research/S014/experiments/EX052_20261020/src/offline_inputs.py",
+    "sha256": "731e8fd0cb14859789f54083298b9140e12d1e50be5d71bb1093ab7f5313b380"
+  },
+  "original_input_provider_source": {
+    "path": "research/S014/experiments/EX017_20261017/src/pinned_inputs.py",
+    "sha256": "2812821581e5dc1d382edb34499df713b3bee064c8e80c58f9ab062ba5099a84"
+  }
+}

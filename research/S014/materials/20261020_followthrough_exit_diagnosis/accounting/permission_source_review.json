@@ -1,0 +1,82 @@
+{
+  "status": "PASS",
+  "reviewer": "A",
+  "source_sha256": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2",
+  "source": {
+    "path": "research/S014/experiments/EX052_20261020/src/strategy_runtime/strategies/trend_permission.py",
+    "sha256": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2"
+  },
+  "prior_source": {
+    "path": "research/S014/experiments/EX050_20261020/src/strategy_runtime/strategies/shock_state_policy.py",
+    "sha256": "ac4fcdbdc5c46b1d43f31f53dda2de0635fea8f4f0cff8889a083a86f87e76f3"
+  },
+  "check_count": 3371,
+  "checks": {
+    "final source exact byte": 1,
+    "original contract exact inputs": 2,
+    "original contract exact decision": 2,
+    "original contract exact execution": 2,
+    "original contract exact monitoring": 2,
+    "original contract exact capabilities": 2,
+    "all new observations declared numeric": 2,
+    "canonical enum rejects invalid": 4,
+    "unchanged original helper completed_sign": 1,
+    "unchanged original helper causal_features": 1,
+    "unchanged original helper tick": 1,
+    "unchanged original helper buy_limit": 1,
+    "unchanged original helper calendar_request": 1,
+    "unchanged original helper derive_calculation_scope": 1,
+    "unchanged original helper non_final_day_dominated": 1,
+    "exact S1 inequalities/unknown boundary": 6,
+    "all new formal flags/index finite on fullfixture": 2,
+    "fresh C9502 pure every old column exact": 1,
+    "independent own firstD0 state first_shock_today": 222,
+    "independent own firstD0 state first_shock_state_known": 222,
+    "independent own firstD0 state first_shock_hold_decision": 222,
+    "independent own firstD0 state shock_state_assessed": 222,
+    "independent own firstD0 state shock_disable_latched": 222,
+    "independent own firstD0 state permission_required_today": 222,
+    "independent own firstD0 state permission_s1_evaluated": 222,
+    "independent own firstD0 state permission_s1_known": 222,
+    "independent own firstD0 state permission_s1_true": 222,
+    "independent own firstD0 state permission_granted": 222,
+    "independent own firstD0 state permission_refused": 222,
+    "independent own firstD0 state permission_age_qualified": 222,
+    "independent own firstD0 state permission_first_index": 222,
+    "independent own firstD0 state selected_shock_exit": 222,
+    "original priority and nextE target": 222,
+    "fixture exercises firstSHOCK": 2,
+    "D0 frozenpermission causal prefix": 6
+  },
+  "implementation": {
+    "path": "research/S014/materials/20261020_followthrough_exit_diagnosis/accounting/review_permission_source.py",
+    "sha256": "0eb72c966ab8fad6bb3a0f6e9db819f464b2c9e575c6afbe4724c7a93341d79d"
+  },
+  "formal_observability_contract": {
+    "required_new_fields": [
+      "permission_trend_profile",
+      "permission_required_today",
+      "permission_s1_evaluated",
+      "permission_s1_known",
+      "permission_s1_true",
+      "permission_granted",
+      "permission_refused",
+      "permission_age_qualified",
+      "permission_first_index"
+    ],
+    "raw_columns_assumed": [],
+    "actual_control_gate_required": "Each declared new field must exist and be finite in formal actual decisions before treatment."
+  },
+  "diagnostic_semantics": "permission_granted/refused and first_index describe final firstSHOCK hold/exit state including age0/control. Count S1-specific grants/refusals only within permission_s1_evaluated and permission_age_qualified; raw refusals alone are not S1 refusals.",
+  "manual_review": [
+    "No EX051 anchor/ATR exit carried. New action is original positive direction S1 within age>=1 at first ownSHOCKD0 only.",
+    "Control/age0 no S1 input dependency. Required-domain UNKNOWN raises rather than FALSE; no rawprice projection assumption.",
+    "Old price/fees/support/cost/GRACE/H10/reservation and strict completed-loss pause unchanged. Actual funded control and sacrificed opportunities remain required.",
+    "Prior S1 negative/combination exclusions are preserved; current posthoc interaction is a separate explicit successor, not independent new information."
+  ],
+  "new_actual_input_fetches": 0,
+  "new_hit_counts": 0,
+  "new_accounts": 0,
+  "new_fits": 0,
+  "new_supplier_calls": 0
+}

@@ -1,0 +1,64 @@
+{
+  "status": "METHOD_ADVERSARIAL_BUFFER_ADDENDUM_CANDIDATE_ONLY_NOT_SELECTED",
+  "reviewer": "B",
+  "blocking_findings": [],
+  "reviewed_hashes": {
+    "research/S014/materials/20261020_followthrough_exit_diagnosis/review/method_adversarial_review.json": "17e98aa904b4bba65df3c92ae7aea6594d291c71f4b260746bf4f5251c954465",
+    "research/S014/materials/20261020_followthrough_exit_diagnosis/accounting/population_method_review.json": "8ebeefea82a2c0109ce77fcd360c20e60b18f79e69562f2644f4099e7d28fca4",
+    "research/S014/materials/20261020_followthrough_exit_diagnosis/accounting/original_hold_population_review.json": "243d9c8a1f9a8b1e9ee13463b878187e1076dd2528963f97a56d5a04470864e0",
+    "research/S014/materials/20261020_followthrough_exit_diagnosis/accounting/original_hold_population.csv": "527589ecc2dac7808e0487d58d170fe6d4accad3563d49a84efb51dc1d8a628a",
+    "research/S014/experiments/EX043_20261019/src/strategy_runtime/strategies/exante_hold_exit.py": "e980a552367e9354a5f2fcfcd411e5c6a64a408ecb83bed115aa9b578029e57a",
+    "research/S014/experiments/EX044_20261019/src/strategy_runtime/strategies/action_role_review.py": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527",
+    "research/S014/experiments/EX007_20261017/src/components.py": "ac5bafe27dbfe61bd2f13b471fc2803ab147e9c131bd840b3af6d7768c3bd276",
+    "research/S014/experiments/EX013_20261017/src/features.py": "04072cd720047fb22947780778a031cf87fbfda7c639b5f783af505cb0cdeea8",
+    "research/S014/experiments/EX013_20261017/src/features_v2.py": "0abe6e8e44c7089a332475662bdd5dede8669c54d4f56a0d3c95b06f37ce538c"
+  },
+  "old_route_exactness": {
+    "finding": "No exact implementation of frozen first-own-SHOCK sourceclose minus one priorATR20 frozen at that SHOCK, monitored on the continued AGE cycle, was found in the bounded S014 source/report routes reviewed. This is a scoped route review, not a proof that no algebraically equivalent rule exists anywhere.",
+    "EX043": "PROFIT_GIVEBACK uses running actualentry-to-D closepeak, priorATR20 recomputed at eachD, netpeak>=2ATR and retracement>=1ATR. It can trigger due to ATR contraction. It did not freeze a SHOCK-event price/volatility pair and predates the current cost/loss-pause background.",
+    "EX044_046": "NET_LOSS_1ATR uses actual entry-price cost inclusive fees minus currentnetmarkedprice>=currentD priorATR20. It is a cost anchor with dynamic volatility, not gross SHOCKclose minus frozenATR.",
+    "EX007": "Holding-path model features include peak-current normalized ATR, with once-only fixed-horizon checkpoints. They do not implement this frozen event-threshold policy.",
+    "EX013": "Breakout path fixes an old20day-high level and eventage, without a one-ATR frozen SHOCK offset; its firsttouch correction and mixed-horizon negative evidence remain."
+  },
+  "read_existing_population_without_new_computation": {
+    "source": "A original C9502 population method review, already frozen before this addendum",
+    "eligible_actual_cycles": 16,
+    "annual_counts_2020_26": [
+      1,
+      3,
+      0,
+      3,
+      3,
+      1,
+      5
+    ],
+    "zeroanchor_firstpost_true": 6,
+    "old_deadline_overlap": 1,
+    "potential_new_actions": 5,
+    "competition": "Firstpost downclose also occurs on originally successful2026Feb/Mar continued cycles. A zero-retracement boundary may mechanically abandon normal pullbacks; this is a reason to examine the interpretation, not an outcome-derived guarantee that a volatility buffer helps.",
+    "new_ATR_buffer_hits_computed_by_reviewer": 0,
+    "new_alternative_returns": 0
+  },
+  "buffer_judgment": "A fixed one-ATR buffer is a meaningful competing action hypothesis because it distinguishes any decline from a decline larger than a previously observed volatility unit. It may reduce false exits but can also exit too late, allow a profitable cycle to become a loss or fail to precede originalcost/support. It has not been shown to improve the original annual goals.",
+  "selection_disclosure": "Numeric1 and20 are inherited existing risk-unit/horizon choices, not fitted here; applying them as a new frozen SHOCKanchor offset is nevertheless a newly selected action boundary after seeing zeroanchor activations and known2025/26 cases. Do not describe it as previously tested/validated, a natural optimal boundary or independent prespecification.",
+  "precision_of_meaning": "ATR20prior is mean true range in source price units, including intrabar range and gaps. OneATR is not a standard deviation, confidence bound, probability of reversal or guaranteed maximum normal one-day movement. FrozenATR removes the old dynamic-ATR contraction mechanism; it adds no new external information.",
+  "minimum_design_to_identify_competition": {
+    "preferred_if_root_question_is_persistent_weakening": "Fresh C9502 control plus persistent zeroanchor plus persistent(anchor-1frozenATR). Hold observation horizon/action opportunities fixed; compare only price buffer. Defer ONE_CHECK rather than run a clock-by-buffer grid.",
+    "alternative_if_root_question_is_immediate_confirmation": "Fresh C9502 control plus nextD-only zeroanchor plus nextD-only(anchor-1frozenATR). Both consume exactly the immediate next original sourceD; do not compare a one-check zero rule with a persistent buffered rule and call the difference only volatility filtering.",
+    "selection_needed": "Root must choose the primary question and fixed small profiles before new candidate-state counts or economic outcomes. This review recommends no full crossgrid and selects no new runtime source/account."
+  },
+  "required_implementation_semantics": [
+    "Freeze A0=sourceHFQClose at own first eligibleSHOCK age>=1 when AGE actually selectshold, and V0=original priorATR20 at the sameD. Require finite positive V0; never use nextD/currentATR, rawaccountprice or runningpeak.",
+    "Threshold=A0-V0 in the same source price units, strict futureClose<threshold. Equality no newexit. No rounding to ticks, ratio reinterpretation, currentprofitfilter, clipping or epsilon; if threshold<=0 it is known but unreachable under positiveprices, not a fallback to zeroanchor.",
+    "Anchor/volatility freeze only once per actualcycle and never reset at later rawSHOCK. RealBUY/actualSELL lifecycle owns it; failedBUY makes noanchor.",
+    "Only original issuedD afterSHOCK can observe the condition. NewmarketSELL is sent at thatD for nextE under originalpublicresolver/status/fees. Existing pending/expiry/cost/support remain active and higher priority; no originalclock/reservation or ownloss-pause change.",
+    "If only nextD confirmation is chosen, checkpoint is the immediately next issuedsourceD regardless of later opportunities; recordpreempted/expired/cutoff without shifting. Persistentmonitoring checks until actualexit under the locked horizon. Do not blur these duties.",
+    "Separate rawcondition, overlapwithoriginalexit, genuinelyaddedtarget, actualfilledsale and laterparticipation/funding. Keep allyears/cycles and all predeclared unfavorable cases, without new sample/CI/noharm/buffer acceptance gates."
+  ],
+  "next_action": "Root select and lock one interpretable small comparison after A/C/B method input. No newbufferhit evaluation, labels, sources or accounts before that lock.",
+  "new_funded_accounts": 0,
+  "new_prepared_fetches": 0,
+  "new_market_calls": 0,
+  "new_labels": 0,
+  "new_fits": 0
+}

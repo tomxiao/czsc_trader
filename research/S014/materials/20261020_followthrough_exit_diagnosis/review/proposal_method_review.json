@@ -1,0 +1,43 @@
+{
+  "status": "PASS_METHOD_INTERPRETATION_PENDING_ROOT_FINAL_LOCK",
+  "reviewer": "B",
+  "blocking_findings": [],
+  "reviewed_hashes": {
+    "research/S014/materials/20261020_followthrough_exit_diagnosis/method_proposal.json": "0d8a3427c131b747f3321a05f7d88e1bc5037baca77f269dfe87d95f314c34e5",
+    "research/S014/materials/20261020_followthrough_exit_diagnosis/authorization.json": "b9bc947ed85aa328bd7aa0eeaa329c2419c0d815803373714efed870f3876c58",
+    "research/S014/materials/20261020_followthrough_exit_diagnosis/baseline_integrity.json": "b9c50087480975fac8e9b891ebd9fa32d42963b208c269c60acfd393730ef789",
+    "research/S014/materials/20261020_followthrough_exit_diagnosis/questions.json": "58759e6b6539f1259d9e985fcc3945fb7b828a8ea4d99cdc3cf110c2dfb41ed5",
+    "research/S014/materials/20261020_followthrough_exit_diagnosis/accounting/original_hold_population_review.json": "243d9c8a1f9a8b1e9ee13463b878187e1076dd2528963f97a56d5a04470864e0",
+    "research/S014/materials/20261020_followthrough_exit_diagnosis/accounting/population_method_review.json": "8ebeefea82a2c0109ce77fcd360c20e60b18f79e69562f2644f4099e7d28fca4",
+    "research/S014/materials/20261020_followthrough_exit_diagnosis/review/method_adversarial_review.json": "17e98aa904b4bba65df3c92ae7aea6594d291c71f4b260746bf4f5251c954465",
+    "research/S014/materials/20261020_followthrough_exit_diagnosis/review/atr_anchor_method_addendum.json": "dee4d30d9c2888d8119d58b9063f07d1c4799f734c03bade73994fdb72e47d9c"
+  },
+  "decision": "Fresh exact C9502 plus persistent ZERO and persistent frozen1ATR is a bounded comparison of retreat boundaries under the same observation clock. It does not claim new data/information, validate the unit, or execute the deferred ONE_CHECK route.",
+  "boundary_interpretation_for_final_lock": [
+    "ZERO is sourceCloseD<frozenSHOCKClose, so equality does not trigger.",
+    "FROZEN1ATR is (frozenSHOCKClose-sourceCloseD)>=frozenATR20prior_SHOCK, so exact equality DOES trigger. This explicitly supersedes the earlier B tentative strictbuffer wording. It is now selected before any new buffered-hit table or account outcome, not an epsilon fix after seeing results.",
+    "Source must keep those exact expressions/operation order. Do not replace difference>=ATR with Close<=anchor-ATR, round/tick the level, add epsilon or silently harmonize equality directions. Focused toys should cover exact equality and representable values on either side.",
+    "ZERO requires a valid finite positive priceanchor only; it must not fail merely because an unusedATR is unknown. Only FROZEN1ATR requires finite positive frozenATR. Fresh control introduces no economic dependency on newanchor/ATR inputs."
+  ],
+  "verified_action_contract": [
+    "Own actually filled cycle and first eligible positiveP SHOCK age>=1 initialize the originalAGE hold latch and eventprice once. New later exits need not currently have positive profit.",
+    "Same persistent later-originalD clock i>i0 through actualSELL for both treatments. No D0 exit from future confirmation, no currentATR/peak resets, laterSHOCK reanchor or year/date lookup.",
+    "Original pending/expiry/cost/support remain active and cannot be cancelled. Record overlaps rather than assign exclusive causes. NewSELL uses originalnextE publicresolver, fees and execution constraints; no sameclose fill or guaranteed profit.",
+    "ActualSELL/realBUY lifecycle clears/initializes ownanchor; failedBUY makes no newcycle. OriginalH10/deadline/reservation and strict actual-loss one-slot pause remain causal and unchanged.",
+    "Unknown required state is explicit retained technicalfailure, never numericzero/currentATR/originalpolicy fallback. Negative anchor-minusATR is known but need not be reachable; no clipping.",
+    "Last original sourceD2026-10-14 and executionE10/15 remain. Late/unobserved observation opportunities are diagnosed without inventing a D10/15 decision or terminal liquidation."
+  ],
+  "scientific_limits": [
+    "ATR is a source price-range scale, not sigma/confidence/probability. Reusing1ATR/20days is still a new action application selected after zeroanchor activation inventory and knowncases.",
+    "No matched-window/return/censor filtering. Full original16 continuation population and zero2022 are retained for diagnosis; later fullpolicies use their own changed actualhistory, not fixedoriginaldates.",
+    "Earlier exit can preserve a profit or realize a loss and change pause/reentry/cash. No claim that recovering March exit prices or April opportunity follows mechanically.",
+    "All original seven annual return/DD and1642-session actualfrequency remain sole economic criteria. Neither within-year decline nor sample/CI/noharm/newbuffer is an added veto."
+  ],
+  "next_step": "Root final lock should preserve the explicit equality/domain interpretations above. Then minimal source/runner/focusedtoy review, publicimmutable lock, fresh exactC9502 and independent actualcontrol PASS before two treatments. No extra localcounterfactual simulator or grid is needed.",
+  "new_buffer_hit_tables": 0,
+  "new_labels": 0,
+  "new_funded_accounts": 0,
+  "new_prepared_fetches": 0,
+  "new_market_calls": 0,
+  "new_fits": 0
+}

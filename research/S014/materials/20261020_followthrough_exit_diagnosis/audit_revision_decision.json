@@ -1,0 +1,136 @@
+{
+  "status": "AUTHORIZED_AUDIT_AND_RUNNER_TECHNICAL_SUCCESSOR_NO_ECONOMIC_CHANGE_NO_REEVALUATION",
+  "role": "RSCH",
+  "cause": "Engine control evaluation succeeded and formal16 new anchor flags/index/combinedrisk are present. Two rawanchor price fields returned by strategyhistory are not declared numeric observations and therefore not in formal decisions projection. Inline audit incorrectly assumed these rawfields existed, raisingKeyError after account publication.",
+  "failed_inline_audit": {
+    "receipt": {
+      "index": 0,
+      "mode": "ORIGINAL_C9502_CONTROL",
+      "parameters": {
+        "anchor_profile": "ORIGINAL_C9502_CONTROL"
+      },
+      "candidate": "S014-C9510",
+      "payload_sha256": "bdbaeb37a821e3c39ae1be0a553b573952c5354857ec5beccee786f118b6d554",
+      "published_payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX051_20261020"
+        },
+        "evidence_id": "bdbaeb37a821e3c39ae1be0a553b573952c5354857ec5beccee786f118b6d554.json",
+        "sha256": "bdbaeb37a821e3c39ae1be0a553b573952c5354857ec5beccee786f118b6d554",
+        "media_type": "application/json",
+        "name": "ex051-payload-000",
+        "schema": null,
+        "schema_version": null
+      },
+      "runtime_implementation_sha256": "5a09cd2f882a5af9f8d8a840b79a847c68c60c3889e806ea6d524d1266adacb1",
+      "execution_source_lock_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX051_20261020"
+        },
+        "evidence_id": "31f34e87ccac549e7d82fed2ab721db55ee28ff7c3925a77721afac973e663ad.json",
+        "sha256": "31f34e87ccac549e7d82fed2ab721db55ee28ff7c3925a77721afac973e663ad",
+        "media_type": "application/json",
+        "name": "ex051-execution-lock-v1",
+        "schema": null,
+        "schema_version": null
+      },
+      "execution_source_lock_sha256": "31f34e87ccac549e7d82fed2ab721db55ee28ff7c3925a77721afac973e663ad",
+      "runtime_sha256": "cde989f1fdffe07f6102ef7e6f6c83a838c3c3ada2c569670ff7548d310f909c",
+      "published_source_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX051_20261020"
+        },
+        "evidence_id": "a97a53b0d277ef4ee5702cc3b846ce8831fd8b182c2afca83159f31f0458f670.py",
+        "sha256": "a97a53b0d277ef4ee5702cc3b846ce8831fd8b182c2afca83159f31f0458f670",
+        "media_type": "text/x-python",
+        "name": "ex051-locked-src-strategy_runtime-strategies-followthrough_anchor.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "binding_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX051_20261020"
+        },
+        "evidence_id": "3170a6caffa19e10283219d9458af169db6886184f684f3b3669ad8f2f38b218.json",
+        "sha256": "3170a6caffa19e10283219d9458af169db6886184f684f3b3669ad8f2f38b218",
+        "media_type": "application/json",
+        "name": "ex051-binding-000",
+        "schema": null,
+        "schema_version": null
+      },
+      "preflight_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX051_20261020"
+        },
+        "evidence_id": "be560a712e8c197b19bcab9fb29dcc168c9f6bf418c52d158181f5e671ea782a.json",
+        "sha256": "be560a712e8c197b19bcab9fb29dcc168c9f6bf418c52d158181f5e671ea782a",
+        "media_type": "application/json",
+        "name": "ex051-preflight-000",
+        "schema": null,
+        "schema_version": null
+      },
+      "status": "SUCCEEDED",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX051_20261020"
+        },
+        "evidence_id": "6afc9e43e9887e6855967a8232f9c49f57ed0927e9367f16c1e0108cbcc7490b.json",
+        "sha256": "6afc9e43e9887e6855967a8232f9c49f57ed0927e9367f16c1e0108cbcc7490b",
+        "media_type": "application/json",
+        "name": "followthrough-anchor-000-original_c9502_control",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "0c310b0d4f4970b387ee5153690522dab464423f2a33aa8f91372ab37f7cc9ba",
+      "audit": null,
+      "error": null,
+      "request_content_sha256": "6562128e72bb485373e34692b7b785e18c5174d830480116bab403215ddd7557",
+      "runtime_binding_hash": "5b3a25271cb636dd707c1ee564ad5a162dd671a23690463b20dc149191ec2465",
+      "exception": "KeyError('shock_anchor_close_RUNTIME_HFQ')"
+    },
+    "counts": "One actual engineSUCCEEDED funded dispatch, one separate inline audit failure. It is not an engineFAILED outcome and is not erased by later review."
+  },
+  "permitted_minimal_correction": [
+    "Preserve original strategy source, originalrunner/auditor, source/execution lock, account/result and original audit=null/exception receipt unchanged.",
+    "Create successor auditorv2 with a pinned public sourceHFQ read and formalfirstanchor created/index identity to independently rebuild frozenClose/ATR0 and test all formalconditions/targets/overlaps/lifecycle. Derived anchor evidence must be named reconstructed, not directlyobserved; no fill0 or fabricated schema fields.",
+    "Create explicit runnerv2 with smallest reviewed ASTdifference: import corrected auditor, authenticate public execution_lock_v2 parentchain and record auditrevisionref for subsequent1/2 receipts. No runtime monkeypatch, silent fallback or modification of original source economics.",
+    "Publish immutable audit/runner revision lock and reviews, independently authenticate the same original000 account with corrected audit plus AexactC9502 fullledger gate. New recoverycontrolgate explicitly links original inlinefailure and followup PASS, never overwrite originalreceipt or claim originalinlinepassed.",
+    "Only after A/B reviewed correction and recoverycontrolgate may dispatch original remaining two fixed profiles. Samecandidate implementation/parameters/input identities, original fees/T+1/pending/hold/pause and annual goals."
+  ],
+  "account_budget_effect": {
+    "already_dispatched": 1,
+    "new_control_dispatches_for_correction": 0,
+    "remaining_original_treatments": 2,
+    "new_fits": 0,
+    "new_supplier_calls": 0,
+    "economic_source_changes": 0
+  },
+  "failure_policy": "If corrected audit does not authenticate same originalcontrol or evidence identity, stop dependent dispatches. Do not change tolerances, add missingraw fallback or reevaluate blindly.",
+  "bindings": {
+    "research/S014/experiments/EX051_20261020/src/strategy_runtime/strategies/followthrough_anchor.py": "a97a53b0d277ef4ee5702cc3b846ce8831fd8b182c2afca83159f31f0458f670",
+    "research/S014/experiments/EX051_20261020/src/run_accounts.py": "83090d4c8055a4b0b8a29408e007e9e6573665cf9fa67100b56ba3043a5288ba",
+    "research/S014/experiments/EX051_20261020/src/audit_accounts.py": "d97af4461b24ab3171c8e067abb9db9b848265f00f754f8e6334df2eeb8bc271",
+    "research/S014/experiments/EX051_20261020/protocols/execution_lock.json": "31f34e87ccac549e7d82fed2ab721db55ee28ff7c3925a77721afac973e663ad",
+    "research/S014/experiments/EX051_20261020/others/accounts/run-000.json": "586f2d48f37dad9be5bd7c7c3d637be16944446c55957667fe1d31dc511ec17e",
+    "research/S014/materials/20261020_followthrough_exit_diagnosis/method_decision.json": "a65f0eb58b41846a3214222ac9bb8c6e8eeba40b535ce1ba920bba74713d2e68",
+    "research/S014/materials/20261020_followthrough_exit_diagnosis/accounting/anchor_account_000_independent_review.json": "69df2e720f837e58021bce4c618408ef6b40047ba86dc1d2afa86fe63694993d"
+  }
+}

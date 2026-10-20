@@ -1,0 +1,98 @@
+{
+  "status": "AUTHENTICATED_ACTUAL_POPULATION_ONLY_NO_ALTERNATIVE_RETURNS",
+  "account_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX050_20261020"
+    },
+    "evidence_id": "83327564961b13c1bc8e36cdf4e5c78ad35896a7e26f8595b6c3215889533ac9.json",
+    "sha256": "83327564961b13c1bc8e36cdf4e5c78ad35896a7e26f8595b6c3215889533ac9",
+    "media_type": "application/json",
+    "name": "shock-state-policy-002-first_shock_after_entry_day_hold",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  },
+  "result_hash": "63b4ce767292ebdfaa71e23f56981eda61e08f5bbf2e6de6c8814bd6da5a2757",
+  "binding_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX050_20261020"
+    },
+    "evidence_id": "43ec16e678a2fac8b95af06212a226f4bae528bada3222cfd1c2eae1f525a0a2.json",
+    "sha256": "43ec16e678a2fac8b95af06212a226f4bae528bada3222cfd1c2eae1f525a0a2",
+    "media_type": "application/json",
+    "name": "ex050-binding-002",
+    "schema": null,
+    "schema_version": null
+  },
+  "actual_review": {
+    "path": "research/S014/materials/20261020_shock_state_diagnosis/accounting/policy_account_002_independent_review.json",
+    "sha256": "a45adbdf991b0d6b1343ed06aa217a0c77b729cab525d86bad87068bfb217f35"
+  },
+  "source_sha256": "ac4fcdbdc5c46b1d43f31f53dda2de0635fea8f4f0cff8889a083a86f87e76f3",
+  "execution_lock_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX050_20261020"
+    },
+    "evidence_id": "3eac91486ea2f0150aad50db471840cb9ec4fa71ede69feb7bb4e6d5c210d0a4.json",
+    "sha256": "3eac91486ea2f0150aad50db471840cb9ec4fa71ede69feb7bb4e6d5c210d0a4",
+    "media_type": "application/json",
+    "name": "ex050-execution-lock-v1",
+    "schema": null,
+    "schema_version": null
+  },
+  "all_first_SHOCK_actual_cycles": 21,
+  "selected_hold_age_ge1_cycles": 16,
+  "year_counts": {
+    "2020": 1,
+    "2021": 3,
+    "2022": 0,
+    "2023": 3,
+    "2024": 3,
+    "2025": 1,
+    "2026": 5
+  },
+  "first_post_same_cycle": 16,
+  "first_post_lower_anchor": 6,
+  "first_post_lower_existing_other_exit": 1.0,
+  "first_post_lower_distinct_action": 5,
+  "original_actual_exit_reason_overlap": {
+    "deadline_exit": 15,
+    "selected_cost_exit|ordinary_support_exit": 1
+  },
+  "input_proof": {
+    "source_prepared": {
+      "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+      "preparation_id": "9f5bf7a5-417e-4b21-b3a6-e1e05ccf1b49",
+      "manifest_sha256": "5d1b258cf4661f15973b06450a6360940a0d22e5d441c21fa239a311f32d4053"
+    },
+    "source_market_request": {
+      "dataset": "stock.ohlcv",
+      "symbol": "600722.SH",
+      "start": "2019-12-31",
+      "end": "2026-10-14",
+      "required_cutoff": "2026-10-14",
+      "frequency": "daily",
+      "parameters": {},
+      "parameter_type": "NoParameters",
+      "coverage": null
+    },
+    "source_market_content_sha256": "8fe13ddf2bec300fc3f083e47e343c9bc0e9ca2165325e21d701ca3e8b970ad1",
+    "prepared_only_public_fetches": 1,
+    "new_preparations": 0,
+    "raw_market_exports": 0
+  },
+  "implementation_sha256": "f3d80d13cb87a124aba06e813088ac862f0c1d887462bfc22a4341b1d6525ad2",
+  "new_fits": 0,
+  "new_supplier_calls": 0,
+  "new_accounts": 0,
+  "new_counterfactual_outcomes": 0,
+  "scope": "Existing actual D/nextD observations only. nextDclose is known at nextD close, never at original SHOCK D. No replacement fill/profit or future labels computed."
+}

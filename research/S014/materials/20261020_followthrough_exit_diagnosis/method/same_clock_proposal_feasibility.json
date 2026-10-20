@@ -1,0 +1,86 @@
+{
+  "status": "METHOD_FEASIBLE_FIXED_SAME_CLOCK_THREE_ARM_PROPOSAL_PENDING_ROOT_LOCK_NO_IMPLEMENTATION",
+  "reviewer": "C",
+  "root_proposal": {
+    "path": "research/S014/materials/20261020_followthrough_exit_diagnosis/method_proposal.json",
+    "sha256": "0d8a3427c131b747f3321a05f7d88e1bc5037baca77f269dfe87d95f314c34e5"
+  },
+  "parent_preliminary_feasibility": {
+    "path": "research/S014/materials/20261020_followthrough_exit_diagnosis/method/method_feasibility.json",
+    "sha256": "8c2d30c8682012ea789b4d716b0c99216a90ed4938d56c052935649c240f2440"
+  },
+  "supersedes_recommendation_only": "The preliminary two-account suggestion referred to choosing just one mechanism. Root now proposes three same-clock arms to isolate zero versus1ATR priceboundary; accept that focused contrast. ONE_CHECK remains historical/unselected, no implied fourth arm.",
+  "judgment": "技术可行，直接3完整连续账户优于重建局部模拟器。三臂共用原C9502首次急涨后延持逻辑；两个处理臂都在余下周期监控冻结锚点，仅价格边界不同。",
+  "canonical_profiles_proposed": [
+    "ORIGINAL_C9502_CONTROL",
+    "SHOCK_ANCHOR_ZERO",
+    "SHOCK_ANCHOR_FROZEN_1ATR"
+  ],
+  "minimal_state": "Independent anchor_index, anchor_close, optional frozen_ATR0; use original shock_assessed/first_hold lifecycle for creation, not support protected_cycle. No daily peak or moving anchor. A single strong confirmation_profile enum; no date/year/threshold/period parameters.",
+  "creation": "At own actualcycle first eligible positiveP rawSHOCK D0 when age>=1 selects continuinghold. ZERO freezes source-runtimeHFQ C_D0;1ATR freezes the same C_D0 and original atr20_prior[D0] endingD0-1. ActualBUY/SELL clear anchor, failedBUY never creates one. All arms otherwise internally fix original C9502 age profile and original own realizedloss pause/cost.",
+  "common_clock": "Only eligible sourceD with i>anchor_index while held and no inheritedpending/mandatory deadline. Monitor until actualSELL; neither treatment compares on D0. No feature from terminal executionE2026-10-15, lastsourceD2026-10-14 remains.",
+  "zero": "C_D<anchor_close, strict; equality does not trigger.",
+  "oneATR": "anchor_close-C_D>=frozen_ATR0, inclusive boundary and direct same-runtime-unit subtraction. Do not replace with currentATR, a rolling peak, netmark profitability or fee-adjusted anchor; firstSHOCK required positiveP but later failure may be positive or negative.",
+  "baseline_and_unknown": "Baseline must remain original C9502 on all old columns and economics and must not acquire a new requiredATR dependency merely to populate diagnostics. ZERO requires finite sourceanchor; only1ATR additionally requires finite positive ATR0 at its actual required creation node and explicitly fails otherwise. No imputation or fallback. Declare new finite SRTflags separately from nullable raw evidence.",
+  "precedence": "Inheritedpending/expiry cannot be cancelled. Newtrigger requests the same nextE MARKETSELL alongside unchanged currentATR NET cost/support rules. Keep rawtrigger, selectednewexit and originalcost/support/deadline overlaps; do not label one exclusive cause when several hold. Once pending, a price recovery does not cancel sale; originalblockedSELL persists with entry/deadline/reservation unchanged.",
+  "cash_and_units": "Same full runtimeHFQ for anchor/currentClose/ATR0. Execution uses original anchoredHFQ_RESEARCH/RESEARCH_UNIT and publicresolver/fees/tick/lots/cash. Dclose is a decision, not a fillprice or profit guarantee; E gap or delayedlimit/suspension may turn markprofit into completednetloss and own i+11 one-shot pause. Whole continuous account captures later participation.",
+  "old_routes": [
+    {
+      "route": "EX006 positive-mark with ret1<0",
+      "source": "research/S014/experiments/EX006_20261016/protocols/design.json exit_parent/exit_control; others/report.md:82-84",
+      "negative_evidence": "Eight horizon/checkpoint differences poolednegative; cannot call a simple down-close a newly proven signal. ONE_CHECK zero would be equivalent to nextD ret1<0, so root explicitly did not select it. Persistent eventanchor remains a distinct clock/role, not new data."
+    },
+    {
+      "route": "EX043 dynamic peak/currentATR giveback",
+      "source": "research/S014/experiments/EX043_20261019/src/strategy_runtime/strategies/exante_hold_exit.py:273-288",
+      "difference": "Old rollingpeak and peaknetgain>=2*currentATR gate vs frozen firstSHOCK Close and one frozen eventATR, neither updated. Old negative results remain counterevidence; different action does not imply positive expectancy."
+    },
+    {
+      "route": "EX007 holding-path representation",
+      "source": "research/S014/experiments/EX007_20261017/others/report.md:45",
+      "counterevidence": "Holdingpath H10 had small+0.067pp vsbaseline yet-0.236pp vsalwaysfixedhold; other horizonsnegative. Keep the small favorable exception and overall lack of dependable increment, without declaring all pricepath rules answered."
+    },
+    {
+      "route": "EX030 old support recovery",
+      "source": "research/S014/experiments/EX030_20261018/others/report.md:4,73,99",
+      "difference": "Prior S5 breakanchor/reentry role did not support the proposed old filter; new anchor is an actualheld firstSHOCK event and exit role. Never rebrand all oldanchor logic as new."
+    }
+  ],
+  "focused_checks": [
+    "Freshcontrol pure old-column exact and actual full old-observation/funded-ledger exact0 gate before treatments",
+    "First ownSHOCK age0 unchanged; age>=1 anchors once; laterSHOCK no reanchor; no sameD trigger",
+    "Same persistent eligible clock for ZERO/1ATR, nextD pass then latercross still monitored",
+    "ZERO equalitynontrigger;1ATR exactboundarytrigger; frozenATR remains constant when futureATR moves",
+    "Cost/support/deadline overlap and inheritedpending unaffected; pending not cancelled by recovery; SELLpublic OPEN/SESSION and SUSPENDED handling inherited",
+    "ActualBUY/SELL reset, failedBUY no phantom; originalH10/reserve/own strict completedloss feedback including sameSALE-D slot semantics",
+    "Causalprefix/futureperturbation and unknownrequiredfield explicitfail only in relevant treatment; baseline has no new dependency",
+    "Distinct newanchorstate, olddynamicstate, targetD and fundedE firstdates; Dheld daily[D]/nextE clock and initial100000/0 retained; cutoff pending/terminal inventory no extension"
+  ],
+  "minimal_reuse": "Copy exact EX050 age strategy with a constant oldpolicy property and one confirmation enum; use original EX050 runner/offline_inputs/v2internal audit and Afinancial audit with only newanchor lifecycle/trigger checks. No new shared generic interface, local counterfactual engine, featureoracle rerun or platform change.",
+  "resource_if_root_locks": {
+    "full_accounts": 3,
+    "fresh_control": 1,
+    "fixed_treatments": 2,
+    "new_fits": 0,
+    "new_vendor_calls": 0,
+    "new_component_simulators": 0,
+    "formal_candidate_registrations": 0
+  },
+  "economic_boundary": "Original seven annualreturn/strictDD/frequency hard goals unchanged, partial2026notannualized; no addedprofit floor/buffer-to-economic-target/noharm/statistical veto. Same-clock treatment includes2026good continuation counterexamples rather than year filtering.",
+  "new_activity_now": {
+    "experiments_created": 0,
+    "source_implementations": 0,
+    "accounts": 0,
+    "future_labels_or_ATR_hits_computed": 0,
+    "market_fetches": 0
+  },
+  "source_bindings": {
+    "research/S014/experiments/EX006_20261016/protocols/design.json": "6bd9166e407ba6ab02dd29982d7c9c87b1463d7a9b686ece2215cb9c577b809c",
+    "research/S014/experiments/EX006_20261016/others/report.md": "1b298fd355f6c0fc8b961760baabec333cbe27dc5c636b2750bfd2edbe84e4f3",
+    "research/S014/experiments/EX007_20261017/others/report.md": "07c8530228d78015b23f7b5616c391feb4c26cfa0f8b81bcf5a3946558a64118",
+    "research/S014/experiments/EX050_20261020/src/strategy_runtime/strategies/shock_state_policy.py": "ac4fcdbdc5c46b1d43f31f53dda2de0635fea8f4f0cff8889a083a86f87e76f3",
+    "research/S014/experiments/EX050_20261020/src/run_accounts.py": "3eea3fcd79b0bb80f4360de64b666b1745da52179a28a034d37d68e566180bcb",
+    "research/S014/experiments/EX050_20261020/src/audit_accounts.py": "07a23131db5a81e726b3b53ac8e44bf4e9e6cfea190541a8e5534e84f72e4b78"
+  },
+  "next_action": "Root final fixed three-arm lock after A/B method reviews; then source and focusedprecheck, deltaaudits/publiclocal lock, freshC9502 full control independentPASS, then both treatments. No implementation before rootlock."
+}

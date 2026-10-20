@@ -1,0 +1,111 @@
+{
+  "status": "METHOD_REVIEW_CANDIDATES_ONLY_PENDING_ROOT_SELECTION_AND_LOCK",
+  "reviewer": "B",
+  "blocking_findings": [],
+  "reviewed_hashes": {
+    "research/S014/experiments/EX006_20261016/src/attribution.py": "f1eb6d4dee250ddf526e5bd678ecfa35ef4b5217bb8aca459af740778c4c1b8d",
+    "research/S014/experiments/EX006_20261016/others/report.md": "1b298fd355f6c0fc8b961760baabec333cbe27dc5c636b2750bfd2edbe84e4f3",
+    "research/S014/experiments/EX007_20261017/src/components.py": "ac5bafe27dbfe61bd2f13b471fc2803ab147e9c131bd840b3af6d7768c3bd276",
+    "research/S014/experiments/EX007_20261017/others/report.md": "07c8530228d78015b23f7b5616c391feb4c26cfa0f8b81bcf5a3946558a64118",
+    "research/S014/experiments/EX008_20261017/src/features.py": "7b9f08eb013dd38f73ce8c638821f0bea648a14d1ef0dc186fb950a2b4c9ac7a",
+    "research/S014/experiments/EX008_20261017/others/report.md": "438116ebb46055204acba05b89efa09d2140df622722548f3985248054b9a87b",
+    "research/S014/experiments/EX013_20261017/src/features.py": "04072cd720047fb22947780778a031cf87fbfda7c639b5f783af505cb0cdeea8",
+    "research/S014/experiments/EX013_20261017/src/features_v2.py": "0abe6e8e44c7089a332475662bdd5dede8669c54d4f56a0d3c95b06f37ce538c",
+    "research/S014/experiments/EX013_20261017/src/direct.py": "fe7ad619da155b9bfb41d968264841f9a40a34975362d35bd6e1dc39e98f0353",
+    "research/S014/experiments/EX013_20261017/others/report.md": "9004b75f2859306bc0735921133340a52831d612f8ff62d6048621f8a77660f1",
+    "research/S014/experiments/EX043_20261019/src/strategy_runtime/strategies/exante_hold_exit.py": "e980a552367e9354a5f2fcfcd411e5c6a64a408ecb83bed115aa9b578029e57a",
+    "research/S014/materials/20261019_exante_hold_exit/report.md": "2d0f6ecd9571119514cc0cf67405fab7f2b531b27d9278537f0ad3a7b90f20b5",
+    "research/S014/materials/20261020_followthrough_exit_diagnosis/authorization.json": "b9bc947ed85aa328bd7aa0eeaa329c2419c0d815803373714efed870f3876c58",
+    "research/S014/materials/20261020_followthrough_exit_diagnosis/questions.json": "58759e6b6539f1259d9e985fcc3945fb7b828a8ea4d99cdc3cf110c2dfb41ed5",
+    "research/S014/materials/20261020_followthrough_exit_diagnosis/baseline_integrity.json": "b9c50087480975fac8e9b891ebd9fa32d42963b208c269c60acfd393730ef789"
+  },
+  "old_route_findings": [
+    {
+      "route": "EX006 profitable one-day weakening",
+      "source_anchors": [
+        "research/S014/experiments/EX006_20261016/src/attribution.py:76",
+        "research/S014/experiments/EX006_20261016/src/attribution.py:84",
+        "research/S014/experiments/EX006_20261016/others/report.md:77"
+      ],
+      "fact": "At entry-close or fixed-horizon midpoint, selected=known_mark_net>0 AND ret1<0; label is next-public-executable earlyexit minus fixedexit, sameQ and bothfees. Eight horizon/checkpoint pooled condition contrasts negative;20day2026 midpoint early sale mean21.019% versus fixed41.022%, a20.003pp opportunity loss.",
+      "applies": "ONE_CHECK at the immediate next source session is algebraically that session ret1<0 because prior close equals fixed SHOCK_Dclose. Price information is old, not a novel signal.",
+      "does_not_answer": "EX006 did not restrict to C9502 first held-SHOCK continuation, did not use the next-after-SHOCK checkpoint, and did not run its own loss-pause/reentry/cash feedback. Proposed rule has no added currentP>0 filter. Old negative evidence lowers the prior but cannot veto the new exact responsibility."
+    },
+    {
+      "route": "EX007 holding-path and once-only decisions",
+      "source_anchors": [
+        "research/S014/experiments/EX007_20261017/src/components.py:9",
+        "research/S014/experiments/EX007_20261017/src/components.py:43",
+        "research/S014/experiments/EX007_20261017/others/report.md:29"
+      ],
+      "fact": "Already tested netmark, peakmark giveback, giveback/ATR and profit-per-heldday on completed fixed5/10/20day midpoint decisions with ridge/tree and strong simple controls. Holding-path10day weak increment over baseline still lost versus simply continuing; no supported general hold/exit signal.",
+      "applies": "Do not call known profit deterioration, extra completed-day information or a once-only probe new information.",
+      "does_not_answer": "No persistent SHOCK-event-close anchor, no immediate followthrough check after an AGE firstSHOCK latch, and no current continuous account feedback. Negative fitted holding-path results do not establish every fixed local action is useless."
+    },
+    {
+      "route": "EX008 overnight/intraday failure",
+      "source_anchors": [
+        "research/S014/experiments/EX008_20261017/src/features.py:36",
+        "research/S014/experiments/EX008_20261017/others/report.md:27",
+        "research/S014/experiments/EX008_20261017/others/report.md:104"
+      ],
+      "fact": "gap_up_fade is open>priorclose AND close<open; upper_failure is intraday upperlimit touch without sealing. Highopen/fade had weak short-horizon evidence and10day opposite direction. These were entry-label/model/event contrasts.",
+      "applies": "Intraday reversal and nextE gap risk are established competing explanations. A nextDclose below priorSHOCKclose is not the same as close<currentopen.",
+      "does_not_answer": "Neither is the proposed cross-session fixedanchor condition or an AGE held-exit policy. Do not replace the locked close-to-anchor rule with gapupfade or claim that study certified an exit."
+    },
+    {
+      "route": "EX013 fixed prior event boundary and return-shape memory",
+      "source_anchors": [
+        "research/S014/experiments/EX013_20261017/src/features.py:46",
+        "research/S014/experiments/EX013_20261017/src/features_v2.py:23",
+        "research/S014/experiments/EX013_20261017/src/direct.py:29",
+        "research/S014/experiments/EX013_20261017/others/report.md:12",
+        "research/S014/experiments/EX013_20261017/others/report.md:77"
+      ],
+      "fact": "Already stored a pre-breakout20day-high level with eventage and retest/failure/reclaim, persisting up to20days. Corrected firstretest records any first touch before successful hold. Direct22 firstretest observations had mixed horizon direction; no added effective use.",
+      "applies": "A fixed historical event level plus subsequent close test is an old representation pattern. Persistent SHOCKclose memory is a new anchor/action context, not a new data family.",
+      "does_not_answer": "Old boundary is prior20day high around a breakout, not first heldSHOCK closing price; population and entry-label/direct/fitted duties differ. Neither old failure nor adding new anchor automatically proves current risk-control usefulness."
+    },
+    {
+      "route": "EX043 funded PROFIT_GIVEBACK and ENTRY_GRACE",
+      "source_anchors": [
+        "research/S014/experiments/EX043_20261019/src/strategy_runtime/strategies/exante_hold_exit.py:280",
+        "research/S014/materials/20261019_exante_hold_exit/report.md:9",
+        "research/S014/materials/20261019_exante_hold_exit/report.md:38",
+        "research/S014/materials/20261019_exante_hold_exit/report.md:69"
+      ],
+      "fact": "Funded giveback rule uses actualentry-to-D highest close, net peak gain>=2 priorATR and drop>=1 priorATR; it is continuous, updates peak and may activate through ATR contraction. ENTRY_GRACE is one-entry-day support exception, nextD restores ordinarysupport. Grace+giveback passed4/6 complete-year returns versus5/6 grace+SHOCK in that original no-cost/no-loss-pause context.",
+      "applies": "Profit peak protection and a limited confirmation period have been executed already. Do not market the whole idea as new or discard those negative opportunity costs.",
+      "does_not_answer": "New anchor is immutable firstSHOCKclose, not actualentry cost or running peak; it has noATR/profit threshold and occurs afterAGE continued. Context includes fixedC9502 cost/loss feedback. One nextD check is a different clock from one-entry-day support grace."
+    }
+  ],
+  "main_judgment": "Worth a bounded action-responsibility test, not a new information discovery. The strongest old counterevidence is precisely that a profitable position plus a down day can exit too early in strongcontinuation years. New evidence must therefore preserve full2020-26 own-cycle population and2026 counterexamples, not just repair knownMarch2025.",
+  "recommended_distinction": {
+    "ONE_CHECK": "Set anchor only when own firstSHOCK age>=1 actually selectsAGE continuation. At the immediately following original source decision session D1, if still held and not already mandatory/pending, sourceClose[D1]<anchor triggers original nextE SELL. If >=anchor, consume this onecheck permanently; do not silently check a later day. This is onebar followthrough failure/ret1<0, not a pre-SHOCK signal or a confirmation before any continuation exposure.",
+    "ANCHOR_CYCLE": "Freeze the same originalSHOCKclose once, never replace with laterSHOCK/latestclose/peak. At each subsequent originalD until realSELL, first close<anchor may trigger nextE SELL. It tests cumulative later failure, not merely the firstdown day; it changes the observation opportunity set/holding duration.",
+    "comparator": "Fresh exact C9502 control plus ONE_CHECK plus ANCHOR_CYCLE is the minimum direct comparison if root wants to distinguish one-session confirmation from persistent memory. If root selects onlycontrol+ONE_CHECK, explicitly leave persistentanchor unanswered rather than switch to it after outcomes.",
+    "not_a_factorial": "Do not add both simultaneously, optimize window/buffer, impose a newly chosen profitfilter or infer independent causes from overlapping exit counts. Only root-locked separate actions may run."
+  },
+  "required_clock_and_lifecycle": [
+    "D0 is own actually held first eligible positiveP SHOCK with own age>=1, sameC9502 latch. Store source fullHFQ close and original sourceindex; account anchored price is not the comparison domain. age0 originalSHOCK exit does not activate newanchor.",
+    "D1 means next original issued sourceD/session, not next sample satisfying condition or next posthoc profitable opportunity. Root lock must disambiguate questions wording first actual eligible source decision: do not skip an original checkpoint to a later discretionary D when it conflicts with pending/expiry.",
+    "At D0 no new followthrough fact exists. Condition uses D1close or laterclose; earliest extraSELL intent is that D, model/publicfilled at its nextE. No originalSHOCKD backfill, Eopen/high/low feature or decisionclose fill.",
+    "If originalcost/support/deadline/pending already exits or sells bycheckpoint, record overlapping/preempted/not-observed reason; no newcycle or delayed reset. The newrisk trigger cannot cancel a pendingSELL, changeH10/reservation, skipfees or guarantee a positive realized exit.",
+    "ONE_CHECK onlyonce even when itpasses. Persistentanchor does not reset on anotherSHOCK. Both reset solely at actualSELL/realBUY lifecycle; failedBUY creates noanchor, laterown realcompletion/loss pause remain causal.",
+    "No originalD after2026-10-14. A firstSHOCK with no next issuedD beforecutoff has an unobserved/righttruncated check, not a fabricatedD10/15 decision or forcedliquidation. A required existingD with invalid/missingstate must fail explicitly, not silently choose a later validday.",
+    "Do not add a currentP>0 gate to the proposed closecomparison: doing so can postpone a loss exit and changes the fixed hypothesis. Current profit sign can be reported as a competing explanation without posthoc exclusions."
+  ],
+  "minimum_informative_readout": [
+    "All control actualAGE continuation cycles and firstpostSHOCK availability, including noevent years/preemptions/cutoff and sameD overlap. New whole policies use own actualhistory, not the frozen control dates.",
+    "Report conditionTRUE, selectedextraexit versus originalotherexit, actualnextE delay/price/fees and own loss-pause/reentry effects separately. Earlier exit can reduce loss but cause costly downtime or miss a later profitable move.",
+    "Show2025March and all2026 goodcontinuations/Jan6negative as alreadyseen cases, with exactremaining clock. No outcome-based eventselection, removing losses, CI/minimum-N/noharm veto or reassignment of original annualgoals.",
+    "If ONE_CHECK and persistentanchor have identical economicpaths, say observed actions are redundant on this history; do not claim two independent confirmations. If different, identify first later anchor-only trigger and the entire own funding/participation path before assigning mechanism."
+  ],
+  "scope": "Read-only originalS014 source/report review. No new state values, alternative labels, policy replay, preparedfetch, funded account, external source or statistical threshold computed.",
+  "new_market_calls": 0,
+  "new_prepared_fetches": 0,
+  "new_labels": 0,
+  "new_funded_accounts": 0,
+  "new_fits": 0,
+  "next_action": "Root chooses and locks concrete clock/action variants after population/method reviews; only then source/focusedtoy/exactcontrol/actual-account workflow. This document does not authorize newsource or accounts."
+}

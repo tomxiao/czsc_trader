@@ -1,0 +1,68 @@
+{
+  "status": "PASS",
+  "reviewer": "A",
+  "source_sha256": "a97a53b0d277ef4ee5702cc3b846ce8831fd8b182c2afca83159f31f0458f670",
+  "source": {
+    "path": "research/S014/experiments/EX051_20261020/src/strategy_runtime/strategies/followthrough_anchor.py",
+    "sha256": "a97a53b0d277ef4ee5702cc3b846ce8831fd8b182c2afca83159f31f0458f670"
+  },
+  "prior_source": {
+    "path": "research/S014/experiments/EX050_20261020/src/strategy_runtime/strategies/shock_state_policy.py",
+    "sha256": "ac4fcdbdc5c46b1d43f31f53dda2de0635fea8f4f0cff8889a083a86f87e76f3"
+  },
+  "implementation": {
+    "path": "research/S014/materials/20261020_followthrough_exit_diagnosis/accounting/review_anchor_source.py",
+    "sha256": "ad31b48f02fb45f98c62a0c1d888898d892fc77fce4871bb1c4240088ceec0e9"
+  },
+  "check_count": 5852,
+  "checks": {
+    "frozen source byte": 1,
+    "fixed original AGE LOSS COST roles": 3,
+    "original contract inputs": 3,
+    "original contract decision": 3,
+    "original contract execution": 3,
+    "original contract monitoring": 3,
+    "original contract capabilities": 3,
+    "strong canonical enum rejects extra configuration": 4,
+    "unchanged helper AST completed_sign": 1,
+    "unchanged helper AST causal_features": 1,
+    "unchanged helper AST tick": 1,
+    "unchanged helper AST buy_limit": 1,
+    "unchanged helper AST calendar_request": 1,
+    "unchanged helper AST derive_calculation_scope": 1,
+    "unchanged helper AST non_final_day_dominated": 1,
+    "control every original column exact": 1,
+    "independent frozen own-cycle anchor_created_today": 333,
+    "independent frozen own-cycle anchor_known": 333,
+    "independent frozen own-cycle anchor_atr_known": 333,
+    "independent frozen own-cycle anchor_index": 333,
+    "independent frozen own-cycle anchor_later_session": 333,
+    "independent frozen own-cycle anchor_raw_condition": 333,
+    "independent frozen own-cycle anchor_exit_eligible": 333,
+    "independent frozen own-cycle selected_anchor_exit": 333,
+    "independent frozen own-cycle anchor_exit_added": 333,
+    "independent frozen own-cycle anchor_cost_overlap": 333,
+    "independent frozen own-cycle anchor_support_overlap": 333,
+    "independent frozen own-cycle anchor_deadline_overlap": 333,
+    "independent frozen own-cycle anchor_pending_overlap": 333,
+    "independent frozen own-cycle selected_combined_risk_exit": 333,
+    "frozen raw field known versus null": 666,
+    "legacy risk preserves original role": 333,
+    "pending expiry combinedrisk S5 priority": 138,
+    "fixture has event creation or exact control": 3,
+    "frozen anchor causal prefix": 9,
+    "positive finite required frozen input": 10
+  },
+  "manual_review": [
+    "ZERO and1ATR share all-later-D cycle clock; firstD0 excluded. Close/ATR freeze once and clear actualBUY/SELL only.",
+    "ZERO/control have no required frozenATR;1ATR requires finite positive originalATR0, never currentATR substitution.",
+    "Original AGE state, rawprofit/risk observations retained; selected_combined_risk_exit represents actual oldriskORanchor. Do not misread legacy selected_risk_exit as full current action.",
+    "Anchor exit no currentP>0 gate, preserves pending/expiry/S5/cost and loss-pause/reservation/publicfill; no source nextE lookahead.",
+    "Actual new-source control exactC9502 and three funded economics remain required after public lock."
+  ],
+  "new_accounts": 0,
+  "new_actual_input_fetches": 0,
+  "new_ATR_hit_inventory": 0,
+  "new_fits": 0,
+  "new_supplier_calls": 0
+}

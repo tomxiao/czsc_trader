@@ -1,0 +1,19 @@
+{
+  "status": "INDEPENDENT_CONTROL_VERIFIED_WITH_EXPLICIT_RAW_ANCHOR_RECONSTRUCTION",
+  "incident": "EX051000 engine SUCCEEDED but original internal audit raised KeyError('shock_anchor_close_RUNTIME_HFQ'). Active treatments stopped; no funded account retry.",
+  "formal_schema": "Actual decisions contain16 finite anchor diagnostics/index/combinedrisk fields. Source history contains shock_anchor_close_RUNTIME_HFQ and shock_anchor_ATR0_RUNTIME_HFQ, but these two raw fields are not in the formal account decision projection.",
+  "correction": "Keep original source, account, receipt, source lock and internal failure unchanged. Independently derive sourceClose at own first event and frozen original ATR0 from authenticated original source assets/event index; verify every formal index/known/rawcondition/eligible/selected/overlap/combinedrisk field and actual order/financial path. Never claim raw anchors were directly observed in the account.",
+  "old_independent_helpers_retained": ["anchor_lifecycle.py", "audit_anchor_accounts.py"],
+  "successor_helpers": ["anchor_lifecycle_v2.py", "audit_anchor_accounts_v2.py"],
+  "independent_failure_distinction": "A old helpers shared the direct-column assumption but had not been run on actual accounts or produced a failed actual review. They are retained. The one actual audit expression failure is C inline internal audit, not an engine/account failure.",
+  "same_control_ref_sha256": "6afc9e43e9887e6855967a8232f9c49f57ed0927e9367f16c1e0108cbcc7490b",
+  "same_control_result_hash": "0c310b0d4f4970b387ee5153690522dab464423f2a33aa8f91372ab37f7cc9ba",
+  "original_dispatch_lock_sha256": "31f34e87ccac549e7d82fed2ab721db55ee28ff7c3925a77721afac973e663ad",
+  "independent_control_review": {"path": "research/S014/materials/20261020_followthrough_exit_diagnosis/accounting/anchor_account_000_independent_review.json", "sha256": "69df2e720f837e58021bce4c618408ef6b40047ba86dc1d2afa86fe63694993d"},
+  "independent_control_checks": 588356,
+  "old_observations_and_funded_projection_tolerance": 0,
+  "new_price_epsilon": 0,
+  "source_or_platform_or_account_modified": false,
+  "funded_control_reexecuted": false,
+  "technical_sequence": "C corrected audit/runner v2 parent chain, minimal independent byte/delta review, new local publiclock and original same-control supplementary/independent gates are still required before either treatment. Original000 remains a v1 execution, never reclassified as v2."
+}
