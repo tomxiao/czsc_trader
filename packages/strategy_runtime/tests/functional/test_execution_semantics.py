@@ -10,6 +10,7 @@ from strategy_runtime import (
     ExecutionOutcome,
     ExecutionOutcomeStatus,
     ExecutionState,
+    ImplementationRef,
     PortfolioSnapshot,
     OrderType,
     RuntimeCompatibilityError,
@@ -26,6 +27,7 @@ def _instance(history):
     sessions = pd.DatetimeIndex(["2026-01-02", "2026-01-05"])
     window_sessions = sessions[1:]
     definition = SimpleNamespace(
+        implementation=ImplementationRef("fixture", "History", 1, "a" * 64),
         decision=SimpleNamespace(minimum_target=0, maximum_target=1),
         capabilities=SimpleNamespace(order_types=("LIMIT",), checkpoints=()),
     )
