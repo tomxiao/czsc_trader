@@ -1,0 +1,130 @@
+{
+  "type": "ComparisonPolicy",
+  "version": "s014-stage4-ranking-v1",
+  "bins": [
+    {
+      "type": "MetricBinSpec",
+      "metric": "NET_ANNUAL_RETURN",
+      "resolution": 0.0001,
+      "origin": 0.0,
+      "rounding": "FLOOR"
+    },
+    {
+      "type": "MetricBinSpec",
+      "metric": "DRAWDOWN_MAGNITUDE",
+      "resolution": 0.0001,
+      "origin": 0.0,
+      "rounding": "FLOOR"
+    },
+    {
+      "type": "MetricBinSpec",
+      "metric": "PARAMETER_RETURN_Q10",
+      "resolution": 0.0001,
+      "origin": 0.0,
+      "rounding": "FLOOR"
+    },
+    {
+      "type": "MetricBinSpec",
+      "metric": "PARAMETER_DRAWDOWN_Q90",
+      "resolution": 0.0001,
+      "origin": 0.0,
+      "rounding": "FLOOR"
+    },
+    {
+      "type": "MetricBinSpec",
+      "metric": "ROLLING_EXCESS_Q10",
+      "resolution": 0.0001,
+      "origin": 0.0,
+      "rounding": "FLOOR"
+    },
+    {
+      "type": "MetricBinSpec",
+      "metric": "STRESS_ANNUAL_LOSS",
+      "resolution": 0.0001,
+      "origin": 0.0,
+      "rounding": "FLOOR"
+    },
+    {
+      "type": "MetricBinSpec",
+      "metric": "PROFIT_CONCENTRATION",
+      "resolution": 0.0001,
+      "origin": 0.0,
+      "rounding": "FLOOR"
+    },
+    {
+      "type": "MetricBinSpec",
+      "metric": "FULL_SAMPLE_FREQUENCY",
+      "resolution": 0.01,
+      "origin": 0.0,
+      "rounding": "FLOOR"
+    }
+  ],
+  "pareto_basis": "RAW",
+  "missing_evidence_policy": "REQUIRE_COMPLETE",
+  "sensitivities": [
+    {
+      "type": "ComparisonVariant",
+      "name": "coarser-precision",
+      "bins": [
+        {
+          "type": "MetricBinSpec",
+          "metric": "NET_ANNUAL_RETURN",
+          "resolution": 0.001,
+          "origin": 0.0,
+          "rounding": "FLOOR"
+        },
+        {
+          "type": "MetricBinSpec",
+          "metric": "DRAWDOWN_MAGNITUDE",
+          "resolution": 0.001,
+          "origin": 0.0,
+          "rounding": "FLOOR"
+        },
+        {
+          "type": "MetricBinSpec",
+          "metric": "PARAMETER_RETURN_Q10",
+          "resolution": 0.001,
+          "origin": 0.0,
+          "rounding": "FLOOR"
+        },
+        {
+          "type": "MetricBinSpec",
+          "metric": "PARAMETER_DRAWDOWN_Q90",
+          "resolution": 0.001,
+          "origin": 0.0,
+          "rounding": "FLOOR"
+        },
+        {
+          "type": "MetricBinSpec",
+          "metric": "ROLLING_EXCESS_Q10",
+          "resolution": 0.001,
+          "origin": 0.0,
+          "rounding": "FLOOR"
+        },
+        {
+          "type": "MetricBinSpec",
+          "metric": "STRESS_ANNUAL_LOSS",
+          "resolution": 0.001,
+          "origin": 0.0,
+          "rounding": "FLOOR"
+        },
+        {
+          "type": "MetricBinSpec",
+          "metric": "PROFIT_CONCENTRATION",
+          "resolution": 0.001,
+          "origin": 0.0,
+          "rounding": "FLOOR"
+        },
+        {
+          "type": "MetricBinSpec",
+          "metric": "FULL_SAMPLE_FREQUENCY",
+          "resolution": 0.1,
+          "origin": 0.0,
+          "rounding": "FLOOR"
+        }
+      ],
+      "adjacent_swap": null
+    }
+  ],
+  "formula_version": "research-ranking-v2"
+}

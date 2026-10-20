@@ -1,0 +1,396 @@
+{
+  "type": "AssessmentPanel",
+  "request_sha256": "f8b088ca3611832de73a3abe321519ea9c99806f2d27ce260404e620b0937694",
+  "protocol_sha256": "3c6bb529b4f106cc2b7e272e697185c08e7d1f15627df3a85ae89e69062f8efb",
+  "rows": [
+    {
+      "type": "CandidateAssessment",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S014-C9524",
+        "content_sha256": "e6531a05f8700305cd1af3613791813bb2882bde51ca72bf7b18c73f44106a32"
+      },
+      "context_sha256": "a489c4438e24997a5ad1a5d9bbf8fdb0ba9be500e5fd107975d9dbc7864a1e4a",
+      "metric_version": "candidate-srt-txe-v5-market-limits",
+      "frequency_window_days": 60,
+      "baseline_scenario": {
+        "type": "EvaluationScenarioContext",
+        "one_way_cost": 0.001,
+        "measurement_tier": "FORMAL",
+        "benchmark_id": "BuyHold",
+        "benchmark_kind": "BUYHOLD",
+        "benchmark_contract_sha256": "255cffeb00ef197076cc40a9d71e82fb602b36dea738538d9cfde0427849f8ff"
+      },
+      "stress_scenario": {
+        "type": "EvaluationScenarioContext",
+        "one_way_cost": 0.002,
+        "measurement_tier": "STRESS",
+        "benchmark_id": "BuyHold",
+        "benchmark_kind": "BUYHOLD",
+        "benchmark_contract_sha256": "255cffeb00ef197076cc40a9d71e82fb602b36dea738538d9cfde0427849f8ff"
+      },
+      "diagnostics": [
+        {
+          "type": "DiagnosticValue",
+          "metric": "FULL_SAMPLE_FREQUENCY",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 3.361753958587089,
+          "reason": null,
+          "evaluation_ids": [
+            "7a4e53c9ce3f415af82a4c5fde83f2c14c181e5241f3b88edcae52710431679a"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "BENCHMARK_POSITIVE_YEAR_FREQUENCY",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 3.6065573770491803,
+          "reason": null,
+          "evaluation_ids": [
+            "7a4e53c9ce3f415af82a4c5fde83f2c14c181e5241f3b88edcae52710431679a"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "NET_ANNUAL_RETURN",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.5187990557178805,
+          "reason": null,
+          "evaluation_ids": [
+            "7a4e53c9ce3f415af82a4c5fde83f2c14c181e5241f3b88edcae52710431679a"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "DRAWDOWN_MAGNITUDE",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.2561331676830466,
+          "reason": null,
+          "evaluation_ids": [
+            "7a4e53c9ce3f415af82a4c5fde83f2c14c181e5241f3b88edcae52710431679a"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "FREQUENCY_MEDIAN",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 3.0,
+          "reason": null,
+          "evaluation_ids": [
+            "7a4e53c9ce3f415af82a4c5fde83f2c14c181e5241f3b88edcae52710431679a"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "FREQUENCY_Q10",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 2.0,
+          "reason": null,
+          "evaluation_ids": [
+            "7a4e53c9ce3f415af82a4c5fde83f2c14c181e5241f3b88edcae52710431679a"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_RETURN_DEGRADATION",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.3881639561725026,
+          "reason": null,
+          "evaluation_ids": [
+            "7a4e53c9ce3f415af82a4c5fde83f2c14c181e5241f3b88edcae52710431679a",
+            "e8f5383e154d977501021c4edcf7dbda8fb48157f81ef4e37eafa0f5c522f1ec",
+            "312dcbfd3fd4626e2991fa793280736bd3fa7b269fb39a87e518091f03c07919",
+            "8a043e2e61466f9de25efd5e8a941a384605fbbbd8381385b048c02f866df791",
+            "13dde796b088d751ebec8b43ae5780c9618f02ec7d39d04f54773b7232057f15",
+            "bd33b2491bf049e71150627da4640c0a4714a79c86e9f2bb2568ffd9bbbe9d4a",
+            "aa02f8181c6664523bfa388a30b661e58adebf40eaf93f9dc86214cb4dd550f8",
+            "38fdef68530ac264de6b11e4a8fd017e55483ff7d3bb8162b6f7f31acbc4bc68",
+            "b0db638b53f66fb64f9b23e3ade82dbe7226cbf34212ec795f42e100001c4675",
+            "604a5168620f9d5fb2ab85a1428ca41ec1521f3179b7e87e920b8ba33a92b90c",
+            "76a404ac94f01fe8167661a3b24a14858103736db8e65ad3df55d51e962551bd",
+            "a7b8fafa0284ad79f791907ab4e4a7aab2baafb68cc11bdf532a2ed76a297c51",
+            "880b4932417b1da3ecdf14db269c7eceef6602a3d7286d8c3dec0bdc0212a118",
+            "c7d746fe3dd596f2c47bb8a91c2f3e837a333787873243be01d82bc632eae1ea",
+            "2297534b2af1eea60fa182a5a1b068fc0a3a686e799fe61522cbc82244d4765a",
+            "ec6e865425e3621be9fabfedc4ca85a171411c1076f47100e3146b6225cc5c74",
+            "f10c063cc8b26fb0fb56d06afc385a9b7cf5a503e589b9260994fa8f03b4cb81",
+            "6cc31f439eb4aa47380dec4a7eb87596e4f196132b3641decc6244bc2cf506ec",
+            "c229a4687d94fb1eb3efaa3227852b2f348cae6933aec8420437cbb1d8b06827",
+            "94f3c28ac5c64a79efab0fb49713376e2c792224246cd9f93450017e51d94f55",
+            "ded6a29db6d39f87ea369e48b84013beca9d359d81de6d24da78ce5c129829e1",
+            "aca326aece1417a9f6c44232c255393fe2c3932a652c19d8fbf9e711cb67e8b2",
+            "f8604d10eb4c046728488394a13a9897acb729b6964838b6d6bb8c33cdab7298",
+            "cd5b6b2a056db9a815cca611636a7e023f18ff482b5d1442d373d4031e02e4e2",
+            "7fe75b98c09453294cf73db7ca2aa8e8741d5c9bd1459e12cbc5a92451a003a3",
+            "27677ef23a6c5fed24666ad27d5c5183030ab3143ebceb142092c43c26d8c191",
+            "926df083e0f2de02444a502cdbc1537a717039c68859d91e15305460bdf8db50",
+            "fc213bb641f2aa6ccb2b79803d953d47703c89d74e8be0deacc346dd870186eb",
+            "76df45b3d7135275983110df9fbca783e6cf8f676912a37ac674a7a9ebe42f2d",
+            "feb3de7e806491c1972c8671071af094ca0161ea84f599fd01e3baf652404747",
+            "6d82d945b4568a9ba412a67400d35483ba71eb32d40d0e02af6dccaeb32e2bb7",
+            "5d38887de021796ae7a31891434cd7da7adf8a3a3b7d0c5c01c5854a3ad1f9a3",
+            "d666c06e1ad09bb0db25f65e1481c1e0eef93e5e5691d0b6bc3b9e6aaec3a17f"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_DRAWDOWN_DEGRADATION",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.22765971408461572,
+          "reason": null,
+          "evaluation_ids": [
+            "7a4e53c9ce3f415af82a4c5fde83f2c14c181e5241f3b88edcae52710431679a",
+            "e8f5383e154d977501021c4edcf7dbda8fb48157f81ef4e37eafa0f5c522f1ec",
+            "312dcbfd3fd4626e2991fa793280736bd3fa7b269fb39a87e518091f03c07919",
+            "8a043e2e61466f9de25efd5e8a941a384605fbbbd8381385b048c02f866df791",
+            "13dde796b088d751ebec8b43ae5780c9618f02ec7d39d04f54773b7232057f15",
+            "bd33b2491bf049e71150627da4640c0a4714a79c86e9f2bb2568ffd9bbbe9d4a",
+            "aa02f8181c6664523bfa388a30b661e58adebf40eaf93f9dc86214cb4dd550f8",
+            "38fdef68530ac264de6b11e4a8fd017e55483ff7d3bb8162b6f7f31acbc4bc68",
+            "b0db638b53f66fb64f9b23e3ade82dbe7226cbf34212ec795f42e100001c4675",
+            "604a5168620f9d5fb2ab85a1428ca41ec1521f3179b7e87e920b8ba33a92b90c",
+            "76a404ac94f01fe8167661a3b24a14858103736db8e65ad3df55d51e962551bd",
+            "a7b8fafa0284ad79f791907ab4e4a7aab2baafb68cc11bdf532a2ed76a297c51",
+            "880b4932417b1da3ecdf14db269c7eceef6602a3d7286d8c3dec0bdc0212a118",
+            "c7d746fe3dd596f2c47bb8a91c2f3e837a333787873243be01d82bc632eae1ea",
+            "2297534b2af1eea60fa182a5a1b068fc0a3a686e799fe61522cbc82244d4765a",
+            "ec6e865425e3621be9fabfedc4ca85a171411c1076f47100e3146b6225cc5c74",
+            "f10c063cc8b26fb0fb56d06afc385a9b7cf5a503e589b9260994fa8f03b4cb81",
+            "6cc31f439eb4aa47380dec4a7eb87596e4f196132b3641decc6244bc2cf506ec",
+            "c229a4687d94fb1eb3efaa3227852b2f348cae6933aec8420437cbb1d8b06827",
+            "94f3c28ac5c64a79efab0fb49713376e2c792224246cd9f93450017e51d94f55",
+            "ded6a29db6d39f87ea369e48b84013beca9d359d81de6d24da78ce5c129829e1",
+            "aca326aece1417a9f6c44232c255393fe2c3932a652c19d8fbf9e711cb67e8b2",
+            "f8604d10eb4c046728488394a13a9897acb729b6964838b6d6bb8c33cdab7298",
+            "cd5b6b2a056db9a815cca611636a7e023f18ff482b5d1442d373d4031e02e4e2",
+            "7fe75b98c09453294cf73db7ca2aa8e8741d5c9bd1459e12cbc5a92451a003a3",
+            "27677ef23a6c5fed24666ad27d5c5183030ab3143ebceb142092c43c26d8c191",
+            "926df083e0f2de02444a502cdbc1537a717039c68859d91e15305460bdf8db50",
+            "fc213bb641f2aa6ccb2b79803d953d47703c89d74e8be0deacc346dd870186eb",
+            "76df45b3d7135275983110df9fbca783e6cf8f676912a37ac674a7a9ebe42f2d",
+            "feb3de7e806491c1972c8671071af094ca0161ea84f599fd01e3baf652404747",
+            "6d82d945b4568a9ba412a67400d35483ba71eb32d40d0e02af6dccaeb32e2bb7",
+            "5d38887de021796ae7a31891434cd7da7adf8a3a3b7d0c5c01c5854a3ad1f9a3",
+            "d666c06e1ad09bb0db25f65e1481c1e0eef93e5e5691d0b6bc3b9e6aaec3a17f"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_RETURN_Q10",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.13063509954537794,
+          "reason": null,
+          "evaluation_ids": [
+            "7a4e53c9ce3f415af82a4c5fde83f2c14c181e5241f3b88edcae52710431679a",
+            "e8f5383e154d977501021c4edcf7dbda8fb48157f81ef4e37eafa0f5c522f1ec",
+            "312dcbfd3fd4626e2991fa793280736bd3fa7b269fb39a87e518091f03c07919",
+            "8a043e2e61466f9de25efd5e8a941a384605fbbbd8381385b048c02f866df791",
+            "13dde796b088d751ebec8b43ae5780c9618f02ec7d39d04f54773b7232057f15",
+            "bd33b2491bf049e71150627da4640c0a4714a79c86e9f2bb2568ffd9bbbe9d4a",
+            "aa02f8181c6664523bfa388a30b661e58adebf40eaf93f9dc86214cb4dd550f8",
+            "38fdef68530ac264de6b11e4a8fd017e55483ff7d3bb8162b6f7f31acbc4bc68",
+            "b0db638b53f66fb64f9b23e3ade82dbe7226cbf34212ec795f42e100001c4675",
+            "604a5168620f9d5fb2ab85a1428ca41ec1521f3179b7e87e920b8ba33a92b90c",
+            "76a404ac94f01fe8167661a3b24a14858103736db8e65ad3df55d51e962551bd",
+            "a7b8fafa0284ad79f791907ab4e4a7aab2baafb68cc11bdf532a2ed76a297c51",
+            "880b4932417b1da3ecdf14db269c7eceef6602a3d7286d8c3dec0bdc0212a118",
+            "c7d746fe3dd596f2c47bb8a91c2f3e837a333787873243be01d82bc632eae1ea",
+            "2297534b2af1eea60fa182a5a1b068fc0a3a686e799fe61522cbc82244d4765a",
+            "ec6e865425e3621be9fabfedc4ca85a171411c1076f47100e3146b6225cc5c74",
+            "f10c063cc8b26fb0fb56d06afc385a9b7cf5a503e589b9260994fa8f03b4cb81",
+            "6cc31f439eb4aa47380dec4a7eb87596e4f196132b3641decc6244bc2cf506ec",
+            "c229a4687d94fb1eb3efaa3227852b2f348cae6933aec8420437cbb1d8b06827",
+            "94f3c28ac5c64a79efab0fb49713376e2c792224246cd9f93450017e51d94f55",
+            "ded6a29db6d39f87ea369e48b84013beca9d359d81de6d24da78ce5c129829e1",
+            "aca326aece1417a9f6c44232c255393fe2c3932a652c19d8fbf9e711cb67e8b2",
+            "f8604d10eb4c046728488394a13a9897acb729b6964838b6d6bb8c33cdab7298",
+            "cd5b6b2a056db9a815cca611636a7e023f18ff482b5d1442d373d4031e02e4e2",
+            "7fe75b98c09453294cf73db7ca2aa8e8741d5c9bd1459e12cbc5a92451a003a3",
+            "27677ef23a6c5fed24666ad27d5c5183030ab3143ebceb142092c43c26d8c191",
+            "926df083e0f2de02444a502cdbc1537a717039c68859d91e15305460bdf8db50",
+            "fc213bb641f2aa6ccb2b79803d953d47703c89d74e8be0deacc346dd870186eb",
+            "76df45b3d7135275983110df9fbca783e6cf8f676912a37ac674a7a9ebe42f2d",
+            "feb3de7e806491c1972c8671071af094ca0161ea84f599fd01e3baf652404747",
+            "6d82d945b4568a9ba412a67400d35483ba71eb32d40d0e02af6dccaeb32e2bb7",
+            "5d38887de021796ae7a31891434cd7da7adf8a3a3b7d0c5c01c5854a3ad1f9a3",
+            "d666c06e1ad09bb0db25f65e1481c1e0eef93e5e5691d0b6bc3b9e6aaec3a17f"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_DRAWDOWN_Q90",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.48379288176766233,
+          "reason": null,
+          "evaluation_ids": [
+            "7a4e53c9ce3f415af82a4c5fde83f2c14c181e5241f3b88edcae52710431679a",
+            "e8f5383e154d977501021c4edcf7dbda8fb48157f81ef4e37eafa0f5c522f1ec",
+            "312dcbfd3fd4626e2991fa793280736bd3fa7b269fb39a87e518091f03c07919",
+            "8a043e2e61466f9de25efd5e8a941a384605fbbbd8381385b048c02f866df791",
+            "13dde796b088d751ebec8b43ae5780c9618f02ec7d39d04f54773b7232057f15",
+            "bd33b2491bf049e71150627da4640c0a4714a79c86e9f2bb2568ffd9bbbe9d4a",
+            "aa02f8181c6664523bfa388a30b661e58adebf40eaf93f9dc86214cb4dd550f8",
+            "38fdef68530ac264de6b11e4a8fd017e55483ff7d3bb8162b6f7f31acbc4bc68",
+            "b0db638b53f66fb64f9b23e3ade82dbe7226cbf34212ec795f42e100001c4675",
+            "604a5168620f9d5fb2ab85a1428ca41ec1521f3179b7e87e920b8ba33a92b90c",
+            "76a404ac94f01fe8167661a3b24a14858103736db8e65ad3df55d51e962551bd",
+            "a7b8fafa0284ad79f791907ab4e4a7aab2baafb68cc11bdf532a2ed76a297c51",
+            "880b4932417b1da3ecdf14db269c7eceef6602a3d7286d8c3dec0bdc0212a118",
+            "c7d746fe3dd596f2c47bb8a91c2f3e837a333787873243be01d82bc632eae1ea",
+            "2297534b2af1eea60fa182a5a1b068fc0a3a686e799fe61522cbc82244d4765a",
+            "ec6e865425e3621be9fabfedc4ca85a171411c1076f47100e3146b6225cc5c74",
+            "f10c063cc8b26fb0fb56d06afc385a9b7cf5a503e589b9260994fa8f03b4cb81",
+            "6cc31f439eb4aa47380dec4a7eb87596e4f196132b3641decc6244bc2cf506ec",
+            "c229a4687d94fb1eb3efaa3227852b2f348cae6933aec8420437cbb1d8b06827",
+            "94f3c28ac5c64a79efab0fb49713376e2c792224246cd9f93450017e51d94f55",
+            "ded6a29db6d39f87ea369e48b84013beca9d359d81de6d24da78ce5c129829e1",
+            "aca326aece1417a9f6c44232c255393fe2c3932a652c19d8fbf9e711cb67e8b2",
+            "f8604d10eb4c046728488394a13a9897acb729b6964838b6d6bb8c33cdab7298",
+            "cd5b6b2a056db9a815cca611636a7e023f18ff482b5d1442d373d4031e02e4e2",
+            "7fe75b98c09453294cf73db7ca2aa8e8741d5c9bd1459e12cbc5a92451a003a3",
+            "27677ef23a6c5fed24666ad27d5c5183030ab3143ebceb142092c43c26d8c191",
+            "926df083e0f2de02444a502cdbc1537a717039c68859d91e15305460bdf8db50",
+            "fc213bb641f2aa6ccb2b79803d953d47703c89d74e8be0deacc346dd870186eb",
+            "76df45b3d7135275983110df9fbca783e6cf8f676912a37ac674a7a9ebe42f2d",
+            "feb3de7e806491c1972c8671071af094ca0161ea84f599fd01e3baf652404747",
+            "6d82d945b4568a9ba412a67400d35483ba71eb32d40d0e02af6dccaeb32e2bb7",
+            "5d38887de021796ae7a31891434cd7da7adf8a3a3b7d0c5c01c5854a3ad1f9a3",
+            "d666c06e1ad09bb0db25f65e1481c1e0eef93e5e5691d0b6bc3b9e6aaec3a17f"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "ROLLING_EXCESS_Q10",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": -0.1240464432248545,
+          "reason": null,
+          "evaluation_ids": [
+            "7a4e53c9ce3f415af82a4c5fde83f2c14c181e5241f3b88edcae52710431679a"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "STRESS_ANNUAL_LOSS",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.0421066941789483,
+          "reason": null,
+          "evaluation_ids": [
+            "7a4e53c9ce3f415af82a4c5fde83f2c14c181e5241f3b88edcae52710431679a",
+            "d10ea182fc049257500dc937af428d663c2b0b0789b821f960a2ee244df291fe"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PROFIT_CONCENTRATION",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.6640553817619624,
+          "reason": null,
+          "evaluation_ids": [
+            "7a4e53c9ce3f415af82a4c5fde83f2c14c181e5241f3b88edcae52710431679a"
+          ]
+        }
+      ],
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -0.028430710871617422,
+        "upper_95": 0.707935445722591,
+        "reason": null
+      },
+      "coverage_gaps": [],
+      "behavior_sha256": "302d73e3f12a02ab4060bdffacf3cee8952d93da44bddbf86b8e05eac43cde96",
+      "benchmark": {
+        "type": "BenchmarkAssessment",
+        "diagnostics": [
+          {
+            "type": "DiagnosticValue",
+            "metric": "NET_ANNUAL_RETURN",
+            "unit": "RATIO",
+            "status": "AVAILABLE",
+            "value": 0.17530367994418206,
+            "reason": null,
+            "evaluation_ids": [
+              "7a4e53c9ce3f415af82a4c5fde83f2c14c181e5241f3b88edcae52710431679a"
+            ]
+          },
+          {
+            "type": "DiagnosticValue",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "unit": "RATIO",
+            "status": "AVAILABLE",
+            "value": 0.6433660692790468,
+            "reason": null,
+            "evaluation_ids": [
+              "7a4e53c9ce3f415af82a4c5fde83f2c14c181e5241f3b88edcae52710431679a"
+            ]
+          }
+        ]
+      },
+      "parameter_context": {
+        "type": "ParameterDiagnosticContext",
+        "protocol": {
+          "type": "ParameterPerturbationProtocol",
+          "radius": 0.05,
+          "point_count": 32,
+          "seed": 13,
+          "max_attempts": 100000,
+          "distance_tolerance": 1e-10,
+          "version": "parameter-total-domain-l2-v1",
+          "random_generator": "PCG64",
+          "integer_rounding": "HALF_EVEN",
+          "quantile_method": "LINEAR"
+        },
+        "design_sha256": "74a48e880351107176bb4c8c7347d097d1c2e1e89db247453c3135a667602ecc",
+        "space_sha256": "d9c6b74c03bd24051d050a0702139a51386397691196717e155e274a4fcabf23",
+        "dimension": 10,
+        "prescribed_points": 32,
+        "valid_points": 32
+      }
+    }
+  ],
+  "family_diagnostics": [
+    {
+      "type": "FamilyDiagnostic",
+      "name": "PBO",
+      "status": "AVAILABLE",
+      "value": 0.031746031746031744,
+      "reason": null
+    },
+    {
+      "type": "FamilyDiagnostic",
+      "name": "DSR_RAW",
+      "status": "AVAILABLE",
+      "value": 0.5953067519145775,
+      "reason": null
+    },
+    {
+      "type": "FamilyDiagnostic",
+      "name": "DSR_EFFECTIVE",
+      "status": "AVAILABLE",
+      "value": 0.9805934744118676,
+      "reason": null
+    }
+  ],
+  "family_limitations": [
+    "All 2020-2026 history was repeatedly seen; this is not unseen validation.",
+    "Only recoverable, published S014 accounts with exactly equal context, metric, scenario and calendar enter the matrix; incompatible or older projections are explicitly excluded.",
+    "Technical reproductions and duplicate funded-account paths are collapsed; matrix width does not count them as independent mechanisms.",
+    "PBO/DSR are descriptive after adaptive mechanism discovery, not proof that selection bias has been removed.",
+    "Indexes record account dispatches; failed accounts have no return column. Missing historical attempts are not reconstructed by new runs.",
+    "Four early observation-contract failed account dispatches enter the conservative raw trial count; one input-preparation failure was not an account dispatch and remains separately disclosed."
+  ],
+  "formula_version": "research-assessment-v4"
+}

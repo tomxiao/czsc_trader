@@ -1,0 +1,83 @@
+{
+  "status": "PASS_EXACT_BUSINESS_BEHAVIOR",
+  "account": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX054_20261020"
+    },
+    "evidence_id": "208a27fecc072716607cc2a8e77643fa73231be5050efbd143f10f48478aad23.json",
+    "sha256": "208a27fecc072716607cc2a8e77643fa73231be5050efbd143f10f48478aad23",
+    "media_type": "application/json",
+    "name": "c9524-equivalent-center",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  },
+  "comparison": {
+    "status": "PASS_EXACT_BUSINESS_BEHAVIOR",
+    "checks": [
+      {
+        "name": "signals",
+        "rows": 1642,
+        "status": "EXACT"
+      },
+      {
+        "name": "ledger.account_daily",
+        "rows": 1642,
+        "status": "EXACT"
+      },
+      {
+        "name": "ledger.decisions",
+        "rows": 1642,
+        "status": "EXACT"
+      },
+      {
+        "name": "ledger.fills",
+        "rows": 184,
+        "status": "EXACT"
+      },
+      {
+        "name": "ledger.orders",
+        "rows": 187,
+        "status": "EXACT"
+      },
+      {
+        "name": "ledger.trades",
+        "rows": 92,
+        "status": "EXACT"
+      },
+      {
+        "name": "assessment.account",
+        "rows": 1642,
+        "status": "EXACT"
+      },
+      {
+        "name": "assessment.fills",
+        "rows": 184,
+        "status": "EXACT"
+      },
+      {
+        "name": "assessment.closed_cycles",
+        "rows": 92,
+        "status": "EXACT"
+      },
+      {
+        "name": "observation",
+        "rows": 1,
+        "status": "EXACT"
+      }
+    ],
+    "identity_bijections": {
+      "cycle_id": 95,
+      "decision_id": 3284,
+      "fill_id": 184,
+      "order_id": 187,
+      "trade_id": 0
+    },
+    "comparison": "No float tolerance; all business fields exact; linked identity bijections."
+  },
+  "original_sha256": "e5005956b926d2062a1a0d040e1387dd30f32e64692480e055597473f153d8e2",
+  "content_sha256": "e6531a05f8700305cd1af3613791813bb2882bde51ca72bf7b18c73f44106a32",
+  "source_sha256": "b50f15e6e11a851fdfd0f3fbd0adc805842edddbfce1193a3a5b2f3d9f5ec566"
+}

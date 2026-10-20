@@ -1,0 +1,4428 @@
+{
+  "status": "PASS_INDEPENDENT_NUMERIC_AUDIT",
+  "experiment": "EX054_20261020",
+  "audit_semantics_version": 2,
+  "semantic_review": "Unpublished audit corrected to SE _concentration's profitable-cycle count (46 -> top5); top10-of92 retained only as extra diagnostic.",
+  "scope": "Only EX054 authenticated local account evidence; no account execution or other experiment reads.",
+  "metric_definitions": {
+    "cagr": "(ending_equity/100000)^(252/1642)-1",
+    "drawdown": "maximum equity decline from running high, including opening 100000",
+    "annual": "opening equity is previous calendar-year last equity; first year 100000; partial 2026 not annualized",
+    "original_hard_gates": "BH-positive year return >= 1.5*BH; otherwise return>0; annual DD strictly < BH; 60*closed/1642>=3",
+    "diagnostics": "Perturbation quantiles/pass counts, concentration and doubled costs are report-only, not extra rejection rules."
+  },
+  "center": {
+    "candidate": "S014-C9524",
+    "account": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX054_20261020"
+      },
+      "evidence_id": "208a27fecc072716607cc2a8e77643fa73231be5050efbd143f10f48478aad23.json",
+      "sha256": "208a27fecc072716607cc2a8e77643fa73231be5050efbd143f10f48478aad23",
+      "media_type": "application/json",
+      "name": "c9524-equivalent-center",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "sessions": 1642,
+    "initial_cash": 100000.0,
+    "ending_equity": 1522765.4949999992,
+    "cagr": 0.5187990557178805,
+    "drawdown": 0.2561331676830466,
+    "closed_cycles": 92,
+    "frequency_60_sessions": 3.361753958587089,
+    "frequency_pass": true,
+    "annual_goals": [
+      {
+        "year": 2020,
+        "opening": 100000.0,
+        "ending": 104251.13900000008,
+        "return": 0.042511390000000926,
+        "drawdown": 0.17075826927555737,
+        "sessions": 243,
+        "benchmark_return": -0.028034239999999877,
+        "benchmark_drawdown": 0.3864522918129226,
+        "required_return": 0.0,
+        "return_pass": true,
+        "drawdown_pass": true
+      },
+      {
+        "year": 2021,
+        "opening": 104251.13900000008,
+        "ending": 261398.22300000017,
+        "return": 1.5073896123091757,
+        "drawdown": 0.14659311793608232,
+        "sessions": 243,
+        "benchmark_return": 0.4793584498285204,
+        "benchmark_drawdown": 0.37753078370888515,
+        "required_return": 0.7190376747427806,
+        "return_pass": true,
+        "drawdown_pass": true
+      },
+      {
+        "year": 2022,
+        "opening": 261398.22300000017,
+        "ending": 274781.44300000014,
+        "return": 0.05119858829338697,
+        "drawdown": 0.08104090346719595,
+        "sessions": 242,
+        "benchmark_return": -0.2907602339701869,
+        "benchmark_drawdown": 0.3196916005343846,
+        "required_return": 0.0,
+        "return_pass": true,
+        "drawdown_pass": true
+      },
+      {
+        "year": 2023,
+        "opening": 274781.44300000014,
+        "ending": 293723.54600000026,
+        "return": 0.06893516095262697,
+        "drawdown": 0.06305943283464654,
+        "sessions": 242,
+        "benchmark_return": 0.022435644999690973,
+        "benchmark_drawdown": 0.17068366539816138,
+        "required_return": 0.03365346749953646,
+        "return_pass": true,
+        "drawdown_pass": true
+      },
+      {
+        "year": 2024,
+        "opening": 293723.54600000026,
+        "ending": 332362.74899999995,
+        "return": 0.13154955918991806,
+        "drawdown": 0.14924320400212654,
+        "sessions": 242,
+        "benchmark_return": -0.06184029980422867,
+        "benchmark_drawdown": 0.4321603942988207,
+        "required_return": 0.0,
+        "return_pass": true,
+        "drawdown_pass": true
+      },
+      {
+        "year": 2025,
+        "opening": 332362.74899999995,
+        "ending": 488653.15299999976,
+        "return": 0.47024043600024457,
+        "drawdown": 0.1258925512717325,
+        "sessions": 243,
+        "benchmark_return": 0.26791909301372363,
+        "benchmark_drawdown": 0.28875875711755516,
+        "required_return": 0.40187863952058545,
+        "return_pass": true,
+        "drawdown_pass": true
+      },
+      {
+        "year": 2026,
+        "opening": 488653.15299999976,
+        "ending": 1522765.4949999992,
+        "return": 2.1162502188950367,
+        "drawdown": 0.2561331676830466,
+        "sessions": 187,
+        "benchmark_return": 1.309762679207088,
+        "benchmark_drawdown": 0.5977359838973151,
+        "required_return": 1.964644018810632,
+        "return_pass": true,
+        "drawdown_pass": true
+      }
+    ],
+    "original_targets_pass": true,
+    "request_sha256": "9445cc3217e973d58257bf7185bb8f0ae71fe1bd251f69e142a21217c2346043",
+    "result_sha256": "59c5a9e593fe72b2daac555f35f09de735f6a63eb3329142197489184db6465d"
+  },
+  "perturbation_count": 32,
+  "linear_cagr_q10": 0.13063509954537794,
+  "linear_drawdown_q90": 0.48379288176766233,
+  "perturbation_original_targets_pass_count": 0,
+  "perturbation_failures_by_gate": {
+    "2020_return": 20,
+    "2021_drawdown": 5,
+    "2021_return": 16,
+    "2022_return": 8,
+    "2023_return": 2,
+    "2024_return": 9,
+    "2025_return": 30,
+    "2026_return": 14,
+    "frequency": 7
+  },
+  "selected_attempts": [
+    {
+      "index": 0,
+      "selected_attempt": "point_00_retry1.json",
+      "all_attempt_statuses": {
+        "point_00.json": "FAILED",
+        "point_00_retry1.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 1,
+      "selected_attempt": "point_01_retry1.json",
+      "all_attempt_statuses": {
+        "point_01.json": "FAILED",
+        "point_01_retry1.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 2,
+      "selected_attempt": "point_02.json",
+      "all_attempt_statuses": {
+        "point_02.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 3,
+      "selected_attempt": "point_03.json",
+      "all_attempt_statuses": {
+        "point_03.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 4,
+      "selected_attempt": "point_04.json",
+      "all_attempt_statuses": {
+        "point_04.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 5,
+      "selected_attempt": "point_05.json",
+      "all_attempt_statuses": {
+        "point_05.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 6,
+      "selected_attempt": "point_06.json",
+      "all_attempt_statuses": {
+        "point_06.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 7,
+      "selected_attempt": "point_07.json",
+      "all_attempt_statuses": {
+        "point_07.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 8,
+      "selected_attempt": "point_08.json",
+      "all_attempt_statuses": {
+        "point_08.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 9,
+      "selected_attempt": "point_09.json",
+      "all_attempt_statuses": {
+        "point_09.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 10,
+      "selected_attempt": "point_10.json",
+      "all_attempt_statuses": {
+        "point_10.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 11,
+      "selected_attempt": "point_11.json",
+      "all_attempt_statuses": {
+        "point_11.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 12,
+      "selected_attempt": "point_12.json",
+      "all_attempt_statuses": {
+        "point_12.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 13,
+      "selected_attempt": "point_13.json",
+      "all_attempt_statuses": {
+        "point_13.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 14,
+      "selected_attempt": "point_14.json",
+      "all_attempt_statuses": {
+        "point_14.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 15,
+      "selected_attempt": "point_15.json",
+      "all_attempt_statuses": {
+        "point_15.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 16,
+      "selected_attempt": "point_16.json",
+      "all_attempt_statuses": {
+        "point_16.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 17,
+      "selected_attempt": "point_17.json",
+      "all_attempt_statuses": {
+        "point_17.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 18,
+      "selected_attempt": "point_18.json",
+      "all_attempt_statuses": {
+        "point_18.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 19,
+      "selected_attempt": "point_19.json",
+      "all_attempt_statuses": {
+        "point_19.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 20,
+      "selected_attempt": "point_20.json",
+      "all_attempt_statuses": {
+        "point_20.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 21,
+      "selected_attempt": "point_21.json",
+      "all_attempt_statuses": {
+        "point_21.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 22,
+      "selected_attempt": "point_22.json",
+      "all_attempt_statuses": {
+        "point_22.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 23,
+      "selected_attempt": "point_23.json",
+      "all_attempt_statuses": {
+        "point_23.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 24,
+      "selected_attempt": "point_24.json",
+      "all_attempt_statuses": {
+        "point_24.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 25,
+      "selected_attempt": "point_25.json",
+      "all_attempt_statuses": {
+        "point_25.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 26,
+      "selected_attempt": "point_26.json",
+      "all_attempt_statuses": {
+        "point_26.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 27,
+      "selected_attempt": "point_27.json",
+      "all_attempt_statuses": {
+        "point_27.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 28,
+      "selected_attempt": "point_28.json",
+      "all_attempt_statuses": {
+        "point_28.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 29,
+      "selected_attempt": "point_29.json",
+      "all_attempt_statuses": {
+        "point_29.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 30,
+      "selected_attempt": "point_30.json",
+      "all_attempt_statuses": {
+        "point_30.json": "SUCCEEDED"
+      }
+    },
+    {
+      "index": 31,
+      "selected_attempt": "point_31.json",
+      "all_attempt_statuses": {
+        "point_31.json": "SUCCEEDED"
+      }
+    }
+  ],
+  "points": [
+    {
+      "candidate": "S014-C9530",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "cd9e55082e1fc4583d96f80831441a418ea0c926e021cd6df191e7455c9120b3.json",
+        "sha256": "cd9e55082e1fc4583d96f80831441a418ea0c926e021cd6df191e7455c9120b3",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-00",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 1117346.3660000004,
+      "cagr": 0.4483276689857594,
+      "drawdown": 0.34378651817774675,
+      "closed_cycles": 90,
+      "frequency_60_sessions": 3.2886723507917175,
+      "frequency_pass": true,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 104251.13900000008,
+          "return": 0.042511390000000926,
+          "drawdown": 0.17075826927555737,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 104251.13900000008,
+          "ending": 261398.22300000017,
+          "return": 1.5073896123091757,
+          "drawdown": 0.14659311793608232,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 261398.22300000017,
+          "ending": 274781.44300000014,
+          "return": 0.05119858829338697,
+          "drawdown": 0.08104090346719595,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 274781.44300000014,
+          "ending": 293723.54600000026,
+          "return": 0.06893516095262697,
+          "drawdown": 0.06305943283464654,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 293723.54600000026,
+          "ending": 337223.1660000001,
+          "return": 0.14809714982808964,
+          "drawdown": 0.21184963805664503,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 337223.1660000001,
+          "ending": 358601.12800000026,
+          "return": 0.0633941085767522,
+          "drawdown": 0.19784997737783938,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 358601.12800000026,
+          "ending": 1117346.3660000004,
+          "return": 2.1158473266152122,
+          "drawdown": 0.256145525773123,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": true,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "12ff36159435b291abe5ef4093e46f47481364244e066a9aa287e823af585136",
+      "result_sha256": "3f12e53d6a8186c0178bf942435ed2a0aae45794abaf70c1d7bcdfda765eceec",
+      "point_index": 0
+    },
+    {
+      "candidate": "S014-C9531",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "f6d8f75fa9f9c2d91cc52a70cb7b079b73d2d9bbbc12f03f7dafebaa42c77c45.json",
+        "sha256": "f6d8f75fa9f9c2d91cc52a70cb7b079b73d2d9bbbc12f03f7dafebaa42c77c45",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-01",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 260444.34599999982,
+      "cagr": 0.1582447572438228,
+      "drawdown": 0.34818095377035563,
+      "closed_cycles": 78,
+      "frequency_60_sessions": 2.8501827040194883,
+      "frequency_pass": false,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 96870.94799999996,
+          "return": -0.03129052000000043,
+          "drawdown": 0.16312409276498185,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 96870.94799999996,
+          "ending": 88626.7169999999,
+          "return": -0.08510529906241926,
+          "drawdown": 0.3182039763711122,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 88626.7169999999,
+          "ending": 94834.02599999988,
+          "return": 0.07003880105363702,
+          "drawdown": 0.11723266462807835,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 94834.02599999988,
+          "ending": 105823.75799999987,
+          "return": 0.1158838495372958,
+          "drawdown": 0.06359181832498417,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 105823.75799999987,
+          "ending": 105673.21799999988,
+          "return": -0.0014225539032548529,
+          "drawdown": 0.11703840430877821,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 105673.21799999988,
+          "ending": 124448.22899999985,
+          "return": 0.1776704765440189,
+          "drawdown": 0.1142228892826268,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 124448.22899999985,
+          "ending": 260444.34599999982,
+          "return": 1.0927927065960907,
+          "drawdown": 0.2175694862494587,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": false,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "28584b00232b62d71656eb2b3122dedd2fb41338dec5b0aaad240fcbd5961127",
+      "result_sha256": "81cb210a54c41fdb6c3d6b9b091cd7870f9ab014dd56ec2555052e8a4b98ee56",
+      "point_index": 1
+    },
+    {
+      "candidate": "S014-C9532",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "ad07c1ab35a568cfcb49645bf8d88cc2b01f8653ba50f1cf14ddd08fd0c789fa.json",
+        "sha256": "ad07c1ab35a568cfcb49645bf8d88cc2b01f8653ba50f1cf14ddd08fd0c789fa",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-02",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 932048.39,
+      "cagr": 0.4085784988690886,
+      "drawdown": 0.29165471814591204,
+      "closed_cycles": 90,
+      "frequency_60_sessions": 3.2886723507917175,
+      "frequency_pass": true,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 96795.94900000008,
+          "return": -0.03204050999999919,
+          "drawdown": 0.11693978550684792,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 96795.94900000008,
+          "ending": 221238.42800000028,
+          "return": 1.2856166015790609,
+          "drawdown": 0.1462706887334323,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 221238.42800000028,
+          "ending": 232574.16100000043,
+          "return": 0.05123763128528536,
+          "drawdown": 0.08098713685364811,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 232574.16100000043,
+          "ending": 248587.39200000037,
+          "return": 0.06885214991703181,
+          "drawdown": 0.06301007539937276,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 248587.39200000037,
+          "ending": 281261.7200000002,
+          "return": 0.13144000480925344,
+          "drawdown": 0.14925346525552874,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 281261.7200000002,
+          "ending": 299117.00900000014,
+          "return": 0.06348282660007887,
+          "drawdown": 0.19793556338187823,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 299117.00900000014,
+          "ending": 932048.39,
+          "return": 2.1159992977865048,
+          "drawdown": 0.25605828105700823,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": true,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "8cf780de22d161bae8ec6c5eb64f929b410219355401669eab3e39a6600200fb",
+      "result_sha256": "8a56d75353d16eb9b3751ac0b94536dab9e9dbab47232d88a5cb7e57e03c5d17",
+      "point_index": 2
+    },
+    {
+      "candidate": "S014-C9533",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "b388d8273d317235109611e25d0b26fe4fd00d501357417f5550ba1ddfa4a3f8.json",
+        "sha256": "b388d8273d317235109611e25d0b26fe4fd00d501357417f5550ba1ddfa4a3f8",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-03",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 200171.32199999984,
+      "cagr": 0.11238867281187015,
+      "drawdown": 0.37664915021639855,
+      "closed_cycles": 80,
+      "frequency_60_sessions": 2.92326431181486,
+      "frequency_pass": false,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 106790.436,
+          "return": 0.06790436,
+          "drawdown": 0.15562358414645328,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 106790.436,
+          "ending": 95942.41699999987,
+          "return": -0.10158230836327076,
+          "drawdown": 0.3181173067478612,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 95942.41699999987,
+          "ending": 91148.21799999986,
+          "return": -0.049969545795370274,
+          "drawdown": 0.16114188580363598,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 91148.21799999986,
+          "ending": 87892.45599999983,
+          "return": -0.035719425694093476,
+          "drawdown": 0.09175810927860761,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 87892.45599999983,
+          "ending": 91854.05399999984,
+          "return": 0.0450732426910454,
+          "drawdown": 0.11711505005465161,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 91854.05399999984,
+          "ending": 108555.12499999988,
+          "return": 0.18182181703161482,
+          "drawdown": 0.11129090612244463,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 108555.12499999988,
+          "ending": 200171.32199999984,
+          "return": 0.8439601262492218,
+          "drawdown": 0.1776795602785204,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": false,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "14b3f8b5268b68fd8d3814fa95ed48e7f70916666b3591583770f0c61fc52594",
+      "result_sha256": "703900661e0f1a01ac7bda6b378226b43a67e25d5a362f0829a9189508d3fc12",
+      "point_index": 3
+    },
+    {
+      "candidate": "S014-C9534",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "a130f3c919f53d6e1e4ac7f97fc3f97227463d085d8a605e514176d766f001f3.json",
+        "sha256": "a130f3c919f53d6e1e4ac7f97fc3f97227463d085d8a605e514176d766f001f3",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-04",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 265404.6699999999,
+      "cagr": 0.161603281452249,
+      "drawdown": 0.33755063999136914,
+      "closed_cycles": 97,
+      "frequency_60_sessions": 3.544457978075518,
+      "frequency_pass": true,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 99419.03899999999,
+          "return": -0.005809610000000132,
+          "drawdown": 0.12666977963786574,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 99419.03899999999,
+          "ending": 137036.20999999996,
+          "return": 0.37836989150538836,
+          "drawdown": 0.1862784247234497,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 137036.20999999996,
+          "ending": 130567.91899999986,
+          "return": -0.04720132729882198,
+          "drawdown": 0.19335065674829643,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 130567.91899999986,
+          "ending": 150565.45099999983,
+          "return": 0.15315808165710276,
+          "drawdown": 0.07205370368092279,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 150565.45099999983,
+          "ending": 130429.58399999983,
+          "return": -0.13373497615996932,
+          "drawdown": 0.18535156127156116,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 130429.58399999983,
+          "ending": 132685.16199999995,
+          "return": 0.017293453914566825,
+          "drawdown": 0.18654523945709012,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 132685.16199999995,
+          "ending": 265404.6699999999,
+          "return": 1.0002588533599561,
+          "drawdown": 0.33755063999136914,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": false,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "60f420c7ae689b2b2e9b758423cd57cf382a83b43cd42d9433aede496aca7b40",
+      "result_sha256": "5b38545ee9a2d424998d97b658218f52d8307d845d88d4f8eaa43d5513699d64",
+      "point_index": 4
+    },
+    {
+      "candidate": "S014-C9535",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "1bc1a2c434511c292e9091e0d3a33e0eb0ec8e81feb60d741afe3eae4ff6fe04.json",
+        "sha256": "1bc1a2c434511c292e9091e0d3a33e0eb0ec8e81feb60d741afe3eae4ff6fe04",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-05",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 1095065.6400000004,
+      "cagr": 0.4438574259024808,
+      "drawdown": 0.2916535179451921,
+      "closed_cycles": 90,
+      "frequency_60_sessions": 3.2886723507917175,
+      "frequency_pass": true,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 103739.86900000006,
+          "return": 0.037398690000000734,
+          "drawdown": 0.1707261728218613,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 103739.86900000006,
+          "ending": 260033.61700000017,
+          "return": 1.5065928799273887,
+          "drawdown": 0.1465992104909276,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 260033.61700000017,
+          "ending": 273351.9330000001,
+          "return": 0.051217670059944265,
+          "drawdown": 0.08104905010247498,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 273351.9330000001,
+          "ending": 292177.81500000006,
+          "return": 0.06887049157980529,
+          "drawdown": 0.06302741870827833,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 292177.81500000006,
+          "ending": 330578.87199999986,
+          "return": 0.13143043389519415,
+          "drawdown": 0.14920933384320256,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 330578.87199999986,
+          "ending": 351529.56300000014,
+          "return": 0.06337577133483685,
+          "drawdown": 0.19788061637652565,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 351529.56300000014,
+          "ending": 1095065.6400000004,
+          "return": 2.1151452260645285,
+          "drawdown": 0.25614440467062727,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": true,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "106c3049f414276b702d1bff71672f8e03cdb4fa4f1e3f8d28c8f3d444071b0e",
+      "result_sha256": "ca5d8fc6fcd4d62aacf5d6ecd5147b396490877338c25af2e2af8364b5bbd532",
+      "point_index": 5
+    },
+    {
+      "candidate": "S014-C9536",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "4b5d156e8d85e6fde91fc103977c3954229e437c94f4e82a0e369cee9d5a9411.json",
+        "sha256": "4b5d156e8d85e6fde91fc103977c3954229e437c94f4e82a0e369cee9d5a9411",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-06",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 94755.807,
+      "cagr": -0.008232973176831027,
+      "drawdown": 0.5181044099999994,
+      "closed_cycles": 84,
+      "frequency_60_sessions": 3.069427527405603,
+      "frequency_pass": true,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 83883.64700000003,
+          "return": -0.16116352999999972,
+          "drawdown": 0.2197859299999998,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 83883.64700000003,
+          "ending": 50103.59000000005,
+          "return": -0.4027013393921698,
+          "drawdown": 0.4230369069141042,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": false,
+          "drawdown_pass": false
+        },
+        {
+          "year": 2022,
+          "opening": 50103.59000000005,
+          "ending": 48254.80800000006,
+          "return": -0.03689919225348892,
+          "drawdown": 0.15318330131473346,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 48254.80800000006,
+          "ending": 51586.40700000006,
+          "return": 0.06904180408302496,
+          "drawdown": 0.058862482634255975,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 51586.40700000006,
+          "ending": 60203.617000000006,
+          "return": 0.16704419829045158,
+          "drawdown": 0.13751873115826319,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 60203.617000000006,
+          "ending": 70265.50400000003,
+          "return": 0.16713093832883863,
+          "drawdown": 0.1973269890579573,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 70265.50400000003,
+          "ending": 94755.807,
+          "return": 0.3485394910139683,
+          "drawdown": 0.3269328075548995,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": false,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "a6d9c10ee3dc20ff4977c60dc6b5852c66817f57bb198614b49b44e5922953c0",
+      "result_sha256": "f1b60b893784673f92ad433f258fdcad6582b5c2b17f327acc2ed998786eff31",
+      "point_index": 6
+    },
+    {
+      "candidate": "S014-C9537",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "db01fe866432843148041de621d5adb300425588e5f2f377a068984e1522a31c.json",
+        "sha256": "db01fe866432843148041de621d5adb300425588e5f2f377a068984e1522a31c",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-07",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 1103245.959,
+      "cagr": 0.445507535292341,
+      "drawdown": 0.2560676298116883,
+      "closed_cycles": 90,
+      "frequency_60_sessions": 3.2886723507917175,
+      "frequency_pass": true,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 104545.006,
+          "return": 0.04545005999999985,
+          "drawdown": 0.21103950628905455,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 104545.006,
+          "ending": 240192.24600000007,
+          "return": 1.297500905973453,
+          "drawdown": 0.1467107923746357,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 240192.24600000007,
+          "ending": 252503.60400000014,
+          "return": 0.05125626744836742,
+          "drawdown": 0.08108041097979823,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 252503.60400000014,
+          "ending": 275962.025,
+          "return": 0.09290331158996001,
+          "drawdown": 0.04196767083103359,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 275962.025,
+          "ending": 306608.59899999993,
+          "return": 0.11105359152223904,
+          "drawdown": 0.16449709551665415,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 306608.59899999993,
+          "ending": 363021.771,
+          "return": 0.18399083451668008,
+          "drawdown": 0.19791172167920978,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 363021.771,
+          "ending": 1103245.959,
+          "return": 2.0390627976965052,
+          "drawdown": 0.2560676298116883,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": true,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "2c3aed86603a5cf8fde741622dc645b372bec1637bb71afc47bc9381a54b96dc",
+      "result_sha256": "b7a8fb87477b8283e688ab2d00c12c7f6279163b54a2bc343184225b70f842be",
+      "point_index": 7
+    },
+    {
+      "candidate": "S014-C9538",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "175183217ae82efb92efa769be0a4a59c05495655730f362b82b70837698ed76.json",
+        "sha256": "175183217ae82efb92efa769be0a4a59c05495655730f362b82b70837698ed76",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-08",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 1189632.7120000005,
+      "cagr": 0.46232901629981193,
+      "drawdown": 0.2561152921375466,
+      "closed_cycles": 91,
+      "frequency_60_sessions": 3.3252131546894033,
+      "frequency_pass": true,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 103453.59400000006,
+          "return": 0.03453594000000049,
+          "drawdown": 0.1809949880997005,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 103453.59400000006,
+          "ending": 259187.65600000022,
+          "return": 1.5053518778670956,
+          "drawdown": 0.14642959745175843,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 259187.65600000022,
+          "ending": 272437.2800000002,
+          "return": 0.05111981104532215,
+          "drawdown": 0.08109365241011057,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 272437.2800000002,
+          "ending": 291197.7400000002,
+          "return": 0.06886157430436834,
+          "drawdown": 0.06302363318633775,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 291197.7400000002,
+          "ending": 323580.33600000007,
+          "return": 0.11120483283970484,
+          "drawdown": 0.16453086848421028,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 323580.33600000007,
+          "ending": 381761.4280000002,
+          "return": 0.17980416461400828,
+          "drawdown": 0.19780147887528587,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 381761.4280000002,
+          "ending": 1189632.7120000005,
+          "return": 2.116167912070991,
+          "drawdown": 0.2561152921375466,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": true,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "a0729a06047c74d1d1f27edf5d73e1ccfdd09a4de5cf6e70868cfb8f53d9a122",
+      "result_sha256": "067a7a734445a9a575e7ebde408497b4ce61da0f6c4e7ce0df357c9e499e894b",
+      "point_index": 8
+    },
+    {
+      "candidate": "S014-C9539",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "3fd3f50eba0c038dc62ac27f74b120a886f021dec972e39efd003f82ed63971b.json",
+        "sha256": "3fd3f50eba0c038dc62ac27f74b120a886f021dec972e39efd003f82ed63971b",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-09",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 279860.2500000001,
+      "cagr": 0.17109650221574157,
+      "drawdown": 0.47865722298163993,
+      "closed_cycles": 86,
+      "frequency_60_sessions": 3.1425091352009744,
+      "frequency_pass": true,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 84749.81700000002,
+          "return": -0.15250182999999973,
+          "drawdown": 0.21297746784929772,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 84749.81700000002,
+          "ending": 53750.04100000003,
+          "return": -0.36577985767214094,
+          "drawdown": 0.38129520285125285,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": false,
+          "drawdown_pass": false
+        },
+        {
+          "year": 2022,
+          "opening": 53750.04100000003,
+          "ending": 56656.074000000015,
+          "return": 0.054065688991753236,
+          "drawdown": 0.1583356345535628,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 56656.074000000015,
+          "ending": 60543.57799999998,
+          "return": 0.0686158380829558,
+          "drawdown": 0.06296206121676784,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 60543.57799999998,
+          "ending": 67838.95099999991,
+          "return": 0.12049788335932066,
+          "drawdown": 0.21131304527228523,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 67838.95099999991,
+          "ending": 89860.36999999998,
+          "return": 0.32461320046060393,
+          "drawdown": 0.12587448121848555,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 89860.36999999998,
+          "ending": 279860.2500000001,
+          "return": 2.114390136608609,
+          "drawdown": 0.25583472585789624,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": true,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "b4c5d2f1fbcee2c4ace390801b68318965255268f554dccfec6a791bc95f202c",
+      "result_sha256": "dfcb34294716f93594d6afba02a9ae8c19a5abfc8a22a3d6c488b16ee7abad16",
+      "point_index": 9
+    },
+    {
+      "candidate": "S014-C9540",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "db9fd296d9e768cb97db9850d6608a8639390e5427dd6dc2b6ab6fc041a8052a.json",
+        "sha256": "db9fd296d9e768cb97db9850d6608a8639390e5427dd6dc2b6ab6fc041a8052a",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-10",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 266810.5029999999,
+      "cagr": 0.16254547207389058,
+      "drawdown": 0.3374722577990066,
+      "closed_cycles": 97,
+      "frequency_60_sessions": 3.544457978075518,
+      "frequency_pass": true,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 106727.87899999997,
+          "return": 0.06727878999999981,
+          "drawdown": 0.11828699408150256,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 106727.87899999997,
+          "ending": 149667.25099999987,
+          "return": 0.4023257315925852,
+          "drawdown": 0.18621611815474826,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 149667.25099999987,
+          "ending": 144023.2129999998,
+          "return": -0.03771057437274683,
+          "drawdown": 0.19337325010476925,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 144023.2129999998,
+          "ending": 150684.91699999984,
+          "return": 0.046254377063508656,
+          "drawdown": 0.07213340263770585,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 150684.91699999984,
+          "ending": 130543.47599999985,
+          "return": -0.13366593950474825,
+          "drawdown": 0.1852481490243939,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 130543.47599999985,
+          "ending": 132799.03399999993,
+          "return": 0.017278213121888042,
+          "drawdown": 0.186414062922571,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 132799.03399999993,
+          "ending": 266810.5029999999,
+          "return": 1.009129848037901,
+          "drawdown": 0.3374722577990066,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": false,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "abe93103853e911979c1d134462de79dcd459949590b3c80c8984c2edfbd360b",
+      "result_sha256": "6678c5b482534c21247d62c462dbc234df398121fe2b0a0275342f873ef1184a",
+      "point_index": 10
+    },
+    {
+      "candidate": "S014-C9541",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "9af5d215fc667388bfcc26af10f187482600ec8bd3e40cee293a76a392fc8c0e.json",
+        "sha256": "9af5d215fc667388bfcc26af10f187482600ec8bd3e40cee293a76a392fc8c0e",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-11",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 356306.7100000001,
+      "cagr": 0.21531592557728896,
+      "drawdown": 0.3186963677964527,
+      "closed_cycles": 81,
+      "frequency_60_sessions": 2.9598051157125456,
+      "frequency_pass": false,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 132144.227,
+          "return": 0.32144227000000014,
+          "drawdown": 0.11205935066188655,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 132144.227,
+          "ending": 120849.68999999994,
+          "return": -0.08547128585496266,
+          "drawdown": 0.3186963677964527,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 120849.68999999994,
+          "ending": 129255.68699999998,
+          "return": 0.06955745604312291,
+          "drawdown": 0.11727094381819092,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 129255.68699999998,
+          "ending": 144303.40200000006,
+          "return": 0.11641820448488338,
+          "drawdown": 0.0635982190789317,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 144303.40200000006,
+          "ending": 144030.55300000004,
+          "return": -0.001890800883544097,
+          "drawdown": 0.1170949625918577,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 144030.55300000004,
+          "ending": 169690.4150000001,
+          "return": 0.17815568617583555,
+          "drawdown": 0.1143452181218374,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 169690.4150000001,
+          "ending": 356306.7100000001,
+          "return": 1.0997456456217627,
+          "drawdown": 0.21788740909204396,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": false,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "c5ed0cb2e73116fe0a669e3cfaae3332ff0d7ef4ae9f5b003bf70cfcff1fa9b8",
+      "result_sha256": "17f98c0246f9e336369f8671478b765eb78a51c6d26da2db8a832e1145f29388",
+      "point_index": 11
+    },
+    {
+      "candidate": "S014-C9542",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "cc00a6b8c78e036615245bf581e23b7c971dded8567f0b274906cd24d0d3b573.json",
+        "sha256": "cc00a6b8c78e036615245bf581e23b7c971dded8567f0b274906cd24d0d3b573",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-12",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 329413.0349999998,
+      "cagr": 0.20076602189264836,
+      "drawdown": 0.33718231399185006,
+      "closed_cycles": 97,
+      "frequency_60_sessions": 3.544457978075518,
+      "frequency_pass": true,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 99082.07900000003,
+          "return": -0.009179209999999771,
+          "drawdown": 0.12839685,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 99082.07900000003,
+          "ending": 139563.93099999987,
+          "return": 0.4085688593595198,
+          "drawdown": 0.18586455611186292,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 139563.93099999987,
+          "ending": 132397.10999999975,
+          "return": -0.05135152720798697,
+          "drawdown": 0.19354558859387427,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 132397.10999999975,
+          "ending": 154425.89899999966,
+          "return": 0.1663842133714244,
+          "drawdown": 0.07214372797724988,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 154425.89899999966,
+          "ending": 152858.86499999967,
+          "return": -0.010147481802906588,
+          "drawdown": 0.15507626483731907,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 152858.86499999967,
+          "ending": 154649.58499999976,
+          "return": 0.01171485867044808,
+          "drawdown": 0.19037263406762173,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 154649.58499999976,
+          "ending": 329413.0349999998,
+          "return": 1.1300609051100934,
+          "drawdown": 0.33718231399185006,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": false,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "e574b3626de5af2003b926dbadb880fe2afdf9e16b46141873f81b45ee19fb38",
+      "result_sha256": "fa97cdaa9eaa0af6098def6d45ca8b0c0703e2df6d16c30a43bbe848fb3ae9b9",
+      "point_index": 12
+    },
+    {
+      "candidate": "S014-C9543",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "8464b7c96000b93a52a78e436c28b079f287a3dd36b20621786b9cb4caa24fa4.json",
+        "sha256": "8464b7c96000b93a52a78e436c28b079f287a3dd36b20621786b9cb4caa24fa4",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-13",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 272782.522,
+      "cagr": 0.16650166840904435,
+      "drawdown": 0.4843635105216648,
+      "closed_cycles": 87,
+      "frequency_60_sessions": 3.17904993909866,
+      "frequency_pass": true,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 83628.96000000002,
+          "return": -0.1637103999999998,
+          "drawdown": 0.22316223115201095,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 83628.96000000002,
+          "ending": 53157.548000000024,
+          "return": -0.36436435416630786,
+          "drawdown": 0.3803017989827232,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": false,
+          "drawdown_pass": false
+        },
+        {
+          "year": 2022,
+          "opening": 53157.548000000024,
+          "ending": 56082.157000000014,
+          "return": 0.055017755897995624,
+          "drawdown": 0.15767181626207072,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 56082.157000000014,
+          "ending": 59921.886000000006,
+          "return": 0.06846614334038525,
+          "drawdown": 0.06279248365306711,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 59921.886000000006,
+          "ending": 66236.20699999997,
+          "return": 0.1053758721813256,
+          "drawdown": 0.14904943095717094,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 66236.20699999997,
+          "ending": 87764.63900000001,
+          "return": 0.32502513315715764,
+          "drawdown": 0.1250892124300611,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 87764.63900000001,
+          "ending": 272782.522,
+          "return": 2.108114214427521,
+          "drawdown": 0.2554859370277517,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": true,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "84c7bd98ddf0f3b9130674ec8b95c16081727312f16dd95351b6b5bc1a246536",
+      "result_sha256": "326e8c5e362a8b710cac5af547a01cc3414e08e51092b5ebd6a3393e44c20c73",
+      "point_index": 13
+    },
+    {
+      "candidate": "S014-C9544",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "987043ae34119df05f30ccc5e7aff3878969b8a823b3d26ba49618d6cc431cb4.json",
+        "sha256": "987043ae34119df05f30ccc5e7aff3878969b8a823b3d26ba49618d6cc431cb4",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-14",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 930438.1020000002,
+      "cagr": 0.40820474013821917,
+      "drawdown": 0.2916275490599872,
+      "closed_cycles": 90,
+      "frequency_60_sessions": 3.2886723507917175,
+      "frequency_pass": true,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 96755.24600000007,
+          "return": -0.032447539999999275,
+          "drawdown": 0.17038989318483744,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 96755.24600000007,
+          "ending": 220868.95400000014,
+          "return": 1.2827594691868178,
+          "drawdown": 0.1463026748455598,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 220868.95400000014,
+          "ending": 232207.55800000028,
+          "return": 0.0513363412768284,
+          "drawdown": 0.08101839838925884,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 232207.55800000028,
+          "ending": 248210.07500000027,
+          "return": 0.06891471206979394,
+          "drawdown": 0.06298513290157604,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 248210.07500000027,
+          "ending": 280849.82700000016,
+          "return": 0.13150051221732184,
+          "drawdown": 0.1492215464748673,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 280849.82700000016,
+          "ending": 298724.91200000024,
+          "return": 0.06364641627498702,
+          "drawdown": 0.19785869288519298,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 298724.91200000024,
+          "ending": 930438.1020000002,
+          "return": 2.1146987232186363,
+          "drawdown": 0.2560844785188826,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": true,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "224b4cd82b5904f94e940aac246dcdc998e2296c5ba4b9c17a97554f51b8e2e0",
+      "result_sha256": "77b6a7c496d0d87636517b0639a409522a73964019ecd0fb407ee64b95ea45eb",
+      "point_index": 14
+    },
+    {
+      "candidate": "S014-C9545",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "26e04877de458bc06df2f426eaf39694841a94f8363e30b54db86b0cab02ba5b.json",
+        "sha256": "26e04877de458bc06df2f426eaf39694841a94f8363e30b54db86b0cab02ba5b",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-15",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 590946.5730000001,
+      "cagr": 0.31344099408669024,
+      "drawdown": 0.30612038717765355,
+      "closed_cycles": 89,
+      "frequency_60_sessions": 3.2521315468940317,
+      "frequency_pass": true,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 104843.61400000006,
+          "return": 0.04843614000000063,
+          "drawdown": 0.1168009226757557,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 104843.61400000006,
+          "ending": 275924.23100000015,
+          "return": 1.6317695515532304,
+          "drawdown": 0.1465337724914858,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 275924.23100000015,
+          "ending": 290084.8400000001,
+          "return": 0.05132064316598539,
+          "drawdown": 0.0810520976529937,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 290084.8400000001,
+          "ending": 310076.16400000005,
+          "return": 0.06891543866959737,
+          "drawdown": 0.06305385032990551,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 310076.16400000005,
+          "ending": 355538.0419999997,
+          "return": 0.14661519741968831,
+          "drawdown": 0.13778575503202162,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 355538.0419999997,
+          "ending": 378082.0399999999,
+          "return": 0.06340811766072618,
+          "drawdown": 0.19795401237718013,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 378082.0399999999,
+          "ending": 590946.5730000001,
+          "return": 0.5630114908393962,
+          "drawdown": 0.30612038717765355,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": false,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "4278b7793fa5278939974d8ee4cb06d861c7e7c054c55ba121207186794f856d",
+      "result_sha256": "1c3586c9c01235b28bb3e80b01df731f883c9e29ac99f5375073882a0fa7dca1",
+      "point_index": 15
+    },
+    {
+      "candidate": "S014-C9546",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "2ecc125ffb96c90eda067533239839e54269991f76b0d7501ca7200b7f984f3e.json",
+        "sha256": "2ecc125ffb96c90eda067533239839e54269991f76b0d7501ca7200b7f984f3e",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-16",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 258181.23099999988,
+      "cagr": 0.15669443364020674,
+      "drawdown": 0.3481563754542667,
+      "closed_cycles": 78,
+      "frequency_60_sessions": 2.8501827040194883,
+      "frequency_pass": false,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 95907.426,
+          "return": -0.04092573999999993,
+          "drawdown": 0.16273839530559353,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 95907.426,
+          "ending": 87768.05999999997,
+          "return": -0.08486690071319436,
+          "drawdown": 0.3185103619121049,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 87768.05999999997,
+          "ending": 93847.10500000003,
+          "return": 0.06926261102273501,
+          "drawdown": 0.11718263911593763,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 93847.10500000003,
+          "ending": 104726.47600000001,
+          "return": 0.11592654882641273,
+          "drawdown": 0.06354167981198289,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 104726.47600000001,
+          "ending": 104526.96999999997,
+          "return": -0.0019050197010356262,
+          "drawdown": 0.1172181070356707,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 104526.96999999997,
+          "ending": 123103.3269999999,
+          "return": 0.17771831518697945,
+          "drawdown": 0.11414635502099035,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 123103.3269999999,
+          "ending": 258181.23099999988,
+          "return": 1.09727257005816,
+          "drawdown": 0.21754489488733875,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": false,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "9212a584bd21e039cf49e77c873be66410cb8bd9452fec865931f6c46489c6e2",
+      "result_sha256": "fdfdb9b218c4c022ab1033a0b38ce4ca6e994b8463fbe9444d5f9c86b70d77b4",
+      "point_index": 16
+    },
+    {
+      "candidate": "S014-C9547",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "9027cb23ceba9f78428ff0f974dbd3b5612d4ddf673599ac693820bdb1490cf7.json",
+        "sha256": "9027cb23ceba9f78428ff0f974dbd3b5612d4ddf673599ac693820bdb1490cf7",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-17",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 1082422.6160000006,
+      "cagr": 0.44128646914099456,
+      "drawdown": 0.2561105755405598,
+      "closed_cycles": 90,
+      "frequency_60_sessions": 3.2886723507917175,
+      "frequency_pass": true,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 86966.96799999998,
+          "return": -0.13033032000000022,
+          "drawdown": 0.15512286122493468,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 86966.96799999998,
+          "ending": 228626.97000000006,
+          "return": 1.6288943406650684,
+          "drawdown": 0.1466128402262501,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 228626.97000000006,
+          "ending": 240351.37400000016,
+          "return": 0.05128180634157076,
+          "drawdown": 0.08094942876795841,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 240351.37400000016,
+          "ending": 256908.22700000013,
+          "return": 0.06888603432739249,
+          "drawdown": 0.06301607407189913,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 256908.22700000013,
+          "ending": 294555.3360000001,
+          "return": 0.14653913360275528,
+          "drawdown": 0.13783664439725352,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 294555.3360000001,
+          "ending": 347492.50900000025,
+          "return": 0.1797189408240769,
+          "drawdown": 0.19798306903712182,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 347492.50900000025,
+          "ending": 1082422.6160000006,
+          "return": 2.1149523744121916,
+          "drawdown": 0.2561105755405598,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": true,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "f1cb0fdb040e73178e68830df4a503cb42fc9e838aefc63a42885493cae34a43",
+      "result_sha256": "1a0284a23ff557b442a6f6171d7a781af950c1951743f634650080b658ff21c9",
+      "point_index": 17
+    },
+    {
+      "candidate": "S014-C9548",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "0a96b5284df8154ee3952b0a36859a8a56fbdb7f8ca736e05c687e48271e316f.json",
+        "sha256": "0a96b5284df8154ee3952b0a36859a8a56fbdb7f8ca736e05c687e48271e316f",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-18",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 272860.33800000005,
+      "cagr": 0.16655273215638933,
+      "drawdown": 0.5003514805765905,
+      "closed_cycles": 85,
+      "frequency_60_sessions": 3.1059683313032886,
+      "frequency_pass": true,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 85632.06500000003,
+          "return": -0.14367934999999965,
+          "drawdown": 0.21278598324165732,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 85632.06500000003,
+          "ending": 52040.296000000046,
+          "return": -0.3922802632401773,
+          "drawdown": 0.4054620066417771,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": false,
+          "drawdown_pass": false
+        },
+        {
+          "year": 2022,
+          "opening": 52040.296000000046,
+          "ending": 55405.010000000046,
+          "return": 0.06465593508538081,
+          "drawdown": 0.15799641624430982,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 55405.010000000046,
+          "ending": 59207.976000000046,
+          "return": 0.0686393883874401,
+          "drawdown": 0.0628058348245073,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 59207.976000000046,
+          "ending": 66320.072,
+          "return": 0.12012057294442813,
+          "drawdown": 0.13770391892210132,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 66320.072,
+          "ending": 87842.45500000005,
+          "return": 0.3245229136663188,
+          "drawdown": 0.12499209018744806,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 87842.45500000005,
+          "ending": 272860.33800000005,
+          "return": 2.106246723181859,
+          "drawdown": 0.2554088969980336,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": true,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "8e4ac8ab0082c950a322c32c6d782964b3f698fe308806ce24a591e2cdf60b0f",
+      "result_sha256": "3c4d66428cfd0eb64f4878d5e494fa07454768510a2df53083957e2731f9eb0b",
+      "point_index": 18
+    },
+    {
+      "candidate": "S014-C9549",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "158c420b5108312914a0baeced362c08fad3b74deaf91a28f9a9746b3b3e3967.json",
+        "sha256": "158c420b5108312914a0baeced362c08fad3b74deaf91a28f9a9746b3b3e3967",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-19",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 258181.23099999988,
+      "cagr": 0.15669443364020674,
+      "drawdown": 0.3481563754542667,
+      "closed_cycles": 78,
+      "frequency_60_sessions": 2.8501827040194883,
+      "frequency_pass": false,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 95907.426,
+          "return": -0.04092573999999993,
+          "drawdown": 0.16273839530559353,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 95907.426,
+          "ending": 87768.05999999997,
+          "return": -0.08486690071319436,
+          "drawdown": 0.3185103619121049,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 87768.05999999997,
+          "ending": 93847.10500000003,
+          "return": 0.06926261102273501,
+          "drawdown": 0.11718263911593763,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 93847.10500000003,
+          "ending": 104726.47600000001,
+          "return": 0.11592654882641273,
+          "drawdown": 0.06354167981198289,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 104726.47600000001,
+          "ending": 104526.96999999997,
+          "return": -0.0019050197010356262,
+          "drawdown": 0.1172181070356707,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 104526.96999999997,
+          "ending": 123103.3269999999,
+          "return": 0.17771831518697945,
+          "drawdown": 0.11414635502099035,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 123103.3269999999,
+          "ending": 258181.23099999988,
+          "return": 1.09727257005816,
+          "drawdown": 0.21754489488733875,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": false,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "2a60721ae103e1d23aaeba269e42a0fae95455ac996406389f1b7c2494ce630a",
+      "result_sha256": "092fcb1f65fdf0cd78503896745035eab944f3d24af66c9854db322d3c903ebd",
+      "point_index": 19
+    },
+    {
+      "candidate": "S014-C9550",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "f490a8335c0dd24d3bf849bc758d0f94efb9ee14b72db4478b596a19c1df07b1.json",
+        "sha256": "f490a8335c0dd24d3bf849bc758d0f94efb9ee14b72db4478b596a19c1df07b1",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-20",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 1024772.6740000008,
+      "cagr": 0.42923090624591453,
+      "drawdown": 0.2917111141997223,
+      "closed_cycles": 90,
+      "frequency_60_sessions": 3.2886723507917175,
+      "frequency_pass": true,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 104251.13900000008,
+          "return": 0.042511390000000926,
+          "drawdown": 0.17075826927555737,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 104251.13900000008,
+          "ending": 238003.77400000018,
+          "return": 1.2829848794265932,
+          "drawdown": 0.14649295066767498,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 238003.77400000018,
+          "ending": 250169.2650000003,
+          "return": 0.051114697870295656,
+          "drawdown": 0.08105899073486789,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 250169.2650000003,
+          "ending": 273404.1440000004,
+          "return": 0.09287663294689708,
+          "drawdown": 0.04197483314043138,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 273404.1440000004,
+          "ending": 309328.94000000035,
+          "return": 0.13139814003697015,
+          "drawdown": 0.14921218822228122,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 309328.94000000035,
+          "ending": 328940.9040000005,
+          "return": 0.06340164615700083,
+          "drawdown": 0.19800365684222254,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 328940.9040000005,
+          "ending": 1024772.6740000008,
+          "return": 2.11537015171576,
+          "drawdown": 0.25606913734393166,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": true,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "e9f61811d17d66b2544ff9f78bc9e8a06685febe820cbd6005e2f8cbca4dd320",
+      "result_sha256": "1b1230dce9ba7b91b6307334cc0d6d5c107c6af7dfeb187b97ab8ff935fb28cc",
+      "point_index": 20
+    },
+    {
+      "candidate": "S014-C9551",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "7be3cfc87c2930377f9309e6fbca9edcb8358187250bc4f6d2079f9575cbfbe4.json",
+        "sha256": "7be3cfc87c2930377f9309e6fbca9edcb8358187250bc4f6d2079f9575cbfbe4",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-21",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 99455.059,
+      "cagr": -0.0008382639742484654,
+      "drawdown": 0.4940552913277245,
+      "closed_cycles": 84,
+      "frequency_60_sessions": 3.069427527405603,
+      "frequency_pass": true,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 90332.50000000001,
+          "return": -0.09667499999999984,
+          "drawdown": 0.17948082580370683,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 90332.50000000001,
+          "ending": 53884.98600000005,
+          "return": -0.4034817369163918,
+          "drawdown": 0.42372505350998346,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": false,
+          "drawdown_pass": false
+        },
+        {
+          "year": 2022,
+          "opening": 53884.98600000005,
+          "ending": 51873.97900000006,
+          "return": -0.03732035858745497,
+          "drawdown": 0.1537853935397333,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 51873.97900000006,
+          "ending": 55441.24400000008,
+          "return": 0.06876790770185592,
+          "drawdown": 0.059049770097119314,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 55441.24400000008,
+          "ending": 63539.28400000001,
+          "return": 0.14606526505790374,
+          "drawdown": 0.15281122974835748,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 63539.28400000001,
+          "ending": 74170.39100000002,
+          "return": 0.16731549886523767,
+          "drawdown": 0.19722026403641346,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 74170.39100000002,
+          "ending": 99455.059,
+          "return": 0.3408997533800242,
+          "drawdown": 0.3267169623300672,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": false,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "413f82bfc3c342abddbf97caf7255cfd569449c9acf7d04fd9753f35c1c20643",
+      "result_sha256": "b1c0d6a3433a80ae4b9a1b0714d8f0329f562cf6a6f6c7764462c43ec1beb560",
+      "point_index": 21
+    },
+    {
+      "candidate": "S014-C9552",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "463c9c66f5ef7151cecab90b88c8310494fc5f2400e0a512995e60b58d380f9a.json",
+        "sha256": "463c9c66f5ef7151cecab90b88c8310494fc5f2400e0a512995e60b58d380f9a",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-22",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 732055.4820000001,
+      "cagr": 0.35732159001515873,
+      "drawdown": 0.3185374809379147,
+      "closed_cycles": 81,
+      "frequency_60_sessions": 2.9598051157125456,
+      "frequency_pass": false,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 145638.48200000002,
+          "return": 0.45638482000000025,
+          "drawdown": 0.11218357180772875,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 145638.48200000002,
+          "ending": 162090.63899999988,
+          "return": 0.11296572701162777,
+          "drawdown": 0.3185374809379147,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 162090.63899999988,
+          "ending": 147279.43299999976,
+          "return": -0.0913760726182351,
+          "drawdown": 0.13871711887803628,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 147279.43299999976,
+          "ending": 160833.10099999985,
+          "return": 0.0920268887781508,
+          "drawdown": 0.06362520862195564,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 160833.10099999985,
+          "ending": 216815.1389999999,
+          "return": 0.3480753504839784,
+          "drawdown": 0.11225800069669689,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 216815.1389999999,
+          "ending": 252110.82499999998,
+          "return": 0.16279161207465354,
+          "drawdown": 0.12937369276764865,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 252110.82499999998,
+          "ending": 732055.4820000001,
+          "return": 1.9037050749407531,
+          "drawdown": 0.1427524652043286,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": false,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "6d1e89bfd735a833cf38327b80ab81c7a44edbbad2ebf4c20e556f9815105624",
+      "result_sha256": "4821bb97ee06270296533258e3fb1ea6f5284d9c8d9f0ac7175c8edc0d7e8f09",
+      "point_index": 22
+    },
+    {
+      "candidate": "S014-C9553",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "e418d50a81be74916c32b880ce3759127c82ca54b404f7725482bfd5e812e9fe.json",
+        "sha256": "e418d50a81be74916c32b880ce3759127c82ca54b404f7725482bfd5e812e9fe",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-23",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 1212519.3580000007,
+      "cagr": 0.4666118625141611,
+      "drawdown": 0.25617608678535086,
+      "closed_cycles": 91,
+      "frequency_60_sessions": 3.3252131546894033,
+      "frequency_pass": true,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 102942.71900000008,
+          "return": 0.029427190000000936,
+          "drawdown": 0.18117117567912444,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 102942.71900000008,
+          "ending": 235055.63000000024,
+          "return": 1.2833633333504628,
+          "drawdown": 0.14658888121707425,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 235055.63000000024,
+          "ending": 247091.7340000004,
+          "return": 0.051205342326836156,
+          "drawdown": 0.08107007177833558,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 247091.7340000004,
+          "ending": 264103.2960000003,
+          "return": 0.06884715131749375,
+          "drawdown": 0.06308492706224134,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 264103.2960000003,
+          "ending": 293448.47000000026,
+          "return": 0.1111124868354536,
+          "drawdown": 0.1645014271582993,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 293448.47000000026,
+          "ending": 389050.88400000025,
+          "return": 0.3257894443954672,
+          "drawdown": 0.1258106089439841,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 389050.88400000025,
+          "ending": 1212519.3580000007,
+          "return": 2.1166086696258475,
+          "drawdown": 0.25617608678535086,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": true,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "24110b61d3dcd3d5c3e4dcc28e58cb4033bc64cdcef958c63af60595e9ac8a23",
+      "result_sha256": "cf403e62cb06a5d2e445736729c62ecadd2a3e37fb59173f6289c3025feff74b",
+      "point_index": 23
+    },
+    {
+      "candidate": "S014-C9554",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "0c17a9bb36eca21c3a5c415019fb17e1d93c2ff3427b2b1564c79271ab2316a2.json",
+        "sha256": "0c17a9bb36eca21c3a5c415019fb17e1d93c2ff3427b2b1564c79271ab2316a2",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-24",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 1088584.9150000003,
+      "cagr": 0.4425427290442703,
+      "drawdown": 0.2561398635516847,
+      "closed_cycles": 90,
+      "frequency_60_sessions": 3.2886723507917175,
+      "frequency_pass": true,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 87438.06800000003,
+          "return": -0.12561931999999976,
+          "drawdown": 0.1471984399999997,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 87438.06800000003,
+          "ending": 229851.01100000012,
+          "return": 1.628729296717764,
+          "drawdown": 0.1466426305442322,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 229851.01100000012,
+          "ending": 241620.2700000002,
+          "return": 0.05120386005176236,
+          "drawdown": 0.08106754454161225,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 241620.2700000002,
+          "ending": 258259.26700000025,
+          "return": 0.06886424305378047,
+          "drawdown": 0.06305331666422909,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 258259.26700000025,
+          "ending": 296166.31600000005,
+          "return": 0.14677904665469277,
+          "drawdown": 0.13777077349864242,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 296166.31600000005,
+          "ending": 349441.3490000001,
+          "return": 0.17988214770514288,
+          "drawdown": 0.197990681930729,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 349441.3490000001,
+          "ending": 1088584.9150000003,
+          "return": 2.1152149512792775,
+          "drawdown": 0.2561398635516847,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": true,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "c3381d544c19f74445ec26fef7d9bdfed8e178c5fcc9f65bf28cef33ec84b927",
+      "result_sha256": "a8d56cd68a1c017aaa3f63c5e007fcdcadb28f82e8d5bdbaa4aad3cc645d634d",
+      "point_index": 24
+    },
+    {
+      "candidate": "S014-C9555",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "c0e48b482c272973473283cd4657d43733ca178cab558635fc6247b24defa57e.json",
+        "sha256": "c0e48b482c272973473283cd4657d43733ca178cab558635fc6247b24defa57e",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-25",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 1108108.814000001,
+      "cagr": 0.446483553498634,
+      "drawdown": 0.25617314681670267,
+      "closed_cycles": 91,
+      "frequency_60_sessions": 3.3252131546894033,
+      "frequency_pass": true,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 96475.10400000004,
+          "return": -0.03524895999999966,
+          "drawdown": 0.18117220118926458,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 96475.10400000004,
+          "ending": 220148.49300000013,
+          "return": 1.2819202454552427,
+          "drawdown": 0.14665159614533008,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 220148.49300000013,
+          "ending": 231419.99200000026,
+          "return": 0.05119952831110286,
+          "drawdown": 0.08100506817010045,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 231419.99200000026,
+          "ending": 247363.16300000026,
+          "return": 0.06889279902835699,
+          "drawdown": 0.06306639136737135,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 247363.16300000026,
+          "ending": 268384.51000000007,
+          "return": 0.0849817197720737,
+          "drawdown": 0.16449951409138164,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 268384.51000000007,
+          "ending": 355810.4010000002,
+          "return": 0.3257486469692312,
+          "drawdown": 0.12582321834201649,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 355810.4010000002,
+          "ending": 1108108.814000001,
+          "return": 2.114323839004359,
+          "drawdown": 0.25617314681670267,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": true,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "41e9fc52e298efc9ce12b73ade4c0f896e54e5537d8a34884ca2152edfcb4a15",
+      "result_sha256": "f86768e439b107a4c5b73016d0075ce50637ae46d53f3ea1418d5b7bb85692dc",
+      "point_index": 25
+    },
+    {
+      "candidate": "S014-C9556",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "e5b94352b881850b3db4af669db601d72ca33f7cd296d3c5f05b8c95a5e552ec.json",
+        "sha256": "e5b94352b881850b3db4af669db601d72ca33f7cd296d3c5f05b8c95a5e552ec",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-26",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 1067608.1890000005,
+      "cagr": 0.4382414111848083,
+      "drawdown": 0.2560835925898085,
+      "closed_cycles": 90,
+      "frequency_60_sessions": 3.2886723507917175,
+      "frequency_pass": true,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 86966.96799999998,
+          "return": -0.13033032000000022,
+          "drawdown": 0.15512286122493468,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 86966.96799999998,
+          "ending": 228626.97000000006,
+          "return": 1.6288943406650684,
+          "drawdown": 0.1466128402262501,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 228626.97000000006,
+          "ending": 240351.37400000016,
+          "return": 0.05128180634157076,
+          "drawdown": 0.08094942876795841,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 240351.37400000016,
+          "ending": 256908.22700000013,
+          "return": 0.06888603432739249,
+          "drawdown": 0.06301607407189913,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 256908.22700000013,
+          "ending": 290652.93700000003,
+          "return": 0.13134927749900305,
+          "drawdown": 0.14925896477491207,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 290652.93700000003,
+          "ending": 342845.68000000017,
+          "return": 0.17957067125731507,
+          "drawdown": 0.19781471976870568,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 342845.68000000017,
+          "ending": 1067608.1890000005,
+          "return": 2.1139613280237333,
+          "drawdown": 0.2560835925898085,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": true,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "88d195d96174463ff194198ae732f28a00ba5d4cfed0776d65ecdefa5680c778",
+      "result_sha256": "ccdec81bff66f9d14879de64baa1e6a681f261081b8417dba2e54e8f5713e676",
+      "point_index": 26
+    },
+    {
+      "candidate": "S014-C9557",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "713de9680bbadcb9305feef9ffeab066ea6eb1814c6bba221cb8d2eff881ae9b.json",
+        "sha256": "713de9680bbadcb9305feef9ffeab066ea6eb1814c6bba221cb8d2eff881ae9b",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-27",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 221093.10699999979,
+      "cagr": 0.12949010511516956,
+      "drawdown": 0.33683170763733383,
+      "closed_cycles": 96,
+      "frequency_60_sessions": 3.507917174177832,
+      "frequency_pass": true,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 91169.338,
+          "return": -0.08830662,
+          "drawdown": 0.19307298823118302,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 91169.338,
+          "ending": 116264.31099999996,
+          "return": 0.2752567206312275,
+          "drawdown": 0.1853973853840013,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 116264.31099999996,
+          "ending": 110727.27799999993,
+          "return": -0.04762452856233779,
+          "drawdown": 0.1933901063231398,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 110727.27799999993,
+          "ending": 125256.50899999983,
+          "return": 0.13121636567278316,
+          "drawdown": 0.07215988981015475,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 125256.50899999983,
+          "ending": 108465.46899999985,
+          "return": -0.13405323311381767,
+          "drawdown": 0.18567783440265606,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 108465.46899999985,
+          "ending": 110459.59499999987,
+          "return": 0.01838489261499454,
+          "drawdown": 0.18617593855493464,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 110459.59499999987,
+          "ending": 221093.10699999979,
+          "return": 1.0015744852224024,
+          "drawdown": 0.33683170763733383,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": false,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "33f576351f4a16408ed92e053d2f1342eae0fc79525dc0a6eac6b552c57b72e2",
+      "result_sha256": "30a3cc8119663ca74e4291f4056b3db37d59250149292558c5fb558fc1c28996",
+      "point_index": 27
+    },
+    {
+      "candidate": "S014-C9558",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "f52c08d58cde8065d2825299c218d0ddbf8ad00ce0be13d8689ee28f3a94b7df.json",
+        "sha256": "f52c08d58cde8065d2825299c218d0ddbf8ad00ce0be13d8689ee28f3a94b7df",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-28",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 1032737.79,
+      "cagr": 0.43093020624204836,
+      "drawdown": 0.3080145935766756,
+      "closed_cycles": 91,
+      "frequency_60_sessions": 3.3252131546894033,
+      "frequency_pass": true,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 75851.08999999997,
+          "return": -0.24148910000000035,
+          "drawdown": 0.2705579676444647,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 75851.08999999997,
+          "ending": 181619.9970000001,
+          "return": 1.3944283068311893,
+          "drawdown": 0.1465926658124579,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 181619.9970000001,
+          "ending": 190904.8710000001,
+          "return": 0.051122531402750804,
+          "drawdown": 0.08098732009946452,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 190904.8710000001,
+          "ending": 204045.97100000005,
+          "return": 0.06883585490073707,
+          "drawdown": 0.06301368863158174,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 204045.97100000005,
+          "ending": 225495.27699999986,
+          "return": 0.10511996828400894,
+          "drawdown": 0.14916899708373998,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 225495.27699999986,
+          "ending": 331517.1099999999,
+          "return": 0.47017318682022835,
+          "drawdown": 0.1258546057694827,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 331517.1099999999,
+          "ending": 1032737.79,
+          "return": 2.11518699592911,
+          "drawdown": 0.25614113629676494,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": true,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "636ec0550ac89a58b455027def86013213e7c4fccc0ee92333d66cc5c593314f",
+      "result_sha256": "1595f8d251f479827ad9e7d0408f9d21870e40c6cee470779605f4bc63142808",
+      "point_index": 28
+    },
+    {
+      "candidate": "S014-C9559",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "d4113dd85a17dca02d4d7df534390a251a206e17e0e039d8edbc17ecc22cebcb.json",
+        "sha256": "d4113dd85a17dca02d4d7df534390a251a206e17e0e039d8edbc17ecc22cebcb",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-29",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 1285805.3590000002,
+      "cagr": 0.47988050605926613,
+      "drawdown": 0.25611021231686615,
+      "closed_cycles": 91,
+      "frequency_60_sessions": 3.3252131546894033,
+      "frequency_pass": true,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 104251.13900000008,
+          "return": 0.042511390000000926,
+          "drawdown": 0.17075826927555737,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 104251.13900000008,
+          "ending": 239381.6500000002,
+          "return": 1.2962017709945597,
+          "drawdown": 0.14649295066767498,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 239381.6500000002,
+          "ending": 251659.85800000024,
+          "return": 0.05129135002620311,
+          "drawdown": 0.08099821511240424,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 251659.85800000024,
+          "ending": 275039.9090000001,
+          "return": 0.09290337833696083,
+          "drawdown": 0.041998694999321295,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 275039.9090000001,
+          "ending": 311208.42400000006,
+          "return": 0.131502788564404,
+          "drawdown": 0.1492665918382331,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 311208.42400000006,
+          "ending": 412505.06900000025,
+          "return": 0.3254945470242161,
+          "drawdown": 0.12587923023963676,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 412505.06900000025,
+          "ending": 1285805.3590000002,
+          "return": 2.117065596592704,
+          "drawdown": 0.25611021231686615,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": true,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "309a301d2b6d56560bd2ada44b0b0132a7f588877b1a2a555ee1fa8aef988711",
+      "result_sha256": "d3d60b55b8c00b99fd0b1dbb163b4085965a51757a7d41b5f888043780344ce4",
+      "point_index": 29
+    },
+    {
+      "candidate": "S014-C9560",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "ad7a086ca8dfebfea00eb7e1eabe4be985bc026fc5862314d52c68db3ff46e11.json",
+        "sha256": "ad7a086ca8dfebfea00eb7e1eabe4be985bc026fc5862314d52c68db3ff46e11",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-30",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 1463981.3679999998,
+      "cagr": 0.5096502560216449,
+      "drawdown": 0.2561601061183223,
+      "closed_cycles": 92,
+      "frequency_60_sessions": 3.361753958587089,
+      "frequency_pass": true,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 97764.97500000005,
+          "return": -0.02235024999999946,
+          "drawdown": 0.11693274783398766,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 97764.97500000005,
+          "ending": 257316.08300000016,
+          "return": 1.631986383671658,
+          "drawdown": 0.14661681156936468,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 257316.08300000016,
+          "ending": 270524.282,
+          "return": 0.05133063913459246,
+          "drawdown": 0.08102545968449337,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 270524.282,
+          "ending": 289143.874,
+          "return": 0.06882780304357294,
+          "drawdown": 0.0630352375669706,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 289143.874,
+          "ending": 319486.16000000003,
+          "return": 0.10493836711892435,
+          "drawdown": 0.14924153980988986,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 319486.16000000003,
+          "ending": 469722.16600000014,
+          "return": 0.4702426108223283,
+          "drawdown": 0.12586314524823017,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 469722.16600000014,
+          "ending": 1463981.3679999998,
+          "return": 2.1166963664218463,
+          "drawdown": 0.2561601061183223,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": true,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "c73b8b468de00dff85e133a62fb2e6b2cb01a96b2b7a982e8f28c61a8d84363b",
+      "result_sha256": "0c09972d1a01ebb386c71f23ca2193ed040726dae2362dd710c2fd15b7563985",
+      "point_index": 30
+    },
+    {
+      "candidate": "S014-C9561",
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX054_20261020"
+        },
+        "evidence_id": "9190091ae44ad41a873c0aacbbbb47534e54db131b9fb28f9e5a746ddb9406e3.json",
+        "sha256": "9190091ae44ad41a873c0aacbbbb47534e54db131b9fb28f9e5a746ddb9406e3",
+        "media_type": "application/json",
+        "name": "ex054-parameter-point-31",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "sessions": 1642,
+      "initial_cash": 100000.0,
+      "ending_equity": 236111.5849999999,
+      "cagr": 0.14094004941725347,
+      "drawdown": 0.34818095377035563,
+      "closed_cycles": 78,
+      "frequency_60_sessions": 2.8501827040194883,
+      "frequency_pass": false,
+      "annual_goals": [
+        {
+          "year": 2020,
+          "opening": 100000.0,
+          "ending": 96870.94799999996,
+          "return": -0.03129052000000043,
+          "drawdown": 0.16312409276498185,
+          "sessions": 243,
+          "benchmark_return": -0.028034239999999877,
+          "benchmark_drawdown": 0.3864522918129226,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2021,
+          "opening": 96870.94799999996,
+          "ending": 88626.7169999999,
+          "return": -0.08510529906241926,
+          "drawdown": 0.3182039763711122,
+          "sessions": 243,
+          "benchmark_return": 0.4793584498285204,
+          "benchmark_drawdown": 0.37753078370888515,
+          "required_return": 0.7190376747427806,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2022,
+          "opening": 88626.7169999999,
+          "ending": 94834.02599999988,
+          "return": 0.07003880105363702,
+          "drawdown": 0.11723266462807835,
+          "sessions": 242,
+          "benchmark_return": -0.2907602339701869,
+          "benchmark_drawdown": 0.3196916005343846,
+          "required_return": 0.0,
+          "return_pass": true,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2023,
+          "opening": 94834.02599999988,
+          "ending": 95978.7149999999,
+          "return": 0.012070446107602884,
+          "drawdown": 0.06368005354957418,
+          "sessions": 242,
+          "benchmark_return": 0.022435644999690973,
+          "benchmark_drawdown": 0.17068366539816138,
+          "required_return": 0.03365346749953646,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2024,
+          "opening": 95978.7149999999,
+          "ending": 95841.70899999992,
+          "return": -0.0014274623284962207,
+          "drawdown": 0.11708274307257915,
+          "sessions": 242,
+          "benchmark_return": -0.06184029980422867,
+          "benchmark_drawdown": 0.4321603942988207,
+          "required_return": 0.0,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2025,
+          "opening": 95841.70899999992,
+          "ending": 112912.14999999992,
+          "return": 0.17811077429764977,
+          "drawdown": 0.11402168694244263,
+          "sessions": 243,
+          "benchmark_return": 0.26791909301372363,
+          "benchmark_drawdown": 0.28875875711755516,
+          "required_return": 0.40187863952058545,
+          "return_pass": false,
+          "drawdown_pass": true
+        },
+        {
+          "year": 2026,
+          "opening": 112912.14999999992,
+          "ending": 236111.5849999999,
+          "return": 1.091108751361125,
+          "drawdown": 0.2175243106550675,
+          "sessions": 187,
+          "benchmark_return": 1.309762679207088,
+          "benchmark_drawdown": 0.5977359838973151,
+          "required_return": 1.964644018810632,
+          "return_pass": false,
+          "drawdown_pass": true
+        }
+      ],
+      "original_targets_pass": false,
+      "request_sha256": "c0b02723cf7f9bfb5a5507681df94cfac8f9977455e8d14ec24d82beba976de6",
+      "result_sha256": "6249cbd674fc58a4224dcf95fb47644ef277407a825f95293b17f425910cacf5",
+      "point_index": 31
+    }
+  ],
+  "stress": {
+    "candidate": "S014-C9524",
+    "account": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX054_20261020"
+      },
+      "evidence_id": "ab544d34d63385694fdd0466b43ba315cc8d6990fb57a44aee81c8bc7f683608.json",
+      "sha256": "ab544d34d63385694fdd0466b43ba315cc8d6990fb57a44aee81c8bc7f683608",
+      "media_type": "application/json",
+      "name": "ex054-center-double-cost",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "sessions": 1642,
+    "initial_cash": 100000.0,
+    "ending_equity": 1267862.9999999998,
+    "cagr": 0.47669236153893224,
+    "drawdown": 0.26335862485285566,
+    "closed_cycles": 92,
+    "frequency_60_sessions": 3.361753958587089,
+    "frequency_pass": true,
+    "annual_goals": [
+      {
+        "year": 2020,
+        "opening": 100000.0,
+        "ending": 102225.61400000009,
+        "return": 0.02225614000000098,
+        "drawdown": 0.17884266716035624,
+        "sessions": 243,
+        "benchmark_return": -0.0290284799999998,
+        "benchmark_drawdown": 0.38680427264087514,
+        "required_return": 0.0,
+        "return_pass": true,
+        "drawdown_pass": true
+      },
+      {
+        "year": 2021,
+        "opening": 102225.61400000009,
+        "ending": 248047.6200000001,
+        "return": 1.4264722929421572,
+        "drawdown": 0.1488635694057726,
+        "sessions": 243,
+        "benchmark_return": 0.47984929568274026,
+        "benchmark_drawdown": 0.3777324567602075,
+        "required_return": 0.7197739435241104,
+        "return_pass": true,
+        "drawdown_pass": true
+      },
+      {
+        "year": 2022,
+        "opening": 248047.6200000001,
+        "ending": 254149.51400000014,
+        "return": 0.02459968775350485,
+        "drawdown": 0.0891818019468047,
+        "sessions": 242,
+        "benchmark_return": -0.2909614220564124,
+        "benchmark_drawdown": 0.3199128073356574,
+        "required_return": 0.0,
+        "return_pass": true,
+        "drawdown_pass": true
+      },
+      {
+        "year": 2023,
+        "opening": 254149.51400000014,
+        "ending": 264485.29399999976,
+        "return": 0.04066810845839197,
+        "drawdown": 0.06852480059281696,
+        "sessions": 242,
+        "benchmark_return": 0.022457539545685634,
+        "benchmark_drawdown": 0.17083853393086923,
+        "required_return": 0.03368630931852845,
+        "return_pass": true,
+        "drawdown_pass": true
+      },
+      {
+        "year": 2024,
+        "opening": 264485.29399999976,
+        "ending": 291378.04599999957,
+        "return": 0.1016795739123395,
+        "drawdown": 0.16255619293388546,
+        "sessions": 242,
+        "benchmark_return": -0.06189932313166957,
+        "benchmark_drawdown": 0.43252808351858496,
+        "required_return": 0.0,
+        "return_pass": true,
+        "drawdown_pass": true
+      },
+      {
+        "year": 2025,
+        "opening": 291378.04599999957,
+        "ending": 416297.0019999998,
+        "return": 0.4287178039487589,
+        "drawdown": 0.13278945742012183,
+        "sessions": 243,
+        "benchmark_return": 0.2681916807530065,
+        "benchmark_drawdown": 0.2889277390594517,
+        "required_return": 0.4022875211295097,
+        "return_pass": true,
+        "drawdown_pass": true
+      },
+      {
+        "year": 2026,
+        "opening": 416297.0019999998,
+        "ending": 1267862.9999999998,
+        "return": 2.045573217940206,
+        "drawdown": 0.26335862485285566,
+        "sessions": 187,
+        "benchmark_return": 1.3108134557396145,
+        "benchmark_drawdown": 0.5978838852553512,
+        "required_return": 1.9662201836094217,
+        "return_pass": true,
+        "drawdown_pass": true
+      }
+    ],
+    "original_targets_pass": true,
+    "request_sha256": "5f64fdd4ff4cd8dc94841cc144a2fc1e70fce04f5993b48191e1523f5cf496eb",
+    "result_sha256": "60f8123d5cdef9b93b2f0711f922dfd12f084c841154b8763e9aabcebe4369fd"
+  },
+  "double_cost_cagr_decrease": 0.0421066941789483,
+  "cost_stress_limitation": "External one-way cost doubled; internal simulated feedback fee remains the fixed baseline 0.001 strategy rule.",
+  "center_profit_concentration": {
+    "closed_cycles": 92,
+    "profitable_cycles": 46,
+    "closed_net_profit": 1422765.4949999992,
+    "sum_positive_cycle_profit": 2230194.411,
+    "top_decile_count": 5,
+    "top_decile_rule": "SE PROFIT_CONCENTRATION: ceil(10% of profitable closed cycles), divide by sum of positive net cycle P&L",
+    "top_decile_positive_profit_share": 0.6640553817619624,
+    "largest_positive_profit_share": 0.25674535151545574,
+    "top_three_positive_profit_share": 0.557718924352555,
+    "top_decile_share_of_net_account_profit": 1.0409112437745762,
+    "extra_all_closed_tenth_count": 10,
+    "extra_all_closed_tenth_positive_profit_share": 0.7748438739137348,
+    "extra_all_closed_tenth_note": "Additional top-10-of-92 diagnostic only; not SE PROFIT_CONCENTRATION.",
+    "largest_cycle_net_profit": 572592.0479999997,
+    "top_three_net_profit": 1243821.6279999998,
+    "denominator_note": "Primary shares divide by sum of profitable closed-cycle net P&L; losses excluded from denominator."
+  },
+  "rankings_computed": false,
+  "account_evaluations": 0,
+  "network_calls": 0
+}

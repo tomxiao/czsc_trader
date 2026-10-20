@@ -3550,6 +3550,16 @@
         "symbol": "000813.CSI"
       }
     ],
+    "assessment": {
+      "batch": {
+        "strategy_id": "S014",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "326ca38f3e749a927ff12d00dee6a7c69b1a8171f922aa6b3b6c2debaaa26b76",
+      "revision": 1,
+      "stage": "ASSESSMENT",
+      "type": "DeliveryReference"
+    },
     "attribution_authorization": {
       "confirmed_proposal": "回到阶段二，先做一轮数据归因；收益发生位置、固定退出回吐、事前区分能力",
       "experiment": {
@@ -3902,8 +3912,8 @@
         "strategy_id": "S014",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "44087dc4c74b7d8daf5331e854f8916d7b5da7127539020692a1e0ec07b75a71",
-      "revision": 14,
+      "content_sha256": "9803933eb8ae4acbd9a7d7ad8f13ac228c47acf3951335dd679590dda82e7f1a",
+      "revision": 15,
       "stage": "CANDIDATES",
       "type": "DeliveryReference"
     },
@@ -3918,7 +3928,7 @@
       "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
-    "conclusion": "C9521正式登记并满足全部原经济目标，阶段二三治理与阶段三交付完成；阶段四未执行。",
+    "conclusion": "C9524与原C9521经济等价且原目标仍达标；32个固定扰动全部原目标通过0/32，参数和时段稳健性不足，建议暂缓冻结。",
     "confirmed_contract": "research/S014/experiments/EX003_20261016/protocols/confirmed_contract.json",
     "current_data_authorization": {
       "actual_source_calls": 0,
@@ -17476,9 +17486,11 @@
       "original_pdfs": 32
     },
     "pending": [
-      "请用户决定是否对唯一交接候选C9521进入阶段四五项自检与比较。"
+      "请用户决定先制定新时段前向验证方案，或明确选择C9524仅进入阶段五技术检验；新增窗口和精确冻结另行批准。"
     ],
-    "phase_four_approved": false,
+    "phase_five_approved": false,
+    "phase_four_approved": true,
+    "phase_four_complete": true,
     "phase_three_approved": true,
     "phase_three_complete": true,
     "phase_three_proposal": {
@@ -22468,7 +22480,7 @@
       "supported_mechanism_status": "AGE_ACTION_TRANSLATION_REPAIRS_2026_WITH_REMAINING_2025_COMPLETED_LOSS_PAUSE_GAP",
       "user_numeric_diagnostic_account_cap": null
     },
-    "stage": "阶段三已完成正式收口，等待用户决定是否进入阶段四",
+    "stage": "阶段四自检已完成，建议暂缓冻结，待用户决定新时段验证或阶段五选型",
     "stage23_governance_20261020": {
       "authorization": "先补全阶段二、阶段三的治理步骤（登记面板、登记候选等），然后完成阶段三收口",
       "candidates": {
@@ -22536,6 +22548,104 @@
         "sha256": "c6cdbd7f8e9f1be9c7fc8f7b90032dfa7e3c1d91c02a8bc10c3d3a910912816f",
         "type": "EvidenceRef"
       }
+    },
+    "stage4_20261020": {
+      "all_history_seen": true,
+      "assessment_delivery": {
+        "batch": {
+          "strategy_id": "S014",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "326ca38f3e749a927ff12d00dee6a7c69b1a8171f922aa6b3b6c2debaaa26b76",
+        "revision": 1,
+        "stage": "ASSESSMENT",
+        "type": "DeliveryReference"
+      },
+      "authorization": "验收通过，请合并当前分支到研究分支，继续完成S014的后续工作",
+      "candidate_delivery": {
+        "batch": {
+          "strategy_id": "S014",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "9803933eb8ae4acbd9a7d7ad8f13ac228c47acf3951335dd679590dda82e7f1a",
+        "revision": 15,
+        "stage": "CANDIDATES",
+        "type": "DeliveryReference"
+      },
+      "distinct_qualified_economic_centers": 1,
+      "equivalent_successor": "S014-C9524",
+      "evidence": {
+        "others/assessment_delivery.json": {
+          "evidence_id": "6fe2d6338fb38bce2104a4d0b5e1bad35d2b16bdd06705009203a8ce73d5c745.json",
+          "experiment": {
+            "experiment_id": "EX054_20261020",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "ex054-closeout-assessment_delivery",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "6fe2d6338fb38bce2104a4d0b5e1bad35d2b16bdd06705009203a8ce73d5c745",
+          "type": "EvidenceRef"
+        },
+        "others/candidate_succession.json": {
+          "evidence_id": "5f67ab8d350ca33400bba7f323ad8e09dd3b2eed53602e824cf41c97401e1862.json",
+          "experiment": {
+            "experiment_id": "EX054_20261020",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "ex054-closeout-candidate_succession",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "5f67ab8d350ca33400bba7f323ad8e09dd3b2eed53602e824cf41c97401e1862",
+          "type": "EvidenceRef"
+        },
+        "others/report.md": {
+          "evidence_id": "9b4f8d8ec0faa1b0c8f1e3661f86340d142604da92f2b890c251ca2a4c1734f1.md",
+          "experiment": {
+            "experiment_id": "EX054_20261020",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "text/markdown",
+          "name": "ex054-closeout-report",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "9b4f8d8ec0faa1b0c8f1e3661f86340d142604da92f2b890c251ca2a4c1734f1",
+          "type": "EvidenceRef"
+        },
+        "protocols/report_copy_verification.json": {
+          "evidence_id": "d7d7e5dbd05af99d1a735cacc0614e42a2e8d53c7cfc30ff4a47e8d45b7c89a8.json",
+          "experiment": {
+            "experiment_id": "EX054_20261020",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "ex054-closeout-report_copy_verification",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "d7d7e5dbd05af99d1a735cacc0614e42a2e8d53c7cfc30ff4a47e8d45b7c89a8",
+          "type": "EvidenceRef"
+        }
+      },
+      "family_paths": 157,
+      "freeze_authorized": false,
+      "new_market_calls": 0,
+      "new_model_fits": 0,
+      "new_valid_accounts": 34,
+      "original_candidate": "S014-C9521",
+      "parameter_all_original_targets_pass": 0,
+      "parameter_points": 32,
+      "production_writes": 0,
+      "pte_ready": false,
+      "recovered_raw_attempts": 178,
+      "registered_candidates": 70,
+      "retained_technical_rejections": 2,
+      "status": "COMPLETE_PHASE_FOUR_NOT_FROZEN"
     },
     "stage_three_authorization": {
       "experiment": {
@@ -22728,7 +22838,7 @@
       "status": "COMPLETE",
       "user_reply": "同意补齐，最多15次调用"
     },
-    "strategy_accounts": 69,
+    "strategy_accounts": 70,
     "supported_components": 3,
     "supported_return_context_components": 1,
     "supported_return_entry_components": 0,
@@ -28784,5 +28894,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-20T12:50:10+08:00"
+  "updated_at": "2026-10-20T18:28:27+08:00"
 }

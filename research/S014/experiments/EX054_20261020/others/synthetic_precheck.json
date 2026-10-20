@@ -1,0 +1,79 @@
+{
+  "status": "PASS",
+  "candidate": "S014-C9524",
+  "synthetic_equivalence_cases": [
+    {
+      "seed": 13,
+      "state_offset": 0,
+      "rows": 901,
+      "columns": 106,
+      "exact": true
+    },
+    {
+      "seed": 13,
+      "state_offset": 300,
+      "rows": 601,
+      "columns": 106,
+      "exact": true
+    },
+    {
+      "seed": 41,
+      "state_offset": 0,
+      "rows": 901,
+      "columns": 106,
+      "exact": true
+    },
+    {
+      "seed": 41,
+      "state_offset": 300,
+      "rows": 601,
+      "columns": 106,
+      "exact": true
+    },
+    {
+      "seed": 173,
+      "state_offset": 0,
+      "rows": 901,
+      "columns": 106,
+      "exact": true
+    },
+    {
+      "seed": 173,
+      "state_offset": 300,
+      "rows": 601,
+      "columns": 106,
+      "exact": true
+    }
+  ],
+  "zero_tolerance": true,
+  "numeric_coordinate_sensitivity": {
+    "support_window": true,
+    "warmup_sessions": true,
+    "holding_horizon": true,
+    "trend_window": true,
+    "trend_lag": true,
+    "atr_window": true,
+    "shock_window": true,
+    "volatility_window": true,
+    "shock_z": true,
+    "cost_atr": true
+  },
+  "illegal_parameter_cases_rejected": 58,
+  "event_coverage": {
+    "buy_filled_today": 238,
+    "sell_filled_today": 238,
+    "failed_buy_reset": 13,
+    "pause_slot_consumed": 139,
+    "selected_shock_exit": 12,
+    "selected_cost_exit": 36,
+    "deadline_exit": 54,
+    "permission_granted": 40,
+    "permission_refused": 13
+  },
+  "account_evaluations": 0,
+  "network_calls": 0,
+  "source_files_changed": [
+    "EX054/src/strategy_runtime/strategies/trend_permission.py",
+    "EX054/src/build_candidate.py"
+  ]
+}
