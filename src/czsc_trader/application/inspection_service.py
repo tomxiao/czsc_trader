@@ -531,6 +531,10 @@ def inspect_candidate(
             if metadata.version(name) != version:
                 raise ValueError(f"installed dependency version differs: {name}")
         candidate = load_candidate(context, request.candidate)
+        if candidate.payload["runtime"].get("contract_version") != 2:
+            raise ValueError("new freeze inspection requires implementation contract version 2")
+        if candidate.payload.get("decision_feedback", "UNDECLARED") == "UNDECLARED":
+            raise ValueError("new freeze inspection requires explicit decision feedback semantics")
     except Exception as exc:
         return failed_preparation(f.InspectionCheck.CONTENT, exc)
     completed_checks[f.InspectionCheck.CONTENT] = f.InspectionCheckResult(
@@ -775,7 +779,11 @@ def freeze_candidate(
     # Revalidate the selected delivery and registered candidate before materialization.
     selection = read_decision(context.root, report.selection)
     _delivery(context, selection.subject.delivery)
-    load_candidate(context, report.plan.origin.candidate)
+    actual_candidate = load_candidate(context, report.plan.origin.candidate)
+    if actual_candidate.payload["runtime"].get("contract_version") != 2:
+        raise ValueError("new freeze requires implementation contract version 2")
+    if actual_candidate.payload.get("decision_feedback", "UNDECLARED") == "UNDECLARED":
+        raise ValueError("new freeze requires explicit decision feedback semantics")
     registration = StrategyRegistry(context.research_registry_root).get_candidate(
         report.plan.origin.candidate, evidence_root=context.research_root / report.plan.origin.candidate.strategy_id
     )

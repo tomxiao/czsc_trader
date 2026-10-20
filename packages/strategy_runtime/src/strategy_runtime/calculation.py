@@ -6,8 +6,58 @@ from datetime import date
 from types import MappingProxyType
 from typing import Mapping
 from dataflows import DataRequest
-from .contracts import TradableWindow
+from .contracts import SignalHistoryMode, TradableWindow
 from .errors import RuntimeContractError
+
+
+@dataclass(frozen=True, slots=True)
+class HistoryCalculationContext:
+    """Immutable boundary between feature warm-up and decision-state replay.
+
+    WINDOW begins fresh account-dependent trade/feedback state at its first
+    signal. CONTINUOUS reconstructs it from declared calculation history.
+    Canonical market indicators and market intent may use full warm-up history
+    under HistoryPolicy in both modes. Both use the same implementation and
+    complete authenticated inputs. Account cash/positions belong to execution.
+    """
+
+    mode: SignalHistoryMode
+    tradable_window: TradableWindow
+    signal_dates: tuple[date, ...]
+    calculation_dates: tuple[date, ...]
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.mode, SignalHistoryMode):
+            raise RuntimeContractError("history context requires SignalHistoryMode")
+        if not isinstance(self.tradable_window, TradableWindow):
+            raise RuntimeContractError("history context requires TradableWindow")
+        for name in ("signal_dates", "calculation_dates"):
+            values = getattr(self, name)
+            if (type(values) is not tuple or not values
+                    or any(type(day) is not date for day in values)
+                    or tuple(sorted(set(values))) != values):
+                raise RuntimeContractError(f"history context {name} requires ordered unique dates")
+        if not set(self.signal_dates) <= set(self.calculation_dates):
+            raise RuntimeContractError("calculation history omits window signal dates")
+        if self.signal_dates[0] >= self.tradable_window.start:
+            raise RuntimeContractError("first signal must precede the first execution session")
+        if self.signal_dates[-1] >= self.tradable_window.end:
+            raise RuntimeContractError("last signal must precede the last execution session")
+        if self.calculation_dates[-1] != self.signal_dates[-1]:
+            raise RuntimeContractError("calculation history must end at the last signal session")
+
+    @property
+    def sessions(self):
+        """A detached index; feature inputs are never sliced by the framework."""
+        import pandas as pd
+
+        dates = self.signal_dates if self.mode is SignalHistoryMode.WINDOW else self.calculation_dates
+        return pd.DatetimeIndex(dates, name="dt")
+
+    @property
+    def state_start(self) -> date:
+        """Replay start for account-dependent state, not market-feature warm-up."""
+        return self.signal_dates[0] if self.mode is SignalHistoryMode.WINDOW else self.calculation_dates[0]
 
 
 @dataclass(frozen=True, slots=True)

@@ -19,8 +19,9 @@ from .models import (
     ParameterSet,
     StrategyDefinition,
     RuntimeDefinition,
+    DecisionFeedback,
 )
-from .algorithm import StrategyImplementation
+from .algorithm import StrategyImplementation, StrategyImplementationV2
 
 
 @dataclass(frozen=True)
@@ -39,6 +40,9 @@ class _BoundStrategy:
 
     def calculate_window_history(self, inputs, sessions):
         return self.implementation.calculate_window_history(inputs, sessions)
+
+    def calculate_context_history(self, inputs, context):
+        return self.implementation.calculate_context_history(inputs, context)
 
 
 class StrategyLoader:
@@ -111,7 +115,7 @@ class StrategyLoader:
         if not isinstance(descriptor, Mapping) or set(descriptor) != expected:
             raise RuntimeCompatibilityError("runtime implementation descriptor is incomplete")
         ref = ImplementationRef(**{key: descriptor[key] for key in expected - {"source_files"}})
-        if ref.contract_version != 1:
+        if ref.contract_version not in (1, 2):
             raise RuntimeCompatibilityError("unsupported implementation contract version")
         if not ref.module.startswith("strategy_runtime.strategies."):
             raise RuntimeCompatibilityError(
@@ -174,6 +178,10 @@ class StrategyLoader:
             ) from exc
         if not isinstance(factory, type) or not issubclass(factory, StrategyImplementation):
             raise RuntimeCompatibilityError("declared class must inherit StrategyImplementation")
+        if ref.contract_version == 2 and not issubclass(factory, StrategyImplementationV2):
+            raise RuntimeCompatibilityError("contract 2 requires StrategyImplementationV2")
+        if ref.contract_version == 1 and issubclass(factory, StrategyImplementationV2):
+            raise RuntimeCompatibilityError("StrategyImplementationV2 requires contract version 2")
         if inspect.isabstract(factory):
             raise RuntimeCompatibilityError(
                 "incomplete strategy implementation: "
@@ -201,6 +209,9 @@ class StrategyLoader:
                 strategy = factory.from_parameters_for_symbol(parameters, symbol.upper())
         if not isinstance(strategy, StrategyImplementation):
             raise RuntimeCompatibilityError("factory must return StrategyImplementation")
+        if (identity.payload["runtime"]["contract_version"] == 2
+                and not isinstance(strategy, StrategyImplementationV2)):
+            raise RuntimeCompatibilityError("contract 2 factory must return StrategyImplementationV2")
         definition = strategy.definition
         if type(definition) is not StrategyDefinition:
             raise RuntimeCompatibilityError("implementation must declare StrategyDefinition")
@@ -212,6 +223,12 @@ class StrategyLoader:
             raise RuntimeCompatibilityError("runtime tradable symbol differs from deployment")
         candidate = isinstance(identity, StrategyCandidate)
         descriptor = identity.payload["runtime"]
+        try:
+            feedback = DecisionFeedback(identity.payload.get("decision_feedback", "UNDECLARED"))
+        except ValueError as exc:
+            raise RuntimeCompatibilityError("invalid declared decision feedback") from exc
+        if feedback is DecisionFeedback.CONFIRMED_EXECUTION:
+            raise RuntimeCompatibilityError("confirmed execution feedback step contract is not implemented")
         runtime = RuntimeDefinition(
             schema_version=3,
             strategy_family_id=identity.strategy_family_id,
@@ -226,6 +243,7 @@ class StrategyLoader:
             ),
             identity_kind="CANDIDATE" if candidate else "RELEASE",
             candidate_id=identity.candidate_id if candidate else None,
+            decision_feedback=feedback,
             **{f.name: getattr(definition, f.name) for f in fields(StrategyDefinition)},
         )
         return _BoundStrategy(strategy, runtime)

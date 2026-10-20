@@ -1,0 +1,199 @@
+{
+  "status": "PASS",
+  "blocking_findings": [],
+  "review_scope": "Read existing original evidence, two full controls and final independent TDR account; no market requests or account execution.",
+  "controls": {
+    "C9522": {
+      "status": "PASS_EXACT_BUSINESS_BEHAVIOR",
+      "rows": {
+        "signals": 1642,
+        "ledger.account_daily": 1642,
+        "ledger.decisions": 1642,
+        "ledger.fills": 184,
+        "ledger.orders": 187,
+        "ledger.trades": 92,
+        "assessment.account": 1642,
+        "assessment.fills": 184,
+        "assessment.closed_cycles": 92,
+        "observation": 1
+      },
+      "evidence_sha256": "bfc3ff69508d11258e3d07d4bb3a1306bdfaf7815a4be252dda12da92d6d9edf"
+    },
+    "C9523": {
+      "status": "PASS_EXACT_BUSINESS_BEHAVIOR",
+      "rows": {
+        "signals": 1642,
+        "ledger.account_daily": 1642,
+        "ledger.decisions": 1642,
+        "ledger.fills": 184,
+        "ledger.orders": 187,
+        "ledger.trades": 92,
+        "assessment.account": 1642,
+        "assessment.fills": 184,
+        "assessment.closed_cycles": 92,
+        "observation": 1
+      },
+      "evidence_sha256": "334c0f1cf957276defa208540f0c5885ae9c4cf58730351dd3f1135b201b1b7a"
+    }
+  },
+  "final_candidate": "S014-C9523",
+  "decision_feedback": "SIMULATED_FILL_FEEDBACK",
+  "declaration_only_change": {
+    "same_source": true,
+    "same_parameters": true,
+    "same_runtime_descriptor": true,
+    "new_identity": "f445ee7f8c4d2083871e16af989c2e4acb71fc9cea1f822b368371a4942ecc20"
+  },
+  "window": {
+    "start": "2026-06-01",
+    "end": "2026-10-19",
+    "sessions": 94,
+    "first_signal": "2026-05-29",
+    "last_signal": "2026-10-16",
+    "initial_cash": 100000,
+    "initial_quantity": 0,
+    "final_equity": 122844.56200000003,
+    "final_quantity": 0,
+    "closed_trades": 5,
+    "return": 0.22844562000000024,
+    "max_drawdown": -0.13523284972960126,
+    "buyhold_return": 0.28220831999999985
+  },
+  "verification": [
+    "Two immutable full-account bytes authenticated and exact comparison recomputed",
+    "Full 1642 signals, 184 fills, 187 orders and 92 closed cycles",
+    "94 execution/signal dates agree with authenticated preparation plan",
+    "Cash, quantity, equity and 0.1 percent one-way fees rebuilt from existing fills",
+    "Return and drawdown recalculated from existing account equity",
+    "Published source unchanged and C9523 metadata only differs from C9522"
+  ],
+  "limitations": [
+    "This is a separate account/window backtest, not an unseen independent research holdout; most of this historical window already informed research.",
+    "Full-window equality proves migration behavior only, not profitable generalization.",
+    "SIMULATED_FILL_FEEDBACK is a limitation declaration; it does not implement confirmed real-fill feedback or prove PTE execution equivalence.",
+    "The final candidate must not receive PTE admission for a real-fill-dependent strategy under the current market-intent-only capability.",
+    "Numeric display rounds terminal equity to 122844.562; retained account floating value is 122844.56200000003."
+  ],
+  "artifacts": [
+    {
+      "path": "outputs/1020_02_S014-C9523/account_daily.csv",
+      "sha256": "da37851d67f77b2150889610ca96e2dfa8a1dfe33eea097727aff41cd78cdabc"
+    },
+    {
+      "path": "outputs/1020_02_S014-C9523/audit.json",
+      "sha256": "80c5883689bb8a5c414246efa4f0fbe1bc57b311eb4c19aca8d27b78ce88db4c"
+    },
+    {
+      "path": "outputs/1020_02_S014-C9523/buyhold_account_daily.csv",
+      "sha256": "e2cdec4a9451742151cf2b50e667ffc6568832b2061448a60c1d941afde6fbce"
+    },
+    {
+      "path": "outputs/1020_02_S014-C9523/buyhold_attempts.csv",
+      "sha256": "d24ef961083818330e0663c65332540d34f1317fc99bfce7b1d9fc1bae1f804c"
+    },
+    {
+      "path": "outputs/1020_02_S014-C9523/buyhold_fills.csv",
+      "sha256": "8192b3000119ca7b320e5f890d23489fdb8f32609d991d09ed28c740ce016f38"
+    },
+    {
+      "path": "outputs/1020_02_S014-C9523/chart.html",
+      "sha256": "478a46bf2dc05c1d2c970234c057a461f32b054fdbafb46d7d47d629861bf97c"
+    },
+    {
+      "path": "outputs/1020_02_S014-C9523/decisions.csv",
+      "sha256": "3218c74795da5d11041efa39d9b302b00ec6cbe1666c7c36445eb22d16225d63"
+    },
+    {
+      "path": "outputs/1020_02_S014-C9523/fills.csv",
+      "sha256": "578bc28f0142eafd9e91a0d6548dfb9ad869616b5c08d0308f06c432018bc40e"
+    },
+    {
+      "path": "outputs/1020_02_S014-C9523/ma_account_daily.csv",
+      "sha256": "38f76539fd4de2c3c0b2bda80ee4087d9681d408c09f1a12887f3098b64ee429"
+    },
+    {
+      "path": "outputs/1020_02_S014-C9523/ma_attempts.csv",
+      "sha256": "9f626d2e5b62b383fba2bc58da6875964d5f13cba74ca57851ac6265474ffa13"
+    },
+    {
+      "path": "outputs/1020_02_S014-C9523/ma_chart.html",
+      "sha256": "b70350113e7cfcc9c4581d46d4e02a6f6b04614baaf90104f8319862b6192292"
+    },
+    {
+      "path": "outputs/1020_02_S014-C9523/ma_fills.csv",
+      "sha256": "d3ad6abd03d217968d7d092f5eaab155d51909d877d10b9b60acb35a005d70d3"
+    },
+    {
+      "path": "outputs/1020_02_S014-C9523/ma_orders.csv",
+      "sha256": "25ddde5f62801b19b05b9a7a0c8bf7720ffc69f51ee775852cae1fa98d591543"
+    },
+    {
+      "path": "outputs/1020_02_S014-C9523/ma_signals.csv",
+      "sha256": "fe5764e5aa10f3022da7aa0b450e4ea3bbf8145adcd010ccb837561d5c557966"
+    },
+    {
+      "path": "outputs/1020_02_S014-C9523/ma_trades.csv",
+      "sha256": "e587c8f895ca375504f07819c99b56e6b1b2601ee2bf203e1d2a46b5538bf5e6"
+    },
+    {
+      "path": "outputs/1020_02_S014-C9523/manifest.json",
+      "sha256": "9c628a3572f642e27882c16a7d20a8162e18f3b8ac2068e85088153a5d0c888d"
+    },
+    {
+      "path": "outputs/1020_02_S014-C9523/metrics.json",
+      "sha256": "fda132ab212f3b19c9e2033b83449d0447ea10865b9a497baa92f66d4a4da865"
+    },
+    {
+      "path": "outputs/1020_02_S014-C9523/observations.json",
+      "sha256": "e5493d326ff50e892190815a917147670dcd36b00c2281f27621cadb23976282"
+    },
+    {
+      "path": "outputs/1020_02_S014-C9523/orders.csv",
+      "sha256": "dcf75a2e06b875a52e13d335607741912c669cf76e962bb385dc571bfb6ad6ba"
+    },
+    {
+      "path": "outputs/1020_02_S014-C9523/report.md",
+      "sha256": "0c8f6338f2b3bca3d4c0b830bf19260c4f336190e381ee41efd619407d188d06"
+    },
+    {
+      "path": "outputs/1020_02_S014-C9523/trades.csv",
+      "sha256": "b94236367b240d30d3efb7c508250299d97fd6ede91e6f243ee580e723a5d4a8"
+    },
+    {
+      "path": "research/S014/assets/evidence/EX052_20261020/e5005956b926d2062a1a0d040e1387dd30f32e64692480e055597473f153d8e2.json",
+      "sha256": "e5005956b926d2062a1a0d040e1387dd30f32e64692480e055597473f153d8e2"
+    },
+    {
+      "path": "research/S014/assets/evidence/EX053_20261020/334c0f1cf957276defa208540f0c5885ae9c4cf58730351dd3f1135b201b1b7a.json",
+      "sha256": "334c0f1cf957276defa208540f0c5885ae9c4cf58730351dd3f1135b201b1b7a"
+    },
+    {
+      "path": "research/S014/assets/evidence/EX053_20261020/bfc3ff69508d11258e3d07d4bb3a1306bdfaf7815a4be252dda12da92d6d9edf.json",
+      "sha256": "bfc3ff69508d11258e3d07d4bb3a1306bdfaf7815a4be252dda12da92d6d9edf"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/c9523_full_control.json",
+      "sha256": "2e9a5b54182c4e54d041bbc75d8c1fc988ccb635da30ac69c0ac3125cecac05a"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/c9523_independent_backtest.json",
+      "sha256": "b4297d98cb1d4b234eca8b2f76374592cace46b72091d2cc747bb438fbfcd501"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/others/full_control.json",
+      "sha256": "43053a17883157311fccb1194e80fd2a8273e3de2e37986b4fc5199796fa0298"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/work/build_candidate.py",
+      "sha256": "907355ed09964c8969a4500fc55229b27bfaaf59a1ad6a97037bced97405a965"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/work/c9522/strategy_runtime/strategies/trend_permission.py",
+      "sha256": "74aed227f79b992d2b403d8286fabb7eefe83d88abbab02a76316eadf1231e23"
+    },
+    {
+      "path": "research/S014/experiments/EX053_20261020/work/compare_full_account.py",
+      "sha256": "b76e80e302f8571955fc060ade2d831ef5706034db46223a8cbd992ff3aa675c"
+    }
+  ]
+}

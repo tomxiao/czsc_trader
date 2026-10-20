@@ -56,10 +56,13 @@ class AccountBindingUpdate:
     account_id: str
     expected_release_hash: str
     target_release_hash: str
+    target_version: str
 
     def __post_init__(self) -> None:
         if type(self.account_id) is not str or not self.account_id.strip():
             raise ValueError("account binding update requires an account id")
+        if type(self.target_version) is not str or re.fullmatch(r"v[1-9][0-9]*", self.target_version) is None:
+            raise ValueError("invalid account binding update target_version")
         for name in ("expected_release_hash", "target_release_hash"):
             value = getattr(self, name)
             if type(value) is not str or re.fullmatch(r"[0-9a-f]{64}", value) is None:

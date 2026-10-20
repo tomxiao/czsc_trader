@@ -1,0 +1,97 @@
+{
+  "status": "PASS_EXACT_ORIGINAL_FULL_WINDOW",
+  "candidate": "S014-C9522",
+  "account": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX053_20261020"
+    },
+    "evidence_id": "bfc3ff69508d11258e3d07d4bb3a1306bdfaf7815a4be252dda12da92d6d9edf.json",
+    "sha256": "bfc3ff69508d11258e3d07d4bb3a1306bdfaf7815a4be252dda12da92d6d9edf",
+    "media_type": "application/json",
+    "name": "c9522-original-full-window-control",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  },
+  "result_hash": "a6b0d38ac72982d83396a6559b5ee32904415108e0d919b146441520d3d670f8",
+  "comparison": {
+    "status": "PASS_EXACT_BUSINESS_BEHAVIOR",
+    "checks": [
+      {
+        "name": "signals",
+        "rows": 1642,
+        "status": "EXACT"
+      },
+      {
+        "name": "ledger.account_daily",
+        "rows": 1642,
+        "status": "EXACT"
+      },
+      {
+        "name": "ledger.decisions",
+        "rows": 1642,
+        "status": "EXACT"
+      },
+      {
+        "name": "ledger.fills",
+        "rows": 184,
+        "status": "EXACT"
+      },
+      {
+        "name": "ledger.orders",
+        "rows": 187,
+        "status": "EXACT"
+      },
+      {
+        "name": "ledger.trades",
+        "rows": 92,
+        "status": "EXACT"
+      },
+      {
+        "name": "assessment.account",
+        "rows": 1642,
+        "status": "EXACT"
+      },
+      {
+        "name": "assessment.fills",
+        "rows": 184,
+        "status": "EXACT"
+      },
+      {
+        "name": "assessment.closed_cycles",
+        "rows": 92,
+        "status": "EXACT"
+      },
+      {
+        "name": "observation",
+        "rows": 1,
+        "status": "EXACT"
+      }
+    ],
+    "identity_bijections": {
+      "cycle_id": 95,
+      "decision_id": 3284,
+      "fill_id": 184,
+      "order_id": 187,
+      "trade_id": 0
+    },
+    "comparison": "No float tolerance; all business fields exact; linked identity bijections."
+  },
+  "source": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX053_20261020"
+    },
+    "evidence_id": "74aed227f79b992d2b403d8286fabb7eefe83d88abbab02a76316eadf1231e23.py",
+    "sha256": "74aed227f79b992d2b403d8286fabb7eefe83d88abbab02a76316eadf1231e23",
+    "media_type": "text/x-python",
+    "name": "c9522-window-contract-source",
+    "schema": null,
+    "schema_version": null
+  },
+  "market_calls": 0
+}

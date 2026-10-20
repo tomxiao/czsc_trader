@@ -16,6 +16,7 @@ from uuid import uuid4
 
 from strategy_runtime import (
     DataPreparationResult,
+    DecisionFeedback,
     ExecutionPlan,
     ExecutionPriceBasis,
     ExecutionPricing,
@@ -33,6 +34,7 @@ from strategy_runtime import (
     materialize_observation,
     unavailable_observation,
     RuntimeDefinition, RuntimeContractError,
+    SignalHistoryMode,
 )
 from dataflows import Dataflows, DataRequest, Dataset, PreparePolicy
 from strategy_manager import Qualification, StrategyRegistry
@@ -46,6 +48,17 @@ from .account_binding import AccountStrategyBinding
 _BEIJING = timezone(timedelta(hours=8), "Asia/Shanghai")
 _ACCOUNT_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
 _PREPARED_STORAGE_REVISION = 3
+
+
+def _require_supported_feedback(definition: RuntimeDefinition) -> None:
+    if (definition.decision_feedback in {
+            DecisionFeedback.SIMULATED_FILL_FEEDBACK, DecisionFeedback.CONFIRMED_EXECUTION,
+        } or (definition.implementation.contract_version == 2
+              and definition.decision_feedback is not DecisionFeedback.MARKET_INTENT)):
+        raise AdviceClientError(
+            "PTE requires MARKET_INTENT decision feedback; only legacy contract 1 may be UNDECLARED; "
+            f"received {definition.decision_feedback.value}"
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -601,6 +614,7 @@ class SrtAdviceClient:
         definition = StrategyRuntime(self.repo_root / "strategies").describe(
             release, symbol=symbol.upper(),
         )
+        _require_supported_feedback(definition)
         if definition.tradable_symbol != symbol.upper():
             raise AdviceClientError("SRT execution-pricing symbol differs from account")
         identity = _strategy_identity(self.repo_root, release)
@@ -676,6 +690,7 @@ class SrtAdviceClient:
             if not isinstance(prepared, PreparedAccountStrategy):
                 raise AdviceClientError("SRT advice requires one prepared strategy instance")
             strategy = prepared.instance
+            _require_supported_feedback(strategy.definition)
             if prepared.tradable_window != TradableWindow(trading_date, trading_date):
                 raise AdviceClientError("prepared strategy window differs from decision date")
             if (
@@ -695,6 +710,7 @@ class SrtAdviceClient:
                 else generated_at.astimezone(_BEIJING)
             )
             plan = strategy.plan_at(
+                history_mode=SignalHistoryMode.CONTINUOUS,
                 point=TradingPoint(trading_date, generated_at),
                 portfolio=PortfolioSnapshot(
                     account_id,

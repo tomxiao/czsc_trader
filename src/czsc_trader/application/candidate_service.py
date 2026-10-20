@@ -76,6 +76,10 @@ def register_candidate(context: RepositoryContext, request: CandidateRegistratio
     if not isinstance(request, CandidateRegistrationRequest):
         raise TypeError("register_candidate requires CandidateRegistrationRequest")
     candidate = request.candidate
+    if candidate.payload["runtime"].get("contract_version") != 2:
+        raise ValueError("new candidate registration requires implementation contract version 2")
+    if candidate.payload.get("decision_feedback", "UNDECLARED") == "UNDECLARED":
+        raise ValueError("new candidate registration requires an explicit decision feedback declaration")
     if candidate.source_root is None or not candidate.source_root.is_relative_to(context.root.resolve()):
         raise ValueError("registration requires candidate sources inside repository")
     root = context.research_root / request.experiment.strategy_id

@@ -68,6 +68,8 @@ def _update_account_bindings(
         account = store.virtual_account(account_id)
         if account["run_state"] != RunState.PAUSED or account["release_hash"] != update.expected_release_hash:
             raise ValueError(f"{account_id}: paused account binding changed concurrently")
+        if binding.version != update.target_version or binding.release_hash != update.target_release_hash:
+            raise ValueError(f"{account_id}: replacement binding differs from requested target")
         pending = [row for row in store.account_decisions(account_id) if row["status"] == DecisionState.PENDING]
         if any(row["status"] == DecisionState.EXECUTING for row in store.account_decisions(account_id)):
             raise ValueError(f"{account_id}: executing decision blocks binding update")
@@ -91,18 +93,23 @@ def _update_account_bindings(
                     details={"intent_id": intent["intent_id"], "replacement_decision_id": payload["decision_id"]}),
             )
         changed = connection.execute(
-            "UPDATE virtual_accounts SET release_hash=?,strategy_name_snapshot=?,qualification_snapshot=?,updated_at=? "
-            "WHERE account_id=? AND release_hash=? AND run_state='PAUSED'",
-            (binding.release_hash, binding.name, binding.qualification.value, _utc_now(), account_id, update.expected_release_hash),
+            "UPDATE virtual_accounts SET strategy_version=?,release_hash=?,strategy_name_snapshot=?,qualification_snapshot=?,updated_at=? "
+            "WHERE account_id=? AND strategy_version=? AND release_hash=? AND run_state='PAUSED'",
+            (binding.version, binding.release_hash, binding.name, binding.qualification.value, _utc_now(),
+             account_id, account["strategy_version"], update.expected_release_hash),
         ).rowcount
         if changed != 1:
             raise ValueError(f"{account_id}: account binding changed concurrently")
         store.save_account_decision(account_id, payload, _in_transaction=True)
         audit.record("ACCOUNT_STRATEGY_BOUND", source="account_maintenance", actor_type="OPERATOR",
-                     account_id=account_id, release_hash=binding.release_hash, decision_id=str(payload["decision_id"]),
-                     details={"previous_release_hash": update.expected_release_hash, "reason": "STRATEGY_UPGRADE"})
+                     account_id=account_id, strategy_id=binding.strategy_id, strategy_version=binding.version,
+                     release_hash=binding.release_hash, decision_id=str(payload["decision_id"]),
+                     details={"previous_release_hash": update.expected_release_hash,
+                              "previous_version": account["strategy_version"], "target_version": binding.version,
+                              "reason": "STRATEGY_UPGRADE"})
         audit.record("DECISION_GENERATED", source="account_maintenance", actor_type="OPERATOR",
-                     account_id=account_id, release_hash=binding.release_hash, decision_id=str(payload["decision_id"]),
+                     account_id=account_id, strategy_id=binding.strategy_id, strategy_version=binding.version,
+                     release_hash=binding.release_hash, decision_id=str(payload["decision_id"]),
                      details={"signal_date": str(payload["signal_date"]), "valid_session": str(payload["valid_session"]),
                               "action": payload["action"], "reason": "STRATEGY_UPGRADE"})
         connection.executemany(

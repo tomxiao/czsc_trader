@@ -7,6 +7,9 @@ services. Every name resolves to the existing implementation, without wrappers.
 from importlib import import_module
 
 _EXPORTS = {
+    "FrozenRuntimeMigrationRequest": "runtime_migration",
+    "PreparedFrozenRuntimeMigration": "runtime_migration",
+    "prepare_frozen_runtime_migration": "runtime_migration",
     "CandidateInspectionRequest": "inspection_service",
     "InspectionReplay": "inspection_service",
     "inspect_candidate": "inspection_service",

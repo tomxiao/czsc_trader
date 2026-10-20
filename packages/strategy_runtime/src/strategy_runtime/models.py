@@ -94,6 +94,15 @@ class CutoffRule(StrEnum):
     LATEST_AVAILABLE = "LATEST_AVAILABLE"
 
 
+class DecisionFeedback(StrEnum):
+    """Facts used to advance decision state, distinct from portfolio persistence."""
+
+    UNDECLARED = "UNDECLARED"
+    MARKET_INTENT = "MARKET_INTENT"
+    SIMULATED_FILL_FEEDBACK = "SIMULATED_FILL_FEEDBACK"
+    CONFIRMED_EXECUTION = "CONFIRMED_EXECUTION"
+
+
 @dataclass(frozen=True, slots=True)
 class ImplementationRef:
     module: str
@@ -104,7 +113,7 @@ class ImplementationRef:
     def __post_init__(self) -> None:
         object.__setattr__(self, "module", _text(self.module, "implementation module"))
         object.__setattr__(self, "qualname", _text(self.qualname, "implementation qualname"))
-        if self.contract_version < 1:
+        if type(self.contract_version) is not int or self.contract_version < 1:
             raise RuntimeContractError("implementation contract_version must be positive")
         if not _SHA256.fullmatch(self.source_sha256):
             raise RuntimeContractError("implementation source_sha256 must be lowercase SHA-256")
@@ -341,12 +350,15 @@ class RuntimeDefinition:
     identity_kind: str = "RELEASE"
     candidate_id: str | None = None
     history: HistoryPolicy = field(default_factory=HistoryPolicy)
+    decision_feedback: DecisionFeedback = DecisionFeedback.UNDECLARED
 
     def __post_init__(self) -> None:
         if type(self.schema_version) is not int or self.schema_version != 3:
             raise RuntimeContractError("runtime definition schema_version must be 3")
         if not isinstance(self.observation, ObservationDefinition):
             raise RuntimeContractError("runtime observation definition must be typed")
+        if type(self.decision_feedback) is not DecisionFeedback:
+            raise RuntimeContractError("runtime decision feedback requires DecisionFeedback")
         if not _FAMILY_ID.fullmatch(self.strategy_family_id):
             raise RuntimeContractError("strategy_family_id must look like S001")
         if self.identity_kind == "RELEASE":
@@ -442,6 +454,8 @@ class RuntimeDefinition:
                 "required_input_start": self.history.required_input_start,
             },
         }
+        if self.decision_feedback is not DecisionFeedback.UNDECLARED:
+            identity["contracts"]["decision_feedback"] = self.decision_feedback.value
         return canonical_sha256(identity)
 
 
@@ -476,6 +490,13 @@ class StrategyCandidate:
             raise RuntimeContractError("candidate payload must declare its runtime implementation")
         if not isinstance(self.payload.get("parameters"), Mapping):
             raise RuntimeContractError("candidate payload must declare its parameter values")
+        if "decision_feedback" in self.payload:
+            try:
+                if not isinstance(self.payload["decision_feedback"], str):
+                    raise ValueError("feedback must be text")
+                DecisionFeedback(self.payload["decision_feedback"])
+            except ValueError as exc:
+                raise RuntimeContractError("invalid candidate decision feedback declaration") from exc
 
     @property
     def reference_id(self) -> str:

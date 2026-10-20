@@ -1,0 +1,88 @@
+{
+  "status": "PASS",
+  "command": "backtest.run",
+  "result": {
+    "strategy": "S014-C9523",
+    "output_dir": "outputs/1020_02_S014-C9523",
+    "metrics": {
+      "strategy": {
+        "reference": "S014-C9523",
+        "metrics": {
+          "max_drawdown": -0.13523284972960126,
+          "calmar": 5.4424715874734115,
+          "win_loss_ratio": 4.01938511455343,
+          "win_loss_ratio_status": "VALID",
+          "return": 0.22844562000000024,
+          "sharpe": 1.359372180523271,
+          "closed_trades": 5,
+          "win_rate": 0.4
+        }
+      },
+      "benchmarks": {
+        "buyhold": {
+          "metrics": {
+            "max_drawdown": -0.33472242030875154,
+            "calmar": 2.8299459809185197,
+            "win_loss_ratio": null,
+            "win_loss_ratio_status": "NO_CLOSED_TRADES",
+            "win_rate": null,
+            "return": 0.28220831999999985,
+            "sharpe": 1.1871191734879838,
+            "closed_trades": 0
+          }
+        },
+        "ma5_ma20": {
+          "metrics": {
+            "max_drawdown": -0.2187802240190284,
+            "calmar": 12.328862020034041,
+            "win_loss_ratio": null,
+            "win_loss_ratio_status": "NO_LOSSES",
+            "win_rate": 1.0,
+            "return": 0.6286602400000001,
+            "sharpe": 2.235862973153352,
+            "closed_trades": 1
+          }
+        }
+      }
+    }
+  },
+  "artifacts": {
+    "decisions.csv": "outputs/1020_02_S014-C9523/decisions.csv",
+    "orders.csv": "outputs/1020_02_S014-C9523/orders.csv",
+    "fills.csv": "outputs/1020_02_S014-C9523/fills.csv",
+    "account_daily.csv": "outputs/1020_02_S014-C9523/account_daily.csv",
+    "trades.csv": "outputs/1020_02_S014-C9523/trades.csv",
+    "buyhold_account_daily.csv": "outputs/1020_02_S014-C9523/buyhold_account_daily.csv",
+    "buyhold_attempts.csv": "outputs/1020_02_S014-C9523/buyhold_attempts.csv",
+    "buyhold_fills.csv": "outputs/1020_02_S014-C9523/buyhold_fills.csv",
+    "ma_attempts.csv": "outputs/1020_02_S014-C9523/ma_attempts.csv",
+    "ma_fills.csv": "outputs/1020_02_S014-C9523/ma_fills.csv",
+    "ma_signals.csv": "outputs/1020_02_S014-C9523/ma_signals.csv",
+    "ma_orders.csv": "outputs/1020_02_S014-C9523/ma_orders.csv",
+    "ma_account_daily.csv": "outputs/1020_02_S014-C9523/ma_account_daily.csv",
+    "ma_trades.csv": "outputs/1020_02_S014-C9523/ma_trades.csv",
+    "metrics.json": "outputs/1020_02_S014-C9523/metrics.json",
+    "audit.json": "outputs/1020_02_S014-C9523/audit.json",
+    "manifest.json": "outputs/1020_02_S014-C9523/manifest.json",
+    "observations.json": "outputs/1020_02_S014-C9523/observations.json",
+    "chart.html": "outputs/1020_02_S014-C9523/chart.html",
+    "ma_chart.html": "outputs/1020_02_S014-C9523/ma_chart.html",
+    "report.md": "outputs/1020_02_S014-C9523/report.md"
+  },
+  "original_candidate": "S014-C9521",
+  "window_adapter_candidate": "S014-C9523",
+  "full_window_equivalence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX053_20261020"
+    },
+    "evidence_id": "334c0f1cf957276defa208540f0c5885ae9c4cf58730351dd3f1135b201b1b7a.json",
+    "sha256": "334c0f1cf957276defa208540f0c5885ae9c4cf58730351dd3f1135b201b1b7a",
+    "media_type": "application/json",
+    "name": "c9522-original-full-window-control",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  }
+}

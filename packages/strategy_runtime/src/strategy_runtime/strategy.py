@@ -40,6 +40,7 @@ from .preparation import PreparedInputs, prepare_inputs, acquire_binding, calend
 from .input_binding import StrategyInputPlan, StrategyInputBinding
 from .prepared_store import save_prepared_inputs
 from .signals import StrategySignal
+from .calculation import HistoryCalculationContext
 
 
 _SHANGHAI = ZoneInfo("Asia/Shanghai")
@@ -237,7 +238,7 @@ class StrategyInstance:
         cached = self._history_cache.get(cache_key)
         if cached is not None:
             return cached
-        frames = {name: result.dataframe for name, result in data._inputs.results.items()}
+        frames = {name: result.dataframe.copy(deep=True) for name, result in data._inputs.results.items()}
         if mode is SignalHistoryMode.CONTINUOUS:
             dates = data.calculation_dates()
         elif mode is SignalHistoryMode.WINDOW:
@@ -247,11 +248,19 @@ class StrategyInstance:
         sessions = pd.DatetimeIndex(
             pd.to_datetime(dates, errors="raise"), name="dt"
         ).normalize()
-        history = (
-            self._algorithm.calculate_window_history(frames, sessions)
-            if mode is SignalHistoryMode.WINDOW
-            else self._algorithm.calculate_history(frames, sessions)
-        )
+        if self.definition.implementation.contract_version == 2:
+            context = HistoryCalculationContext(
+                mode, self._tradable_window,
+                tuple(dict.fromkeys(data._inputs.signal_dates.values())),
+                tuple(data.calculation_dates()),
+            )
+            history = self._algorithm.calculate_context_history(frames, context)
+        else:
+            history = (
+                self._algorithm.calculate_window_history(frames, sessions)
+                if mode is SignalHistoryMode.WINDOW
+                else self._algorithm.calculate_history(frames, sessions)
+            )
         if not isinstance(history, pd.DataFrame) or not isinstance(
             history.index, pd.DatetimeIndex
         ):
@@ -263,7 +272,7 @@ class StrategyInstance:
             raise RuntimeContractError(
                 "strategy history sessions must be unique and ordered"
             )
-        if mode is SignalHistoryMode.WINDOW and not actual_sessions.equals(sessions):
+        if (mode is SignalHistoryMode.WINDOW or self.definition.implementation.contract_version == 2) and not actual_sessions.equals(sessions):
             raise RuntimeContractError(
                 "strategy window history differs from requested evaluation sessions"
             )

@@ -17,7 +17,7 @@ from paper_trading_engine.store import PaperStore, RUNTIME_DATABASE_SCHEMA_VERSI
 from paper_trading_engine.runtime_config import PteRuntimeConfig
 from paper_trading_engine.contracts import OrderSpec
 from strategy_manager import Qualification
-from pte_support import decision, FakeAdvice, preparation
+from pte_support import adopt_test_decision, claim_test_intent, decision, FakeAdvice, preparation
 
 
 @pytest.fixture
@@ -38,6 +38,7 @@ def maintenance(new_store, maintenance_database, tmp_path, monkeypatch):
     monkeypatch.setattr(module, "load_release", lambda *_: release)
     PteRuntimeConfig().save(runtime / "shared/config/pte.json")
     fake = FakeAdvice(decision())
+    fake._account_root = lambda account_id: runtime / "shared/data/accounts" / account_id
     fake.validate_account_binding = lambda **kwargs: binding
     fake.latest_completed_signal_date = lambda at: date(2026, 9, 1)
     fake.prepare_account_data = lambda **kwargs: preparation(fake.value)
@@ -48,7 +49,7 @@ def maintenance(new_store, maintenance_database, tmp_path, monkeypatch):
     monkeypatch.setattr(module, "create_dataflows", dataflows)
     yield SimpleNamespace(
         runtime=runtime, database=database, store=store, binding=binding, release=release, fake=fake,
-        updates=tuple(AccountBindingUpdate(x, "a" * 64, "b" * 64) for x in ("one", "two")),
+        updates=tuple(AccountBindingUpdate(x, "a" * 64, "b" * 64, "v1") for x in ("one", "two")),
     )
     store.close()
 
@@ -70,7 +71,29 @@ def maintenance_database(empty_paper_database, frozen_seed_root):
     return path
 
 
-def test_update_preserves_economics_completed_history_and_health(maintenance):
+def _target_version(maintenance, version):
+    """Make the installed target and its real preparation request version-explicit."""
+    m = maintenance
+    target = replace(m.binding, version=version)
+    m.fake.value = replace(m.fake.value, strategy={
+        **m.fake.value.strategy, "version": version, "release_id": f"S001-{version}",
+    })
+
+    def validate(**kwargs):
+        assert kwargs["strategy_version"] == version
+        return target
+
+    def prepare(**kwargs):
+        assert kwargs["strategy_version"] == version
+        return preparation(m.fake.value)
+
+    m.fake.validate_account_binding = validate
+    m.fake.prepare_account_data = prepare
+    return tuple(replace(update, target_version=version) for update in m.updates)
+
+
+@pytest.mark.parametrize("target_version", ["v1", "v2"])
+def test_update_preserves_economics_completed_history_and_health(maintenance, target_version):
     m = maintenance
     value = replace(decision(), strategy={**decision().strategy, "release_hash": "a" * 64},
                     cycle_target_quantity=5900, target_quantity=5900)
@@ -85,22 +108,28 @@ def test_update_preserves_economics_completed_history_and_health(maintenance):
         m.store._connection.execute("INSERT INTO account_snapshots VALUES(?,?,?,?)",
             ("one", "2026-09-03", json.dumps({"total_assets": 100000, "session": "2026-09-03"}), "now"))
     m.fake.value = replace(decision(), cycle_target_quantity=5900, target_quantity=5900)
+    updates = _target_version(m, target_version)
     before = m.store.virtual_account("one")
     old_before = m.store.account_decision("one", payload["decision_id"])
+    history = {
+        table: [tuple(row) for row in m.store._connection.execute(f"SELECT * FROM {table}")]
+        for table in ("orders", "fills", "account_ledger", "account_snapshots")
+    }
     m.store.set_setting("last_prepared_data_id:one", "old")
     m.store.set_setting("unrelated:one", "keep")
 
-    result = update_account_bindings(m.runtime, "v1.0.0", m.updates)
+    result = update_account_bindings(m.runtime, "v1.0.0", updates)
 
     assert result.status is AccountBindingUpdateStatus.COMMITTED
     assert result.account_ids == ("one", "two")
     after = m.store.virtual_account("one")
-    changed = {"release_hash", "strategy_name_snapshot", "qualification_snapshot",
+    changed = {"strategy_version", "release_hash", "strategy_name_snapshot", "qualification_snapshot",
                "last_decision_id", "last_decision_payload", "updated_at"}
     assert {k: v for k, v in after.items() if k not in changed} == {
         k: v for k, v in before.items() if k not in changed
     }
     assert after["release_hash"] == "b" * 64
+    assert after["strategy_version"] == target_version
     assert after["run_state"] == "PAUSED"
     assert after["health"] == "BLOCKED"
     assert after["cycle_target"] == after["quantity"] == 5900
@@ -110,6 +139,13 @@ def test_update_preserves_economics_completed_history_and_health(maintenance):
     assert m.store.get_setting("last_prepared_data_id:one") is None
     assert m.store.get_setting("unrelated:one") == "keep"
     assert m.store.account_intents("one") == []
+    for table, rows in history.items():
+        assert [tuple(row) for row in m.store._connection.execute(f"SELECT * FROM {table}")] == rows
+    event = m.store.query_audit_events(event_type="ACCOUNT_STRATEGY_BOUND", account_id="one")[0]
+    assert event["strategy_version"] == target_version
+    assert event["details"]["previous_version"] == "v1"
+    assert event["details"]["target_version"] == target_version
+    assert event["details"]["previous_release_hash"] == "a" * 64
 
 
 def test_pending_replacement_releases_reservations_atomically(maintenance):
@@ -144,9 +180,9 @@ def test_failed_second_account_rolls_back_entire_batch(maintenance, failure):
     updates = m.updates
     with m.store._connection as c:
         if failure == "hash":
-            updates = (updates[0], AccountBindingUpdate("two", "d" * 64, "b" * 64))
+            updates = (updates[0], AccountBindingUpdate("two", "d" * 64, "b" * 64, "v1"))
         elif failure == "target":
-            updates = (updates[0], AccountBindingUpdate("two", "a" * 64, "d" * 64))
+            updates = (updates[0], AccountBindingUpdate("two", "a" * 64, "d" * 64, "v1"))
         elif failure == "cutoff":
             c.execute("UPDATE virtual_accounts SET selection_data_cutoff='2026-09-01' WHERE account_id='two'")
         elif failure == "retired":
@@ -179,8 +215,9 @@ def test_running_writer_blocks_maintenance(maintenance):
     assert m.store.virtual_account("one")["release_hash"] == "a" * 64
 
 
-@pytest.mark.parametrize("values", [("", "a" * 64, "b" * 64), ("one", "old", "b" * 64),
-                                   ("one", "a" * 64, "a" * 64), ("one", "a" * 64, None)])
+@pytest.mark.parametrize("values", [("", "a" * 64, "b" * 64, "v2"), ("one", "old", "b" * 64, "v2"),
+                                   ("one", "a" * 64, "a" * 64, "v2"), ("one", "a" * 64, None, "v2"),
+                                   ("one", "a" * 64, "b" * 64, "v0"), ("one", "a" * 64, "b" * 64, None)])
 def test_binding_update_rejects_invalid_contract(values):
     with pytest.raises(ValueError):
         AccountBindingUpdate(*values)
@@ -200,7 +237,7 @@ def test_preflight_failure_does_not_change_database(maintenance, monkeypatch, fa
     m = maintenance
     updates = m.updates
     if failure == "unknown":
-        updates = (AccountBindingUpdate("missing", "a" * 64, "b" * 64),)
+        updates = (AccountBindingUpdate("missing", "a" * 64, "b" * 64, "v1"),)
     elif failure == "schema":
         m.store.set_setting("runtime_database_schema_version", "1")
     elif failure == "package_changed":
@@ -243,7 +280,7 @@ def test_real_installed_package_binding_is_validated(new_store, pte_frozen, tmp_
             strategy_name_snapshot="old", qualification_snapshot="PAPER_READY",
             selection_data_cutoff=version.selection_data_cutoff,
         )
-        update_account_bindings(runtime, "v1.0.0", (AccountBindingUpdate("one", "a" * 64, version.release_hash),))
+        update_account_bindings(runtime, "v1.0.0", (AccountBindingUpdate("one", "a" * 64, version.release_hash, "v1"),))
         assert store.virtual_account("one")["release_hash"] == version.release_hash
         assert store.virtual_account("one")["run_state"] == "PAUSED"
     finally:
@@ -291,7 +328,8 @@ def test_running_account_requires_explicit_pause(maintenance):
     assert list(m.store._connection.iterdump()) == before
 
 
-def test_second_adoption_failure_rolls_back_binding_decisions_and_reservations(maintenance, monkeypatch):
+@pytest.mark.parametrize("target_version", ["v1", "v2"])
+def test_second_adoption_failure_rolls_back_binding_decisions_and_reservations(maintenance, monkeypatch, target_version):
     m = maintenance
     old = replace(decision(OrderSpec("BUY", 100, "LIMIT", 1.0, "DAY")),
                   strategy={**decision().strategy, "release_hash": "a" * 64}, available_cash=100000)
@@ -301,6 +339,7 @@ def test_second_adoption_failure_rolls_back_binding_decisions_and_reservations(m
         order_sequence=0, symbol=old.symbol, side="BUY", quantity=100,
         limit_price=1.0, valid_session="2026-09-02")
     m.store.set_virtual_paused("one", True)
+    updates = _target_version(m, target_version)
     before = list(m.store._connection.iterdump())
     original = PaperStore.save_account_decision
     def save(store, account_id, payload, **kwargs):
@@ -309,5 +348,131 @@ def test_second_adoption_failure_rolls_back_binding_decisions_and_reservations(m
         return original(store, account_id, payload, **kwargs)
     monkeypatch.setattr(PaperStore, "save_account_decision", save)
     with pytest.raises(ValueError, match="second adoption failure"):
-        update_account_bindings(m.runtime, "v1.0.0", m.updates)
+        update_account_bindings(m.runtime, "v1.0.0", updates)
     assert list(m.store._connection.iterdump()) == before
+
+
+def test_target_version_must_match_authenticated_installed_binding(maintenance):
+    m = maintenance
+    before = list(m.store._connection.iterdump())
+    updates = tuple(replace(update, target_version="v2") for update in m.updates)
+    with pytest.raises(ValueError, match="strategy identity, symbol or selection cutoff differs"):
+        update_account_bindings(m.runtime, "v1.0.0", updates)
+    assert list(m.store._connection.iterdump()) == before
+
+
+def test_binding_update_requires_explicit_target_version():
+    with pytest.raises(TypeError, match="target_version"):
+        AccountBindingUpdate("one", "a" * 64, "b" * 64)
+
+
+def test_version_upgrade_preserves_completed_fills_and_nonzero_portfolio(maintenance):
+    m = maintenance
+    m.store.set_virtual_paused("one", False)
+    adopt_test_decision(m.store, account_id="one", decision_id="OLD-BUY", valid_session="2026-09-02",
+                        orders=[{"side": "BUY", "quantity": 1000, "order_type": "LIMIT", "limit_price": 1.68}])
+    intent = m.store.create_account_intent(
+        account_id="one", decision_id="OLD-BUY", order_sequence=0,
+        symbol="588080.SH", side="BUY", quantity=1000, limit_price="1.680",
+        valid_session="2026-09-02", fee_rate="0.0005",
+    )
+    assert claim_test_intent(m.store, intent["intent_id"])
+    m.store.bind_channel_order(intent["intent_id"], "old-order", {
+        "channel_order_id": "old-order", "symbol": "588080.SH", "side": "BUY",
+        "quantity": 1000, "limit_price": 1.68, "status": "SUBMITTED",
+        "cumulative_filled_quantity": 0, "average_fill_price": 0, "remark": intent["intent_id"],
+    })
+    m.store.apply_fill_increment("old-order", cumulative_quantity=1000,
+                                 average_price="1.670", occurred_at="2026-09-02T01:31:00+00:00")
+    report = m.store.account_order("old-order")
+    m.store.update_channel_order_report("old-order", {**report, "status": "FILLED_ALL"})
+    m.store.set_virtual_paused("one", True)
+    m.fake.value = replace(decision(), target_quantity=1000, cycle_target_quantity=1000)
+    updates = _target_version(m, "v2")
+    before = m.store.virtual_account("one")
+    old_decision = m.store.account_decision("one", "OLD-BUY")
+    history = {
+        table: [tuple(row) for row in m.store._connection.execute(f"SELECT * FROM {table}")]
+        for table in ("intents", "orders", "fills", "account_ledger")
+    }
+    assert before["quantity"] == 1000 and before["cash"] == "98329.1650"
+    assert len(history["fills"]) == 1 and history["account_ledger"]
+
+    update_account_bindings(m.runtime, "v1.0.0", updates)
+
+    after = m.store.virtual_account("one")
+    assert after["strategy_version"] == "v2"
+    for key in ("cash", "frozen_cash", "total_assets", "initial_cash", "quantity", "average_cost", "realized_pnl", "cycle_target"):
+        assert after[key] == before[key]
+    for table, rows in history.items():
+        assert [tuple(row) for row in m.store._connection.execute(f"SELECT * FROM {table}")] == rows
+    assert m.store.account_decision("one", "OLD-BUY") == old_decision
+
+
+@pytest.mark.parametrize('scenario', [
+    'prepare-existing', 'prepare-missing', 'adoption-existing', 'success',
+])
+def test_binding_transaction_restores_current_cache_indexes_on_failure(
+    maintenance, monkeypatch, scenario,
+):
+    from paper_trading_engine.srt_advice_client import SrtAdviceClient
+
+    m = maintenance
+    updates = _target_version(m, 'v2')
+
+    def index(account_id, version):
+        return {'schema_version': 3, 'account_id': account_id, 'symbol': '588080.SH',
+                'signal_date': '2026-09-01', 'trading_date': '2026-09-02',
+                'releases': {f'S001-{version}': {'release_hash': ('a' if version == 'v1' else 'b') * 64}}}
+
+    originals = {}
+    old_records = {}
+    for account_id in ('one', 'two'):
+        root = m.fake._account_root(account_id)
+        path = root / 'current.json'
+        if scenario != 'prepare-missing':
+            SrtAdviceClient._write_index(root, index(account_id, 'v1'))
+            # Retain exact original bytes, including valid insignificant whitespace.
+            path.write_bytes(path.read_bytes() + b' \n')
+            originals[path] = path.read_bytes()
+            old_records.update({record: record.read_bytes() for record in (root / 'preparation-records').glob('*.json')})
+        else:
+            originals[path] = None
+
+    def prepare(**kwargs):
+        root = m.fake._account_root(kwargs['account_id'])
+        SrtAdviceClient._write_index(root, index(kwargs['account_id'], kwargs['strategy_version']))
+        if scenario.startswith('prepare-') and kwargs['account_id'] == 'two':
+            raise ValueError('second cache preparation failure')
+        return preparation(m.fake.value)
+
+    m.fake.prepare_account_data = prepare
+    if scenario == 'adoption-existing':
+        original_save = PaperStore.save_account_decision
+
+        def save(store, account_id, payload, **kwargs):
+            if account_id == 'two':
+                raise ValueError('second cache adoption failure')
+            return original_save(store, account_id, payload, **kwargs)
+
+        monkeypatch.setattr(PaperStore, 'save_account_decision', save)
+    before = list(m.store._connection.iterdump())
+
+    if scenario == 'success':
+        result = update_account_bindings(m.runtime, 'v1.0.0', updates)
+        assert result.status is AccountBindingUpdateStatus.COMMITTED
+        for path in originals:
+            assert 'S001-v2' in json.loads(path.read_bytes())['releases']
+            assert m.store.virtual_account(path.parent.name)['strategy_version'] == 'v2'
+    else:
+        with pytest.raises(ValueError, match='second cache'):
+            update_account_bindings(m.runtime, 'v1.0.0', updates)
+        assert list(m.store._connection.iterdump()) == before
+        for path, original in originals.items():
+            if original is None:
+                assert not path.exists()
+            else:
+                assert path.read_bytes() == original
+                assert 'S001-v1' in json.loads(path.read_bytes())['releases']
+    for record, original in old_records.items():
+        assert record.read_bytes() == original

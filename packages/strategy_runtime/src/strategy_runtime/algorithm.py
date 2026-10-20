@@ -9,10 +9,10 @@ from typing import Mapping, Self
 import pandas as pd
 from dataflows import DataRequest
 
-from .calculation import CalculationScope
+from .calculation import CalculationScope, HistoryCalculationContext
 from .contracts import TradableWindow
 from .models import ParameterSet, StrategyDefinition
-from .errors import RuntimeCompatibilityError
+from .errors import RuntimeCompatibilityError, RuntimeContractError
 
 
 class StrategyImplementation(ABC):
@@ -70,3 +70,28 @@ class StrategyImplementation(ABC):
         """Calculate an evaluation window with strategy state reset at its left edge."""
 
         return self.calculate_history(inputs, sessions)
+
+
+class StrategyImplementationV2(StrategyImplementation):
+    """One decision kernel with an explicit history initialization boundary.
+
+    Implementations calculate market features and canonical market-intent
+    history from all prepared inputs under their declared HistoryPolicy.
+    Account-dependent trade/feedback state advances over context.sessions:
+    WINDOW starts fresh at its first signal; CONTINUOUS reconstructs it over
+    the declared calculation range. Market intent is not an account position.
+    """
+
+    @abstractmethod
+    def calculate_context_history(
+        self,
+        inputs: Mapping[str, pd.DataFrame],
+        context: HistoryCalculationContext,
+    ) -> pd.DataFrame:
+        raise NotImplementedError
+
+    def calculate_history(self, inputs, sessions):
+        raise RuntimeContractError("contract 2 requires an explicit HistoryCalculationContext")
+
+    def calculate_window_history(self, inputs, sessions):
+        raise RuntimeContractError("contract 2 requires an explicit HistoryCalculationContext")

@@ -12,7 +12,7 @@ import pytest
 from pathlib import Path
 from dataflows import Dataflows, Dataset, DataSpace, ProviderBinding, ProviderConfig
 from dataflows.ohlcv_quality import bind_quality_frame, build_quality_evidence, verify_daily_sessions
-from strategy_runtime import canonical_sha256
+from strategy_runtime import DecisionFeedback, SignalHistoryMode, StrategyRuntime, canonical_sha256
 
 from paper_trading_engine.account_data_preparer import AccountDataPreparer
 from paper_trading_engine.account_engine import AccountEngine
@@ -150,6 +150,14 @@ def test_pte_prepares_then_uses_one_account_strategy_instance(pte_frozen, tmp_pa
 
     monkeypatch.setattr(client.dataflows, "prepare", lambda *_a, **_k: pytest.fail(
         "decision must not prepare new inputs"))
+
+    continuous_original_plan = prepared.instance.plan_at
+
+    def continuous_plan(**kwargs):
+        assert kwargs["history_mode"] is SignalHistoryMode.CONTINUOUS
+        return continuous_original_plan(**kwargs)
+
+    monkeypatch.setattr(prepared.instance, "plan_at", continuous_plan)
 
     decision = client.get_decision(
         0,
@@ -529,3 +537,80 @@ def test_pte_observation_failure_is_explicit_and_does_not_change_execution(pte_f
     transport[0]["result"]["observation"]["plan_identity"] = "0" * 64
     with pytest.raises(AdviceContractError, match="another decision"):
         original_parse(transport[0])
+
+
+@pytest.mark.parametrize('feedback', list(DecisionFeedback))
+def test_contract_two_feedback_gates_binding_and_prepared_decisions(
+    pte_frozen, tmp_path, monkeypatch, feedback,
+):
+    from paper_trading_engine.errors import AdviceClientError
+
+    client = _client(pte_frozen[0].root, tmp_path, {date(2026, 9, 2): date(2026, 9, 3)})
+    prepared = _prepare(client, 's900-v1', date(2026, 9, 2))
+    release = client._load_release('S900', 'v1')
+    original_describe = StrategyRuntime.describe
+    authenticated = original_describe(StrategyRuntime(client.repo_root / 'strategies'), release,
+                                      symbol='588080.SH')
+    assert authenticated.implementation.contract_version == 2
+    assert authenticated.decision_feedback is DecisionFeedback.MARKET_INTENT
+    # Inject an unsupported typed declaration after real source authentication.
+    # Both public PTE entry points must enforce their own business boundary.
+    definition = replace(authenticated, decision_feedback=feedback)
+
+    def describe(runtime, *args, **kwargs):
+        assert original_describe(runtime, *args, **kwargs) == authenticated
+        return definition
+
+    monkeypatch.setattr(StrategyRuntime, 'describe', describe)
+    monkeypatch.setattr(prepared.instance, '_algorithm', replace(
+        prepared.instance._algorithm, definition=definition,
+    ))
+    kwargs = {'strategy_id': 'S900', 'strategy_version': 'v1',
+              'symbol': '588080.SH', 'asset': 'etf'}
+    if feedback is DecisionFeedback.MARKET_INTENT:
+        binding = client.validate_account_binding(**kwargs)
+        result = _decision(client, prepared)
+        assert binding.release_hash == release.release_hash
+        assert result.strategy['release_hash'] == release.release_hash
+        assert result.orders and result.runtime_sha256 == definition.runtime_sha256
+    else:
+        with pytest.raises(AdviceClientError, match=f'MARKET_INTENT.*{feedback.value}'):
+            client.validate_account_binding(**kwargs)
+        with pytest.raises(AdviceClientError, match=f'MARKET_INTENT.*{feedback.value}'):
+            _decision(client, prepared)
+
+
+@pytest.mark.parametrize('feedback', list(DecisionFeedback))
+def test_legacy_contract_feedback_cannot_bypass_pte_boundary(
+    pte_frozen, tmp_path, monkeypatch, feedback,
+):
+    from paper_trading_engine.errors import AdviceClientError
+
+    client = _client(pte_frozen[0].root, tmp_path, {date(2026, 9, 2): date(2026, 9, 3)})
+    prepared = _prepare(client, 's900-v1', date(2026, 9, 2))
+    authenticated = prepared.instance.definition
+    definition = replace(authenticated,
+                         implementation=replace(authenticated.implementation, contract_version=1),
+                         decision_feedback=feedback)
+    original_describe = StrategyRuntime.describe
+
+    def describe(runtime, *args, **kwargs):
+        assert original_describe(runtime, *args, **kwargs) == authenticated
+        return definition
+
+    monkeypatch.setattr(StrategyRuntime, 'describe', describe)
+    monkeypatch.setattr(prepared.instance, '_algorithm', replace(
+        prepared.instance._algorithm, definition=definition,
+    ))
+    kwargs = {'strategy_id': 'S900', 'strategy_version': 'v1',
+              'symbol': '588080.SH', 'asset': 'etf'}
+    if feedback in {DecisionFeedback.UNDECLARED, DecisionFeedback.MARKET_INTENT}:
+        # The transition allowance preserves legacy binding admission. This
+        # fixture's actual kernel remains V2; it does not represent a V1 replay.
+        binding = client.validate_account_binding(**kwargs)
+        assert binding.release_hash == prepared.strategy.release_hash
+    else:
+        with pytest.raises(AdviceClientError, match=f'MARKET_INTENT.*{feedback.value}'):
+            client.validate_account_binding(**kwargs)
+        with pytest.raises(AdviceClientError, match=f'MARKET_INTENT.*{feedback.value}'):
+            _decision(client, prepared)

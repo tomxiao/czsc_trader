@@ -4,8 +4,10 @@ from dataclasses import asdict
 from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
+import os
 import sqlite3
 from threading import RLock
+from uuid import uuid4
 
 from dataflows import DataSpace
 
@@ -21,6 +23,24 @@ from .runtime_lock import RuntimeDatabaseLock
 from .runtime_release import load_release
 from .srt_advice_client import SrtAdviceClient
 from .store import PaperStore, RUNTIME_DATABASE_SCHEMA_VERSION, _update_account_bindings
+
+
+def _restore_current_indexes(snapshots: dict[Path, bytes | None]) -> None:
+    """Restore mutable cache pointers; immutable preparations remain reusable."""
+    for path, original in snapshots.items():
+        if original is None:
+            path.unlink(missing_ok=True)
+            continue
+        if path.is_file() and path.read_bytes() == original:
+            continue
+        temporary_root = path.parent / ".tmp"
+        temporary_root.mkdir(parents=True, exist_ok=True)
+        temporary = temporary_root / f"binding-rollback-{uuid4().hex}.json"
+        try:
+            temporary.write_bytes(original)
+            os.replace(temporary, path)
+        finally:
+            temporary.unlink(missing_ok=True)
 
 
 def update_account_bindings(
@@ -46,6 +66,7 @@ def update_account_bindings(
         store = PaperStore.__new__(PaperStore)
         store.path, store._connection = database, connection
         store._lock, store._atomic_decision_depth = RLock(), 1
+        current_indexes: dict[Path, bytes | None] = {}
         try:
             connection.execute("BEGIN")
             row = connection.execute("SELECT value FROM settings WHERE key='runtime_database_schema_version'").fetchone()
@@ -93,6 +114,10 @@ def update_account_bindings(
                 dataflows=create_dataflows(data_dir=shared / "data", space=DataSpace(config.data_space),
                                            config_root=shared / "config"),
             )
+            current_indexes = {
+                path: path.read_bytes() if path.exists() else None
+                for path in (client._account_root(account_id) / "current.json" for account_id in account_ids)
+            }
             signal_date = client.latest_completed_signal_date(datetime.now(timezone.utc))
             bindings = []
             for update in updates:
@@ -100,12 +125,12 @@ def update_account_bindings(
                 if account["release_hash"] != update.expected_release_hash:
                     raise ValueError(f"{update.account_id}: current release hash differs from expected hash")
                 binding = client.validate_account_binding(
-                    strategy_id=account["strategy_id"], strategy_version=account["strategy_version"],
+                    strategy_id=account["strategy_id"], strategy_version=update.target_version,
                     symbol=account["symbol"], asset=account["asset_type"],
                 )
                 if binding.release_hash != update.target_release_hash:
                     raise ValueError(f"{update.account_id}: target release hash differs from installed strategy")
-                if (account["strategy_id"], account["strategy_version"], account["symbol"], account["selection_data_cutoff"], account["asset_type"]) != (
+                if (account["strategy_id"], update.target_version, account["symbol"], account["selection_data_cutoff"], account["asset_type"]) != (
                         binding.strategy_id, binding.version, binding.symbol, binding.selection_data_cutoff.isoformat(), "etf"):
                     raise ValueError(f"{update.account_id}: strategy identity, symbol or selection cutoff differs")
                 prepared = client.prepare_account_data(
@@ -148,6 +173,7 @@ def update_account_bindings(
             connection.commit()
         except BaseException:
             connection.rollback()
+            _restore_current_indexes(current_indexes)
             raise
         finally:
             connection.close()

@@ -2,11 +2,12 @@
 
 from .input_binding import StrategyInputPlan, StrategyInputBinding
 from .pricing import ExecutionPriceBasis, ExecutionPricing
-from .algorithm import StrategyImplementation
+from .algorithm import StrategyImplementation, StrategyImplementationV2
 from .identity import CandidateContentIdentity, ImplementationDependency
 from .alignment import AlignmentRule, AlignedInput, InputAlignment, align_input_history
 from .calculation import (
     CalculationScope,
+    HistoryCalculationContext,
 )
 from .binding import RuntimeBinding, RuntimeBindingSpec
 from .observation import (
@@ -45,6 +46,7 @@ from .deployment import StrategyDeployment, deployment_inventory, load_strategy_
 from .models import (
     CutoffRule,
     DecisionContract,
+    DecisionFeedback,
     ExecutionPolicy,
     HistoryPolicy,
     ImplementationRef,
@@ -79,9 +81,11 @@ __all__ = [
     "AlignmentRule",
     "DataPreparationResult",
     "CalculationScope",
+    "HistoryCalculationContext",
     "CutoffRule",
     "ExecutionCapabilities",
     "DecisionContract",
+    "DecisionFeedback",
     "ExecutionOutcome",
     "ExecutionPlan",
     "ExecutionPolicy",
@@ -111,6 +115,7 @@ __all__ = [
     "StrategyIdentity",
     "StrategyInit",
     "StrategyImplementation",
+    "StrategyImplementationV2",
     "StrategyInstance",
     "StrategyRelease",
     "StrategyRuntime",
