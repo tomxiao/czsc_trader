@@ -70,14 +70,14 @@ def test_historical_market_rejections_retain_cash_holdings_and_retry_idempotentl
     assert result.trades.iloc[0].net_return == pytest.approx(999. / 1101.1 - 1.)
 
 
-def test_historical_market_admission_rejects_wrong_symbol_missing_dates_and_unsupported_overlay():
+def test_historical_market_admission_rejects_wrong_symbol_missing_dates_and_overlay_without_checkpoints():
     dates = pd.bdate_range("2026-09-14", periods=5)
     limits = tuple(SessionPriceLimits(day.date(), 9., 11.) for day in dates[1:])
     with pytest.raises(RuntimeContractError, match="another instrument"):
         _market_executor_fixture(rules=MarketExecutionRules("510500.SH", limits))
     with pytest.raises(RuntimeContractError, match="do not cover"):
         _market_executor_fixture(rules=MarketExecutionRules("600722.SH", limits[:-1]))
-    with pytest.raises(RuntimeContractError, match="INTRADAY_OVERLAY"):
+    with pytest.raises(RuntimeContractError, match="overlay requires 5m"):
         _market_executor_fixture(policy_type="INTRADAY_OVERLAY")
 
 

@@ -412,18 +412,19 @@ def test_version_upgrade_preserves_completed_fills_and_nonzero_portfolio(mainten
 @pytest.mark.parametrize('scenario', [
     'prepare-existing', 'prepare-missing', 'adoption-existing', 'success',
 ])
+@pytest.mark.parametrize('target_version', ['v1', 'v2'])
 def test_binding_transaction_restores_current_cache_indexes_on_failure(
-    maintenance, monkeypatch, scenario,
+    maintenance, monkeypatch, scenario, target_version,
 ):
     from paper_trading_engine.srt_advice_client import SrtAdviceClient
 
     m = maintenance
-    updates = _target_version(m, 'v2')
+    updates = _target_version(m, target_version)
 
-    def index(account_id, version):
+    def index(account_id, version, release_hash):
         return {'schema_version': 3, 'account_id': account_id, 'symbol': '588080.SH',
                 'signal_date': '2026-09-01', 'trading_date': '2026-09-02',
-                'releases': {f'S001-{version}': {'release_hash': ('a' if version == 'v1' else 'b') * 64}}}
+                'releases': {f'S001-{version}': {'release_hash': release_hash}}}
 
     originals = {}
     old_records = {}
@@ -431,7 +432,7 @@ def test_binding_transaction_restores_current_cache_indexes_on_failure(
         root = m.fake._account_root(account_id)
         path = root / 'current.json'
         if scenario != 'prepare-missing':
-            SrtAdviceClient._write_index(root, index(account_id, 'v1'))
+            SrtAdviceClient._write_index(root, index(account_id, 'v1', 'a' * 64))
             # Retain exact original bytes, including valid insignificant whitespace.
             path.write_bytes(path.read_bytes() + b' \n')
             originals[path] = path.read_bytes()
@@ -441,7 +442,7 @@ def test_binding_transaction_restores_current_cache_indexes_on_failure(
 
     def prepare(**kwargs):
         root = m.fake._account_root(kwargs['account_id'])
-        SrtAdviceClient._write_index(root, index(kwargs['account_id'], kwargs['strategy_version']))
+        SrtAdviceClient._write_index(root, index(kwargs['account_id'], kwargs['strategy_version'], 'b' * 64))
         if scenario.startswith('prepare-') and kwargs['account_id'] == 'two':
             raise ValueError('second cache preparation failure')
         return preparation(m.fake.value)
@@ -462,8 +463,8 @@ def test_binding_transaction_restores_current_cache_indexes_on_failure(
         result = update_account_bindings(m.runtime, 'v1.0.0', updates)
         assert result.status is AccountBindingUpdateStatus.COMMITTED
         for path in originals:
-            assert 'S001-v2' in json.loads(path.read_bytes())['releases']
-            assert m.store.virtual_account(path.parent.name)['strategy_version'] == 'v2'
+            assert json.loads(path.read_bytes())['releases'][f'S001-{target_version}']['release_hash'] == 'b' * 64
+            assert m.store.virtual_account(path.parent.name)['strategy_version'] == target_version
     else:
         with pytest.raises(ValueError, match='second cache'):
             update_account_bindings(m.runtime, 'v1.0.0', updates)

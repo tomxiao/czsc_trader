@@ -85,6 +85,7 @@ def build_replay_evidence(
             evaluation_sessions=evaluation_sessions,
             execution_spec={
                 "pricing": data.pricing.to_dict(),
+                "market_rules": None if data.market_rules is None else data.market_rules.to_dict(),
                 "mode": "CORE_EVENT_INTRADAY_ROTATION",
                 "fee_rate": overlay_settings["one_way_cost"],
                 "lot_size": overlay_settings["lot_size"],

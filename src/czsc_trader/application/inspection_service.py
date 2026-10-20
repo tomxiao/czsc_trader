@@ -28,6 +28,9 @@ from .research_evidence import (
     read_decision,
     validate_inspection,
     validate_approval,
+    validate_migration_selection,
+    validate_migration_target,
+    validate_migration_files,
 )
 from strategy_runtime import (
     StrategyRuntime,
@@ -108,7 +111,9 @@ def record_research_decision(
         raise TypeError("record_research_decision requires ResearchDecision")
     StrategyRegistry(context.research_registry_root).get_family(decision.strategy_id)
     subject = decision.subject
-    if isinstance(subject, (f.StageAdvanceSubject, f.CandidateSelectionSubject)):
+    if type(subject) is f.FrozenMigrationSelectionSubject:
+        validate_migration_selection(context, subject)
+    elif isinstance(subject, (f.StageAdvanceSubject, f.CandidateSelectionSubject)):
         reference, content = _delivery(context, subject.delivery)
         if reference.strategy_id != decision.strategy_id:
             raise ValueError("decision delivery family differs")
@@ -490,13 +495,27 @@ def inspect_candidate(
     selection = read_decision(context.root, request.selection)
     if (
         selection.action is not f.DecisionAction.APPROVE
-        or type(selection.subject) is not f.CandidateSelectionSubject
+        or type(selection.subject) not in (f.CandidateSelectionSubject, f.FrozenMigrationSelectionSubject)
         or selection.subject.candidate != request.candidate
         or selection.subject.content_sha256 != registration.content_sha256
     ):
         raise ValueError("inspection requires matching candidate selection")
-    _, assessment = _delivery(context, selection.subject.delivery)
-    selected_evidence = assessment.payload.assessment_request.evidence
+    migration = type(selection.subject) is f.FrozenMigrationSelectionSubject
+    if migration:
+        validate_migration_target(context, selection.subject, request.version, request.parent_version,
+                                  request.selection_data_cutoff, request.forward_start, available=True)
+        validate_migration_files(context, selection.subject, request.additional_files)
+        selected_evidence = []
+        for reference in registration.origin.evidence:
+            value = _read(reference.resolve(_registered_root(context, registration)))
+            validate_evaluation_evidence(value)
+            selected_evidence.extend(AssessmentEvidence.from_dict(item) for item in value["assessment_evidence"])
+        note = ("Contract migration equivalence covers declared windows, not a new alpha or unseen holdout; "
+                "original selection cutoff/forward start are inherited and are not production activation dates.")
+        request = replace(request, remaining_risks=(*request.remaining_risks, note))
+    else:
+        _, assessment = _delivery(context, selection.subject.delivery)
+        selected_evidence = assessment.payload.assessment_request.evidence
     origin = f.CandidateOrigin(registration.key, registration.content_sha256,
                               store.put_json(registration.to_dict()))
     plan = None
@@ -620,7 +639,8 @@ def inspect_candidate(
             and p.candidate.content_sha256 == registration.content_sha256
             for p in projection
         ):
-            raise ValueError("reference evaluation is absent from selected assessment")
+            raise ValueError("reference evaluation is absent from " + (
+                "registered migration evidence" if migration else "selected assessment"))
         sources.append(ref)
         try:
             current_request = replace(new_request, strategy=candidate)
@@ -778,7 +798,13 @@ def freeze_candidate(
     report = validate_approval(context.root, request)
     # Revalidate the selected delivery and registered candidate before materialization.
     selection = read_decision(context.root, report.selection)
-    _delivery(context, selection.subject.delivery)
+    if type(selection.subject) is f.FrozenMigrationSelectionSubject:
+        if report.plan.version == selection.subject.original.version:
+            raise ValueError("same-version migration requires the explicit runtime upgrade API")
+        validate_migration_target(context, selection.subject, report.plan.version, report.plan.parent_version,
+                                  report.plan.selection_data_cutoff, report.plan.forward_start, available=True)
+    else:
+        _delivery(context, selection.subject.delivery)
     actual_candidate = load_candidate(context, report.plan.origin.candidate)
     if actual_candidate.payload["runtime"].get("contract_version") != 2:
         raise ValueError("new freeze requires implementation contract version 2")

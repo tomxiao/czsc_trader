@@ -1,0 +1,211 @@
+{
+  "status": "PASS_NEW_OLD_WITH_IDENTICAL_RULES_WITH_DECLARED_LEGACY_ECONOMIC_DIFFERENCE",
+  "blocking_findings_for_equal_legacy_economics": [
+    "Actual exchange rules reject a historical invalid-limit buy which the explicit no-rules legacy executor accepted. Do not claim legacy/new economic equivalence."
+  ],
+  "reference": "S003-v1",
+  "candidate": "S003-C9901",
+  "window": {
+    "start": "2026-06-01",
+    "end": "2026-09-02",
+    "sessions": 67
+  },
+  "actual_strategy_accounts_run": 3,
+  "supplier_calls": 0,
+  "old_new_with_identical_actual_rules": {
+    "checks": [
+      {
+        "name": "decisions",
+        "rows": 20,
+        "columns": 10,
+        "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+      },
+      {
+        "name": "orders",
+        "rows": 38,
+        "columns": 13,
+        "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+      },
+      {
+        "name": "fills",
+        "rows": 37,
+        "columns": 12,
+        "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+      },
+      {
+        "name": "account_daily",
+        "rows": 67,
+        "columns": 11,
+        "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+      },
+      {
+        "name": "trades",
+        "rows": 18,
+        "columns": 8,
+        "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+      }
+    ],
+    "identity_bijections": {
+      "decision_id": 20,
+      "order_id": 38,
+      "cycle_id": 20,
+      "fill_id": 37
+    }
+  },
+  "exchange_fact": {
+    "date": "2026-07-15",
+    "symbol": "510500.SH",
+    "source": "Existing authenticated common-window ETF limits preparation",
+    "request": {
+      "dataset": "security.price_limits",
+      "symbol": "510500.SH",
+      "start": "2026-06-01",
+      "end": "2026-09-02",
+      "required_cutoff": "2026-09-02",
+      "frequency": "daily",
+      "parameters": {},
+      "coverage": null
+    },
+    "prepared": {
+      "space_id": "e1358429-6181-43cb-829c-6e286e3f25c8",
+      "preparation_id": "6043658d-1d88-4110-80f6-2c9f3defae17",
+      "manifest_sha256": "b68443e4a683eb68a9b0c6347b28b630df84ac4afea2f1858b01e3c80ff42733"
+    },
+    "content_sha256": "1bf2f8b34e25fab2b77f9eb5b74bc8a2132432ed67bf262ae6c129e497176496",
+    "down_limit": 7.438,
+    "up_limit": 9.09,
+    "unchanged_strategy_buy_limit": 9.254,
+    "quantity": 5300,
+    "rule_outcome": "ORDER_PRICE_OUTSIDE_LIMITS",
+    "dependent_sell": "Not submitted because required BUY did not fill",
+    "legacy_outcome": "BUY and SELL filled without any market limits contract"
+  },
+  "accounts": {
+    "old_with_actual_rules": {
+      "orders": 38,
+      "fills": 37,
+      "closed_cycles": 18,
+      "final_cash": 59188.15432799997,
+      "final_quantity": 5300,
+      "final_equity": 100268.45432799996
+    },
+    "new_with_actual_rules": {
+      "orders": 38,
+      "fills": 37,
+      "closed_cycles": 18,
+      "final_cash": 59188.15432799997,
+      "final_quantity": 5300,
+      "final_equity": 100268.45432799996
+    },
+    "explicit_legacy_no_rules": {
+      "orders": 39,
+      "fills": 39,
+      "closed_cycles": 19,
+      "final_cash": 58758.98640399997,
+      "final_quantity": 5300,
+      "final_equity": 99839.28640399998
+    }
+  },
+  "separate_non_economic_difference": {
+    "field": "account_daily.trading_status",
+    "legacy": "TRADING",
+    "actual_rules_NOT_PROVIDED": null,
+    "interpretation": "Retained original public suspension-information semantics, not silently removed from a claimed full-field comparison."
+  },
+  "scope": [
+    "Strategy source, parameters, prices, order limits and original frozen package were not changed.",
+    "Different executions arise from enforcing the real exchange order-price contract.",
+    "Old release and migration candidate produce five strictly equal ledgers when both consume the same actual market rules.",
+    "No clipping or replacement of the rejected strategy price was performed.",
+    "This is engineering validation, not a previously unseen research test or production upgrade."
+  ],
+  "formal_TDR_audit_status": {
+    "status": "NOT_YET_SUPPORTED_PENDING_AUDIT_CHAIN_FIX",
+    "missing": [
+      "TDR overlay ReplayEvidence currently omits market_rules required by schema7 validation.",
+      "SE overlay audit currently rejects every UNFILLED order and requires every rotation BUY+SELL pair, including a legitimately rejected dependency BUY."
+    ]
+  },
+  "configuration": {
+    "path": "research/S014/experiments/EX053_20261020/protocols/market_equivalence_cases.json",
+    "sha256": "f87c9178dfd25033007c124ace8338c69d0ae2323e17c11ef611940049a99a1c"
+  },
+  "artifacts": [
+    {
+      "path": ".tmp/s003-overlay-market-rules-real-v3/new_binding.json",
+      "sha256": "82a5a671ad673f64572290d5f9891566e698f67f6c77820afb00cce4ab962213"
+    },
+    {
+      "path": ".tmp/s003-overlay-market-rules-real-v3/new_derived_plan.json",
+      "sha256": "a5c71b80976f7524f338888432afee4da0c13ae2f6de6192f69e0f018652f9ea"
+    },
+    {
+      "path": ".tmp/s003-overlay-market-rules-real-v3/new_rules_WINDOW_account_daily.csv",
+      "sha256": "96a4d105bd600f6ff1c5685d39284ff4f1bd7dd393c071a3b210a334a690159e"
+    },
+    {
+      "path": ".tmp/s003-overlay-market-rules-real-v3/new_rules_WINDOW_decisions.csv",
+      "sha256": "70cacc4e19d02917ee3b1261ad5af8e613d2c832e2d4610fceb3fd7e10e82e45"
+    },
+    {
+      "path": ".tmp/s003-overlay-market-rules-real-v3/new_rules_WINDOW_fills.csv",
+      "sha256": "64435942c2681ff917ba59cc23beb1466c2233e309deccc9e647b76db0114163"
+    },
+    {
+      "path": ".tmp/s003-overlay-market-rules-real-v3/new_rules_WINDOW_orders.csv",
+      "sha256": "7474af23928fc5df5505ea7da693d0fc288d24debb7d2e8d6ba1c77ac3550741"
+    },
+    {
+      "path": ".tmp/s003-overlay-market-rules-real-v3/new_rules_WINDOW_trades.csv",
+      "sha256": "dc42d411d29b563b10525c164ce1e7fd9006ef6baf5b766e49ebb81ac7ddc923"
+    },
+    {
+      "path": ".tmp/s003-overlay-market-rules-real-v3/old_binding.json",
+      "sha256": "5b16df7b77c210c729794b38c87f48fd384b22f2f46d5e64ffd2bf1ddfc5ca90"
+    },
+    {
+      "path": ".tmp/s003-overlay-market-rules-real-v3/old_derived_plan.json",
+      "sha256": "66715f76720fd9e452a7af1df783297e6528266d0cbe6b8ebe1da34eb7919d38"
+    },
+    {
+      "path": ".tmp/s003-overlay-market-rules-real-v3/old_legacy_WINDOW_account_daily.csv",
+      "sha256": "178e9550ffbee56037ef5a13a5d56ca646989d4632c2c7d9b70b9826e0c0444a"
+    },
+    {
+      "path": ".tmp/s003-overlay-market-rules-real-v3/old_legacy_WINDOW_decisions.csv",
+      "sha256": "f28fcd161ab2bd5c6b9622d6702d7c3decb5c85ed8203d550408c050c761319f"
+    },
+    {
+      "path": ".tmp/s003-overlay-market-rules-real-v3/old_legacy_WINDOW_fills.csv",
+      "sha256": "e6ede832968ae4c2b2fc9957dfc0612f3ff7f0ec76615106dc615363a293ec4f"
+    },
+    {
+      "path": ".tmp/s003-overlay-market-rules-real-v3/old_legacy_WINDOW_orders.csv",
+      "sha256": "e29c7bf5d268fb98b6f985a0d30a4d1c7bed97c123e7858503c158c2eaed6de0"
+    },
+    {
+      "path": ".tmp/s003-overlay-market-rules-real-v3/old_legacy_WINDOW_trades.csv",
+      "sha256": "c32939e2bd2c20268b7542d11faff2723444188559faefd593dc8a2ec92b1075"
+    },
+    {
+      "path": ".tmp/s003-overlay-market-rules-real-v3/old_rules_WINDOW_account_daily.csv",
+      "sha256": "96a4d105bd600f6ff1c5685d39284ff4f1bd7dd393c071a3b210a334a690159e"
+    },
+    {
+      "path": ".tmp/s003-overlay-market-rules-real-v3/old_rules_WINDOW_decisions.csv",
+      "sha256": "f28fcd161ab2bd5c6b9622d6702d7c3decb5c85ed8203d550408c050c761319f"
+    },
+    {
+      "path": ".tmp/s003-overlay-market-rules-real-v3/old_rules_WINDOW_fills.csv",
+      "sha256": "d4b5d6a04143522693c0883f864d7484c4aa477061f8c62176c4ba61b6684a0e"
+    },
+    {
+      "path": ".tmp/s003-overlay-market-rules-real-v3/old_rules_WINDOW_orders.csv",
+      "sha256": "2022eea9de914bc5997d7e9a16a747c2917f40c3a82c4199b9792c59d0b29e58"
+    },
+    {
+      "path": ".tmp/s003-overlay-market-rules-real-v3/old_rules_WINDOW_trades.csv",
+      "sha256": "dd499c66b0e022037423de28d8d2ffb19ea254fdf9349912779ec4f347b18a5e"
+    }
+  ]
+}

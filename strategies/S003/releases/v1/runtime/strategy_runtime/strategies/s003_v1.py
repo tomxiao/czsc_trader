@@ -1,6 +1,7 @@
 """Frozen S003-v1 constituent-moneyflow intraday overlay runtime."""
 
 from __future__ import annotations
+from strategy_runtime import HistoryCalculationContext, StrategyImplementationV2
 
 from pathlib import Path
 from datetime import date, timedelta
@@ -182,7 +183,7 @@ def _decision_history(history: pd.DataFrame, feature: Mapping[str, Any]) -> pd.D
     return result
 
 
-class S003V1(StrategyImplementation):
+class S003V1(StrategyImplementationV2):
     """Executable S003-v1 with an immutable seed and point-in-time increments."""
 
     def __init__(self, parameters: ParameterSet) -> None:
@@ -341,11 +342,8 @@ class S003V1(StrategyImplementation):
             ranges, source_root=Path(__file__).resolve().parent.parent, observation_dates=observation_dates,
         )
 
-    def calculate_history(
-        self,
-        inputs: Mapping[str, pd.DataFrame],
-        sessions: pd.DatetimeIndex,
-    ) -> pd.DataFrame:
+    def calculate_context_history(self, inputs, context: HistoryCalculationContext):
+        sessions = context.sessions
         if _SEED in inputs:
             seed = inputs[_SEED]
             history = _seed_history(seed)

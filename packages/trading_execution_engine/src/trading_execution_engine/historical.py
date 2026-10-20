@@ -19,6 +19,7 @@ from strategy_runtime import (
     OrderType,
     PortfolioSnapshot,
     RuntimeContractError,
+    RuntimeExecutionError,
     TradingPoint,
 )
 from .fills import OrderSpec, resolve_fill, DailyQuote
@@ -126,8 +127,6 @@ class HistoricalExecutor:
                 raise RuntimeContractError("historical market rules require MarketExecutionRules")
             if market_rules.symbol != self._strategy_symbol:
                 raise RuntimeContractError("market rules belong to another instrument")
-            if execution_policy.policy_type == "INTRADAY_OVERLAY":
-                raise RuntimeContractError("INTRADAY_OVERLAY does not support market execution rules")
         self._market_rules = market_rules
         self._policy = execution_policy
         try:
@@ -144,12 +143,18 @@ class HistoricalExecutor:
         self._initial_cash = float(initial_cash)
         self._daily = _prices(execution_daily, "execution daily", ("open", "close"))
         self._intraday = _prices(execution_intraday, "execution intraday", ("high", "low"))
-        self._overlay_checkpoints = (
+        five_minute = (
             None
             if execution_five_minute is None
-            else _overlay_checkpoints(
-                _prices(execution_five_minute, "execution 5m", ("open", "close")).reset_index()
+            else _prices(
+                execution_five_minute, "execution 5m",
+                (("open", "high", "low", "close")
+                 if market_rules is not None and execution_policy.policy_type == "INTRADAY_OVERLAY"
+                 else ("open", "close")),
             )
+        )
+        self._overlay_checkpoints = (
+            None if five_minute is None else _overlay_checkpoints(five_minute.reset_index())
         )
         start = pd.Timestamp(evaluation_start).normalize()
         end = pd.Timestamp(evaluation_end).normalize()
@@ -189,6 +194,30 @@ class HistoricalExecutor:
                     if any(not float(row["low"]) <= float(row[column]) <= float(row["high"])
                            for column in ("open", "close") if column in row):
                         raise ValueError("intraday OHLC prices are inconsistent")
+                if execution_policy.policy_type == "INTRADAY_OVERLAY":
+                    if halted.intersection(self._evaluation.index):
+                        raise ValueError("intraday overlay does not support suspended evaluation sessions")
+                    if five_minute is None:
+                        raise ValueError("intraday overlay requires 5m execution data")
+                    if (any(five_minute.index.minute % 5) or any(five_minute.index.second)
+                            or any(five_minute.index.microsecond) or any(five_minute.index.nanosecond)):
+                        raise ValueError("overlay prices must use exact 5m timestamps")
+                    for timestamp, row in five_minute.iterrows():
+                        if timestamp.normalize() not in self._evaluation.index:
+                            continue
+                        limits = market_rules.for_session(timestamp.date())
+                        values = tuple(float(row[column]) for column in ("open", "high", "low", "close"))
+                        if any(not limits.contains(value) for value in values):
+                            raise ValueError("overlay 5m prices are outside session price limits")
+                        if not values[2] <= min(values[0], values[3]) <= max(values[0], values[3]) <= values[1]:
+                            raise ValueError("overlay 5m OHLC prices are inconsistent")
+                    for session in self._evaluation.index:
+                        opening, closing = self._overlay_checkpoints.get(session, ((), ()))
+                        if len(opening) != 1 or len(closing) != 1:
+                            raise ValueError("intraday overlay has incomplete execution checkpoints")
+                        daily_open = float(self._evaluation.loc[session, "open"])
+                        if abs(opening[0] - daily_open) > max(abs(opening[0]), abs(daily_open)) * 1e-12:
+                            raise ValueError("overlay 5m opening price differs from daily open")
             except (TypeError, ValueError) as exc:
                 raise RuntimeContractError(str(exc)) from exc
 
@@ -216,6 +245,7 @@ class HistoricalExecutor:
         self._state_by_date: dict[pd.Timestamp, dict[str, object]] = {}
         self._open_trade: dict[str, object] | None = None
         self._result: ExecutionResult | None = None
+        self._execution_failure: str | None = None
 
         self._opening_cash = self._cash
         self._opening_quantity = self._quantity
@@ -247,6 +277,8 @@ class HistoricalExecutor:
         ), ExecutionState(self._revision, as_of, self._cycle_target)
 
     def execute(self, plan: ExecutionPlan) -> ExecutionOutcome:
+        if self._execution_failure is not None:
+            raise RuntimeExecutionError(self._execution_failure)
         if self._result is not None:
             raise RuntimeContractError("historical executor is already finalized")
         key = plan.plan_identity
@@ -264,7 +296,26 @@ class HistoricalExecutor:
             raise RuntimeContractError("execution fee_rate must be finite and in [0, 1)")
         should_record = True
         if self._policy.policy_type == "INTRADAY_OVERLAY" and plan.legs:
-            self._execute_overlay(plan, signal_date, execution_date)
+            if self._market_rules is None:
+                self._execute_overlay(plan, signal_date, execution_date)
+            else:
+                fills_before = len(self._fill_rows)
+                try:
+                    self._execute_overlay(plan, signal_date, execution_date)
+                except Exception as exc:
+                    # A checkpoint buy may already have occurred before its
+                    # dependent exit failed. Preserve those facts; the account
+                    # cannot be finalized or retried as a successful replay.
+                    fills_added = len(self._fill_rows) - fills_before
+                    self._execution_failure = (
+                        "historical overlay execution failed; "
+                        f"confirmed fills in failed plan={fills_added}; "
+                        f"partial execution facts are retained: {exc}"
+                    )
+                    if fills_added:
+                        self._revision += 1
+                        self._last_execution = execution_date
+                    raise RuntimeExecutionError(self._execution_failure) from exc
         elif self._policy.policy_type == "INTRADAY_OVERLAY":
             self._state_by_date[execution_date] = {
                 "signal_date": signal_date,
@@ -312,6 +363,8 @@ class HistoricalExecutor:
     def finish(self) -> ExecutionResult:
         """Close the deterministic ledger exactly once."""
 
+        if self._execution_failure is not None:
+            raise RuntimeExecutionError(self._execution_failure)
         if self._result is not None:
             return self._result
         if self._policy.policy_type == "FROZEN_RULE":
@@ -620,6 +673,7 @@ class HistoricalExecutor:
         entry_price = 0.0
         exit_price = 0.0
         trade_quantity = 0
+        sellable_quantity = quantity_before
         for leg in plan.legs:
             sequence = leg.sequence
             dependency = leg.dependency_sequence
@@ -648,8 +702,30 @@ class HistoricalExecutor:
                     and reference >= limit_price
                 )
             )
+            failure_reason = None
+            if self._market_rules is not None:
+                fill_time = (
+                    execution_date + pd.Timedelta(hours=9, minutes=30)
+                    if checkpoint == "OPEN"
+                    else execution_date + pd.Timedelta(hours=11, minutes=30)
+                )
+                fill = resolve_fill(
+                    OrderSpec(side, order_type, quantity, limit_price),
+                    session_open=reference,
+                    session_time=fill_time.to_pydatetime(),
+                    intraday_touches=(),
+                    session_limits=self._market_rules.for_session(execution_date.date()),
+                )
+                can_fill = fill.filled
+                failure_reason = None if can_fill else fill.reason
             if side == "BUY" and can_fill:
                 can_fill = quantity * reference * (1.0 + fee_rate) <= self._cash + 1e-8
+                if not can_fill:
+                    failure_reason = "INSUFFICIENT_CASH"
+            if self._market_rules is not None and side == "SELL" and can_fill:
+                can_fill = quantity <= sellable_quantity
+                if not can_fill:
+                    failure_reason = "INSUFFICIENT_SELLABLE_POSITION"
             status = "FILLED" if can_fill else "UNFILLED"
             leg_status[sequence] = "FILLED_ALL" if can_fill else status
             order_id = _id("ORD", cycle_id, side)
@@ -669,6 +745,8 @@ class HistoricalExecutor:
                     "role": leg.role,
                 }
             )
+            if self._market_rules is not None and not can_fill:
+                self._order_rows[-1]["reason"] = failure_reason
             if not can_fill:
                 continue
             fees = quantity * reference * fee_rate
@@ -680,6 +758,7 @@ class HistoricalExecutor:
             else:
                 self._cash += quantity * reference - fees
                 self._quantity -= quantity
+                sellable_quantity -= quantity
                 exit_price = reference
             fill_time = (
                 execution_date + pd.Timedelta(hours=9, minutes=30)

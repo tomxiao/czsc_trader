@@ -166,6 +166,59 @@ def _audit_intraday_overlay(
     fee_rate = float(spec["fee_rate"])
     lot_size = int(spec["lot_size"])
     core_fraction = float(spec["core_fraction"])
+    limits = market_limits(spec.get("market_rules"), evidence.evaluation_sessions)
+    bars_by_time = {str(row["time"])[0:16]: row for row in evidence.execution_intraday}
+    daily_by_date = {str(row["date"])[:10]: row for row in evidence.execution_daily}
+    accounts_by_date = {str(row["date"])[:10]: row for row in evidence.account_daily}
+    verified_rejected_buys: set[str] = set()
+    if limits:
+        try:
+            for bar in evidence.execution_intraday:
+                stamp = market_timestamp(bar["time"])
+                if stamp.minute % 5 or stamp.second or stamp.microsecond:
+                    raise ValueError("overlay requires exact 5m timestamps")
+                for field in ("open", "high", "low", "close"):
+                    strict_market_number(bar[field], positive=True)
+                if not bar["low"] <= min(bar["open"], bar["close"]) <= max(bar["open"], bar["close"]) <= bar["high"]:
+                    raise ValueError("invalid overlay 5m OHLC")
+            for session in evidence.evaluation_sessions:
+                day = str(session)[:10]
+                for clock in ("09:35", "11:30"):
+                    checkpoint = [bar for bar in evidence.execution_intraday if str(bar["time"])[:16] == f"{day}T{clock}"]
+                    if len(checkpoint) != 1:
+                        raise ValueError("missing or duplicate overlay checkpoint")
+                opening = float(bars_by_time[f"{day}T09:35"]["open"])
+                daily_open = float(daily_by_date[day]["open"])
+                if abs(opening - daily_open) > max(abs(opening), abs(daily_open)) * 1e-12:
+                    raise ValueError("overlay 5m opening price differs from daily open")
+        except (ValueError, TypeError, KeyError):
+            reasons.append("INVALID_INTRADAY_MARKET_PRICES")
+
+    def rejection_reason(order):
+        """Independent checkpoint proof; never import the executor fill engine."""
+        day = str(order["execution_date"])[:10]
+        checkpoint = str(order.get("checkpoint"))
+        key = f"{day}T09:35" if checkpoint == "OPEN" else f"{day}T11:30"
+        bar = bars_by_time[key]
+        price = float(bar["open"] if checkpoint == "OPEN" else bar["close"])
+        side = str(order["side"])
+        kind = str(order["order_type"])
+        bound = limits[day]
+        limit = float(order["limit_price"])
+        if blocked_order(side, price, bound, order_type=kind, limit_price=limit):
+            return "ORDER_PRICE_OUTSIDE_LIMITS"
+        if side == "BUY" and abs(price - bound[1]) <= abs(bound[1]) * 1e-10:
+            return "OPEN_UP_LIMIT_BUY_BLOCKED"
+        if side == "SELL" and abs(price - bound[0]) <= abs(bound[0]) * 1e-10:
+            return "OPEN_DOWN_LIMIT_SELL_BLOCKED"
+        if kind == "LIMIT" and (price > limit if side == "BUY" else price < limit):
+            return "LIMIT_NOT_CROSSED"
+        account = accounts_by_date[day]
+        if side == "BUY" and int(order["quantity"]) * price * (1 + fee_rate) > float(account["cash_before"]) + 1e-8:
+            return "INSUFFICIENT_CASH"
+        if side == "SELL" and int(order["quantity"]) > int(account["quantity_before"]):
+            return "INSUFFICIENT_SELLABLE_POSITION"
+        return None
     if (
         not 0 < core_fraction < 1
         or str(spec.get("entry_checkpoint")) != "OPEN"
@@ -210,7 +263,19 @@ def _audit_intraday_overlay(
         if quantity <= 0 or quantity % lot_size:
             reasons.append("INVALID_ORDER_LOT")
         if str(order["status"]) != "FILLED" or order_id not in fills_by_order:
-            reasons.append("INTRADAY_ORDER_NOT_FILLED")
+            rejected = False
+            if (limits and str(order["status"]) == "UNFILLED" and order_id not in fills_by_order
+                    and str(order["side"]) == "BUY" and decision is not None
+                    and str(decision.get("plan_mode")) == "CORE_EVENT_INTRADAY_ROTATION"):
+                try:
+                    expected_rejection = rejection_reason(order)
+                    rejected = expected_rejection is not None and order.get("reason") == expected_rejection
+                except (KeyError, TypeError, ValueError):
+                    rejected = False
+            if rejected:
+                verified_rejected_buys.add(order_id)
+            else:
+                reasons.append("INTRADAY_ORDER_NOT_FILLED")
     for decision_id, decision in decisions.items():
         linked = orders_by_decision.get(decision_id, [])
         sides = [str(item["side"]) for item in linked]
@@ -231,6 +296,13 @@ def _audit_intraday_overlay(
                 and len(set(quantities)) == 1
                 and str(decision.get("action")) == "INTRADAY_LONG_OVERLAY"
             )
+            if (limits and len(linked) == 1 and str(linked[0]["order_id"]) in verified_rejected_buys
+                    and plan_mode == "CORE_EVENT_INTRADAY_ROTATION"
+                    and sides == ["BUY"] and checkpoints == ["OPEN"]
+                    and str(decision.get("action")) == "INTRADAY_LONG_OVERLAY"):
+                valid = True
+            if verified_rejected_buys.intersection(str(item["order_id"]) for item in linked) and len(linked) != 1:
+                valid = False
         if not valid:
             reasons.append("INVALID_INTRADAY_ORDER_PAIR")
     core_decisions = [
@@ -246,12 +318,8 @@ def _audit_intraday_overlay(
         reasons.append("INVALID_CORE_SETUP_COVERAGE")
     checks.append("INTRADAY_ORDER_CONTRACT")
 
-    bars_by_time = {str(row["time"])[0:16]: row for row in evidence.execution_intraday}
-    daily_by_date = {str(row["date"])[:10]: row for row in evidence.execution_daily}
     for order in evidence.orders:
         fill = fills_by_order.get(str(order["order_id"]))
-        if fill is None:
-            continue
         day = str(order["execution_date"])[:10]
         side = str(order["side"])
         checkpoint = str(order.get("checkpoint"))
@@ -278,6 +346,28 @@ def _audit_intraday_overlay(
             limit_matches = True
         else:
             limit_matches = abs(float(order["limit_price"]) - expected_price) <= tolerance
+        if not type_matches or not limit_matches:
+            reasons.append("INTRADAY_FILL_MISMATCH")
+        if limits and side == "BUY":
+            account = accounts_by_date.get(day)
+            if account is None:
+                reasons.append("INTRADAY_ACCOUNT_LEDGER_MISMATCH")
+            elif str(decisions.get(str(order["decision_id"]), {}).get("plan_mode")) == "CORE_EVENT_INTRADAY_ROTATION":
+                unit = Decimal(str(order["limit_price"])) * (1 + Decimal(str(fee_rate)))
+                affordable = int(Decimal(str(account["cash_before"])) / (unit * lot_size)) * lot_size
+                if quantity != min(int(account["quantity_before"]), affordable):
+                    reasons.append("INVALID_INTRADAY_EVENT_QUANTITY")
+        if fill is None:
+            continue
+        if limits:
+            try:
+                if rejection_reason(order) is not None:
+                    reasons.append("INTRADAY_MARKET_FILL_BLOCKED")
+                expected_time = f"{day}T09:30:00" if checkpoint == "OPEN" else f"{day}T11:30:00"
+                if datetime.fromisoformat(str(fill["fill_time"])) != datetime.fromisoformat(expected_time):
+                    reasons.append("INTRADAY_FILL_MISMATCH")
+            except (KeyError, TypeError, ValueError):
+                reasons.append("INVALID_INTRADAY_MARKET_PRICES")
         if (
             str(fill["side"]) != side
             or int(fill["quantity"]) != quantity
@@ -316,6 +406,7 @@ def _audit_intraday_overlay(
             if day <= previous_day:
                 reasons.append("INVALID_ACCOUNT_INDEX")
             previous_day = day
+            sellable_quantity = quantity
             if (
                 abs(float(row["cash_before"]) - cash) > tolerance
                 or int(row["quantity_before"]) != quantity
@@ -329,8 +420,11 @@ def _audit_intraday_overlay(
                     cash -= gross + fees
                     quantity += fill_quantity
                 else:
+                    if limits and fill_quantity > sellable_quantity:
+                        reasons.append("T_PLUS_ONE_SELLABLE_CORE_EXCEEDED")
                     cash += gross - fees
                     quantity -= fill_quantity
+                    sellable_quantity -= fill_quantity
                 decision = decisions.get(str(fill["decision_id"]), {})
                 if str(decision.get("plan_mode")) == "CORE_SETUP":
                     if core_quantity is not None or str(fill["side"]) != "BUY":
@@ -496,8 +590,6 @@ def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAud
     except (TypeError, ValueError, KeyError):
         return ReplayAuditResult(AuditStatus.FAIL, digest, (), ("INVALID_MARKET_EXECUTION_RULES",))
     if evidence.execution_spec.get("mode") == "CORE_EVENT_INTRADAY_ROTATION":
-        if limits:
-            return ReplayAuditResult(AuditStatus.FAIL, digest, (), ("UNSUPPORTED_MARKET_EXECUTION_MODE",))
         return _audit_intraday_overlay(evidence, digest, tolerance)
     reasons: list[str] = []
     checks: list[str] = []
@@ -565,7 +657,7 @@ def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAud
             signal_close = float(signal["unadjusted_close"])
             expected_limit = min(
                 _floor(signal_close * (1 + float(spec["entry_limit_parameter"])), tick),
-                _floor(signal_close * (1 + price_limit_ratio), tick) - tick,
+                _nearest(_floor(signal_close * (1 + price_limit_ratio), tick) - tick, tick),
             )
         else:
             expected_order_type = str(spec.get("exit_order_type", "MARKET"))

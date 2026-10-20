@@ -1,0 +1,1145 @@
+{
+  "status": "PREPARED_NOT_DISPATCHED",
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S003",
+    "experiment_id": "EX002_20261020"
+  },
+  "request_specification": {
+    "repository_root": ".",
+    "experiment_id": "EX002_20261020",
+    "strategy": {
+      "strategy_id": "S003",
+      "candidate_id": "C9901",
+      "payload_path": ".tmp/window-contract-final-migrations/S003-v1/candidate_payload.json",
+      "source_root": ".tmp/window-contract-final-migrations/S003-v1/strategy_runtime",
+      "payload_sha256": "d922f546d27cecd1bac738e79c78ba9f9cbf1d4a8c511b1716dfa53a5ea5d6de"
+    },
+    "runtime_binding": {
+      "candidate_id": "S003-C9901",
+      "source_files": [
+        "strategies/s003_v1.py",
+        "calculation.py",
+        "execution_rules.py",
+        "resources/s003_v1_seed.csv.gz"
+      ],
+      "implementation_sha256": "da3a416c74e004e00a22d6fc2a9b1564d8fadc6ecad6eb877cd5ce817e699ae8"
+    },
+    "symbol": "510500.SH",
+    "asset_type": "etf",
+    "windows": [
+      {
+        "window_id": "full",
+        "start": "2026-06-01",
+        "end": "2026-09-02"
+      }
+    ],
+    "data_cutoff": "2026-09-02",
+    "initial_cash": 100000,
+    "costs": [
+      {
+        "scenario_id": "baseline",
+        "one_way_cost": 0.00012,
+        "measurement_tier": "FORMAL"
+      }
+    ],
+    "benchmark": {
+      "benchmark_id": "BuyHold",
+      "kind": "BUYHOLD",
+      "execution_version": "buyhold-execution-v1",
+      "execution": {
+        "type": "LimitBuyHold",
+        "lot_size": 100,
+        "premium": 0.01,
+        "price_tick": 0.001,
+        "price_limit_ratio": 0.1,
+        "maximum_order_quantity": 1000000
+      }
+    },
+    "price_basis": "UNADJUSTED",
+    "workers": 1,
+    "resources": {
+      "max_workers": 1,
+      "native_threads_per_worker": 1,
+      "random_seed": 17
+    },
+    "frequency_window_days": 60,
+    "execution_mode": "FULL",
+    "dependencies": [],
+    "derivation": null,
+    "content_identity": {
+      "content_sha256": "2821dc2aff22c85a07b66ca07401a4eacec4f742ecf8265527be7cc102c90fa2",
+      "source_sha256": "da3a416c74e004e00a22d6fc2a9b1564d8fadc6ecad6eb877cd5ce817e699ae8",
+      "dependency_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "schema_version": 2
+    },
+    "original_frozen_reference": "S003-v1",
+    "original_frozen_release_hash": "eb0ebf6c80385f8c9d0d34fa466059ab9364055af79b7bf0fe2f9168f683d174",
+    "original_selection_data_cutoff": "2026-09-08",
+    "execution_terms": {
+      "instrument": {
+        "lot_size": 100,
+        "price_tick": 0.001,
+        "price_limit_ratio": 0.1,
+        "maximum_order_quantity": 1000000
+      },
+      "terms_source": "EXPLICIT_510500_CN_ETF_BENCHMARK_TERMS; LOT_FROM_ORIGINAL_OVERLAY",
+      "strategy_one_way_cost": 0.00012,
+      "benchmark": {
+        "benchmark_id": "BuyHold",
+        "kind": "BUYHOLD",
+        "execution_version": "buyhold-execution-v1",
+        "execution": {
+          "type": "LimitBuyHold",
+          "lot_size": 100,
+          "premium": 0.01,
+          "price_tick": 0.001,
+          "price_limit_ratio": 0.1,
+          "maximum_order_quantity": 1000000
+        }
+      }
+    }
+  },
+  "request_summary": {
+    "repository_root": ".",
+    "experiment_id": "EX002_20261020",
+    "strategy": {
+      "strategy_id": "S003",
+      "candidate_id": "C9901",
+      "payload_path": ".tmp/window-contract-final-migrations/S003-v1/candidate_payload.json",
+      "source_root": ".tmp/window-contract-final-migrations/S003-v1/strategy_runtime",
+      "payload_sha256": "d922f546d27cecd1bac738e79c78ba9f9cbf1d4a8c511b1716dfa53a5ea5d6de"
+    },
+    "runtime_binding": {
+      "candidate_id": "S003-C9901",
+      "source_files": [
+        "strategies/s003_v1.py",
+        "calculation.py",
+        "execution_rules.py",
+        "resources/s003_v1_seed.csv.gz"
+      ],
+      "implementation_sha256": "da3a416c74e004e00a22d6fc2a9b1564d8fadc6ecad6eb877cd5ce817e699ae8"
+    },
+    "symbol": "510500.SH",
+    "asset_type": "etf",
+    "windows": [
+      {
+        "window_id": "full",
+        "start": "2026-06-01",
+        "end": "2026-09-02"
+      }
+    ],
+    "data_cutoff": "2026-09-02",
+    "initial_cash": 100000,
+    "costs": [
+      {
+        "scenario_id": "baseline",
+        "one_way_cost": 0.00012,
+        "measurement_tier": "FORMAL"
+      }
+    ],
+    "benchmark": {
+      "benchmark_id": "BuyHold",
+      "kind": "BUYHOLD",
+      "execution_version": "buyhold-execution-v1",
+      "execution": {
+        "type": "LimitBuyHold",
+        "lot_size": 100,
+        "premium": 0.01,
+        "price_tick": 0.001,
+        "price_limit_ratio": 0.1,
+        "maximum_order_quantity": 1000000
+      }
+    },
+    "price_basis": "UNADJUSTED",
+    "workers": 1,
+    "resources": {
+      "max_workers": 1,
+      "native_threads_per_worker": 1,
+      "random_seed": 17
+    },
+    "frequency_window_days": 60,
+    "execution_mode": "FULL",
+    "dependencies": [],
+    "derivation": null,
+    "content_identity": {
+      "content_sha256": "2821dc2aff22c85a07b66ca07401a4eacec4f742ecf8265527be7cc102c90fa2",
+      "source_sha256": "da3a416c74e004e00a22d6fc2a9b1564d8fadc6ecad6eb877cd5ce817e699ae8",
+      "dependency_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "schema_version": 2
+    },
+    "original_frozen_reference": "S003-v1",
+    "original_frozen_release_hash": "eb0ebf6c80385f8c9d0d34fa466059ab9364055af79b7bf0fe2f9168f683d174",
+    "original_selection_data_cutoff": "2026-09-08",
+    "execution_terms": {
+      "instrument": {
+        "lot_size": 100,
+        "price_tick": 0.001,
+        "price_limit_ratio": 0.1,
+        "maximum_order_quantity": 1000000
+      },
+      "terms_source": "EXPLICIT_510500_CN_ETF_BENCHMARK_TERMS; LOT_FROM_ORIGINAL_OVERLAY",
+      "strategy_one_way_cost": 0.00012,
+      "benchmark": {
+        "benchmark_id": "BuyHold",
+        "kind": "BUYHOLD",
+        "execution_version": "buyhold-execution-v1",
+        "execution": {
+          "type": "LimitBuyHold",
+          "lot_size": 100,
+          "premium": 0.01,
+          "price_tick": 0.001,
+          "price_limit_ratio": 0.1,
+          "maximum_order_quantity": 1000000
+        }
+      }
+    },
+    "input_bindings": {
+      "full": {
+        "schema_version": 1,
+        "plan": {
+          "strategy": {
+            "strategy_id": "S003",
+            "reference_id": "S003-C9901",
+            "release_hash": "679031d67e334e7b3cad3e6b20bd1684e9e0c329ba25ede250d017f36f309c65",
+            "runtime_sha256": "e90d691efbb4adc1469882f49d17bdc6c3e5cd0b7e1de94b76263340e2e90feb",
+            "symbol": "510500.SH"
+          },
+          "tradable_window": {
+            "start": "2026-06-01",
+            "end": "2026-09-02"
+          },
+          "calendar_name": "trading_calendar",
+          "calendar_sha256": "5b8d5dbdd0cd6145872ddbd2dc093099f8d4ae7412360763c880740a3083ff37",
+          "requests": {
+            "adjusted_daily": {
+              "dataset": "etf.ohlcv",
+              "symbol": "510500.SH",
+              "start": "2026-05-29",
+              "end": "2026-09-01",
+              "required_cutoff": "2026-09-01",
+              "frequency": "daily",
+              "parameters": {},
+              "parameter_type": "NoParameters",
+              "coverage": {
+                "maximum_start_lag_days": null,
+                "minimum_observations": 1,
+                "minimum_sessions": 1,
+                "observations_through": "2026-05-29"
+              }
+            },
+            "constituent_moneyflow_seed": {
+              "dataset": "strategy.feature_evidence",
+              "symbol": "S003-v1",
+              "start": "2026-03-02",
+              "end": "2026-09-01",
+              "required_cutoff": null,
+              "frequency": "daily",
+              "parameters": {
+                "repository_root": "D:\\CodeBase\\czsc_trader\\.tmp\\window-contract-final-migrations\\S003-v1\\strategy_runtime",
+                "source_path": "resources/s003_v1_seed.csv.gz",
+                "source_sha256": "6a60c143617fcf6597ccd475782849763cb413e4cf47b7c45199f720c988d86c"
+              },
+              "parameter_type": "EvidenceParameters",
+              "coverage": null
+            },
+            "execution_daily": {
+              "dataset": "etf.unadjusted_daily",
+              "symbol": "510500.SH",
+              "start": "2026-05-29",
+              "end": "2026-09-01",
+              "required_cutoff": "2026-09-01",
+              "frequency": "daily",
+              "parameters": {},
+              "parameter_type": "NoParameters",
+              "coverage": {
+                "maximum_start_lag_days": null,
+                "minimum_observations": 1,
+                "minimum_sessions": 1,
+                "observations_through": "2026-05-29"
+              }
+            },
+            "trading_calendar": {
+              "dataset": "calendar.trading_sessions",
+              "symbol": "SSE",
+              "start": "2026-01-01",
+              "end": "2026-09-22",
+              "required_cutoff": "2026-09-22",
+              "frequency": "daily",
+              "parameters": {},
+              "parameter_type": "NoParameters",
+              "coverage": null
+            }
+          },
+          "calendar_dates": [
+            "2026-01-05",
+            "2026-01-06",
+            "2026-01-07",
+            "2026-01-08",
+            "2026-01-09",
+            "2026-01-12",
+            "2026-01-13",
+            "2026-01-14",
+            "2026-01-15",
+            "2026-01-16",
+            "2026-01-19",
+            "2026-01-20",
+            "2026-01-21",
+            "2026-01-22",
+            "2026-01-23",
+            "2026-01-26",
+            "2026-01-27",
+            "2026-01-28",
+            "2026-01-29",
+            "2026-01-30",
+            "2026-02-02",
+            "2026-02-03",
+            "2026-02-04",
+            "2026-02-05",
+            "2026-02-06",
+            "2026-02-09",
+            "2026-02-10",
+            "2026-02-11",
+            "2026-02-12",
+            "2026-02-13",
+            "2026-02-24",
+            "2026-02-25",
+            "2026-02-26",
+            "2026-02-27",
+            "2026-03-02",
+            "2026-03-03",
+            "2026-03-04",
+            "2026-03-05",
+            "2026-03-06",
+            "2026-03-09",
+            "2026-03-10",
+            "2026-03-11",
+            "2026-03-12",
+            "2026-03-13",
+            "2026-03-16",
+            "2026-03-17",
+            "2026-03-18",
+            "2026-03-19",
+            "2026-03-20",
+            "2026-03-23",
+            "2026-03-24",
+            "2026-03-25",
+            "2026-03-26",
+            "2026-03-27",
+            "2026-03-30",
+            "2026-03-31",
+            "2026-04-01",
+            "2026-04-02",
+            "2026-04-03",
+            "2026-04-07",
+            "2026-04-08",
+            "2026-04-09",
+            "2026-04-10",
+            "2026-04-13",
+            "2026-04-14",
+            "2026-04-15",
+            "2026-04-16",
+            "2026-04-17",
+            "2026-04-20",
+            "2026-04-21",
+            "2026-04-22",
+            "2026-04-23",
+            "2026-04-24",
+            "2026-04-27",
+            "2026-04-28",
+            "2026-04-29",
+            "2026-04-30",
+            "2026-05-06",
+            "2026-05-07",
+            "2026-05-08",
+            "2026-05-11",
+            "2026-05-12",
+            "2026-05-13",
+            "2026-05-14",
+            "2026-05-15",
+            "2026-05-18",
+            "2026-05-19",
+            "2026-05-20",
+            "2026-05-21",
+            "2026-05-22",
+            "2026-05-25",
+            "2026-05-26",
+            "2026-05-27",
+            "2026-05-28",
+            "2026-05-29",
+            "2026-06-01",
+            "2026-06-02",
+            "2026-06-03",
+            "2026-06-04",
+            "2026-06-05",
+            "2026-06-08",
+            "2026-06-09",
+            "2026-06-10",
+            "2026-06-11",
+            "2026-06-12",
+            "2026-06-15",
+            "2026-06-16",
+            "2026-06-17",
+            "2026-06-18",
+            "2026-06-22",
+            "2026-06-23",
+            "2026-06-24",
+            "2026-06-25",
+            "2026-06-26",
+            "2026-06-29",
+            "2026-06-30",
+            "2026-07-01",
+            "2026-07-02",
+            "2026-07-03",
+            "2026-07-06",
+            "2026-07-07",
+            "2026-07-08",
+            "2026-07-09",
+            "2026-07-10",
+            "2026-07-13",
+            "2026-07-14",
+            "2026-07-15",
+            "2026-07-16",
+            "2026-07-17",
+            "2026-07-20",
+            "2026-07-21",
+            "2026-07-22",
+            "2026-07-23",
+            "2026-07-24",
+            "2026-07-27",
+            "2026-07-28",
+            "2026-07-29",
+            "2026-07-30",
+            "2026-07-31",
+            "2026-08-03",
+            "2026-08-04",
+            "2026-08-05",
+            "2026-08-06",
+            "2026-08-07",
+            "2026-08-10",
+            "2026-08-11",
+            "2026-08-12",
+            "2026-08-13",
+            "2026-08-14",
+            "2026-08-17",
+            "2026-08-18",
+            "2026-08-19",
+            "2026-08-20",
+            "2026-08-21",
+            "2026-08-24",
+            "2026-08-25",
+            "2026-08-26",
+            "2026-08-27",
+            "2026-08-28",
+            "2026-08-31",
+            "2026-09-01",
+            "2026-09-02",
+            "2026-09-03",
+            "2026-09-04",
+            "2026-09-07",
+            "2026-09-08",
+            "2026-09-09",
+            "2026-09-10",
+            "2026-09-11",
+            "2026-09-14",
+            "2026-09-15",
+            "2026-09-16",
+            "2026-09-17",
+            "2026-09-18",
+            "2026-09-21",
+            "2026-09-22"
+          ],
+          "signal_dates": {
+            "2026-06-01": "2026-05-29",
+            "2026-06-02": "2026-06-01",
+            "2026-06-03": "2026-06-02",
+            "2026-06-04": "2026-06-03",
+            "2026-06-05": "2026-06-04",
+            "2026-06-08": "2026-06-05",
+            "2026-06-09": "2026-06-08",
+            "2026-06-10": "2026-06-09",
+            "2026-06-11": "2026-06-10",
+            "2026-06-12": "2026-06-11",
+            "2026-06-15": "2026-06-12",
+            "2026-06-16": "2026-06-15",
+            "2026-06-17": "2026-06-16",
+            "2026-06-18": "2026-06-17",
+            "2026-06-22": "2026-06-18",
+            "2026-06-23": "2026-06-22",
+            "2026-06-24": "2026-06-23",
+            "2026-06-25": "2026-06-24",
+            "2026-06-26": "2026-06-25",
+            "2026-06-29": "2026-06-26",
+            "2026-06-30": "2026-06-29",
+            "2026-07-01": "2026-06-30",
+            "2026-07-02": "2026-07-01",
+            "2026-07-03": "2026-07-02",
+            "2026-07-06": "2026-07-03",
+            "2026-07-07": "2026-07-06",
+            "2026-07-08": "2026-07-07",
+            "2026-07-09": "2026-07-08",
+            "2026-07-10": "2026-07-09",
+            "2026-07-13": "2026-07-10",
+            "2026-07-14": "2026-07-13",
+            "2026-07-15": "2026-07-14",
+            "2026-07-16": "2026-07-15",
+            "2026-07-17": "2026-07-16",
+            "2026-07-20": "2026-07-17",
+            "2026-07-21": "2026-07-20",
+            "2026-07-22": "2026-07-21",
+            "2026-07-23": "2026-07-22",
+            "2026-07-24": "2026-07-23",
+            "2026-07-27": "2026-07-24",
+            "2026-07-28": "2026-07-27",
+            "2026-07-29": "2026-07-28",
+            "2026-07-30": "2026-07-29",
+            "2026-07-31": "2026-07-30",
+            "2026-08-03": "2026-07-31",
+            "2026-08-04": "2026-08-03",
+            "2026-08-05": "2026-08-04",
+            "2026-08-06": "2026-08-05",
+            "2026-08-07": "2026-08-06",
+            "2026-08-10": "2026-08-07",
+            "2026-08-11": "2026-08-10",
+            "2026-08-12": "2026-08-11",
+            "2026-08-13": "2026-08-12",
+            "2026-08-14": "2026-08-13",
+            "2026-08-17": "2026-08-14",
+            "2026-08-18": "2026-08-17",
+            "2026-08-19": "2026-08-18",
+            "2026-08-20": "2026-08-19",
+            "2026-08-21": "2026-08-20",
+            "2026-08-24": "2026-08-21",
+            "2026-08-25": "2026-08-24",
+            "2026-08-26": "2026-08-25",
+            "2026-08-27": "2026-08-26",
+            "2026-08-28": "2026-08-27",
+            "2026-08-31": "2026-08-28",
+            "2026-09-01": "2026-08-31",
+            "2026-09-02": "2026-09-01"
+          },
+          "calculation_dates": [
+            "2026-03-02",
+            "2026-03-03",
+            "2026-03-04",
+            "2026-03-05",
+            "2026-03-06",
+            "2026-03-09",
+            "2026-03-10",
+            "2026-03-11",
+            "2026-03-12",
+            "2026-03-13",
+            "2026-03-16",
+            "2026-03-17",
+            "2026-03-18",
+            "2026-03-19",
+            "2026-03-20",
+            "2026-03-23",
+            "2026-03-24",
+            "2026-03-25",
+            "2026-03-26",
+            "2026-03-27",
+            "2026-03-30",
+            "2026-03-31",
+            "2026-04-01",
+            "2026-04-02",
+            "2026-04-03",
+            "2026-04-07",
+            "2026-04-08",
+            "2026-04-09",
+            "2026-04-10",
+            "2026-04-13",
+            "2026-04-14",
+            "2026-04-15",
+            "2026-04-16",
+            "2026-04-17",
+            "2026-04-20",
+            "2026-04-21",
+            "2026-04-22",
+            "2026-04-23",
+            "2026-04-24",
+            "2026-04-27",
+            "2026-04-28",
+            "2026-04-29",
+            "2026-04-30",
+            "2026-05-06",
+            "2026-05-07",
+            "2026-05-08",
+            "2026-05-11",
+            "2026-05-12",
+            "2026-05-13",
+            "2026-05-14",
+            "2026-05-15",
+            "2026-05-18",
+            "2026-05-19",
+            "2026-05-20",
+            "2026-05-21",
+            "2026-05-22",
+            "2026-05-25",
+            "2026-05-26",
+            "2026-05-27",
+            "2026-05-28",
+            "2026-05-29",
+            "2026-06-01",
+            "2026-06-02",
+            "2026-06-03",
+            "2026-06-04",
+            "2026-06-05",
+            "2026-06-08",
+            "2026-06-09",
+            "2026-06-10",
+            "2026-06-11",
+            "2026-06-12",
+            "2026-06-15",
+            "2026-06-16",
+            "2026-06-17",
+            "2026-06-18",
+            "2026-06-22",
+            "2026-06-23",
+            "2026-06-24",
+            "2026-06-25",
+            "2026-06-26",
+            "2026-06-29",
+            "2026-06-30",
+            "2026-07-01",
+            "2026-07-02",
+            "2026-07-03",
+            "2026-07-06",
+            "2026-07-07",
+            "2026-07-08",
+            "2026-07-09",
+            "2026-07-10",
+            "2026-07-13",
+            "2026-07-14",
+            "2026-07-15",
+            "2026-07-16",
+            "2026-07-17",
+            "2026-07-20",
+            "2026-07-21",
+            "2026-07-22",
+            "2026-07-23",
+            "2026-07-24",
+            "2026-07-27",
+            "2026-07-28",
+            "2026-07-29",
+            "2026-07-30",
+            "2026-07-31",
+            "2026-08-03",
+            "2026-08-04",
+            "2026-08-05",
+            "2026-08-06",
+            "2026-08-07",
+            "2026-08-10",
+            "2026-08-11",
+            "2026-08-12",
+            "2026-08-13",
+            "2026-08-14",
+            "2026-08-17",
+            "2026-08-18",
+            "2026-08-19",
+            "2026-08-20",
+            "2026-08-21",
+            "2026-08-24",
+            "2026-08-25",
+            "2026-08-26",
+            "2026-08-27",
+            "2026-08-28",
+            "2026-08-31",
+            "2026-09-01"
+          ]
+        },
+        "prepared": {
+          "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+          "preparation_id": "ea60eea9-4b64-4ca1-9602-6dc5f00852f3",
+          "manifest_sha256": "166f6e93fd363772ee85c1c555d009643997d72706609cfabb0e65c4394a83fd"
+        }
+      }
+    },
+    "execution_fingerprint": "d4ed1f9b0a06f2aac0d458d4b75ca56b09f517812fa0a5ac2eb3206723e6b8cf",
+    "execution_prepared": {
+      "space_id": "69621e82-992c-477d-a785-4a6e16002911",
+      "preparation_id": "f968416e-ff1f-40aa-9111-4f793a183b3c",
+      "manifest_sha256": "7e8d6c13d4fba0e23791ef6c08eacfc734d071ed578257cf24dde77c48bf947c"
+    },
+    "execution_requests": {
+      "price_limits": {
+        "dataset": "security.price_limits",
+        "symbol": "510500.SH",
+        "start": "2026-06-01",
+        "end": "2026-09-02",
+        "required_cutoff": "2026-09-02",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "adjusted_daily": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2026-05-29",
+        "end": "2026-09-02",
+        "required_cutoff": "2026-09-02",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "execution_daily": {
+        "dataset": "etf.unadjusted_daily",
+        "symbol": "510500.SH",
+        "start": "2026-05-29",
+        "end": "2026-09-02",
+        "required_cutoff": "2026-09-02",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "execution_5m": {
+        "dataset": "etf.unadjusted_intraday",
+        "symbol": "510500.SH",
+        "start": "2026-06-01",
+        "end": "2026-09-02",
+        "required_cutoff": "2026-09-02",
+        "frequency": "5m",
+        "parameters": {},
+        "coverage": null
+      },
+      "trading_calendar": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2026-06-01",
+        "end": "2026-09-02",
+        "required_cutoff": "2026-09-02",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      }
+    },
+    "execution_input_identities": {
+      "trading_calendar": "ddb0cfb92539460865fdb01bc9ce5d60adf370b792783c96c6822c77fec61e08",
+      "adjusted_daily": "b11dfea1edde1c345e21fd85605c53b44e3384e1f85ad3b860939b95c3b98876",
+      "execution_5m": "bad480e2a99223c6bc209d7172a02c9d5afa54d965bad5f399b3e73a63bab816",
+      "execution_daily": "06e9c17af8af0cabe3e37f89ca4b1172a25b7fe6127b48aaf6a09f49e6f6096d",
+      "price_limits": "1bf2f8b34e25fab2b77f9eb5b74bc8a2132432ed67bf262ae6c129e497176496"
+    },
+    "pricing": {
+      "basis": "UNADJUSTED",
+      "quantity_unit": "SHARE",
+      "anchor_date": null,
+      "anchor_factor": null
+    },
+    "market_rules": {
+      "contract_version": "DAILY_RANGE_V3",
+      "symbol": "510500.SH",
+      "sessions": [
+        {
+          "session": "2026-06-01",
+          "down_limit": 7.599,
+          "up_limit": 9.287,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-06-02",
+          "down_limit": 7.533,
+          "up_limit": 9.207,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-06-03",
+          "down_limit": 7.565,
+          "up_limit": 9.247,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-06-04",
+          "down_limit": 7.61,
+          "up_limit": 9.301,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-06-05",
+          "down_limit": 7.603,
+          "up_limit": 9.293,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-06-08",
+          "down_limit": 7.505,
+          "up_limit": 9.173,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-06-09",
+          "down_limit": 7.261,
+          "up_limit": 8.875,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-06-10",
+          "down_limit": 7.443,
+          "up_limit": 9.097,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-06-11",
+          "down_limit": 7.354,
+          "up_limit": 8.988,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-06-12",
+          "down_limit": 7.32,
+          "up_limit": 8.946,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-06-15",
+          "down_limit": 7.418,
+          "up_limit": 9.066,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-06-16",
+          "down_limit": 7.69,
+          "up_limit": 9.398,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-06-17",
+          "down_limit": 7.769,
+          "up_limit": 9.495,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-06-18",
+          "down_limit": 7.887,
+          "up_limit": 9.639,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-06-22",
+          "down_limit": 7.945,
+          "up_limit": 9.711,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-06-23",
+          "down_limit": 8.106,
+          "up_limit": 9.908,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-06-24",
+          "down_limit": 7.934,
+          "up_limit": 9.697,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-06-25",
+          "down_limit": 8.087,
+          "up_limit": 9.884,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-06-26",
+          "down_limit": 8.177,
+          "up_limit": 9.994,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-06-29",
+          "down_limit": 7.975,
+          "up_limit": 9.747,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-06-30",
+          "down_limit": 8.077,
+          "up_limit": 9.871,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-07-01",
+          "down_limit": 8.275,
+          "up_limit": 10.113,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-07-02",
+          "down_limit": 8.262,
+          "up_limit": 10.098,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-07-03",
+          "down_limit": 7.964,
+          "up_limit": 9.734,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-07-06",
+          "down_limit": 8.011,
+          "up_limit": 9.791,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-07-07",
+          "down_limit": 7.929,
+          "up_limit": 9.691,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-07-08",
+          "down_limit": 7.791,
+          "up_limit": 9.523,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-07-09",
+          "down_limit": 7.696,
+          "up_limit": 9.406,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-07-10",
+          "down_limit": 7.924,
+          "up_limit": 9.684,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-07-13",
+          "down_limit": 7.828,
+          "up_limit": 9.568,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-07-14",
+          "down_limit": 7.463,
+          "up_limit": 9.121,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-07-15",
+          "down_limit": 7.438,
+          "up_limit": 9.09,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-07-16",
+          "down_limit": 7.336,
+          "up_limit": 8.966,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-07-17",
+          "down_limit": 7.16,
+          "up_limit": 8.752,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-07-20",
+          "down_limit": 6.755,
+          "up_limit": 8.256,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-07-21",
+          "down_limit": 6.683,
+          "up_limit": 8.169,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-07-22",
+          "down_limit": 7.013,
+          "up_limit": 8.571,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-07-23",
+          "down_limit": 6.966,
+          "up_limit": 8.514,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-07-24",
+          "down_limit": 6.963,
+          "up_limit": 8.511,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-07-27",
+          "down_limit": 6.791,
+          "up_limit": 8.3,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-07-28",
+          "down_limit": 6.953,
+          "up_limit": 8.499,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-07-29",
+          "down_limit": 6.717,
+          "up_limit": 8.209,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-07-30",
+          "down_limit": 6.786,
+          "up_limit": 8.294,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-07-31",
+          "down_limit": 6.602,
+          "up_limit": 8.07,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-08-03",
+          "down_limit": 6.75,
+          "up_limit": 8.25,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-08-04",
+          "down_limit": 6.678,
+          "up_limit": 8.162,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-08-05",
+          "down_limit": 6.841,
+          "up_limit": 8.361,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-08-06",
+          "down_limit": 7.034,
+          "up_limit": 8.597,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-08-07",
+          "down_limit": 7.049,
+          "up_limit": 8.615,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-08-10",
+          "down_limit": 7.188,
+          "up_limit": 8.786,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-08-11",
+          "down_limit": 7.233,
+          "up_limit": 8.841,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-08-12",
+          "down_limit": 7.19,
+          "up_limit": 8.788,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-08-13",
+          "down_limit": 7.248,
+          "up_limit": 8.858,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-08-14",
+          "down_limit": 7.182,
+          "up_limit": 8.778,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-08-17",
+          "down_limit": 7.198,
+          "up_limit": 8.798,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-08-18",
+          "down_limit": 7.377,
+          "up_limit": 9.017,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-08-19",
+          "down_limit": 7.367,
+          "up_limit": 9.004,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-08-20",
+          "down_limit": 7.024,
+          "up_limit": 8.584,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-08-21",
+          "down_limit": 7.077,
+          "up_limit": 8.649,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-08-24",
+          "down_limit": 7.079,
+          "up_limit": 8.653,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-08-25",
+          "down_limit": 6.966,
+          "up_limit": 8.514,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-08-26",
+          "down_limit": 6.953,
+          "up_limit": 8.499,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-08-27",
+          "down_limit": 7.01,
+          "up_limit": 8.568,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-08-28",
+          "down_limit": 7.176,
+          "up_limit": 8.77,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-08-31",
+          "down_limit": 7.131,
+          "up_limit": 8.715,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-09-01",
+          "down_limit": 7.17,
+          "up_limit": 8.764,
+          "price_tick": 0.001
+        },
+        {
+          "session": "2026-09-02",
+          "down_limit": 7.093,
+          "up_limit": 8.669,
+          "price_tick": 0.001
+        }
+      ],
+      "suspended_sessions": [],
+      "suspension_information": "NOT_PROVIDED"
+    }
+  },
+  "bound_request_pickle": {
+    "path": ".tmp/formal-migration-transport/S003-v1/bound-request.pkl",
+    "sha256": "c52b68adc205c4b40b690aae2aeb0209db9aba665dfc76ab8b592f02d19f6e7f"
+  },
+  "source_script_sha256": "66d3b49a43e89093159e88e94f7e24c77a8404702d6012645ba31373bc0877bf"
+}

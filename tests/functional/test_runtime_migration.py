@@ -10,6 +10,7 @@ from hashlib import sha256
 import importlib
 import json
 from pathlib import Path
+import shutil
 from uuid import uuid4
 from zoneinfo import ZoneInfo
 
@@ -23,6 +24,8 @@ from czsc_trader.application import (
 )
 from czsc_trader.application.runtime_acceptance import prospective_release
 from strategy_manager import StrategyRegistry
+from strategy_manager.freeze_contracts import FrozenVersionReference
+from czsc_trader.application.runtime_migration import _migration_original
 from strategy_runtime import (
     DecisionFeedback, ExecutionCapabilities, ExecutionPlan, ExecutionState, HistoryCalculationContext,
     OrderSide, OrderType, ParameterSet, PlanLeg, PlannedOrder, PortfolioSnapshot,
@@ -36,16 +39,43 @@ from trading_execution_engine import HistoricalExecutor
 
 ROOT = Path(__file__).resolve().parents[2]
 REFERENCES = ("S001-v1", "S001-v2", "S002-v1", "S003-v1", "S007-v1", "S011-v1")
+BASELINE_IDENTITIES = {
+    "S001-v1": ("3dccd608cf8ee762a8f359d197aca93463183b50a4da5771ca3ca694063ab692", "5d62e13496e033ba6991e6d56b5f8886bf67d408a25dbcdb31141bddf475d228"),
+    "S001-v2": ("2c4a339ca5dec89c03491e5fd15fc8560d7aa0424f8af2be1fcdf9b93b51a2da", "65996ee0fcc3915a109c391129136d2a0dd9f5db81a85361263757a38fdf2f67"),
+    "S002-v1": ("707e3d3fb7feea4d5f04e71e3ca8fa026562c6a76e666fffd86e53e7e4f00715", "2ebb2179a78593083bf43a2132de26e8fe54c5dd202b8f8b1601c4821ba0b923"),
+    "S003-v1": ("eb0ebf6c80385f8c9d0d34fa466059ab9364055af79b7bf0fe2f9168f683d174", "cfcbf8165b9472c9d91356a43d43686116e728c32f900d491e346d862dcd0498"),
+    "S007-v1": ("19c6bdb05c7fb1daae5bb71f0bd61cd09d7987f049e2dac6c95e3f2a063259b2", "c45f8a3792b49afcca152901a620e1b88df7f8a69112aa70a2edf6f972f5e95e"),
+    "S011-v1": ("369b89c170906d74ac884cd1f9b08d22e5ba773998d8be1b58086784e4c12f2c", "a8945d9257d59e195b4f161cb4b572a0fab8e3ef6a20c45c2d048cf9e1ae2c04"),
+}
 
 
 @pytest.fixture(scope="module")
 def preparations():
-    context = RepositoryContext.discover(ROOT)
+    live = RepositoryContext.discover(ROOT)
+    workspace = ROOT / ".tmp" / ("runtime_migration_tests_" + uuid4().hex)
+    baseline = workspace / ("baseline_" + uuid4().hex)
+    context = RepositoryContext(baseline, baseline / "research", baseline / "research/registrations", baseline / "strategies")
+    for ref, identity in BASELINE_IDENTITIES.items():
+        family, version = ref.split("-")
+        old, manifest, _, source = _migration_original(live, FrozenVersionReference(family, version, *identity))
+        package = source
+        for _ in Path(manifest["runtime_root"]).parts:
+            package = package.parent
+        shutil.copytree(package, context.strategy_root / family / "releases" / version)
+        path = context.strategy_root / family / "versions" / f"{version}.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(old.to_dict()), encoding="utf-8")
+        deployment = context.strategy_root / "deployments" / f"{ref}.json"
+        deployment.parent.mkdir(exist_ok=True)
+        value = {"schema_version": 1, "strategy_version_id": ref, "strategy_version_hash": old.release_hash,
+                 "release_package": f"{family}/releases/{version}", "package_hash": manifest["package_hash"]}
+        from strategy_manager import canonical_sha256
+        value["receipt_hash"] = canonical_sha256(value)
+        deployment.write_text(json.dumps(value), encoding="utf-8")
     original = {str(path): sha256(path.read_bytes()).hexdigest()
                 for path in context.strategy_root.rglob("*") if path.is_file()}
-    workspace = ROOT / ".tmp" / ("runtime_migration_tests_" + uuid4().hex)
     results = {ref: prepare_frozen_runtime_migration(context, FrozenRuntimeMigrationRequest(
-        ref, f"C{9800 + index:04d}", workspace / ref.replace("-", "_"),
+        ref, f"C{9800 + index:04d}", baseline / ".tmp" / ref.replace("-", "_"),
     )) for index, ref in enumerate(REFERENCES)}
     yield context, results
     actual = {str(path): sha256(path.read_bytes()).hexdigest()
@@ -86,11 +116,11 @@ def _implementations(preparations, reference, monkeypatch):
     _, binding, source = validate_release_package(context, reference)
     release = prospective_release(stored)
     StrategyRuntime().describe(release, source_root=source, runtime_binding=RuntimeBinding.from_dict(binding))
-    monkeypatch.syspath_prepend(str(ROOT))
+    monkeypatch.syspath_prepend(str(context.root.parent))
     monkeypatch.syspath_prepend(str(results[reference].metadata_path.parent.parent))
     monkeypatch.setattr("sys.dont_write_bytecode", True)
     module_suffix = release.payload["runtime"]["module"].removeprefix("strategy_runtime.")
-    old_module = importlib.import_module(".".join(source.relative_to(ROOT).parts) + "." + module_suffix)
+    old_module = importlib.import_module(context.root.name + "." + ".".join(source.relative_to(context.root).parts) + "." + module_suffix)
     new_module = importlib.import_module(results[reference].metadata_path.parent.name + ".strategy_runtime." + module_suffix)
     factory_name = release.payload["runtime"]["qualname"]
     old = getattr(old_module, factory_name).from_parameters(ParameterSet(release.payload["parameters"]))

@@ -1,5 +1,6 @@
 """Development prototype: causal short-pressure reversal; no frozen release."""
 from __future__ import annotations
+from strategy_runtime import HistoryCalculationContext, StrategyImplementationV2
 from pathlib import Path
 from datetime import date
 import numpy as np
@@ -72,7 +73,7 @@ def policy(panel, params, sessions):
     frame['intent_age'] = ages
     return frame
 
-class S011Reversal(StrategyImplementation):
+class S011Reversal(StrategyImplementationV2):
 
     def __init__(self, parameters: ParameterSet):
         self.params = dict(parameters.values)
@@ -105,10 +106,7 @@ class S011Reversal(StrategyImplementation):
         ranges['spx'] = InputRange(date(2024, 12, 16), original.end, None)
         return build_scope(self.definition, window, base.trading_dates, base.signal_dates, base.calculation_dates, ranges, source_root=Path(__file__).resolve().parent.parent)
 
-    def calculate_history(self, inputs, sessions):
-        panel = features(inputs)
-        canonical = panel.index[panel.index >= '2025-02-05']
-        return policy(panel, self.params, canonical).reindex(sessions)
-
-    def calculate_window_history(self, inputs, sessions):
+    def calculate_context_history(self, inputs, context: HistoryCalculationContext):
+        sessions = context.sessions
         return policy(features(inputs), self.params, sessions)
+

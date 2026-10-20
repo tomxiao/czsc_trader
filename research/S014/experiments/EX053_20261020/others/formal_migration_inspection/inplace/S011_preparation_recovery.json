@@ -1,0 +1,12 @@
+{
+  "status": "EXPLICIT_PREPARATION_ONLY_RECOVERY",
+  "reference": "S011-v1",
+  "original_marker": "state/S011-v1-dispatch.json",
+  "original_error": "migration target version is reserved by an unresolved request",
+  "location": "inspect_candidate validates migration target before any reproduction or prospective-release account computation",
+  "accounts_started_on_original_attempt": 0,
+  "cause": "Existing historical COMMITTED receipt with an older S011 hash was incorrectly treated as a pending reservation because public result was already UNKNOWN before this task.",
+  "fix": "Recognize exact authenticated terminal COMMITTED journal receipt for same-version migration; preserve original historical receipt and its existing public UNKNOWN state.",
+  "successor": "attempt2/S011-v1.json",
+  "old_marker_and_failure_receipts_preserved": true
+}

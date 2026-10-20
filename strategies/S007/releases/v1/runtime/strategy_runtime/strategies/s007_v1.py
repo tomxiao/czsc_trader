@@ -1,6 +1,7 @@
 """Frozen S007-v1 multi-source causal feature-gate runtime."""
 
 from __future__ import annotations
+from strategy_runtime import HistoryCalculationContext, StrategyImplementationV2
 
 from pathlib import Path
 from datetime import date, timedelta
@@ -225,7 +226,7 @@ def resolve_s007_feature_panel(
     return panel[~panel.index.duplicated(keep="last")].sort_index()
 
 
-class S007V1(StrategyImplementation):
+class S007V1(StrategyImplementationV2):
     """Executable S007-v1; every feature is materialized from DFLS inputs."""
 
     def __init__(self, parameters: ParameterSet) -> None:
@@ -436,11 +437,8 @@ class S007V1(StrategyImplementation):
             ranges, source_root=Path(__file__).resolve().parent.parent, observation_dates=observation_dates,
         )
 
-    def calculate_history(
-        self,
-        inputs: Mapping[str, pd.DataFrame],
-        sessions: pd.DatetimeIndex,
-    ) -> pd.DataFrame:
+    def calculate_context_history(self, inputs, context: HistoryCalculationContext):
+        sessions = context.sessions
         panel = resolve_s007_feature_panel(inputs, self._score)
         history = calculate_s007_history(panel, self._normalization, self._score)
         requested = pd.DatetimeIndex(sessions).normalize()

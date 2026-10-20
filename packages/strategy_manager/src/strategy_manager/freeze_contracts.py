@@ -180,6 +180,23 @@ class CandidateSelectionSubject(Record):
 
 
 @dataclass(frozen=True, slots=True)
+class FrozenMigrationSelectionSubject(Record):
+    """Select a reviewed equivalent implementation of one frozen source."""
+
+    original: FrozenVersionReference
+    candidate: CandidateKey
+    content_sha256: str
+    equivalence_evidence: tuple[ResearchEvidenceRef, ...]
+
+    def _validate(self):
+        _hash(self.content_sha256)
+        if self.original.strategy_id != self.candidate.strategy_id:
+            raise ValueError("migration original and candidate family differ")
+        if not self.equivalence_evidence or len(set(self.equivalence_evidence)) != len(self.equivalence_evidence):
+            raise ValueError("migration selection requires unique equivalence evidence")
+
+
+@dataclass(frozen=True, slots=True)
 class FreezeSubject(Record):
     candidate: CandidateKey
     content_sha256: str
@@ -198,7 +215,7 @@ class ResearchDecision(Record):
     decision_id: str
     strategy_id: str
     action: DecisionAction
-    subject: StageAdvanceSubject | CandidateSelectionSubject | FreezeSubject
+    subject: StageAdvanceSubject | CandidateSelectionSubject | FrozenMigrationSelectionSubject | FreezeSubject
     confirmation_source: CandidateEvidence | ResearchEvidenceRef
     reason: str
 

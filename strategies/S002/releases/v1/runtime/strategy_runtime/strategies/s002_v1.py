@@ -1,6 +1,7 @@
 """Frozen S002-v1 three-down-bars, five-session repair strategy."""
 
 from __future__ import annotations
+from strategy_runtime import HistoryCalculationContext, StrategyImplementationV2, SignalHistoryMode
 
 from pathlib import Path
 from datetime import date
@@ -149,7 +150,7 @@ def _calculate_target_history(
     return history
 
 
-class S002V1(StrategyImplementation):
+class S002V1(StrategyImplementationV2):
     """Executable S002-v1 implementation with no TDR dependency."""
 
     def __init__(self, parameters: ParameterSet, deployment_symbol: str | None = None) -> None:
@@ -277,24 +278,8 @@ class S002V1(StrategyImplementation):
         return build_scope(self._definition, tradable_window, scope.trading_dates, scope.signal_dates,
                            scope.calculation_dates, scope.inputs, source_root=Path(__file__).resolve().parent.parent)
 
-    def calculate_history(
-        self,
-        inputs: Mapping[str, pd.DataFrame],
-        sessions: pd.DatetimeIndex,
-    ) -> pd.DataFrame:
-        del sessions
-        return _calculate_target_history(
-            inputs[_INPUT_DAILY],
-            symbol=self._symbol,
-            signal=self._signal,
-            portfolio=self._portfolio,
-        )
-
-    def calculate_window_history(
-        self,
-        inputs: Mapping[str, pd.DataFrame],
-        sessions: pd.DatetimeIndex,
-    ) -> pd.DataFrame:
+    def calculate_context_history(self, inputs, context: HistoryCalculationContext):
+        sessions = context.sessions
         states = _calculate_signal_states(
             inputs[_INPUT_DAILY],
             symbol=self._symbol,
@@ -305,11 +290,12 @@ class S002V1(StrategyImplementation):
         if not missing.empty:
             raise RuntimeContractError("S002-v1 prepared history misses evaluation sessions")
         history = _target_history(
-            states.reindex(requested),
+            states if context.mode is SignalHistoryMode.CONTINUOUS else states.reindex(requested),
             str(self._signal.get("entry_state", "")),
             int(self._portfolio.get("holding_sessions", 0)),
         )
         history["factor_score"] = (
             history["signal_state"].eq(str(self._signal.get("entry_state", ""))).astype(float)
         )
-        return history
+        return history.reindex(requested)
+

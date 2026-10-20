@@ -1,6 +1,7 @@
 """Shared frozen runtime implementation for the S001 strategy family."""
 
 from __future__ import annotations
+from strategy_runtime import HistoryCalculationContext, StrategyImplementationV2
 
 from collections import Counter
 from pathlib import Path
@@ -340,7 +341,7 @@ def calculate_s001_history(
     return history.assign(target_position=targets)
 
 
-class S001Base(StrategyImplementation):
+class S001Base(StrategyImplementationV2):
     """Common executable behavior for immutable S001 releases."""
 
     def __init__(self, parameters: ParameterSet, deployment_symbol: str | None = None) -> None:
@@ -518,11 +519,8 @@ class S001Base(StrategyImplementation):
             ranges, source_root=Path(__file__).resolve().parent.parent,
         )
 
-    def calculate_history(
-        self,
-        inputs: Mapping[str, pd.DataFrame],
-        sessions: pd.DatetimeIndex,
-    ) -> pd.DataFrame:
+    def calculate_context_history(self, inputs, context: HistoryCalculationContext):
+        sessions = context.sessions
         sessions = pd.DatetimeIndex(sessions, name="dt").normalize()
         scores = _calculate_s001_scores(
             inputs[_INTRADAY],
