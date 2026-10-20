@@ -12,14 +12,16 @@ from types import SimpleNamespace
 import pandas as pd
 import pytest
 
-from paper_trading_engine import AccountRetirementRequest
+from paper_trading_engine import AccountHealth, AccountRetirementRequest
 from paper_trading_engine.futu_execution import FutuExecution
 from paper_trading_engine.store import PaperStore
 from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine import cli as pte_cli
 from paper_trading_engine.web_api import PteWebApi
 from paper_trading_engine.runtime_lock import RuntimeDatabaseLock
-from pte_support import FakeBroker, decision, adopt_test_decision, claim_test_intent
+from pte_support import (
+    FakeAdvice, FakeBroker, decision, preparation, adopt_test_decision, claim_test_intent,
+)
 from pte_control_support import create_bound_account, engine_arguments, installed_binding
 
 
@@ -30,6 +32,90 @@ def create_account(store, account_id, version, marker):
         strategy_version=version, release_hash=marker * 64,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-02",
     )
+
+
+def test_new_accounts_are_healthy_without_starting_strategy_execution(new_store, tmp_path):
+    store = new_store(tmp_path / "new-account-health.db")
+    account = create_account(store, "one", "v1", "a")
+    assert account["run_state"] == "PAUSED"
+    assert account["health"] is AccountHealth.OK
+    assert account["last_error"] is None
+    reconciliation = store.create_channel_reconciliation_account()
+    assert reconciliation["health"] is AccountHealth.OK
+    assert reconciliation["last_error"] is None
+    assert store.account_decisions("one") == []
+    assert store.account_intents("one") == []
+    store.close()
+
+
+@pytest.mark.parametrize("invalid", ["OK", "BLOCKED", "READY", "UNKNOWN", None, False, 1])
+def test_health_updates_require_typed_values_without_side_effects(new_store, tmp_path, invalid):
+    store = new_store(tmp_path / "typed-account-health.db")
+    create_account(store, "one", "v1", "a")
+    store.set_virtual_health("one", AccountHealth.BLOCKED, "人工复核未完成")
+    before = store.virtual_account("one")
+    with pytest.raises(TypeError, match="AccountHealth"):
+        store.set_virtual_health("one", invalid)
+    assert store.virtual_account("one") == before
+    assert store.account_decisions("one") == []
+    assert store.account_intents("one") == []
+    store.close()
+
+
+@pytest.mark.parametrize("operation", ["read", "list", "resume", "decision", "claim", "submit"])
+@pytest.mark.parametrize("invalid_health", ["READY", "UNKNOWN"])
+def test_invalid_persisted_health_cannot_resume_decide_or_submit(
+    new_store, tmp_path, operation, invalid_health,
+):
+    store = new_store(tmp_path / "invalid-account-health.db")
+    create_account(store, "one", "v1", "a")
+    store.set_virtual_paused("one", False)
+    adopt_test_decision(
+        store, account_id="one", decision_id="DEC-HEALTH", valid_session="2026-09-04",
+        orders=[{"side": "BUY", "quantity": 1000, "order_type": "LIMIT", "limit_price": 1.68}],
+    )
+    intent = store.create_account_intent(
+        account_id="one", decision_id="DEC-HEALTH", order_sequence=0,
+        symbol="588080.SH", side="BUY", quantity=1000,
+        limit_price="1.680", valid_session="2026-09-04",
+    )
+    broker = FakeBroker()
+    execution = FutuExecution(
+        store, broker, now=lambda: datetime.fromisoformat("2026-09-04T10:00:00+08:00"),
+    )
+    execution.refresh_orders()
+    advice = FakeAdvice(decision())
+    accounts = AccountEngine(store, advice)
+    if operation == "resume":
+        store.set_virtual_paused("one", True)
+    # Model externally corrupted storage, including databases with a CHECK constraint.
+    store._connection.execute("PRAGMA ignore_check_constraints=ON")
+    store._connection.execute(
+        "UPDATE virtual_accounts SET health=? WHERE account_id='one'", (invalid_health,),
+    )
+    store._connection.commit()
+    store._connection.execute("PRAGMA ignore_check_constraints=OFF")
+    actions = {
+        "read": lambda: store.virtual_account("one"),
+        "list": store.virtual_accounts,
+        "resume": lambda: store.set_virtual_paused("one", False),
+        "decision": lambda: accounts.refresh_account("one", prepared=preparation(advice.value)),
+        "claim": lambda: claim_test_intent(store, intent["intent_id"]),
+        "submit": lambda: execution.submit_pending(reconcile=False),
+    }
+    with pytest.raises(ValueError, match="AccountHealth|health"):
+        actions[operation]()
+    assert advice.calls == []
+    assert broker.placed == broker.cancelled == []
+    assert store.account_intent(intent["intent_id"])["status"] == "PENDING_SUBMIT"
+    assert store.account_orders("one") == []
+    assert store.account_fills("one") == []
+    persisted = store._connection.execute(
+        "SELECT health,run_state FROM virtual_accounts WHERE account_id='one'"
+    ).fetchone()
+    assert persisted["health"] == invalid_health
+    assert persisted["run_state"] == ("PAUSED" if operation == "resume" else "RUNNING")
+    store.close()
 
 
 @pytest.mark.parametrize("action", ["create", "pause", "resume", "create-reconciliation"])

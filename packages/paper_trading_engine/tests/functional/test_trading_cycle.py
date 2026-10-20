@@ -5,6 +5,7 @@ from time import monotonic, sleep
 from types import SimpleNamespace
 import pytest
 
+from paper_trading_engine import AccountHealth
 from paper_trading_engine.account_engine import (
     AccountDecisionBlockedError,
     AccountEngine,
@@ -66,7 +67,7 @@ def test_blocked_or_draining_account_cannot_complete_a_decision_generation(new_s
     )
     store.set_virtual_paused("s001-v1", False)
     store.set_setting("last_data_prepare_date", "2026-09-01")
-    store.set_virtual_health("s001-v1", "BLOCKED", "等待人工处理")
+    store.set_virtual_health("s001-v1", AccountHealth.BLOCKED, "等待人工处理")
     advice = FakeAdvice(decision(OrderSpec("BUY", 1000, "LIMIT", 1.68, "DAY")))
     accounts = AccountEngine(store, advice)
 
@@ -99,7 +100,7 @@ def test_blocked_or_draining_account_cannot_complete_a_decision_generation(new_s
         "account_strategy_cycle:s001-v1"
     }
 
-    store.set_virtual_health("s001-v1", "OK")
+    store.set_virtual_health("s001-v1", AccountHealth.OK)
     accounts.begin_shutdown()
     with pytest.raises(AccountDecisionBlockedError, match="PTE正在停止"):
         accounts.refresh_account("s001-v1", prepared=preparation(advice.value))
@@ -423,14 +424,14 @@ def test_ft_pte02_account_decision_futu_order_fill_restart_and_idempotence(new_s
             "s001-v1", prepared=preparation(next_advice.value)
         )
     assert next_advice.calls == []
-    assert store.virtual_account("s001-v1")["health"] == "READY"
+    assert store.virtual_account("s001-v1")["health"] is AccountHealth.OK
     assert len(store.account_intents("s001-v1")) == 1
     blocked_events = store.query_audit_events(event_type="ORDER_SUBMISSION_BLOCKED")
     assert [row["details"]["reason"] for row in blocked_events] == [
         "previous_order_active",
     ]
     execution.refresh_orders()
-    assert store.virtual_account("s001-v1")["health"] == "READY"
+    assert store.virtual_account("s001-v1")["health"] is AccountHealth.OK
 
     broker.value = broker_snapshot(
         orders=(replace(
@@ -462,7 +463,7 @@ def test_ft_pte02_account_decision_futu_order_fill_restart_and_idempotence(new_s
     assert len(broker.placed) == 1
     assert store.account_invariant_violations() == []
     assert store.virtual_account("s001-v1")["quantity"] == 1000
-    assert store.virtual_account("s001-v1")["health"] == "READY"
+    assert store.virtual_account("s001-v1")["health"] is AccountHealth.OK
     next_accounts.refresh_account(
         "s001-v1", prepared=preparation(next_advice.value)
     )
@@ -479,6 +480,53 @@ def test_ft_pte02_account_decision_futu_order_fill_restart_and_idempotence(new_s
     assert len(reopened.account_orders("s001-v1")) == 1
     assert len(reopened.account_fills("s001-v1")) == 2
     reopened.close()
+
+def test_fill_and_daily_snapshot_preserve_an_unrelated_account_block(new_store, tmp_path):
+    store = new_store(tmp_path / "blocked-fill.db")
+    store.create_virtual_account(
+        "s001-v1", "S001-v1模拟账户", "legacy", "a" * 64, 100_000,
+        strategy_id="S001", strategy_name_snapshot="综合基线策略",
+        strategy_version="v1", release_hash="b" * 64,
+        qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-01",
+    )
+    store.set_virtual_paused("s001-v1", False)
+    broker = FakeBroker()
+    execution = FutuExecution(store, broker, today=lambda: date(2026, 9, 2))
+    execution.refresh_orders()
+    advice = FakeAdvice(decision(OrderSpec("BUY", 1000, "LIMIT", 1.68, "DAY")))
+    accounts = AccountEngine(store, advice)
+    accounts.refresh_account("s001-v1", prepared=preparation(advice.value))
+    assert store.virtual_account("s001-v1")["health"] is AccountHealth.OK
+    execution.submit_pending()
+    submitted = broker.value.orders[0]
+    store.set_virtual_health("s001-v1", AccountHealth.BLOCKED, "人工资金复核未完成")
+    broker.value = broker_snapshot(
+        orders=(replace(submitted, status="FILLED_ALL", cumulative_filled_quantity=1000,
+                        average_fill_price=1.67),), quantity=1000,
+    )
+    execution.refresh_orders()
+    filled = store.virtual_account("s001-v1")
+    assert filled["quantity"] == 1000
+    assert len(store.account_fills("s001-v1")) == 1
+    assert filled["health"] is AccountHealth.BLOCKED
+    assert filled["last_error"] == "人工资金复核未完成"
+    store.save_account_snapshot("s001-v1", "2026-09-02", {
+        "cash": filled["cash"], "frozen_cash": filled["frozen_cash"],
+        "quantity": 1000, "close": "1.67", "market_value": "1670.0000",
+        "total_assets": "99999.1650",
+        "decision_id": store.account_decisions("s001-v1")[0]["decision_id"],
+    })
+    settled = store.virtual_account("s001-v1")
+    assert settled["last_settlement_session"] == "2026-09-02"
+    assert settled["health"] is AccountHealth.BLOCKED
+    assert settled["last_error"] == "人工资金复核未完成"
+    calls = list(advice.calls)
+    with pytest.raises(AccountDecisionBlockedError, match="阻塞"):
+        accounts.refresh_account("s001-v1", prepared=preparation(advice.value))
+    assert advice.calls == calls
+    assert store.query_audit_events(event_type="ACCOUNT_RECONCILIATION_RECOVERED") == []
+    store.close()
+
 
 def test_account_snapshot_values_position_with_execution_price(new_store, tmp_path):
     store = new_store(tmp_path / "valuation.db")
@@ -828,7 +876,7 @@ def test_operator_can_drive_one_account_decision_with_explicit_result_and_audit(
     )
     assert len(events) == 3
     assert all(row["actor_type"] == "OPERATOR" for row in events)
-    store.set_virtual_health("s001-v1", "BLOCKED", "等待人工处理")
+    store.set_virtual_health("s001-v1", AccountHealth.BLOCKED, "等待人工处理")
     with pytest.raises(AccountDecisionBlockedError, match="已阻塞"):
         coordinator.drive_virtual_account_decision("s001-v1")
     failed = store.query_audit_events(

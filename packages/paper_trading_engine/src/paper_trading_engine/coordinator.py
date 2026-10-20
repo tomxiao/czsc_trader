@@ -7,6 +7,7 @@ from .audit import AuditRecorder
 from .account_retirement import AccountRetirementRequest, AccountRetirementResult
 from .futu_gateway import FutuGatewayError
 from .channel import FUTU_SIMULATE_CN_CHANNEL_ID
+from .lifecycle import AccountHealth
 from .trading_window import shanghai_now
 
 
@@ -175,7 +176,7 @@ class PteCoordinator:
             except Exception as exc:
                 failures.append((str(account["account_id"]), exc))
                 self.store.set_virtual_health(
-                    str(account["account_id"]), "BLOCKED", str(exc)
+                    str(account["account_id"]), AccountHealth.BLOCKED, str(exc)
                 )
                 self.audit.record(
                     "VIRTUAL_ACCOUNT_FAILED",

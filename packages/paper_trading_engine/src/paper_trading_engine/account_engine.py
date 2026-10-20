@@ -13,6 +13,7 @@ from .audit import AuditRecorder
 from .broker import TERMINAL_INTENT_STATUSES
 from .channel import FUTU_SIMULATE_CN_CHANNEL_ID
 from .store import PaperStore
+from .lifecycle import AccountHealth
 
 
 class AccountRefreshBatchError(RuntimeError):
@@ -196,7 +197,7 @@ class AccountEngine:
             raise AccountDecisionBlockedError(
                 f"虚拟账户状态不允许生成决策: {account['run_state']}"
             )
-        if account["health"] == "BLOCKED":
+        if account["health"] != AccountHealth.OK:
             raise AccountDecisionBlockedError(
                 f"虚拟账户已阻塞，禁止生成新的决策: {account.get('last_error') or account_id}"
             )
@@ -315,7 +316,7 @@ class AccountEngine:
             raise AccountDecisionBlockedError(
                 f"虚拟账户状态不允许执行决策: {execution_account['run_state']}"
             )
-        if execution_account["health"] == "BLOCKED":
+        if execution_account["health"] != AccountHealth.OK:
             raise AccountDecisionBlockedError(
                 "虚拟账户在策略计算期间被阻塞，决策未提交"
             )
@@ -373,7 +374,7 @@ class AccountEngine:
                 if (self._planning_revision(locked_account, current_active) != source_revision
                         or locked_account["release_hash"] != account["release_hash"]
                         or locked_account["run_state"] != execution_account["run_state"]
-                        or locked_account["health"] == "BLOCKED"):
+                        or locked_account["health"] != AccountHealth.OK):
                     raise AccountDecisionBlockedError("账户在替换提交前发生变化，决策未提交")
                 replacement_state_changed = (
                     bool(current_active)
@@ -444,7 +445,7 @@ class AccountEngine:
                 if (self._planning_revision(locked_account, locked_intents) != source_revision
                         or locked_account["release_hash"] != account["release_hash"]
                         or locked_account["run_state"] != execution_account["run_state"]
-                        or locked_account["health"] == "BLOCKED"):
+                        or locked_account["health"] != AccountHealth.OK):
                     raise AccountDecisionBlockedError("账户在提交前发生变化，决策未提交")
                 status = self._persist_generated_decision(
                     account_id, payload, locked_account, decision, account, previous_action,

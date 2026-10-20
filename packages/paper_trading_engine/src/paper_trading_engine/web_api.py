@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 import json
 
+from .lifecycle import AccountHealth
 from .audit import AuditCategory, AuditOutcome, AuditSeverity, EVENT_CATALOG
 from .channel import FUTU_SIMULATE_CN_CHANNEL_ID, STRATEGY_ACCOUNT_TYPE
 from .trading_window import SHANGHAI
@@ -98,7 +99,7 @@ class PteWebApi:
         }
         if any(errors.values()):
             alerts.append("DATA_PREPARATION_FAILED")
-        if any(row.get("health") == "BLOCKED" for row in accounts):
+        if any(row["health"] == AccountHealth.BLOCKED for row in accounts):
             alerts.append("VIRTUAL_ACCOUNT_BLOCKED")
         if self.store.unresolved_account_intents():
             alerts.append("ORDER_SUBMISSION_UNRESOLVED")

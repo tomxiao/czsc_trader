@@ -5,6 +5,12 @@ from enum import StrEnum
 from .broker import TERMINAL_INTENT_STATUSES, UNRESOLVED_INTENT_STATUSES
 
 
+class AccountHealth(StrEnum):
+    """Current account safety; independent of running state and strategy qualification."""
+    OK = "OK"
+    BLOCKED = "BLOCKED"
+
+
 class RunState(StrEnum):
     PAUSED = "PAUSED"
     RUNNING = "RUNNING"

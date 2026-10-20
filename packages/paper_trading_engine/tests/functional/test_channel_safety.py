@@ -7,6 +7,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from paper_trading_engine import AccountHealth
 from paper_trading_engine.audit import AuditRecorder
 from paper_trading_engine.account_engine import AccountDecisionBlockedError, AccountEngine
 from paper_trading_engine.broker import (
@@ -119,7 +120,7 @@ def test_blocked_pending_intent_expires_and_releases_reserved_cash(new_store, tm
         symbol="588080.SH", side="BUY", quantity=1000,
         limit_price="1.680", valid_session="2026-09-02",
     )
-    store.set_virtual_health("s001-v1", "BLOCKED", "等待对账")
+    store.set_virtual_health("s001-v1", AccountHealth.BLOCKED, "等待对账")
     execution = FutuExecution(
         store, FakeBroker(),
         now=lambda: datetime.fromisoformat("2026-09-03T10:00:00+08:00"),
@@ -748,6 +749,54 @@ def test_ft_pte03_explicit_rejection_releases_cash_and_duplicate_submit_is_atomi
         event_type="ACCOUNT_EXECUTION_MIGRATED",
     )) == migration_count
     reopened.close()
+
+
+def test_acknowledging_execution_gap_preserves_unrelated_health_block(new_store, tmp_path):
+    class RejectingBroker(FakeBroker):
+        def place_order(self, intent):
+            self.placed.append(intent)
+            raise BrokerOrderRejectedError("报单价格不在涨跌停区间")
+
+    store = new_store(tmp_path / "unrelated-health-block.db")
+    store.create_virtual_account(
+        "s001-v1", "S001-v1模拟账户", "legacy", "a" * 64, 100_000,
+        strategy_id="S001", strategy_name_snapshot="综合基线策略",
+        strategy_version="v1", release_hash="a" * 64,
+        qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-02",
+    )
+    store.set_virtual_paused("s001-v1", False)
+    adopt_test_decision(
+        store, account_id="s001-v1", decision_id="DEC-REJECT", valid_session="2026-09-04",
+        orders=[{"side": "BUY", "quantity": 1000, "order_type": "LIMIT", "limit_price": 1.68}],
+    )
+    FutuExecution(
+        store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00"),
+    ).refresh_orders()
+    intent = store.create_account_intent(
+        account_id="s001-v1", decision_id="DEC-REJECT", order_sequence=0,
+        symbol="588080.SH", side="BUY", quantity=1000,
+        limit_price="1.680", valid_session="2026-09-04",
+    )
+    broker = RejectingBroker()
+    execution = FutuExecution(
+        store, broker, now=lambda: datetime.fromisoformat("2026-09-04T10:00:00+08:00"),
+    )
+    with pytest.raises(OrderSubmissionBatchError):
+        execution.submit_pending()
+    store.set_virtual_health("s001-v1", AccountHealth.BLOCKED, "人工资金复核未完成")
+    resolved = execution.acknowledge_execution_gap(
+        "s001-v1", intent["intent_id"], "已确认拒单无成交",
+    )
+    assert resolved["attention_required"] is False
+    account = store.virtual_account("s001-v1")
+    assert account["health"] is AccountHealth.BLOCKED
+    assert account["last_error"] == "人工资金复核未完成"
+    assert store.attention_account_intents("s001-v1") == []
+    assert len(store.query_audit_events(event_type="EXECUTION_GAP_ACKNOWLEDGED")) == 1
+    assert store.query_audit_events(event_type="ACCOUNT_RECONCILIATION_RECOVERED") == []
+    assert store.account_orders("s001-v1") == []
+    assert store.account_fills("s001-v1") == []
+    store.close()
 
 
 def test_ft_pte03_incomplete_and_unknown_orders_never_silently_recover(new_store, tmp_path):

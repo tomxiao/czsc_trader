@@ -4,6 +4,7 @@ from importlib import import_module
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from .lifecycle import AccountHealth
     from .contracts import AdviceDecision, OrderSpec
     from .account_binding import (
         AccountStrategyBinding, AccountBindingUpdate, AccountBindingUpdateResult,
@@ -15,12 +16,14 @@ if TYPE_CHECKING:
     )
 
 __all__ = [
+    "AccountHealth",
     "AdviceDecision", "OrderSpec", "AccountStrategyBinding", "AccountBindingUpdate",
     "AccountBindingUpdateResult", "AccountBindingUpdateStatus", "update_account_bindings",
     "AccountRetirementRequest", "AccountRetirementResult", "AccountRetirementStatus",
 ]
 
 _EXPORT_MODULES = {
+    'AccountHealth': 'lifecycle',
     'AdviceDecision': 'contracts', 'OrderSpec': 'contracts',
     'AccountStrategyBinding': 'account_binding', 'AccountBindingUpdate': 'account_binding',
     'AccountBindingUpdateResult': 'account_binding', 'AccountBindingUpdateStatus': 'account_binding',

@@ -21,7 +21,7 @@ from .audit import (
     AuditSeverity,
     redact_details,
 )
-from .lifecycle import (RunState, DecisionState, IntentControlState, TERMINAL_DECISION_STATES,
+from .lifecycle import (AccountHealth, RunState, DecisionState, IntentControlState, TERMINAL_DECISION_STATES,
                         validate_transition, planned_orders, execution_state)
 from .account_binding import AccountBindingUpdate, AccountStrategyBinding
 from .account_retirement import (
@@ -43,8 +43,8 @@ from .channel import (
 
 
 DEFAULT_FUTU_CAPITAL_POOL = "1000000.0000"
-RUNTIME_DATABASE_SCHEMA_VERSION = 4
-RUNTIME_DATABASE_COMPATIBLE_VERSIONS = (1, 2, 3, 4)
+RUNTIME_DATABASE_SCHEMA_VERSION = 5
+RUNTIME_DATABASE_COMPATIBLE_VERSIONS = (1, 2, 3, 4, 5)
 
 
 def _utc_now() -> str:
@@ -211,7 +211,7 @@ class PaperStore:
         stored_schema = self._connection.execute(
             "SELECT value FROM settings WHERE key='runtime_database_schema_version'"
         ).fetchone()
-        if stored_schema is not None and int(stored_schema[0]) in {3, 4}:
+        if stored_schema is not None and int(stored_schema[0]) in {3, 4, 5}:
             self._initialize_lifecycle()
             return
         self._connection.executescript(
@@ -374,7 +374,7 @@ class PaperStore:
                 last_settlement_session TEXT,
                 last_decision_id TEXT,
                 last_decision_payload TEXT,
-                health TEXT NOT NULL DEFAULT 'READY',
+                health TEXT NOT NULL DEFAULT 'OK',
                 last_error TEXT,
                 channel_id TEXT NOT NULL DEFAULT 'futu_simulate_cn',
                 account_type TEXT NOT NULL DEFAULT 'STRATEGY',
@@ -396,7 +396,7 @@ class PaperStore:
         self._ensure_column("virtual_accounts", "last_settlement_session", "TEXT")
         self._ensure_column("virtual_accounts", "last_decision_id", "TEXT")
         self._ensure_column("virtual_accounts", "last_decision_payload", "TEXT")
-        self._ensure_column("virtual_accounts", "health", "TEXT NOT NULL DEFAULT 'READY'")
+        self._ensure_column("virtual_accounts", "health", "TEXT NOT NULL DEFAULT 'OK'")
         self._ensure_column("virtual_accounts", "last_error", "TEXT")
         self._ensure_column("virtual_accounts", "strategy_id", "TEXT")
         self._ensure_column("virtual_accounts", "strategy_name_snapshot", "TEXT")
@@ -532,9 +532,12 @@ class PaperStore:
 
     def _initialize_lifecycle(self):
         from .lifecycle_migration import migrate_lifecycle
+        from .account_health_migration import migrate_account_health
         try:
             self._connection.execute("BEGIN IMMEDIATE")
-            migrate_lifecycle(self._connection, _utc_now())
+            now = _utc_now()
+            migrate_lifecycle(self._connection, now)
+            migrate_account_health(self._connection, now)
             self._connection.execute(
                 "INSERT INTO settings(key,value) VALUES('runtime_database_schema_version',?) "
                 "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
@@ -1002,13 +1005,13 @@ class PaperStore:
                 "INSERT INTO virtual_accounts(account_id,name,baseline_version,baseline_sha256,"
                 "strategy_id,strategy_name_snapshot,strategy_version,release_hash,"
                 "selection_data_cutoff,qualification_snapshot,symbol,asset_type,initial_cash,cash,total_assets,"
-                "channel_id,account_type,run_state,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                "channel_id,account_type,run_state,health,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (
                     account_id, name, baseline_version, baseline_sha256, strategy_id,
                     strategy_name_snapshot, strategy_version, release_hash,
                     selection_data_cutoff, qualification_snapshot, symbol.upper(), asset_type,
                     str(cash), str(cash), str(cash),
-                    FUTU_SIMULATE_CN_CHANNEL_ID, STRATEGY_ACCOUNT_TYPE, RunState.PAUSED, now, now,
+                    FUTU_SIMULATE_CN_CHANNEL_ID, STRATEGY_ACCOUNT_TYPE, RunState.PAUSED, AccountHealth.OK, now, now,
                 ),
             )
             scope = {
@@ -1045,15 +1048,15 @@ class PaperStore:
             if existing is not None:
                 if Decimal(existing["initial_cash"]) != 0:
                     raise ValueError("reconciliation account must have zero initial balance")
-                return dict(existing)
+                return self.virtual_account(existing["account_id"])
             now = _utc_now()
             self._connection.execute(
                 "INSERT INTO virtual_accounts(account_id,name,baseline_version,baseline_sha256,"
-                "symbol,asset_type,initial_cash,cash,total_assets,channel_id,account_type,run_state,"
-                "created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                "symbol,asset_type,initial_cash,cash,total_assets,channel_id,account_type,run_state,health,"
+                "created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (account_id, "Futu模拟盘CN渠道平账账户", "channel_reconciliation.v1", baseline,
                  "CASH.CN", "cash", "0.0000", "0.0000", "0.0000",
-                 FUTU_SIMULATE_CN_CHANNEL_ID, CHANNEL_RECONCILIATION_ACCOUNT_TYPE, None, now, now),
+                 FUTU_SIMULATE_CN_CHANNEL_ID, CHANNEL_RECONCILIATION_ACCOUNT_TYPE, None, AccountHealth.OK, now, now),
             )
             self._insert_audit_event(self._new_audit_event(
                 "CHANNEL_RECONCILIATION_ACCOUNT_CREATED", source="account_registry",
@@ -1241,6 +1244,7 @@ class PaperStore:
         if row is None:
             raise KeyError(account_id)
         result = dict(row)
+        result["health"] = AccountHealth(result["health"])
         result.pop("legacy_status", None)
         result.pop("legacy_paused", None)
         return result
@@ -1291,7 +1295,7 @@ class PaperStore:
                 raise ValueError("pause the account before retirement")
             if account["quantity"] != 0 or Decimal(account["frozen_cash"]) != 0:
                 raise ValueError("retirement requires no position or frozen cash")
-            if account["health"] == "BLOCKED":
+            if AccountHealth(account["health"]) != AccountHealth.OK:
                 raise ValueError("blocked account cannot retire")
             if any(row["status"] not in TERMINAL_INTENT_STATUSES or row["attention_required"]
                    for row in self.account_intents(request.account_id)):
@@ -1347,7 +1351,7 @@ class PaperStore:
                 "SELECT * FROM virtual_accounts WHERE channel_id=? AND account_type=?",
                 (channel_id, CHANNEL_RECONCILIATION_ACCOUNT_TYPE),
             ).fetchone()
-        return None if row is None else dict(row)
+        return None if row is None else self.virtual_account(row["account_id"])
 
     def set_virtual_paused(self, account_id: str, paused: bool):
         if type(paused) is not bool:
@@ -1360,7 +1364,7 @@ class PaperStore:
             if account["run_state"] == RunState.RETIRED:
                 raise ValueError("retired account cannot be paused or resumed")
             if target == RunState.RUNNING and (
-                account["health"] == "BLOCKED"
+                AccountHealth(account["health"]) != AccountHealth.OK
                 or account["qualification_snapshot"] not in {"PAPER_READY", "LIVE_READY"}
                 or self.unresolved_account_intents(account_id)
                 or self.attention_account_intents(account_id)
@@ -1373,7 +1377,9 @@ class PaperStore:
             )
         return self.virtual_account(account_id)
 
-    def set_virtual_health(self, account_id: str, health: str, error: str | None = None):
+    def set_virtual_health(self, account_id: str, health: AccountHealth, error: str | None = None):
+        if type(health) is not AccountHealth:
+            raise TypeError("account health requires an AccountHealth value")
         with self._lock, self._write_context(False):
             changed = self._connection.execute(
                 "UPDATE virtual_accounts SET health=?,last_error=?,updated_at=? WHERE account_id=?",
@@ -1652,7 +1658,7 @@ class PaperStore:
             self._require_execution_portfolio(account_id, decision_id, creating=True)
             if account["run_state"] != "RUNNING":
                 raise ValueError("virtual account status does not allow order intents")
-            if account["health"] == "BLOCKED":
+            if AccountHealth(account["health"]) != AccountHealth.OK:
                 raise ValueError("blocked virtual account cannot create order intents")
             if account["run_state"] == RunState.PAUSED:
                 raise ValueError("paused virtual account cannot create order intents")
@@ -1805,7 +1811,7 @@ class PaperStore:
             self._require_execution_portfolio(account_id, decision_id, creating=True)
             if account["run_state"] != "RUNNING":
                 raise ValueError("virtual account status does not allow execution plans")
-            if account["health"] == "BLOCKED":
+            if AccountHealth(account["health"]) != AccountHealth.OK:
                 raise ValueError("blocked virtual account cannot create execution plans")
             if account["run_state"] == RunState.PAUSED:
                 raise ValueError("paused virtual account cannot create execution plans")
@@ -2032,7 +2038,7 @@ class PaperStore:
             self._require_execution_portfolio(account_id, decision_id, creating=True)
             if account["run_state"] != "RUNNING":
                 raise ValueError("virtual account status does not allow order intents")
-            if account["health"] == "BLOCKED":
+            if AccountHealth(account["health"]) != AccountHealth.OK:
                 raise ValueError("blocked virtual account cannot create order intents")
             if account["run_state"] == RunState.PAUSED:
                 raise ValueError("paused virtual account cannot create order intents")
@@ -2186,7 +2192,7 @@ class PaperStore:
         require_futu_simulate_cn(account["channel_id"])
         if account["account_type"] != STRATEGY_ACCOUNT_TYPE or account["run_state"] != RunState.RUNNING:
             raise ValueError("only a running strategy account may execute a decision")
-        if account["health"] not in {"READY", "OK"}:
+        if AccountHealth(account["health"]) != AccountHealth.OK:
             raise ValueError("blocked virtual account cannot execute decisions")
         decision = self.account_decision(account_id, decision_id)
         if decision["status"] not in {DecisionState.PENDING, DecisionState.EXECUTING}:

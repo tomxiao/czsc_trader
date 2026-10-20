@@ -20,7 +20,7 @@ from .broker import (
     TERMINAL_ORDER_STATUSES,
 )
 from .channel import FUTU_SIMULATE_CN_CHANNEL_ID, require_futu_simulate_cn_broker
-from .lifecycle import IntentControlState
+from .lifecycle import AccountHealth, IntentControlState
 from .trading_window import SHANGHAI, is_submission_window, shanghai_now
 
 
@@ -83,7 +83,7 @@ class FutuExecution:
         self.store.set_setting("channel_reconciliation_status", "BLOCKED")
         account_id = None if intent is None else intent["account_id"]
         if account_id:
-            self.store.set_virtual_health(account_id, "BLOCKED", message)
+            self.store.set_virtual_health(account_id, AccountHealth.BLOCKED, message)
         self.audit.record(
             "CHANNEL_RECONCILIATION_FAILED", source="futu_execution",
             outcome="FAILURE", channel=FUTU_SIMULATE_CN_CHANNEL_ID, account_id=account_id,
@@ -125,7 +125,7 @@ class FutuExecution:
             "存在未完成订单",
         )
         if (
-            account["health"] == "BLOCKED"
+            account["health"] == AccountHealth.BLOCKED
             and str(account.get("last_error") or "").startswith(transient_prefixes)
             and not any(
                 row["status"] not in TERMINAL_INTENT_STATUSES
@@ -133,7 +133,7 @@ class FutuExecution:
             )
             and not self.store.attention_account_intents(account_id)
         ):
-            self.store.set_virtual_health(account_id, "OK")
+            self.store.set_virtual_health(account_id, AccountHealth.OK)
             self.audit.record(
                 "ACCOUNT_RECONCILIATION_RECOVERED", source="futu_execution",
                 account_id=account_id, strategy_id=account.get("strategy_id"),
@@ -151,7 +151,7 @@ class FutuExecution:
         self.store.release_account_intent(
             intent["intent_id"], "EXPIRED", attention_reason=message,
         )
-        self.store.set_virtual_health(intent["account_id"], "BLOCKED", message)
+        self.store.set_virtual_health(intent["account_id"], AccountHealth.BLOCKED, message)
         self.audit.record(
             "EXECUTION_PLAN_BLOCKED", source="futu_execution", outcome="FAILURE",
             account_id=intent["account_id"], channel=FUTU_SIMULATE_CN_CHANNEL_ID,
@@ -174,7 +174,7 @@ class FutuExecution:
                 self.store.release_account_intent(
                     intent["intent_id"], "EXPIRED", attention_reason=message,
                 )
-                self.store.set_virtual_health(intent["account_id"], "BLOCKED", message)
+                self.store.set_virtual_health(intent["account_id"], AccountHealth.BLOCKED, message)
                 self.audit.record(
                     "DECISION_EXPIRED", source="futu_execution", outcome="SKIPPED",
                     account_id=intent["account_id"], channel=FUTU_SIMULATE_CN_CHANNEL_ID,
@@ -255,7 +255,7 @@ class FutuExecution:
                 self.broker.cancel_order(intent["channel_order_id"])
             except Exception as exc:
                 self.store.set_virtual_health(
-                    intent["account_id"], "BLOCKED",
+                    intent["account_id"], AccountHealth.BLOCKED,
                     "计划订单到期但撤单结果不确定，等待渠道对账",
                 )
                 self.audit.record(
@@ -498,7 +498,7 @@ class FutuExecution:
             self.store.update_channel_order_report(order.channel_order_id, asdict(order))
             if order.status == "TIMEOUT":
                 self.store.set_virtual_health(
-                    intent["account_id"], "BLOCKED",
+                    intent["account_id"], AccountHealth.BLOCKED,
                     "Futu订单状态未知（TIMEOUT），等待后续订单对账确认",
                 )
             if order.status in {"CANCELLED_PART", "CANCELLED_ALL"} and (
@@ -522,7 +522,7 @@ class FutuExecution:
             ):
                 account = self.store.virtual_account(intent["account_id"])
                 self.store.set_virtual_health(
-                    intent["account_id"], "BLOCKED",
+                    intent["account_id"], AccountHealth.BLOCKED,
                     f"Futu订单未完整执行（{order.status}），需要人工确认该次前瞻执行缺口",
                 )
                 self.audit.record(
@@ -607,7 +607,7 @@ class FutuExecution:
             first = violations[0]
             account_id = str(first["account_id"])
             self.store.set_virtual_health(
-                account_id, "BLOCKED", f"虚拟账户账本与余额不一致: {account_id}",
+                account_id, AccountHealth.BLOCKED, f"虚拟账户账本与余额不一致: {account_id}",
             )
             intent = next(
                 (row for row in self.store.account_intents(account_id)
@@ -659,7 +659,7 @@ class FutuExecution:
             if (
                 account["run_state"] == "PAUSED"
                 or account["run_state"] != "RUNNING"
-                or account["health"] not in {"READY", "OK"}
+                or account["health"] != AccountHealth.OK
             ):
                 continue
             if (
@@ -683,7 +683,7 @@ class FutuExecution:
                     row["intent_id"], "REJECTED", attention_reason=f"Futu明确拒单：{exc}",
                 )
                 self.store.set_virtual_health(
-                    row["account_id"], "BLOCKED", f"Futu明确拒单：{exc}",
+                    row["account_id"], AccountHealth.BLOCKED, f"Futu明确拒单：{exc}",
                 )
                 self.audit.record(
                     "ORDER_REJECTED", source="futu_execution", outcome="REJECTED",
@@ -697,7 +697,7 @@ class FutuExecution:
                 self.store.release_account_intent(
                     row["intent_id"], "SUBMISSION_FAILED", attention_reason=str(exc),
                 )
-                self.store.set_virtual_health(row["account_id"], "BLOCKED", str(exc))
+                self.store.set_virtual_health(row["account_id"], AccountHealth.BLOCKED, str(exc))
                 self.audit.record(
                     "ORDER_SUBMISSION_FAILED", source="futu_execution", outcome="FAILURE",
                     account_id=row["account_id"], channel=FUTU_SIMULATE_CN_CHANNEL_ID,
@@ -711,7 +711,7 @@ class FutuExecution:
                     row["intent_id"], IntentControlState.SUBMISSION_UNCERTAIN
                 )
                 self.store.set_virtual_health(
-                    row["account_id"], "BLOCKED",
+                    row["account_id"], AccountHealth.BLOCKED,
                     "Futu下单结果不确定，已保留冻结资金并等待订单对账",
                 )
                 self.audit.record(
@@ -728,7 +728,7 @@ class FutuExecution:
                     row["intent_id"], IntentControlState.SUBMISSION_UNCERTAIN
                 )
                 self.store.set_virtual_health(
-                    row["account_id"], "BLOCKED",
+                    row["account_id"], AccountHealth.BLOCKED,
                     f"Futu已返回订单，但订单回报与意图不一致：{exc}",
                 )
                 raise
@@ -753,7 +753,7 @@ class FutuExecution:
                     row["intent_id"], IntentControlState.SUBMISSION_UNCERTAIN
                 )
                 self.store.set_virtual_health(
-                    row["account_id"], "BLOCKED",
+                    row["account_id"], AccountHealth.BLOCKED,
                     "Futu已返回订单，但本地绑定失败，等待双向对账",
                 )
                 raise
@@ -775,25 +775,39 @@ class FutuExecution:
         intent = self.store.account_intent(intent_id)
         if intent is None or intent["account_id"] != account_id:
             raise KeyError(intent_id)
-        resolved = self.store.resolve_account_intent_attention(intent_id, resolution_note)
-        if (
-            not self.store.unresolved_account_intents(account_id)
-            and not self.store.attention_account_intents(account_id)
-        ):
-            self.store.set_virtual_health(account_id, "OK")
-        account = self.store.virtual_account(account_id)
-        self.audit.record(
-            "ACCOUNT_RECONCILIATION_RECOVERED", source="operator.reconciliation",
-            actor_type="OPERATOR", account_id=account_id,
-            strategy_id=account.get("strategy_id"),
-            strategy_version=account.get("strategy_version"),
-            release_hash=account.get("release_hash"), channel=FUTU_SIMULATE_CN_CHANNEL_ID,
-            decision_id=intent["decision_id"],
-            details={
+        with self.store.atomic_decision_update():
+            resolved = self.store.resolve_account_intent_attention(intent_id, resolution_note)
+            account = self.store.virtual_account(account_id)
+            reviewed_reasons = set()
+            for reviewed in self.store.account_intents(account_id):
+                if not reviewed["resolved_at"] or not reviewed["attention_reason"]:
+                    continue
+                reviewed_reasons.add(reviewed["attention_reason"])
+                reviewed_reasons.add(
+                    f"Futu订单未完整执行（{reviewed['status']}），需要人工确认该次前瞻执行缺口"
+                )
+            recovered = (
+                account["health"] == AccountHealth.BLOCKED
+                and account["last_error"] in reviewed_reasons
+                and not self.store.unresolved_account_intents(account_id)
+                and not self.store.attention_account_intents(account_id)
+            )
+            if recovered:
+                self.store.set_virtual_health(account_id, AccountHealth.OK)
+            scope = {
+                "source": "operator.reconciliation", "actor_type": "OPERATOR",
+                "account_id": account_id, "strategy_id": account.get("strategy_id"),
+                "strategy_version": account.get("strategy_version"),
+                "release_hash": account.get("release_hash"), "channel": FUTU_SIMULATE_CN_CHANNEL_ID,
+                "decision_id": intent["decision_id"],
+            }
+            details = {
                 "reason": "execution_gap_acknowledged", "intent_id": intent_id,
                 "resolution_note": resolution_note,
-            },
-        )
+            }
+            self.audit.record("EXECUTION_GAP_ACKNOWLEDGED", **scope, details=details)
+            if recovered:
+                self.audit.record("ACCOUNT_RECONCILIATION_RECOVERED", **scope, details=details)
         return resolved
 
     def repair_account_ledger(self, account_id: str, intent_id: str):

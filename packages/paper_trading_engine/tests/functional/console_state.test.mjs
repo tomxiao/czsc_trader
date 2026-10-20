@@ -153,7 +153,7 @@ test('FT-PTEJS01 console state preserves scope, stable polling and Chinese prese
   assert.equal(statusLabel('FUTU_CASH_RECONCILIATION_UNATTRIBUTED'), 'Futu现金差异来源不明');
   assert.equal(statusLabel('FUTU_CASH_RECONCILIATION_OUT_OF_RANGE'), 'Futu费用差异超出允许范围');
   assert.equal(statusLabel('FUTU_CASH_RECONCILIATION_AMBIGUOUS'), 'Futu现金差异无法安全归属');
-  assert.equal(accountOperatingStatus({run_state:'RUNNING',health:'BLOCKED'}), '阻塞');
+  assert.equal(accountOperatingStatus({run_state:'RUNNING',health:'BLOCKED'}), '运行中 · 阻塞');
   assert.equal(accountOperatingStatus({run_state:'PAUSED',health:'OK'}), '已暂停');
   assert.equal(formatPrice('1.5899999999999999'), '1.590');
   assert.equal(formatQuantity(60500), '60,500 股');
@@ -207,6 +207,35 @@ test('FT-PTEJS01 console state preserves scope, stable polling and Chinese prese
   );
 });
 
+test('account health and operating state stay consistent across account and channel views', () => {
+  const cases=[
+    ['RUNNING','OK','运行中 · 正常'],
+    ['RUNNING','BLOCKED','运行中 · 阻塞'],
+    ['PAUSED','OK','已暂停'],
+    ['PAUSED','BLOCKED','已暂停 · 阻塞'],
+    ['RETIRED','OK','已退出'],
+    ['RETIRED','BLOCKED','已退出 · 阻塞'],
+  ];
+  for(const [run_state,health,label] of cases){
+    const account={account_id:'test-account',name:'测试账户',run_state,health};
+    assert.equal(accountOperatingStatus(account),label);
+    const html=accountMarkup({scope:{account_id:account.account_id},account},[account]);
+    if(run_state!=='RETIRED'){
+      assert.match(html,new RegExp(`<option[^>]*>测试账户 · ${label}</option>`));
+      assert.match(html,new RegExp(`<small>— · ${label}</small>`));
+    }
+    assert.match(html,new RegExp(`Futu · ${label}</div>`));
+    assert.match(channelMarkup({accounts:[account]}),new RegExp(`<td>${label}</td>`));
+  }
+  for(const health of ['READY','UNKNOWN',null,undefined]){
+    assert.equal(accountOperatingStatus({run_state:'RUNNING',health}),'运行中 · 健康状态异常');
+    assert.equal(accountOperatingStatus({run_state:'PAUSED',health}),'已暂停 · 健康状态异常');
+    assert.equal(accountOperatingStatus({run_state:'RETIRED',health}),'已退出 · 健康状态异常');
+  }
+  assert.equal(accountOperatingStatus({run_state:'UNKNOWN',health:'OK'}),'运行状态异常');
+  assert.equal(statusLabel('READY'),'就绪');
+});
+
 test('virtual account orders show order time and remain newest first', () => {
   const html = accountMarkup({
     scope: {account_id:'s001-v1',release_id:'S001-v1'},
@@ -226,7 +255,7 @@ test('virtual account orders show order time and remain newest first', () => {
 test('retired account shows recovered cash and cannot be resumed', () => {
   const html = accountMarkup({
     scope: {account_id:'closed',release_id:'S001-v1'},
-    account: {account_id:'closed',run_state:'RETIRED',initial_cash:'100000',
+    account: {account_id:'closed',run_state:'RETIRED',health:'OK',initial_cash:'100000',
       cash:'0',total_assets:'0',released_cash:'101250.4321'},
     metrics: {current_total_return:0.012504321},
   });
@@ -234,7 +263,7 @@ test('retired account shows recovered cash and cannot be resumed', () => {
   assert.match(html, /已退出 · 资金已回收/);
   assert.match(html, /已回收资金/);
   assert.doesNotMatch(html, /点击恢复/);
-  assert.equal(accountOperatingStatus({run_state:'RETIRED'}), '已退出');
+  assert.equal(accountOperatingStatus({run_state:'RETIRED',health:'OK'}), '已退出');
 });
 
 test('virtual account navigation excludes retired accounts and stale selections', () => {
