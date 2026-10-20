@@ -42,7 +42,7 @@ def parameter_plan(research, request, *, child_parameters=None):
         parameters = {**request.strategy.payload["parameters"], "threshold": point.coordinates[0]}
         if child_parameters is not None:
             parameters.update(child_parameters(point))
-        payload = {"runtime": dict(request.strategy.payload["runtime"]), "parameters": parameters}
+        payload = {**request.strategy.payload, "parameters": parameters}
         candidate = StrategyCandidate("S900", f"C{point.index + 2:04}", payload, request.strategy.source_root)
         child = replace(request, strategy=candidate, runtime_binding={**request.runtime_binding,
                         "candidate_id": candidate.reference_id}, input_bindings={})

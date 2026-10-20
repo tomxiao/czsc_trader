@@ -47,7 +47,8 @@ class MarketReplayFixture(CandidateFixture):
             capabilities=RequiredCapabilities((adjusted.value, raw.value, Dataset.TRADING_CALENDAR.value), ("MARKET",)),
         )
 
-    def calculate_history(self, inputs, sessions):
+    def calculate_context_history(self, inputs, context):
+        sessions = context.sessions
         market = inputs["market"].copy()
         market["Date"] = pd.to_datetime(market["Date"])
         close = market.set_index("Date").reindex(sessions)["Close"]

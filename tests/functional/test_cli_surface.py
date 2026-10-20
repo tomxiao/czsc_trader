@@ -20,6 +20,10 @@ from czsc_trader.application import (
 
 ROOT = Path(__file__).resolve().parents[2]
 PUBLIC_API = {
+    "FrozenRuntimeMigrationRequest", "PreparedFrozenRuntimeMigration",
+    "prepare_frozen_runtime_migration", "validate_frozen_runtime_migration",
+    "FrozenRuntimeUpgradeRequest", "PreparedFrozenRuntimeUpgrade", "FrozenRuntimeUpgradeReceipt",
+    "prepare_frozen_runtime_upgrade", "apply_frozen_runtime_upgrade",
     "CandidateInspectionRequest", "InspectionReplay",
     "inspect_candidate", "record_research_decision", "freeze_candidate", "get_freeze_result",
     "assemble_delivery", "validate_delivery", "CandidateRegistrationRequest", "register_candidate",
