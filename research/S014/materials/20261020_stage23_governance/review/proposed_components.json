@@ -1,0 +1,1471 @@
+{
+  "status": "PROPOSED_SPEC_NOT_REGISTERED",
+  "old_panel": {
+    "batch": {
+      "strategy_id": "S014",
+      "type": "ResearchBatchRef"
+    },
+    "content_sha256": "eb1dd559a0417529ca50f6e53158acfb68d42d3056c138676e6d10d1cde457a5",
+    "revision": 22,
+    "stage": "COMPONENTS",
+    "type": "DeliveryReference"
+  },
+  "reuse_old_count": 28,
+  "components": [
+    {
+      "proposed_component_id": "prior-s5-support-and-entryday-grace",
+      "definition_type": "ExperimentDefinitionRef",
+      "definition_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX052_20261020"
+        },
+        "evidence_id": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2.py",
+        "sha256": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2",
+        "media_type": "text/x-python",
+        "name": "ex052-locked-src-strategy_runtime-strategies-trend_permission.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "entrypoint": "history",
+      "source_path": "research/S014/experiments/EX052_20261020/src/strategy_runtime/strategies/trend_permission.py",
+      "definition": "Prior five in-window closes minimum; support break plus actual-entry-day grace. H10/deadline/reservation are execution contract, not an alpha.",
+      "judgment": "Conditional support for entry grace in fixed full-account mechanism; no standalone return predictor claim.",
+      "role": "支撑转弱与入场当日宽限职责",
+      "label": "真实完整账户及逐真实持仓周期损益；不把支撑值当可赚收益",
+      "control": "EX043 BASE与ENTRY_GRACE、TREND_CYCLE固定对照；原C0056合同",
+      "horizon": "首个ownSHOCK当D或该完整真实cycle至实际退出；全账户2020-2026原截止10/15年度，按各测试精确协议",
+      "availability": "D已完成真实价格与当时已发生的own成交/持仓/完成史；D决策次E原规则执行；禁止E后知数据作D条件；unknown明确保留",
+      "price_basis": "特征/ATR均原runtime fullHFQ；账本价格为HFQ_RESEARCH锚5.892、quantity=RESEARCH_UNIT；按原费用/投影核算，不能混价单位",
+      "applicability": "仅S014已见开发域及固定原执行合同；具体触发域、优先级、latch及own资金状态以对应公开源码/预先协议为准",
+      "strongest_counterevidence": "TREND_CYCLE并非额外稳定改善；entryday成本出口可覆盖grace；2024九格仍全部失败。",
+      "necessary_test_experiments": [
+        "EX043",
+        "EX050",
+        "EX052"
+      ]
+    },
+    {
+      "proposed_component_id": "causal-positive-profit-acceleration-exit",
+      "definition_type": "ExperimentDefinitionRef",
+      "definition_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX052_20261020"
+        },
+        "evidence_id": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2.py",
+        "sha256": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2",
+        "media_type": "text/x-python",
+        "name": "ex052-locked-src-strategy_runtime-strategies-trend_permission.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "entrypoint": "causal_features,history",
+      "source_path": "research/S014/experiments/EX052_20261020/src/strategy_runtime/strategies/trend_permission.py",
+      "definition": "Z5=sum last five log returns / (std20(ddof1) ending D-5 * sqrt5); raw Z>2, original netP>0. Actual selected action differs from raw legacy flags.",
+      "judgment": "Exit role only with own age/permission controls; blanket disabling and ANY_P/entry-gate uses retain negative and interaction evidence.",
+      "role": "持仓正浮盈急涨的退出职责",
+      "label": "真实全路径年度收益/回撤与实际完整周期；原Z5非预测收益标签",
+      "control": "EX043 BASE与SHOCK；EX044 ANY_P/entrygate；EX047/48 ON/OFF交互",
+      "horizon": "首个ownSHOCK当D或该完整真实cycle至实际退出；全账户2020-2026原截止10/15年度，按各测试精确协议",
+      "availability": "D已完成真实价格与当时已发生的own成交/持仓/完成史；D决策次E原规则执行；禁止E后知数据作D条件；unknown明确保留",
+      "price_basis": "特征/ATR均原runtime fullHFQ；账本价格为HFQ_RESEARCH锚5.892、quantity=RESEARCH_UNIT；按原费用/投影核算，不能混价单位",
+      "applicability": "仅S014已见开发域及固定原执行合同；具体触发域、优先级、latch及own资金状态以对应公开源码/预先协议为准",
+      "strongest_counterevidence": "关SHOCK有助部分上涨延续却伤及2025；ANY_P/entrygate未形成通用改进；不能用旧两格差推当前局部因果。",
+      "necessary_test_experiments": [
+        "EX043",
+        "EX044",
+        "EX045",
+        "EX047",
+        "EX048",
+        "EX052"
+      ]
+    },
+    {
+      "proposed_component_id": "net-cost-loss-prior-atr-risk",
+      "definition_type": "ExperimentDefinitionRef",
+      "definition_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX052_20261020"
+        },
+        "evidence_id": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2.py",
+        "sha256": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2",
+        "media_type": "text/x-python",
+        "name": "ex052-locked-src-strategy_runtime-strategies-trend_permission.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "entrypoint": "causal_features,history",
+      "source_path": "research/S014/experiments/EX052_20261020/src/strategy_runtime/strategies/trend_permission.py",
+      "definition": "entryfill*1.001 - currentClose*.999 >= positive ATR20 through D-1; all runtime fullHFQ units. Cost can override grace but cannot undo entry-day damage.",
+      "judgment": "Mechanism support is conditional portfolio protection; not proof of universal downside forecasting or isolated cost effect.",
+      "role": "净成本损伤的波幅尺度风险出口",
+      "label": "真实账户年度/周期和费用后损益；entryday损伤仍保留",
+      "control": "EX044 costBASE与NET1ATR；EX048关pause条件交互，不伪称单独成本因果",
+      "horizon": "首个ownSHOCK当D或该完整真实cycle至实际退出；全账户2020-2026原截止10/15年度，按各测试精确协议",
+      "availability": "D已完成真实价格与当时已发生的own成交/持仓/完成史；D决策次E原规则执行；禁止E后知数据作D条件；unknown明确保留",
+      "price_basis": "特征/ATR均原runtime fullHFQ；账本价格为HFQ_RESEARCH锚5.892、quantity=RESEARCH_UNIT；按原费用/投影核算，不能混价单位",
+      "applicability": "仅S014已见开发域及固定原执行合同；具体触发域、优先级、latch及own资金状态以对应公开源码/预先协议为准",
+      "strongest_counterevidence": "2024仍未单独达标；不能追回买入当日已发生损伤；动态ATR变化和support重合须披露。",
+      "necessary_test_experiments": [
+        "EX043",
+        "EX044",
+        "EX048",
+        "EX052"
+      ]
+    },
+    {
+      "proposed_component_id": "own-actual-completed-net-feedback",
+      "definition_type": "ExperimentDefinitionRef",
+      "definition_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX052_20261020"
+        },
+        "evidence_id": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2.py",
+        "sha256": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2",
+        "media_type": "text/x-python",
+        "name": "ex052-locked-src-strategy_runtime-strategies-trend_permission.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "entrypoint": "completed_sign,history",
+      "source_path": "research/S014/experiments/EX052_20261020/src/strategy_runtime/strategies/trend_permission.py",
+      "definition": "Own actual CLOSED sale proceeds less actual entry and both fees; strict negative/positive/zero/no-history separated. Selected sign arms one eligible candidate-slot pause i+11 without fake BUY or entry/deadline/fees.",
+      "judgment": "Supported only as actual policy feedback/timing mechanism; old population did not establish loss-after-entry hazard. Profit-direction control and noPause interaction retained.",
+      "role": "真实完成净损益反馈后的参与时钟",
+      "label": "own实际CLOSED净损严格负/正/零与全年路径；失败BUY无完成收益标签",
+      "control": "EX046 BASE/loss/profit三格、EX048 OFF下pauseLOSS/BASE；全部自身资金路径",
+      "horizon": "首个ownSHOCK当D或该完整真实cycle至实际退出；全账户2020-2026原截止10/15年度，按各测试精确协议",
+      "availability": "D已完成真实价格与当时已发生的own成交/持仓/完成史；D决策次E原规则执行；禁止E后知数据作D条件；unknown明确保留",
+      "price_basis": "特征/ATR均原runtime fullHFQ；账本价格为HFQ_RESEARCH锚5.892、quantity=RESEARCH_UNIT；按原费用/投影核算，不能混价单位",
+      "applicability": "仅S014已见开发域及固定原执行合同；具体触发域、优先级、latch及own资金状态以对应公开源码/预先协议为准",
+      "strongest_counterevidence": "旧人口亏损后并不普遍更危险；利润后暂停反向控制及取消lossPause对2024/25损害保留。",
+      "necessary_test_experiments": [
+        "EX045",
+        "EX046",
+        "EX048",
+        "EX052"
+      ]
+    },
+    {
+      "proposed_component_id": "first-own-shock-holding-age-state",
+      "definition_type": "ExperimentDefinitionRef",
+      "definition_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX052_20261020"
+        },
+        "evidence_id": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2.py",
+        "sha256": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2",
+        "media_type": "text/x-python",
+        "name": "ex052-locked-src-strategy_runtime-strategies-trend_permission.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "entrypoint": "history",
+      "source_path": "research/S014/experiments/EX052_20261020/src/strategy_runtime/strategies/trend_permission.py",
+      "definition": "At first own eligible SHOCK in a funded cycle, actual holding_age0 vs>=1; one assessment and hold-latch through cycle, reset on real buy/sell. Inherited pending/cost/support/H10 remain superior.",
+      "judgment": "AGE alone passed2026 but failed2025; only AGE-domain S1 full-policy supported all original goals. Age is timing state, not independent alpha.",
+      "role": "首次ownSHOCK的持仓时钟与延持许可",
+      "label": "EX049同entry/Q局部清算差与EX050完整账户目标分别表达",
+      "control": "EX050原SHOCK/S2/AGE三格；AGE自身2025失败和EX051后D退出",
+      "horizon": "首个ownSHOCK当D或该完整真实cycle至实际退出；全账户2020-2026原截止10/15年度，按各测试精确协议",
+      "availability": "D已完成真实价格与当时已发生的own成交/持仓/完成史；D决策次E原规则执行；禁止E后知数据作D条件；unknown明确保留",
+      "price_basis": "特征/ATR均原runtime fullHFQ；账本价格为HFQ_RESEARCH锚5.892、quantity=RESEARCH_UNIT；按原费用/投影核算，不能混价单位",
+      "applicability": "仅S014已见开发域及固定原执行合同；具体触发域、优先级、latch及own资金状态以对应公开源码/预先协议为准",
+      "strongest_counterevidence": "AGE独立2025缺22.227565pp；age0中2021-12-24有正延持反例，held域亦有负标签。",
+      "necessary_test_experiments": [
+        "EX049",
+        "EX050",
+        "EX051",
+        "EX052"
+      ]
+    },
+    {
+      "proposed_component_id": "prior-trend-s1-permission",
+      "definition_type": "ExperimentDefinitionRef",
+      "definition_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX052_20261020"
+        },
+        "evidence_id": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2.py",
+        "sha256": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2",
+        "media_type": "text/x-python",
+        "name": "ex052-locked-src-strategy_runtime-strategies-trend_permission.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "entrypoint": "prior_trend_permission,causal_features,history",
+      "source_path": "research/S014/experiments/EX052_20261020/src/strategy_runtime/strategies/trend_permission.py",
+      "definition": "MA20 through D-1 > same MA shifted five sessions (through D-6), and sourceClose[D-1]>=MA20[D-1]. Known/finite required only first eligible AGE>=1 treatment domain; scalar exact comparisons.",
+      "judgment": "Supported as conditional permission inside C9521; old S1 pooled/local negative and excluded-combination decision preserved. Not independent new information or unseen validation.",
+      "role": "AGE>=1域首次ownSHOCK的priorS1许可",
+      "label": "EX049局部差为component标签；EX052自身实际7年度目标是整政策证据，不是独立S1预测精度",
+      "control": "EX052 freshC9502与AGE×S1；保留EX049 S1局部负面与EX050原禁混合决定",
+      "horizon": "首个ownSHOCK当D或该完整真实cycle至实际退出；全账户2020-2026原截止10/15年度，按各测试精确协议",
+      "availability": "D已完成真实价格与当时已发生的own成交/持仓/完成史；D决策次E原规则执行；禁止E后知数据作D条件；unknown明确保留",
+      "price_basis": "特征/ATR均原runtime fullHFQ；账本价格为HFQ_RESEARCH锚5.892、quantity=RESEARCH_UNIT；按原费用/投影核算，不能混价单位",
+      "applicability": "仅S014已见开发域及固定原执行合同；具体触发域、优先级、latch及own资金状态以对应公开源码/预先协议为准",
+      "strongest_counterevidence": "原S1局部pooled不支持；2021-02-09 FALSE牺牲大上涨，年度较C9502少48.646730pp且连续终值更低。",
+      "necessary_test_experiments": [
+        "EX049",
+        "EX050",
+        "EX052"
+      ]
+    },
+    {
+      "proposed_component_id": "last-day-nondominance-s2",
+      "definition_type": "ExperimentDefinitionRef",
+      "definition_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX049_20261020"
+        },
+        "evidence_id": "58827ad8d59e4b3ebd99f250a25a05f8a1f552a9ebf8626ed1fef027f9134f6b.py",
+        "sha256": "58827ad8d59e4b3ebd99f250a25a05f8a1f552a9ebf8626ed1fef027f9134f6b",
+        "media_type": "text/x-python",
+        "name": "ex049-source-local_cycle.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "entrypoint": "state_at_D",
+      "source_path": "research/S014/experiments/EX049_20261020/src/local_cycle.py",
+      "definition": "log(C_D/C_D-1) <= log(C_D-1/C_D-5), finite/positive source values. Includes down D; first-own-SHOCK latch.",
+      "judgment": "Local pooled appearance did not separate remaining-clock effects; full S2 policy failed original2025/2026. Retain negative comparison, not a supported alpha.",
+      "role": "首次ownSHOCK末日占比的拟议分流",
+      "label": "EX049固定entry/Q到共同终点的费用后清算差，21cycle等权；EX050真实整政策另核",
+      "control": "always-exit/always-hold与固定S2；共同remaining层、AGE和完整政策反证",
+      "horizon": "首个ownSHOCK当D或该完整真实cycle至实际退出；全账户2020-2026原截止10/15年度，按各测试精确协议",
+      "availability": "D已完成真实价格与当时已发生的own成交/持仓/完成史；D决策次E原规则执行；禁止E后知数据作D条件；unknown明确保留",
+      "price_basis": "特征/ATR均原runtime fullHFQ；账本价格为HFQ_RESEARCH锚5.892、quantity=RESEARCH_UNIT；按原费用/投影核算，不能混价单位",
+      "applicability": "仅S014已见开发域及固定原执行合同；具体触发域、优先级、latch及own资金状态以对应公开源码/预先协议为准",
+      "strongest_counterevidence": "FALSE仅3例且remaining不平衡；共同remaining增量转负；S2整政策2025/26失败。",
+      "necessary_test_experiments": [
+        "EX049",
+        "EX050"
+      ]
+    },
+    {
+      "proposed_component_id": "post-shock-frozen-anchor-weakening",
+      "definition_type": "ExperimentDefinitionRef",
+      "definition_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX051_20261020"
+        },
+        "evidence_id": "a97a53b0d277ef4ee5702cc3b846ce8831fd8b182c2afca83159f31f0458f670.py",
+        "sha256": "a97a53b0d277ef4ee5702cc3b846ce8831fd8b182c2afca83159f31f0458f670",
+        "media_type": "text/x-python",
+        "name": "ex051-locked-src-strategy_runtime-strategies-followthrough_anchor.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "entrypoint": "history",
+      "source_path": "research/S014/experiments/EX051_20261020/src/strategy_runtime/strategies/followthrough_anchor.py",
+      "definition": "At AGE-qualified first SHOCK freeze sourceClose and positive ATR20prior; persistent later D monitoring: close<anchor or anchor-close>=ATR0; next E original execution.",
+      "judgment": "Both fixed full policies failed2025 and damaged2026; no supported replacement exit. Late2025Mar exits remained net losses and did not remove own loss pause.",
+      "role": "已选择延持后的后续转弱出口",
+      "label": "EX051三条真实完整账户年度目标与实际周期，不生成新替代利润",
+      "control": "同监控时钟freshAGE/持续ZERO/持续冻结1ATR；不是一天zero对全cyclebuffer",
+      "horizon": "首个ownSHOCK当D或该完整真实cycle至实际退出；全账户2020-2026原截止10/15年度，按各测试精确协议",
+      "availability": "D已完成真实价格与当时已发生的own成交/持仓/完成史；D决策次E原规则执行；禁止E后知数据作D条件；unknown明确保留",
+      "price_basis": "特征/ATR均原runtime fullHFQ；账本价格为HFQ_RESEARCH锚5.892、quantity=RESEARCH_UNIT；按原费用/投影核算，不能混价单位",
+      "applicability": "仅S014已见开发域及固定原执行合同；具体触发域、优先级、latch及own资金状态以对应公开源码/预先协议为准",
+      "strongest_counterevidence": "2025Mar下一D退出已晚：实际仍净亏并触发Apr9暂停；2026正常回调误伤，ZERO/ATR两臂均失败。",
+      "necessary_test_experiments": [
+        "EX051"
+      ]
+    }
+  ],
+  "formal_evidence_by_experiment": {
+    "EX040": {
+      "source": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX040_20261019"
+        },
+        "evidence_id": "f1a96bfadab319d8963b7de56e675182f36a8dff3f2785a69dc591a1b16b0bb2.py",
+        "sha256": "f1a96bfadab319d8963b7de56e675182f36a8dff3f2785a69dc591a1b16b0bb2",
+        "media_type": "text/x-python",
+        "name": "ex040-v2-locked-src-revision02-strategy_runtime-strategies-repair_action_review.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "source_entrypoint": "see published runtime class and fixed protocol",
+      "formal_actual_accounts": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX040_20261019"
+          },
+          "evidence_id": "545e981ba7ed2a3bf7a138c0589d15e80c2a62b8211f66190b5f4306e4358ac0.json",
+          "sha256": "545e981ba7ed2a3bf7a138c0589d15e80c2a62b8211f66190b5f4306e4358ac0",
+          "media_type": "application/json",
+          "name": "2025-action-003-noop",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX040_20261019"
+          },
+          "evidence_id": "d318b3e1f14cf27b50d6d7ae364ebf7403d1e3fc91770086f5ed48043da5df83.json",
+          "sha256": "d318b3e1f14cf27b50d6d7ae364ebf7403d1e3fc91770086f5ed48043da5df83",
+          "media_type": "application/json",
+          "name": "2025-action-004-skip_buy_once",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX040_20261019"
+          },
+          "evidence_id": "7490ab9fab92b117c7c4b783740a6b8316d67d140add1df9e95bc51c01919dc3.json",
+          "sha256": "7490ab9fab92b117c7c4b783740a6b8316d67d140add1df9e95bc51c01919dc3",
+          "media_type": "application/json",
+          "name": "2025-action-005-force_sell_once",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      ],
+      "final_verification": null,
+      "predeclared_protocols": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX040_20261019"
+          },
+          "evidence_id": "e99c55c387e4f8a9929c5f0ea57d1b847468ab2782c6bd187debe19aff35073e.json",
+          "sha256": "e99c55c387e4f8a9929c5f0ea57d1b847468ab2782c6bd187debe19aff35073e",
+          "media_type": "application/json",
+          "name": "ex040-locked-protocols-design.json",
+          "schema": null,
+          "schema_version": null
+        }
+      ]
+    },
+    "EX041": {
+      "source": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX041_20261019"
+        },
+        "evidence_id": "b18c884977580dfeace071c98bcd94fecf23a0e9369cb015f3f2e021b8f5536c.py",
+        "sha256": "b18c884977580dfeace071c98bcd94fecf23a0e9369cb015f3f2e021b8f5536c",
+        "media_type": "text/x-python",
+        "name": "ex041-locked-src-strategy_runtime-strategies-early_cycle_review.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "source_entrypoint": "see published runtime class and fixed protocol",
+      "formal_actual_accounts": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX041_20261019"
+          },
+          "evidence_id": "be52c6e08a3543d34b8109e54103d2ba1d9f6ecf36a05d34e14dc2bbd8dacc38.json",
+          "sha256": "be52c6e08a3543d34b8109e54103d2ba1d9f6ecf36a05d34e14dc2bbd8dacc38",
+          "media_type": "application/json",
+          "name": "2025-action-000-noop",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX041_20261019"
+          },
+          "evidence_id": "469bf2e4c0492267e9729360d721334dcb24e292b65d219deabada712bc19a7a.json",
+          "sha256": "469bf2e4c0492267e9729360d721334dcb24e292b65d219deabada712bc19a7a",
+          "media_type": "application/json",
+          "name": "2025-action-001-hold_original_cycle_h10",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      ],
+      "final_verification": null,
+      "predeclared_protocols": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX041_20261019"
+          },
+          "evidence_id": "71cddb782a5ffc0ecacebb3e9dfd626d85f0bb916cc015561d4bed3adbe6ac4f.json",
+          "sha256": "71cddb782a5ffc0ecacebb3e9dfd626d85f0bb916cc015561d4bed3adbe6ac4f",
+          "media_type": "application/json",
+          "name": "ex041-locked-protocols-design.json",
+          "schema": null,
+          "schema_version": null
+        }
+      ]
+    },
+    "EX042": {
+      "source": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX042_20261019"
+        },
+        "evidence_id": "8c5ec5b36149fa1bb3b5f52a468cf7b9c3dd23f16851ce44146dc95ad77bf376.py",
+        "sha256": "8c5ec5b36149fa1bb3b5f52a468cf7b9c3dd23f16851ce44146dc95ad77bf376",
+        "media_type": "text/x-python",
+        "name": "ex042-locked-src-strategy_runtime-strategies-joint_action_review.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "source_entrypoint": "see published runtime class and fixed protocol",
+      "formal_actual_accounts": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX042_20261019"
+          },
+          "evidence_id": "349b82b5189af7045adf308fd439508a9a301991c23dd21febd3549abed81045.json",
+          "sha256": "349b82b5189af7045adf308fd439508a9a301991c23dd21febd3549abed81045",
+          "media_type": "application/json",
+          "name": "2025-action-000-noop",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX042_20261019"
+          },
+          "evidence_id": "1ff4b147689c585f6f478a2fdc3cf4f64c4c9bad3762dda521deaaa77c372c3b.json",
+          "sha256": "1ff4b147689c585f6f478a2fdc3cf4f64c4c9bad3762dda521deaaa77c372c3b",
+          "media_type": "application/json",
+          "name": "2025-action-001-joint",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      ],
+      "final_verification": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX042_20261019"
+        },
+        "evidence_id": "59150256a09d804c234bb3e7e1a3bcc5c5a2c9df30ed6fb84ca3b1fdf725ddd2.json",
+        "sha256": "59150256a09d804c234bb3e7e1a3bcc5c5a2c9df30ed6fb84ca3b1fdf725ddd2",
+        "media_type": "application/json",
+        "name": "ex042-final-three-wave-execution-verification",
+        "schema": null,
+        "schema_version": null
+      },
+      "predeclared_protocols": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX042_20261019"
+          },
+          "evidence_id": "91fdbb861fe16544d974e7c9b5bafb62b30ca40d7e4df65b4cc95fd5af2b8c62.json",
+          "sha256": "91fdbb861fe16544d974e7c9b5bafb62b30ca40d7e4df65b4cc95fd5af2b8c62",
+          "media_type": "application/json",
+          "name": "ex042-locked-protocols-design.json",
+          "schema": null,
+          "schema_version": null
+        }
+      ]
+    },
+    "EX043": {
+      "source": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX043_20261019"
+        },
+        "evidence_id": "e980a552367e9354a5f2fcfcd411e5c6a64a408ecb83bed115aa9b578029e57a.py",
+        "sha256": "e980a552367e9354a5f2fcfcd411e5c6a64a408ecb83bed115aa9b578029e57a",
+        "media_type": "text/x-python",
+        "name": "ex043-locked-src-strategy_runtime-strategies-exante_hold_exit.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "source_entrypoint": "history",
+      "formal_actual_accounts": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX043_20261019"
+          },
+          "evidence_id": "a448f5903cced103ab5d8a76ea1ef24db452f2dbf1e12796b811f1e89671a731.json",
+          "sha256": "a448f5903cced103ab5d8a76ea1ef24db452f2dbf1e12796b811f1e89671a731",
+          "media_type": "application/json",
+          "name": "exante-policy-000-base-base",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX043_20261019"
+          },
+          "evidence_id": "88fcb6eed7c4d243289f9c0765fdbe362acab7a67ea3c0fc038aed63162f57d3.json",
+          "sha256": "88fcb6eed7c4d243289f9c0765fdbe362acab7a67ea3c0fc038aed63162f57d3",
+          "media_type": "application/json",
+          "name": "exante-policy-001-base-shock_profit",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX043_20261019"
+          },
+          "evidence_id": "f34dabba6ef0b30bfcb68a31f17c1e57355ba10feb33e623b9ed9829b02923b7.json",
+          "sha256": "f34dabba6ef0b30bfcb68a31f17c1e57355ba10feb33e623b9ed9829b02923b7",
+          "media_type": "application/json",
+          "name": "exante-policy-002-base-profit_giveback",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX043_20261019"
+          },
+          "evidence_id": "3bf526c04a84a44bb43fbee1344c63d2b8f7e7bccc94066eccd484d62ee35624.json",
+          "sha256": "3bf526c04a84a44bb43fbee1344c63d2b8f7e7bccc94066eccd484d62ee35624",
+          "media_type": "application/json",
+          "name": "exante-policy-003-entry_grace-base",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX043_20261019"
+          },
+          "evidence_id": "302de307b9d951ded647cd76d8516bb677173088c978ecf93cb280d648637aab.json",
+          "sha256": "302de307b9d951ded647cd76d8516bb677173088c978ecf93cb280d648637aab",
+          "media_type": "application/json",
+          "name": "exante-policy-004-entry_grace-shock_profit",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX043_20261019"
+          },
+          "evidence_id": "80735372ed7e4bed7d0630b028c6e930c2110454173d6d4a31f4b3b5382dabb2.json",
+          "sha256": "80735372ed7e4bed7d0630b028c6e930c2110454173d6d4a31f4b3b5382dabb2",
+          "media_type": "application/json",
+          "name": "exante-policy-005-entry_grace-profit_giveback",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX043_20261019"
+          },
+          "evidence_id": "e18ad3a0779da1b892b7191c8adfd2398a53c2715d6a0776e23a6498f0af832d.json",
+          "sha256": "e18ad3a0779da1b892b7191c8adfd2398a53c2715d6a0776e23a6498f0af832d",
+          "media_type": "application/json",
+          "name": "exante-policy-006-trend_cycle-base",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX043_20261019"
+          },
+          "evidence_id": "83dad484c92d331257efab1f7765ce66c020981fdcb48545512e8d0cdaf36284.json",
+          "sha256": "83dad484c92d331257efab1f7765ce66c020981fdcb48545512e8d0cdaf36284",
+          "media_type": "application/json",
+          "name": "exante-policy-007-trend_cycle-shock_profit",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX043_20261019"
+          },
+          "evidence_id": "aaccc5bc90c8726f88149bb18ca8b58e49e099c0c792066ada0eff47c5631c01.json",
+          "sha256": "aaccc5bc90c8726f88149bb18ca8b58e49e099c0c792066ada0eff47c5631c01",
+          "media_type": "application/json",
+          "name": "exante-policy-008-trend_cycle-profit_giveback",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      ],
+      "final_verification": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX043_20261019"
+        },
+        "evidence_id": "7006016c5a7981625c206ee6b64b959544cbe1ac14eb27d49f77b206b1dba4ca.json",
+        "sha256": "7006016c5a7981625c206ee6b64b959544cbe1ac14eb27d49f77b206b1dba4ca",
+        "media_type": "application/json",
+        "name": "ex043-final-execution-verification",
+        "schema": null,
+        "schema_version": null
+      },
+      "predeclared_protocols": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX043_20261019"
+          },
+          "evidence_id": "8c3551e4a0ac13314fb8c9138b850e7f8936020c29d9aa18cf2fea77ad3d8fcc.json",
+          "sha256": "8c3551e4a0ac13314fb8c9138b850e7f8936020c29d9aa18cf2fea77ad3d8fcc",
+          "media_type": "application/json",
+          "name": "ex043-locked-protocols-design.json",
+          "schema": null,
+          "schema_version": null
+        }
+      ]
+    },
+    "EX044": {
+      "source": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX044_20261019"
+        },
+        "evidence_id": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527.py",
+        "sha256": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527",
+        "media_type": "text/x-python",
+        "name": "ex044-locked-src-strategy_runtime-strategies-action_role_review.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "source_entrypoint": "history",
+      "formal_actual_accounts": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX044_20261019"
+          },
+          "evidence_id": "5bfd5f78856b4794ed6840cb464dce77c26e6d4138552d59dfb4a5716fafb2d4.json",
+          "sha256": "5bfd5f78856b4794ed6840cb464dce77c26e6d4138552d59dfb4a5716fafb2d4",
+          "media_type": "application/json",
+          "name": "action-role-000-base-positive_p-base",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX044_20261019"
+          },
+          "evidence_id": "9388c9f9f8a6b6d33c63d25538234cd2b7eb97eb1d8ccb39f77bc63575e46911.json",
+          "sha256": "9388c9f9f8a6b6d33c63d25538234cd2b7eb97eb1d8ccb39f77bc63575e46911",
+          "media_type": "application/json",
+          "name": "action-role-001-block_shock-positive_p-base",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX044_20261019"
+          },
+          "evidence_id": "13be0793a17e34be3760b4be30927ac5ecf0171c907b8740299bd1eac948c827.json",
+          "sha256": "13be0793a17e34be3760b4be30927ac5ecf0171c907b8740299bd1eac948c827",
+          "media_type": "application/json",
+          "name": "action-role-002-base-any_p-base",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX044_20261019"
+          },
+          "evidence_id": "3bc39da2adcc6eaff8ee747660f83909e12091235d63b522a72781c500e38915.json",
+          "sha256": "3bc39da2adcc6eaff8ee747660f83909e12091235d63b522a72781c500e38915",
+          "media_type": "application/json",
+          "name": "action-role-003-block_shock-any_p-base",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX044_20261019"
+          },
+          "evidence_id": "29782a9c53c1d4624b39aab6ae31bf2069a79a5747bccb7af56139e0dcf81f9b.json",
+          "sha256": "29782a9c53c1d4624b39aab6ae31bf2069a79a5747bccb7af56139e0dcf81f9b",
+          "media_type": "application/json",
+          "name": "action-role-004-base-positive_p-net_loss_1atr",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      ],
+      "final_verification": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX044_20261019"
+        },
+        "evidence_id": "b58efa67da182d67bd3bf0f98b09d460b72915cabfae7f5b49e8d30fd69b4f37.json",
+        "sha256": "b58efa67da182d67bd3bf0f98b09d460b72915cabfae7f5b49e8d30fd69b4f37",
+        "media_type": "application/json",
+        "name": "ex044-final-execution-verification",
+        "schema": null,
+        "schema_version": null
+      },
+      "predeclared_protocols": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX044_20261019"
+          },
+          "evidence_id": "a794a2066fcc9bafe23bcc32363de7ff6254a47f1e51e39415119743a83cc233.json",
+          "sha256": "a794a2066fcc9bafe23bcc32363de7ff6254a47f1e51e39415119743a83cc233",
+          "media_type": "application/json",
+          "name": "ex044-locked-protocols-design.json",
+          "schema": null,
+          "schema_version": null
+        }
+      ]
+    },
+    "EX045": {
+      "source": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX045_20261019"
+        },
+        "evidence_id": "07088482b6a183e8315f9fc23c3eaeee44dbe840aa598f86f89201d59e925b68.py",
+        "sha256": "07088482b6a183e8315f9fc23c3eaeee44dbe840aa598f86f89201d59e925b68",
+        "media_type": "text/x-python",
+        "name": "ex045-locked-src-strategy_runtime-strategies-blocked_clock_review.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "source_entrypoint": "history",
+      "formal_actual_accounts": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX045_20261019"
+          },
+          "evidence_id": "b637c44cceb3b2651dd731515c2567576673a7982afd9e42c6a3e39593690d7f.json",
+          "sha256": "b637c44cceb3b2651dd731515c2567576673a7982afd9e42c6a3e39593690d7f",
+          "media_type": "application/json",
+          "name": "blocked-clock-000-retry_each_d",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX045_20261019"
+          },
+          "evidence_id": "bf9abc68a01d7fd9a53eeffbf87ff96408ccadf1d2a50eadc99091525c547d94.json",
+          "sha256": "bf9abc68a01d7fd9a53eeffbf87ff96408ccadf1d2a50eadc99091525c547d94",
+          "media_type": "application/json",
+          "name": "blocked-clock-001-keep_planned_slot",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      ],
+      "final_verification": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX045_20261019"
+        },
+        "evidence_id": "a406dc49dcf3b09cdb6daa741a1c944752f169e0c03be45a9559e39ebc60ed5a.json",
+        "sha256": "a406dc49dcf3b09cdb6daa741a1c944752f169e0c03be45a9559e39ebc60ed5a",
+        "media_type": "application/json",
+        "name": "ex045-final-execution-verification",
+        "schema": null,
+        "schema_version": null
+      },
+      "predeclared_protocols": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX045_20261019"
+          },
+          "evidence_id": "4c0b75e1c7a63385cbccd613e2c9fa2cda2b66b01f4af28663aa08eab054d961.json",
+          "sha256": "4c0b75e1c7a63385cbccd613e2c9fa2cda2b66b01f4af28663aa08eab054d961",
+          "media_type": "application/json",
+          "name": "ex045-locked-protocols-design.json",
+          "schema": null,
+          "schema_version": null
+        }
+      ]
+    },
+    "EX046": {
+      "source": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX046_20261020"
+        },
+        "evidence_id": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846.py",
+        "sha256": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846",
+        "media_type": "text/x-python",
+        "name": "ex046-locked-src-strategy_runtime-strategies-completed_pause_review.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "source_entrypoint": "history",
+      "formal_actual_accounts": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX046_20261020"
+          },
+          "evidence_id": "174a4f8d4ca11ccd14a44f8cfb439e046123de4e3df67da065846e323ea36ab4.json",
+          "sha256": "174a4f8d4ca11ccd14a44f8cfb439e046123de4e3df67da065846e323ea36ab4",
+          "media_type": "application/json",
+          "name": "completed-sign-pause-000-base",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX046_20261020"
+          },
+          "evidence_id": "935b74f311a04b11e494d7adea80c7c9d1badb7776706e0761a77679dc8751e0.json",
+          "sha256": "935b74f311a04b11e494d7adea80c7c9d1badb7776706e0761a77679dc8751e0",
+          "media_type": "application/json",
+          "name": "completed-sign-pause-001-after_net_loss_skip1",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX046_20261020"
+          },
+          "evidence_id": "dd90fca7b8805bf4aa1092934a0af95d74c501a59583102aabbf155fae8ccd33.json",
+          "sha256": "dd90fca7b8805bf4aa1092934a0af95d74c501a59583102aabbf155fae8ccd33",
+          "media_type": "application/json",
+          "name": "completed-sign-pause-002-after_net_profit_skip1",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      ],
+      "final_verification": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX046_20261020"
+        },
+        "evidence_id": "9b2281edd2a27ffb35ef6f4e36aa295859aeae20bae62dacb745265314e6659f.json",
+        "sha256": "9b2281edd2a27ffb35ef6f4e36aa295859aeae20bae62dacb745265314e6659f",
+        "media_type": "application/json",
+        "name": "ex046-final-execution-verification",
+        "schema": null,
+        "schema_version": null
+      },
+      "predeclared_protocols": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX046_20261020"
+          },
+          "evidence_id": "f447784ad9f6d431b45c478f2ffd0d088d1e43ab61ea1c9cf0f0c00df1ee57cc.json",
+          "sha256": "f447784ad9f6d431b45c478f2ffd0d088d1e43ab61ea1c9cf0f0c00df1ee57cc",
+          "media_type": "application/json",
+          "name": "ex046-locked-protocols-design.json",
+          "schema": null,
+          "schema_version": null
+        }
+      ]
+    },
+    "EX047": {
+      "source": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX047_20261020"
+        },
+        "evidence_id": "ea8f6c82dc7901b12edd00fe13cf1db6ed6d274563ac65479bf06058ed11bf4b.py",
+        "sha256": "ea8f6c82dc7901b12edd00fe13cf1db6ed6d274563ac65479bf06058ed11bf4b",
+        "media_type": "text/x-python",
+        "name": "ex047-locked-src-strategy_runtime-strategies-shock_action_review.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "source_entrypoint": "history",
+      "formal_actual_accounts": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX047_20261020"
+          },
+          "evidence_id": "944ddc461a4f18a42ac247939eaca31334924aaeaeae1ddd07bec618583c9627.json",
+          "sha256": "944ddc461a4f18a42ac247939eaca31334924aaeaeae1ddd07bec618583c9627",
+          "media_type": "application/json",
+          "name": "shock-action-000-shock_on",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX047_20261020"
+          },
+          "evidence_id": "3c9ca87b2cec20e4bfb793c68df7d438862da67b8f6533348ac2f7f39df62bf9.json",
+          "sha256": "3c9ca87b2cec20e4bfb793c68df7d438862da67b8f6533348ac2f7f39df62bf9",
+          "media_type": "application/json",
+          "name": "shock-action-001-shock_off",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      ],
+      "final_verification": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX047_20261020"
+        },
+        "evidence_id": "2d60431c867c977d273b9baa3a4fc04ded2e785193a159d6d084bc7350398678.json",
+        "sha256": "2d60431c867c977d273b9baa3a4fc04ded2e785193a159d6d084bc7350398678",
+        "media_type": "application/json",
+        "name": "ex047-final-execution-verification",
+        "schema": null,
+        "schema_version": null
+      },
+      "predeclared_protocols": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX047_20261020"
+          },
+          "evidence_id": "e62e08a4555d1957b869aee867fb7a0bb4d01fb803e9ee3e24486ee1666783aa.json",
+          "sha256": "e62e08a4555d1957b869aee867fb7a0bb4d01fb803e9ee3e24486ee1666783aa",
+          "media_type": "application/json",
+          "name": "ex047-locked-protocols-design.json",
+          "schema": null,
+          "schema_version": null
+        }
+      ]
+    },
+    "EX048": {
+      "source": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX048_20261020"
+        },
+        "evidence_id": "5a4347527aad29cb647d9c44a26cf1b970dda471af9d1419f817b39e4476a66b.py",
+        "sha256": "5a4347527aad29cb647d9c44a26cf1b970dda471af9d1419f817b39e4476a66b",
+        "media_type": "text/x-python",
+        "name": "ex048-locked-src-strategy_runtime-strategies-loss_interaction_review.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "source_entrypoint": "history",
+      "formal_actual_accounts": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX048_20261020"
+          },
+          "evidence_id": "14a866ce8df692430ddb466ff4024bb34bc982f2b71684098152e251d41eea73.json",
+          "sha256": "14a866ce8df692430ddb466ff4024bb34bc982f2b71684098152e251d41eea73",
+          "media_type": "application/json",
+          "name": "loss-interaction-000-after_net_loss_skip1",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX048_20261020"
+          },
+          "evidence_id": "860ba7fd0855f88b62d1d476bd28a8bab1f85de7d26388b517f4cdeb2b3963be.json",
+          "sha256": "860ba7fd0855f88b62d1d476bd28a8bab1f85de7d26388b517f4cdeb2b3963be",
+          "media_type": "application/json",
+          "name": "loss-interaction-001-base",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      ],
+      "final_verification": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX048_20261020"
+        },
+        "evidence_id": "5f46dc79b95b01824996c93eadc5dce0b02c2d8b55448051dfb70dce9914f16f.json",
+        "sha256": "5f46dc79b95b01824996c93eadc5dce0b02c2d8b55448051dfb70dce9914f16f",
+        "media_type": "application/json",
+        "name": "ex048-final-execution-verification",
+        "schema": null,
+        "schema_version": null
+      },
+      "predeclared_protocols": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX048_20261020"
+          },
+          "evidence_id": "c1dab953e4fcd09f4d37aa18c370093c2e8868b0d6f134c3346091fd169c5b41.json",
+          "sha256": "c1dab953e4fcd09f4d37aa18c370093c2e8868b0d6f134c3346091fd169c5b41",
+          "media_type": "application/json",
+          "name": "ex048-locked-protocols-design.json",
+          "schema": null,
+          "schema_version": null
+        }
+      ]
+    },
+    "EX050": {
+      "source": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX050_20261020"
+        },
+        "evidence_id": "ac4fcdbdc5c46b1d43f31f53dda2de0635fea8f4f0cff8889a083a86f87e76f3.py",
+        "sha256": "ac4fcdbdc5c46b1d43f31f53dda2de0635fea8f4f0cff8889a083a86f87e76f3",
+        "media_type": "text/x-python",
+        "name": "ex050-locked-src-strategy_runtime-strategies-shock_state_policy.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "source_entrypoint": "history",
+      "formal_actual_accounts": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX050_20261020"
+          },
+          "evidence_id": "456e4893a8133713fb5460e8f67e4f1fd4dfb82d56747b23b4655324ee8f6bc1.json",
+          "sha256": "456e4893a8133713fb5460e8f67e4f1fd4dfb82d56747b23b4655324ee8f6bc1",
+          "media_type": "application/json",
+          "name": "shock-state-policy-000-original_c9461_control",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX050_20261020"
+          },
+          "evidence_id": "b3db4c264d202e59e64acec85248ef3eb887e2b24104026cc5e8df28bd36d4d0.json",
+          "sha256": "b3db4c264d202e59e64acec85248ef3eb887e2b24104026cc5e8df28bd36d4d0",
+          "media_type": "application/json",
+          "name": "shock-state-policy-001-first_shock_non_final_day_dominated_hold",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX050_20261020"
+          },
+          "evidence_id": "83327564961b13c1bc8e36cdf4e5c78ad35896a7e26f8595b6c3215889533ac9.json",
+          "sha256": "83327564961b13c1bc8e36cdf4e5c78ad35896a7e26f8595b6c3215889533ac9",
+          "media_type": "application/json",
+          "name": "shock-state-policy-002-first_shock_after_entry_day_hold",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      ],
+      "final_verification": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX050_20261020"
+        },
+        "evidence_id": "73cfbaf18bc98e6b72e2db3d4daf9d48cac0cc77642dede9fdebd604c024c0f8.json",
+        "sha256": "73cfbaf18bc98e6b72e2db3d4daf9d48cac0cc77642dede9fdebd604c024c0f8",
+        "media_type": "application/json",
+        "name": "ex050-final-execution-verification",
+        "schema": null,
+        "schema_version": null
+      },
+      "predeclared_protocols": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX050_20261020"
+          },
+          "evidence_id": "1845fea88102c01b84890b8571842731ad2b1722977e03bd7a2be113d76532b3.json",
+          "sha256": "1845fea88102c01b84890b8571842731ad2b1722977e03bd7a2be113d76532b3",
+          "media_type": "application/json",
+          "name": "ex050-locked-protocols-design.json",
+          "schema": null,
+          "schema_version": null
+        }
+      ]
+    },
+    "EX051": {
+      "source": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX051_20261020"
+        },
+        "evidence_id": "a97a53b0d277ef4ee5702cc3b846ce8831fd8b182c2afca83159f31f0458f670.py",
+        "sha256": "a97a53b0d277ef4ee5702cc3b846ce8831fd8b182c2afca83159f31f0458f670",
+        "media_type": "text/x-python",
+        "name": "ex051-locked-src-strategy_runtime-strategies-followthrough_anchor.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "source_entrypoint": "history",
+      "formal_actual_accounts": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX051_20261020"
+          },
+          "evidence_id": "6afc9e43e9887e6855967a8232f9c49f57ed0927e9367f16c1e0108cbcc7490b.json",
+          "sha256": "6afc9e43e9887e6855967a8232f9c49f57ed0927e9367f16c1e0108cbcc7490b",
+          "media_type": "application/json",
+          "name": "followthrough-anchor-000-original_c9502_control",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX051_20261020"
+          },
+          "evidence_id": "616bd47cd22dfb67b3d6e9ac39099af171d50bd05f7833c7748edd3c65984aa0.json",
+          "sha256": "616bd47cd22dfb67b3d6e9ac39099af171d50bd05f7833c7748edd3c65984aa0",
+          "media_type": "application/json",
+          "name": "followthrough-anchor-001-shock_anchor_zero",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX051_20261020"
+          },
+          "evidence_id": "7dc3720adea5d7d228c2c5ed40cdc8a1c56b9484306f1e10cccc0565e6c858ad.json",
+          "sha256": "7dc3720adea5d7d228c2c5ed40cdc8a1c56b9484306f1e10cccc0565e6c858ad",
+          "media_type": "application/json",
+          "name": "followthrough-anchor-002-shock_anchor_frozen_1atr",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      ],
+      "final_verification": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX051_20261020"
+        },
+        "evidence_id": "6e7b178c48adecf6ebd184ac57700bc0d4244c18b70017da04b0f64de19fc6bf.json",
+        "sha256": "6e7b178c48adecf6ebd184ac57700bc0d4244c18b70017da04b0f64de19fc6bf",
+        "media_type": "application/json",
+        "name": "ex051-final-execution-verification",
+        "schema": null,
+        "schema_version": null
+      },
+      "predeclared_protocols": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX051_20261020"
+          },
+          "evidence_id": "e61c74fe0993df89885b8af29f2072a0ad6b1d1701a0c9e0365a710c35fb7b59.json",
+          "sha256": "e61c74fe0993df89885b8af29f2072a0ad6b1d1701a0c9e0365a710c35fb7b59",
+          "media_type": "application/json",
+          "name": "ex051-locked-protocols-design.json",
+          "schema": null,
+          "schema_version": null
+        }
+      ]
+    },
+    "EX052": {
+      "source": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX052_20261020"
+        },
+        "evidence_id": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2.py",
+        "sha256": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2",
+        "media_type": "text/x-python",
+        "name": "ex052-locked-src-strategy_runtime-strategies-trend_permission.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "source_entrypoint": "history",
+      "formal_actual_accounts": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX052_20261020"
+          },
+          "evidence_id": "158634c8c08aa57bc701d0e97d82507a71e536e51d1be33de7b058750aacbbd8.json",
+          "sha256": "158634c8c08aa57bc701d0e97d82507a71e536e51d1be33de7b058750aacbbd8",
+          "media_type": "application/json",
+          "name": "trend-permission-000-original_c9502_control",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX052_20261020"
+          },
+          "evidence_id": "e5005956b926d2062a1a0d040e1387dd30f32e64692480e055597473f153d8e2.json",
+          "sha256": "e5005956b926d2062a1a0d040e1387dd30f32e64692480e055597473f153d8e2",
+          "media_type": "application/json",
+          "name": "trend-permission-001-age_prior_trend_permission",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      ],
+      "final_verification": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX052_20261020"
+        },
+        "evidence_id": "1d775856e06bb9347d5a0b38c6b970956611bede01445edcec06111125499026.json",
+        "sha256": "1d775856e06bb9347d5a0b38c6b970956611bede01445edcec06111125499026",
+        "media_type": "application/json",
+        "name": "ex052-final-execution-verification",
+        "schema": null,
+        "schema_version": null
+      },
+      "predeclared_protocols": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX052_20261020"
+          },
+          "evidence_id": "de9abd879e43be3e7f52c038586cc8295dfe8885f24820f12bb23219f47d228e.json",
+          "sha256": "de9abd879e43be3e7f52c038586cc8295dfe8885f24820f12bb23219f47d228e",
+          "media_type": "application/json",
+          "name": "ex052-locked-protocols-design.json",
+          "schema": null,
+          "schema_version": null
+        }
+      ]
+    },
+    "EX049": {
+      "source": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX049_20261020"
+        },
+        "evidence_id": "58827ad8d59e4b3ebd99f250a25a05f8a1f552a9ebf8626ed1fef027f9134f6b.py",
+        "sha256": "58827ad8d59e4b3ebd99f250a25a05f8a1f552a9ebf8626ed1fef027f9134f6b",
+        "media_type": "text/x-python",
+        "name": "ex049-source-local_cycle.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "source_entrypoint": "state_at_D,simulate,label",
+      "formal_actual_accounts": [],
+      "ON": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX049_20261020"
+        },
+        "evidence_id": "b1e01f3d4dc936114d67d3c63282b3d5e42565a8c001336ed454dba3371b4141.json",
+        "sha256": "b1e01f3d4dc936114d67d3c63282b3d5e42565a8c001336ed454dba3371b4141",
+        "media_type": "application/json",
+        "name": "ex049-on-component-control-and-D-known-states",
+        "schema": null,
+        "schema_version": null
+      },
+      "OFF": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX049_20261020"
+        },
+        "evidence_id": "86909ac231df0f34eb67401586c910ac09ad87a0913e14a21ad610ed99e55dd5.json",
+        "sha256": "86909ac231df0f34eb67401586c910ac09ad87a0913e14a21ad610ed99e55dd5",
+        "media_type": "application/json",
+        "name": "ex049-off-modelled-local-cycle-labels",
+        "schema": null,
+        "schema_version": null
+      },
+      "final_verification": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX049_20261020"
+        },
+        "evidence_id": "8596c8fe516be2673ebea5a6e173e844f0b9bc4265462d59db147bccdee61327.json",
+        "sha256": "8596c8fe516be2673ebea5a6e173e844f0b9bc4265462d59db147bccdee61327",
+        "media_type": "application/json",
+        "name": "ex049-final-component-verification",
+        "schema": null,
+        "schema_version": null
+      },
+      "predeclared_protocols": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX049_20261020"
+          },
+          "evidence_id": "473778576626672f9d01ff112d77b11f76f1aac155bbafb49ce00a5bbb89e4a1.json",
+          "sha256": "473778576626672f9d01ff112d77b11f76f1aac155bbafb49ce00a5bbb89e4a1",
+          "media_type": "application/json",
+          "name": "ex049-source-design.json",
+          "schema": null,
+          "schema_version": null
+        }
+      ]
+    }
+  }
+}

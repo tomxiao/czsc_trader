@@ -3449,7 +3449,7 @@
       },
       "status": "COMPLETE_METHOD_SUPPORT_NO_NEW_PREDICTOR"
     },
-    "all_targets_pass_count": 0,
+    "all_targets_pass_count": 1,
     "announcement_feasibility": {
       "access": "PERMISSION_DENIED",
       "coverage": "UNVERIFIED",
@@ -3902,23 +3902,23 @@
         "strategy_id": "S014",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "f08d2db8cdf721b05792aab633caae8d9de08b568af8afd63581c8f723258370",
-      "revision": 13,
+      "content_sha256": "44087dc4c74b7d8daf5331e854f8916d7b5da7127539020692a1e0ec07b75a71",
+      "revision": 14,
       "stage": "CANDIDATES",
       "type": "DeliveryReference"
     },
-    "component_definitions": 28,
+    "component_definitions": 36,
     "components": {
       "batch": {
         "strategy_id": "S014",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "eb1dd559a0417529ca50f6e53158acfb68d42d3056c138676e6d10d1cde457a5",
-      "revision": 22,
+      "content_sha256": "b8a5f15e71d2adeff5e6421ecb2ec9fdb8024e7535d63242f59649e948b5c479",
+      "revision": 23,
       "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
-    "conclusion": "本轮没有找到足以继续开发直接财务买卖信号的新证据。已能核实披露链的24期中，5期有更早的利润预告、19期未找到更早同期间预告；本轮已核实的公司预告/快报链没有确认多数事件的归母利润已被提前披露；其他公告正文、分析师信息和市场预期渠道仍未排除，不能确认或充分排除“早已知道”这一解释。另3期受2026目录缺口影响，保持未知。5期更早预告均为左右近似单点，不是明确区间，无法按事前定义形成正负边界突破与区间覆盖的可比组；两项主效果不可估计，不得写成超预期机制已被证伪。5个最早预告事件的涨跌方向与公告预增预减并不一一对应，且样本极少、已见并受其他信息影响。",
+    "conclusion": "C9521正式登记并满足全部原经济目标，阶段二三治理与阶段三交付完成；阶段四未执行。",
     "confirmed_contract": "research/S014/experiments/EX003_20261016/protocols/confirmed_contract.json",
     "current_data_authorization": {
       "actual_source_calls": 0,
@@ -17476,10 +17476,11 @@
       "original_pdfs": 32
     },
     "pending": [
-      "当前标的与窗口下，停止追加财务直接入场路线的阈值、持有期或模型搜索；不把财务默认为有效风险过滤器。保留财务原文资产与未知项，未来只有取得新的、可核时点的预期对照及足够可比较的事件，并提出能改变判断的固定问题时再审议重启。本次不推进新的阶段三策略，不暂停或改写其他历史研究路线及候选资格。"
+      "请用户决定是否对唯一交接候选C9521进入阶段四五项自检与比较。"
     ],
     "phase_four_approved": false,
     "phase_three_approved": true,
+    "phase_three_complete": true,
     "phase_three_proposal": {
       "calibration": "EX016 src/annual_followup.py::calibrate + EX013 src/component.py::gap_sequence_context",
       "execution_authorized": true,
@@ -22467,7 +22468,75 @@
       "supported_mechanism_status": "AGE_ACTION_TRANSLATION_REPAIRS_2026_WITH_REMAINING_2025_COMPLETED_LOSS_PAUSE_GAP",
       "user_numeric_diagnostic_account_cap": null
     },
-    "stage": "阶段二财务披露增量诊断完成：直接财务入场路线建议停止追加，三期来源未知保留",
+    "stage": "阶段三已完成正式收口，等待用户决定是否进入阶段四",
+    "stage23_governance_20261020": {
+      "authorization": "先补全阶段二、阶段三的治理步骤（登记面板、登记候选等），然后完成阶段三收口",
+      "candidates": {
+        "batch": {
+          "strategy_id": "S014",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "44087dc4c74b7d8daf5331e854f8916d7b5da7127539020692a1e0ec07b75a71",
+        "revision": 14,
+        "stage": "CANDIDATES",
+        "type": "DeliveryReference"
+      },
+      "components": {
+        "batch": {
+          "strategy_id": "S014",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "b8a5f15e71d2adeff5e6421ecb2ec9fdb8024e7535d63242f59649e948b5c479",
+        "revision": 23,
+        "stage": "COMPONENTS",
+        "type": "DeliveryReference"
+      },
+      "handoff": [
+        "S014-C9521"
+      ],
+      "historical_28_component_entries": "UNCHANGED",
+      "historical_66_candidates_and_eligibility": "UNCHANGED",
+      "legacy_support_counts_are_not_current_panel_rollup": true,
+      "new_account_evaluations": 0,
+      "new_fits": 0,
+      "new_market_calls": 0,
+      "no_backdated_authority": true,
+      "registered_new": [
+        "S014-C9461",
+        "S014-C9502",
+        "S014-C9521"
+      ],
+      "stage3_decision": {
+        "decision_id": "S014-GOV-20261020-STAGE3",
+        "evidence": {
+          "owner": {
+            "experiment_id": null,
+            "strategy_id": "S014",
+            "type": "ResearchEvidenceOwner"
+          },
+          "path": "decisions/S014-GOV-20261020-STAGE3.json",
+          "sha256": "9ccc8e959438641ba3fcc938acafab46d0acf2bbb0a31abd0f4a1e710794c5c0",
+          "type": "ResearchEvidenceRef"
+        },
+        "type": "DecisionReference"
+      },
+      "stage4_executed": false,
+      "status": "COMPLETE_STAGE_THREE_CLOSEOUT",
+      "support_count_scope": {
+        "evidence_id": "c6cdbd7f8e9f1be9c7fc8f7b90032dfa7e3c1d91c02a8bc10c3d3a910912816f.json",
+        "experiment": {
+          "experiment_id": "EX052_20261020",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "stage23-current-and-historical-count-scope",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "c6cdbd7f8e9f1be9c7fc8f7b90032dfa7e3c1d91c02a8bc10c3d3a910912816f",
+        "type": "EvidenceRef"
+      }
+    },
     "stage_three_authorization": {
       "experiment": {
         "experiment_id": "EX017_20261017",
@@ -22659,7 +22728,7 @@
       "status": "COMPLETE",
       "user_reply": "同意补齐，最多15次调用"
     },
-    "strategy_accounts": 66,
+    "strategy_accounts": 69,
     "supported_components": 3,
     "supported_return_context_components": 1,
     "supported_return_entry_components": 0,
@@ -28715,5 +28784,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-20T11:21:10+08:00"
+  "updated_at": "2026-10-20T12:50:10+08:00"
 }

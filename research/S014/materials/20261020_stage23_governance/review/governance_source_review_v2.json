@@ -1,0 +1,973 @@
+{
+  "status": "PASS",
+  "reviewer": "C",
+  "scope": "Minimal fact-closure v2 delta and actual pure DeliveryContent constructor checks; not formal prepare/publication.",
+  "reviewed_hashes": {
+    "research/S014/materials/20261020_stage23_governance/src/complete_governance.py": "45f6b8399d38656fb0128b9015bf414f5440d6ab2d1e10998d62260f5469f483",
+    "research/S014/materials/20261020_stage23_governance/src/complete_governance_v2.py": "910a2bfaffd9e9c344866995fa9cd30fb840eee2e8b27f8210c58ca556aba34f",
+    "research/S014/materials/20261020_stage23_governance/preparation_revision.json": "c99c533ab7c6b43c4b72504e3ea047d5aa31270012bb8b938b9997ccbec503b8",
+    "research/S014/materials/20261020_stage23_governance/review/governance_source_review.json": "92d1a3dfc2327a1c7bbc21c6002daade5c7e533c5a3444f599bac21706721673",
+    "research/S014/materials/20261020_stage23_governance/review/candidate_registration_plan.json": "e5b03c663040d5621c7fadd3d35fcdfc4d4a54c5e210309510abfe51e79b27e2"
+  },
+  "checks_count": 28,
+  "checks": [
+    "v1 frozen original source",
+    "v1 original focused review preserved",
+    "failure disclosure exact and no account retry",
+    "same function interface set",
+    "all nonchanged helper AST exact blocked",
+    "all nonchanged helper AST exact write",
+    "all nonchanged helper AST exact refs",
+    "all nonchanged helper AST exact digest",
+    "all nonchanged helper AST exact publication_context",
+    "all nonchanged helper AST exact publish_file",
+    "all nonchanged helper AST exact candidate_from_spec",
+    "all nonchanged helper AST exact registration_specs",
+    "all nonchanged helper AST exact canonical",
+    "all nonchanged helper AST exact read",
+    "all nonchanged helper AST exact baseline_check",
+    "complete AST exact except additive retained failure count",
+    "pure preparation captures both typed contents and manifest",
+    "exact original sixteen required facts",
+    "old28 component definitions and tests exact",
+    "new4 facts prefix avoids collision",
+    "all current test fact references present",
+    "36 components actually typed",
+    "69 candidates actually typed with old66 exact",
+    "only C9521 current handoff",
+    "v1 v2 revision explicit material selection",
+    "no prepared files written by review",
+    "no current formal governance objects",
+    "v2 source stable"
+  ],
+  "blocking_findings": [],
+  "original_required_fact_ids": [
+    "current-audit-checks",
+    "current-source-calls",
+    "current-strategy-accounts",
+    "prior-current-audit-checks",
+    "prior-current-source-calls",
+    "prior-current-strategy-accounts",
+    "prior-prior-current-audit-checks",
+    "prior-prior-current-strategy-accounts",
+    "prior-prior-prior-prior-attribution-exit-comparisons",
+    "prior-prior-prior-prior-attribution-primary-comparisons",
+    "prior-prior-prior-prior-previous-comparisons",
+    "prior-prior-prior-prior-previous-model-fits",
+    "prior-prior-prior-prior-previous-primary-comparison-history",
+    "prior-prior-prior-prior-previous-this-round-fixed-fits",
+    "prior-prior-prior-round-model-solves",
+    "prior-prior-prior-round-strategy-accounts"
+  ],
+  "original_required_fact_records": [
+    {
+      "type": "FactValue",
+      "fact_id": "prior-prior-prior-prior-previous-model-fits",
+      "value": 192,
+      "unit": "fits",
+      "status": "AVAILABLE",
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX004_20261016"
+          },
+          "evidence_id": "c79cc498e9ff910a8aa6d0265f42aa6fc523f69a4cad35f3509830515d32ac7d.json",
+          "sha256": "c79cc498e9ff910a8aa6d0265f42aa6fc523f69a4cad35f3509830515d32ac7d",
+          "media_type": "application/json",
+          "name": "provenance",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX004_20261016"
+          },
+          "evidence_id": "2f414a8998e3ecc83ba8a134d13d07581e4c93677a43d86663e50d8f1339b382.json",
+          "sha256": "2f414a8998e3ecc83ba8a134d13d07581e4c93677a43d86663e50d8f1339b382",
+          "media_type": "application/json",
+          "name": "audit",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "reason": null
+    },
+    {
+      "type": "FactValue",
+      "fact_id": "prior-prior-prior-prior-previous-comparisons",
+      "value": 32,
+      "unit": "comparisons",
+      "status": "AVAILABLE",
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX004_20261016"
+          },
+          "evidence_id": "c79cc498e9ff910a8aa6d0265f42aa6fc523f69a4cad35f3509830515d32ac7d.json",
+          "sha256": "c79cc498e9ff910a8aa6d0265f42aa6fc523f69a4cad35f3509830515d32ac7d",
+          "media_type": "application/json",
+          "name": "provenance",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX004_20261016"
+          },
+          "evidence_id": "2f414a8998e3ecc83ba8a134d13d07581e4c93677a43d86663e50d8f1339b382.json",
+          "sha256": "2f414a8998e3ecc83ba8a134d13d07581e4c93677a43d86663e50d8f1339b382",
+          "media_type": "application/json",
+          "name": "audit",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "reason": null
+    },
+    {
+      "type": "FactValue",
+      "fact_id": "prior-prior-prior-prior-previous-this-round-fixed-fits",
+      "value": 56,
+      "unit": "fits including32replications",
+      "status": "AVAILABLE",
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX005_20261016"
+          },
+          "evidence_id": "e125fdc5982434dabb85025df50a873d3b6b76c57bdad0603733ba428861b126.json",
+          "sha256": "e125fdc5982434dabb85025df50a873d3b6b76c57bdad0603733ba428861b126",
+          "media_type": "application/json",
+          "name": "provenance",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX005_20261016"
+          },
+          "evidence_id": "e0491f7590ebb6046c7467a3657afa0eabe8c5a8e857de4be7eea80e60d1f095.json",
+          "sha256": "e0491f7590ebb6046c7467a3657afa0eabe8c5a8e857de4be7eea80e60d1f095",
+          "media_type": "application/json",
+          "name": "audit",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "reason": null
+    },
+    {
+      "type": "FactValue",
+      "fact_id": "prior-prior-prior-prior-previous-primary-comparison-history",
+      "value": 62,
+      "unit": "nominal comparisons including repeated controls",
+      "status": "AVAILABLE",
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX005_20261016"
+          },
+          "evidence_id": "e125fdc5982434dabb85025df50a873d3b6b76c57bdad0603733ba428861b126.json",
+          "sha256": "e125fdc5982434dabb85025df50a873d3b6b76c57bdad0603733ba428861b126",
+          "media_type": "application/json",
+          "name": "provenance",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX005_20261016"
+          },
+          "evidence_id": "e0491f7590ebb6046c7467a3657afa0eabe8c5a8e857de4be7eea80e60d1f095.json",
+          "sha256": "e0491f7590ebb6046c7467a3657afa0eabe8c5a8e857de4be7eea80e60d1f095",
+          "media_type": "application/json",
+          "name": "audit",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "reason": null
+    },
+    {
+      "type": "FactValue",
+      "fact_id": "prior-prior-prior-prior-attribution-primary-comparisons",
+      "value": 16,
+      "unit": "nominal comparisons",
+      "status": "AVAILABLE",
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX006_20261016"
+          },
+          "evidence_id": "da6198ab069249cca6722674d7f27b0f384936188c298a61f2502c171c63a36b.json",
+          "sha256": "da6198ab069249cca6722674d7f27b0f384936188c298a61f2502c171c63a36b",
+          "media_type": "application/json",
+          "name": "provenance",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX006_20261016"
+          },
+          "evidence_id": "3947b42b60783a4540d9154fea21c7eedf026da541646a11c408e97e09ad97d8.json",
+          "sha256": "3947b42b60783a4540d9154fea21c7eedf026da541646a11c408e97e09ad97d8",
+          "media_type": "application/json",
+          "name": "audit",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "reason": null
+    },
+    {
+      "type": "FactValue",
+      "fact_id": "prior-prior-prior-prior-attribution-exit-comparisons",
+      "value": 8,
+      "unit": "comparisons",
+      "status": "AVAILABLE",
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX006_20261016"
+          },
+          "evidence_id": "da6198ab069249cca6722674d7f27b0f384936188c298a61f2502c171c63a36b.json",
+          "sha256": "da6198ab069249cca6722674d7f27b0f384936188c298a61f2502c171c63a36b",
+          "media_type": "application/json",
+          "name": "provenance",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX006_20261016"
+          },
+          "evidence_id": "3947b42b60783a4540d9154fea21c7eedf026da541646a11c408e97e09ad97d8.json",
+          "sha256": "3947b42b60783a4540d9154fea21c7eedf026da541646a11c408e97e09ad97d8",
+          "media_type": "application/json",
+          "name": "audit",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "reason": null
+    },
+    {
+      "type": "FactValue",
+      "fact_id": "prior-prior-prior-round-model-solves",
+      "value": 7364,
+      "unit": "solves including repeated annual fits",
+      "status": "AVAILABLE",
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX007_20261017"
+          },
+          "evidence_id": "a335dadb20e16215be7dc78f81c126d8ef3307c2f40634b6007478707954bd02.json",
+          "sha256": "a335dadb20e16215be7dc78f81c126d8ef3307c2f40634b6007478707954bd02",
+          "media_type": "application/json",
+          "name": "provenance",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX007_20261017"
+          },
+          "evidence_id": "027a113bdb1cd2028464e82ba4bc6c0ed53d66b6a2376de46dbd817e1c4d3fba.json",
+          "sha256": "027a113bdb1cd2028464e82ba4bc6c0ed53d66b6a2376de46dbd817e1c4d3fba",
+          "media_type": "application/json",
+          "name": "audit",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "reason": null
+    },
+    {
+      "type": "FactValue",
+      "fact_id": "prior-prior-prior-round-strategy-accounts",
+      "value": 0,
+      "unit": "accounts",
+      "status": "AVAILABLE",
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX007_20261017"
+          },
+          "evidence_id": "a335dadb20e16215be7dc78f81c126d8ef3307c2f40634b6007478707954bd02.json",
+          "sha256": "a335dadb20e16215be7dc78f81c126d8ef3307c2f40634b6007478707954bd02",
+          "media_type": "application/json",
+          "name": "provenance",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX007_20261017"
+          },
+          "evidence_id": "027a113bdb1cd2028464e82ba4bc6c0ed53d66b6a2376de46dbd817e1c4d3fba.json",
+          "sha256": "027a113bdb1cd2028464e82ba4bc6c0ed53d66b6a2376de46dbd817e1c4d3fba",
+          "media_type": "application/json",
+          "name": "audit",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "reason": null
+    },
+    {
+      "type": "FactValue",
+      "fact_id": "prior-prior-current-audit-checks",
+      "value": 61,
+      "unit": "checks",
+      "status": "AVAILABLE",
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX008_20261017"
+          },
+          "evidence_id": "e390cdda4329c78f43c17c2ed5a1d61b6c3c17a033c09600ee6c032c27309c8c.json",
+          "sha256": "e390cdda4329c78f43c17c2ed5a1d61b6c3c17a033c09600ee6c032c27309c8c",
+          "media_type": "application/json",
+          "name": "provenance",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX008_20261017"
+          },
+          "evidence_id": "9de743c30b3084308ca1e9bcbd2fe7b2d6b1d3bff7bdec3593f0b379ae30055d.json",
+          "sha256": "9de743c30b3084308ca1e9bcbd2fe7b2d6b1d3bff7bdec3593f0b379ae30055d",
+          "media_type": "application/json",
+          "name": "audit",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX008_20261017"
+          },
+          "evidence_id": "6632af9d35b586730156b8cdbb02311714f8aa353af8069a704234eb8e0edf02.json",
+          "sha256": "6632af9d35b586730156b8cdbb02311714f8aa353af8069a704234eb8e0edf02",
+          "media_type": "application/json",
+          "name": "cap-audit",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "reason": null
+    },
+    {
+      "type": "FactValue",
+      "fact_id": "prior-prior-current-strategy-accounts",
+      "value": 0,
+      "unit": "accounts",
+      "status": "AVAILABLE",
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX008_20261017"
+          },
+          "evidence_id": "e390cdda4329c78f43c17c2ed5a1d61b6c3c17a033c09600ee6c032c27309c8c.json",
+          "sha256": "e390cdda4329c78f43c17c2ed5a1d61b6c3c17a033c09600ee6c032c27309c8c",
+          "media_type": "application/json",
+          "name": "provenance",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX008_20261017"
+          },
+          "evidence_id": "9de743c30b3084308ca1e9bcbd2fe7b2d6b1d3bff7bdec3593f0b379ae30055d.json",
+          "sha256": "9de743c30b3084308ca1e9bcbd2fe7b2d6b1d3bff7bdec3593f0b379ae30055d",
+          "media_type": "application/json",
+          "name": "audit",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX008_20261017"
+          },
+          "evidence_id": "6632af9d35b586730156b8cdbb02311714f8aa353af8069a704234eb8e0edf02.json",
+          "sha256": "6632af9d35b586730156b8cdbb02311714f8aa353af8069a704234eb8e0edf02",
+          "media_type": "application/json",
+          "name": "cap-audit",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "reason": null
+    },
+    {
+      "type": "FactValue",
+      "fact_id": "prior-current-source-calls",
+      "value": 1,
+      "unit": "calls",
+      "status": "AVAILABLE",
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX009_20261017"
+          },
+          "evidence_id": "1efdb9d4760be48e8dcf5a88d11b2e089369113393d55c1b64c12c9e60b5ce95.json",
+          "sha256": "1efdb9d4760be48e8dcf5a88d11b2e089369113393d55c1b64c12c9e60b5ce95",
+          "media_type": "application/json",
+          "name": "provenance",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX009_20261017"
+          },
+          "evidence_id": "ef5fb1cbe5f347278b5af88fe34eaca100d60536b2c3e54a9054eedeaa60b578.json",
+          "sha256": "ef5fb1cbe5f347278b5af88fe34eaca100d60536b2c3e54a9054eedeaa60b578",
+          "media_type": "application/json",
+          "name": "upstream-verification",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX009_20261017"
+          },
+          "evidence_id": "28e8591fd7faf2332bbf161731a1956d8c9f6a7250318ad44ef80836f3ef6c4d.json",
+          "sha256": "28e8591fd7faf2332bbf161731a1956d8c9f6a7250318ad44ef80836f3ef6c4d",
+          "media_type": "application/json",
+          "name": "audit",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX009_20261017"
+          },
+          "evidence_id": "44f3193ec41bc718dfdab5043d35ebb85abdf5f86bfd660752595fab46f548fd.json",
+          "sha256": "44f3193ec41bc718dfdab5043d35ebb85abdf5f86bfd660752595fab46f548fd",
+          "media_type": "application/json",
+          "name": "followup-audit",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX009_20261017"
+          },
+          "evidence_id": "31012e0a6271218a1719ba8fb5c8341c1b7307bc749f4441d6002edec781e23b.json",
+          "sha256": "31012e0a6271218a1719ba8fb5c8341c1b7307bc749f4441d6002edec781e23b",
+          "media_type": "application/json",
+          "name": "summary-audit",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "reason": null
+    },
+    {
+      "type": "FactValue",
+      "fact_id": "prior-current-strategy-accounts",
+      "value": 0,
+      "unit": "accounts",
+      "status": "AVAILABLE",
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX009_20261017"
+          },
+          "evidence_id": "1efdb9d4760be48e8dcf5a88d11b2e089369113393d55c1b64c12c9e60b5ce95.json",
+          "sha256": "1efdb9d4760be48e8dcf5a88d11b2e089369113393d55c1b64c12c9e60b5ce95",
+          "media_type": "application/json",
+          "name": "provenance",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX009_20261017"
+          },
+          "evidence_id": "ef5fb1cbe5f347278b5af88fe34eaca100d60536b2c3e54a9054eedeaa60b578.json",
+          "sha256": "ef5fb1cbe5f347278b5af88fe34eaca100d60536b2c3e54a9054eedeaa60b578",
+          "media_type": "application/json",
+          "name": "upstream-verification",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX009_20261017"
+          },
+          "evidence_id": "28e8591fd7faf2332bbf161731a1956d8c9f6a7250318ad44ef80836f3ef6c4d.json",
+          "sha256": "28e8591fd7faf2332bbf161731a1956d8c9f6a7250318ad44ef80836f3ef6c4d",
+          "media_type": "application/json",
+          "name": "audit",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX009_20261017"
+          },
+          "evidence_id": "44f3193ec41bc718dfdab5043d35ebb85abdf5f86bfd660752595fab46f548fd.json",
+          "sha256": "44f3193ec41bc718dfdab5043d35ebb85abdf5f86bfd660752595fab46f548fd",
+          "media_type": "application/json",
+          "name": "followup-audit",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX009_20261017"
+          },
+          "evidence_id": "31012e0a6271218a1719ba8fb5c8341c1b7307bc749f4441d6002edec781e23b.json",
+          "sha256": "31012e0a6271218a1719ba8fb5c8341c1b7307bc749f4441d6002edec781e23b",
+          "media_type": "application/json",
+          "name": "summary-audit",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "reason": null
+    },
+    {
+      "type": "FactValue",
+      "fact_id": "prior-current-audit-checks",
+      "value": 34,
+      "unit": "checks",
+      "status": "AVAILABLE",
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX009_20261017"
+          },
+          "evidence_id": "1efdb9d4760be48e8dcf5a88d11b2e089369113393d55c1b64c12c9e60b5ce95.json",
+          "sha256": "1efdb9d4760be48e8dcf5a88d11b2e089369113393d55c1b64c12c9e60b5ce95",
+          "media_type": "application/json",
+          "name": "provenance",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX009_20261017"
+          },
+          "evidence_id": "ef5fb1cbe5f347278b5af88fe34eaca100d60536b2c3e54a9054eedeaa60b578.json",
+          "sha256": "ef5fb1cbe5f347278b5af88fe34eaca100d60536b2c3e54a9054eedeaa60b578",
+          "media_type": "application/json",
+          "name": "upstream-verification",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX009_20261017"
+          },
+          "evidence_id": "28e8591fd7faf2332bbf161731a1956d8c9f6a7250318ad44ef80836f3ef6c4d.json",
+          "sha256": "28e8591fd7faf2332bbf161731a1956d8c9f6a7250318ad44ef80836f3ef6c4d",
+          "media_type": "application/json",
+          "name": "audit",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX009_20261017"
+          },
+          "evidence_id": "44f3193ec41bc718dfdab5043d35ebb85abdf5f86bfd660752595fab46f548fd.json",
+          "sha256": "44f3193ec41bc718dfdab5043d35ebb85abdf5f86bfd660752595fab46f548fd",
+          "media_type": "application/json",
+          "name": "followup-audit",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX009_20261017"
+          },
+          "evidence_id": "31012e0a6271218a1719ba8fb5c8341c1b7307bc749f4441d6002edec781e23b.json",
+          "sha256": "31012e0a6271218a1719ba8fb5c8341c1b7307bc749f4441d6002edec781e23b",
+          "media_type": "application/json",
+          "name": "summary-audit",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "reason": null
+    },
+    {
+      "type": "FactValue",
+      "fact_id": "current-source-calls",
+      "value": 3,
+      "unit": "calls",
+      "status": "AVAILABLE",
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX010_20261017"
+          },
+          "evidence_id": "917e7d9b6a82f437cab964624b6261afd45bc54e4ed944574c01aa73fb8334cf.json",
+          "sha256": "917e7d9b6a82f437cab964624b6261afd45bc54e4ed944574c01aa73fb8334cf",
+          "media_type": "application/json",
+          "name": "provenance",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX010_20261017"
+          },
+          "evidence_id": "8d71b0aa4831497fa6f6ea6dd945936b8855ca435a6606527647279a139f7996.json",
+          "sha256": "8d71b0aa4831497fa6f6ea6dd945936b8855ca435a6606527647279a139f7996",
+          "media_type": "application/json",
+          "name": "resolved-upstream",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX010_20261017"
+          },
+          "evidence_id": "1e75c3241b24c0077c8f4c520af3ceb568ba4babd75c672a1a5f5a82b3999a58.json",
+          "sha256": "1e75c3241b24c0077c8f4c520af3ceb568ba4babd75c672a1a5f5a82b3999a58",
+          "media_type": "application/json",
+          "name": "audit",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX010_20261017"
+          },
+          "evidence_id": "c164e2d46b7105fc0985029e9400cb993cd7c74d858d0d3884f2acda53a7fc0c.json",
+          "sha256": "c164e2d46b7105fc0985029e9400cb993cd7c74d858d0d3884f2acda53a7fc0c",
+          "media_type": "application/json",
+          "name": "followup-audit",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX010_20261017"
+          },
+          "evidence_id": "60d03888895a09b271aa66d903f53a2cb67d99b47024c33edd41486b58cc326c.json",
+          "sha256": "60d03888895a09b271aa66d903f53a2cb67d99b47024c33edd41486b58cc326c",
+          "media_type": "application/json",
+          "name": "stock-lag-audit",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "reason": null
+    },
+    {
+      "type": "FactValue",
+      "fact_id": "current-audit-checks",
+      "value": 40,
+      "unit": "checks",
+      "status": "AVAILABLE",
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX010_20261017"
+          },
+          "evidence_id": "917e7d9b6a82f437cab964624b6261afd45bc54e4ed944574c01aa73fb8334cf.json",
+          "sha256": "917e7d9b6a82f437cab964624b6261afd45bc54e4ed944574c01aa73fb8334cf",
+          "media_type": "application/json",
+          "name": "provenance",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX010_20261017"
+          },
+          "evidence_id": "8d71b0aa4831497fa6f6ea6dd945936b8855ca435a6606527647279a139f7996.json",
+          "sha256": "8d71b0aa4831497fa6f6ea6dd945936b8855ca435a6606527647279a139f7996",
+          "media_type": "application/json",
+          "name": "resolved-upstream",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX010_20261017"
+          },
+          "evidence_id": "1e75c3241b24c0077c8f4c520af3ceb568ba4babd75c672a1a5f5a82b3999a58.json",
+          "sha256": "1e75c3241b24c0077c8f4c520af3ceb568ba4babd75c672a1a5f5a82b3999a58",
+          "media_type": "application/json",
+          "name": "audit",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX010_20261017"
+          },
+          "evidence_id": "c164e2d46b7105fc0985029e9400cb993cd7c74d858d0d3884f2acda53a7fc0c.json",
+          "sha256": "c164e2d46b7105fc0985029e9400cb993cd7c74d858d0d3884f2acda53a7fc0c",
+          "media_type": "application/json",
+          "name": "followup-audit",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX010_20261017"
+          },
+          "evidence_id": "60d03888895a09b271aa66d903f53a2cb67d99b47024c33edd41486b58cc326c.json",
+          "sha256": "60d03888895a09b271aa66d903f53a2cb67d99b47024c33edd41486b58cc326c",
+          "media_type": "application/json",
+          "name": "stock-lag-audit",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "reason": null
+    },
+    {
+      "type": "FactValue",
+      "fact_id": "current-strategy-accounts",
+      "value": 0,
+      "unit": "accounts",
+      "status": "AVAILABLE",
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX010_20261017"
+          },
+          "evidence_id": "917e7d9b6a82f437cab964624b6261afd45bc54e4ed944574c01aa73fb8334cf.json",
+          "sha256": "917e7d9b6a82f437cab964624b6261afd45bc54e4ed944574c01aa73fb8334cf",
+          "media_type": "application/json",
+          "name": "provenance",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX010_20261017"
+          },
+          "evidence_id": "8d71b0aa4831497fa6f6ea6dd945936b8855ca435a6606527647279a139f7996.json",
+          "sha256": "8d71b0aa4831497fa6f6ea6dd945936b8855ca435a6606527647279a139f7996",
+          "media_type": "application/json",
+          "name": "resolved-upstream",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX010_20261017"
+          },
+          "evidence_id": "1e75c3241b24c0077c8f4c520af3ceb568ba4babd75c672a1a5f5a82b3999a58.json",
+          "sha256": "1e75c3241b24c0077c8f4c520af3ceb568ba4babd75c672a1a5f5a82b3999a58",
+          "media_type": "application/json",
+          "name": "audit",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX010_20261017"
+          },
+          "evidence_id": "c164e2d46b7105fc0985029e9400cb993cd7c74d858d0d3884f2acda53a7fc0c.json",
+          "sha256": "c164e2d46b7105fc0985029e9400cb993cd7c74d858d0d3884f2acda53a7fc0c",
+          "media_type": "application/json",
+          "name": "followup-audit",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX010_20261017"
+          },
+          "evidence_id": "60d03888895a09b271aa66d903f53a2cb67d99b47024c33edd41486b58cc326c.json",
+          "sha256": "60d03888895a09b271aa66d903f53a2cb67d99b47024c33edd41486b58cc326c",
+          "media_type": "application/json",
+          "name": "stock-lag-audit",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "reason": null
+    }
+  ],
+  "typed_construction": {
+    "components": 36,
+    "candidates": 69,
+    "handoff": [
+      "S014-C9521"
+    ],
+    "facts": 20,
+    "exact_inherited_facts": 16,
+    "new_prefixed_facts": 4
+  },
+  "pure_harness": "Compile v2 prepare with explicit no-I/O test doubles for context/material publisher/write and in-memory output hashes. Only the38-document content-hash metadata loop uses already B-certified inventory values instead of repeating full account decoding; both DeliveryContent expressions run unchanged. New material EvidenceRef metadata is synthetic constructor-only and is neither persisted nor claimed published; original sixteen FactValues retain original real evidence exactly. Captured outputs exist only in memory; actual prepared delivery/full validation remains root+B gate.",
+  "failure_accounting": {
+    "preparation_expression_failures_retained": 1,
+    "account_retries": 0,
+    "new_accounts": 0,
+    "formal_governance_mutations": 0
+  },
+  "implementation": {
+    "path": ".tmp/s014_stage23_source_review_v2.py",
+    "sha256": "8a6aac612897950a05199ae01cfceb8dce43b354373e25e7ece2db08c484db5f"
+  }
+}

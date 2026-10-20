@@ -1,0 +1,288 @@
+{
+  "status": "PROPOSED_ONLY",
+  "definitions": [
+    {
+      "proposed_component_id": "prior-s5-support-and-entryday-grace",
+      "definition_type": "ExperimentDefinitionRef",
+      "definition_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX052_20261020"
+        },
+        "evidence_id": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2.py",
+        "sha256": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2",
+        "media_type": "text/x-python",
+        "name": "ex052-locked-src-strategy_runtime-strategies-trend_permission.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "entrypoint": "history",
+      "source_path": "research/S014/experiments/EX052_20261020/src/strategy_runtime/strategies/trend_permission.py",
+      "definition": "Prior five in-window closes minimum; support break plus actual-entry-day grace. H10/deadline/reservation are execution contract, not an alpha.",
+      "judgment": "Conditional support for entry grace in fixed full-account mechanism; no standalone return predictor claim.",
+      "role": "支撑转弱与入场当日宽限职责",
+      "label": "真实完整账户及逐真实持仓周期损益；不把支撑值当可赚收益",
+      "control": "EX043 BASE与ENTRY_GRACE、TREND_CYCLE固定对照；原C0056合同",
+      "horizon": "首个ownSHOCK当D或该完整真实cycle至实际退出；全账户2020-2026原截止10/15年度，按各测试精确协议",
+      "availability": "D已完成真实价格与当时已发生的own成交/持仓/完成史；D决策次E原规则执行；禁止E后知数据作D条件；unknown明确保留",
+      "price_basis": "特征/ATR均原runtime fullHFQ；账本价格为HFQ_RESEARCH锚5.892、quantity=RESEARCH_UNIT；按原费用/投影核算，不能混价单位",
+      "applicability": "仅S014已见开发域及固定原执行合同；具体触发域、优先级、latch及own资金状态以对应公开源码/预先协议为准",
+      "strongest_counterevidence": "TREND_CYCLE并非额外稳定改善；entryday成本出口可覆盖grace；2024九格仍全部失败。",
+      "necessary_test_experiments": [
+        "EX043",
+        "EX050",
+        "EX052"
+      ]
+    },
+    {
+      "proposed_component_id": "causal-positive-profit-acceleration-exit",
+      "definition_type": "ExperimentDefinitionRef",
+      "definition_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX052_20261020"
+        },
+        "evidence_id": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2.py",
+        "sha256": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2",
+        "media_type": "text/x-python",
+        "name": "ex052-locked-src-strategy_runtime-strategies-trend_permission.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "entrypoint": "causal_features,history",
+      "source_path": "research/S014/experiments/EX052_20261020/src/strategy_runtime/strategies/trend_permission.py",
+      "definition": "Z5=sum last five log returns / (std20(ddof1) ending D-5 * sqrt5); raw Z>2, original netP>0. Actual selected action differs from raw legacy flags.",
+      "judgment": "Exit role only with own age/permission controls; blanket disabling and ANY_P/entry-gate uses retain negative and interaction evidence.",
+      "role": "持仓正浮盈急涨的退出职责",
+      "label": "真实全路径年度收益/回撤与实际完整周期；原Z5非预测收益标签",
+      "control": "EX043 BASE与SHOCK；EX044 ANY_P/entrygate；EX047/48 ON/OFF交互",
+      "horizon": "首个ownSHOCK当D或该完整真实cycle至实际退出；全账户2020-2026原截止10/15年度，按各测试精确协议",
+      "availability": "D已完成真实价格与当时已发生的own成交/持仓/完成史；D决策次E原规则执行；禁止E后知数据作D条件；unknown明确保留",
+      "price_basis": "特征/ATR均原runtime fullHFQ；账本价格为HFQ_RESEARCH锚5.892、quantity=RESEARCH_UNIT；按原费用/投影核算，不能混价单位",
+      "applicability": "仅S014已见开发域及固定原执行合同；具体触发域、优先级、latch及own资金状态以对应公开源码/预先协议为准",
+      "strongest_counterevidence": "关SHOCK有助部分上涨延续却伤及2025；ANY_P/entrygate未形成通用改进；不能用旧两格差推当前局部因果。",
+      "necessary_test_experiments": [
+        "EX043",
+        "EX044",
+        "EX045",
+        "EX047",
+        "EX048",
+        "EX052"
+      ]
+    },
+    {
+      "proposed_component_id": "net-cost-loss-prior-atr-risk",
+      "definition_type": "ExperimentDefinitionRef",
+      "definition_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX052_20261020"
+        },
+        "evidence_id": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2.py",
+        "sha256": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2",
+        "media_type": "text/x-python",
+        "name": "ex052-locked-src-strategy_runtime-strategies-trend_permission.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "entrypoint": "causal_features,history",
+      "source_path": "research/S014/experiments/EX052_20261020/src/strategy_runtime/strategies/trend_permission.py",
+      "definition": "entryfill*1.001 - currentClose*.999 >= positive ATR20 through D-1; all runtime fullHFQ units. Cost can override grace but cannot undo entry-day damage.",
+      "judgment": "Mechanism support is conditional portfolio protection; not proof of universal downside forecasting or isolated cost effect.",
+      "role": "净成本损伤的波幅尺度风险出口",
+      "label": "真实账户年度/周期和费用后损益；entryday损伤仍保留",
+      "control": "EX044 costBASE与NET1ATR；EX048关pause条件交互，不伪称单独成本因果",
+      "horizon": "首个ownSHOCK当D或该完整真实cycle至实际退出；全账户2020-2026原截止10/15年度，按各测试精确协议",
+      "availability": "D已完成真实价格与当时已发生的own成交/持仓/完成史；D决策次E原规则执行；禁止E后知数据作D条件；unknown明确保留",
+      "price_basis": "特征/ATR均原runtime fullHFQ；账本价格为HFQ_RESEARCH锚5.892、quantity=RESEARCH_UNIT；按原费用/投影核算，不能混价单位",
+      "applicability": "仅S014已见开发域及固定原执行合同；具体触发域、优先级、latch及own资金状态以对应公开源码/预先协议为准",
+      "strongest_counterevidence": "2024仍未单独达标；不能追回买入当日已发生损伤；动态ATR变化和support重合须披露。",
+      "necessary_test_experiments": [
+        "EX043",
+        "EX044",
+        "EX048",
+        "EX052"
+      ]
+    },
+    {
+      "proposed_component_id": "own-actual-completed-net-feedback",
+      "definition_type": "ExperimentDefinitionRef",
+      "definition_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX052_20261020"
+        },
+        "evidence_id": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2.py",
+        "sha256": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2",
+        "media_type": "text/x-python",
+        "name": "ex052-locked-src-strategy_runtime-strategies-trend_permission.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "entrypoint": "completed_sign,history",
+      "source_path": "research/S014/experiments/EX052_20261020/src/strategy_runtime/strategies/trend_permission.py",
+      "definition": "Own actual CLOSED sale proceeds less actual entry and both fees; strict negative/positive/zero/no-history separated. Selected sign arms one eligible candidate-slot pause i+11 without fake BUY or entry/deadline/fees.",
+      "judgment": "Supported only as actual policy feedback/timing mechanism; old population did not establish loss-after-entry hazard. Profit-direction control and noPause interaction retained.",
+      "role": "真实完成净损益反馈后的参与时钟",
+      "label": "own实际CLOSED净损严格负/正/零与全年路径；失败BUY无完成收益标签",
+      "control": "EX046 BASE/loss/profit三格、EX048 OFF下pauseLOSS/BASE；全部自身资金路径",
+      "horizon": "首个ownSHOCK当D或该完整真实cycle至实际退出；全账户2020-2026原截止10/15年度，按各测试精确协议",
+      "availability": "D已完成真实价格与当时已发生的own成交/持仓/完成史；D决策次E原规则执行；禁止E后知数据作D条件；unknown明确保留",
+      "price_basis": "特征/ATR均原runtime fullHFQ；账本价格为HFQ_RESEARCH锚5.892、quantity=RESEARCH_UNIT；按原费用/投影核算，不能混价单位",
+      "applicability": "仅S014已见开发域及固定原执行合同；具体触发域、优先级、latch及own资金状态以对应公开源码/预先协议为准",
+      "strongest_counterevidence": "旧人口亏损后并不普遍更危险；利润后暂停反向控制及取消lossPause对2024/25损害保留。",
+      "necessary_test_experiments": [
+        "EX045",
+        "EX046",
+        "EX048",
+        "EX052"
+      ]
+    },
+    {
+      "proposed_component_id": "first-own-shock-holding-age-state",
+      "definition_type": "ExperimentDefinitionRef",
+      "definition_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX052_20261020"
+        },
+        "evidence_id": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2.py",
+        "sha256": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2",
+        "media_type": "text/x-python",
+        "name": "ex052-locked-src-strategy_runtime-strategies-trend_permission.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "entrypoint": "history",
+      "source_path": "research/S014/experiments/EX052_20261020/src/strategy_runtime/strategies/trend_permission.py",
+      "definition": "At first own eligible SHOCK in a funded cycle, actual holding_age0 vs>=1; one assessment and hold-latch through cycle, reset on real buy/sell. Inherited pending/cost/support/H10 remain superior.",
+      "judgment": "AGE alone passed2026 but failed2025; only AGE-domain S1 full-policy supported all original goals. Age is timing state, not independent alpha.",
+      "role": "首次ownSHOCK的持仓时钟与延持许可",
+      "label": "EX049同entry/Q局部清算差与EX050完整账户目标分别表达",
+      "control": "EX050原SHOCK/S2/AGE三格；AGE自身2025失败和EX051后D退出",
+      "horizon": "首个ownSHOCK当D或该完整真实cycle至实际退出；全账户2020-2026原截止10/15年度，按各测试精确协议",
+      "availability": "D已完成真实价格与当时已发生的own成交/持仓/完成史；D决策次E原规则执行；禁止E后知数据作D条件；unknown明确保留",
+      "price_basis": "特征/ATR均原runtime fullHFQ；账本价格为HFQ_RESEARCH锚5.892、quantity=RESEARCH_UNIT；按原费用/投影核算，不能混价单位",
+      "applicability": "仅S014已见开发域及固定原执行合同；具体触发域、优先级、latch及own资金状态以对应公开源码/预先协议为准",
+      "strongest_counterevidence": "AGE独立2025缺22.227565pp；age0中2021-12-24有正延持反例，held域亦有负标签。",
+      "necessary_test_experiments": [
+        "EX049",
+        "EX050",
+        "EX051",
+        "EX052"
+      ]
+    },
+    {
+      "proposed_component_id": "prior-trend-s1-permission",
+      "definition_type": "ExperimentDefinitionRef",
+      "definition_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX052_20261020"
+        },
+        "evidence_id": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2.py",
+        "sha256": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2",
+        "media_type": "text/x-python",
+        "name": "ex052-locked-src-strategy_runtime-strategies-trend_permission.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "entrypoint": "prior_trend_permission,causal_features,history",
+      "source_path": "research/S014/experiments/EX052_20261020/src/strategy_runtime/strategies/trend_permission.py",
+      "definition": "MA20 through D-1 > same MA shifted five sessions (through D-6), and sourceClose[D-1]>=MA20[D-1]. Known/finite required only first eligible AGE>=1 treatment domain; scalar exact comparisons.",
+      "judgment": "Supported as conditional permission inside C9521; old S1 pooled/local negative and excluded-combination decision preserved. Not independent new information or unseen validation.",
+      "role": "AGE>=1域首次ownSHOCK的priorS1许可",
+      "label": "EX049局部差为component标签；EX052自身实际7年度目标是整政策证据，不是独立S1预测精度",
+      "control": "EX052 freshC9502与AGE×S1；保留EX049 S1局部负面与EX050原禁混合决定",
+      "horizon": "首个ownSHOCK当D或该完整真实cycle至实际退出；全账户2020-2026原截止10/15年度，按各测试精确协议",
+      "availability": "D已完成真实价格与当时已发生的own成交/持仓/完成史；D决策次E原规则执行；禁止E后知数据作D条件；unknown明确保留",
+      "price_basis": "特征/ATR均原runtime fullHFQ；账本价格为HFQ_RESEARCH锚5.892、quantity=RESEARCH_UNIT；按原费用/投影核算，不能混价单位",
+      "applicability": "仅S014已见开发域及固定原执行合同；具体触发域、优先级、latch及own资金状态以对应公开源码/预先协议为准",
+      "strongest_counterevidence": "原S1局部pooled不支持；2021-02-09 FALSE牺牲大上涨，年度较C9502少48.646730pp且连续终值更低。",
+      "necessary_test_experiments": [
+        "EX049",
+        "EX050",
+        "EX052"
+      ]
+    },
+    {
+      "proposed_component_id": "last-day-nondominance-s2",
+      "definition_type": "ExperimentDefinitionRef",
+      "definition_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX049_20261020"
+        },
+        "evidence_id": "58827ad8d59e4b3ebd99f250a25a05f8a1f552a9ebf8626ed1fef027f9134f6b.py",
+        "sha256": "58827ad8d59e4b3ebd99f250a25a05f8a1f552a9ebf8626ed1fef027f9134f6b",
+        "media_type": "text/x-python",
+        "name": "ex049-source-local_cycle.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "entrypoint": "state_at_D",
+      "source_path": "research/S014/experiments/EX049_20261020/src/local_cycle.py",
+      "definition": "log(C_D/C_D-1) <= log(C_D-1/C_D-5), finite/positive source values. Includes down D; first-own-SHOCK latch.",
+      "judgment": "Local pooled appearance did not separate remaining-clock effects; full S2 policy failed original2025/2026. Retain negative comparison, not a supported alpha.",
+      "role": "首次ownSHOCK末日占比的拟议分流",
+      "label": "EX049固定entry/Q到共同终点的费用后清算差，21cycle等权；EX050真实整政策另核",
+      "control": "always-exit/always-hold与固定S2；共同remaining层、AGE和完整政策反证",
+      "horizon": "首个ownSHOCK当D或该完整真实cycle至实际退出；全账户2020-2026原截止10/15年度，按各测试精确协议",
+      "availability": "D已完成真实价格与当时已发生的own成交/持仓/完成史；D决策次E原规则执行；禁止E后知数据作D条件；unknown明确保留",
+      "price_basis": "特征/ATR均原runtime fullHFQ；账本价格为HFQ_RESEARCH锚5.892、quantity=RESEARCH_UNIT；按原费用/投影核算，不能混价单位",
+      "applicability": "仅S014已见开发域及固定原执行合同；具体触发域、优先级、latch及own资金状态以对应公开源码/预先协议为准",
+      "strongest_counterevidence": "FALSE仅3例且remaining不平衡；共同remaining增量转负；S2整政策2025/26失败。",
+      "necessary_test_experiments": [
+        "EX049",
+        "EX050"
+      ]
+    },
+    {
+      "proposed_component_id": "post-shock-frozen-anchor-weakening",
+      "definition_type": "ExperimentDefinitionRef",
+      "definition_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX051_20261020"
+        },
+        "evidence_id": "a97a53b0d277ef4ee5702cc3b846ce8831fd8b182c2afca83159f31f0458f670.py",
+        "sha256": "a97a53b0d277ef4ee5702cc3b846ce8831fd8b182c2afca83159f31f0458f670",
+        "media_type": "text/x-python",
+        "name": "ex051-locked-src-strategy_runtime-strategies-followthrough_anchor.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "entrypoint": "history",
+      "source_path": "research/S014/experiments/EX051_20261020/src/strategy_runtime/strategies/followthrough_anchor.py",
+      "definition": "At AGE-qualified first SHOCK freeze sourceClose and positive ATR20prior; persistent later D monitoring: close<anchor or anchor-close>=ATR0; next E original execution.",
+      "judgment": "Both fixed full policies failed2025 and damaged2026; no supported replacement exit. Late2025Mar exits remained net losses and did not remove own loss pause.",
+      "role": "已选择延持后的后续转弱出口",
+      "label": "EX051三条真实完整账户年度目标与实际周期，不生成新替代利润",
+      "control": "同监控时钟freshAGE/持续ZERO/持续冻结1ATR；不是一天zero对全cyclebuffer",
+      "horizon": "首个ownSHOCK当D或该完整真实cycle至实际退出；全账户2020-2026原截止10/15年度，按各测试精确协议",
+      "availability": "D已完成真实价格与当时已发生的own成交/持仓/完成史；D决策次E原规则执行；禁止E后知数据作D条件；unknown明确保留",
+      "price_basis": "特征/ATR均原runtime fullHFQ；账本价格为HFQ_RESEARCH锚5.892、quantity=RESEARCH_UNIT；按原费用/投影核算，不能混价单位",
+      "applicability": "仅S014已见开发域及固定原执行合同；具体触发域、优先级、latch及own资金状态以对应公开源码/预先协议为准",
+      "strongest_counterevidence": "2025Mar下一D退出已晚：实际仍净亏并触发Apr9暂停；2026正常回调误伤，ZERO/ATR两臂均失败。",
+      "necessary_test_experiments": [
+        "EX051"
+      ]
+    }
+  ]
+}

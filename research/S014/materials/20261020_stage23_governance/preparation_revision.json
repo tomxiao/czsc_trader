@@ -1,0 +1,16 @@
+{
+  "status": "PRESERVED_INITIAL_PREPARATION_FAILURE_AND_MINIMAL_SUCCESSOR",
+  "original_source": "research/S014/materials/20261020_stage23_governance/src/complete_governance.py",
+  "original_source_sha256": "45f6b8399d38656fb0128b9015bf414f5440d6ab2d1e10998d62260f5469f483",
+  "failed_phase": "prepare, before prepared typed contents and before formal delivery/decision/candidate registration",
+  "actual_exception": "ValueError: unknown fact reference",
+  "cause": "The 28 inherited component entries retain test.fact_ids, but the first preparer omitted their referenced FactValue records when building new DeliveryContent. The public typed contract correctly rejected it.",
+  "already_published_materials": "The initial source and selected original report/review bytes were published as local immutable materials. They remain unchanged; no original experiment/account or existing delivery was edited.",
+  "successor_source": "research/S014/materials/20261020_stage23_governance/src/complete_governance_v2.py",
+  "minimal_correction": "Retain the exact 16 old FactValue records referenced by the unchanged inherited component tests. Prefix new governance facts to avoid collision. Explicitly supply required empty explanations tuple in the candidate DeliveryContent. Keep original v1 source and focused reviews, add this revision and v2 source to explicit material evidence.",
+  "additional_preflight_type_finding": "The unpublished v2 pure construction review then reached the candidate content and detected the original missing required explanations argument. Corrected before any v2 prepare/publication; no candidate/delivery/account writes were made by that pure preflight.",
+  "unchanged": "Original28 component entries/tests, new8 role definitions, 3 candidate identities/derivations/economic eligibility, reports, original goals, source/economic strategy, input dates/fees, no new accounts or market calls.",
+  "new_account_retries": 0,
+  "formal_governance_writes_in_failed_phase": 0,
+  "next_gate": "Focused v2 review and full typed preparation, then independent final prepared/report review, then authorized public governance writes. Do not disable validation or invent missing facts."
+}

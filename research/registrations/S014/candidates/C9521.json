@@ -1,0 +1,61 @@
+{
+  "record": {
+    "content_sha256": "2c0ef4f7e6528d5ee08495205515cde98b85436b65462ccfb8153998ea56b12f",
+    "dependencies": [],
+    "dependency_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "derivation": {
+      "changes": {
+        "implementation": "First-own SHOCK AGE>=1 additionally requires original S1 finiteTRUE (priorMA>lag5 and priorClose>=priorMA); FALSE original exit, TRUE own-cycle latch. No EX051 anchor; own history preserved.",
+        "parameter_interface": {
+          "from": "policy_profile FIRST_SHOCK_AFTER_ENTRY_DAY_HOLD",
+          "to": "permission_profile AGE_PRIOR_TREND_PERMISSION"
+        },
+        "selection": "Explicit posthoc interaction successor after seen negative pooledS1 and EX051; old negative results and 2021 sacrificed opportunity retained."
+      },
+      "child": {
+        "candidate_id": "C9521",
+        "strategy_id": "S014"
+      },
+      "child_content_sha256": "2c0ef4f7e6528d5ee08495205515cde98b85436b65462ccfb8153998ea56b12f",
+      "evidence": {
+        "path": "assets/candidates/C9521/derivation/83327564961b13c1bc8e36cdf4e5c78ad35896a7e26f8595b6c3215889533ac9.json",
+        "sha256": "83327564961b13c1bc8e36cdf4e5c78ad35896a7e26f8595b6c3215889533ac9"
+      },
+      "kind": "IMPLEMENTATION",
+      "parent": {
+        "candidate_id": "C9502",
+        "strategy_id": "S014"
+      },
+      "parent_content_sha256": "91f4e70cb6b584ab7b78a91ef0105249f4657b9385ce336c66c8f1f0ef893934",
+      "protocol_sha256": "de9abd879e43be3e7f52c038586cc8295dfe8885f24820f12bb23219f47d228e"
+    },
+    "identity_schema_version": 2,
+    "key": {
+      "candidate_id": "C9521",
+      "strategy_id": "S014"
+    },
+    "origin": {
+      "evidence": [
+        {
+          "path": "assets/evidence/EX052_20261020/e5005956b926d2062a1a0d040e1387dd30f32e64692480e055597473f153d8e2.json",
+          "sha256": "e5005956b926d2062a1a0d040e1387dd30f32e64692480e055597473f153d8e2"
+        }
+      ],
+      "experiment_id": "EX052_20261020"
+    },
+    "payload": {
+      "path": "assets/candidates/C9521/payload/6b089037416675633bf46246f6f19b3438195c962c5d0760b5349222e07cd6f6.json",
+      "sha256": "6b089037416675633bf46246f6f19b3438195c962c5d0760b5349222e07cd6f6"
+    },
+    "schema_version": 3,
+    "source_files": [
+      {
+        "path": "assets/candidates/C9521/source/92a9fa2441693c564487b46200a2feb994147cc97ad818f2239b7ce922591bf6/strategy_runtime/strategies/trend_permission.py",
+        "sha256": "ba01530dc434d32a540ba0a8e6ec9078a638137dcbaf683eb366171291ee67f2"
+      }
+    ],
+    "source_root": "assets/candidates/C9521/source/92a9fa2441693c564487b46200a2feb994147cc97ad818f2239b7ce922591bf6/strategy_runtime",
+    "source_sha256": "92a9fa2441693c564487b46200a2feb994147cc97ad818f2239b7ce922591bf6"
+  },
+  "record_sha256": "1eadee90764bc486641e44b0d1aa64e8f754791fe3bf6f0b36fa124e448c3204"
+}
