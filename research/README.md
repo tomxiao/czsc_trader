@@ -57,6 +57,8 @@ research/registrations/               # 研究族、立项凭据和候选登记
 | S001 | [HANDOFF](S001/HANDOFF.md) | S007 | [HANDOFF](S007/HANDOFF.md) |
 | S002 | [HANDOFF](S002/HANDOFF.md) | S011 | [HANDOFF](S011/HANDOFF.md) |
 | S003 | [HANDOFF](S003/HANDOFF.md) | S012 | [HANDOFF](S012/HANDOFF.md) |
-| S013 | [HANDOFF](S013/HANDOFF.md) | | |
+| S013 | [HANDOFF](S013/HANDOFF.md) | S014 | [HANDOFF](S014/HANDOFF.md) |
 
 S013当前为**PAUSED**：EX101固定趋势对照已完成，整体策略目标未达成；研究成果已合并并推送至`master`。见[最新研究概览](S013/materials/research_status_20261016.md)和[交接入口](S013/HANDOFF.md)。正式历史报告及候选资格保持原状，后续研究须另获明确授权。
+
+S014于2026-10-20经用户确认**终止**：原历史绩效达标记录保留，但开发池反复用于规则筛选和组合，尚无充分独立证据支持稳定优势；不再新增实验、调参、补证、冻结或PTE适配。研究分支按本次授权收口并合并至`master`，不包含推送、tag或生产变更。见[终止记录](S014/materials/termination_20261020.md)；旧交接中的继续执行指令已失效。
