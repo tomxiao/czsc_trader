@@ -1,0 +1,557 @@
+{
+  "question": "S015阶段三补充；沿用MANDATE/2及434日已见开发池，不推进阶段四。",
+  "window": [
+    "2025-01-02",
+    "2026-10-21"
+  ],
+  "warmup": [
+    "2024-09-09",
+    "2024-12-31"
+  ],
+  "anchors": {
+    "entry0": "EX003 C0031 highest observed CAGR",
+    "entry0.0025": "EX003 C0026 high return near same drawdown"
+  },
+  "selection_disclosure": "锚点和振幅路线来自已见EX002/EX003，非独立检验；不对所有反转进退场推广。",
+  "mechanism": "保留反转信号周期和退出规则；活跃信号周期内每日根据range5或range5/range20分配仓位，超过阈值取low_weight，否则1；reverse用于后续反证。",
+  "controls": "旧周期全仓与新权益全仓分离执行语义；新权益恒定25/50/75%分离一般降风险作用；后续同阈值反向映射与全池平均目标匹配常数仅作已见诊断。",
+  "zero_weight": "高振幅目标0可在原信号周期内清仓再入场；不倒称原入口过滤，实际闭合交易频率可能改变。",
+  "threshold_basis": "relative 1/1.25/1.5覆盖无扩张至50%扩张；absolute .02/.03/.04代表2/3/4%五日平均日振幅，未扫描收益择阈值。",
+  "initial_configurations": [
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.0,
+      "low_weight": 1.0,
+      "reverse": false,
+      "sizing": "cycle"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.0,
+      "low_weight": 1.0,
+      "reverse": false,
+      "sizing": "constant"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.0,
+      "low_weight": 0.25,
+      "reverse": false,
+      "sizing": "constant"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.0,
+      "low_weight": 0.5,
+      "reverse": false,
+      "sizing": "constant"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.0,
+      "low_weight": 0.75,
+      "reverse": false,
+      "sizing": "constant"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 1.0,
+      "low_weight": 0.0,
+      "reverse": false,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 1.0,
+      "low_weight": 0.25,
+      "reverse": false,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 1.0,
+      "low_weight": 0.5,
+      "reverse": false,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 1.0,
+      "low_weight": 0.75,
+      "reverse": false,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 1.25,
+      "low_weight": 0.0,
+      "reverse": false,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 1.25,
+      "low_weight": 0.25,
+      "reverse": false,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 1.25,
+      "low_weight": 0.5,
+      "reverse": false,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 1.25,
+      "low_weight": 0.75,
+      "reverse": false,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 1.5,
+      "low_weight": 0.0,
+      "reverse": false,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 1.5,
+      "low_weight": 0.25,
+      "reverse": false,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 1.5,
+      "low_weight": 0.5,
+      "reverse": false,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 1.5,
+      "low_weight": 0.75,
+      "reverse": false,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.02,
+      "low_weight": 0.0,
+      "reverse": false,
+      "sizing": "absolute"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.02,
+      "low_weight": 0.25,
+      "reverse": false,
+      "sizing": "absolute"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.02,
+      "low_weight": 0.5,
+      "reverse": false,
+      "sizing": "absolute"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.02,
+      "low_weight": 0.75,
+      "reverse": false,
+      "sizing": "absolute"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.03,
+      "low_weight": 0.0,
+      "reverse": false,
+      "sizing": "absolute"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.03,
+      "low_weight": 0.25,
+      "reverse": false,
+      "sizing": "absolute"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.03,
+      "low_weight": 0.5,
+      "reverse": false,
+      "sizing": "absolute"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.03,
+      "low_weight": 0.75,
+      "reverse": false,
+      "sizing": "absolute"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.04,
+      "low_weight": 0.0,
+      "reverse": false,
+      "sizing": "absolute"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.04,
+      "low_weight": 0.25,
+      "reverse": false,
+      "sizing": "absolute"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.04,
+      "low_weight": 0.5,
+      "reverse": false,
+      "sizing": "absolute"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.04,
+      "low_weight": 0.75,
+      "reverse": false,
+      "sizing": "absolute"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.0,
+      "low_weight": 1.0,
+      "reverse": false,
+      "sizing": "cycle"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.0,
+      "low_weight": 1.0,
+      "reverse": false,
+      "sizing": "constant"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.0,
+      "low_weight": 0.25,
+      "reverse": false,
+      "sizing": "constant"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.0,
+      "low_weight": 0.5,
+      "reverse": false,
+      "sizing": "constant"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.0,
+      "low_weight": 0.75,
+      "reverse": false,
+      "sizing": "constant"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 1.0,
+      "low_weight": 0.0,
+      "reverse": false,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 1.0,
+      "low_weight": 0.25,
+      "reverse": false,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 1.0,
+      "low_weight": 0.5,
+      "reverse": false,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 1.0,
+      "low_weight": 0.75,
+      "reverse": false,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 1.25,
+      "low_weight": 0.0,
+      "reverse": false,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 1.25,
+      "low_weight": 0.25,
+      "reverse": false,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 1.25,
+      "low_weight": 0.5,
+      "reverse": false,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 1.25,
+      "low_weight": 0.75,
+      "reverse": false,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 1.5,
+      "low_weight": 0.0,
+      "reverse": false,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 1.5,
+      "low_weight": 0.25,
+      "reverse": false,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 1.5,
+      "low_weight": 0.5,
+      "reverse": false,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 1.5,
+      "low_weight": 0.75,
+      "reverse": false,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.02,
+      "low_weight": 0.0,
+      "reverse": false,
+      "sizing": "absolute"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.02,
+      "low_weight": 0.25,
+      "reverse": false,
+      "sizing": "absolute"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.02,
+      "low_weight": 0.5,
+      "reverse": false,
+      "sizing": "absolute"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.02,
+      "low_weight": 0.75,
+      "reverse": false,
+      "sizing": "absolute"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.03,
+      "low_weight": 0.0,
+      "reverse": false,
+      "sizing": "absolute"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.03,
+      "low_weight": 0.25,
+      "reverse": false,
+      "sizing": "absolute"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.03,
+      "low_weight": 0.5,
+      "reverse": false,
+      "sizing": "absolute"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.03,
+      "low_weight": 0.75,
+      "reverse": false,
+      "sizing": "absolute"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.04,
+      "low_weight": 0.0,
+      "reverse": false,
+      "sizing": "absolute"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.04,
+      "low_weight": 0.25,
+      "reverse": false,
+      "sizing": "absolute"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.04,
+      "low_weight": 0.5,
+      "reverse": false,
+      "sizing": "absolute"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.04,
+      "low_weight": 0.75,
+      "reverse": false,
+      "sizing": "absolute"
+    }
+  ],
+  "initial_count": 58,
+  "candidate_start": 200,
+  "optuna": "enqueue all fixed configurations, ask/tell, RandomSampler seed13; no pruning",
+  "resources": {
+    "workers": 8,
+    "native_threads": 1,
+    "seed": 13
+  },
+  "precheck": "synthetic prefix/future perturbation, exact daily binding continuity, serial/parallel ledger comparison, prior two cycle controls economic path comparison",
+  "followup": "对每锚每振幅种类的收益/回撤前沿代表进行反向映射和匹配平均信号仓位常数；若阈值边界出现改善，优先向relative .75/2或absolute .01/.05扩边，必要时再延伸至机制自然边界。结果后先固定并发布扩边配置再执行。初始预留24点；若问题未闭合则说明追加依据，不以额度替代充分性。",
+  "hard_gates": "MANDATE/2中心经济+双频率原样；不新增成交量门或各年度门；阶段四32扰动与费用压力尚未授权",
+  "stop": "对照能区分执行语义、一般减仓和振幅映射；必要边界完成，完整达标及前沿留存后收口。",
+  "next_gate": "用户批准后才能进入阶段四。"
+}

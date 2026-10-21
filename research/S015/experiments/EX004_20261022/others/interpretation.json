@@ -1,0 +1,28 @@
+{
+  "conclusion": "阶段三补充完成：多档位仓位提供可执行的风险收益选择，振幅方案未超过已评估全仓规则的最高收益。C0307相对匹配恒定仓位有有限收益和回撤改善，但另一入场锚未复现收益改善；保留全部中心达标候选，建议进入阶段四检验，不能据开发池结果声称已稳健或可冻结。",
+  "configurations": 97,
+  "center_passed": 73,
+  "registered": 77,
+  "cumulative_registered": 117,
+  "cumulative_handoff": 98,
+  "initial_representatives": {
+    "count": 8,
+    "lower_return_than_matched": 8,
+    "lower_drawdown_than_matched": 5
+  },
+  "risk_exception": {
+    "source": "C0307",
+    "matched": "C0401",
+    "other_anchor": "C0323",
+    "other_anchor_matched": "C0405"
+  },
+  "stopping_basis": "Lower threshold .5 loses return gate in both anchors; upper extension converges to full weight. Local risk mechanism is now testable in stage four; no global optimum claim.",
+  "not_performed": [
+    "stage_four_32_joint_perturbations",
+    "fee_stress",
+    "formal_ranking",
+    "freeze",
+    "PTE"
+  ],
+  "independent_validation": false
+}

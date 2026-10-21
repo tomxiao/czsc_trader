@@ -1,0 +1,101 @@
+{
+  "status": "PASS",
+  "scope": "EX004 focused research checks, not platform regression or stage-four acceptance",
+  "configuration_count": 97,
+  "unique_parameter_count": 97,
+  "completed_optuna_trials": 97,
+  "center_passed": 73,
+  "registrations": 77,
+  "cumulative_handoff": 98,
+  "evidence_sha_and_input_binding_identity": "97 PASS (analyze_supplement)",
+  "cash_and_closed_cycle_share_reconciliation": "97 PASS",
+  "signal_age_reconstruction": "97 PASS",
+  "old_cycle_exact_economic_continuity": [
+    {
+      "candidate_id": "C0200",
+      "original_candidate_id": "C0031",
+      "status": "PASS",
+      "rows": 434,
+      "comparison": "exact date/cash/quantity/equity",
+      "original_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX003_20261021"
+        },
+        "evidence_id": "99521e89055c860ed93c79ed3f089a9af1efefd1c9d2b60a2c71b346722eb6f3.json",
+        "sha256": "99521e89055c860ed93c79ed3f089a9af1efefd1c9d2b60a2c71b346722eb6f3",
+        "media_type": "application/json",
+        "name": "grid_0031",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "candidate_id": "C0229",
+      "original_candidate_id": "C0026",
+      "status": "PASS",
+      "rows": 434,
+      "comparison": "exact date/cash/quantity/equity",
+      "original_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX003_20261021"
+        },
+        "evidence_id": "cb55b3b02a6917e3e99f91f169bcef513d5b0fabb2f996f2b6bf0b906630e398.json",
+        "sha256": "cb55b3b02a6917e3e99f91f169bcef513d5b0fabb2f996f2b6bf0b906630e398",
+        "media_type": "application/json",
+        "name": "grid_0026",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    }
+  ],
+  "candidate_load_and_content_identity": "77 PASS (register_supplement)",
+  "synthetic_signal_checks": {
+    "status": "PASS",
+    "checks": [
+      "dynamic weights while intent age unchanged",
+      "zero target does not reset intent",
+      "reverse direction",
+      "full-weight intent control equivalence",
+      "prefix and future perturbation invariance",
+      "invalid parameters"
+    ],
+    "scope": "synthetic signals only; no return acceptance"
+  },
+  "daily_input_continuity": {
+    "status": "PASS",
+    "checks": [
+      {
+        "input": "market",
+        "rows": 508,
+        "retained_original_sha256": "c8a95f32246e33682c33dddc776337103de437d712b5fc5d85edec2bbfe1e223",
+        "bound_sha256": "9b0abd8aeb0fefa34152c27b939031f4c8c050f13cc7e2602777467fb555e450",
+        "comparison": "exact values including all OHLCVA"
+      },
+      {
+        "input": "execution",
+        "rows": 508,
+        "retained_original_sha256": "86ef09152a3cf19de3d05da1c18af2ea9b070926008a0dd197306488292b8f92",
+        "bound_sha256": "14e49ce9092045fe42652c012cd09fc702a97103354da9d3ff430deae28126e2",
+        "comparison": "exact values including all OHLCVA"
+      }
+    ],
+    "scope": "precheck-bound daily inputs match the prior pool on their full overlap; no provider call"
+  },
+  "ruff": "All checks passed!",
+  "strategy_source_sha256": "9f7e389875464932ece81b06500caaec9b5bd550cd1b0befa45afee4e6e03321",
+  "read_only_method_review": "97 EvidenceRef SHA and counts checked by s015_supplement_method; limited risk improvement supported, return increment not replicated at second entry anchor; stage-three closeout justified.",
+  "not_performed": [
+    "repository_full_regression",
+    "stage_four",
+    "fee_stress",
+    "freeze",
+    "PTE",
+    "production_change"
+  ]
+}

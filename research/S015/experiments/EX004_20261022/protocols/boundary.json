@@ -1,0 +1,134 @@
+{
+  "configurations": [
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.75,
+      "low_weight": 0.5,
+      "reverse": true,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.0,
+      "low_weight": 0.5647321428571429,
+      "reverse": false,
+      "sizing": "constant"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.0,
+      "low_weight": 0.9352678571428571,
+      "reverse": false,
+      "sizing": "constant"
+    },
+    {
+      "entry": 0.0,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.5,
+      "low_weight": 0.5,
+      "reverse": false,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.75,
+      "low_weight": 0.5,
+      "reverse": true,
+      "sizing": "relative"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.0,
+      "low_weight": 0.5433526011560693,
+      "reverse": false,
+      "sizing": "constant"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.0,
+      "low_weight": 0.9566473988439307,
+      "reverse": false,
+      "sizing": "constant"
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.005,
+      "max_days": 3,
+      "threshold": 0.5,
+      "low_weight": 0.5,
+      "reverse": false,
+      "sizing": "relative"
+    }
+  ],
+  "count": 8,
+  "comparisons": [
+    {
+      "source": "C0307",
+      "reverse": "C0400",
+      "matched_constant": "C0401",
+      "reverse_matched_constant": "C0402",
+      "lower_neighbor": "C0403"
+    },
+    {
+      "source": "C0323",
+      "reverse": "C0404",
+      "matched_constant": "C0405",
+      "reverse_matched_constant": "C0406",
+      "lower_neighbor": "C0407"
+    }
+  ],
+  "upper_saturation": [
+    {
+      "control": "C0201",
+      "feature": "range_ratio",
+      "active_min": 0.34213129081176114,
+      "active_max": 2.4639197208793235,
+      "upper_saturation_threshold": 2.4639197208793235,
+      "result": "threshold at or above active maximum is the recorded full-weight signal; same equity policy",
+      "scope": "signal-level deterministic equality in this seen pool; no new account claimed"
+    },
+    {
+      "control": "C0201",
+      "feature": "range5",
+      "active_min": 0.007958868644547638,
+      "active_max": 0.06753389124565708,
+      "upper_saturation_threshold": 0.06753389124565708,
+      "result": "threshold at or above active maximum is the recorded full-weight signal; same equity policy",
+      "scope": "signal-level deterministic equality in this seen pool; no new account claimed"
+    },
+    {
+      "control": "C0230",
+      "feature": "range_ratio",
+      "active_min": 0.44585499645193494,
+      "active_max": 2.4639197208793235,
+      "upper_saturation_threshold": 2.4639197208793235,
+      "result": "threshold at or above active maximum is the recorded full-weight signal; same equity policy",
+      "scope": "signal-level deterministic equality in this seen pool; no new account claimed"
+    },
+    {
+      "control": "C0230",
+      "feature": "range5",
+      "active_min": 0.008516651582145526,
+      "active_max": 0.06753389124565708,
+      "upper_saturation_threshold": 0.06753389124565708,
+      "result": "threshold at or above active maximum is the recorded full-weight signal; same equity policy",
+      "scope": "signal-level deterministic equality in this seen pool; no new account claimed"
+    }
+  ],
+  "reason": "relative .75/low_weight .5 contains a new passing risk frontier for entry0; match/reverse both anchors and test .5 lower neighbor before stopping",
+  "timing": "after89 completed configurations, before these8 accounts",
+  "scope": "diagnostic extension, not stage-four perturbations or cost stress"
+}
