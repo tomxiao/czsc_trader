@@ -257,9 +257,17 @@ print(backtest.manifest["audit"]["status"], backtest.metrics)
 输入价格、时间、成交及费用通过 SRT/TXE 计算，SE 复算账户审计；完整回测包含 BuyHold、MA5/MA20 基准。
 回测 manifest 为 schema 5，研究指标语义版本为 `candidate-srt-txe-v4-explicit-benchmark`。
 
-执行行情按订单需要获取：限价成交通常使用30分钟，日内执行检查按需使用5分钟；仅市价执行与开盘持有基准可不需要分钟线。
-分钟线直接消费 DFLS 不复权产品。SRT 独立规划策略预热，完整回测的 MA5/MA20 基准另需20个先前交易日。
+普通`FROZEN_RULE`目标仓位策略采用`DAILY_RANGE_V3`日范围成交模型，含普通限价单；该路径不请求分钟成交数据，
+也不按成交量约束成交数量。当前声明`11:30_CLOSE`检查点的日内执行策略请求5分钟DFLS不复权产品；
+仅声明`OPEN`检查点不增加分钟需求。
+数据已准备不表示某个账户执行路径实际消费了该频率。具体成交与时点精度见[TXE](../../packages/trading_execution_engine/README.md)。
+SRT独立规划策略预热，完整回测的MA5/MA20基准另需20个先前交易日。
 缺少必需频率、日期或截止日时失败，不静默缩窗。
+
+多档位策略须显式声明`FROZEN_RULE`资金模式`target_equity_fraction`、作用范围`decision`及
+`allocation_fraction=1`。TDR评价保留小数目标，由SRT按实际账户权益计算份额、TXE执行及记账；
+原`entry_cycle`资金模式仍仅接受0/1目标。计算规则见[SRT执行计划](../../packages/strategy_runtime/README.md#执行计划)。
+公开账户归因诊断的全仓/现金、单周期单次买入等限制不因新增仓位能力而扩大。
 
 用户 CLI 从仓库根目录执行，仅接受已登记冻结版本；对应研究族须已登记。CLI 明确创建实验并保存报告证据，
 JSON 输出的 `artifacts` 给出内容寻址文件路径，报告内图表链接保持可用。

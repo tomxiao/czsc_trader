@@ -4,6 +4,18 @@
 账户、服务、Futu渠道和生产发布的操作属于独立授权的DEV/运维任务，见
 [DEV Agent](../../docs/DEV_AGENT.md)及[PTE运维手册](../../docs/PTE_OPERATIONS.md)。
 
+## 资金模式与代码兼容
+
+PTE按SRT计划中的目标份额和订单执行，不重新计算策略目标比例。原有`full_available_cash`、
+`available_cash_fraction`继续使用`target_scope=entry_cycle`；新增`target_equity_fraction`须使用
+`target_scope=decision`且`allocation_fraction=1`，用于[SRT多档位目标仓位](../strategy_runtime/README.md#执行计划)。
+资金模式与作用范围不匹配时明确拒绝；部分减仓不结束仍有持仓的周期。
+
+支持新模式的PTE代码继续接受原有计划。旧PTE不识别新模式，不能直接消费新多档位计划；
+使用前须同步升级SRT/PTE运行包，并按现有流程检验、冻结、部署及取得PTE资格。
+增加模式未改变`advice.v4`普通订单结构，也不需要新增账户数据库字段。
+本地代码更新不代表生产运行包已升级，不会自动改写既有冻结策略或生产账户。
+
 ## 何时使用
 
 PTE只运行已冻结、已部署且具备`PAPER_READY`资格的策略版本；研究候选包与PTE无直接关联。

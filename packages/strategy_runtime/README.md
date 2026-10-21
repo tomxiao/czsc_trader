@@ -190,6 +190,30 @@ SRT 计算目标仓位、订单数量、委托类型、委托价和生效时点�
 计划。`TradingPoint.trading_date`必须为`date`，`calculation_time`必须是带时区的`datetime`。
 `ExecutionCapabilities.order_types`必须是由`OrderType`枚举组成的元组。
 
+`FROZEN_RULE`的目标仓位与资金模式须配套声明：
+
+| `capital.mode` | `target_scope` | 仓位语义 |
+| --- | --- | --- |
+| `full_available_cash` / `available_cash_fraction` | `entry_cycle` | 仅接受0/1目标；按既有开仓周期目标份额买入或补买，0表示清仓 |
+| `target_equity_fraction` | `decision` | 接受有限的0至1目标比例；每次决策按当前实际现金与持仓重新计算目标份额，支持加仓、部分减仓与清仓 |
+
+多档位模式须显式设置`allocation_fraction=1`，例如：
+
+```python
+capital = {
+    "mode": "target_equity_fraction",
+    "target_scope": "decision",
+    "allocation_fraction": 1.0,
+    "fee_rate": 0.001,
+}
+```
+
+设可用现金为C、实际份额为Q、同账户价格口径的信号日执行参考价为P、目标比例为w、整手单位为L，
+目标份额为`floor((C + Q * P) * w / (P * L)) * L`。买入数量另受委托价含费现金上限限制；
+减仓只卖出实际份额与目标份额的差额。比例不变时，价格变化也可能触发再平衡。
+费用、整手取整、未成交及次日成交价格变化均可能使实际仓位比例偏离信号目标；目标比例不保证精确成交比例。
+该模式不沿用上次开仓周期目标来限制新目标。非法比例或资金模式组合明确失败。
+
 执行结果必须返回`ExecutionOutcome`：`status`显式使用`ExecutionOutcomeStatus.SETTLED`或
 `FAILED`，`portfolio`和`state`分别使用`PortfolioSnapshot`和`ExecutionState`，
 `plan_identity`必须对应当前计划。`SETTLED`表示执行已完成并对账，可以包含未成交订单；
@@ -216,6 +240,10 @@ SRT 计算目标仓位、订单数量、委托类型、委托价和生效时点�
 三者形成`runtime_sha256`。`RuntimeDefinition`只接受schema 3，按完整运行定义及观察定义计算身份。
 源码、资源文件或绑定发生变化时须通过获准的当前检验与冻结流程形成新发布；原冻结证据保持不可变。
 加载时任何哈希不一致都会失败。
+
+新增多档位资金模式不会自动改变既有冻结策略的执行定义。启用该模式须由新候选显式声明，
+经检验及批准形成新冻结版本；不能原地修改旧发布包。PTE消费该模式前也须升级到支持该资金契约的版本，
+旧PTE会拒绝未知资金模式。现有发布是否可用仍以其身份、加载及相应执行验证为准。
 
 `RuntimeBindingSpec`使用schema 2，绑定`source_files/implementation_sha256/install_files/observation_sha256`；
 `RuntimeBinding`再绑定发布ID和哈希。平台从候选定义生成绑定，加载时核对观察定义哈希。
