@@ -1,0 +1,105 @@
+{
+  "requests": [
+    {
+      "dataset": "etf.ohlcv",
+      "symbol": "159326.SZ",
+      "frequency": "daily",
+      "start": "2024-09-09",
+      "end": "2026-10-21",
+      "required_cutoff": "2026-10-21"
+    },
+    {
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "159326.SZ",
+      "frequency": "daily",
+      "start": "2024-09-09",
+      "end": "2026-10-21",
+      "required_cutoff": "2026-10-21"
+    }
+  ],
+  "ready": true,
+  "items": [
+    {
+      "dataset": "etf.ohlcv",
+      "status": "READY",
+      "error": null,
+      "rows": 509,
+      "first_date": "2024-09-09",
+      "last_date": "2026-10-21",
+      "warmup_sessions": 75,
+      "evaluation_sessions": 434,
+      "identity": {
+        "dataset": "etf.ohlcv",
+        "source": "tushare",
+        "symbol": "159326.SZ",
+        "data_start": "2024-09-09T00:00:00",
+        "data_cutoff": "2026-10-21T00:00:00",
+        "content_sha256": "c8a95f32246e33682c33dddc776337103de437d712b5fc5d85edec2bbfe1e223"
+      },
+      "quality": {
+        "version": 1,
+        "total_sessions": 509,
+        "daily": {
+          "complete_sessions": 509,
+          "accurate_sessions": 509,
+          "completeness": 1.0,
+          "accuracy": 1.0,
+          "minimum_accuracy": 0.99,
+          "incomplete_dates": [],
+          "inaccurate_dates": []
+        }
+      },
+      "availability_limits": {
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false,
+        "available_at": "scheduled fund_adj daily 17:00 Asia/Shanghai; historical publication unverified",
+        "availability_time_field": "AvailableDate",
+        "adjustment": "hfq"
+      },
+      "quality_scope": "DFLS日线完备性及日线内部量价一致性；没有核验分钟聚合、历史发布链或未来执行能力。"
+    },
+    {
+      "dataset": "etf.unadjusted_daily",
+      "status": "READY",
+      "error": null,
+      "rows": 509,
+      "first_date": "2024-09-09",
+      "last_date": "2026-10-21",
+      "warmup_sessions": 75,
+      "evaluation_sessions": 434,
+      "identity": {
+        "dataset": "etf.unadjusted_daily",
+        "source": "tushare",
+        "symbol": "159326.SZ",
+        "data_start": "2024-09-09T00:00:00",
+        "data_cutoff": "2026-10-21T00:00:00",
+        "content_sha256": "86ef09152a3cf19de3d05da1c18af2ea9b070926008a0dd197306488292b8f92"
+      },
+      "quality": {
+        "version": 1,
+        "total_sessions": 509,
+        "daily": {
+          "complete_sessions": 509,
+          "accurate_sessions": 509,
+          "completeness": 1.0,
+          "accuracy": 1.0,
+          "minimum_accuracy": 0.99,
+          "incomplete_dates": [],
+          "inaccurate_dates": []
+        }
+      },
+      "availability_limits": {
+        "available_at": "SOURCE_PERIOD_CLOSE",
+        "availability_time_field": "Date",
+        "adjustment": "none"
+      },
+      "quality_scope": "DFLS日线完备性及日线内部量价一致性；没有核验分钟聚合、历史发布链或未来执行能力。"
+    }
+  ],
+  "prepared_reference": {
+    "space_id": "67b4df74-e6d9-4fa4-9200-b5694e5d7018",
+    "preparation_id": "10ef6d39-abea-4bce-a55a-8aca06458357",
+    "manifest_sha256": "5ba749ccb9a1f92a09e6255cd9a0459acca667e6afc9215240cb39944816755a"
+  }
+}
