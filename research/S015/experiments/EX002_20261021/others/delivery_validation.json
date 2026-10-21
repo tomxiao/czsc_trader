@@ -1,0 +1,50 @@
+{
+  "delivery": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S015"
+    },
+    "stage": "COMPONENTS",
+    "revision": 3,
+    "content_sha256": "8922e26b4470f2adb5621bc99b130e120b621c97ed809514ddb464a39ed049cd"
+  },
+  "validation": {
+    "type": "DeliveryValidation",
+    "status": "PASS",
+    "scope": "FULL",
+    "issues": [],
+    "stats": {
+      "type": "DeliveryValidationStats",
+      "unique_deliveries": 5,
+      "reference_visits": 5,
+      "recursive_expansions": 5,
+      "semantic_reuses": 0,
+      "files_hashed": 423,
+      "bytes_hashed": 180740081,
+      "elapsed_seconds": 0.7851443000836298
+    }
+  },
+  "experiment": {
+    "type": "ExperimentValidation",
+    "status": "PASS",
+    "scope": "REPORT_PUBLICATION",
+    "issues": [],
+    "report": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX002_20261021"
+      },
+      "evidence_id": "c6e408474d687624bdd1b95af0a001c8e19d53b98de4b6702308cf0dc03c944d.json",
+      "sha256": "c6e408474d687624bdd1b95af0a001c8e19d53b98de4b6702308cf0dc03c944d",
+      "media_type": "application/json",
+      "name": "experiment-report",
+      "schema": "experiment_report",
+      "schema_version": 1
+    }
+  },
+  "economic_acceptance": "NOT_EVALUATED",
+  "scope_note": "本次实际公共入口验证的结果快照，不能替代将来实时校验；没有策略经济验收。"
+}

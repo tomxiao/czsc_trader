@@ -1,0 +1,97 @@
+{
+  "F-PROJECT-DAILY-CLOSE-VWAP-DEVIATION": {
+    "status": "PASS",
+    "definition": {
+      "digest": "aea50fedaa02bd614169c1b4ab84f35908554125df0f53bef975143483215f31",
+      "definition": {
+        "kind": "factor",
+        "factor_id": "F-PROJECT-DAILY-CLOSE-VWAP-DEVIATION",
+        "name": "日收盘VWAP偏离",
+        "description": "当日收盘价相对全日成交量加权平均价的偏离",
+        "information_family": "POSITION_VALUATION",
+        "tags": [
+          "daily",
+          "ohlcv",
+          "vwap",
+          "valuation"
+        ],
+        "inputs": [
+          "daily.close",
+          "daily.volume",
+          "daily.amount"
+        ],
+        "provider": "project",
+        "implementation": "factor_signal_catalog.calculations.calculate_daily_close_vwap_deviation",
+        "formula": "close/(amount/volume)-1",
+        "availability": "T日收盘后",
+        "causality": "只使用T日及此前已完成日线",
+        "parameters": {},
+        "status": "DISCOVERED",
+        "version": 3
+      }
+    }
+  },
+  "F-PROJECT-DAILY-INTRADAY-RANGE": {
+    "status": "PASS",
+    "definition": {
+      "digest": "aea50fedaa02bd614169c1b4ab84f35908554125df0f53bef975143483215f31",
+      "definition": {
+        "kind": "factor",
+        "factor_id": "F-PROJECT-DAILY-INTRADAY-RANGE",
+        "name": "日内振幅",
+        "description": "当日最高价与最低价之差相对收盘价的比例",
+        "information_family": "VOLATILITY_RISK",
+        "tags": [
+          "daily",
+          "ohlcv",
+          "volatility",
+          "range"
+        ],
+        "inputs": [
+          "daily.high",
+          "daily.low",
+          "daily.close"
+        ],
+        "provider": "project",
+        "implementation": "factor_signal_catalog.calculations.calculate_daily_intraday_range",
+        "formula": "(high-low)/close",
+        "availability": "T日收盘后",
+        "causality": "只使用T日已完成日线",
+        "parameters": {},
+        "status": "DISCOVERED",
+        "version": 3
+      }
+    }
+  },
+  "F-PROJECT-ER60": {
+    "status": "PASS",
+    "definition": {
+      "digest": "aea50fedaa02bd614169c1b4ab84f35908554125df0f53bef975143483215f31",
+      "definition": {
+        "kind": "factor",
+        "factor_id": "F-PROJECT-ER60",
+        "name": "60日效率比",
+        "description": "以前一交易日收盘为截止的60日净位移与逐日路径长度之比",
+        "information_family": "TREND_REGIME",
+        "tags": [
+          "daily",
+          "ohlcv",
+          "regime"
+        ],
+        "inputs": [
+          "daily.close"
+        ],
+        "provider": "project",
+        "implementation": "czsc_trader.regime_weight.lagged_efficiency_ratio",
+        "formula": "abs(close_t-1-close_t-61)/sum(abs(diff(close)),t-60..t-1)",
+        "availability": "前一交易日收盘后，当前交易日开盘前可用",
+        "causality": "标记在交易日T的数值只使用T-1及更早的已完成日线",
+        "parameters": {
+          "lookback": 60
+        },
+        "status": "DEPRECATED",
+        "version": 2
+      }
+    }
+  }
+}

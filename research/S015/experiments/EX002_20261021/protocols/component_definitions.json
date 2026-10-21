@@ -1,0 +1,105 @@
+{
+  "C001_RECENT_RANGE": {
+    "role": "未来3日日内振幅连续预测，不是下跌概率或安全持仓阈值",
+    "formula": "range_n(T)=mean((High-Low)/Close,T-n+1..T); 主检查n=5，邻域3/7/10完整报告，均属一个信息族。",
+    "entrypoint": "component_study.hand_features",
+    "features": [
+      "range5",
+      "range20",
+      "vol20"
+    ],
+    "label": "range3=mean(log(High/Low),T+1..T+3)",
+    "status": "SUPPORTED for continuous within-pool amplitude information only"
+  },
+  "C002_PRICE_PRESSURE": {
+    "role": "短期反转线索，独立收益增量尚未确立",
+    "formula": "vwap_dev=Close/(Amount/Volume)-1; body=log(Close/Open); ret1=log(Close/Close[-1]); close_location=(2Close-High-Low)/(High-Low). 核心vwap_dev方向每训练折均负。",
+    "entrypoint": "component_study.hand_features",
+    "features": [
+      "vwap_dev",
+      "body",
+      "ret1",
+      "close_location"
+    ],
+    "label": "open1=Open[T+2]/Open[T+1]-1",
+    "status": "association supported; unique incremental role INSUFFICIENT_DATA"
+  },
+  "C003_CONTINUATION": {
+    "role": "本次固定趋势信息集的增量检验负结果",
+    "formula": "ret5/20/60、efficiency20/60、ma_dev20，加固定ret5/vol20基线；训练内标准化、ridge alpha=10。",
+    "entrypoint": "component_study.multivariate",
+    "status": "INEFFECTIVE in tested representation, not universal mechanism falsification"
+  },
+  "C004_RANGE_SLOPE": {
+    "role": "多日环境线索，当前证据不足",
+    "formula": "tsfresh linear_trend(attr=slope) on last20 daily (High-Low)/Close observations; 对照60日同类斜率。",
+    "entrypoint": "component_study.ts_features",
+    "label": "open3/open5",
+    "status": "INSUFFICIENT_DATA"
+  },
+  "C005_DUPLICATE_INFO": {
+    "role": "避免把同源变换计为新信息",
+    "formula": "ts20 range mean == range20; ts20 return mean proportional ret20; ts20 return standard_deviation == vol20; ts20 volume_change mean proportional volume_change20; ts60 range mean == range60。",
+    "entrypoint": "component_study.ts_features",
+    "status": "REDUNDANT; five perfect rank-equivalent pairs verified"
+  },
+  "implementation": {
+    "source": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX002_20261021"
+      },
+      "evidence_id": "b399927e0dc48d60a0e6783fc1504ff9fdd9804236ba3b37a3362c682fae762d.py",
+      "sha256": "b399927e0dc48d60a0e6783fc1504ff9fdd9804236ba3b37a3362c682fae762d",
+      "media_type": "text/x-python",
+      "name": "initial_study_source",
+      "schema": null,
+      "schema_version": null
+    },
+    "followup_source_run": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX002_20261021"
+      },
+      "evidence_id": "b70c802eed0efeeb0ee0ffcdd689cc881ef0b8e9b0fa08b7d26158938c62ff99.py",
+      "sha256": "b70c802eed0efeeb0ee0ffcdd689cc881ef0b8e9b0fa08b7d26158938c62ff99",
+      "media_type": "text/x-python",
+      "name": "followup_source",
+      "schema": null,
+      "schema_version": null
+    },
+    "followup_source_cleanup": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX002_20261021"
+      },
+      "evidence_id": "08da4b9056b17477e34c761622ac29e2dd071d6959cfc2d3e17e6cf3ff8731cc.py",
+      "sha256": "08da4b9056b17477e34c761622ac29e2dd071d6959cfc2d3e17e6cf3ff8731cc",
+      "media_type": "text/x-python",
+      "name": "followup_source_import_cleanup",
+      "schema": null,
+      "schema_version": null
+    },
+    "cleanup": "仅移除2个未使用import；实际后续运行源码原件仍保存，不改写原执行身份。",
+    "data_preparation": {
+      "space_id": "67b4df74-e6d9-4fa4-9200-b5694e5d7018",
+      "preparation_id": "10ef6d39-abea-4bce-a55a-8aca06458357",
+      "manifest_sha256": "5ba749ccb9a1f92a09e6255cd9a0459acca667e6afc9215240cb39944816755a"
+    },
+    "versions": {
+      "numpy": "2.5.2",
+      "pandas": "3.0.5",
+      "scipy": "1.18.0",
+      "tsfresh": "0.21.1",
+      "optuna": "4.9.0",
+      "expr_codegen": "0.16.6",
+      "scikit-learn": "1.9.0"
+    }
+  }
+}
