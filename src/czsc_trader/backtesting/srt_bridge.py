@@ -74,8 +74,10 @@ def _plain_json(value):
     return value
 
 
-def _decision_id(reference: str, signal_date: pd.Timestamp, target: int) -> str:
-    raw = f"{reference}|{signal_date.date()}|{target}".encode()
+def _decision_id(reference: str, signal_date: pd.Timestamp, target: float) -> str:
+    # Preserve the existing binary decision identities while retaining fractional targets.
+    target_token = int(target) if target in (0.0, 1.0) else target
+    raw = f"{reference}|{signal_date.date()}|{target_token}".encode()
     return "DEC-" + sha256(raw).hexdigest()[:20].upper()
 
 
@@ -415,9 +417,12 @@ def build_srt_signal_replay(
     else:
         for signal_date in visible:
             row = history.loc[signal_date]
-            if float(row["target_position"]) not in (0.0, 1.0):
+            target = float(row["target_position"])
+            capital_mode = dict(definition.execution.settings.get("capital", {})).get("mode")
+            if target not in (0.0, 1.0) and capital_mode != "target_equity_fraction":
                 raise RuntimeContractError("TXE target replay requires binary positions; fractional targets are unsupported")
-            target = int(row["target_position"])
+            if target in (0.0, 1.0):
+                target = int(target)
             record: dict[str, object] = {
                 "decision_id": _decision_id(snapshot.identity.reference, signal_date, target),
                 "signal_date": signal_date,

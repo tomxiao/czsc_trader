@@ -78,14 +78,43 @@ def _target_plan(
     cash = Decimal(str(request.available_cash))
     lot = int(instrument["lot_size"])
     tick = float(instrument["price_tick"])
-    if request.target_position not in (0.0, 1.0):
+    equity_target = capital["mode"] == "target_equity_fraction"
+    if equity_target:
+        if (not isinstance(request.target_position, (int, float))
+                or isinstance(request.target_position, bool)
+                or not isfinite(request.target_position)
+                or not 0 <= request.target_position <= 1):
+            raise RuntimeContractError("equity target position must be finite and in [0, 1]")
+        if (capital["target_scope"] != "decision"
+                or isinstance(capital.get("allocation_fraction"), bool)
+                or capital.get("allocation_fraction") != 1):
+            raise RuntimeContractError("equity target requires decision scope and allocation fraction one")
+        if (not cash.is_finite() or cash < 0
+                or type(actual) is not int or actual < 0 or actual % lot):
+            raise RuntimeContractError("equity target requires non-negative cash and whole-lot position")
+        if not isfinite(request.quote_reference) or request.quote_reference <= 0:
+            raise RuntimeContractError("equity target requires a positive finite reference price")
+        fee_value = Decimal(str(capital["fee_rate"]))
+        if not fee_value.is_finite() or not 0 <= fee_value < 1:
+            raise RuntimeContractError("equity target fee rate must be in [0, 1)")
+    elif request.target_position not in (0.0, 1.0):
         raise RuntimeContractError(
             "FROZEN_RULE requires a binary target position"
         )
-    target_position = int(request.target_position)
+    # Keep endpoint serialization stable; fractional targets must never be truncated.
+    target_position = (int(request.target_position) if request.target_position in (0.0, 1.0)
+                       else float(request.target_position))
     execution_reference_price = request.quote_reference
+    desired = 0
+    if equity_target:
+        # Size against the same causal price basis as the actual account holdings.
+        # Fees, lots, limit execution and price movement can prevent exact weights.
+        reference = Decimal(str(execution_reference_price)) * Decimal(str(request.price_scale))
+        equity = cash + Decimal(actual) * reference
+        desired = int((equity * Decimal(str(target_position)) / (reference * lot))
+                      .to_integral_value(rounding=ROUND_FLOOR)) * lot
     orders: list[dict[str, object]] = []
-    if target_position:
+    if (equity_target and desired >= actual) or (not equity_target and target_position):
         requested = _round_tick(
             execution_reference_price * (1 + float(entry["limit_parameter"])),
             tick,
@@ -108,7 +137,7 @@ def _target_plan(
             (cash * allocation / (unit_cost * lot)).to_integral_value(rounding=ROUND_FLOOR)
         ) * lot
         previous_cycle = request.deployment_settings.get("cycle_target_quantity")
-        cycle_target = affordable if previous_cycle is None else int(previous_cycle)
+        cycle_target = desired if equity_target else (affordable if previous_cycle is None else int(previous_cycle))
         target = min(cycle_target, affordable)
         delta = max(0, target - actual)
         action = "BUY" if delta else ("HOLD" if actual else "WAIT")
@@ -127,11 +156,11 @@ def _target_plan(
             if order_type == "MARKET"
             else lower_guard
         ) * request.price_scale
-        target = 0
-        delta = -actual
-        action = "SELL" if actual else "WAIT"
+        target = desired if equity_target else 0
+        delta = target - actual
+        action = "SELL" if delta else ("HOLD" if actual else "WAIT")
         previous_cycle = request.deployment_settings.get("cycle_target_quantity")
-        cycle_target = 0 if not actual else int(previous_cycle or actual)
+        cycle_target = desired if equity_target else (0 if not actual else int(previous_cycle or actual))
         side = "SELL"
     remaining = abs(delta)
     maximum = int(instrument["maximum_order_quantity"])

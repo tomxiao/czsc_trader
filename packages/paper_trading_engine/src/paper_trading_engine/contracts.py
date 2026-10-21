@@ -295,14 +295,15 @@ class AdviceDecision:
             "allocation fraction",
             nonnegative=True,
         )
-        if capital_mode not in {"full_available_cash", "available_cash_fraction"}:
+        if capital_mode not in {"full_available_cash", "available_cash_fraction", "target_equity_fraction"}:
             raise AdviceContractError("capital mode is unsupported")
         if not 0 < allocation_fraction <= 1:
             raise AdviceContractError("allocation fraction must be in (0, 1]")
-        if capital_rule.get("target_scope") != "entry_cycle":
+        expected_scope = "decision" if capital_mode == "target_equity_fraction" else "entry_cycle"
+        if capital_rule.get("target_scope") != expected_scope:
             raise AdviceContractError("capital target scope is unsupported")
-        if capital_mode == "full_available_cash" and allocation_fraction != 1.0:
-            raise AdviceContractError("full cash mode requires allocation fraction one")
+        if capital_mode in {"full_available_cash", "target_equity_fraction"} and allocation_fraction != 1.0:
+            raise AdviceContractError("full cash and target equity modes require allocation fraction one")
         if valid_session <= signal_date:
             raise AdviceContractError("valid session must be after signal date")
         if data_cutoff != signal_date:

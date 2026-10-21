@@ -243,6 +243,15 @@ class DecisionContract:
 
 @dataclass(frozen=True, slots=True)
 class ExecutionPolicy:
+    """Execution semantics owned by the strategy.
+
+    FROZEN_RULE capital mode ``target_equity_fraction`` uses decision scope and
+    allocation_fraction=1. Each decision sizes the requested [0, 1] weight from
+    cash plus actual holdings valued at the causal execution reference. Whole
+    lots, cash including fees, and subsequent execution prices constrain the
+    realized weight. It rebalances on every decision, unlike entry_cycle modes.
+    """
+
     policy_type: str
     settings: Mapping[str, Any]
 
@@ -250,6 +259,15 @@ class ExecutionPolicy:
         object.__setattr__(self, "policy_type", _text(self.policy_type, "execution policy_type"))
         object.__setattr__(self, "settings", _json_mapping(self.settings, "execution settings"))
         canonical_sha256(self.settings)
+        if self.policy_type == "FROZEN_RULE":
+            capital = self.settings.get("capital", {})
+            if capital.get("mode") == "target_equity_fraction":
+                if (capital.get("target_scope") != "decision"
+                        or isinstance(capital.get("allocation_fraction"), bool)
+                        or capital.get("allocation_fraction") != 1):
+                    raise RuntimeContractError(
+                        "equity target requires decision scope and allocation fraction one"
+                    )
 
     def order_type_for(self, side: str) -> str:
         """Return the effective channel-neutral order type for one side."""

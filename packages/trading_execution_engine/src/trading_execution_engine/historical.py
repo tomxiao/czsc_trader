@@ -495,9 +495,10 @@ class HistoricalExecutor:
         price_row = self._evaluation.loc[execution_date]
         cash_before = self._cash
         quantity_before = self._quantity
-        target = int(plan.target_position)
+        target = (int(plan.target_position) if plan.target_position in (0.0, 1.0)
+                  else float(plan.target_position))
         decision_id = self._decision_id(plan)
-        if target == 1 and self._quantity == 0 and self._cycle_id is None:
+        if target > 0 and self._quantity == 0 and self._cycle_id is None:
             self._cycle_id = _id("CYC", self._strategy_reference, signal_date)
         exit_time: pd.Timestamp | None = None
         exit_quantity = 0
@@ -633,7 +634,7 @@ class HistoricalExecutor:
             )
             self._open_trade = None
         self._cycle_target = plan.cycle_target_quantity
-        if target == 0 and self._quantity == 0:
+        if self._quantity == 0 and (target == 0 or exit_quantity):
             self._cycle_target = None
             self._cycle_id = None
         self._state_by_date[execution_date] = {

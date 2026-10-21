@@ -573,6 +573,59 @@ def test_pte_observation_failure_is_explicit_and_does_not_change_execution(prepa
         original_parse(transport[0])
 
 
+def test_pte_transports_equity_mode_and_rejects_mismatched_scope(prepared_account, monkeypatch):
+    """The SRT boundary supplies a typed plan; PTE must retain its capital contract."""
+    from copy import deepcopy
+    from paper_trading_engine.contracts import AdviceContractError, AdviceDecision
+    from strategy_runtime.contracts import plan_identity_for, signal_identity_for
+
+    client, prepared = prepared_account
+    original_plan = prepared.instance.plan_at
+
+    def equity_plan(**kwargs):
+        plan = original_plan(**kwargs)
+        signal_identity = signal_identity_for(
+            strategy=plan.strategy, signal_date=plan.signal_date, target_position=.5,
+            input_identities=plan.input_identities, price_identities=plan.price_identities,
+        )
+        plan_identity = plan_identity_for(
+            signal_identity=signal_identity, actual_quantity=plan.actual_quantity,
+            target_quantity=plan.target_quantity, cycle_target_quantity=plan.cycle_target_quantity,
+            plan_mode=plan.plan_mode, capital_mode="target_equity_fraction",
+            allocation_fraction=plan.allocation_fraction, orders=plan.orders, legs=plan.legs,
+        )
+        return replace(plan, capital_mode="target_equity_fraction", target_position=.5,
+                       signal_identity=signal_identity, plan_identity=plan_identity)
+
+    transport = []
+    original_parse = AdviceDecision.from_cli_payload
+
+    def capture_payload(value):
+        transport.append(deepcopy(value))
+        return original_parse(value)
+
+    monkeypatch.setattr(prepared.instance, "plan_at", equity_plan)
+    monkeypatch.setattr(AdviceDecision, "from_cli_payload", capture_payload)
+    decision = _decision(client, prepared)
+    assert decision.capital_mode == "target_equity_fraction"
+    assert decision.allocation_fraction == 1.
+    assert decision.observation["target_position"] == .5
+    assert transport[0]["result"]["capital_rule"] == {
+        "mode": "target_equity_fraction", "target_scope": "decision", "allocation_fraction": 1.,
+    }
+    for mode, scope, allocation, message in (
+        ("target_equity_fraction", "entry_cycle", 1., "scope"),
+        ("full_available_cash", "decision", 1., "scope"),
+        ("target_equity_fraction", "decision", .5, "allocation fraction one"),
+    ):
+        bad = deepcopy(transport[0])
+        bad["result"]["capital_rule"] = {
+            "mode": mode, "target_scope": scope, "allocation_fraction": allocation,
+        }
+        with pytest.raises(AdviceContractError, match=message):
+            original_parse(bad)
+
+
 @pytest.mark.parametrize('feedback', list(DecisionFeedback))
 def test_contract_two_feedback_gates_binding_and_prepared_decisions(
     prepared_account, monkeypatch, feedback,

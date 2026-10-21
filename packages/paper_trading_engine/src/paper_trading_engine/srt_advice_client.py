@@ -190,7 +190,7 @@ def _decision_from_plan(
         "capital_rule": {
             "mode": plan.capital_mode,
             "allocation_fraction": float(plan.allocation_fraction),
-            "target_scope": "entry_cycle",
+            "target_scope": "decision" if plan.capital_mode == "target_equity_fraction" else "entry_cycle",
         },
         "plan_mode": plan.plan_mode,
         "plan_legs": legs,

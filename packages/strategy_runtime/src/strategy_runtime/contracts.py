@@ -422,6 +422,11 @@ class ExecutionPlan:
             raise RuntimeContractError("allocation fraction must be in (0, 1]")
         if self.capital_mode == "full_available_cash" and allocation_fraction != 1:
             raise RuntimeContractError("full cash mode requires allocation fraction one")
+        if self.capital_mode == "target_equity_fraction":
+            if isinstance(self.allocation_fraction, bool) or allocation_fraction != 1:
+                raise RuntimeContractError("equity target requires allocation fraction one")
+            if isinstance(self.target_position, bool) or not 0 <= self.target_position <= 1:
+                raise RuntimeContractError("equity target position must be in [0, 1]")
         object.__setattr__(self, "allocation_fraction", allocation_fraction)
         for name in (
             "available_cash",
