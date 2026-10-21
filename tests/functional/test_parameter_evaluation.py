@@ -3,6 +3,7 @@
 from dataclasses import replace
 from importlib.metadata import version
 import json
+import pickle
 import shutil
 
 import pytest
@@ -63,6 +64,26 @@ def parameter_plan(research, request, *, child_parameters=None):
     return request, plan, reference, tuple(bound)
 
 
+@pytest.fixture
+def prepared_parameter_plan(request, tmp_path, frozen_seed_root):
+    """Build the real plan once; each fault gets private files, frames and bindings."""
+    from czsc_trader.research_tools._evaluation_workers import pack
+    from evaluation_seed_support import relocate_request, restored_context
+
+    seed = frozen_seed_root / "parameter-plan-input"
+    data = frozen_seed_root / "parameter-plan-input.pkl"
+    if not seed.exists():
+        research, evaluation = request.getfixturevalue("managed_evaluation")
+        prepared = parameter_plan(research, evaluation)
+        data.write_bytes(pack(prepared))
+        shutil.copytree(research.repository.root, seed)
+    root = tmp_path / "parameter-plan-repo"
+    shutil.copytree(seed, root)
+    center, plan, reference, children = pickle.loads(data.read_bytes())
+    return (restored_context(root), relocate_request(center, root), plan, reference,
+            tuple(relocate_request(child, root) for child in children))
+
+
 def test_published_parameter_point_reaches_authenticated_account_and_se(managed_evaluation):
     research, request = managed_evaluation
     request = replace(request, dependencies=(ImplementationDependency("numpy", version("numpy")),))
@@ -85,16 +106,15 @@ def test_published_parameter_point_reaches_authenticated_account_and_se(managed_
         research.evaluation.prepare(children[0])
 
 
-def test_parameter_plan_rejects_missing_publication_and_collapsed_payloads(managed_evaluation):
-    research, request = managed_evaluation
-    center, plan, reference, children = parameter_plan(research, request)
+def test_parameter_plan_rejects_missing_publication_and_collapsed_payloads(prepared_parameter_plan):
+    research, center, plan, reference, children = prepared_parameter_plan
     with pytest.raises(ValueError, match="duplicate parameter child candidate"):
         replace(plan, children=(plan.children[0], plan.children[0]))
     with pytest.raises(ValueError, match="duplicate parameter candidate payload"):
         replace(plan, children=(plan.children[0], replace(plan.children[1], payload_json=plan.children[0].payload_json)))
     with pytest.raises(ValueError, match="evidence differs"):
         replace(plan, mapping_evidence=plan.feasibility_evidence)
-    reference.resolve(request.repository_root).unlink()
+    reference.resolve(center.repository_root).unlink()
     with pytest.raises(FileNotFoundError, match="published evidence"):
         research.evaluation.prepare(children[0])
 
@@ -187,11 +207,10 @@ def test_parameter_plan_allows_genuine_lookback_extension(managed_evaluation):
 
 
 @pytest.mark.parametrize("failure", ["source_contract", "raw_values"])
-def test_parameter_plan_rejects_changed_raw_signal_inputs(managed_evaluation, monkeypatch, failure):
+def test_parameter_plan_rejects_changed_raw_signal_inputs(prepared_parameter_plan, monkeypatch, failure):
     from dataflows import Dataflows, Dataset, PreparePolicy, ProviderBinding, ProviderConfig
 
-    research, request = managed_evaluation
-    center, plan, _, children = parameter_plan(research, request)
+    research, center, _, _, children = prepared_parameter_plan
     child = children[0]
     if failure == "source_contract":
         original = child.input_bindings["full"]
@@ -233,9 +252,8 @@ def test_parameter_plan_rejects_changed_raw_signal_inputs(managed_evaluation, mo
         assert flow_reads == [center.input_bindings["full"].prepared, prepared.reference]
 
 
-def test_equal_pinned_inputs_read_once_per_role_and_again_for_each_preparation(managed_evaluation, monkeypatch):
-    research, request = managed_evaluation
-    center, _, _, children = parameter_plan(research, request)
+def test_equal_pinned_inputs_read_once_per_role_and_again_for_each_preparation(prepared_parameter_plan, monkeypatch):
+    research, center, _, _, children = prepared_parameter_plan
     original = center.input_bindings["full"]
     assert all(child.input_bindings["full"].prepared == original.prepared for child in children)
     fetch = research.data.fetch
@@ -255,11 +273,10 @@ def test_equal_pinned_inputs_read_once_per_role_and_again_for_each_preparation(m
     ] * 3)
 
 
-def test_equal_pinned_inputs_reject_corrupted_asset_after_success(managed_evaluation):
+def test_equal_pinned_inputs_reject_corrupted_asset_after_success(prepared_parameter_plan):
     import sqlite3
 
-    research, request = managed_evaluation
-    center, _, _, children = parameter_plan(research, request)
+    research, center, _, _, children = prepared_parameter_plan
     original = center.input_bindings["full"]
     assert children[0].input_bindings["full"].prepared == original.prepared
     assert research.evaluation.prepare(children[0]) is children[0]
@@ -285,11 +302,10 @@ def test_unprepared_adapter_uses_authenticated_binding_after_source_cleanup(mana
     assert evidence[0].request_sha256 == result.request_hash
 
 
-def test_parameter_plan_reuses_decoding_but_rechecks_all_published_bytes(managed_evaluation, monkeypatch):
+def test_parameter_plan_reuses_decoding_but_rechecks_all_published_bytes(prepared_parameter_plan, monkeypatch):
     from czsc_trader.research_tools.parameter_evaluation import read_parameter_plan, _decode_parameter_plan
 
-    research, request = managed_evaluation
-    _, plan, reference, _ = parameter_plan(research, request)
+    _, request, plan, reference, _ = prepared_parameter_plan
     _decode_parameter_plan.cache_clear()
     original = ParameterEvaluationPlan.from_dict
     calls = []

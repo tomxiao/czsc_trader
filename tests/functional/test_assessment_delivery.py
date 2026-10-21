@@ -196,9 +196,8 @@ def acceptance_targets():
     )
 
 
-def test_acceptance_contract_persists_and_full_validation_rejects_forged_facts(completed):
-    definition, value = prepare(completed, acceptance_targets())
-    context = completed[0]
+def test_acceptance_contract_persists_and_full_validation_rejects_forged_facts(prepared_acceptance_delivery):
+    context, definition, value = prepared_acceptance_delivery
     receipt = assemble_delivery(context, definition, value)
     assert receipt.schema_version == 8
     saved = json.loads((published(context, receipt) / "delivery.json").read_text(encoding="utf-8"))
@@ -224,9 +223,9 @@ def test_acceptance_contract_persists_and_full_validation_rejects_forged_facts(c
 
 
 @pytest.mark.parametrize("change", ["coverage", "joint-count", "nested-limit", "stress-cost", "omit"])
-def test_acceptance_conditions_cannot_be_relaxed_after_confirmation(completed, change):
-    targets = acceptance_targets()
-    definition, value = prepare(completed, targets)
+def test_acceptance_conditions_cannot_be_relaxed_after_confirmation(prepared_acceptance_delivery, change):
+    context, definition, value = prepared_acceptance_delivery
+    targets = value.payload.comparison_request.targets.requirements
     altered = list(targets)
     if change == "coverage":
         altered[1] = replace(altered[1], minimum_numerator=8)
@@ -244,7 +243,7 @@ def test_acceptance_conditions_cannot_be_relaxed_after_confirmation(completed, c
     changed = replace(payload, comparison_request=comparison, comparison=compare_candidates(comparison),
                       target_bindings=tuple(d.TargetMandateBinding(x.target_id, "return") for x in altered))
     with pytest.raises(d.DeliveryValidationError, match="confirmed mandate|targets must be preserved"):
-        assemble_delivery(completed[0], definition, replace(value, payload=changed))
+        assemble_delivery(context, definition, replace(value, payload=changed))
 
 
 def test_account_reuse_still_checks_current_file_and_reference_owner(completed):
@@ -658,14 +657,23 @@ def test_validation_scope_controls_recomputation_and_always_checks_hashes(prepar
 
 @pytest.fixture
 def prepared_delivery(request, tmp_path, frozen_seed_root):
+    return _prepared_delivery_copy(request, tmp_path, frozen_seed_root)
+
+
+@pytest.fixture
+def prepared_acceptance_delivery(request, tmp_path, frozen_seed_root):
+    return _prepared_delivery_copy(request, tmp_path, frozen_seed_root, acceptance_targets())
+
+
+def _prepared_delivery_copy(request, tmp_path, frozen_seed_root, targets=None):
     """Copy real stage-three preparation without repeating it for numeric faults."""
-    import pickle
     from czsc_trader.research_tools._evaluation_workers import pack
-    seed = frozen_seed_root / "tdr-assessment-delivery-input"
-    data = frozen_seed_root / "tdr-assessment-delivery-input.pkl"
+    name = "tdr-assessment-delivery-input" if targets is None else "tdr-acceptance-delivery-input"
+    seed = frozen_seed_root / name
+    data = frozen_seed_root / (name + ".pkl")
     if not seed.exists():
         completed = request.getfixturevalue("completed")
-        definition, value = prepare(completed)
+        definition, value = prepare(completed, targets)
         shutil.copytree(completed[0].root, seed)
         data.write_bytes(pack((definition, value)))
     root = tmp_path / "assessment-repo"

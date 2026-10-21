@@ -168,6 +168,19 @@ def test_complete_declared_coverage_computes_linear_quantiles():
     assert values[m.ResearchMetric.PARAMETER_RETURN_DEGRADATION] > 0
     assert panel.formula_version == "research-assessment-v5"
     assert m.CandidateAssessmentRequest.from_dict(req.to_dict()) == req
+    item = panel.rows[0]
+    assert len(item.parameter_performances) == 2
+    assert {x.point_index for x in item.parameter_performances} == {0, 1}
+    assert item.stress_performance.scenario.one_way_cost == 0.001
+    assert m.AssessmentPanel.from_dict(panel.to_dict()) == panel
+    group = m.ParameterGroupTarget("points", 2, 2,
+        (m.ResearchTarget("profit", m.ResearchMetric.NET_ANNUAL_RETURN,
+                         lower=m.ConstantBound(0.0, False)),),
+        (m.ResearchTarget("risk", m.ResearchMetric.DRAWDOWN_MAGNITUDE,
+                         upper=m.ConstantBound(0.25, True)),))
+    checked = compare((item,), targets=(group,)).rows[0].target_checks[0]
+    assert (checked.valid_points, checked.joint_passes) == (2, 2)
+    assert checked.status is m.TargetCheckStatus.PASSED
 
 
 def test_declared_count_cannot_be_less_than_minimum_required_coverage():

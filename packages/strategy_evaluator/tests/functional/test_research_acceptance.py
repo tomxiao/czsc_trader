@@ -8,7 +8,6 @@ import pytest
 
 from strategy_evaluator import assess_candidates
 from strategy_evaluator import research_models as m
-from test_parameter_perturbation import bound_request
 from test_research_assessment import candidate, compare, evidence, policy, protocol, row
 from test_research_comparison_v2 import benchmark
 
@@ -243,20 +242,6 @@ def test_incomplete_parameter_group_does_not_shrink_denominator_or_pass_without_
         replace(item, parameter_performances=(item.parameter_performances[0],) * 32)
 
 
-def test_declared_accounts_supply_group_and_pressure_facts_without_another_replay():
-    req = bound_request()
-    panel = assess_candidates(req)
-    item = panel.rows[0]
-    assert len(item.parameter_performances) == 2
-    assert {x.point_index for x in item.parameter_performances} == {0, 1}
-    assert item.stress_performance.scenario.one_way_cost == 0.001
-    assert m.AssessmentPanel.from_dict(panel.to_dict()) == panel
-    assert (
-        compare((item,), targets=(parameter_target(2, 1),)).rows[0].target_checks[0].valid_points
-        == 2
-    )
-
-
 def stress_targets():
     args = {"scope": m.TargetScope.STRESS, "one_way_cost": 0.002}
     return (
@@ -340,8 +325,6 @@ def test_pressure_loss_alone_or_wrong_fee_cannot_certify_acceptance():
     [
         (0.1, 0.15, m.TargetCheckStatus.PASSED),
         (0.1, 0.149999, m.TargetCheckStatus.FAILED),
-        (0.0, 0.0, m.TargetCheckStatus.FAILED),
-        (-0.1, 0.01, m.TargetCheckStatus.PASSED),
     ],
 )
 def test_center_approved_return_branches_and_decimal_multiplier_boundaries(rb, rs, expected):

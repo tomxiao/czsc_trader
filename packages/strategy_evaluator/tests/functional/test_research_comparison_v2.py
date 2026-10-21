@@ -93,12 +93,16 @@ def test_conditional_positive_return_preserves_nonpositive_benchmark_branch(base
         lower=m.ConstantBound(0.0, False),
         when=m.BenchmarkCondition(m.ResearchMetric.NET_ANNUAL_RETURN, m.ComparisonOperator.LE, 0.0),
     )
-    result = checks(benchmark(row(candidate(), annual=annual), annual=base), target)[0]
+    positive = m.ResearchTarget("relative-positive", m.ResearchMetric.NET_ANNUAL_RETURN,
+        lower=m.BenchmarkBound(1.5, True),
+        when=m.BenchmarkCondition(m.ResearchMetric.NET_ANNUAL_RETURN, m.ComparisonOperator.GT, 0.0))
+    ranked = compare((benchmark(row(candidate(), annual=annual), annual=base),),
+                     targets=(positive, target)).rows[0]
+    result = ranked.target_checks[1]
     assert result.status is expected
     assert result.condition_observed == base
-    missing = checks(benchmark(row(candidate()), missing=True), target)[0]
-    assert missing.status is m.TargetCheckStatus.INDETERMINATE
-    assert missing.reason == "MISSING_CONDITION_BENCHMARK"
+    assert ranked.acceptance_status is (
+        m.TargetCheckStatus.FAILED if expected is m.TargetCheckStatus.NOT_APPLICABLE else expected)
 
 
 def test_multiple_same_metric_targets_and_missing_bound_do_not_pass():
@@ -112,6 +116,11 @@ def test_multiple_same_metric_targets_and_missing_bound_do_not_pass():
     result = compare((benchmark(row(candidate()), missing=True),), targets=(a, b)).rows[0]
     assert result.status is m.ComparisonStatus.INCOMPARABLE
     assert result.target_checks[0].reason == "MISSING_BOUND_BENCHMARK"
+    conditional = replace(b, when=m.BenchmarkCondition(
+        m.ResearchMetric.NET_ANNUAL_RETURN, m.ComparisonOperator.LE, 0.0))
+    missing = checks(benchmark(row(candidate()), missing=True), conditional)[0]
+    assert missing.status is m.TargetCheckStatus.INDETERMINATE
+    assert missing.reason == "MISSING_CONDITION_BENCHMARK"
     with pytest.raises(TypeError):
         m.ResearchTarget("bad", a.metric, lower=0.1)
     with pytest.raises(TypeError):
