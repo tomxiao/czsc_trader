@@ -1,6 +1,7 @@
 # TDR 研究工具使用说明
 
-TDR 为研究员提供批次上下文、账户评价、回测、结果留证、候选登记及五阶段交付。
+TDR 为研究员提供批次上下文、研究概览、账户评价与诊断、回测、实验报告、结果留证、候选登记及五阶段交付。
+本文是这些公共工具的统一使用入口，说明调用契约、支持范围、示例及结果处理；研究方法与判断责任由RSCH指南规定。
 阶段二、三的探索与搜索由 RSCH 自主组织，平台校验产物、输入身份及数值一致性。
 研究目标、授权、候选选择和冻结批准见 [RSCH 契约](../../research/RSCH_AGENT.md)。
 用户 CLI 提供 `backtest run`；Python API 与 CLI 的结果保存行为分别说明如下。
@@ -18,7 +19,9 @@ TDR 为研究员提供批次上下文、账户评价、回测、结果留证、�
 | 结果留证 | `publish_evidence`、`publish_evidence_many` | 单项 `EvidenceRef`；批量逐项 `PublicationOutcome` |
 | 候选登记与读取 | `register_candidate`、`load_candidate` | 保存候选载荷、源码快照及支撑证据，读取已登记实体 |
 | 五阶段交付 | `assemble_delivery`、`validate_delivery` | 结论、选定证据快照和不可变修订 |
-| 研究事实与诊断 | `get_research_overview`、`diagnose_accounts`、`validate_experiment` | 批次概览、正式账户损益与路径诊断、实验结构和报告发布检查 |
+| 研究概览 | `get_research_overview(repository, batch)` | `ResearchOverview`，读取保留事实、来源及限制 |
+| 账户诊断 | `diagnose_accounts(repository, AccountDiagnosisRequest)` | `AccountDiagnosisResult`，正式账户损益、路径差异及覆盖 |
+| 实验检查 | `validate_experiment(repository, ExperimentValidationRequest)` | `ExperimentValidation`，实验结构或报告发布一致性 |
 | 自检与比较 | `build_assessment_evidence`；SE `assess_candidates/compare_candidates` | 数值事实适配、自检和比较 |
 | 技术检验与冻结 | `inspect_candidate`、`record_research_decision`、`freeze_candidate`、`get_freeze_result` | 真实用户决定、技术检验、批准与事务状态 |
 | 目录与模板 | `validate_catalog/list_catalog/show_catalog`、`validate_templates/list_templates/show_template/instantiate_template` | FSC/STC 公开内容与绑定校验 |
@@ -30,8 +33,10 @@ TDR 为研究员提供批次上下文、账户评价、回测、结果留证、�
 
 | 对象 | 当前版本 |
 | --- | --- |
+| 账户评价证据／请求身份 | 7／6 |
 | 已发布账户评价／回测 manifest | 5／5 |
-| 阶段交付定义、文档和回执 | 6 |
+| 实验报告快照 | 1 |
+| 阶段交付定义、文档和回执 | 7 |
 | SM 候选登记／候选内容身份 | 3／2 |
 | SM 冻结版本／SRT 发布记录 | 5／5 |
 | SRT 运行定义／运行绑定 | 3／2 |
@@ -50,6 +55,8 @@ TDR 为研究员提供批次上下文、账户评价、回测、结果留证、�
 - 数据身份、日期或数值不符时明确失败；研究成功、技术通过与用户批准分别判断。
 
 ## 3. 批次上下文、实验与数据
+
+### 批次与实验分配
 
 新立项使用 `create_research_batch(repository, ResearchBatchRequest, *, actor, reason)`，返回
 `ResearchBatchRef`；调用前取得用户立项授权。更新意图使用
@@ -78,7 +85,7 @@ experiment_root = experiment.resolve(repository.root)
 source = experiment_root / "src"
 ```
 
-`create_experiment` 在 `research/S900/experiments/EXxxx_YYYYMMDD/` 分配身份，创建 `experiment.json`、根目录初始 `notes.md`、进行中的`report.md`及`src/`、`protocols/`、`others/`。单个实验材料内聚于该目录，正式资产仍由批次`assets/`管理。实验报告通过`ExperimentReportWrite`独立发布，不要求阶段交付；完整公共契约见[研究工具](../../docs/RESEARCH_TOOLS.md)。
+`create_experiment` 在 `research/S900/experiments/EXxxx_YYYYMMDD/` 分配身份，创建 `experiment.json`、根目录初始 `notes.md`、进行中的`report.md`及`src/`、`protocols/`、`others/`。单个实验材料内聚于该目录，正式资产仍由批次`assets/`管理。实验报告独立发布，不要求阶段交付；操作见[实验报告发布](#实验报告独立发布与修订)。
 编号在批次内跨日期递增，分配时参考本批次旧目录的现有编号；三位编号耗尽时拒绝。源码、实验方案和其他材料分别保存于对应目录，运行资料由研究程序按需要组织。
 
 上下文的 `data`、`runtime` 和 `evaluation` 共用 `research/<批次>/assets/data/`。DFLS 的只读 `binding`
@@ -103,6 +110,43 @@ if not market.ready:
 一次 prepare 对完整请求集合完成校验、适用补丁及质量验收，再形成准备引用。fetch 读取已准备资产，
 核对空间、准备身份与实现修订，不对子窗口重新执行质量验收。详情与门槛见 [DFLS 手册](../../packages/dataflows/README.md)。
 独立取数与多个账户可复用相同批次空间；完整评价所需行情、分钟执行数据和策略预热由平台按实际依赖准备。
+
+### 研究概览
+
+`get_research_overview(repository, batch) -> ResearchOverview`接受已发现的仓库上下文和批次引用。
+研究概览、账户诊断及实验检查均为只读入口，不创建数据准备环境，不访问供应商、PTE生产库或其他研究批次，不重新执行策略。
+
+```python
+from czsc_trader.application import get_research_overview
+from czsc_trader.research_tools import ResearchBatchRef
+
+overview = get_research_overview(repository, ResearchBatchRef("S900"))
+```
+
+返回登记状态、各阶段最高已支持修订、实验报告状态、组件测试声明、候选、交接集合、搜索声明、计数、限制及来源快照。来源包含文件/目录位置、存在状态和哈希；调用结束前复核读取清单，检测并发变化即报错，不自动重试。
+
+计数的`basis`为`VERIFIED`（已认证登记事实）、`DECLARED`（已保存的声明）或`UNKNOWN`（`value=None`及原因）。重复交付中的相同搜索声明只展示一次；多个可能重叠的搜索声明不相加。账户评价数只覆盖保留的评价身份声明，不等于账户账本已认证，也不是完整尝试次数。没有受管的经济路径分组声明时，该计数保持未知，不在概览中重算。
+
+概览认证保留记录及关联文件哈希，不重算SE、验证运行资格或判断研究是否充分。最高交付修订不等于阶段获批；登记状态不代替当前用户指令。旧格式明确列为不支持，不按新格式解读。缺失或损坏的必要引用报错，不补零或静默改用旧版本。
+
+报告状态为`MISSING`、`DRAFT`、`PUBLISHED`、`UNPUBLISHED_CHANGES`。历史实验缺少根报告如实显示，不自动搬迁或补写。
+
+### 实验结构与报告检查
+
+创建实验后可用`STRUCTURE`检查结构；以下示例用于完成第5节的独立报告发布后，检查当前报告与正式引用的一致性。
+
+```python
+from czsc_trader.application import validate_experiment
+from czsc_trader.research_tools import ExperimentValidationRequest, ExperimentValidationScope
+
+check = validate_experiment(repository, ExperimentValidationRequest(
+    experiment, ExperimentValidationScope.REPORT_PUBLICATION,
+))
+```
+
+`STRUCTURE`检查身份、根报告及目录；`REPORT_PUBLICATION`还要求当前报告引用、快照、正文及关联证据一致。`ExperimentArtifactRef(owner, path, sha256)`中`path`相对其所属实验，禁止绝对路径、逃逸、符号链接或junction；共享材料可以属于同批次另一实验。只检查声明的必要材料，不要求完整过程封存，也不能发现未声明材料的语义归属。
+
+返回`ExperimentValidation(status, scope, issues, report)`；`PASS`只表示结构或发布契约成立，不表示研究有效、实验成功、报告充分或阶段获批。
 
 ## 4. 策略评价与回测
 
@@ -227,7 +271,63 @@ JSON 输出的 `artifacts` 给出内容寻址文件路径，报告内图表链�
   --start 2026-09-14 --end 2026-09-15 --init-cash 1000000 --lot-size 100
 ```
 
+### 账户损益与路径诊断
+
+`diagnose_accounts(repository, request) -> AccountDiagnosisResult`要求强类型`AccountDiagnosisRequest`，引用正式证据及精确评价身份。
+以下示例在完成第5节的账户证据发布后执行，沿用前例单窗口、单成本场景的`result`及`bound_request`；多个场景须显式选择对应评价和窗口。
+
+```python
+from czsc_trader.application import diagnose_accounts
+from czsc_trader.research_tools import (
+    AccountDiagnosisRequest, AccountRunRef, AccountDiagnosisStatus,
+)
+
+selected_run = result.runs[0]
+if selected_run.identity is None:
+    raise ValueError("账户评价缺少完整身份")
+diagnosis = diagnose_accounts(repository, AccountDiagnosisRequest(
+    baseline=AccountRunRef(account_evidence, selected_run.identity),
+    alternative=None,
+    window=bound_request.windows[0],
+))
+if diagnosis.status is AccountDiagnosisStatus.COMPUTED:
+    print(diagnosis.reconciliation)
+else:
+    print(diagnosis.status.value, diagnosis.issues)
+```
+
+`account_evidence`须是`account_evaluation` schema 7正式证据，`AccountRunRef.identity`精确选中一个评价；平台核验原始哈希、账户及账本认证，不凭候选编号找最近一次结果。`alternative`可传同批次另一账户；标的、市场执行数据、费用、单位、初始资金及会话等上下文不同则不可比。候选实现可以不同。
+
+窗口是原连续账户的切片，继承此前资金和持仓，不重置本金。首版支持单标的、只做多、全仓/现金、单周期一次买入和至多一次卖出的账本；加减仓、多次成交、日内往返等不支持，不降级为简化收益计算。
+
+在原账户一致的价格及数量单位下，每日互斥分解为：
+
+| 分项 | 金额 |
+| --- | --- |
+| 入场日 | 买入数量 ×（当日估值价 − 买价） |
+| 其他持有日 | 持仓数量 ×（当日估值价 − 前一估值价） |
+| 退出日 | 卖出数量 ×（卖价 − 前一估值价） |
+| 费用 | 当日实际成交费用的负值 |
+
+分项合计核对实际权益变化，费用不重复扣除。返回逐日、逐年明细及完整切片残差；年度贡献使用本账户该诊断年度期初权益，单位为比例。部分年度标识是诊断窗口边界说明，不改变原研究年度目标。跨年周期不把全部利润记入入场年。SE协议固定为`single-long-full-position-v1`，精度固定，调用方不能放宽容差。
+
+返回状态为`COMPUTED`、`INCOMPARABLE`、`UNSUPPORTED`、`INVALID_EVIDENCE`，失败保留原因。结果包含原证据、评价身份、决策/订单/成交/周期标识。两账户返回共同或仅一方入场周期及逐日资金路径差异，不把差额解释为独立因果贡献，也不据此计算取消交易的反事实。
+
+可选`DecisionPopulationRef(evidence, population_id)`引用研究员显式提供的人群。材料JSON必须是以下精确结构：
+
+```json
+{"schema_version":1,"population_id":"entry-population","evaluation_id":"<64位评价身份哈希>","memberships":[{"decision_id":"<原决策身份>","member":true}]}
+```
+
+`member`仅允许`true`、`false`、`null`；未列决策保持未知，未知/重复决策和跨账户身份拒绝。平台按真实订单、成交与持仓记录计算覆盖，不寻找分类条件，不认证研究员的金融解释或真实历史可得性。
+
+`coverage_summary`按评价、人群及买入意图/成交/持有决策类别汇总总数、组内、组外及未知数。比例分母为该类别总数；分母为零或存在未知成员时`member_fraction=None`，不把未知改为组外。
+
+结果的`to_dict()`可交给现有材料证据发布入口保存；诊断调用本身不写证据、不新增账户。
+
 ## 5. 显式发布和读取证据
+
+### 账户与材料证据
 
 计算完成后，按交付需要选择结果留证。完整账户证据保存请求身份、策略输入绑定、信号、账户账本、基准、指标和 SE 适配事实，
 发布时核验请求与结果一致。它的格式是 `account_evaluation`／schema 7，请求身份使用 schema 6，
@@ -252,7 +352,8 @@ evaluation_reference = EvaluationEvidenceRef(account_evidence)
 批量调用先检查全部请求类型、批次、已分配实验和数据空间归属；非法调用整体抛出异常，且不发布任何项。
 账户结果认证、序列化和实际写入失败按项返回，不撤销其他已发布项。
 `PublicationOutcome.index` 是输入的零起始位置，`status` 使用 `PublicationStatus`：
-`PUBLISHED` 只携带 `reference`，`FAILED`、`CANCELLED`、`UNKNOWN` 只携带 `PublicationError(code, message)`。
+`PUBLISHED` 只携带 `reference`，`FAILED`、`CANCELLED`、`UNKNOWN` 携带 `PublicationError`；
+除基本错误外，报告发布错误还可保留阶段、快照引用及当前引用的提交状态，见[实验报告发布](#实验报告独立发布与修订)。
 计算进程失败时正式证据尚未写入，返回 `FAILED`；计算取消返回 `CANCELLED`。
 若原子写入之后发生异常，或无法确认写入状态，返回 `UNKNOWN`，不会自动重试。
 
@@ -289,6 +390,35 @@ verified_path = note.resolve(repository.root)
 `research/<批次>/assets/evidence/<实验>/<hash>.<suffix>`；`resolve(repository.root)` 核验文件哈希。
 TDR 按内容哈希保存证据，同内容可复用，已有内容冲突拒绝覆盖。
 证据引用可通过 `to_dict/from_dict` 保存和恢复。完整评价留证必须使用对应已绑定请求，材料发布不会自动变成账户评价证据。
+
+正式账户及五张账本保存在`research/<批次>/assets/evidence/<实验>/<哈希>.json`；`assets/runs/`中的运行资料不作为账户诊断的默认输入。
+
+### 实验报告独立发布与修订
+
+先将实际结论写入实验根`report.md`并选择结果声明。下例假定报告已完成，使用前例正式账户证据作为来源；发布接口不判断研究结论或报告内容是否充分。
+
+```python
+from hashlib import sha256
+from czsc_trader.application import publish_evidence
+from czsc_trader.research_tools import ExperimentOutcome, ExperimentReportWrite
+
+report_bytes = (experiment.resolve(repository.root) / "report.md").read_bytes()
+report_ref = publish_evidence(research, ExperimentReportWrite(
+    experiment=experiment,
+    expected_report_sha256=sha256(report_bytes).hexdigest(),
+    outcome=ExperimentOutcome.COMPLETED,
+    evidence=(account_evidence,),
+    previous=None,
+))
+```
+
+`outcome`由RSCH声明：`COMPLETED/FAILED/CANCELLED/INCOMPLETE`。没有阶段交付也能发布，阶段报告与实验报告不要求相同。
+
+通过`publish_evidence`提交`ExperimentReportWrite`，返回报告快照的`EvidenceRef`。快照为`experiment_report` schema 1，保存UTF-8原文、字节哈希、声明结果、来源及前版，不转换换行；根`report_ref.json`指向当前正式快照。前版冲突或正文哈希变化拒绝，同一请求可幂等确认。发布不会改写根报告。
+
+引用提交前失败可能留下不可变但未被当前引用指向的快照，不删除或冒称提交完成。`ReportPublicationError`及批量`PublicationError`提供`phase/reference/pointer_committed`；发生异常且指针已提交或提交结果不确定时批量状态为`UNKNOWN`，明确未提交为`FAILED`，取消按实际状态表达。正常提交仍返回`PUBLISHED`。不自动重试。`publish_evidence_many`逐项报告，参数预检失败仍在任何写入前拒绝整批。
+
+根报告以后可继续编辑；已发布快照仍不变，正文不同于当前快照即为未发布修改，修订时传入准确的`previous`。原始阶段交付、候选及旧实验报告不迁移、不重签。
 
 ## 6. 候选登记与自检
 
@@ -439,7 +569,7 @@ if checked.status is not ValidationStatus.PASS:
 公开目录 `research/<批次>/deliveries/<阶段>/<修订>/` 保存对应的 `report.md` 和 `receipt.json`。
 发布与校验核对两处报告及回执的字节一致性；完整包只包含已选定材料。
 `DeliveryDefinition`、`DeliveryReceipt` 和 `delivery.json` 使用 schema 7，读取时拒绝旧交付格式，
-不自动迁移历史原件。账户评价证据使用 schema 6，`StrategyVersion` 继续使用 schema 5。
+不自动迁移历史原件。账户评价证据使用 schema 7，请求身份使用 schema 6，`StrategyVersion` 继续使用 schema 5。
 修订号在“批次＋阶段”内唯一，同内容重复发布复用，冲突拒绝覆盖，失败不留下可见的半成品修订。
 前驱为同批次的 `DeliveryReference`；同阶段前驱只能是更早修订。
 
@@ -453,6 +583,12 @@ if checked.status is not ValidationStatus.PASS:
 盈利年份合并频率由已保存基准净值与实际退出日计算，频率硬门仍须绑定已确认的目标及精确窗口。
 旧自检或排序字段集合明确拒绝，历史原件保留，不自动改写或重算历史排名。
 阶段五继续核验实际决定、检验及冻结状态；交付快照不取代运行发布和批准事实。
+
+### 交付校验与运行统计
+
+`validate_delivery`返回`DeliveryValidation`，范围与技术成功状态按上文处理。共享前驱在单次调用内避免重复展开，文件完整性及结束前的一致性复核保持；不同调用不复用文件校验结果。
+
+返回`stats`：`unique_deliveries/reference_visits/recursive_expansions/semantic_reuses/files_hashed/bytes_hashed/elapsed_seconds`。哈希计数统计交付服务显式执行的文件内容哈希，不含下游库内部操作系统读取量；最终复核包含在计数和耗时内。运行统计不参与交付身份或业务结果相等性。发布前驱检查沿用相同校验保证；运行统计不代表研究充分性或阶段批准。
 
 ## 8. 技术检验、用户决定与冻结
 
