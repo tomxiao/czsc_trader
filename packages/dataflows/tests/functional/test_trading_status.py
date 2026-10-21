@@ -1,10 +1,8 @@
 """Public preparation distinguishes proven suspensions from missing observations."""
-from pathlib import Path
-
 import pandas as pd
 import pytest
 
-from dataflows import DataRequest, Dataflows, DataSpace, Dataset, PreparePolicy, ProviderConfig
+from dataflows import DataRequest, Dataflows, Dataset, PreparePolicy, ProviderConfig
 
 
 class SessionSource:
@@ -45,13 +43,13 @@ class SessionSource:
     ("510500.SH", True, True, False, False),
 ])
 def test_native_status_preparation_requires_explicit_suspension_evidence(
-    tmp_path, monkeypatch, symbol, missing, proof, intraday, ready,
+    tmp_path, empty_space_factory, monkeypatch, symbol, missing, proof, intraday, ready,
 ):
     source = SessionSource(missing, proof, intraday)
     if proof is None:
         monkeypatch.setattr(source, "suspend_d", None)
     monkeypatch.setattr("dataflows.tushare_common.get_tushare_pro", lambda _: source)
-    flows = Dataflows(base_dir=tmp_path, space=DataSpace(Path("data")), providers=ProviderConfig())
+    flows = Dataflows(base_dir=tmp_path, space=empty_space_factory("data"), providers=ProviderConfig())
     request = DataRequest(Dataset.SECURITY_TRADING_STATUS, symbol, "2026-09-14", "2026-09-18", "2026-09-18")
     prepared = flows.prepare((request,), policy=PreparePolicy.REUSE)
     assert prepared.ready is ready

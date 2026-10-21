@@ -59,21 +59,37 @@ def test_unprovided_suspension_information_cannot_be_forged_as_a_known_status(as
     assert audit_replay(replace(evidence, account_daily=accounts)).status is AuditStatus.FAIL
 
 
-@pytest.mark.parametrize("kind", ["benchmark", "strategy"])
-@pytest.mark.parametrize("bad", [None, [], 1, {"sessions": []}, "unknown", {"invalid"}])
+# Both public audits call market_limits. Exercise its complete malformed-input
+# matrix through strategy audit; benchmark retains both validator wiring and
+# its separate evidence-encoding failure path.
+@pytest.mark.parametrize("bad,kind", [
+    (None, "strategy"), ([], "strategy"), (1, "strategy"),
+    ({"sessions": []}, "strategy"), ("unknown", "strategy"), ({"invalid"}, "strategy"),
+    (None, "benchmark"),
+    pytest.param({"invalid"}, "benchmark", id="bad5-benchmark"),
+])
 def test_invalid_market_contract_returns_fail(kind, bad):
     evidence, audit = (benchmark(), audit_benchmark_replay) if kind == "benchmark" else (strategy(), audit_replay)
+    assert audit(evidence).status is AuditStatus.PASS
     valid = evidence.market_rules if kind == "benchmark" else evidence.execution_spec["market_rules"]
     value = {**valid, "sessions": None} if bad is None else bad
     changed = (replace(evidence, market_rules=value) if kind == "benchmark" else
                replace(evidence, execution_spec={**evidence.execution_spec, "market_rules": value}))
-    assert audit(changed).status is AuditStatus.FAIL
+    result = audit(changed)
+    assert result.status is AuditStatus.FAIL
+    assert result.reason_codes == (("INVALID_EVIDENCE_ENCODING",) if isinstance(bad, set)
+                                   else ("INVALID_MARKET_EXECUTION_RULES",))
 
 
-@pytest.mark.parametrize("kind", ["benchmark", "strategy"])
-@pytest.mark.parametrize("tamper", ["unknown", "missing", "nan", "negative", "duplicate", "symbol", "suspension_information", "unprovided_halt"])
+@pytest.mark.parametrize("tamper,kind", [
+    ("unknown", "strategy"), ("missing", "strategy"), ("nan", "strategy"),
+    ("negative", "strategy"), ("duplicate", "strategy"), ("symbol", "strategy"),
+    ("suspension_information", "strategy"), ("unprovided_halt", "strategy"),
+    ("unknown", "benchmark"), ("missing", "benchmark"),
+])
 def test_market_boundary_corruption_cannot_pass(kind, tamper):
     evidence, audit = (benchmark(), audit_benchmark_replay) if kind == "benchmark" else (strategy(), audit_replay)
+    assert audit(evidence).status is AuditStatus.PASS
     market = deepcopy(evidence.market_rules if kind == "benchmark" else evidence.execution_spec["market_rules"])
     if tamper == "unknown":
         market["contract_version"] = "FUTURE_UNSUPPORTED_VERSION"
@@ -92,7 +108,9 @@ def test_market_boundary_corruption_cannot_pass(kind, tamper):
         market["sessions"][0]["up_limit"] = float("nan") if tamper == "nan" else -1.
     changed = (replace(evidence, market_rules=market) if kind == "benchmark" else
                replace(evidence, execution_spec={**evidence.execution_spec, "market_rules": market}))
-    assert audit(changed).status is AuditStatus.FAIL
+    result = audit(changed)
+    assert result.status is AuditStatus.FAIL
+    assert result.reason_codes == ("INVALID_MARKET_EXECUTION_RULES",)
 
 
 @pytest.mark.parametrize("kind", ["benchmark", "strategy"])
@@ -188,27 +206,42 @@ def test_fill_must_belong_to_its_real_order(tamper):
     assert audit_replay(changed).status is AuditStatus.FAIL
 
 
-@pytest.mark.parametrize("section,field,index", [
-    ("orders", "quantity", 1), ("fills", "quantity", 0),
-    ("account_daily", "quantity_before", 2), ("account_daily", "quantity", 2),
-    ("trades", "quantity", 0),
+# strict_market_number owns all numeric classes. Each other field retains an
+# integer-only wiring case; every positive=True quantity retains its zero bound.
+@pytest.mark.parametrize("bad,section,field,index", [
+    (99900.5, "orders", "quantity", 1), (True, "orders", "quantity", 1),
+    (float("nan"), "orders", "quantity", 1), (float("inf"), "orders", "quantity", 1),
+    ("99900", "orders", "quantity", 1), (-1, "orders", "quantity", 1),
+    (99900.5, "fills", "quantity", 0), (99900.5, "account_daily", "quantity_before", 2),
+    (99900.5, "account_daily", "quantity", 2), (99900.5, "trades", "quantity", 0),
+    (0, "orders", "quantity", 1), (0, "fills", "quantity", 0), (0, "trades", "quantity", 0),
 ])
-@pytest.mark.parametrize("bad", [99900.5, True, float("nan"), float("inf"), "99900"])
 def test_market_quantities_are_strict_finite_integers(section, field, index, bad):
     evidence = strategy()
+    assert audit_replay(evidence).status is AuditStatus.PASS
     rows = list(getattr(evidence, section))
     rows[index] = {**rows[index], field: bad}
     result = audit_replay(replace(evidence, **{section: tuple(rows)}))
     assert result.status is AuditStatus.FAIL
+    assert result.reason_codes == ("INVALID_MARKET_EXECUTION_RULES",)
 
 
-@pytest.mark.parametrize("field", ["cash_before", "cash", "close", "equity"])
-@pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf"), True, "100000"])
+# cash_before carries the shared finite-number matrix. Other account fields
+# each prove validator wiring; close/equity additionally require positive values.
+@pytest.mark.parametrize("bad,field", [
+    (float("nan"), "cash_before"), (float("inf"), "cash_before"),
+    (float("-inf"), "cash_before"), (True, "cash_before"), ("100000", "cash_before"),
+    (-1, "cash_before"), (True, "cash"), (True, "close"), (True, "equity"),
+    (0, "close"), (0, "equity"),
+])
 def test_market_account_values_are_finite_real_numbers(field, bad):
     evidence = strategy()
+    assert audit_replay(evidence).status is AuditStatus.PASS
     rows = list(evidence.account_daily)
     rows[2] = {**rows[2], field: bad}
-    assert audit_replay(replace(evidence, account_daily=tuple(rows))).status is AuditStatus.FAIL
+    result = audit_replay(replace(evidence, account_daily=tuple(rows)))
+    assert result.status is AuditStatus.FAIL
+    assert result.reason_codes == ("INVALID_MARKET_EXECUTION_RULES",)
 
 
 @pytest.mark.parametrize("clock", ["23:00:00", "09:31:00", "09:29:59", "12:00:00", "09:30:00+08:00"])

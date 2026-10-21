@@ -1,7 +1,5 @@
 """GVZ publication and failure semantics through the public prepare/fetch contract."""
 
-from pathlib import Path
-
 import pandas as pd
 import pytest
 import requests
@@ -9,7 +7,6 @@ import requests
 from dataflows import (
     Dataflows,
     DataRequest,
-    DataSpace,
     DataStatus,
     Dataset,
     PreparePolicy,
@@ -45,7 +42,7 @@ def observations():
     ]
 
 
-def test_gvz_first_release_preparation_and_offline_restoration(tmp_path, monkeypatch):
+def test_gvz_first_release_preparation_and_offline_restoration(tmp_path, empty_space_factory, monkeypatch):
     monkeypatch.setenv("FRED_KEY", "test-key")
     calls = []
 
@@ -54,7 +51,7 @@ def test_gvz_first_release_preparation_and_offline_restoration(tmp_path, monkeyp
         return Response(200, observations())
 
     monkeypatch.setattr(requests, "get", get)
-    args = {"base_dir": tmp_path, "space": DataSpace(Path("gvz")), "providers": ProviderConfig()}
+    args = {"base_dir": tmp_path, "space": empty_space_factory("gvz"), "providers": ProviderConfig()}
     flow = Dataflows(**args)
     prepared = flow.prepare((request(),), policy=PreparePolicy.REFRESH)
     assert prepared.ready, prepared.items
@@ -119,7 +116,7 @@ def test_gvz_rejects_invalid_first_release_records(flow_factory, monkeypatch, fa
     assert not prepared.ready and prepared.items[0].status is DataStatus.FAILED
 
 
-def test_gvz_custom_binding_cannot_publish_early_availability(tmp_path):
+def test_gvz_custom_binding_cannot_publish_early_availability(tmp_path, empty_space_factory):
     frame = pd.DataFrame(
         {
             "Date": pd.to_datetime(["2024-01-05", "2024-01-08"]),
@@ -143,7 +140,7 @@ def test_gvz_custom_binding_cannot_publish_early_availability(tmp_path):
     }
     flow = Dataflows(
         base_dir=tmp_path,
-        space=DataSpace(Path("early")),
+        space=empty_space_factory("early"),
         providers=ProviderConfig(
             bindings={
                 Dataset.GOLD_VOLATILITY_DAILY: ProviderBinding(
@@ -156,7 +153,7 @@ def test_gvz_custom_binding_cannot_publish_early_availability(tmp_path):
     assert not prepared.ready and prepared.items[0].status is DataStatus.FAILED
 
 
-def test_gvz_splits_vintage_window_without_changing_series(tmp_path, monkeypatch):
+def test_gvz_splits_vintage_window_without_changing_series(tmp_path, empty_space_factory, monkeypatch):
     monkeypatch.setenv("FRED_KEY", "test-key")
     calls = []
 
@@ -167,7 +164,7 @@ def test_gvz_splits_vintage_window_without_changing_series(tmp_path, monkeypatch
         return Response(200, [{"date": day, "realtime_start": day, "value": "20.0"}])
 
     monkeypatch.setattr(requests, "get", get)
-    flow = Dataflows(base_dir=tmp_path, space=DataSpace(Path("long")), providers=ProviderConfig())
+    flow = Dataflows(base_dir=tmp_path, space=empty_space_factory("long"), providers=ProviderConfig())
     req = DataRequest(Dataset.GOLD_VOLATILITY_DAILY, None, "2020-01-01", "2026-09-30", "2026-09-30")
     prepared = flow.prepare((req,), policy=PreparePolicy.REFRESH)
     assert prepared.ready, prepared.items

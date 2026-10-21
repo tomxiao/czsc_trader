@@ -75,30 +75,39 @@ try {
                 'tests/functional/test_candidate_runtime_execution.py',
                 'tests/functional/test_srt_backtest_bridge.py',
                 'tests/functional/test_evaluation_batch.py',
-                'tests/functional/test_input_binding_integrity.py'
+                'tests/functional/test_input_binding_integrity.py',
+                'tests/functional/test_benchmark_contract.py',
+                'tests/functional/test_benchmark_lot_size.py',
+                'tests/functional/test_hfq_research_evaluation.py',
+                'tests/functional/test_parameter_evaluation.py',
+                'tests/functional/test_backtest_publication.py',
+                'tests/functional/test_research_contract_upgrade.py'
             )
             $FreezeTests = @(
                 'tests/functional/test_candidate_freeze.py',
-                'tests/functional/test_assessment_delivery.py'
+                'tests/functional/test_candidate_contract_admission.py',
+                'tests/functional/test_runtime_migration.py',
+                'tests/functional/test_frozen_migration_governance.py',
+                'tests/functional/test_frozen_runtime_upgrade.py'
             )
-            # One explicit group balances the measured expensive files; the
-            # other discovers the remainder, including future test files.
+            # Co-locate users of the real frozen/evaluation seeds and balance
+            # the measured work. TDR_2 discovers all remaining/new files.
             $TdrGroupOne = @(
-                'tests/functional/test_research_contract_upgrade.py',
-                'tests/functional/test_benchmark_contract.py',
-                'tests/functional/test_benchmark_lot_size.py',
-                'tests/functional/test_delivery_v2.py',
-                'tests/functional/test_research_delivery.py',
+                'tests/functional/test_assessment_delivery.py',
+                'tests/functional/test_backtest.py',
+                'tests/functional/test_git_artifact_integrity.py',
+                'tests/functional/test_independent_backtest.py',
                 'tests/functional/test_current_contracts.py',
-                'tests/functional/test_evaluation.py',
                 'tests/functional/test_public_backtest_api.py',
-                'tests/functional/test_temp_workspace.py'
+                'tests/functional/test_candidate_strategy_workflow.py',
+                'tests/functional/test_frozen_source_imports.py'
             )
             $PteGroupOne = @(
                 'packages/paper_trading_engine/tests/functional/test_srt_advice_client.py',
                 'packages/paper_trading_engine/tests/functional/test_release_runtime.py',
                 'packages/paper_trading_engine/tests/functional/test_account_binding.py',
                 'packages/paper_trading_engine/tests/functional/test_account_retirement.py',
+                'packages/paper_trading_engine/tests/functional/test_account_maintenance.py',
                 'packages/paper_trading_engine/tests/functional/test_watchdog_service.py',
                 'packages/paper_trading_engine/tests/functional/test_web_console.py',
                 'packages/paper_trading_engine/tests/functional/test_scheduler.py',

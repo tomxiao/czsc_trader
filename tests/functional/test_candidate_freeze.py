@@ -222,14 +222,20 @@ def test_changed_inspected_file_is_rejected(inspected_candidate):
 
 
 
-def test_stage_five_delivery_publishes_report_and_approval(inspection):
+def test_stage_five_delivery_publishes_report_and_approval(inspected_candidate):
     from czsc_trader.application import publish_evidence, validate_delivery
-    from czsc_trader.research_tools.context import ResearchBatchRef
+    from czsc_trader.research_tools.context import ResearchBatchRef, ExperimentRef
     from czsc_trader.research_tools.evidence import MaterialEvidenceWrite
     from czsc_trader.research_tools import delivery as d
-    context, request, source = inspection
-    report = inspect_candidate(context, request)
-    reference = publish_evidence(request.research, MaterialEvidenceWrite(request.experiment,
+    from evaluation_seed_support import restored_context
+
+    # Inspection execution is owned by the real success/failure scenarios above;
+    # this scenario owns publication, approval and revision of its genuine report.
+    context, report, source = inspected_candidate
+    research = restored_context(context.root)
+    owner = report.reference.owner
+    experiment = ExperimentRef(owner.strategy_id, owner.experiment_id)
+    reference = publish_evidence(research, MaterialEvidenceWrite(experiment,
         "technical_inspection", json.dumps(report.to_dict(), ensure_ascii=False, sort_keys=True,
         separators=(",", ":")).encode(), "application/json", "json"))
     selection = f.ResearchDecision.from_dict(json.loads(report.selection.evidence.resolve(context.root).read_text(encoding="utf-8")))

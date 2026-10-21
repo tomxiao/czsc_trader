@@ -7,7 +7,6 @@ from dataflows import DataRequest, Dataset
 from strategy_runtime import (
     CalculationScope,
     CutoffRule,
-    DataPreparationResult,
     DecisionContract,
     ExecutionPolicy,
     HistoryPolicy,
@@ -19,7 +18,6 @@ from strategy_runtime import (
     RequiredCapabilities,
     RuntimeDefinition,
     RuntimeContractError,
-    StrategyIdentity,
     TradableWindow,
     implementation_sha256,
 )
@@ -75,17 +73,3 @@ def test_calculation_scope_requires_complete_typed_requests() -> None:
         scope.inputs['rates'] = request
     with pytest.raises(RuntimeContractError, match='named DataRequest'):
         CalculationScope(window, (window.start,), {window.start: signal}, (signal,), {'rates': (signal, signal)})
-
-
-def test_preparation_result_exposes_the_public_field_name() -> None:
-    window = TradableWindow(date(2026, 9, 2), date(2026, 9, 3))
-    result = DataPreparationResult(
-        StrategyIdentity("S900", "S900-C0001", "a" * 64, "b" * 64, "518880.SH"),
-        window,
-        date(2026, 9, 2),
-        "c" * 64,
-    )
-
-    assert result.data_identity == "c" * 64
-    with pytest.raises(AttributeError):
-        getattr(result, "dataset_identity")

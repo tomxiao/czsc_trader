@@ -13,6 +13,13 @@ from dataflows import tushare_etf
 from dataflows.history_repair import frame_content_sha256
 
 
+@pytest.fixture
+def repair_root(tmp_path, empty_space_factory):
+    # Initialization/concurrency are covered by test_data_space.
+    empty_space_factory("assets")
+    return tmp_path
+
+
 def _bars(day, minutes, price=10.0):
     date = pd.Timestamp(day)
     times = pd.date_range(date + pd.Timedelta(hours=9, minutes=30 + minutes),
@@ -83,9 +90,9 @@ class _Vendor:
         pytest.fail("unadjusted executable prices must not acquire adjustment factors")
 
 
-def _flow(tmp_path, vendor, monkeypatch):
+def _flow(repair_root, vendor, monkeypatch):
     monkeypatch.setattr(tushare_etf, "get_tushare_pro", lambda _: vendor)
-    return Dataflows(base_dir=tmp_path, space=DataSpace(Path("assets")), providers=ProviderConfig())
+    return Dataflows(base_dir=repair_root, space=DataSpace(Path("assets")), providers=ProviderConfig())
 
 
 def _publish(flow, request):
@@ -125,7 +132,7 @@ def _raw_hash(frame, *, intraday):
 
 
 def _assert_failed_refresh_preserves_ref(
-    flow, request, prepared, original, tmp_path, code, *, item_status=DataStatus.FAILED,
+    flow, request, prepared, original, repair_root, code, *, item_status=DataStatus.FAILED,
 ):
     failed = flow.prepare((request,), policy=PreparePolicy.REFRESH)
     assert failed.status is PrepareStatus.FAILED and failed.reference is None
@@ -134,7 +141,7 @@ def _assert_failed_refresh_preserves_ref(
     assert item.error.code == code
     # Reopen without any supplier: neither failed refresh nor fetch may replace
     # the original immutable published object.
-    offline = Dataflows(base_dir=tmp_path, space=DataSpace(Path("assets")),
+    offline = Dataflows(base_dir=repair_root, space=DataSpace(Path("assets")),
                        providers=ProviderConfig(bindings={}))
     restored = offline.fetch(request, prepared=prepared.reference)
     assert restored.ready and restored.prepared == prepared.reference
@@ -143,11 +150,11 @@ def _assert_failed_refresh_preserves_ref(
     return item.error
 
 
-def test_default_daily_patch_publishes_exact_correction_and_rejects_unknown_signature(tmp_path, monkeypatch):
+def test_default_daily_patch_publishes_exact_correction_and_rejects_unknown_signature(repair_root, monkeypatch):
     daily = _daily(["2020-03-09", "2020-03-10"], price=3.659)
     daily.loc[0, ["Open", "High", "Low"]] = [3.716, 3.728, 3.317]
     vendor = _Vendor(daily)
-    flow = _flow(tmp_path, vendor, monkeypatch)
+    flow = _flow(repair_root, vendor, monkeypatch)
     request = DataRequest(Dataset.ETF_UNADJUSTED_DAILY, "518880.SH",
                           "2020-03-09", "2020-03-10", "2020-03-10")
     prepared, result = _publish(flow, request)
@@ -165,13 +172,13 @@ def test_default_daily_patch_publishes_exact_correction_and_rejects_unknown_sign
     assert [endpoint for endpoint, _ in vendor.calls] == ["fund_daily", "fund_basic", "trade_cal"]
     vendor.daily.loc[0, "Low"] = 3.400  # Same registered date, unknown numeric signature.
     error = _assert_failed_refresh_preserves_ref(
-        flow, request, prepared, result, tmp_path, "DATA_REPAIR_FAILED",
+        flow, request, prepared, result, repair_root, "DATA_REPAIR_FAILED",
     )
     assert error.context["finding_codes"] == ["SOURCE_SIGNATURE_UNKNOWN"]
 
 
 @pytest.mark.parametrize("defect", ["signature", "minute-gap"])
-def test_default_extrema_patch_acquires_minute_evidence_before_publication(tmp_path, monkeypatch, defect):
+def test_default_extrema_patch_acquires_minute_evidence_before_publication(repair_root, monkeypatch, defect):
     days = ["2020-09-11", "2020-09-14"]
     daily = _daily(days, price=6.9)
     daily.loc[0, "Low"] = 6.829
@@ -180,7 +187,7 @@ def test_default_extrema_patch_acquires_minute_evidence_before_publication(tmp_p
     minute = _bars(days[0], 1, 6.9)
     minute.loc[minute.Date.eq(pd.Timestamp("2020-09-11 09:37")), "Low"] = 6.829
     vendor = _Vendor(daily, coarse, minute)
-    flow = _flow(tmp_path, vendor, monkeypatch)
+    flow = _flow(repair_root, vendor, monkeypatch)
     request = DataRequest(Dataset.ETF_UNADJUSTED_INTRADAY, "510500.SH",
                           days[0], days[-1], days[-1], frequency="5m")
     prepared, result = _publish(flow, request)
@@ -210,20 +217,20 @@ def test_default_extrema_patch_acquires_minute_evidence_before_publication(tmp_p
         vendor.minute = vendor.minute.loc[vendor.minute.Date.ne(pd.Timestamp("2020-09-11 09:37"))]
         expected_message = "expected 240 complete 1m repair bars, found 239"
     error = _assert_failed_refresh_preserves_ref(
-        flow, request, prepared, result, tmp_path, "DATA_REPAIR_FAILED",
+        flow, request, prepared, result, repair_root, "DATA_REPAIR_FAILED",
     )
     assert expected_message in error.message
 
 
 @pytest.mark.parametrize("symbol", ["512100.SH", "515050.SH", "588080.SH"])
-def test_default_registered_volume_patches_require_post_repair_daily_agreement(tmp_path, monkeypatch, symbol):
+def test_default_registered_volume_patches_require_post_repair_daily_agreement(repair_root, monkeypatch, symbol):
     days = ["2024-04-02", "2024-04-03"]
     expected = pd.concat([_bars(day, 5) for day in days], ignore_index=True)
     coarse = expected.copy(deep=True)
     affected = coarse.Date.dt.normalize().eq(pd.Timestamp(days[1]))
     coarse.loc[affected, "Volume"] *= 100
     vendor = _Vendor(_daily(days), coarse)
-    flow = _flow(tmp_path, vendor, monkeypatch)
+    flow = _flow(repair_root, vendor, monkeypatch)
     request = DataRequest(Dataset.ETF_UNADJUSTED_INTRADAY, symbol,
                           days[0], days[1], days[1], frequency="5m")
     prepared, result = _publish(flow, request)
@@ -239,7 +246,7 @@ def test_default_registered_volume_patches_require_post_repair_daily_agreement(t
     # must fail the real second validation, rather than publish a repaired label.
     vendor.coarse.loc[affected, "Volume"] *= 2
     error = _assert_failed_refresh_preserves_ref(
-        flow, request, prepared, result, tmp_path, "DATA_CONTRACT_MISMATCH",
+        flow, request, prepared, result, repair_root, "DATA_CONTRACT_MISMATCH",
     )
     quality = error.context["quality"]
     assert quality["daily"]["accuracy"] == 1.0
@@ -248,12 +255,12 @@ def test_default_registered_volume_patches_require_post_repair_daily_agreement(t
     assert quality["minute"]["inaccurate_dates"] == [days[1]]
 
 
-def test_default_missing_day_patch_rebuilds_only_registered_day_from_minute_evidence(tmp_path, monkeypatch):
+def test_default_missing_day_patch_rebuilds_only_registered_day_from_minute_evidence(repair_root, monkeypatch):
     days = ["2024-10-29", "2024-10-30", "2024-10-31"]
     expected = pd.concat([_bars(day, 15) for day in days], ignore_index=True)
     coarse = expected.loc[expected.Date.dt.normalize().ne(pd.Timestamp(days[1]))].reset_index(drop=True)
     vendor = _Vendor(_daily(days), coarse, _bars(days[1], 1))
-    flow = _flow(tmp_path, vendor, monkeypatch)
+    flow = _flow(repair_root, vendor, monkeypatch)
     request = DataRequest(Dataset.ETF_UNADJUSTED_INTRADAY, "588080.SH",
                           days[0], days[-1], days[-1], frequency="15m")
     prepared, result = _publish(flow, request)
@@ -271,7 +278,7 @@ def test_default_missing_day_patch_rebuilds_only_registered_day_from_minute_evid
     }]
     vendor.coarse = vendor.coarse.loc[vendor.coarse.Date.dt.normalize().ne(pd.Timestamp(days[2]))]
     error = _assert_failed_refresh_preserves_ref(
-        flow, request, prepared, result, tmp_path, "INCOMPLETE_DATA",
+        flow, request, prepared, result, repair_root, "INCOMPLETE_DATA",
         item_status=DataStatus.INCOMPLETE,
     )
     assert error.context["missing_dates"] == [days[2]]

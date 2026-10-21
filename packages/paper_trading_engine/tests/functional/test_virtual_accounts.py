@@ -3,6 +3,7 @@ from dataclasses import replace
 from datetime import date, datetime, timedelta
 import json
 import os
+import shutil
 from pathlib import Path
 import sqlite3
 from threading import Barrier, Event, get_ident
@@ -34,6 +35,41 @@ def create_account(store, account_id, version, marker):
     )
 
 
+@pytest.fixture(scope="module")
+def healthy_account_database(empty_paper_database, frozen_seed_root):
+    """One real account seed; health mutations always run on private DB copies."""
+    path = frozen_seed_root / "healthy-account.db"
+    shutil.copyfile(empty_paper_database, path)
+    store = PaperStore(path)
+    create_account(store, "one", "v1", "a")
+    store.close()
+    original = path.read_bytes()
+    yield path
+    assert path.read_bytes() == original
+
+
+@pytest.fixture(scope="module")
+def health_intent_database(healthy_account_database, frozen_seed_root):
+    """Persist one legal unsubmitted plan before testing corrupted health gates."""
+    path = frozen_seed_root / "health-intent.db"
+    shutil.copyfile(healthy_account_database, path)
+    store = PaperStore(path)
+    store.set_virtual_paused("one", False)
+    adopt_test_decision(
+        store, account_id="one", decision_id="DEC-HEALTH", valid_session="2026-09-04",
+        orders=[{"side": "BUY", "quantity": 1000, "order_type": "LIMIT", "limit_price": 1.68}],
+    )
+    store.create_account_intent(
+        account_id="one", decision_id="DEC-HEALTH", order_sequence=0,
+        symbol="588080.SH", side="BUY", quantity=1000,
+        limit_price="1.680", valid_session="2026-09-04",
+    )
+    store.close()
+    original = path.read_bytes()
+    yield path
+    assert path.read_bytes() == original
+
+
 def test_new_accounts_are_healthy_without_starting_strategy_execution(new_store, tmp_path):
     store = new_store(tmp_path / "new-account-health.db")
     account = create_account(store, "one", "v1", "a")
@@ -49,9 +85,10 @@ def test_new_accounts_are_healthy_without_starting_strategy_execution(new_store,
 
 
 @pytest.mark.parametrize("invalid", ["OK", "BLOCKED", "READY", "UNKNOWN", None, False, 1])
-def test_health_updates_require_typed_values_without_side_effects(new_store, tmp_path, invalid):
-    store = new_store(tmp_path / "typed-account-health.db")
-    create_account(store, "one", "v1", "a")
+def test_health_updates_require_typed_values_without_side_effects(
+    new_store, healthy_account_database, tmp_path, invalid,
+):
+    store = new_store(tmp_path / "typed-account-health.db", seed=healthy_account_database)
     store.set_virtual_health("one", AccountHealth.BLOCKED, "人工复核未完成")
     before = store.virtual_account("one")
     with pytest.raises(TypeError, match="AccountHealth"):
@@ -65,20 +102,10 @@ def test_health_updates_require_typed_values_without_side_effects(new_store, tmp
 @pytest.mark.parametrize("operation", ["read", "list", "resume", "decision", "claim", "submit"])
 @pytest.mark.parametrize("invalid_health", ["READY", "UNKNOWN"])
 def test_invalid_persisted_health_cannot_resume_decide_or_submit(
-    new_store, tmp_path, operation, invalid_health,
+    new_store, health_intent_database, tmp_path, operation, invalid_health,
 ):
-    store = new_store(tmp_path / "invalid-account-health.db")
-    create_account(store, "one", "v1", "a")
-    store.set_virtual_paused("one", False)
-    adopt_test_decision(
-        store, account_id="one", decision_id="DEC-HEALTH", valid_session="2026-09-04",
-        orders=[{"side": "BUY", "quantity": 1000, "order_type": "LIMIT", "limit_price": 1.68}],
-    )
-    intent = store.create_account_intent(
-        account_id="one", decision_id="DEC-HEALTH", order_sequence=0,
-        symbol="588080.SH", side="BUY", quantity=1000,
-        limit_price="1.680", valid_session="2026-09-04",
-    )
+    store = new_store(tmp_path / "invalid-account-health.db", seed=health_intent_database)
+    (intent,) = store.account_intents("one")
     broker = FakeBroker()
     execution = FutuExecution(
         store, broker, now=lambda: datetime.fromisoformat("2026-09-04T10:00:00+08:00"),
@@ -990,7 +1017,9 @@ def test_account_chart_runs_market_fetch_and_render_on_dedicated_worker(new_stor
         worker_ids.append(("dfls", get_ident()))
         source_refreshes.append(kwargs["refresh_source"])
         entered.set()
-        assert release.wait(2)
+        # The caller controls this barrier, not a supplier timeout. Always
+        # release it in finally, including when a responsiveness assertion fails.
+        release.wait()
         return "a" * 64, frame
 
     def render(_request):
@@ -1005,28 +1034,34 @@ def test_account_chart_runs_market_fetch_and_render_on_dedicated_worker(new_stor
         renderer=render,
         refresh_interval_seconds=3600,
     )
-    started = time.perf_counter()
-    first = service.status("s001-v2")
-    elapsed = time.perf_counter() - started
+    try:
+        started = time.perf_counter()
+        first = service.status("s001-v2")
+        elapsed = time.perf_counter() - started
 
-    assert first["status"] == "BUILDING"
-    assert elapsed < 0.5
-    assert entered.wait(1)
-    assert service.refresh("s001-v2")["status"] == "BUILDING"
-    assert source_refreshes == [False]
-    release.set()
-    deadline = time.monotonic() + 2
-    ready = service.status("s001-v2")
-    while ready["status"] != "READY" and time.monotonic() < deadline:
-        time.sleep(0.01)
+        assert first["status"] == "BUILDING", first
+        assert elapsed < 0.5, {"elapsed": elapsed, "status": first}
+        assert entered.wait(1)
+        assert service.refresh("s001-v2")["status"] == "BUILDING"
+        assert source_refreshes == [False]
+        release.set()
+        deadline = time.monotonic() + 2
         ready = service.status("s001-v2")
-    assert ready["status"] == "READY"
-    assert source_refreshes == [False, True]
-    assert {name for name, _thread_id in worker_ids} == {"dfls", "render"}
-    assert all(thread_id != caller for _name, thread_id in worker_ids)
-    assert len({thread_id for name, thread_id in worker_ids if name == "render"}) == 1
-    service.close()
-    store.close()
+        while ready["status"] != "READY" and time.monotonic() < deadline:
+            time.sleep(0.01)
+            ready = service.status("s001-v2")
+        assert ready["status"] == "READY", {
+            "status": ready, "source_refreshes": source_refreshes, "worker_ids": worker_ids,
+            "failures": store.query_audit_events(event_type="ACCOUNT_CHART_GENERATION_FAILED"),
+        }
+        assert source_refreshes == [False, True]
+        assert {name for name, _thread_id in worker_ids} == {"dfls", "render"}
+        assert all(thread_id != caller for _name, thread_id in worker_ids)
+        assert len({thread_id for name, thread_id in worker_ids if name == "render"}) == 1
+    finally:
+        release.set()
+        service.close()
+        store.close()
 
 
 def test_account_chart_preserves_signal_history_across_strategy_packages(new_store, tmp_path):

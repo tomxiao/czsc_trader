@@ -122,6 +122,8 @@ def test_modes_share_kernel_with_isolated_initial_state_and_full_feature_warmup(
     independent = strategy.inspect_signals(history_mode=SignalHistoryMode.WINDOW)
     continuous = strategy.inspect_signals(history_mode=SignalHistoryMode.CONTINUOUS)
     assert independent.index.tolist() == [pd.Timestamp('2026-09-01'), pd.Timestamp('2026-09-02')]
+    assert len(continuous) > len(independent)
+    assert independent.index.isin(continuous.index).all()
     assert independent.fixture_signal.iloc[0] == pytest.approx(0.8)
     assert independent.target_position.tolist() == [1.0, 1.0]
     assert continuous.loc['2026-09-02', 'target_position'] == 0.0

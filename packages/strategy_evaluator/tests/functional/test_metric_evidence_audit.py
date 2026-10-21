@@ -66,14 +66,17 @@ def test_public_audit_rejects_invalid_metric_evidence(kind, field, value):
     assert ("METRIC_MISMATCH" if kind == "strategy" else "BENCHMARK_METRIC_MISMATCH") in result.reason_codes
 
 
-@pytest.mark.parametrize("kind", ["strategy", "benchmark"])
-@pytest.mark.parametrize("value", [
-    pytest.param(float("nan"), id="nan"),
-    pytest.param(float("inf"), id="positive-infinity"),
-    pytest.param(float("-inf"), id="negative-infinity"),
-    pytest.param(True, id="boolean"),
-    pytest.param("0", id="string"),
-    pytest.param(None, id="unavailable"),
+# Both audit paths use metric_matches for finite metrics. Keep its type/value
+# matrix once plus an explicit benchmark wiring case; per-field/status/tolerance
+# tests below still exercise both public audit paths independently.
+@pytest.mark.parametrize("value,kind", [
+    pytest.param(float("nan"), "strategy", id="nan-strategy"),
+    pytest.param(float("inf"), "strategy", id="positive-infinity-strategy"),
+    pytest.param(float("-inf"), "strategy", id="negative-infinity-strategy"),
+    pytest.param(True, "strategy", id="boolean-strategy"),
+    pytest.param("0", "strategy", id="string-strategy"),
+    pytest.param(None, "strategy", id="unavailable-strategy"),
+    pytest.param(True, "benchmark", id="boolean-benchmark"),
 ])
 def test_public_audit_rejects_invalid_finite_metric(kind, value):
     evidence, audit = (_closed_replay(), audit_replay) if kind == "strategy" else (

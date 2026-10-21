@@ -22,6 +22,7 @@ from test_current_contracts import (  # noqa: E402
     managed_evaluation as managed_evaluation,
 )
 from strategy_manager import PaperTradingApproval, StrategyRegistry  # noqa: E402
+from test_research_contract_upgrade import fresh_managed_evaluation as fresh_managed_evaluation  # noqa: E402
 
 
 @pytest.fixture

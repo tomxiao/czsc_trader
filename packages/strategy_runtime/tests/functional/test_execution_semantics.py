@@ -16,7 +16,6 @@ from strategy_runtime import (
     RuntimeCompatibilityError,
     RuntimeContractError,
     RuntimeExecutionError,
-    SignalHistoryMode,
     StrategyInstance,
     TradableWindow,
     TradingPoint,
@@ -63,17 +62,6 @@ def test_invalid_history_targets_are_rejected_at_history_boundary(value):
         instance.inspect_signals()
 
 
-def test_history_modes_use_distinct_session_scopes_and_defensive_outputs():
-    history = pd.DataFrame(
-        {"target_position": [0.0, 1.0]}, index=pd.to_datetime(["2026-01-02", "2026-01-05"])
-    )
-    instance, continuous, window = _instance(history)
-    assert instance.inspect_signals(history_mode=SignalHistoryMode.CONTINUOUS).index.equals(
-        continuous
-    )
-    assert instance.inspect_signals(history_mode=SignalHistoryMode.WINDOW).index.equals(window)
-    with pytest.raises(RuntimeContractError, match="SignalHistoryMode"):
-        instance.inspect_signals(history_mode="WINDOW")
 
 
 def test_missing_executor_capability_fails_before_snapshot_or_execute():

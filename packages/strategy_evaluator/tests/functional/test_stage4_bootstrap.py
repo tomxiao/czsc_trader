@@ -37,11 +37,18 @@ def assert_interval(request, expected):
     result = assess_candidates(request).rows[0].uncertainty
     assert result.status is m.DiagnosticStatus.AVAILABLE
     assert (result.lower_95, result.upper_95) == (expected.lower_95, expected.upper_95)
+    return result
 
 
-@pytest.mark.parametrize("observations", [2, 7, 257])
-@pytest.mark.parametrize("repetitions", [1, 256, 257])
-@pytest.mark.parametrize("seed", [0, 13])
+# All length x repetition boundaries remain. Repeat identical input/protocol
+# under seed 13 as well as 0 to protect public seed forwarding, without repeating
+# the entire numerical matrix for a second arbitrary RNG seed.
+@pytest.mark.parametrize("seed,repetitions,observations", [
+    (0, 1, 2), (0, 1, 7), (0, 1, 257),
+    (0, 256, 2), (0, 256, 7), (0, 256, 257),
+    (0, 257, 2), (0, 257, 7), (0, 257, 257),
+    (13, 257, 7),
+])
 def test_stage_four_interval_matches_full_bootstrap_exactly(observations, repetitions, seed):
     rng = np.random.default_rng(19)
     champion = rng.normal(0.0004, 0.01, observations)
@@ -51,7 +58,11 @@ def test_stage_four_interval_matches_full_bootstrap_exactly(observations, repeti
     full = bootstrap.paired_stationary_bootstrap(
         champion, comparator, champion_id="center", comparator_id="benchmark", **kwargs,
     )
-    assert_interval(request, full.cagr)
+    actual = assert_interval(request, full.cagr)
+    if seed == 13:
+        other = assess_candidates(replace(request, protocol=replace(request.protocol, seed=0))).rows[0].uncertainty
+        assert other.status is m.DiagnosticStatus.AVAILABLE
+        assert (actual.lower_95, actual.upper_95) != (other.lower_95, other.upper_95)
 
 
 def test_original_bootstrap_rng_and_chunk_boundary_golden():

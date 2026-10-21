@@ -21,16 +21,22 @@ def _request(**kwargs):
     })
 
 
-def _flow(tmp_path):
-    return Dataflows(base_dir=tmp_path, space=DataSpace(Path("market")), providers=ProviderConfig())
+@pytest.fixture
+def event_root(tmp_path, empty_space_factory):
+    empty_space_factory("market")
+    return tmp_path
 
 
-def test_verified_official_event_prepares_and_restores_without_network(tmp_path, monkeypatch):
+def _flow(event_root):
+    return Dataflows(base_dir=event_root, space=DataSpace(Path("market")), providers=ProviderConfig())
+
+
+def test_verified_official_event_prepares_and_restores_without_network(event_root, monkeypatch):
     def deny(*args, **kwargs):
         pytest.fail("the immutable event supplement must not access a network provider")
 
     monkeypatch.setattr(requests.sessions.Session, "request", deny)
-    flow = _flow(tmp_path)
+    flow = _flow(event_root)
     request = _request()
     prepared = flow.prepare((request,), policy=PreparePolicy.REFRESH)
     assert prepared.ready, prepared.items
@@ -60,7 +66,7 @@ def test_verified_official_event_prepares_and_restores_without_network(tmp_path,
     assert metadata["availability_time_field"] == "AvailableDate"
     assert "captured official sources" in metadata["available_at"]
 
-    offline = Dataflows(base_dir=tmp_path, space=DataSpace(Path("market")), providers=ProviderConfig({}))
+    offline = Dataflows(base_dir=event_root, space=DataSpace(Path("market")), providers=ProviderConfig({}))
     restored = offline.fetch(request, prepared=prepared.reference)
     assert restored.ready, restored.error
     pd.testing.assert_frame_equal(restored.dataframe, frame)
@@ -74,8 +80,8 @@ def test_verified_official_event_prepares_and_restores_without_network(tmp_path,
     ("2021-06-11", "2021-06-15"),
     ("2021-06-16", "2021-06-16"),
 ])
-def test_unknown_event_windows_are_incomplete_not_certified_empty(tmp_path, start, end):
-    prepared = _flow(tmp_path).prepare(
+def test_unknown_event_windows_are_incomplete_not_certified_empty(event_root, start, end):
+    prepared = _flow(event_root).prepare(
         (_request(start=start, end=end, required_cutoff=None),), policy=PreparePolicy.REFRESH,
     )
     assert not prepared.ready and prepared.reference is None
@@ -88,8 +94,8 @@ def test_unknown_event_windows_are_incomplete_not_certified_empty(tmp_path, star
     assert start not in item.error.context["verified_event_sessions"]
 
 
-def test_other_index_cannot_consume_the_csi500_patch(tmp_path):
-    prepared = _flow(tmp_path).prepare((_request(symbol="000300.SH"),), policy=PreparePolicy.REFRESH)
+def test_other_index_cannot_consume_the_csi500_patch(event_root):
+    prepared = _flow(event_root).prepare((_request(symbol="000300.SH"),), policy=PreparePolicy.REFRESH)
     item, = prepared.items
     assert item.status is DataStatus.FAILED and prepared.reference is None
     assert item.error.code == "DATA_CONTRACT_MISMATCH"
@@ -107,7 +113,7 @@ def test_event_request_rejects_daily_and_ambiguous_time_semantics(arguments):
 
 
 @pytest.mark.parametrize("defect", ["direction", "availability", "coverage", "source_hash", "missing_row"])
-def test_corrupt_event_or_provenance_never_publishes_ready(tmp_path, monkeypatch, defect):
+def test_corrupt_event_or_provenance_never_publishes_ready(event_root, monkeypatch, defect):
     original = index_constituent_changes.fetch_index_constituent_changes
 
     def corrupt(request):
@@ -125,26 +131,26 @@ def test_corrupt_event_or_provenance_never_publishes_ready(tmp_path, monkeypatch
         return frame, metadata
 
     monkeypatch.setattr(index_constituent_changes, "fetch_index_constituent_changes", corrupt)
-    prepared = _flow(tmp_path).prepare((_request(),), policy=PreparePolicy.REFRESH)
+    prepared = _flow(event_root).prepare((_request(),), policy=PreparePolicy.REFRESH)
     item, = prepared.items
     assert item.status is DataStatus.FAILED and prepared.reference is None
     assert item.error.code == "DATA_CONTRACT_MISMATCH"
     assert item.identity is None
 
 
-def test_transcription_hash_rejects_changed_catalog_before_publication(tmp_path, monkeypatch):
+def test_transcription_hash_rejects_changed_catalog_before_publication(event_root, monkeypatch):
     patch = next(patch for patch in index_constituent_changes.PATCHES if patch.first_session == "2021-06-15")
     changed = replace(patch, added=(("000001.SZ", "changed"), *patch.added[1:]))
     monkeypatch.setattr(index_constituent_changes, "PATCHES", tuple(
         changed if item.patch_id == patch.patch_id else item for item in index_constituent_changes.PATCHES
     ))
-    prepared = _flow(tmp_path).prepare((_request(),), policy=PreparePolicy.REFRESH)
+    prepared = _flow(event_root).prepare((_request(),), policy=PreparePolicy.REFRESH)
     item, = prepared.items
     assert item.status is DataStatus.FAILED and prepared.reference is None
     assert "pinned hash" in item.error.message
 
 
-def test_multiple_verified_events_publish_together_without_certifying_the_intervening_dates(tmp_path, monkeypatch):
+def test_multiple_verified_events_publish_together_without_certifying_the_intervening_dates(event_root, monkeypatch):
     def deny(*args, **kwargs):
         pytest.fail("verified event patches must remain offline")
 
@@ -161,10 +167,10 @@ def test_multiple_verified_events_publish_together_without_certifying_the_interv
         ("2026-06-15", 50, "2026-05-29", "2026-06-12T15:00:00"),
     ]
     requests_ = tuple(_request(start=day, end=day, required_cutoff=day) for day, *_ in cases)
-    flow = _flow(tmp_path)
+    flow = _flow(event_root)
     prepared = flow.prepare(requests_, policy=PreparePolicy.REFRESH)
     assert prepared.ready, prepared.items
-    offline = Dataflows(base_dir=tmp_path, space=DataSpace(Path("market")), providers=ProviderConfig({}))
+    offline = Dataflows(base_dir=event_root, space=DataSpace(Path("market")), providers=ProviderConfig({}))
     total = 0
     for request, (day, count, announcement, close) in zip(requests_, cases, strict=True):
         result = offline.fetch(request, prepared=prepared.reference)
@@ -199,10 +205,10 @@ def test_multiple_verified_events_publish_together_without_certifying_the_interv
     assert result.items[0].status is DataStatus.INCOMPLETE
 
 
-def test_duplicate_catalog_session_fails_instead_of_selecting_a_patch(tmp_path, monkeypatch):
+def test_duplicate_catalog_session_fails_instead_of_selecting_a_patch(event_root, monkeypatch):
     patch = next(p for p in index_constituent_changes.PATCHES if p.first_session == "2021-06-15")
     monkeypatch.setattr(index_constituent_changes, "PATCHES", (*index_constituent_changes.PATCHES, patch))
-    prepared = _flow(tmp_path).prepare((_request(),), policy=PreparePolicy.REFRESH)
+    prepared = _flow(event_root).prepare((_request(),), policy=PreparePolicy.REFRESH)
     assert not prepared.ready and prepared.reference is None
     assert prepared.items[0].status is DataStatus.FAILED
     assert "multiple" in prepared.items[0].error.message

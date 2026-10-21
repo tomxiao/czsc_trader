@@ -5,6 +5,7 @@ from dataclasses import replace
 from threading import Event
 from types import SimpleNamespace
 import json
+import shutil
 from zoneinfo import ZoneInfo
 
 import pandas as pd
@@ -136,6 +137,48 @@ def _decision(client, prepared):
     )
 
 
+def _tree_bytes(root):
+    return {path.relative_to(root): path.read_bytes()
+            for path in root.rglob("*") if path.is_file()}
+
+
+@pytest.fixture(scope="module")
+def prepared_account_cache():
+    return {}
+
+
+@pytest.fixture
+def prepared_account(pte_frozen, tmp_path, frozen_seed_root, prepared_account_cache, monkeypatch):
+    """Reuse real immutable inputs, then authenticate a private restored account."""
+    if not prepared_account_cache:
+        seed = frozen_seed_root / "pte-prepared-account"
+        client = _client(pte_frozen[0].root, seed, {date(2026, 9, 2): date(2026, 9, 3)})
+        prepared = _prepare(client, "s900-v1", date(2026, 9, 2))
+        prepared_account_cache.update(
+            root=seed, files=_tree_bytes(seed), identity=prepared.data_identity,
+            binding=prepared.input_binding, reference=prepared.data_reference,
+        )
+    seed = prepared_account_cache
+    assert _tree_bytes(seed["root"]) == seed["files"]
+    data = tmp_path / "prepared-account"
+    shutil.copytree(seed["root"], data)
+    client = _client(pte_frozen[0].root, data, {
+        date(2026, 9, 2): date(2026, 9, 3), date(2026, 9, 3): date(2026, 9, 4),
+    })
+    # Restore through the public entry point. It must use the copied, hash-bound
+    # inputs rather than silently preparing a new data identity or reading seed paths.
+    with monkeypatch.context() as guard:
+        guard.setattr(client.dataflows, "prepare", lambda *_a, **_k: pytest.fail(
+            "restored account must consume its copied authenticated inputs"))
+        prepared = _prepare(client, "s900-v1", date(2026, 9, 2))
+    assert prepared.data_identity == seed["identity"]
+    assert prepared.input_binding == seed["binding"]
+    assert prepared.data_reference == seed["reference"]
+    assert client.dataflows.binding.base_dir == data.resolve()
+    yield client, prepared
+    assert _tree_bytes(seed["root"]) == seed["files"]
+
+
 def test_pte_prepares_then_uses_one_account_strategy_instance(pte_frozen, tmp_path, monkeypatch):
     client = _client(pte_frozen[0].root, tmp_path, {date(2026, 9, 2): date(2026, 9, 3)}, adjustment_factor=.3)
     prepared = client.prepare_account_data(
@@ -237,20 +280,12 @@ def test_prepared_data_is_isolated_by_account(pte_frozen, tmp_path):
     "change",
     ["unversioned-storage", "missing-runtime", "changed-runtime", "changed-symbol"],
 )
-def test_account_replaces_incompatible_space_without_mutating_old_data(pte_frozen,
-    tmp_path, change,
+def test_account_replaces_incompatible_space_without_mutating_old_data(
+    prepared_account, change,
 ):
-    moments = iter((
-        datetime(2026, 9, 2, 22, 0, tzinfo=ZoneInfo("Asia/Shanghai")),
-        datetime(2026, 9, 3, 22, 0, tzinfo=ZoneInfo("Asia/Shanghai")),
-    ))
-    client = SrtAdviceClient(
-        repo_root=pte_frozen[0].root, data_dir=tmp_path, dataflows=_flows(tmp_path),
-        now=lambda: next(moments),
-        session_resolver=lambda signal_date: signal_date.replace(day=signal_date.day + 1),
-    )
-    first = _prepare(client, "s900-v1", date(2026, 9, 2))
-    account_root = tmp_path / "accounts/s900-v1"
+    client, first = prepared_account
+    client.now = lambda: datetime(2026, 9, 3, 22, 0, tzinfo=ZoneInfo("Asia/Shanghai"))
+    account_root = client.data_dir / "accounts/s900-v1"
     current = account_root / "current.json"
     index = json.loads(current.read_text(encoding="utf-8"))
     entry = index["releases"]["S900-v1"]
@@ -414,7 +449,7 @@ def minimum_depth_frozen(candidate_payload, tmp_path, monkeypatch):
     from strategy_manager import PaperTradingApproval, StrategyRegistry
     from strategy_runtime import implementation_sha256
     import test_candidate_runtime_execution as data_support
-    from test_research_contract_upgrade import managed_evaluation
+    from test_research_contract_upgrade import fresh_managed_evaluation
     from test_assessment_delivery import fresh_completed
     from test_candidate_freeze import _build_inspection, approve
 
@@ -442,7 +477,7 @@ def minimum_depth_frozen(candidate_payload, tmp_path, monkeypatch):
 
     monkeypatch.setattr(data_support, "_install_candidate_dataflows", with_warmup)
     monkeypatch.setattr("test_research_contract_upgrade._install_candidate_dataflows", with_warmup)
-    evaluation = managed_evaluation.__wrapped__(candidate_payload, tmp_path, monkeypatch)
+    evaluation = fresh_managed_evaluation.__wrapped__(candidate_payload, tmp_path, monkeypatch)
     context, inspection, source = _build_inspection(fresh_completed.__wrapped__(evaluation))
     report = inspect_candidate(context, inspection)
     assert report.status.value == "PASS", report
@@ -501,13 +536,12 @@ def test_missing_input_sessions_recovers_then_restart_keeps_successful_binding(
     assert publication["calls"] == 2
 
 
-def test_pte_observation_failure_is_explicit_and_does_not_change_execution(pte_frozen, tmp_path, monkeypatch):
+def test_pte_observation_failure_is_explicit_and_does_not_change_execution(prepared_account, monkeypatch):
     from dataclasses import replace
     from strategy_runtime import StrategyObservation
     from paper_trading_engine.contracts import AdviceContractError, AdviceDecision
 
-    client = _client(pte_frozen[0].root, tmp_path, {date(2026, 9, 2): date(2026, 9, 3)})
-    prepared = _prepare(client, "s900-v1", date(2026, 9, 2))
+    client, prepared = prepared_account
     result = _decision(client, prepared)
     assert result.observation["status"] == "READY"
     assert StrategyObservation.from_dict(result.observation).plan_identity == result.plan_identity
@@ -541,12 +575,11 @@ def test_pte_observation_failure_is_explicit_and_does_not_change_execution(pte_f
 
 @pytest.mark.parametrize('feedback', list(DecisionFeedback))
 def test_contract_two_feedback_gates_binding_and_prepared_decisions(
-    pte_frozen, tmp_path, monkeypatch, feedback,
+    prepared_account, monkeypatch, feedback,
 ):
     from paper_trading_engine.errors import AdviceClientError
 
-    client = _client(pte_frozen[0].root, tmp_path, {date(2026, 9, 2): date(2026, 9, 3)})
-    prepared = _prepare(client, 's900-v1', date(2026, 9, 2))
+    client, prepared = prepared_account
     release = client._load_release('S900', 'v1')
     original_describe = StrategyRuntime.describe
     authenticated = original_describe(StrategyRuntime(client.repo_root / 'strategies'), release,
@@ -582,12 +615,11 @@ def test_contract_two_feedback_gates_binding_and_prepared_decisions(
 
 @pytest.mark.parametrize('feedback', list(DecisionFeedback))
 def test_legacy_contract_feedback_cannot_bypass_pte_boundary(
-    pte_frozen, tmp_path, monkeypatch, feedback,
+    prepared_account, monkeypatch, feedback,
 ):
     from paper_trading_engine.errors import AdviceClientError
 
-    client = _client(pte_frozen[0].root, tmp_path, {date(2026, 9, 2): date(2026, 9, 3)})
-    prepared = _prepare(client, 's900-v1', date(2026, 9, 2))
+    client, prepared = prepared_account
     authenticated = prepared.instance.definition
     definition = replace(authenticated,
                          implementation=replace(authenticated.implementation, contract_version=1),

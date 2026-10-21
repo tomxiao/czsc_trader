@@ -218,9 +218,8 @@ def test_release_command_preserves_status_with_non_utf8_windows_output(
     assert results[0].returncode == returncode
 
 
-def test_build_rejects_strategy_runtime_wheel_with_governed_assets(tmp_path, pte_frozen):
-    repo = tmp_path / "repo"
-    _create_tagged_release_repo(repo, pte_frozen[0].strategy_root)
+def test_build_rejects_strategy_runtime_wheel_with_governed_assets(tagged_release_repo_copy):
+    repo = tagged_release_repo_copy
 
     class GovernedAssetRunner(FakeReleaseRunner):
         def __call__(self, command, **kwargs):
@@ -350,13 +349,35 @@ def release_build_cache():
     return {}
 
 
+@pytest.fixture(scope="module")
+def release_source_cache():
+    return {}
+
+
+@pytest.fixture
+def tagged_release_repo_copy(request, frozen_seed_root, release_source_cache, tmp_path):
+    """One actual Git commit/tag; each build receives its own complete repository."""
+    if not release_source_cache:
+        seed = frozen_seed_root / "release-source"
+        _create_tagged_release_repo(seed, request.getfixturevalue("pte_frozen")[0].strategy_root)
+        release_source_cache.update(root=seed, files={
+            path.relative_to(seed): path.read_bytes()
+            for path in seed.rglob("*") if path.is_file()
+        })
+    seed = release_source_cache["root"]
+    repo = tmp_path / "release-source"
+    shutil.copytree(seed, repo)
+    yield repo
+    assert {path.relative_to(seed): path.read_bytes()
+            for path in seed.rglob("*") if path.is_file()} == release_source_cache["files"]
+
+
 @pytest.fixture
 def built_release_copy(request, frozen_seed_root, release_build_cache, tmp_path):
     """Run the tagged build once; every publication owns an independent bundle."""
     if not release_build_cache:
-        repo = frozen_seed_root / "release-repo"
+        repo = request.getfixturevalue("tagged_release_repo_copy")
         build_root = repo / ".build" / "pte"
-        _create_tagged_release_repo(repo, request.getfixturevalue("pte_frozen")[0].strategy_root)
         runner = FakeReleaseRunner()
         fetch_sdist, pinned_runner = _source_build_fakes(runner)
         result = build_release(

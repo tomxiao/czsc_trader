@@ -93,33 +93,44 @@ def sources(monkeypatch):
 
 
 def _request(**kwargs):
+    # Keep the session before the first event, all five middle sessions, and the
+    # second event. Only the full-month integration case needs the other dates.
     return DataRequest(**{"dataset": Dataset.INDEX_CONSTITUENTS_DAILY, "symbol": "000905.SH",
-                          "start": "2020-01-01", "end": "2020-01-31", "required_cutoff": None,
+                          "start": "2020-01-10", "end": "2020-01-20", "required_cutoff": None,
                           "frequency": "daily", **kwargs})
 
 
-def _flow(tmp_path, *, offline=False):
-    return Dataflows(base_dir=tmp_path, space=DataSpace(Path("market")),
+@pytest.fixture
+def membership_root(tmp_path, empty_space_factory):
+    # Space creation is owned by test_data_space; this suite validates membership.
+    empty_space_factory("market")
+    return tmp_path
+
+
+def _flow(membership_root, *, offline=False):
+    return Dataflows(base_dir=membership_root, space=DataSpace(Path("market")),
                      providers=ProviderConfig({}) if offline else ProviderConfig())
 
 
-def _prepare(tmp_path, request=None):
-    flow = _flow(tmp_path)
+def _prepare(membership_root, request=None):
+    flow = _flow(membership_root)
     request = _request() if request is None else request
     prepared = flow.prepare((request,), policy=PreparePolicy.REFRESH)
     return flow, request, prepared
 
 
-def test_actual_effective_session_switches_and_offline_fetch_keeps_evidence(tmp_path, monkeypatch, sources):
+def test_actual_effective_session_switches_and_offline_fetch_keeps_evidence(membership_root, monkeypatch, sources):
     pro = sources(events=[_event()])
-    daily = _request()
-    events = _request(dataset=Dataset.INDEX_CONSTITUENT_EVENTS, frequency="event")
-    flow = _flow(tmp_path)
+    daily = _request(start="2020-01-01", end="2020-01-31")
+    events = _request(dataset=Dataset.INDEX_CONSTITUENT_EVENTS, frequency="event",
+                      start="2020-01-01", end="2020-01-31")
+    flow = _flow(membership_root)
     prepared = flow.prepare((daily, events), policy=PreparePolicy.REFRESH)
     assert prepared.ready, prepared.items
     result = flow.fetch(daily, prepared=prepared.reference)
     assert result.ready, result.error
     frame = result.dataframe
+    assert frame.Date.nunique() == 23
     assert frame.groupby("Date").size().eq(500).all()
     assert not frame.Date.dt.weekday.ge(5).any()
     assert _A in set(frame.loc[frame.Date.eq("2020-01-06"), "ConstituentSymbol"])
@@ -143,13 +154,13 @@ def test_actual_effective_session_switches_and_offline_fetch_keeps_evidence(tmp_
 
     monkeypatch.setattr(pro, "index_weight", deny)
     monkeypatch.setattr(pro, "trade_cal", deny)
-    restored = _flow(tmp_path, offline=True).fetch(daily, prepared=prepared.reference)
+    restored = _flow(membership_root, offline=True).fetch(daily, prepared=prepared.reference)
     assert restored.ready, restored.error
     pd.testing.assert_frame_equal(restored.dataframe, frame)
 
 
 @pytest.mark.parametrize("weight", ["missing", None, "invalid", float("inf")])
-def test_daily_membership_neither_requires_nor_hashes_weights(tmp_path, monkeypatch, sources, weight):
+def test_daily_membership_neither_requires_nor_hashes_weights(membership_root, monkeypatch, sources, weight):
     from dataflows import index_membership
 
     pro = sources(events=[_event()])
@@ -166,11 +177,12 @@ def test_daily_membership_neither_requires_nor_hashes_weights(tmp_path, monkeypa
         return raw
 
     monkeypatch.setattr(pro, "index_weight", snapshots)
-    flow, request, prepared = _prepare(tmp_path)
+    flow, request, prepared = _prepare(membership_root, _request(end="2020-01-13"))
     assert prepared.ready, prepared.items
     result = flow.fetch(request, prepared=prepared.reference)
     assert result.ready, result.error
     assert set(result.dataframe.columns) == {"Date", "ConstituentSymbol", "AvailableDate", "SourceSnapshotDate"}
+    assert result.dataframe.Date.nunique() == 2
     assert result.dataframe.groupby("Date").size().eq(500).all()
     assert [query["sha256"] for query in result.identity.metadata["snapshot_queries"]] == [
         index_membership._frame_hash(raw) for raw in raw_sources]
@@ -179,10 +191,10 @@ def test_daily_membership_neither_requires_nor_hashes_weights(tmp_path, monkeypa
 @pytest.mark.parametrize("dataset,frequency", [
     (Dataset.INDEX_CONSTITUENTS_DAILY, "daily"), (Dataset.INDEX_CONSTITUENT_EVENTS, "event"),
 ])
-def test_unreviewed_announcement_scope_is_incomplete_before_vendor_queries(tmp_path, sources, dataset, frequency):
+def test_unreviewed_announcement_scope_is_incomplete_before_vendor_queries(membership_root, sources, dataset, frequency):
     pending = [13334, 13716]
     pro = sources(events=[_event()], scope_review={"complete": False, "pending_notice_ids": pending})
-    _, _, prepared = _prepare(tmp_path, _request(dataset=dataset, frequency=frequency))
+    _, _, prepared = _prepare(membership_root, _request(dataset=dataset, frequency=frequency))
     item, = prepared.items
     assert item.status is DataStatus.INCOMPLETE and prepared.reference is None
     assert item.error.context["pending_notice_ids"] == pending
@@ -192,16 +204,16 @@ def test_unreviewed_announcement_scope_is_incomplete_before_vendor_queries(tmp_p
 @pytest.mark.parametrize("dataset,frequency", [
     (Dataset.INDEX_CONSTITUENTS_DAILY, "daily"), (Dataset.INDEX_CONSTITUENT_EVENTS, "event"),
 ])
-def test_scope_review_time_bounds_published_availability(tmp_path, sources, dataset, frequency):
+def test_scope_review_time_bounds_published_availability(membership_root, sources, dataset, frequency):
     sources(events=[_event()], scope_review={"complete": True, "observed_at_utc": "2026-10-15T03:00:00+00:00"})
-    flow, request, prepared = _prepare(tmp_path, _request(dataset=dataset, frequency=frequency))
+    flow, request, prepared = _prepare(membership_root, _request(dataset=dataset, frequency=frequency))
     assert prepared.ready, prepared.items
     result = flow.fetch(request, prepared=prepared.reference)
     assert result.ready, result.error
     assert result.dataframe.AvailableDate.eq(pd.Timestamp("2026-10-15T11:00:00")).all()
 
 
-def test_missing_month_with_no_event_uses_unchanged_segment_without_patch(tmp_path, monkeypatch, sources):
+def test_missing_month_with_no_event_uses_unchanged_segment_without_patch(membership_root, monkeypatch, sources):
     from dataflows import index_membership
 
     sources(snapshots={"2019-12-31": _members(_A), "2020-02-28": _members(_A)})
@@ -209,7 +221,7 @@ def test_missing_month_with_no_event_uses_unchanged_segment_without_patch(tmp_pa
     observations = iter([_OBSERVED, "2026-10-15T01:00:00+00:00",
                          "2026-10-15T03:00:00+00:00", _OBSERVED])
     monkeypatch.setattr(index_membership, "_now", lambda: next(observations))
-    flow, request, prepared = _prepare(tmp_path, _request(end="2020-02-28"))
+    flow, request, prepared = _prepare(membership_root, _request(end="2020-02-28"))
     assert prepared.ready, prepared.items
     result = flow.fetch(request, prepared=prepared.reference)
     assert result.ready, result.error
@@ -220,10 +232,10 @@ def test_missing_month_with_no_event_uses_unchanged_segment_without_patch(tmp_pa
     assert len(result.identity.metadata["reconstruction_segments"]) == 1
 
 
-def test_two_events_in_one_month_require_a_middle_membership_anchor(tmp_path, sources):
+def test_two_events_in_one_month_require_a_middle_membership_anchor(membership_root, sources):
     events = [_event(), _event("2020-01-20", 2, "2020-01-16")]
     sources(events=events, snapshots={"2019-12-31": _members(_A), "2020-01-31": _members(_C)})
-    _, _, prepared = _prepare(tmp_path)
+    _, _, prepared = _prepare(membership_root)
     item, = prepared.items
     assert item.status is DataStatus.INCOMPLETE and prepared.reference is None
     assert item.error.context["missing_session_start"] == "2020-01-13"
@@ -232,12 +244,12 @@ def test_two_events_in_one_month_require_a_middle_membership_anchor(tmp_path, so
 
 
 @pytest.mark.parametrize("direction", ["forward", "reverse"])
-def test_explicit_patch_fills_only_the_missing_middle_segment(tmp_path, sources, direction):
+def test_explicit_patch_fills_only_the_missing_middle_segment(membership_root, sources, direction):
     first, second = _event(), _event("2020-01-20", 2, "2020-01-16")
     patch = _patch(first, _A, _B) if direction == "forward" else _patch(second, _B, _C)
     sources(events=[first, second], snapshots={"2019-12-31": _members(_A), "2020-01-31": _members(_C)},
             patches=[patch])
-    flow, request, prepared = _prepare(tmp_path)
+    flow, request, prepared = _prepare(membership_root)
     assert prepared.ready, prepared.items
     result = flow.fetch(request, prepared=prepared.reference)
     assert result.ready, result.error
@@ -254,64 +266,64 @@ def test_explicit_patch_fills_only_the_missing_middle_segment(tmp_path, sources,
     assert segments[0]["patch_ids"] == segments[2]["patch_ids"] == []
 
 
-def test_same_segment_constituent_change_without_event_is_incomplete(tmp_path, sources):
+def test_same_segment_constituent_change_without_event_is_incomplete(membership_root, sources):
     sources()
-    _, _, prepared = _prepare(tmp_path)
+    _, _, prepared = _prepare(membership_root)
     item, = prepared.items
     assert item.status is DataStatus.INCOMPLETE and prepared.reference is None
     assert "without an identified effective event" in item.error.message
 
 
-def test_missing_calendar_date_is_incomplete(tmp_path, sources):
+def test_missing_calendar_date_is_incomplete(membership_root, sources):
     pro = sources(events=[_event()])
     pro.drop_calendar_day = True
-    _, _, prepared = _prepare(tmp_path)
+    _, _, prepared = _prepare(membership_root)
     item, = prepared.items
     assert item.status is DataStatus.INCOMPLETE and prepared.reference is None
 
 
 @pytest.mark.parametrize("members", [_members(_A)[:-1], [*_STABLE, "bad-code"]])
-def test_invalid_snapshot_never_publishes_ready(tmp_path, sources, members):
+def test_invalid_snapshot_never_publishes_ready(membership_root, sources, members):
     sources(events=[_event()], snapshots={"2019-12-31": members, "2020-01-31": _members(_B)})
-    _, _, prepared = _prepare(tmp_path)
+    _, _, prepared = _prepare(membership_root)
     item, = prepared.items
     assert item.status is DataStatus.FAILED and prepared.reference is None
     assert item.error.code == "DATA_CONTRACT_MISMATCH"
 
 
-def test_patch_contradicting_a_source_anchor_is_incomplete(tmp_path, sources):
+def test_patch_contradicting_a_source_anchor_is_incomplete(membership_root, sources):
     first, second = _event(), _event("2020-01-20", 2, "2020-01-16")
     patches = [_patch(first, _A, _B), _patch(second, _B, "600004.SH")]
     sources(events=[first, second], snapshots={"2019-12-31": _members(_A), "2020-01-31": _members(_C)},
             patches=patches)
-    _, _, prepared = _prepare(tmp_path)
+    _, _, prepared = _prepare(membership_root)
     item, = prepared.items
     assert item.status is DataStatus.INCOMPLETE and prepared.reference is None
 
 
 @pytest.mark.parametrize("arguments,complete", [({"start": "2019-11-01"}, True), ({}, False)])
-def test_uncertified_catalog_range_is_incomplete_before_vendor_queries(tmp_path, sources, arguments, complete):
+def test_uncertified_catalog_range_is_incomplete_before_vendor_queries(membership_root, sources, arguments, complete):
     pro = sources(events=[_event()], complete=complete)
-    _, _, prepared = _prepare(tmp_path, _request(**arguments))
+    _, _, prepared = _prepare(membership_root, _request(**arguments))
     item, = prepared.items
     assert item.status is DataStatus.INCOMPLETE and prepared.reference is None
     assert not pro.weight_calls and not pro.calendar_calls
 
 
-def test_catalog_hash_tampering_never_publishes_ready(tmp_path, monkeypatch, sources):
+def test_catalog_hash_tampering_never_publishes_ready(membership_root, monkeypatch, sources):
     from dataflows import _csi500_effective_dates
 
     pro = sources(events=[_event()])
     monkeypatch.setattr(_csi500_effective_dates, "CATALOG_SHA256", "f" * 64)
-    _, _, prepared = _prepare(tmp_path)
+    _, _, prepared = _prepare(membership_root)
     item, = prepared.items
     assert item.status is DataStatus.FAILED and prepared.reference is None
     assert not pro.weight_calls
 
 
-def test_non_session_effective_date_is_rejected_instead_of_switching_on_monday(tmp_path, sources):
+def test_non_session_effective_date_is_rejected_instead_of_switching_on_monday(membership_root, sources):
     pro = sources(events=[_event("2020-01-11")])
-    _, _, prepared = _prepare(tmp_path)
+    _, _, prepared = _prepare(membership_root)
     item, = prepared.items
     assert item.status is DataStatus.FAILED and prepared.reference is None
     assert item.error.code == "DATA_CONTRACT_MISMATCH"
@@ -326,18 +338,18 @@ def test_daily_request_uses_strong_parameters(arguments):
         _request(**arguments)
 
 
-def test_patch_records_hash_tampering_is_a_contract_failure(tmp_path, sources):
+def test_patch_records_hash_tampering_is_a_contract_failure(membership_root, sources):
     first, second = _event(), _event("2020-01-20", 2, "2020-01-16")
     patch = replace(_patch(first, _A, _B), records_sha256="f" * 64)
     sources(events=[first, second], snapshots={"2019-12-31": _members(_A), "2020-01-31": _members(_C)},
             patches=[patch])
-    _, _, prepared = _prepare(tmp_path)
+    _, _, prepared = _prepare(membership_root)
     item, = prepared.items
     assert item.status is DataStatus.FAILED and prepared.reference is None
 
 
 @pytest.mark.parametrize("defect", ["availability", "snapshot_hash", "invented_patch", "wrong_event_patch", "patch_count"])
-def test_provider_cannot_publish_backdated_or_fabricated_segment_evidence(tmp_path, monkeypatch, sources, defect):
+def test_provider_cannot_publish_backdated_or_fabricated_segment_evidence(membership_root, monkeypatch, sources, defect):
     from dataflows import index_membership
 
     first, second = _event(), _event("2020-01-20", 2, "2020-01-16")
@@ -365,19 +377,19 @@ def test_provider_cannot_publish_backdated_or_fabricated_segment_evidence(tmp_pa
         return frame, metadata
 
     monkeypatch.setattr(index_membership, "fetch_index_constituents_daily", corrupt)
-    _, _, prepared = _prepare(tmp_path)
+    _, _, prepared = _prepare(membership_root)
     item, = prepared.items
     assert item.status is DataStatus.FAILED and prepared.reference is None
     assert item.error.code == "DATA_CONTRACT_MISMATCH"
 
 
-def test_publication_availability_includes_catalog_and_only_actually_used_patches(tmp_path, sources):
+def test_publication_availability_includes_catalog_and_only_actually_used_patches(membership_root, sources):
     event = _event()
     event["observed_at_utc"] = "2026-10-15T04:00:00+00:00"
     # A valid supplement is unused because both event segments have snapshots.
     unused = replace(_patch(event, _A, _B), observed_at_utc="2026-10-15T05:00:00+00:00")
     sources(events=[event], patches=[unused])
-    flow, request, prepared = _prepare(tmp_path)
+    flow, request, prepared = _prepare(membership_root)
     assert prepared.ready, prepared.items
     result = flow.fetch(request, prepared=prepared.reference)
     assert result.ready, result.error

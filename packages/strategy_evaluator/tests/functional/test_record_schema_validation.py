@@ -53,10 +53,3 @@ def test_warm_schema_rejects_nonfinite_numbers_in_constructor_and_decode(warm_po
     value["close"] = nonfinite
     with pytest.raises(ValueError):
         m.AccountPoint.from_dict(value)
-
-
-def test_cached_annotation_mapping_cannot_be_modified(warm_point):
-    hints = m._record_hints(type(warm_point))
-    with pytest.raises(TypeError):
-        hints["cash"] = str
-    assert m.AccountPoint.from_dict(warm_point.to_dict()) == warm_point

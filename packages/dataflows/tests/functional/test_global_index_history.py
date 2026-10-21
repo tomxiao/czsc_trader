@@ -13,6 +13,13 @@ from dataflows.errors import IncompleteDataError
 from dataflows.tushare_strategy_data import fetch_global_index_daily
 
 
+@pytest.fixture
+def global_index_root(tmp_path, empty_space_factory):
+    # Initialization/concurrency are covered by test_data_space.
+    empty_space_factory("market")
+    return tmp_path
+
+
 class GlobalPro:
     def __init__(self, *, empty_year=None, missing_start=None, missing_end=None):
         self.empty_year = empty_year
@@ -33,7 +40,7 @@ class GlobalPro:
 
 
 def test_spx_default_publication_keeps_annual_evidence_and_allows_holiday_slice(
-    tmp_path, monkeypatch,
+    global_index_root, monkeypatch,
 ):
     from dataflows import tushare_strategy_data
 
@@ -41,7 +48,7 @@ def test_spx_default_publication_keeps_annual_evidence_and_allows_holiday_slice(
     monkeypatch.setattr(tushare_strategy_data, '_client', lambda *_: pro)
     request = DataRequest(Dataset.GLOBAL_INDEX_DAILY, 'SPX', '2024-12-31',
                           '2026-01-01', '2025-12-31')
-    flows = Dataflows(base_dir=tmp_path, space=DataSpace(Path('market')),
+    flows = Dataflows(base_dir=global_index_root, space=DataSpace(Path('market')),
                      providers=ProviderConfig())
     prepared = flows.prepare((request,), policy=PreparePolicy.REUSE)
     assert prepared.ready, prepared.items
@@ -58,7 +65,7 @@ def test_spx_default_publication_keeps_annual_evidence_and_allows_holiday_slice(
 
 
 def test_empty_spx_annual_slice_is_incomplete_with_request_evidence(
-    tmp_path, monkeypatch,
+    global_index_root, monkeypatch,
 ):
     from dataflows import tushare_strategy_data
 
@@ -66,7 +73,7 @@ def test_empty_spx_annual_slice_is_incomplete_with_request_evidence(
     monkeypatch.setattr(tushare_strategy_data, '_client', lambda *_: pro)
     request = DataRequest(Dataset.GLOBAL_INDEX_DAILY, 'SPX', '2024-12-31',
                           '2026-01-05', '2026-01-05')
-    flows = Dataflows(base_dir=tmp_path, space=DataSpace(Path('market')),
+    flows = Dataflows(base_dir=global_index_root, space=DataSpace(Path('market')),
                      providers=ProviderConfig())
     prepared = flows.prepare((request,), policy=PreparePolicy.REFRESH)
     assert not prepared.ready and prepared.reference is None
@@ -88,13 +95,13 @@ def test_nonempty_spx_year_with_internal_hole_is_rejected():
 
 
 @pytest.mark.parametrize(('gap_days', 'ready'), [(10, True), (11, False)])
-def test_spx_history_gap_boundary_is_checked_without_coverage(tmp_path, gap_days, ready):
+def test_spx_history_gap_boundary_is_checked_without_coverage(global_index_root, gap_days, ready):
     dates = pd.to_datetime(['2025-01-02', '2025-01-02'])
     dates = pd.DatetimeIndex([dates[0], dates[1] + pd.Timedelta(days=gap_days)])
     frame = pd.DataFrame({'Date': dates, 'PercentChange': [0.01, -0.01]})
     request = DataRequest(Dataset.GLOBAL_INDEX_DAILY, 'SPX', '2025-01-02',
                           dates[-1].date().isoformat(), dates[-1].date().isoformat())
-    flows = Dataflows(base_dir=tmp_path, space=DataSpace(Path('market')),
+    flows = Dataflows(base_dir=global_index_root, space=DataSpace(Path('market')),
         providers=ProviderConfig({Dataset.GLOBAL_INDEX_DAILY:
             ProviderBinding('fixture', '1', lambda _: (frame, {'vendor': 'synthetic'}))}))
     prepared = flows.prepare((request,), policy=PreparePolicy.REUSE)
@@ -107,7 +114,7 @@ def test_spx_history_gap_boundary_is_checked_without_coverage(tmp_path, gap_days
 
 
 def test_old_ready_spx_hole_is_rejected_on_fetch_and_reuse_then_explicitly_refreshed(
-    tmp_path, monkeypatch,
+    global_index_root, monkeypatch,
 ):
     from dataflows import facade
 
@@ -120,7 +127,7 @@ def test_old_ready_spx_hole_is_rejected_on_fetch_and_reuse_then_explicitly_refre
         calls.append(request)
         return frame, {'vendor': 'synthetic'}
 
-    flows = Dataflows(base_dir=tmp_path, space=DataSpace(Path('market')),
+    flows = Dataflows(base_dir=global_index_root, space=DataSpace(Path('market')),
         providers=ProviderConfig({Dataset.GLOBAL_INDEX_DAILY:
             ProviderBinding('fixture', '1', provider)}))
     request = DataRequest(Dataset.GLOBAL_INDEX_DAILY, 'SPX', '2024-12-30',

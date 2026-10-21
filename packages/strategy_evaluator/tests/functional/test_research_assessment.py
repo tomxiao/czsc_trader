@@ -14,7 +14,6 @@ from strategy_evaluator import (
 from strategy_evaluator import research_models as m
 from strategy_evaluator import research_assessment as assessment
 from strategy_evaluator import search_bias
-from strategy_evaluator import bootstrap
 
 
 def candidate(name="C0001", digest="a"):
@@ -639,23 +638,3 @@ def test_family_dsr_unexpected_error_is_not_converted_to_diagnostic(monkeypatch)
     monkeypatch.setattr(assessment, "calculate_dsr_bundle", failed)
     with pytest.raises(RuntimeError, match="unexpected implementation failure"):
         assess_candidates(family_request())
-
-
-def test_stage_four_interval_matches_original_without_sampled_drawdown(monkeypatch):
-    req = request()
-    base = req.evidence[0]
-    benchmark = np.r_[base.initial_cash, base.benchmark_equity]
-    expected = bootstrap.paired_stationary_bootstrap(
-        assessment._returns(base), benchmark[1:] / benchmark[:-1] - 1,
-        champion_id=req.centers[0].candidate_id, comparator_id="benchmark",
-        repetitions=req.protocol.bootstrap_repetitions,
-        mean_block_length=req.protocol.bootstrap_block_length, seed=req.protocol.seed,
-    ).cagr
-
-    def unused(*args):
-        raise AssertionError("stage four only needs the CAGR interval")
-
-    monkeypatch.setattr(bootstrap, "_row_metrics", unused)
-    interval = assess_candidates(req).rows[0].uncertainty
-    assert interval.status is m.DiagnosticStatus.AVAILABLE
-    assert (interval.lower_95, interval.upper_95) == (expected.lower_95, expected.upper_95)

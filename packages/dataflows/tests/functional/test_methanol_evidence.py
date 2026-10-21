@@ -99,11 +99,15 @@ def _bindings(evidence):
     )
 
 
-def _flow(root, evidence, *, space="published", bindings=None):
-    return Dataflows(
-        base_dir=root, space=DataSpace(Path(space)),
-        providers=ProviderConfig(bindings=_bindings(evidence) if bindings is None else bindings),
-    )
+@pytest.fixture
+def methanol_flow(tmp_path, empty_space_factory):
+    """Private named stores; every evidence acquisition/publication remains real."""
+    def create(evidence, *, space="published", bindings=None):
+        return Dataflows(
+            base_dir=tmp_path, space=empty_space_factory(space),
+            providers=ProviderConfig(bindings=_bindings(evidence) if bindings is None else bindings),
+        )
+    return create
 
 
 @pytest.fixture(autouse=True)
@@ -114,10 +118,10 @@ def _no_network(monkeypatch):
     monkeypatch.setattr(socket, "create_connection", forbidden)
 
 
-def test_offline_publication_preserves_pre_roll_contract_and_pinned_reload(tmp_path):
+def test_offline_publication_preserves_pre_roll_contract_and_pinned_reload(tmp_path, methanol_flow):
     evidence = _write_evidence(tmp_path)
     requests = (_request(), _request(MAPPING, "MA.ZCE"))
-    flow = _flow(tmp_path, evidence)
+    flow = methanol_flow(evidence)
     prepared = flow.prepare(requests, policy=PreparePolicy.REFRESH)
     assert prepared.ready, prepared.items
     daily, mapping = [flow.fetch(request, prepared=prepared.reference) for request in requests]
@@ -148,9 +152,9 @@ def test_offline_publication_preserves_pre_roll_contract_and_pinned_reload(tmp_p
     assert reused.ready and reused.reference == prepared.reference
 
 
-def test_available_date_excludes_same_source_day_and_before_close(tmp_path):
+def test_available_date_excludes_same_source_day_and_before_close(tmp_path, methanol_flow):
     evidence = _write_evidence(tmp_path)
-    flow = _flow(tmp_path, evidence)
+    flow = methanol_flow(evidence)
     request = _request()
     prepared = flow.prepare((request,), policy=PreparePolicy.REFRESH)
     assert prepared.ready, prepared.items
@@ -168,13 +172,13 @@ def test_available_date_excludes_same_source_day_and_before_close(tmp_path):
     assert aligned.dataframe.Close.iloc[2:].tolist() == [10., 11.]
 
 
-def test_closed_day_previous_date_is_preserved_but_open_day_predecessor_is_required(tmp_path):
+def test_closed_day_previous_date_is_preserved_but_open_day_predecessor_is_required(tmp_path, methanol_flow):
     records = _records()
     # Closed-day vendor values may use a different convention from the latest open date.
     records["calendar"][3][1][3] = "20260923"
     evidence = _write_evidence(tmp_path, records)
     calendar_request = _request(Dataset.TRADING_CALENDAR, "CZCE", end="2026-09-29")
-    flow = _flow(tmp_path, evidence)
+    flow = methanol_flow(evidence)
     prepared = flow.prepare((_request(), calendar_request), policy=PreparePolicy.REFRESH)
     assert prepared.ready, prepared.items
     calendar = flow.fetch(calendar_request, prepared=prepared.reference)
@@ -194,7 +198,7 @@ def test_closed_day_previous_date_is_preserved_but_open_day_predecessor_is_requi
     # The same discrepancy on an OPEN date is a contradiction, not a retained convention.
     records["calendar"][3][4][3] = "20260923"
     evidence = _write_evidence(tmp_path, records)
-    rejected = _flow(tmp_path, evidence, space="invalid-open-predecessor").prepare(
+    rejected = methanol_flow(evidence, space="invalid-open-predecessor").prepare(
         (_request(),), policy=PreparePolicy.REFRESH,
     )
     assert not rejected.ready and rejected.reference is None
@@ -203,13 +207,13 @@ def test_closed_day_previous_date_is_preserved_but_open_day_predecessor_is_requi
     assert "open-day previous trading day" in rejected.items[0].error.message
 
 
-def test_conversion_revision_prevents_reuse_of_prior_preparation(tmp_path, monkeypatch):
+def test_conversion_revision_prevents_reuse_of_prior_preparation(tmp_path, methanol_flow, monkeypatch):
     from dataflows import methanol_evidence
 
     evidence = _write_evidence(tmp_path)
     requests = (_request(), _request(MAPPING, "MA.ZCE"))
     original_bindings = _bindings(evidence)
-    original_flow = _flow(tmp_path, evidence, bindings=original_bindings)
+    original_flow = methanol_flow(evidence, bindings=original_bindings)
     original = original_flow.prepare(requests, policy=PreparePolicy.REFRESH)
     assert original.ready, original.items
 
@@ -225,7 +229,7 @@ def test_conversion_revision_prevents_reuse_of_prior_preparation(tmp_path, monke
     for dataset in (DAILY, MAPPING):
         assert changed_bindings[dataset].revision != original_bindings[dataset].revision
         assert changed_bindings[dataset].name != original_bindings[dataset].name
-    changed_flow = _flow(tmp_path, evidence, bindings=changed_bindings)
+    changed_flow = methanol_flow(evidence, bindings=changed_bindings)
     changed = changed_flow.prepare(requests, policy=PreparePolicy.REUSE)
     assert changed.ready, changed.items
     assert changed.reference != original.reference
@@ -257,8 +261,8 @@ def test_request_rejects_implicit_time_or_wrong_parameters(changes):
         replace(_request(), **changes)
 
 
-def _assert_rejected(root, evidence, request=None, *, space="rejected"):
-    flow = _flow(root, evidence, space=space)
+def _assert_rejected(methanol_flow, evidence, request=None, *, space="rejected"):
+    flow = methanol_flow(evidence, space=space)
     prepared = flow.prepare((request or _request(),), policy=PreparePolicy.REFRESH)
     assert not prepared.ready
     assert prepared.reference is None
@@ -271,7 +275,7 @@ def _assert_rejected(root, evidence, request=None, *, space="rejected"):
     "failed_receipt", "missing_session", "duplicate_session", "wrong_contract",
     "unlisted_contract", "zero_close", "negative_volume", "calendar_hole",
 ])
-def test_evidence_failures_block_publication_without_fallback(tmp_path, mutation):
+def test_evidence_failures_block_publication_without_fallback(tmp_path, methanol_flow, mutation):
     records = _records()
     if mutation == "missing_session":
         records["daily"][3].pop(0)
@@ -306,22 +310,22 @@ def test_evidence_failures_block_publication_without_fallback(tmp_path, mutation
             receipt["status"] = "FAILED"
         path.write_text(json.dumps(receipt), encoding="utf-8")
         evidence[name] = replace(evidence[name], source_sha256=hashlib.sha256(path.read_bytes()).hexdigest())
-    _assert_rejected(tmp_path, evidence)
+    _assert_rejected(methanol_flow, evidence)
 
 
 @pytest.mark.parametrize("data_request", [
     _request(start="2026-09-23"), _request(end="2026-09-29"),
     _request(symbol="MA2610.ZCE"),
 ])
-def test_unprovided_contract_or_range_never_triggers_acquisition(tmp_path, data_request):
-    _assert_rejected(tmp_path, _write_evidence(tmp_path), data_request)
+def test_unprovided_contract_or_range_never_triggers_acquisition(tmp_path, methanol_flow, data_request):
+    _assert_rejected(methanol_flow, _write_evidence(tmp_path), data_request)
 
 
-def test_zero_volume_is_preserved_and_calendar_tail_cannot_invent_next_session(tmp_path):
+def test_zero_volume_is_preserved_and_calendar_tail_cannot_invent_next_session(tmp_path, methanol_flow):
     records = _records()
     records["daily"][3][0][4] = 0.
     evidence = _write_evidence(tmp_path, records)
-    flow = _flow(tmp_path, evidence)
+    flow = methanol_flow(evidence)
     prepared = flow.prepare((_request(),), policy=PreparePolicy.REFRESH)
     assert prepared.ready, prepared.items
     result = flow.fetch(_request(), prepared=prepared.reference)
@@ -330,10 +334,10 @@ def test_zero_volume_is_preserved_and_calendar_tail_cannot_invent_next_session(t
     records["daily"][1]["end_date"] = "20260929"
     records["daily"][3].append(["MA2611.ZCE", "20260929", 12., 12., 100., 1200., 210.])
     evidence = _write_evidence(tmp_path, records)
-    _assert_rejected(tmp_path, evidence, _request(end="2026-09-29"))
+    _assert_rejected(methanol_flow, evidence, _request(end="2026-09-29"))
 
 
-def test_single_contract_request_never_reads_other_contract_response(tmp_path):
+def test_single_contract_request_never_reads_other_contract_response(tmp_path, methanol_flow):
     records = _records()
     records["unselected"] = (
         "fut_daily", {"ts_code": "MA2610.ZCE", "start_date": "20260924", "end_date": "20260928"},
@@ -346,14 +350,14 @@ def test_single_contract_request_never_reads_other_contract_response(tmp_path):
         directory=evidence["directory"], calendar=evidence["calendar"], mapping=evidence["mapping"],
         daily=(evidence["daily"], evidence["unselected"]),
     )
-    flow = _flow(tmp_path, evidence, bindings=bindings)
+    flow = methanol_flow(evidence, bindings=bindings)
     prepared = flow.prepare((_request(),), policy=PreparePolicy.REFRESH)
     assert prepared.ready, prepared.items
     assert flow.fetch(_request(), prepared=prepared.reference).dataframe.Contract.eq("MA2611.ZCE").all()
 
 
 @pytest.mark.parametrize("mutation", ["missing_session", "wrong_series", "unknown_month_contract"])
-def test_mapping_requires_exact_sessions_and_verified_original_contracts(tmp_path, mutation):
+def test_mapping_requires_exact_sessions_and_verified_original_contracts(tmp_path, methanol_flow, mutation):
     records = _records()
     if mutation == "missing_session":
         records["mapping"][3].pop(0)
@@ -361,11 +365,11 @@ def test_mapping_requires_exact_sessions_and_verified_original_contracts(tmp_pat
         records["mapping"][3][0][0] = "MAL.ZCE"
     else:
         records["mapping"][3][0][2] = "MA2612.ZCE"
-    _assert_rejected(tmp_path, _write_evidence(tmp_path, records), _request(MAPPING, "MA.ZCE"))
+    _assert_rejected(methanol_flow, _write_evidence(tmp_path, records), _request(MAPPING, "MA.ZCE"))
 
 
 @pytest.mark.parametrize("mutation", ["missing_availability", "same_day_availability", "wrong_contract"])
-def test_facade_rechecks_provider_time_and_identity(tmp_path, mutation):
+def test_facade_rechecks_provider_time_and_identity(tmp_path, methanol_flow, mutation):
     evidence = _write_evidence(tmp_path)
     bindings = _bindings(evidence)
     original = bindings[DAILY]
@@ -382,7 +386,7 @@ def test_facade_rechecks_provider_time_and_identity(tmp_path, mutation):
         return frame, metadata
 
     bindings[DAILY] = ProviderBinding("invalid-evidence-fixture", "v1", invalid)
-    prepared = _flow(tmp_path, evidence, bindings=bindings).prepare(
+    prepared = methanol_flow(evidence, bindings=bindings).prepare(
         (_request(),), policy=PreparePolicy.REFRESH,
     )
     assert not prepared.ready and prepared.reference is None

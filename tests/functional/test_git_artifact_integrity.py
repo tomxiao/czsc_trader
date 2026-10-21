@@ -22,7 +22,7 @@ from test_current_contracts import (
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def _git(root, autocrlf, *arguments):
+def _git(root, autocrlf, *arguments, input=None):
     return subprocess.check_output(
         [
             "git", "-c", f"core.autocrlf={autocrlf}",
@@ -31,7 +31,7 @@ def _git(root, autocrlf, *arguments):
             "-c", "user.name=Artifact Test", "-c", "user.email=artifact@example.invalid",
             *arguments,
         ],
-        cwd=root, stderr=subprocess.PIPE,
+        cwd=root, stderr=subprocess.PIPE, input=input,
     )
 
 
@@ -68,13 +68,21 @@ def test_git_roundtrip_preserves_evidence_and_current_release(tmp_path, current_
     _git(source, autocrlf, "commit", "-m", "synthetic authenticated artifacts")
     checkout = tmp_path / "git-checkout"
     _git(source, autocrlf, "clone", "--no-hardlinks", str(source), str(checkout))
+    # Read every actual blob through one Git process; per-file spawning only
+    # duplicated process startup, not coverage of the transport or file bytes.
+    queries = "".join(f"HEAD:{name}\n" for name in files).encode("utf-8")
+    blobs = BytesIO(_git(source, autocrlf, "cat-file", "--batch", input=queries))
     archive = ZipFile(BytesIO(_git(source, autocrlf, "archive", "--format=zip", "HEAD")))
     with archive:
         for name, content in files.items():
-            assert _git(source, autocrlf, "cat-file", "blob", f"HEAD:{name}") == content, name
+            _, kind, size = blobs.readline().split()
+            assert kind == b"blob", name
+            assert blobs.read(int(size)) == content, name
+            assert blobs.read(1) == b"\n", name
             assert (checkout / name).read_bytes() == content, name
             assert archive.read(name) == content, name
             CandidateEvidence(name, sha256(content).hexdigest()).resolve(checkout)
+    assert blobs.read() == b""
     assert implementation_sha256(source_files, source_root=checkout) == source_identity
     assert StrategyRegistry(checkout / "strategies").get_version("S900", "v1") == version
     deployed = load_strategy_deployment(checkout / "strategies", version.release_id)

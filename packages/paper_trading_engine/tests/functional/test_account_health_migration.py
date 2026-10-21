@@ -27,7 +27,10 @@ def legacy_health_seed(frozen_seed_root):
     """Create the real legacy schema once; migration always uses a private copy."""
     original = frozen_seed_root / "legacy-health.db"
     connection = sqlite3.connect(original)
+    # This is fixture construction, not the migration under test. Commit the
+    # fixed seed once instead of forcing a durable commit for every DDL/row.
     connection.executescript("""
+        BEGIN;
         CREATE TABLE settings(key TEXT PRIMARY KEY,value TEXT NOT NULL);
         INSERT INTO settings VALUES('runtime_database_schema_version','4');
         CREATE TABLE virtual_accounts(account_id TEXT PRIMARY KEY,health TEXT,last_error TEXT,
@@ -55,6 +58,7 @@ def legacy_health_seed(frozen_seed_root):
         INSERT INTO ledger VALUES('{"cash_delta":"-123.4500"}');
         CREATE TABLE events(payload TEXT);
         INSERT INTO events VALUES('{"historical_health":"READY"}');
+        COMMIT;
     """)
     connection.close()
     original_bytes = original.read_bytes()

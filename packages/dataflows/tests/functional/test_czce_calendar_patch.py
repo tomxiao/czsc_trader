@@ -11,6 +11,13 @@ from dataflows import DataRequest, Dataflows, DataSpace, Dataset, PreparePolicy,
 from dataflows._czce_calendar_patch import PATCH_ID, PATCH_SOURCE_HASHES, apply_czce_calendar_patch
 
 
+@pytest.fixture
+def calendar_root(tmp_path, empty_space_factory):
+    # Initialization/concurrency are covered by test_data_space.
+    empty_space_factory("calendar")
+    return tmp_path
+
+
 def _frame():
     return pd.DataFrame({
         "Date": pd.to_datetime(["2022-12-30", "2023-01-01", "2023-01-02", "2023-01-03"]),
@@ -32,9 +39,9 @@ def _publish(root, frame, *, exchange="CZCE", start="2022-12-30", end="2023-01-0
     return prepared, flow.fetch(request, prepared=prepared.reference) if prepared.ready else None
 
 
-def test_certified_single_missing_day_is_published_with_source_lineage(tmp_path):
+def test_certified_single_missing_day_is_published_with_source_lineage(calendar_root):
     original = _frame()
-    prepared, result = _publish(tmp_path, original)
+    prepared, result = _publish(calendar_root, original)
     assert prepared.ready, prepared.items
     assert result.ready and len(result.dataframe) == 5
     row = result.dataframe.loc[result.dataframe.Date.eq("2022-12-31")].iloc[0]
@@ -47,16 +54,16 @@ def test_certified_single_missing_day_is_published_with_source_lineage(tmp_path)
     assert len(original) == 4
 
 
-def test_correct_existing_row_is_idempotent(tmp_path):
+def test_correct_existing_row_is_idempotent(calendar_root):
     frame = pd.concat([_frame(), pd.DataFrame({"Date": [pd.Timestamp("2022-12-31")],
                                              "IsOpen": [0], "PreviousTradingDate": [pd.Timestamp("2022-12-30")]})]).sort_values("Date").reset_index(drop=True)
-    prepared, result = _publish(tmp_path, frame)
+    prepared, result = _publish(calendar_root, frame)
     assert prepared.ready and len(result.dataframe) == 5
     assert not result.identity.metadata.get("calendar_repairs")
 
 
 @pytest.mark.parametrize("case", ["open_conflict", "previous_conflict", "duplicate", "no_previous", "other_hole", "wrong_exchange"])
-def test_patch_rejects_conflicts_and_does_not_infer_other_dates(tmp_path, case):
+def test_patch_rejects_conflicts_and_does_not_infer_other_dates(calendar_root, case):
     frame = _frame()
     if case in {"open_conflict", "previous_conflict", "duplicate"}:
         extra = pd.DataFrame({"Date": [pd.Timestamp("2022-12-31")],
@@ -67,12 +74,12 @@ def test_patch_rejects_conflicts_and_does_not_infer_other_dates(tmp_path, case):
         frame = frame.loc[frame.Date.ne("2022-12-30")]
     elif case == "other_hole":
         frame = frame.loc[frame.Date.ne("2023-01-01")]
-    prepared, result = _publish(tmp_path, frame, exchange="SSE" if case == "wrong_exchange" else "CZCE")
+    prepared, result = _publish(calendar_root, frame, exchange="SSE" if case == "wrong_exchange" else "CZCE")
     assert not prepared.ready and result is None
 
 
-def test_unaffected_range_is_not_patched(tmp_path):
-    prepared, result = _publish(tmp_path, _frame(), start="2023-01-01")
+def test_unaffected_range_is_not_patched(calendar_root):
+    prepared, result = _publish(calendar_root, _frame(), start="2023-01-01")
     assert prepared.ready and len(result.dataframe) == 3
     assert not result.identity.metadata.get("calendar_repairs")
 

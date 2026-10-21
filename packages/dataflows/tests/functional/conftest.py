@@ -78,13 +78,31 @@ def empty_space_seeds(frozen_seed_root):
 
 
 @pytest.fixture
-def flow_factory(tmp_path, empty_space_seeds):
+def empty_space_factory(tmp_path, empty_space_seeds):
+    """Give dataset fixtures named private stores without redoing schema setup.
+
+    Repeat opens retain the same identity; distinct names within one case use
+    distinct original seed identities. No identity or database bytes are edited.
+    """
+    spaces = {}
+
+    def create(name):
+        space = DataSpace(Path(name))
+        if space.path not in spaces:
+            copytree(empty_space_seeds(len(spaces)), tmp_path / space.path)
+            spaces[space.path] = space
+        return space
+
+    return create
+
+
+@pytest.fixture
+def flow_factory(tmp_path, empty_space_factory):
     spaces = count()
 
     def create(providers=None):
         index = next(spaces)
-        space = DataSpace(path=Path(f"space-{index}"))
-        copytree(empty_space_seeds(index), tmp_path / space.path)
+        space = empty_space_factory(f"space-{index}")
         bindings = None if providers is None else {
             Dataset(dataset): ProviderBinding(name="fixture", revision="v1", fetch=provider)
             for dataset, provider in providers.items()

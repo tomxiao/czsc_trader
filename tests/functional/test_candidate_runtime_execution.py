@@ -368,6 +368,6 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(managed_evaluatio
 
 
 @pytest.fixture
-def managed_evaluation(candidate_payload, tmp_path, monkeypatch):
+def managed_evaluation(request, tmp_path, frozen_seed_root, monkeypatch):
     from test_research_contract_upgrade import managed_evaluation as prepare_managed
-    return prepare_managed.__wrapped__(candidate_payload, tmp_path, monkeypatch)
+    return prepare_managed.__wrapped__(request, tmp_path, frozen_seed_root, monkeypatch)

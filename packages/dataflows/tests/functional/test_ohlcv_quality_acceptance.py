@@ -186,15 +186,22 @@ def test_reuse_is_offline_and_fetch_reads_certified_window_quality(flow_factory,
     assert len(calls) == 1
 
 
-@pytest.mark.parametrize("version", [None, 2, True], ids=["missing", "different", "invalid-type"])
-def test_prepare_and_fetch_require_matching_preparation_contract(flow_factory, version):
+def _certified_daily(clone_published_flow, calls):
+    """One real certified publication; every mutation gets a private database."""
     daily, _ = _source(sessions=FAULT_SESSIONS)
-    calls = []
-    flows = flow_factory({Dataset.ETF_OHLCV: _provider(daily, _metadata(daily, sessions=FAULT_SESSIONS), calls)})
     request = _request(sessions=FAULT_SESSIONS)
-    prepared = flows.prepare((request,), policy=PreparePolicy.REFRESH)
-    assert prepared.ready
-    entries = flows._store.load_preparation(prepared.reference)
+    flows, original = clone_published_flow("quality-daily", {
+        Dataset.ETF_OHLCV: _provider(daily, _metadata(daily, sessions=FAULT_SESSIONS), calls),
+    }, request)
+    calls.clear()  # Only this case's refresh/reuse may invoke its current provider.
+    return flows, request, original.prepared
+
+
+@pytest.mark.parametrize("version", [None, 2, True], ids=["missing", "different", "invalid-type"])
+def test_prepare_and_fetch_require_matching_preparation_contract(clone_published_flow, version):
+    calls = []
+    flows, request, prepared = _certified_daily(clone_published_flow, calls)
+    entries = flows._store.load_preparation(prepared)
     for entry in entries:
         if version is None:
             del entry["data_contract_version"]
@@ -210,17 +217,13 @@ def test_prepare_and_fetch_require_matching_preparation_contract(flow_factory, v
     assert rejected.error.code == error_code
     reused = flows.prepare((request,), policy=PreparePolicy.REUSE)
     assert not reused.ready and reused.reference is None and reused.items[0].error.code == error_code
-    assert len(calls) == 1
-    assert flows.fetch(request, prepared=prepared.reference).ready
+    assert len(calls) == 0
+    assert flows.fetch(request, prepared=prepared).ready
 
 
-def test_changed_code_and_provider_revision_preserve_same_contract_assets(flow_factory, monkeypatch):
-    daily, _ = _source(sessions=FAULT_SESSIONS)
+def test_changed_code_and_provider_revision_preserve_same_contract_assets(clone_published_flow, monkeypatch):
     calls = []
-    providers = {Dataset.ETF_OHLCV: _provider(daily, _metadata(daily, sessions=FAULT_SESSIONS), calls)}
-    flows = flow_factory(providers)
-    request = _request(sessions=FAULT_SESSIONS)
-    original = flows.prepare((request,), policy=PreparePolicy.REFRESH)
+    flows, request, original = _certified_daily(clone_published_flow, calls)
     monkeypatch.setattr(facade, "_implementation_revision", lambda: "0" * 64)
     upgraded = Dataflows(
         base_dir=flows._store.base_dir,
@@ -228,51 +231,44 @@ def test_changed_code_and_provider_revision_preserve_same_contract_assets(flow_f
         providers=ProviderConfig(bindings={Dataset(key): replace(value, revision="v2")
                                           for key, value in flows._providers.items()}),
     )
-    original_data = flows.fetch(request, prepared=original.reference)
-    upgraded_data = upgraded.fetch(request, prepared=original.reference)
+    original_data = flows.fetch(request, prepared=original)
+    upgraded_data = upgraded.fetch(request, prepared=original)
     assert upgraded_data.ready and upgraded_data.identity == original_data.identity
     pd.testing.assert_frame_equal(upgraded_data.dataframe, original_data.dataframe, check_exact=True)
     current = upgraded.prepare((request,), policy=PreparePolicy.REUSE)
-    assert current.ready and current.reference == original.reference
-    assert len(calls) == 1
+    assert current.ready and current.reference == original
+    assert len(calls) == 0
     assert upgraded_data.identity.metadata["data_contract_version"] == 1
     assert upgraded_data.identity.metadata["provider_revision"] == "v1"
-    assert flows.fetch(request, prepared=original.reference).ready
+    assert flows.fetch(request, prepared=original).ready
 
 
-def test_changed_contract_blocks_reuse_until_explicit_refresh(flow_factory, monkeypatch):
-    daily, _ = _source(sessions=FAULT_SESSIONS)
+def test_changed_contract_blocks_reuse_until_explicit_refresh(clone_published_flow, monkeypatch):
     calls = []
-    flows = flow_factory({Dataset.ETF_OHLCV: _provider(daily, _metadata(daily, sessions=FAULT_SESSIONS), calls)})
-    request = _request(sessions=FAULT_SESSIONS)
-    original = flows.prepare((request,), policy=PreparePolicy.REFRESH)
-    assert original.ready
-    original_manifest = flows._store.load_preparation(original.reference)
+    flows, request, original = _certified_daily(clone_published_flow, calls)
+    original_manifest = flows._store.load_preparation(original)
     monkeypatch.setattr(facade, "DATA_CONTRACT_VERSION", 2)
     upgraded = Dataflows(base_dir=flows.binding.base_dir, space=flows.binding.space,
                         providers=ProviderConfig(bindings={Dataset(key): value
                                                            for key, value in flows._providers.items()}))
-    rejected = upgraded.fetch(request, prepared=original.reference)
+    rejected = upgraded.fetch(request, prepared=original)
     assert rejected.error.code == "DATA_CONTRACT_VERSION_MISMATCH"
     for current_request in (request, replace(request, required_cutoff=None)):
         reused = upgraded.prepare((current_request,), policy=PreparePolicy.REUSE)
         assert not reused.ready and reused.reference is None
         assert reused.items[0].error.code == "DATA_CONTRACT_VERSION_MISMATCH"
-    assert len(calls) == 1
+    assert len(calls) == 0
     refreshed = upgraded.prepare((request,), policy=PreparePolicy.REFRESH)
-    assert refreshed.ready and refreshed.reference != original.reference and len(calls) == 2
+    assert refreshed.ready and refreshed.reference != original and len(calls) == 1
     assert upgraded.fetch(request, prepared=refreshed.reference).identity.metadata["data_contract_version"] == 2
-    assert flows._store.load_preparation(original.reference) == original_manifest
-    assert flows.fetch(request, prepared=original.reference).ready
+    assert flows._store.load_preparation(original) == original_manifest
+    assert flows.fetch(request, prepared=original).ready
 
 
-def test_missing_cache_indexes_do_not_hide_an_incompatible_publication(flow_factory):
-    daily, _ = _source(sessions=FAULT_SESSIONS)
+def test_missing_cache_indexes_do_not_hide_an_incompatible_publication(clone_published_flow):
     calls = []
-    flows = flow_factory({Dataset.ETF_OHLCV: _provider(daily, _metadata(daily, sessions=FAULT_SESSIONS), calls)})
-    request = _request(sessions=FAULT_SESSIONS)
-    original = flows.prepare((request,), policy=PreparePolicy.REFRESH)
-    entries = flows._store.load_preparation(original.reference)
+    flows, request, original = _certified_daily(clone_published_flow, calls)
+    entries = flows._store.load_preparation(original)
     del entries[0]["data_contract_version"]
     with flows._store.transaction() as connection:
         incompatible = flows._store.publish(connection, entries)
@@ -281,17 +277,14 @@ def test_missing_cache_indexes_do_not_hide_an_incompatible_publication(flow_fact
     assert flows.fetch(request, prepared=incompatible).error.code == "DATA_CONTRACT_VERSION_MISSING"
     reused = flows.prepare((request,), policy=PreparePolicy.REUSE)
     assert not reused.ready and reused.reference is None
-    assert reused.items[0].error.code == "DATA_CONTRACT_VERSION_MISSING" and len(calls) == 1
+    assert reused.items[0].error.code == "DATA_CONTRACT_VERSION_MISSING" and len(calls) == 0
 
 
 @pytest.mark.parametrize("version", [None, 2], ids=["missing", "different"])
-def test_matching_preparation_cannot_certify_incompatible_asset(flow_factory, version):
-    daily, _ = _source(sessions=FAULT_SESSIONS)
+def test_matching_preparation_cannot_certify_incompatible_asset(clone_published_flow, version):
     calls = []
-    flows = flow_factory({Dataset.ETF_OHLCV: _provider(daily, _metadata(daily, sessions=FAULT_SESSIONS), calls)})
-    request = _request(sessions=FAULT_SESSIONS)
-    original = flows.prepare((request,), policy=PreparePolicy.REFRESH)
-    entries = flows._store.load_preparation(original.reference)
+    flows, request, original = _certified_daily(clone_published_flow, calls)
+    entries = flows._store.load_preparation(original)
     with flows._store.transaction() as connection:
         stored = flows._store.read_asset(connection, entries[0]["asset_id"])
         metadata = dict(stored.identity.metadata)
@@ -310,7 +303,7 @@ def test_matching_preparation_cannot_certify_incompatible_asset(flow_factory, ve
     assert not rejected.ready and rejected.error.code == error_code
     reused = flows.prepare((request,), policy=PreparePolicy.REUSE)
     assert not reused.ready and reused.reference is None and reused.items[0].error.code == error_code
-    assert len(calls) == 1
+    assert len(calls) == 0
 
 
 def test_partial_minute_fetch_retains_full_session_quality(flow_factory):
