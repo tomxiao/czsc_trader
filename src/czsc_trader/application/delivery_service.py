@@ -1,11 +1,13 @@
 """Publish research conclusions and selected evidence without execution history."""
 
 from dataclasses import fields, is_dataclass, replace
+from contextvars import ContextVar
 from hashlib import sha256
 import json
 import math
 from pathlib import Path
 import shutil
+from time import perf_counter
 
 from factor_signal_catalog import FactorDefinition, SignalDefinition
 from strategy_evaluator import AssessmentEvidence, AssessmentPanel, assess_candidates, compare_candidates
@@ -17,6 +19,46 @@ from .context import RepositoryContext
 from ..research_tools import delivery as d
 from ..research_tools.evidence import EvidenceRef
 from ..temp_workspace import create_temporary_directory
+
+
+class _ValidationSession:
+    """Only this invocation owns reuse; files are authenticated on every visit."""
+
+    def __init__(self):
+        self.started = perf_counter()
+        self.completed = set()
+        self.nodes = {}
+        self.identities = set()
+        self.account_cache = {}
+        self.reference_visits = self.recursive_expansions = self.semantic_reuses = 0
+        self.files_hashed = self.bytes_hashed = 0
+
+    def stats(self):
+        return d.DeliveryValidationStats(
+            len(self.identities), self.reference_visits, self.recursive_expansions,
+            self.semantic_reuses, self.files_hashed, self.bytes_hashed,
+            float(perf_counter() - self.started),
+        )
+
+    def recheck(self, context):
+        for root, reference, receipt, published in self.nodes.values():
+            if d.DeliveryReceipt.from_dict(_read_json(_resolve(root, "receipt.json"))) != receipt:
+                _fail("SOURCE_CHANGED", "receipt.json", "delivery receipt changed during validation")
+            if _manifest(root) != receipt.files:
+                _fail("SOURCE_CHANGED", "receipt.files", "delivery files changed during validation")
+            if published:
+                _validate_public_copy(context, reference, root)
+
+
+_validation_session = ContextVar("delivery_validation_session", default=None)
+
+
+def _file_hash(data):
+    session = _validation_session.get()
+    if session is not None:
+        session.files_hashed += 1
+        session.bytes_hashed += len(data)
+    return sha256(data).hexdigest()
 
 
 def _fail(code, path, message):
@@ -64,7 +106,7 @@ def _decode_json(text: str):
 
 def _read_evidence(root, reference):
     data = _resolve(root, reference.path).read_bytes()
-    if sha256(data).hexdigest() != reference.sha256:
+    if _file_hash(data) != reference.sha256:
         _fail("EVIDENCE_HASH", reference.path, "evidence hash differs")
     return data
 
@@ -196,7 +238,7 @@ def _validate_inspection_delivery(definition, content, root, context):
     receipt_path = _public_delivery_path(context, payload.source_assessment) / "receipt.json"
     if (not isinstance(selection.subject, f.CandidateSelectionSubject)
         or selection.subject.delivery.path != receipt_path.relative_to(context.root).as_posix()
-        or selection.subject.delivery.sha256 != sha256(receipt_path.read_bytes()).hexdigest()):
+        or selection.subject.delivery.sha256 != _file_hash(receipt_path.read_bytes())):
         _fail("INSPECTION_SELECTION", "source_assessment", "selection refers to another assessment")
     for ref in payload.decisions:
         record = read_decision(context.root, ref)
@@ -206,7 +248,7 @@ def _validate_inspection_delivery(definition, content, root, context):
             _fail("INSPECTION_DECISION", ref.decision_id, "freeze decision report differs")
     for ref in _support_references(context, content):
         snapshot = _resolve(root, f"support/{ref.sha256}").read_bytes()
-        if sha256(snapshot).hexdigest() != ref.sha256 or snapshot != ref.resolve(context.root).read_bytes():
+        if _file_hash(snapshot) != ref.sha256 or snapshot != ref.resolve(context.root).read_bytes():
             _fail("INSPECTION_EVIDENCE", ref.path, "inspection or decision snapshot differs")
     if payload.freeze is not None:
         from .inspection_service import get_freeze_result
@@ -379,7 +421,7 @@ def _manifest(root) -> tuple[d.PublicationFile, ...]:
         relative = path.relative_to(root).as_posix()
         _resolve(root, relative)
         if path.is_file() and relative != "receipt.json":
-            result.append(d.PublicationFile(relative, sha256(path.read_bytes()).hexdigest()))
+            result.append(d.PublicationFile(relative, _file_hash(path.read_bytes())))
     d._unique((x.path.casefold() for x in result), "manifest path")
     return tuple(result)
 
@@ -395,11 +437,15 @@ def _validate_public_copy(context, reference, root):
 
 def _read_delivery(context, reference, root, visited, scope=d.DeliveryValidationScope.INTEGRITY,
                    *, published=True, account_cache=None):
+    session = _validation_session.get()
     if account_cache is None:
-        account_cache = {}
+        account_cache = {} if session is None else session.account_cache
     identity = (reference.batch, reference.stage, reference.revision)
     if identity in visited:
         _fail("DELIVERY_CYCLE", "predecessors", "cyclic delivery references")
+    if session is not None:
+        session.reference_visits += 1
+        session.identities.add((identity, reference.content_sha256))
     visited = visited | {identity}
     document = _read_json(_resolve(root, "delivery.json"))
     if (type(document) is not dict or set(document) != {"schema_version", "definition", "content"}
@@ -410,6 +456,19 @@ def _read_delivery(context, reference, root, visited, scope=d.DeliveryValidation
         _fail("DELIVERY_IDENTITY", "receipt", "receipt differs from retained reference")
     if _manifest(root) != receipt.files:
         _fail("DELIVERY_FILES", "receipt.files", "published file manifest differs")
+    key = (root.resolve(), reference, scope, published)
+    if session is not None:
+        previous = session.nodes.get(root.resolve())
+        observed = (root, reference, receipt, published)
+        if previous is not None and previous != observed:
+            _fail("SOURCE_CHANGED", "delivery", "delivery identity changed during validation")
+        session.nodes[root.resolve()] = observed
+        if key in session.completed:
+            if published:
+                _validate_public_copy(context, reference, root)
+            session.semantic_reuses += 1
+            return receipt
+        session.recursive_expansions += 1
     definition = d.DeliveryDefinition.from_dict(document["definition"])
     content = d.DeliveryContent.from_dict(document["content"])
     if (definition.batch, definition.stage, definition.revision) != identity:
@@ -422,6 +481,8 @@ def _read_delivery(context, reference, root, visited, scope=d.DeliveryValidation
         _fail("REPORT_CONTENT", "report.md", "report differs from the submitted research report")
     if published:
         _validate_public_copy(context, reference, root)
+    if session is not None:
+        session.completed.add(key)
     return receipt
 
 
@@ -432,14 +493,19 @@ def validate_delivery(context: RepositoryContext, reference: d.DeliveryReference
         raise TypeError("scope requires DeliveryValidationScope")
     if type(context) is not RepositoryContext or type(reference) is not d.DeliveryReference:
         raise TypeError("validate_delivery requires RepositoryContext and DeliveryReference")
+    session = _ValidationSession()
+    token = _validation_session.set(session)
     try:
         _read_delivery(context, reference, _delivery_path(context, reference), set(), scope)
-        return d.DeliveryValidation(d.ValidationStatus.PASS, scope)
+        session.recheck(context)
+        return d.DeliveryValidation(d.ValidationStatus.PASS, scope, stats=session.stats())
     except d.DeliveryValidationError as exc:
-        return d.DeliveryValidation(d.ValidationStatus.FAIL, scope, exc.issues)
+        return d.DeliveryValidation(d.ValidationStatus.FAIL, scope, exc.issues, session.stats())
     except (OSError, ValueError, TypeError, KeyError) as exc:
         return d.DeliveryValidation(d.ValidationStatus.FAIL, scope,
-            (d.DeliveryIssue("INVALID_DELIVERY", "delivery", str(exc)),))
+            (d.DeliveryIssue("INVALID_DELIVERY", "delivery", str(exc)),), session.stats())
+    finally:
+        _validation_session.reset(token)
 
 
 def _validate_handoff(context, content):
@@ -468,15 +534,20 @@ def assemble_delivery(context: RepositoryContext, definition: d.DeliveryDefiniti
         or type(content) is not d.DeliveryContent):
         raise TypeError("assembly requires RepositoryContext, DeliveryDefinition and DeliveryContent")
     lock = _resolve(context.root, f".tmp/delivery-publication/{definition.strategy_id}")
+    session = _ValidationSession()
+    token = _validation_session.set(session)
     try:
         with RegistryWriteLock(lock).hold():
             return _assemble_delivery(context, definition, content)
     except (RegistryError, OSError) as exc:
         raise d.DeliveryValidationError((d.DeliveryIssue("ASSEMBLY_FAILED", "delivery", str(exc)),)) from exc
+    finally:
+        _validation_session.reset(token)
 
 
 def _assemble_delivery(context, definition, content):
-    account_cache = {}
+    session = _validation_session.get()
+    account_cache = {} if session is None else session.account_cache
     staging = public_staging = None
     installed_package = installed_public = completed = False
     destination = public_destination = None
@@ -492,7 +563,10 @@ def _assemble_delivery(context, definition, content):
             if _read_json(_resolve(destination, "delivery.json")) != document:
                 raise d.DeliveryConflictError("delivery revision contains different content")
             receipt = d.DeliveryReceipt.from_dict(_read_json(_resolve(destination, "receipt.json")))
-            return _read_delivery(context, receipt.reference, destination, set(), account_cache=account_cache)
+            checked = _read_delivery(context, receipt.reference, destination, set(), account_cache=account_cache)
+            if session is not None:
+                session.recheck(context)
+            return checked
         _validate_handoff(context, content)
         for predecessor in definition.predecessors:
             _read_delivery(context, predecessor, _delivery_path(context, predecessor), set(),
@@ -501,7 +575,7 @@ def _assemble_delivery(context, definition, content):
         staging = create_temporary_directory(context.root, "delivery")
 
         def copy(data, relative, expected):
-            if sha256(data).hexdigest() != expected:
+            if _file_hash(data) != expected:
                 _fail("EVIDENCE_HASH", relative, "source changed or hash differs")
             target = _resolve(staging, relative)
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -533,11 +607,14 @@ def _assemble_delivery(context, definition, content):
         receipt = d.DeliveryReceipt(reference, files)
         (staging / "receipt.json").write_bytes(d._canonical(receipt))
         _read_delivery(context, reference, staging, set(), published=False, account_cache=account_cache)
+        if session is not None:
+            session.recheck(context)
         public_staging = create_temporary_directory(context.root, "delivery-public")
         for name in ("report.md", "receipt.json"):
             shutil.copyfile(staging / name, public_staging / name)
         destination.parent.mkdir(parents=True, exist_ok=True)
         public_destination.parent.mkdir(parents=True, exist_ok=True)
+        staged_root = staging.resolve()
         staging.rename(destination)
         installed_package = True
         staging = None
@@ -545,6 +622,10 @@ def _assemble_delivery(context, definition, content):
         installed_public = True
         public_staging = None
         _validate_public_copy(context, reference, destination)
+        if session is not None:
+            session.nodes.pop(staged_root, None)
+            session.nodes[destination.resolve()] = (destination, reference, receipt, True)
+            session.recheck(context)
         completed = True
         return receipt
     except (d.DeliveryValidationError, d.DeliveryConflictError):

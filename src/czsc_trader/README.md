@@ -18,6 +18,7 @@ TDR 为研究员提供批次上下文、账户评价、回测、结果留证、�
 | 结果留证 | `publish_evidence`、`publish_evidence_many` | 单项 `EvidenceRef`；批量逐项 `PublicationOutcome` |
 | 候选登记与读取 | `register_candidate`、`load_candidate` | 保存候选载荷、源码快照及支撑证据，读取已登记实体 |
 | 五阶段交付 | `assemble_delivery`、`validate_delivery` | 结论、选定证据快照和不可变修订 |
+| 研究事实与诊断 | `get_research_overview`、`diagnose_accounts`、`validate_experiment` | 批次概览、正式账户损益与路径诊断、实验结构和报告发布检查 |
 | 自检与比较 | `build_assessment_evidence`；SE `assess_candidates/compare_candidates` | 数值事实适配、自检和比较 |
 | 技术检验与冻结 | `inspect_candidate`、`record_research_decision`、`freeze_candidate`、`get_freeze_result` | 真实用户决定、技术检验、批准与事务状态 |
 | 目录与模板 | `validate_catalog/list_catalog/show_catalog`、`validate_templates/list_templates/show_template/instantiate_template` | FSC/STC 公开内容与绑定校验 |
@@ -77,7 +78,7 @@ experiment_root = experiment.resolve(repository.root)
 source = experiment_root / "src"
 ```
 
-`create_experiment` 在 `research/S900/experiments/EXxxx_YYYYMMDD/` 分配身份，创建 `experiment.json`、根目录初始 `notes.md` 及 `src/`、`protocols/`、`others/`。
+`create_experiment` 在 `research/S900/experiments/EXxxx_YYYYMMDD/` 分配身份，创建 `experiment.json`、根目录初始 `notes.md`、进行中的`report.md`及`src/`、`protocols/`、`others/`。单个实验材料内聚于该目录，正式资产仍由批次`assets/`管理。实验报告通过`ExperimentReportWrite`独立发布，不要求阶段交付；完整公共契约见[研究工具](../../docs/RESEARCH_TOOLS.md)。
 编号在批次内跨日期递增，分配时参考本批次旧目录的现有编号；三位编号耗尽时拒绝。源码、实验方案和其他材料分别保存于对应目录，运行资料由研究程序按需要组织。
 
 上下文的 `data`、`runtime` 和 `evaluation` 共用 `research/<批次>/assets/data/`。DFLS 的只读 `binding`
@@ -229,7 +230,7 @@ JSON 输出的 `artifacts` 给出内容寻址文件路径，报告内图表链�
 ## 5. 显式发布和读取证据
 
 计算完成后，按交付需要选择结果留证。完整账户证据保存请求身份、策略输入绑定、信号、账户账本、基准、指标和 SE 适配事实，
-发布时核验请求与结果一致。它的格式是 `account_evaluation`／schema 6，请求身份使用 schema 5，
+发布时核验请求与结果一致。它的格式是 `account_evaluation`／schema 7，请求身份使用 schema 6，
 包含实际策略输入绑定及可选的参数扰动点绑定。
 
 ```python
@@ -377,7 +378,7 @@ child_result = research.evaluation.evaluate(child_request)
 `build_assessment_evidence` 把已认证点绑定传给 SE；缺失或失败账户仍按实际状态处理，不能填零。
 阶段四 `CandidateAssessmentDelivery.parameter_plans` 显式引用计划。交付浅快照计划及其映射／约束材料，
 核对实际中心请求、全部规定父子关系和保存账户的点身份，并在 `FULL` 范围重算 SE。
-发布后的校验读取交付快照，不依赖实验 `work/`、原计划材料文件或可变源码。
+发布后的校验读取交付快照，不依赖实验工作目录、原计划材料文件或可变源码。一次调用内按完整身份、位置及校验范围复用已完成节点的递归展开和语义计算；循环检测独立维护，每次引用仍认证当前文件，结束前再次核对输入。不同调用不复用成功状态。`validate_delivery`返回`stats`记录不同交付数、引用访问、展开、语义复用、文件哈希次数/字节量及耗时；统计不进入交付身份。
 平台只认证声明、身份及确定性计算；坐标业务含义、映射合理性及研究授权由 RSCH 负责。
 
 ## 7. 五阶段交付

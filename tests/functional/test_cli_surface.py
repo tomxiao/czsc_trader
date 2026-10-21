@@ -20,6 +20,7 @@ from czsc_trader.application import (
 
 ROOT = Path(__file__).resolve().parents[2]
 PUBLIC_API = {
+    "get_research_overview", "diagnose_accounts", "validate_experiment",
     "FrozenRuntimeMigrationRequest", "PreparedFrozenRuntimeMigration",
     "prepare_frozen_runtime_migration", "validate_frozen_runtime_migration",
     "FrozenRuntimeUpgradeRequest", "PreparedFrozenRuntimeUpgrade", "FrozenRuntimeUpgradeReceipt",

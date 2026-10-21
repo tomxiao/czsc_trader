@@ -520,10 +520,30 @@ class DeliveryValidationScope(StrEnum):
 
 
 @dataclass(frozen=True, slots=True)
+class DeliveryValidationStats(_Record):
+    unique_deliveries: int
+    reference_visits: int
+    recursive_expansions: int
+    semantic_reuses: int
+    files_hashed: int
+    bytes_hashed: int
+    elapsed_seconds: float
+
+    def _validate(self):
+        for name in ("unique_deliveries", "reference_visits", "recursive_expansions",
+                     "semantic_reuses", "files_hashed", "bytes_hashed"):
+            if getattr(self, name) < 0:
+                raise ValueError("validation counters must be nonnegative")
+        if self.elapsed_seconds < 0:
+            raise ValueError("validation elapsed time must be nonnegative")
+
+
+@dataclass(frozen=True, slots=True)
 class DeliveryValidation(_Record):
     status: ValidationStatus
     scope: DeliveryValidationScope
     issues: tuple[DeliveryIssue, ...] = ()
+    stats: DeliveryValidationStats | None = field(default=None, compare=False)
 
     def _validate(self):
         if (self.status is ValidationStatus.PASS) != (not self.issues):

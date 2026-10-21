@@ -38,7 +38,9 @@ def test_research_identity_credentials_context_and_editable_experiments(minimal_
     one = create_experiment(research, ExperimentRequest("收益机会", "价格驱动是否有效", date(2026, 10, 7)))
     folder = one.resolve(repository.root)
     assert {path.name for path in folder.iterdir()} == {
-        "experiment.json", "notes.md", "src", "protocols", "others"}
+        "experiment.json", "notes.md", "report.md", "src", "protocols", "others"}
+    assert "IN_PROGRESS" in (folder / "report.md").read_text(encoding="utf-8")
+    assert not (folder / "report_ref.json").exists()
     assert all((folder / name).is_dir() for name in ("src", "protocols", "others"))
     notes = folder / "notes.md"
     assert notes.read_text(encoding="utf-8") == "# 收益机会\n\n价格驱动是否有效\n"

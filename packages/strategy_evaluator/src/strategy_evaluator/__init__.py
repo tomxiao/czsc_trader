@@ -170,6 +170,20 @@ from .ledger_comparison import (
     compare_ledgers,
 )
 
+from .account_diagnosis import (
+    DIAGNOSIS_PROTOCOL,
+    AccountDiagnosisStatus,
+    DailyPnl,
+    AnnualPnl,
+    AccountPnl,
+    DecisionCoverage,
+    PopulationCoverageSummary,
+    CyclePathComparison,
+    DailyPathComparison,
+    AccountDiagnosisCalculation,
+    diagnose_account_replays,
+)
+
 __all__ = [
     "ParameterCoordinateKind",
     "ParameterCoordinate",
@@ -308,6 +322,17 @@ __all__ = [
     "BenchmarkAuditResult",
     "BenchmarkEvidence",
     "audit_benchmark_replay",
+    "DIAGNOSIS_PROTOCOL",
+    "AccountDiagnosisStatus",
+    "DailyPnl",
+    "AnnualPnl",
+    "AccountPnl",
+    "DecisionCoverage",
+    "PopulationCoverageSummary",
+    "CyclePathComparison",
+    "DailyPathComparison",
+    "AccountDiagnosisCalculation",
+    "diagnose_account_replays",
 ]
 
 __all__ += [

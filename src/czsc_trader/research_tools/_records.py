@@ -1,6 +1,7 @@
 """Strict record serialization shared by TDR public contracts."""
 from dataclasses import fields, is_dataclass
-from enum import StrEnum
+from enum import Enum
+from functools import lru_cache
 from hashlib import sha256
 import json
 import math
@@ -8,6 +9,12 @@ from pathlib import PurePosixPath
 import re
 from types import UnionType
 from typing import TypeVar, Union, get_args, get_origin, get_type_hints
+
+
+@lru_cache(maxsize=256)
+def _record_hints(record_type):
+    """Class annotations are static metadata, never file-validation results."""
+    return get_type_hints(record_type)
 
 def _text(value: str, name: str) -> None:
     if type(value) is not str:
@@ -61,7 +68,7 @@ def _matches(value, annotation) -> bool:
 
 class _Record:
     def __post_init__(self):
-        for name, annotation in get_type_hints(type(self)).items():
+        for name, annotation in _record_hints(type(self)).items():
             if not _matches(getattr(self, name), annotation):
                 raise TypeError(f"{type(self).__name__}.{name} requires {annotation}")
         self._validate()
@@ -86,7 +93,7 @@ def _encode(value):
             "type": type(value).__name__,
             **{field.name: _encode(getattr(value, field.name)) for field in fields(value)},
         }
-    if isinstance(value, StrEnum):
+    if isinstance(value, Enum):
         return value.value
     if isinstance(value, tuple):
         return [_encode(x) for x in value]
@@ -116,9 +123,9 @@ def _decode(value, annotation):
             raise ValueError("record fields differ from schema")
         if value["type"] != annotation.__name__:
             raise ValueError("record discriminator differs")
-        hints = get_type_hints(annotation)
+        hints = _record_hints(annotation)
         return annotation(**{key: _decode(value[key], hints[key]) for key in names})
-    if isinstance(annotation, type) and issubclass(annotation, StrEnum):
+    if isinstance(annotation, type) and issubclass(annotation, Enum):
         if type(value) is not str:
             raise TypeError("serialized enum must be a string")
         return annotation(value)

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import Enum, StrEnum
 from hashlib import sha256
 from pathlib import Path
 import re
@@ -119,7 +119,35 @@ class EvaluationEvidenceWrite:
                 raise TypeError(f"evaluation publication requires {expected.__name__}")
 
 
-EvidenceWriteRequest = MaterialEvidenceWrite | EvaluationEvidenceWrite
+class ExperimentOutcome(StrEnum):
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+    INCOMPLETE = "INCOMPLETE"
+
+
+@dataclass(frozen=True, slots=True)
+class ExperimentReportWrite(_Record):
+    experiment: ExperimentRef
+    expected_report_sha256: str
+    outcome: ExperimentOutcome
+    evidence: tuple[EvidenceRef, ...]
+    previous: EvidenceRef | None = None
+
+    def _validate(self):
+        _hash(self.expected_report_sha256)
+        if any(ref.experiment.strategy_id != self.experiment.strategy_id for ref in self.evidence):
+            raise ValueError("report sources must belong to the same research batch")
+        if len(set(self.evidence)) != len(self.evidence):
+            raise ValueError("duplicate report source")
+        if self.previous is not None and (
+            self.previous.experiment != self.experiment or
+            self.previous.schema != "experiment_report" or self.previous.schema_version != 1
+        ):
+            raise ValueError("previous must reference this experiment's report")
+
+
+EvidenceWriteRequest = MaterialEvidenceWrite | EvaluationEvidenceWrite | ExperimentReportWrite
 
 
 class PublicationStatus(str, Enum):
@@ -133,10 +161,19 @@ class PublicationStatus(str, Enum):
 class PublicationError:
     code: str
     message: str
+    phase: str | None = None
+    reference: EvidenceRef | None = None
+    pointer_committed: bool | None = None
 
     def __post_init__(self):
         _text(self.code, "publication error code")
         _text(self.message, "publication error message")
+        if self.phase is not None:
+            _text(self.phase, "publication phase")
+        if self.reference is not None and type(self.reference) is not EvidenceRef:
+            raise TypeError("publication error reference requires EvidenceRef")
+        if self.pointer_committed is not None and type(self.pointer_committed) is not bool:
+            raise TypeError("pointer_committed requires bool or None")
 
 
 @dataclass(frozen=True, slots=True)

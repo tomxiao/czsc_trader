@@ -14,6 +14,7 @@ from ..research_tools.context import ResearchContext, ExperimentRef
 from ..research_tools.evidence import (
     EvidenceRef, EvidenceWriteRequest, EvaluationEvidenceWrite, MaterialEvidenceWrite, managed_path,
     PublicationStatus, PublicationError, PublicationOutcome,
+    ExperimentReportWrite,
 )
 
 
@@ -43,7 +44,7 @@ def _publish_bytes(repository_root: Path, target: Path, data: bytes) -> None:
 
 def _validate_request(context: ResearchContext, request: EvidenceWriteRequest) -> None:
     if type(context) is not ResearchContext or type(request) not in (
-        MaterialEvidenceWrite, EvaluationEvidenceWrite,
+        MaterialEvidenceWrite, EvaluationEvidenceWrite, ExperimentReportWrite,
     ):
         raise TypeError("publication requires a research context and typed evidence request")
     if request.experiment.strategy_id != context.strategy_id:
@@ -52,9 +53,14 @@ def _validate_request(context: ResearchContext, request: EvidenceWriteRequest) -
     experiment = request.experiment.resolve(root)
     if not (experiment / "experiment.json").is_file():
         raise ValueError("evidence must belong to a platform-allocated experiment")
-    recorded = ExperimentRef.from_dict(json.loads((experiment / "experiment.json").read_text(encoding="utf-8")))
+    from .experiment_artifact_service import _strict_json
+    identity = managed_path(root, f"{request.experiment.repository_path}/experiment.json")
+    recorded = ExperimentRef.from_dict(_strict_json(identity.read_bytes()))
     if recorded != request.experiment:
         raise ValueError("experiment identity differs from the allocated reference")
+    if isinstance(request, ExperimentReportWrite):
+        from .experiment_artifact_service import _validate_report_request
+        _validate_report_request(root, request)
     if isinstance(request, EvaluationEvidenceWrite):
         if request.request.experiment_id != request.experiment.experiment_id:
             raise ValueError("evaluation request belongs to another experiment")
@@ -102,6 +108,9 @@ def _publish_serialized(context: ResearchContext, request: EvidenceWriteRequest,
 
 def publish_evidence(context: ResearchContext, request: EvidenceWriteRequest) -> EvidenceRef:
     _validate_request(context, request)
+    if isinstance(request, ExperimentReportWrite):
+        from .experiment_artifact_service import _publish_report
+        return _publish_report(context, request)
     data = _serialize_account(request) if isinstance(request, EvaluationEvidenceWrite) else request.content
     return _publish_serialized(context, request, data)
 
@@ -109,6 +118,8 @@ def publish_evidence(context: ResearchContext, request: EvidenceWriteRequest) ->
 def _failed(index: int, error: BaseException, status: PublicationStatus = PublicationStatus.FAILED):
     return PublicationOutcome(index, status, error=PublicationError(
         type(error).__name__, str(error) or type(error).__name__,
+        getattr(error, "phase", None), getattr(error, "reference", None),
+        getattr(error, "pointer_committed", None),
     ))
 
 
@@ -156,7 +167,20 @@ def publish_evidence_many(context: ResearchContext,
     from ..research_tools._evaluation_workers import pack
 
     for index, request in enumerate(requests):
-        if isinstance(request, MaterialEvidenceWrite):
+        if isinstance(request, ExperimentReportWrite):
+            from .experiment_artifact_service import _publish_report
+            try:
+                outcomes[index] = PublicationOutcome(index, PublicationStatus.PUBLISHED,
+                                                     _publish_report(context, request))
+            except BaseException as exc:
+                if isinstance(exc, (CancelledError, KeyboardInterrupt, SystemExit)):
+                    status = (PublicationStatus.CANCELLED if getattr(exc, "pointer_committed", False) is False
+                              else PublicationStatus.UNKNOWN)
+                else:
+                    status = (PublicationStatus.FAILED if getattr(exc, "pointer_committed", False) is False
+                              else PublicationStatus.UNKNOWN)
+                outcomes[index] = _failed(index, exc, status)
+        elif isinstance(request, MaterialEvidenceWrite):
             outcomes[index] = _publish_outcome(context, index, request, request.content)
         else:
             try:

@@ -356,6 +356,10 @@ def create_experiment(context: ResearchContext, request: ExperimentRequest) -> E
                 (staging / name).mkdir()
             (staging / "experiment.json").write_text(json.dumps(reference.to_dict(), sort_keys=True), encoding="utf-8")
             (staging / "notes.md").write_text(f"# {request.title}\n\n{request.question}\n", encoding="utf-8")
+            (staging / "report.md").write_text(
+                f"# {request.title}\n\nStatus: IN_PROGRESS\n\n{request.question}\n",
+                encoding="utf-8",
+            )
             parent.mkdir(parents=True, exist_ok=True)
             staging.rename(reference.resolve(root))
         finally:
