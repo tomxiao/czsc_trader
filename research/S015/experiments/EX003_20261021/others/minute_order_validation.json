@@ -1,0 +1,3045 @@
+{
+  "status": "PASS_WITH_EXECUTION_SENSITIVITY",
+  "scope": "All account_evaluation schema 7 artifacts present at initial EX003 directory scan",
+  "prepared_minute_reference": {
+    "space_id": "67b4df74-e6d9-4fa4-9200-b5694e5d7018",
+    "preparation_id": "2d53fde8-11d3-4adc-861f-d13e3f2157ff",
+    "manifest_sha256": "e901ff6cbcd165fc3ac057e806850ec49b6c7cf9fc52beefefb452616139e32c"
+  },
+  "minute_content_sha256": "6f13f697b5770b96484b9f569d7636743297382bd95fe193d004f789ed26856a",
+  "minute_rows": 3472,
+  "minute_sessions": 434,
+  "account_evidence_files": 86,
+  "unique_evaluation_ids": 86,
+  "counts_with_cross_account_repetition": {
+    "strategy_orders": 8979,
+    "strategy_filled_orders": 8898,
+    "strategy_unfilled_orders": 81,
+    "strategy_minute_open_differences": 132,
+    "benchmark_orders": 86,
+    "benchmark_filled_orders": 86,
+    "benchmark_unfilled_orders": 0
+  },
+  "unique_date_side_order_type_limit_conditions": 459,
+  "unique_conditions_by_role": {
+    "strategy": 459,
+    "benchmark": 1
+  },
+  "unique_difference_conditions": 0,
+  "difference_categories": {},
+  "cross_frequency_ohlc_differences_on_order_days": [
+    {
+      "date": "2025-01-03",
+      "price_scale": 1.0,
+      "different_fields": [
+        "open"
+      ],
+      "formal_daily": {
+        "open": 1.074,
+        "high": 1.079,
+        "low": 1.046,
+        "close": 1.047
+      },
+      "minute_aggregate": {
+        "open": 1.073,
+        "high": 1.079,
+        "low": 1.046,
+        "close": 1.047
+      }
+    },
+    {
+      "date": "2025-01-22",
+      "price_scale": 1.0,
+      "different_fields": [
+        "open"
+      ],
+      "formal_daily": {
+        "open": 1.083,
+        "high": 1.089,
+        "low": 1.077,
+        "close": 1.086
+      },
+      "minute_aggregate": {
+        "open": 1.084,
+        "high": 1.089,
+        "low": 1.077,
+        "close": 1.086
+      }
+    },
+    {
+      "date": "2025-02-26",
+      "price_scale": 1.0,
+      "different_fields": [
+        "open"
+      ],
+      "formal_daily": {
+        "open": 1.099,
+        "high": 1.106,
+        "low": 1.091,
+        "close": 1.105
+      },
+      "minute_aggregate": {
+        "open": 1.098,
+        "high": 1.106,
+        "low": 1.091,
+        "close": 1.105
+      }
+    },
+    {
+      "date": "2025-01-23",
+      "price_scale": 1.0,
+      "different_fields": [
+        "open"
+      ],
+      "formal_daily": {
+        "open": 1.091,
+        "high": 1.097,
+        "low": 1.074,
+        "close": 1.075
+      },
+      "minute_aggregate": {
+        "open": 1.093,
+        "high": 1.097,
+        "low": 1.074,
+        "close": 1.075
+      }
+    }
+  ],
+  "unique_minute_open_sensitivity_conditions": 5,
+  "minute_open_sensitivity": [
+    {
+      "condition": [
+        "2025-01-03",
+        "SELL",
+        "MARKET",
+        null
+      ],
+      "strict_with_formal_daily_open": {
+        "filled": true,
+        "price": 1.074,
+        "filled_at": "2025-01-03 09:30:00",
+        "trigger": "OPEN_MARKET",
+        "reason": "FILLED",
+        "time_precision": "TIMESTAMP"
+      },
+      "strict_with_first_minute_bar_open": {
+        "filled": true,
+        "price": 1.073,
+        "filled_at": "2025-01-03 09:30:00",
+        "trigger": "OPEN_MARKET",
+        "reason": "FILLED",
+        "time_precision": "TIMESTAMP"
+      },
+      "order_occurrences": 4,
+      "examples": [
+        {
+          "evidence_id": "003a15e8e8f5ba952c228800090776a2c8a883da6026fbb71e515263589b4e52.json",
+          "evaluation_id": "8054d7cedfc72ce69a237f651d34e391c7d2e9a2114efdb796d0eef3a99f4bf2",
+          "role": "strategy",
+          "candidate_id": "C0012",
+          "order_id": "ORD-5FCB6390D76B45B6E3A0",
+          "condition": [
+            "2025-01-03",
+            "SELL",
+            "MARKET",
+            null
+          ],
+          "quantity": 88400,
+          "status": "FILLED"
+        },
+        {
+          "evidence_id": "3aaa88efbe2093e9994e06a47af79ba49c9858f8ac3910a5ffdd4e0a686f1cc6.json",
+          "evaluation_id": "813be9af187bd297f4f3600d6fc070ec22b207d474d6659220636545bbdac697",
+          "role": "strategy",
+          "candidate_id": "C0007",
+          "order_id": "ORD-F4628E28ED6EF101FA58",
+          "condition": [
+            "2025-01-03",
+            "SELL",
+            "MARKET",
+            null
+          ],
+          "quantity": 88400,
+          "status": "FILLED"
+        },
+        {
+          "evidence_id": "4d7f1575529c720384c5b27def68082cd338236632d9270244726843e0e5a765.json",
+          "evaluation_id": "850a11afc23637dea87195e13fbba7057b2af69e135257195208e8e2743a6d8f",
+          "role": "strategy",
+          "candidate_id": "C0024",
+          "order_id": "ORD-8C531628E8CEB971E76E",
+          "condition": [
+            "2025-01-03",
+            "SELL",
+            "MARKET",
+            null
+          ],
+          "quantity": 88400,
+          "status": "FILLED"
+        },
+        {
+          "evidence_id": "f5d3f687988f6df3d8048e1b7f27b307dfa0ba08be60cd1f8977b65a6814a086.json",
+          "evaluation_id": "40a701c812868f0f42b5ce3e14f37a889dc78a9439d124de89292d40b1b23aee",
+          "role": "strategy",
+          "candidate_id": "C0036",
+          "order_id": "ORD-772F812D09091BC39816",
+          "condition": [
+            "2025-01-03",
+            "SELL",
+            "MARKET",
+            null
+          ],
+          "quantity": 88400,
+          "status": "FILLED"
+        }
+      ]
+    },
+    {
+      "condition": [
+        "2025-01-22",
+        "SELL",
+        "MARKET",
+        null
+      ],
+      "strict_with_formal_daily_open": {
+        "filled": true,
+        "price": 1.083,
+        "filled_at": "2025-01-22 09:30:00",
+        "trigger": "OPEN_MARKET",
+        "reason": "FILLED",
+        "time_precision": "TIMESTAMP"
+      },
+      "strict_with_first_minute_bar_open": {
+        "filled": true,
+        "price": 1.084,
+        "filled_at": "2025-01-22 09:30:00",
+        "trigger": "OPEN_MARKET",
+        "reason": "FILLED",
+        "time_precision": "TIMESTAMP"
+      },
+      "order_occurrences": 22,
+      "examples": [
+        {
+          "evidence_id": "003a15e8e8f5ba952c228800090776a2c8a883da6026fbb71e515263589b4e52.json",
+          "evaluation_id": "8054d7cedfc72ce69a237f651d34e391c7d2e9a2114efdb796d0eef3a99f4bf2",
+          "role": "strategy",
+          "candidate_id": "C0012",
+          "order_id": "ORD-A80691F14CA2A9EA6292",
+          "condition": [
+            "2025-01-22",
+            "SELL",
+            "MARKET",
+            null
+          ],
+          "quantity": 87900,
+          "status": "FILLED"
+        },
+        {
+          "evidence_id": "0b9e41032fe476882c5144954621056acbfa29a1e30711c965cdc87fbf81d46d.json",
+          "evaluation_id": "7bbdf96008b7dc13f57b71772fe3394d052e27f0e698e742d53798b5a0df9b22",
+          "role": "strategy",
+          "candidate_id": "C0022",
+          "order_id": "ORD-F7A8C182445B31A71B7E",
+          "condition": [
+            "2025-01-22",
+            "SELL",
+            "MARKET",
+            null
+          ],
+          "quantity": 87700,
+          "status": "FILLED"
+        },
+        {
+          "evidence_id": "3aaa88efbe2093e9994e06a47af79ba49c9858f8ac3910a5ffdd4e0a686f1cc6.json",
+          "evaluation_id": "813be9af187bd297f4f3600d6fc070ec22b207d474d6659220636545bbdac697",
+          "role": "strategy",
+          "candidate_id": "C0007",
+          "order_id": "ORD-1F2AE24388288B15CF23",
+          "condition": [
+            "2025-01-22",
+            "SELL",
+            "MARKET",
+            null
+          ],
+          "quantity": 87900,
+          "status": "FILLED"
+        },
+        {
+          "evidence_id": "47b92da6049260689aa6126c89ed608a1a563c94bd8a8fe8949dec298bdc50cb.json",
+          "evaluation_id": "1cb50ab0d03ee6a36ef8aa51bdbecb2daf28a5b35bc3dc128b4c71ed6686c34a",
+          "role": "strategy",
+          "candidate_id": "C0021",
+          "order_id": "ORD-530DFE6453335529EA52",
+          "condition": [
+            "2025-01-22",
+            "SELL",
+            "MARKET",
+            null
+          ],
+          "quantity": 91300,
+          "status": "FILLED"
+        },
+        {
+          "evidence_id": "4d7f1575529c720384c5b27def68082cd338236632d9270244726843e0e5a765.json",
+          "evaluation_id": "850a11afc23637dea87195e13fbba7057b2af69e135257195208e8e2743a6d8f",
+          "role": "strategy",
+          "candidate_id": "C0024",
+          "order_id": "ORD-90974851889FC699257F",
+          "condition": [
+            "2025-01-22",
+            "SELL",
+            "MARKET",
+            null
+          ],
+          "quantity": 87900,
+          "status": "FILLED"
+        },
+        {
+          "evidence_id": "5b574ab3649c321b7bd752c59e9e21a17eb92db8afa293f2bd65208e49b33d3d.json",
+          "evaluation_id": "7d1dd6d207a2bc2d8815ddba375d28562375e306e84c910b3a37f01512280f2c",
+          "role": "strategy",
+          "candidate_id": "C0030",
+          "order_id": "ORD-61EA3B8F5F83C6691F85",
+          "condition": [
+            "2025-01-22",
+            "SELL",
+            "MARKET",
+            null
+          ],
+          "quantity": 90800,
+          "status": "FILLED"
+        },
+        {
+          "evidence_id": "5cf18f28b1d7c03987839ef952382c1359205d84afa3d8e852dd0a833d7540a7.json",
+          "evaluation_id": "d291eadeaefef927c49bf1660ad120c3b2c9406ddddda4e8f2bede1f11087b13",
+          "role": "strategy",
+          "candidate_id": "C0051",
+          "order_id": "ORD-CAE6FA67686818031412",
+          "condition": [
+            "2025-01-22",
+            "SELL",
+            "MARKET",
+            null
+          ],
+          "quantity": 87100,
+          "status": "FILLED"
+        },
+        {
+          "evidence_id": "611215800b984bd6404f81bd20b2d89d95a7f997f214452cec9a8dd923a49a4c.json",
+          "evaluation_id": "29af88b9c45cc594c282a9b7a1d1ae88cfa27be578dd7f04c4ad1770bf8e1d17",
+          "role": "strategy",
+          "candidate_id": "C0023",
+          "order_id": "ORD-DD97B09464AE0EF6CA90",
+          "condition": [
+            "2025-01-22",
+            "SELL",
+            "MARKET",
+            null
+          ],
+          "quantity": 87100,
+          "status": "FILLED"
+        }
+      ]
+    },
+    {
+      "condition": [
+        "2025-02-26",
+        "BUY",
+        "LIMIT",
+        1.104
+      ],
+      "strict_with_formal_daily_open": {
+        "filled": true,
+        "price": 1.099,
+        "filled_at": "2025-02-26 09:30:00",
+        "trigger": "OPEN",
+        "reason": "FILLED",
+        "time_precision": "TIMESTAMP"
+      },
+      "strict_with_first_minute_bar_open": {
+        "filled": true,
+        "price": 1.098,
+        "filled_at": "2025-02-26 09:30:00",
+        "trigger": "OPEN",
+        "reason": "FILLED",
+        "time_precision": "TIMESTAMP"
+      },
+      "order_occurrences": 44,
+      "examples": [
+        {
+          "evidence_id": "003a15e8e8f5ba952c228800090776a2c8a883da6026fbb71e515263589b4e52.json",
+          "evaluation_id": "8054d7cedfc72ce69a237f651d34e391c7d2e9a2114efdb796d0eef3a99f4bf2",
+          "role": "strategy",
+          "candidate_id": "C0012",
+          "order_id": "ORD-92A649CFFBB36100DF54",
+          "condition": [
+            "2025-02-26",
+            "BUY",
+            "LIMIT",
+            1.104
+          ],
+          "quantity": 88000,
+          "status": "FILLED"
+        },
+        {
+          "evidence_id": "0b9e41032fe476882c5144954621056acbfa29a1e30711c965cdc87fbf81d46d.json",
+          "evaluation_id": "7bbdf96008b7dc13f57b71772fe3394d052e27f0e698e742d53798b5a0df9b22",
+          "role": "strategy",
+          "candidate_id": "C0022",
+          "order_id": "ORD-33871C0DDDC6DB3CE391",
+          "condition": [
+            "2025-02-26",
+            "BUY",
+            "LIMIT",
+            1.104
+          ],
+          "quantity": 88200,
+          "status": "FILLED"
+        },
+        {
+          "evidence_id": "12e02e694bddfcedf338a9a905f58536b4a5abf66ccd382eb52ef21457c7056b.json",
+          "evaluation_id": "dfd8443bd9f1235f9561fca8ad56d7ec0ccabb875bf571c6b38869c627b38cfb",
+          "role": "strategy",
+          "candidate_id": "C0108",
+          "order_id": "ORD-EE473F362E8DEED64BED",
+          "condition": [
+            "2025-02-26",
+            "BUY",
+            "LIMIT",
+            1.104
+          ],
+          "quantity": 86400,
+          "status": "FILLED"
+        },
+        {
+          "evidence_id": "13761cdffe405ac8c13488a5ff8ab30b1c804f5d543490dfb89397453d64e1bc.json",
+          "evaluation_id": "8d63204568ab3422eed06ce7dca1d1c8bdc20fa1433234dc627367c9d1a4bb9f",
+          "role": "strategy",
+          "candidate_id": "C0010",
+          "order_id": "ORD-528EE05F1469823F6AFA",
+          "condition": [
+            "2025-02-26",
+            "BUY",
+            "LIMIT",
+            1.104
+          ],
+          "quantity": 88300,
+          "status": "FILLED"
+        },
+        {
+          "evidence_id": "1817c91755c46a78024151c368d32af9bc9740829b4510bd22030a37ba1281ba.json",
+          "evaluation_id": "8089a16346b44291e48db6024e8e8ef3349d6622ed5a9dcac0c01d97687449b2",
+          "role": "strategy",
+          "candidate_id": "C0043",
+          "order_id": "ORD-AB20CE0358A4BC0FBB91",
+          "condition": [
+            "2025-02-26",
+            "BUY",
+            "LIMIT",
+            1.104
+          ],
+          "quantity": 90300,
+          "status": "FILLED"
+        },
+        {
+          "evidence_id": "1a4678b723931db878113346aa766d36a6dc57affc602e54428ec4f36394f104.json",
+          "evaluation_id": "2e16b0d5d5701b33aea26fba39d0d21d6bdaf77eee7d395bdb615a653365dc3d",
+          "role": "strategy",
+          "candidate_id": "C0052",
+          "order_id": "ORD-D2D62C94BB40E8980C1E",
+          "condition": [
+            "2025-02-26",
+            "BUY",
+            "LIMIT",
+            1.104
+          ],
+          "quantity": 92200,
+          "status": "FILLED"
+        },
+        {
+          "evidence_id": "223505b7a3163fc42bce3e20ac18ca08f8422a909e7d04ad0905126351b788a2.json",
+          "evaluation_id": "99a9d7ba3ad671949344f639da998ba94cf3575a15e4ef9919193e1adb823e54",
+          "role": "strategy",
+          "candidate_id": "C0046",
+          "order_id": "ORD-C4123EF98D376CD32C91",
+          "condition": [
+            "2025-02-26",
+            "BUY",
+            "LIMIT",
+            1.104
+          ],
+          "quantity": 86400,
+          "status": "FILLED"
+        },
+        {
+          "evidence_id": "2cc8d55fdab70b4a2b3431289b99e6b4910d392fd3e0c5b4646e79bb3252bd08.json",
+          "evaluation_id": "6b0e0d8b994f190e30ce2f35a28efac29987aa6de1e2dcb328aac7619178b2ce",
+          "role": "strategy",
+          "candidate_id": "C0055",
+          "order_id": "ORD-85880B89392AF0BD17D3",
+          "condition": [
+            "2025-02-26",
+            "BUY",
+            "LIMIT",
+            1.104
+          ],
+          "quantity": 88300,
+          "status": "FILLED"
+        }
+      ]
+    },
+    {
+      "condition": [
+        "2025-01-03",
+        "BUY",
+        "LIMIT",
+        1.083
+      ],
+      "strict_with_formal_daily_open": {
+        "filled": true,
+        "price": 1.074,
+        "filled_at": "2025-01-03 09:30:00",
+        "trigger": "OPEN",
+        "reason": "FILLED",
+        "time_precision": "TIMESTAMP"
+      },
+      "strict_with_first_minute_bar_open": {
+        "filled": true,
+        "price": 1.073,
+        "filled_at": "2025-01-03 09:30:00",
+        "trigger": "OPEN",
+        "reason": "FILLED",
+        "time_precision": "TIMESTAMP"
+      },
+      "order_occurrences": 60,
+      "examples": [
+        {
+          "evidence_id": "07730ea852bd165303d3bffca7f5e78a7b7a9649506d9f77ee880ee7264de0fc.json",
+          "evaluation_id": "bbfdc8cd7444e849338ba456e9bd487506588bc5e6059a77a63051677bc42d54",
+          "role": "strategy",
+          "candidate_id": "C0049",
+          "order_id": "ORD-AB1B2E843882D536A914",
+          "condition": [
+            "2025-01-03",
+            "BUY",
+            "LIMIT",
+            1.083
+          ],
+          "quantity": 92200,
+          "status": "FILLED"
+        },
+        {
+          "evidence_id": "0b70d1d2aa5f69635a542298ad71293c767665d3519a02a51c75f2ce3c313d0f.json",
+          "evaluation_id": "02cdd1f601519beec90cf82b6b6625c59386452b3ad9fa764c73945bbb14e458",
+          "role": "strategy",
+          "candidate_id": "C0029",
+          "order_id": "ORD-E23B788CBD37EBA74CC3",
+          "condition": [
+            "2025-01-03",
+            "BUY",
+            "LIMIT",
+            1.083
+          ],
+          "quantity": 92200,
+          "status": "FILLED"
+        },
+        {
+          "evidence_id": "13761cdffe405ac8c13488a5ff8ab30b1c804f5d543490dfb89397453d64e1bc.json",
+          "evaluation_id": "8d63204568ab3422eed06ce7dca1d1c8bdc20fa1433234dc627367c9d1a4bb9f",
+          "role": "strategy",
+          "candidate_id": "C0010",
+          "order_id": "ORD-BADCA835EF857460F8ED",
+          "condition": [
+            "2025-01-03",
+            "BUY",
+            "LIMIT",
+            1.083
+          ],
+          "quantity": 92200,
+          "status": "FILLED"
+        },
+        {
+          "evidence_id": "1817c91755c46a78024151c368d32af9bc9740829b4510bd22030a37ba1281ba.json",
+          "evaluation_id": "8089a16346b44291e48db6024e8e8ef3349d6622ed5a9dcac0c01d97687449b2",
+          "role": "strategy",
+          "candidate_id": "C0043",
+          "order_id": "ORD-96F37F69937746CDD129",
+          "condition": [
+            "2025-01-03",
+            "BUY",
+            "LIMIT",
+            1.083
+          ],
+          "quantity": 92200,
+          "status": "FILLED"
+        },
+        {
+          "evidence_id": "1a4678b723931db878113346aa766d36a6dc57affc602e54428ec4f36394f104.json",
+          "evaluation_id": "2e16b0d5d5701b33aea26fba39d0d21d6bdaf77eee7d395bdb615a653365dc3d",
+          "role": "strategy",
+          "candidate_id": "C0052",
+          "order_id": "ORD-65BBDF61292BDBDE5E80",
+          "condition": [
+            "2025-01-03",
+            "BUY",
+            "LIMIT",
+            1.083
+          ],
+          "quantity": 92200,
+          "status": "FILLED"
+        },
+        {
+          "evidence_id": "29aa48d794e1b5d49a691ee9e63728b67943b4908ecde65c810092f691839656.json",
+          "evaluation_id": "1548f816c1ace62610b9c22ea847e34e8ea18c0953fcc3b61adde724533d9713",
+          "role": "strategy",
+          "candidate_id": "C0006",
+          "order_id": "ORD-5AAD6F81446B61886D18",
+          "condition": [
+            "2025-01-03",
+            "BUY",
+            "LIMIT",
+            1.083
+          ],
+          "quantity": 92200,
+          "status": "FILLED"
+        },
+        {
+          "evidence_id": "2cc8d55fdab70b4a2b3431289b99e6b4910d392fd3e0c5b4646e79bb3252bd08.json",
+          "evaluation_id": "6b0e0d8b994f190e30ce2f35a28efac29987aa6de1e2dcb328aac7619178b2ce",
+          "role": "strategy",
+          "candidate_id": "C0055",
+          "order_id": "ORD-A5E1FEC7A97CF4FA8BB3",
+          "condition": [
+            "2025-01-03",
+            "BUY",
+            "LIMIT",
+            1.083
+          ],
+          "quantity": 92200,
+          "status": "FILLED"
+        },
+        {
+          "evidence_id": "3028d91089e0b6a6c7a4c59f8c2086108aa7a5cad78ea4033573118060775111.json",
+          "evaluation_id": "b8d2250c6c9584c34e538b4a9a1e386503c5e0f5eeafa11f71f01590a6cb6978",
+          "role": "strategy",
+          "candidate_id": "C0027",
+          "order_id": "ORD-D7C139D848EECF9BA88D",
+          "condition": [
+            "2025-01-03",
+            "BUY",
+            "LIMIT",
+            1.083
+          ],
+          "quantity": 92200,
+          "status": "FILLED"
+        }
+      ]
+    },
+    {
+      "condition": [
+        "2025-01-23",
+        "SELL",
+        "MARKET",
+        null
+      ],
+      "strict_with_formal_daily_open": {
+        "filled": true,
+        "price": 1.091,
+        "filled_at": "2025-01-23 09:30:00",
+        "trigger": "OPEN_MARKET",
+        "reason": "FILLED",
+        "time_precision": "TIMESTAMP"
+      },
+      "strict_with_first_minute_bar_open": {
+        "filled": true,
+        "price": 1.093,
+        "filled_at": "2025-01-23 09:30:00",
+        "trigger": "OPEN_MARKET",
+        "reason": "FILLED",
+        "time_precision": "TIMESTAMP"
+      },
+      "order_occurrences": 2,
+      "examples": [
+        {
+          "evidence_id": "3d79fd8dd70289cfe8d976e984db7bc27a151af1108fbb7d5037e919a2dcffe7.json",
+          "evaluation_id": "a4780d016ce635f6eddb2632eca960db23e1af9bb0f8ca56834ab739e61bc6aa",
+          "role": "strategy",
+          "candidate_id": "C0045",
+          "order_id": "ORD-A2A53F2EE3335909E1FD",
+          "condition": [
+            "2025-01-23",
+            "SELL",
+            "MARKET",
+            null
+          ],
+          "quantity": 89300,
+          "status": "FILLED"
+        },
+        {
+          "evidence_id": "8b7067a567ab97e4129ebed8d5d4d70b720de2f16bf348eefe0d39c20a6e25d9.json",
+          "evaluation_id": "9d7809959e308f64bf117960ee1099c7f614634574136b1d9f7afac0131c7edd",
+          "role": "strategy",
+          "candidate_id": "C0060",
+          "order_id": "ORD-80E06185B7FE48BB03F0",
+          "condition": [
+            "2025-01-23",
+            "SELL",
+            "MARKET",
+            null
+          ],
+          "quantity": 89300,
+          "status": "FILLED"
+        }
+      ]
+    }
+  ],
+  "authenticated_daily_price_scales": [
+    1.0
+  ],
+  "daily_contract_mismatches": [],
+  "filled_price_not_observed_in_30m": [],
+  "quantity_exceeds_eligible_observed_bar_volume": [
+    {
+      "evidence_id": "b43f404142723b4769ff8346928d411c2491ee5379defa91d31e79d44ecb96fa.json",
+      "evaluation_id": "c8df87cd6224ba1433c1a1930bf4691ef4dc3137ee172583e51f5c1760af467d",
+      "role": "strategy",
+      "candidate_id": "C0011",
+      "order_id": "ORD-15E17F66510EB25FC24C",
+      "condition": [
+        "2025-07-04",
+        "SELL",
+        "MARKET",
+        null
+      ],
+      "quantity": 88500,
+      "status": "FILLED",
+      "fill_quantity": 88500,
+      "eligible_bar_volume": 31300.0,
+      "ratio": 2.8274760383386583
+    },
+    {
+      "evidence_id": "f2ec2c4f06199a4f37e52820a1eab9b8168946ddbe9e889be8642f4a79f11e65.json",
+      "evaluation_id": "6963a9eaf0fd63c22306f71d6d09a8eab55f638c953ed543e6a35c1ab59effe2",
+      "role": "strategy",
+      "candidate_id": "C0038",
+      "order_id": "ORD-DCDED6F829ADD4372D8E",
+      "condition": [
+        "2025-07-04",
+        "SELL",
+        "MARKET",
+        null
+      ],
+      "quantity": 88500,
+      "status": "FILLED",
+      "fill_quantity": 88500,
+      "eligible_bar_volume": 31300.0,
+      "ratio": 2.8274760383386583
+    }
+  ],
+  "maximum_quantity_to_eligible_observed_bar_volume": 2.8274760383386583,
+  "differences": [],
+  "evidence_checked": [
+    {
+      "evidence_id": "003a15e8e8f5ba952c228800090776a2c8a883da6026fbb71e515263589b4e52.json",
+      "sha256": "003a15e8e8f5ba952c228800090776a2c8a883da6026fbb71e515263589b4e52",
+      "request_hash": "52467677031aef7ab22aa43e9ee113bd1d380595b8ae4b003d4dac0d131b9511",
+      "result_hash": "2da5218077d739e3d0b7ebf520cae021999b7e8ca04b2e3b4ad854d038397257",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "8054d7cedfc72ce69a237f651d34e391c7d2e9a2114efdb796d0eef3a99f4bf2",
+          "candidate_id": "C0012",
+          "counts": {
+            "strategy_orders": 280,
+            "strategy_filled_orders": 277,
+            "strategy_unfilled_orders": 3,
+            "strategy_minute_open_differences": 3,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "07730ea852bd165303d3bffca7f5e78a7b7a9649506d9f77ee880ee7264de0fc.json",
+      "sha256": "07730ea852bd165303d3bffca7f5e78a7b7a9649506d9f77ee880ee7264de0fc",
+      "request_hash": "d13917774a0f450021fe34e91c6d51ed5a3b44ed688d738d11da5a4362a3ac6a",
+      "result_hash": "b70b61a312afdbd916a4702dcc8f27f868261cd5a77ef19343e1708012942de3",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "bbfdc8cd7444e849338ba456e9bd487506588bc5e6059a77a63051677bc42d54",
+          "candidate_id": "C0049",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 64,
+            "strategy_filled_orders": 64,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "0b70d1d2aa5f69635a542298ad71293c767665d3519a02a51c75f2ce3c313d0f.json",
+      "sha256": "0b70d1d2aa5f69635a542298ad71293c767665d3519a02a51c75f2ce3c313d0f",
+      "request_hash": "dfe2d28b89ea2f15d478d3aa1ed12e9357f882440fd312daebe29e57f69ba468",
+      "result_hash": "29cdfa6ae48abbce739f5a4c63eea135d48fd4e419b072770807b549dd9a6e56",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "02cdd1f601519beec90cf82b6b6625c59386452b3ad9fa764c73945bbb14e458",
+          "candidate_id": "C0029",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 26,
+            "strategy_filled_orders": 26,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "0b9e41032fe476882c5144954621056acbfa29a1e30711c965cdc87fbf81d46d.json",
+      "sha256": "0b9e41032fe476882c5144954621056acbfa29a1e30711c965cdc87fbf81d46d",
+      "request_hash": "8579f6d00cdfb8c04195ea2a0c9a95f24e6ff5d2982aa4eed22eda6dbdbb55a6",
+      "result_hash": "0c1959b5135e075776b65ecc77fe68f45b0e5631f0635a09c71660c3604684ec",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "7bbdf96008b7dc13f57b71772fe3394d052e27f0e698e742d53798b5a0df9b22",
+          "candidate_id": "C0022",
+          "counts": {
+            "strategy_orders": 217,
+            "strategy_filled_orders": 215,
+            "strategy_unfilled_orders": 2,
+            "strategy_minute_open_differences": 2,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "12e02e694bddfcedf338a9a905f58536b4a5abf66ccd382eb52ef21457c7056b.json",
+      "sha256": "12e02e694bddfcedf338a9a905f58536b4a5abf66ccd382eb52ef21457c7056b",
+      "request_hash": "b8dd3ec9dc195c7849e350b4cb27d3d68c6aa5184a459b7030ecbbcfd1d7ecce",
+      "result_hash": "ccca87191ef6a37e5e26ff40e4c44072057a0bc7cc34d65ce9ca94d00186626e",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "dfd8443bd9f1235f9561fca8ad56d7ec0ccabb875bf571c6b38869c627b38cfb",
+          "candidate_id": "C0108",
+          "counts": {
+            "strategy_orders": 196,
+            "strategy_filled_orders": 194,
+            "strategy_unfilled_orders": 2,
+            "strategy_minute_open_differences": 1,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "13761cdffe405ac8c13488a5ff8ab30b1c804f5d543490dfb89397453d64e1bc.json",
+      "sha256": "13761cdffe405ac8c13488a5ff8ab30b1c804f5d543490dfb89397453d64e1bc",
+      "request_hash": "e4fb5fcfb98d3fa42b016af81389ed8f0b6a312673f3d412cef7bcff9d471480",
+      "result_hash": "837fe96becb75d9a9660074f36e566b54daa6a6b8180536448e45e2cf1a7c2f4",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "8d63204568ab3422eed06ce7dca1d1c8bdc20fa1433234dc627367c9d1a4bb9f",
+          "candidate_id": "C0010",
+          "counts": {
+            "strategy_minute_open_differences": 2,
+            "strategy_orders": 143,
+            "strategy_filled_orders": 142,
+            "strategy_unfilled_orders": 1,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "162d83c8a17a369d58f66c6bb407bc251a9b20d0c0b8b9e39724a9bf3d94eef4.json",
+      "sha256": "162d83c8a17a369d58f66c6bb407bc251a9b20d0c0b8b9e39724a9bf3d94eef4",
+      "request_hash": "3a49a644945f208dcaab9458e3c95025e85945affc65a7023ba3da48e127fcb4",
+      "result_hash": "333f5dc3f580eadacbf23af8a666e1e2492f224083dbee76cfbfb41c47d067d8",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "220ff6c1acb955fe3ba8da17b7654dca0b9a1df72b2e7f5ccddba49c94ed66d5",
+          "candidate_id": "C0110",
+          "counts": {
+            "strategy_orders": 14,
+            "strategy_filled_orders": 14,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "1817c91755c46a78024151c368d32af9bc9740829b4510bd22030a37ba1281ba.json",
+      "sha256": "1817c91755c46a78024151c368d32af9bc9740829b4510bd22030a37ba1281ba",
+      "request_hash": "3d2ce695d3e44f75d4254a38b1e13eeb2438d87737aed4440427f479b3a7ed43",
+      "result_hash": "9f6a5e5274b310bc513a1f3ca53260b75bb2f54cdc2391d51ecc172793919603",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "8089a16346b44291e48db6024e8e8ef3349d6622ed5a9dcac0c01d97687449b2",
+          "candidate_id": "C0043",
+          "counts": {
+            "strategy_minute_open_differences": 2,
+            "strategy_orders": 128,
+            "strategy_filled_orders": 127,
+            "strategy_unfilled_orders": 1,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "1a4678b723931db878113346aa766d36a6dc57affc602e54428ec4f36394f104.json",
+      "sha256": "1a4678b723931db878113346aa766d36a6dc57affc602e54428ec4f36394f104",
+      "request_hash": "70c4ef11a878785402258bd7b91e38723d84f362c7d03723c0404c95eb9fd89c",
+      "result_hash": "03b696263ef41be26f4cfff8ad1b61be7283670fe968a959e71b983a50fb1aa1",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "2e16b0d5d5701b33aea26fba39d0d21d6bdaf77eee7d395bdb615a653365dc3d",
+          "candidate_id": "C0052",
+          "counts": {
+            "strategy_minute_open_differences": 2,
+            "strategy_orders": 135,
+            "strategy_filled_orders": 134,
+            "strategy_unfilled_orders": 1,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "223505b7a3163fc42bce3e20ac18ca08f8422a909e7d04ad0905126351b788a2.json",
+      "sha256": "223505b7a3163fc42bce3e20ac18ca08f8422a909e7d04ad0905126351b788a2",
+      "request_hash": "3c52397ba6de99acfaaba3d5c1eebad6dba0828ebcf77804a087f9c0d5eb94b5",
+      "result_hash": "374cfd92b77a57dec4b802b5d3d428baef88e4ed151ebdab3081aae4a4f7e604",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "99a9d7ba3ad671949344f639da998ba94cf3575a15e4ef9919193e1adb823e54",
+          "candidate_id": "C0046",
+          "counts": {
+            "strategy_orders": 201,
+            "strategy_filled_orders": 198,
+            "strategy_unfilled_orders": 3,
+            "strategy_minute_open_differences": 1,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "29aa48d794e1b5d49a691ee9e63728b67943b4908ecde65c810092f691839656.json",
+      "sha256": "29aa48d794e1b5d49a691ee9e63728b67943b4908ecde65c810092f691839656",
+      "request_hash": "c0ce94d85416ad6a6953c4d3f20a902f4905d3d43b5a3fb8bcd5e681410d04b0",
+      "result_hash": "8f6aa9a0b7e526242b3ee2a6a72aae3c76aea4c793c05099a75d9e1f11217b96",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "1548f816c1ace62610b9c22ea847e34e8ea18c0953fcc3b61adde724533d9713",
+          "candidate_id": "C0006",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 30,
+            "strategy_filled_orders": 30,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "2cc8d55fdab70b4a2b3431289b99e6b4910d392fd3e0c5b4646e79bb3252bd08.json",
+      "sha256": "2cc8d55fdab70b4a2b3431289b99e6b4910d392fd3e0c5b4646e79bb3252bd08",
+      "request_hash": "606c47928d615e837f96785c84d2be06e7c379800e083b87f90da7955fa1f880",
+      "result_hash": "1f1723aba6dafe2e31a9ae710642514dd4a94eb9bcd0a55a872501c35ae4b516",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "6b0e0d8b994f190e30ce2f35a28efac29987aa6de1e2dcb328aac7619178b2ce",
+          "candidate_id": "C0055",
+          "counts": {
+            "strategy_minute_open_differences": 2,
+            "strategy_orders": 131,
+            "strategy_filled_orders": 130,
+            "strategy_unfilled_orders": 1,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "3028d91089e0b6a6c7a4c59f8c2086108aa7a5cad78ea4033573118060775111.json",
+      "sha256": "3028d91089e0b6a6c7a4c59f8c2086108aa7a5cad78ea4033573118060775111",
+      "request_hash": "29546048a893bbef42cc4aefba6e0bd722e4451bb3a448542b118eb8284dc343",
+      "result_hash": "a913c401c2ada4e21ed43695174402f7fbff10bac5aaad380db4efd19c6be102",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "b8d2250c6c9584c34e538b4a9a1e386503c5e0f5eeafa11f71f01590a6cb6978",
+          "candidate_id": "C0027",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 58,
+            "strategy_filled_orders": 58,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "30b938dc3f15e6d87264316258494e38117cfef2ba0f7fd7309f9c3bb5785520.json",
+      "sha256": "30b938dc3f15e6d87264316258494e38117cfef2ba0f7fd7309f9c3bb5785520",
+      "request_hash": "ebdb807ea1e7800ea9e6bfabece8a5238990ecab3c59d2334afb0f2f7a162347",
+      "result_hash": "2a40fb891b77ecee18b3d13234d38b21893f771845c97ccc748ddde9be40bff4",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "2a844c95dbeeb832588bb6d0c184cf00f60d816c362cb26577760f40c441b934",
+          "candidate_id": "C0015",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 24,
+            "strategy_filled_orders": 24,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "371f16300fdff4045d99b259237706fe82fd4e56be710876b796ba1ed4b0af8a.json",
+      "sha256": "371f16300fdff4045d99b259237706fe82fd4e56be710876b796ba1ed4b0af8a",
+      "request_hash": "f76b647fb3553dc38e279601c73dc7b72acca680419459173595604fbf622691",
+      "result_hash": "cb06abcd642b508a0ef44382b141f6f2c76cf696c826f3f3843a526584463243",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "1b143d2753fedecc0ba31b00a8ce92d25f157f7ef0bc9b832a3296d70630dc47",
+          "candidate_id": "C0040",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 60,
+            "strategy_filled_orders": 60,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "39572d84da0f92bf4ee98f5f709c9f106cc258c5c171a19b0dfd24bee64ae90a.json",
+      "sha256": "39572d84da0f92bf4ee98f5f709c9f106cc258c5c171a19b0dfd24bee64ae90a",
+      "request_hash": "e4603ec493d092fc4e038c497651f2027f49453e4d87f817ff44a252628639b3",
+      "result_hash": "411febfa237ad7c1626793a7b7ef8568df4622b16913b70dd87b6e011dcdf06b",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "ee2e1ba862e1d87e9b8a883f0b0c264e3fc579c1c3a841e3232f3ddad7d46139",
+          "candidate_id": "C0002",
+          "counts": {
+            "strategy_minute_open_differences": 2,
+            "strategy_orders": 135,
+            "strategy_filled_orders": 134,
+            "strategy_unfilled_orders": 1,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "3aaa88efbe2093e9994e06a47af79ba49c9858f8ac3910a5ffdd4e0a686f1cc6.json",
+      "sha256": "3aaa88efbe2093e9994e06a47af79ba49c9858f8ac3910a5ffdd4e0a686f1cc6",
+      "request_hash": "9f831ee472255920d56f45a014d4747b1d700bbb9b71858ce88fc19b0e9814df",
+      "result_hash": "27207e48c4be140749544ad6b5d4d2c902c6a4fd567bac24eaab19fb67438614",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "813be9af187bd297f4f3600d6fc070ec22b207d474d6659220636545bbdac697",
+          "candidate_id": "C0007",
+          "counts": {
+            "strategy_orders": 280,
+            "strategy_filled_orders": 277,
+            "strategy_unfilled_orders": 3,
+            "strategy_minute_open_differences": 3,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "3b071e90dc4c4961ca135be7b0845f2fa17bbec728c9b1af6574b71d3b1adbca.json",
+      "sha256": "3b071e90dc4c4961ca135be7b0845f2fa17bbec728c9b1af6574b71d3b1adbca",
+      "request_hash": "bb0ffa823555ed4cf7ff7215b7ea25fef9807c4c5e0d411d923e2aded7758388",
+      "result_hash": "cb3c7967351d0ab42e715409983c14e74bee9f182a24b5dc918f27c198184bbc",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "4a68b947a796596b35ac08a06b56d636856b82f37e74be03e9dc7cb2df0aca24",
+          "candidate_id": "C0033",
+          "counts": {
+            "strategy_minute_open_differences": 2,
+            "strategy_orders": 133,
+            "strategy_filled_orders": 132,
+            "strategy_unfilled_orders": 1,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "3d79fd8dd70289cfe8d976e984db7bc27a151af1108fbb7d5037e919a2dcffe7.json",
+      "sha256": "3d79fd8dd70289cfe8d976e984db7bc27a151af1108fbb7d5037e919a2dcffe7",
+      "request_hash": "5ad77baba396203aeff0dce61e1ccd521a4cddf86d1fa575fdc0e953afbcbc8c",
+      "result_hash": "f67fda71fd87bf1d3c8db7502c495db9d01823d04a777a258763274b2bf17a00",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "a4780d016ce635f6eddb2632eca960db23e1af9bb0f8ca56834ab739e61bc6aa",
+          "candidate_id": "C0045",
+          "counts": {
+            "strategy_orders": 174,
+            "strategy_filled_orders": 172,
+            "strategy_unfilled_orders": 2,
+            "strategy_minute_open_differences": 2,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "44d0066ad41f56e8fb1d49e1dc8fe28758b9d37f43c34f3388e3ef3f3886438a.json",
+      "sha256": "44d0066ad41f56e8fb1d49e1dc8fe28758b9d37f43c34f3388e3ef3f3886438a",
+      "request_hash": "68dcc071d75ef2f4095d0fc6be394dd15d683a319f13b612c729eaf1db2187b9",
+      "result_hash": "be4522227ee5b1fdd1aa200f1ce06cf1c9d87073483cb9a12e50259fe3a13b7f",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "d6f69b762733e99ad2839f89f4f6d681093cedbfa627f192964256c2c92e9a7e",
+          "candidate_id": "C0025",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 26,
+            "strategy_filled_orders": 26,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "47b92da6049260689aa6126c89ed608a1a563c94bd8a8fe8949dec298bdc50cb.json",
+      "sha256": "47b92da6049260689aa6126c89ed608a1a563c94bd8a8fe8949dec298bdc50cb",
+      "request_hash": "43bfd5d66b1c0a5916d615f3fcec9caac55fab94ab399d1be724733c7f5d2182",
+      "result_hash": "6e49bf52aa08aea780e1ae567bd4108d4a4e4706291c9aad682ed8050ceb7c5b",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "1cb50ab0d03ee6a36ef8aa51bdbecb2daf28a5b35bc3dc128b4c71ed6686c34a",
+          "candidate_id": "C0021",
+          "counts": {
+            "strategy_minute_open_differences": 3,
+            "strategy_orders": 168,
+            "strategy_filled_orders": 166,
+            "strategy_unfilled_orders": 2,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "4d7f1575529c720384c5b27def68082cd338236632d9270244726843e0e5a765.json",
+      "sha256": "4d7f1575529c720384c5b27def68082cd338236632d9270244726843e0e5a765",
+      "request_hash": "0d78818bbe0a25c6867dc336a04d18da25a06e3fd6ebba1618cf6e88452e2161",
+      "result_hash": "34d5f44b3ff43efc08b3b723db0c213bcfeafada756f3f730fed0b970b0a0f18",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "850a11afc23637dea87195e13fbba7057b2af69e135257195208e8e2743a6d8f",
+          "candidate_id": "C0024",
+          "counts": {
+            "strategy_orders": 264,
+            "strategy_filled_orders": 261,
+            "strategy_unfilled_orders": 3,
+            "strategy_minute_open_differences": 3,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "53616d01c0ec5e77d9170dca3fede86387cdc898dcea3c05f6ab710c488eb079.json",
+      "sha256": "53616d01c0ec5e77d9170dca3fede86387cdc898dcea3c05f6ab710c488eb079",
+      "request_hash": "0d713c5b106b38f382b33e9e1647498dd607ae359a70b9a07154b353618b7c56",
+      "result_hash": "52f0504b7b945c3b950a02de862b86bac1dcb42c9fbd9684a68cf8f1f3736b49",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "f5f6c49f9e5e48cfa1b3a47366add54766826d51f5f91baedfaeb9b77364c1d0",
+          "candidate_id": "C0106",
+          "counts": {
+            "strategy_orders": 8,
+            "strategy_filled_orders": 8,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "572633f26b48c8351e1513d1c371692fcf6a880404fcd7fdc2e7837d811d8c10.json",
+      "sha256": "572633f26b48c8351e1513d1c371692fcf6a880404fcd7fdc2e7837d811d8c10",
+      "request_hash": "92eb14fb305ab24be6106f20aa79ecaf5605d11e8da532a183d0fe58373f74cf",
+      "result_hash": "51470ba3a963e9e3a7d2628e1ba7df8d088633cf017a5cea7e7470209a863184",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "9bbbdc156a21806ec9c1c4fee0503e2fd2a804c0594daf3355103248fe024c94",
+          "candidate_id": "C0101",
+          "counts": {
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "5a057ce1cac5e24b2f46ee3963c3a95ae10ee5e58d2735f479a672d362a78a83.json",
+      "sha256": "5a057ce1cac5e24b2f46ee3963c3a95ae10ee5e58d2735f479a672d362a78a83",
+      "request_hash": "99bd5aab4b2d8324000c29ef83fb47315cf4d5ea6c3b8c34878a13ba10d79db9",
+      "result_hash": "26194b164590b0e090d7ad9925868eff41cf9c02898704444f01a620549c0e49",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "41dac7c0f79b75da90cf5c4f74f61ab4df73e18aae2699145c800e4a8c49c063",
+          "candidate_id": "C0056",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 30,
+            "strategy_filled_orders": 30,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "5b574ab3649c321b7bd752c59e9e21a17eb92db8afa293f2bd65208e49b33d3d.json",
+      "sha256": "5b574ab3649c321b7bd752c59e9e21a17eb92db8afa293f2bd65208e49b33d3d",
+      "request_hash": "6af41173f18a0ae5e8d93b1f84551d41221a5552514c3304dfe7597aa82008bc",
+      "result_hash": "e8147a89f42b27698a9054c8a070b9f3466e23388570af6aff5d19f0be68fb0b",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "7d1dd6d207a2bc2d8815ddba375d28562375e306e84c910b3a37f01512280f2c",
+          "candidate_id": "C0030",
+          "counts": {
+            "strategy_minute_open_differences": 3,
+            "strategy_orders": 205,
+            "strategy_filled_orders": 202,
+            "strategy_unfilled_orders": 3,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "5cf18f28b1d7c03987839ef952382c1359205d84afa3d8e852dd0a833d7540a7.json",
+      "sha256": "5cf18f28b1d7c03987839ef952382c1359205d84afa3d8e852dd0a833d7540a7",
+      "request_hash": "46467e3db38743aa4afd49f2cfdf7c4a4bdc93367d6bdb39cb0b7a3d5d95f02e",
+      "result_hash": "9c8a47abc6a83eb07d20bf239572e533970ef130982536d4f2ffce92766d8348",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "d291eadeaefef927c49bf1660ad120c3b2c9406ddddda4e8f2bede1f11087b13",
+          "candidate_id": "C0051",
+          "counts": {
+            "strategy_orders": 237,
+            "strategy_filled_orders": 235,
+            "strategy_unfilled_orders": 2,
+            "strategy_minute_open_differences": 2,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "5e2db1b1bb7ec2ca4d01d9dad8416503aa12cb8048dee07d2ef600cda53f9dc8.json",
+      "sha256": "5e2db1b1bb7ec2ca4d01d9dad8416503aa12cb8048dee07d2ef600cda53f9dc8",
+      "request_hash": "2a159f5f0ef9021167b500284e86fc8804048e1191a26f670f0e5eee36c9d575",
+      "result_hash": "ce1125868a4e3034e3a0f22375f4c23c5798f0239c8cd21e83114d85a64c182e",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "1a82335429e2c52f757a304e8cfeaf35f381b828962377383a337523c7bc5915",
+          "candidate_id": "C0050",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 64,
+            "strategy_filled_orders": 64,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "5ea4132e4128619cb068a9bbed9d91fbe89db6a9cbb72652f4f5c10899ca9db4.json",
+      "sha256": "5ea4132e4128619cb068a9bbed9d91fbe89db6a9cbb72652f4f5c10899ca9db4",
+      "request_hash": "f0166b075afdb503e00982f2e3e4d903aaf8ba572246d95e2722dcf801fccc39",
+      "result_hash": "a31b7b334c095278516a35f02a482286ccd4a8bc51d379950f332120e6aeabd2",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "e3dddad056a4964c17486c257cb27f8adc33700bf1b7212c41144f01d9bd5ba7",
+          "candidate_id": "C0109",
+          "counts": {
+            "strategy_orders": 175,
+            "strategy_filled_orders": 174,
+            "strategy_unfilled_orders": 1,
+            "strategy_minute_open_differences": 1,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "5f34f39b4985ea917f6fbd9c8041bac615725120ca6e2d261bd9ef9573b2a270.json",
+      "sha256": "5f34f39b4985ea917f6fbd9c8041bac615725120ca6e2d261bd9ef9573b2a270",
+      "request_hash": "c07d7d8feec7a75e79f3e7977f172a97d15e1cbea580d498712832c0ffe98916",
+      "result_hash": "5ed628bdc11aabe61832a51475994145219c27fbd8bc5d7d0b02cb1e95b90c27",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "b36478f62403f06017abe4311c71094cfc28419d47596c92c6783ec800e19b57",
+          "candidate_id": "C0019",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 56,
+            "strategy_filled_orders": 56,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "611215800b984bd6404f81bd20b2d89d95a7f997f214452cec9a8dd923a49a4c.json",
+      "sha256": "611215800b984bd6404f81bd20b2d89d95a7f997f214452cec9a8dd923a49a4c",
+      "request_hash": "08662b3dd2ce1d0828664fce5954e44aa0d65c36fcb32b6a8a1c097a682feeda",
+      "result_hash": "aa5a91cff8c2e4250b4678dbe81f88fddb40f9096f3d781ea5aabbd2016effb8",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "29af88b9c45cc594c282a9b7a1d1ae88cfa27be578dd7f04c4ad1770bf8e1d17",
+          "candidate_id": "C0023",
+          "counts": {
+            "strategy_orders": 223,
+            "strategy_filled_orders": 221,
+            "strategy_unfilled_orders": 2,
+            "strategy_minute_open_differences": 2,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "62e515d9f876b1817c347541d2bec92b4aaea03f5da7a4d13a34b37c4141596f.json",
+      "sha256": "62e515d9f876b1817c347541d2bec92b4aaea03f5da7a4d13a34b37c4141596f",
+      "request_hash": "7a23c6c2fc143041d7bd8bc1bac53be59ad91c2d28250228b041cd7b99cd1e00",
+      "result_hash": "5b11b7cb28a8acdde251a23a513e5cdd3f7931fadb7773f6bd9ae6ce3b064c16",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "cbd30928f1dafaf1720886317809d67cd6358418cda9c5d8bda6ca0d0b80d8a4",
+          "candidate_id": "C0047",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 24,
+            "strategy_filled_orders": 24,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "65d17bd3a8c9dfa5a219c1d3344b2272d8e19dd083357d2c9c7a168925230598.json",
+      "sha256": "65d17bd3a8c9dfa5a219c1d3344b2272d8e19dd083357d2c9c7a168925230598",
+      "request_hash": "24b0934bf1f1278d7f04b90d7e1b094a6d900af4acddf19bacbf775a3b5a9437",
+      "result_hash": "6c43d710da7f2d341890187df0738933efddf984704caa6aa88de4858dc85bfb",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "15a6bbab835bcf49eabba73e3e75df3df348e60b1cdd90b1c3fbed2ce2b0b4a3",
+          "candidate_id": "C0115",
+          "counts": {
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "67fdc0ba2dfd684e114158f30ca659f79aa3f209611f913114d9e62a6935a826.json",
+      "sha256": "67fdc0ba2dfd684e114158f30ca659f79aa3f209611f913114d9e62a6935a826",
+      "request_hash": "daca07c8d518e7b5cd8d16a6ab819890341383c1dd653156ffc6db7907ccf394",
+      "result_hash": "beb5e12d3c7675e6beb2eb41f89655e3a567f54ef6f1995615034f6e64b787bd",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "96c12f6f9eeccde53946cca97d2631340d459526940d93e435cbd1039c39c27f",
+          "candidate_id": "C0042",
+          "counts": {
+            "strategy_minute_open_differences": 3,
+            "strategy_orders": 193,
+            "strategy_filled_orders": 190,
+            "strategy_unfilled_orders": 3,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "68e2cb437f7a9bf3ce2368dc0a857a0f524f6bbd6954a20036474a05979555a6.json",
+      "sha256": "68e2cb437f7a9bf3ce2368dc0a857a0f524f6bbd6954a20036474a05979555a6",
+      "request_hash": "6ea7830a654a20c89a03e9846df3ddc5f5078839ca624965169a55fd2c917dfa",
+      "result_hash": "3cc06808368147c89d9ce187ee2d7565777aa0c14d3bf541628ca6b60fec0d99",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "bc4c1e722ca9106318f53579d0e586e0a93dcd23bcb8f334832676a2afd93f69",
+          "candidate_id": "C0118",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 30,
+            "strategy_filled_orders": 30,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "6ce06821f2ed9191be0a01c2aa13ebc92e5b2afab4a95d4d2abf732a0d0551b5.json",
+      "sha256": "6ce06821f2ed9191be0a01c2aa13ebc92e5b2afab4a95d4d2abf732a0d0551b5",
+      "request_hash": "da34082813f1cc27e365d6c6a7838cbee7d03b7e6089dfcb1f852b0ce163ab86",
+      "result_hash": "d90f6f2e74e92665e96c2c45569fa2ddcf76030d75d29e0bb1494a38d1d0fc10",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "1c29627540dbab80bb4085e61796012f40c18bbb170ff6ddc5283388069c04d9",
+          "candidate_id": "C0062",
+          "counts": {
+            "strategy_minute_open_differences": 3,
+            "strategy_orders": 205,
+            "strategy_filled_orders": 202,
+            "strategy_unfilled_orders": 3,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "79fbefe64565da4c58f8708dd6a5ebcd894c3f32772b07dfcc53b157f48d6404.json",
+      "sha256": "79fbefe64565da4c58f8708dd6a5ebcd894c3f32772b07dfcc53b157f48d6404",
+      "request_hash": "352a38f2f5881460eb540f518ef10ad7b10b770c973a1977e25fcb5e90a1d85d",
+      "result_hash": "6088fd965f822f15fb42f889ccf5c41dd14750a74d2614e984526e55dcccfb17",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "c1a9c0ff09ddb910ce729c4ee6628728061526dfacb852739bd763a3f6d42864",
+          "candidate_id": "C0009",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 64,
+            "strategy_filled_orders": 64,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "7a0731ac082341fc3a7cdfbd38381ad7076e946c47acab2e2d708e9e4da44abc.json",
+      "sha256": "7a0731ac082341fc3a7cdfbd38381ad7076e946c47acab2e2d708e9e4da44abc",
+      "request_hash": "abc1019360bec6b553085dc383ac26545af12ba8ce9ab17076098e7ad7b96873",
+      "result_hash": "87d71bfe0313e69a8c2f39a45510ecf992dfd2620bb4233342acccdf066a5b2a",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "2597d873e75864fc6d6b680607bee11c3dd6034945e9378449c889b04fcaba74",
+          "candidate_id": "C0114",
+          "counts": {
+            "strategy_orders": 14,
+            "strategy_filled_orders": 14,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "8b7067a567ab97e4129ebed8d5d4d70b720de2f16bf348eefe0d39c20a6e25d9.json",
+      "sha256": "8b7067a567ab97e4129ebed8d5d4d70b720de2f16bf348eefe0d39c20a6e25d9",
+      "request_hash": "d20f1097b663af478c0751b3b3ba2e49360d656e1b9d6ef1644e8d6e2b181501",
+      "result_hash": "4afaf161988de974948e62acf798c5ec698f88ab9a49be70c3757335c1c77b9f",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "9d7809959e308f64bf117960ee1099c7f614634574136b1d9f7afac0131c7edd",
+          "candidate_id": "C0060",
+          "counts": {
+            "strategy_orders": 180,
+            "strategy_filled_orders": 178,
+            "strategy_unfilled_orders": 2,
+            "strategy_minute_open_differences": 2,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "8f95f4fd62aa7d6328b9d752adf861090c2d498e3d2a0e3f5da7cc4fcbedf493.json",
+      "sha256": "8f95f4fd62aa7d6328b9d752adf861090c2d498e3d2a0e3f5da7cc4fcbedf493",
+      "request_hash": "1d0d8a2bab357733004aa2ffd51957a42e640a1e5225c4a8128733fd425716c1",
+      "result_hash": "0ec57ab2dfbe7c13a5462a274cfa783edc913b9c5b97cd29b5e9d6874bc228cd",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "1e8226f0675adc126dcc4381d4fcc38558d1e5efd8ae2285ed39b8473cf1326c",
+          "candidate_id": "C0053",
+          "counts": {
+            "strategy_minute_open_differences": 2,
+            "strategy_orders": 112,
+            "strategy_filled_orders": 111,
+            "strategy_unfilled_orders": 1,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "91fa9ec3ee2b55c8b24aca381f274fad0cdb8b49b291b326ae8442168f6f573f.json",
+      "sha256": "91fa9ec3ee2b55c8b24aca381f274fad0cdb8b49b291b326ae8442168f6f573f",
+      "request_hash": "0b44a90f5a1e7bc83260b3e8442068795815b9cd6a2004decc1bdbe8771c7cf0",
+      "result_hash": "8c2bb8ce0e10cec10e9d6a57d5c185f59be09080a8cb0eb2ee97701dc4d08b38",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "e24c2ec637f2c0dc0610a2ba51934e16a4bdc30c2509162182d3d17dadef228b",
+          "candidate_id": "C0028",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 30,
+            "strategy_filled_orders": 30,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "9518f61d280d8b21ce247316e6fc655c682558011bab0279f076db7e4bae9db9.json",
+      "sha256": "9518f61d280d8b21ce247316e6fc655c682558011bab0279f076db7e4bae9db9",
+      "request_hash": "6677451f06403ea5acec3aaf538faead96b066c963cfa4de858d3f0a4a10337e",
+      "result_hash": "8ef465313e7bf2e8ed62f8032b3ae56044444c113dcc8381ffe264026d454bbc",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "1f445449038fd805cbdbfd196546ecfe9b0319fcdf17ddc41be33e287c7510d0",
+          "candidate_id": "C0102",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 30,
+            "strategy_filled_orders": 30,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "96030ced2d0c3a88b641b1e2bad5c2ce031978e5ae51a7ec58935e2e500879f2.json",
+      "sha256": "96030ced2d0c3a88b641b1e2bad5c2ce031978e5ae51a7ec58935e2e500879f2",
+      "request_hash": "bd43fdf7973eed912325035857190d8045fc8163044d02bb4b5f388c5845e3a0",
+      "result_hash": "809b29c1d9c33eea15647c3f2cc032b5eed0073789d5867368486725d755e76f",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "e6b0fa9b48fcff008555f67c7aa445dabb820d44f5031a503661482259dd081a",
+          "candidate_id": "C0057",
+          "counts": {
+            "strategy_minute_open_differences": 2,
+            "strategy_orders": 124,
+            "strategy_filled_orders": 123,
+            "strategy_unfilled_orders": 1,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "96caee7c1515a02ad1ca96f5d73758e0b03d5c70b4543c7dc1d5916a92e95173.json",
+      "sha256": "96caee7c1515a02ad1ca96f5d73758e0b03d5c70b4543c7dc1d5916a92e95173",
+      "request_hash": "66e8d5f38baf664e30d8f33082e4447fa8daab298307699e677100e17026f12b",
+      "result_hash": "8700a56c334f6cdb6b5bb2e86693b3b0a603088519b7416346fbace5b646ea3b",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "890a5e3d8c9f2f8eda33576ad83f72f80170bab89b940fc1ece223e5b2da4950",
+          "candidate_id": "C0005",
+          "counts": {
+            "strategy_minute_open_differences": 2,
+            "strategy_orders": 131,
+            "strategy_filled_orders": 130,
+            "strategy_unfilled_orders": 1,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "97b593a181bcf58d7425c1fe93114e02586fd2db521d313351563a5bb3dc314c.json",
+      "sha256": "97b593a181bcf58d7425c1fe93114e02586fd2db521d313351563a5bb3dc314c",
+      "request_hash": "e1e64355ddb21fd57070c33e9e9670d7809a45f49b134716a05a83bd9d0df4de",
+      "result_hash": "2c26f62ebe43991e0ad64a91d97a058b83201aa9fadef0c37573b3d151b74c61",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "aaf12a13007d630f131d4457a6f92194175a119338fa5f30b1872cb25a2da20c",
+          "candidate_id": "C0001",
+          "counts": {
+            "strategy_minute_open_differences": 2,
+            "strategy_orders": 135,
+            "strategy_filled_orders": 134,
+            "strategy_unfilled_orders": 1,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "99521e89055c860ed93c79ed3f089a9af1efefd1c9d2b60a2c71b346722eb6f3.json",
+      "sha256": "99521e89055c860ed93c79ed3f089a9af1efefd1c9d2b60a2c71b346722eb6f3",
+      "request_hash": "5646e59e7c25f344bd0c7841a9a43607d2ea505b8e761e0c65fcc3ef8cd458d9",
+      "result_hash": "aaca2840f8828921477ad156e7b850acc3760a33062bc12ec67bc5d10375f471",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "60c054862ed69cac187ce40fc6447f4f59d56f905f19f4cdc9f206a639b62690",
+          "candidate_id": "C0031",
+          "counts": {
+            "strategy_orders": 213,
+            "strategy_filled_orders": 210,
+            "strategy_unfilled_orders": 3,
+            "strategy_minute_open_differences": 1,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "9c7c7c6f76d77d91f06a26f55688cc29dcaf5955febb0de5715c56ad07c67ce7.json",
+      "sha256": "9c7c7c6f76d77d91f06a26f55688cc29dcaf5955febb0de5715c56ad07c67ce7",
+      "request_hash": "3ee9361c034a8d46cc20d6599ca5263f14c882bf23a827d3b60833850074d9d4",
+      "result_hash": "ea4833bddec9edf9b3c632e27187ba5d99963ba8e29ca711f6a8ee7318f96604",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "e9802a8b9ef48f2c7c63d254ddfdf124accf15146d4994f35077a29c98426d04",
+          "candidate_id": "C0016",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 54,
+            "strategy_filled_orders": 54,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "9d52b294e66f6ee6c96093be846c2eff102360a6403524162cb09dfba4dfbc4b.json",
+      "sha256": "9d52b294e66f6ee6c96093be846c2eff102360a6403524162cb09dfba4dfbc4b",
+      "request_hash": "cf3a0c589ac285a9489d8fb069e06cf86d102fa6d475eac278cd723a045406e4",
+      "result_hash": "f4aaf4efeaf18200110f689b6b5b4f255a68300a876cc13656da2566c783359d",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "bf08b84a89b2239f85e5f9ec73f2b521daf0cf8c1041db7ee3452e0d5eb15931",
+          "candidate_id": "C0119",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 30,
+            "strategy_filled_orders": 30,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "a01cd24e1d050b7ff8ce44e932f2ba8c2d5dc190577e6eb47a725de3d87ea011.json",
+      "sha256": "a01cd24e1d050b7ff8ce44e932f2ba8c2d5dc190577e6eb47a725de3d87ea011",
+      "request_hash": "19e2ec767183da3127adba246ff00dc156b96e575ef1ab8a34eb4552525d7279",
+      "result_hash": "fc2937529aaa79f6563ca36936b1f779dc00362af1e8aee502594fa3378587fe",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "9aaef1d28de6d8fabf83acdbe350b30887687d7db2706a4ae91c8fbafda157eb",
+          "candidate_id": "C0111",
+          "counts": {
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "a413ce6b190584f8c0c2ba19681c3d17d7b3e9e69d4855a10d79c34dc0ce65bf.json",
+      "sha256": "a413ce6b190584f8c0c2ba19681c3d17d7b3e9e69d4855a10d79c34dc0ce65bf",
+      "request_hash": "80aabbb7318a34f30424a40fa7aea3ee43af9875c27e09edefa75acf7255294a",
+      "result_hash": "50c4b21152d32ad27a075ca2758a2e0d90eb572e4d169e437d3175ad5fd68648",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "6fe7cf952fc5dfd04dd79da2fa09d88138b989335efdd96c7f550c94262bec65",
+          "candidate_id": "C0105",
+          "counts": {
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "a52335b42e61efd196615ed722f9131c6d48f825d22dfdbf2be01816cd9ed2e0.json",
+      "sha256": "a52335b42e61efd196615ed722f9131c6d48f825d22dfdbf2be01816cd9ed2e0",
+      "request_hash": "2d6ba7360bd783b5d86c91035adcb7324f15024fa2c8cc6698c3339fccd8626a",
+      "result_hash": "9a286bc8837efe4c958f868f179770b465e36882d42a42e22b9c76b83eb743ea",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "dfa1f5f3b8894f9b04e3caa702b2021368469a1bd2033f6ab8bc98c33de5adc1",
+          "candidate_id": "C0037",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 74,
+            "strategy_filled_orders": 74,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "a69f8b2fbf4d8df078150b4ed0981a5f8fcfca3add704ba1de8afa538b8e1280.json",
+      "sha256": "a69f8b2fbf4d8df078150b4ed0981a5f8fcfca3add704ba1de8afa538b8e1280",
+      "request_hash": "107a1907fdf9e4a3d76b94de7df49de38b463a5e1534691bd69cc02afea0d65a",
+      "result_hash": "35fae67bbbb3cb306bf28c9e1c6a61af76ade56f2629026d05fc2b4531ff0d08",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "e659a12497620212065a305da9237b391a5daed55ae2172b839372d1fb88b8b9",
+          "candidate_id": "C0116",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 30,
+            "strategy_filled_orders": 30,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "a830a2b2fa71bb4acf21ad150315a9516100e7252f29bff39cc5b278dcce2179.json",
+      "sha256": "a830a2b2fa71bb4acf21ad150315a9516100e7252f29bff39cc5b278dcce2179",
+      "request_hash": "96b7a18ed8a0784204953020e05cd3168913fd6f752fb97c75257374ddf0f22c",
+      "result_hash": "02327fabc17c07467889714a5bc26d5600f896b5c8ffda2ba72f9df21bf32ac3",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "2c329ca185cd640143c0f6ebe3062a2b3d25e74ba83a3f39076214ee16e4c268",
+          "candidate_id": "C0048",
+          "counts": {
+            "strategy_minute_open_differences": 3,
+            "strategy_orders": 193,
+            "strategy_filled_orders": 190,
+            "strategy_unfilled_orders": 3,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "ae96eb198a69cdfed76993ab789ca5f91d24c4b3ae3f4561cd2b29104aae77b3.json",
+      "sha256": "ae96eb198a69cdfed76993ab789ca5f91d24c4b3ae3f4561cd2b29104aae77b3",
+      "request_hash": "3b11d97791d118dd9680d186932c6eb8ee0b611e099626bb83543a5f3f28f823",
+      "result_hash": "434341a46bf85d62fc9f32567dd45f9f86206e6e11f358e773a93010b0b9c287",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "b61081794fcaa3a29555a51846e35eb99090516b25e6db3938e199b9348a6b01",
+          "candidate_id": "C0008",
+          "counts": {
+            "strategy_minute_open_differences": 3,
+            "strategy_orders": 184,
+            "strategy_filled_orders": 182,
+            "strategy_unfilled_orders": 2,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "b0ed216b87ab69cf7266e3269c71329f6166faf318ec6d02c6e7f76aff2e8328.json",
+      "sha256": "b0ed216b87ab69cf7266e3269c71329f6166faf318ec6d02c6e7f76aff2e8328",
+      "request_hash": "9ca3f85a497d9e1696cab222011e26bf3ffb58d74799edadb91225a6780b21b7",
+      "result_hash": "d0cef9774ab83a1602a6560d7f931bd190e2aee95bfdfed4e20b42756ac17690",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "adffd01241bcc785434c3cfe8df0ece0d8c195540d796b5d84c6c4bf539bdd3c",
+          "candidate_id": "C0121",
+          "counts": {
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "b1efc25b73f3da5bf30fd18e7d853083eec5b8ac425162bcd82dcb1ae05974b6.json",
+      "sha256": "b1efc25b73f3da5bf30fd18e7d853083eec5b8ac425162bcd82dcb1ae05974b6",
+      "request_hash": "72fc0e7b83e5618071bbe72cb098d6de089a18f8fc5f60a88750fb34095e4f3a",
+      "result_hash": "5448f0e890b5b33b659dc02c10905db169a4d4c843c1214ea5028f3beee40733",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "2de05bcd09a11bde460db8009c79c24b1e67e007019f6060ed5240478ed15098",
+          "candidate_id": "C0004",
+          "counts": {
+            "strategy_orders": 229,
+            "strategy_filled_orders": 227,
+            "strategy_unfilled_orders": 2,
+            "strategy_minute_open_differences": 2,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "b43f404142723b4769ff8346928d411c2491ee5379defa91d31e79d44ecb96fa.json",
+      "sha256": "b43f404142723b4769ff8346928d411c2491ee5379defa91d31e79d44ecb96fa",
+      "request_hash": "6077fa640063b6722d0fe13f40790b722598ea23609799aeaf8773ffc961a961",
+      "result_hash": "2c1ded75eb3acb4e4c5c4ec7f2246b07971e05f1a24e28242430e45561a3b723",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "c8df87cd6224ba1433c1a1930bf4691ef4dc3137ee172583e51f5c1760af467d",
+          "candidate_id": "C0011",
+          "counts": {
+            "strategy_minute_open_differences": 2,
+            "strategy_orders": 143,
+            "strategy_filled_orders": 141,
+            "strategy_unfilled_orders": 2,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "b696265a143e248da8ea333db30efd51c0bb78a1763af2a00b82a30c1299b732.json",
+      "sha256": "b696265a143e248da8ea333db30efd51c0bb78a1763af2a00b82a30c1299b732",
+      "request_hash": "a115cb9d4bcefd8197e5456188ed3f74a7fc6ea537fb9c6e45c406217017cf79",
+      "result_hash": "31f07d1773b9d08d22c50528bd64c559c18e72341e24470143239ccab9bb4586",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "f21764ed025b31dd6828903a20ca42655a3b515a2a6959522ace2e2ec39fafb7",
+          "candidate_id": "C0104",
+          "counts": {
+            "strategy_orders": 8,
+            "strategy_filled_orders": 8,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "b9f4277731711915a817ffed5cb075e317d5aec4bf5d7f78ea203e02ace90419.json",
+      "sha256": "b9f4277731711915a817ffed5cb075e317d5aec4bf5d7f78ea203e02ace90419",
+      "request_hash": "98f32e53653e9ba0aa71a12a204b2d100d9347b28493f066cc3bf4f2ff39cee3",
+      "result_hash": "9e1544fdc13645c1fe4921be7be7ab9df502da8b0833c4a4ee30b8ec1786f6c2",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "747d559c1fea0d3d1b23128113035d4d96719089cb8376b50d986b2b2e7d4fa7",
+          "candidate_id": "C0120",
+          "counts": {
+            "strategy_orders": 14,
+            "strategy_filled_orders": 14,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "bc5388499314c1493e4b9fdc75c8363663c5d6c782a5a52aba43e4a4db3645f0.json",
+      "sha256": "bc5388499314c1493e4b9fdc75c8363663c5d6c782a5a52aba43e4a4db3645f0",
+      "request_hash": "7c896e50f068b47f0f13030a9efb26a7b5f3e2902d18ee1e92bf4a667443ca08",
+      "result_hash": "1d1b552a1a9d18e4ac65fbb40e21d3c2a9fd81a64488f7734cb164cf16005ee3",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "4d1a9c7110bd28ce208a67c2f0da7ac3f2e0aacbb055474936b9f896b66cc42a",
+          "candidate_id": "C0123",
+          "counts": {
+            "strategy_minute_open_differences": 3,
+            "strategy_orders": 136,
+            "strategy_filled_orders": 136,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "be24782f0588d04f9605091f370eddafc0431dad09359bcd79bfdbccbe6f8ea9.json",
+      "sha256": "be24782f0588d04f9605091f370eddafc0431dad09359bcd79bfdbccbe6f8ea9",
+      "request_hash": "b346c5aaa29b2dc719dcf1fbbf9d79d177bcb2bc7dd5e7c1d543efb485116e45",
+      "result_hash": "26a36a67d986dddbf10f83881a110267c18bcadc54ee0bb90c05a5b804c4a4e3",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "0f6798d2f98fc4e198e1714b8cac49e9f94abe4c553607fe8adf94f88b86c82f",
+          "candidate_id": "C0100",
+          "counts": {
+            "strategy_orders": 14,
+            "strategy_filled_orders": 14,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "c3aedeb8bd77137790b1f92a81a3424ee8c6d6d096c800fa022ea5a62150a3b5.json",
+      "sha256": "c3aedeb8bd77137790b1f92a81a3424ee8c6d6d096c800fa022ea5a62150a3b5",
+      "request_hash": "641e08717e202b14f0e9a6ce1b8565b194736bd07036a5f19ae0a4e75bcc0c84",
+      "result_hash": "c235c43f4e1dff5037a260da73ae8387e8e1c2bba5cfd3b5273af7e9cbc3e2ba",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "08c6eae7a2c46267486a3b082fab9b3058ac60957c9479cfcdcd4c26af2e7356",
+          "candidate_id": "C0035",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 24,
+            "strategy_filled_orders": 24,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "c49a3ffd404c5280b6faf16dc19339c2bc4efc59321a07d369517de124b4135d.json",
+      "sha256": "c49a3ffd404c5280b6faf16dc19339c2bc4efc59321a07d369517de124b4135d",
+      "request_hash": "fa6c77191ac9b66899e5c2ae863c43381c3b5087fa28f56fa59d73e6d27a9169",
+      "result_hash": "92ded9c7a0670ffc0f1a763dbbeec2af7bd219e72c0542eea5f6df34a48940ae",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "a6d8c50f19744e297062509f3872898d43fca4408cefd2b67c82401bc6a64ea6",
+          "candidate_id": "C0003",
+          "counts": {
+            "strategy_minute_open_differences": 2,
+            "strategy_orders": 116,
+            "strategy_filled_orders": 115,
+            "strategy_unfilled_orders": 1,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "cb55b3b02a6917e3e99f91f169bcef513d5b0fabb2f996f2b6bf0b906630e398.json",
+      "sha256": "cb55b3b02a6917e3e99f91f169bcef513d5b0fabb2f996f2b6bf0b906630e398",
+      "request_hash": "0050526fb3036f03cc70ed483490428fde11860decc48e4590cde95eb1bb24f0",
+      "result_hash": "4cf5cdf91e4d3f590648a1bc64b8db91a50c797d9fb73e8dce3736180fcb3254",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "a34a37990b74b5000ee3e97bedf02cf9eb88a769f0710fbf93c5f5c6054665dd",
+          "candidate_id": "C0026",
+          "counts": {
+            "strategy_minute_open_differences": 3,
+            "strategy_orders": 170,
+            "strategy_filled_orders": 167,
+            "strategy_unfilled_orders": 3,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "cc22ec8c074469fd2c04d4148aedc5faa79a8e37a0a89e13f5234520de345735.json",
+      "sha256": "cc22ec8c074469fd2c04d4148aedc5faa79a8e37a0a89e13f5234520de345735",
+      "request_hash": "ae4f2aae7fe124ceac8be4f899aa0ba1b421339be9d359cef0bc3b4e96f57e70",
+      "result_hash": "9e463efb003b18967886e0a270a8c217609c68361d84a74d8f09a9487aea8a2e",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "e7a221c2845b272f62efb51837ea9569821f258eb16327781143ed5a9ef1d151",
+          "candidate_id": "C0034",
+          "counts": {
+            "strategy_minute_open_differences": 2,
+            "strategy_orders": 143,
+            "strategy_filled_orders": 142,
+            "strategy_unfilled_orders": 1,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "cdc3abc7a80edc4fdc73eed6cbc51e7ee8668cf2d759c55226522c0ffa6656a1.json",
+      "sha256": "cdc3abc7a80edc4fdc73eed6cbc51e7ee8668cf2d759c55226522c0ffa6656a1",
+      "request_hash": "1ec5370830f8ea897095ba7c536d4a427aea2c85a8794c1d7332f1dec8f4b1b6",
+      "result_hash": "c71ae7441408d352072e61bf623951c9fc30b29d32a9a1f4a50dbf4e8b8ee81a",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "433b5dea3b6c3e3b61c1120ddf9e065ba8f9a31d77845cf9091c8f7ab6ce02ce",
+          "candidate_id": "C0017",
+          "counts": {
+            "strategy_minute_open_differences": 3,
+            "strategy_orders": 172,
+            "strategy_filled_orders": 170,
+            "strategy_unfilled_orders": 2,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "ce8cdcfc9d03447be61cbc709e527b59cfbefb43e735ed18cf1fe4eb605d3056.json",
+      "sha256": "ce8cdcfc9d03447be61cbc709e527b59cfbefb43e735ed18cf1fe4eb605d3056",
+      "request_hash": "0628d6c9ed086896f45580b28416550d5bc38da3cc2c2850f1f61b0889d898c4",
+      "result_hash": "9229a2cd57fad4985dda49f86fa196a2c6f85c0c5456f737ac83969c498ae8de",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "edeb0010dcab792e8048f6d315dd5ae47ecb514b97c3c604fe6b614f805ae024",
+          "candidate_id": "C0032",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 32,
+            "strategy_filled_orders": 32,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "cfa28e8e4bc4bde5e2ab53d5f5670f0ce098a27236bdb0dc19359da9709d5636.json",
+      "sha256": "cfa28e8e4bc4bde5e2ab53d5f5670f0ce098a27236bdb0dc19359da9709d5636",
+      "request_hash": "fd39bf5335d98159e6942b20381a0e700139ce09277f7d5189228e31d05b02b1",
+      "result_hash": "1251888f04afc491b8a7bcc6fd8933e9c7ebf5c6f20afe6cadb4bafba9a4cdf2",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "e827a188943fe65eda4512da72b0546af112ffd03e4c53dfe8285b525a08c700",
+          "candidate_id": "C0122",
+          "counts": {
+            "strategy_minute_open_differences": 3,
+            "strategy_orders": 155,
+            "strategy_filled_orders": 153,
+            "strategy_unfilled_orders": 2,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "d1f914429a25dc0e3267deefeb9372e1aad7b4e9f82d7ab986bb97e2ee6ec888.json",
+      "sha256": "d1f914429a25dc0e3267deefeb9372e1aad7b4e9f82d7ab986bb97e2ee6ec888",
+      "request_hash": "e985b97aa199300289536ad6b845ffa4a40c61eb5ef039e2a9f8e586cdf6dac6",
+      "result_hash": "0b340467aef7d6430eb0c6f391c30396eace32eb166b1e54ce13834ab73e1fc3",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "6b9ffb19afb97595b6569a818af655c594d23a87ec124b1f5c4da6258c87230c",
+          "candidate_id": "C0059",
+          "counts": {
+            "strategy_minute_open_differences": 3,
+            "strategy_orders": 180,
+            "strategy_filled_orders": 178,
+            "strategy_unfilled_orders": 2,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "d64cdef8783e515bc45b668c9476546b8b2f333ff4506f9978555c52a96e0f3a.json",
+      "sha256": "d64cdef8783e515bc45b668c9476546b8b2f333ff4506f9978555c52a96e0f3a",
+      "request_hash": "5677ae9b9228da363f938674d9dc82b13affc371b4d0b97d795f00faa5d5168d",
+      "result_hash": "ec115ef991fc333aa939b0f48527ee4038d240d6bcd570cd2a68ef4eb4f245f5",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "ead0855781ab1882861191cc5a95e4c248c2e731039ef9b9cccaf1920ddbc935",
+          "candidate_id": "C0058",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 70,
+            "strategy_filled_orders": 70,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "da117992aa60019c2df88370ee73ae700aeb227e7c35c7d5e77ec1d2be7acd05.json",
+      "sha256": "da117992aa60019c2df88370ee73ae700aeb227e7c35c7d5e77ec1d2be7acd05",
+      "request_hash": "86eb9fa4eb761abec1497c2d02d538b9c2cce79dff9691fc1f0828e3acbbc9c3",
+      "result_hash": "f9d33b805e57630a8a05e9135c7ffd21e580506f41c793e9f3e9f99cb7c3c792",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "3bcbe6d9c1e2764d0a2eebf15c6b455cb063eb0f2eb452daa744f0ae67d1133b",
+          "candidate_id": "C0107",
+          "counts": {
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "dd99b98dfd2e83f7f2edafb3c326495a6623f3a59d5ae5a260da15c0d35d1c18.json",
+      "sha256": "dd99b98dfd2e83f7f2edafb3c326495a6623f3a59d5ae5a260da15c0d35d1c18",
+      "request_hash": "80400ad91601482c8540623461cc531b4a45f53ac5c2257df1dfd4c05b7b2c7c",
+      "result_hash": "4fd76ae48aa7be2983ab439da58b9faa21e9902d6e3e00578b55492da96352df",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "8f59d58fea0247ef5d1bc450806d20010bb28bcbb564fad4b86bde16364afd2b",
+          "candidate_id": "C0014",
+          "counts": {
+            "strategy_minute_open_differences": 2,
+            "strategy_orders": 121,
+            "strategy_filled_orders": 120,
+            "strategy_unfilled_orders": 1,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "e3cac16be4c298ebc6813c55dc356020312ec2be16d68f95202851a0e0c5d8e3.json",
+      "sha256": "e3cac16be4c298ebc6813c55dc356020312ec2be16d68f95202851a0e0c5d8e3",
+      "request_hash": "f3008294b617436d9f7a0b55f331c99aec39936f6f2ea2f4fc29a39fdbef35c9",
+      "result_hash": "d0aa89e6be29889766c3b21e2042396b802031f889bf2b1aa947b92c35ee360a",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "ed6224470d4912019f192fd8bc090563a8b4bb700a21ed34f414975924e17443",
+          "candidate_id": "C0041",
+          "counts": {
+            "strategy_minute_open_differences": 3,
+            "strategy_orders": 158,
+            "strategy_filled_orders": 155,
+            "strategy_unfilled_orders": 3,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "eacdf6b03e9f88d50779cc7f08052b230bd6ec818913f7c0223e7a20b1f7b2c6.json",
+      "sha256": "eacdf6b03e9f88d50779cc7f08052b230bd6ec818913f7c0223e7a20b1f7b2c6",
+      "request_hash": "16d6c325822e938b54463e35d4f5a653578b0339a1116d95d1f836a6fe1d8da3",
+      "result_hash": "473387ee3d9451e5010db198922c98a1117c7c7786543685c8bac5f06996d5a7",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "e1eef50c80d79c8347e4531fd348e0d2f5ba40dc92990f1fe66c780c1301ecad",
+          "candidate_id": "C0039",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 74,
+            "strategy_filled_orders": 74,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "eb09d6780f2fefe86003aaf8fb102acc34dc47623d21107af032394b375ba7ce.json",
+      "sha256": "eb09d6780f2fefe86003aaf8fb102acc34dc47623d21107af032394b375ba7ce",
+      "request_hash": "b8f5f2e53727d0c2c3c7ee622c004dcd50f1b862a23ac731d3e62914a3d6948c",
+      "result_hash": "9e74b6f4e51ee92b766e274d69bef06f2240f7a3d1211e1ee4a74c10e30d49c4",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "c000e76afbae324156f4b2b35014f407372b7075a4cdc32f217cf9ff34b06d7a",
+          "candidate_id": "C0113",
+          "counts": {
+            "strategy_minute_open_differences": 3,
+            "strategy_orders": 128,
+            "strategy_filled_orders": 128,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "efb4299d15db44c85af2382072db13b101afcffa8cc8ee44e6c4a4beba7ac966.json",
+      "sha256": "efb4299d15db44c85af2382072db13b101afcffa8cc8ee44e6c4a4beba7ac966",
+      "request_hash": "564459ad1ca1681bf77568596439ef79639c48a14d1ae7a7b71f42d8c245bd46",
+      "result_hash": "dd7904cee6e16ddb3a165b84e9e502329859b9c89b56c6f0d1391e3df8a0f80c",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "35279d9824b31eb0e0ceeaa60a18776a1dd97dee202f17aa91cbe8d99a7ee7f2",
+          "candidate_id": "C0061",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 32,
+            "strategy_filled_orders": 32,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "f22af9b9c8cf0b9b26ee6ac0bef2f54ebeb55bc5c6f82dc4c89daf09b84d965a.json",
+      "sha256": "f22af9b9c8cf0b9b26ee6ac0bef2f54ebeb55bc5c6f82dc4c89daf09b84d965a",
+      "request_hash": "01cfae776aaa78068a567c68419b60d0389aa744f14251eafca4f8cac8e42ec2",
+      "result_hash": "01791ceb1f1456aee746ba865e65e73a477b0c53f5308d44abed0727159e4c06",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "485d5794551fe1691b5f3a80c52b601331c3707265a77c8cc94f1a64710e69dc",
+          "candidate_id": "C0103",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 28,
+            "strategy_filled_orders": 28,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "f2ec2c4f06199a4f37e52820a1eab9b8168946ddbe9e889be8642f4a79f11e65.json",
+      "sha256": "f2ec2c4f06199a4f37e52820a1eab9b8168946ddbe9e889be8642f4a79f11e65",
+      "request_hash": "89bf98cddc8853a9e6ebd80b5fbe3e4b904d36a8dec5bff6cef80604258dc4c9",
+      "result_hash": "9f123a5ddf131b0c7b8c4b3bf3f0f45fdd61de6fcb39f9ed0721ba805892193a",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "6963a9eaf0fd63c22306f71d6d09a8eab55f638c953ed543e6a35c1ab59effe2",
+          "candidate_id": "C0038",
+          "counts": {
+            "strategy_minute_open_differences": 2,
+            "strategy_orders": 153,
+            "strategy_filled_orders": 151,
+            "strategy_unfilled_orders": 2,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "f59287a671679f2cc95957b51232791decb67749bd8a0d188906416a38722706.json",
+      "sha256": "f59287a671679f2cc95957b51232791decb67749bd8a0d188906416a38722706",
+      "request_hash": "0fd21f197636db70750ea1b21acbf5ea92ee22be8610cf98775a53ce5fca7084",
+      "result_hash": "8a57aae25f374454596fad4a91f357142250624d82ca37a46eeed28a9eaf057d",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "f23ba48c048196b8e9886a10e277bcb7607ee50fd60369eee3556c69c463def9",
+          "candidate_id": "C0112",
+          "counts": {
+            "strategy_minute_open_differences": 3,
+            "strategy_orders": 143,
+            "strategy_filled_orders": 141,
+            "strategy_unfilled_orders": 2,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "f5d3f687988f6df3d8048e1b7f27b307dfa0ba08be60cd1f8977b65a6814a086.json",
+      "sha256": "f5d3f687988f6df3d8048e1b7f27b307dfa0ba08be60cd1f8977b65a6814a086",
+      "request_hash": "1b8664be9457ac0af493b7218b64da9754525b6669492ff7190100148b7c8570",
+      "result_hash": "4058525409d8d1e660ffd3f32e5fd52bcf1a04341cb7f4cc7ceb3edf8f50b9b7",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "40a701c812868f0f42b5ce3e14f37a889dc78a9439d124de89292d40b1b23aee",
+          "candidate_id": "C0036",
+          "counts": {
+            "strategy_orders": 264,
+            "strategy_filled_orders": 261,
+            "strategy_unfilled_orders": 3,
+            "strategy_minute_open_differences": 3,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "fac1682c4441fa5997257f1cdafbb8e9b31948743e8ab5452196ec926bff3053.json",
+      "sha256": "fac1682c4441fa5997257f1cdafbb8e9b31948743e8ab5452196ec926bff3053",
+      "request_hash": "19a48da332ccd6c9c14428e449aac593cc8d257636c3025f99541d45799fb2c0",
+      "result_hash": "55a3df16461bb062f4a6ac28962fa6c6997501bc2100866822c8913b849823da",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "0b162bf31ab511ccd380b4bd5440c4d558629e535a6d317c3cb968c2ea25bc20",
+          "candidate_id": "C0018",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 24,
+            "strategy_filled_orders": 24,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "fb40d9d124db32edab17125516797746fd2eecf4f4178ab6476786b79e882662.json",
+      "sha256": "fb40d9d124db32edab17125516797746fd2eecf4f4178ab6476786b79e882662",
+      "request_hash": "453fdef68db040ade6adfae7ed1713edc4d06434942ab34b8a3748823204f8d0",
+      "result_hash": "a608ebdbd4de1afa4d149af24f24cb4558e4504c6d640eb68795338a49ada013",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "3c8b6374abd7ef00c61b27938009e2430d925fc8da197d338ba433cb8bb3f366",
+          "candidate_id": "C0054",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 66,
+            "strategy_filled_orders": 66,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "fb72d6507c97797fcbb2fadd3de1d115c7b0116942dd457d0a25035d20e28202.json",
+      "sha256": "fb72d6507c97797fcbb2fadd3de1d115c7b0116942dd457d0a25035d20e28202",
+      "request_hash": "21633d4db5040943788296ce7a66b4a7ca68480dd825e02f7715a87878874fec",
+      "result_hash": "1fd06de5ca67c26227488fef0dc4bc506f60658b2f715ade4c85e66194a1a8e5",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "d9b8b02291e791470307abc441a396a977a820aa46c4ef710c9e5fd3e25b0f04",
+          "candidate_id": "C0044",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 30,
+            "strategy_filled_orders": 30,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "fc69030e80b9427332fe8170ec0916546852b6caf1b164fdcb72c9263bf7cafb.json",
+      "sha256": "fc69030e80b9427332fe8170ec0916546852b6caf1b164fdcb72c9263bf7cafb",
+      "request_hash": "683a7fcdda0a3c16ccee2d19cfa238f00bdcba5190be8dd38681931935683427",
+      "result_hash": "eefc76108c9b53c9cb20b818e19a66fd065f6de3b5fede460e17ab7e72686fcc",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "abf041e18aff9c9a9e98bdfcc00ee1faa69074ff1de0a6b8051db40c981ba4c0",
+          "candidate_id": "C0013",
+          "counts": {
+            "strategy_minute_open_differences": 2,
+            "strategy_orders": 123,
+            "strategy_filled_orders": 122,
+            "strategy_unfilled_orders": 1,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "fd52e9f21dc141506dbb2381f1d5a8432ded2f370c0a0f84aa6c10b55f8e139f.json",
+      "sha256": "fd52e9f21dc141506dbb2381f1d5a8432ded2f370c0a0f84aa6c10b55f8e139f",
+      "request_hash": "ce6b09a8946356442d70649879e0545c447131f1a2d9db55cdec2cf2c0fce172",
+      "result_hash": "0d6becb539eb2d1dafbea97416129a9d62db6f120aaa380b9608bd7cfac2d7e9",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "156deeb01d73641c12fbdb7ee811633194cb3dd13b30366f5ae23ea9abfb96a3",
+          "candidate_id": "C0020",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 68,
+            "strategy_filled_orders": 68,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    },
+    {
+      "evidence_id": "fda651d26fe3a6b909f4d7b85cbf17731d64b6266f2c9c4693b4659319534af0.json",
+      "sha256": "fda651d26fe3a6b909f4d7b85cbf17731d64b6266f2c9c4693b4659319534af0",
+      "request_hash": "4e3cda0dcaa92354ea957fc3a8638e0603c87cf91ea376a79b23be83e36b2f61",
+      "result_hash": "1dec2524210beb38b58db2835be6fd9448497b73bd84aaa5e9266509c02bb5bb",
+      "pricing": {
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT",
+        "anchor_date": "2024-12-31",
+        "anchor_factor": 1.0
+      },
+      "runs": [
+        {
+          "evaluation_id": "9b97994355f3e7d595bac131f98878e20e4b84a3f3f7b4a829eeb551df5ccac8",
+          "candidate_id": "C0117",
+          "counts": {
+            "strategy_minute_open_differences": 1,
+            "strategy_orders": 26,
+            "strategy_filled_orders": 26,
+            "strategy_unfilled_orders": 0,
+            "benchmark_orders": 1,
+            "benchmark_filled_orders": 1,
+            "benchmark_unfilled_orders": 0
+          }
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "Repeated orders across candidates and repeated benchmark accounts are not independent market observations.",
+    "Thirty-minute OHLC reachability and aggregate volume do not prove queue priority, opening auction liquidity or full quantity fillability.",
+    "Quantity volume checks use eligible bars containing the actual fill price; full bar volume is not volume traded exactly at that price.",
+    "Strict sensitivity evaluates each retained order independently; it does not rebuild later cash, positions, signals or returns after a changed fill.",
+    "Main strict crossing comparison retains the formal daily open to isolate execution rules; a separate sensitivity substitutes the observed first 30-minute bar open.",
+    "DAILY_RANGE_V3 includes limit touches and can differ from strict crossing and opening price-limit handling.",
+    "Minute bar-end timestamps only bound intrabar triggering; historical publication and revision times remain unverified.",
+    "No account evaluation, provider preparation, supplier refresh or original ledger changes were performed."
+  ]
+}

@@ -1,0 +1,2220 @@
+{
+  "status": "PASS",
+  "candidate": "S015-C0001",
+  "pilot_evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX003_20261021"
+    },
+    "evidence_id": "97b593a181bcf58d7425c1fe93114e02586fd2db521d313351563a5bb3dc314c.json",
+    "sha256": "97b593a181bcf58d7425c1fe93114e02586fd2db521d313351563a5bb3dc314c",
+    "media_type": "application/json",
+    "name": "pilot_account",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  },
+  "input_binding_identity": "ed12358da0cbf6c91200dec55cbd52a65294ed24533e1a470ebbc55493afc3e4",
+  "sessions": 434,
+  "clocks": [
+    "17:30 Asia/Shanghai",
+    "20:31 Asia/Shanghai"
+  ],
+  "comparison": "All ExecutionPlan fields except generated_at; all snapshot fields except as_of",
+  "actual_path_check": "Both complete TXE paths match retained pilot pre-plan cash and quantities",
+  "ledger_comparison": "All five ledgers match each other exactly and retained formal pilot including IDs",
+  "ledger_original_tolerance": {
+    "relative": 1e-12,
+    "absolute": 1e-08
+  },
+  "counts": {
+    "decisions": 434,
+    "orders": 135,
+    "fills": 134,
+    "trades": 67,
+    "account_daily": 434
+  },
+  "execution_contract": "DAILY_RANGE_V3",
+  "execution_intraday_rows": 0,
+  "provider_configuration": "empty bindings; prepare_data(binding=existing) only; no provider preparation",
+  "history_mode": "WINDOW",
+  "plan_pairs": [
+    {
+      "session": "2025-01-02",
+      "plan_identity": "9f338d059d39f5a2b74819a0cd385725d5aa542e6830ddf6f684a08b1e1d9cb8",
+      "complete_economic_plan_sha256": "1b36ec4608943a58a85abd4b2144f2997245a832362c56798550cce59b51eb3a"
+    },
+    {
+      "session": "2025-01-03",
+      "plan_identity": "a05665bb2a23fa2a1d6936f9f09fc1a778b10af7dd423fd98e37dd0dd70b5287",
+      "complete_economic_plan_sha256": "e599474e4c2176c8fdc62fc69926991917a29a9eca6baeff42a52d4e6ba82343"
+    },
+    {
+      "session": "2025-01-06",
+      "plan_identity": "fc76a94632032cef0054ced9cd042f1cf3598c57b5e73cf6cf72e8973416658a",
+      "complete_economic_plan_sha256": "a0436ada1ee862fd01985b50447bdb3e2b52c2fc0162d8e538e0227713fc5099"
+    },
+    {
+      "session": "2025-01-07",
+      "plan_identity": "1559fea42b21a1144a49c1fa6e3c6b2158c919435cf057bb335c9a9b82e54fc5",
+      "complete_economic_plan_sha256": "ab5a495ce7390e8dbfb326515265547e29e5a7711f2adca90ed67f67fa9e51b6"
+    },
+    {
+      "session": "2025-01-08",
+      "plan_identity": "f8105fdab7fcbd996c35abda4013683972c0e43bfb100203238fec598f82472c",
+      "complete_economic_plan_sha256": "aeab28ef50d3c1f16ae6d414fe84675bf68d23aa4c47f52e1985e133ae3d882b"
+    },
+    {
+      "session": "2025-01-09",
+      "plan_identity": "df188d4008133b50c7069a5dede89af08e71fb6cc632b3f0771a86b9eace382d",
+      "complete_economic_plan_sha256": "0a7682279af38ceab93ec27891a228033ad9fa4cdb451dd36bb8a209ebfa724b"
+    },
+    {
+      "session": "2025-01-10",
+      "plan_identity": "a927f509accd2d5c9c1a41d9703a399738cdf74b6c2fa78460b826a23b98402d",
+      "complete_economic_plan_sha256": "c415f6718506175fe9249fc9e147fe5a8f6cab0a56ba00511aa9b0bc79a0ba80"
+    },
+    {
+      "session": "2025-01-13",
+      "plan_identity": "689435a444a567e4c2c5098b98a064b24bcd0c083381f58d8fecdce7cdc3ba10",
+      "complete_economic_plan_sha256": "b4578d4e6a4098555d73113988b8eb6abedd67309e027e4d707003c0c4f5f6ad"
+    },
+    {
+      "session": "2025-01-14",
+      "plan_identity": "c5be67e6145378f6031b0e959bc2aba4b72ea71ac38b2194bb973d35cfdd49b9",
+      "complete_economic_plan_sha256": "f610e4f2615efff1555370ba025a32fcf7202b66c5d6df3b1a1ddfbb7b660f2d"
+    },
+    {
+      "session": "2025-01-15",
+      "plan_identity": "625d8200c00b137a388f9599d5e9bb6b9774beb3c2148f1ff6705f2c9c138339",
+      "complete_economic_plan_sha256": "38fe9dc2b181b27f1593769042a1f59c2a220ea560f1c138cc06d6dd8782eefb"
+    },
+    {
+      "session": "2025-01-16",
+      "plan_identity": "a88ddc1ed58d690e4a0e10af5bcc2ed4c40ae661fae8f3660c102320292fd723",
+      "complete_economic_plan_sha256": "e4c37cb28a11433d5f9ae14fd04f6e6bb7dcd8970012121a76515179e930e4ae"
+    },
+    {
+      "session": "2025-01-17",
+      "plan_identity": "3effe43d5c0fa2aa4816eb1a6120249de44b3c03b4f3ba1c4a28ead7d1d58544",
+      "complete_economic_plan_sha256": "cadd6317a1a4d3ac744ee1cdf27b58dc55f8fdc642d0f5e7b3359639dc8c165d"
+    },
+    {
+      "session": "2025-01-20",
+      "plan_identity": "d75147517ce1ffb75ad13267dd76afbfc3b65d454fdbc9c3f8ceb1ae360a0739",
+      "complete_economic_plan_sha256": "169458f2ff615e7597c8ede836e15bfb4881017135e45c2473026129c7e72aa8"
+    },
+    {
+      "session": "2025-01-21",
+      "plan_identity": "3761c256c8dd77c500184872500110517982cdd7963e1038960d72fbfa44521d",
+      "complete_economic_plan_sha256": "1e067177cfcb14188d1109a0c0d61f96efbd55e190f5381a62c83538d75b6a64"
+    },
+    {
+      "session": "2025-01-22",
+      "plan_identity": "b6b1713ed9c60547f9ffd1189f58276b9da7e96948d0785cb882d13d9beb86a3",
+      "complete_economic_plan_sha256": "d562867489fc3484451ee2d2b7811997c6e5a47f15b605a3507f56521e60f45b"
+    },
+    {
+      "session": "2025-01-23",
+      "plan_identity": "3dea2632e11004b4d96fcf8ff99a393f2a5eeb39df1c6e6852258841f4b7709f",
+      "complete_economic_plan_sha256": "14c2162eae9bedd49a7295992960646191749c21e86751bd61fdc04ce9f319f8"
+    },
+    {
+      "session": "2025-01-24",
+      "plan_identity": "45f928ce283f74b4d434545aaa60cc24032f090e2add657f1e922a12415e8267",
+      "complete_economic_plan_sha256": "178a6aba8891f448d47a3706e838563d8782f55b14f146b655b69bb8eb7cee4c"
+    },
+    {
+      "session": "2025-01-27",
+      "plan_identity": "8f6288edb51e97fbb29141000dcc96c15c77aa906877e64bf5e664df97be19fe",
+      "complete_economic_plan_sha256": "7f8108bdcccffc8edcde88b0f628a25a27cb03c5403e137a3a9dc079b8db1331"
+    },
+    {
+      "session": "2025-02-05",
+      "plan_identity": "87f2d6e7520aa113be85df20f5db944f69778a2fb109e0c9435ae5ee7abfc50c",
+      "complete_economic_plan_sha256": "d1c6fad7167fab493b774d461a5e0ca7689475c3817d0e1299ad6674dedb2e83"
+    },
+    {
+      "session": "2025-02-06",
+      "plan_identity": "b2fdc4639646f313a9906635ea70da24fd8cad85a3556bfa80bb0b76db1df930",
+      "complete_economic_plan_sha256": "7975d760154389033f7bc21340f77d11b6bbaa38019004a16b7940892bf88811"
+    },
+    {
+      "session": "2025-02-07",
+      "plan_identity": "b007354d26c454d3b445e9e88d1c4d592ede22ea066ff06b1ec80b77e47dfc4e",
+      "complete_economic_plan_sha256": "7aa81138aa68915f35a674a7073df19acdd29d47efe4885be83c8cf93e5d8dec"
+    },
+    {
+      "session": "2025-02-10",
+      "plan_identity": "a61369699454ff5bf84d89429aea8ffecc1bb8dd322f474ed4e69f10a0972856",
+      "complete_economic_plan_sha256": "726fa76242c182880468d2ee9e4845a04899ae310103121d880ab133b5f07ca2"
+    },
+    {
+      "session": "2025-02-11",
+      "plan_identity": "6ca659a757a0c12d676664833c777e5e76f5c155fc34e8b2c45e83fa07dc282f",
+      "complete_economic_plan_sha256": "5078d89858b60c86bccee8d6c09dac55cc9034d2cb2d6e150791d8c2972bed7f"
+    },
+    {
+      "session": "2025-02-12",
+      "plan_identity": "2586cbf421e350dc71a24c195db9f878abded7213d93998b67d5e032339575f0",
+      "complete_economic_plan_sha256": "f5688010002b46c5c6e1dc3b96a8946eed5fc9ebcaf665a59d2ac38eab5fbca8"
+    },
+    {
+      "session": "2025-02-13",
+      "plan_identity": "2c31b416561513e9087d5891f8f25d8b2a2a9cb12e49248b6d59537c3d045186",
+      "complete_economic_plan_sha256": "36ce825326748c3d9ee5f2a11c3da95247512cbd324018e18b8d4a1e08c95589"
+    },
+    {
+      "session": "2025-02-14",
+      "plan_identity": "6d0a5ff8776f3e0b672c8ba5a9f666329efe5dc0e0d4632937cbbaa7eec5ad0a",
+      "complete_economic_plan_sha256": "b8c7142bdb4c64b1c05712d1e57858535a6b22fe9076fa34667df9fa928bf642"
+    },
+    {
+      "session": "2025-02-17",
+      "plan_identity": "11667a84e21dbb3f7bf79d23284b4ec06d479949734452a5ee6d7d233a147ec2",
+      "complete_economic_plan_sha256": "c69c6c2ecb74d0361ffe310b74535de3cf9050bd44a5389afbf0d74763142248"
+    },
+    {
+      "session": "2025-02-18",
+      "plan_identity": "3e91f3ecc9a478720a80cba591ecd1e1b0be4c07e70ce1c4d4fd051bf835eaa5",
+      "complete_economic_plan_sha256": "9997019a6945824a784ede6235f1577397927857cd8e882f696c3b0f78efb1a3"
+    },
+    {
+      "session": "2025-02-19",
+      "plan_identity": "90bd682afd9fb844e52b8967fc56c5e6960b7707a57b70f93fcd5df0a4a6822b",
+      "complete_economic_plan_sha256": "3936044ed0b98692b5c506a9b73013517dfac87a2d819d38dd3a09fc838ae91a"
+    },
+    {
+      "session": "2025-02-20",
+      "plan_identity": "fd8fa7d66c0c0cf3036bd1cf4b4239975d6754f2185c5c69cc8ddddbc03c5dd5",
+      "complete_economic_plan_sha256": "6f232cd8f7c6fd4f7e3ab690f94714007362581a0fecaa3af519c316a8f24ca0"
+    },
+    {
+      "session": "2025-02-21",
+      "plan_identity": "273c68513e550ce32e430b4b7dd503fd16178e7924f5331c7d091f87d90df2c9",
+      "complete_economic_plan_sha256": "cd133495e2eb65da8a2e3c2d56abaab8cd64177440df8b556d8e8df52aa9ec15"
+    },
+    {
+      "session": "2025-02-24",
+      "plan_identity": "f6ff2528bfc5a6ff2b93d4cc8f9a5b236d2789da264e1b60e7193e13c484b807",
+      "complete_economic_plan_sha256": "d19cb3e46fae047af8185d1c56e5a2b3ede87983d05fb76c9ff41b4ef84b9441"
+    },
+    {
+      "session": "2025-02-25",
+      "plan_identity": "b37ec6418ae450119dd97862238a9a485186130d0320504d937a54c1621099a2",
+      "complete_economic_plan_sha256": "ec06fe036ab30c778b2b062bc46fe3fc4dcb2e1c5032a237125c1c2668979810"
+    },
+    {
+      "session": "2025-02-26",
+      "plan_identity": "c8995d927e5464d0c62ec23d8149427924d5f22a57925486cf8168bfa2245864",
+      "complete_economic_plan_sha256": "6d02bb4f3d74bb77689862354138d109ec9d934b1d05515862a22f38e4277b26"
+    },
+    {
+      "session": "2025-02-27",
+      "plan_identity": "136898bd1d55c5afd8dff8d49b0ea81e4b988729e70d8f95c9507d8cbe8a9708",
+      "complete_economic_plan_sha256": "6eb8ade0b26826e24d47c3a14cd06a34a408d0644385cd0c78fbabb8f45602f0"
+    },
+    {
+      "session": "2025-02-28",
+      "plan_identity": "6b1f71b6cd2a5be4af42cd70140d8fba883b55bdb111d1ac938081a84709fd03",
+      "complete_economic_plan_sha256": "428c6b9a907e528af803e67401ecec320285bf5612ef4a72f7907a3711b1469f"
+    },
+    {
+      "session": "2025-03-03",
+      "plan_identity": "6b5abf86ba554e1fd9106f10251cfdaebe5d78d4072fc82250344f7efde511bb",
+      "complete_economic_plan_sha256": "971313d7950e619f0dc539c3462320efa004d2cee48b0bbd4bd85726bb0d95af"
+    },
+    {
+      "session": "2025-03-04",
+      "plan_identity": "a6f4247e4067fc8a996ae76b69a24b73b001af7d9dfaffa94e9568e66cd800d0",
+      "complete_economic_plan_sha256": "fc5a8d838cc9cd25e2f5f0072dacea9c74e1945c6010b0c583582804165d4232"
+    },
+    {
+      "session": "2025-03-05",
+      "plan_identity": "95073ff6409f25078f77f06cc0b65586436377bc6fe0370bf86a34c5ee0004ad",
+      "complete_economic_plan_sha256": "09b119284d6e5887a3ca33d8b1abfb28b27128feba7fe6f97c3eeb5e9f8b32d3"
+    },
+    {
+      "session": "2025-03-06",
+      "plan_identity": "122eebbb285b311a553c7bb020f9a0b4799d3bb0cb609309c450561ec1f3ec8b",
+      "complete_economic_plan_sha256": "36006ab7fa4a13035c416ff9df4abfdb707727aa719b3d5fdbcf79175eb95ee5"
+    },
+    {
+      "session": "2025-03-07",
+      "plan_identity": "41e49e30a96b8e1d22f443d61feede325e646dae521b0e2545014d1bbad9edfc",
+      "complete_economic_plan_sha256": "e4f921910d4af58a9ddfa9ffc377b89cadccb9ffcdffa314e0704d913d64dd06"
+    },
+    {
+      "session": "2025-03-10",
+      "plan_identity": "7d3ef11d48677268a300ee0e521162eb9f7cfb501bb44b2b9410ae739f1f2d8c",
+      "complete_economic_plan_sha256": "15a1fdfa3e0e37670370360df5652a3d4b128c377ae95ae94b841ead6e1ca0c5"
+    },
+    {
+      "session": "2025-03-11",
+      "plan_identity": "d77c862036f8527ab6ab184981e2ef5f3d623a07610d993ddbd6f45838acad67",
+      "complete_economic_plan_sha256": "aee00c373067171afcc79771aace5bf696f20d95610da8c46f1cbe147788ef04"
+    },
+    {
+      "session": "2025-03-12",
+      "plan_identity": "c7f1bcc31b9bf85ace0d37f941a476fd700d8f1aa5e43488313c373ba56ba2dc",
+      "complete_economic_plan_sha256": "20553b4f316f98c6bd89f1622b7179ce1c28361ac1f51d16740647f1a77112dd"
+    },
+    {
+      "session": "2025-03-13",
+      "plan_identity": "50022e1f3cd72725e4c51dc9dd839e3fdc457d15de4b640ca9c7495ece473103",
+      "complete_economic_plan_sha256": "8a12f499fc8fc005ec70d3137fc5d19d9a8b1fe6125006665023aefde449fdc6"
+    },
+    {
+      "session": "2025-03-14",
+      "plan_identity": "3fd707d7689e21675e42ca0e8445d2fd87fca7b04fdadf77441ee4a7f6892a33",
+      "complete_economic_plan_sha256": "1e862248da7c8db77766dad85a8e02b37d07511dca79703b946bed24ffc01807"
+    },
+    {
+      "session": "2025-03-17",
+      "plan_identity": "8172fd7fd19748f6ece8340ed9064f2a10a39a339cceff530c8b6dbd655d7748",
+      "complete_economic_plan_sha256": "2e47e5e5de17ac73d00a1b946aa115fa1af12abe63f22fc88cfe63f000380e59"
+    },
+    {
+      "session": "2025-03-18",
+      "plan_identity": "921bf96cb926f386f97e3810df46868bfa89873641a856a6dd6d79f8f19fef20",
+      "complete_economic_plan_sha256": "4b9572d43cd00e56b7e204a6d2e3769464133a16dcb87e90e9fcb33150456416"
+    },
+    {
+      "session": "2025-03-19",
+      "plan_identity": "254b294a7655bcae67fffa9da7282a86c3dbe06b39922d21a1cc7c82a803f833",
+      "complete_economic_plan_sha256": "2d8d040a9e75b812abef0525871950a8fb922e1fc8fa0ccc008415fc3f1b34a7"
+    },
+    {
+      "session": "2025-03-20",
+      "plan_identity": "e8d66e18b719606f07279cd61b3d4d3fd8b7d5a578b1a679af52b7c46b36a8eb",
+      "complete_economic_plan_sha256": "cfd190e06a077d23f50dc95fb3f7d74f4e07c7b562137012c1b37fc9e28a09b9"
+    },
+    {
+      "session": "2025-03-21",
+      "plan_identity": "e80966a4fc4752ced9d83c36df52cf288530eb13680fcf549eb9eb4a30fc76d9",
+      "complete_economic_plan_sha256": "af8ac89b0f3f23d57b1ccd2c04b2980a67629e106e3cc4f543c5dfce30e376fc"
+    },
+    {
+      "session": "2025-03-24",
+      "plan_identity": "ab12e8dd0d349c26b74208e6edcfb92fd58ceb93a7a7926338ad5f0ba2e14303",
+      "complete_economic_plan_sha256": "7e8d312b7456e9213516244fc31a5e3e674e1a6081a74d2fab198bcfdfb218ba"
+    },
+    {
+      "session": "2025-03-25",
+      "plan_identity": "e41fa39d8f354aa9b183c2819162f660f3371819a2df31b3213eecd9f2cdaea5",
+      "complete_economic_plan_sha256": "a8401cda83f8e82cfd8b513964c1a62e3fcedf9346ecf8bc623ffe883f944d5b"
+    },
+    {
+      "session": "2025-03-26",
+      "plan_identity": "1dbbd3032d44ae06aa145b1dc948e0ca16cf28645f261add23a8c8ca5115bafa",
+      "complete_economic_plan_sha256": "070a1d26f3836bb505c8f1f62fd331062d87e436881c47f51fc61609ed697586"
+    },
+    {
+      "session": "2025-03-27",
+      "plan_identity": "4c318afd4d51b746b1177fb1fb1faff730be257a782315a0beb3173967eaf7ed",
+      "complete_economic_plan_sha256": "f21c67205e6a6c2ff1fb483d7c40b1ac2f7a6b142bebec846347050a1806651c"
+    },
+    {
+      "session": "2025-03-28",
+      "plan_identity": "8ab97f9c3a5b545f6c2fd473929ba20ce73e5a32d7876b59dd08d5eeb5036003",
+      "complete_economic_plan_sha256": "290a61f02caca9e8baed999ce08cad0265d02eeed08d52701e164bb01386dd66"
+    },
+    {
+      "session": "2025-03-31",
+      "plan_identity": "27a1a36f2f91cb00d5e15cdc8b6c0315207fd307b0284ce76e6a45c6d41e6fd0",
+      "complete_economic_plan_sha256": "4280e5751e9fc4b72ce0e65bb2e90444780594bfc4f7cc4496f4ba0cb1d1dc1a"
+    },
+    {
+      "session": "2025-04-01",
+      "plan_identity": "5ae6fab1ed19dcd8035290126e654d357484f3fbe3bee3ecff688992c8abfb45",
+      "complete_economic_plan_sha256": "88aa37a444dce2b45e2a4b856350318a91603a25636a0073b35de5cc03be3e7f"
+    },
+    {
+      "session": "2025-04-02",
+      "plan_identity": "f6dfbaf5327ab876cf36aecfa2c76e11404dbd1aea546466e5fb7f46254bea09",
+      "complete_economic_plan_sha256": "22fcc0aa2a4700e4ea546453a91ce9f7cae28e3bf6ef4ff924f709008ad15f50"
+    },
+    {
+      "session": "2025-04-03",
+      "plan_identity": "ff4564b015e281b27e5f8ab7657fe7199b13642c92661ea1a2412483a5c27aa0",
+      "complete_economic_plan_sha256": "e96e3dbaa710a79ce9dcfae39b99a19f7d34529eafb6c2be88640a6764eddab9"
+    },
+    {
+      "session": "2025-04-07",
+      "plan_identity": "063872e10ec45572b27e2bc5e9dfb6a6e167a43b6a247fc47671ae9e0ba0e478",
+      "complete_economic_plan_sha256": "8aaf980ec4ad66fe9d9303495d17a2aa32a42853df20d52d5f7a3dcf902130d3"
+    },
+    {
+      "session": "2025-04-08",
+      "plan_identity": "c4aef2edadd67450e379ce2fb4d0f373048696dd569511bc2293cad1ad67cced",
+      "complete_economic_plan_sha256": "58fa2e6dd6400922daf994cedb6148f0302563ee5f6f2985a16dcfd4f2285d43"
+    },
+    {
+      "session": "2025-04-09",
+      "plan_identity": "c40b6e252f8a0cc9af8dfb489ff38d1e377856122394c447fe8f189e39319d91",
+      "complete_economic_plan_sha256": "805901c9ae2a45b1df37c9a504411157b684de2b9b05392330d2e866b802e07d"
+    },
+    {
+      "session": "2025-04-10",
+      "plan_identity": "781a42b7aba228c939639523d79efbf7fbd0905ce0d5b33610bf619cfc543d44",
+      "complete_economic_plan_sha256": "8ddc553afb8ed77778547cc2b4dd026d0f9fb1a5512bd7e06851fe561ac573f8"
+    },
+    {
+      "session": "2025-04-11",
+      "plan_identity": "9a62b699e35e273fd03012da1b00c9fd2264e726a8b50b17e57b900330c991bf",
+      "complete_economic_plan_sha256": "6892a22eea6886eecbb42dfe19e31e213a9e563f25996e4a9d10b376edf7ea0a"
+    },
+    {
+      "session": "2025-04-14",
+      "plan_identity": "fbe307bbb0567fa846f37aaff7a5d58b336dbd7e239347c0ea5752e293083be7",
+      "complete_economic_plan_sha256": "0d38e2b1455143db269f3e9cb3061f3ab4481393a0b53ea53a288d98005c86c1"
+    },
+    {
+      "session": "2025-04-15",
+      "plan_identity": "8eeb12021fba7b565b7534ce44741ab680d02d625e475a3e0cbe97fa3de5540f",
+      "complete_economic_plan_sha256": "ece8fbe031fbbc82a902ea0d43c66bafce12945dda68d9b6153666e6c1ec834f"
+    },
+    {
+      "session": "2025-04-16",
+      "plan_identity": "0520ecb328669486e84e8c87033e260d512a27f2bfa2de7cf16cd43aa6401039",
+      "complete_economic_plan_sha256": "5391017b5db9ea433d7b10dce610836237e8fa693960526cad1ce31a9925bc4c"
+    },
+    {
+      "session": "2025-04-17",
+      "plan_identity": "2d062d144c09848394d383c721aa14b9f36a9dbe0073bc812a76ac525887e6a3",
+      "complete_economic_plan_sha256": "0f6f2faa6ced8ac543865f0b9520d419c32702b9fcfc797768adb6e1642452d5"
+    },
+    {
+      "session": "2025-04-18",
+      "plan_identity": "b8e8f586ebc415f3d0db25c37e70794396ca5b0220589e29c5de30bf9c6a0719",
+      "complete_economic_plan_sha256": "9ce91b81c20923b8ecd80c2a73a70a9178ac43a12a975b80dda17c86f94f01bb"
+    },
+    {
+      "session": "2025-04-21",
+      "plan_identity": "1a7d1f7e89ab2ad44c29a9d983954f982717c9aaf14104d2595eb05bda2da812",
+      "complete_economic_plan_sha256": "088f4203c0bac2eed6b6b9a8f59e00948406deb3ed5087aa4a68bfd3dbcbb1b9"
+    },
+    {
+      "session": "2025-04-22",
+      "plan_identity": "8c9e8fbd71d6d7a5dda0736f39aae69ee1bf0662ecd96b1f4be6cb532f47835c",
+      "complete_economic_plan_sha256": "809ef1044f7b308ba9b04e9d78890522113fa579bbb87d87e1605612251e2bde"
+    },
+    {
+      "session": "2025-04-23",
+      "plan_identity": "9331bc272197a04df79df03cdf137743a80703737cd7bb19982944338513c142",
+      "complete_economic_plan_sha256": "74cb5b15cf8401c00240f5a3eefe63745f23956be0f84d86ef09a34c6d931a7a"
+    },
+    {
+      "session": "2025-04-24",
+      "plan_identity": "3b3be1cc34eb557552a77e0a52768fb815b9aa41f97d75e687ea865fe73a4c08",
+      "complete_economic_plan_sha256": "6ac3a5c74946356ee9af86a99a95b2455de3ef27e4ac38eba6019e6c4cdd74a2"
+    },
+    {
+      "session": "2025-04-25",
+      "plan_identity": "a36e64550ee6117402e4ed262296e04d274fd2ec6eddc4f2416d278847fb9df2",
+      "complete_economic_plan_sha256": "6e4fd020d8d8f976cd6d5abbe2ad5ef916a3aeb90584da9e8f4de6163abb1ad4"
+    },
+    {
+      "session": "2025-04-28",
+      "plan_identity": "2c17abb21978f53c4c7ea4b66882873861734cb879f0740ed6252e2158f955e9",
+      "complete_economic_plan_sha256": "22f6d319db4f945148dc4eb6a3ee8fc25bd943754a921b2e190089578b22c2de"
+    },
+    {
+      "session": "2025-04-29",
+      "plan_identity": "6f644b2f7a5aca9d2dc08758d7ccea4649e88522377d340426ddaa6901c6c46f",
+      "complete_economic_plan_sha256": "42b0a68f63900b34093b16c7515f48e42fad646ef0a6df6a814c27b398e7b849"
+    },
+    {
+      "session": "2025-04-30",
+      "plan_identity": "c58f2b34540007d3346db8153b30b1a9bbc47b09091ab8fdbe81c2d75ad92447",
+      "complete_economic_plan_sha256": "d998c3b9f56eb8600c04ad969f50635fb87d765da680a8a8a5a68aca3e5f45f2"
+    },
+    {
+      "session": "2025-05-06",
+      "plan_identity": "9c98fd93109ab788e9f9978e2bbbc361d2eccb1030423b7c8578da5777977798",
+      "complete_economic_plan_sha256": "2b54bd9e4e7cb9f45343db3bfd8b11949132af4c1224b1aa5e063fa7b6a0f259"
+    },
+    {
+      "session": "2025-05-07",
+      "plan_identity": "b6f4bed2cc9ad0d1bed44333fdba303acff97282988051cef9540167f97db417",
+      "complete_economic_plan_sha256": "85cbbecc506285f53db50ee35a603be0c7d97e20779fc9f6491e7e9a6b153536"
+    },
+    {
+      "session": "2025-05-08",
+      "plan_identity": "30a3ad0a4e6bbdaf1afc2408352692fe514b78a31ae5876638f81e835ff3b581",
+      "complete_economic_plan_sha256": "ec6ec8a018907a30fa72c5296b76b152f8aa01303a678330a0ec2064cbd170b3"
+    },
+    {
+      "session": "2025-05-09",
+      "plan_identity": "aea576aa8b3244d81f8c06bac172a19102dea2c98a913f3b8ab6bce83229c073",
+      "complete_economic_plan_sha256": "235198ae6a04e3897c341de88bd4f35a871c9d4d91b715c5c9470f1bb859c16a"
+    },
+    {
+      "session": "2025-05-12",
+      "plan_identity": "d54ca353174dcd452a8eeac8d63eebcaab20e07c093270a968f2c2ae19e7ab4a",
+      "complete_economic_plan_sha256": "ac8c056b386764fecc51f6c74f8a98da6d08939dc7b678acf1202bb96594619a"
+    },
+    {
+      "session": "2025-05-13",
+      "plan_identity": "e3f929e7e39f5689394bf8ad0ddad06726da850171354739fd423f1b2dbce4b4",
+      "complete_economic_plan_sha256": "1acb43355cd9bde362e9b897c3bc3230d0cd7b9c5330cf3a19f13ff1adfc5024"
+    },
+    {
+      "session": "2025-05-14",
+      "plan_identity": "2050e9c92b6600e4555b301c2808ee829b900a05d7c53734de8d7043971719cc",
+      "complete_economic_plan_sha256": "445439a9977310c6c0425439856a13f75bed7e1c3e672ec75bb8ea289a6b7c88"
+    },
+    {
+      "session": "2025-05-15",
+      "plan_identity": "259e195eb7f3c0112505ea4f110014faa79f5f3716ccecee593579dbc2974b30",
+      "complete_economic_plan_sha256": "63e9e8fd4248cd7d0e17096462901dc74e6b8dc055c80b8e5ee05b8939ea6e6c"
+    },
+    {
+      "session": "2025-05-16",
+      "plan_identity": "590dfbf7ac8626db059ce7c2c64cc25084776130cc8f2d26d8dbb47f3d6760ce",
+      "complete_economic_plan_sha256": "9f996527e5f752ffdd8df08376d0132bfca84b7080fbe6b37b5b3d4c92d32b0d"
+    },
+    {
+      "session": "2025-05-19",
+      "plan_identity": "67ab7695e4d9399cba34dd1d067d3d0ab995531ac3524be45f0a91def3566961",
+      "complete_economic_plan_sha256": "283379c43de09e7da73554ebd6dd7c4565ca42d8fb75008c6ea3297a13291398"
+    },
+    {
+      "session": "2025-05-20",
+      "plan_identity": "535aa93a29b2d29c4ea03c4270f06706dfc048cdfedb5affb87b0c1d03cd55c8",
+      "complete_economic_plan_sha256": "00386eaec6596328bedb3a21e61ddd958d6ed5b038c16140fe9064c119c9f740"
+    },
+    {
+      "session": "2025-05-21",
+      "plan_identity": "b1597a5c10dfe2ce400b2f7509ede2436705e23d1eb670bd0e8559a74940678f",
+      "complete_economic_plan_sha256": "f984608226d13d9bc4f47f5718527657475c363e285359e0b2f3338e1b79074a"
+    },
+    {
+      "session": "2025-05-22",
+      "plan_identity": "235601c859c11bb698fd78f9c2abe588aa372cc049de093f8444f410358ec6fc",
+      "complete_economic_plan_sha256": "f10380f00df21dc9134d4ec54e46688b213c29f17f0c742696152079e6b08eed"
+    },
+    {
+      "session": "2025-05-23",
+      "plan_identity": "37a0d513e3eb981785d500e61b3e748eaa308dc32080d3f64798ece2bd516d02",
+      "complete_economic_plan_sha256": "63e8c352347ea725fbac9fcf75fa44b9afba733bad5b80990cb6140ea068bd23"
+    },
+    {
+      "session": "2025-05-26",
+      "plan_identity": "d7f221a0f429fa1e9537b8d4a81d0a5e0acee88b1aca5c8c1f953979834b284a",
+      "complete_economic_plan_sha256": "efed47f0ce904ba4fe07324bfb39746ec3358f874ce104058ad3f49f3d285b8b"
+    },
+    {
+      "session": "2025-05-27",
+      "plan_identity": "7fadb821f527524416af95c218a135f3686d485a2f6d5722082cedfe7df47e90",
+      "complete_economic_plan_sha256": "7354314c99ed88aa5d5c0d57085078d2d34bd2c04eb690b398032ff7f8e91cfb"
+    },
+    {
+      "session": "2025-05-28",
+      "plan_identity": "f79f3143bd95a5d9d21999125abf228a3ac83fb44fef64128116633a6a246890",
+      "complete_economic_plan_sha256": "28fa8bad6f8b79357c683d8a7ac14d9d58099d6cade512c3c7a02bd916348e2f"
+    },
+    {
+      "session": "2025-05-29",
+      "plan_identity": "05228afa32d859b4551bded093352243eb5fc203c95968c3fb1610b32d87cc60",
+      "complete_economic_plan_sha256": "479db336ff19bf8913a447b3e11e01ab5dbf8aee6772d2a89edbc42ba33d3cd3"
+    },
+    {
+      "session": "2025-05-30",
+      "plan_identity": "00d95b646cf5f2e898c521cd454ba516303334209e5f086ddc92490f353b2864",
+      "complete_economic_plan_sha256": "778e6c22ba5fa0591250b5c273639719db3b89f0877fb38fa5a50e333d288669"
+    },
+    {
+      "session": "2025-06-03",
+      "plan_identity": "af1868a5a8c029ce7c9ae02efd352081628a8b140ce7045125235b52b6803f90",
+      "complete_economic_plan_sha256": "a23e0151da7d24c4f5f837240c44d11e290a620d8f3eff9e2593c893ed005058"
+    },
+    {
+      "session": "2025-06-04",
+      "plan_identity": "799e6e8d9f93b884831b63aca558e59216453b3661f1bf82b9669d458c958137",
+      "complete_economic_plan_sha256": "2e1f2dc140b0627e5b6872a8462449f05aea5a3c8f1fee716ad8d67aa33ed0f1"
+    },
+    {
+      "session": "2025-06-05",
+      "plan_identity": "3772970e5cadbfb13e3a32966b17d24bd3e65a12cb46f2d4dec81032ffb93754",
+      "complete_economic_plan_sha256": "b4f24393f2afe62bcb5f45897897ae98a051b44b027081b9d9fa5f82fe56292f"
+    },
+    {
+      "session": "2025-06-06",
+      "plan_identity": "e6d00149c5eddbd2b0fe7cdfba12bec85b4c89dbd566232ca30751177b3ff638",
+      "complete_economic_plan_sha256": "326f2e03cc445f88fe77663d73fd0bb5db1217ff7acde5d0e9de66970a183ce7"
+    },
+    {
+      "session": "2025-06-09",
+      "plan_identity": "64d90a7cb2201d4ba8cc4deba89a4d09bb0bc234fed348da3a6427189f9278e5",
+      "complete_economic_plan_sha256": "062dd5aaeec95eb3a11c7deaad13e173d7b7555b31e81714245e96bcc849149b"
+    },
+    {
+      "session": "2025-06-10",
+      "plan_identity": "09a57ebf487a5539a82456b3a3087b301a0f780d08693712c9081268d79c4324",
+      "complete_economic_plan_sha256": "430e569025d06f9496c01cc0d0c40d3fe548da8111c9e46f16ea11d15eda45f0"
+    },
+    {
+      "session": "2025-06-11",
+      "plan_identity": "a361ca6d5e0fba8b6cff15e658377558b2727af9e66ce0dcc67ffc1d859af665",
+      "complete_economic_plan_sha256": "51326e5c0ba5b6b8498056cc77dbea82692bc79d363fd0c57829f6cdd7602814"
+    },
+    {
+      "session": "2025-06-12",
+      "plan_identity": "fce87356f2cddda80b97d165b100f56d6e6a191dcefb98376ce95bca4c9a0c66",
+      "complete_economic_plan_sha256": "482d44927cfaf01b3a1de24e48a1026007a4a44277dff6f3641064e06028b8e7"
+    },
+    {
+      "session": "2025-06-13",
+      "plan_identity": "337b203b6d4ee82efe0eed7a03361af1e3648bab32669e93d17a1c2d5be76e8e",
+      "complete_economic_plan_sha256": "b9ac811ce06230521dd753cba55f317df3b297b763320d51e047130d06ac409d"
+    },
+    {
+      "session": "2025-06-16",
+      "plan_identity": "1214afeeca41a9655e6de3dcb558849dd207a8e9ac1b384ef48ddecbdd804236",
+      "complete_economic_plan_sha256": "386a2dc1c9ec24c4c9469dea7bb616918470ef10badf1f016be821dcb68c67d5"
+    },
+    {
+      "session": "2025-06-17",
+      "plan_identity": "8d3fb2f0ba5e190791de6c667bc424a5b66d188b4d6c4738f8c68eac8bf3b2d0",
+      "complete_economic_plan_sha256": "517d8f579a133b7717a6227ba2a75da7dce4c2109e7752c449173da6780b25e2"
+    },
+    {
+      "session": "2025-06-18",
+      "plan_identity": "c53b8060cb51e0812a9b39c42c5313f825916ae4f74840ffb951ec747734cb81",
+      "complete_economic_plan_sha256": "6500bb5572ef3fbde805ce151f1b6d9154dd78f4a0bc15e3ad333e7ae9fbfadf"
+    },
+    {
+      "session": "2025-06-19",
+      "plan_identity": "1b3b0944086c096aca594aee766001df74ee0c0a5c3bb2520234420a082e0444",
+      "complete_economic_plan_sha256": "c6fbdefb10c8dfb6c4e8a7429f23688729286d617893a1bd3c60fd10d84c0202"
+    },
+    {
+      "session": "2025-06-20",
+      "plan_identity": "94b1f7c4d36b75e97a47a8beca16a56ad7a811ea429b131026a7934090e41af7",
+      "complete_economic_plan_sha256": "9212055f5837c8dd14f94d71900a74e7592d30218cbb12589a3ca3d04c08237f"
+    },
+    {
+      "session": "2025-06-23",
+      "plan_identity": "83ee12a6fb6c9b9a10a09674376dcb07433f7cd9fe21dde1708629f8f30ecf0b",
+      "complete_economic_plan_sha256": "2555694c762543d646b0cafa24e7b6e6014b96f6fccc9daf37c7d54fc19878d7"
+    },
+    {
+      "session": "2025-06-24",
+      "plan_identity": "3326591eb36c5d4963970e39c3a6ffab47a482b8bc3846c9cd76fe7fc37af7aa",
+      "complete_economic_plan_sha256": "03f688132049a9d721a988750ea1d1e0a9bd60622b100d2f5ef97cdbcf645bca"
+    },
+    {
+      "session": "2025-06-25",
+      "plan_identity": "133df38a61de0c7d5012163e9a00995dca48d9513076d41e2a9a8a50b3f3d9a1",
+      "complete_economic_plan_sha256": "7fa6c0f6a6e0ba1c3561326bb23b4473ecdf07f2ec95bb90b65f2390b5a7a877"
+    },
+    {
+      "session": "2025-06-26",
+      "plan_identity": "474f6f874edcbafa229df4fa4fa723df04d527ff7b542b6cae957db27e79a81f",
+      "complete_economic_plan_sha256": "abc43fc86fc2e96c82e86d67863beee62822a8ef4d4306fe76fc4ada8cb202ab"
+    },
+    {
+      "session": "2025-06-27",
+      "plan_identity": "7cdc8cd55d447e5902dabddba5fdd09b34ef6160c0b1c32932d71e1224686a09",
+      "complete_economic_plan_sha256": "92e1a717a6f9268019b034141ee04576df3b37a11dce8a2a2ec2135295ff4390"
+    },
+    {
+      "session": "2025-06-30",
+      "plan_identity": "56ecfd5b9d4b8671c45d1eeb644a600709f49579618119194739fa34072ea87d",
+      "complete_economic_plan_sha256": "593979af507ddc406bdd8a4ca8dc68deba3e2290b314112b746e2aa4aa85f059"
+    },
+    {
+      "session": "2025-07-01",
+      "plan_identity": "fb729e36d48bb086860ca0b0c7784901137f39df3d21ccd4323948c21bad6e62",
+      "complete_economic_plan_sha256": "eccda2ce31bf7c50d519a0ccc7d06162c95b9f6013408abe8f8b16d771c52e8b"
+    },
+    {
+      "session": "2025-07-02",
+      "plan_identity": "b7f40669ffa7db88688108d585b98a0cbfe67ecf413f7576a37eee1b210af716",
+      "complete_economic_plan_sha256": "f3cb4f982168ed627c3af33cbd673eec7d8a703014e66bb34c46e14fee0bcd53"
+    },
+    {
+      "session": "2025-07-03",
+      "plan_identity": "0f2f8d8c4f948c65be3f8fd18c0a77f03a548be257026f5048cf8a5eabfa6385",
+      "complete_economic_plan_sha256": "56831af859e4a4a838d9121ab8007ec6ff5f139b7f5e8c76dd9ed120dee3a4b3"
+    },
+    {
+      "session": "2025-07-04",
+      "plan_identity": "28b9bcf1861b0ea933e8c3cf1660f25703705a62c9bb1da963c415870f654b76",
+      "complete_economic_plan_sha256": "e39515bd479959f31c52d2162682beb6fa5ccf0823b5187c3b38a82bdef48435"
+    },
+    {
+      "session": "2025-07-07",
+      "plan_identity": "3c2d20ca4e731213d64895db2123cb43a499f631ed87f85d508c2e6b3a8c35e1",
+      "complete_economic_plan_sha256": "c37745af9e81d28c8e7b42c9a76b627dd7d8c3f4b4ec92af31401853eb746960"
+    },
+    {
+      "session": "2025-07-08",
+      "plan_identity": "5b39046266e35cca23cc2e1c59ccba8470eb2d6b07b2a3006f9f1fe09e2165b0",
+      "complete_economic_plan_sha256": "ae1e1f09f73177d99f8d118fbda9189e2a2d385eebeff9625dfb96bd1c76a2f4"
+    },
+    {
+      "session": "2025-07-09",
+      "plan_identity": "3a4cf55ffba0b427b24d82c57f4173fc06e5ae7cd3d54bd37e95b967a4220c7a",
+      "complete_economic_plan_sha256": "83f812f678fd5d6af02b71ea56e3dcabb17ebcfc88921a0867172fdee4a1d059"
+    },
+    {
+      "session": "2025-07-10",
+      "plan_identity": "d2cc42b4e3eaace614d2585a326ea880f38b835ace5f5d470f84b9bb598c4403",
+      "complete_economic_plan_sha256": "1ce9235ddeb5818a2d5b7fefa181349633f4670f940343d235d891a105964884"
+    },
+    {
+      "session": "2025-07-11",
+      "plan_identity": "dd9f368ef83589e11414eb93d0249c9ba3b4006b3ded42183cfa26d7f8d77e56",
+      "complete_economic_plan_sha256": "b5e3825ffb98eac7244e605847a585490b13de105ff05e13f344e68e90be7532"
+    },
+    {
+      "session": "2025-07-14",
+      "plan_identity": "559c12f0b1168cbc8933a2744bb88773b8489e5e2c22ceafe6c6b910290ace82",
+      "complete_economic_plan_sha256": "4c0098fe9df78db85c2efdd6b7da91d1d40a00e6b06307691375e49c360208c7"
+    },
+    {
+      "session": "2025-07-15",
+      "plan_identity": "a51c4bef4245afb29291f7212dc5382fb4506833e27223a5240b62bd08b04dae",
+      "complete_economic_plan_sha256": "553137a95a01e5c0fd885741c4411e2037c0a8b1b22dc22ebb6c42af7b32c859"
+    },
+    {
+      "session": "2025-07-16",
+      "plan_identity": "c6662be4e65cc1bc64e4f3d47e2d681393a26cb9cbb4c60419b00dc7eab24888",
+      "complete_economic_plan_sha256": "69dbafa8fe33a79b60bc9abd9102736424d275ff0d38d0a85b53725510ea9d5a"
+    },
+    {
+      "session": "2025-07-17",
+      "plan_identity": "770c000010da97d6d9282eed3df6cae3f6ce5918eb7918afce179ca7c298c7c8",
+      "complete_economic_plan_sha256": "45e62a5b91d1ed6d643bd2deada112226a00725e7c1dab218d8439eebf427052"
+    },
+    {
+      "session": "2025-07-18",
+      "plan_identity": "1d2b450dfe919dafa0ef0abe36c05c318ce08a45f075db423ebb9687f8fa7ad7",
+      "complete_economic_plan_sha256": "3ea6f7b578857680ba5c5e8ce0795ea491ac35bfa0d16d2832228bca27326d16"
+    },
+    {
+      "session": "2025-07-21",
+      "plan_identity": "4ccf935d191fb3608b3f277463eab2fafeb18ddda1ac713410d6e6b94a555830",
+      "complete_economic_plan_sha256": "320dc52cba7566b6e505394d28cc741be680d328600927eb7f69b4adaefafa18"
+    },
+    {
+      "session": "2025-07-22",
+      "plan_identity": "0a5b02bb8e0827b738a7c5c229da9778ab70e7075f34310099422763045a7c09",
+      "complete_economic_plan_sha256": "3a28195fc1f874e822421cc3b5344d4d47f088806ea339c8f561cfb647f75b9f"
+    },
+    {
+      "session": "2025-07-23",
+      "plan_identity": "19d96985dca7687d2bd0d1878652a4be0869c2606f02173616049403c7d35574",
+      "complete_economic_plan_sha256": "c06bac30698e6ce37454a6343a01d2a2c5a62d3cb06da96a7acc22739d349ccc"
+    },
+    {
+      "session": "2025-07-24",
+      "plan_identity": "3b8495dfa002807e093a28902d965aee1c27f8d81fbfd85e37f67c147ee7acab",
+      "complete_economic_plan_sha256": "7be631e316bf9e58f3042f6c64c16c4f02b4f52a4e76abe4cf898b0b9cb633ca"
+    },
+    {
+      "session": "2025-07-25",
+      "plan_identity": "492e65425a8c7e10f211aaec18f2b90d8bf9a4dd9fe506f0908a69e07ca67b39",
+      "complete_economic_plan_sha256": "0767b9501a0680f730fd06be95c805b0b1ea824e5ec13893323f8c94806e2d56"
+    },
+    {
+      "session": "2025-07-28",
+      "plan_identity": "d98e524ab9cc974d9338380ab6acfc4bfa65f3a990f5f82fe9e3642bfa1f445a",
+      "complete_economic_plan_sha256": "3bc1fc44be63af9b6273572dbc2f69716eab5a2067f9709d7b053c9458c2bbaa"
+    },
+    {
+      "session": "2025-07-29",
+      "plan_identity": "8b88b16d48a4277bfe8483d530af2d8f13e6ed2a8284628c554eec502bc2e5bc",
+      "complete_economic_plan_sha256": "c159f1a12ea5084e846ad3d62d12ab5637c2706b0ec6219c29c9d61ccb3a94e9"
+    },
+    {
+      "session": "2025-07-30",
+      "plan_identity": "bbd8491267c84fc1cd523b1ff352b04bc6f84c0dc8ccd486dfebe31ba1d732f5",
+      "complete_economic_plan_sha256": "b61f399c8767b2bbbd00efd80f21e214d218fb28f3601d031a56bd68cc4b7ded"
+    },
+    {
+      "session": "2025-07-31",
+      "plan_identity": "75e751e95cdb0462b9d537805fd50239e426977b10c5e91d468f49ee7cd8d0c4",
+      "complete_economic_plan_sha256": "f845b964642c93c1e496cf96d6f6c0a04b4bb4e0b9c650010acdfaab1aa2f2e0"
+    },
+    {
+      "session": "2025-08-01",
+      "plan_identity": "9a700490bedc92115ae53d465979ab9774c2d97f36fa0fa501a999cd2ce914e6",
+      "complete_economic_plan_sha256": "8443a69f21f9424fa0fcc221963879242c9cd956a5b0f1ca1f9c97550a3a2a43"
+    },
+    {
+      "session": "2025-08-04",
+      "plan_identity": "c8282e20aa82d67347dbd63f6d04c42c215fcc65bf5d5564d35369be1d66b608",
+      "complete_economic_plan_sha256": "f2832f6bef3387fb73f7ca9e1ae49cee6cf32382496a04a0bd526862b54151a0"
+    },
+    {
+      "session": "2025-08-05",
+      "plan_identity": "37ea14f42c41abff99415631cb525210914756a6e8ab176c1d0d1da2006d236c",
+      "complete_economic_plan_sha256": "b0ed785431990ad0deff83cd1f221125310a2f64e21088cc475a7a59c7eea551"
+    },
+    {
+      "session": "2025-08-06",
+      "plan_identity": "7b5e220d9cbda3153146fa2c93f3fc2dea0591e1f7ebe1aba67cafed84f997ed",
+      "complete_economic_plan_sha256": "7a2541e8a04693dbcdcad9eb81097a2a17267a6de6866b52ec692713f12678de"
+    },
+    {
+      "session": "2025-08-07",
+      "plan_identity": "4c201cc7820f342574ead91bc43841efa613048be03a03b4a98ee0125e926abd",
+      "complete_economic_plan_sha256": "1ab0aa5e614840fd9235d1e5cb62c00bab9b5faece0180803ae585f187ba99ef"
+    },
+    {
+      "session": "2025-08-08",
+      "plan_identity": "2aee00408db49284079690022120a2fc4b0df61c34431fa12539cbbb55f00c16",
+      "complete_economic_plan_sha256": "f486f40569447048e385da7333d2fe20ba897c5512431963c430dc5ab3c59aa0"
+    },
+    {
+      "session": "2025-08-11",
+      "plan_identity": "9c457162d14505e458800d46aeb1ddbe0bb0ee00d97a208eb861170c228a67bd",
+      "complete_economic_plan_sha256": "26adc34fea37436c4317c501c6fbcea28015d7410953e6c373c50648ce3c6f52"
+    },
+    {
+      "session": "2025-08-12",
+      "plan_identity": "74e396b9a99788cd49025a33b65844c472042c826806fb624cadf9c8bbc44a25",
+      "complete_economic_plan_sha256": "64b3fd1ef670a098a664e6b4168c3f767ed175d40bc39b1696c240c9c310b7ed"
+    },
+    {
+      "session": "2025-08-13",
+      "plan_identity": "fcbef2103e4766a54445cc617d2d336f451698e865d65df93100fe66aef2ad78",
+      "complete_economic_plan_sha256": "5da128226b81794c4d6c1cbe17baed3b1becfa4b524f2f5adb52d2f129c790e7"
+    },
+    {
+      "session": "2025-08-14",
+      "plan_identity": "c0ad9efd9127963b04d9cd83416bfb1da3a8cecd7b66f43b90df964cd1649443",
+      "complete_economic_plan_sha256": "303389bee927ced15e0baa4edde79d37aed42954cb27f31804eb9d311402f7b8"
+    },
+    {
+      "session": "2025-08-15",
+      "plan_identity": "96df44293f7ab4474464d7db044f9486fefe0dd796106821b90ce0fb1e32ba53",
+      "complete_economic_plan_sha256": "34b36523323bd8caab883a1acf16211443514124524e3d4ace9b4b68af29b8d3"
+    },
+    {
+      "session": "2025-08-18",
+      "plan_identity": "e8c7d7fb043ba8b56dea2a4d0474a4010c0d5962a73e7db9d9d91fee7812aba6",
+      "complete_economic_plan_sha256": "c18c5a06dacdc4b602354e264c73f14a23e31d992c9b11027bc23bdaaaa9ef2b"
+    },
+    {
+      "session": "2025-08-19",
+      "plan_identity": "dc8de151ac5abcbe945de4083ee6d044038814e2baafb0ca9c5aaa01f2663792",
+      "complete_economic_plan_sha256": "9f72d06d51c75790a66daf8675964b427dfc4c5ab5d8651aa8e7041a0d5763fb"
+    },
+    {
+      "session": "2025-08-20",
+      "plan_identity": "b5a9f1d760ed0e8193f137a75434a4d2a972ea7c05089aaec874b24657745327",
+      "complete_economic_plan_sha256": "42160f1dfedbd7d794264c060c10e756b8da430d62ae8cc11cb9f30a23d6bc68"
+    },
+    {
+      "session": "2025-08-21",
+      "plan_identity": "74290d42fcfbe2888448730734636334f7ff9af0001d97eea4a55bd042cce5d8",
+      "complete_economic_plan_sha256": "82b9a5e0b292bbee03bccd88f70ca6a891263fb4b785b7187dff71fba26afa87"
+    },
+    {
+      "session": "2025-08-22",
+      "plan_identity": "0610085cafba352f1c0394b55364d74656ce746012d63c701ef275394c0e503f",
+      "complete_economic_plan_sha256": "9063ff8262863435aca1ffa4b71c9221ebbcb70870ac6d55d227346c1302c187"
+    },
+    {
+      "session": "2025-08-25",
+      "plan_identity": "fda03b61a3e1c1f00d5ce44b16cd5d8ed2738e79cfd273256a0f0215a7027b85",
+      "complete_economic_plan_sha256": "a70d378d26dd71d8c946abe44a464be8ba7730651a5cf56d97586575e996b64c"
+    },
+    {
+      "session": "2025-08-26",
+      "plan_identity": "635582c93115839ad7af3e807da6e12e4bfc85dadea4ec120aacf5c780cffaf8",
+      "complete_economic_plan_sha256": "9d7e55afc93a8e6af0e638aa84b2193ffa9aa4b2fa595e3c7f233de24a44d7b5"
+    },
+    {
+      "session": "2025-08-27",
+      "plan_identity": "624a248e08b242243411642a31880176b3fec8dc669c3dbb7b197b3c0b2d4a5a",
+      "complete_economic_plan_sha256": "71a7982e16bc0bfe3f3615049524b6e860c3347b89807fd2354a61154962ba7f"
+    },
+    {
+      "session": "2025-08-28",
+      "plan_identity": "d5920487c222aed5f3a783703000809a0df219a55126081c74750b29f7dca50f",
+      "complete_economic_plan_sha256": "3581dfd9b42c39f89dcdfa6dc3ed93630e4531d393525d05189bb0a1f9aebde3"
+    },
+    {
+      "session": "2025-08-29",
+      "plan_identity": "9ead55a525015f9a9177524145ae277df7ca8994ec161082343f3f3f22f0d9c7",
+      "complete_economic_plan_sha256": "c8580dad7548d32652b2cc249d1f39c008f7aeefd8d2efc15a6f2f411d4b8f3e"
+    },
+    {
+      "session": "2025-09-01",
+      "plan_identity": "d889fdf1b6a056c13005b8c0ca5faba98e5bb7d5283e399dbd438aea0957cd2c",
+      "complete_economic_plan_sha256": "499a836f70213f5115ead9943b6a95eb68b92f03617c7851117347e3605ab764"
+    },
+    {
+      "session": "2025-09-02",
+      "plan_identity": "27cf2dec52afd368886e2c58067e88ee900acd337bc804a4bcefac858af7182c",
+      "complete_economic_plan_sha256": "2b70e2a516a89ab6951926441209040f0f0a5ddd3ead4ed3e4f51412146434e2"
+    },
+    {
+      "session": "2025-09-03",
+      "plan_identity": "7b5076792648f28bd7dcf26cbacc4edaf2db53c1f468b2e1149b47c9ff5abd24",
+      "complete_economic_plan_sha256": "f963dbf21b35395c957feba34ce2c73371b6458b19550d2e64927a91c05988bc"
+    },
+    {
+      "session": "2025-09-04",
+      "plan_identity": "22fffee5e962f56ddd63238a0e472f4db08388dd4e8954507650ee1f73cbd8ff",
+      "complete_economic_plan_sha256": "7308e55e82dbd4d197b91930c2f05df6b12f6a92f357c292413c311a2e48fe19"
+    },
+    {
+      "session": "2025-09-05",
+      "plan_identity": "e10df8922f46727216cfbbf43fb9f5f7011bd2a7f423efc9cd5e989d1bb883e9",
+      "complete_economic_plan_sha256": "532386cdcaf648e505926d8fa6a8751044fb635fa13677c8712489f3c2778f13"
+    },
+    {
+      "session": "2025-09-08",
+      "plan_identity": "d25b3715411cc599c70270d954c760297e24416fa071c730f66e30ffd6a59b40",
+      "complete_economic_plan_sha256": "582a847c2eba1fd11bd348d428edc5c6bab0d94c91dc5b81eb3db4ac28a3687a"
+    },
+    {
+      "session": "2025-09-09",
+      "plan_identity": "49b9b86034dedfdfa4a3747cbb57de408079dca4716414aa1a4c4416a49bed3e",
+      "complete_economic_plan_sha256": "30b4d0245d20b8eeb71bbe741131bce1c53e909c406467c271f6421198d8552a"
+    },
+    {
+      "session": "2025-09-10",
+      "plan_identity": "c6f8b844211461f83ca816598dffc0adcf395a223e932b39e5578ed9cb498e83",
+      "complete_economic_plan_sha256": "7360cd7f6066b932d0ce9e4f0643c2573475ecbd53da9f9579765322862a0fd4"
+    },
+    {
+      "session": "2025-09-11",
+      "plan_identity": "e4f6520e406ba753d5bdf8e7492bed1bdc9514e35799e3f7dee901cb2f3d3ae5",
+      "complete_economic_plan_sha256": "c4459b882bbd02b8d59b6d2ab0afcbceb901b9c6e6ba2ab88d0bdee84a74d332"
+    },
+    {
+      "session": "2025-09-12",
+      "plan_identity": "cf0ba3818e0cac4850bebc904570a34c8cde700e63e63546db1f26ad594915f8",
+      "complete_economic_plan_sha256": "32ecbb7c7224c05509897cded01d2f347cecd4276eef90dac9e3db177f71ec14"
+    },
+    {
+      "session": "2025-09-15",
+      "plan_identity": "5615b3cf2c47791c1f253d7a273e7267925be9be868db0cf32a4f9ca2793c448",
+      "complete_economic_plan_sha256": "bf88cdce2d129aa6f0e1c3c896a7d5b09fcd9ebbe837ea2d3dddf0cbb2040a79"
+    },
+    {
+      "session": "2025-09-16",
+      "plan_identity": "198475a8b356fc3ab06917ee69811bef985a003e5e9c4af1a78f7b41a64faa28",
+      "complete_economic_plan_sha256": "da2a23044df3a7dddebfa60544b436d0feeb1c87971561437687b2a2f7c0166b"
+    },
+    {
+      "session": "2025-09-17",
+      "plan_identity": "3fbc25db08b73c524e5f9c3d32207e9021d40ccd22e34860f9617212daa30700",
+      "complete_economic_plan_sha256": "72144b314214126f41c34e6a7ab889f39782b1473919908b1f73810efe15bbf5"
+    },
+    {
+      "session": "2025-09-18",
+      "plan_identity": "12f4c2e00029c405ee35761a16e4122dc5803c0b7bb52c604b7633ed770ca92d",
+      "complete_economic_plan_sha256": "f691b3b1b8c48d326d329f87a2262e12b6e415ad76f8a07bffc908863838d6b0"
+    },
+    {
+      "session": "2025-09-19",
+      "plan_identity": "7d3059b942f1a564b9ceeedbeea194d8c0a6475099f97bd144c4cd977841166d",
+      "complete_economic_plan_sha256": "8b4efc3258f7a5856af9c3238fdbf7e79a79507e549bebc8aad90ba8557e997c"
+    },
+    {
+      "session": "2025-09-22",
+      "plan_identity": "cee5d6d7ab410588b153c843911c9311c27c55203f7d55572f18038f0d2fbc56",
+      "complete_economic_plan_sha256": "60d6ed72b9b56bf660020547e763c6651b510404512f149d640ca7b123aed0b2"
+    },
+    {
+      "session": "2025-09-23",
+      "plan_identity": "90b6816a3b557ce1b5171aeb0fb49ecbc52ac2576fdd0818501248677a682a4f",
+      "complete_economic_plan_sha256": "c3bef6c0ae998719896e662ed7f836686c1fffeddd44361aff0793e3d9184294"
+    },
+    {
+      "session": "2025-09-24",
+      "plan_identity": "6494412d2508bbb5d42ecd6f4b2179a09feb38d0067ccf9c1150885191380f6c",
+      "complete_economic_plan_sha256": "84361784445582517c3a940c7e0d8a0039f2c77889d64d83afaa562bb9981768"
+    },
+    {
+      "session": "2025-09-25",
+      "plan_identity": "9a8a8988daaa4d6aecf19ea0d478306dcef7d0965dfb77a443babe6a68312246",
+      "complete_economic_plan_sha256": "fabe891cba6ff4e1f309cc8fcafca84e3cc1d754eec19f6af0aa8f0866a7f9db"
+    },
+    {
+      "session": "2025-09-26",
+      "plan_identity": "87f95355dcac28493360a9e18d55972e977da89b5d496d0bbe338ebbd44a9521",
+      "complete_economic_plan_sha256": "23e481d0a2eeb63781e8604c3a4d7818368446ccacbf7b1145bf44227363cd71"
+    },
+    {
+      "session": "2025-09-29",
+      "plan_identity": "e74175b0e3ee3b30a9aa5eb39cc8d973b7426dc3a9050145293f07b7b7467dab",
+      "complete_economic_plan_sha256": "4d54cf24fd2024db850d01606e66216f4656aac014f02fffe25750be415ac745"
+    },
+    {
+      "session": "2025-09-30",
+      "plan_identity": "a9a99648a0b309d3a8e214aa8c110842264426fb2f0e81b3a220b4245b4ce716",
+      "complete_economic_plan_sha256": "a672b091685259501ee01c358fccbb003d23d4ca2ecd84afe8d86f98aac08e19"
+    },
+    {
+      "session": "2025-10-09",
+      "plan_identity": "b2b6947b40f18b18d34ee47ed901c221b1ee5560c91ac17f7a419ee071cd5a37",
+      "complete_economic_plan_sha256": "e55b05c19b2cbdc78d36752dc1766ace9244106de97b3312ade75ee9d52a6433"
+    },
+    {
+      "session": "2025-10-10",
+      "plan_identity": "f2de9bcb47837f685694742d1b5e1495259ff2ccde94f2e15f5f1bfb3bba43ed",
+      "complete_economic_plan_sha256": "eca042dc0134105fda2551a55ff354b0736eabfc20e90924eec61b0915e591fa"
+    },
+    {
+      "session": "2025-10-13",
+      "plan_identity": "ea7c9a0f5450519a2a34cf1accf969c7c4721f270417bcd66f2b0fc0808d19d1",
+      "complete_economic_plan_sha256": "3ecbed5b5007a7c5b77a7a907a61ce47a34083c03a924b44845ec32a3fbdce77"
+    },
+    {
+      "session": "2025-10-14",
+      "plan_identity": "dc7bf31bb4aec6a23740b3b8683d80e75c1d29bceffbaede55c988fa37f415de",
+      "complete_economic_plan_sha256": "fdfc5e886f2a88e310c58781a5dead785aae7f46d79e628650fee0dff39d22c4"
+    },
+    {
+      "session": "2025-10-15",
+      "plan_identity": "f6d6461a0ae71f9a868927beee0972c93f6be1310c01c80fbc359d86a5fb0475",
+      "complete_economic_plan_sha256": "71c36786525d7d0d45c48cc736ac158cc46d91d5950d1a7aff60f7746ce57cbb"
+    },
+    {
+      "session": "2025-10-16",
+      "plan_identity": "944b7e7d14863238300966fb3a43613c0f51ea8fbe28d593e493a7c44de407bc",
+      "complete_economic_plan_sha256": "725f8bfeae3e390628f5ce74dc8f71ce8cfbfc6b91a56365c049335a7d4d572c"
+    },
+    {
+      "session": "2025-10-17",
+      "plan_identity": "abf7355cf6c01f3f82b74284fc0cee9ce6309ef2c8d75e316c9eb59788ad2547",
+      "complete_economic_plan_sha256": "d435b7443ab47a9552f7c8780bca803f4774f8ee335f4e2f1d4737c36ef4026f"
+    },
+    {
+      "session": "2025-10-20",
+      "plan_identity": "460ea5e5c3abd07cf7a07d5060d8125ae676dd2c51e5db601603d0b8eb268729",
+      "complete_economic_plan_sha256": "7c925b5bbfef8a82b8fd4b982b91dcbe41985542cb0f7dc1bba9752715bdac55"
+    },
+    {
+      "session": "2025-10-21",
+      "plan_identity": "dcff57c3b5e9e02f40b1f366adb3184d68de52ad8f615456fcc2f8d0541e8e3f",
+      "complete_economic_plan_sha256": "03c033ec745d17d6ac61b5fd8366a79b997ff28b32fab157b961d554af1c8168"
+    },
+    {
+      "session": "2025-10-22",
+      "plan_identity": "ea95e9aacf1afe819d5fd207da16a12f9bf43e3c2589ef5ee5d43f47e1aef71c",
+      "complete_economic_plan_sha256": "284b73fde9f37c57eb77b6576dbb5c411c54fa3503ffc7868a5257e23cfc3de3"
+    },
+    {
+      "session": "2025-10-23",
+      "plan_identity": "7d94f04ba8ce4d343c01666231bced48b66a02d1f939adb0163000aa3691d82f",
+      "complete_economic_plan_sha256": "3f6a3b2746ffd6d7eb3c248a019bbded2b2ddc70fbc00266e316238f5e8d097e"
+    },
+    {
+      "session": "2025-10-24",
+      "plan_identity": "4a80da2fa1d0877713cec845cd0223ff85b32f2ab99efcc976c8e29ad31dabdc",
+      "complete_economic_plan_sha256": "d0a02ad093108b439b39fcdac9f40833dda04b8a3f99568e7dd266761247cdba"
+    },
+    {
+      "session": "2025-10-27",
+      "plan_identity": "1a738087b0d16bebcddc71a855a61b2d44fffa8cbd48200bbc887d6918bdc04a",
+      "complete_economic_plan_sha256": "b3d35bbbc504799c1154126914b25092a0377d4fa68a1c2cb7671ab0a6d646ed"
+    },
+    {
+      "session": "2025-10-28",
+      "plan_identity": "9617fd461fd8f555f5e9b0a973abfc10a5f8bc1d73e2e1da524ff40831755879",
+      "complete_economic_plan_sha256": "f132abe644c595704b3f5661c43859502d4239c29c837def7faa1364a4685ed4"
+    },
+    {
+      "session": "2025-10-29",
+      "plan_identity": "6eef8a722cc2a454107033bc3fff0973cdfaacc9bfa49230a6f4a2473a04cfa2",
+      "complete_economic_plan_sha256": "eb3a084fc44dbdb680593401e47f3055fbe48622ac433da7487164a0bcd3a5b2"
+    },
+    {
+      "session": "2025-10-30",
+      "plan_identity": "049460ff0788e5643266629ee1925d658ff6a832844d9ae2845e6a41807c0f81",
+      "complete_economic_plan_sha256": "50704cb249032772ad048fb2e843d0d4f86b13bde0d8376f1d59ad5b94b2e504"
+    },
+    {
+      "session": "2025-10-31",
+      "plan_identity": "91b020c042abe4b6606d7ad6399e1c55e917278e12c4ab87b97a409a73341918",
+      "complete_economic_plan_sha256": "13eda805e786f54ff69fb9b6c76e980423c9e8b86988efe83d0e73670ddb8f34"
+    },
+    {
+      "session": "2025-11-03",
+      "plan_identity": "1de9c11602983dea9a029e4b5d103e965a6a6c4bfb9516ae3642423e33e2144d",
+      "complete_economic_plan_sha256": "ebe61a8b40c51fb7fb620e917abc5b9a72c26e138b9cbccd3602543bf9c3fb62"
+    },
+    {
+      "session": "2025-11-04",
+      "plan_identity": "4fd9a3c1c75286dc75ae0b6260528011f56c0bdd9da301008f859a6163193419",
+      "complete_economic_plan_sha256": "37f2eee647d55e7ea8ea305832992c2793220650c206e6cf3ab4834fc2d31203"
+    },
+    {
+      "session": "2025-11-05",
+      "plan_identity": "7fc14c91c749061610a30f8bba0ddc1491cd599f3b98ce814c14659875fb434b",
+      "complete_economic_plan_sha256": "367338a970989c013fc19289ed27798d8bc44c125ef1a56355be2ac1e5b124e7"
+    },
+    {
+      "session": "2025-11-06",
+      "plan_identity": "b0e91c845d7381e640cf5164fa30f77178093738cec56d60bc58c354b3d85c43",
+      "complete_economic_plan_sha256": "8c0f30fa394c64bcb25c26c424b5c06f9dc4d16345bdef8edcaa427c3a3cea10"
+    },
+    {
+      "session": "2025-11-07",
+      "plan_identity": "285a9e9be664b262fd176cd5c10ec77ed01e9886c97332aa88d7dc29955f1dc9",
+      "complete_economic_plan_sha256": "1f7942e9d2d3a7ea920395cbb32f63aaa54b34b35f7dcc3a990b6465cb33c194"
+    },
+    {
+      "session": "2025-11-10",
+      "plan_identity": "ca5ed79831e306060eb673c1f76bb8048e80f00b134e63e057d558f9224fb96f",
+      "complete_economic_plan_sha256": "caf7c66a858f47b218109f5dba2cb516961aca24b88e9370661c6b5967c73337"
+    },
+    {
+      "session": "2025-11-11",
+      "plan_identity": "e1fb37cd28d2ca76be0d7e5c2cafd1ad1930717e012098ab512dccedcd9fce0f",
+      "complete_economic_plan_sha256": "6ada57bcadcb44ef095601ea3168b0eed55b83da159dd07f10a3c91448ed4942"
+    },
+    {
+      "session": "2025-11-12",
+      "plan_identity": "dc53f1793531a9ccb845394ee23bee25d860011bfdab1dc084395fb4aa2b7243",
+      "complete_economic_plan_sha256": "00788f1079db09da83902c2ac3471a661c2006c35e81af679ff93299a2a54a59"
+    },
+    {
+      "session": "2025-11-13",
+      "plan_identity": "143b3d244809a808b5500dd3505c845c0ee7c6c8bde0f76e1a3fa3e380446608",
+      "complete_economic_plan_sha256": "400d75d5fa0a57a8e158cebb7870ede0c8520a8e9573c1466396384ddfd207fc"
+    },
+    {
+      "session": "2025-11-14",
+      "plan_identity": "bce52bb1d4721e9f8734ed26bbfb5093257aa3a7849fe20a83586095b0b6370b",
+      "complete_economic_plan_sha256": "35b49032ca7596f6459557671232d63bd118211fc962ca8cf895455314169811"
+    },
+    {
+      "session": "2025-11-17",
+      "plan_identity": "6c565d87df4bc4a8f8ac3f3eb459c51edf43747598a8ee4f7d36d5615f14dbf0",
+      "complete_economic_plan_sha256": "dc8f236c4c4a212fd689f8cdd6c476052dc59394c15958f77a04ac1bd839efb6"
+    },
+    {
+      "session": "2025-11-18",
+      "plan_identity": "c851bbe66c474f8d761092d562f7edf18417b7b1669d1067245e50b88c6fcbb1",
+      "complete_economic_plan_sha256": "57cf56370a9da2157e0204788aaf6f489e9ca3365ebbff647d2a01ae06f57d18"
+    },
+    {
+      "session": "2025-11-19",
+      "plan_identity": "061f894445b6602eff8c704871f301ba0c71d345335e15805f2872dfb2745c45",
+      "complete_economic_plan_sha256": "167af0d32fde6ef04410bea803732be3fe28cc5f2b39b4ab1a65f8b77f42ee73"
+    },
+    {
+      "session": "2025-11-20",
+      "plan_identity": "8671d6e076fbd7090a05f37ff3b93288735f2871ee3de7b84b326b278feb509f",
+      "complete_economic_plan_sha256": "828f6ca56f3be1bc0e056c319e9f965d8dd3c58a85860735a82ef1ad0fa1ebc6"
+    },
+    {
+      "session": "2025-11-21",
+      "plan_identity": "f0e30f2019c652370d61c220401ef2429978d4ac0763ae3aede8b9639f8c3cf8",
+      "complete_economic_plan_sha256": "62d52d5b5592b2df79911b4bfca095d5c1389a29332d85e90e63f84f0404d3db"
+    },
+    {
+      "session": "2025-11-24",
+      "plan_identity": "703bb5d09650b0c006189df9a5360638bba2f1d9174af4b2c6171d8033810e49",
+      "complete_economic_plan_sha256": "95a17c85b877876f786d771705b8f4caf01d2723b0ef9be97a1214703a84ebd9"
+    },
+    {
+      "session": "2025-11-25",
+      "plan_identity": "9ae2fc68bea8ddb05b20091c83b22b79f5ce43e1194dcaa593ea001ee0196e94",
+      "complete_economic_plan_sha256": "e4d347327fa283e1478f4da0bd585fa8b15548fe5c8d8c73e8f54465d06396a9"
+    },
+    {
+      "session": "2025-11-26",
+      "plan_identity": "92dba9c891225d8462fa2df691baeda1c325a9d52a682bd8569ce93e7aeca2be",
+      "complete_economic_plan_sha256": "1cda16f4e347f8bbb0e56b0847ba0c8196234d32ac0a43b177e08ebc87828d96"
+    },
+    {
+      "session": "2025-11-27",
+      "plan_identity": "05dbd7dbf66a96c656c4c543fd54058f92f69ec606b523bb4c2f7e1ebe31b335",
+      "complete_economic_plan_sha256": "9cc9afcf80bccde90d7652102a55ed88974e206c39b53ad162ebe6df7827a364"
+    },
+    {
+      "session": "2025-11-28",
+      "plan_identity": "354d5b6a9562921f6601958c10c826793ae6419d5b122e7592f7137f83b8b523",
+      "complete_economic_plan_sha256": "92d405d31b38c284c0ff15f612c8876b82c37c0f188a9443992042dc413519a0"
+    },
+    {
+      "session": "2025-12-01",
+      "plan_identity": "be58d135548a6c9419dcea816dcc7ecfb229eb1a4d84c11c8075654ca00ffda1",
+      "complete_economic_plan_sha256": "8c19656d71fc053fe17932d61485f7d0fa23b8049c385ca0f73a69653648b104"
+    },
+    {
+      "session": "2025-12-02",
+      "plan_identity": "430444c49dcc199e2d9b0768241edd091980b39555272bc542cba713fefff13b",
+      "complete_economic_plan_sha256": "c878deb5efa19e81d82ac9dc95bcaa555c3bcf5592b6755b1a47f65b10c5d43d"
+    },
+    {
+      "session": "2025-12-03",
+      "plan_identity": "25b7ef106a9dcda4a8bfe5d8365fdab1d33fb5055e29c533af5eaf64c16b716b",
+      "complete_economic_plan_sha256": "d2ff273b00869d53650392d94c210a6eb75d4fac71f6963f8c88adb543c5f480"
+    },
+    {
+      "session": "2025-12-04",
+      "plan_identity": "410b55f59335a8ade4ba5bb99735e448fc17e8dba043111c3919195553fe6cae",
+      "complete_economic_plan_sha256": "dbbb33ff527f3cf9ef0e09a6d656b0483f26e49a4072c42b608aa5a060942fa6"
+    },
+    {
+      "session": "2025-12-05",
+      "plan_identity": "19528dedd860908b86fcebc97c7ebdaa778ce3a618d033c887eadd995ad73b86",
+      "complete_economic_plan_sha256": "704c17bf94a2621ece96f13cd4c118e4c678350b9e191fe78a17c7f188dd8632"
+    },
+    {
+      "session": "2025-12-08",
+      "plan_identity": "e6072a4e07d897d0f3381caa1e1516bb8c77f62a2dce3f6eb9e1ec17a818df13",
+      "complete_economic_plan_sha256": "bfc4cdbdade08771326b1f9da5bb2bbd85ca829c4a1f7038084a6e25d49137f2"
+    },
+    {
+      "session": "2025-12-09",
+      "plan_identity": "f51054b1f0aff4a29f32639922a31779a4b9c01659e829784ec9b6dc979fb7c6",
+      "complete_economic_plan_sha256": "02f6fe6a65e3c30f28d677d168df6afde33379aa3cfa759692906b717354f3d6"
+    },
+    {
+      "session": "2025-12-10",
+      "plan_identity": "a1a00d90d568d4e97e9857eeb2491e84e45a1d7dca2c76f2d40ca6c9e9bcdefa",
+      "complete_economic_plan_sha256": "6c1573842cbcf09905c2603f05f011ab7a06a90b7cb9b1ef0d3917ad76d5bee8"
+    },
+    {
+      "session": "2025-12-11",
+      "plan_identity": "0505eb1064abe6d9c9380e27f80a5f2adfc0d187b90e1236bd97c39a49ba85a5",
+      "complete_economic_plan_sha256": "1d23344be7227db7cfa150027e63e70e7bd26a5403ce4e8080c91100c52ba2a2"
+    },
+    {
+      "session": "2025-12-12",
+      "plan_identity": "1b522ece4e72cb452b21160b0b3bcf9c5798326ac5dc2ab27403a217971b62dd",
+      "complete_economic_plan_sha256": "774afa5d0a2df0ec30b59a0a081b6fd3bc6da62f444c24681f9a455b26791f36"
+    },
+    {
+      "session": "2025-12-15",
+      "plan_identity": "0b5e6729509c2e74cc05212f25e14a2229db8506d0bea0341a7f34585288862f",
+      "complete_economic_plan_sha256": "9f62c589aff0d059b42175414161ed6c270b18d8cacce9ac086caff7c9163734"
+    },
+    {
+      "session": "2025-12-16",
+      "plan_identity": "cc34367cc3758cc1cfac96b418472d0ea6d9e6f10352a95b9dc95b55971ca76a",
+      "complete_economic_plan_sha256": "ffa762c3f47d5262fdcabe3a09c0773aa663f89f59dd7ebeb578be001a86efa6"
+    },
+    {
+      "session": "2025-12-17",
+      "plan_identity": "9082c0915b627d79275769980a95fcad979ee1cfe24c7fe1e38d8458ae1663f7",
+      "complete_economic_plan_sha256": "ab722ee99d822d843e9af5672524d890bb562040069f7294810fddf15792520f"
+    },
+    {
+      "session": "2025-12-18",
+      "plan_identity": "9a7917921f71980d47de976c5d56fdd39616da857156bcc7768e7a8628f15348",
+      "complete_economic_plan_sha256": "97876108890212ac4652b39fe31803a6c23fdc502c898c4c81f3018f19bb48e6"
+    },
+    {
+      "session": "2025-12-19",
+      "plan_identity": "c743e49e3faa32d7c8f5473a187e3a3cd733a6e5dd6d89b9fed43c0cf463973d",
+      "complete_economic_plan_sha256": "3049035b94d4cb8a47ca8a2c1d0bb6ce6535bf3852d2f9e3f8cbbc9d52eae8b1"
+    },
+    {
+      "session": "2025-12-22",
+      "plan_identity": "50b3a407a46117844c908e364d313a152412aa54572737b89c2b04f204e8dc88",
+      "complete_economic_plan_sha256": "be857f43a9111b19429ef324cbbef4344c17c7e4dd5f02278eadb86bfa846be6"
+    },
+    {
+      "session": "2025-12-23",
+      "plan_identity": "bf7367fe12af909c591069b7008eafb094372245c1c41e45a1abb8a09f9f94d9",
+      "complete_economic_plan_sha256": "b10d5cbd3e293e0526478092e1820bce6c8bd77249dde67fd30008ceb40a0e52"
+    },
+    {
+      "session": "2025-12-24",
+      "plan_identity": "becf3d96f8191e0c03457cf921cb8eab6e06ca6bfe983ce76dcf61fdea1a75b8",
+      "complete_economic_plan_sha256": "1f224c79518cfa2eb856098e1ac6b8155428b5010165859ce408148dff69d096"
+    },
+    {
+      "session": "2025-12-25",
+      "plan_identity": "cd148c9dab1fa70f31ba586b6a9b2ae7340945f5c51ea6f64570f107fd5039ac",
+      "complete_economic_plan_sha256": "17d219692479bee7abb9cd9fad9920f34e2dcb52cdf7da8effd49f2cd5f3d7f8"
+    },
+    {
+      "session": "2025-12-26",
+      "plan_identity": "559ce7928e3e86c89caca49bc89e2e7359a0a2e37270ae24c99c5428f1d22730",
+      "complete_economic_plan_sha256": "32f8a510a6a4ccb3226edba17719b658dc15e233d58f29d87cc113c5d6ee0a11"
+    },
+    {
+      "session": "2025-12-29",
+      "plan_identity": "35c3a0914bb70883658034fa065701323cda83d889aa744c1baa076b919b9ee7",
+      "complete_economic_plan_sha256": "eccb944444b22ab3910a4ea4b1fd04ab0e93f69d5bf2f85db4689471912d9d38"
+    },
+    {
+      "session": "2025-12-30",
+      "plan_identity": "287ea5beae14b2c0df229a69ebf6041f32d335fb1d4c70d8128eaf7d937439d2",
+      "complete_economic_plan_sha256": "7ef11946f09b2fa01b7b03a14cee4a3effde2bcc6c8cdd18c807b4a06360ade2"
+    },
+    {
+      "session": "2025-12-31",
+      "plan_identity": "c1bc158a9f12330a025afead34ab542e90ac8f73ad68c1ce083091f80c0956a4",
+      "complete_economic_plan_sha256": "1f05ab1f3ff791abf0dc87d6aabad31b7897ddea5af828e9b6f5d0eebaf33916"
+    },
+    {
+      "session": "2026-01-05",
+      "plan_identity": "9b9d942c2ee14ed16dd4850e0b17765702f57923802dbc21f6a0ba9138ecd7a8",
+      "complete_economic_plan_sha256": "2b4ad66f0ca4c97b97b36f43c8a2b91d156e198d69bbb7da3d17061ebae5b76f"
+    },
+    {
+      "session": "2026-01-06",
+      "plan_identity": "1afb3fa6dac2018976aec3b8e3101c3bec9035303840ec9aed799d2ab4008862",
+      "complete_economic_plan_sha256": "6029b7a4656c424a75b06b8ca2b4935bdbd00e036fdc5bd5779f874c5545a334"
+    },
+    {
+      "session": "2026-01-07",
+      "plan_identity": "fdb1b81d905c08c649aa56bfd09471484261af435f757f7e8082fedfe28a0b60",
+      "complete_economic_plan_sha256": "dcfec35dccfc84cba355ce971fad41ae1f84487bdeb41bba6746644dc7977eae"
+    },
+    {
+      "session": "2026-01-08",
+      "plan_identity": "60cb765de8b4aaf9b22718cd1277f1328f63c5420cb0be49f9d5a2794f0e90f5",
+      "complete_economic_plan_sha256": "469215818d6d8b858d22eb6c79da0b0663392d2a3d511e5def5a17c45727f9b1"
+    },
+    {
+      "session": "2026-01-09",
+      "plan_identity": "842e85974dc3ae9798f53fa04349498e90e2f2c0eab5a8194d88340f2897e606",
+      "complete_economic_plan_sha256": "10197b642f70f368de7bb2907501c14a86f78a116d9e7477cebfbb4339ff3226"
+    },
+    {
+      "session": "2026-01-12",
+      "plan_identity": "c0a590cec34cb17e96e1641aec3cd2b9cb51b763e40e06f171e2d851bc96deb2",
+      "complete_economic_plan_sha256": "8275b9f4995e41f59789b058988d1543040ecd07bab443771cae57ab01722654"
+    },
+    {
+      "session": "2026-01-13",
+      "plan_identity": "748fb5d176bf0b9937bf6cc68853d6e3d700e0781393b4eda840634c9e5619f5",
+      "complete_economic_plan_sha256": "9ec87af36cea995d4fdb1e95db26e19effed451dfd5092534fa2bd3a4e203eeb"
+    },
+    {
+      "session": "2026-01-14",
+      "plan_identity": "99530ae93149efb570b6299a7fa5e6a0ac7652d7b6e5facb496db6eed766a54c",
+      "complete_economic_plan_sha256": "b313ec105447a8236c419475d689e8a703687c69d4145693ead3455932e3bf2b"
+    },
+    {
+      "session": "2026-01-15",
+      "plan_identity": "f07989b0254cd96729cbb1ca828189390f55ec2a989b8b00d199f7192f7de971",
+      "complete_economic_plan_sha256": "66bac5fac6a600bccd0d568bf3649c44304ec3820ce06b47d7e6a4a24a733b3b"
+    },
+    {
+      "session": "2026-01-16",
+      "plan_identity": "927f9150a8312ff6640ea043c1d6ac5f6724df6d97767bcda9b9bcb6c18c033e",
+      "complete_economic_plan_sha256": "2994de7ad7ecdd1c780c4b62426429310ece854e73db36368c044af278e6d2c6"
+    },
+    {
+      "session": "2026-01-19",
+      "plan_identity": "5560ce7de1244e283b9c5d3fb68a671ed4ee4510662afaedc8eeeac8cafe07ec",
+      "complete_economic_plan_sha256": "8571c0a61b082867e5dfbc10ab673567d4021291e74f650bf94c89e950cf0256"
+    },
+    {
+      "session": "2026-01-20",
+      "plan_identity": "bf8330c4e224ad2a5889482da417c6f0f2721254be922757d86807e7b89374cd",
+      "complete_economic_plan_sha256": "9326fd39f0a976b73696235e93baa86fa43ef0e804b3ec92f1909565a46cdbfc"
+    },
+    {
+      "session": "2026-01-21",
+      "plan_identity": "c4c9bf201b79f7de36da8b7cbedebbaac1a79a234f02250b07040a2cc7f73351",
+      "complete_economic_plan_sha256": "54721a551b4d9497a67f917503d8ff4a30316e4d6d8268cdb2201f61fb3af04e"
+    },
+    {
+      "session": "2026-01-22",
+      "plan_identity": "074026ff7c78c802196dec9729e4180b83087616cf1fc3fab25c788d227b3f53",
+      "complete_economic_plan_sha256": "063a767086e120ff39c3fbbb66214c559e3d2ee81142ba5754328ae0f0f1ba4a"
+    },
+    {
+      "session": "2026-01-23",
+      "plan_identity": "5b88b85520ad22ba5da6ae2ae3e03c2a04a5955a1d537f8501e2c39e475254a7",
+      "complete_economic_plan_sha256": "f8a3f7ea47d53db0d9d01e0f1e4b79d6a581244013fd82f09a48c4487a1353d7"
+    },
+    {
+      "session": "2026-01-26",
+      "plan_identity": "e7d3784efa5b4de356bc60ac29cdbaada87f50b5a4d1fbb9278434f56ad3cf1c",
+      "complete_economic_plan_sha256": "74675b2f99b23f76f315001956713f3b68658cdb6271e93a6f5afff991ed8c65"
+    },
+    {
+      "session": "2026-01-27",
+      "plan_identity": "fedbb5555fde8f4f617679ee80d0157d3f4be923a0abe8a73f86800dfd346c8e",
+      "complete_economic_plan_sha256": "0982dc00ee628b6c30309826cfebe9d1e8a7963ad0e2c95cb83241a4134adf90"
+    },
+    {
+      "session": "2026-01-28",
+      "plan_identity": "b8a596d20ce1ddea592a48e0417c822b1c14eb6d69a68894efd27179ff1b08d5",
+      "complete_economic_plan_sha256": "b86aae02cebed6b8622dfadffbda7182a449aa431333c52ac421da63e928fcc4"
+    },
+    {
+      "session": "2026-01-29",
+      "plan_identity": "8f59097b27785dd794e19c055eb56e3dfe2d80f14c9da8a27eda1c4f4cad0788",
+      "complete_economic_plan_sha256": "8af01b376c0a0ca37aaaed918aa05e81b2435cef8398f622b84d9ade759af44f"
+    },
+    {
+      "session": "2026-01-30",
+      "plan_identity": "62fde54db25c932ab569296d7982aaab2918ab9812df8b57d3e5670978db628d",
+      "complete_economic_plan_sha256": "5511a34c99135d9705f0d18cb9d201e72895550719fe230836ce7d790d735da9"
+    },
+    {
+      "session": "2026-02-02",
+      "plan_identity": "cf2bebe0922f4d75ed9c99cf32eac2cbcba3981a081ca14534c9f45a63272ca5",
+      "complete_economic_plan_sha256": "5f856c65d38875c37254fa02e19d8474d04d87f45274f587654861f5f62145c2"
+    },
+    {
+      "session": "2026-02-03",
+      "plan_identity": "239f4f0bff598d703322c4886f52c9c9f42dc86268470b7347eb0d166e072966",
+      "complete_economic_plan_sha256": "e263c0420f8632a1bc73d5ef94c4bf849856cee860935365e494f1ad1bd937d7"
+    },
+    {
+      "session": "2026-02-04",
+      "plan_identity": "75f98c4269256b6403272e52468402825dccafcfb6182d49f5bcccefc8a591d4",
+      "complete_economic_plan_sha256": "40062ef5f0f3d3123d7c51f33ea32f9877ba5dd9f619b3f99d2cec4055ba70c6"
+    },
+    {
+      "session": "2026-02-05",
+      "plan_identity": "8e0edd825e126f504e3008f8437279610358015c45814f162d551cd40f184863",
+      "complete_economic_plan_sha256": "07ff85ed87f0be5b8c240f8e4127d09e72956635fdf174c98b7b12885fadd432"
+    },
+    {
+      "session": "2026-02-06",
+      "plan_identity": "b4c03b19d69fa74b04c4e2e67fe61ba7c482a3476f999c9235f5784c6a0551ed",
+      "complete_economic_plan_sha256": "3b923e31ebb1c74820f140f658ab73e90448550777b6294e78fe56855a829dd7"
+    },
+    {
+      "session": "2026-02-09",
+      "plan_identity": "850d813ac5b02f4469a83aba5ebe2e3d8f7eb13590264f4e66a55ef25d3c4623",
+      "complete_economic_plan_sha256": "921f4040939b7216be326145374c223574156fb2b3da4d15b5cd42cc46b1ef39"
+    },
+    {
+      "session": "2026-02-10",
+      "plan_identity": "a1c387a6e29e2e4fca90df304daceb0666ea511aab6ff9889e885ad434bb3951",
+      "complete_economic_plan_sha256": "6d10a4d1ffc4fc0700b270332beac1abce934756c6177099ff7d6839c0624f3a"
+    },
+    {
+      "session": "2026-02-11",
+      "plan_identity": "95c49b58dfdad7aa9239290ca625867d581dd3da4e975207d5e1acbdfd642829",
+      "complete_economic_plan_sha256": "4bd9454619c37a693078f598eef1b974815904dd46a575582b16685ac9d3c51b"
+    },
+    {
+      "session": "2026-02-12",
+      "plan_identity": "d7f3d4a1edc239a95bc86b7f303126a0ef5fe9bc99d25d0cd0ef11e429b1dfda",
+      "complete_economic_plan_sha256": "4145bd3c9b11042b8964c966d595c387f8e0d69eec24014b518d8d3ef2bbf6f1"
+    },
+    {
+      "session": "2026-02-13",
+      "plan_identity": "b54ca8003f79bf652511e86186399f54f3354f34a1e8a76734bc1455ca0cf507",
+      "complete_economic_plan_sha256": "fdf68aeed4f41eaaa298ea1d0b28331764ff3a82733c71528bd477539d823fc6"
+    },
+    {
+      "session": "2026-02-24",
+      "plan_identity": "0922d63262c7fefbd0a6e0bae289eb8d7f8335ac46bc863687488940d58c1569",
+      "complete_economic_plan_sha256": "333540c0b026475275305f207d0291f840db4dd5e6ca28de3ffd6b1ba556d38d"
+    },
+    {
+      "session": "2026-02-25",
+      "plan_identity": "18cd10a1936deeb980fbefccd4216591498e1c219a874bdf712386f718bdfafe",
+      "complete_economic_plan_sha256": "5482f481ff177078038f01c1095d2ae61d473769732a2b5d0cf6235ad96d35b2"
+    },
+    {
+      "session": "2026-02-26",
+      "plan_identity": "631e4509bb4b7b122d7cf4f6b085966392d2d87f1af6877b2ed6e75c7b6cd42d",
+      "complete_economic_plan_sha256": "e1131d8d93270e5b536c5444386fa2757aef03f7440b60ce2ebf3ddc23f5bcd8"
+    },
+    {
+      "session": "2026-02-27",
+      "plan_identity": "0087e0b09d9dc6e4c12ce099e758d9fa04eb154bd1875b6e72b20b5f743c4643",
+      "complete_economic_plan_sha256": "362c607029e1bac3389d4fb0d245a2570eb0acf3728db245f27d6e2081f8c04e"
+    },
+    {
+      "session": "2026-03-02",
+      "plan_identity": "981e124cd5819ce5ed259d0de88b756c9935a462c3637c88ed99d658a8d551fa",
+      "complete_economic_plan_sha256": "d91559930a0d32b9c633925e6b7aed953abc4c20c0b178d7bb8421f4180bec39"
+    },
+    {
+      "session": "2026-03-03",
+      "plan_identity": "6e3efa8d2d4b4d78b9b11d1294ec867d4b8fc154ea689f523dc6066dcf3924cd",
+      "complete_economic_plan_sha256": "f7da25ecbaa7994b3e923ac8279d52853034b3e44e4e6d60f24f18b5a60c7487"
+    },
+    {
+      "session": "2026-03-04",
+      "plan_identity": "03b1162297b925d3009c7277ab4f809d6d203ad8f44719c9736957f76b6cfb73",
+      "complete_economic_plan_sha256": "acc5a1c71cd1f33a1ab54c807bd6cb507189c2306e9f43f878e2679760541ce0"
+    },
+    {
+      "session": "2026-03-05",
+      "plan_identity": "01029836b4e74a13866715e34c666b22ef4873acc93e70d7a2e769c86cdac810",
+      "complete_economic_plan_sha256": "110d04d7ac3a3d2ffe2fe37e30d55da78fd355ccf210f4be22947d378ed37c05"
+    },
+    {
+      "session": "2026-03-06",
+      "plan_identity": "2c4eda696a3fe48524a23f975d4a53dc7d936c3b1b8e5fe78dd3d481e62044c6",
+      "complete_economic_plan_sha256": "de6e420695677c3554de658c508fbe89dff2eb2cab64d38093557052ef50f2cb"
+    },
+    {
+      "session": "2026-03-09",
+      "plan_identity": "30a188cc0085107e96a77176e0c43659483f7dd1b2baafc264fa041fb0145ba7",
+      "complete_economic_plan_sha256": "f7d8853ae5facd0da504bd66538a0eb253b9ea4993c7023d98adff3024d5f121"
+    },
+    {
+      "session": "2026-03-10",
+      "plan_identity": "f36ea798d8071c5e178b1f095f0dacb85ea5915e71544576fd14eaa805f49291",
+      "complete_economic_plan_sha256": "3404113c7d7efa3cfecc0b43522ec352979934d6dee454b3af36d3457ab4ab2c"
+    },
+    {
+      "session": "2026-03-11",
+      "plan_identity": "b029c72563e8513c31a7f40ac7c700b41758a598d99520f1a8196fd9b38b0189",
+      "complete_economic_plan_sha256": "046b5aa29e33548caaec4f9570467760353bee70a2623884b8728ee61b999d1e"
+    },
+    {
+      "session": "2026-03-12",
+      "plan_identity": "3272d36a6bf951871883817877a19e05fea4b64afe0414fff9dd2c9b5b7f40ed",
+      "complete_economic_plan_sha256": "db65c54bf67b0785c467425299b3137ab15861ea4e64eeea4875c13ec98cd776"
+    },
+    {
+      "session": "2026-03-13",
+      "plan_identity": "b78c8ef5dab16fd3da3dbf88f0c6ee76a25ae3e0a22ce5abf9e5e4380553a43c",
+      "complete_economic_plan_sha256": "a9b8e574279fc2be2ff014e550ce5e24fbb90486e2a8a3f2a37477b919c66921"
+    },
+    {
+      "session": "2026-03-16",
+      "plan_identity": "c877142cd8051ad6cb31d7b4768a0e776ac38da8bb52940f2baab6f8f28f2f4b",
+      "complete_economic_plan_sha256": "00865db4fa99c80687b97a3412f64e823bc60ca8347bb9383d4b1454fdd54c9a"
+    },
+    {
+      "session": "2026-03-17",
+      "plan_identity": "77123f35e222872751e3b2cc56a8379f271323ed29c98383fd18bc93ac59b07e",
+      "complete_economic_plan_sha256": "316d44a56f217a108e3ce26aee3607951c94f7eed0d80e9e16f79b5c4cb573c0"
+    },
+    {
+      "session": "2026-03-18",
+      "plan_identity": "98d3b9320c7ec4e9b56e51b3ebf10cc7dbef185fd2d8877834572d3d0d8f6bc1",
+      "complete_economic_plan_sha256": "e9d6e6077b60f11f0539ded7c860ad0eeaecc62e5179438e7b0f020f12c1d4d2"
+    },
+    {
+      "session": "2026-03-19",
+      "plan_identity": "1d25b5dc7cb67fc974292601d32caecf59c8dbf573097083eebe9872c21caf98",
+      "complete_economic_plan_sha256": "6f118fd93aba9463e7aee72f3a96c413aac4aabb9179b76666c0611968490709"
+    },
+    {
+      "session": "2026-03-20",
+      "plan_identity": "165396db7a2dd7196b9e714d51b4e605b55ea7ed4805ca325694d853ce5fea58",
+      "complete_economic_plan_sha256": "64b09e632851af4f655cda5b1a6373073d17770b35f5b33994ddcd4ef902401f"
+    },
+    {
+      "session": "2026-03-23",
+      "plan_identity": "c1f93db0050a589e06b5d6a9d4d8b62ee0ed01229c233e9bde922ab2bd4ee888",
+      "complete_economic_plan_sha256": "0cc68b9d8f18fb5795bdca6124d61ed1eb017d16188a690e65516db8563b3890"
+    },
+    {
+      "session": "2026-03-24",
+      "plan_identity": "e1212a9c4e6d3c65e042465e0b704974d8114e5a4909ce90be4d1a4fa1094756",
+      "complete_economic_plan_sha256": "fbbae805edc99b9b9b52d0a192e0fae709eb115a539b43c239dfc0f17beee04f"
+    },
+    {
+      "session": "2026-03-25",
+      "plan_identity": "9667fd269c8552878e839c4a6917d4d7d4aa4624e5d7407a44f2825a52f8d0a9",
+      "complete_economic_plan_sha256": "9564096e9148130e5a8fab97c650de0f6b9ed2c2fa6e6097cbecc124ba2071ff"
+    },
+    {
+      "session": "2026-03-26",
+      "plan_identity": "f8ba3912c370b77a1eaa1f0e4cdf598778d10796d76a49f8c137343b09854c0b",
+      "complete_economic_plan_sha256": "cbc9839e6fa324e818b77d81adeb8cb209910384a4237114b1e531faf891ce6e"
+    },
+    {
+      "session": "2026-03-27",
+      "plan_identity": "030b47254ea805c566a52dcef01db76dce55b99efaabfdd2d9236e1b88d5b0eb",
+      "complete_economic_plan_sha256": "c309fc19742d677df73d39749434fa27bd65e815a06b71149a0ed0af20432485"
+    },
+    {
+      "session": "2026-03-30",
+      "plan_identity": "9d304d8b1a0ceb6c41d039fec9eba55e330dd52f0d0191d0e505c8bbac15ff87",
+      "complete_economic_plan_sha256": "56a4bb23b9f14080ecbf8ab89a54eb896ea6c3bd1ec059fa4eb744e18c61c828"
+    },
+    {
+      "session": "2026-03-31",
+      "plan_identity": "2375058ab8511c25772c90345fd9fbc90b585cef7c3ea7a568b35787bbde4cda",
+      "complete_economic_plan_sha256": "3cbb71c34e43b601ea3ab6d4aca0cf629ef07ad74dc93036187d8f29792cc618"
+    },
+    {
+      "session": "2026-04-01",
+      "plan_identity": "22c626ecc519d73db0691c71ec26a405d0d2d72f39d49693bb94a49a50fbbd92",
+      "complete_economic_plan_sha256": "0f59c97b8b666316bdeaa3d383ef1fc237a5e68dc9a0e54df3a3ff908c706c77"
+    },
+    {
+      "session": "2026-04-02",
+      "plan_identity": "50127cddd606def11f3a21a1f34e4ce497c257f92260327908697da9edf1b43a",
+      "complete_economic_plan_sha256": "7bf149813ae4ca59484266864fbf300e1a2eae251dfa4a5c0886cddd051975ed"
+    },
+    {
+      "session": "2026-04-03",
+      "plan_identity": "681f8d02865a495631b851b62a47e0441e6142f0ae2288f20e8f249523efe3a6",
+      "complete_economic_plan_sha256": "30056c185efaa729150ac6e3d2832fd3ce7243d2831986b8ca6309e8ea70d75a"
+    },
+    {
+      "session": "2026-04-07",
+      "plan_identity": "b5e589abd478372aacea0bca23405ccfe91dd484f454b948331291b5997ef1fd",
+      "complete_economic_plan_sha256": "9600a158e08c4571d148ac5a5b7376944310dd4b48ab9b9d9f4a21d46e5687aa"
+    },
+    {
+      "session": "2026-04-08",
+      "plan_identity": "a3e70b11b65ccde775ec8f9be945348e256438f15f7e8146e03841010c60d3af",
+      "complete_economic_plan_sha256": "0e67829fb135d79ab8275d4ce8a971e93d11503fa9233bb87d0b84406b7a1479"
+    },
+    {
+      "session": "2026-04-09",
+      "plan_identity": "9d2a5a7a9b53e14d3dabf73cbd5a889329c2fe55b118f45905cc7f23f6863cae",
+      "complete_economic_plan_sha256": "5c5615f921bf7541be67cc5cf9a949f54ce178693fa19627556e077642f7c65d"
+    },
+    {
+      "session": "2026-04-10",
+      "plan_identity": "ec10faf210e1693621c0897076fc5859859864b5bdef90cdb60612bab5894cc4",
+      "complete_economic_plan_sha256": "82a7db8e426818d53b31a0352cd070f082fece0041df2de2d23ef2a55b8680b4"
+    },
+    {
+      "session": "2026-04-13",
+      "plan_identity": "02c627b57e0f2bc587d82134b297d8db585317ff2c849ea380e5a165fd3847af",
+      "complete_economic_plan_sha256": "ad4c9892a1c7fa988bc70fa2b25139543e08bd20f09a2f7b01960fb8adaaa006"
+    },
+    {
+      "session": "2026-04-14",
+      "plan_identity": "1cfe87ee7addc9949424944f79587df9b42cf0897c6af5c08681056b288d2e8d",
+      "complete_economic_plan_sha256": "f1db636d9c36b13faa4b5b70dfbe1dd3faf71291737282f22f57a5e6c56754b6"
+    },
+    {
+      "session": "2026-04-15",
+      "plan_identity": "81c850734d4b436327fa2936d9bcde776ced5dc843cff536373de79d733aafcc",
+      "complete_economic_plan_sha256": "8adf209e98b9e3f7127c2094e81e901b0e7f9b9334754c92a175e4f2f90d7ccb"
+    },
+    {
+      "session": "2026-04-16",
+      "plan_identity": "654401121e63c1d83e15fee4c2d3880d752fcdbf4485bd16bd0a9894254abb86",
+      "complete_economic_plan_sha256": "f12b022189079d0c101946515e0c8920e3c38ca5c35869083ed59a2ae7651a76"
+    },
+    {
+      "session": "2026-04-17",
+      "plan_identity": "79d3f22b08166a9a8f6cbe41c89c95930c8e79b8f5f79a5b6b3a0f5ef1cbe4bd",
+      "complete_economic_plan_sha256": "e1eb9ed8c1c636b54ad40436bed94d1e3dd28de3ecf67764735863b803401f24"
+    },
+    {
+      "session": "2026-04-20",
+      "plan_identity": "5df58cce185cff8d2d8a01e7c909e1838de6c26a880269da921f98243f877855",
+      "complete_economic_plan_sha256": "78b67a6d4f431c7d85e2c603357479962ffcb48540c2bebde3a738eea045eae8"
+    },
+    {
+      "session": "2026-04-21",
+      "plan_identity": "6628472262c9e530b1d7c1dcc689b249d1f21ee6e49ff3243ece927850c1a20c",
+      "complete_economic_plan_sha256": "8826495a32157a2316ff1e5780dc0895eb197b7291aca96d38a4f33536590862"
+    },
+    {
+      "session": "2026-04-22",
+      "plan_identity": "620899bd69ddff572b670915d2d5d77ea510672571ba97fb673a42d97dd13ed7",
+      "complete_economic_plan_sha256": "4b13817fff56229ab72e59d7ae9e7396c69fa32a7e5b8d4bab24174d7f2485b5"
+    },
+    {
+      "session": "2026-04-23",
+      "plan_identity": "9cc7fe605fe82786b3d7e1a9810733265a4cc121474e91cd78e2b8c8979e2f9e",
+      "complete_economic_plan_sha256": "b911a7601f88f518acb424c8095f59c1ad6438b5ae21fcb21bc74d6de8a13fec"
+    },
+    {
+      "session": "2026-04-24",
+      "plan_identity": "348e063fdcf1b887010166abd637be4fa22df4a2e116c14dd29f00ef0fd77ddd",
+      "complete_economic_plan_sha256": "eedecac47aa7d934a1a054fdfab46ba3d16d3f44caf3319006bcc28ae5d33ceb"
+    },
+    {
+      "session": "2026-04-27",
+      "plan_identity": "5b7987db46047d43a39da093b3b0e711f9778d223bcb149883826e4e13ea6e36",
+      "complete_economic_plan_sha256": "e05d7c89cd807bcb01219b3dbe06ae4f3162b2655b84d525e8b36ceb271825b4"
+    },
+    {
+      "session": "2026-04-28",
+      "plan_identity": "9b06d12b4d7b21d5635f5a117582dd6cc0343a970c34aaaa9511d6fb087c9796",
+      "complete_economic_plan_sha256": "dc07c83c4f996762a0eebee6424ac76590971a7ec71d291426f0a7187b8031a1"
+    },
+    {
+      "session": "2026-04-29",
+      "plan_identity": "d3fc6605159e3d86f0588d3882437303fabb5e3aed30948ac1d39e10d79e91a2",
+      "complete_economic_plan_sha256": "284b3c64caed9559801e9ecfd54917f054268db8450560732d1be6aa7433e755"
+    },
+    {
+      "session": "2026-04-30",
+      "plan_identity": "e7b1f3f73920ed842d018d2e107ae0174ddc393814b94348ad0b226eb7b2d85e",
+      "complete_economic_plan_sha256": "cf1285eb807874a7739387b9fa9573673dabdd4da214c90f1e0c74fbe7d83546"
+    },
+    {
+      "session": "2026-05-06",
+      "plan_identity": "3040ba3cb777116c989261a8549ec55df52372ad11174d3f442666e37521f0f9",
+      "complete_economic_plan_sha256": "0a5af169d2afb5b9c14ae5048eac811280896dc2da1d6df51fea4da9214b9573"
+    },
+    {
+      "session": "2026-05-07",
+      "plan_identity": "a7480d17a6899a799b0cfcc3b14c887fc608a3b7bb2c99d360dc352aed7f3159",
+      "complete_economic_plan_sha256": "5c0cd8f0fb1179e70b9e13d379361c2a80336df0746b0ef0714aa3194f3845cd"
+    },
+    {
+      "session": "2026-05-08",
+      "plan_identity": "fc39986918d355403ec6c04df445c080ae5e5b480f184869fa8bf48cba5b2f9b",
+      "complete_economic_plan_sha256": "c73597ef6443c6e50e55cf7e8ce97e56ba2c5356a6ea8d1c9fa0854f1d9dafc1"
+    },
+    {
+      "session": "2026-05-11",
+      "plan_identity": "682c85e5fc079ac72abd68ed8d6d0ba0f22a2aa11d3d75bdd05f6c9dcd7947ce",
+      "complete_economic_plan_sha256": "b7058b7fb3908379b2d5bcd664a5c7b8e79c5175792bc592cdfdf08095673d29"
+    },
+    {
+      "session": "2026-05-12",
+      "plan_identity": "5929dd15b860f0514bdb56620da548b9a0f31d6c782245ad4e8b090e192d6b3c",
+      "complete_economic_plan_sha256": "5ef501be51f623ef7ee65630fd236dd6ceb6b0581b1300a8c30f6771f24a180a"
+    },
+    {
+      "session": "2026-05-13",
+      "plan_identity": "d9f1d9a1e36dde1714beb61720bea61b2bab4b964aa9900a3ee6684ceaae0ede",
+      "complete_economic_plan_sha256": "a068abd7d816e95c138bbf74c99a57b68de7713208afd0d0d64a015ed73b1fca"
+    },
+    {
+      "session": "2026-05-14",
+      "plan_identity": "9602b1e800c3a09a6d544429e66473d7187748b45710453b3a970b2cf2671466",
+      "complete_economic_plan_sha256": "499e756a10dd6c75ce4aa481c7d2be537f1362c92ddd3d0cadacffdbd32af4d7"
+    },
+    {
+      "session": "2026-05-15",
+      "plan_identity": "80232ebdff3296d8f91e812d09eb0b382b9ee075cc13c8077c31f4a5657a1787",
+      "complete_economic_plan_sha256": "7cad04dfe5493dbfac1801802baaf3a74984d7b597f17e3a35e5025fa57060b2"
+    },
+    {
+      "session": "2026-05-18",
+      "plan_identity": "183d29d3aef451286dddb9e7651b31d7158e2b56ab6fc29557c9965ba468996d",
+      "complete_economic_plan_sha256": "969f78c6513e9d46467b45567ff15e822477d3ef441e9034767c71cda4f34c90"
+    },
+    {
+      "session": "2026-05-19",
+      "plan_identity": "276d7c94eb1fa1b0bb1bf7bc5d20925d7f8f1f32bc34119d4457a6ea9239c7de",
+      "complete_economic_plan_sha256": "5c51cf922a504da1a4a234ac4055a2d41cc1caaf30982db9820fa6724db53bac"
+    },
+    {
+      "session": "2026-05-20",
+      "plan_identity": "b5bb3ffaeb3360d2878220ba6cec96f02aab87405180aeefe7bd8a276e738c92",
+      "complete_economic_plan_sha256": "27c1c4abb1c1a50e52a2dfe4042f25c9f634bca34fa28ce90aa77bd89f410b84"
+    },
+    {
+      "session": "2026-05-21",
+      "plan_identity": "dd6ee7bae551e8b858ca63d9c7a512290ee65c72e4a76f94704785391678922d",
+      "complete_economic_plan_sha256": "8c5ee9dc06ae9be3b07f67382379665ba4b076b41155da8e3ad114800709248f"
+    },
+    {
+      "session": "2026-05-22",
+      "plan_identity": "ab0b2950d64fdf63c87d6576e5f6d487d7c31d9be93cd669053bee396dc202e4",
+      "complete_economic_plan_sha256": "8ac505c593c94d4d9b58af058efead6720f4e8d095112349fa7e481addfe27a6"
+    },
+    {
+      "session": "2026-05-25",
+      "plan_identity": "4f257f6f4f9d80b513ad28e74e7bb6f326234e7e337090e21a8894137d2cba7a",
+      "complete_economic_plan_sha256": "c7598fe696d6784b6f6d6ccc73b816e423695902a9cbed0f78d033f295329bb2"
+    },
+    {
+      "session": "2026-05-26",
+      "plan_identity": "60e721bc0e515d2e03d8a8854d4a78ea9cd461567cdf1b34550100a3492aef89",
+      "complete_economic_plan_sha256": "39dd7cd64bd18a789b73eefe86e777ed1c3a6e3c261cb8e02f27835c9e2eb551"
+    },
+    {
+      "session": "2026-05-27",
+      "plan_identity": "93015232e22de057a9ada89cb3399fd7cb1b64510755970ddc89d7ca304b8f3c",
+      "complete_economic_plan_sha256": "60802f1229e659243ad144479f2f3fc4fe6f9f7e0e365bd7b50bd01c73735e8d"
+    },
+    {
+      "session": "2026-05-28",
+      "plan_identity": "2f6e7837f5e5b78c184553a5a8fd568314d6ace5911729532739ed7752b027a0",
+      "complete_economic_plan_sha256": "e4bd8bfd97079e80090a746a65b600e1aabb07231b299595b4f3726787c119ab"
+    },
+    {
+      "session": "2026-05-29",
+      "plan_identity": "18433182710ae5076b37d1ffbc877064c3d978d6467ac9e8d95959a432906b56",
+      "complete_economic_plan_sha256": "b50bdc7b3611546b32efc1946523d5b0c4a754d5597001b61360c2974084c4b5"
+    },
+    {
+      "session": "2026-06-01",
+      "plan_identity": "9f77ba6f5011936e4e482fb20de34636403e565353eef488a7f861f700f990e5",
+      "complete_economic_plan_sha256": "0302ca1948ec5e431314f69cf7415af97dd296d22d594635da84c138702397e9"
+    },
+    {
+      "session": "2026-06-02",
+      "plan_identity": "44bbec6aa34b7c16c2b607cf7174128ee52ceec9e74f9f5c5c76ed1aa8deeb3e",
+      "complete_economic_plan_sha256": "a4ac75751ea84a739db3e8ad4cbde69d293b83fc7978da39998da5ddfd82f835"
+    },
+    {
+      "session": "2026-06-03",
+      "plan_identity": "6b25b263cf44fd078aeb65bd75e3cc591a221120ea75d9efd272a91e10c7bcb5",
+      "complete_economic_plan_sha256": "0c533fec3bf2e52b55ae8da304c7c49af31c74402474210706276832352aa31a"
+    },
+    {
+      "session": "2026-06-04",
+      "plan_identity": "89f819b64c5520de59e3f5cacbdfe7a4385cf2356eebe245dc70c9cd920850f2",
+      "complete_economic_plan_sha256": "e1b34c2490bbe5ebfaf24ac5bdeda9a41b99353e797bfbcd3ae2086d04048294"
+    },
+    {
+      "session": "2026-06-05",
+      "plan_identity": "995977057e3c417742815ab5cfa055259005db9ce4d0b04f98d9697679b438a7",
+      "complete_economic_plan_sha256": "25b27f4dd49a808e97494c175a0b959ef0175b0bcac8bbc9525a4df7d51cb571"
+    },
+    {
+      "session": "2026-06-08",
+      "plan_identity": "751fb444956300f8bd156f3dc1a32a42a6ab9c6b6d23caf3fa75c0e4eda67af0",
+      "complete_economic_plan_sha256": "86f59c0a94034598c54301cd3939142a2bf720b9ca91ad1152973f6e222eb173"
+    },
+    {
+      "session": "2026-06-09",
+      "plan_identity": "02446f057fbd1d426c028b40ceb42241f0d89e03da66e09303f51d3ba1d16077",
+      "complete_economic_plan_sha256": "9cd16dd36db590174f5b6b30d96207d7d7814a2f8522da426ab265b701380bd1"
+    },
+    {
+      "session": "2026-06-10",
+      "plan_identity": "148ceeb2420018d80e0d792d37fc637212446c1f330e9dd55aca82abaf27d595",
+      "complete_economic_plan_sha256": "8de7ccf232b812d6d004a54f26cd0e456773cd93b6cb8051fa42dbe56357aed4"
+    },
+    {
+      "session": "2026-06-11",
+      "plan_identity": "b3e89e41a457b6192842297b827b017e9d14ca2e663eeddd297b2b495da00baa",
+      "complete_economic_plan_sha256": "e1b0fd46fe15b158aed001ddddebf9921aaba211cc4427ac834bab3d80a2e8c7"
+    },
+    {
+      "session": "2026-06-12",
+      "plan_identity": "a32255670a5165208729fc652af2224327bd062f8ee9d092509e82108b3171a4",
+      "complete_economic_plan_sha256": "2d111f0c2ac13b3263a4d19cb27c2bbbbb039145f6d07bf2675aae2963b3b7e5"
+    },
+    {
+      "session": "2026-06-15",
+      "plan_identity": "d9db42dab117b5d47c654e8dcc0ba87b101e3c4a42617b1117e9946f6153162e",
+      "complete_economic_plan_sha256": "eeeb0add6014cb663e7653b805e2cb7acc790c02418d91b8c32f715dad68fc32"
+    },
+    {
+      "session": "2026-06-16",
+      "plan_identity": "792ab12bb32d178457897c5e49ee8b0d4ae803307915df5d014628a1685e07c6",
+      "complete_economic_plan_sha256": "2719670b91dabf256e2da8782da95b61bcc97116e4517865369282143cfe0c40"
+    },
+    {
+      "session": "2026-06-17",
+      "plan_identity": "42da8d99af5713424ec204e4e2c503a8f86b6e443e81755c0c45ea34783109f2",
+      "complete_economic_plan_sha256": "40b8d9daec7a90ef1f06c480c1e2ebafef8ab191c37289a115daec2d6d1a20a9"
+    },
+    {
+      "session": "2026-06-18",
+      "plan_identity": "611a8c590bb3068f8ff043e7ab6fe04df3e4fbc79edec2c9b840e4aef59fa598",
+      "complete_economic_plan_sha256": "3ea0824a9b0fa2cdc51e8a5dc2ef7c3f4984f68a7ceefe6ed42f0d918eafdf5c"
+    },
+    {
+      "session": "2026-06-22",
+      "plan_identity": "cce574f1131ea7bf0382e06445210df198fc6f374baccf29060abb465daa9d9d",
+      "complete_economic_plan_sha256": "00376edffb054cae302d234076d957cea17fa93c9c9f494925cde828d9543635"
+    },
+    {
+      "session": "2026-06-23",
+      "plan_identity": "15834a063c682421f17ced9a2538e2035ec66f6fb857d668246bc3f116ac6a2b",
+      "complete_economic_plan_sha256": "c6770b089fcecf46be6aedf2b9457e0926c3768957ad5cf142904a5bc681a984"
+    },
+    {
+      "session": "2026-06-24",
+      "plan_identity": "45d9769c4b207ca305a68d49e49838419f9b8c94c29ae2134059b7b932271d78",
+      "complete_economic_plan_sha256": "cd1b10870469c3fdc3ff0fda54ccb3862e0efbc47ad08c9dce48022118329dd9"
+    },
+    {
+      "session": "2026-06-25",
+      "plan_identity": "928ef6cbec2faa1d2a99f4373a024aa94b8b1b3dc88c2abdcad18910e9867602",
+      "complete_economic_plan_sha256": "b9cee1680e40f049de2d53ae15224aca0cc7139c6c8018a2855eb259b932bb5b"
+    },
+    {
+      "session": "2026-06-26",
+      "plan_identity": "655e76b84679bcf862db0780a829188e76e7376d0dfe6b079bc4620f7384b4df",
+      "complete_economic_plan_sha256": "5199becc7b0b2b8003d79848a95ee062ce9d0cd1d1ad26d8de410c77f9c85f84"
+    },
+    {
+      "session": "2026-06-29",
+      "plan_identity": "4d3111d9fba7249f0a8983d84130465c8e2012ed239f5d37e5838abfacf9c33d",
+      "complete_economic_plan_sha256": "100135940b09d6e65132a5fc9a2bd56136cb4eabbcba4a2754094e1e5af374d2"
+    },
+    {
+      "session": "2026-06-30",
+      "plan_identity": "d3909a81c384e1d83a8c4da0f017fb086e00504c5493128454a0cef5c352dd34",
+      "complete_economic_plan_sha256": "d236b64c0c219750490e3977708f6e1e5964d3dd0f644c06ac05364fd4744334"
+    },
+    {
+      "session": "2026-07-01",
+      "plan_identity": "bd8524c89cf46e51f9fc1431659d6a8a7c8dd76a699a98d5e93f2aee4728a802",
+      "complete_economic_plan_sha256": "de7fe84c95edfa74f225bb2b5c5e111c7edb6db72a02285e38215c358b00146b"
+    },
+    {
+      "session": "2026-07-02",
+      "plan_identity": "d1b5c1c98a507cd7b22f0ce1430873ebe784ddb4ae84905f40de8730e7b795c0",
+      "complete_economic_plan_sha256": "8d47f1cfc7c878e3b3212fda4186cf528e00b3563fe8fddbc2f953745e15a8a8"
+    },
+    {
+      "session": "2026-07-03",
+      "plan_identity": "8122f5b97a2f07c8994e93c4b6f165f7d3af856495afb7c198c4dcc2c8b5d4ac",
+      "complete_economic_plan_sha256": "530d6c01fc72f7abaed2a4f77eb3a7707eb4e67b8faf5cc56ad1750a66ef39d5"
+    },
+    {
+      "session": "2026-07-06",
+      "plan_identity": "060b2367a17ee8becd2134f23b7d5ff5e58a06181a6f0866d95d0bccdd4bff0f",
+      "complete_economic_plan_sha256": "3cb8c45b08bba35a6d828e92960555df216a27d197f8f43501783c6b3cb5fb90"
+    },
+    {
+      "session": "2026-07-07",
+      "plan_identity": "9af5f9144426436278c236cbddc0d8fb9f9b8c4bb25a66bbbccc87ae43f864eb",
+      "complete_economic_plan_sha256": "38f5b6bd15dcb5cc54db91551bd1820e3ace5d769bebeeae1e21e0d4c0f65168"
+    },
+    {
+      "session": "2026-07-08",
+      "plan_identity": "89b7f7341807d208c92cbc33bc3bfabf419a43607aa3cbc0bf4dba1d458adc77",
+      "complete_economic_plan_sha256": "f09d6de1de6d8d0523979a871ed496e115ebb886073380c22943efa65f24b446"
+    },
+    {
+      "session": "2026-07-09",
+      "plan_identity": "94bdc515594733ab73f8bf9b8a6d95496f6a71d8a34bcaa8928d577d53b22ffe",
+      "complete_economic_plan_sha256": "b3445af2e268413cc287d9fb5f8a135a6642677bdbcc7ed95aa9d581a49583e8"
+    },
+    {
+      "session": "2026-07-10",
+      "plan_identity": "b53ad9fab8fe67e908fbf6f889a43878d8432c87d9df1ab9ad7ba608b9a96f69",
+      "complete_economic_plan_sha256": "4e15337637da6db382d3dab016315a6d258947c697027d100c35289b98b2af0e"
+    },
+    {
+      "session": "2026-07-13",
+      "plan_identity": "e206e16e6fe4e03172def2bf3553d8a928385e7fbccdaa837b14397fe31a8721",
+      "complete_economic_plan_sha256": "5da646a25bbe13013f5c4577c06c30faa144fe904f26d4ec73d2cae35087c352"
+    },
+    {
+      "session": "2026-07-14",
+      "plan_identity": "b9904d86b2e3c6113ef4cb25587e8037e6563992ca68324a77047216de32c789",
+      "complete_economic_plan_sha256": "dbdfb6f34288edb76ed44e3b30ca615d424447f35557478a9368fc50cef66188"
+    },
+    {
+      "session": "2026-07-15",
+      "plan_identity": "195d431c76ce15eb99a28048846570d39e2ee5adcc91a7d19d34ee07984b19c0",
+      "complete_economic_plan_sha256": "312cd7a9a6eec95e7d68e31f40569ff01442f1ab4eadf45b02482830759582b4"
+    },
+    {
+      "session": "2026-07-16",
+      "plan_identity": "bfd79da165f342df2a306082c0024eeb521fffd0b88f462c7fa47a93af509032",
+      "complete_economic_plan_sha256": "ce3397fde5aad6105aa7aa006009dd312369e17f990ffb0b6016b5450c70332d"
+    },
+    {
+      "session": "2026-07-17",
+      "plan_identity": "bca0926cb74de4293257b273ae6eaadc332d03cb22ffaa32e5a33e7f1f1d0860",
+      "complete_economic_plan_sha256": "f2ee6f9bc3ef81933118b88f71c676ee32cdd7a7db777dda53290a08c90d9df4"
+    },
+    {
+      "session": "2026-07-20",
+      "plan_identity": "cae1f6f027a031aea1dd95050a7c5b44a171a80fcc1e70c0476f22ae01d10493",
+      "complete_economic_plan_sha256": "f1604426eb597a90ee1f54f04c5be224c61dccd1bedb3349de9464966290343f"
+    },
+    {
+      "session": "2026-07-21",
+      "plan_identity": "6f09bdcd17c0d69bb310fb2da5a62fae0c6efe40bd844893656bef6f050c955d",
+      "complete_economic_plan_sha256": "a83e215dd9e0d7d1d99ca9edf6c01b7d64e1f10be17233054dacb9eee389782b"
+    },
+    {
+      "session": "2026-07-22",
+      "plan_identity": "b57fa9c08ff0d794f74656b9cc18693ade4aa2c8036808d86b5e8b7ffca28361",
+      "complete_economic_plan_sha256": "88bdd2524ae803d91843bd034fa5ff7323fa84404af0c47bcbc8d5d3794a2ccf"
+    },
+    {
+      "session": "2026-07-23",
+      "plan_identity": "e04751819741eb97dabf81de79d1a1f32bfd31bf2dc00b6b4204eec6951d6224",
+      "complete_economic_plan_sha256": "732621071549f85646687226423e8127fe7a06c66eefdc2cb1f383b617b2e550"
+    },
+    {
+      "session": "2026-07-24",
+      "plan_identity": "2922a58cc09ce06b5b87ca9386e538adb68185437a0a4ffd3421155e943a4c4a",
+      "complete_economic_plan_sha256": "aae0e0da5b9806120aa3090bfeba9e87fa36b4b498b7c862d7525ed2c60256ae"
+    },
+    {
+      "session": "2026-07-27",
+      "plan_identity": "c76ade63312f24755fa249c47304aa592271eb632608a724551bac24f8645708",
+      "complete_economic_plan_sha256": "95b5de31405f8e45bccefb34f13ef2c99f925ed0e0543c811173f77f76368f47"
+    },
+    {
+      "session": "2026-07-28",
+      "plan_identity": "124277e4952864a9780a274547e36b8cbde9f65a54abe4c431ad2cace417784c",
+      "complete_economic_plan_sha256": "6f8187c99e7c3340b65d0ed58fb07b7db9fd5fd1f92456dc972e3f55b49aafa6"
+    },
+    {
+      "session": "2026-07-29",
+      "plan_identity": "a57d61552a78b493a5aff1fae1c51d3ba92dac28f9da7de1bf1e3a2e59bd9dd5",
+      "complete_economic_plan_sha256": "ed855ea5e5bf1cbda86ee9d9279fbb15533b00909d0f7a5a058eff530325950b"
+    },
+    {
+      "session": "2026-07-30",
+      "plan_identity": "0faf6d3723d470ba83bc31a8ad237b13eace15df9034e64581db863e693142a0",
+      "complete_economic_plan_sha256": "36847caab5b49b784583bc82e34761fa4da719d65fa694b7a0bdb12640e215ba"
+    },
+    {
+      "session": "2026-07-31",
+      "plan_identity": "41c683d16629046f89eaa48a5294734cd9c09397c877477277ba8f0cad34bf36",
+      "complete_economic_plan_sha256": "0d350f386f6193bc211bc74d9b0b5ad309489b7dc24c82b8f876105673344cfe"
+    },
+    {
+      "session": "2026-08-03",
+      "plan_identity": "043b6721279098f7bf60619d148aa27e3dc495f8779908ea95f6489e5c7a6e50",
+      "complete_economic_plan_sha256": "b535cc826bfc930e7719c43610207eb6e1fbdb1ffcc5e4b86dc7d9d58f056069"
+    },
+    {
+      "session": "2026-08-04",
+      "plan_identity": "c3de62aad2f687647c681aad91df58914921350f61921b5bb33e59878213daf9",
+      "complete_economic_plan_sha256": "001a10a64401fd69527c5490894fb49c4cb9e0e2d047405fb2242e14c518ebf0"
+    },
+    {
+      "session": "2026-08-05",
+      "plan_identity": "fbc6a255b76deb34064d60f2ea0cdee7db7c9a50815dbcb59915a6d0a6be3ded",
+      "complete_economic_plan_sha256": "3440ba6c9399e6686fedbdf31a38ef47cec2b876c42f240560845d67f833b6e0"
+    },
+    {
+      "session": "2026-08-06",
+      "plan_identity": "6e308b2a7774bfe0111f7c82e979b14212575be6452c508cbbd9b1157c16f968",
+      "complete_economic_plan_sha256": "f1a8d21fb9f9723ef52fcc28ccc211e345c865911f6a48ff83f58da397c6a7cb"
+    },
+    {
+      "session": "2026-08-07",
+      "plan_identity": "8ed51caa3000122caae7f7ed4f4349bcfa603acfebe1ff6f9f8479fcb1635b88",
+      "complete_economic_plan_sha256": "822e47faf4e948d4d8cfb701502582177c8432ad6489511414f860defffaa870"
+    },
+    {
+      "session": "2026-08-10",
+      "plan_identity": "9a3965b02d165703c2906c7e038cd04cba2b7204a833a9833773c710cd120134",
+      "complete_economic_plan_sha256": "97188a4ef7cccddd49cfd840b8937e957998f9affcb1fe3012232cee75c54ebe"
+    },
+    {
+      "session": "2026-08-11",
+      "plan_identity": "12f8af78af39f006ac1afdb5df96b4bc080b18064dcde6062904646894271624",
+      "complete_economic_plan_sha256": "3bb12618e7a71b0d32a135b1c8b175b7df308803ae655bafebadf6bb27228b94"
+    },
+    {
+      "session": "2026-08-12",
+      "plan_identity": "933b869d8919e46a1a43834905f3f286aae5f40bcf884205761e28f9476cf5e0",
+      "complete_economic_plan_sha256": "8d855cbf13f58a1ae5d7c3b26829da9a2ecefc8082dde1df057c5fe78b9494bf"
+    },
+    {
+      "session": "2026-08-13",
+      "plan_identity": "effdf446ab9ea312677caad884ee089d48cc6b6554a76c035900efb4abb1a9c9",
+      "complete_economic_plan_sha256": "979fc554a9d37ca3dcbfbd0947a7e21efa32636704f99d7852d6fb3ffb4f9788"
+    },
+    {
+      "session": "2026-08-14",
+      "plan_identity": "8144af92f276eb994054099373cf4f1225662365bdaab77e589d1932aa2b65c6",
+      "complete_economic_plan_sha256": "d9a72463d909f3719396b1c60a9401afb96a9ac37c5f90b0b8e42a38b04e98c6"
+    },
+    {
+      "session": "2026-08-17",
+      "plan_identity": "bb9d5080e2d25f84fcf244b39f08a09cc9a8dbc0e96dae779fcae37f30426726",
+      "complete_economic_plan_sha256": "eabc02b5be50c0152fc988a88a12598fa7794131e73bec9fbc829cb2c8599f67"
+    },
+    {
+      "session": "2026-08-18",
+      "plan_identity": "b6d9a90669cdf71aba3e83e018f458de05ecc1c91f83b1ae554052fa943adf1e",
+      "complete_economic_plan_sha256": "6950c12d0ed8ca3316879a9970ed32d82850287b446dd783b70e98640e7b19cb"
+    },
+    {
+      "session": "2026-08-19",
+      "plan_identity": "63f88cdd64851b22d20c81aa815198bd5a3ed67b22155c302b7ce9a7391e2c03",
+      "complete_economic_plan_sha256": "37269382cd007783eecee89f5eff277782504c1e65c23d2689149ffc83c72f31"
+    },
+    {
+      "session": "2026-08-20",
+      "plan_identity": "3ac1a9174caa3c199c98613182bd9bba30d516cd95e158d9cb81ea7e516f842b",
+      "complete_economic_plan_sha256": "76593ca6745b8efc00058373dfe8d86d271c79b07ea1c827dcee187077d07b97"
+    },
+    {
+      "session": "2026-08-21",
+      "plan_identity": "39b1156a7c06d31419a89a2dc71d90e7575466cddbda43037665500806f8f7a0",
+      "complete_economic_plan_sha256": "d59d4e05287a7619bd741062fee9b6255765e439df58ec87f3f4e78add81b9c8"
+    },
+    {
+      "session": "2026-08-24",
+      "plan_identity": "eb0e8f9d402fd1861a8e58b6c9751ac7e81264c9dc8d9f8c5e38ab5cbbf5e959",
+      "complete_economic_plan_sha256": "357882f0ce27c0ebe393ee7f1fa9fe806e408c6a6aee140c7a3b8b8c54bc4643"
+    },
+    {
+      "session": "2026-08-25",
+      "plan_identity": "b69a21358fca61d951f924cd397b86383643e6264a6e4d7aaf02dc9529c5c49b",
+      "complete_economic_plan_sha256": "274661b6f16c3ca6e5bd958cb4b5d2642d001243e915efe5addb266fac1c46c4"
+    },
+    {
+      "session": "2026-08-26",
+      "plan_identity": "9ca2913fdfc93813f89a6da0627031e89e7901567c5df42acd3ae853284d7b68",
+      "complete_economic_plan_sha256": "547ffabf2c7d9cc722520f5cd9c32720407b032c6df43b5c65ee14814eb64379"
+    },
+    {
+      "session": "2026-08-27",
+      "plan_identity": "ffaececf32079d941487a27b9f525d8a2d31e708c6b7bfb5da0c476c77bcaf14",
+      "complete_economic_plan_sha256": "a0542d519dab1f05b54297c1e71208832a1795b5ab904c63e01a0e6a4a2d2d04"
+    },
+    {
+      "session": "2026-08-28",
+      "plan_identity": "2a4cd6777dae133225a2a5ae134c0d3191431824bc409e3fa534dec6993007e5",
+      "complete_economic_plan_sha256": "184eafbe180bfbb9f100a43669e0454cb6960ca3c4efdb381a3c794609ba6c5e"
+    },
+    {
+      "session": "2026-08-31",
+      "plan_identity": "22c961d063734d1846932cf55ccc13ba2b22c8f798e29d1ec38cb6b7fb606171",
+      "complete_economic_plan_sha256": "db953ffe3dfdb2ac32a5bc7938402fc15b0477e1ad75f6a45d5647b7b09405b6"
+    },
+    {
+      "session": "2026-09-01",
+      "plan_identity": "4f070e59127ed12419ed3ae05660c49aa5900e515dc80c5dcd72169f203b3623",
+      "complete_economic_plan_sha256": "47fc9cd1e2dd75f00962b6fd64c7e31e831ddd32d45e0a9d67eebc59ee378cf2"
+    },
+    {
+      "session": "2026-09-02",
+      "plan_identity": "a414f4bf67baa4bacc5067f6da49b102881ee03a574c30284c6f57a0468170af",
+      "complete_economic_plan_sha256": "90e304050c4659d90529365bb9c6cc2370595207d45cd385da6105fe7fceadda"
+    },
+    {
+      "session": "2026-09-03",
+      "plan_identity": "86782f96d7ff3272dd09ff28802fb4d7d46d1f8b366f4a5b6a0475ff88715683",
+      "complete_economic_plan_sha256": "7b4038f67e4d41b5318415c64ed5cd4a9a061b20dd5718799b7aaf20513ed06d"
+    },
+    {
+      "session": "2026-09-04",
+      "plan_identity": "e0fc857fc5de897827e26c54d35fd3bbd34190aae40e38c9d3f5bfae4084cdd2",
+      "complete_economic_plan_sha256": "ba427a54527775ad390b0a4fb6a364bbae64cdd5859a18ea9a7a83be9dbe1311"
+    },
+    {
+      "session": "2026-09-07",
+      "plan_identity": "fcd6be580eadfdcd431cf68131584edc663b18d0908a20cf992398fc48f78e95",
+      "complete_economic_plan_sha256": "9018cbbc57c41efdc792c6ad21f9f03a44db4e162716ba347c10637e59be17f3"
+    },
+    {
+      "session": "2026-09-08",
+      "plan_identity": "4fdcb92e302390ebffbd171cb3536f56049751647161ec75b40932271c9a6a87",
+      "complete_economic_plan_sha256": "c2df6a05e8a89d96cd268a37b7764ae60e3f4445e6fa95487780b10be4153162"
+    },
+    {
+      "session": "2026-09-09",
+      "plan_identity": "32ef6a6740b7bcd781946b3a4e3c792fb1f5e31c884ca896d49a9e34d09002a0",
+      "complete_economic_plan_sha256": "11da570794bd662c20fdfb1fe6e8d70fbf5e4a0319fa7af69f92a7ea9bfce1f4"
+    },
+    {
+      "session": "2026-09-10",
+      "plan_identity": "bdfc86e64ea0c7501d1ed3d6ff890e562bf6ad0615c1eb199bca036e38f75bad",
+      "complete_economic_plan_sha256": "affba18ffc41fd729b49600e69b52be83e6b08edb91c30f59d7d2161302511b2"
+    },
+    {
+      "session": "2026-09-11",
+      "plan_identity": "b599fbc879728c9f21ae68c81a1238c06c145a0930cbe847ee442233086e6781",
+      "complete_economic_plan_sha256": "772844142354df948f9a5a9749d73e1240ba58aa1d2192a8d709ce6db757e539"
+    },
+    {
+      "session": "2026-09-14",
+      "plan_identity": "3fd36a1198dc63ca6682922ead861feac9bcadfbb970531bb67aa82bfb382997",
+      "complete_economic_plan_sha256": "05b7ef2cdb1b0af1789c5566a85b5290ca5293f63800687ef1caf6630f17f251"
+    },
+    {
+      "session": "2026-09-15",
+      "plan_identity": "c2d980430c85be35ef00f3f1ee40104ea0d386d167171e49d679c131723c93a3",
+      "complete_economic_plan_sha256": "b889bd39c042a51b5b20765e567f1ad200ba9ccf39fe46c0be36a2bb990aa23f"
+    },
+    {
+      "session": "2026-09-16",
+      "plan_identity": "38bf7ceb3c59c65ba064d383d316186169c345fcd266115c5b8323b3e610ad2c",
+      "complete_economic_plan_sha256": "a039ee5f5de9afc3925b462e8acb6e650736110f131397e85d9513f2342a3dea"
+    },
+    {
+      "session": "2026-09-17",
+      "plan_identity": "ad16b553d21e898c55a12b2bbf3b9dc407cb16747495c30e2301f8cff9032a42",
+      "complete_economic_plan_sha256": "9cf5a4a00cd56488e4b174afbe2726b9a378dd84e0dd9490611cc5f5a84a168a"
+    },
+    {
+      "session": "2026-09-18",
+      "plan_identity": "e3df1b6f5cc57c982a56e7320f6a517ff3023a8285f4884610e508cf74438f80",
+      "complete_economic_plan_sha256": "e89288c3c4a3d8814f80d3fb769cc970b944844c027c5508fdbc7be64bc6d090"
+    },
+    {
+      "session": "2026-09-21",
+      "plan_identity": "0f27e344636a291d1229b3dcd429b6eaa0a0d3316fcc8cf53baa981b838c00f2",
+      "complete_economic_plan_sha256": "1f1535239d4e07895ea2b43eb2d5567db50076e680d78e36e70044ab4d282e43"
+    },
+    {
+      "session": "2026-09-22",
+      "plan_identity": "4253fb0e2e2d4fea56a9e6df5446f6dd4052a4b86c8cf773b9939220821308d3",
+      "complete_economic_plan_sha256": "9278906431e242adbbeb363ea6b74db4669d2adf9f40077c08aec9d87cf44178"
+    },
+    {
+      "session": "2026-09-23",
+      "plan_identity": "16bd8b5de26cb5436fc269dac036a73c475d7ef335578c4283254f1091ed8cef",
+      "complete_economic_plan_sha256": "2e92bbe10d42bc11352e91fbf38add664830fd54feb50479359aa5313b4dffdd"
+    },
+    {
+      "session": "2026-09-24",
+      "plan_identity": "bed2a9c029932aa89bcbda9c77434e16063af8088844afb201fa14816a8d0d75",
+      "complete_economic_plan_sha256": "9d605fac2efc7d133299ad16a2d166b744eb7250c5380f9195e9954b7a87787b"
+    },
+    {
+      "session": "2026-09-28",
+      "plan_identity": "b34813ad705168c64f7a65710c71ac8c53fcda7f09312b19f25d93565fb5c8ae",
+      "complete_economic_plan_sha256": "9c53a8333c83574a1de84cd4b8e6c6dfc89da8ee33e7f26b9a796b758cf354ab"
+    },
+    {
+      "session": "2026-09-29",
+      "plan_identity": "edfd110dfacc4676d0396bf4bfd49265ded67628c0832d8b3fce1904a0f4f94f",
+      "complete_economic_plan_sha256": "30f0fe4bbde9507e054ae0b63655eee9e7a54867a9f96a224b2630e1522bb2cf"
+    },
+    {
+      "session": "2026-09-30",
+      "plan_identity": "1d53f4e6ea0d474c18fa0cff96f55ab46d3ed5cbb2f9b06623f376ec0aadf332",
+      "complete_economic_plan_sha256": "ada3bd47f6dfb5a86838c63973a7e2b31d414cda96bd3d349d7cb828f3c07f5a"
+    },
+    {
+      "session": "2026-10-08",
+      "plan_identity": "0448dcc180aa308a03a3fae26af96a30b72107ba5c41cf431f80b9fec404b9c8",
+      "complete_economic_plan_sha256": "833ea72667774d54a9f7c1527af5d01f08f382d0f248d9ad23d9f4922fd82b66"
+    },
+    {
+      "session": "2026-10-09",
+      "plan_identity": "943752cc9e569e26b4364a20eed76516e39c1e30ad726341a0cea123ce87ec10",
+      "complete_economic_plan_sha256": "5f8763e6168f1bf92be426d655e5eb8fcd006a2be87caf60a00c205fbb31dc5d"
+    },
+    {
+      "session": "2026-10-12",
+      "plan_identity": "f98880fa4d4e19edb1b57ceeb292fe1087f49ae9194e943a6347ef37f83d5206",
+      "complete_economic_plan_sha256": "7728cc6e200ef76d906538793b6493c77b16765fdd742b11cff52639b8016202"
+    },
+    {
+      "session": "2026-10-13",
+      "plan_identity": "b8ee43beee25f1d8ad61f69476bd257bdd80ee23b234f100127beb0e4886a986",
+      "complete_economic_plan_sha256": "eb24705bfcd0fffaf753214acf8e1fa480e81f6beef2376d921a0ab3a872c65f"
+    },
+    {
+      "session": "2026-10-14",
+      "plan_identity": "02576fb3a990329285f16bee74e748145c075e31e7a9f2bc950bad39d76dcea9",
+      "complete_economic_plan_sha256": "5525a1c90e938c25e359e54e91cbe3d373a6dfd5d1c387472177d05c263c0bd6"
+    },
+    {
+      "session": "2026-10-15",
+      "plan_identity": "9d651cc87e84d75a3443de07040b455194fcfdf95172f8c4c7fa1ea05c2c7384",
+      "complete_economic_plan_sha256": "cc6ccd28ffb0350bd88b0dd3f61105d2af18d15e9d8d6556b2d1c7b834b94ec2"
+    },
+    {
+      "session": "2026-10-16",
+      "plan_identity": "2da8e2ffa10a9e74ae7496cbc30768eda4283909994ffca055ed11a852f4903d",
+      "complete_economic_plan_sha256": "38fff981370ccdfb9bc6be052d1485fe312f855f15a78784b1093114d10b4775"
+    },
+    {
+      "session": "2026-10-19",
+      "plan_identity": "330abb515ee4f2aa7b93b9c5a6c5cb5abe3ad550ca773b00bb1c2380410a85ac",
+      "complete_economic_plan_sha256": "5126aa3e0d6fd96e981bae293fc53568375b5ccc253cbcf8b5db05ba5bbc4ac8"
+    },
+    {
+      "session": "2026-10-20",
+      "plan_identity": "de0264e051a4836b425ba2222f729f747df5baa5c538c42d16f1320806168bd7",
+      "complete_economic_plan_sha256": "7c13e0528142f5b0b0f3d88113d3f6325460f584912d4b9f2aae0b4415d52966"
+    },
+    {
+      "session": "2026-10-21",
+      "plan_identity": "6bfd3877c43b7c0d9721c58b15a01ca6186848a3f39070fc6fd2e86f1cc2e17a",
+      "complete_economic_plan_sha256": "e8b2bc1543ccf6c7e8dd618971e46c7a2a62ffe96561912379df053108389dc3"
+    }
+  ],
+  "limits": [
+    "Conditional equivalence for C0001 and these authenticated retained inputs only.",
+    "Historical vendor publication, revision chain and 17:30 availability remain unverified.",
+    "Original formal pilot run used 20:31; its original timestamps and evidence remain unchanged.",
+    "This is a dedicated public SRT/TXE verification replay, not a new TDR account evaluation."
+  ]
+}

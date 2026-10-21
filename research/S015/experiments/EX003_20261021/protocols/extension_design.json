@@ -1,0 +1,287 @@
+{
+  "basis": "首轮60点已完成，21点同时满足中心经济与双频率。最高年化C0031约47.9%，退出阈值在暂定上沿。高入场阈值低回撤前沿多数频率不足，仍保留必要扩边负对照。",
+  "policy": "逐维改变暂定上界并保持其他参数，避免额外组合爆炸；h=1时exit没有作用故不重复扩exit。entry=0和h=1为机制自然边界。",
+  "range_policy": "首轮固定振幅过滤整体损失收益，未呈现足以支持继续调过滤阈值的增量；保留现有有无对照，不据结果细调安全区。",
+  "method": "Optuna enqueue_trial/ask/tell登记有限确定配置，RandomSampler(seed13)不生成额外自由采样；8进程、线程1。",
+  "configurations": [
+    {
+      "entry": 0.02,
+      "exit": 0.005,
+      "max_days": 3,
+      "range_cap": 0
+    },
+    {
+      "entry": 0.03,
+      "exit": 0.005,
+      "max_days": 3,
+      "range_cap": 0
+    },
+    {
+      "entry": 0.015,
+      "exit": 0.01,
+      "max_days": 3,
+      "range_cap": 0
+    },
+    {
+      "entry": 0.015,
+      "exit": 0.02,
+      "max_days": 3,
+      "range_cap": 0
+    },
+    {
+      "entry": 0.02,
+      "exit": 0.005,
+      "max_days": 1,
+      "range_cap": 1.5
+    },
+    {
+      "entry": 0.03,
+      "exit": 0.005,
+      "max_days": 1,
+      "range_cap": 1.5
+    },
+    {
+      "entry": 0.02,
+      "exit": 0,
+      "max_days": 1,
+      "range_cap": 1.5
+    },
+    {
+      "entry": 0.03,
+      "exit": 0,
+      "max_days": 1,
+      "range_cap": 1.5
+    },
+    {
+      "entry": 0,
+      "exit": 0.01,
+      "max_days": 3,
+      "range_cap": 0
+    },
+    {
+      "entry": 0,
+      "exit": 0.02,
+      "max_days": 3,
+      "range_cap": 0
+    },
+    {
+      "entry": 0.02,
+      "exit": 0.005,
+      "max_days": 1,
+      "range_cap": 0
+    },
+    {
+      "entry": 0.03,
+      "exit": 0.005,
+      "max_days": 1,
+      "range_cap": 0
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.01,
+      "max_days": 3,
+      "range_cap": 1.5
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.02,
+      "max_days": 3,
+      "range_cap": 1.5
+    },
+    {
+      "entry": 0.02,
+      "exit": 0.005,
+      "max_days": 5,
+      "range_cap": 0
+    },
+    {
+      "entry": 0.03,
+      "exit": 0.005,
+      "max_days": 5,
+      "range_cap": 0
+    },
+    {
+      "entry": 0.015,
+      "exit": 0.01,
+      "max_days": 5,
+      "range_cap": 0
+    },
+    {
+      "entry": 0.015,
+      "exit": 0.02,
+      "max_days": 5,
+      "range_cap": 0
+    },
+    {
+      "entry": 0.015,
+      "exit": 0.005,
+      "max_days": 7,
+      "range_cap": 0
+    },
+    {
+      "entry": 0.015,
+      "exit": 0.005,
+      "max_days": 10,
+      "range_cap": 0
+    },
+    {
+      "entry": 0.02,
+      "exit": 0,
+      "max_days": 1,
+      "range_cap": 0
+    },
+    {
+      "entry": 0.03,
+      "exit": 0,
+      "max_days": 1,
+      "range_cap": 0
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.01,
+      "max_days": 3,
+      "range_cap": 0
+    },
+    {
+      "entry": 0.0025,
+      "exit": 0.02,
+      "max_days": 3,
+      "range_cap": 0
+    }
+  ],
+  "changes": [
+    {
+      "parent": "C0006",
+      "changed": "entry",
+      "from": 0.015,
+      "to": 0.02
+    },
+    {
+      "parent": "C0006",
+      "changed": "entry",
+      "from": 0.015,
+      "to": 0.03
+    },
+    {
+      "parent": "C0006",
+      "changed": "exit",
+      "from": 0.005,
+      "to": 0.01
+    },
+    {
+      "parent": "C0006",
+      "changed": "exit",
+      "from": 0.005,
+      "to": 0.02
+    },
+    {
+      "parent": "C0025",
+      "changed": "entry",
+      "from": 0.015,
+      "to": 0.02
+    },
+    {
+      "parent": "C0025",
+      "changed": "entry",
+      "from": 0.015,
+      "to": 0.03
+    },
+    {
+      "parent": "C0029",
+      "changed": "entry",
+      "from": 0.015,
+      "to": 0.02
+    },
+    {
+      "parent": "C0029",
+      "changed": "entry",
+      "from": 0.015,
+      "to": 0.03
+    },
+    {
+      "parent": "C0031",
+      "changed": "exit",
+      "from": 0.005,
+      "to": 0.01
+    },
+    {
+      "parent": "C0031",
+      "changed": "exit",
+      "from": 0.005,
+      "to": 0.02
+    },
+    {
+      "parent": "C0032",
+      "changed": "entry",
+      "from": 0.015,
+      "to": 0.02
+    },
+    {
+      "parent": "C0032",
+      "changed": "entry",
+      "from": 0.015,
+      "to": 0.03
+    },
+    {
+      "parent": "C0041",
+      "changed": "exit",
+      "from": 0.005,
+      "to": 0.01
+    },
+    {
+      "parent": "C0041",
+      "changed": "exit",
+      "from": 0.005,
+      "to": 0.02
+    },
+    {
+      "parent": "C0044",
+      "changed": "entry",
+      "from": 0.015,
+      "to": 0.02
+    },
+    {
+      "parent": "C0044",
+      "changed": "entry",
+      "from": 0.015,
+      "to": 0.03
+    },
+    {
+      "parent": "C0044",
+      "changed": "exit",
+      "from": 0.005,
+      "to": 0.01
+    },
+    {
+      "parent": "C0044",
+      "changed": "exit",
+      "from": 0.005,
+      "to": 0.02
+    },
+    {
+      "parent": "C0044",
+      "changed": "max_days",
+      "from": 5,
+      "to": 7
+    },
+    {
+      "parent": "C0044",
+      "changed": "max_days",
+      "from": 5,
+      "to": 10
+    },
+    {
+      "parent": "C0061",
+      "changed": "entry",
+      "from": 0.015,
+      "to": 0.02
+    },
+    {
+      "parent": "C0061",
+      "changed": "entry",
+      "from": 0.015,
+      "to": 0.03
+    }
+  ],
+  "selection": "全部达标及收益/回撤前沿保留；不进行阶段四排序或稳健性检验。"
+}
