@@ -83,8 +83,8 @@ def test_relative_degradation_is_diagnostic_only_and_missing_ranking_value_is_no
 def test_frequency_scope_and_protocol_versions_are_explicit():
     positive = m.ResearchMetric.BENCHMARK_POSITIVE_YEAR_FREQUENCY
     target = m.ResearchTarget("frequency", positive, lower=m.ConstantBound(4.0, True))
-    with pytest.raises(ValueError, match="frequency metric differs from target"):
-        compare((row(candidate()),), targets=(target,))
+    independent = compare((row(candidate()),), targets=(target,))
+    assert independent.rows[0].target_checks[0].status is m.TargetCheckStatus.FAILED
     matched = policy(frequency_metric=positive)
     result = compare((metrics(row(candidate()), BENCHMARK_POSITIVE_YEAR_FREQUENCY=4.0),),
                      matched, targets=(target,))

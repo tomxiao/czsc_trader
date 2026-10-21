@@ -11,7 +11,7 @@ from time import perf_counter
 
 from factor_signal_catalog import FactorDefinition, SignalDefinition
 from strategy_evaluator import AssessmentEvidence, AssessmentPanel, assess_candidates, compare_candidates
-from strategy_evaluator.research_models import FREQUENCY_METRICS
+from strategy_evaluator.research_models import is_frequency_target
 from strategy_manager.write_lock import RegistryWriteLock
 from strategy_manager.errors import RegistryError
 
@@ -288,8 +288,8 @@ def _validate_assessment_delivery(definition, payload, root, context, content, s
 
     def source(ref):
         document = _read_json(_resolve(_delivery_path(context, ref), "delivery.json"))
-        if document.get("schema_version") != 7:
-            _fail("ASSESSMENT_SOURCE", ref.stage.value, "assessment requires schema 7 handoffs")
+        if document.get("schema_version") != 8:
+            _fail("ASSESSMENT_SOURCE", ref.stage.value, "assessment requires schema 8 handoffs")
         return d.DeliveryContent.from_dict(document["content"]).payload
 
     candidates = source(payload.source_candidates)
@@ -313,7 +313,7 @@ def _validate_assessment_delivery(definition, payload, root, context, content, s
     for binding in payload.target_bindings:
         if expected[binding.target_id] != (binding.mandate_item_id, targets[binding.target_id]):
             _fail("TARGET_BINDING", binding.target_id, "target differs from confirmed mandate")
-    if any(x.metric in FREQUENCY_METRICS for x in targets.values()):
+    if any(is_frequency_target(x) for x in targets.values()):
         item = declarations.get(payload.frequency_window_item_id)
         days = payload.comparison_request.targets.frequency_window_days
         if (item is None or item.confirmation.status is not d.ConfirmationStatus.CONFIRMED
@@ -449,7 +449,7 @@ def _read_delivery(context, reference, root, visited, scope=d.DeliveryValidation
     visited = visited | {identity}
     document = _read_json(_resolve(root, "delivery.json"))
     if (type(document) is not dict or set(document) != {"schema_version", "definition", "content"}
-        or type(document["schema_version"]) is not int or document["schema_version"] != 7):
+        or type(document["schema_version"]) is not int or document["schema_version"] != 8):
         _fail("DELIVERY_SCHEMA", "delivery.json", "unsupported delivery schema")
     receipt = d.DeliveryReceipt.from_dict(_read_json(_resolve(root, "receipt.json")))
     if receipt.reference != reference or d._digest(receipt.files) != reference.content_sha256:
@@ -554,7 +554,7 @@ def _assemble_delivery(context, definition, content):
     try:
         definition = d.DeliveryDefinition.from_dict(definition.to_dict())
         content = d.DeliveryContent.from_dict(content.to_dict())
-        document = {"schema_version": 7, "definition": definition.to_dict(), "content": content.to_dict()}
+        document = {"schema_version": 8, "definition": definition.to_dict(), "content": content.to_dict()}
         destination = _delivery_path(context, definition)
         public_destination = _public_delivery_path(context, definition)
         if destination.exists() or public_destination.exists():

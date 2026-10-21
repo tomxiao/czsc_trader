@@ -166,7 +166,7 @@ def test_complete_declared_coverage_computes_linear_quantiles():
     assert context.design_sha256 == req.parameter_designs[0].sha256
     values = {x.metric: x.value for x in panel.rows[0].diagnostics}
     assert values[m.ResearchMetric.PARAMETER_RETURN_DEGRADATION] > 0
-    assert panel.formula_version == "research-assessment-v4"
+    assert panel.formula_version == "research-assessment-v5"
     assert m.CandidateAssessmentRequest.from_dict(req.to_dict()) == req
 
 

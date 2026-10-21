@@ -117,12 +117,17 @@ def comparison_request(panel):
     )
 
 
-def prepare(completed):
+def prepare(completed, targets=None):
     context, research, request, result, evaluation = completed
     evidence = build_assessment_evidence(request, result)
     assessment = assessment_request(evidence)
+    if targets is not None:
+        assessment = replace(assessment, protocol=replace(
+            assessment.protocol, frequency_min_closed_cycles=3))
     panel = assess_candidates(assessment)
     comparison = comparison_request(panel)
+    if targets is not None:
+        comparison = replace(comparison, targets=m.ResearchTargets(targets, 60))
     confirmation = attachment(research, "confirmation", {"user": "合成测试：净年化下界 -1"})
     mandate = d.ResearchMandate((
         d.MandateItem("return", d.MandateItemKind.OBJECTIVE, "净年化下界",
@@ -130,6 +135,10 @@ def prepare(completed):
             d.PerformanceRequirement(comparison.targets.requirements)),
         d.MandateItem("benchmark", d.MandateItemKind.BENCHMARK, "显式基准",
             d.ConfirmationRecord(d.ConfirmationStatus.CONFIRMED, confirmation), d.BenchmarkRequirement(request.benchmark)),
+        *((d.MandateItem("frequency_days", d.MandateItemKind.EXECUTION, "统计窗口",
+            d.ConfirmationRecord(d.ConfirmationStatus.CONFIRMED, confirmation),
+            d.NumericRequirement("frequency_window_days", "sessions", lower=60.0, upper=60.0)),)
+          if targets is not None else ()),
     ))
     mandate_receipt = assemble_delivery(context,
         d.DeliveryDefinition(research.batch, d.DeliveryStage.MANDATE, 1), content(mandate))
@@ -141,7 +150,8 @@ def prepare(completed):
         content(d.CandidateSet((entry,), (key,), (), "交接一个候选")))
     payload = d.CandidateAssessmentDelivery(candidate_receipt.reference, mandate_receipt.reference,
         assessment, panel, comparison, compare_candidates(comparison),
-        (d.TargetMandateBinding("net_annual_return", "return"),), None, "benchmark",
+        tuple(d.TargetMandateBinding(x.target_id, "return") for x in comparison.targets.requirements),
+        "frequency_days" if targets is not None else None, "benchmark",
         "先补充缺失自检证据，再由用户选型", (evaluation.evidence,), ("是否补做压力与参数扰动实验",))
     definition = d.DeliveryDefinition(research.batch, d.DeliveryStage.ASSESSMENT, 1,
         predecessors=(candidate_receipt.reference, mandate_receipt.reference))
@@ -168,6 +178,73 @@ def test_delivery_certifies_each_unique_account_once_per_operation(completed, mo
     assert len(calls) == 2
     assert validate_delivery(context, receipt.reference, scope=d.DeliveryValidationScope.INTEGRITY).status is d.ValidationStatus.PASS
     assert len(calls) == 3
+
+
+def acceptance_targets():
+    return (
+        m.ResearchTarget("median", m.ResearchMetric.FREQUENCY_MEDIAN,
+                         lower=m.ConstantBound(6.0, True)),
+        m.FrequencyCoverageTarget("coverage", 60, 3, 9, 10),
+        m.ParameterGroupTarget("parameters", 32, 26,
+            (m.ResearchTarget("point-return", m.ResearchMetric.NET_ANNUAL_RETURN,
+                             lower=m.ConstantBound(0.0, False), one_way_cost=0.001),),
+            (m.ResearchTarget("point-dd", m.ResearchMetric.DRAWDOWN_MAGNITUDE,
+                             upper=m.ConstantBound(0.25, True), one_way_cost=0.001),)),
+        m.ResearchTarget("stress-return", m.ResearchMetric.NET_ANNUAL_RETURN,
+                         lower=m.BenchmarkBound(1.0, False),
+                         scope=m.TargetScope.STRESS, one_way_cost=0.002),
+    )
+
+
+def test_acceptance_contract_persists_and_full_validation_rejects_forged_facts(completed):
+    definition, value = prepare(completed, acceptance_targets())
+    context = completed[0]
+    receipt = assemble_delivery(context, definition, value)
+    assert receipt.schema_version == 8
+    saved = json.loads((published(context, receipt) / "delivery.json").read_text(encoding="utf-8"))
+    assert d.DeliveryContent.from_dict(saved["content"]) == value
+    for scope in d.DeliveryValidationScope:
+        assert validate_delivery(context, receipt.reference, scope=scope).status is d.ValidationStatus.PASS
+    result = value.payload.comparison.rows[0]
+    assert result.acceptance_status is m.TargetCheckStatus.INDETERMINATE
+    assert result.pareto_layer is None
+    assert len(result.target_checks) == 4
+    payload = value.payload
+    row = payload.assessment.rows[0]
+    forged = replace(row, frequency_coverage=replace(
+        row.frequency_coverage, total_windows=10, covered_windows=9))
+    panel = replace(payload.assessment, rows=(forged,))
+    comparison = replace(payload.comparison_request, panel=panel)
+    changed = replace(payload, assessment=panel, comparison_request=comparison,
+                      comparison=compare_candidates(comparison))
+    with pytest.raises(d.DeliveryValidationError, match="recomputation"):
+        assemble_delivery(context, replace(definition, revision=2), replace(value, payload=changed))
+    with pytest.raises(ValueError, match="invalid delivery revision/schema"):
+        replace(definition, schema_version=7)
+
+
+@pytest.mark.parametrize("change", ["coverage", "joint-count", "nested-limit", "stress-cost", "omit"])
+def test_acceptance_conditions_cannot_be_relaxed_after_confirmation(completed, change):
+    targets = acceptance_targets()
+    definition, value = prepare(completed, targets)
+    altered = list(targets)
+    if change == "coverage":
+        altered[1] = replace(altered[1], minimum_numerator=8)
+    elif change == "joint-count":
+        altered[2] = replace(altered[2], minimum_joint_passes=25)
+    elif change == "nested-limit":
+        altered[2] = replace(altered[2], all_point_targets=(replace(
+            altered[2].all_point_targets[0], upper=m.ConstantBound(0.30, True)),))
+    elif change == "stress-cost":
+        altered[3] = replace(altered[3], one_way_cost=0.001)
+    else:
+        altered.pop()
+    payload = value.payload
+    comparison = replace(payload.comparison_request, targets=m.ResearchTargets(tuple(altered), 60))
+    changed = replace(payload, comparison_request=comparison, comparison=compare_candidates(comparison),
+                      target_bindings=tuple(d.TargetMandateBinding(x.target_id, "return") for x in altered))
+    with pytest.raises(d.DeliveryValidationError, match="confirmed mandate|targets must be preserved"):
+        assemble_delivery(completed[0], definition, replace(value, payload=changed))
 
 
 def test_account_reuse_still_checks_current_file_and_reference_owner(completed):
@@ -235,8 +312,8 @@ def test_stage_four_roundtrip_recomputation_and_source_cleanup(completed):
     context, _, _, _, _ = completed
     definition, value = prepare(completed)
     comparison = value.payload.comparison_request
-    assert comparison.panel.formula_version == "research-assessment-v4"
-    assert comparison.policy.formula_version == "research-ranking-v2"
+    assert comparison.panel.formula_version == "research-assessment-v5"
+    assert comparison.policy.formula_version == "research-ranking-v3"
     assert len(comparison.policy.bins) == 8
     comparison = replace(comparison, policy=replace(comparison.policy, sensitivities=(m.ComparisonVariant("coarse-bins", comparison.policy.bins),)))
     value = replace(value, payload=replace(value.payload, comparison_request=comparison, comparison=compare_candidates(comparison)))

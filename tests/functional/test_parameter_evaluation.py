@@ -11,6 +11,7 @@ from strategy_evaluator import (
     ParameterSpace, build_parameter_perturbation_design, assess_candidates, compare_candidates,
     PerturbationLink,
 )
+from strategy_evaluator import research_models as m
 from strategy_manager import CandidateKey, CandidateDerivation, CandidateDerivationKind, CandidateEvidence
 from strategy_runtime import StrategyCandidate, StrategyRuntime, ImplementationDependency, canonical_sha256
 
@@ -100,7 +101,12 @@ def test_parameter_plan_rejects_missing_publication_and_collapsed_payloads(manag
 
 def test_parameter_assessment_delivery_replays_plan_after_source_cleanup(fresh_completed):
     context, research, request, center_result, _ = fresh_completed
-    definition, content = prepare(fresh_completed)
+    group = m.ParameterGroupTarget("point-economics", 2, 2,
+        (m.ResearchTarget("point-return", m.ResearchMetric.NET_ANNUAL_RETURN,
+                         lower=m.ConstantBound(-1.0, True)),),
+        (m.ResearchTarget("point-dd", m.ResearchMetric.DRAWDOWN_MAGNITUDE,
+                         upper=m.ConstantBound(1.0, True)),))
+    definition, content = prepare(fresh_completed, (group,))
     center, plan, reference, children = parameter_plan(research, request)
     center_evidence = build_assessment_evidence(center, center_result)
     accounts, links = [], []
@@ -117,9 +123,12 @@ def test_parameter_assessment_delivery_replays_plan_after_source_cleanup(fresh_c
                          perturbations=tuple(links), evidence=(*center_evidence, *accounts),
                          parameter_designs=(plan.design,))
     panel = assess_candidates(assessment)
-    comparison = comparison_request(panel)
+    comparison = replace(comparison_request(panel), targets=content.payload.comparison_request.targets)
     payload = replace(content.payload, assessment_request=assessment, assessment=panel,
                       comparison_request=comparison, comparison=compare_candidates(comparison), parameter_plans=(reference,))
+    checked = payload.comparison.rows[0].target_checks[0]
+    assert (checked.valid_points, checked.joint_passes) == (2, 2)
+    assert checked.status is m.TargetCheckStatus.PASSED
     false_center = replace(plan, center_request_sha256="f" * 64)
     false_reference = publish_evidence(research, MaterialEvidenceWrite(ExperimentRef("S900", request.experiment_id),
         "false-parameter-center", json.dumps(false_center.to_dict()).encode(), "application/json", "json"))

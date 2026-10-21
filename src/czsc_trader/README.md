@@ -568,7 +568,7 @@ if checked.status is not ValidationStatus.PASS:
 选定证据的 `evidence/` 浅快照及必要的决定／检验 `support/`。
 公开目录 `research/<批次>/deliveries/<阶段>/<修订>/` 保存对应的 `report.md` 和 `receipt.json`。
 发布与校验核对两处报告及回执的字节一致性；完整包只包含已选定材料。
-`DeliveryDefinition`、`DeliveryReceipt` 和 `delivery.json` 使用 schema 7，读取时拒绝旧交付格式，
+`DeliveryDefinition`、`DeliveryReceipt` 和 `delivery.json` 使用 schema 8，读取时拒绝旧交付格式，
 不自动迁移历史原件。账户评价证据使用 schema 7，请求身份使用 schema 6，`StrategyVersion` 继续使用 schema 5。
 修订号在“批次＋阶段”内唯一，同内容重复发布复用，冲突拒绝覆盖，失败不留下可见的半成品修订。
 前驱为同批次的 `DeliveryReference`；同阶段前驱只能是更早修订。
@@ -577,12 +577,38 @@ if checked.status is not ValidationStatus.PASS:
 校验默认 `DeliveryValidationScope.FULL`，核对文件身份和关联事实，并重算阶段四 SE 结果；
 `INTEGRITY` 仍核对文件、引用及保存事实，但不重新执行阶段四 SE 自检和排序计算。两者都不重跑整个研究过程。
 两种范围均核验 `report.md` 与提交的 `report` 字节一致；该检查不判断文字解释或研究结论的正确性。
-阶段四使用 SE 自检公式 `research-assessment-v4` 与排序公式 `research-ranking-v2`，
+阶段四使用 SE 自检公式 `research-assessment-v5` 与排序公式 `research-ranking-v3`，
 按中心收益和回撤分层、同层稳健性优先及交易频率最后比较；指标、分箱与频率口径见
 [SE 比较政策](../../packages/strategy_evaluator/README.md#比较请求与政策)。
 盈利年份合并频率由已保存基准净值与实际退出日计算，频率硬门仍须绑定已确认的目标及精确窗口。
 旧自检或排序字段集合明确拒绝，历史原件保留，不自动改写或重算历史排名。
 阶段五继续核验实际决定、检验及冻结状态；交付快照不取代运行发布和批准事实。
+
+### 完整目标集合的交付绑定
+
+阶段一`PerformanceRequirement.targets`接受SE的`ResearchTarget`、`FrequencyCoverageTarget`和
+`ParameterGroupTarget`。标准成本、压力成本、条件分支、联合点数及内层全部点条件都属于获批目标内容。
+具体字段、完整标准构造示例、逐项输出及精确计算口径见[SE验收契约](../../packages/strategy_evaluator/README.md#经济频率及稳健性验收)。
+
+| 入口 | 输入要求 | 输出及检查 |
+| --- | --- | --- |
+| `assemble_delivery`阶段一 | 在`ResearchMandate.items`的`PerformanceRequirement.targets`保存完整目标；每项有真实`ConfirmationRecord`；基准使用`BenchmarkRequirement` | 保存目标及确认引用，供后继交付精确绑定；不推断确认文本语义 |
+| `assemble_delivery`阶段四 | `CandidateAssessmentDelivery`携带自检请求/面板、比较请求/结果、账户正式证据，以及每个外层目标的`TargetMandateBinding(target_id, mandate_item_id)` | 所有已确认绩效目标必须完整保留且值一致，包括参数组内层；漏项或改阈值拒绝 |
+| `validate_delivery(..., scope=FULL)` | 当前schema交付引用及其前驱 | 认证账户、参数设计和阶段一绑定，再用`assess_candidates/compare_candidates`复算覆盖事实、逐点和压力验收及排序；不一致拒绝 |
+
+两项频率验收共用`ResearchTargets.frequency_window_days`，在已确认的执行条目中保存
+`NumericRequirement("frequency_window_days", "sessions", lower=60.0, upper=60.0)`，
+由`frequency_window_item_id`引用；`benchmark_item_id`绑定已确认基准。
+自检协议显式设置`frequency_min_closed_cycles=3`，参数协议规定32点；不要用排序频率替代双频率目标。
+`target_bindings`只绑定参数组外层ID，内层条件随整个组的强类型值精确核对。
+
+技术校验`PASS`表示交付真实、可复算；研究验收读取`comparison.rows[*].acceptance_status`及
+`target_checks`，推荐排序还须满足可比性和完整证据政策。研究未达标或证据不足的真实报告可正常留存，
+不能将保存成功当作研究通过。`INTEGRITY`不重算数值，不得替代FULL声称复算成功。
+
+本次版本升级拒绝schema 7交付及旧自检/排序字段，不实现双版本读取或自动迁移；旧原件保持原位。
+已有schema 7账户证据可在新合同下显式引用；继续旧研究须获准生成新交付，不能直接接续旧交付链。
+StrategyVersion和运行发布合同不变，不更改已冻结策略、SM状态或PTE运行行为。
 
 ### 交付校验与运行统计
 

@@ -187,8 +187,8 @@ def _deliveries(reader, batch, limitations):
             value = _json(reader.read(f"{path}/delivery.json"))
             if type(value) is not dict or type(value.get("schema_version")) is not int:
                 raise ValueError("invalid delivery envelope")
-            if value["schema_version"] != 7:
-                limitations.append(OverviewLimitation("UNSUPPORTED_DELIVERY_SCHEMA", path, "Retained delivery is not schema 7; no compatibility interpretation was performed."))
+            if value["schema_version"] != 8:
+                limitations.append(OverviewLimitation("UNSUPPORTED_DELIVERY_SCHEMA", path, "Retained delivery is not schema 8; no compatibility interpretation was performed."))
                 continue
             if set(value) != {"schema_version", "definition", "content"}:
                 raise ValueError("delivery envelope fields differ")

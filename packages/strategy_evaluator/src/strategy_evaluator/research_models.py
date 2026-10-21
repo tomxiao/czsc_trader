@@ -268,6 +268,7 @@ class DiagnosticStatus(StrEnum):
 
 
 class ResearchMetric(StrEnum):
+    FREQUENCY_COVERAGE = "FREQUENCY_COVERAGE"
     FULL_SAMPLE_FREQUENCY = "FULL_SAMPLE_FREQUENCY"
     BENCHMARK_POSITIVE_YEAR_FREQUENCY = "BENCHMARK_POSITIVE_YEAR_FREQUENCY"
     NET_ANNUAL_RETURN = "NET_ANNUAL_RETURN"
@@ -284,6 +285,7 @@ class ResearchMetric(StrEnum):
 
 
 FREQUENCY_METRICS = (
+    ResearchMetric.FREQUENCY_COVERAGE,
     ResearchMetric.FULL_SAMPLE_FREQUENCY,
     ResearchMetric.BENCHMARK_POSITIVE_YEAR_FREQUENCY,
     ResearchMetric.FREQUENCY_MEDIAN,
@@ -309,7 +311,7 @@ class DiagnosticValue(ResearchRecord):
     def validate(self):
         unit = (
             MetricUnit.CLOSED_CYCLES_PER_WINDOW
-            if self.metric in FREQUENCY_METRICS
+            if self.metric in FREQUENCY_METRICS and self.metric is not ResearchMetric.FREQUENCY_COVERAGE
             else MetricUnit.RATIO
         )
         require(self.unit is unit, "metric unit differs")
@@ -325,6 +327,7 @@ class DiagnosticValue(ResearchRecord):
                 ResearchMetric.DRAWDOWN_MAGNITUDE,
                 ResearchMetric.PARAMETER_DRAWDOWN_Q90,
                 ResearchMetric.PROFIT_CONCENTRATION,
+                ResearchMetric.FREQUENCY_COVERAGE,
             ):
                 require(0 <= self.value <= 1, "metric outside ratio range")
             if self.metric in (
@@ -618,8 +621,11 @@ class SelfCheckProtocol(ResearchRecord):
     reconciliation_tolerance: float
     pbo_blocks: int = 10
     parameter_protocol: ParameterPerturbationProtocol | None = None
+    frequency_min_closed_cycles: int | None = None
 
     def validate(self):
+        require(self.frequency_min_closed_cycles is None or self.frequency_min_closed_cycles > 0,
+                "frequency minimum must be positive")
         for name in (
             "rolling_window_days",
             "rolling_step_days",
@@ -869,6 +875,40 @@ class BenchmarkAssessment(ResearchRecord):
 
 
 @dataclass(frozen=True)
+class FrequencyCoverageFacts(ResearchRecord):
+    window_days: int
+    minimum_closed_cycles: int
+    total_windows: int
+    covered_windows: int
+    evaluation_ids: tuple[str, ...]
+
+    def validate(self):
+        require(self.window_days > 0 and self.minimum_closed_cycles > 0, "invalid frequency definition")
+        require(0 <= self.covered_windows <= self.total_windows, "invalid frequency coverage")
+        require(bool(self.evaluation_ids), "frequency source required")
+
+
+@dataclass(frozen=True)
+class PerformanceFacts(ResearchRecord):
+    candidate: AssessmentCandidate
+    evaluation_id: str
+    scenario: EvaluationScenarioContext
+    annual_return: float
+    drawdown: float
+    benchmark_return: float | None
+    benchmark_drawdown: float | None
+    point_index: int | None = None
+
+    def validate(self):
+        require(0 <= self.drawdown <= 1, "invalid performance drawdown")
+        require((self.benchmark_return is None) == (self.benchmark_drawdown is None),
+                "incomplete benchmark performance")
+        require(self.benchmark_drawdown is None or 0 <= self.benchmark_drawdown <= 1,
+                "invalid benchmark drawdown")
+        require(self.point_index is None or self.point_index >= 0, "invalid point index")
+
+
+@dataclass(frozen=True)
 class CandidateAssessment(ResearchRecord):
     candidate: AssessmentCandidate
     context_sha256: str | None
@@ -882,8 +922,28 @@ class CandidateAssessment(ResearchRecord):
     behavior_sha256: str | None
     benchmark: BenchmarkAssessment
     parameter_context: ParameterDiagnosticContext | None = None
+    frequency_coverage: FrequencyCoverageFacts | None = None
+    parameter_performances: tuple[PerformanceFacts, ...] = ()
+    stress_performance: PerformanceFacts | None = None
 
     def validate(self):
+        unique((x.point_index for x in self.parameter_performances), "performance point")
+        unique((x.candidate for x in self.parameter_performances), "performance candidate")
+        require(not self.parameter_performances or self.parameter_context is not None,
+                "parameter facts require design context")
+        if self.parameter_context is not None:
+            require(all(x.point_index is not None
+                        and x.point_index < self.parameter_context.prescribed_points
+                        and x.candidate != self.candidate
+                        and x.scenario == self.baseline_scenario
+                        for x in self.parameter_performances), "invalid parameter performance identity")
+        require(self.stress_performance is None or (
+            self.stress_performance.candidate == self.candidate
+            and self.stress_performance.scenario == self.stress_scenario
+            and self.stress_performance.point_index is None), "invalid stress performance identity")
+        require(self.frequency_coverage is None
+                or self.frequency_coverage.window_days == self.frequency_window_days,
+                "frequency definition differs")
         if (
             self.parameter_context is not None
             and self.parameter_context.valid_points != self.parameter_context.prescribed_points
@@ -938,11 +998,11 @@ class AssessmentPanel(ResearchRecord):
     rows: tuple[CandidateAssessment, ...]
     family_diagnostics: tuple[FamilyDiagnostic, ...]
     family_limitations: tuple[str, ...]
-    formula_version: str = "research-assessment-v4"
+    formula_version: str = "research-assessment-v5"
 
     def validate(self):
         require(
-            self.formula_version == "research-assessment-v4",
+            self.formula_version == "research-assessment-v5",
             "unsupported assessment formula version",
         )
         unique((x.candidate.candidate_id for x in self.rows), "panel candidate")
@@ -980,6 +1040,11 @@ class BenchmarkCondition(ResearchRecord):
         require(self.metric in BENCHMARK_METRICS, "unsupported benchmark condition metric")
 
 
+class TargetScope(StrEnum):
+    STANDARD = "STANDARD"
+    STRESS = "STRESS"
+
+
 @dataclass(frozen=True)
 class ResearchTarget(ResearchRecord):
     target_id: str
@@ -987,8 +1052,13 @@ class ResearchTarget(ResearchRecord):
     lower: ConstantBound | BenchmarkBound | None = None
     upper: ConstantBound | BenchmarkBound | None = None
     when: BenchmarkCondition | None = None
+    scope: TargetScope = TargetScope.STANDARD
+    one_way_cost: float | None = None
 
     def validate(self):
+        require(self.one_way_cost is None or 0 <= self.one_way_cost < 1, "invalid target cost")
+        require(self.scope is TargetScope.STANDARD or self.metric in BENCHMARK_METRICS,
+                "stress targets require performance metrics")
         require(
             self.metric
             in (
@@ -1017,13 +1087,55 @@ class ResearchTarget(ResearchRecord):
 
 
 @dataclass(frozen=True)
+class FrequencyCoverageTarget(ResearchRecord):
+    target_id: str
+    window_days: int
+    minimum_closed_cycles: int
+    minimum_numerator: int
+    minimum_denominator: int
+
+    def validate(self):
+        require(self.window_days > 0 and self.minimum_closed_cycles > 0, "invalid frequency target")
+        require(0 < self.minimum_numerator <= self.minimum_denominator, "invalid coverage fraction")
+
+
+@dataclass(frozen=True)
+class ParameterGroupTarget(ResearchRecord):
+    target_id: str
+    required_points: int
+    minimum_joint_passes: int
+    joint_targets: tuple[ResearchTarget, ...]
+    all_point_targets: tuple[ResearchTarget, ...]
+
+    def validate(self):
+        require(0 < self.minimum_joint_passes <= self.required_points, "invalid parameter group count")
+        require(bool(self.joint_targets) and bool(self.all_point_targets), "empty parameter conditions")
+        unique((x.target_id for x in (*self.joint_targets, *self.all_point_targets)), "point target")
+        require(all(x.scope is TargetScope.STANDARD and x.metric in BENCHMARK_METRICS
+                    for x in (*self.joint_targets, *self.all_point_targets)),
+                "parameter conditions require standard performance metrics")
+
+
+AcceptanceTarget = ResearchTarget | FrequencyCoverageTarget | ParameterGroupTarget
+
+
+def is_frequency_target(target):
+    return isinstance(target, FrequencyCoverageTarget) or (
+        isinstance(target, ResearchTarget) and target.metric in FREQUENCY_METRICS)
+
+
+@dataclass(frozen=True)
 class ResearchTargets(ResearchRecord):
-    requirements: tuple[ResearchTarget, ...]
+    requirements: tuple[AcceptanceTarget, ...]
     frequency_window_days: int
 
     def validate(self):
         unique((x.target_id for x in self.requirements), "research target")
         require(self.frequency_window_days > 0, "invalid frequency window")
+        coverage = [x for x in self.requirements if isinstance(x, FrequencyCoverageTarget)]
+        require(len(coverage) <= 1, "only one frequency coverage definition allowed")
+        require(all(x.window_days == self.frequency_window_days for x in coverage),
+                "frequency target window differs")
 
 
 WITHIN_LAYER_METRICS = (
@@ -1098,10 +1210,10 @@ class ComparisonPolicy(ResearchRecord):
     pareto_basis: ParetoBasis
     missing_evidence_policy: MissingEvidencePolicy
     sensitivities: tuple[ComparisonVariant, ...] = ()
-    formula_version: str = "research-ranking-v2"
+    formula_version: str = "research-ranking-v3"
 
     def validate(self):
-        require(self.formula_version == "research-ranking-v2", "unsupported ranking formula version")
+        require(self.formula_version == "research-ranking-v3", "unsupported ranking formula version")
         ComparisonVariant("baseline", self.bins)
         unique((x.name for x in self.sensitivities), "sensitivity name")
         require(
@@ -1136,14 +1248,9 @@ class CandidateComparisonRequest(ResearchRecord):
             set(self.candidates) == {x.candidate for x in self.panel.rows},
             "comparison set differs from panel",
         )
-        require(
-            all(
-                x.metric is self.policy.frequency_metric
-                for x in self.targets.requirements
-                if x.metric in FREQUENCY_METRICS
-            ),
-            "ranking frequency metric differs from target",
-        )
+        require(self.policy.frequency_metric is not ResearchMetric.FREQUENCY_COVERAGE or any(
+            isinstance(x, FrequencyCoverageTarget) for x in self.targets.requirements),
+            "coverage ranking requires a coverage target definition")
 
 
 class ComparisonStatus(StrEnum):
@@ -1185,16 +1292,59 @@ class TargetCheck(ResearchRecord):
 
 
 @dataclass(frozen=True)
+class FrequencyCoverageCheck(ResearchRecord):
+    target: FrequencyCoverageTarget
+    facts: FrequencyCoverageFacts | None
+    status: TargetCheckStatus
+    reason: str | None
+
+    def validate(self):
+        require((self.status is TargetCheckStatus.PASSED) == (self.reason is None), "invalid coverage result")
+        require(self.status not in (TargetCheckStatus.PASSED, TargetCheckStatus.FAILED)
+                or self.facts is not None, "coverage decision requires facts")
+
+
+@dataclass(frozen=True)
+class ParameterPointCheck(ResearchRecord):
+    point_index: int
+    candidate: AssessmentCandidate
+    evaluation_id: str
+    joint_checks: tuple[TargetCheck, ...]
+    all_point_checks: tuple[TargetCheck, ...]
+
+
+@dataclass(frozen=True)
+class ParameterGroupCheck(ResearchRecord):
+    target: ParameterGroupTarget
+    valid_points: int
+    joint_passes: int
+    points: tuple[ParameterPointCheck, ...]
+    status: TargetCheckStatus
+    reason: str | None
+
+    def validate(self):
+        require(0 <= self.joint_passes <= self.valid_points == len(self.points)
+                <= self.target.required_points, "invalid group result counts")
+        unique((x.point_index for x in self.points), "checked parameter point")
+        require((self.status is TargetCheckStatus.PASSED) == (self.reason is None), "invalid group result")
+        require(self.status is not TargetCheckStatus.PASSED
+                or (self.valid_points == self.target.required_points
+                    and self.joint_passes >= self.target.minimum_joint_passes),
+                "passed group requires complete coverage")
+
+
+@dataclass(frozen=True)
 class CandidateRank(ResearchRecord):
     candidate: AssessmentCandidate
     status: ComparisonStatus
-    target_checks: tuple[TargetCheck, ...]
+    target_checks: tuple[TargetCheck | FrequencyCoverageCheck | ParameterGroupCheck, ...]
     pareto_layer: int | None
     rank_in_layer: int | None
     bin_values: tuple[int | None, ...]
     reasons: tuple[str, ...]
     rank_min: int | None
     rank_max: int | None
+    acceptance_status: TargetCheckStatus = TargetCheckStatus.INDETERMINATE
 
     def validate(self):
         require((self.rank_min is None) == (self.rank_max is None), "rank interval incomplete")

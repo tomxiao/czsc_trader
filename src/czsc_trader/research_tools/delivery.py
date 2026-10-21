@@ -16,6 +16,8 @@ from strategy_evaluator import (
     CandidateComparisonRequest,
     CandidateComparison,
     ResearchTarget,
+    FrequencyCoverageTarget,
+    ParameterGroupTarget,
 )
 
 
@@ -69,14 +71,14 @@ class DeliveryDefinition(_Record):
     stage: DeliveryStage
     revision: int
     predecessors: tuple[DeliveryReference, ...] = ()
-    schema_version: int = 7
+    schema_version: int = 8
 
     @property
     def strategy_id(self):
         return self.batch.strategy_id
 
     def _validate(self):
-        if self.revision < 1 or self.schema_version != 7:
+        if self.revision < 1 or self.schema_version != 8:
             raise ValueError("invalid delivery revision/schema")
         _unique(((x.stage,x.revision) for x in self.predecessors), "predecessor")
         for ref in self.predecessors:
@@ -130,7 +132,7 @@ class NumericRequirement(_Record):
 
 @dataclass(frozen=True, slots=True)
 class PerformanceRequirement(_Record):
-    targets: tuple[ResearchTarget, ...]
+    targets: tuple[ResearchTarget | FrequencyCoverageTarget | ParameterGroupTarget, ...]
 
     def _validate(self):
         if not self.targets:
@@ -564,10 +566,10 @@ class PublicationFile(_Record):
 class DeliveryReceipt(_Record):
     reference: DeliveryReference
     files: tuple[PublicationFile, ...]
-    schema_version: int = 7
+    schema_version: int = 8
 
     def _validate(self):
-        if self.schema_version != 7:
+        if self.schema_version != 8:
             raise ValueError("unsupported receipt schema")
         if not self.files:
             raise ValueError("receipt requires file manifest")

@@ -307,7 +307,7 @@ def row(who, annual=0.1, drawdown=0.1, degradation=0.02, missing=None):
         }.get(metric, 0.01)
         unit = (
             m.MetricUnit.CLOSED_CYCLES_PER_WINDOW
-            if metric in m.FREQUENCY_METRICS
+            if metric in m.FREQUENCY_METRICS and metric is not m.ResearchMetric.FREQUENCY_COVERAGE
             else m.MetricUnit.RATIO
         )
         diagnostics.append(

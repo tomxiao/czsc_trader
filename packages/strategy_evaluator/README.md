@@ -93,7 +93,7 @@ SE不猜测策略参数含义，也不读取账户收益筛选扰动点。
 公开契约为`ParameterCoordinate`、`ParameterSpace`、`ParameterPerturbationProtocol`、
 `ParameterDesignRequest`、`ParameterPerturbationDesign`及`ParameterPointBinding`。
 `ResearchRecord.to_dict/from_dict/sha256`提供严格序列化和内容身份；当前字段必须齐全，
-不自动补齐历史格式。自检输出公式版本为`research-assessment-v4`，历史原件保持不变。
+不自动补齐历史格式。自检输出公式版本为`research-assessment-v5`，历史原件保持不变。
 
 ```python
 from strategy_evaluator import (
@@ -169,18 +169,18 @@ if result.status is ParameterDesignStatus.COMPLETE:
 `CandidateComparisonRequest`显式传入比较候选集、`ResearchTargets`、自检面板和
 `ComparisonPolicy`。TDR阶段交付将数值目标绑定到阶段一已确认的`MandateItem`；纯SE请求本身
 不证明目标已获用户确认。诊断指标不自动升级为研究硬门。
-本入口核验`ResearchTargets`显式支持的中心指标目标；年度逐项目标及扰动点逐点达标要求
-由研究方另外核验并留证，排序计算不替代这些检查。
+本入口核验`ResearchTargets`显式声明的中心、窗口覆盖率、参数组及压力目标，输入与结果见下节。
+年度表现、集中度、区间和PBO/DSR仍是诊断，不自动生成数值门槛。
 
 `ComparisonPolicy(version, bins, pareto_basis, missing_evidence_policy, sensitivities=(),
-formula_version="research-ranking-v2")`
+formula_version="research-ranking-v3")`
 必须显式声明分层基础及缺失证据政策：
 
 | 字段 | 支持选项与语义 |
 | --- | --- |
 | `pareto_basis` | `ParetoBasis.RAW`使用原始净年化与回撤；`BINNED`使用协议分箱后的两项指标分层 |
 | `missing_evidence_policy` | `MissingEvidencePolicy.REQUIRE_COMPLETE`要求两项分层、五项稳健性及一项频率，共八项证据齐备；`PREFIX_PARTIAL`允许按已知指标前缀判断部分先后关系，遇到影响判断的缺失值保留成对不可比 |
-| `formula_version` | 固定为`research-ranking-v2`，连同研究协议`version`进入请求身份；旧字段集合和公式版本明确拒绝，不自动升级历史交付 |
+| `formula_version` | 固定为`research-ranking-v3`，连同研究协议`version`进入请求身份；旧字段集合和公式版本明确拒绝，不自动升级历史交付 |
 
 `bins`恰含净年化、回撤、上述五项稳健性及一个`FREQUENCY_METRICS`指标。
 层级优先；层内固定按六项指标比较：扰动净年化Q10（高）、扰动回撤Q90（低）、滚动超额Q10（高）、
@@ -191,7 +191,8 @@ formula_version="research-ranking-v2")`
 候选ID只用于稳定展示。结果包含`pairs`两两比较关系以及每个候选的`rank_min/rank_max`；
 `rank_in_layer`仅在能确定名次时填写，完整并列采用竞赛排名。状态为
 `TARGET_NOT_MET/INCOMPARABLE/RANKED/TIED/PARTIALLY_ORDERED`，缺失值不填零。
-交易频率最后参与层内排序，已有频率目标必须与所选频率指标一致，窗口须与面板一致，不能混用口径。
+交易频率最后参与层内排序。排序只选择一项频率，验收可同时声明中位数及覆盖率等多项条件；
+它们不必等于排序指标，但窗口须与面板一致。选择覆盖率排序时，必须显式声明同口径覆盖率目标。
 未达标、证据不足和不可比候选仍保留结果。
 采用部分排序时，目标、净年化和回撤仍须可核验；评价口径不一致的候选保留为不可比。
 敏感性方案另列，不改写基准排序；`adjacent_swap`取0至4，只交换六项层内指标的相邻优先级，
@@ -209,6 +210,87 @@ formula_version="research-ranking-v2")`
 [RSCH排序规则](../../research/RSCH_AGENT.md#研究族内排序规则)和获批协议为准，调用方不得据工具能力自行改政策。
 按该研究政策构造请求时，显式设置`ParetoBasis.RAW`和`MissingEvidencePolicy.REQUIRE_COMPLETE`；
 其他政策须先获用户批准并另立协议版本。
+
+### 经济、频率及稳健性验收
+
+验收复用上述两个入口，不新增账户回放或独立准入服务。SE计算声明的条件，TDR认证来源并绑定
+阶段一确认；数值通过不等于统计独立性充分，也不授予冻结或PTE权限。
+
+| 输入类型 | 字段与语义 |
+| --- | --- |
+| `ResearchTarget` | `target_id/metric/lower/upper/when`；`scope=TargetScope.STANDARD`使用中心，`STRESS`只支持压力净年化和回撤；可用`one_way_cost`声明必需每侧费用，缺失或不符为证据不足 |
+| `FrequencyCoverageTarget` | `target_id/window_days/minimum_closed_cycles/minimum_numerator/minimum_denominator`；例如`("coverage", 60, 3, 9, 10)`表示至少90%的完整60交易日窗口有至少3笔闭合交易 |
+| `ParameterGroupTarget` | `target_id/required_points/minimum_joint_passes/joint_targets/all_point_targets`；同一点须同时满足所有适用联合条件，全部设计点须满足全部点条件；内层仅支持标准场景收益和回撤 |
+| `SelfCheckProtocol.frequency_min_closed_cycles` | 显式传入覆盖统计的闭合笔数阈值，例如3；`None`表示未请求该统计，不能用中位数或Q10补齐 |
+
+这些目标组成`ResearchTargets.requirements`。参数与窗口数接受有约束的整数，拒绝布尔值冒充整数。
+参数条件按每个点自己的标准场景基准计算；压力条件只使用压力账户自己的基准。成本未声明表示
+该原子目标没有费用约束；下例明确声明标准0.001、压力0.002，不从场景名称推断费用。
+
+`CandidateAssessment`增加三类事实：
+
+- `frequency_coverage: FrequencyCoverageFacts | None`：窗口长度、笔数阈值、总窗口数N、达标数K及评价ID。
+  每交易日移动一次，按退出日计闭合交易，窗口前入场、窗口内退出计入；未退出不计入。
+  N为账户日数减窗口长度加一，不足窗口时N=0，验收为`INDETERMINATE`。
+  `FREQUENCY_COVERAGE`诊断为K/N，单位`RATIO`；门槛用整数交叉相乘，避免插值分位数替代覆盖率。
+- `parameter_performances: tuple[PerformanceFacts, ...]`：保留有效点序号、候选及评价ID、场景、策略和基准净年化/回撤。
+  只接纳与中心的上下文、版本、费用、基准净值和设计绑定一致的点；缺点不缩小规定分母。
+- `stress_performance: PerformanceFacts | None`：同一中心的压力场景策略与基准绩效、场景和评价ID。
+  只有压力损失诊断不足以完成压力验收。
+
+净年化使用`(末期净值/初始资金) ** (252/交易日数) - 1`，回撤包含初始资金及持仓市值。
+比较使用未作展示舍入的数值；v3将基准值与倍数的最短十进制表示相乘后转换为float作为边界，
+避免`0.1 * 1.5`的乘法尾差误拒绝`0.15`；不加入额外容差，严格不等号仍严格执行。
+
+以下是2026-10-21获批标准的目标构造示例；`performance`是示例内的本地构造函数，不是平台API。
+研究协议需另行显式配置60日频率、32点设计、标准/压力场景与覆盖阈值3，再取得对应面板。
+
+```python
+from strategy_evaluator import (
+    ResearchMetric as M, ResearchTarget, ResearchTargets, TargetScope,
+    ConstantBound as C, BenchmarkBound as B, BenchmarkCondition, ComparisonOperator as Op,
+    FrequencyCoverageTarget, ParameterGroupTarget,
+)
+
+def performance(prefix, multiple, dd_multiple):
+    return (
+        ResearchTarget(prefix + "-positive", M.NET_ANNUAL_RETURN, lower=B(multiple, True),
+            when=BenchmarkCondition(M.NET_ANNUAL_RETURN, Op.GT, 0.0), one_way_cost=0.001),
+        ResearchTarget(prefix + "-nonpositive", M.NET_ANNUAL_RETURN, lower=C(0.0, False),
+            when=BenchmarkCondition(M.NET_ANNUAL_RETURN, Op.LE, 0.0), one_way_cost=0.001),
+        ResearchTarget(prefix + "-relative-dd", M.DRAWDOWN_MAGNITUDE,
+            upper=B(dd_multiple, True), one_way_cost=0.001),
+    )
+
+pressure = {"scope": TargetScope.STRESS, "one_way_cost": 0.002}
+targets = ResearchTargets((
+    *performance("center", 1.5, 0.8),
+    ResearchTarget("center-cap", M.DRAWDOWN_MAGNITUDE, upper=C(0.25, True), one_way_cost=0.001),
+    ResearchTarget("median", M.FREQUENCY_MEDIAN, lower=C(6.0, True), one_way_cost=0.001),
+    FrequencyCoverageTarget("coverage", 60, 3, 9, 10),
+    ParameterGroupTarget("parameters", 32, 26, performance("point", 1.25, 0.9), (
+        ResearchTarget("point-cap", M.DRAWDOWN_MAGNITUDE, upper=C(0.25, True), one_way_cost=0.001),
+    )),
+    ResearchTarget("stress-profit", M.NET_ANNUAL_RETURN, lower=C(0.0, False), **pressure),
+    ResearchTarget("stress-excess", M.NET_ANNUAL_RETURN, lower=B(1.0, False), **pressure),
+    ResearchTarget("stress-dd-positive", M.DRAWDOWN_MAGNITUDE, upper=B(1.0, False),
+        when=BenchmarkCondition(M.DRAWDOWN_MAGNITUDE, Op.GT, 0.0), **pressure),
+    ResearchTarget("stress-dd-zero", M.DRAWDOWN_MAGNITUDE, upper=C(0.0, True),
+        when=BenchmarkCondition(M.DRAWDOWN_MAGNITUDE, Op.LE, 0.0), **pressure),
+    ResearchTarget("stress-cap", M.DRAWDOWN_MAGNITUDE, upper=C(0.25, True), **pressure),
+), frequency_window_days=60)
+```
+
+`CandidateRank.target_checks`按目标返回`TargetCheck/FrequencyCoverageCheck/ParameterGroupCheck`。
+原子结果有观察值、解析后边界、条件值和评价ID；覆盖结果带N/K；参数结果带有效点数、联合通过数、
+逐点联合与全部点检查。输出状态为`PASSED/FAILED/INDETERMINATE/NOT_APPLICABLE`：条件分支未触发
+仅该原子项不适用；不能把全不适用或空目标集合视为通过。参数组完整通过要求全部规定点有效，
+且联合通过数和全部点条件同时成立；已发现风险上限失败可直接报告失败，缺失项仍保留。
+
+`CandidateRank.acceptance_status`汇总已声明目标：任一失败为`FAILED`；没有失败但有证据不足则为
+`INDETERMINATE`；所有适用条件通过且至少一项适用才为`PASSED`。没有目标时可作普通排序，验收状态
+仍为`INDETERMINATE`。声明目标未通过的候选不进入推荐排序；目标通过但排序证据不全仍不可比。
+此字段只证明所传目标集合，完整获批集合由TDR阶段一绑定校验，不能用删减目标的纯SE请求宣称完整通过。
 
 ## `compare_ledgers`：保留原始身份的账本比较
 

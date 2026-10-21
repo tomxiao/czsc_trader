@@ -4,12 +4,12 @@ from collections import defaultdict
 from dataclasses import replace
 from decimal import Decimal, ROUND_FLOOR, ROUND_HALF_EVEN, ROUND_HALF_UP
 from itertools import combinations
-import operator
 import math
 
 import numpy as np
 
 from . import research_models as m
+from .research_acceptance import acceptance_status, check_target as _check_target
 from .bootstrap import _paired_stationary_bootstrap_cagr
 from .audit_models import ReturnMatrixEvidence
 from .search_bias import annualized_sharpe, calculate_dsr_bundle, cscv_pbo, effective_trial_count
@@ -37,6 +37,15 @@ def _equity_performance(equity, initial_cash):
     drawdown = float(-np.min(wealth / np.maximum.accumulate(wealth) - 1))
     m.require(math.isfinite(annual), "annual return overflow")
     return annual, drawdown
+
+
+def _performance_facts(evidence):
+    annual, drawdown = _performance(evidence)
+    benchmark = (_equity_performance(evidence.benchmark_equity, evidence.initial_cash)
+                 if evidence.benchmark_equity else (None, None))
+    return m.PerformanceFacts(evidence.candidate, evidence.evaluation_id, evidence.scenario_context,
+        annual, drawdown, *benchmark,
+        None if evidence.parameter_point is None else evidence.parameter_point.point_index)
 
 
 def _returns(evidence):
@@ -191,6 +200,9 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
             )
         ]
         diagnostics = {}
+        coverage = None
+        point_facts = ()
+        stress_facts = None
 
         def put(
             metric,
@@ -201,7 +213,7 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
         ):
             unit = (
                 m.MetricUnit.CLOSED_CYCLES_PER_WINDOW
-                if metric in m.FREQUENCY_METRICS
+                if metric in m.FREQUENCY_METRICS and metric is not m.ResearchMetric.FREQUENCY_COVERAGE
                 else m.MetricUnit.RATIO
             )
             diagnostics[metric] = m.DiagnosticValue(
@@ -272,6 +284,14 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
                     reason="INSUFFICIENT_FREQUENCY_WINDOW",
                     sources=(base,),
                 )
+            if p.frequency_min_closed_cycles is not None:
+                coverage = m.FrequencyCoverageFacts(size, p.frequency_min_closed_cycles, len(counts),
+                    sum(x >= p.frequency_min_closed_cycles for x in counts), (base.evaluation_id,))
+                put(m.ResearchMetric.FREQUENCY_COVERAGE,
+                    coverage.covered_windows / coverage.total_windows if coverage.total_windows else None,
+                    reason="INSUFFICIENT_FREQUENCY_WINDOW", sources=(base,))
+            else:
+                put(m.ResearchMetric.FREQUENCY_COVERAGE, reason="FREQUENCY_COVERAGE_NOT_REQUESTED", sources=(base,))
             concentration, state, reason = _concentration(base, p.reconciliation_tolerance)
             put(m.ResearchMetric.PROFIT_CONCENTRATION, concentration, state, reason, (base,))
             if reason:
@@ -303,6 +323,13 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
                 and x.scenario_context == base.scenario_context
                 for x in neighbors
             )
+            if design is not None:
+                point_facts = tuple(_performance_facts(x) for x in neighbors
+                    if x is not None and x.parameter_point is not None
+                    and x.context_sha256 == base.context_sha256
+                    and x.metric_version == base.metric_version
+                    and x.scenario_context == base.scenario_context
+                    and x.benchmark_equity == base.benchmark_equity)
             declared_complete = design is None or (
                 len(links) == design.protocol.point_count
                 and {x.parameter_point.point_index for x in links}
@@ -359,6 +386,7 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
                     base.metric_version,
                 )
             ):
+                stress_facts = _performance_facts(stress)
                 put(
                     m.ResearchMetric.STRESS_ANNUAL_LOSS,
                     annual - _performance(stress)[0],
@@ -453,6 +481,7 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
                 None
                 if not request.parameter_designs
                 else _parameter_context(request, center, evidence, base),
+                coverage, point_facts, stress_facts,
             )
         )
     family, limitations = _family(request)
@@ -486,67 +515,6 @@ def _parameter_context(request, center, evidence, base):
         len(design.space.coordinates),
         design.protocol.point_count,
         valid,
-    )
-
-
-def _check_target(target, row, frequency_window_days):
-    metrics = {x.metric: x for x in row.diagnostics}
-    benchmark = {x.metric: x for x in row.benchmark.diagnostics}
-    observed = metrics[target.metric].value
-    sources = list(metrics[target.metric].evaluation_ids)
-    condition_value = None
-    lower = upper = None
-
-    def result(status, reason=None):
-        return m.TargetCheck(
-            target,
-            observed,
-            status,
-            reason,
-            lower,
-            upper,
-            condition_value,
-            tuple(dict.fromkeys(sources)),
-        )
-
-    if target.when is not None:
-        condition = target.when
-        diagnostic = benchmark[condition.metric]
-        condition_value = diagnostic.value
-        sources.extend(diagnostic.evaluation_ids)
-        if condition_value is None:
-            return result(m.TargetCheckStatus.INDETERMINATE, "MISSING_CONDITION_BENCHMARK")
-        operations = {
-            m.ComparisonOperator.LT: operator.lt,
-            m.ComparisonOperator.LE: operator.le,
-            m.ComparisonOperator.GT: operator.gt,
-            m.ComparisonOperator.GE: operator.ge,
-        }
-        if not operations[condition.operator](condition_value, condition.value):
-            return result(m.TargetCheckStatus.NOT_APPLICABLE, "CONDITION_FALSE")
-    if target.metric in m.FREQUENCY_METRICS and row.frequency_window_days != frequency_window_days:
-        return result(m.TargetCheckStatus.INDETERMINATE, "FREQUENCY_WINDOW_DIFFERS")
-    if observed is None:
-        return result(m.TargetCheckStatus.INDETERMINATE, metrics[target.metric].reason)
-    bounds = []
-    for bound in (target.lower, target.upper):
-        if isinstance(bound, m.BenchmarkBound):
-            diagnostic = benchmark[target.metric]
-            sources.extend(diagnostic.evaluation_ids)
-            if diagnostic.value is None:
-                return result(m.TargetCheckStatus.INDETERMINATE, "MISSING_BOUND_BENCHMARK")
-            value = diagnostic.value * bound.multiplier
-            m.require(math.isfinite(value), "benchmark bound overflow")
-            bounds.append(value)
-        else:
-            bounds.append(None if bound is None else bound.value)
-    lower, upper = bounds
-    passed = (
-        lower is None or (observed >= lower if target.lower.inclusive else observed > lower)
-    ) and (upper is None or (observed <= upper if target.upper.inclusive else observed < upper))
-    return result(
-        m.TargetCheckStatus.PASSED if passed else m.TargetCheckStatus.FAILED,
-        None if passed else "TARGET_NOT_MET",
     )
 
 
@@ -675,6 +643,7 @@ def _rank(request, bins, order):
             _check_target(x, row, request.targets.frequency_window_days)
             for x in request.targets.requirements
         )
+        accepted = acceptance_status(checks)
         reasons = [
             x.reason
             for x in checks
@@ -698,10 +667,10 @@ def _rank(request, bins, order):
                 )
                 and metric not in missing
             )
-        if any(x.status is m.TargetCheckStatus.FAILED for x in checks):
+        if accepted is m.TargetCheckStatus.FAILED:
             status = m.ComparisonStatus.TARGET_NOT_MET
         elif (
-            any(x.status is m.TargetCheckStatus.INDETERMINATE for x in checks)
+            (bool(checks) and accepted is m.TargetCheckStatus.INDETERMINATE)
             or row.frequency_window_days != request.targets.frequency_window_days
             or row.context_sha256 is None
             or any(x in missing for x in m.BENCHMARK_METRICS)
@@ -731,7 +700,7 @@ def _rank(request, bins, order):
         )
         records.append(
             m.CandidateRank(
-                row.candidate, status, checks, None, None, values, tuple(reasons), None, None
+                row.candidate, status, checks, None, None, values, tuple(reasons), None, None, accepted
             )
         )
         if status is m.ComparisonStatus.RANKED:
