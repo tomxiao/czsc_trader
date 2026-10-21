@@ -1,23 +1,57 @@
-"""Stage-four CAGR computation preserves the complete paired-bootstrap semantics."""
+"""Public stage-four intervals preserve the complete paired-bootstrap semantics."""
+
+from dataclasses import replace
+from datetime import date, timedelta
 
 import numpy as np
 import pytest
 
-from strategy_evaluator import bootstrap
+from strategy_evaluator import assess_candidates, bootstrap
+from strategy_evaluator import research_models as m
+from test_research_assessment import evidence, protocol
+
+
+def interval_request(champion, comparator, **kwargs):
+    """Small reconciled marked accounts; no execution or data preparation needed."""
+    base = evidence()
+    equity = base.initial_cash * np.cumprod(1 + champion)
+    benchmark = base.initial_cash * np.cumprod(1 + comparator)
+    sessions = tuple((date(2025, 1, 1) + timedelta(days=i)).isoformat()
+                     for i in range(len(equity)))
+    account = tuple(m.AccountPoint(day, 0.0, 1, float(value), float(value))
+                    for day, value in zip(sessions, equity, strict=True))
+    base = replace(base, account=account, benchmark_equity=tuple(float(x) for x in benchmark),
+        fills=(m.AssessmentFill("open", sessions[0], m.FillSide.BUY, 1, base.initial_cash, 0.0),),
+        closed_cycles=())
+    settings = replace(protocol(), bootstrap_repetitions=kwargs["repetitions"],
+                       bootstrap_block_length=kwargs["mean_block_length"], seed=kwargs["seed"])
+    request = m.CandidateAssessmentRequest((base.candidate,), settings, (), (base,))
+    # Reconstruct both public inputs from the stored account to preserve exact
+    # floating-point return semantics without calling private implementation helpers.
+    strategy_values = np.r_[base.initial_cash, equity]
+    benchmark_values = np.r_[base.initial_cash, benchmark]
+    return request, strategy_values[1:] / strategy_values[:-1] - 1, benchmark_values[1:] / benchmark_values[:-1] - 1
+
+
+def assert_interval(request, expected):
+    result = assess_candidates(request).rows[0].uncertainty
+    assert result.status is m.DiagnosticStatus.AVAILABLE
+    assert (result.lower_95, result.upper_95) == (expected.lower_95, expected.upper_95)
 
 
 @pytest.mark.parametrize("observations", [2, 7, 257])
 @pytest.mark.parametrize("repetitions", [1, 256, 257])
 @pytest.mark.parametrize("seed", [0, 13])
-def test_cagr_only_matches_full_bootstrap_exactly(observations, repetitions, seed):
+def test_stage_four_interval_matches_full_bootstrap_exactly(observations, repetitions, seed):
     rng = np.random.default_rng(19)
     champion = rng.normal(0.0004, 0.01, observations)
     comparator = rng.normal(0.0002, 0.008, observations)
     kwargs = dict(repetitions=repetitions, mean_block_length=3, seed=seed)
+    request, champion, comparator = interval_request(champion, comparator, **kwargs)
     full = bootstrap.paired_stationary_bootstrap(
         champion, comparator, champion_id="center", comparator_id="benchmark", **kwargs,
     )
-    assert bootstrap._paired_stationary_bootstrap_cagr(champion, comparator, **kwargs) == full.cagr
+    assert_interval(request, full.cagr)
 
 
 def test_original_bootstrap_rng_and_chunk_boundary_golden():
@@ -29,7 +63,6 @@ def test_original_bootstrap_rng_and_chunk_boundary_golden():
         -0.2944588980149083, 6.0238015605639434, 0.7976653696498055,
     )
     kwargs = dict(repetitions=257, mean_block_length=3, seed=13)
-    assert bootstrap._paired_stationary_bootstrap_cagr(champion, comparator, **kwargs) == expected
     full = bootstrap.paired_stationary_bootstrap(
         champion, comparator, champion_id="center", comparator_id="benchmark", **kwargs,
     )
@@ -45,9 +78,10 @@ def test_original_bootstrap_rng_and_chunk_boundary_golden():
 
 
 @pytest.mark.parametrize("champion", [np.zeros(7), np.full(7, .01)])
-def test_cagr_only_does_not_calculate_sample_drawdown_or_calmar(monkeypatch, champion):
+def test_stage_four_interval_does_not_calculate_sample_drawdown_or_calmar(monkeypatch, champion):
     comparator = np.zeros(7)
     kwargs = dict(repetitions=257, mean_block_length=1, seed=13)
+    request, champion, comparator = interval_request(champion, comparator, **kwargs)
     expected = bootstrap.paired_stationary_bootstrap(
         champion, comparator, champion_id="center", comparator_id="benchmark", **kwargs,
     ).cagr
@@ -56,7 +90,7 @@ def test_cagr_only_does_not_calculate_sample_drawdown_or_calmar(monkeypatch, cha
         raise AssertionError("sampled drawdown and Calmar must not be computed")
 
     monkeypatch.setattr(bootstrap, "_row_metrics", unused)
-    assert bootstrap._paired_stationary_bootstrap_cagr(champion, comparator, **kwargs) == expected
+    assert_interval(request, expected)
 
 
 @pytest.mark.parametrize("champion,comparator,kwargs", [
@@ -72,11 +106,8 @@ def test_cagr_only_does_not_calculate_sample_drawdown_or_calmar(monkeypatch, cha
     ([.01, .02], [.01, .02], {"mean_block_length": 0}),
     ([.01, .02], [.01, .02], {"seed": -1}),
 ])
-def test_cagr_only_rejects_same_boundaries(champion, comparator, kwargs):
-    with pytest.raises(ValueError) as original:
+def test_public_bootstrap_rejects_invalid_return_series_and_protocol(champion, comparator, kwargs):
+    with pytest.raises(ValueError):
         bootstrap.paired_stationary_bootstrap(
             champion, comparator, champion_id="center", comparator_id="benchmark", **kwargs,
         )
-    with pytest.raises(ValueError) as optimized:
-        bootstrap._paired_stationary_bootstrap_cagr(champion, comparator, **kwargs)
-    assert str(optimized.value) == str(original.value)

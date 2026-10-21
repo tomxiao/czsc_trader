@@ -156,9 +156,10 @@ def test_mutating_kernel_cannot_contaminate_other_modes_or_instances(
     flows = _flows(tmp_path)
     window = TradableWindow(date(2026, 9, 2), date(2026, 9, 3))
 
-    def prepared_instance(directory):
+    def prepared_instance(directory, *, binding=None):
         strategy = StrategyRuntime(dataflows=flows).create(StrategyInit(candidate, window, directory))
-        preparation = strategy.prepare_data(policy=PreparePolicy.REUSE)
+        preparation = (strategy.prepare_data(policy=PreparePolicy.REUSE) if binding is None
+                       else strategy.prepare_data(binding=binding))
         return strategy, preparation
 
     strategy, preparation = prepared_instance(tmp_path / 'mutating')
@@ -173,7 +174,10 @@ def test_mutating_kernel_cannot_contaminate_other_modes_or_instances(
         pd.testing.assert_frame_equal(prices, strategy.inspect_price_history())
 
     for mode in modes:
-        fresh, fresh_preparation = prepared_instance(tmp_path / f'fresh-{mode.value}')
+        # Fresh instances load the same authenticated input binding, without
+        # preparing its unchanged supplier inputs again. Each retains its own
+        # materialized frames, context directory and history cache.
+        fresh, fresh_preparation = prepared_instance(tmp_path / f'fresh-{mode.value}', binding=binding)
         assert fresh_preparation.data_identity == preparation.data_identity
         pd.testing.assert_frame_equal(histories[mode], fresh.inspect_signals(history_mode=mode))
         pd.testing.assert_frame_equal(histories[mode], strategy.inspect_signals(history_mode=mode))

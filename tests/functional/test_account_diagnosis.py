@@ -3,6 +3,8 @@
 from dataclasses import replace
 from datetime import date
 import json
+import pickle
+import shutil
 
 import pandas as pd
 import pytest
@@ -22,7 +24,7 @@ from public_backtest_support import request_for_prices
 
 
 @pytest.fixture
-def retained_account(candidate_payload, tmp_path, monkeypatch):
+def fresh_retained_account(candidate_payload, tmp_path, monkeypatch):
     days = pd.bdate_range("2025-12-29", periods=8)
     prices = pd.DataFrame(
         {
@@ -48,6 +50,26 @@ def retained_account(candidate_payload, tmp_path, monkeypatch):
         context, EvaluationEvidenceWrite(experiment, "account", request, result)
     )
     return context, request, result, evidence
+
+
+@pytest.fixture
+def retained_account(request, tmp_path, frozen_seed_root):
+    """Diagnose private copies of one real retained account without replaying setup."""
+    from czsc_trader.research_tools._evaluation_workers import pack
+    from evaluation_seed_support import relocate_request, relocate_result, restored_context
+
+    seed = frozen_seed_root / "diagnosis-account"
+    data = frozen_seed_root / "diagnosis-account.pkl"
+    if not seed.exists():
+        context, evaluation, result, evidence = request.getfixturevalue("fresh_retained_account")
+        data.write_bytes(pack((evaluation, result, evidence)))
+        shutil.copytree(context.repository.root, seed)
+    root = tmp_path / "diagnosis-repo"
+    shutil.copytree(seed, root)
+    evaluation, result, evidence = pickle.loads(data.read_bytes())
+    result = relocate_result(result, evaluation, root)
+    evaluation = relocate_request(evaluation, root)
+    return restored_context(root), evaluation, result, evidence
 
 
 def test_authenticated_hfq_account_decomposes_daily_years_and_inherited_window(

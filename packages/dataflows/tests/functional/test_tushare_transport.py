@@ -18,16 +18,28 @@ def response(status=200, payload=None):
     return result
 
 
-@pytest.mark.parametrize("http_status,expected_status,code,retryable", [
+_HTTP_FAILURES = [
     (502, DataStatus.WAITING_SOURCE, "SOURCE_NOT_READY", True),
     (503, DataStatus.WAITING_SOURCE, "SOURCE_NOT_READY", True),
     (504, DataStatus.WAITING_SOURCE, "SOURCE_NOT_READY", True),
     (429, DataStatus.WAITING_SOURCE, "SOURCE_NOT_READY", True),
     (401, DataStatus.FAILED, "SOURCE_REQUEST_FAILED", False),
     (403, DataStatus.FAILED, "SOURCE_REQUEST_FAILED", False),
+]
+
+
+# One native route carries the complete HTTP-code matrix. Every other native
+# route still exercises server failure, throttling and authorization failure;
+# 502/504 and 403 reuse the same transport branch as 503 and 401 respectively.
+# This preserves route-specific exception propagation without a Cartesian copy
+# of the common transport classifier. Every retained input remains a pytest node.
+@pytest.mark.parametrize("dataset,http_status,expected_status,code,retryable", [
+    (dataset, *failure)
+    for dataset in (Dataset.STOCK_UNADJUSTED_DAILY, Dataset.STOCK_OHLCV,
+                    Dataset.SECURITY_PRICE_LIMITS, Dataset.SECURITY_TRADING_STATUS)
+    for failure in _HTTP_FAILURES
+    if dataset is Dataset.STOCK_UNADJUSTED_DAILY or failure[0] in (503, 429, 401)
 ])
-@pytest.mark.parametrize("dataset", [Dataset.STOCK_UNADJUSTED_DAILY, Dataset.STOCK_OHLCV,
-                                     Dataset.SECURITY_PRICE_LIMITS, Dataset.SECURITY_TRADING_STATUS])
 def test_http_failures_cross_native_preparation_without_empty_rows_or_retries(
     flow_factory, monkeypatch, http_status, expected_status, code, retryable, dataset,
 ):

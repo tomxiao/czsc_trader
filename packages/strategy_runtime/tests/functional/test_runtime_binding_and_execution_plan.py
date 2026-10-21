@@ -1,17 +1,28 @@
 from __future__ import annotations
 
+from dataclasses import replace
+from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import pytest
+from dataflows import PreparePolicy
 
 from strategy_runtime import (
     ExecutionPolicy,
+    ExecutionState,
+    PortfolioSnapshot,
     RuntimeContractError,
+    StrategyInit,
     StrategyRelease,
+    StrategyRuntime,
+    TradableWindow,
+    TradingPoint,
+    implementation_sha256,
 )
 from strategy_runtime.execution_planner import build_execution_plan
-from strategy_runtime.strategy import _capital_terms
+from test_public_runtime import _flows
 
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -122,27 +133,47 @@ def test_frozen_rule_rejects_fractional_target_positions() -> None:
         )
 
 
-def test_intraday_overlay_capital_terms_are_explicit_for_each_plan_mode() -> None:
-    policy = ExecutionPolicy(
-        "INTRADAY_OVERLAY",
-        {
-            "core_fraction": 0.5,
-            "event_fraction": 0.5,
-        },
-    )
+def test_intraday_overlay_capital_terms_are_explicit_for_each_plan_mode(
+    tmp_path, runtime_candidate,
+) -> None:
+    # The synthetic strategy owns the overlay policy. Exercise its published
+    # plans, including the capital terms and identity, through the real loader.
+    path = runtime_candidate.source_root / "strategies/current_fixture.py"
+    source = path.read_text(encoding="utf-8")
+    start, end = source.index("            execution=ExecutionPolicy("), source.index("            monitoring=")
+    source = source[:start] + '''            execution=ExecutionPolicy("INTRADAY_OVERLAY", {
+                "lot_size": 100, "one_way_cost": .001,
+                "core_fraction": .5, "event_fraction": .5,
+            }),
+''' + source[end:]
+    path.write_text(source, encoding="utf-8")
+    descriptor = dict(runtime_candidate.payload["runtime"])
+    descriptor["source_sha256"] = implementation_sha256(
+        tuple(descriptor["source_files"]), source_root=runtime_candidate.source_root)
+    candidate = replace(runtime_candidate, payload={**runtime_candidate.payload, "runtime": descriptor})
+    strategy = StrategyRuntime(dataflows=_flows(tmp_path, flow_value=[.8, .8, .8, .8, .1])).create(
+        StrategyInit(candidate, TradableWindow(date(2026, 9, 2), date(2026, 9, 3)), tmp_path / "context"))
+    strategy.prepare_data(policy=PreparePolicy.REUSE)
 
-    assert _capital_terms(
-        raw={"plan_mode": "CORE_SETUP"},
-        execution_policy=policy,
-    ) == ("available_cash_fraction", Decimal("0.5"))
-    assert _capital_terms(
-        raw={"plan_mode": "CORE_EVENT_INTRADAY_ROTATION"},
-        execution_policy=policy,
-    ) == ("full_available_cash", Decimal("1"))
-    assert _capital_terms(
-        raw={"plan_mode": "NONE"},
-        execution_policy=policy,
-    ) == ("full_available_cash", Decimal("1"))
+    def plan(trading_date, signal_date, quantity, cycle_quantity):
+        now = datetime.combine(signal_date, datetime.min.time().replace(hour=20),
+                               tzinfo=ZoneInfo("Asia/Shanghai"))
+        return strategy.plan_at(
+            point=TradingPoint(trading_date, now),
+            portfolio=PortfolioSnapshot("overlay", "588080.SH", Decimal("50000"),
+                                        Decimal("100000"), quantity, 1, now),
+            state=ExecutionState(1, now, cycle_quantity))
+
+    setup = plan(date(2026, 9, 2), date(2026, 9, 1), 0, None)
+    assert (setup.plan_mode, setup.capital_mode, setup.allocation_fraction) == (
+        "CORE_SETUP", "available_cash_fraction", Decimal(".5"))
+    rotation = plan(date(2026, 9, 2), date(2026, 9, 1), setup.target_quantity, setup.cycle_target_quantity)
+    assert (rotation.plan_mode, rotation.capital_mode, rotation.allocation_fraction) == (
+        "CORE_EVENT_INTRADAY_ROTATION", "full_available_cash", Decimal(1))
+    hold = plan(date(2026, 9, 3), date(2026, 9, 2), setup.target_quantity, setup.cycle_target_quantity)
+    assert (hold.plan_mode, hold.capital_mode, hold.allocation_fraction) == (
+        "NONE", "full_available_cash", Decimal(1))
+    assert len({setup.plan_identity, rotation.plan_identity, hold.plan_identity}) == 3
 
 
 def test_target_execution_plan_preserves_audited_marketable_exit_semantics() -> None:

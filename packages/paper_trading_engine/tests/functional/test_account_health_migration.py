@@ -22,9 +22,10 @@ from test_release_runtime import release_verification_runtime  # noqa: F401
 NOW = "2026-10-20T23:30:00+08:00"
 
 
-@pytest.fixture
-def legacy_health_db(tmp_path):
-    original = tmp_path / "legacy.db"
+@pytest.fixture(scope="module")
+def legacy_health_seed(frozen_seed_root):
+    """Create the real legacy schema once; migration always uses a private copy."""
+    original = frozen_seed_root / "legacy-health.db"
     connection = sqlite3.connect(original)
     connection.executescript("""
         CREATE TABLE settings(key TEXT PRIMARY KEY,value TEXT NOT NULL);
@@ -57,6 +58,14 @@ def legacy_health_db(tmp_path):
     """)
     connection.close()
     original_bytes = original.read_bytes()
+    yield original, original_bytes
+    assert original.read_bytes() == original_bytes
+
+
+@pytest.fixture
+def legacy_health_db(legacy_health_seed, tmp_path):
+    original, original_bytes = legacy_health_seed
+    assert original.read_bytes() == original_bytes
     target = tmp_path / "migration-copy.db"
     target.write_bytes(original_bytes)
     migrated = sqlite3.connect(target)

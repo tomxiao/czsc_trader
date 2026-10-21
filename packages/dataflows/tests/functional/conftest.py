@@ -1,6 +1,7 @@
 """Test-only helpers for exercising publication checks through two-phase DFLS."""
 
 from itertools import count
+from hashlib import sha256
 from pathlib import Path
 from shutil import copytree
 from uuid import uuid4
@@ -51,18 +52,46 @@ def ohlcv_fixture_metadata(
     }
 
 
+@pytest.fixture(scope="session")
+def empty_space_seeds(frozen_seed_root):
+    """Reuse real empty schemas, never an open connection or mutable test space.
+
+    Storage initialization, corrupt spaces and concurrent creation are exercised
+    directly in test_data_space. Dataset tests still run every prepare/fetch and
+    publication transaction against a private copy. Separate factory calls in
+    one case retain distinct space identities without rewriting any identity.
+    """
+    base = frozen_seed_root / "dfls-empty-spaces"
+    seeds = {}
+
+    def seed(index):
+        if index not in seeds:
+            space = DataSpace(Path(f"space-{index}"))
+            Dataflows(base_dir=base, space=space, providers=ProviderConfig(bindings={}))
+            path = base / space.path
+            seeds[index] = path, sha256((path / "assets.sqlite3").read_bytes()).hexdigest()
+        return seeds[index][0]
+
+    yield seed
+    for path, digest in seeds.values():
+        assert sha256((path / "assets.sqlite3").read_bytes()).hexdigest() == digest
+
+
 @pytest.fixture
-def flow_factory(tmp_path):
+def flow_factory(tmp_path, empty_space_seeds):
     spaces = count()
 
     def create(providers=None):
+        index = next(spaces)
+        space = DataSpace(path=Path(f"space-{index}"))
+        copytree(empty_space_seeds(index), tmp_path / space.path)
         bindings = None if providers is None else {
             Dataset(dataset): ProviderBinding(name="fixture", revision="v1", fetch=provider)
             for dataset, provider in providers.items()
         }
         return Dataflows(
             base_dir=tmp_path,
-            space=DataSpace(path=Path(f"space-{next(spaces)}")),
+            space=space,
             providers=ProviderConfig(bindings=bindings),
         )
 

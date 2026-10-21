@@ -3,6 +3,7 @@ from dataclasses import replace
 from concurrent.futures import CancelledError
 import json
 import os
+import pickle
 import shutil
 
 import pytest
@@ -18,12 +19,32 @@ from test_research_contract_upgrade import managed_evaluation as managed_evaluat
 
 
 @pytest.fixture
-def publication(managed_evaluation):
+def fresh_publication(managed_evaluation):
     context, request = managed_evaluation
     bound = context.evaluation.prepare(request)
     result = context.evaluation.evaluate(bound)
     experiment = ExperimentRef(context.strategy_id, request.experiment_id)
     return context, EvaluationEvidenceWrite(experiment, "synthetic-account", bound, result)
+
+
+@pytest.fixture
+def publication(request, tmp_path, frozen_seed_root):
+    """Reuse real account preparation; every publication gets private files and frames."""
+    from czsc_trader.research_tools._evaluation_workers import pack
+    from evaluation_seed_support import relocate_request, relocate_result, restored_context
+
+    seed = frozen_seed_root / "publication-account"
+    data = frozen_seed_root / "publication-account.pkl"
+    if not seed.exists():
+        context, account = request.getfixturevalue("fresh_publication")
+        data.write_bytes(pack(account))
+        shutil.copytree(context.repository.root, seed)
+    root = tmp_path / "publication-repo"
+    shutil.copytree(seed, root)
+    account = pickle.loads(data.read_bytes())
+    account = replace(account, result=relocate_result(account.result, account.request, root),
+                      request=relocate_request(account.request, root))
+    return restored_context(root), account
 
 
 def terminated_serializer(payload, native_threads):
