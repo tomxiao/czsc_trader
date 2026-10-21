@@ -1,0 +1,840 @@
+{
+  "type": "ParameterEvaluationPlan",
+  "design": {
+    "type": "ParameterPerturbationDesign",
+    "center": {
+      "type": "AssessmentCandidate",
+      "candidate_id": "S015-C0212",
+      "content_sha256": "5f8dcd1a00603ab0503a2d779318f216873c5aaeb6b3e46fca166f4d10af4060"
+    },
+    "protocol": {
+      "type": "ParameterPerturbationProtocol",
+      "radius": 0.05,
+      "point_count": 32,
+      "seed": 13,
+      "max_attempts": 100000,
+      "distance_tolerance": 1e-10,
+      "version": "parameter-total-domain-l2-v1",
+      "random_generator": "PCG64",
+      "integer_rounding": "HALF_EVEN",
+      "quantile_method": "LINEAR"
+    },
+    "space": {
+      "type": "ParameterSpace",
+      "coordinates": [
+        {
+          "type": "ParameterCoordinate",
+          "name": "entry",
+          "center": 0.0,
+          "lower": 0.0,
+          "upper": 0.03,
+          "kind": "CONTINUOUS"
+        },
+        {
+          "type": "ParameterCoordinate",
+          "name": "exit",
+          "center": 0.005,
+          "lower": 0.0,
+          "upper": 0.02,
+          "kind": "CONTINUOUS"
+        },
+        {
+          "type": "ParameterCoordinate",
+          "name": "max_days",
+          "center": 3.0,
+          "lower": 1.0,
+          "upper": 20.0,
+          "kind": "INTEGER"
+        },
+        {
+          "type": "ParameterCoordinate",
+          "name": "threshold",
+          "center": 1.25,
+          "lower": 0.0,
+          "upper": 4.0,
+          "kind": "CONTINUOUS"
+        },
+        {
+          "type": "ParameterCoordinate",
+          "name": "low_weight",
+          "center": 0.75,
+          "lower": 0.0,
+          "upper": 1.0,
+          "kind": "CONTINUOUS"
+        }
+      ],
+      "mapping_sha256": "8e7cdf43cf0157c7e0170fda5df6eaae7363bb16112c0023cda42d7862105ef2",
+      "feasibility_sha256": "b14bee89e8a0349c3505cacca77c4edb9b610b613da1fd45a7584de316bfe441"
+    },
+    "points": [
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 0,
+        "coordinates": [
+          0.0007182140629306341,
+          0.00419314143375372,
+          3.0,
+          1.2536505091268253,
+          0.767276261226757
+        ],
+        "actual_radius": 0.05000000000000002
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 1,
+        "coordinates": [
+          0.00028598574450427674,
+          0.005903406435091526,
+          3.0,
+          1.1989546805145692,
+          0.7643497424364238
+        ],
+        "actual_radius": 0.049999999999999975
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 2,
+        "coordinates": [
+          0.0005625114519188361,
+          0.004690313912298878,
+          3.0,
+          1.374874548918333,
+          0.7805623328984282
+        ],
+        "actual_radius": 0.05000000000000002
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 3,
+        "coordinates": [
+          0.0009553988152371766,
+          0.004591315815116536,
+          3.0,
+          1.1226427228115508,
+          0.7573819493946826
+        ],
+        "actual_radius": 0.049999999999999996
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 4,
+        "coordinates": [
+          0.0011437399792570354,
+          0.005160129384923097,
+          3.0,
+          1.1346374823206467,
+          0.7377270871772538
+        ],
+        "actual_radius": 0.05000000000000001
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 5,
+        "coordinates": [
+          0.0007978491974238632,
+          0.005450790306171785,
+          3.0,
+          1.1238972137833458,
+          0.767053096621888
+        ],
+        "actual_radius": 0.05000000000000001
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 6,
+        "coordinates": [
+          0.00043220491142957986,
+          0.005169946707753859,
+          3.0,
+          1.316813317017832,
+          0.7940594748209704
+        ],
+        "actual_radius": 0.04999999999999996
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 7,
+        "coordinates": [
+          0.001067261406340035,
+          0.005070427317738582,
+          3.0,
+          1.110172309508198,
+          0.7499234112122358
+        ],
+        "actual_radius": 0.049999999999999996
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 8,
+        "coordinates": [
+          0.0010650595495887167,
+          0.004315523286019224,
+          3.0,
+          1.2339223967465742,
+          0.7572237489698899
+        ],
+        "actual_radius": 0.04999999999999999
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 9,
+        "coordinates": [
+          0.000877396485526209,
+          0.0052402979857159625,
+          3.0,
+          1.2396507533210874,
+          0.7886469578983117
+        ],
+        "actual_radius": 0.05
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 10,
+        "coordinates": [
+          0.0002595140410501501,
+          0.005914378544818263,
+          3.0,
+          1.3231351514876517,
+          0.7508075863856805
+        ],
+        "actual_radius": 0.05
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 11,
+        "coordinates": [
+          0.000998556535989072,
+          0.005642956233385474,
+          3.0,
+          1.1825874687719506,
+          0.7586362255099607
+        ],
+        "actual_radius": 0.04999999999999999
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 12,
+        "coordinates": [
+          5.370877170393938e-05,
+          0.004470312046789946,
+          3.0,
+          1.3241204035474738,
+          0.7118947917622712
+        ],
+        "actual_radius": 0.05
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 13,
+        "coordinates": [
+          0.0005444366787795858,
+          0.004193237706701176,
+          3.0,
+          1.1587183176626588,
+          0.7547664477185546
+        ],
+        "actual_radius": 0.049999999999999996
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 14,
+        "coordinates": [
+          0.0005289817164526912,
+          0.005328641107105093,
+          3.0,
+          1.275996889704492,
+          0.7066775495479842
+        ],
+        "actual_radius": 0.04999999999999997
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 15,
+        "coordinates": [
+          0.00013881941213602248,
+          0.0053258722962020695,
+          3.0,
+          1.4238282695158198,
+          0.7680163641951502
+        ],
+        "actual_radius": 0.04999999999999999
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 16,
+        "coordinates": [
+          0.0003449944089153485,
+          0.005526685748335533,
+          3.0,
+          1.1683216462741346,
+          0.7145415736248262
+        ],
+        "actual_radius": 0.04999999999999999
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 17,
+        "coordinates": [
+          0.001296308121489052,
+          0.005384542496624758,
+          3.0,
+          1.2049304650542274,
+          0.7616720280621514
+        ],
+        "actual_radius": 0.05000000000000001
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 18,
+        "coordinates": [
+          0.0011764727016712693,
+          0.005139512377092547,
+          3.0,
+          1.214046339895237,
+          0.7788560836151299
+        ],
+        "actual_radius": 0.05000000000000004
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 19,
+        "coordinates": [
+          0.00044809497380607143,
+          0.005115382876238757,
+          3.0,
+          1.0936120908989346,
+          0.7767403130394452
+        ],
+        "actual_radius": 0.04999999999999998
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 20,
+        "coordinates": [
+          0.001234800064317338,
+          0.005421607381188474,
+          3.0,
+          1.29374714696613,
+          0.7655518153153242
+        ],
+        "actual_radius": 0.050000000000000024
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 21,
+        "coordinates": [
+          6.689956244253426e-05,
+          0.004933469962382322,
+          3.0,
+          1.0513473945749698,
+          0.7541872362784927
+        ],
+        "actual_radius": 0.04999999999999998
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 22,
+        "coordinates": [
+          4.869433633776001e-05,
+          0.004975284254493738,
+          3.0,
+          1.0518539398628581,
+          0.7435214268657716
+        ],
+        "actual_radius": 0.05
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 23,
+        "coordinates": [
+          0.00012218203510397184,
+          0.004210859635314161,
+          3.0,
+          1.336031410204615,
+          0.7715399355700258
+        ],
+        "actual_radius": 0.05
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 24,
+        "coordinates": [
+          0.0008865978200889674,
+          0.005186370688521565,
+          3.0,
+          1.3412770601270438,
+          0.7819225757631337
+        ],
+        "actual_radius": 0.049999999999999996
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 25,
+        "coordinates": [
+          0.0009514463382097225,
+          0.00515446710571963,
+          3.0,
+          1.282164823184307,
+          0.7129884435655296
+        ],
+        "actual_radius": 0.05
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 26,
+        "coordinates": [
+          4.540368767628453e-05,
+          0.00428567794019453,
+          3.0,
+          1.38957037363266,
+          0.752139243464921
+        ],
+        "actual_radius": 0.05
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 27,
+        "coordinates": [
+          0.0012765846180540859,
+          0.0052029837821208425,
+          3.0,
+          1.343721579517017,
+          0.7438952465141666
+        ],
+        "actual_radius": 0.05
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 28,
+        "coordinates": [
+          0.0003638610071875747,
+          0.005788683869326871,
+          3.0,
+          1.1691586436378858,
+          0.7697327446140448
+        ],
+        "actual_radius": 0.05000000000000003
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 29,
+        "coordinates": [
+          7.584503105131881e-05,
+          0.005981874086947675,
+          3.0,
+          1.2622457290675335,
+          0.7413951063923492
+        ],
+        "actual_radius": 0.05000000000000002
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 30,
+        "coordinates": [
+          0.0007105986031776171,
+          0.0053583860481095065,
+          3.0,
+          1.1478300597676154,
+          0.7189287257049882
+        ],
+        "actual_radius": 0.04999999999999999
+      },
+      {
+        "type": "ParameterPerturbationPoint",
+        "index": 31,
+        "coordinates": [
+          0.001190561152499883,
+          0.0047809776612407675,
+          3.0,
+          1.3034735196022793,
+          0.775028598157103
+        ],
+        "actual_radius": 0.04999999999999998
+      }
+    ],
+    "attempts": 81,
+    "rejections": [
+      {
+        "type": "ParameterDesignRejection",
+        "reason": "INTEGER_RADIUS",
+        "count": 25
+      },
+      {
+        "type": "ParameterDesignRejection",
+        "reason": "DOMAIN",
+        "count": 24
+      }
+    ]
+  },
+  "center": {
+    "type": "ParameterEvaluationCandidate",
+    "candidate": {
+      "type": "AssessmentCandidate",
+      "candidate_id": "S015-C0212",
+      "content_sha256": "5f8dcd1a00603ab0503a2d779318f216873c5aaeb6b3e46fca166f4d10af4060"
+    },
+    "runtime_identity_sha256": "7c78e0d4dfb68d34b5e66abc00b8bba038d7b25547ea232b4c4e10ff93e242bc",
+    "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.0,\"exit\":0.005,\"low_weight\":0.75,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.25},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+  },
+  "center_request_sha256": "ee22144e5367caed17e1e55682d994fdb73e3010198d379d09d6cd0fc0e843c5",
+  "nonparameter_context_sha256": "d96f02edae6c9861257bf0bb2b7808ecf8f7006bfa120e6833ba5cff9cfc5509",
+  "children": [
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2024",
+        "content_sha256": "93d5636f6b8d23d1b6ed23ff4dfcd72e3e4cf9289e632bb057a88a5b9b2fddd4"
+      },
+      "runtime_identity_sha256": "11fa38a439712ae54382b0e2f8f373dfea9b8d7a96343950e64a4a704d6f0d05",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.0007182140629306341,\"exit\":0.00419314143375372,\"low_weight\":0.767276261226757,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.2536505091268253},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2025",
+        "content_sha256": "e169006ddad8ebae82f89100d5c4cba8865626c71b373532018f5048dfbbc5f3"
+      },
+      "runtime_identity_sha256": "e6d8ca381288e117ccdafb8782ab2b1af4933e49ee8cc4ccbefaffcf28a4602c",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.00028598574450427674,\"exit\":0.005903406435091526,\"low_weight\":0.7643497424364238,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.1989546805145692},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2026",
+        "content_sha256": "09554b806ade6b5cc3fe44a2261a2627c4c69c6ec510dc0df4d3444e8b506a32"
+      },
+      "runtime_identity_sha256": "2a77fa7d0e1154dcbc5b6dfccdc8d51c431629de1f6530fe7f25c8e44d2eb833",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.0005625114519188361,\"exit\":0.004690313912298878,\"low_weight\":0.7805623328984282,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.374874548918333},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2027",
+        "content_sha256": "da05b8d70015317b4cb93baf1a2ba8b6f72de4656d94fb7e0bab75a25b6e63ed"
+      },
+      "runtime_identity_sha256": "22d9f26fc4b4450c05b1fd8a63edf971da268fadcd9751022b20082a587e8b58",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.0009553988152371766,\"exit\":0.004591315815116536,\"low_weight\":0.7573819493946826,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.1226427228115508},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2028",
+        "content_sha256": "a6e67209b02822bb119919040af3b45f3784a0792c550e4bab027b1be83cc299"
+      },
+      "runtime_identity_sha256": "b3f59e93d8403399e2c85a29569503d9483c946700f0140ab8eeb9c820f4baf9",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.0011437399792570354,\"exit\":0.005160129384923097,\"low_weight\":0.7377270871772538,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.1346374823206467},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2029",
+        "content_sha256": "97f2cf7a2aeeb467cc2750143467d5c5ba6de2c7e83750aa2342e8e71a0d9ddc"
+      },
+      "runtime_identity_sha256": "01bad790ba7b5e30135c7093c364461046c79b83ad43254c2f61009ae892f06b",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.0007978491974238632,\"exit\":0.005450790306171785,\"low_weight\":0.767053096621888,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.1238972137833458},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2030",
+        "content_sha256": "d3f6121ba887b05c15463f2a5e3032a51bc5ee484ac7605d8c095659a0f31f3a"
+      },
+      "runtime_identity_sha256": "9e7ee75fa154674a43c245559adcd0ab0e8e9277dc4f5bcb85975818284e88ea",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.00043220491142957986,\"exit\":0.005169946707753859,\"low_weight\":0.7940594748209704,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.316813317017832},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2031",
+        "content_sha256": "cca88d178abd4d10ad5502cf3e78ce2c2b50409c5d99e938a504e3ead860d185"
+      },
+      "runtime_identity_sha256": "e2d12ec9deeb062526e7b1a13bc68b2c60b8dc66d50b31f7c95a9ec6dc562cc1",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.001067261406340035,\"exit\":0.005070427317738582,\"low_weight\":0.7499234112122358,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.110172309508198},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2032",
+        "content_sha256": "c4e78b6c0155686e688e39debcebe232bb243eea5f95da8c51baa270beded7b4"
+      },
+      "runtime_identity_sha256": "0dd6ecc15c9dff73d07fe1b95f229f87bd6209e4d2f344d54312b16f3956bf64",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.0010650595495887167,\"exit\":0.004315523286019224,\"low_weight\":0.7572237489698899,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.2339223967465742},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2033",
+        "content_sha256": "8ca14db891265bc0505e9352a379a4f60afc87cc5c0f02a09b67cc07b3a8b138"
+      },
+      "runtime_identity_sha256": "8d07ebb02954ccc96b59d8e9d60abeb5d8d75ba6167b31fcbd26237b6c344915",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.000877396485526209,\"exit\":0.0052402979857159625,\"low_weight\":0.7886469578983117,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.2396507533210874},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2034",
+        "content_sha256": "efaa908289ff52168c818fc634ae3b888e169510bb9322293ae3a1f40a046eeb"
+      },
+      "runtime_identity_sha256": "abd11d886f4bc445c0f42478d9b1ae91927a0f8b0aa93f1b668925bc811c86a3",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.0002595140410501501,\"exit\":0.005914378544818263,\"low_weight\":0.7508075863856805,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.3231351514876517},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2035",
+        "content_sha256": "17181e282d0f592f2ad0974122dc71a142703fdbeaf3d77b9c8abf5e748029dc"
+      },
+      "runtime_identity_sha256": "c04fa87fb9a75c2ac6067fdb757a8b3be8122cb7a0073d8c5bfacb7b46fbd60f",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.000998556535989072,\"exit\":0.005642956233385474,\"low_weight\":0.7586362255099607,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.1825874687719506},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2036",
+        "content_sha256": "1fece632b19550e9b48d7b231e274ca24d09a986f64aa1e9c4d52a6dbec1fce0"
+      },
+      "runtime_identity_sha256": "ceccd0f9dff423af6065785bbfb986c8223f9f2bdaf1552e2c5d05d9ec50a040",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":5.370877170393938e-05,\"exit\":0.004470312046789946,\"low_weight\":0.7118947917622712,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.3241204035474738},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2037",
+        "content_sha256": "d6e9f4d446b38d9380c3f40ab64b0b74d4bad25dca8228c3cabd914b77412633"
+      },
+      "runtime_identity_sha256": "4ab43296b0c8a081fa4b33cac4c84a430be23b342a56cd9998fb1cc96b142011",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.0005444366787795858,\"exit\":0.004193237706701176,\"low_weight\":0.7547664477185546,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.1587183176626588},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2038",
+        "content_sha256": "42ba3508e90a12f9cb1f8e60be2a816c19a080d96612a02a61718f92b30df27c"
+      },
+      "runtime_identity_sha256": "dd8a409d0f089d3922e18dbb61d9006726b242cfa18de36097bd23ac0aae2a2b",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.0005289817164526912,\"exit\":0.005328641107105093,\"low_weight\":0.7066775495479842,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.275996889704492},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2039",
+        "content_sha256": "6c9aeeff0fa106741de38cfc546e3e46ac85e2d310ce3d569bfc7e015c8c2220"
+      },
+      "runtime_identity_sha256": "a5d34cf97a65d30354ea244e256047f8e6dc930741082b1eb13593bebbbe70b1",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.00013881941213602248,\"exit\":0.0053258722962020695,\"low_weight\":0.7680163641951502,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.4238282695158198},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2040",
+        "content_sha256": "fa28e0e2ce22d3724ad2c96a15fac8cabe3ff3c52c01f27b60b2fc48d73b9200"
+      },
+      "runtime_identity_sha256": "5b4607d7b3531f8f18d616b701c73217a8da743c8271e8e11cb1fcdbb21850bd",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.0003449944089153485,\"exit\":0.005526685748335533,\"low_weight\":0.7145415736248262,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.1683216462741346},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2041",
+        "content_sha256": "90e5b43d0e2514955fb33ce94682c0fa32ee8bc249051a82d0bb033064df32ae"
+      },
+      "runtime_identity_sha256": "a33a1b0e774f449d2a8b548a0edf66f6f239fb63c3cffed228ab4f6705443969",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.001296308121489052,\"exit\":0.005384542496624758,\"low_weight\":0.7616720280621514,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.2049304650542274},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2042",
+        "content_sha256": "faec6c6a858541e5f4a89cd032b7b440918b5e74f911ed72f6521001ce3c5fd5"
+      },
+      "runtime_identity_sha256": "8400c276c087d90fec6f4ee788382b17e86d6940bf17e06137b5ec60e1a8c690",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.0011764727016712693,\"exit\":0.005139512377092547,\"low_weight\":0.7788560836151299,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.214046339895237},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2043",
+        "content_sha256": "dd08bdd0e5ff487de34ade3862137bf27e6c6f57ac8af088099a0a5d3d48f659"
+      },
+      "runtime_identity_sha256": "428fe078cb446644124e933d1b212b299c4e511b8ce03c4d3a94a7ef749b3519",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.00044809497380607143,\"exit\":0.005115382876238757,\"low_weight\":0.7767403130394452,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.0936120908989346},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2044",
+        "content_sha256": "af00623d03e8f2d5f0d6f897bf470443842a54ad867417eeef111c3de60187b7"
+      },
+      "runtime_identity_sha256": "ac433364d2a434a4fee840a4c20362cbcc7abae08eb2dd19a7f78f87b97420b8",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.001234800064317338,\"exit\":0.005421607381188474,\"low_weight\":0.7655518153153242,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.29374714696613},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2045",
+        "content_sha256": "695fd2fa1c5aabc57b34a4c537d5cb4fe08e1ef89346ba44d6dcda90e98ac02c"
+      },
+      "runtime_identity_sha256": "80c104e9322d0c3385e8be536b13ff0c16c1ba4eaedb5d52753ad0864c8a8ab6",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":6.689956244253426e-05,\"exit\":0.004933469962382322,\"low_weight\":0.7541872362784927,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.0513473945749698},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2046",
+        "content_sha256": "d54e82fd75654103151cf318606ebc57d9716e66fae75a13117abbbe3962bbdc"
+      },
+      "runtime_identity_sha256": "ea6ebec39affd9e0eb68311fd0e3a1daf75897d81ac9035012a34c5772c78ec4",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":4.869433633776001e-05,\"exit\":0.004975284254493738,\"low_weight\":0.7435214268657716,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.0518539398628581},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2047",
+        "content_sha256": "a371e747380a1575125712979c2c8b9a41238ea22005cac81bea4f944d9fefdb"
+      },
+      "runtime_identity_sha256": "63d918b4a089dea3aeb783125273f062910003eb9fb91b5beea60ce69ef5a3e2",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.00012218203510397184,\"exit\":0.004210859635314161,\"low_weight\":0.7715399355700258,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.336031410204615},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2048",
+        "content_sha256": "161abf7b6b4de534e2232b6609ae77e0d577ff87e6851a0ff7461f25a74a8ff1"
+      },
+      "runtime_identity_sha256": "d30a82ba1670036f1422c6b75aaeace0d264b87efc6a9ba3c3c4e03ffe016a05",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.0008865978200889674,\"exit\":0.005186370688521565,\"low_weight\":0.7819225757631337,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.3412770601270438},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2049",
+        "content_sha256": "2d199e90e4e3e205c8ea1bf0a4e31ef34c7f1346cc624c26b52a3648993d01a5"
+      },
+      "runtime_identity_sha256": "56a1d876e989ab15fc1bbedcea5463294ae44b131ef21cf8f8de7c8a3a85b85e",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.0009514463382097225,\"exit\":0.00515446710571963,\"low_weight\":0.7129884435655296,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.282164823184307},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2050",
+        "content_sha256": "723cd95d56d454180d5ec949a7f993746c4cfde5ba589ab9e307f3b9aeaaa5f8"
+      },
+      "runtime_identity_sha256": "e3ec4fa5952f65ca01516546d73ceafff5428c86a815674b09742406a6673c0b",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":4.540368767628453e-05,\"exit\":0.00428567794019453,\"low_weight\":0.752139243464921,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.38957037363266},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2051",
+        "content_sha256": "ab754c0e69083bbd8069899e42f6088448d52d356c4bfd5c97ff6380cee34d48"
+      },
+      "runtime_identity_sha256": "c20cf63dace5ea149cd23ed9cb62b89b9e64d73abbd6fa2141cd83e4df04a481",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.0012765846180540859,\"exit\":0.0052029837821208425,\"low_weight\":0.7438952465141666,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.343721579517017},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2052",
+        "content_sha256": "efbd15fc2a9a2eafaf431992f616f8704fb3fddb73b0b935676ac6da529a2fae"
+      },
+      "runtime_identity_sha256": "8767f27d82b1938132534d6690bde47fd99bed7c2f81437647b19612ed098934",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.0003638610071875747,\"exit\":0.005788683869326871,\"low_weight\":0.7697327446140448,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.1691586436378858},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2053",
+        "content_sha256": "97691df374f5a2b631fe93b97b0b3d7b8da1408cca15b8526eab73bf67f42b67"
+      },
+      "runtime_identity_sha256": "18848c8cb113dd891d80c8d339a38859ba424ea95bf532246885af0c053cc551",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":7.584503105131881e-05,\"exit\":0.005981874086947675,\"low_weight\":0.7413951063923492,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.2622457290675335},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2054",
+        "content_sha256": "dbb906b50643fb3e759996c5d0b7a0ebef604dc7bc7bf79cec18df70379b7ba9"
+      },
+      "runtime_identity_sha256": "24a70a8bbebd2ce78d2ab794f396ee15c30c511ca1d703d3619019af4626e6cb",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.0007105986031776171,\"exit\":0.0053583860481095065,\"low_weight\":0.7189287257049882,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.1478300597676154},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C2055",
+        "content_sha256": "10ff9557aa61c1417dff8050b006a520856d29d25db9b51047804ade4baf1f2f"
+      },
+      "runtime_identity_sha256": "fdd5da7720223fa64d532c916c9708125017c94903829d34a4542ac9bf0aeda9",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"entry\":0.001190561152499883,\"exit\":0.0047809776612407675,\"low_weight\":0.775028598157103,\"max_days\":3,\"reverse\":false,\"sizing\":\"relative\",\"threshold\":1.3034735196022793},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.range_weight_reversal\",\"qualname\":\"RangeWeightReversal\",\"source_files\":[\"strategies/range_weight_reversal.py\"],\"source_sha256\":\"369b93b2d18b8784613f6bc868c0cb21b7dc98cfa0b8f65e2fe42235c0860b45\"}}"
+    }
+  ],
+  "mapping_evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX005_20261022"
+    },
+    "evidence_id": "8e7cdf43cf0157c7e0170fda5df6eaae7363bb16112c0023cda42d7862105ef2.py",
+    "sha256": "8e7cdf43cf0157c7e0170fda5df6eaae7363bb16112c0023cda42d7862105ef2",
+    "media_type": "text/x-python",
+    "name": "parameter_mapping",
+    "schema": null,
+    "schema_version": null
+  },
+  "feasibility_evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX005_20261022"
+    },
+    "evidence_id": "b14bee89e8a0349c3505cacca77c4edb9b610b613da1fd45a7584de316bfe441.py",
+    "sha256": "b14bee89e8a0349c3505cacca77c4edb9b610b613da1fd45a7584de316bfe441",
+    "media_type": "text/x-python",
+    "name": "parameter_constraints",
+    "schema": null,
+    "schema_version": null
+  },
+  "center_inputs": [
+    {
+      "type": "ParameterEvaluationInput",
+      "window_id": "full",
+      "binding_json": "{\"plan\":{\"calculation_dates\":[\"2024-12-31\",\"2025-01-02\",\"2025-01-03\",\"2025-01-06\",\"2025-01-07\",\"2025-01-08\",\"2025-01-09\",\"2025-01-10\",\"2025-01-13\",\"2025-01-14\",\"2025-01-15\",\"2025-01-16\",\"2025-01-17\",\"2025-01-20\",\"2025-01-21\",\"2025-01-22\",\"2025-01-23\",\"2025-01-24\",\"2025-01-27\",\"2025-02-05\",\"2025-02-06\",\"2025-02-07\",\"2025-02-10\",\"2025-02-11\",\"2025-02-12\",\"2025-02-13\",\"2025-02-14\",\"2025-02-17\",\"2025-02-18\",\"2025-02-19\",\"2025-02-20\",\"2025-02-21\",\"2025-02-24\",\"2025-02-25\",\"2025-02-26\",\"2025-02-27\",\"2025-02-28\",\"2025-03-03\",\"2025-03-04\",\"2025-03-05\",\"2025-03-06\",\"2025-03-07\",\"2025-03-10\",\"2025-03-11\",\"2025-03-12\",\"2025-03-13\",\"2025-03-14\",\"2025-03-17\",\"2025-03-18\",\"2025-03-19\",\"2025-03-20\",\"2025-03-21\",\"2025-03-24\",\"2025-03-25\",\"2025-03-26\",\"2025-03-27\",\"2025-03-28\",\"2025-03-31\",\"2025-04-01\",\"2025-04-02\",\"2025-04-03\",\"2025-04-07\",\"2025-04-08\",\"2025-04-09\",\"2025-04-10\",\"2025-04-11\",\"2025-04-14\",\"2025-04-15\",\"2025-04-16\",\"2025-04-17\",\"2025-04-18\",\"2025-04-21\",\"2025-04-22\",\"2025-04-23\",\"2025-04-24\",\"2025-04-25\",\"2025-04-28\",\"2025-04-29\",\"2025-04-30\",\"2025-05-06\",\"2025-05-07\",\"2025-05-08\",\"2025-05-09\",\"2025-05-12\",\"2025-05-13\",\"2025-05-14\",\"2025-05-15\",\"2025-05-16\",\"2025-05-19\",\"2025-05-20\",\"2025-05-21\",\"2025-05-22\",\"2025-05-23\",\"2025-05-26\",\"2025-05-27\",\"2025-05-28\",\"2025-05-29\",\"2025-05-30\",\"2025-06-03\",\"2025-06-04\",\"2025-06-05\",\"2025-06-06\",\"2025-06-09\",\"2025-06-10\",\"2025-06-11\",\"2025-06-12\",\"2025-06-13\",\"2025-06-16\",\"2025-06-17\",\"2025-06-18\",\"2025-06-19\",\"2025-06-20\",\"2025-06-23\",\"2025-06-24\",\"2025-06-25\",\"2025-06-26\",\"2025-06-27\",\"2025-06-30\",\"2025-07-01\",\"2025-07-02\",\"2025-07-03\",\"2025-07-04\",\"2025-07-07\",\"2025-07-08\",\"2025-07-09\",\"2025-07-10\",\"2025-07-11\",\"2025-07-14\",\"2025-07-15\",\"2025-07-16\",\"2025-07-17\",\"2025-07-18\",\"2025-07-21\",\"2025-07-22\",\"2025-07-23\",\"2025-07-24\",\"2025-07-25\",\"2025-07-28\",\"2025-07-29\",\"2025-07-30\",\"2025-07-31\",\"2025-08-01\",\"2025-08-04\",\"2025-08-05\",\"2025-08-06\",\"2025-08-07\",\"2025-08-08\",\"2025-08-11\",\"2025-08-12\",\"2025-08-13\",\"2025-08-14\",\"2025-08-15\",\"2025-08-18\",\"2025-08-19\",\"2025-08-20\",\"2025-08-21\",\"2025-08-22\",\"2025-08-25\",\"2025-08-26\",\"2025-08-27\",\"2025-08-28\",\"2025-08-29\",\"2025-09-01\",\"2025-09-02\",\"2025-09-03\",\"2025-09-04\",\"2025-09-05\",\"2025-09-08\",\"2025-09-09\",\"2025-09-10\",\"2025-09-11\",\"2025-09-12\",\"2025-09-15\",\"2025-09-16\",\"2025-09-17\",\"2025-09-18\",\"2025-09-19\",\"2025-09-22\",\"2025-09-23\",\"2025-09-24\",\"2025-09-25\",\"2025-09-26\",\"2025-09-29\",\"2025-09-30\",\"2025-10-09\",\"2025-10-10\",\"2025-10-13\",\"2025-10-14\",\"2025-10-15\",\"2025-10-16\",\"2025-10-17\",\"2025-10-20\",\"2025-10-21\",\"2025-10-22\",\"2025-10-23\",\"2025-10-24\",\"2025-10-27\",\"2025-10-28\",\"2025-10-29\",\"2025-10-30\",\"2025-10-31\",\"2025-11-03\",\"2025-11-04\",\"2025-11-05\",\"2025-11-06\",\"2025-11-07\",\"2025-11-10\",\"2025-11-11\",\"2025-11-12\",\"2025-11-13\",\"2025-11-14\",\"2025-11-17\",\"2025-11-18\",\"2025-11-19\",\"2025-11-20\",\"2025-11-21\",\"2025-11-24\",\"2025-11-25\",\"2025-11-26\",\"2025-11-27\",\"2025-11-28\",\"2025-12-01\",\"2025-12-02\",\"2025-12-03\",\"2025-12-04\",\"2025-12-05\",\"2025-12-08\",\"2025-12-09\",\"2025-12-10\",\"2025-12-11\",\"2025-12-12\",\"2025-12-15\",\"2025-12-16\",\"2025-12-17\",\"2025-12-18\",\"2025-12-19\",\"2025-12-22\",\"2025-12-23\",\"2025-12-24\",\"2025-12-25\",\"2025-12-26\",\"2025-12-29\",\"2025-12-30\",\"2025-12-31\",\"2026-01-05\",\"2026-01-06\",\"2026-01-07\",\"2026-01-08\",\"2026-01-09\",\"2026-01-12\",\"2026-01-13\",\"2026-01-14\",\"2026-01-15\",\"2026-01-16\",\"2026-01-19\",\"2026-01-20\",\"2026-01-21\",\"2026-01-22\",\"2026-01-23\",\"2026-01-26\",\"2026-01-27\",\"2026-01-28\",\"2026-01-29\",\"2026-01-30\",\"2026-02-02\",\"2026-02-03\",\"2026-02-04\",\"2026-02-05\",\"2026-02-06\",\"2026-02-09\",\"2026-02-10\",\"2026-02-11\",\"2026-02-12\",\"2026-02-13\",\"2026-02-24\",\"2026-02-25\",\"2026-02-26\",\"2026-02-27\",\"2026-03-02\",\"2026-03-03\",\"2026-03-04\",\"2026-03-05\",\"2026-03-06\",\"2026-03-09\",\"2026-03-10\",\"2026-03-11\",\"2026-03-12\",\"2026-03-13\",\"2026-03-16\",\"2026-03-17\",\"2026-03-18\",\"2026-03-19\",\"2026-03-20\",\"2026-03-23\",\"2026-03-24\",\"2026-03-25\",\"2026-03-26\",\"2026-03-27\",\"2026-03-30\",\"2026-03-31\",\"2026-04-01\",\"2026-04-02\",\"2026-04-03\",\"2026-04-07\",\"2026-04-08\",\"2026-04-09\",\"2026-04-10\",\"2026-04-13\",\"2026-04-14\",\"2026-04-15\",\"2026-04-16\",\"2026-04-17\",\"2026-04-20\",\"2026-04-21\",\"2026-04-22\",\"2026-04-23\",\"2026-04-24\",\"2026-04-27\",\"2026-04-28\",\"2026-04-29\",\"2026-04-30\",\"2026-05-06\",\"2026-05-07\",\"2026-05-08\",\"2026-05-11\",\"2026-05-12\",\"2026-05-13\",\"2026-05-14\",\"2026-05-15\",\"2026-05-18\",\"2026-05-19\",\"2026-05-20\",\"2026-05-21\",\"2026-05-22\",\"2026-05-25\",\"2026-05-26\",\"2026-05-27\",\"2026-05-28\",\"2026-05-29\",\"2026-06-01\",\"2026-06-02\",\"2026-06-03\",\"2026-06-04\",\"2026-06-05\",\"2026-06-08\",\"2026-06-09\",\"2026-06-10\",\"2026-06-11\",\"2026-06-12\",\"2026-06-15\",\"2026-06-16\",\"2026-06-17\",\"2026-06-18\",\"2026-06-22\",\"2026-06-23\",\"2026-06-24\",\"2026-06-25\",\"2026-06-26\",\"2026-06-29\",\"2026-06-30\",\"2026-07-01\",\"2026-07-02\",\"2026-07-03\",\"2026-07-06\",\"2026-07-07\",\"2026-07-08\",\"2026-07-09\",\"2026-07-10\",\"2026-07-13\",\"2026-07-14\",\"2026-07-15\",\"2026-07-16\",\"2026-07-17\",\"2026-07-20\",\"2026-07-21\",\"2026-07-22\",\"2026-07-23\",\"2026-07-24\",\"2026-07-27\",\"2026-07-28\",\"2026-07-29\",\"2026-07-30\",\"2026-07-31\",\"2026-08-03\",\"2026-08-04\",\"2026-08-05\",\"2026-08-06\",\"2026-08-07\",\"2026-08-10\",\"2026-08-11\",\"2026-08-12\",\"2026-08-13\",\"2026-08-14\",\"2026-08-17\",\"2026-08-18\",\"2026-08-19\",\"2026-08-20\",\"2026-08-21\",\"2026-08-24\",\"2026-08-25\",\"2026-08-26\",\"2026-08-27\",\"2026-08-28\",\"2026-08-31\",\"2026-09-01\",\"2026-09-02\",\"2026-09-03\",\"2026-09-04\",\"2026-09-07\",\"2026-09-08\",\"2026-09-09\",\"2026-09-10\",\"2026-09-11\",\"2026-09-14\",\"2026-09-15\",\"2026-09-16\",\"2026-09-17\",\"2026-09-18\",\"2026-09-21\",\"2026-09-22\",\"2026-09-23\",\"2026-09-24\",\"2026-09-28\",\"2026-09-29\",\"2026-09-30\",\"2026-10-08\",\"2026-10-09\",\"2026-10-12\",\"2026-10-13\",\"2026-10-14\",\"2026-10-15\",\"2026-10-16\",\"2026-10-19\",\"2026-10-20\"],\"calendar_dates\":[\"2024-09-09\",\"2024-09-10\",\"2024-09-11\",\"2024-09-12\",\"2024-09-13\",\"2024-09-18\",\"2024-09-19\",\"2024-09-20\",\"2024-09-23\",\"2024-09-24\",\"2024-09-25\",\"2024-09-26\",\"2024-09-27\",\"2024-09-30\",\"2024-10-08\",\"2024-10-09\",\"2024-10-10\",\"2024-10-11\",\"2024-10-14\",\"2024-10-15\",\"2024-10-16\",\"2024-10-17\",\"2024-10-18\",\"2024-10-21\",\"2024-10-22\",\"2024-10-23\",\"2024-10-24\",\"2024-10-25\",\"2024-10-28\",\"2024-10-29\",\"2024-10-30\",\"2024-10-31\",\"2024-11-01\",\"2024-11-04\",\"2024-11-05\",\"2024-11-06\",\"2024-11-07\",\"2024-11-08\",\"2024-11-11\",\"2024-11-12\",\"2024-11-13\",\"2024-11-14\",\"2024-11-15\",\"2024-11-18\",\"2024-11-19\",\"2024-11-20\",\"2024-11-21\",\"2024-11-22\",\"2024-11-25\",\"2024-11-26\",\"2024-11-27\",\"2024-11-28\",\"2024-11-29\",\"2024-12-02\",\"2024-12-03\",\"2024-12-04\",\"2024-12-05\",\"2024-12-06\",\"2024-12-09\",\"2024-12-10\",\"2024-12-11\",\"2024-12-12\",\"2024-12-13\",\"2024-12-16\",\"2024-12-17\",\"2024-12-18\",\"2024-12-19\",\"2024-12-20\",\"2024-12-23\",\"2024-12-24\",\"2024-12-25\",\"2024-12-26\",\"2024-12-27\",\"2024-12-30\",\"2024-12-31\",\"2025-01-02\",\"2025-01-03\",\"2025-01-06\",\"2025-01-07\",\"2025-01-08\",\"2025-01-09\",\"2025-01-10\",\"2025-01-13\",\"2025-01-14\",\"2025-01-15\",\"2025-01-16\",\"2025-01-17\",\"2025-01-20\",\"2025-01-21\",\"2025-01-22\",\"2025-01-23\",\"2025-01-24\",\"2025-01-27\",\"2025-02-05\",\"2025-02-06\",\"2025-02-07\",\"2025-02-10\",\"2025-02-11\",\"2025-02-12\",\"2025-02-13\",\"2025-02-14\",\"2025-02-17\",\"2025-02-18\",\"2025-02-19\",\"2025-02-20\",\"2025-02-21\",\"2025-02-24\",\"2025-02-25\",\"2025-02-26\",\"2025-02-27\",\"2025-02-28\",\"2025-03-03\",\"2025-03-04\",\"2025-03-05\",\"2025-03-06\",\"2025-03-07\",\"2025-03-10\",\"2025-03-11\",\"2025-03-12\",\"2025-03-13\",\"2025-03-14\",\"2025-03-17\",\"2025-03-18\",\"2025-03-19\",\"2025-03-20\",\"2025-03-21\",\"2025-03-24\",\"2025-03-25\",\"2025-03-26\",\"2025-03-27\",\"2025-03-28\",\"2025-03-31\",\"2025-04-01\",\"2025-04-02\",\"2025-04-03\",\"2025-04-07\",\"2025-04-08\",\"2025-04-09\",\"2025-04-10\",\"2025-04-11\",\"2025-04-14\",\"2025-04-15\",\"2025-04-16\",\"2025-04-17\",\"2025-04-18\",\"2025-04-21\",\"2025-04-22\",\"2025-04-23\",\"2025-04-24\",\"2025-04-25\",\"2025-04-28\",\"2025-04-29\",\"2025-04-30\",\"2025-05-06\",\"2025-05-07\",\"2025-05-08\",\"2025-05-09\",\"2025-05-12\",\"2025-05-13\",\"2025-05-14\",\"2025-05-15\",\"2025-05-16\",\"2025-05-19\",\"2025-05-20\",\"2025-05-21\",\"2025-05-22\",\"2025-05-23\",\"2025-05-26\",\"2025-05-27\",\"2025-05-28\",\"2025-05-29\",\"2025-05-30\",\"2025-06-03\",\"2025-06-04\",\"2025-06-05\",\"2025-06-06\",\"2025-06-09\",\"2025-06-10\",\"2025-06-11\",\"2025-06-12\",\"2025-06-13\",\"2025-06-16\",\"2025-06-17\",\"2025-06-18\",\"2025-06-19\",\"2025-06-20\",\"2025-06-23\",\"2025-06-24\",\"2025-06-25\",\"2025-06-26\",\"2025-06-27\",\"2025-06-30\",\"2025-07-01\",\"2025-07-02\",\"2025-07-03\",\"2025-07-04\",\"2025-07-07\",\"2025-07-08\",\"2025-07-09\",\"2025-07-10\",\"2025-07-11\",\"2025-07-14\",\"2025-07-15\",\"2025-07-16\",\"2025-07-17\",\"2025-07-18\",\"2025-07-21\",\"2025-07-22\",\"2025-07-23\",\"2025-07-24\",\"2025-07-25\",\"2025-07-28\",\"2025-07-29\",\"2025-07-30\",\"2025-07-31\",\"2025-08-01\",\"2025-08-04\",\"2025-08-05\",\"2025-08-06\",\"2025-08-07\",\"2025-08-08\",\"2025-08-11\",\"2025-08-12\",\"2025-08-13\",\"2025-08-14\",\"2025-08-15\",\"2025-08-18\",\"2025-08-19\",\"2025-08-20\",\"2025-08-21\",\"2025-08-22\",\"2025-08-25\",\"2025-08-26\",\"2025-08-27\",\"2025-08-28\",\"2025-08-29\",\"2025-09-01\",\"2025-09-02\",\"2025-09-03\",\"2025-09-04\",\"2025-09-05\",\"2025-09-08\",\"2025-09-09\",\"2025-09-10\",\"2025-09-11\",\"2025-09-12\",\"2025-09-15\",\"2025-09-16\",\"2025-09-17\",\"2025-09-18\",\"2025-09-19\",\"2025-09-22\",\"2025-09-23\",\"2025-09-24\",\"2025-09-25\",\"2025-09-26\",\"2025-09-29\",\"2025-09-30\",\"2025-10-09\",\"2025-10-10\",\"2025-10-13\",\"2025-10-14\",\"2025-10-15\",\"2025-10-16\",\"2025-10-17\",\"2025-10-20\",\"2025-10-21\",\"2025-10-22\",\"2025-10-23\",\"2025-10-24\",\"2025-10-27\",\"2025-10-28\",\"2025-10-29\",\"2025-10-30\",\"2025-10-31\",\"2025-11-03\",\"2025-11-04\",\"2025-11-05\",\"2025-11-06\",\"2025-11-07\",\"2025-11-10\",\"2025-11-11\",\"2025-11-12\",\"2025-11-13\",\"2025-11-14\",\"2025-11-17\",\"2025-11-18\",\"2025-11-19\",\"2025-11-20\",\"2025-11-21\",\"2025-11-24\",\"2025-11-25\",\"2025-11-26\",\"2025-11-27\",\"2025-11-28\",\"2025-12-01\",\"2025-12-02\",\"2025-12-03\",\"2025-12-04\",\"2025-12-05\",\"2025-12-08\",\"2025-12-09\",\"2025-12-10\",\"2025-12-11\",\"2025-12-12\",\"2025-12-15\",\"2025-12-16\",\"2025-12-17\",\"2025-12-18\",\"2025-12-19\",\"2025-12-22\",\"2025-12-23\",\"2025-12-24\",\"2025-12-25\",\"2025-12-26\",\"2025-12-29\",\"2025-12-30\",\"2025-12-31\",\"2026-01-05\",\"2026-01-06\",\"2026-01-07\",\"2026-01-08\",\"2026-01-09\",\"2026-01-12\",\"2026-01-13\",\"2026-01-14\",\"2026-01-15\",\"2026-01-16\",\"2026-01-19\",\"2026-01-20\",\"2026-01-21\",\"2026-01-22\",\"2026-01-23\",\"2026-01-26\",\"2026-01-27\",\"2026-01-28\",\"2026-01-29\",\"2026-01-30\",\"2026-02-02\",\"2026-02-03\",\"2026-02-04\",\"2026-02-05\",\"2026-02-06\",\"2026-02-09\",\"2026-02-10\",\"2026-02-11\",\"2026-02-12\",\"2026-02-13\",\"2026-02-24\",\"2026-02-25\",\"2026-02-26\",\"2026-02-27\",\"2026-03-02\",\"2026-03-03\",\"2026-03-04\",\"2026-03-05\",\"2026-03-06\",\"2026-03-09\",\"2026-03-10\",\"2026-03-11\",\"2026-03-12\",\"2026-03-13\",\"2026-03-16\",\"2026-03-17\",\"2026-03-18\",\"2026-03-19\",\"2026-03-20\",\"2026-03-23\",\"2026-03-24\",\"2026-03-25\",\"2026-03-26\",\"2026-03-27\",\"2026-03-30\",\"2026-03-31\",\"2026-04-01\",\"2026-04-02\",\"2026-04-03\",\"2026-04-07\",\"2026-04-08\",\"2026-04-09\",\"2026-04-10\",\"2026-04-13\",\"2026-04-14\",\"2026-04-15\",\"2026-04-16\",\"2026-04-17\",\"2026-04-20\",\"2026-04-21\",\"2026-04-22\",\"2026-04-23\",\"2026-04-24\",\"2026-04-27\",\"2026-04-28\",\"2026-04-29\",\"2026-04-30\",\"2026-05-06\",\"2026-05-07\",\"2026-05-08\",\"2026-05-11\",\"2026-05-12\",\"2026-05-13\",\"2026-05-14\",\"2026-05-15\",\"2026-05-18\",\"2026-05-19\",\"2026-05-20\",\"2026-05-21\",\"2026-05-22\",\"2026-05-25\",\"2026-05-26\",\"2026-05-27\",\"2026-05-28\",\"2026-05-29\",\"2026-06-01\",\"2026-06-02\",\"2026-06-03\",\"2026-06-04\",\"2026-06-05\",\"2026-06-08\",\"2026-06-09\",\"2026-06-10\",\"2026-06-11\",\"2026-06-12\",\"2026-06-15\",\"2026-06-16\",\"2026-06-17\",\"2026-06-18\",\"2026-06-22\",\"2026-06-23\",\"2026-06-24\",\"2026-06-25\",\"2026-06-26\",\"2026-06-29\",\"2026-06-30\",\"2026-07-01\",\"2026-07-02\",\"2026-07-03\",\"2026-07-06\",\"2026-07-07\",\"2026-07-08\",\"2026-07-09\",\"2026-07-10\",\"2026-07-13\",\"2026-07-14\",\"2026-07-15\",\"2026-07-16\",\"2026-07-17\",\"2026-07-20\",\"2026-07-21\",\"2026-07-22\",\"2026-07-23\",\"2026-07-24\",\"2026-07-27\",\"2026-07-28\",\"2026-07-29\",\"2026-07-30\",\"2026-07-31\",\"2026-08-03\",\"2026-08-04\",\"2026-08-05\",\"2026-08-06\",\"2026-08-07\",\"2026-08-10\",\"2026-08-11\",\"2026-08-12\",\"2026-08-13\",\"2026-08-14\",\"2026-08-17\",\"2026-08-18\",\"2026-08-19\",\"2026-08-20\",\"2026-08-21\",\"2026-08-24\",\"2026-08-25\",\"2026-08-26\",\"2026-08-27\",\"2026-08-28\",\"2026-08-31\",\"2026-09-01\",\"2026-09-02\",\"2026-09-03\",\"2026-09-04\",\"2026-09-07\",\"2026-09-08\",\"2026-09-09\",\"2026-09-10\",\"2026-09-11\",\"2026-09-14\",\"2026-09-15\",\"2026-09-16\",\"2026-09-17\",\"2026-09-18\",\"2026-09-21\",\"2026-09-22\",\"2026-09-23\",\"2026-09-24\",\"2026-09-28\",\"2026-09-29\",\"2026-09-30\",\"2026-10-08\",\"2026-10-09\",\"2026-10-12\",\"2026-10-13\",\"2026-10-14\",\"2026-10-15\",\"2026-10-16\",\"2026-10-19\",\"2026-10-20\",\"2026-10-21\"],\"calendar_name\":\"calendar\",\"calendar_sha256\":\"6d460f60ebdd614f77776602f03fa084a10fc059bde1d90755390ebeecd9f427\",\"requests\":{\"calendar\":{\"coverage\":null,\"dataset\":\"calendar.trading_sessions\",\"end\":\"2026-10-21\",\"frequency\":\"daily\",\"parameter_type\":\"NoParameters\",\"parameters\":{},\"required_cutoff\":\"2026-10-21\",\"start\":\"2024-09-09\",\"symbol\":\"SZSE\"},\"execution\":{\"coverage\":{\"maximum_start_lag_days\":null,\"minimum_observations\":1,\"minimum_sessions\":1,\"observations_through\":\"2024-12-31\"},\"dataset\":\"etf.unadjusted_daily\",\"end\":\"2026-10-20\",\"frequency\":\"daily\",\"parameter_type\":\"NoParameters\",\"parameters\":{},\"required_cutoff\":\"2026-10-20\",\"start\":\"2024-09-09\",\"symbol\":\"159326.SZ\"},\"market\":{\"coverage\":{\"maximum_start_lag_days\":null,\"minimum_observations\":1,\"minimum_sessions\":20,\"observations_through\":\"2024-12-31\"},\"dataset\":\"etf.ohlcv\",\"end\":\"2026-10-20\",\"frequency\":\"daily\",\"parameter_type\":\"NoParameters\",\"parameters\":{},\"required_cutoff\":\"2026-10-20\",\"start\":\"2024-09-09\",\"symbol\":\"159326.SZ\"}},\"signal_dates\":{\"2025-01-02\":\"2024-12-31\",\"2025-01-03\":\"2025-01-02\",\"2025-01-06\":\"2025-01-03\",\"2025-01-07\":\"2025-01-06\",\"2025-01-08\":\"2025-01-07\",\"2025-01-09\":\"2025-01-08\",\"2025-01-10\":\"2025-01-09\",\"2025-01-13\":\"2025-01-10\",\"2025-01-14\":\"2025-01-13\",\"2025-01-15\":\"2025-01-14\",\"2025-01-16\":\"2025-01-15\",\"2025-01-17\":\"2025-01-16\",\"2025-01-20\":\"2025-01-17\",\"2025-01-21\":\"2025-01-20\",\"2025-01-22\":\"2025-01-21\",\"2025-01-23\":\"2025-01-22\",\"2025-01-24\":\"2025-01-23\",\"2025-01-27\":\"2025-01-24\",\"2025-02-05\":\"2025-01-27\",\"2025-02-06\":\"2025-02-05\",\"2025-02-07\":\"2025-02-06\",\"2025-02-10\":\"2025-02-07\",\"2025-02-11\":\"2025-02-10\",\"2025-02-12\":\"2025-02-11\",\"2025-02-13\":\"2025-02-12\",\"2025-02-14\":\"2025-02-13\",\"2025-02-17\":\"2025-02-14\",\"2025-02-18\":\"2025-02-17\",\"2025-02-19\":\"2025-02-18\",\"2025-02-20\":\"2025-02-19\",\"2025-02-21\":\"2025-02-20\",\"2025-02-24\":\"2025-02-21\",\"2025-02-25\":\"2025-02-24\",\"2025-02-26\":\"2025-02-25\",\"2025-02-27\":\"2025-02-26\",\"2025-02-28\":\"2025-02-27\",\"2025-03-03\":\"2025-02-28\",\"2025-03-04\":\"2025-03-03\",\"2025-03-05\":\"2025-03-04\",\"2025-03-06\":\"2025-03-05\",\"2025-03-07\":\"2025-03-06\",\"2025-03-10\":\"2025-03-07\",\"2025-03-11\":\"2025-03-10\",\"2025-03-12\":\"2025-03-11\",\"2025-03-13\":\"2025-03-12\",\"2025-03-14\":\"2025-03-13\",\"2025-03-17\":\"2025-03-14\",\"2025-03-18\":\"2025-03-17\",\"2025-03-19\":\"2025-03-18\",\"2025-03-20\":\"2025-03-19\",\"2025-03-21\":\"2025-03-20\",\"2025-03-24\":\"2025-03-21\",\"2025-03-25\":\"2025-03-24\",\"2025-03-26\":\"2025-03-25\",\"2025-03-27\":\"2025-03-26\",\"2025-03-28\":\"2025-03-27\",\"2025-03-31\":\"2025-03-28\",\"2025-04-01\":\"2025-03-31\",\"2025-04-02\":\"2025-04-01\",\"2025-04-03\":\"2025-04-02\",\"2025-04-07\":\"2025-04-03\",\"2025-04-08\":\"2025-04-07\",\"2025-04-09\":\"2025-04-08\",\"2025-04-10\":\"2025-04-09\",\"2025-04-11\":\"2025-04-10\",\"2025-04-14\":\"2025-04-11\",\"2025-04-15\":\"2025-04-14\",\"2025-04-16\":\"2025-04-15\",\"2025-04-17\":\"2025-04-16\",\"2025-04-18\":\"2025-04-17\",\"2025-04-21\":\"2025-04-18\",\"2025-04-22\":\"2025-04-21\",\"2025-04-23\":\"2025-04-22\",\"2025-04-24\":\"2025-04-23\",\"2025-04-25\":\"2025-04-24\",\"2025-04-28\":\"2025-04-25\",\"2025-04-29\":\"2025-04-28\",\"2025-04-30\":\"2025-04-29\",\"2025-05-06\":\"2025-04-30\",\"2025-05-07\":\"2025-05-06\",\"2025-05-08\":\"2025-05-07\",\"2025-05-09\":\"2025-05-08\",\"2025-05-12\":\"2025-05-09\",\"2025-05-13\":\"2025-05-12\",\"2025-05-14\":\"2025-05-13\",\"2025-05-15\":\"2025-05-14\",\"2025-05-16\":\"2025-05-15\",\"2025-05-19\":\"2025-05-16\",\"2025-05-20\":\"2025-05-19\",\"2025-05-21\":\"2025-05-20\",\"2025-05-22\":\"2025-05-21\",\"2025-05-23\":\"2025-05-22\",\"2025-05-26\":\"2025-05-23\",\"2025-05-27\":\"2025-05-26\",\"2025-05-28\":\"2025-05-27\",\"2025-05-29\":\"2025-05-28\",\"2025-05-30\":\"2025-05-29\",\"2025-06-03\":\"2025-05-30\",\"2025-06-04\":\"2025-06-03\",\"2025-06-05\":\"2025-06-04\",\"2025-06-06\":\"2025-06-05\",\"2025-06-09\":\"2025-06-06\",\"2025-06-10\":\"2025-06-09\",\"2025-06-11\":\"2025-06-10\",\"2025-06-12\":\"2025-06-11\",\"2025-06-13\":\"2025-06-12\",\"2025-06-16\":\"2025-06-13\",\"2025-06-17\":\"2025-06-16\",\"2025-06-18\":\"2025-06-17\",\"2025-06-19\":\"2025-06-18\",\"2025-06-20\":\"2025-06-19\",\"2025-06-23\":\"2025-06-20\",\"2025-06-24\":\"2025-06-23\",\"2025-06-25\":\"2025-06-24\",\"2025-06-26\":\"2025-06-25\",\"2025-06-27\":\"2025-06-26\",\"2025-06-30\":\"2025-06-27\",\"2025-07-01\":\"2025-06-30\",\"2025-07-02\":\"2025-07-01\",\"2025-07-03\":\"2025-07-02\",\"2025-07-04\":\"2025-07-03\",\"2025-07-07\":\"2025-07-04\",\"2025-07-08\":\"2025-07-07\",\"2025-07-09\":\"2025-07-08\",\"2025-07-10\":\"2025-07-09\",\"2025-07-11\":\"2025-07-10\",\"2025-07-14\":\"2025-07-11\",\"2025-07-15\":\"2025-07-14\",\"2025-07-16\":\"2025-07-15\",\"2025-07-17\":\"2025-07-16\",\"2025-07-18\":\"2025-07-17\",\"2025-07-21\":\"2025-07-18\",\"2025-07-22\":\"2025-07-21\",\"2025-07-23\":\"2025-07-22\",\"2025-07-24\":\"2025-07-23\",\"2025-07-25\":\"2025-07-24\",\"2025-07-28\":\"2025-07-25\",\"2025-07-29\":\"2025-07-28\",\"2025-07-30\":\"2025-07-29\",\"2025-07-31\":\"2025-07-30\",\"2025-08-01\":\"2025-07-31\",\"2025-08-04\":\"2025-08-01\",\"2025-08-05\":\"2025-08-04\",\"2025-08-06\":\"2025-08-05\",\"2025-08-07\":\"2025-08-06\",\"2025-08-08\":\"2025-08-07\",\"2025-08-11\":\"2025-08-08\",\"2025-08-12\":\"2025-08-11\",\"2025-08-13\":\"2025-08-12\",\"2025-08-14\":\"2025-08-13\",\"2025-08-15\":\"2025-08-14\",\"2025-08-18\":\"2025-08-15\",\"2025-08-19\":\"2025-08-18\",\"2025-08-20\":\"2025-08-19\",\"2025-08-21\":\"2025-08-20\",\"2025-08-22\":\"2025-08-21\",\"2025-08-25\":\"2025-08-22\",\"2025-08-26\":\"2025-08-25\",\"2025-08-27\":\"2025-08-26\",\"2025-08-28\":\"2025-08-27\",\"2025-08-29\":\"2025-08-28\",\"2025-09-01\":\"2025-08-29\",\"2025-09-02\":\"2025-09-01\",\"2025-09-03\":\"2025-09-02\",\"2025-09-04\":\"2025-09-03\",\"2025-09-05\":\"2025-09-04\",\"2025-09-08\":\"2025-09-05\",\"2025-09-09\":\"2025-09-08\",\"2025-09-10\":\"2025-09-09\",\"2025-09-11\":\"2025-09-10\",\"2025-09-12\":\"2025-09-11\",\"2025-09-15\":\"2025-09-12\",\"2025-09-16\":\"2025-09-15\",\"2025-09-17\":\"2025-09-16\",\"2025-09-18\":\"2025-09-17\",\"2025-09-19\":\"2025-09-18\",\"2025-09-22\":\"2025-09-19\",\"2025-09-23\":\"2025-09-22\",\"2025-09-24\":\"2025-09-23\",\"2025-09-25\":\"2025-09-24\",\"2025-09-26\":\"2025-09-25\",\"2025-09-29\":\"2025-09-26\",\"2025-09-30\":\"2025-09-29\",\"2025-10-09\":\"2025-09-30\",\"2025-10-10\":\"2025-10-09\",\"2025-10-13\":\"2025-10-10\",\"2025-10-14\":\"2025-10-13\",\"2025-10-15\":\"2025-10-14\",\"2025-10-16\":\"2025-10-15\",\"2025-10-17\":\"2025-10-16\",\"2025-10-20\":\"2025-10-17\",\"2025-10-21\":\"2025-10-20\",\"2025-10-22\":\"2025-10-21\",\"2025-10-23\":\"2025-10-22\",\"2025-10-24\":\"2025-10-23\",\"2025-10-27\":\"2025-10-24\",\"2025-10-28\":\"2025-10-27\",\"2025-10-29\":\"2025-10-28\",\"2025-10-30\":\"2025-10-29\",\"2025-10-31\":\"2025-10-30\",\"2025-11-03\":\"2025-10-31\",\"2025-11-04\":\"2025-11-03\",\"2025-11-05\":\"2025-11-04\",\"2025-11-06\":\"2025-11-05\",\"2025-11-07\":\"2025-11-06\",\"2025-11-10\":\"2025-11-07\",\"2025-11-11\":\"2025-11-10\",\"2025-11-12\":\"2025-11-11\",\"2025-11-13\":\"2025-11-12\",\"2025-11-14\":\"2025-11-13\",\"2025-11-17\":\"2025-11-14\",\"2025-11-18\":\"2025-11-17\",\"2025-11-19\":\"2025-11-18\",\"2025-11-20\":\"2025-11-19\",\"2025-11-21\":\"2025-11-20\",\"2025-11-24\":\"2025-11-21\",\"2025-11-25\":\"2025-11-24\",\"2025-11-26\":\"2025-11-25\",\"2025-11-27\":\"2025-11-26\",\"2025-11-28\":\"2025-11-27\",\"2025-12-01\":\"2025-11-28\",\"2025-12-02\":\"2025-12-01\",\"2025-12-03\":\"2025-12-02\",\"2025-12-04\":\"2025-12-03\",\"2025-12-05\":\"2025-12-04\",\"2025-12-08\":\"2025-12-05\",\"2025-12-09\":\"2025-12-08\",\"2025-12-10\":\"2025-12-09\",\"2025-12-11\":\"2025-12-10\",\"2025-12-12\":\"2025-12-11\",\"2025-12-15\":\"2025-12-12\",\"2025-12-16\":\"2025-12-15\",\"2025-12-17\":\"2025-12-16\",\"2025-12-18\":\"2025-12-17\",\"2025-12-19\":\"2025-12-18\",\"2025-12-22\":\"2025-12-19\",\"2025-12-23\":\"2025-12-22\",\"2025-12-24\":\"2025-12-23\",\"2025-12-25\":\"2025-12-24\",\"2025-12-26\":\"2025-12-25\",\"2025-12-29\":\"2025-12-26\",\"2025-12-30\":\"2025-12-29\",\"2025-12-31\":\"2025-12-30\",\"2026-01-05\":\"2025-12-31\",\"2026-01-06\":\"2026-01-05\",\"2026-01-07\":\"2026-01-06\",\"2026-01-08\":\"2026-01-07\",\"2026-01-09\":\"2026-01-08\",\"2026-01-12\":\"2026-01-09\",\"2026-01-13\":\"2026-01-12\",\"2026-01-14\":\"2026-01-13\",\"2026-01-15\":\"2026-01-14\",\"2026-01-16\":\"2026-01-15\",\"2026-01-19\":\"2026-01-16\",\"2026-01-20\":\"2026-01-19\",\"2026-01-21\":\"2026-01-20\",\"2026-01-22\":\"2026-01-21\",\"2026-01-23\":\"2026-01-22\",\"2026-01-26\":\"2026-01-23\",\"2026-01-27\":\"2026-01-26\",\"2026-01-28\":\"2026-01-27\",\"2026-01-29\":\"2026-01-28\",\"2026-01-30\":\"2026-01-29\",\"2026-02-02\":\"2026-01-30\",\"2026-02-03\":\"2026-02-02\",\"2026-02-04\":\"2026-02-03\",\"2026-02-05\":\"2026-02-04\",\"2026-02-06\":\"2026-02-05\",\"2026-02-09\":\"2026-02-06\",\"2026-02-10\":\"2026-02-09\",\"2026-02-11\":\"2026-02-10\",\"2026-02-12\":\"2026-02-11\",\"2026-02-13\":\"2026-02-12\",\"2026-02-24\":\"2026-02-13\",\"2026-02-25\":\"2026-02-24\",\"2026-02-26\":\"2026-02-25\",\"2026-02-27\":\"2026-02-26\",\"2026-03-02\":\"2026-02-27\",\"2026-03-03\":\"2026-03-02\",\"2026-03-04\":\"2026-03-03\",\"2026-03-05\":\"2026-03-04\",\"2026-03-06\":\"2026-03-05\",\"2026-03-09\":\"2026-03-06\",\"2026-03-10\":\"2026-03-09\",\"2026-03-11\":\"2026-03-10\",\"2026-03-12\":\"2026-03-11\",\"2026-03-13\":\"2026-03-12\",\"2026-03-16\":\"2026-03-13\",\"2026-03-17\":\"2026-03-16\",\"2026-03-18\":\"2026-03-17\",\"2026-03-19\":\"2026-03-18\",\"2026-03-20\":\"2026-03-19\",\"2026-03-23\":\"2026-03-20\",\"2026-03-24\":\"2026-03-23\",\"2026-03-25\":\"2026-03-24\",\"2026-03-26\":\"2026-03-25\",\"2026-03-27\":\"2026-03-26\",\"2026-03-30\":\"2026-03-27\",\"2026-03-31\":\"2026-03-30\",\"2026-04-01\":\"2026-03-31\",\"2026-04-02\":\"2026-04-01\",\"2026-04-03\":\"2026-04-02\",\"2026-04-07\":\"2026-04-03\",\"2026-04-08\":\"2026-04-07\",\"2026-04-09\":\"2026-04-08\",\"2026-04-10\":\"2026-04-09\",\"2026-04-13\":\"2026-04-10\",\"2026-04-14\":\"2026-04-13\",\"2026-04-15\":\"2026-04-14\",\"2026-04-16\":\"2026-04-15\",\"2026-04-17\":\"2026-04-16\",\"2026-04-20\":\"2026-04-17\",\"2026-04-21\":\"2026-04-20\",\"2026-04-22\":\"2026-04-21\",\"2026-04-23\":\"2026-04-22\",\"2026-04-24\":\"2026-04-23\",\"2026-04-27\":\"2026-04-24\",\"2026-04-28\":\"2026-04-27\",\"2026-04-29\":\"2026-04-28\",\"2026-04-30\":\"2026-04-29\",\"2026-05-06\":\"2026-04-30\",\"2026-05-07\":\"2026-05-06\",\"2026-05-08\":\"2026-05-07\",\"2026-05-11\":\"2026-05-08\",\"2026-05-12\":\"2026-05-11\",\"2026-05-13\":\"2026-05-12\",\"2026-05-14\":\"2026-05-13\",\"2026-05-15\":\"2026-05-14\",\"2026-05-18\":\"2026-05-15\",\"2026-05-19\":\"2026-05-18\",\"2026-05-20\":\"2026-05-19\",\"2026-05-21\":\"2026-05-20\",\"2026-05-22\":\"2026-05-21\",\"2026-05-25\":\"2026-05-22\",\"2026-05-26\":\"2026-05-25\",\"2026-05-27\":\"2026-05-26\",\"2026-05-28\":\"2026-05-27\",\"2026-05-29\":\"2026-05-28\",\"2026-06-01\":\"2026-05-29\",\"2026-06-02\":\"2026-06-01\",\"2026-06-03\":\"2026-06-02\",\"2026-06-04\":\"2026-06-03\",\"2026-06-05\":\"2026-06-04\",\"2026-06-08\":\"2026-06-05\",\"2026-06-09\":\"2026-06-08\",\"2026-06-10\":\"2026-06-09\",\"2026-06-11\":\"2026-06-10\",\"2026-06-12\":\"2026-06-11\",\"2026-06-15\":\"2026-06-12\",\"2026-06-16\":\"2026-06-15\",\"2026-06-17\":\"2026-06-16\",\"2026-06-18\":\"2026-06-17\",\"2026-06-22\":\"2026-06-18\",\"2026-06-23\":\"2026-06-22\",\"2026-06-24\":\"2026-06-23\",\"2026-06-25\":\"2026-06-24\",\"2026-06-26\":\"2026-06-25\",\"2026-06-29\":\"2026-06-26\",\"2026-06-30\":\"2026-06-29\",\"2026-07-01\":\"2026-06-30\",\"2026-07-02\":\"2026-07-01\",\"2026-07-03\":\"2026-07-02\",\"2026-07-06\":\"2026-07-03\",\"2026-07-07\":\"2026-07-06\",\"2026-07-08\":\"2026-07-07\",\"2026-07-09\":\"2026-07-08\",\"2026-07-10\":\"2026-07-09\",\"2026-07-13\":\"2026-07-10\",\"2026-07-14\":\"2026-07-13\",\"2026-07-15\":\"2026-07-14\",\"2026-07-16\":\"2026-07-15\",\"2026-07-17\":\"2026-07-16\",\"2026-07-20\":\"2026-07-17\",\"2026-07-21\":\"2026-07-20\",\"2026-07-22\":\"2026-07-21\",\"2026-07-23\":\"2026-07-22\",\"2026-07-24\":\"2026-07-23\",\"2026-07-27\":\"2026-07-24\",\"2026-07-28\":\"2026-07-27\",\"2026-07-29\":\"2026-07-28\",\"2026-07-30\":\"2026-07-29\",\"2026-07-31\":\"2026-07-30\",\"2026-08-03\":\"2026-07-31\",\"2026-08-04\":\"2026-08-03\",\"2026-08-05\":\"2026-08-04\",\"2026-08-06\":\"2026-08-05\",\"2026-08-07\":\"2026-08-06\",\"2026-08-10\":\"2026-08-07\",\"2026-08-11\":\"2026-08-10\",\"2026-08-12\":\"2026-08-11\",\"2026-08-13\":\"2026-08-12\",\"2026-08-14\":\"2026-08-13\",\"2026-08-17\":\"2026-08-14\",\"2026-08-18\":\"2026-08-17\",\"2026-08-19\":\"2026-08-18\",\"2026-08-20\":\"2026-08-19\",\"2026-08-21\":\"2026-08-20\",\"2026-08-24\":\"2026-08-21\",\"2026-08-25\":\"2026-08-24\",\"2026-08-26\":\"2026-08-25\",\"2026-08-27\":\"2026-08-26\",\"2026-08-28\":\"2026-08-27\",\"2026-08-31\":\"2026-08-28\",\"2026-09-01\":\"2026-08-31\",\"2026-09-02\":\"2026-09-01\",\"2026-09-03\":\"2026-09-02\",\"2026-09-04\":\"2026-09-03\",\"2026-09-07\":\"2026-09-04\",\"2026-09-08\":\"2026-09-07\",\"2026-09-09\":\"2026-09-08\",\"2026-09-10\":\"2026-09-09\",\"2026-09-11\":\"2026-09-10\",\"2026-09-14\":\"2026-09-11\",\"2026-09-15\":\"2026-09-14\",\"2026-09-16\":\"2026-09-15\",\"2026-09-17\":\"2026-09-16\",\"2026-09-18\":\"2026-09-17\",\"2026-09-21\":\"2026-09-18\",\"2026-09-22\":\"2026-09-21\",\"2026-09-23\":\"2026-09-22\",\"2026-09-24\":\"2026-09-23\",\"2026-09-28\":\"2026-09-24\",\"2026-09-29\":\"2026-09-28\",\"2026-09-30\":\"2026-09-29\",\"2026-10-08\":\"2026-09-30\",\"2026-10-09\":\"2026-10-08\",\"2026-10-12\":\"2026-10-09\",\"2026-10-13\":\"2026-10-12\",\"2026-10-14\":\"2026-10-13\",\"2026-10-15\":\"2026-10-14\",\"2026-10-16\":\"2026-10-15\",\"2026-10-19\":\"2026-10-16\",\"2026-10-20\":\"2026-10-19\",\"2026-10-21\":\"2026-10-20\"},\"strategy\":{\"reference_id\":\"S015-C0212\",\"release_hash\":\"7c78e0d4dfb68d34b5e66abc00b8bba038d7b25547ea232b4c4e10ff93e242bc\",\"runtime_sha256\":\"ab7df2a5ccd7656598f1b9c5ac2d7b7ed2a05f4a75b2e7a4b055def63523c037\",\"strategy_id\":\"S015\",\"symbol\":\"159326.SZ\"},\"tradable_window\":{\"end\":\"2026-10-21\",\"start\":\"2025-01-02\"}},\"prepared\":{\"manifest_sha256\":\"31a37437f6ced61b44021be39c9c0e527ee79adf85a32b648050fc1d674ec4c6\",\"preparation_id\":\"b2d52c58-d6ff-49a2-b8ce-c1e24b827478\",\"space_id\":\"67b4df74-e6d9-4fa4-9200-b5694e5d7018\"},\"schema_version\":1}"
+    }
+  ],
+  "execution_contract_json": "{\"checkpoints\":[],\"decision_effective_time_rule\":\"NEXT_SESSION\",\"decision_output_kind\":\"TARGET_POSITION\",\"order_types\":[\"LIMIT\",\"MARKET\"],\"policy\":{\"policy_type\":\"FROZEN_RULE\",\"settings\":{\"capital\":{\"allocation_fraction\":1.0,\"mode\":\"target_equity_fraction\",\"target_scope\":\"decision\"},\"entry\":{\"limit_parameter\":0.01,\"order_type\":\"LIMIT\"},\"exit\":{\"limit_ratio\":0.1,\"order_type\":\"MARKET\"},\"instrument\":{\"lot_size\":100,\"maximum_order_quantity\":1000000,\"price_limit_ratio\":0.1,\"price_tick\":0.001}}}}",
+  "schema_version": 1
+}

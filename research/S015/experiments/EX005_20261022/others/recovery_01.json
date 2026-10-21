@@ -1,0 +1,89 @@
+{
+  "created_at": "2026-10-22T01:55:02.370577+08:00",
+  "failure": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX005_20261022"
+    },
+    "evidence_id": "7c3f7e487d9e0a538932c049bc90263146e16d708bea62d44f66aede78422b93.json",
+    "sha256": "7c3f7e487d9e0a538932c049bc90263146e16d708bea62d44f66aede78422b93",
+    "media_type": "application/json",
+    "name": "publication_failure_attempt1",
+    "schema": null,
+    "schema_version": null
+  },
+  "previous_orchestration": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX005_20261022"
+    },
+    "evidence_id": "ee59e304c3cae0ec22da2fe61eb87a16e5fba44164427439d89c8c0b1eac2f4e.py",
+    "sha256": "ee59e304c3cae0ec22da2fe61eb87a16e5fba44164427439d89c8c0b1eac2f4e",
+    "media_type": "text/x-python",
+    "name": "orchestration_before_publication_retry",
+    "schema": null,
+    "schema_version": null
+  },
+  "phase": "publication",
+  "system_error": "WinError6 / BrokenProcessPool",
+  "cause": "not established; no strategy or data failure inferred",
+  "parent": "C0243",
+  "point_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "candidate_ids": [
+    "C2728",
+    "C2729",
+    "C2730",
+    "C2731",
+    "C2732",
+    "C2733",
+    "C2734",
+    "C2735",
+    "C2736",
+    "C2737",
+    "C2738",
+    "C2739",
+    "C2740",
+    "C2741",
+    "C2742",
+    "C2743"
+  ],
+  "successful_evaluations_without_retained_publication": 16,
+  "published_account_matches": 0,
+  "matched_materials": [
+    {
+      "name": "dd95f5f50ea392b52061c43d67908f9cd95250abf38a67de41c116dbca936b75.json",
+      "type": "ParameterEvaluationPlan",
+      "account_evidence": false
+    }
+  ],
+  "scanned_files": 2444,
+  "first_result_hash": "ca06a01dfab09f2ea48ff56fbdc16404055ce3c5f360e970d66a8ca1b40546c2",
+  "first_request_hash": "6e9bf35d8f8a7e7d377aab5468af1e71d9d9dd49357835fee0cfca547610985e",
+  "decision": "explicitly retry only missing same prescribed identities; retain successful published results; no replacement points",
+  "resume_batch_size": 33,
+  "workers_per_pool": 8,
+  "aggregate_limit": 16,
+  "publication_resilience": "retain failed future block outputs and all publication statuses for explicit recovery if another failure occurs; no automatic retry or serial fallback",
+  "assessment_interruption": "the waiting verifier stopped on failure; restart public authentication in parallel after all account checkpoints complete"
+}

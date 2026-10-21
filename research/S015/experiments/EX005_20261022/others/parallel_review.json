@@ -1,0 +1,83 @@
+{
+  "status": "PASS_FOR_CURRENT_DISJOINT_DISPATCH",
+  "review_date": "2026-10-22",
+  "blocking_findings": [],
+  "scope": "Read-only source and current scheduling/evidence snapshot; no account execution, no source changes, no cache changes.",
+  "resource_evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX005_20261022"
+    },
+    "evidence_id": "c1a59003fc95d42c1bb37c31ebc2df1778020c5ab071610ff8d386ad377eb1ce.json",
+    "sha256": "c1a59003fc95d42c1bb37c31ebc2df1778020c5ab071610ff8d386ad377eb1ce",
+    "media_type": "application/json",
+    "name": "user_authorized_parallel_increase",
+    "schema": null,
+    "schema_version": null
+  },
+  "original_protocol_evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX005_20261022"
+    },
+    "evidence_id": "3e605e9761c39d541bb928d4f677e49e9e84c9ec0c62bb2cdd6374893fdaa416.json",
+    "sha256": "3e605e9761c39d541bb928d4f677e49e9e84c9ec0c62bb2cdd6374893fdaa416",
+    "media_type": "application/json",
+    "name": "stage4_protocol",
+    "schema": null,
+    "schema_version": null
+  },
+  "checks": {
+    "forward_centers": 71,
+    "tail_centers": 27,
+    "union_centers": 98,
+    "partition_intersection_empty": true,
+    "aggregate_worker_budget": 16,
+    "native_threads_per_worker": 1,
+    "boundary": "C0307",
+    "boundary_state": "RUNNING",
+    "source_cache_exists": false,
+    "held_cache_exists": true,
+    "tail_failure_marker_absent": true,
+    "observed_completed_forward_centers": 50,
+    "observed_completed_tail_centers": 7,
+    "observed_saved_scenarios": 1833,
+    "observed_evaluation_ids_unique": true,
+    "observed_parameter_ids_unique": true,
+    "in_progress_snapshot": [
+      {
+        "candidate_id": "C0239",
+        "published_rows": 16,
+        "expected_rows": 33
+      }
+    ]
+  },
+  "reasoning": [
+    "The resource addendum is publicly published before the boundary cache moves or the extra account pool starts; the original research protocol retains its original hash.",
+    "The forward runner checks the C0307 cache before loading any tail request. The cache is currently held while the tail runs, so the forward loop cannot reach any tail center.",
+    "The extra runner owns center ordinals72..98 only. It writes33 scenarios per center to center-specific checkpoint files and requires all27*33 publications before restoring C0307.",
+    "After restoration, the forward runner reads completed result coordinates and constructs an empty pending set for the tail; it does not rerun these accounts.",
+    "Public account evidence publication uses per-content-hash immutable paths, UUID temporary files and atomic hard links, rather than a shared mutable experiment index. The two parent publishers do not contend on per-center checkpoint paths.",
+    "Each pool uses its existing8-worker and1-native-thread contract. Evaluation and publication worker pools are sequential within each parent; the aggregate active pool budget is16.",
+    "Failure keeps the cache held and emits a failure record. Final checks require tail COMPLETE,891 scenarios, restored cache and absence of the failure marker; publisher also gates completion and includes the resource evidence."
+  ],
+  "operational_conditions": [
+    "This is a one-run dispatch barrier, not a general interprocess lock. While the cache is held, do not rerun prepare_plans.py for C0307, regenerate its cache, manually restore the cache, or launch another runner for these candidate sets.",
+    "The startup active-index assertion precedes the cache rename and is not an atomic general scheduling lock. Current observed dispatch has already acquired the cache before the forward boundary; do not reuse this pattern at an already-active boundary.",
+    "After a tail failure, reconcile published evidence and checkpoint state before any retry or cache restoration; the script deliberately does not silently resume partial tails.",
+    "This interim review verifies scheduling exclusivity and provenance, not completion or speedup. Final3170-account uniqueness and numeric checks plusFULL delivery validation remain required.",
+    "Hardware capacity and live process command lines were not independently re-audited in this sandbox; an attempted read-only Win32_Process query was denied. Worker budgets were verified from the execution/context code and authenticated resource declaration."
+  ],
+  "reviewed_source_sha256": {
+    "research/S015/experiments/EX005_20261022/src/run_parallel_tail.py": "39ed34ee5b669647d77529707639cd4ff1e48daa7534880aa75dd36834dc515d",
+    "research/S015/experiments/EX005_20261022/src/run_assessment.py": "ee59e304c3cae0ec22da2fe61eb87a16e5fba44164427439d89c8c0b1eac2f4e",
+    "research/S015/experiments/EX005_20261022/src/common.py": "0c29738a27d7a2064ab5ebf6d9fa19f9b250b44f79c0c9fe20824276a23559d1",
+    "research/S015/experiments/EX005_20261022/src/finalize_checks.py": "16a5dcc57f2d52c7c865e5026d2f00b75415bf24b460694786e2382c0e59ea84",
+    "research/S015/experiments/EX005_20261022/src/publish_assessment.py": "3e9b8f169a12dc6a902d510fbb0bc9d4989a94fab8e7783dd1e5540661a81632",
+    "src/czsc_trader/application/evidence_service.py": "e19f262277eed78631e615dd994e15679d5c8195eb9e1639dcdb6abd2bcf8576"
+  }
+}

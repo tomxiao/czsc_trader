@@ -1,0 +1,98 @@
+{
+  "review_date": "2026-10-22",
+  "status": "PASS_WITH_DECLARED_LIMITATIONS",
+  "blocking_findings": [],
+  "scope": "Read-only protocol, all98 center handoff identities and all3072 geometric points; available published plans; exactly2 public account evidence sample validations. No account rerun or new evaluation.",
+  "checks": {
+    "center_handoff_count": 98,
+    "complete_designs": 96,
+    "not_applicable_centers": [
+      "C0030",
+      "C0062"
+    ],
+    "points": 3072,
+    "max_normalized_distance_error": 6.938893903907228e-17,
+    "integer_max_days_moves": 0,
+    "dimension_counts": {
+      "3": 17,
+      "4": 31,
+      "5": 48
+    },
+    "available_plan_files_at_review": 22,
+    "complete_plans_authenticated": 20,
+    "distinct_source_contracts_in_available_plans": 1,
+    "mandate_full_validation": "PASS",
+    "typed_target_count": 12,
+    "same_source_same_nonparameter_payload_in_available_plans": true,
+    "center_request_identity_preserved": true,
+    "ranking_policy": "RAW / REQUIRE_COMPLETE; eight fixed bins; seven prospective sensitivities",
+    "all98_center_evidence_refs_and_evaluation_ids_match_published_handoff": true
+  },
+  "sample_account_checks": [
+    {
+      "candidate_id": "C1000",
+      "kind": "parameter",
+      "evaluation_id": "c0aa56ff17a927c8ff440e98a92ca729f5a0a64022e7f9ffc46e114238a30cc2",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX005_20261022"
+        },
+        "evidence_id": "9387c566bca409a8ce75fd27df2060cb77c0986c98e44d2e47a599e405533fcc.json",
+        "sha256": "9387c566bca409a8ce75fd27df2060cb77c0986c98e44d2e47a599e405533fcc",
+        "media_type": "application/json",
+        "name": "C0004_parameter_0",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "one_way_cost": 0.001,
+      "fills": 217,
+      "closed_cycles": 108,
+      "public_validation": "PASS"
+    },
+    {
+      "candidate_id": "C0004",
+      "kind": "stress",
+      "evaluation_id": "2874898492c89c7831e5c6bce7b057d149ca693debf73441e607343845f87587",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX005_20261022"
+        },
+        "evidence_id": "91ff2ee57f4547195600e89821511ee4fcd2bbbc247d2c22e403803d89ce7ac8.json",
+        "sha256": "91ff2ee57f4547195600e89821511ee4fcd2bbbc247d2c22e403803d89ce7ac8",
+        "media_type": "application/json",
+        "name": "C0004_stress_center",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "one_way_cost": 0.002,
+      "fills": 227,
+      "closed_cycles": 113,
+      "public_validation": "PASS"
+    }
+  ],
+  "required_report_disclosures": [
+    "3072 parameter accounts plus98 stress accounts are planned; this interim review does not certify all results completed. Final authentication and FULL delivery validation remain required.",
+    "No max_days integer moves: a one-day normalized move is1/19 >5%; passing this neighborhood does not establish +/-1day robustness. Sizing/reverse and enabled/disabled range structure remain fixed.",
+    "C0030/C0062 have only one active continuous coordinate at this radius and at most two distinct feasible shell points; they remain NOT_APPLICABLE and excluded from ranking, not automatically passed.",
+    "5% is total Euclidean distance in declared domain units. Different dimensions/domain widths imply different economic changes; 2/9 absolute-range domain is a nominal +/-10% no-tick scale, not a strict market-data upper bound.",
+    "181 retained executable configurations includes duplicate economic paths and zero-variance accounts. This is not181 independent trials and not all historical adaptive choices. EX0021092 feature/label comparisons cannot be added as if homogeneous account trials.",
+    "Highest full-sample Sharpe selection serves only family DSR diagnostics, not user selection or the candidate ranking rule. Zero dispersion may cause public DSR diagnostics to be unavailable; retain the stated reason.",
+    "Partial buys/sells must be reconciled by actual cash flows in closed cycles; do not use total sell-order count as completed-trade frequency. Open cycles do not count.",
+    "Daily price-range execution without volume constraints is the user-confirmed platform model. Minute volume mismatch does not add an unapproved eligibility gate. Historical17:30 supplier availability remains unverified.",
+    "All434 sessions are development data; overlapping rolling windows and bootstrap intervals do not create independent holdout evidence. No phase-five approval, candidate user selection, freeze, PTE or production action follows automatically."
+  ],
+  "reviewed_source_sha256": {
+    "research/S015/experiments/EX005_20261022/src/parameter_map.py": "8e7cdf43cf0157c7e0170fda5df6eaae7363bb16112c0023cda42d7862105ef2",
+    "research/S015/experiments/EX005_20261022/src/parameter_constraints.py": "b14bee89e8a0349c3505cacca77c4edb9b610b613da1fd45a7584de316bfe441",
+    "research/S015/experiments/EX005_20261022/src/design_stage4.py": "8d8208c8fa87b18d987a9fe0adcf79b7d8de20bfae56a636812251a2ecd37058",
+    "research/S015/experiments/EX005_20261022/src/prepare_plans.py": "1b0b05ba8cb39f5fc3240503a98188d5330ec8c255f0265e7674764760a28b27",
+    "research/S015/experiments/EX005_20261022/src/run_assessment.py": "ee59e304c3cae0ec22da2fe61eb87a16e5fba44164427439d89c8c0b1eac2f4e",
+    "research/S015/experiments/EX005_20261022/src/build_assessment.py": "8fde01a5492472bf80e859ede536840e8ad81a1659877e318c9aa102b71225b3"
+  }
+}

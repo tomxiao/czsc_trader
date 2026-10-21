@@ -1,0 +1,40 @@
+{
+  "status": "PASS",
+  "checks": [
+    "bound parameter serial/parallel five ledgers and result hash identical",
+    "standard and stress actual fill fees verified",
+    "both new accounts formally published"
+  ],
+  "formal_accounts": 2,
+  "physical_evaluations": 3,
+  "evidence": [
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX005_20261022"
+      },
+      "evidence_id": "9387c566bca409a8ce75fd27df2060cb77c0986c98e44d2e47a599e405533fcc.json",
+      "sha256": "9387c566bca409a8ce75fd27df2060cb77c0986c98e44d2e47a599e405533fcc",
+      "media_type": "application/json",
+      "name": "C0004_parameter_0",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX005_20261022"
+      },
+      "evidence_id": "91ff2ee57f4547195600e89821511ee4fcd2bbbc247d2c22e403803d89ce7ac8.json",
+      "sha256": "91ff2ee57f4547195600e89821511ee4fcd2bbbc247d2c22e403803d89ce7ac8",
+      "media_type": "application/json",
+      "name": "C0004_stress_center",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    }
+  ]
+}

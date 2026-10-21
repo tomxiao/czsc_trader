@@ -1,0 +1,102 @@
+{
+  "created_at": "2026-10-22T01:57:47.341516+08:00",
+  "reason": "second WinError6/BrokenProcessPool under aggregate16; stable cause not established",
+  "decision": "return to one existing8-worker parallel pool; no serial fallback, no platform change",
+  "aggregate_max_workers": 8,
+  "native_threads_per_worker": 1,
+  "retained_tail_centers": [
+    "C0307",
+    "C0308",
+    "C0309",
+    "C0310",
+    "C0311",
+    "C0312",
+    "C0313",
+    "C0314",
+    "C0316",
+    "C0317",
+    "C0318",
+    "C0319",
+    "C0320",
+    "C0321",
+    "C0322",
+    "C0324",
+    "C0325",
+    "C0326",
+    "C0327",
+    "C0328",
+    "C0329",
+    "C0330"
+  ],
+  "forward_resume_centers": [
+    "C0400",
+    "C0401",
+    "C0402",
+    "C0404",
+    "C0406"
+  ],
+  "unknown_evaluation_batch": {
+    "parent": "C0400",
+    "requested_scenarios": 33,
+    "actual_started_or_finished_count": null,
+    "status": "UNKNOWN",
+    "first_request_hash": "b48fc5ab82a87c823e023242d366c5d2c33492cba401bf0a62972901bcf625a6"
+  },
+  "published_account_matches": 0,
+  "matched_materials": [
+    {
+      "file": "3e605e9761c39d541bb928d4f677e49e9e84c9ec0c62bb2cdd6374893fdaa416.json",
+      "account_evidence": false
+    },
+    {
+      "file": "f12b405468d8a46fa315e55a2cb5c696eba8d99751ffefd815d7f8f44265f35a.json",
+      "account_evidence": false
+    }
+  ],
+  "retry": "explicitly retry the same33 C0400 requests, then execute the remaining4 tail centers; retain all published results",
+  "boundary_release": "additional pool has exited; restore its held cache so the live forward runner can skip22 completed tail centers and evaluate5 missing centers",
+  "failure_references": {
+    "failure": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX005_20261022"
+      },
+      "evidence_id": "49f61115b9ff978c1d55f0c393d57265efa99c48c484bd556169942af06f7ca3.json",
+      "sha256": "49f61115b9ff978c1d55f0c393d57265efa99c48c484bd556169942af06f7ca3",
+      "media_type": "application/json",
+      "name": "second_pool_failure",
+      "schema": null,
+      "schema_version": null
+    },
+    "parallel_tail_failure": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX005_20261022"
+      },
+      "evidence_id": "9d5cbdaa310b84e0fc85018e38c852e584a1b41003cbc46e2fdc9b5e8b7379af.json",
+      "sha256": "9d5cbdaa310b84e0fc85018e38c852e584a1b41003cbc46e2fdc9b5e8b7379af",
+      "media_type": "application/json",
+      "name": "second_pool_parallel_tail_failure",
+      "schema": null,
+      "schema_version": null
+    },
+    "parallel_tail_state": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX005_20261022"
+      },
+      "evidence_id": "77ff0ddf7c01cefebb5e2e28a1f0b2efce35c2ba258593d721ad20c0c098d530.json",
+      "sha256": "77ff0ddf7c01cefebb5e2e28a1f0b2efce35c2ba258593d721ad20c0c098d530",
+      "media_type": "application/json",
+      "name": "second_pool_parallel_tail_state",
+      "schema": null,
+      "schema_version": null
+    }
+  }
+}
