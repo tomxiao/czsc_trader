@@ -1,0 +1,129 @@
+{
+  "user_instruction": "请你自主完成阶段二",
+  "stage": 2,
+  "mandate": "MANDATE/3",
+  "predecessor": "COMPONENTS/5",
+  "question": "EX011的分钟增量能否被已有当日开收盘变化以及其余已有日线组件解释？",
+  "reason": "afternoon_reversal与afternoon结合可表达上午/下午总变动；EX011主控制没有body，不足排除日线开收盘信息的重复表达。此前结果和报告保留，不回写。",
+  "controls": {
+    "PRBody": [
+      "base_r1",
+      "base_r5",
+      "base_vol20",
+      "pressure",
+      "calm_range",
+      "body"
+    ],
+    "AllDaily": [
+      "base_r1",
+      "base_r5",
+      "base_vol20",
+      "pressure",
+      "calm_range",
+      "body",
+      "trend20",
+      "location",
+      "lower_wick",
+      "efficiency5"
+    ]
+  },
+  "duplicate_exclusion": "trend5 equals base_r5, included once. AllDaily covers all eight EX010 daily component definitions plus simple r1/r5/vol20, avoiding exact duplicates.",
+  "budget": {
+    "primary_PRBody": 6,
+    "AllDaily_sensitivity": 6,
+    "total_paired_conditions": 12,
+    "targets": 2,
+    "folds": 4,
+    "new_accounts": 0,
+    "parameter_searches": 0
+  },
+  "components": [
+    "afternoon",
+    "afternoon_reversal"
+  ],
+  "horizons": [
+    1,
+    2,
+    3
+  ],
+  "method": "Authenticated EX011 feature matrix, authenticated EX010 labels and exact EX011 evaluate routine; alpha10, purged expanding folds, training-only scaling/negative residual terciles, seed13 block10/20x499 unchanged. Only control columns change.",
+  "selection": "New falsification selected after EX011 results; entirely seen development data, no fresh holdout or confirmation.",
+  "judgment": "Separate predictive association under a chosen model from unique information beyond all already available daily features. Preserve negative and unstable results. No new hard strategy gate.",
+  "data": "No data fetch or extension; immutable inputs from previous publication; final cutoff2026-10-21.",
+  "resources": {
+    "processes": 1,
+    "native_threads": 1
+  },
+  "inherited": {
+    "source": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX011_20261023"
+      },
+      "evidence_id": "a30ac09e3134ec7d5545325449ece61e1442a881b5bfeb35e27b5ee2d8b17421.py",
+      "sha256": "a30ac09e3134ec7d5545325449ece61e1442a881b5bfeb35e27b5ee2d8b17421",
+      "media_type": "text/x-python",
+      "name": "incremental_study",
+      "schema": null,
+      "schema_version": null
+    },
+    "features": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX011_20261023"
+      },
+      "evidence_id": "502b6ea32eeacd6f73fb40ea6bf2f90f351f060cea25fdc9693265a39f17be9b.csv",
+      "sha256": "502b6ea32eeacd6f73fb40ea6bf2f90f351f060cea25fdc9693265a39f17be9b",
+      "media_type": "text/csv",
+      "name": "features_reconstructed",
+      "schema": null,
+      "schema_version": null
+    },
+    "labels": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX010_20261023"
+      },
+      "evidence_id": "bb36e3eed3da9a4e6b67adcbc7b97501d082ae8771a0c3d9165ee174f8de4ba7.csv",
+      "sha256": "bb36e3eed3da9a4e6b67adcbc7b97501d082ae8771a0c3d9165ee174f8de4ba7",
+      "media_type": "text/csv",
+      "name": "event_labels",
+      "schema": null,
+      "schema_version": null
+    },
+    "results": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX011_20261023"
+      },
+      "evidence_id": "b26f6648c72576fff84810134c17832ced6e59133d6aea2303e5c730ecb9fccd.json",
+      "sha256": "b26f6648c72576fff84810134c17832ced6e59133d6aea2303e5c730ecb9fccd",
+      "media_type": "application/json",
+      "name": "incremental_results",
+      "schema": null,
+      "schema_version": null
+    },
+    "protocol": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX011_20261023"
+      },
+      "evidence_id": "61d28885750d021ef0449e00022bd4812d3243a3a5b2eebbd0e9b4f85adc2753.json",
+      "sha256": "61d28885750d021ef0449e00022bd4812d3243a3a5b2eebbd0e9b4f85adc2753",
+      "media_type": "application/json",
+      "name": "incremental_protocol",
+      "schema": null,
+      "schema_version": null
+    }
+  }
+}

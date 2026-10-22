@@ -1,0 +1,166 @@
+{
+  "stage": 2,
+  "mandate": "MANDATE/3",
+  "parent": "COMPONENTS/4",
+  "question": "分钟组件在已有日线卖压和振幅以外，是否有稳定的短期收益或下行风险增量？",
+  "hypotheses": {
+    "afternoon": "午后下跌可能代表短暂流动性压力，随后反弹；竞争解释是全天卖压的重复代理或持续坏消息。",
+    "afternoon_reversal": "午后相对上午转弱可能保留日内时序信息；竞争解释是噪声、市场阶段或极少极端日。"
+  },
+  "primary": "PR baseline: r1/r5/vol20 + pressure + calm_range, versus adding ONE minute component. 2 components x 3 horizons = 6 paired comparisons.",
+  "sensitivity": "P: omit calm_range; PROther: PR plus the OTHER minute component. 12 further paired comparisons, not hidden primary trials.",
+  "total_budget": {
+    "paired_comparisons": 18,
+    "outcomes_per_comparison": 2,
+    "folds": 4,
+    "new_strategy_accounts": 0,
+    "parameter_searches": 0
+  },
+  "horizons": [
+    1,
+    2,
+    3
+  ],
+  "components": [
+    "afternoon",
+    "afternoon_reversal"
+  ],
+  "folds": [
+    [
+      100,
+      184
+    ],
+    [
+      184,
+      268
+    ],
+    [
+      268,
+      352
+    ],
+    [
+      352,
+      434
+    ]
+  ],
+  "model": "Ridge alpha10, intercept unpenalized, training-only mean/std. All labels must exit strictly before first test decision. No test-driven tuning.",
+  "grouping": "Negative minute residual after training-only ridge on baseline; training residual terciles. Higher score means relatively weaker afternoon, following observed EX010 reversal. No threshold search.",
+  "selection_disclosure": "EX010 results and all development samples already seen. Components, inverse orientation and controls chosen after EX010. This is conditional developmental evidence, NOT a fresh holdout or confirmation.",
+  "labels": "Reuse authenticated EX010 independent 100k event labels, T+1 limit buy and T+h+1 market sell, .1% each way; conservative entry-day inclusive downside geometry. No equity curve from overlapping labels.",
+  "cost_sensitivity": "At identical fills/quantities deduct another .1% buy+sell notional. Fee-only sensitivity, not a resized .2% executable account or cost acceptance.",
+  "diagnostics": [
+    "2025/2026 and four folds",
+    "leave out five largest absolute labels",
+    "fixed archived S011/C0031 end-of-T position states",
+    "gain/loss opportunity fractions for each residual tercile",
+    "499 moving-block10 and block20 gain intervals, seed13"
+  ],
+  "uncertainty": "Bootstrap resamples chronological prediction losses, not model fitting; intervals exploratory, shared samples and many comparisons preclude confirmatory significance claims.",
+  "judgment": "RSCH synthesizes direction, incremental loss, consistency, concentration and uncertainty; no added strategy hard acceptance gates. Negative or inconclusive results close stage2 validly.",
+  "availability": "T17:30 features only through T15:00 bars. Provider historical publication clock not independently certified. Existing data and prepared hashes unchanged.",
+  "resources": {
+    "processes": 1,
+    "native_threads": 1,
+    "seed": 13
+  },
+  "inherited_evidence": {
+    "component_study": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX010_20261023"
+      },
+      "evidence_id": "2c1eefd15553620f08451ae9c9a3d7941e1786b86ea0dabcb3db116a9fd3607c.py",
+      "sha256": "2c1eefd15553620f08451ae9c9a3d7941e1786b86ea0dabcb3db116a9fd3607c",
+      "media_type": "text/x-python",
+      "name": "component_study",
+      "schema": null,
+      "schema_version": null
+    },
+    "component_protocol": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX010_20261023"
+      },
+      "evidence_id": "7d90ec40b617ee836b576994756a40e20d8793518163ebeddd9fef8e5b7c61a2.json",
+      "sha256": "7d90ec40b617ee836b576994756a40e20d8793518163ebeddd9fef8e5b7c61a2",
+      "media_type": "application/json",
+      "name": "component_protocol",
+      "schema": null,
+      "schema_version": null
+    },
+    "input_facts": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX010_20261023"
+      },
+      "evidence_id": "889af03cb1bc6515d320ed8d6aa439f3da93d341460df2ddd217510e04502f6a.json",
+      "sha256": "889af03cb1bc6515d320ed8d6aa439f3da93d341460df2ddd217510e04502f6a",
+      "media_type": "application/json",
+      "name": "input_facts",
+      "schema": null,
+      "schema_version": null
+    },
+    "event_labels": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX010_20261023"
+      },
+      "evidence_id": "bb36e3eed3da9a4e6b67adcbc7b97501d082ae8771a0c3d9165ee174f8de4ba7.csv",
+      "sha256": "bb36e3eed3da9a4e6b67adcbc7b97501d082ae8771a0c3d9165ee174f8de4ba7",
+      "media_type": "text/csv",
+      "name": "event_labels",
+      "schema": null,
+      "schema_version": null
+    },
+    "archive_diagnosis_S011-v1": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX010_20261023"
+      },
+      "evidence_id": "ea5cbc9f6d35a7bc8df452e853f964e32f146a278e4216d39aeef167e7d74668.csv",
+      "sha256": "ea5cbc9f6d35a7bc8df452e853f964e32f146a278e4216d39aeef167e7d74668",
+      "media_type": "text/csv",
+      "name": "archive_diagnosis_S011-v1",
+      "schema": null,
+      "schema_version": null
+    },
+    "archive_diagnosis_C0031": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX010_20261023"
+      },
+      "evidence_id": "b2f30e8015a840de3cf43e4caa2c91c5a22547e4b8dd6f43590023772944c514.csv",
+      "sha256": "b2f30e8015a840de3cf43e4caa2c91c5a22547e4b8dd6f43590023772944c514",
+      "media_type": "text/csv",
+      "name": "archive_diagnosis_C0031",
+      "schema": null,
+      "schema_version": null
+    },
+    "component_results": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX010_20261023"
+      },
+      "evidence_id": "0574347f1a4220c5bd4b0bae19d150122fdfce1352a4cb417b929d72685bd1a0.json",
+      "sha256": "0574347f1a4220c5bd4b0bae19d150122fdfce1352a4cb417b929d72685bd1a0",
+      "media_type": "application/json",
+      "name": "component_results",
+      "schema": null,
+      "schema_version": null
+    }
+  }
+}
