@@ -1,0 +1,94 @@
+{
+  "status": "COMPLETED",
+  "snapshot_sha256": "9b1da1a097c7a8ce9b565e7b2e46631a72b69512d5315915af5c8fa3a2048d53",
+  "source_count": 8609,
+  "candidate_count": 117,
+  "current_experiment": {
+    "type": "ExperimentOverview",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX013_20261023"
+    },
+    "report_state": "PUBLISHED",
+    "report": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX013_20261023"
+      },
+      "evidence_id": "3c0607e97f8c4b7b4eadd223e5564ca9eec71e97a99dcc7d4bb4bf463fffc550.json",
+      "sha256": "3c0607e97f8c4b7b4eadd223e5564ca9eec71e97a99dcc7d4bb4bf463fffc550",
+      "media_type": "application/json",
+      "name": "experiment-report",
+      "schema": "experiment_report",
+      "schema_version": 1
+    },
+    "outcome": "COMPLETED",
+    "source": {
+      "type": "ResearchSourceRef",
+      "repository_path": "research/S015/experiments/EX013_20261023/experiment.json",
+      "sha256": "c2dd830de19d727aca96b40b7e02060e8c64c7516b2cdc6ca52be2ca5ee02b4f",
+      "kind": "FILE",
+      "present": true
+    }
+  },
+  "counts": [
+    {
+      "type": "ResearchCount",
+      "kind": "REGISTERED_CANDIDATES",
+      "value": 117,
+      "basis": "VERIFIED",
+      "reason": "Authenticated retained registration identities only."
+    },
+    {
+      "type": "ResearchCount",
+      "kind": "PUBLISHED_ACCOUNT_EVALUATIONS",
+      "value": 3440,
+      "basis": "DECLARED",
+      "reason": "Distinct supported retained evaluation ID declarations; not ledger certification or a complete exploration count. Unsupported schemas prevent a complete total."
+    },
+    {
+      "type": "ResearchCount",
+      "kind": "SEARCH_EVALUATIONS",
+      "value": null,
+      "basis": "UNKNOWN",
+      "reason": "No unique nonoverlapping total can be established from retained search declarations."
+    },
+    {
+      "type": "ResearchCount",
+      "kind": "DISTINCT_CONFIGURATIONS",
+      "value": null,
+      "basis": "UNKNOWN",
+      "reason": "No unique nonoverlapping total can be established from retained search declarations."
+    },
+    {
+      "type": "ResearchCount",
+      "kind": "ECONOMIC_PATH_GROUPS",
+      "value": null,
+      "basis": "UNKNOWN",
+      "reason": "No typed retained economic-path grouping declaration is available; no grouping is inferred."
+    }
+  ],
+  "limitations": [
+    {
+      "type": "OverviewLimitation",
+      "code": "METADATA_AUTHENTICATION_ONLY",
+      "repository_path": "research/S015/batch.json",
+      "message": "Retained metadata and referenced file hashes are checked; ledger semantics, runtime identities, assessment recomputation, authorization and unrecorded searches are not certified."
+    },
+    {
+      "type": "OverviewLimitation",
+      "code": "UNSUPPORTED_LEGACY_INSPECTION",
+      "repository_path": "research/S015/assets/deliveries/INSPECTION/1",
+      "message": "Historical inspection metadata only; its technical result and coverage are unknown under the current protocol."
+    },
+    {
+      "type": "OverviewLimitation",
+      "code": "SEARCH_OVERLAP_UNKNOWN",
+      "repository_path": "research/S015/batch.json",
+      "message": "Multiple search declarations may overlap; their counts were not added."
+    }
+  ]
+}

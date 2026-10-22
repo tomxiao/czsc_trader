@@ -1,0 +1,75 @@
+{
+  "status": "PASS",
+  "physical_evaluations": 2,
+  "new_accounts": 1,
+  "repeated_C0031": 1,
+  "five_ledgers_and_result_hash_equal": true,
+  "references": [
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX013_20261023"
+      },
+      "evidence_id": "5d3fb11aedc16ed954e7fe4a0f06134f2793eb0b7977382f3386ef3f6c3fb0bf.json",
+      "sha256": "5d3fb11aedc16ed954e7fe4a0f06134f2793eb0b7977382f3386ef3f6c3fb0bf",
+      "media_type": "application/json",
+      "name": "C0031_actual_parallel_precheck",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX013_20261023"
+      },
+      "evidence_id": "303725dd7c27b51e4eaae88039f72c3100eee14667d381ca154386a40cb5ae3c.json",
+      "sha256": "303725dd7c27b51e4eaae88039f72c3100eee14667d381ca154386a40cb5ae3c",
+      "media_type": "application/json",
+      "name": "C0004_actual_parallel_precheck",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    }
+  ],
+  "execution_stats": {
+    "elapsed_seconds": 5.696772500057705,
+    "pool_starts": 1,
+    "submitted": 4,
+    "completed": 4,
+    "failed": 0,
+    "unknown": 0,
+    "reused_results": 0,
+    "reused_publications": 0,
+    "phase_wall_seconds": [
+      [
+        "COMPUTE",
+        4.436342000029981
+      ],
+      [
+        "PREPARE",
+        0.02487630001269281
+      ],
+      [
+        "PUBLISH",
+        0.19969279994256794
+      ],
+      [
+        "SERIALIZE",
+        0.8042263999814168
+      ]
+    ],
+    "worker_seconds": [
+      [
+        "COMPUTE",
+        3.468028099858202
+      ],
+      [
+        "SERIALIZE",
+        1.0169659999664873
+      ]
+    ]
+  }
+}
