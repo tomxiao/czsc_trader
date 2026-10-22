@@ -23,6 +23,7 @@ from strategy_runtime import (
 
 
 ROOT = Path(__file__).resolve().parents[2]
+pytestmark = pytest.mark.release_acceptance
 CLOCKS = ("10:00", "10:30", "11:00", "11:30", "13:30", "14:00", "14:30", "15:00")
 CN_CLOSED = pd.DatetimeIndex(["2025-01-01", *pd.date_range("2025-01-28", "2025-02-04")])
 US_CLOSED = pd.DatetimeIndex(["2024-12-25", "2025-01-01", "2025-01-09", "2025-01-20"])

@@ -1,5 +1,6 @@
 """Frozen migration preparation is local and explicitly separates equivalence.
 
+Release acceptance covers the six explicitly reviewed historical source adapters.
 Synthetic feature boundaries exercise each unchanged decision kernel. They do
 not stand in for market-data, transaction-ledger or production acceptance.
 """
@@ -37,6 +38,8 @@ from strategy_runtime.execution_planner import build_execution_plan
 from trading_execution_engine import HistoricalExecutor
 
 
+pytestmark = pytest.mark.release_acceptance
+
 ROOT = Path(__file__).resolve().parents[2]
 REFERENCES = ("S001-v1", "S001-v2", "S002-v1", "S003-v1", "S007-v1", "S011-v1")
 BASELINE_IDENTITIES = {
@@ -50,9 +53,9 @@ BASELINE_IDENTITIES = {
 
 
 @pytest.fixture(scope="module")
-def preparations():
+def preparations(frozen_seed_root):
     live = RepositoryContext.discover(ROOT)
-    workspace = ROOT / ".tmp" / ("runtime_migration_tests_" + uuid4().hex)
+    workspace = frozen_seed_root / "runtime-migration"
     baseline = workspace / ("baseline_" + uuid4().hex)
     context = RepositoryContext(baseline, baseline / "research", baseline / "research/registrations", baseline / "strategies")
     for ref, identity in BASELINE_IDENTITIES.items():
@@ -105,6 +108,9 @@ def test_real_frozen_preparation_authenticates_new_identity_and_plain_import(pre
         module = importlib.import_module(prefix + "." + ".".join(path.relative_to(result.candidate.source_root).with_suffix("").parts))
         assert Path(module.__file__).resolve() == path.resolve()
     assert result.equivalence_status == "NOT_YET_NUMERICALLY_VERIFIED"
+    with pytest.raises(ValueError, match="already implements contract version 2"):
+        prepare_frozen_runtime_migration(RepositoryContext.discover(ROOT), FrozenRuntimeMigrationRequest(
+            reference, "C9899", result.metadata_path.parent / "no-second-migration"))
     if reference == "S007-v1":
         assert metadata["market_intent_history"] == "CANONICAL_REPLAY"
 
@@ -200,10 +206,6 @@ def test_migration_rejects_unsafe_or_reused_workspace_without_frozen_changes(pre
         prepare_frozen_runtime_migration(context, FrozenRuntimeMigrationRequest("S001-v1", "C9899", Path("strategies/new")))
     with pytest.raises(FileExistsError, match="already exists"):
         prepare_frozen_runtime_migration(context, FrozenRuntimeMigrationRequest("S001-v1", "C9899", results["S001-v1"].metadata_path.parent))
-    with pytest.raises(ValueError, match="four ASCII digits"):
-        FrozenRuntimeMigrationRequest("S001-v1", "migration", Path(".tmp/new"))
-    with pytest.raises(ValueError, match="no reviewed adapter"):
-        FrozenRuntimeMigrationRequest("S099-v1", "C9899", Path(".tmp/new"))
 
 
 def _definitions(preparations, reference):
@@ -343,16 +345,7 @@ def test_actual_policies_and_txe_economic_ledgers_remain_equivalent(preparations
     assert result.account_daily.cash.ge(0).all()
     assert result.account_daily.cash_before.iloc[0] == 100_000.
     assert result.account_daily.quantity_before.iloc[0] == 0, "market intent must never carry account positions into replay"
-    path = preparations[1][reference].metadata_path.parent / f"synthetic_ledger_{mode.value}.json"
-    path.write_text(json.dumps({
-        "scope": "SYNTHETIC_FEATURE_KERNEL_PUBLIC_PLANNER_TXE", "reference": reference,
-        "mode": mode.value, "status": "EXACT_ECONOMIC_LEDGER_EQUIVALENCE",
-        "orders": len(result.orders), "fills": len(result.fills), "cycles": len(result.trades),
-        "fees": float(result.fills.fees.sum()), "terminal_cash": float(result.account_daily.cash.iloc[-1]),
-        "terminal_quantity": int(result.account_daily.quantity.iloc[-1]),
-        "terminal_equity": float(result.account_daily.equity.iloc[-1]),
-        "full_market_and_PTE_acceptance": False,
-    }, indent=2) + "\n", encoding="utf-8")
+
 
 
 @pytest.mark.parametrize("reference", REFERENCES)

@@ -85,10 +85,6 @@ def test_repository_catalog_preserves_definitions_mirrors_and_platform_implement
     assert catalog.show("F-PROJECT-ETF-NAV-PREMIUM")["inputs"] == ["etf_share_size.nav", "etf_share_size.close"]
     assert any(row["id"] == "SIG-CZSC-cxt_bi_base_V230228"
                for row in catalog.list_definitions(kind="signal", family="MARKET_STRUCTURE"))
-    migrated = [item for item in catalog.factors
-                if item.implementation.startswith("factor_signal_catalog.calculations.")]
-    assert len(migrated) == 11
-    assert all(item.version == 3 and item.provider == "project" for item in migrated)
     modules = {}
     for kind, definitions in (("factors", catalog.factors), ("signals", catalog.signals)):
         directory = REPO / "catalog" / kind

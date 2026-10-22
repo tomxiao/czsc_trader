@@ -26,6 +26,7 @@ def original(context, reference):
     return f.FrozenVersionReference(family, version, manifest["strategy_version_hash"], manifest["package_hash"])
 
 
+@pytest.mark.release_acceptance
 @pytest.mark.parametrize("reference", REFERENCES)
 def test_reviewed_six_frozen_conversions_revalidate_without_writing(preparations, reference):
     context, results = preparations
@@ -38,6 +39,7 @@ def test_reviewed_six_frozen_conversions_revalidate_without_writing(preparations
                       for path in result.candidate.source_root.rglob("*") if path.is_file()}
 
 
+@pytest.mark.release_acceptance
 @pytest.mark.parametrize("change", ["algorithm", "extra_module", "initializer", "parameters", "feedback", "missing_source"])
 def test_rehashed_arbitrary_changes_cannot_use_migration_governance(preparations, change):
     context, results = preparations
@@ -66,6 +68,7 @@ def test_rehashed_arbitrary_changes_cannot_use_migration_governance(preparations
         validate_frozen_runtime_migration(context, original(context, "S002-v1"), candidate)
 
 
+@pytest.mark.release_acceptance
 def test_frozen_source_hash_and_family_cannot_be_substituted(preparations):
     context, results = preparations
     source = original(context, "S002-v1")

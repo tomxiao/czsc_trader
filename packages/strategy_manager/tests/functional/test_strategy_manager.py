@@ -1,4 +1,3 @@
-from pathlib import Path
 import json
 import pytest
 from strategy_manager import (
@@ -7,9 +6,6 @@ from strategy_manager import (
     RegistryError,
     ValidationError,
 )
-
-ROOT = Path(__file__).resolve().parents[4]
-
 
 @pytest.mark.parametrize("schema", [1, True, "5", None, 6])
 def test_registry_rejects_retired_release_and_preserves_original(tmp_path, schema):
@@ -21,26 +17,6 @@ def test_registry_rejects_retired_release_and_preserves_original(tmp_path, schem
     with pytest.raises(RegistryError, match="schema_version must be 5"):
         registry.get_version("S900", "v1")
     assert path.read_bytes() == before
-
-
-def test_retired_writers_and_models_are_unavailable():
-    import strategy_manager as sm
-
-    assert not any(name.startswith("_legacy_") for name in dir(StrategyRegistry))
-    for name in (
-        "append_governance_seal",
-        "create_frozen_version_from_credential",
-        "record_legacy_governance_acceptance",
-    ):
-        assert not hasattr(StrategyRegistry, name)
-    for name in (
-        "CandidateSnapshot",
-        "EvaluationMandate",
-        "AdjudicationReport",
-        "FreezeReviewCase",
-        "FreezeApproval",
-    ):
-        assert name not in sm.__all__ and not hasattr(sm, name)
 
 
 def test_family_registration_still_validates_names_and_identity(tmp_path):

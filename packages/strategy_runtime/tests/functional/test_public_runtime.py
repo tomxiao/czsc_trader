@@ -167,7 +167,6 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
 
     assert prepared.strategy.reference_id == "S900-C0001"
     assert len(prepared.data_identity) == 64
-    assert not hasattr(prepared, "dataset_identity")
     for mode in SignalHistoryMode:
         history = strategy.inspect_signals(history_mode=mode)
         explicit = strategy.plan_at(

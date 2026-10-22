@@ -1,4 +1,4 @@
-"""Local publication transaction tests, using real package bytes in isolated repos.
+"""Local publication transactions using synthetic releases in isolated repos.
 
 The inspection trust boundary is supplied separately here; full governance and
 market acceptance are exercised by their own public-path tests and evidence.
@@ -11,7 +11,7 @@ import shutil
 from types import SimpleNamespace
 
 import pytest
-from strategy_runtime import RuntimeCompatibilityError
+from strategy_runtime import RuntimeCompatibilityError, StrategyCandidate, implementation_sha256
 
 from czsc_trader.application import RepositoryContext, validate_release_package
 from czsc_trader.application import runtime_migration as m
@@ -19,7 +19,10 @@ from czsc_trader.application import research_evidence as e
 from czsc_trader.application.inspection_service import _EvidenceStore
 from strategy_manager import StrategyRegistry, CandidateKey, canonical_sha256
 from strategy_manager import freeze_contracts as f
-from test_runtime_migration import preparations as preparations
+from test_current_contracts import (
+    current_frozen as current_frozen, inspection as inspection,
+    managed_evaluation as managed_evaluation,
+)
 
 
 def _inspected_migration_release(context, owner, stored, candidate, manifest, binding, source):
@@ -52,33 +55,35 @@ def _inspected_migration_release(context, owner, stored, candidate, manifest, bi
 
 
 @pytest.fixture
-def upgrade(preparations, tmp_path, monkeypatch):
-    baseline, results = preparations
-    root = tmp_path / "upgrade-repo"
-    strategies = root / "strategies"
-    strategies.mkdir(parents=True)
-    shutil.copytree(baseline.strategy_root / "S002", strategies / "S002")
-    (strategies / "deployments").mkdir()
-    shutil.copyfile(baseline.strategy_root / "deployments/S002-v1.json", strategies / "deployments/S002-v1.json")
-    context = RepositoryContext(root, root / "research", root / "research/registrations", strategies)
-    original_manifest, binding, source = validate_release_package(context, "S002-v1")
-    stored = StrategyRegistry(strategies).get_version("S002", "v1")
-    original = f.FrozenVersionReference("S002", "v1", stored.release_hash, original_manifest["package_hash"])
+def upgrade(current_frozen, monkeypatch):
+    context, stored = current_frozen
+    root, strategies = context.root, context.strategy_root
+    original_manifest, binding, source = validate_release_package(context, "S900-v1")
+    stored = StrategyRegistry(strategies).get_version("S900", "v1")
+    original = f.FrozenVersionReference("S900", "v1", stored.release_hash, original_manifest["package_hash"])
     lifecycle = {"schema_version": 1, "event_id": "EVT-synthetic-paper", "event_type": "PAPER_APPROVED",
-        "strategy_id": "S002", "version": "v1", "release_hash": stored.release_hash,
+        "strategy_id": "S900", "version": "v1", "release_hash": stored.release_hash,
         "from_state": "RESEARCH", "to_state": "PAPER_READY", "evidence_ids": [],
         "actor": "synthetic-fixture", "reason": "transaction qualification boundary",
         "occurred_at": "2026-10-20T00:00:00+08:00"}
-    (strategies / "S002/lifecycle.jsonl").write_text(json.dumps(lifecycle) + "\n")
-    ref = f.ResearchEvidenceRef(f.ResearchEvidenceOwner("S002", "EX001_20261020"), "a" * 64 + ".json", "a" * 64)
-    candidate = results["S002-v1"].candidate
+    (strategies / "S900/lifecycle.jsonl").write_text(json.dumps(lifecycle) + "\n")
+    ref = f.ResearchEvidenceRef(f.ResearchEvidenceOwner("S900", "EX001_20261020"), "a" * 64 + ".json", "a" * 64)
+    candidate_source = root / ".tmp/upgrade-source"
+    shutil.copytree(source, candidate_source)
+    payload = json.loads(json.dumps(dict(stored.strategy_payload), default=dict))
+    payload["parameters"]["threshold"] = 0.75
+    changed_source = candidate_source / payload["runtime"]["source_files"][0]
+    changed_source.write_bytes(changed_source.read_bytes() + b"\n# Synthetic upgrade revision.\n")
+    payload["runtime"]["source_sha256"] = implementation_sha256(
+        tuple(payload["runtime"]["source_files"]), source_root=candidate_source)
+    candidate = StrategyCandidate("S900", "C9876", payload, candidate_source)
     release = _inspected_migration_release(context, ref.owner, stored, candidate, original_manifest, binding, source)
     report = SimpleNamespace(plan=SimpleNamespace(sha256="b" * 64), release=release)
     # Only replace the completed inspection boundary. Package authentication,
     # exact source publication, CAS, archive, lifecycle and rollback stay real.
     monkeypatch.setattr(m, "_upgrade_inputs", lambda *args: (
         report, candidate, stored, original_manifest, binding, source))
-    request = m.FrozenRuntimeUpgradeRequest(original, CandidateKey("S002", candidate.candidate_id),
+    request = m.FrozenRuntimeUpgradeRequest(original, CandidateKey("S900", candidate.candidate_id),
                                            ref, ref, root / ".tmp/prepared")
     return context, request, stored
 
@@ -90,19 +95,19 @@ def _bytes(root):
 def test_upgrade_prepares_then_preserves_history_archives_and_commits_idempotently(upgrade):
     context, request, stored = upgrade
     before = _bytes(context.strategy_root)
-    assert StrategyRegistry(context.strategy_root).current_qualification("S002", "v1").value == "PAPER_READY"
+    assert StrategyRegistry(context.strategy_root).current_qualification("S900", "v1").value == "PAPER_READY"
     prepared = m.prepare_frozen_runtime_upgrade(context, request)
     assert _bytes(context.strategy_root) == before
     assert prepared.migrated.version == prepared.original.version == "v1"
     release = m._upgrade_inputs(context, request)[0].release
-    stage = prepared.plan_path.parent / "staged/S002"
+    stage = prepared.plan_path.parent / "staged/S900"
     assert (stage / "versions/v1.json").read_bytes() == release.version_record.resolve(context.root).read_bytes()
     assert (stage / "releases/v1/release_manifest.json").read_bytes() == release.manifest.resolve(context.root).read_bytes()
     for item in release.files:
         assert (stage / "releases/v1" / item.path).read_bytes() == item.source.resolve(context.root).read_bytes()
     receipt = m.apply_frozen_runtime_upgrade(context, prepared)
     assert receipt.status == "COMMITTED"
-    current = StrategyRegistry(context.strategy_root).get_version("S002", "v1")
+    current = StrategyRegistry(context.strategy_root).get_version("S900", "v1")
     old, new = stored.to_dict(), current.to_dict()
     for field in ("strategy_payload", "release_hash"):
         old.pop(field)
@@ -110,13 +115,13 @@ def test_upgrade_prepares_then_preserves_history_archives_and_commits_idempotent
     assert old == new
     assert current.strategy_payload["decision_feedback"] == "MARKET_INTENT"
     assert current.strategy_payload["runtime"]["contract_version"] == 2
-    assert StrategyRegistry(context.strategy_root).current_qualification("S002", "v1").value == "RESEARCH"
+    assert StrategyRegistry(context.strategy_root).current_qualification("S900", "v1").value == "RESEARCH"
     for name, data in before.items():
-        if name.startswith("S002/releases/v1/"):
+        if name.startswith("S900/releases/v1/"):
             assert (receipt.archive_path / "strategies" / name).read_bytes() == data
-        elif name == "S002/versions/v1.json":
+        elif name == "S900/versions/v1.json":
             assert (receipt.archive_path / "strategies" / name).read_bytes() == data
-        elif name == "deployments/S002-v1.json":
+        elif name == "deployments/S900-v1.json":
             assert (receipt.archive_path / "strategies" / name).read_bytes() == data
         else:
             assert (context.strategy_root / name).read_bytes() == data
@@ -126,9 +131,7 @@ def test_upgrade_prepares_then_preserves_history_archives_and_commits_idempotent
     historic, _, _, source = m._migration_original(context, request.original)
     assert historic.to_dict() == stored.to_dict()
     assert source.is_relative_to(receipt.archive_path)
-    with pytest.raises(ValueError, match="already implements contract version 2"):
-        m.prepare_frozen_runtime_migration(context, m.FrozenRuntimeMigrationRequest(
-            "S002-v1", "C9876", context.root / ".tmp/no-second-migration"))
+
 
 
 @pytest.mark.parametrize("change", ["archive", "deployment"])
@@ -137,19 +140,22 @@ def test_committed_upgrade_retry_authenticates_archive_and_deployment(upgrade, c
     prepared = m.prepare_frozen_runtime_upgrade(context, request)
     receipt = m.apply_frozen_runtime_upgrade(context, prepared)
     if change == "archive":
-        path = receipt.archive_path / "strategies/S002/versions/v1.json"
+        path = receipt.archive_path / "strategies/S900/versions/v1.json"
         path.write_bytes(path.read_bytes() + b"\n")
     else:
-        (context.strategy_root / "deployments/S002-v1.json").write_bytes(
-            (receipt.archive_path / "strategies/deployments/S002-v1.json").read_bytes())
+        (context.strategy_root / "deployments/S900-v1.json").write_bytes(
+            (receipt.archive_path / "strategies/deployments/S900-v1.json").read_bytes())
     with pytest.raises((ValueError, RuntimeCompatibilityError), match="archived file|archive differs|deployment|receipt"):
         m.apply_frozen_runtime_upgrade(context, prepared)
 
 
 def test_upgrade_rejects_changed_staging_before_original_writes(upgrade):
-    context, request, _ = upgrade
+    context, request, stored = upgrade
     prepared = m.prepare_frozen_runtime_upgrade(context, request)
-    (prepared.plan_path.parent / "staged/S002/releases/v1/runtime/strategy_runtime/strategies/s002_v1.py").write_bytes(b"changed")
+    package = prepared.plan_path.parent / "staged/S900/releases/v1"
+    manifest = json.loads((package / "release_manifest.json").read_bytes())
+    source = stored.strategy_payload["runtime"]["source_files"][0]
+    (package / manifest["runtime_root"] / source).write_bytes(b"changed")
     before = _bytes(context.strategy_root)
     with pytest.raises(ValueError, match="staged file identity"):
         m.apply_frozen_runtime_upgrade(context, prepared)
@@ -159,7 +165,7 @@ def test_upgrade_rejects_changed_staging_before_original_writes(upgrade):
 def test_upgrade_compares_original_version_bytes_after_preparation(upgrade):
     context, request, _ = upgrade
     prepared = m.prepare_frozen_runtime_upgrade(context, request)
-    path = context.strategy_root / "S002/versions/v1.json"
+    path = context.strategy_root / "S900/versions/v1.json"
     path.write_bytes(path.read_bytes() + b"\n")
     before = _bytes(context.strategy_root)
     with pytest.raises(ValueError, match="changed after preparation"):
@@ -187,9 +193,9 @@ def test_upgrade_deployment_failure_restores_original_package_version_and_receip
         m.apply_frozen_runtime_upgrade(context, prepared)
     assert failed
     assert all((context.strategy_root / name).read_bytes() == data for name, data in before.items())
-    manifest, _, _ = validate_release_package(context, "S002-v1")
+    manifest, _, _ = validate_release_package(context, "S900-v1")
     assert manifest["package_hash"] == request.original.package_hash
-    archive = context.strategy_root / "revisions/S002-v1" / request.original.release_hash
+    archive = context.strategy_root / "revisions/S900-v1" / request.original.release_hash
     assert json.loads((archive / "rollback.json").read_bytes())["status"] == "ROLLED_BACK"
     assert not (archive / "upgrade_receipt.json").exists()
     with pytest.raises(ValueError, match="nonterminal archive"):
@@ -228,11 +234,16 @@ def test_sameversion_parent_must_remain_original_parent(tmp_path, monkeypatch):
 
 
 def test_upgrade_preparation_and_receipt_reject_untyped_public_values():
-    old = f.FrozenVersionReference("S002", "v1", "a" * 64, "b" * 64)
-    new = f.FrozenVersionReference("S002", "v1", "c" * 64, "d" * 64)
+    old = f.FrozenVersionReference("S900", "v1", "a" * 64, "b" * 64)
+    new = f.FrozenVersionReference("S900", "v1", "c" * 64, "d" * 64)
     with pytest.raises(TypeError, match="plan_path"):
         m.PreparedFrozenRuntimeUpgrade(".tmp/plan", "e" * 64, old, new)
     with pytest.raises(ValueError, match="SHA-256"):
         m.PreparedFrozenRuntimeUpgrade(Path(".tmp/plan"), "invalid", old, new)
     with pytest.raises(TypeError, match="FreezeStatus"):
         m.FrozenRuntimeUpgradeReceipt("COMMITTED", old, new, Path("archive"), Path("receipt"))
+
+    with pytest.raises(ValueError, match="four ASCII digits"):
+        m.FrozenRuntimeMigrationRequest("S001-v1", "migration", Path(".tmp/new"))
+    with pytest.raises(ValueError, match="no reviewed adapter"):
+        m.FrozenRuntimeMigrationRequest("S099-v1", "C9899", Path(".tmp/new"))
