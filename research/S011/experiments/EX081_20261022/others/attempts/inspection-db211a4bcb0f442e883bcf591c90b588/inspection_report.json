@@ -1,0 +1,279 @@
+{
+  "type": "CandidateInspectionReport",
+  "run_id": "inspection-db211a4bcb0f442e883bcf591c90b588",
+  "owner": {
+    "type": "ResearchEvidenceOwner",
+    "strategy_id": "S011",
+    "experiment_id": "EX081_20261022"
+  },
+  "origin": {
+    "type": "CandidateOrigin",
+    "candidate": {
+      "type": "CandidateKey",
+      "strategy_id": "S011",
+      "candidate_id": "C9902"
+    },
+    "content_sha256": "e3b172664d26eb396528dac9ccc812434c2314b465c25eaf60f459c909fb7a12",
+    "registration": {
+      "type": "ResearchEvidenceRef",
+      "owner": {
+        "type": "ResearchEvidenceOwner",
+        "strategy_id": "S011",
+        "experiment_id": "EX081_20261022"
+      },
+      "path": "inspection/bb522e3d42c48e011bc27eec5ad25aa43550f04e881e0d8269a26688c53fd9ed",
+      "sha256": "bb522e3d42c48e011bc27eec5ad25aa43550f04e881e0d8269a26688c53fd9ed"
+    }
+  },
+  "selection": {
+    "type": "DecisionReference",
+    "decision_id": "S011-select-C9902-v2-20261022",
+    "evidence": {
+      "type": "ResearchEvidenceRef",
+      "owner": {
+        "type": "ResearchEvidenceOwner",
+        "strategy_id": "S011",
+        "experiment_id": null
+      },
+      "path": "decisions/S011-select-C9902-v2-20261022.json",
+      "sha256": "08b478bbddcdbe5b2b57a0ab8db9f6002c0969d2201c01368ee4d5ccdccede62"
+    }
+  },
+  "request": {
+    "type": "ResearchEvidenceRef",
+    "owner": {
+      "type": "ResearchEvidenceOwner",
+      "strategy_id": "S011",
+      "experiment_id": "EX081_20261022"
+    },
+    "path": "inspection/2b6d0e9d7226c130ba915a61b55a0f756ce7c629b85ebc019448fc6e2ead7f13",
+    "sha256": "2b6d0e9d7226c130ba915a61b55a0f756ce7c629b85ebc019448fc6e2ead7f13"
+  },
+  "protocol": {
+    "type": "ResearchEvidenceRef",
+    "owner": {
+      "type": "ResearchEvidenceOwner",
+      "strategy_id": "S011",
+      "experiment_id": "EX081_20261022"
+    },
+    "path": "inspection/006cb002edd63659d3e5cfb961bfce074e116c11d7e52af1a0c1ed3aadfb3b09",
+    "sha256": "006cb002edd63659d3e5cfb961bfce074e116c11d7e52af1a0c1ed3aadfb3b09"
+  },
+  "environment": {
+    "type": "ResearchEvidenceRef",
+    "owner": {
+      "type": "ResearchEvidenceOwner",
+      "strategy_id": "S011",
+      "experiment_id": "EX081_20261022"
+    },
+    "path": "inspection/d8580164bd51fbbdf4324334bb8349c26948d580c532afa27aa831f97929fef9",
+    "sha256": "d8580164bd51fbbdf4324334bb8349c26948d580c532afa27aa831f97929fef9"
+  },
+  "plan": {
+    "type": "FreezePlan",
+    "origin": {
+      "type": "CandidateOrigin",
+      "candidate": {
+        "type": "CandidateKey",
+        "strategy_id": "S011",
+        "candidate_id": "C9902"
+      },
+      "content_sha256": "e3b172664d26eb396528dac9ccc812434c2314b465c25eaf60f459c909fb7a12",
+      "registration": {
+        "type": "ResearchEvidenceRef",
+        "owner": {
+          "type": "ResearchEvidenceOwner",
+          "strategy_id": "S011",
+          "experiment_id": "EX081_20261022"
+        },
+        "path": "inspection/bb522e3d42c48e011bc27eec5ad25aa43550f04e881e0d8269a26688c53fd9ed",
+        "sha256": "bb522e3d42c48e011bc27eec5ad25aa43550f04e881e0d8269a26688c53fd9ed"
+      }
+    },
+    "version": "v2",
+    "parent_version": "v1",
+    "change_summary": "修复历史输入最低数量：daily/bars为20，market为21；保留原公式、参数、固定起点和交易规则。",
+    "source_experiment": "EX080_20261022",
+    "selection_data_cutoff": "2026-10-21",
+    "forward_start": "2026-10-22",
+    "payload": {
+      "type": "ResearchEvidenceRef",
+      "owner": {
+        "type": "ResearchEvidenceOwner",
+        "strategy_id": "S011",
+        "experiment_id": "EX081_20261022"
+      },
+      "path": "inspection/86f212656c42c9ced56c03ebb463bfb4c57f12c384c632f039b531beceacf7ca",
+      "sha256": "86f212656c42c9ced56c03ebb463bfb4c57f12c384c632f039b531beceacf7ca"
+    },
+    "source_files": [
+      {
+        "type": "FreezeFile",
+        "path": "strategies/s011_reversal.py",
+        "source": {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S011",
+            "experiment_id": "EX081_20261022"
+          },
+          "path": "inspection/39fcbb5aa5e751c3f286b667eba285d20a6078c7fd85a85dfc5a911c443674af",
+          "sha256": "39fcbb5aa5e751c3f286b667eba285d20a6078c7fd85a85dfc5a911c443674af"
+        }
+      },
+      {
+        "type": "FreezeFile",
+        "path": "calculation.py",
+        "source": {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S011",
+            "experiment_id": "EX081_20261022"
+          },
+          "path": "inspection/edd27ec4d3d5641320ada2774a5661520b35639dc704bcf9e71cf1162dc25571",
+          "sha256": "edd27ec4d3d5641320ada2774a5661520b35639dc704bcf9e71cf1162dc25571"
+        }
+      }
+    ],
+    "runtime_binding": {
+      "type": "ResearchEvidenceRef",
+      "owner": {
+        "type": "ResearchEvidenceOwner",
+        "strategy_id": "S011",
+        "experiment_id": "EX081_20261022"
+      },
+      "path": "inspection/255f024d475f36ff6ae23bca7ef098e4607d62009d28461989a0c91a587fe367",
+      "sha256": "255f024d475f36ff6ae23bca7ef098e4607d62009d28461989a0c91a587fe367"
+    },
+    "schema_version": 2
+  },
+  "release": {
+    "type": "InspectedRelease",
+    "version_record": {
+      "type": "ResearchEvidenceRef",
+      "owner": {
+        "type": "ResearchEvidenceOwner",
+        "strategy_id": "S011",
+        "experiment_id": "EX081_20261022"
+      },
+      "path": "inspection/d071fee6511efd29021f6df345b3b2c7b453aa4d6e92b8b7dfbf641e195fe621",
+      "sha256": "d071fee6511efd29021f6df345b3b2c7b453aa4d6e92b8b7dfbf641e195fe621"
+    },
+    "manifest": {
+      "type": "ResearchEvidenceRef",
+      "owner": {
+        "type": "ResearchEvidenceOwner",
+        "strategy_id": "S011",
+        "experiment_id": "EX081_20261022"
+      },
+      "path": "inspection/a4737b61b43d4a31a397517bc6dc88bd814d61fcb7cad5e60eec336662394f48",
+      "sha256": "a4737b61b43d4a31a397517bc6dc88bd814d61fcb7cad5e60eec336662394f48"
+    },
+    "files": [
+      {
+        "type": "FreezeFile",
+        "path": "runtime_binding.json",
+        "source": {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S011",
+            "experiment_id": "EX081_20261022"
+          },
+          "path": "inspection/bb04b6d5f0067c88926fbaa1280d0dcdc265abd2a5ff1acfcc7393b48e77ef16",
+          "sha256": "bb04b6d5f0067c88926fbaa1280d0dcdc265abd2a5ff1acfcc7393b48e77ef16"
+        }
+      },
+      {
+        "type": "FreezeFile",
+        "path": "src/strategy_runtime/calculation.py",
+        "source": {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S011",
+            "experiment_id": "EX081_20261022"
+          },
+          "path": "inspection/edd27ec4d3d5641320ada2774a5661520b35639dc704bcf9e71cf1162dc25571",
+          "sha256": "edd27ec4d3d5641320ada2774a5661520b35639dc704bcf9e71cf1162dc25571"
+        }
+      },
+      {
+        "type": "FreezeFile",
+        "path": "src/strategy_runtime/strategies/s011_reversal.py",
+        "source": {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S011",
+            "experiment_id": "EX081_20261022"
+          },
+          "path": "inspection/39fcbb5aa5e751c3f286b667eba285d20a6078c7fd85a85dfc5a911c443674af",
+          "sha256": "39fcbb5aa5e751c3f286b667eba285d20a6078c7fd85a85dfc5a911c443674af"
+        }
+      }
+    ],
+    "release_sha256": "b48eb925eedc5fed9d93fcb6ad85f2c9c916807a25786f6d404fc5a281458472",
+    "package_sha256": "340320cb1fe8188c2917e73a1b838f15b4df908641038752219bc5b90fa94545"
+  },
+  "behavior_equivalence": {
+    "type": "InspectionGoalResult",
+    "status": "FAIL",
+    "cases": [
+      {
+        "type": "InspectionCaseResult",
+        "case_id": "execution-equivalence",
+        "status": "FAIL",
+        "reason_code": "EXECUTION_ERROR",
+        "summary": "[WinError 5] 拒绝访问。",
+        "evidence": [
+          {
+            "type": "ResearchEvidenceRef",
+            "owner": {
+              "type": "ResearchEvidenceOwner",
+              "strategy_id": "S011",
+              "experiment_id": "EX081_20261022"
+            },
+            "path": "inspection/bece242aaf14ec158cb7ab83e3c489be095c1a4e914687628828db400e7f7ff7",
+            "sha256": "bece242aaf14ec158cb7ab83e3c489be095c1a4e914687628828db400e7f7ff7"
+          }
+        ]
+      }
+    ],
+    "evidence": [
+      {
+        "type": "ResearchEvidenceRef",
+        "owner": {
+          "type": "ResearchEvidenceOwner",
+          "strategy_id": "S011",
+          "experiment_id": "EX081_20261022"
+        },
+        "path": "inspection/bece242aaf14ec158cb7ab83e3c489be095c1a4e914687628828db400e7f7ff7",
+        "sha256": "bece242aaf14ec158cb7ab83e3c489be095c1a4e914687628828db400e7f7ff7"
+      }
+    ]
+  },
+  "pte_runtime": {
+    "type": "InspectionGoalResult",
+    "status": "NOT_RUN",
+    "cases": [],
+    "evidence": []
+  },
+  "measurements": {
+    "type": "ResearchEvidenceRef",
+    "owner": {
+      "type": "ResearchEvidenceOwner",
+      "strategy_id": "S011",
+      "experiment_id": "EX081_20261022"
+    },
+    "path": "inspection/4318091fc7d49609e88df66d6483a3b34670bb77f45a148e203327fee0e32707",
+    "sha256": "4318091fc7d49609e88df66d6483a3b34670bb77f45a148e203327fee0e32707"
+  },
+  "remaining_risks": [
+    "技术通过不构成新研究选型、绩效验收或独立前向证据。",
+    "PTE采用历史输入及合成成交渠道，未验证真实券商连通、流动性或生产生效。",
+    "EX078旧格式历史账户未认证；本次原账户对照仅针对EX080的同一C9902当前契约证据。"
+  ],
+  "schema_version": 2
+}
