@@ -91,9 +91,9 @@ def test_overview_selects_numeric_revision_and_preserves_component_results(overv
     component = d.ComponentEntry("signal", d.ExperimentDefinitionRef(material, "signal"),
         "entry", "return", "20d", "base", "before decision", "raw", "sample", "negative", (test,))
     first = assemble_delivery(research.repository,
-        d.DeliveryDefinition(research.batch, d.DeliveryStage.COMPONENTS, 2), _content(d.ComponentPanel((component,), "Negative")))
+        d.DeliveryDefinition(research.batch, d.DeliveryStage.COMPONENTS, 2), _content(d.ComponentPanel((component,), "Negative"))).receipt
     last = assemble_delivery(research.repository,
-        d.DeliveryDefinition(research.batch, d.DeliveryStage.COMPONENTS, 10, (first.reference,)), _content(d.ComponentPanel((), "New statement")))
+        d.DeliveryDefinition(research.batch, d.DeliveryStage.COMPONENTS, 10, (first.reference,)), _content(d.ComponentPanel((), "New statement"))).receipt
     # Metadata overview, like delivery validation, relies on retained snapshots.
     material.resolve(research.repository.root).unlink()
     overview = get_research_overview(research.repository, research.batch)
@@ -108,14 +108,14 @@ def test_overview_deduplicates_search_declarations_but_never_sums_overlap(overvi
     for revision in (1, 2):
         assemble_delivery(research.repository,
             d.DeliveryDefinition(research.batch, d.DeliveryStage.CANDIDATES, revision),
-            _content(d.CandidateSet((), (), (search,), "No handoff")))
+            _content(d.CandidateSet((), (), (search,), "No handoff"))).receipt
     first = get_research_overview(research.repository, research.batch)
     assert len(first.searches) == 1 and len(first.searches[0].deliveries) == 2
     assert _count(first, ResearchCountKind.SEARCH_EVALUATIONS).value == 10
     assert _count(first, ResearchCountKind.SEARCH_EVALUATIONS).basis is CountBasis.DECLARED
     assemble_delivery(research.repository,
         d.DeliveryDefinition(research.batch, d.DeliveryStage.CANDIDATES, 3),
-        _content(d.CandidateSet((), (), (replace(search, evaluations=20),), "Cumulative declaration")))
+        _content(d.CandidateSet((), (), (replace(search, evaluations=20),), "Cumulative declaration"))).receipt
     second = get_research_overview(research.repository, research.batch)
     assert _count(second, ResearchCountKind.SEARCH_EVALUATIONS).value is None
     assert any(item.code == "SEARCH_OVERLAP_UNKNOWN" for item in second.limitations)
@@ -129,7 +129,7 @@ def test_overview_memory_does_not_scale_with_repeated_large_evidence_copies(over
     for revision in range(1, 9):
         assemble_delivery(research.repository,
             d.DeliveryDefinition(research.batch, d.DeliveryStage.COMPONENTS, revision),
-            replace(_content(d.ComponentPanel((), "Large selected source")), evidence=(evidence,)))
+            replace(_content(d.ComponentPanel((), "Large selected source")), evidence=(evidence,))).receipt
     # Eight independent retained copies represent the cumulative research graph.
     # Authentication must not keep their full payloads alive until the read ends.
     tracemalloc.start()
@@ -145,7 +145,7 @@ def test_overview_memory_does_not_scale_with_repeated_large_evidence_copies(over
 def test_overview_reports_unsupported_delivery_without_legacy_parser(overview_context):
     research, _ = overview_context
     assemble_delivery(research.repository,
-        d.DeliveryDefinition(research.batch, d.DeliveryStage.COMPONENTS, 2), _content(d.ComponentPanel((), "old readable")))
+        d.DeliveryDefinition(research.batch, d.DeliveryStage.COMPONENTS, 2), _content(d.ComponentPanel((), "old readable"))).receipt
     path = research.repository.root / "research/S900/assets/deliveries/COMPONENTS/10"
     path.mkdir(parents=True)
     (path / "delivery.json").write_text(json.dumps({"schema_version": 5, "old": "not interpreted"}))
@@ -183,7 +183,7 @@ def test_overview_marks_unsupported_account_total_unknown(overview_context):
 def test_overview_rejects_invalid_required_identity_or_artifact(overview_context, damage):
     research, experiment = overview_context
     receipt = assemble_delivery(research.repository,
-        d.DeliveryDefinition(research.batch, d.DeliveryStage.COMPONENTS, 1), _content(d.ComponentPanel((), "done")))
+        d.DeliveryDefinition(research.batch, d.DeliveryStage.COMPONENTS, 1), _content(d.ComponentPanel((), "done"))).receipt
     if damage == "missing":
         (research.repository.root / f"research/S900/deliveries/COMPONENTS/{receipt.reference.revision}/receipt.json").unlink()
     elif damage == "missing-package":

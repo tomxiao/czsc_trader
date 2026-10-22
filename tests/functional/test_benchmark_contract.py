@@ -139,5 +139,5 @@ def test_stage_four_rejects_confirmed_benchmark_mismatch(completed):
     )
     payload = replace(value.payload, assessment_request=replace(request, evidence=changed))
     with pytest.raises(d.DeliveryValidationError) as exc:
-        assemble_delivery(context, defined, replace(value, payload=payload))
+        assemble_delivery(context, defined, replace(value, payload=payload)).receipt
     assert any(x.code == "BENCHMARK_BINDING" for x in exc.value.issues)

@@ -141,13 +141,13 @@ def prepare(completed, targets=None):
           if targets is not None else ()),
     ))
     mandate_receipt = assemble_delivery(context,
-        d.DeliveryDefinition(research.batch, d.DeliveryStage.MANDATE, 1), content(mandate))
+        d.DeliveryDefinition(research.batch, d.DeliveryStage.MANDATE, 1), content(mandate)).receipt
     key = CandidateKey("S900", "C0001")
     identity = d.CandidateIdentityRef(key, evidence[0].candidate.content_sha256)
     entry = d.CandidateEntry(identity, "完整可执行假设", "提交自检", (evaluation,))
     candidate_receipt = assemble_delivery(context,
         d.DeliveryDefinition(research.batch, d.DeliveryStage.CANDIDATES, 1),
-        content(d.CandidateSet((entry,), (key,), (), "交接一个候选")))
+        content(d.CandidateSet((entry,), (key,), (), "交接一个候选"))).receipt
     payload = d.CandidateAssessmentDelivery(candidate_receipt.reference, mandate_receipt.reference,
         assessment, panel, comparison, compare_candidates(comparison),
         tuple(d.TargetMandateBinding(x.target_id, "return") for x in comparison.targets.requirements),
@@ -161,6 +161,7 @@ def prepare(completed, targets=None):
 
 def test_delivery_certifies_each_unique_account_once_per_operation(completed, monkeypatch):
     from czsc_trader.research_tools import evaluation
+    from czsc_trader.application import delivery_service
 
     definition, value = prepare(completed)
     context = completed[0]
@@ -172,7 +173,22 @@ def test_delivery_certifies_each_unique_account_once_per_operation(completed, mo
         return original(document)
 
     monkeypatch.setattr(evaluation, "validate_evaluation_evidence", tracked)
-    receipt = assemble_delivery(context, definition, value)
+    recomputations = []
+    numeric = delivery_service.assess_candidates
+    def tracked_numeric(request):
+        recomputations.append(request)
+        return numeric(request)
+    monkeypatch.setattr(delivery_service, "assess_candidates", tracked_numeric)
+    progress = []
+    assembled = assemble_delivery(context, definition, value, on_progress=progress.append)
+    receipt = assembled.receipt
+    assert assembled.validation.status is d.ValidationStatus.PASS
+    assert assembled.validation.scope is d.DeliveryValidationScope.FULL
+    assert len(recomputations) == 1
+    assert assembled.validation.stats.accounts_authenticated == 1
+    assert {event.phase for event in progress} >= {
+        d.DeliveryValidationPhase.RECOMPUTATION, d.DeliveryValidationPhase.FINAL_RECHECK}
+    assert d.DeliveryAssemblyResult.from_dict(assembled.to_dict()) == assembled
     assert len(calls) == 1
     assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
     assert len(calls) == 2
@@ -198,7 +214,7 @@ def acceptance_targets():
 
 def test_acceptance_contract_persists_and_full_validation_rejects_forged_facts(prepared_acceptance_delivery):
     context, definition, value = prepared_acceptance_delivery
-    receipt = assemble_delivery(context, definition, value)
+    receipt = assemble_delivery(context, definition, value).receipt
     assert receipt.schema_version == 8
     saved = json.loads((published(context, receipt) / "delivery.json").read_text(encoding="utf-8"))
     assert d.DeliveryContent.from_dict(saved["content"]) == value
@@ -217,7 +233,7 @@ def test_acceptance_contract_persists_and_full_validation_rejects_forged_facts(p
     changed = replace(payload, assessment=panel, comparison_request=comparison,
                       comparison=compare_candidates(comparison))
     with pytest.raises(d.DeliveryValidationError, match="recomputation"):
-        assemble_delivery(context, replace(definition, revision=2), replace(value, payload=changed))
+        assemble_delivery(context, replace(definition, revision=2), replace(value, payload=changed)).receipt
     with pytest.raises(ValueError, match="invalid delivery revision/schema"):
         replace(definition, schema_version=7)
 
@@ -243,7 +259,7 @@ def test_acceptance_conditions_cannot_be_relaxed_after_confirmation(prepared_acc
     changed = replace(payload, comparison_request=comparison, comparison=compare_candidates(comparison),
                       target_bindings=tuple(d.TargetMandateBinding(x.target_id, "return") for x in altered))
     with pytest.raises(d.DeliveryValidationError, match="confirmed mandate|targets must be preserved"):
-        assemble_delivery(context, definition, replace(value, payload=changed))
+        assemble_delivery(context, definition, replace(value, payload=changed)).receipt
 
 
 def test_account_reuse_still_checks_current_file_and_reference_owner(completed):
@@ -257,6 +273,8 @@ def test_account_reuse_still_checks_current_file_and_reference_owner(completed):
     target.write_bytes(reference.resolve(context.root).read_bytes())
     cache = {}
     first = delivery_service._account_document(root, reference, cache)
+    assert set(cache) == {reference.sha256}
+    assert set(first[0]) == {"request_hash", "request_identity", "execution_policies"}
     wrong_owner = replace(reference, experiment=ExperimentRef("S900", "EX999_20261001"))
     with pytest.raises(d.DeliveryValidationError, match="origin differs"):
         delivery_service._account_document(root, wrong_owner, cache)
@@ -264,6 +282,26 @@ def test_account_reuse_still_checks_current_file_and_reference_owner(completed):
     target.write_bytes(target.read_bytes() + b" ")
     with pytest.raises(d.DeliveryValidationError, match="hash differs"):
         delivery_service._account_document(root, reference, cache)
+
+
+def test_parallel_authentication_failure_never_publishes_a_delivery(completed):
+    from strategy_runtime.resources import ExecutionResources
+    from czsc_trader.research_tools.evidence import MaterialEvidenceWrite
+
+    context, research, request, result, good = completed
+    malformed = publish_evidence(research, MaterialEvidenceWrite(
+        good.evidence.experiment, "malformed-account", b'{"schema_version":7}', "application/json", "json"))
+    malformed = replace(malformed, schema="account_evaluation", schema_version=7)
+    candidate = build_assessment_evidence(request, result)[0].candidate
+    entry = d.CandidateEntry(d.CandidateIdentityRef(CandidateKey("S900", "C0001"), candidate.content_sha256),
+        "合成机制", "认证失败必须拒绝发布", (good, d.EvaluationEvidenceRef(malformed)))
+    definition = d.DeliveryDefinition(research.batch, d.DeliveryStage.CANDIDATES, 1)
+    with pytest.raises(d.DeliveryValidationError) as failed:
+        assemble_delivery(context, definition, content(d.CandidateSet((entry,), (), (), "验证认证失败")),
+                          resources=ExecutionResources(max_workers=2))
+    assert failed.value.issues[0].code == "ACCOUNT_AUTHENTICATION"
+    assert not (context.root / "research/S900/assets/deliveries/CANDIDATES/1").exists()
+    assert not (context.root / "research/S900/deliveries/CANDIDATES/1").exists()
 
 
 def test_assembly_rechecks_account_bytes_after_cached_certification(completed, monkeypatch):
@@ -284,7 +322,7 @@ def test_assembly_rechecks_account_bytes_after_cached_certification(completed, m
 
     monkeypatch.setattr(delivery_service, "_manifest", tamper_after_certification)
     with pytest.raises(d.DeliveryValidationError, match="hash differs"):
-        assemble_delivery(completed[0], definition, value)
+        assemble_delivery(completed[0], definition, value).receipt
     assert corrupted
     assert not (completed[0].root / "research/S900/assets/deliveries/ASSESSMENT/1").exists()
 
@@ -316,7 +354,7 @@ def test_stage_four_roundtrip_recomputation_and_source_cleanup(completed):
     assert len(comparison.policy.bins) == 8
     comparison = replace(comparison, policy=replace(comparison.policy, sensitivities=(m.ComparisonVariant("coarse-bins", comparison.policy.bins),)))
     value = replace(value, payload=replace(value.payload, comparison_request=comparison, comparison=compare_candidates(comparison)))
-    receipt = assemble_delivery(context, definition, value)
+    receipt = assemble_delivery(context, definition, value).receipt
     assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
     report = (published(context, receipt) / "report.md").read_text(encoding="utf-8")
     assert report == value.report
@@ -328,7 +366,7 @@ def test_stage_four_roundtrip_recomputation_and_source_cleanup(completed):
     assert temporary.is_relative_to(context.root.resolve())
     shutil.rmtree(temporary)
     assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
-    assert assemble_delivery(context, definition, value) == receipt
+    assert assemble_delivery(context, definition, value).receipt == receipt
 
 
 def test_stage_four_rejects_old_formula_versions_and_forged_comparison(completed):
@@ -347,7 +385,7 @@ def test_stage_four_rejects_old_formula_versions_and_forged_comparison(completed
     # comparison is changed, so publication must reject recomputation mismatch.
     forged = replace(payload.comparison, request_sha256="f" * 64)
     with pytest.raises(d.DeliveryValidationError) as caught:
-        assemble_delivery(context, definition, replace(value, payload=replace(payload, comparison=forged)))
+        assemble_delivery(context, definition, replace(value, payload=replace(payload, comparison=forged))).receipt
     assert caught.value.issues[0].code == "COMPARISON_RESULT"
 
 
@@ -380,7 +418,7 @@ def test_stage_four_public_validation_tolerates_only_effective_dsr_roundoff(prep
     # Explicit numerical-oracle injection isolates the public tolerance contract;
     # actual assembly, persistence, authentication and validation still execute.
     monkeypatch.setattr(delivery_service, "assess_candidates", lambda _: saved)
-    receipt = assemble_delivery(context, definition, replace(value, payload=payload))
+    receipt = assemble_delivery(context, definition, replace(value, payload=payload)).receipt
     changed = saved
     if case in {"effective", "PBO", "DSR_RAW"}:
         name = "DSR_EFFECTIVE" if case == "effective" else case
@@ -404,7 +442,7 @@ def test_stage_four_public_validation_tolerates_only_effective_dsr_roundoff(prep
                 comparison_request=replace(comparison, panel=changed),
                 comparison=compare_candidates(replace(comparison, panel=changed)))
             monkeypatch.setattr(delivery_service, "assess_candidates", lambda _: saved)
-            second = assemble_delivery(context, replace(definition, revision=2, predecessors=(*definition.predecessors, receipt.reference)), replace(value, payload=reversed_payload))
+            second = assemble_delivery(context, replace(definition, revision=2, predecessors=(*definition.predecessors, receipt.reference)), replace(value, payload=reversed_payload)).receipt
             assert validate_delivery(context, second.reference).status is d.ValidationStatus.PASS
     else:
         first, second, effective = saved.family_diagnostics
@@ -441,7 +479,7 @@ def test_stage_four_rejects_changed_targets_and_forged_panel(completed):
         payload, comparison_request=changed_target, comparison=compare_candidates(changed_target)
     )
     with pytest.raises(d.DeliveryValidationError, match="confirmed mandate"):
-        assemble_delivery(context, definition, replace(value, payload=changed))
+        assemble_delivery(context, definition, replace(value, payload=changed)).receipt
     first = payload.assessment.rows[0]
     forged = replace(
         first,
@@ -459,7 +497,7 @@ def test_stage_four_rejects_changed_targets_and_forged_panel(completed):
         comparison=compare_candidates(comparison),
     )
     with pytest.raises(d.DeliveryValidationError, match="recomputation"):
-        assemble_delivery(context, definition, replace(value, payload=changed))
+        assemble_delivery(context, definition, replace(value, payload=changed)).receipt
     dropped = replace(payload.comparison_request, targets=m.ResearchTargets((), 60))
     changed = replace(
         payload,
@@ -468,7 +506,7 @@ def test_stage_four_rejects_changed_targets_and_forged_panel(completed):
         target_bindings=(),
     )
     with pytest.raises(d.DeliveryValidationError, match="targets must be preserved"):
-        assemble_delivery(context, definition, replace(value, payload=changed))
+        assemble_delivery(context, definition, replace(value, payload=changed)).receipt
 
 
 def test_stage_four_must_cover_exact_handoff_scope(completed):
@@ -486,7 +524,7 @@ def test_stage_four_must_cover_exact_handoff_scope(completed):
         comparison=compare_candidates(comp),
     )
     with pytest.raises(d.DeliveryValidationError) as caught:
-        assemble_delivery(context, definition, replace(value, payload=changed))
+        assemble_delivery(context, definition, replace(value, payload=changed)).receipt
     assert caught.value.issues[0].code == "ASSESSMENT_SCOPE"
 
 
@@ -509,7 +547,7 @@ def test_stage_four_rejects_forged_account_evidence(completed):
         comparison=compare_candidates(comparison),
     )
     with pytest.raises(d.DeliveryValidationError) as caught:
-        assemble_delivery(context, definition, replace(value, payload=changed))
+        assemble_delivery(context, definition, replace(value, payload=changed)).receipt
     assert caught.value.issues[0].code == "ASSESSMENT_EVIDENCE"
 
 @pytest.mark.parametrize("frequency_metric", [
@@ -556,7 +594,7 @@ def test_frequency_targets_require_the_confirmed_window(completed, frequency_met
     receipt = assemble_delivery(context,
         d.DeliveryDefinition(completed[1].batch, d.DeliveryStage.MANDATE, 2,
                              predecessors=(payload.source_mandate,)),
-        replace(original, payload=mandate))
+        replace(original, payload=mandate)).receipt
     targets = replace(
         payload.comparison_request.targets,
         requirements=(
@@ -585,14 +623,14 @@ def test_frequency_targets_require_the_confirmed_window(completed, frequency_met
         ),
     )
     defined = replace(definition, predecessors=(payload.source_candidates, receipt.reference))
-    result = assemble_delivery(context, defined, replace(value, payload=changed))
+    result = assemble_delivery(context, defined, replace(value, payload=changed)).receipt
     assert validate_delivery(context, result.reference).status is d.ValidationStatus.PASS
     wrong = replace(comparison, targets=replace(targets, frequency_window_days=30))
     changed = replace(changed, comparison_request=wrong, comparison=compare_candidates(wrong))
     with pytest.raises(d.DeliveryValidationError, match="frequency window"):
         assemble_delivery(
             context, replace(defined, revision=2), replace(value, payload=changed)
-        )
+        ).receipt
 
 
 @pytest.mark.parametrize("damage", ["missing", "content", "source"])
@@ -622,7 +660,7 @@ def test_handoff_requires_registered_content_but_published_delivery_is_independe
         )
         path.write_bytes(path.read_bytes() + b"\n# changed\n")
     with pytest.raises(d.DeliveryValidationError) as error:
-        assemble_delivery(context, replace(definition, revision=2), value)
+        assemble_delivery(context, replace(definition, revision=2), value).receipt
     assert error.value.issues[0].code == "HANDOFF_REGISTRATION"
     assert not (root.parent / "2").exists()
     assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
@@ -633,7 +671,7 @@ def test_handoff_requires_registered_content_but_published_delivery_is_independe
 def test_validation_scope_controls_recomputation_and_always_checks_hashes(prepared_delivery, monkeypatch):
     from czsc_trader.application import delivery_service
     context, definition, value = prepared_delivery
-    receipt = assemble_delivery(context, definition, value)
+    receipt = assemble_delivery(context, definition, value).receipt
     def unavailable(_):
         raise OSError("numerical computation is unavailable")
     with monkeypatch.context() as fault:
@@ -643,6 +681,9 @@ def test_validation_scope_controls_recomputation_and_always_checks_hashes(prepar
         full = validate_delivery(context, receipt.reference)
         assert full.status is d.ValidationStatus.FAIL and full.scope is d.DeliveryValidationScope.FULL
         assert full.issues[0].code == "INVALID_DELIVERY" and "numerical computation" in full.issues[0].message
+        # An unchanged revision must also satisfy FULL before assembly reports success.
+        with pytest.raises(d.DeliveryValidationError, match="numerical computation"):
+            assemble_delivery(context, definition, value)
     full = validate_delivery(context, receipt.reference)
     assert full.status is d.ValidationStatus.PASS
     assert d.DeliveryValidation.from_dict(full.to_dict()) == full

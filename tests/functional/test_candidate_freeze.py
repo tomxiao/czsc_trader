@@ -135,7 +135,7 @@ def _delivery(context, report, *, revision=1, decisions=(), freeze=None):
                                       revision, schema_version=9)
     content = d.DeliveryContent(payload, d.DeliveryStatus.COMPLETE, (), (),
                                report="Synthetic two-goal technical inspection; no economic acceptance claim.")
-    return assemble_delivery(context, definition, content)
+    return assemble_delivery(context, definition, content).receipt
 
 
 def test_managed_inspection_freeze_and_idempotent_query(fresh_inspection):

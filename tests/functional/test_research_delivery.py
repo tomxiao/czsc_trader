@@ -48,7 +48,7 @@ def test_delivery_keeps_selected_evidence_and_excludes_work(context):
     value = replace(content(), facts=(fact,))
     experiment = reference.experiment.resolve(context.repository.root)
     (experiment / "others/unselected.txt").write_text("technical iteration")
-    receipt = assemble_delivery(context.repository, definition, value)
+    receipt = assemble_delivery(context.repository, definition, value).receipt
     publication = published(context.repository, receipt)
     assert (publication / reference.path).is_file()
     assert not list(publication.rglob("others"))
@@ -68,19 +68,19 @@ def test_researcher_report_and_declared_evidence_are_preserved(context):
     )
     value = content(report=report, evidence=(reference,))
     definition = d.DeliveryDefinition(context.batch, d.DeliveryStage.COMPONENTS, 1)
-    receipt = assemble_delivery(context.repository, definition, value)
+    receipt = assemble_delivery(context.repository, definition, value).receipt
     publication = published(context.repository, receipt)
     assert receipt.schema_version == definition.schema_version == 8
     assert (publication / "report.md").read_bytes() == report.encode("utf-8")
     assert (publication / reference.path).read_bytes() == reference.resolve(context.repository.root).read_bytes()
     reference.resolve(context.repository.root).unlink()
     assert validate_delivery(context.repository, receipt.reference).status is d.ValidationStatus.PASS
-    assert assemble_delivery(context.repository, definition, value) == receipt
+    assert assemble_delivery(context.repository, definition, value).receipt == receipt
     with pytest.raises(d.DeliveryConflictError):
-        assemble_delivery(context.repository, definition, replace(value, report=report + "新结论"))
+        assemble_delivery(context.repository, definition, replace(value, report=report + "新结论")).receipt
     with pytest.raises(d.DeliveryConflictError):
         assemble_delivery(context.repository, definition,
-                          replace(value, payload=d.ComponentPanel((), "changed")))
+                          replace(value, payload=d.ComponentPanel((), "changed"))).receipt
     (publication / "report.md").write_bytes(report.encode("utf-8") + b"corrupt")
     for scope in d.DeliveryValidationScope:
         assert validate_delivery(context.repository, receipt.reference, scope=scope).status is d.ValidationStatus.FAIL
@@ -97,7 +97,7 @@ def test_component_delivery_retains_claims_without_judging_the_research(context)
     # Selected material exists. The platform neither consults today's FSC catalog
     # nor tries to infer whether this declared method/claim is scientifically valid.
     receipt = assemble_delivery(context.repository,
-        d.DeliveryDefinition(context.batch, d.DeliveryStage.COMPONENTS, 1), value)
+        d.DeliveryDefinition(context.batch, d.DeliveryStage.COMPONENTS, 1), value).receipt
     assert validate_delivery(context.repository, receipt.reference).status is d.ValidationStatus.PASS
     copied = published(context.repository, receipt) / reference.path
     copied.write_bytes(b"changed")
@@ -120,12 +120,12 @@ def test_component_uses_selected_definition_snapshot_independently_of_current_ca
     value = content(d.ComponentPanel((component,), "定义身份可核验，研究结论由研究员负责"))
     definition = d.DeliveryDefinition(context.batch, d.DeliveryStage.COMPONENTS, 1)
     assert not (context.repository.root / "catalog").exists()
-    receipt = assemble_delivery(context.repository, definition, value)
+    receipt = assemble_delivery(context.repository, definition, value).receipt
     assert validate_delivery(context.repository, receipt.reference).status is d.ValidationStatus.PASS
     wrong = replace(component, definition=replace(reference, version=2))
     with pytest.raises(d.DeliveryValidationError, match="definition identity"):
         assemble_delivery(context.repository, replace(definition, revision=2),
-                          replace(value, payload=d.ComponentPanel((wrong,), "错误的引用身份")))
+                          replace(value, payload=d.ComponentPanel((wrong,), "错误的引用身份"))).receipt
 
 
 def test_missing_report_evidence_blocks_publication(context):
@@ -134,15 +134,15 @@ def test_missing_report_evidence_blocks_publication(context):
     with pytest.raises(d.DeliveryValidationError):
         assemble_delivery(context.repository,
             d.DeliveryDefinition(context.batch, d.DeliveryStage.COMPONENTS, 1),
-            content(report="研究员的结论", evidence=(reference,)))
+            content(report="研究员的结论", evidence=(reference,))).receipt
     assert not (context.repository.research_root / "S900/deliveries/COMPONENTS/1").exists()
 
 
 def test_new_revision_retains_old_conclusion(context):
     definition = d.DeliveryDefinition(context.batch, d.DeliveryStage.COMPONENTS, 1)
-    first = assemble_delivery(context.repository, definition, content())
+    first = assemble_delivery(context.repository, definition, content()).receipt
     changed = content(d.ComponentPanel((), "新检验得到不同结论"))
-    second = assemble_delivery(context.repository, replace(definition, revision=2, predecessors=(first.reference,)), changed)
+    second = assemble_delivery(context.repository, replace(definition, revision=2, predecessors=(first.reference,)), changed).receipt
     assert first.reference != second.reference
     assert validate_delivery(context.repository, first.reference).status is d.ValidationStatus.PASS
     assert validate_delivery(context.repository, second.reference).status is d.ValidationStatus.PASS
@@ -151,9 +151,9 @@ def test_new_revision_retains_old_conclusion(context):
 def test_stage_payload_and_explicit_partial_state(context):
     definition = d.DeliveryDefinition(context.batch, d.DeliveryStage.COMPONENTS, 1)
     with pytest.raises(d.DeliveryValidationError):
-        assemble_delivery(context.repository, definition, content(d.ResearchMandate(())))
+        assemble_delivery(context.repository, definition, content(d.ResearchMandate(()))).receipt
     partial = replace(content(), status=d.DeliveryStatus.PARTIAL, incomplete_items=("缺失资金流数据",))
-    receipt = assemble_delivery(context.repository, definition, partial)
+    receipt = assemble_delivery(context.repository, definition, partial).receipt
     assert validate_delivery(context.repository, receipt.reference).status is d.ValidationStatus.PASS
     with pytest.raises(ValueError):
         replace(partial, incomplete_items=())
@@ -165,7 +165,7 @@ def test_delivery_rejects_a_missing_public_or_complete_package(context, location
 
     definition = d.DeliveryDefinition(context.batch, d.DeliveryStage.COMPONENTS, 1)
     value = content()
-    receipt = assemble_delivery(context.repository, definition, value)
+    receipt = assemble_delivery(context.repository, definition, value).receipt
     public = _public_delivery_path(context.repository, receipt.reference)
     package = published(context.repository, receipt)
     assert {path.name for path in public.iterdir()} == {"report.md", "receipt.json"}
@@ -174,7 +174,7 @@ def test_delivery_rejects_a_missing_public_or_complete_package(context, location
     shutil.rmtree(public if location == "public" else package)
     assert validate_delivery(context.repository, receipt.reference).status is d.ValidationStatus.FAIL
     with pytest.raises(d.DeliveryValidationError, match="incomplete"):
-        assemble_delivery(context.repository, definition, value)
+        assemble_delivery(context.repository, definition, value).receipt
 
 
 @pytest.mark.parametrize("filename", ["report.md", "receipt.json"])
@@ -183,14 +183,14 @@ def test_delivery_rejects_public_copy_tampering(context, filename):
 
     definition = d.DeliveryDefinition(context.batch, d.DeliveryStage.COMPONENTS, 1)
     value = content()
-    receipt = assemble_delivery(context.repository, definition, value)
+    receipt = assemble_delivery(context.repository, definition, value).receipt
     public = _public_delivery_path(context.repository, receipt.reference)
     (public / filename).write_bytes(b"tampered")
     result = validate_delivery(context.repository, receipt.reference)
     assert result.status is d.ValidationStatus.FAIL
     assert result.issues[0].code == "PUBLIC_DELIVERY"
     with pytest.raises(d.DeliveryValidationError, match="differs"):
-        assemble_delivery(context.repository, definition, value)
+        assemble_delivery(context.repository, definition, value).receipt
 
 
 def test_public_publication_failure_rolls_back_its_complete_package(context, monkeypatch):
@@ -209,8 +209,8 @@ def test_public_publication_failure_rolls_back_its_complete_package(context, mon
 
     monkeypatch.setattr(Path, "rename", fail_public)
     with pytest.raises(d.DeliveryValidationError, match="public publication denied"):
-        assemble_delivery(context.repository, definition, content())
+        assemble_delivery(context.repository, definition, content()).receipt
     assert not package.exists() and not public.exists()
     monkeypatch.undo()
-    receipt = assemble_delivery(context.repository, definition, content())
+    receipt = assemble_delivery(context.repository, definition, content()).receipt
     assert validate_delivery(context.repository, receipt.reference).status is d.ValidationStatus.PASS

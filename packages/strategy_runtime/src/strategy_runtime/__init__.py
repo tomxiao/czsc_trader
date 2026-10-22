@@ -2,6 +2,7 @@
 
 from .input_binding import StrategyInputPlan, StrategyInputBinding
 from .pricing import ExecutionPriceBasis, ExecutionPricing
+from .resources import ExecutionResources, default_worker_count
 from .algorithm import StrategyImplementation, StrategyImplementationV2
 from .identity import CandidateContentIdentity, ImplementationDependency
 from .alignment import AlignmentRule, AlignedInput, InputAlignment, align_input_history
@@ -71,6 +72,7 @@ from .strategy import StrategyInstance
 __version__ = "0.1.0"
 
 __all__ = [
+    "ExecutionResources", "default_worker_count",
     "VerifiedReleasePackage", "load_inspection_deployment", "validate_release_package",
     "InspectionControl", "InspectionProgress", "InspectionStage", "InspectionEnvironment",
     "ImplementationFileIdentity", "InspectionRuntimePermit", "collect_inspection_environment",

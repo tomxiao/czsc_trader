@@ -50,6 +50,12 @@ TDR/REX受管入口；候选登记、检验和获批冻结见[TDR说明](../../s
 技术许可不写成正式部署回执，普通入口不接受技术许可封套。许可不替代PTE自身的隔离账户准入。
 
 `InspectionControl/InspectionProgress/InspectionStage`提供无宿主依赖的预算、取消和进度类型。
+`ExecutionResources`是研究执行的共享资源契约，包含`max_workers`、
+`native_threads_per_worker=1`和`random_seed=0`。它与`InspectionControl.max_workers`
+均默认使用`max(1, os.cpu_count() * 70 // 100)`；16个逻辑核默认11个工作进程。
+默认值在构造时读取本机，显式指定`max_workers`可覆盖；无法识别逻辑核数时拒绝默认构造，
+要求显式提供预算。该预算表示并发上限，不是CPU使用率保证，实际并发还受独立任务数量限制。
+同一执行会话及其子任务共享预算，不在嵌套阶段再次申请70%；不同顶层会话各自管理预算。
 `InspectionEnvironment/ImplementationFileIdentity`记录实际执行环境；
 `collect_inspection_environment(repository_root)`从当前解释器解析到的平台包源码位置采集清单和
 精确依赖版本，数据仓库或隔离仓库路径不能替代执行文件身份，Git提交仅作辅助信息。

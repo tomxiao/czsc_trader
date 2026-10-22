@@ -41,6 +41,9 @@ from .delivery import (
     DeliveryIssue,
     DeliveryValidationScope,
     DeliveryValidation,
+    DeliveryAssemblyResult,
+    DeliveryValidationPhase,
+    DeliveryValidationProgress,
     PublicationFile,
     DeliveryReceipt,
     DeliveryValidationError,
@@ -78,14 +81,19 @@ from .evaluation import (
     EvaluationWindow,
 )
 
+from strategy_runtime.resources import ExecutionResources
+
 from .evaluation_access import (
-    EvaluationResources,
     EvaluationStatus,
     EvaluationError,
     EvaluationOutcome,
 )
 
 from .assessment import build_assessment_evidence
+from .execution import (
+    CheckpointMode, ExecutionCheckpointRequest, ExecutionPhase, ExecutionProgress,
+    ExecutionStats, ResearchExecutionSession,
+)
 from .parameter_evaluation import (
     ParameterEvaluationCandidate, ParameterEvaluationPlan, ParameterEvaluationBinding, ParameterEvaluationInput,
 )
@@ -138,6 +146,9 @@ from .delivery import (
 )
 
 __all__ = [
+    'CheckpointMode', 'ExecutionCheckpointRequest', 'ExecutionPhase', 'ExecutionProgress',
+    'ExecutionStats', 'ResearchExecutionSession',
+    'DeliveryAssemblyResult', 'DeliveryValidationPhase', 'DeliveryValidationProgress',
     "ExecutionPriceBasis",
     "BacktestEvaluation",
     'DeliveryStage',
@@ -202,7 +213,7 @@ __all__ = [
     'EvaluationResult',
     'EvaluationRun',
     'EvaluationWindow',
-    'EvaluationResources',
+    'ExecutionResources',
     'EvaluationStatus',
     'EvaluationError',
     'EvaluationOutcome',

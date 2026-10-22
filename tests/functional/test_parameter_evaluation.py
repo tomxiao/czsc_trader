@@ -154,8 +154,19 @@ def test_parameter_assessment_delivery_replays_plan_after_source_cleanup(fresh_c
         "false-parameter-center", json.dumps(false_center.to_dict()).encode(), "application/json", "json"))
     with pytest.raises(ValueError, match="planned center differs"):
         assemble_delivery(context, definition,
-                          replace(content, payload=replace(payload, parameter_plans=(false_reference,))))
-    receipt = assemble_delivery(context, definition, replace(content, payload=payload))
+                          replace(content, payload=replace(payload, parameter_plans=(false_reference,)))).receipt
+    from strategy_runtime.resources import ExecutionResources
+    progress = []
+    assembled = assemble_delivery(context, definition, replace(content, payload=payload),
+                                  resources=ExecutionResources(max_workers=2), on_progress=progress.append)
+    receipt = assembled.receipt
+    assert assembled.validation.stats.accounts_authenticated == 3
+    assert any(event.phase.value == "AUTHENTICATION" and event.completed == event.total == 2
+               for event in progress)
+    parallel = validate_delivery(context, receipt.reference, resources=ExecutionResources(max_workers=2))
+    serial = validate_delivery(context, receipt.reference, resources=ExecutionResources(max_workers=1))
+    assert parallel == serial == assembled.validation
+    assert parallel.stats.accounts_authenticated == serial.stats.accounts_authenticated == 3
     shutil.rmtree(request.strategy.source_root)
     for material in (reference, plan.mapping_evidence, plan.feasibility_evidence):
         material.resolve(context.root).unlink()

@@ -8,8 +8,9 @@ import time
 import pytest
 from dataflows import Dataflows, DataSpace, ProviderConfig
 from czsc_trader.research_tools.evaluation import _evaluate_strategy
+from strategy_runtime import ExecutionResources
 from czsc_trader.research_tools.evaluation_access import (
-    EvaluationAccess, EvaluationResources, EvaluationOutcome, EvaluationStatus,
+    EvaluationAccess, EvaluationOutcome, EvaluationStatus,
 )
 from test_research_contract_upgrade import managed_evaluation as managed_evaluation
 
@@ -37,7 +38,7 @@ def terminated_worker(request):
 
 def test_parallel_results_preserve_order_and_failure_is_not_retried(managed_evaluation):
     context, request = managed_evaluation
-    access = EvaluationAccess(dataflows=context.data, resources=EvaluationResources(2, 1), strategy_id="S900")
+    access = EvaluationAccess(dataflows=context.data, resources=ExecutionResources(2, 1), strategy_id="S900")
     access._batch_evaluator = SyntheticEvaluator(context.repository.root, DataSpace(Path("research/S900/assets/data")))
     outcomes = access.evaluate_many((request, replace(request, initial_cash=13),
                                      replace(request, initial_cash=200_000), request))
@@ -58,19 +59,19 @@ def test_cancellation_and_worker_loss_return_truthful_status(managed_evaluation)
     access._batch_evaluator = SyntheticEvaluator(context.repository.root, DataSpace(Path("research/S900/assets/data")))
     cancelled = access.evaluate_many((replace(request, initial_cash=14),))[0]
     assert cancelled.status is EvaluationStatus.CANCELLED and cancelled.result is None
-    broken = EvaluationAccess(dataflows=context.data, resources=EvaluationResources(2))
+    broken = EvaluationAccess(dataflows=context.data, resources=ExecutionResources(2))
     broken._batch_evaluator = terminated_worker
     outcomes = broken.evaluate_many((request, request))
     assert all(x.status is EvaluationStatus.UNKNOWN and x.result is None for x in outcomes)
 
 
-def test_invalid_outcome_and_nested_parallelism_are_rejected(managed_evaluation):
+def test_invalid_outcome_and_request_resource_configuration_are_rejected(managed_evaluation):
     context, request = managed_evaluation
     result = context.evaluation.evaluate(request)
     with pytest.raises(ValueError, match="successful outcome"):
         EvaluationOutcome(EvaluationStatus.SUCCEEDED, result.request_hash)
-    with pytest.raises(ValueError, match="workers=1"):
-        context.evaluation.evaluate_many((replace(request, workers=2),))
+    with pytest.raises(TypeError, match="workers"):
+        replace(request, workers=2)
     with pytest.raises(ValueError, match="request identities differ"):
         EvaluationOutcome(EvaluationStatus.SUCCEEDED, "f" * 64, result)
 
@@ -78,7 +79,7 @@ def test_invalid_outcome_and_nested_parallelism_are_rejected(managed_evaluation)
 @pytest.mark.parametrize("kwargs", [{"max_workers": 0}, {"native_threads_per_worker": True}, {"random_seed": -1}])
 def test_invalid_resources_reject_before_computation(kwargs):
     with pytest.raises(ValueError):
-        EvaluationResources(**kwargs)
+        ExecutionResources(**kwargs)
 
 
 def test_batch_data_preparation_failure_is_returned_for_only_the_failed_item(managed_evaluation):
@@ -95,12 +96,12 @@ def test_batch_data_preparation_failure_is_returned_for_only_the_failed_item(man
 
 
 def test_batch_submits_prepared_account_before_preparing_the_next(managed_evaluation, monkeypatch):
-    from czsc_trader.research_tools import evaluation_access as module
+    from czsc_trader.research_tools import _execution_session as module
 
     context, request = managed_evaluation
     bound = context.evaluation.prepare(request)
     result = context.evaluation.evaluate(bound)
-    access = EvaluationAccess(dataflows=context.data, resources=EvaluationResources(2), strategy_id="S900")
+    access = EvaluationAccess(dataflows=context.data, resources=ExecutionResources(2), strategy_id="S900")
     events = []
 
     def prepare(item):
@@ -113,18 +114,15 @@ def test_batch_submits_prepared_account_before_preparing_the_next(managed_evalua
         def __init__(self, **kwargs):
             assert kwargs["max_workers"] == 2
 
-        def __enter__(self):
-            return self
-
-        def __exit__(self, *args):
+        def shutdown(self, **kwargs):
             pass
 
-        def submit(self, operation, payload):
+        def submit(self, operation, worker, args, native_threads):
             from czsc_trader.research_tools._evaluation_workers import pack
 
             events.append("submit")
             future = Future()
-            future.set_result(pack(result))
+            future.set_result((pack(result), 0.0))
             return future
 
     monkeypatch.setattr(access, "prepare", prepare)

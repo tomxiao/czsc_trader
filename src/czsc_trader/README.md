@@ -73,12 +73,12 @@ from pathlib import Path
 from czsc_trader.application import (
     RepositoryContext, create_research_context, create_experiment, ExperimentRequest,
 )
-from czsc_trader.research_tools import ResearchBatchRef, EvaluationResources
+from czsc_trader.research_tools import ResearchBatchRef, ExecutionResources
 
 repository = RepositoryContext.discover(Path.cwd())
 research = create_research_context(
     repository, ResearchBatchRef("S900"),
-    resources=EvaluationResources(max_workers=2, native_threads_per_worker=1, random_seed=42),
+    resources=ExecutionResources(max_workers=2, native_threads_per_worker=1, random_seed=42),
 )
 experiment = create_experiment(
     research, ExperimentRequest("收益机会检验", "该机制能否改善账户收益？", date(2026, 10, 7)),
@@ -185,7 +185,7 @@ result = research.evaluation.evaluate(bound_request)
 ```
 
 保留 `bound_request`，用于结果留证、自检和技术检验的输入绑定。跨进程恢复时，保存请求参数、执行数据准备引用及策略输入绑定，按公开类型重建请求并保留对应数据资产。执行数据和策略输入引用必须来自同一批次空间，
-无效引用或内容变化明确失败。重复评价可复用已准备输入，仍会执行账户计算。
+无效引用或内容变化明确失败。普通重复评价会重新计算；显式执行会话的检查点可恢复已完整落盘且通过身份核验的结果。
 
 `evaluate_many(tuple[EvaluationRequest, ...])` 按输入顺序返回 `EvaluationOutcome`：
 
@@ -196,7 +196,7 @@ result = research.evaluation.evaluate(bound_request)
 | `CANCELLED` | 本项被取消，有错误，无结果 |
 | `UNKNOWN` | 工作进程等异常导致结果无法确认，有错误，无结果 |
 
-批量请求为非空 tuple，各自 `workers=1`，批次并行数来自 `EvaluationResources.max_workers`。
+批量请求为非空 tuple，资源配置统一来自 `ExecutionResources`，`EvaluationRequest` 不再含 `workers`。
 先预检全部请求契约；主进程逐项绑定输入，准备完成即提交给 `spawn` 子进程，
 使后续准备与已经提交的账户计算重叠。单项准备或传输失败不妨碍其他项；非法类型或批量契约在计算前拒绝整次调用。
 平台不自动重试、管理 Optuna study 或决定搜索预算；调用方根据逐项结果组织后续研究。
@@ -213,15 +213,16 @@ result = research.evaluation.evaluate(bound_request)
 | pandas、NumPy及统计库 | 数据对齐、批量数值计算与统计检验 | 优先使用向量化、批量运算和公共中间结果，减少逐行Python循环与重复转换；按内存容量分批，核验缺失值、索引和数值类型对结果的影响 |
 | 其他加速评价库 | 降低特定计算环节或策略评价的耗时 | 先用代表性样例确认加速收益与适用交易语义；用于正式比较前，必须完成与SRT/TXE的信号及完整经济账本等价性核验 |
 
-本项目研究任务的默认并发预算为`max(1, (os.cpu_count() or 1) // 2)`；由研究员统筹各库、trial间并发与单次评价内部并发。
-固定扰动批次应显式传入这一预算的`EvaluationResources(max_workers=..., native_threads_per_worker=1)`；
-例如16个逻辑核对应8个进程，每个账户请求仍为`workers=1`。底层资源类型的单进程默认值不代替研究批次预算。
-采用trial多进程时，单次评价内部并发及各进程的BLAS/OpenMP线程默认均为1，避免嵌套并发超出预算。
-固定网格和固定扰动同样适用多进程默认值；`EvaluationResources`声明账户评价资源，不负责Optuna调度。
+可并行接口内部默认采用`max(1, os.cpu_count() * 70 // 100)`个工作进程／线程，向下取整；
+例如16个逻辑核默认11个，实际同时执行数还受独立任务数限制。`ExecutionResources(max_workers=...)`
+显式覆盖，默认`native_threads_per_worker=1`。无法识别逻辑核数时明确报错，调用方可显式指定。
+预算控制工作进程／线程数量，不承诺CPU利用率；同一会话共享总预算，不同顶层会话不受整机调度器协调。
+`evaluate_many`在请求间并行，子请求内部执行使用一个工作线程；`evaluate`可在独立窗口／费用场景间使用上下文预算。
+资源类型不负责Optuna调度；研究员仍须统筹平台以外的trial及第三方库并发。
 
 正式批量评价调用`context.evaluation.evaluate_many(tuple_of_requests)`，由TDR使用Windows `spawn`
 进程池执行研究员已确定的请求。主进程持有Study和批次上下文，核对逐项结果并选择必要证据；子进程只计算，
-不得按worker或计算分片创建实验。每个请求`workers=1`，进程数取`EvaluationResources.max_workers`。
+不得按worker或计算分片创建实验。进程数取`ExecutionResources.max_workers`。
 单次`evaluate`返回`EvaluationResult`，失败抛出异常；批量`evaluate_many`逐项返回`EvaluationOutcome`，
 区分`SUCCEEDED/FAILED/CANCELLED/UNKNOWN`。研究员据此决定Optuna回填及显式重试，
 平台不管理研究预算或自动重试；正式发布使用`evaluation.prepare`绑定后的请求和对应结果。
@@ -229,6 +230,52 @@ result = research.evaluation.evaluate(bound_request)
 披露实际配置、种子、搜索范围、评价及独立配置数量、选择依据和方法局限；保存正式结论所需结果与反证。
 内存Study不替代必要的持久证据，无须保留全部trial和技术失败日志；并行采样的复现范围须如实说明。
 安装、升级及跨角色修改仍需另行授权；研究依赖不得自动进入冻结运行时依赖。
+
+### 执行会话与显式恢复
+
+`open_research_execution(research, experiment=..., checkpoint=None, on_progress=None)`返回
+`ResearchExecutionSession`上下文管理器。连续批次通过`execution=session`共享同一个有界`spawn`池，
+评价和证据序列化按完成顺序收取结果，返回tuple仍保持输入顺序。正式证据仅由主进程提交。
+不传会话时，批量API内部创建并关闭一次相同执行器。一个研究上下文同时只允许一个显式会话；
+会话活动期间必须明确传入它，避免隐式创建第二个资源预算。
+
+```python
+from czsc_trader.application import open_research_execution, publish_evidence_many
+from czsc_trader.research_tools import (
+    CheckpointMode, ExecutionCheckpointRequest, EvaluationEvidenceWrite,
+)
+
+with open_research_execution(
+    research, experiment=experiment,
+    checkpoint=ExecutionCheckpointRequest("stage4-round1", CheckpointMode.CREATE),
+) as session:
+    outcomes = research.evaluation.evaluate_many(bound_requests, execution=session)
+    selected = tuple(
+        EvaluationEvidenceWrite(experiment, f"account-{i}", request, outcome.result)
+        for i, (request, outcome) in enumerate(zip(bound_requests, outcomes, strict=True))
+        if outcome.status.value == "SUCCEEDED"
+    )
+    if selected:
+        publications = publish_evidence_many(research, selected, execution=session)
+stats = session.stats
+```
+
+重启后用相同运行标识和`CheckpointMode.RESUME`打开会话，重新提供准备后的请求。
+检查点位于`.tmp/research-execution/<批次>/<运行标识>/`，包括绑定实验与实现身份的`manifest.json`、
+`results/<请求哈希>.json`和`publications/<发布身份哈希>.json`。使用结构化JSON、校验和、原子写入及单写锁，
+恢复时重新核对请求、源码／实现、数据、参数、数值结果及当前证据字节；不读取磁盘pickle。
+同一请求可恢复已完整保存的计算结果，继续显式发布；不同名称的发布不会错误复用旧名称引用。
+缓存损坏或身份不符明确失败，不自动重新计算掩盖问题。未保存的结果需要调用方明确决定重试。
+缓存可清理，正式交付不依赖检查点；`CREATE`不覆盖已有运行，`RESUME`不创建缺失运行。
+
+工作进程丢失时，计算结果按`UNKNOWN`表达；仅在序列化阶段丢失工作进程且主进程未提交文件，
+发布状态为`FAILED`。文件提交无法确认时仍为`UNKNOWN`。进程池损坏或收取结果中断后禁止继续使用该会话，
+调用方需关闭它并显式开启新的会话。平台不自动重试、不重建损坏池、不静默改为串行。
+
+`ExecutionProgress`报告阶段、完成数、失败／未知数和耗时，回调在主进程执行；回调异常使调用失败。
+`session.stats`区分会话墙钟时间、分阶段墙钟区间、累计工作进程时间、进程池创建次数及恢复命中数。
+准备与计算、发布与序列化可能重叠，分段区间不能直接相加；累计工作进程时间也不等于端到端耗时。
+资源变化不改变策略参数，平台源码变化可能改变评价环境／结果身份，应比较经济账本与数值并核验新身份。
 
 ### 显式基准执行合同
 
@@ -523,7 +570,16 @@ child_result = research.evaluation.evaluate(child_request)
 
 ## 7. 五阶段交付
 
-`assemble_delivery(repository, DeliveryDefinition, DeliveryContent) -> DeliveryReceipt` 直接接受强类型数据。
+`assemble_delivery(repository, DeliveryDefinition, DeliveryContent, *, resources=None, on_progress=None) -> DeliveryAssemblyResult` 直接接受强类型数据。
+返回值包含 `receipt: DeliveryReceipt` 和 `validation: DeliveryValidation`；后者是包含安装后完整性复核的本次 `FULL PASS`，无需紧接着再调用一次完整校验。
+同内容修订的重复组装也重新执行 FULL。后续独立调用 `validate_delivery(..., resources=None, on_progress=None)` 时重新读取当前文件，绝不以历史 PASS 代替认证。
+两个入口的独立账户认证默认采用 `ExecutionResources` 的本机 70% 逻辑核预算，显式资源可覆盖；单项认证直接执行。
+认证缓存只在本次调用内保存按 SHA-256 标识的必要事实，每次消费仍核验文件当前字节；最终复核覆盖前驱及公开副本。
+`DeliveryValidationProgress` 回调报告 `PACKAGE_LOAD`、`AUTHENTICATION`、`RECOMPUTATION`、`FINAL_RECHECK` 阶段、完成数量及累计墙钟耗时。
+`PACKAGE_LOAD` 在读取每个交付包之前立即发出；`package_load_seconds` 累计包封装读取、清单哈希与强类型解析的墙钟时间，包含失败读取，排除递归前驱、账户认证和 SE 复算。
+`DeliveryValidationStats` 记录认证墙钟时间（含并行进程启动及结果传输）、SE 复算时间、最终复核时间、认证账户数和缓存复用数；阶段数值不包含其他序列化及 I/O，不将这些局部计时之和称为端到端时间。
+`file_read_task_seconds` 和 `file_hash_task_seconds` 是校验路径的主进程及工作进程逐项文件读取／哈希累计耗时，含在认证与最终复核阶段内；并行任务累计时间不可相加或当作墙钟耗时。
+这些执行统计和组装返回包装不写入交付文件，不改变交付 schema 或内容身份。
 研究员提供结论、必要事实、解释、人工报告和关联证据，自主组织实验过程。
 平台核验结论与已声明证据的存在、身份、完整性及契约一致性，无法判断研究结论是否正确。
 研究方法、证据是否充分及结论解释由 RSCH 负责。
@@ -550,7 +606,7 @@ child_result = research.evaluation.evaluate(child_request)
 继续前例，用该候选形成阶段三交付；实际修订号与前驱引用由 RSCH 按已发布记录指定。
 
 ```python
-from czsc_trader.application import assemble_delivery, validate_delivery
+from czsc_trader.application import assemble_delivery
 from czsc_trader.research_tools import (
     CandidateEntry, CandidateIdentityRef, CandidateSet, DeliveryDefinition,
     DeliveryStage, DeliveryContent, DeliveryStatus, ValidationStatus,
@@ -561,7 +617,7 @@ candidate_set = CandidateSet(
                                "按实际机制填写收益假设", "提交自检", (evaluation_reference,)),),
     handoff=(registration.key,), searches=(), conclusion="交接该候选进行自检与比较",
 )
-receipt = assemble_delivery(
+assembled = assemble_delivery(
     repository, DeliveryDefinition(research.batch, DeliveryStage.CANDIDATES, revision=1),
     DeliveryContent(
         candidate_set, DeliveryStatus.COMPLETE, facts=(), explanations=(),
@@ -569,7 +625,7 @@ receipt = assemble_delivery(
         evidence=(),
     ),
 )
-checked = validate_delivery(repository, receipt.reference)
+receipt, checked = assembled.receipt, assembled.validation
 if checked.status is not ValidationStatus.PASS:
     raise RuntimeError(checked.issues)
 ```
@@ -643,7 +699,7 @@ StrategyVersion和运行发布合同不变，不更改已冻结策略、SM状态
 | `FreezeTarget` | version、parent_version、change_summary、date类型selection_data_cutoff和forward_start |
 | `InspectionReplay` | coordinate、候选StrategyInputBinding、完整BacktestExecutionData、initial_cash、one_way_cost、可选baseline |
 | `InspectionProtocol` | `candidate-inspection-v2`、`ECONOMIC_V1`、float_tolerance、PteInspectionProtocol |
-| `InspectionControl` | 总timeout_seconds、max_workers、cancelled、on_progress；默认一个回放worker |
+| `InspectionControl` | 总timeout_seconds、max_workers、cancelled、on_progress；默认预算为本机70%逻辑核，实际并发受独立任务数限制 |
 | `CandidateInspectionReport` | schema 2；run_id、owner、origin、selection、request/protocol/environment引用、plan/release、behavior_equivalence、pte_runtime、measurements、remaining_risks |
 | `InspectedRelease` | 最终version_record、manifest、文件闭包，以及release_sha256和package_sha256 |
 | `CandidateInspectionDelivery` | inspection报告引用、decisions、freeze、pending_decisions；无source_assessment |

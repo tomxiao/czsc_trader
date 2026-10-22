@@ -34,6 +34,6 @@ def test_missing_selected_evidence_leaves_no_visible_delivery(context):
     fact = d.FactValue("missing", None, "ratio", d.FactStatus.INSUFFICIENT_DATA, (reference,), "not available")
     definition = d.DeliveryDefinition(research.batch, d.DeliveryStage.COMPONENTS, 1)
     with pytest.raises(d.DeliveryValidationError):
-        assemble_delivery(research.repository, definition, replace(content(), facts=(fact,)))
+        assemble_delivery(research.repository, definition, replace(content(), facts=(fact,))).receipt
     assert not (research.repository.research_root / "S900/deliveries/COMPONENTS/1").exists()
     assert not (research.repository.research_root / "S900/assets/deliveries/COMPONENTS/1").exists()

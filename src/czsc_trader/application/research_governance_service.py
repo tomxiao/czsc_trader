@@ -25,7 +25,8 @@ from .context import RepositoryContext
 from .errors import ValidationError
 from ..research_tools.context import ResearchBatchRef, ResearchContext, ExperimentRef
 from ..research_tools.evidence import managed_path
-from ..research_tools.evaluation_access import EvaluationAccess, EvaluationResources
+from ..research_tools.evaluation_access import EvaluationAccess
+from strategy_runtime.resources import ExecutionResources
 from dataflows import Dataflows, DataSpace, ProviderConfig
 from strategy_runtime import StrategyRuntime
 from strategy_manager.write_lock import RegistryWriteLock
@@ -317,7 +318,7 @@ def update_research_intent(
 
 def create_research_context(
     repository: RepositoryContext, batch: ResearchBatchRef, *,
-    resources: EvaluationResources | None = None, providers: ProviderConfig | None = None,
+    resources: ExecutionResources | None = None, providers: ProviderConfig | None = None,
 ) -> ResearchContext:
     """Bind one registered research batch to its shared DFLS and runtime capabilities."""
     if type(repository) is not RepositoryContext or type(batch) is not ResearchBatchRef:

@@ -18,7 +18,7 @@ def graph(research):
             d.DeliveryDefinition(research.batch, d.DeliveryStage.COMPONENTS, revision,
                                  tuple(references[index - 1] for index in predecessors)),
             content(report=f"Declared graph node {revision}"),
-        )
+        ).receipt
         references.append(receipt.reference)
     return references
 
@@ -84,7 +84,7 @@ def test_publication_rechecks_predecessors_after_installation(context, monkeypat
 
     monkeypatch.setattr(Path, "rename", mutate_during_commit)
     with pytest.raises(d.DeliveryValidationError, match="changed during validation"):
-        assemble_delivery(context.repository, definition, content())
+        assemble_delivery(context.repository, definition, content()).receipt
     assert not destination.exists() and not public.exists()
 
 
@@ -108,3 +108,32 @@ def test_validation_stats_reject_invalid_numbers(field, value):
     stats = d.DeliveryValidationStats(0, 0, 0, 0, 0, 0, 0.0)
     with pytest.raises((ValueError, TypeError)):
         replace(stats, **{field: value})
+
+
+@pytest.mark.parametrize("damaged", [False, True])
+def test_validation_elapsed_includes_cleanup_for_success_and_failure(context, monkeypatch, damaged):
+    reference = graph(context)[0]
+    if damaged:
+        (service._delivery_path(context.repository, reference) / "report.md").write_bytes(b"tampered")
+    clock = [0.0]
+    close = service._ValidationSession.close
+    read_json = service._read_json
+    def read(path):
+        clock[0] += 1.0
+        return read_json(path)
+    def cleanup(session):
+        close(session)
+        clock[0] += 2.5  # Deterministic fault-boundary cost; no actual sleep.
+    monkeypatch.setattr(service, "perf_counter", lambda: clock[0])
+    monkeypatch.setattr(service._ValidationSession, "close", cleanup)
+    monkeypatch.setattr(service, "_read_json", read)
+    progress = []
+    result = validate_delivery(context.repository, reference, on_progress=progress.append)
+    assert result.status is (d.ValidationStatus.FAIL if damaged else d.ValidationStatus.PASS)
+    assert result.stats.elapsed_seconds == (4.5 if damaged else 5.5)
+    assert result.stats.package_load_seconds == 2.0
+    assert progress[0].phase is d.DeliveryValidationPhase.PACKAGE_LOAD
+    assert progress[0].completed == 0
+    finished_load = [event for event in progress
+                     if event.phase is d.DeliveryValidationPhase.PACKAGE_LOAD and event.completed == 1]
+    assert bool(finished_load) is not damaged

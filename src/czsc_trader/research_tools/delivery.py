@@ -527,6 +527,25 @@ class DeliveryValidationScope(StrEnum):
     FULL = "FULL"
 
 
+class DeliveryValidationPhase(StrEnum):
+    PACKAGE_LOAD = "PACKAGE_LOAD"
+    AUTHENTICATION = "AUTHENTICATION"
+    RECOMPUTATION = "RECOMPUTATION"
+    FINAL_RECHECK = "FINAL_RECHECK"
+
+
+@dataclass(frozen=True, slots=True)
+class DeliveryValidationProgress(_Record):
+    phase: DeliveryValidationPhase
+    completed: int
+    total: int
+    elapsed_seconds: float
+
+    def _validate(self):
+        if not 0 <= self.completed <= self.total or self.elapsed_seconds < 0:
+            raise ValueError("invalid delivery validation progress")
+
+
 @dataclass(frozen=True, slots=True)
 class DeliveryValidationStats(_Record):
     unique_deliveries: int
@@ -536,14 +555,26 @@ class DeliveryValidationStats(_Record):
     files_hashed: int
     bytes_hashed: int
     elapsed_seconds: float
+    authentication_seconds: float = 0.0
+    recomputation_seconds: float = 0.0
+    final_recheck_seconds: float = 0.0
+    accounts_authenticated: int = 0
+    account_reuses: int = 0
+    file_read_task_seconds: float = 0.0
+    file_hash_task_seconds: float = 0.0
+    package_load_seconds: float = 0.0
 
     def _validate(self):
         for name in ("unique_deliveries", "reference_visits", "recursive_expansions",
-                     "semantic_reuses", "files_hashed", "bytes_hashed"):
+                     "semantic_reuses", "files_hashed", "bytes_hashed",
+                     "accounts_authenticated", "account_reuses"):
             if getattr(self, name) < 0:
                 raise ValueError("validation counters must be nonnegative")
-        if self.elapsed_seconds < 0:
-            raise ValueError("validation elapsed time must be nonnegative")
+        for name in ("elapsed_seconds", "authentication_seconds", "recomputation_seconds",
+                     "final_recheck_seconds", "file_read_task_seconds", "file_hash_task_seconds",
+                     "package_load_seconds"):
+            if getattr(self, name) < 0:
+                raise ValueError("validation elapsed time must be nonnegative")
 
 
 @dataclass(frozen=True, slots=True)
@@ -580,6 +611,19 @@ class DeliveryReceipt(_Record):
         if not self.files:
             raise ValueError("receipt requires file manifest")
         _unique((x.path.casefold() for x in self.files), "receipt file")
+
+
+@dataclass(frozen=True, slots=True)
+class DeliveryAssemblyResult(_Record):
+    """Runtime result; the persisted receipt/schema remains unchanged."""
+
+    receipt: DeliveryReceipt
+    validation: DeliveryValidation
+
+    def _validate(self):
+        if (self.validation.status is not ValidationStatus.PASS
+            or self.validation.scope is not DeliveryValidationScope.FULL):
+            raise ValueError("assembly result requires a completed FULL PASS")
 
 
 

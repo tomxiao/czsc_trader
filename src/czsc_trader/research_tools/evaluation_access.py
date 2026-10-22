@@ -1,18 +1,20 @@
 """Batch-owned account computation; persistence is an explicit evidence operation."""
 from __future__ import annotations
 
-from concurrent.futures import CancelledError, ProcessPoolExecutor
+from concurrent.futures import CancelledError
 from concurrent.futures.process import BrokenProcessPool
 from dataclasses import dataclass
 from enum import Enum
-from multiprocessing import get_context
+from contextlib import nullcontext, closing
 from pathlib import Path
 import pickle
 import re
+from threading import Lock
 
 from dataflows import Dataflows
 from threadpoolctl import threadpool_limits
 from strategy_runtime import canonical_sha256
+from strategy_runtime.resources import ExecutionResources
 
 from .evaluation import (
     EvaluationRequest, EvaluationResult, _bind_evaluation_inputs,
@@ -20,20 +22,8 @@ from .evaluation import (
 )
 from ._evaluation_workers import PlatformEvaluator, compute, pack
 from .parameter_evaluation import validate_parameter_request
-
-
-@dataclass(frozen=True, slots=True)
-class EvaluationResources:
-    max_workers: int = 1
-    native_threads_per_worker: int = 1
-    random_seed: int = 0
-
-    def __post_init__(self):
-        for name in ("max_workers", "native_threads_per_worker"):
-            if type(getattr(self, name)) is not int or getattr(self, name) < 1:
-                raise ValueError(f"{name} must be a positive integer")
-        if type(self.random_seed) is not int or self.random_seed < 0:
-            raise ValueError("random_seed must be a nonnegative integer")
+from .execution import ResearchExecutionSession, ExecutionPhase, ExecutionProgress
+from ._execution_session import ExecutionExecutor
 
 
 class EvaluationStatus(str, Enum):
@@ -79,15 +69,17 @@ class EvaluationOutcome:
 class EvaluationAccess:
     """Use one injected DFLS space for preparation and all account calculations."""
 
-    def __init__(self, *, dataflows: Dataflows, resources: EvaluationResources | None = None,
+    def __init__(self, *, dataflows: Dataflows, resources: ExecutionResources | None = None,
                  strategy_id: str | None = None):
         if not isinstance(dataflows, Dataflows):
             raise TypeError("evaluation requires Dataflows")
         self.data = dataflows
-        self.resources = resources if resources is not None else EvaluationResources()
-        if not isinstance(self.resources, EvaluationResources):
-            raise TypeError("evaluation requires EvaluationResources")
+        self.resources = resources if resources is not None else ExecutionResources()
+        if type(self.resources) is not ExecutionResources:
+            raise TypeError("evaluation requires ExecutionResources")
         self.strategy_id = strategy_id
+        self._session_lock = Lock()
+        self._active_execution = None
         self._base_dir = dataflows.binding.base_dir
         self._batch_evaluator = PlatformEvaluator(
             self._base_dir, dataflows.binding.space,
@@ -100,8 +92,6 @@ class EvaluationAccess:
             raise ValueError("evaluation request repository differs from its context")
         if self.strategy_id is not None and request.strategy.strategy_family_id != self.strategy_id:
             raise ValueError("evaluation candidate belongs to another batch")
-        if request.workers > self.resources.max_workers:
-            raise ValueError("evaluation workers exceed EvaluationResources.max_workers")
         if request.execution_data is not None:
             prepared = request.execution_data.prepared
             if prepared is None or prepared.space_id != self.data.binding.space_id:
@@ -114,9 +104,11 @@ class EvaluationAccess:
         return prepared
 
     def evaluate(self, request: EvaluationRequest) -> EvaluationResult:
+        if self._active_execution is not None:
+            raise RuntimeError("use evaluate_many with the active execution session")
         prepared = self.prepare(request)
         with threadpool_limits(limits=self.resources.native_threads_per_worker):
-            return _evaluate_strategy(prepared, dataflows=self.data)
+            return _evaluate_strategy(prepared, dataflows=self.data, workers=self.resources.max_workers)
 
     @staticmethod
     def _outcome(request, calculate):
@@ -152,52 +144,68 @@ class EvaluationAccess:
                 type(exc).__name__, str(exc) or type(exc).__name__,
             ))
 
-    def evaluate_many(self, requests: tuple[EvaluationRequest, ...]) -> tuple[EvaluationOutcome, ...]:
+    def evaluate_many(self, requests: tuple[EvaluationRequest, ...], *,
+                      execution: ResearchExecutionSession | None = None) -> tuple[EvaluationOutcome, ...]:
         if not isinstance(requests, tuple) or not requests:
             raise ValueError("evaluate_many requires a nonempty tuple")
         if not all(isinstance(item, EvaluationRequest) for item in requests):
             raise TypeError("evaluate_many requires EvaluationRequest values")
-        if any(item.workers != 1 for item in requests):
-            raise ValueError("batch requests require workers=1; configure EvaluationResources")
+        if execution is None and self._active_execution is not None:
+            raise RuntimeError("pass the active execution session explicitly")
+        if execution is not None:
+            if type(execution) is not ResearchExecutionSession:
+                raise TypeError("execution requires ResearchExecutionSession")
+            for item in requests:
+                execution.require(self, item.experiment_id)
         # Contract errors reject the call. Data/preparation failures belong to their item.
         contracts = tuple(_request_contract(item, require_execution=False)[0] for item in requests)
         outcomes = [None] * len(requests)
         def fail(error):
             raise error
 
-        def prepared_requests():
+        executor = execution.executor if execution is not None else ExecutionExecutor(self.resources)
+        checkpoint = None if execution is None else execution.checkpoint
+        prepared_by_index = {}
+
+        def tasks():
             for index, (item, contract) in enumerate(zip(requests, contracts, strict=True)):
                 try:
-                    prepared = self.prepare(item)
+                    with executor.measure(ExecutionPhase.PREPARE):
+                        prepared = self.prepare(item)
                 except Exception as exc:
                     outcomes[index] = EvaluationOutcome(EvaluationStatus.FAILED,
                         canonical_sha256(contract), error=EvaluationError(
                             type(exc).__name__, str(exc) or type(exc).__name__))
-                else:
-                    yield index, prepared
-
-        if self.resources.max_workers == 1:
-            with threadpool_limits(limits=self.resources.native_threads_per_worker):
-                for index, item in prepared_requests():
-                    outcomes[index] = self._outcome(item, lambda item=item: self._batch_evaluator(item))
-        else:
-            # All caller contracts passed preflight. Submit each prepared item
-            # immediately so worker computation overlaps the next preparation.
-            with ProcessPoolExecutor(max_workers=min(len(requests), self.resources.max_workers),
-                                     mp_context=get_context("spawn")) as pool:
-                pending = []
-                for index, item in prepared_requests():
-                    try:
-                        payload = pack((self._batch_evaluator, item, self.resources.native_threads_per_worker))
-                    except Exception as exc:
-                        outcomes[index] = self._outcome(item, lambda exc=exc: fail(exc))
+                    continue
+                request_hash = canonical_sha256(_request_contract(prepared)[0])
+                if checkpoint is not None:
+                    restored = checkpoint.load_result(prepared, request_hash)
+                    if restored is not None:
+                        outcomes[index] = self._outcome(prepared, lambda: restored)
+                        if outcomes[index].status is not EvaluationStatus.SUCCEEDED:
+                            raise ValueError("restored checkpoint does not match the prepared request")
+                        executor.reused_results += 1
                         continue
-                    try:
-                        pending.append((index, item, pool.submit(compute, payload)))
-                    except Exception as exc:
-                        # Submission failed before this request could begin computation.
-                        outcomes[index] = self._outcome(item, lambda exc=exc: fail(
-                            CancelledError(f"evaluation not submitted: {exc}")))
-                for index, item, future in pending:
-                    outcomes[index] = self._outcome(item, lambda future=future: pickle.loads(future.result()))
+                try:
+                    payload = pack((self._batch_evaluator, prepared, self.resources.native_threads_per_worker))
+                except Exception as exc:
+                    outcomes[index] = self._outcome(prepared, lambda exc=exc: fail(exc))
+                    continue
+                prepared_by_index[index] = prepared
+                yield index, (payload,)
+
+        with (nullcontext(executor) if execution is not None else executor):
+            with closing(executor.run(compute, tasks(), phase=ExecutionPhase.COMPUTE,
+                                      total=len(requests))) as completed:
+                for index, value, error in completed:
+                    item = prepared_by_index.pop(index)
+                    outcome = self._outcome(item, lambda: fail(error) if error is not None else pickle.loads(value))
+                    if checkpoint is not None and outcome.status is EvaluationStatus.SUCCEEDED:
+                        checkpoint.save_result(outcome.request_hash, outcome.result)
+                    outcomes[index] = outcome
+            if executor.on_progress is not None:
+                executor.notify(ExecutionProgress(
+                    ExecutionPhase.COMPUTE, len(outcomes), len(outcomes),
+                    sum(x.status in (EvaluationStatus.FAILED, EvaluationStatus.CANCELLED) for x in outcomes),
+                    sum(x.status is EvaluationStatus.UNKNOWN for x in outcomes), executor.stats.elapsed_seconds))
         return tuple(outcomes)

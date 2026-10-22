@@ -1,14 +1,15 @@
 """Atomic, explicit publication of research result evidence."""
 
 from hashlib import sha256
-from concurrent.futures import CancelledError, ProcessPoolExecutor, wait, FIRST_COMPLETED
+from concurrent.futures import CancelledError
+from contextlib import nullcontext, closing
 import json
-from multiprocessing import get_context
 import os
 from pathlib import Path
 from uuid import uuid4
 
 from threadpoolctl import threadpool_limits
+from strategy_runtime import canonical_sha256
 
 from ..research_tools.context import ResearchContext, ExperimentRef
 from ..research_tools.evidence import (
@@ -16,6 +17,8 @@ from ..research_tools.evidence import (
     PublicationStatus, PublicationError, PublicationOutcome,
     ExperimentReportWrite,
 )
+from ..research_tools.execution import ResearchExecutionSession, ExecutionPhase, ExecutionProgress
+from ..research_tools._execution_session import ExecutionExecutor
 
 
 def _publish_bytes(repository_root: Path, target: Path, data: bytes) -> None:
@@ -148,7 +151,8 @@ def _publish_outcome(context, index, request, data):
 
 
 def publish_evidence_many(context: ResearchContext,
-                          requests: tuple[EvidenceWriteRequest, ...]) -> tuple[PublicationOutcome, ...]:
+                          requests: tuple[EvidenceWriteRequest, ...], *,
+                          execution: ResearchExecutionSession | None = None) -> tuple[PublicationOutcome, ...]:
     """Compute selected account evidence in parallel; only the parent publishes it."""
     if type(context) is not ResearchContext:
         raise TypeError("publication requires ResearchContext")
@@ -157,21 +161,60 @@ def publish_evidence_many(context: ResearchContext,
     # Every ownership/contract error rejects the entire call before any write.
     for request in requests:
         _validate_request(context, request)
+    if execution is None and context.evaluation._active_execution is not None:
+        raise RuntimeError("pass the active execution session explicitly")
+    if execution is not None:
+        if type(execution) is not ResearchExecutionSession:
+            raise TypeError("execution requires ResearchExecutionSession")
+        for request in requests:
+            execution.require(context.evaluation, request.experiment.experiment_id)
     resources = context.evaluation.resources
-    from ..research_tools.evaluation_access import EvaluationResources
-
-    if type(resources) is not EvaluationResources:
-        raise TypeError("publication resources require EvaluationResources")
+    executor = execution.executor if execution is not None else ExecutionExecutor(resources)
+    checkpoint = None if execution is None else execution.checkpoint
     outcomes = [None] * len(requests)
     accounts = []
     from ..research_tools._evaluation_workers import pack
 
+    publication_keys = {}
     for index, request in enumerate(requests):
+        if checkpoint is not None and isinstance(request, EvaluationEvidenceWrite):
+            # Names are part of the returned reference even when bytes coincide.
+            key = canonical_sha256({"request_hash": request.result.request_hash,
+                                    "result_hash": request.result.result_hash,
+                                    "request_identity": request.request.strategy.runtime_identity_sha256,
+                                    "experiment": request.experiment.to_dict(), "name": request.name,
+                                    "schema": "account_evaluation", "version": 7})
+            publication_keys[index] = key
+            reference = checkpoint.load_publication(key)
+            if reference is not None:
+                # A valid reference cannot bypass request/result authentication.
+                from ..research_tools.evaluation import _request_contract, _evaluation_result_hash
+                if (canonical_sha256(_request_contract(request.request)[0]) != request.result.request_hash
+                        or _evaluation_result_hash(request.result.request_hash, request.result.runs) != request.result.result_hash):
+                    raise ValueError("publication checkpoint differs from supplied request/result")
+                payload = json.loads(reference.resolve(context.repository.root).read_bytes())
+                expected = {"request_hash": request.result.request_hash,
+                            "result_hash": request.result.result_hash,
+                            "strategy_identity": request.result.strategy_identity,
+                            "runtime_binding_hash": request.result.runtime_binding_hash,
+                            "data_identity": request.result.data_identity,
+                            "execution_mode": request.result.execution_mode,
+                            "input_bindings": {name: binding.to_dict() for name, binding in request.request.input_bindings.items()}}
+                if (reference.name != request.name or reference.experiment != request.experiment
+                        or (reference.schema, reference.schema_version) != ("account_evaluation", 7)
+                        or any(payload.get(name) != value for name, value in expected.items())):
+                    raise ValueError("publication checkpoint points to another evaluation")
+                from ..research_tools.evaluation import validate_evaluation_evidence
+                validate_evaluation_evidence(payload)
+                outcomes[index] = PublicationOutcome(index, PublicationStatus.PUBLISHED, reference)
+                executor.reused_publications += 1
+                continue
         if isinstance(request, ExperimentReportWrite):
             from .experiment_artifact_service import _publish_report
             try:
-                outcomes[index] = PublicationOutcome(index, PublicationStatus.PUBLISHED,
-                                                     _publish_report(context, request))
+                with executor.measure(ExecutionPhase.PUBLISH):
+                    outcomes[index] = PublicationOutcome(index, PublicationStatus.PUBLISHED,
+                                                         _publish_report(context, request))
             except BaseException as exc:
                 if isinstance(exc, (CancelledError, KeyboardInterrupt, SystemExit)):
                     status = (PublicationStatus.CANCELLED if getattr(exc, "pointer_committed", False) is False
@@ -181,59 +224,38 @@ def publish_evidence_many(context: ResearchContext,
                               else PublicationStatus.UNKNOWN)
                 outcomes[index] = _failed(index, exc, status)
         elif isinstance(request, MaterialEvidenceWrite):
-            outcomes[index] = _publish_outcome(context, index, request, request.content)
+            with executor.measure(ExecutionPhase.PUBLISH):
+                outcomes[index] = _publish_outcome(context, index, request, request.content)
         else:
+            accounts.append((index, request))
+
+    def tasks():
+        for index, request in accounts:
             try:
-                if resources.max_workers == 1:
-                    with threadpool_limits(limits=resources.native_threads_per_worker):
-                        data = _serialize_account(request)
-                    outcomes[index] = _publish_outcome(context, index, request, data)
+                payload = pack(request)
+            except Exception as exc:
+                outcomes[index] = _failed(index, exc)
+            else:
+                yield index, (payload, resources.native_threads_per_worker)
+
+    with (nullcontext(executor) if execution is not None else executor):
+        with closing(executor.run(_serialize_worker, tasks(), phase=ExecutionPhase.SERIALIZE,
+                                  total=len(accounts))) as completed:
+            for index, data, error in completed:
+                if error is not None:
+                    status = (PublicationStatus.CANCELLED if isinstance(error, (CancelledError, KeyboardInterrupt, SystemExit))
+                              else PublicationStatus.FAILED)
+                    outcomes[index] = _failed(index, error, status)
                 else:
-                    accounts.append((index, request))
-            except BaseException as exc:
-                status = (PublicationStatus.CANCELLED if isinstance(exc, (CancelledError, KeyboardInterrupt, SystemExit))
-                          else PublicationStatus.FAILED)
-                outcomes[index] = _failed(index, exc, status)
-    if accounts:
-        try:
-            with ProcessPoolExecutor(max_workers=min(len(accounts), resources.max_workers),
-                                     mp_context=get_context("spawn")) as pool:
-                pending = {}
-                remaining = iter(accounts)
-                exhausted = False
-                while pending or not exhausted:
-                    while not exhausted and len(pending) < resources.max_workers:
-                        try:
-                            index, request = next(remaining)
-                        except StopIteration:
-                            exhausted = True
-                            break
-                        try:
-                            # Bound transport memory and overlap packing with computation.
-                            payload = pack(request)
-                            future = pool.submit(_serialize_worker, payload, resources.native_threads_per_worker)
-                            pending[future] = (index, request)
-                        except Exception as exc:
-                            outcomes[index] = _failed(index, exc)
-                    if not pending:
-                        continue
-                    completed, _ = wait(pending, return_when=FIRST_COMPLETED)
-                    for future in completed:
-                        index, request = pending.pop(future)
-                        try:
-                            data = future.result()
-                        except BaseException as exc:
-                            status = (PublicationStatus.CANCELLED if isinstance(exc, (CancelledError, KeyboardInterrupt, SystemExit))
-                                      else PublicationStatus.FAILED)
-                            outcomes[index] = _failed(index, exc, status)
-                        else:
-                            outcomes[index] = _publish_outcome(context, index, request, data)
-        except BaseException as exc:
-            status = (PublicationStatus.CANCELLED if isinstance(exc, (CancelledError, KeyboardInterrupt, SystemExit))
-                      else PublicationStatus.FAILED)
-            for index, _ in accounts:
-                if outcomes[index] is None:
-                    outcomes[index] = _failed(index, exc, status)
+                    with executor.measure(ExecutionPhase.PUBLISH):
+                        outcomes[index] = _publish_outcome(context, index, requests[index], data)
+                    if checkpoint is not None and outcomes[index].status is PublicationStatus.PUBLISHED:
+                        checkpoint.save_publication(publication_keys[index], outcomes[index].reference)
+        if executor.on_progress is not None:
+            executor.notify(ExecutionProgress(
+                ExecutionPhase.PUBLISH, len(outcomes), len(outcomes),
+                sum(x.status in (PublicationStatus.FAILED, PublicationStatus.CANCELLED) for x in outcomes),
+                sum(x.status is PublicationStatus.UNKNOWN for x in outcomes), executor.stats.elapsed_seconds))
     return tuple(outcomes)
 
 

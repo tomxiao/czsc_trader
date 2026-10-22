@@ -1,7 +1,7 @@
 """Host-independent technical inspection identity, control and isolated admission."""
 from __future__ import annotations
 
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from enum import StrEnum
 from pathlib import Path, PurePosixPath
 from typing import Callable
@@ -16,6 +16,7 @@ import subprocess
 from .errors import RuntimeCompatibilityError
 from .identity import ImplementationDependency
 from .models import canonical_sha256
+from .resources import default_worker_count
 
 
 def _hash(value: str) -> None:
@@ -68,7 +69,7 @@ class InspectionProgress:
 @dataclass(frozen=True, slots=True)
 class InspectionControl:
     timeout_seconds: float | None = None
-    max_workers: int = 1
+    max_workers: int = field(default_factory=default_worker_count)
     cancelled: Callable[[], bool] | None = None
     on_progress: Callable[[InspectionProgress], None] | None = None
 

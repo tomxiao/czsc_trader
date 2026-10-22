@@ -11,7 +11,7 @@ import pytest
 from czsc_trader.application import publish_evidence, publish_evidence_many
 from czsc_trader.application import evidence_service
 from czsc_trader.research_tools import (
-    EvaluationEvidenceWrite, EvaluationResources, ExperimentRef, MaterialEvidenceWrite,
+    EvaluationEvidenceWrite, ExecutionResources, ExperimentRef, MaterialEvidenceWrite,
     PublicationError, PublicationOutcome, PublicationStatus,
 )
 from czsc_trader.research_tools.evaluation import validate_evaluation_evidence
@@ -60,7 +60,7 @@ def test_batch_matches_single_bytes_and_only_parent_publishes(publication, monke
     context, account = publication
     single = publish_evidence(context, account)
     expected = single.resolve(context.repository.root).read_bytes()
-    context.evaluation.resources = EvaluationResources(workers, 1)
+    context.evaluation.resources = ExecutionResources(workers, 1)
     # Retention must consume authenticated facts without loading strategy files.
     shutil.rmtree(account.request.strategy.source_root)
     owners = []
@@ -86,7 +86,7 @@ def test_batch_matches_single_bytes_and_only_parent_publishes(publication, monke
 @pytest.mark.parametrize("workers", [1, 2])
 def test_partial_authentication_failure_is_an_item_result(publication, workers):
     context, account = publication
-    context.evaluation.resources = EvaluationResources(workers, 1)
+    context.evaluation.resources = ExecutionResources(workers, 1)
     bad = replace(account, result=replace(account.result, result_hash="f" * 64))
     outcomes = publish_evidence_many(context, (account, bad))
     assert [item.status for item in outcomes] == [PublicationStatus.PUBLISHED, PublicationStatus.FAILED]
@@ -116,7 +116,7 @@ def test_invalid_batch_rejects_all_items_before_writing(publication, invalid):
 
 def test_worker_loss_fails_without_serial_retry_or_formal_writes(publication, monkeypatch):
     context, account = publication
-    context.evaluation.resources = EvaluationResources(2, 1)
+    context.evaluation.resources = ExecutionResources(2, 1)
     monkeypatch.setattr(evidence_service, "_serialize_worker", terminated_serializer)
 
     def no_retry(request):
@@ -162,7 +162,7 @@ def test_pre_install_write_failure_is_failed(publication, monkeypatch):
 @pytest.mark.parametrize("workers", [1, 2])
 def test_cancelled_serialization_never_publishes(publication, monkeypatch, workers):
     context, account = publication
-    context.evaluation.resources = EvaluationResources(workers, 1)
+    context.evaluation.resources = ExecutionResources(workers, 1)
     if workers == 1:
         def cancel(request):
             raise CancelledError("synthetic cancellation")
@@ -211,5 +211,5 @@ def test_publication_contracts_reject_ambiguous_outcomes(publication):
         with pytest.raises(ValueError, match="nonempty tuple"):
             publish_evidence_many(context, requests)
     context.evaluation.resources = object()
-    with pytest.raises(TypeError, match="EvaluationResources"):
+    with pytest.raises(TypeError, match="ExecutionResources"):
         publish_evidence_many(context, (account,))

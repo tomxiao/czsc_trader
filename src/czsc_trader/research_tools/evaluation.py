@@ -117,7 +117,6 @@ class EvaluationRequest:
     costs: tuple[EvaluationCost, ...]
     execution_data: BacktestExecutionData | None = None
     benchmark: EvaluationBenchmark = field(kw_only=True)
-    workers: int = 1
     frequency_window_days: int = 60
     execution_mode: str = "FULL"
     lineage: EvaluationLineage | None = None
@@ -138,8 +137,6 @@ class EvaluationRequest:
             raise TypeError("windows must be a tuple of EvaluationWindow")
         if not isinstance(self.costs, tuple) or not all(isinstance(item, EvaluationCost) for item in self.costs):
             raise TypeError("costs must be a tuple of EvaluationCost")
-        if type(self.workers) is not int or self.workers < 1:
-            raise ValueError("workers must be a positive integer")
         if isinstance(self.initial_cash, bool) or not isfinite(self.initial_cash) or self.initial_cash <= 0:
             raise ValueError("initial_cash must be positive and finite")
         if not isinstance(self.dependencies, tuple) or not all(isinstance(item, ImplementationDependency) for item in self.dependencies):
@@ -696,8 +693,6 @@ def _request_contract(request: EvaluationRequest, *, require_execution: bool = T
         raise ValueError("evaluation initial_cash must be positive and finite")
     if request.execution_mode != "FULL":
         raise ValueError("only FULL execution is allowed until equivalence is validated")
-    if type(request.workers) is not int or request.workers < 1:
-        raise ValueError("evaluation workers must be a positive integer")
     if type(request.frequency_window_days) is not int or request.frequency_window_days < 1:
         raise ValueError("frequency_window_days must be a positive integer")
     if type(request.benchmark) is not EvaluationBenchmark:
@@ -866,7 +861,7 @@ def _bind_evaluation_inputs(request: EvaluationRequest, *, dataflows) -> Evaluat
     return replace(request, input_bindings=bindings)
 
 
-def _evaluate_strategy(request: EvaluationRequest, *, dataflows: Dataflows) -> EvaluationResult:
+def _evaluate_strategy(request: EvaluationRequest, *, dataflows: Dataflows, workers: int = 1) -> EvaluationResult:
     """Evaluate one strategy without candidate admission, ranking or governance writes."""
 
     request = _prepare_evaluation_inputs(request, dataflows=dataflows)
@@ -890,7 +885,7 @@ def _evaluate_strategy(request: EvaluationRequest, *, dataflows: Dataflows) -> E
         periods=periods,
         fee_rate=request.costs[0].one_way_cost,
         init_cash=request.initial_cash,
-        workers=request.workers,
+        workers=workers,
         frequency_window_days=request.frequency_window_days,
         family_id=request.strategy.strategy_family_id,
         _dataflows=dataflows,
