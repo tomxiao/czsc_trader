@@ -1,0 +1,103 @@
+{
+  "delivery": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S015"
+    },
+    "stage": "MANDATE",
+    "revision": 3,
+    "content_sha256": "5563c98c1a2ed876b6d75b775437f35ec2c31777818ad0f9b67e89c90d30d90a"
+  },
+  "full": {
+    "type": "DeliveryValidation",
+    "status": "PASS",
+    "scope": "FULL",
+    "issues": [],
+    "stats": {
+      "type": "DeliveryValidationStats",
+      "unique_deliveries": 3,
+      "reference_visits": 3,
+      "recursive_expansions": 3,
+      "semantic_reuses": 0,
+      "files_hashed": 131,
+      "bytes_hashed": 1104111,
+      "elapsed_seconds": 0.18770120001863688
+    }
+  },
+  "experiment": {
+    "type": "ExperimentValidation",
+    "status": "PASS",
+    "scope": "REPORT_PUBLICATION",
+    "issues": [],
+    "report": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX009_20261022"
+      },
+      "evidence_id": "83e6fc8c04e338c08695288716c1e98e70afa0b052495b2effea963b0bf5a50e.json",
+      "sha256": "83e6fc8c04e338c08695288716c1e98e70afa0b052495b2effea963b0bf5a50e",
+      "media_type": "application/json",
+      "name": "experiment-report",
+      "schema": "experiment_report",
+      "schema_version": 1
+    }
+  },
+  "old_delivery_files_unchanged": 20,
+  "baseline_release_files_unchanged": true,
+  "default_items_exactly_inherited": true,
+  "research_execution_started": false,
+  "current_intent": {
+    "research_symbol": "159326.SZ",
+    "current_phase": "阶段一目标已修订；MANDATE/3完成，新的阶段二方案待批准",
+    "objective": "在固定共同窗口同时严格优于修复后S011-v1的累计净收益和最大回撤，并满足原开发池默认标准",
+    "mandate": {
+      "type": "DeliveryReference",
+      "batch": {
+        "type": "ResearchBatchRef",
+        "strategy_id": "S015"
+      },
+      "stage": "MANDATE",
+      "revision": 3,
+      "content_sha256": "5563c98c1a2ed876b6d75b775437f35ec2c31777818ad0f9b67e89c90d30d90a"
+    },
+    "comparative_contract": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX009_20261022"
+      },
+      "evidence_id": "fb35ccd6216e9caffb6e9966b8a6b9cc0bbac8d9917739a19c9d726cf00f3762.json",
+      "sha256": "fb35ccd6216e9caffb6e9966b8a6b9cc0bbac8d9917739a19c9d726cf00f3762",
+      "media_type": "application/json",
+      "name": "comparative_gate",
+      "schema": null,
+      "schema_version": null
+    },
+    "development_window": {
+      "id": "development",
+      "start": "2025-01-02",
+      "end": "2026-10-21",
+      "sessions": 434
+    },
+    "comparison_window": {
+      "id": "s011_common",
+      "start": "2025-02-06",
+      "end": "2026-10-21",
+      "sessions": 415
+    },
+    "baseline": {
+      "release_id": "S011-v1",
+      "release_hash": "5da4a999f28aa699ef60641bc26d34f66e124dda8236063aeeea9b18afa9e89e",
+      "package_hash": "d6f9bd05b4214109669edd1e49cbfd89d376d4fc993e0e5a27ae3fa07d84f055"
+    },
+    "selected_candidate": null,
+    "historical_candidate": "C0031；已有研究及技术证据保留，在新比较门下回撤不通过",
+    "data_boundary": "保留原获准ETF数据及S011固定基线引用；不扩大新候选输入或封存样本范围",
+    "next_gate": "用户批准新的阶段二方案后开展组件研究；阶段三、选型、冻结及PTE另行确认",
+    "proposal_path": "research/S015/experiments/EX009_20261022/protocols/next_stage_proposal.md"
+  }
+}

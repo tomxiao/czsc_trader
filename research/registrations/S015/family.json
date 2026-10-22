@@ -3,16 +3,55 @@
   "created_by": "RSCH",
   "name": "电网设备ETF默认目标新批次研究（S015）",
   "research_intent": {
-    "assessment_sha256": "020663f560ebd639bf0f01eeca03917e44f96f9d4f22bdf2abae64910374943f",
-    "current_phase": "阶段五C0031技术检验通过，INSPECTION/1已交付，等待精确冻结批准",
-    "data_boundary": "沿用S015已绑定同标的数据，不访问其它批次或封存样本",
-    "freeze_plan_sha256": "648dbe4ac6be74c8d09754848a244acd7c90eb8ea795e9e3fe5a237f58ca9930",
-    "inspection_delivery_sha256": "e7cd5099daa66dd8bf7eb5915f337be718f373a23a19aeb84c099ff80b3a46fa",
-    "inspection_sha256": "3befcccef077018bd4f04f05c7854d081b27dfd82326f986b307ad0590bc683b",
-    "next_gate": "用户批准C0031内容、检验报告、冻结计划及S015-v1后方可冻结；PTE及部署另批",
+    "baseline": {
+      "package_hash": "d6f9bd05b4214109669edd1e49cbfd89d376d4fc993e0e5a27ae3fa07d84f055",
+      "release_hash": "5da4a999f28aa699ef60641bc26d34f66e124dda8236063aeeea9b18afa9e89e",
+      "release_id": "S011-v1"
+    },
+    "comparative_contract": {
+      "evidence_id": "fb35ccd6216e9caffb6e9966b8a6b9cc0bbac8d9917739a19c9d726cf00f3762.json",
+      "experiment": {
+        "experiment_id": "EX009_20261022",
+        "strategy_id": "S015",
+        "type": "ExperimentRef"
+      },
+      "media_type": "application/json",
+      "name": "comparative_gate",
+      "schema": null,
+      "schema_version": null,
+      "sha256": "fb35ccd6216e9caffb6e9966b8a6b9cc0bbac8d9917739a19c9d726cf00f3762",
+      "type": "EvidenceRef"
+    },
+    "comparison_window": {
+      "end": "2026-10-21",
+      "id": "s011_common",
+      "sessions": 415,
+      "start": "2025-02-06"
+    },
+    "current_phase": "阶段一目标已修订；MANDATE/3完成，新的阶段二方案待批准",
+    "data_boundary": "保留原获准ETF数据及S011固定基线引用；不扩大新候选输入或封存样本范围",
+    "development_window": {
+      "end": "2026-10-21",
+      "id": "development",
+      "sessions": 434,
+      "start": "2025-01-02"
+    },
+    "historical_candidate": "C0031；已有研究及技术证据保留，在新比较门下回撤不通过",
+    "mandate": {
+      "batch": {
+        "strategy_id": "S015",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "5563c98c1a2ed876b6d75b775437f35ec2c31777818ad0f9b67e89c90d30d90a",
+      "revision": 3,
+      "stage": "MANDATE",
+      "type": "DeliveryReference"
+    },
+    "next_gate": "用户批准新的阶段二方案后开展组件研究；阶段三、选型、冻结及PTE另行确认",
+    "objective": "在固定共同窗口同时严格优于修复后S011-v1的累计净收益和最大回撤，并满足原开发池默认标准",
+    "proposal_path": "research/S015/experiments/EX009_20261022/protocols/next_stage_proposal.md",
     "research_symbol": "159326.SZ",
-    "selected_candidate": "C0031",
-    "window": "2025-01-02至2026-10-21；此前75日预热"
+    "selected_candidate": null
   },
   "research_state": "RESEARCHING",
   "schema_version": 2,
@@ -20,5 +59,5 @@
     "159326.SZ"
   ],
   "strategy_id": "S015",
-  "updated_at": "2026-10-22T11:48:55+08:00"
+  "updated_at": "2026-10-22T18:53:23+08:00"
 }

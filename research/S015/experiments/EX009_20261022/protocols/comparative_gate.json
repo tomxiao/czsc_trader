@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "kind": "RSCH_FIXED_BASELINE_COMPARISON",
+  "strategy_id": "S015",
+  "authorization": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX009_20261022"
+    },
+    "evidence_id": "6193976f494e2ca374492efa856caf1f3c1c43ca1b4f587e861508016cd23a85.json",
+    "sha256": "6193976f494e2ca374492efa856caf1f3c1c43ca1b4f587e861508016cd23a85",
+    "media_type": "application/json",
+    "name": "authorization",
+    "schema": null,
+    "schema_version": null
+  },
+  "original_defaults_source": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S015"
+    },
+    "stage": "MANDATE",
+    "revision": 2,
+    "content_sha256": "997d7b956b4f30871b92e9e4bd4a25f7081af15bdb58d19f6a24d1b72c5c58f2"
+  },
+  "default_window": {
+    "id": "development",
+    "start": "2025-01-02",
+    "end": "2026-10-21",
+    "sessions": 434
+  },
+  "comparison_window": {
+    "id": "s011_common",
+    "start": "2025-02-06",
+    "end": "2026-10-21",
+    "sessions": 415
+  },
+  "account_initialization": {
+    "initial_cash": 100000,
+    "quantity": 0,
+    "independent_account_per_window": true
+  },
+  "one_way_cost": 0.001,
+  "price_basis": "HFQ_RESEARCH",
+  "execution_contract": "DAILY_RANGE_V3",
+  "force_end_liquidation": false,
+  "baseline_reference": {
+    "release_id": "S011-v1",
+    "release_hash": "5da4a999f28aa699ef60641bc26d34f66e124dda8236063aeeea9b18afa9e89e",
+    "package_hash": "d6f9bd05b4214109669edd1e49cbfd89d376d4fc993e0e5a27ae3fa07d84f055",
+    "release_archive": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX009_20261022"
+      },
+      "evidence_id": "29d1fe7b3d0cdc8f7e3542a3298d265bdb7e015417710991b6b0363a99f9a295.zip",
+      "sha256": "29d1fe7b3d0cdc8f7e3542a3298d265bdb7e015417710991b6b0363a99f9a295",
+      "media_type": "application/zip",
+      "name": "pinned_s011_release",
+      "schema": null,
+      "schema_version": null
+    },
+    "account_archive": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX008_20261022"
+      },
+      "evidence_id": "f3c88c2ebc3452c0e490496b239bc65af3246653d0defe33e00f38011b2b0b16.zip",
+      "sha256": "f3c88c2ebc3452c0e490496b239bc65af3246653d0defe33e00f38011b2b0b16",
+      "media_type": "application/zip",
+      "name": "S011-v1_complete_backtest",
+      "schema": null,
+      "schema_version": null
+    },
+    "release_files_sha256": {
+      "strategies/S011/releases/v1/release_manifest.json": "a1ef62bba63ae5f503f737fd013a600ce3c8e2f98899f972846ab01744ae2a40",
+      "strategies/S011/releases/v1/runtime_binding.json": "2296fa83903000f3132b512a069fb51457d5c558f066824454117e3653eaac52",
+      "strategies/S011/releases/v1/src/strategy_runtime/calculation.py": "edd27ec4d3d5641320ada2774a5661520b35639dc704bcf9e71cf1162dc25571",
+      "strategies/S011/releases/v1/src/strategy_runtime/strategies/s011_reversal.py": "39fcbb5aa5e751c3f286b667eba285d20a6078c7fd85a85dfc5a911c443674af",
+      "strategies/S011/versions/v1.json": "4540d2a6b331189499c28aef635dcd0f47edf0682cd64eb30f0282f17a4a3cc0",
+      "strategies/deployments/S011-v1.json": "2feb54b3502085c7b655cb8b6f91059eac895f554acd3ea41568c3c75f2764ce"
+    },
+    "execution_fingerprint": "52d8dadf23685e6cd6f2f37d846e4001eca200187c1ee301dbee28d045a31529"
+  },
+  "conditions": [
+    {
+      "metric": "cumulative_net_return",
+      "operator": "GT",
+      "baseline_value": 0.9158029150000013,
+      "formula": "final_equity / initial_cash - 1"
+    },
+    {
+      "metric": "maximum_drawdown_magnitude",
+      "operator": "LT",
+      "baseline_value": 0.07248663749114126,
+      "formula": "max(1 - equity / cumulative_max_including_initial_cash)"
+    }
+  ],
+  "gate_aggregation": "ALL",
+  "comparison_uses_unrounded_values": true,
+  "equality_passes": false,
+  "overall_acceptance": "development_defaults_PASS AND s011_common_comparison_PASS",
+  "unknown_or_incomparable": "NOT_PROVEN; cannot claim acceptance",
+  "scope": "center only, standard cost, whole common window; no new annual, perturbation or stress dominance gate",
+  "implementation_note": "RSCH computes this explicit separate-window gate; unchanged default PerformanceRequirement alone is insufficient.",
+  "current_stage": "MANDATE_COMPLETE_NEXT_RESEARCH_PROPOSED_ONLY"
+}

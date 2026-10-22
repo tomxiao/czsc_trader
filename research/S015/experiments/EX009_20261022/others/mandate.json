@@ -1,0 +1,678 @@
+{
+  "type": "ResearchMandate",
+  "items": [
+    {
+      "type": "MandateItem",
+      "item_id": "symbol",
+      "kind": "TRADABLE_SYMBOL",
+      "statement": "仅159326.SZ，单标的收益型择时",
+      "confirmation": {
+        "type": "ConfirmationRecord",
+        "status": "CONFIRMED",
+        "source": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX002_20261021"
+          },
+          "evidence_id": "b1818cac88cd6544e6f6cc8d565db1a0f5df8454531d477c6dc8b110e407d670.json",
+          "sha256": "b1818cac88cd6544e6f6cc8d565db1a0f5df8454531d477c6dc8b110e407d670",
+          "media_type": "application/json",
+          "name": "phase2_authorization",
+          "schema": null,
+          "schema_version": null
+        }
+      },
+      "requirement": null
+    },
+    {
+      "type": "MandateItem",
+      "item_id": "performance",
+      "kind": "OBJECTIVE",
+      "statement": "完整采用2026-10-21用户确认的中心经济、双频率、参数扰动和费用压力条件",
+      "confirmation": {
+        "type": "ConfirmationRecord",
+        "status": "CONFIRMED",
+        "source": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX002_20261021"
+          },
+          "evidence_id": "b1818cac88cd6544e6f6cc8d565db1a0f5df8454531d477c6dc8b110e407d670.json",
+          "sha256": "b1818cac88cd6544e6f6cc8d565db1a0f5df8454531d477c6dc8b110e407d670",
+          "media_type": "application/json",
+          "name": "phase2_authorization",
+          "schema": null,
+          "schema_version": null
+        }
+      },
+      "requirement": {
+        "type": "PerformanceRequirement",
+        "targets": [
+          {
+            "type": "ResearchTarget",
+            "target_id": "center-positive",
+            "metric": "NET_ANNUAL_RETURN",
+            "lower": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.5,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "NET_ANNUAL_RETURN",
+              "operator": "GT",
+              "value": 0.0
+            },
+            "scope": "STANDARD",
+            "one_way_cost": 0.001
+          },
+          {
+            "type": "ResearchTarget",
+            "target_id": "center-nonpositive",
+            "metric": "NET_ANNUAL_RETURN",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 0.0,
+              "inclusive": false
+            },
+            "upper": null,
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "NET_ANNUAL_RETURN",
+              "operator": "LE",
+              "value": 0.0
+            },
+            "scope": "STANDARD",
+            "one_way_cost": 0.001
+          },
+          {
+            "type": "ResearchTarget",
+            "target_id": "center-relative-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "BenchmarkBound",
+              "multiplier": 0.8,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": 0.001
+          },
+          {
+            "type": "ResearchTarget",
+            "target_id": "center-cap",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.25,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": 0.001
+          },
+          {
+            "type": "ResearchTarget",
+            "target_id": "median",
+            "metric": "FREQUENCY_MEDIAN",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 6.0,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": 0.001
+          },
+          {
+            "type": "FrequencyCoverageTarget",
+            "target_id": "coverage",
+            "window_days": 60,
+            "minimum_closed_cycles": 3,
+            "minimum_numerator": 9,
+            "minimum_denominator": 10
+          },
+          {
+            "type": "ParameterGroupTarget",
+            "target_id": "parameters",
+            "required_points": 32,
+            "minimum_joint_passes": 26,
+            "joint_targets": [
+              {
+                "type": "ResearchTarget",
+                "target_id": "point-positive",
+                "metric": "NET_ANNUAL_RETURN",
+                "lower": {
+                  "type": "BenchmarkBound",
+                  "multiplier": 1.25,
+                  "inclusive": true
+                },
+                "upper": null,
+                "when": {
+                  "type": "BenchmarkCondition",
+                  "metric": "NET_ANNUAL_RETURN",
+                  "operator": "GT",
+                  "value": 0.0
+                },
+                "scope": "STANDARD",
+                "one_way_cost": 0.001
+              },
+              {
+                "type": "ResearchTarget",
+                "target_id": "point-nonpositive",
+                "metric": "NET_ANNUAL_RETURN",
+                "lower": {
+                  "type": "ConstantBound",
+                  "value": 0.0,
+                  "inclusive": false
+                },
+                "upper": null,
+                "when": {
+                  "type": "BenchmarkCondition",
+                  "metric": "NET_ANNUAL_RETURN",
+                  "operator": "LE",
+                  "value": 0.0
+                },
+                "scope": "STANDARD",
+                "one_way_cost": 0.001
+              },
+              {
+                "type": "ResearchTarget",
+                "target_id": "point-relative-dd",
+                "metric": "DRAWDOWN_MAGNITUDE",
+                "lower": null,
+                "upper": {
+                  "type": "BenchmarkBound",
+                  "multiplier": 0.9,
+                  "inclusive": true
+                },
+                "when": null,
+                "scope": "STANDARD",
+                "one_way_cost": 0.001
+              }
+            ],
+            "all_point_targets": [
+              {
+                "type": "ResearchTarget",
+                "target_id": "point-cap",
+                "metric": "DRAWDOWN_MAGNITUDE",
+                "lower": null,
+                "upper": {
+                  "type": "ConstantBound",
+                  "value": 0.25,
+                  "inclusive": true
+                },
+                "when": null,
+                "scope": "STANDARD",
+                "one_way_cost": 0.001
+              }
+            ]
+          },
+          {
+            "type": "ResearchTarget",
+            "target_id": "stress-profit",
+            "metric": "NET_ANNUAL_RETURN",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 0.0,
+              "inclusive": false
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          {
+            "type": "ResearchTarget",
+            "target_id": "stress-excess",
+            "metric": "NET_ANNUAL_RETURN",
+            "lower": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.0,
+              "inclusive": false
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          {
+            "type": "ResearchTarget",
+            "target_id": "stress-dd-positive",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.0,
+              "inclusive": false
+            },
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "DRAWDOWN_MAGNITUDE",
+              "operator": "GT",
+              "value": 0.0
+            },
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          {
+            "type": "ResearchTarget",
+            "target_id": "stress-dd-zero",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.0,
+              "inclusive": true
+            },
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "DRAWDOWN_MAGNITUDE",
+              "operator": "LE",
+              "value": 0.0
+            },
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          {
+            "type": "ResearchTarget",
+            "target_id": "stress-cap",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.25,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          }
+        ]
+      }
+    },
+    {
+      "type": "MandateItem",
+      "item_id": "frequency-window",
+      "kind": "EXECUTION",
+      "statement": "完整滚动60交易日",
+      "confirmation": {
+        "type": "ConfirmationRecord",
+        "status": "CONFIRMED",
+        "source": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX002_20261021"
+          },
+          "evidence_id": "b1818cac88cd6544e6f6cc8d565db1a0f5df8454531d477c6dc8b110e407d670.json",
+          "sha256": "b1818cac88cd6544e6f6cc8d565db1a0f5df8454531d477c6dc8b110e407d670",
+          "media_type": "application/json",
+          "name": "phase2_authorization",
+          "schema": null,
+          "schema_version": null
+        }
+      },
+      "requirement": {
+        "type": "NumericRequirement",
+        "metric": "frequency_window_days",
+        "unit": "sessions",
+        "lower": 60.0,
+        "upper": 60.0
+      }
+    },
+    {
+      "type": "MandateItem",
+      "item_id": "default-execution",
+      "kind": "EXECUTION",
+      "statement": "日频T决策T+1执行；只做多、不加杠杆；限价买、市价卖；标准每侧0.1%、压力每侧0.2%",
+      "confirmation": {
+        "type": "ConfirmationRecord",
+        "status": "CONFIRMED",
+        "source": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX002_20261021"
+          },
+          "evidence_id": "b1818cac88cd6544e6f6cc8d565db1a0f5df8454531d477c6dc8b110e407d670.json",
+          "sha256": "b1818cac88cd6544e6f6cc8d565db1a0f5df8454531d477c6dc8b110e407d670",
+          "media_type": "application/json",
+          "name": "phase2_authorization",
+          "schema": null,
+          "schema_version": null
+        }
+      },
+      "requirement": null
+    },
+    {
+      "type": "MandateItem",
+      "item_id": "window",
+      "kind": "HORIZON",
+      "statement": "RSCH自主固定2025-01-02至2026-10-21开发池，预热2024-09-09至2024-12-31；不启用封存验证",
+      "confirmation": {
+        "type": "ConfirmationRecord",
+        "status": "CONFIRMED",
+        "source": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX002_20261021"
+          },
+          "evidence_id": "b1818cac88cd6544e6f6cc8d565db1a0f5df8454531d477c6dc8b110e407d670.json",
+          "sha256": "b1818cac88cd6544e6f6cc8d565db1a0f5df8454531d477c6dc8b110e407d670",
+          "media_type": "application/json",
+          "name": "phase2_authorization",
+          "schema": null,
+          "schema_version": null
+        }
+      },
+      "requirement": null
+    },
+    {
+      "type": "MandateItem",
+      "item_id": "benchmark",
+      "kind": "BENCHMARK",
+      "statement": "同标的可执行限价BuyHold，具体限价参数已确认；持有至期末估值，不强制卖出",
+      "confirmation": {
+        "type": "ConfirmationRecord",
+        "status": "CONFIRMED",
+        "source": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX002_20261021"
+          },
+          "evidence_id": "b1818cac88cd6544e6f6cc8d565db1a0f5df8454531d477c6dc8b110e407d670.json",
+          "sha256": "b1818cac88cd6544e6f6cc8d565db1a0f5df8454531d477c6dc8b110e407d670",
+          "media_type": "application/json",
+          "name": "phase2_authorization",
+          "schema": null,
+          "schema_version": null
+        }
+      },
+      "requirement": {
+        "type": "BenchmarkRequirement",
+        "benchmark": {
+          "type": "EvaluationBenchmark",
+          "execution": {
+            "type": "LimitBuyHold",
+            "lot_size": 100,
+            "premium": 0.01,
+            "price_tick": 0.001,
+            "price_limit_ratio": 0.1,
+            "maximum_order_quantity": 1000000
+          }
+        }
+      }
+    },
+    {
+      "type": "MandateItem",
+      "item_id": "cash",
+      "kind": "EXECUTION",
+      "statement": "初始资金10万元、初始空仓；策略与基准一致",
+      "confirmation": {
+        "type": "ConfirmationRecord",
+        "status": "CONFIRMED",
+        "source": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX002_20261021"
+          },
+          "evidence_id": "b1818cac88cd6544e6f6cc8d565db1a0f5df8454531d477c6dc8b110e407d670.json",
+          "sha256": "b1818cac88cd6544e6f6cc8d565db1a0f5df8454531d477c6dc8b110e407d670",
+          "media_type": "application/json",
+          "name": "phase2_authorization",
+          "schema": null,
+          "schema_version": null
+        }
+      },
+      "requirement": {
+        "type": "NumericRequirement",
+        "metric": "initial_cash",
+        "unit": "CNY",
+        "lower": 100000.0,
+        "upper": 100000.0
+      }
+    },
+    {
+      "type": "MandateItem",
+      "item_id": "execution-detail",
+      "kind": "EXECUTION",
+      "statement": "初始资金10万元，单标的仓位[0,100%]，不做空、不借款；策略与基准共用T+1执行、限价规划及费用。买限价参考T收盘上涨1%，按0.001档位及涨跌停边界规划；未成交不得假定成交。卖出市价，完整成交由SRT/TXE及已准备分钟数据决定。此处1%等具体参数是已确认，不从S013合同自动继承。T日17:30 Asia/Shanghai作日频决策，T+1执行；来源就绪须实际核验，未就绪明确失败，不回填信号。",
+      "confirmation": {
+        "type": "ConfirmationRecord",
+        "status": "CONFIRMED",
+        "source": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX002_20261021"
+          },
+          "evidence_id": "b1818cac88cd6544e6f6cc8d565db1a0f5df8454531d477c6dc8b110e407d670.json",
+          "sha256": "b1818cac88cd6544e6f6cc8d565db1a0f5df8454531d477c6dc8b110e407d670",
+          "media_type": "application/json",
+          "name": "phase2_authorization",
+          "schema": null,
+          "schema_version": null
+        }
+      },
+      "requirement": null
+    },
+    {
+      "type": "MandateItem",
+      "item_id": "data",
+      "kind": "DATA_PERMISSION",
+      "statement": "现有Tushare/DFLS，仅159326.SZ日线（研究与执行价格分开）；后续同标的分钟数据准备需保留质量证据。指数、成分股、PCF、资金流及宏观等尚未列入获批数据范围。",
+      "confirmation": {
+        "type": "ConfirmationRecord",
+        "status": "CONFIRMED",
+        "source": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX002_20261021"
+          },
+          "evidence_id": "b1818cac88cd6544e6f6cc8d565db1a0f5df8454531d477c6dc8b110e407d670.json",
+          "sha256": "b1818cac88cd6544e6f6cc8d565db1a0f5df8454531d477c6dc8b110e407d670",
+          "media_type": "application/json",
+          "name": "phase2_authorization",
+          "schema": null,
+          "schema_version": null
+        }
+      },
+      "requirement": null
+    },
+    {
+      "type": "MandateItem",
+      "item_id": "resources",
+      "kind": "RESOURCE",
+      "statement": "依现行指南默认8进程、每进程原生线程1；不启动额外依赖安装、外部服务或生产操作",
+      "confirmation": {
+        "type": "ConfirmationRecord",
+        "status": "CONFIRMED",
+        "source": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX002_20261021"
+          },
+          "evidence_id": "b1818cac88cd6544e6f6cc8d565db1a0f5df8454531d477c6dc8b110e407d670.json",
+          "sha256": "b1818cac88cd6544e6f6cc8d565db1a0f5df8454531d477c6dc8b110e407d670",
+          "media_type": "application/json",
+          "name": "phase2_authorization",
+          "schema": null,
+          "schema_version": null
+        }
+      },
+      "requirement": null
+    },
+    {
+      "type": "MandateItem",
+      "item_id": "dual-superiority-objective",
+      "kind": "OBJECTIVE",
+      "statement": "415日共同窗口内，中心累计净收益严格高于固定S011-v1、最大回撤幅度严格低于固定S011-v1；同时满足原434日开发池全部默认标准。精确窗口、原始数值和基线哈希绑定comparative_gate证据；不由原默认目标集合自动代算。",
+      "confirmation": {
+        "type": "ConfirmationRecord",
+        "status": "CONFIRMED",
+        "source": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX009_20261022"
+          },
+          "evidence_id": "6193976f494e2ca374492efa856caf1f3c1c43ca1b4f587e861508016cd23a85.json",
+          "sha256": "6193976f494e2ca374492efa856caf1f3c1c43ca1b4f587e861508016cd23a85",
+          "media_type": "application/json",
+          "name": "authorization",
+          "schema": null,
+          "schema_version": null
+        }
+      },
+      "requirement": null
+    },
+    {
+      "type": "MandateItem",
+      "item_id": "fixed-s011-baseline",
+      "kind": "CONSTRAINT",
+      "statement": "S011-v1固定release_hash=5da4a999f28aa699ef60641bc26d34f66e124dda8236063aeeea9b18afa9e89e、package_hash=d6f9bd05b4214109669edd1e49cbfd89d376d4fc993e0e5a27ae3fa07d84f055；原始源码和账户归档固定，将来同名版本更新不自动替换。",
+      "confirmation": {
+        "type": "ConfirmationRecord",
+        "status": "CONFIRMED",
+        "source": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX009_20261022"
+          },
+          "evidence_id": "6193976f494e2ca374492efa856caf1f3c1c43ca1b4f587e861508016cd23a85.json",
+          "sha256": "6193976f494e2ca374492efa856caf1f3c1c43ca1b4f587e861508016cd23a85",
+          "media_type": "application/json",
+          "name": "authorization",
+          "schema": null,
+          "schema_version": null
+        }
+      },
+      "requirement": null
+    },
+    {
+      "type": "MandateItem",
+      "item_id": "separate-comparison-window",
+      "kind": "HORIZON",
+      "statement": "共同窗口2025-02-06至2026-10-21，415日，另起10万元空仓账户。原开发池2025-01-02至2026-10-21及75日预热不变；不得把继承持仓的切片冒充独立比较。",
+      "confirmation": {
+        "type": "ConfirmationRecord",
+        "status": "CONFIRMED",
+        "source": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX009_20261022"
+          },
+          "evidence_id": "6193976f494e2ca374492efa856caf1f3c1c43ca1b4f587e861508016cd23a85.json",
+          "sha256": "6193976f494e2ca374492efa856caf1f3c1c43ca1b4f587e861508016cd23a85",
+          "media_type": "application/json",
+          "name": "authorization",
+          "schema": null,
+          "schema_version": null
+        }
+      },
+      "requirement": null
+    },
+    {
+      "type": "MandateItem",
+      "item_id": "mechanism-freedom",
+      "kind": "OBJECTIVE",
+      "statement": "不限定沿用C0031或S011机制；获准研究阶段内可重新选择既有许可数据中的信息、入退出场信号和仓位逻辑，固定执行约束不自动改变。",
+      "confirmation": {
+        "type": "ConfirmationRecord",
+        "status": "CONFIRMED",
+        "source": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX009_20261022"
+          },
+          "evidence_id": "6193976f494e2ca374492efa856caf1f3c1c43ca1b4f587e861508016cd23a85.json",
+          "sha256": "6193976f494e2ca374492efa856caf1f3c1c43ca1b4f587e861508016cd23a85",
+          "media_type": "application/json",
+          "name": "authorization",
+          "schema": null,
+          "schema_version": null
+        }
+      },
+      "requirement": null
+    },
+    {
+      "type": "MandateItem",
+      "item_id": "baseline-access-and-exposure",
+      "kind": "DATA_PERMISSION",
+      "statement": "可引用已获准S011基线实现、定义及账户证据；不自动将S011的沪深300/SPX输入纳入S015新候选，新增来源另批。所有重叠历史均已见，不作为新的独立验证。",
+      "confirmation": {
+        "type": "ConfirmationRecord",
+        "status": "CONFIRMED",
+        "source": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX009_20261022"
+          },
+          "evidence_id": "6193976f494e2ca374492efa856caf1f3c1c43ca1b4f587e861508016cd23a85.json",
+          "sha256": "6193976f494e2ca374492efa856caf1f3c1c43ca1b4f587e861508016cd23a85",
+          "media_type": "application/json",
+          "name": "authorization",
+          "schema": null,
+          "schema_version": null
+        }
+      },
+      "requirement": null
+    },
+    {
+      "type": "MandateItem",
+      "item_id": "current-authorization",
+      "kind": "RESOURCE",
+      "statement": "本次确认仅完成新目标约定与后续研究方案；新的阶段二执行待批准，原C0031选型与技术检验保留为历史、不继续等待该候选冻结；冻结与PTE另批。",
+      "confirmation": {
+        "type": "ConfirmationRecord",
+        "status": "CONFIRMED",
+        "source": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX009_20261022"
+          },
+          "evidence_id": "6193976f494e2ca374492efa856caf1f3c1c43ca1b4f587e861508016cd23a85.json",
+          "sha256": "6193976f494e2ca374492efa856caf1f3c1c43ca1b4f587e861508016cd23a85",
+          "media_type": "application/json",
+          "name": "authorization",
+          "schema": null,
+          "schema_version": null
+        }
+      },
+      "requirement": null
+    }
+  ]
+}
