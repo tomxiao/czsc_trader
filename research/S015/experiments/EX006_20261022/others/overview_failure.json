@@ -1,0 +1,26 @@
+{
+  "status": "FAILED",
+  "operation": "get_research_overview",
+  "exception": "ResearchOverviewError",
+  "code": "INVALID_RETAINED_RECORD",
+  "reported_path": "research/S015/batch.json",
+  "message": "published evidence must be files",
+  "trigger_path": "research/S015/assets/evidence/EX006_20261022/inspection",
+  "cause": "research_overview_service._accounts rejects every evidence-owner child directory; public inspect_candidate legitimately stores ResearchEvidenceRef objects in inspection/.",
+  "source": "src/czsc_trader/application/research_overview_service.py:270-281",
+  "impact": "Fresh overview unavailable. No replacement overview or inferred counters produced. Passing inspection and immutable INSPECTION/1 remain retained.",
+  "platform_changes": "NONE",
+  "freeze": "NOT_EXECUTED",
+  "required_followup": "DEV review of nested inspection-evidence compatibility and repeated cross-operation authentication costs.",
+  "timing": {
+    "selection_process_start_local": "2026-10-22T10:55:00+08:00",
+    "inspection_process_start_local": "2026-10-22T11:12:54+08:00",
+    "inspection_first_evidence_written_local": "2026-10-22T11:30:42.7690395+08:00",
+    "inspection_report_written_local": "2026-10-22T11:30:52.9500340+08:00",
+    "technical_evidence_write_interval_seconds": 10.1809945,
+    "technical_interval_basis": "File last-write timestamps, an estimate of the technical body, not an instrumented function benchmark.",
+    "publication_seconds": 1033.6132245000917,
+    "publication_observed_working_set_bytes": 24839118848,
+    "mechanism": "Each public decision/inspection/publication invocation starts its own validation session; decoded/certified account cache is not shared across invocations."
+  }
+}

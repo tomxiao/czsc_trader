@@ -2,8 +2,8 @@
 
 ## 当前状态
 
-- 身份RSCH；标的159326.SZ；分支`codex/159326-new-research`。用户已完成阶段三补充授权，并以“同意，这是合理的做法”批准阶段四机制覆盖与比较。
-- 阶段三目标已完成；来源交付[CANDIDATES/2](deliveries/CANDIDATES/2/report.md)，业务COMPLETE、FULL与实验REPORT_PUBLICATION校验PASS。阶段四EX005已完成，完整覆盖98个交接身份；最新交付为[ASSESSMENT/1](deliveries/ASSESSMENT/1/report.md)，FULL与REPORT_PUBLICATION均PASS。
+- 身份RSCH；标的159326.SZ；分支`codex/159326-new-research`。用户已明确选择C0031进入阶段五；技术检验及INSPECTION/1交付完成，精确冻结计划待批准；收尾概览刷新失败，详见文末。
+- 阶段三目标已完成；来源交付[CANDIDATES/2](deliveries/CANDIDATES/2/report.md)，业务COMPLETE、FULL与实验REPORT_PUBLICATION校验PASS。阶段四EX005已完成，完整覆盖98个交接身份；阶段四交付为[ASSESSMENT/1](deliveries/ASSESSMENT/1/report.md)，FULL与REPORT_PUBLICATION均PASS。
 - 开发池固定2025-01-02至2026-10-21共434日，此前75日仅预热，保留完整2025自然年。全部均属已见开发信息，没有独立封存验证结论。
 
 ## 原阶段三结果（EX003，保留历史）
@@ -74,3 +74,16 @@ EX003及CANDIDATES/1原件保持不可变。用户随后明确批准阶段三补
 - [事前协议](experiments/EX005_20261022/protocols/stage4.json)、[实验报告](experiments/EX005_20261022/report.md)、[独立数值核验](experiments/EX005_20261022/others/final_checks.json)、[交付验证](experiments/EX005_20261022/others/delivery_validation.json)、[研究概览](experiments/EX005_20261022/others/overview_after.json)。聚焦验证已完成，未执行仓库级全量回归。
 - ASSESSMENT/1内容身份：`020663f560ebd639bf0f01eeca03917e44f96f9d4f22bdf2abae64910374943f`；精确前驱为CANDIDATES/2与MANDATE/2。正式资产位于`assets/runs/EX005_20261022/`、`assets/evidence/EX005_20261022/`与`assets/deliveries/ASSESSMENT/1/`，需独立保留。
 - 前文阶段三“未执行阶段四”等措辞均为历史时点。当前等待用户选择进入阶段五的具体候选、补证或暂不推进；没有记录用户选型、启动技术检验、冻结、PTE或生产，也未合并master、打tag或推送。
+
+## 阶段五检验交付完成、概览刷新失败（EX006，2026-10-22）
+
+- 用户明确选择C0031进入阶段五，公共决定`S015-select-C0031-20261022`关联ASSESSMENT/1与原候选内容；没有记录冻结批准。
+- [INSPECTION/1](deliveries/INSPECTION/1/report.md)已发布，8项技术检查全部PASS。标准费用及费用翻倍两个434日坐标覆盖齐全；4组信号比较、4组经济账本比较与4次账本审计全部通过，容差0。原源码、参数及输入绑定保持不变。
+- 候选内容：`6a6e536c6c2f017c43d238633267c05f1f2b9d647aa22d52506d9e8e0a81d580`；技术报告：`3befcccef077018bd4f04f05c7854d081b27dfd82326f986b307ad0590bc683b`；冻结计划：`648dbe4ac6be74c8d09754848a244acd7c90eb8ea795e9e3fe5a237f58ca9930`；INSPECTION/1：`e7cd5099daa66dd8bf7eb5915f337be718f373a23a19aeb84c099ff80b3a46fa`。
+- 拟冻结S015-v1，无父版本；选择截止2026-10-21，前瞻数据分界2026-10-22，后者不是PTE或生产启动日期。未读取分界之后行情。
+- [精确批准对象](experiments/EX006_20261022/others/freeze_approval_subject.json)、[冻结计划](experiments/EX006_20261022/others/freeze_plan.json)、[实际检查](experiments/EX006_20261022/others/inspection_report.json)、[发布验证](experiments/EX006_20261022/others/delivery_validation.json)、[公开报告核验](experiments/EX006_20261022/others/publication_checks.json)。assemble_delivery完成本节点FULL内容、前驱INTEGRITY及发布一致性检查，REPORT_PUBLICATION通过；未另行重复validate_delivery(FULL)或阶段四统计复算。
+- 收尾get_research_overview失败：`INVALID_RETAINED_RECORD / published evidence must be files`。概览账户计数器拒绝任何证据子目录，与inspect_candidate合法生成的`inspection/`布局不兼容。[失败记录](experiments/EX006_20261022/others/overview_failure.json)及[公共证据引用](experiments/EX006_20261022/others/overview_failure_refs.json)已保留；没有伪造替代概览或当前计数。旧EX005概览只代表阶段四历史时点。
+- 本轮耗时主要来自三个公共入口分别认证完整历史交付链，缓存仅在单次调用中复用，各次约17至18分钟；发布实际耗时1033.613秒。技术检验主体首末证据落盘间隔约10.18秒，仅为文件时间估算；发布末期观测内存约25GB。平台实现未修改，建议DEV独立处理重复认证开销及概览布局兼容。
+- 已见样本、选择偏差、区间跨零、持有天数未扰动、日范围成交模型、历史17:30数据链未认证及周期资金合同等限制全部保留。技术通过不增加独立收益证据。
+- 实际资产：`assets/evidence/EX006_20261022/inspection/`及该实验其他evidence、`assets/runs/EX006_20261022/replay_requests.pkl`、`assets/deliveries/INSPECTION/1/`；用户决定位于`decisions/`，确认源位于`decisions/objects/`。须独立保留Git忽略的资产。
+- 当前状态：技术检验和待批准交付完成；概览刷新失败；尚未冻结。下一步由用户决定精确冻结批准及DEV修复安排。冻结、PTE、部署、生产、合并master、tag及推送均未执行；前文未选型/未开始阶段五等为历史时点。

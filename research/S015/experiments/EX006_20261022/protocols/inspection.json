@@ -1,0 +1,91 @@
+{
+  "purpose": "Technical delivery inspection, not a new search or independent validation sample",
+  "candidate": {
+    "strategy_id": "S015",
+    "candidate_id": "C0031"
+  },
+  "content_sha256": "6a6e536c6c2f017c43d238633267c05f1f2b9d647aa22d52506d9e8e0a81d580",
+  "protocol": {
+    "type": "InspectionProtocol",
+    "coordinates": [
+      {
+        "type": "InspectionCoordinate",
+        "window_id": "full",
+        "scenario_id": "standard"
+      },
+      {
+        "type": "InspectionCoordinate",
+        "window_id": "full",
+        "scenario_id": "fee_x2"
+      }
+    ],
+    "tolerance": 0.0,
+    "method_version": "candidate-inspection-v1"
+  },
+  "references": [
+    {
+      "type": "EvaluationEvidenceRef",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX003_20261021"
+        },
+        "evidence_id": "99521e89055c860ed93c79ed3f089a9af1efefd1c9d2b60a2c71b346722eb6f3.json",
+        "sha256": "99521e89055c860ed93c79ed3f089a9af1efefd1c9d2b60a2c71b346722eb6f3",
+        "media_type": "application/json",
+        "name": "grid_0031",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "evaluation_ids": [
+        "60c054862ed69cac187ce40fc6447f4f59d56f905f19f4cdc9f206a639b62690"
+      ]
+    },
+    {
+      "type": "EvaluationEvidenceRef",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX005_20261022"
+        },
+        "evidence_id": "960eed98e049516dee71950f015d82a994ad69c922f0b0e3054eac20986bfb5f.json",
+        "sha256": "960eed98e049516dee71950f015d82a994ad69c922f0b0e3054eac20986bfb5f",
+        "media_type": "application/json",
+        "name": "C0031_stress_center",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "evaluation_ids": [
+        "26de93dedf83bce49afb2bb37bcd236d3bcb5988f915e2892c0db063509fb3fa"
+      ]
+    }
+  ],
+  "scope": "Original 434-session full window, standard and doubled costs; original bound data only; candidate and prospective release replay.",
+  "version": "v1",
+  "parent_version": null,
+  "selection_data_cutoff": "2026-10-21",
+  "forward_start": "2026-10-22",
+  "forward_boundary_meaning": "Earliest post-selection data boundary only, not PTE or production activation.",
+  "request_snapshot_sha256": "ba236abff845362bb348dc5c414caf325c2429a098b610eccb3e5e7fdedbbd00",
+  "resources": {
+    "max_workers": 1,
+    "native_threads": 1,
+    "seed": 13
+  },
+  "remaining_risks": [
+    "全部2025-01-02至2026-10-21信息均已见；继承阶段二1092项比较及阶段三181个配置等选择历史，不能声称独立Alpha或未来成功概率。",
+    "阶段四PBO为0.785714；有效次数和DSR因零方差等条件缺失；C0031超额年化95%重抽样区间跨零（约-6.47至66.02个百分点）。",
+    "32点参数检验没有改变max_days；不覆盖正负一日、额外半径、类别切换或参数与费用交叉压力。",
+    "执行遵循用户认可的DAILY_RANGE_V3：按价格区间、不按成交量；日线与30分钟开盘存在容差内差异，不证明真实足量成交。",
+    "约定17:30决策与公共运行20:31存在时钟差异；原pilot时钟等价证据不扩张为C0031历史17:30发布与修订链认证。",
+    "信号年龄按意图而非实际成交计数；本候选使用full_available_cash周期目标，允许周期内补齐，并非逐日权益仓位再平衡。",
+    "25%为历史回撤上限，并非运行止损或未来损失保证；PTE账户、调度、预警、暂停及部署须另行约定与授权。",
+    "forward_start为选择截止日之后的证据分界，不是已启动前瞻观察或生产启用日期；本轮不读取2026-10-22及之后行情。",
+    "正式数据、候选、决定、检验与交付资产不全在Git内，必须独立保留；本检验不代表仓库级全量回归。"
+  ],
+  "stop_rule": "Preserve failures or incomplete checks; never alter candidate or data to make inspection pass."
+}

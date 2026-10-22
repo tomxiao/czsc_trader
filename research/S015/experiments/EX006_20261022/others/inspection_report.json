@@ -1,0 +1,492 @@
+{
+  "type": "CandidateInspectionReport",
+  "origin": {
+    "type": "CandidateOrigin",
+    "candidate": {
+      "type": "CandidateKey",
+      "strategy_id": "S015",
+      "candidate_id": "C0031"
+    },
+    "content_sha256": "6a6e536c6c2f017c43d238633267c05f1f2b9d647aa22d52506d9e8e0a81d580",
+    "registration": {
+      "type": "ResearchEvidenceRef",
+      "owner": {
+        "type": "ResearchEvidenceOwner",
+        "strategy_id": "S015",
+        "experiment_id": "EX006_20261022"
+      },
+      "path": "inspection/cb83ffc73f7b17a68fce44b232be8523d0f2832b4c112447c7aa7a4e431806e3",
+      "sha256": "cb83ffc73f7b17a68fce44b232be8523d0f2832b4c112447c7aa7a4e431806e3"
+    }
+  },
+  "plan": {
+    "type": "FreezePlan",
+    "origin": {
+      "type": "CandidateOrigin",
+      "candidate": {
+        "type": "CandidateKey",
+        "strategy_id": "S015",
+        "candidate_id": "C0031"
+      },
+      "content_sha256": "6a6e536c6c2f017c43d238633267c05f1f2b9d647aa22d52506d9e8e0a81d580",
+      "registration": {
+        "type": "ResearchEvidenceRef",
+        "owner": {
+          "type": "ResearchEvidenceOwner",
+          "strategy_id": "S015",
+          "experiment_id": "EX006_20261022"
+        },
+        "path": "inspection/cb83ffc73f7b17a68fce44b232be8523d0f2832b4c112447c7aa7a4e431806e3",
+        "sha256": "cb83ffc73f7b17a68fce44b232be8523d0f2832b4c112447c7aa7a4e431806e3"
+      }
+    },
+    "version": "v1",
+    "parent_version": null,
+    "change_summary": "首次冻结计划：保留用户选定C0031原始源码、参数和周期资金合同。",
+    "source_experiment": "EX003_20261021",
+    "selection_data_cutoff": "2026-10-21",
+    "forward_start": "2026-10-22",
+    "payload": {
+      "type": "ResearchEvidenceRef",
+      "owner": {
+        "type": "ResearchEvidenceOwner",
+        "strategy_id": "S015",
+        "experiment_id": "EX006_20261022"
+      },
+      "path": "inspection/2548a1ff4e9d0bdf93657fbe61fa66df9958fe438d6dbe05931633f41bf1b7db",
+      "sha256": "2548a1ff4e9d0bdf93657fbe61fa66df9958fe438d6dbe05931633f41bf1b7db"
+    },
+    "source_files": [
+      {
+        "type": "FreezeFile",
+        "path": "strategies/range_gate_reversal.py",
+        "source": {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/0c074893bb5b57a0fb43a0042741ea6bf10a70936ac0cb1821cbe75e1b655f09",
+          "sha256": "0c074893bb5b57a0fb43a0042741ea6bf10a70936ac0cb1821cbe75e1b655f09"
+        }
+      }
+    ],
+    "runtime_binding": {
+      "type": "ResearchEvidenceRef",
+      "owner": {
+        "type": "ResearchEvidenceOwner",
+        "strategy_id": "S015",
+        "experiment_id": "EX006_20261022"
+      },
+      "path": "inspection/087b9ec8633325a51057e588d8987e0442bb3d3dba27f58c6001124797760de3",
+      "sha256": "087b9ec8633325a51057e588d8987e0442bb3d3dba27f58c6001124797760de3"
+    },
+    "registration_evidence": [
+      {
+        "type": "ResearchEvidenceRef",
+        "owner": {
+          "type": "ResearchEvidenceOwner",
+          "strategy_id": "S015",
+          "experiment_id": "EX006_20261022"
+        },
+        "path": "inspection/99521e89055c860ed93c79ed3f089a9af1efefd1c9d2b60a2c71b346722eb6f3",
+        "sha256": "99521e89055c860ed93c79ed3f089a9af1efefd1c9d2b60a2c71b346722eb6f3"
+      }
+    ]
+  },
+  "selection": {
+    "type": "DecisionReference",
+    "decision_id": "S015-select-C0031-20261022",
+    "evidence": {
+      "type": "ResearchEvidenceRef",
+      "owner": {
+        "type": "ResearchEvidenceOwner",
+        "strategy_id": "S015",
+        "experiment_id": null
+      },
+      "path": "decisions/S015-select-C0031-20261022.json",
+      "sha256": "17f602bc969ea0ff793bda15503d84644ed1a136af55c4fb82160648cc135b04"
+    }
+  },
+  "protocol": {
+    "type": "InspectionProtocol",
+    "coordinates": [
+      {
+        "type": "InspectionCoordinate",
+        "window_id": "full",
+        "scenario_id": "standard"
+      },
+      {
+        "type": "InspectionCoordinate",
+        "window_id": "full",
+        "scenario_id": "fee_x2"
+      }
+    ],
+    "tolerance": 0.0,
+    "method_version": "candidate-inspection-v1"
+  },
+  "request_sha256": "faa63bc0845c01b3b8c56cc2460c38f9d7dab899317bf2d10b05bff054d3d550",
+  "checks": [
+    {
+      "type": "InspectionCheckResult",
+      "check": "CONTENT",
+      "status": "PASS",
+      "evidence": [
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/cb83ffc73f7b17a68fce44b232be8523d0f2832b4c112447c7aa7a4e431806e3",
+          "sha256": "cb83ffc73f7b17a68fce44b232be8523d0f2832b4c112447c7aa7a4e431806e3"
+        }
+      ],
+      "detail": "registered candidate source, payload and installed dependencies verified"
+    },
+    {
+      "type": "InspectionCheckResult",
+      "check": "PACKAGE",
+      "status": "PASS",
+      "evidence": [
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/648dbe4ac6be74c8d09754848a244acd7c90eb8ea795e9e3fe5a237f58ca9930",
+          "sha256": "648dbe4ac6be74c8d09754848a244acd7c90eb8ea795e9e3fe5a237f58ca9930"
+        }
+      ],
+      "detail": "source, observation and install closure verified"
+    },
+    {
+      "type": "InspectionCheckResult",
+      "check": "RUNTIME",
+      "status": "PASS",
+      "evidence": [
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/648dbe4ac6be74c8d09754848a244acd7c90eb8ea795e9e3fe5a237f58ca9930",
+          "sha256": "648dbe4ac6be74c8d09754848a244acd7c90eb8ea795e9e3fe5a237f58ca9930"
+        }
+      ],
+      "detail": "candidate and prospective release runtime contracts match"
+    },
+    {
+      "type": "InspectionCheckResult",
+      "check": "COVERAGE",
+      "status": "PASS",
+      "evidence": [
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/bac5b94b752659f9fa6d17be695d157169c4013c20fb801473dc33f31c1c5fcd",
+          "sha256": "bac5b94b752659f9fa6d17be695d157169c4013c20fb801473dc33f31c1c5fcd"
+        },
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/99521e89055c860ed93c79ed3f089a9af1efefd1c9d2b60a2c71b346722eb6f3",
+          "sha256": "99521e89055c860ed93c79ed3f089a9af1efefd1c9d2b60a2c71b346722eb6f3"
+        },
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/9d59deaf32a3485bb83d965a6ba735e3157ed5f7240630d8906d85c3d179693c",
+          "sha256": "9d59deaf32a3485bb83d965a6ba735e3157ed5f7240630d8906d85c3d179693c"
+        },
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/960eed98e049516dee71950f015d82a994ad69c922f0b0e3054eac20986bfb5f",
+          "sha256": "960eed98e049516dee71950f015d82a994ad69c922f0b0e3054eac20986bfb5f"
+        },
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/960eed98e049516dee71950f015d82a994ad69c922f0b0e3054eac20986bfb5f",
+          "sha256": "960eed98e049516dee71950f015d82a994ad69c922f0b0e3054eac20986bfb5f"
+        }
+      ],
+      "detail": "actual reproduction coverage compared with explicit protocol"
+    },
+    {
+      "type": "InspectionCheckResult",
+      "check": "REPRODUCTION",
+      "status": "PASS",
+      "evidence": [
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/bac5b94b752659f9fa6d17be695d157169c4013c20fb801473dc33f31c1c5fcd",
+          "sha256": "bac5b94b752659f9fa6d17be695d157169c4013c20fb801473dc33f31c1c5fcd"
+        },
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/99521e89055c860ed93c79ed3f089a9af1efefd1c9d2b60a2c71b346722eb6f3",
+          "sha256": "99521e89055c860ed93c79ed3f089a9af1efefd1c9d2b60a2c71b346722eb6f3"
+        },
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/9d59deaf32a3485bb83d965a6ba735e3157ed5f7240630d8906d85c3d179693c",
+          "sha256": "9d59deaf32a3485bb83d965a6ba735e3157ed5f7240630d8906d85c3d179693c"
+        },
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/960eed98e049516dee71950f015d82a994ad69c922f0b0e3054eac20986bfb5f",
+          "sha256": "960eed98e049516dee71950f015d82a994ad69c922f0b0e3054eac20986bfb5f"
+        },
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/960eed98e049516dee71950f015d82a994ad69c922f0b0e3054eac20986bfb5f",
+          "sha256": "960eed98e049516dee71950f015d82a994ad69c922f0b0e3054eac20986bfb5f"
+        }
+      ],
+      "detail": "fresh managed evaluations persisted"
+    },
+    {
+      "type": "InspectionCheckResult",
+      "check": "LEDGER_AUDIT",
+      "status": "PASS",
+      "evidence": [
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/bac5b94b752659f9fa6d17be695d157169c4013c20fb801473dc33f31c1c5fcd",
+          "sha256": "bac5b94b752659f9fa6d17be695d157169c4013c20fb801473dc33f31c1c5fcd"
+        },
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/99521e89055c860ed93c79ed3f089a9af1efefd1c9d2b60a2c71b346722eb6f3",
+          "sha256": "99521e89055c860ed93c79ed3f089a9af1efefd1c9d2b60a2c71b346722eb6f3"
+        },
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/9d59deaf32a3485bb83d965a6ba735e3157ed5f7240630d8906d85c3d179693c",
+          "sha256": "9d59deaf32a3485bb83d965a6ba735e3157ed5f7240630d8906d85c3d179693c"
+        },
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/960eed98e049516dee71950f015d82a994ad69c922f0b0e3054eac20986bfb5f",
+          "sha256": "960eed98e049516dee71950f015d82a994ad69c922f0b0e3054eac20986bfb5f"
+        },
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/960eed98e049516dee71950f015d82a994ad69c922f0b0e3054eac20986bfb5f",
+          "sha256": "960eed98e049516dee71950f015d82a994ad69c922f0b0e3054eac20986bfb5f"
+        }
+      ],
+      "detail": "4/4 reproduction coordinates passed"
+    },
+    {
+      "type": "InspectionCheckResult",
+      "check": "LEDGER_EQUIVALENCE",
+      "status": "PASS",
+      "evidence": [
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/bac5b94b752659f9fa6d17be695d157169c4013c20fb801473dc33f31c1c5fcd",
+          "sha256": "bac5b94b752659f9fa6d17be695d157169c4013c20fb801473dc33f31c1c5fcd"
+        },
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/99521e89055c860ed93c79ed3f089a9af1efefd1c9d2b60a2c71b346722eb6f3",
+          "sha256": "99521e89055c860ed93c79ed3f089a9af1efefd1c9d2b60a2c71b346722eb6f3"
+        },
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/9d59deaf32a3485bb83d965a6ba735e3157ed5f7240630d8906d85c3d179693c",
+          "sha256": "9d59deaf32a3485bb83d965a6ba735e3157ed5f7240630d8906d85c3d179693c"
+        },
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/960eed98e049516dee71950f015d82a994ad69c922f0b0e3054eac20986bfb5f",
+          "sha256": "960eed98e049516dee71950f015d82a994ad69c922f0b0e3054eac20986bfb5f"
+        },
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/960eed98e049516dee71950f015d82a994ad69c922f0b0e3054eac20986bfb5f",
+          "sha256": "960eed98e049516dee71950f015d82a994ad69c922f0b0e3054eac20986bfb5f"
+        }
+      ],
+      "detail": "4/4 reproduction coordinates passed"
+    },
+    {
+      "type": "InspectionCheckResult",
+      "check": "SIGNAL_EQUIVALENCE",
+      "status": "PASS",
+      "evidence": [
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/bac5b94b752659f9fa6d17be695d157169c4013c20fb801473dc33f31c1c5fcd",
+          "sha256": "bac5b94b752659f9fa6d17be695d157169c4013c20fb801473dc33f31c1c5fcd"
+        },
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/99521e89055c860ed93c79ed3f089a9af1efefd1c9d2b60a2c71b346722eb6f3",
+          "sha256": "99521e89055c860ed93c79ed3f089a9af1efefd1c9d2b60a2c71b346722eb6f3"
+        },
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/9d59deaf32a3485bb83d965a6ba735e3157ed5f7240630d8906d85c3d179693c",
+          "sha256": "9d59deaf32a3485bb83d965a6ba735e3157ed5f7240630d8906d85c3d179693c"
+        },
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/960eed98e049516dee71950f015d82a994ad69c922f0b0e3054eac20986bfb5f",
+          "sha256": "960eed98e049516dee71950f015d82a994ad69c922f0b0e3054eac20986bfb5f"
+        },
+        {
+          "type": "ResearchEvidenceRef",
+          "owner": {
+            "type": "ResearchEvidenceOwner",
+            "strategy_id": "S015",
+            "experiment_id": "EX006_20261022"
+          },
+          "path": "inspection/960eed98e049516dee71950f015d82a994ad69c922f0b0e3054eac20986bfb5f",
+          "sha256": "960eed98e049516dee71950f015d82a994ad69c922f0b0e3054eac20986bfb5f"
+        }
+      ],
+      "detail": "4/4 reproduction coordinates passed"
+    }
+  ],
+  "remaining_risks": [
+    "全部2025-01-02至2026-10-21信息均已见；继承阶段二1092项比较及阶段三181个配置等选择历史，不能声称独立Alpha或未来成功概率。",
+    "阶段四PBO为0.785714；有效次数和DSR因零方差等条件缺失；C0031超额年化95%重抽样区间跨零（约-6.47至66.02个百分点）。",
+    "32点参数检验没有改变max_days；不覆盖正负一日、额外半径、类别切换或参数与费用交叉压力。",
+    "执行遵循用户认可的DAILY_RANGE_V3：按价格区间、不按成交量；日线与30分钟开盘存在容差内差异，不证明真实足量成交。",
+    "约定17:30决策与公共运行20:31存在时钟差异；原pilot时钟等价证据不扩张为C0031历史17:30发布与修订链认证。",
+    "信号年龄按意图而非实际成交计数；本候选使用full_available_cash周期目标，允许周期内补齐，并非逐日权益仓位再平衡。",
+    "25%为历史回撤上限，并非运行止损或未来损失保证；PTE账户、调度、预警、暂停及部署须另行约定与授权。",
+    "forward_start为选择截止日之后的证据分界，不是已启动前瞻观察或生产启用日期；本轮不读取2026-10-22及之后行情。",
+    "正式数据、候选、决定、检验与交付资产不全在Git内，必须独立保留；本检验不代表仓库级全量回归。"
+  ],
+  "owner": {
+    "type": "ResearchEvidenceOwner",
+    "strategy_id": "S015",
+    "experiment_id": "EX006_20261022"
+  }
+}
