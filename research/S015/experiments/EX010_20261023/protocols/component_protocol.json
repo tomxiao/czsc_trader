@@ -1,0 +1,211 @@
+{
+  "schema_version": 1,
+  "stage": 2,
+  "mandate": "MANDATE/3",
+  "definitions": [
+    {
+      "id": "trend5",
+      "name": "五日趋势",
+      "formula": "log(Close/Close.shift(5))",
+      "hypothesis": "短暂卖压之后延续还是持续下跌",
+      "family": "trend",
+      "orientation": "Higher score expected to identify more profitable or less risky conditions; fixed before label evaluation."
+    },
+    {
+      "id": "trend20",
+      "name": "二十日趋势位置",
+      "formula": "Close/rolling_mean(Close,20)-1",
+      "hypothesis": "中期趋势可能决定反弹收益空间",
+      "family": "trend",
+      "orientation": "Higher score expected to identify more profitable or less risky conditions; fixed before label evaluation."
+    },
+    {
+      "id": "pressure",
+      "name": "收盘相对成交均价",
+      "formula": "Close/(Amount/Volume)-1",
+      "hypothesis": "收盘买卖压力的旧信息能否在新短期限提供增量",
+      "family": "pressure",
+      "orientation": "Higher score expected to identify more profitable or less risky conditions; fixed before label evaluation."
+    },
+    {
+      "id": "body",
+      "name": "当日开收盘变化",
+      "formula": "log(Close/Open)",
+      "hypothesis": "当天卖压相对尾盘修复",
+      "family": "pressure",
+      "orientation": "Higher score expected to identify more profitable or less risky conditions; fixed before label evaluation."
+    },
+    {
+      "id": "location",
+      "name": "收盘区间位置",
+      "formula": "(2*Close-High-Low)/(High-Low)",
+      "hypothesis": "收盘靠近高位是否比仅有反弹更可靠",
+      "family": "pressure",
+      "orientation": "Higher score expected to identify more profitable or less risky conditions; fixed before label evaluation."
+    },
+    {
+      "id": "lower_wick",
+      "name": "下影吸收",
+      "formula": "(min(Open,Close)-Low)/(High-Low)",
+      "hypothesis": "盘中探底后恢复是否区别于下跌持续",
+      "family": "recovery",
+      "orientation": "Higher score expected to identify more profitable or less risky conditions; fixed before label evaluation."
+    },
+    {
+      "id": "calm_range",
+      "name": "近期振幅收缩",
+      "formula": "-mean((High-Low)/Close,5)/mean((High-Low)/Close,20)",
+      "hypothesis": "近期压力扩张可能识别损失风险",
+      "family": "risk",
+      "orientation": "Higher score expected to identify more profitable or less risky conditions; fixed before label evaluation."
+    },
+    {
+      "id": "efficiency5",
+      "name": "五日有向效率",
+      "formula": "sum(log_return,5)/sum(abs(log_return),5)",
+      "hypothesis": "有方向的价格路径与无方向波动不同",
+      "family": "trend",
+      "orientation": "Higher score expected to identify more profitable or less risky conditions; fixed before label evaluation."
+    },
+    {
+      "id": "afternoon",
+      "name": "午后价格修复",
+      "formula": "log(last_close/first_afternoon_open)",
+      "hypothesis": "收盘前恢复是否有后续信息",
+      "family": "intraday",
+      "orientation": "Higher score expected to identify more profitable or less risky conditions; fixed before label evaluation."
+    },
+    {
+      "id": "late_hour",
+      "name": "最后一小时收益",
+      "formula": "log(last_close/open_of_14:30_bar)",
+      "hypothesis": "更近时点的压力是否优于全天开收盘",
+      "family": "intraday",
+      "orientation": "Higher score expected to identify more profitable or less risky conditions; fixed before label evaluation."
+    },
+    {
+      "id": "afternoon_reversal",
+      "name": "午后相对上午恢复",
+      "formula": "afternoon_return-morning_return",
+      "hypothesis": "卖压在盘中是否消退",
+      "family": "intraday",
+      "orientation": "Higher score expected to identify more profitable or less risky conditions; fixed before label evaluation."
+    },
+    {
+      "id": "downside_balance",
+      "name": "日内下跌强度占比",
+      "formula": "-sum(min(log(bar_close/bar_open),0)**2)/sum(log(bar_close/bar_open)**2)",
+      "hypothesis": "下跌波动占比是否区分损失风险",
+      "family": "risk",
+      "orientation": "Higher score expected to identify more profitable or less risky conditions; fixed before label evaluation."
+    }
+  ],
+  "horizons": [
+    1,
+    2,
+    3
+  ],
+  "component_horizon_budget": 36,
+  "new_strategy_accounts": 0,
+  "decision_time": "T 17:30; all input bars through T; event entry T+1; exit T+h+1 open (h>=1, no same-day sale)",
+  "label": "Each independent event starts with 100000 cash; SRT-equivalent frozen limit sizing formula, TXE public resolve_fill with retained full-session market rules, one-way cost .001; no reinvestment across events.",
+  "units": "Adjusted execution prices and quantities use the retained HFQ_RESEARCH contract; raw prices used for .001 tick planning before price-scale conversion.",
+  "right_censor": "No labels beyond 2026-10-21; right-censored and unfilled events excluded and counted separately. No forced exit or assumed fill.",
+  "downside": "Worst low from entry day through day before planned exit, relative to actual entry. Daily-range entry timing unknown; entry-day low is conservative geometry, not realized post-entry loss.",
+  "folds": {
+    "training_minimum_decision_sessions": 100,
+    "test_ranges_relative_to_434": [
+      [
+        100,
+        184
+      ],
+      [
+        184,
+        268
+      ],
+      [
+        268,
+        352
+      ],
+      [
+        352,
+        434
+      ]
+    ],
+    "purge": "Only labels whose exit date is strictly before first test decision are used for training."
+  },
+  "grouping": "Past-training 1/3 and 2/3 quantiles; fixed orientation; high/low/middle separately; no threshold search.",
+  "controls": [
+    "r1",
+    "r5",
+    "vol20"
+  ],
+  "incremental": "Ridge alpha=10; controls versus controls+one component for event return and downside; training-only standardization.",
+  "outputs": [
+    "high-low mean net event label",
+    "retained profitable label amount",
+    "avoided negative label amount",
+    "missed positive label amount",
+    "coverage counts",
+    "2025/2026 sign stability",
+    "incremental prediction loss gain",
+    "block20 interval"
+  ],
+  "diagnostics": "499 moving-block20 resamples, seed13; intervals are exploratory, overlap and selection history remain. No independent holdout or confirmed statistical significance.",
+  "judgment": "SUPPORTED only for a clearly stated role and horizon with high-low direction consistent in 2025 and 2026 and positive incremental loss gain in both years for that role. This is RSCH evidence classification, not an added strategy acceptance gate. Empty support is a valid result.",
+  "account_context": "Fixed actual 415-session accounts are descriptive conditioning only. State at T is observed; no cancellation of trades or subtraction treated as counterfactual equity.",
+  "resources": {
+    "max_workers": 8,
+    "native_threads_per_worker": 1,
+    "seed": 13,
+    "nested_parallelism": false
+  },
+  "scope": "No combined rule, Optuna search, new candidate, stage3/4, freeze, PTE, prod, new market data or changed dates.",
+  "input_facts": {
+    "identities": {
+      "etf.ohlcv": {
+        "dataset": "etf.ohlcv",
+        "source": "tushare",
+        "symbol": "159326.SZ",
+        "data_start": "2024-09-09T00:00:00",
+        "data_cutoff": "2026-10-21T00:00:00",
+        "content_sha256": "c8a95f32246e33682c33dddc776337103de437d712b5fc5d85edec2bbfe1e223"
+      },
+      "etf.unadjusted_daily": {
+        "dataset": "etf.unadjusted_daily",
+        "source": "tushare",
+        "symbol": "159326.SZ",
+        "data_start": "2024-09-09T00:00:00",
+        "data_cutoff": "2026-10-21T00:00:00",
+        "content_sha256": "86ef09152a3cf19de3d05da1c18af2ea9b070926008a0dd197306488292b8f92"
+      },
+      "etf.unadjusted_intraday": {
+        "dataset": "etf.unadjusted_intraday",
+        "source": "tushare",
+        "symbol": "159326.SZ",
+        "data_start": "2025-01-02T10:00:00",
+        "data_cutoff": "2026-10-21T15:00:00",
+        "content_sha256": "6f13f697b5770b96484b9f569d7636743297382bd95fe193d004f789ed26856a"
+      }
+    },
+    "daily_prepared": {
+      "space_id": "67b4df74-e6d9-4fa4-9200-b5694e5d7018",
+      "preparation_id": "10ef6d39-abea-4bce-a55a-8aca06458357",
+      "manifest_sha256": "5ba749ccb9a1f92a09e6255cd9a0459acca667e6afc9215240cb39944816755a"
+    },
+    "minute_prepared": {
+      "space_id": "67b4df74-e6d9-4fa4-9200-b5694e5d7018",
+      "preparation_id": "2d53fde8-11d3-4adc-861f-d13e3f2157ff",
+      "manifest_sha256": "e901ff6cbcd165fc3ac057e806850ec49b6c7cf9fc52beefefb452616139e32c"
+    },
+    "daily_rows": 509,
+    "minute_rows": 3472,
+    "evaluation_sessions": 434,
+    "max_raw_adjusted_log_return_difference": 0.0,
+    "causal_future_perturbation": "PASS",
+    "minute_times": "8 exact bars per day; last bar 15:00",
+    "publication_limits": "Historical daily adjustment publication and intraday vendor availability at 17:30 remain unverified.",
+    "sources": "Existing S015 DFLS preparations only; no prepare, refresh, new data, or adjacent batch input."
+  },
+  "prior_seen": "All samples previously used in development. Prior EX002 explored related daily features; this is a new question/label/execution comparison, not fresh independent discovery."
+}
