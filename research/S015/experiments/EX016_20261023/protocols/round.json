@@ -1,0 +1,43 @@
+{
+  "round": 1,
+  "question": "Does pressure order distinguish transient shock from persistent deterioration, under unchanged exits?",
+  "mechanisms": {
+    "base": "Existing daily pressure episode control with equity targets",
+    "cross": "Enter only when crossing from positive to nonpositive pressure",
+    "recover": "Enter at nonpositive pressure only if better than previous day",
+    "deteriorate": "Reverse control: nonpositive pressure worse than previous day"
+  },
+  "configurations": [
+    {
+      "mode": "base",
+      "entry": 0.0,
+      "exit": 0.005,
+      "hold": 3
+    },
+    {
+      "mode": "cross",
+      "entry": 0.0,
+      "exit": 0.005,
+      "hold": 3
+    },
+    {
+      "mode": "recover",
+      "entry": 0.0,
+      "exit": 0.005,
+      "hold": 3
+    },
+    {
+      "mode": "deteriorate",
+      "entry": 0.0,
+      "exit": 0.005,
+      "hold": 3
+    }
+  ],
+  "paired_windows": "434 full AND415 s011_common, each100k/zero holdings",
+  "controls": "No range filter, model forecast or date gates. Initial four natural-sign comparisons, no threshold search.",
+  "decision": "Consider followup only with a clear full-account risk/return or boundary improvement; frequency or insufficient-return failures retained, no new gates.",
+  "source_files": [
+    "src/strategy_runtime/strategies/pressure_path.py",
+    "src/suite.py"
+  ]
+}

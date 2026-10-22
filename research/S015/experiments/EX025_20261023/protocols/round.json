@@ -1,0 +1,34 @@
+{
+  "round": 10,
+  "title": "放量冲击与缩量卖压的竞争解释",
+  "hypothesis": "EX002已有量价统计与复杂组负面证据保留；当前顺序、确认、趋势、振幅等问题失败后，固定检验尚未独立回答的成交额状态与卖压条件交互，不宣称新组件已有效。",
+  "definition": "amount_z20=(log(Amount)-rolling20mean(log(Amount)))/rolling20std(ddof0)，与EX002既有定义一致。当前自然正负边界，两方向都保留；未知/退化标准差直接失败，不填0。",
+  "configurations": [
+    {
+      "mode": "base",
+      "entry": 0.0,
+      "exit": 0.005,
+      "hold": 3
+    },
+    {
+      "mode": "volume_high",
+      "entry": 0.0,
+      "exit": 0.005,
+      "hold": 3
+    },
+    {
+      "mode": "volume_low",
+      "entry": 0.0,
+      "exit": 0.005,
+      "hold": 3
+    }
+  ],
+  "controls": "Same pressure entry/exit/hold and exact trading contract. Separate first-entry permission by sign of known same-day amount_z20; no change to active position/exit logic.",
+  "budget": {
+    "configurations": 3,
+    "scenarios": 6,
+    "remaining_after_this": 0
+  },
+  "stopping": "Final authorized round. No volume threshold/length tuning after outcomes. Existing nonpassing candidates cannot be promoted and no extra round is automatically started.",
+  "selection": "All prior results known, no new independent sample or source. If no dual-qualified center, end budget and publish empty new-goal handoff; no32point/stress computations for failed centers."
+}

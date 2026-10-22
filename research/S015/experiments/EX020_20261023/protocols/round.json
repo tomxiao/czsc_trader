@@ -1,0 +1,240 @@
+{
+  "round": 5,
+  "title": "按近期振幅归一化的卖压",
+  "hypothesis": "原振幅一刀切过滤损害收益，归一化的是卖压强度和退出强度，不是高振幅直接禁入；检验一致尺度的短期冲击。",
+  "configurations": [
+    {
+      "mode": "normalized",
+      "entry": 0.0,
+      "exit": 0.0,
+      "hold": 2,
+      "lookback": 5
+    },
+    {
+      "mode": "normalized",
+      "entry": 0.0,
+      "exit": 0.0,
+      "hold": 3,
+      "lookback": 5
+    },
+    {
+      "mode": "normalized",
+      "entry": 0.0,
+      "exit": 0.1,
+      "hold": 2,
+      "lookback": 5
+    },
+    {
+      "mode": "normalized",
+      "entry": 0.0,
+      "exit": 0.1,
+      "hold": 3,
+      "lookback": 5
+    },
+    {
+      "mode": "normalized",
+      "entry": 0.1,
+      "exit": 0.0,
+      "hold": 2,
+      "lookback": 5
+    },
+    {
+      "mode": "normalized",
+      "entry": 0.1,
+      "exit": 0.0,
+      "hold": 3,
+      "lookback": 5
+    },
+    {
+      "mode": "normalized",
+      "entry": 0.1,
+      "exit": 0.1,
+      "hold": 2,
+      "lookback": 5
+    },
+    {
+      "mode": "normalized",
+      "entry": 0.1,
+      "exit": 0.1,
+      "hold": 3,
+      "lookback": 5
+    },
+    {
+      "mode": "normalized",
+      "entry": 0.25,
+      "exit": 0.0,
+      "hold": 2,
+      "lookback": 5
+    },
+    {
+      "mode": "normalized",
+      "entry": 0.25,
+      "exit": 0.0,
+      "hold": 3,
+      "lookback": 5
+    },
+    {
+      "mode": "normalized",
+      "entry": 0.25,
+      "exit": 0.1,
+      "hold": 2,
+      "lookback": 5
+    },
+    {
+      "mode": "normalized",
+      "entry": 0.25,
+      "exit": 0.1,
+      "hold": 3,
+      "lookback": 5
+    },
+    {
+      "mode": "normalized",
+      "entry": 0.0,
+      "exit": 0.0,
+      "hold": 2,
+      "lookback": 20
+    },
+    {
+      "mode": "normalized",
+      "entry": 0.0,
+      "exit": 0.0,
+      "hold": 3,
+      "lookback": 20
+    },
+    {
+      "mode": "normalized",
+      "entry": 0.0,
+      "exit": 0.1,
+      "hold": 2,
+      "lookback": 20
+    },
+    {
+      "mode": "normalized",
+      "entry": 0.0,
+      "exit": 0.1,
+      "hold": 3,
+      "lookback": 20
+    },
+    {
+      "mode": "normalized",
+      "entry": 0.1,
+      "exit": 0.0,
+      "hold": 2,
+      "lookback": 20
+    },
+    {
+      "mode": "normalized",
+      "entry": 0.1,
+      "exit": 0.0,
+      "hold": 3,
+      "lookback": 20
+    },
+    {
+      "mode": "normalized",
+      "entry": 0.1,
+      "exit": 0.1,
+      "hold": 2,
+      "lookback": 20
+    },
+    {
+      "mode": "normalized",
+      "entry": 0.1,
+      "exit": 0.1,
+      "hold": 3,
+      "lookback": 20
+    },
+    {
+      "mode": "normalized",
+      "entry": 0.25,
+      "exit": 0.0,
+      "hold": 2,
+      "lookback": 20
+    },
+    {
+      "mode": "normalized",
+      "entry": 0.25,
+      "exit": 0.0,
+      "hold": 3,
+      "lookback": 20
+    },
+    {
+      "mode": "normalized",
+      "entry": 0.25,
+      "exit": 0.1,
+      "hold": 2,
+      "lookback": 20
+    },
+    {
+      "mode": "normalized",
+      "entry": 0.25,
+      "exit": 0.1,
+      "hold": 3,
+      "lookback": 20
+    }
+  ],
+  "budget": {
+    "configurations": 24,
+    "account_scenarios": 48,
+    "parameter_search": "finite prospectively queued Optuna ask/tell; no posthoc deletion"
+  },
+  "references": {
+    "budget": {
+      "authorization": "授权10轮实验的额度，请你以产出合格策略为目标自主执行。",
+      "maximum_experiments": 10,
+      "first_experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX016_20261023"
+      },
+      "current_branch": "codex/s015-stage2-dual-objective",
+      "counting": "One prospective research question with declared comparisons is one round; not one account. Technical same-request retries do not create rounds and must be counted separately.",
+      "scope": "Autonomous stage2/3/4 research toward a fully qualified research candidate; existing ETF daily/30m only,434 original+415 common independent cash accounts, no new sources/windows, no freeze/PTE/production.",
+      "center_limit_per_round": 64,
+      "maximum_new_center_account_scenarios": 1280,
+      "self_check_limit": 8,
+      "self_checks": "Only dual-center-qualified candidates:32 default5% perturbations+1 fee stress on434. Same content and same account contract; all eight ranking evidence, original target defaults.",
+      "resources": {
+        "processes": 8,
+        "native_threads": 1,
+        "seed": 13
+      },
+      "success": "434 original economic+frequency+32 perturbations+fee stress AND415 net>.9158029150000013 and DD<.07248663749114126; raw values strict. No added annual or predictive gates.",
+      "allocation": "First examine pressure order, staged commitment, trend interaction and rebound memory. Followups require a specific observed mechanism/boundary; reserve rounds for validation. No obligation to spend all10 if goals achieved or no defensible question remains.",
+      "selection_bias": "All history seen repeatedly; all configuration/account/round counts retained. No claims of independent validation.",
+      "phase_authorization": "Current explicit10-round goal authorization covers necessary strategy construction and original validation; precise candidate selection/freeze/production remains separate.",
+      "source_mandate": {
+        "batch": {
+          "strategy_id": "S015",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "5563c98c1a2ed876b6d75b775437f35ec2c31777818ad0f9b67e89c90d30d90a",
+        "revision": 3,
+        "stage": "MANDATE",
+        "type": "DeliveryReference"
+      },
+      "prior_report": {
+        "evidence_id": "fed9b766ccd370d36b7930d9628a9f00f49cea15f7640223cb117e166bacbdd5.json",
+        "experiment": {
+          "experiment_id": "EX015_20261023",
+          "strategy_id": "S015",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "experiment-report",
+        "schema": "experiment_report",
+        "schema_version": 1,
+        "sha256": "fed9b766ccd370d36b7930d9628a9f00f49cea15f7640223cb117e166bacbdd5",
+        "type": "EvidenceRef"
+      }
+    },
+    "previous_rounds": [
+      "EX016_20261023",
+      "EX017_20261023",
+      "EX018_20261023",
+      "EX019_20261023"
+    ]
+  },
+  "controls": "EX016 base control retained; same strategy source, fees, independent434/415 accounts. Registered control points retain original identity and are repeated measurements, not new candidates.",
+  "stopping": "All original gates; individual center failures kept. Only center-dual-qualified go to32point+pressure. Round10 reserved for concrete new evidence; do not spend blindly.",
+  "selection": "Question chosen after earlier completed rounds and all historical experiments; entirely seen development data."
+}

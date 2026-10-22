@@ -1,0 +1,146 @@
+"""Publish the ten-round search closeout with an honest empty new-goal handoff."""
+from pathlib import Path
+
+from suite import ROOT,HOME,read,save,material,ExperimentRef,EvidenceRef
+from czsc_trader.application import RepositoryContext,assemble_delivery,update_research_intent,ResearchIntentUpdate
+from czsc_trader.research_tools import (
+    ResearchBatchRef,DeliveryReference,DeliveryDefinition,DeliveryStage,DeliveryContent,
+    DeliveryStatus,CandidateSet,SearchSummary,FactValue,FactStatus,
+)
+
+
+def main():
+    assert not (HOME/'others/budget_delivery_validation.json').exists()
+    audit=read(HOME/'others/ten_round_audit.json')
+    benchmarks=read(HOME/'others/benchmark_audit.json')
+    assert audit['status']=='PASS_AUTHENTICATION_AND_INDEPENDENT_CENTER_GATES'
+    assert benchmarks['status']=='PASS' and benchmarks['scenarios']==254
+    total=audit['totals']
+    assert total['rounds_completed']==10 and total['joint_center_pass']==0
+    ex=ExperimentRef('S015','EX016_20261023')
+    text='''# S015 十轮自主研究收口：完成额度，未产出合格策略
+
+Status: COMPLETED
+
+RSCH，2026-10-23。用户授权“10轮实验的额度，以产出合格策略为目标自主执行”。10/10轮（EX016至EX025）已完成，剩余额度0；研究执行及证据交付完成，**产出合格策略的目标未达成**。
+
+总计127个配置评价条目、125个不同策略内容哈希、114条不同415日权益路径；254个正式窗口账户场景。434日中心要求通过66条，415日收益严格优于S011的23条、回撤严格更小的6条，两项同时通过0条，完整中心联合通过0条。因此没有候选进入32点联合扰动和费用压力验收，没有新登记候选或合格策略。
+
+## 原目标与本轮授权
+
+沿用MANDATE/3：原434日（2025-01-02至2026-10-21）须满足原经济、双频率、32点联合扰动及费用压力标准；415日（2025-02-06至2026-10-21）另起10万元空仓，累计净收益严格大于0.9158029150000013、最大回撤严格小于0.07248663749114126。原始浮点值判定，等于不通过，两窗口高度重叠且已见，不是独立验证。
+
+新授权覆盖目标所需的阶段三策略构造及原阶段四验证，最多10轮。每轮是一个明确机制问题及其事前对照，不把每个账户计为一轮。实际使用日线、既有量价信息及已批准S011基线；未增加外部数据或日期、未变更成交规则、平台或生产。原30分钟数据未作为本次新候选的新增输入；此前分钟增量负面证据继续保留。
+
+## 逐轮问题、覆盖和结果
+
+下表“434中心”仅含原收益、回撤和两项频率，不能称为已通过完整自检；条目数包含旧控制复测及重复内容。415两列分别统计收益门和回撤门，不能分别相加冒充联合通过。
+
+| 轮次 | 机制与对照 | 配置评价条目 | 账户场景 | 434中心通过 | 415收益通过 | 415回撤通过 | 联合中心 |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+'''
+    names=['卖压首次转负/负值改善/继续恶化','试探仓、确认加仓、延迟与恒定半仓',
+        '20日趋势背景与卖压交互','未反弹退出与已反弹延长','振幅归一化的入场及退出',
+        '2/3/5日累计卖压与恢复','连续振幅风险预算与恒定仓位','恶化卖压的持有与退出交互',
+        '价格确认与正压力延续','放量冲击与缩量卖压']
+    for s,name in zip(audit['rounds'],names,strict=True):
+        text+=f"| {s['round']} | {name} | {s['configurations']} | {2*s['configurations']} | {s['default434_center_pass']} | {s['return415_pass']} | {s['dd415_pass']} | {s['joint_center_pass']} |\n"
+    text+='''
+每轮均先发布协议与实际源码，再执行Optuna管理的固定配置、公共TDR完整账户并发表独立报告。最大8进程、每进程原生线程1，执行会话共享单个进程池；未使用未认证代理收益或删除交易的反事实净值。第一轮串行与真实多请求并行的两个窗口、五张完整账本及结果哈希一致。
+
+## 最强有限例外与剩余缺口
+
+以下为描述性代表，不是完整自检后的正式排名，也不表示可将不同账户的优点直接组合。
+
+| 配置编号 | 选择依据 | 415日净收益 | 最大回撤 | 原434中心 | 为什么不合格 |
+| --- | --- | ---: | ---: | --- | --- |
+'''
+    titles={'highest_return':('本轮最高收益','回撤显著高于7.2487%'),
+        'lowest_dd_among_return_and434_pass':('原中心且415收益通过组中回撤最低','回撤仍高4.3583个百分点'),
+        'highest_return_among_dd_pass':('415回撤通过组中收益最高','收益不足91.5803%，434收益也失败'),
+        'lowest_dd':('本轮最低回撤','收益不足，434收益及频率失败')}
+    for key in ('highest_return','lowest_dd_among_return_and434_pass','highest_return_among_dd_pass','lowest_dd'):
+        r=audit['representatives'][key]
+        title,reason=titles[key]
+        text+=f"| {r['candidate_id']} | {title} | {r['net_return']:.4%} | {r['dd']:.4%} | {r['default434_pass']} | {reason} |\n"
+    text+='''
+保住收益和压低回撤分别可以实现，但本轮没有同时兑现。C1804为20日背景转弱时75%、其余活跃周期100%目标仓位，415日收益95.2215%、回撤11.6070%；相比原收益通过组的旧最佳回撤13.3650%有所降低，但距固定S011回撤要求仍差4.3583个百分点，收益余量也只有3.6412个百分点。它是有限改善，不能包装为“已经接近合格”。
+
+### 机制判断
+
+- 卖压继续恶化组保留了反转收益，等待卖压改善入场反而亏损。负面结果适用于本轮自然符号规则，不能泛化为所有确认机制无效。
+- 原3日周期内50%试探、后确认加仓的版本不及恒定半仓；75%试探版收益较高、回撤也较高。退出判定优先于确认，确认基于建立信号时的收盘及压力，而非实际成交价。结论只约束这段短确认窗口，不能扩张为所有分批投入均无效。
+- 趋势背景能够改变参与时点与仓位取舍，但没有提供足够的收益和风险联合优势。累积卖压和压力尺度归一化同样未能保住足够收益并压低回撤；二者同时改变入场与退出，差异不归因于单独某一端。
+- 更早退出未起效周期反而扩大回撤，已起效才延长持有未解决主要风险。连续风险预算确实有低回撤结果，但收益明显不足。
+- 正压力延续的12个配置均亏损；价格确认的低回撤不能弥补其收益与频率缺口。放量组虽好于缩量组，仍未达标；成交额作为特征不等于认证实际成交容量。
+
+代表实际账本的算术进一步限制解释：C1603与C1804最大回撤仍发生在2026-06-30至07-20，峰谷净亏损分别33976.75元和24424.95元，其中新入场份额当日毛亏损分别27065.90元、19466.50元，约占净亏损79.66%、79.70%。这些是会计金额占比，不是可避免损失比例，也不证明因果。低风险代表C2204的最大回撤发生在2025年3月至4月，其主要亏损发生段已改变，但收益仍不足。
+
+## 计数、修正和核验
+
+127是配置评价条目数，含旧C0203/C0204对照复测及同内容重复；125个不同内容哈希也不等于125个独立假设。114条不同415权益路径仍共享相同市场历史。注册表维持117个原身份，哈希全部不变；评价编号C16xx至C25xx并不意味着已经登记为新候选。
+
+254个正式场景全部通过EvidenceRef认证、schema7校验及逐账户独立复算。另有2个串并行预检重复场景，以及2个首次摘要失败前已计算但未保留的技术场景：后一项是保留运行记录中的声明，不能说拥有同等完整正式账本认证。按执行记录共258个策略账户场景，不混入搜索或独立机会数量；基准随正式账户配套计算，不另计为新策略配置。
+
+首轮汇总错误仅将窗口字段误取自身份对象，随后修正为公开EvaluationRun.window_id；保留原源码及技术恢复记录，同协议显式重跑。第2轮检查点名称重复，在新账户计算前失败，改用实验专属名称后重试；未消耗新轮次。上述程序版本全部有独立发布引用，未改写历史证据。
+
+独立检查包含两窗口独立本金/零持仓、日期、同S011逐日定价、实际手续费、连续高水位回撤、CAGR、实际退出归属及完整60日窗（434日375个、415日356个）。基准另从每个账户的可执行LimitBuyHold权益独立复算年化与回撤、核对初始现金及日期。所有本池基准年化为正，原收益门采用相应正分支，未用CLI开盘买持替代1%限价买持。
+
+各候选的参数协议和实际源码、信号前缀/未来扰动检查、全部正负结果及技术修正均留证。公共单周期诊断仍不支持多次成交和调仓；上述代表归因是单独标识的RSCH实际账本算术，不冒充公开诊断PASS。没有重复执行全仓概览或旧434日FULL自检；复用同工作段已认证概览并核对登记身份、新账户与本轮报告。此次没有仓库级全量回归。
+
+## 正式交付与下一步
+
+本次CANDIDATES/3交付为空的新目标交接集合，保留10轮搜索概要和必要反证；旧CANDIDATES/1、2、ASSESSMENT/1及全部历史资格保持原件。由于没有通过两个窗口中心要求的配置，32点联合扰动与费用压力本轮均为0，阶段四完整合格结果为0，不建立虚假的新ASSESSMENT或技术检验。
+
+10轮额度已用尽。建议停止在本批已有压力、振幅、持有天数、仓位比例上的邻近扩搜。本轮削弱的是这些已检验机制，不能证明目标不可实现或所有已有数据模型皆无效。若继续，应先评审有独立机制依据的新信息或执行假设，并明确需要的范围与新额度；例如市场共同状态能否区分暂时卖压与系统性下跌，是待评审问题，当前没有读取或授权新增指数输入。
+
+综合交付首次在暂存目录重命名提交时遭遇WinError5，核对正式资产和公开目录均未安装后，通过同一公开API显式重试；失败前材料与恢复记录另行留证。重试前收紧50%试探版本的解释限定及两个窗口的频率分母，不改变账户结果、研究轮数或任何资格。
+
+用户目标未达成，不推荐冻结或占用PTE资源。本轮不合并master、不推送、不打tag、不修改生产。Git保存材料与正式引用；关联assets/evidence及assets/deliveries必须独立保留。
+'''
+    path=HOME/'others/ten_round_closeout.md'
+    path.write_text(text,encoding='utf-8',newline='\n')
+    refs=[EvidenceRef.from_dict(x) for x in audit['sources']]
+    refs += [EvidenceRef.from_dict(x['evidence']) for x in audit['rows']]
+    refs += [EvidenceRef.from_dict(audit['baseline']),EvidenceRef.from_dict(audit['account_arithmetic_source'])]
+    material_refs={}
+    for p in [path,HOME/'others/ten_round_audit.json',HOME/'others/benchmark_audit.json',
+              HOME/'others/ten_round_results.csv',HOME/'protocols/ten_round_budget.json',
+              HOME/'src/audit_budget.py',HOME/'src/audit_benchmarks.py',
+              HOME/'others/budget_publication_recovery.json',Path(__file__)]:
+        ref=material(ex,p.stem,p)
+        refs.append(ref)
+        material_refs[p.name]=ref.to_dict()
+    refs=list(dict.fromkeys(refs))
+    searches=[]
+    for r in audit['rounds']:
+        unique=len({x['content_sha256'] for x in audit['rows'] if x['round']==r['round']})
+        searches.append(SearchSummary(r['experiment'],'事前固定配置、Optuna提议回填、公共TDR完整账户',
+            'S015既有434日开发池与415日共同窗口，独立本金；标准单侧0.1%',
+            2*r['configurations'],unique,'全部中心双窗口合格者可交接，本轮为空；不按单项优势推荐',
+            ('已见开发历史，配置/内容/经济路径相关，重复控制和配置不是独立证据。',),
+            (EvidenceRef.from_dict(r['results']),EvidenceRef.from_dict(r['report']))))
+    payload=CandidateSet((),(),tuple(searches),'10轮研究完成，0个完整中心双窗口合格配置；目标未达成，当前新目标交接为空，原历史资格不变。')
+    evidence=EvidenceRef.from_dict(material_refs['ten_round_audit.json'])
+    facts=tuple(FactValue(k,v,'count',FactStatus.AVAILABLE,(evidence,)) for k,v in total.items() if isinstance(v,int))
+    parents=tuple(DeliveryReference.from_dict(read(ROOT/f'research/S015/deliveries/{stage}/{revision}/receipt.json')['reference'])
+                  for stage,revision in [('MANDATE',3),('COMPONENTS',7)])
+    adapted=text
+    assembled=assemble_delivery(RepositoryContext.discover(ROOT),
+        DeliveryDefinition(ResearchBatchRef('S015'),DeliveryStage.CANDIDATES,3,parents),
+        DeliveryContent(payload,DeliveryStatus.COMPLETE,facts,(),report=adapted,evidence=tuple(refs)))
+    assert assembled.validation.status.value=='PASS',assembled.validation.issues
+    save(HOME/'others/budget_delivery_validation.json',{'delivery':assembled.receipt.reference.to_dict(),
+        'validation':assembled.validation.to_dict(),'materials':material_refs})
+    intent=dict(read(ROOT/'research/registrations/S015/family.json')['research_intent'])
+    intent.update(current_candidates=assembled.receipt.reference.to_dict(),current_experiment=ExperimentRef('S015','EX025_20261023').to_dict(),
+        selected_candidate=None,current_phase='10/10轮自主研究完成，0双窗口合格中心，未产出合格策略；额度已用尽',
+        experiment_budget={'authorized':10,'completed':10,'remaining':0,'source':material_refs['ten_round_budget.json']},
+        next_gate='当前额度已用尽；如继续先评审新机制与范围及新额度，不自动扩搜、进入冻结或PTE')
+    update_research_intent(RepositoryContext.discover(ROOT),ResearchBatchRef('S015'),ResearchIntentUpdate(research_intent=intent),
+        actor='RSCH',reason='用户授权10轮已全部完成，独立核验0联合合格中心，正式交付空的新目标候选集合并保留全部反证。')
+    print({'delivery':'CANDIDATES/3','status':assembled.validation.status.value,'qualified':0,'remaining':0},flush=True)
+
+
+if __name__=='__main__':
+    main()
