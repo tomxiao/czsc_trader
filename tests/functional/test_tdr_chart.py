@@ -53,3 +53,22 @@ def test_backtest_rejects_observations_that_differ_from_audited_decisions(candid
     with pytest.raises(ValueError, match="chart observation"):
         render_output(result, context.repository.root)
     assert not (context.repository.root / "outputs").exists()
+
+
+def test_chart_projection_does_not_copy_or_change_source_metadata(candidate_payload, tmp_path, monkeypatch):
+    class SourceEvidence:
+        def __deepcopy__(self, memo):
+            raise AssertionError("chart must not deepcopy source evidence")
+
+    days = pd.bdate_range("2026-08-17", periods=23)
+    prices = pd.DataFrame({"dt": days, "open": 1., "close": 1.})
+    context, request, _ = request_for_prices(candidate_payload, tmp_path, monkeypatch, prices, start_index=20)
+    result = run_backtest(context, request.strategy, BacktestRequest(
+        "588080.SH", "etf", days[20].date(), days[-1].date(), 100000, 100))
+    original = pd.DataFrame(result.execution_data.adjusted_daily, copy=True)
+    evidence = SourceEvidence()
+    result.execution_data.adjusted_daily.attrs["quality"] = evidence
+    output = render_output(result, context.repository.root)
+    assert_public_charts(output)
+    assert result.execution_data.adjusted_daily.attrs["quality"] is evidence
+    pd.testing.assert_frame_equal(pd.DataFrame(result.execution_data.adjusted_daily, copy=False), original)

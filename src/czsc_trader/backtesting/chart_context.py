@@ -210,7 +210,8 @@ def build_backtest_chart_context(
     if result.identity != signal_replay.snapshot.identity:
         raise ValueError("chart result identity differs from signal replay")
     start, end = signal_replay.evaluation_start.date(), signal_replay.evaluation_end.date()
-    prices = execution_data.adjusted_daily.copy()
+    # Charts project numerical facts; keep quality evidence on the input only.
+    prices = pd.DataFrame(execution_data.adjusted_daily, copy=False)
     if "dt" in prices:
         prices = prices.set_index("dt")
     prices.index = pd.DatetimeIndex(pd.to_datetime(prices.index))

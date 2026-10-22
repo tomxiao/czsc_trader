@@ -33,9 +33,8 @@ def execute_target_positions(
     shifted ``execution_target``.  TXE owns fills, fees, cash and equity.
     """
 
-    frame = prices.copy()
-    # Source evidence is retained by the caller, outside the numerical replay.
-    frame.attrs = {}
+    # Copy values once, without deep-copying attached evidence metadata.
+    frame = pd.DataFrame(prices, copy=True)
     if "dt" in frame.columns:
         frame = frame.set_index("dt")
     frame.index = pd.DatetimeIndex(pd.to_datetime(frame.index), name="dt")
@@ -71,7 +70,7 @@ def execute_target_positions(
                 <= max(float(row["open"]), float(row["close"])) <= float(row["high"])
             ):
                 raise ValueError("market OHLC prices are inconsistent")
-    target = execution_target.astype(float).copy()
+    target = pd.Series(execution_target, copy=True).astype(float)
     target.index = pd.DatetimeIndex(pd.to_datetime(target.index), name="dt")
     target = target.reindex(frame.index)
     if target.isna().any() or not np.isfinite(target).all() or not target.between(0, 1).all():
@@ -96,17 +95,19 @@ def execute_target_positions(
     order_rows: list[dict[str, object]] = []
     attempt_rows: list[dict[str, object]] = []
     state_rows: list[dict[str, object]] = []
-    for timestamp, row in frame.iterrows():
+    for position, (timestamp, opened, closed) in enumerate(zip(
+        frame.index, frame["open"].array, frame["close"].array
+    )):
         desired = float(target.loc[timestamp])
         if market_rules is not None and timestamp.date() in market_rules.suspended_sessions:
-            close_price = float(row["close"])
+            close_price = float(closed)
             if not np.isfinite(close_price) or close_price <= 0:
                 raise ValueError("suspended session requires a valid valuation close")
             equity_rows.append(cash + shares * close_price)
             state_rows.append({"date": timestamp, "target": float(target.loc[timestamp]), "cash": cash, "quantity": shares, "close": close_price, "equity": cash + shares * close_price})
             continue
-        open_price = float(row["open"])
-        close_price = float(row["close"])
+        open_price = float(opened)
+        close_price = float(closed)
         if desired != previous_target:
             completed = True
             portfolio_value = cash + shares * open_price
@@ -126,7 +127,7 @@ def execute_target_positions(
                         session_time=(timestamp + pd.Timedelta(hours=9, minutes=30)).to_pydatetime(),
                         intraday_touches=(), slippage_bp=slippage_bp,
                         session_limits=None if market_rules is None else market_rules.for_session(timestamp.date()),
-                        daily_quote=None if market_rules is None else DailyQuote(float(row["low"]), float(row["high"])),
+                        daily_quote=None if market_rules is None else DailyQuote(float(frame["low"].iat[position]), float(frame["high"].iat[position])),
                     )
                     attempt_rows.append({"execution_date": timestamp, "side": "BUY", "quantity": quantity,
                                          "status": "FILLED" if fill.filled else "UNFILLED", "reason": fill.reason})
@@ -153,7 +154,7 @@ def execute_target_positions(
                         session_time=(timestamp + pd.Timedelta(hours=9, minutes=30)).to_pydatetime(),
                         intraday_touches=(), slippage_bp=slippage_bp,
                         session_limits=None if market_rules is None else market_rules.for_session(timestamp.date()),
-                        daily_quote=None if market_rules is None else DailyQuote(float(row["low"]), float(row["high"])),
+                        daily_quote=None if market_rules is None else DailyQuote(float(frame["low"].iat[position]), float(frame["high"].iat[position])),
                     )
                     attempt_rows.append({"execution_date": timestamp, "side": "SELL", "quantity": quantity,
                                          "status": "FILLED" if fill.filled else "UNFILLED", "reason": fill.reason})

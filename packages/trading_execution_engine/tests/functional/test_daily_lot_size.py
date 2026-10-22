@@ -51,3 +51,25 @@ def test_daily_insufficient_cash_emits_no_zero_order():
     assert result.orders.empty
     assert result.equity.tolist() == [1000, 1000]
     assert result.state.quantity.tolist() == [0, 0]
+
+
+def test_daily_numeric_replay_does_not_copy_evidence_or_modify_inputs():
+    class Evidence:
+        def __deepcopy__(self, memo):
+            raise AssertionError("source evidence must not be deep-copied")
+
+    prices = _prices()
+    target = pd.Series([.5, 0.], index=prices.dt)
+    baseline = execute_target_positions(prices, target, fee_rate=.001, initial_cash=10000, lot_size=100)
+    evidence = Evidence()
+    prices.attrs["evidence"] = target.attrs["evidence"] = evidence
+    result = execute_target_positions(prices, target, fee_rate=.001, initial_cash=10000, lot_size=100)
+    for name in ("equity", "orders", "state", "attempts"):
+        left, right = getattr(baseline, name), getattr(result, name)
+        if isinstance(left, pd.Series):
+            pd.testing.assert_series_equal(left, right, check_exact=True)
+        else:
+            pd.testing.assert_frame_equal(left, right, check_exact=True)
+    assert prices.attrs["evidence"] is target.attrs["evidence"] is evidence
+    assert pd.DataFrame(prices).open.tolist() == [10., 11.]
+    assert pd.Series(target).tolist() == [.5, 0.]

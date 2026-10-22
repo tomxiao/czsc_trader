@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 
 from czsc_trader.backtesting.benchmark_contracts import EvaluationBenchmark, LimitBuyHold, NextOpenBuyHold
-from czsc_trader.backtesting.benchmarks import replay_benchmarks, replay_buyhold
+from czsc_trader.backtesting.benchmarks import replay_benchmarks, replay_buyhold, valuation_prices
 from czsc_trader.backtesting.execution_data import BacktestExecutionData
 from czsc_trader.backtesting.signal_replay import SignalReplay
 from trading_execution_engine import MarketExecutionRules, SessionPriceLimits, execute_target_positions
@@ -127,3 +127,65 @@ def test_ma_blocked_exit_keeps_position_and_retries_current_zero_target(tmp_path
     assert result.ma_orders.side.tolist() == ["BUY", "SELL"]
     assert len(result.ma_fills) == 2
     assert len(result.ma_trades) == result.metrics["ma5_ma20"]["metrics"]["closed_trades"] == 1
+
+
+@pytest.mark.parametrize("mode", ["buyhold", "benchmarks"])
+def test_benchmark_numeric_projection_preserves_source_without_copying_metadata(tmp_path, mode):
+    class SourceEvidence:
+        def __deepcopy__(self, memo):
+            raise AssertionError("numerical benchmark must not deepcopy source evidence")
+
+    signals, data = _inputs(tmp_path, "588080.SH")
+    def replay():
+        if mode == "buyhold":
+            return replay_buyhold(signals, data, 10000., benchmark=EvaluationBenchmark(NextOpenBuyHold(100)))
+        return replay_benchmarks(signals, data, 10000., lot_size=100)
+    expected = replay()
+    sources = (data.execution_daily, data.adjusted_daily)
+    originals = tuple(pd.DataFrame(frame, copy=True) for frame in sources)
+    evidence = SourceEvidence()
+    for frame in sources:
+        frame.attrs["quality"] = evidence
+    actual = replay()
+    assert actual.metrics == expected.metrics
+    names = (("account_daily", "orders", "attempts", "fills") if mode == "buyhold" else
+             ("buyhold_account_daily", "buyhold_orders", "buyhold_attempts", "buyhold_fills",
+              "ma_account_daily", "ma_orders", "ma_attempts", "ma_fills", "ma_signals", "ma_trades"))
+    for name in names:
+        pd.testing.assert_frame_equal(getattr(actual, name), getattr(expected, name))
+    account = actual.account_daily if mode == "buyhold" else actual.buyhold_account_daily
+    account.loc[0, "close"] = -1.
+    for source, original in zip(sources, originals):
+        assert source.attrs["quality"] is evidence
+        pd.testing.assert_frame_equal(pd.DataFrame(source, copy=False), original)
+
+
+def test_valuation_projection_retains_halted_price_source_and_isolates_values(tmp_path):
+    signals, data = _inputs(tmp_path, "588080.SH")
+    halted = data.evaluation_sessions[1]
+    daily = data.execution_daily.loc[data.execution_daily.dt.ne(halted)].copy()
+    daily.attrs = {"quality": {"scope": "original"}}
+    expected = pd.DataFrame(daily, copy=True)
+    value = valuation_prices(replace(data, execution_daily=daily), signals.evaluation_start, signals.evaluation_end)
+    assert value.dt.tolist() == list(data.evaluation_sessions)
+    assert pd.isna(value.loc[1, "open"])
+    assert value.loc[1, "close"] == value.loc[0, "close"]
+    assert value.loc[1, "valuation_source_date"] == data.evaluation_sessions[0]
+    value.loc[0, "close"] = -1.
+    value.attrs["projection"] = True
+    assert daily.attrs == {"quality": {"scope": "original"}}
+    pd.testing.assert_frame_equal(pd.DataFrame(daily, copy=False), expected)
+
+
+@pytest.mark.parametrize("mode", ["buyhold", "benchmarks"])
+def test_benchmark_keeps_invalid_execution_date_rejection(tmp_path, mode):
+    signals, data = _inputs(tmp_path, "588080.SH")
+    daily = data.execution_daily.copy()
+    daily["dt"] = daily.dt.astype(str)
+    daily.loc[0, "dt"] = "invalid-date"
+    data = replace(data, execution_daily=daily)
+    with pytest.raises(ValueError):
+        if mode == "buyhold":
+            replay_buyhold(signals, data, 10000., benchmark=EvaluationBenchmark(NextOpenBuyHold(100)))
+        else:
+            replay_benchmarks(signals, data, 10000., lot_size=100)

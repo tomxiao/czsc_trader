@@ -303,13 +303,15 @@ class StrategyInstance:
         history, _ = self._history(data, history_mode)
         signal_date = data.signal_date_for(point.trading_date)
         signal_session = pd.Timestamp(signal_date).normalize()
-        if signal_session not in history.index:
+        try:
+            signal_position = history.index.get_loc(signal_session)
+        except KeyError:
             raise RuntimeContractError(
                 "strategy history does not reach the signal date: "
                 f"signal={signal_date.isoformat()}, "
                 f"range={history.index.min()}..{history.index.max()}"
-            )
-        row = history.loc[signal_session]
+            ) from None
+        row = history.iloc[signal_position]
         target_position = float(row["target_position"])
         if not (
             self.definition.decision.minimum_target
@@ -333,7 +335,12 @@ class StrategyInstance:
             elif self.definition.decision.output_kind == "INTRADAY_OVERLAY":
                 evidence["action"] = "NO_EVENT"
             else:
-                previous = history["target_position"].shift(1, fill_value=0.0).loc[signal_session]
+                # History is ordered and unique. Read its predecessor directly;
+                # shifting the full column for every session is quadratic work.
+                previous = (
+                    history["target_position"].iat[signal_position - 1]
+                    if signal_position > 0 else 0.0
+                )
                 evidence["action"] = (
                     "BUY"
                     if target_position > float(previous)

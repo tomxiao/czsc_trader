@@ -39,9 +39,9 @@ def _frame(rows: list[dict[str, object]], columns: list[str]) -> pd.DataFrame:
 def _prices(frame: pd.DataFrame, name: str, columns: tuple[str, ...]) -> pd.DataFrame:
     if not isinstance(frame, pd.DataFrame) or not {"dt", *columns}.issubset(frame.columns):
         raise RuntimeContractError(f"{name} price columns are incomplete")
-    value = frame.copy()
-    # Preserve source evidence without copying it through every price lookup.
-    value.attrs = {}
+    # The constructor isolates values without propagating/deep-copying attrs.
+    # Admission retains source evidence on the caller's frame only.
+    value = pd.DataFrame(frame, copy=True)
     try:
         value["dt"] = pd.to_datetime(value["dt"], errors="raise")
         indexed = value.set_index("dt").sort_index()
@@ -261,10 +261,10 @@ class HistoricalExecutor:
         if as_of.tzinfo is None:
             raise RuntimeContractError("backtest account snapshot time must be timezone-aware")
         session = pd.Timestamp(as_of.date())
-        prices = self._daily.loc[self._daily.index <= session, "close"]
-        if prices.empty:
+        position = self._daily.index.searchsorted(session, side="right") - 1
+        if position < 0:
             raise RuntimeContractError("backtest account snapshot has no reference close")
-        total_assets = self._cash + self._quantity * float(prices.iloc[-1])
+        total_assets = self._cash + self._quantity * float(self._daily["close"].iat[position])
         return PortfolioSnapshot(
             self._account_id,
             self._strategy_symbol,
@@ -503,9 +503,14 @@ class HistoricalExecutor:
         exit_time: pd.Timestamp | None = None
         exit_quantity = 0
         fee_rate = float(plan.fee_rate)
-        day_bars = self._intraday.loc[
-            self._intraday.index.normalize() == execution_date.normalize()
-        ]
+        # Sorted timestamps permit a bounded slice, without scanning every day.
+        # Empty plans need no intraday materialization at all.
+        if plan.orders:
+            start = self._intraday.index.searchsorted(execution_date, side="left")
+            end = self._intraday.index.searchsorted(
+                execution_date + pd.Timedelta(days=1), side="left"
+            )
+            day_bars = self._intraday.iloc[start:end]
         for slice_number, order in enumerate(plan.orders, start=1):
             order_id = _id("ORD", decision_id, execution_date, slice_number)
             side = order.side.value
@@ -832,7 +837,10 @@ class HistoricalExecutor:
         cash = self._opening_cash
         quantity = self._opening_quantity
         rows: list[dict[str, object]] = []
-        for day, price_row in self._evaluation.iterrows():
+        source_positions = self._daily.index.searchsorted(self._evaluation.index, side="right") - 1
+        for day, close, source_position in zip(
+            self._evaluation.index, self._evaluation["close"].array, source_positions
+        ):
             state = self._state_by_date.get(pd.Timestamp(day))
             if state is None:
                 cash_before = cash
@@ -859,12 +867,12 @@ class HistoricalExecutor:
                     "quantity_before": quantity_before,
                     "cash": cash,
                     "quantity": quantity,
-                    "close": float(price_row["close"]),
-                    "valuation_source_date": self._daily.index[self._daily.index <= day][-1],
+                    "close": float(close),
+                    "valuation_source_date": self._daily.index[source_position],
                     "trading_status": (None if self._market_rules is not None and
                                        self._market_rules.suspension_information is SuspensionInformation.NOT_PROVIDED else
                                        "SUSPENDED" if self._market_rules is not None and day.date() in self._market_rules.suspended_sessions else "TRADING"),
-                    "equity": cash + quantity * float(price_row["close"]),
+                    "equity": cash + quantity * float(close),
                 }
             )
         return rows

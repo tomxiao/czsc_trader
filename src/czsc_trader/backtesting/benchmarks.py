@@ -111,7 +111,9 @@ def _account_daily(
 
 def valuation_prices(data: BacktestExecutionData, start, end) -> pd.DataFrame:
     """Account view retains halted sessions without executable OHLC quotes."""
-    raw = data.execution_daily.set_index("dt").sort_index()
+    # Valuation consumes values, not source quality metadata. Detach the
+    # container before pandas propagates/deepcopies attrs through each step.
+    raw = pd.DataFrame(data.execution_daily, copy=False).set_index("dt").sort_index()
     index = data.evaluation_sessions
     index = index[(index >= start) & (index <= end)]
     frame = raw.reindex(index)
@@ -144,15 +146,31 @@ def replay_buyhold(
             metrics, ledger.account_daily, ledger.orders, benchmark, ledger,
             attempts=ledger.orders, fills=ledger.fills,
         )
-    execution = execution_data.execution_daily.copy()
-    execution["dt"] = pd.to_datetime(execution["dt"]).dt.normalize()
+    # Retain the date-conversion validation without copying the entire source.
+    pd.to_datetime(pd.DataFrame(execution_data.execution_daily, copy=False)["dt"]).dt.normalize()
     evaluation = valuation_prices(execution_data, signals.evaluation_start, signals.evaluation_end)
+    return _replay_next_open_buyhold(
+        signals, execution_data, initial_cash, benchmark=benchmark,
+        evaluation=evaluation, fee_rate=fee_rate,
+    )
+
+
+def _replay_next_open_buyhold(
+    signals: SignalReplay,
+    execution_data: BacktestExecutionData,
+    initial_cash: float,
+    *,
+    benchmark: EvaluationBenchmark,
+    evaluation: pd.DataFrame,
+    fee_rate: float,
+) -> BuyHoldReplay:
+    """Consume the caller's private valuation table within this calculation."""
     evaluation_index = pd.DatetimeIndex(evaluation["dt"], name="dt")
     if evaluation.empty:
         raise ValueError("benchmark interval contains no execution sessions")
 
     adjusted_dates = pd.DatetimeIndex(
-        pd.to_datetime(execution_data.adjusted_daily["dt"])
+        pd.to_datetime(pd.DataFrame(execution_data.adjusted_daily, copy=False)["dt"])
     ).normalize()
     prior_dates = adjusted_dates[adjusted_dates < signals.evaluation_start]
     if prior_dates.empty:
@@ -198,24 +216,24 @@ def replay_benchmarks(
 ) -> BenchmarkReplay:
     """Run independently funded BuyHold and MA5/MA20 next-open benchmarks."""
     fee_rate = _fee_rate(signals)
-    execution = execution_data.execution_daily.copy()
-    execution["dt"] = pd.to_datetime(execution["dt"]).dt.normalize()
+    pd.to_datetime(pd.DataFrame(execution_data.execution_daily, copy=False)["dt"]).dt.normalize()
     evaluation = valuation_prices(execution_data, signals.evaluation_start, signals.evaluation_end)
     evaluation_index = pd.DatetimeIndex(evaluation["dt"], name="dt")
     if evaluation.empty:
         raise ValueError("benchmark interval contains no execution sessions")
 
     adjusted_signals = moving_average_signals(
-        execution_data.adjusted_daily, slow=MA_BENCHMARK_SLOW_SESSIONS,
+        pd.DataFrame(execution_data.adjusted_daily, copy=False), slow=MA_BENCHMARK_SLOW_SESSIONS,
     )
     prior_dates = adjusted_signals.index[adjusted_signals.index < signals.evaluation_start]
     if prior_dates.empty:
         raise ValueError("benchmark interval has no prior signal session")
     prior_date = pd.Timestamp(prior_dates[-1])
 
-    buyhold = replay_buyhold(
+    buyhold = _replay_next_open_buyhold(
         signals, execution_data, initial_cash,
         benchmark=EvaluationBenchmark(NextOpenBuyHold(lot_size)),
+        evaluation=evaluation, fee_rate=fee_rate,
     )
 
     ma_target = adjusted_signals["target_position"].reindex(adjusted_signals.index.union(evaluation_index)).sort_index().ffill().reindex(evaluation_index).astype(float)
