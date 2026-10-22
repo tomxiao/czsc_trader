@@ -1,0 +1,5166 @@
+{
+  "comparison": "PR vs AllDaily; signed entry-to-close gross PnL",
+  "new_accounts": 0,
+  "paired_conditions": 1,
+  "folds": [
+    {
+      "fold": 0,
+      "train_n": 99,
+      "test_n": 83,
+      "train_last_label_end": 174,
+      "test_start": 175,
+      "PR": {
+        "q1": -0.0015368032418309496,
+        "q2": 0.0015263134080695305
+      },
+      "AllDaily": {
+        "q1": -0.001293994987298469,
+        "q2": 0.0013562546790944793
+      }
+    },
+    {
+      "fold": 1,
+      "train_n": 182,
+      "test_n": 83,
+      "train_last_label_end": 258,
+      "test_start": 259,
+      "PR": {
+        "q1": 0.00018718940177687917,
+        "q2": 0.002232607251174705
+      },
+      "AllDaily": {
+        "q1": 0.0003521730642248758,
+        "q2": 0.0022129380122429235
+      }
+    },
+    {
+      "fold": 2,
+      "train_n": 265,
+      "test_n": 80,
+      "train_last_label_end": 342,
+      "test_start": 343,
+      "PR": {
+        "q1": 0.0005095396458200008,
+        "q2": 0.003241930879804777
+      },
+      "AllDaily": {
+        "q1": 0.0003870930052507827,
+        "q2": 0.003490129800627701
+      }
+    },
+    {
+      "fold": 3,
+      "train_n": 345,
+      "test_n": 80,
+      "train_last_label_end": 426,
+      "test_start": 427,
+      "PR": {
+        "q1": 0.0007381577222597447,
+        "q2": 0.0035347645315591024
+      },
+      "AllDaily": {
+        "q1": 0.0005925906396175817,
+        "q2": 0.0035064260454636875
+      }
+    }
+  ],
+  "all": {
+    "n": 326,
+    "gross_total": {
+      "n": 326,
+      "positive_count": 178,
+      "negative_count": 144,
+      "zero_count": 4,
+      "positive_yuan": 256332.20000000004,
+      "negative_yuan": 189951.3000000001,
+      "signed_yuan": 66380.89999999989,
+      "missed_positive_fraction": 1.0,
+      "captured_negative_fraction": 1.0,
+      "loss_precision": 0.44171779141104295,
+      "loss_count_recall": 1.0
+    },
+    "net_entry_total": {
+      "n": 326,
+      "positive_count": 170,
+      "negative_count": 156,
+      "zero_count": 0,
+      "positive_yuan": 238930.80329999997,
+      "negative_yuan": 204728.65940000018,
+      "signed_yuan": 34202.14389999988,
+      "missed_positive_fraction": 1.0,
+      "captured_negative_fraction": 1.0,
+      "loss_precision": 0.4785276073619632,
+      "loss_count_recall": 1.0
+    },
+    "mean_prediction_mse": 0.0003340659124351893,
+    "models": {
+      "PR": {
+        "mse": 0.00034135103428413374,
+        "gain_vs_mean": -0.021807438525646594,
+        "sign_accuracy_zero_threshold": 0.5368098159509203,
+        "balanced_accuracy_zero_threshold": 0.5278922466422467,
+        "groups": {
+          "-1": {
+            "gross": {
+              "n": 132,
+              "positive_count": 66,
+              "negative_count": 63,
+              "zero_count": 3,
+              "positive_yuan": 69149.09999999992,
+              "negative_yuan": 71026.00000000009,
+              "signed_yuan": -1876.9000000001702,
+              "missed_positive_fraction": 0.2697636114385938,
+              "captured_negative_fraction": 0.37391689343531764,
+              "loss_precision": 0.4772727272727273,
+              "loss_count_recall": 0.4375
+            },
+            "net_entry": {
+              "n": 132,
+              "positive_count": 63,
+              "negative_count": 69,
+              "zero_count": 0,
+              "positive_yuan": 62653.23729999995,
+              "negative_yuan": 77577.88790000012,
+              "signed_yuan": -14924.65060000017,
+              "missed_positive_fraction": 0.26222335686593307,
+              "captured_negative_fraction": 0.3789302783858314,
+              "loss_precision": 0.5227272727272727,
+              "loss_count_recall": 0.4423076923076923
+            }
+          },
+          "0": {
+            "gross": {
+              "n": 69,
+              "positive_count": 36,
+              "negative_count": 32,
+              "zero_count": 1,
+              "positive_yuan": 50224.60000000002,
+              "negative_yuan": 39654.59999999998,
+              "signed_yuan": 10570.000000000045,
+              "missed_positive_fraction": 0.1959355867113067,
+              "captured_negative_fraction": 0.2087619300315394,
+              "loss_precision": 0.463768115942029,
+              "loss_count_recall": 0.2222222222222222
+            },
+            "net_entry": {
+              "n": 69,
+              "positive_count": 34,
+              "negative_count": 35,
+              "zero_count": 0,
+              "positive_yuan": 46715.04960000003,
+              "negative_yuan": 42951.299599999984,
+              "signed_yuan": 3763.750000000042,
+              "missed_positive_fraction": 0.19551706583995748,
+              "captured_negative_fraction": 0.20979622357650207,
+              "loss_precision": 0.5072463768115942,
+              "loss_count_recall": 0.22435897435897437
+            }
+          },
+          "1": {
+            "gross": {
+              "n": 125,
+              "positive_count": 76,
+              "negative_count": 49,
+              "zero_count": 0,
+              "positive_yuan": 136958.5000000001,
+              "negative_yuan": 79270.70000000006,
+              "signed_yuan": 57687.8,
+              "missed_positive_fraction": 0.5343008018500995,
+              "captured_negative_fraction": 0.41732117653314305,
+              "loss_precision": 0.392,
+              "loss_count_recall": 0.3402777777777778
+            },
+            "net_entry": {
+              "n": 125,
+              "positive_count": 73,
+              "negative_count": 52,
+              "zero_count": 0,
+              "positive_yuan": 129562.51640000005,
+              "negative_yuan": 84199.47190000005,
+              "signed_yuan": 45363.04450000001,
+              "missed_positive_fraction": 0.5422595772941097,
+              "captured_negative_fraction": 0.4112734980376664,
+              "loss_precision": 0.416,
+              "loss_count_recall": 0.3333333333333333
+            }
+          }
+        },
+        "exclusion_fraction": 0.4049079754601227
+      },
+      "AllDaily": {
+        "mse": 0.0003491953169780171,
+        "gain_vs_mean": -0.04528868100471928,
+        "sign_accuracy_zero_threshold": 0.5153374233128835,
+        "balanced_accuracy_zero_threshold": 0.506486568986569,
+        "groups": {
+          "-1": {
+            "gross": {
+              "n": 138,
+              "positive_count": 71,
+              "negative_count": 65,
+              "zero_count": 2,
+              "positive_yuan": 86183.49999999996,
+              "negative_yuan": 76526.10000000008,
+              "signed_yuan": 9657.399999999885,
+              "missed_positive_fraction": 0.33621800148401154,
+              "captured_negative_fraction": 0.4028722098769528,
+              "loss_precision": 0.47101449275362317,
+              "loss_count_recall": 0.4513888888888889
+            },
+            "net_entry": {
+              "n": 138,
+              "positive_count": 68,
+              "negative_count": 70,
+              "zero_count": 0,
+              "positive_yuan": 79197.46769999998,
+              "negative_yuan": 83175.46660000009,
+              "signed_yuan": -3977.998900000114,
+              "missed_positive_fraction": 0.3314661257827026,
+              "captured_negative_fraction": 0.40627172982895043,
+              "loss_precision": 0.5072463768115942,
+              "loss_count_recall": 0.44871794871794873
+            }
+          },
+          "0": {
+            "gross": {
+              "n": 60,
+              "positive_count": 30,
+              "negative_count": 29,
+              "zero_count": 1,
+              "positive_yuan": 30664.199999999975,
+              "negative_yuan": 37927.10000000001,
+              "signed_yuan": -7262.900000000046,
+              "missed_positive_fraction": 0.11962679678947855,
+              "captured_negative_fraction": 0.1996674937207589,
+              "loss_precision": 0.48333333333333334,
+              "loss_count_recall": 0.2013888888888889
+            },
+            "net_entry": {
+              "n": 60,
+              "positive_count": 28,
+              "negative_count": 32,
+              "zero_count": 0,
+              "positive_yuan": 27742.78289999998,
+              "negative_yuan": 40929.38680000002,
+              "signed_yuan": -13186.603900000046,
+              "missed_positive_fraction": 0.11611220703580157,
+              "captured_negative_fraction": 0.19992016222815157,
+              "loss_precision": 0.5333333333333333,
+              "loss_count_recall": 0.20512820512820512
+            }
+          },
+          "1": {
+            "gross": {
+              "n": 128,
+              "positive_count": 77,
+              "negative_count": 50,
+              "zero_count": 1,
+              "positive_yuan": 139484.5000000001,
+              "negative_yuan": 75498.10000000003,
+              "signed_yuan": 63986.40000000002,
+              "missed_positive_fraction": 0.5441552017265098,
+              "captured_negative_fraction": 0.3974602964022883,
+              "loss_precision": 0.390625,
+              "loss_count_recall": 0.3472222222222222
+            },
+            "net_entry": {
+              "n": 128,
+              "positive_count": 74,
+              "negative_count": 54,
+              "zero_count": 0,
+              "positive_yuan": 131990.55270000006,
+              "negative_yuan": 80623.80600000003,
+              "signed_yuan": 51366.74670000003,
+              "missed_positive_fraction": 0.552421667181496,
+              "captured_negative_fraction": 0.39380810794289783,
+              "loss_precision": 0.421875,
+              "loss_count_recall": 0.34615384615384615
+            }
+          }
+        },
+        "exclusion_fraction": 0.4233128834355828
+      }
+    },
+    "AllDaily_gain_vs_PR": -0.022980105246594773,
+    "exclusion_transition": {
+      "common_low": {
+        "gross": {
+          "n": 115,
+          "positive_count": 58,
+          "negative_count": 55,
+          "zero_count": 2,
+          "positive_yuan": 60837.59999999993,
+          "negative_yuan": 65469.000000000065,
+          "signed_yuan": -4631.4000000001415,
+          "missed_positive_fraction": 0.23733889070510816,
+          "captured_negative_fraction": 0.3446620265299581,
+          "loss_precision": 0.4782608695652174,
+          "loss_count_recall": 0.3819444444444444
+        },
+        "net_entry": {
+          "n": 115,
+          "positive_count": 55,
+          "negative_count": 60,
+          "zero_count": 0,
+          "positive_yuan": 55135.14329999995,
+          "negative_yuan": 71129.98980000011,
+          "signed_yuan": -15994.846500000143,
+          "missed_positive_fraction": 0.2307577865160091,
+          "captured_negative_fraction": 0.34743542994156906,
+          "loss_precision": 0.5217391304347826,
+          "loss_count_recall": 0.38461538461538464
+        }
+      },
+      "AllDaily_added_low": {
+        "gross": {
+          "n": 23,
+          "positive_count": 13,
+          "negative_count": 10,
+          "zero_count": 0,
+          "positive_yuan": 25345.900000000027,
+          "negative_yuan": 11057.099999999997,
+          "signed_yuan": 14288.800000000027,
+          "missed_positive_fraction": 0.0988791107789034,
+          "captured_negative_fraction": 0.058210183346994675,
+          "loss_precision": 0.43478260869565216,
+          "loss_count_recall": 0.06944444444444445
+        },
+        "net_entry": {
+          "n": 23,
+          "positive_count": 13,
+          "negative_count": 10,
+          "zero_count": 0,
+          "positive_yuan": 24062.324400000023,
+          "negative_yuan": 12045.476799999997,
+          "signed_yuan": 12016.847600000026,
+          "missed_positive_fraction": 0.10070833926669356,
+          "captured_negative_fraction": 0.0588362998873815,
+          "loss_precision": 0.43478260869565216,
+          "loss_count_recall": 0.0641025641025641
+        }
+      },
+      "AllDaily_released_low": {
+        "gross": {
+          "n": 17,
+          "positive_count": 8,
+          "negative_count": 8,
+          "zero_count": 1,
+          "positive_yuan": 8311.499999999985,
+          "negative_yuan": 5557.000000000016,
+          "signed_yuan": 2754.49999999997,
+          "missed_positive_fraction": 0.03242472073348563,
+          "captured_negative_fraction": 0.029254866905359493,
+          "loss_precision": 0.47058823529411764,
+          "loss_count_recall": 0.05555555555555555
+        },
+        "net_entry": {
+          "n": 17,
+          "positive_count": 8,
+          "negative_count": 9,
+          "zero_count": 0,
+          "positive_yuan": 7518.093999999986,
+          "negative_yuan": 6447.898100000016,
+          "signed_yuan": 1070.19589999997,
+          "missed_positive_fraction": 0.03146557034992393,
+          "captured_negative_fraction": 0.03149484844426237,
+          "loss_precision": 0.5294117647058824,
+          "loss_count_recall": 0.057692307692307696
+        }
+      },
+      "neither_low": {
+        "gross": {
+          "n": 171,
+          "positive_count": 99,
+          "negative_count": 71,
+          "zero_count": 1,
+          "positive_yuan": 161837.20000000007,
+          "negative_yuan": 107868.20000000001,
+          "signed_yuan": 53969.00000000002,
+          "missed_positive_fraction": 0.6313572777825027,
+          "captured_negative_fraction": 0.5678729232176877,
+          "loss_precision": 0.4152046783625731,
+          "loss_count_recall": 0.4930555555555556
+        },
+        "net_entry": {
+          "n": 171,
+          "positive_count": 94,
+          "negative_count": 77,
+          "zero_count": 0,
+          "positive_yuan": 152215.24160000007,
+          "negative_yuan": 115105.29470000001,
+          "signed_yuan": 37109.94690000003,
+          "missed_positive_fraction": 0.6370683038673736,
+          "captured_negative_fraction": 0.5622334217267869,
+          "loss_precision": 0.4502923976608187,
+          "loss_count_recall": 0.4935897435897436
+        }
+      }
+    }
+  },
+  "years": {
+    "2025": {
+      "n": 142,
+      "gross_total": {
+        "n": 142,
+        "positive_count": 78,
+        "negative_count": 63,
+        "zero_count": 1,
+        "positive_yuan": 97472.09999999989,
+        "negative_yuan": 57861.50000000002,
+        "signed_yuan": 39610.5999999999,
+        "missed_positive_fraction": 1.0,
+        "captured_negative_fraction": 1.0,
+        "loss_precision": 0.44366197183098594,
+        "loss_count_recall": 1.0
+      },
+      "net_entry_total": {
+        "n": 142,
+        "positive_count": 71,
+        "negative_count": 71,
+        "zero_count": 0,
+        "positive_yuan": 89889.73219999994,
+        "negative_yuan": 64314.71480000005,
+        "signed_yuan": 25575.017399999895,
+        "missed_positive_fraction": 1.0,
+        "captured_negative_fraction": 1.0,
+        "loss_precision": 0.5,
+        "loss_count_recall": 1.0
+      },
+      "mean_prediction_mse": 0.00023270874324371588,
+      "models": {
+        "PR": {
+          "mse": 0.00024983873725796253,
+          "gain_vs_mean": -0.07361130387914305,
+          "sign_accuracy_zero_threshold": 0.5,
+          "balanced_accuracy_zero_threshold": 0.5152702431183445,
+          "groups": {
+            "-1": {
+              "gross": {
+                "n": 78,
+                "positive_count": 41,
+                "negative_count": 36,
+                "zero_count": 1,
+                "positive_yuan": 36572.59999999992,
+                "negative_yuan": 29883.600000000082,
+                "signed_yuan": 6688.999999999838,
+                "missed_positive_fraction": 0.37521095780228353,
+                "captured_negative_fraction": 0.516467772180121,
+                "loss_precision": 0.46153846153846156,
+                "loss_count_recall": 0.5714285714285714
+              },
+              "net_entry": {
+                "n": 78,
+                "positive_count": 38,
+                "negative_count": 40,
+                "zero_count": 0,
+                "positive_yuan": 32543.53619999995,
+                "negative_yuan": 33571.70730000011,
+                "signed_yuan": -1028.1711000001612,
+                "missed_positive_fraction": 0.36203841532859715,
+                "captured_negative_fraction": 0.5219910778489543,
+                "loss_precision": 0.5128205128205128,
+                "loss_count_recall": 0.5633802816901409
+              }
+            },
+            "0": {
+              "gross": {
+                "n": 23,
+                "positive_count": 13,
+                "negative_count": 10,
+                "zero_count": 0,
+                "positive_yuan": 13613.70000000001,
+                "negative_yuan": 8658.199999999968,
+                "signed_yuan": 4955.50000000004,
+                "missed_positive_fraction": 0.13966765874542586,
+                "captured_negative_fraction": 0.1496366323029988,
+                "loss_precision": 0.43478260869565216,
+                "loss_count_recall": 0.15873015873015872
+              },
+              "net_entry": {
+                "n": 23,
+                "positive_count": 11,
+                "negative_count": 12,
+                "zero_count": 0,
+                "positive_yuan": 12370.93220000001,
+                "negative_yuan": 9687.299299999971,
+                "signed_yuan": 2683.6329000000396,
+                "missed_positive_fraction": 0.13762341812828338,
+                "captured_negative_fraction": 0.15062337336214018,
+                "loss_precision": 0.5217391304347826,
+                "loss_count_recall": 0.16901408450704225
+              }
+            },
+            "1": {
+              "gross": {
+                "n": 41,
+                "positive_count": 24,
+                "negative_count": 17,
+                "zero_count": 0,
+                "positive_yuan": 47285.79999999999,
+                "negative_yuan": 19319.69999999997,
+                "signed_yuan": 27966.100000000017,
+                "missed_positive_fraction": 0.48512138345229083,
+                "captured_negative_fraction": 0.33389559551688025,
+                "loss_precision": 0.4146341463414634,
+                "loss_count_recall": 0.2698412698412698
+              },
+              "net_entry": {
+                "n": 41,
+                "positive_count": 22,
+                "negative_count": 19,
+                "zero_count": 0,
+                "positive_yuan": 44975.26379999999,
+                "negative_yuan": 21055.708199999972,
+                "signed_yuan": 23919.555600000018,
+                "missed_positive_fraction": 0.5003381665431196,
+                "captured_negative_fraction": 0.3273855487889057,
+                "loss_precision": 0.4634146341463415,
+                "loss_count_recall": 0.2676056338028169
+              }
+            }
+          },
+          "exclusion_fraction": 0.5492957746478874
+        },
+        "AllDaily": {
+          "mse": 0.00024766518020104755,
+          "gain_vs_mean": -0.06427105724028515,
+          "sign_accuracy_zero_threshold": 0.49295774647887325,
+          "balanced_accuracy_zero_threshold": 0.5041189471569218,
+          "groups": {
+            "-1": {
+              "gross": {
+                "n": 78,
+                "positive_count": 40,
+                "negative_count": 37,
+                "zero_count": 1,
+                "positive_yuan": 38657.79999999996,
+                "negative_yuan": 31029.50000000007,
+                "signed_yuan": 7628.299999999888,
+                "missed_positive_fraction": 0.3966037460976013,
+                "captured_negative_fraction": 0.536271959765994,
+                "loss_precision": 0.47435897435897434,
+                "loss_count_recall": 0.5873015873015873
+              },
+              "net_entry": {
+                "n": 78,
+                "positive_count": 37,
+                "negative_count": 41,
+                "zero_count": 0,
+                "positive_yuan": 34727.638799999986,
+                "negative_yuan": 34816.5355000001,
+                "signed_yuan": -88.896700000113,
+                "missed_positive_fraction": 0.3863359913313882,
+                "captured_negative_fraction": 0.5413463405422747,
+                "loss_precision": 0.5256410256410257,
+                "loss_count_recall": 0.5774647887323944
+              }
+            },
+            "0": {
+              "gross": {
+                "n": 23,
+                "positive_count": 12,
+                "negative_count": 11,
+                "zero_count": 0,
+                "positive_yuan": 9708.699999999968,
+                "negative_yuan": 10097.899999999989,
+                "signed_yuan": -389.20000000002113,
+                "missed_positive_fraction": 0.09960491258524211,
+                "captured_negative_fraction": 0.1745184621898842,
+                "loss_precision": 0.4782608695652174,
+                "loss_count_recall": 0.1746031746031746
+              },
+              "net_entry": {
+                "n": 23,
+                "positive_count": 10,
+                "negative_count": 13,
+                "zero_count": 0,
+                "positive_yuan": 8565.26619999997,
+                "negative_yuan": 11225.688999999991,
+                "signed_yuan": -2660.422800000021,
+                "missed_positive_fraction": 0.09528636909210834,
+                "captured_negative_fraction": 0.17454308916565361,
+                "loss_precision": 0.5652173913043478,
+                "loss_count_recall": 0.18309859154929578
+              }
+            },
+            "1": {
+              "gross": {
+                "n": 41,
+                "positive_count": 26,
+                "negative_count": 15,
+                "zero_count": 0,
+                "positive_yuan": 49105.59999999999,
+                "negative_yuan": 16734.099999999962,
+                "signed_yuan": 32371.500000000025,
+                "missed_positive_fraction": 0.5037913413171569,
+                "captured_negative_fraction": 0.28920957804412184,
+                "loss_precision": 0.36585365853658536,
+                "loss_count_recall": 0.23809523809523808
+              },
+              "net_entry": {
+                "n": 41,
+                "positive_count": 24,
+                "negative_count": 17,
+                "zero_count": 0,
+                "positive_yuan": 46596.82719999999,
+                "negative_yuan": 18272.490299999965,
+                "signed_yuan": 28324.336900000024,
+                "missed_positive_fraction": 0.5183776395765035,
+                "captured_negative_fraction": 0.28411057029207176,
+                "loss_precision": 0.4146341463414634,
+                "loss_count_recall": 0.23943661971830985
+              }
+            }
+          },
+          "exclusion_fraction": 0.5492957746478874
+        }
+      },
+      "AllDaily_gain_vs_PR": 0.008699840067918463,
+      "exclusion_transition": {
+        "common_low": {
+          "gross": {
+            "n": 68,
+            "positive_count": 36,
+            "negative_count": 31,
+            "zero_count": 1,
+            "positive_yuan": 32096.499999999945,
+            "negative_yuan": 26585.600000000064,
+            "signed_yuan": 5510.899999999876,
+            "missed_positive_fraction": 0.3292890991370862,
+            "captured_negative_fraction": 0.45946959549959915,
+            "loss_precision": 0.45588235294117646,
+            "loss_count_recall": 0.49206349206349204
+          },
+          "net_entry": {
+            "n": 68,
+            "positive_count": 33,
+            "negative_count": 35,
+            "zero_count": 0,
+            "positive_yuan": 28562.237599999975,
+            "negative_yuan": 29779.727600000093,
+            "signed_yuan": -1217.490000000124,
+            "missed_positive_fraction": 0.3177474990853293,
+            "captured_negative_fraction": 0.46303132483143766,
+            "loss_precision": 0.5147058823529411,
+            "loss_count_recall": 0.49295774647887325
+          }
+        },
+        "AllDaily_added_low": {
+          "gross": {
+            "n": 10,
+            "positive_count": 4,
+            "negative_count": 6,
+            "zero_count": 0,
+            "positive_yuan": 6561.300000000015,
+            "negative_yuan": 4443.900000000002,
+            "signed_yuan": 2117.4000000000115,
+            "missed_positive_fraction": 0.06731464696051508,
+            "captured_negative_fraction": 0.07680236426639477,
+            "loss_precision": 0.6,
+            "loss_count_recall": 0.09523809523809523
+          },
+          "net_entry": {
+            "n": 10,
+            "positive_count": 4,
+            "negative_count": 6,
+            "zero_count": 0,
+            "positive_yuan": 6165.401200000013,
+            "negative_yuan": 5036.8079000000025,
+            "signed_yuan": 1128.5933000000111,
+            "missed_positive_fraction": 0.06858849224605897,
+            "captured_negative_fraction": 0.07831501571083696,
+            "loss_precision": 0.6,
+            "loss_count_recall": 0.08450704225352113
+          }
+        },
+        "AllDaily_released_low": {
+          "gross": {
+            "n": 10,
+            "positive_count": 5,
+            "negative_count": 5,
+            "zero_count": 0,
+            "positive_yuan": 4476.099999999975,
+            "negative_yuan": 3298.000000000014,
+            "signed_yuan": 1178.0999999999606,
+            "missed_positive_fraction": 0.04592185866519732,
+            "captured_negative_fraction": 0.05699817668052181,
+            "loss_precision": 0.5,
+            "loss_count_recall": 0.07936507936507936
+          },
+          "net_entry": {
+            "n": 10,
+            "positive_count": 5,
+            "negative_count": 5,
+            "zero_count": 0,
+            "positive_yuan": 3981.2985999999746,
+            "negative_yuan": 3791.9797000000135,
+            "signed_yuan": 189.3188999999608,
+            "missed_positive_fraction": 0.04429091624326785,
+            "captured_negative_fraction": 0.058959753017516464,
+            "loss_precision": 0.5,
+            "loss_count_recall": 0.07042253521126761
+          }
+        },
+        "neither_low": {
+          "gross": {
+            "n": 54,
+            "positive_count": 33,
+            "negative_count": 21,
+            "zero_count": 0,
+            "positive_yuan": 54338.19999999997,
+            "negative_yuan": 23533.99999999994,
+            "signed_yuan": 30804.200000000044,
+            "missed_positive_fraction": 0.5574743952372015,
+            "captured_negative_fraction": 0.4067298635534843,
+            "loss_precision": 0.3888888888888889,
+            "loss_count_recall": 0.3333333333333333
+          },
+          "net_entry": {
+            "n": 54,
+            "positive_count": 29,
+            "negative_count": 25,
+            "zero_count": 0,
+            "positive_yuan": 51180.79479999998,
+            "negative_yuan": 25706.19959999994,
+            "signed_yuan": 25474.59520000005,
+            "missed_positive_fraction": 0.569373092425344,
+            "captured_negative_fraction": 0.3996939064402089,
+            "loss_precision": 0.46296296296296297,
+            "loss_count_recall": 0.352112676056338
+          }
+        }
+      }
+    },
+    "2026": {
+      "n": 184,
+      "gross_total": {
+        "n": 184,
+        "positive_count": 100,
+        "negative_count": 81,
+        "zero_count": 3,
+        "positive_yuan": 158860.1000000001,
+        "negative_yuan": 132089.8000000001,
+        "signed_yuan": 26770.299999999985,
+        "missed_positive_fraction": 1.0,
+        "captured_negative_fraction": 1.0,
+        "loss_precision": 0.44021739130434784,
+        "loss_count_recall": 1.0
+      },
+      "net_entry_total": {
+        "n": 184,
+        "positive_count": 99,
+        "negative_count": 85,
+        "zero_count": 0,
+        "positive_yuan": 149041.0711000001,
+        "negative_yuan": 140413.9446000001,
+        "signed_yuan": 8627.126499999993,
+        "missed_positive_fraction": 1.0,
+        "captured_negative_fraction": 1.0,
+        "loss_precision": 0.46195652173913043,
+        "loss_count_recall": 1.0
+      },
+      "mean_prediction_mse": 0.0004122872060503481,
+      "models": {
+        "PR": {
+          "mse": 0.0004119746548152008,
+          "gain_vs_mean": 0.0007580910359589188,
+          "sign_accuracy_zero_threshold": 0.5652173913043478,
+          "balanced_accuracy_zero_threshold": 0.536497662711255,
+          "groups": {
+            "-1": {
+              "gross": {
+                "n": 54,
+                "positive_count": 25,
+                "negative_count": 27,
+                "zero_count": 2,
+                "positive_yuan": 32576.500000000004,
+                "negative_yuan": 41142.40000000001,
+                "signed_yuan": -8565.900000000009,
+                "missed_positive_fraction": 0.20506407839350463,
+                "captured_negative_fraction": 0.311472952491411,
+                "loss_precision": 0.5,
+                "loss_count_recall": 0.3333333333333333
+              },
+              "net_entry": {
+                "n": 54,
+                "positive_count": 25,
+                "negative_count": 29,
+                "zero_count": 0,
+                "positive_yuan": 30109.701100000002,
+                "negative_yuan": 44006.180600000014,
+                "signed_yuan": -13896.479500000009,
+                "missed_positive_fraction": 0.20202284429234743,
+                "captured_negative_fraction": 0.313403207390557,
+                "loss_precision": 0.5370370370370371,
+                "loss_count_recall": 0.3411764705882353
+              }
+            },
+            "0": {
+              "gross": {
+                "n": 46,
+                "positive_count": 23,
+                "negative_count": 22,
+                "zero_count": 1,
+                "positive_yuan": 36610.90000000001,
+                "negative_yuan": 30996.40000000001,
+                "signed_yuan": 5614.500000000005,
+                "missed_positive_fraction": 0.23046000852322257,
+                "captured_negative_fraction": 0.23466157114326755,
+                "loss_precision": 0.4782608695652174,
+                "loss_count_recall": 0.2716049382716049
+              },
+              "net_entry": {
+                "n": 46,
+                "positive_count": 23,
+                "negative_count": 23,
+                "zero_count": 0,
+                "positive_yuan": 34344.11740000001,
+                "negative_yuan": 33264.00030000001,
+                "signed_yuan": 1080.1171000000002,
+                "missed_positive_fraction": 0.23043391426619977,
+                "captured_negative_fraction": 0.23689955007502855,
+                "loss_precision": 0.5,
+                "loss_count_recall": 0.27058823529411763
+              }
+            },
+            "1": {
+              "gross": {
+                "n": 84,
+                "positive_count": 52,
+                "negative_count": 32,
+                "zero_count": 0,
+                "positive_yuan": 89672.70000000007,
+                "negative_yuan": 59951.00000000009,
+                "signed_yuan": 29721.699999999997,
+                "missed_positive_fraction": 0.5644759130832728,
+                "captured_negative_fraction": 0.4538654763653215,
+                "loss_precision": 0.38095238095238093,
+                "loss_count_recall": 0.3950617283950617
+              },
+              "net_entry": {
+                "n": 84,
+                "positive_count": 51,
+                "negative_count": 33,
+                "zero_count": 0,
+                "positive_yuan": 84587.25260000008,
+                "negative_yuan": 63143.763700000076,
+                "signed_yuan": 21443.488899999997,
+                "missed_positive_fraction": 0.5675432414414529,
+                "captured_negative_fraction": 0.44969724253441445,
+                "loss_precision": 0.39285714285714285,
+                "loss_count_recall": 0.38823529411764707
+              }
+            }
+          },
+          "exclusion_fraction": 0.29347826086956524
+        },
+        "AllDaily": {
+          "mse": 0.0004275500964472003,
+          "gain_vs_mean": -0.03702004372890544,
+          "sign_accuracy_zero_threshold": 0.532608695652174,
+          "balanced_accuracy_zero_threshold": 0.507371449119022,
+          "groups": {
+            "-1": {
+              "gross": {
+                "n": 60,
+                "positive_count": 31,
+                "negative_count": 28,
+                "zero_count": 1,
+                "positive_yuan": 47525.700000000004,
+                "negative_yuan": 45496.600000000006,
+                "signed_yuan": 2029.100000000001,
+                "missed_positive_fraction": 0.2991670029164024,
+                "captured_negative_fraction": 0.34443689066074723,
+                "loss_precision": 0.4666666666666667,
+                "loss_count_recall": 0.345679012345679
+              },
+              "net_entry": {
+                "n": 60,
+                "positive_count": 31,
+                "negative_count": 29,
+                "zero_count": 0,
+                "positive_yuan": 44469.8289,
+                "negative_yuan": 48358.9311,
+                "signed_yuan": -3889.1022,
+                "missed_positive_fraction": 0.298372982506028,
+                "captured_negative_fraction": 0.34440262495125407,
+                "loss_precision": 0.48333333333333334,
+                "loss_count_recall": 0.3411764705882353
+              }
+            },
+            "0": {
+              "gross": {
+                "n": 37,
+                "positive_count": 18,
+                "negative_count": 18,
+                "zero_count": 1,
+                "positive_yuan": 20955.500000000004,
+                "negative_yuan": 27829.200000000026,
+                "signed_yuan": -6873.700000000024,
+                "missed_positive_fraction": 0.13191166315519123,
+                "captured_negative_fraction": 0.21068394380186817,
+                "loss_precision": 0.4864864864864865,
+                "loss_count_recall": 0.2222222222222222
+              },
+              "net_entry": {
+                "n": 37,
+                "positive_count": 18,
+                "negative_count": 19,
+                "zero_count": 0,
+                "positive_yuan": 19177.516700000007,
+                "negative_yuan": 29703.697800000027,
+                "signed_yuan": -10526.181100000025,
+                "missed_positive_fraction": 0.1286726977903475,
+                "captured_negative_fraction": 0.2115437885077406,
+                "loss_precision": 0.5135135135135135,
+                "loss_count_recall": 0.2235294117647059
+              }
+            },
+            "1": {
+              "gross": {
+                "n": 87,
+                "positive_count": 51,
+                "negative_count": 35,
+                "zero_count": 1,
+                "positive_yuan": 90378.90000000007,
+                "negative_yuan": 58764.00000000007,
+                "signed_yuan": 31614.90000000002,
+                "missed_positive_fraction": 0.5689213339284064,
+                "captured_negative_fraction": 0.4448791655373846,
+                "loss_precision": 0.40229885057471265,
+                "loss_count_recall": 0.43209876543209874
+              },
+              "net_entry": {
+                "n": 87,
+                "positive_count": 50,
+                "negative_count": 37,
+                "zero_count": 0,
+                "positive_yuan": 85393.72550000007,
+                "negative_yuan": 62351.31570000006,
+                "signed_yuan": 23042.409800000012,
+                "missed_positive_fraction": 0.5729543197036244,
+                "captured_negative_fraction": 0.4440535865410052,
+                "loss_precision": 0.42528735632183906,
+                "loss_count_recall": 0.43529411764705883
+              }
+            }
+          },
+          "exclusion_fraction": 0.32608695652173914
+        }
+      },
+      "AllDaily_gain_vs_PR": -0.03780679575782675,
+      "exclusion_transition": {
+        "common_low": {
+          "gross": {
+            "n": 47,
+            "positive_count": 22,
+            "negative_count": 24,
+            "zero_count": 1,
+            "positive_yuan": 28741.09999999999,
+            "negative_yuan": 38883.400000000016,
+            "signed_yuan": -10142.300000000017,
+            "missed_positive_fraction": 0.18092082278684185,
+            "captured_negative_fraction": 0.29437095067143704,
+            "loss_precision": 0.5106382978723404,
+            "loss_count_recall": 0.2962962962962963
+          },
+          "net_entry": {
+            "n": 47,
+            "positive_count": 22,
+            "negative_count": 25,
+            "zero_count": 0,
+            "positive_yuan": 26572.905699999992,
+            "negative_yuan": 41350.262200000005,
+            "signed_yuan": -14777.356500000016,
+            "missed_positive_fraction": 0.17829250356212703,
+            "captured_negative_fraction": 0.29448828830922236,
+            "loss_precision": 0.5319148936170213,
+            "loss_count_recall": 0.29411764705882354
+          }
+        },
+        "AllDaily_added_low": {
+          "gross": {
+            "n": 13,
+            "positive_count": 9,
+            "negative_count": 4,
+            "zero_count": 0,
+            "positive_yuan": 18784.60000000001,
+            "negative_yuan": 6613.199999999994,
+            "signed_yuan": 12171.400000000018,
+            "missed_positive_fraction": 0.11824618012956054,
+            "captured_negative_fraction": 0.05006593998931022,
+            "loss_precision": 0.3076923076923077,
+            "loss_count_recall": 0.04938271604938271
+          },
+          "net_entry": {
+            "n": 13,
+            "positive_count": 9,
+            "negative_count": 4,
+            "zero_count": 0,
+            "positive_yuan": 17896.92320000001,
+            "negative_yuan": 7008.668899999994,
+            "signed_yuan": 10888.254300000019,
+            "missed_positive_fraction": 0.12008047894390098,
+            "captured_negative_fraction": 0.0499143366420317,
+            "loss_precision": 0.3076923076923077,
+            "loss_count_recall": 0.047058823529411764
+          }
+        },
+        "AllDaily_released_low": {
+          "gross": {
+            "n": 7,
+            "positive_count": 3,
+            "negative_count": 3,
+            "zero_count": 1,
+            "positive_yuan": 3835.400000000011,
+            "negative_yuan": 2259.0000000000023,
+            "signed_yuan": 1576.4000000000087,
+            "missed_positive_fraction": 0.024143255606662774,
+            "captured_negative_fraction": 0.017102001819973994,
+            "loss_precision": 0.42857142857142855,
+            "loss_count_recall": 0.037037037037037035
+          },
+          "net_entry": {
+            "n": 7,
+            "positive_count": 3,
+            "negative_count": 4,
+            "zero_count": 0,
+            "positive_yuan": 3536.7954000000104,
+            "negative_yuan": 2655.9184000000023,
+            "signed_yuan": 880.8770000000087,
+            "missed_positive_fraction": 0.023730340730220425,
+            "captured_negative_fraction": 0.018914919081334608,
+            "loss_precision": 0.5714285714285714,
+            "loss_count_recall": 0.047058823529411764
+          }
+        },
+        "neither_low": {
+          "gross": {
+            "n": 117,
+            "positive_count": 66,
+            "negative_count": 50,
+            "zero_count": 1,
+            "positive_yuan": 107499.00000000007,
+            "negative_yuan": 84334.2000000001,
+            "signed_yuan": 23164.799999999974,
+            "missed_positive_fraction": 0.6766897414769348,
+            "captured_negative_fraction": 0.6384611075192789,
+            "loss_precision": 0.42735042735042733,
+            "loss_count_recall": 0.6172839506172839
+          },
+          "net_entry": {
+            "n": 117,
+            "positive_count": 65,
+            "negative_count": 52,
+            "zero_count": 0,
+            "positive_yuan": 101034.44680000006,
+            "negative_yuan": 89399.0951000001,
+            "signed_yuan": 11635.351699999983,
+            "missed_positive_fraction": 0.6778966767637515,
+            "captured_negative_fraction": 0.6366824559674114,
+            "loss_precision": 0.4444444444444444,
+            "loss_count_recall": 0.611764705882353
+          }
+        }
+      }
+    }
+  },
+  "periods": {
+    "0": {
+      "n": 83,
+      "gross_total": {
+        "n": 83,
+        "positive_count": 47,
+        "negative_count": 35,
+        "zero_count": 1,
+        "positive_yuan": 47799.39999999995,
+        "negative_yuan": 24892.900000000016,
+        "signed_yuan": 22906.499999999924,
+        "missed_positive_fraction": 1.0,
+        "captured_negative_fraction": 1.0,
+        "loss_precision": 0.42168674698795183,
+        "loss_count_recall": 1.0
+      },
+      "net_entry_total": {
+        "n": 83,
+        "positive_count": 43,
+        "negative_count": 40,
+        "zero_count": 0,
+        "positive_yuan": 43188.97859999998,
+        "negative_yuan": 28492.56260000006,
+        "signed_yuan": 14696.415999999926,
+        "missed_positive_fraction": 1.0,
+        "captured_negative_fraction": 1.0,
+        "loss_precision": 0.4819277108433735,
+        "loss_count_recall": 1.0
+      },
+      "mean_prediction_mse": 0.0001306981317914474,
+      "models": {
+        "PR": {
+          "mse": 0.0001610793188514495,
+          "gain_vs_mean": -0.23245310888208248,
+          "sign_accuracy_zero_threshold": 0.43373493975903615,
+          "balanced_accuracy_zero_threshold": 0.49494047619047615,
+          "groups": {
+            "-1": {
+              "gross": {
+                "n": 61,
+                "positive_count": 34,
+                "negative_count": 26,
+                "zero_count": 1,
+                "positive_yuan": 30480.099999999937,
+                "negative_yuan": 19350.900000000067,
+                "signed_yuan": 11129.199999999864,
+                "missed_positive_fraction": 0.6376670000041835,
+                "captured_negative_fraction": 0.7773662369591352,
+                "loss_precision": 0.4262295081967213,
+                "loss_count_recall": 0.7428571428571429
+              },
+              "net_entry": {
+                "n": 61,
+                "positive_count": 31,
+                "negative_count": 30,
+                "zero_count": 0,
+                "positive_yuan": 27141.648599999964,
+                "negative_yuan": 22048.843800000097,
+                "signed_yuan": 5092.804799999865,
+                "missed_positive_fraction": 0.6284392333371824,
+                "captured_negative_fraction": 0.7738455859354698,
+                "loss_precision": 0.4918032786885246,
+                "loss_count_recall": 0.75
+              }
+            },
+            "0": {
+              "gross": {
+                "n": 14,
+                "positive_count": 9,
+                "negative_count": 5,
+                "zero_count": 0,
+                "positive_yuan": 11963.599999999993,
+                "negative_yuan": 3277.5999999999653,
+                "signed_yuan": 8686.00000000003,
+                "missed_positive_fraction": 0.25028766051456725,
+                "captured_negative_fraction": 0.13166806599471992,
+                "loss_precision": 0.35714285714285715,
+                "loss_count_recall": 0.14285714285714285
+              },
+              "net_entry": {
+                "n": 14,
+                "positive_count": 8,
+                "negative_count": 6,
+                "zero_count": 0,
+                "positive_yuan": 11086.199200000003,
+                "negative_yuan": 3783.944599999975,
+                "signed_yuan": 7302.2546000000275,
+                "missed_positive_fraction": 0.25669046963754794,
+                "captured_negative_fraction": 0.13280464285090196,
+                "loss_precision": 0.42857142857142855,
+                "loss_count_recall": 0.15
+              }
+            },
+            "1": {
+              "gross": {
+                "n": 8,
+                "positive_count": 4,
+                "negative_count": 4,
+                "zero_count": 0,
+                "positive_yuan": 5355.700000000014,
+                "negative_yuan": 2264.399999999982,
+                "signed_yuan": 3091.300000000033,
+                "missed_positive_fraction": 0.11204533948124915,
+                "captured_negative_fraction": 0.09096569704614489,
+                "loss_precision": 0.5,
+                "loss_count_recall": 0.11428571428571428
+              },
+              "net_entry": {
+                "n": 8,
+                "positive_count": 4,
+                "negative_count": 4,
+                "zero_count": 0,
+                "positive_yuan": 4961.1308000000145,
+                "negative_yuan": 2659.7741999999816,
+                "signed_yuan": 2301.3566000000333,
+                "missed_positive_fraction": 0.11487029702526971,
+                "captured_negative_fraction": 0.09334977121362809,
+                "loss_precision": 0.5,
+                "loss_count_recall": 0.1
+              }
+            }
+          },
+          "exclusion_fraction": 0.7349397590361446
+        },
+        "AllDaily": {
+          "mse": 0.0001639901037443107,
+          "gain_vs_mean": -0.25472416090833394,
+          "sign_accuracy_zero_threshold": 0.4457831325301205,
+          "balanced_accuracy_zero_threshold": 0.5014880952380952,
+          "groups": {
+            "-1": {
+              "gross": {
+                "n": 60,
+                "positive_count": 33,
+                "negative_count": 26,
+                "zero_count": 1,
+                "positive_yuan": 33589.69999999997,
+                "negative_yuan": 19033.30000000005,
+                "signed_yuan": 14556.399999999916,
+                "missed_positive_fraction": 0.7027222099022165,
+                "captured_negative_fraction": 0.7646075788678716,
+                "loss_precision": 0.43333333333333335,
+                "loss_count_recall": 0.7428571428571429
+              },
+              "net_entry": {
+                "n": 60,
+                "positive_count": 30,
+                "negative_count": 30,
+                "zero_count": 0,
+                "positive_yuan": 30349.80759999999,
+                "negative_yuan": 21732.16090000008,
+                "signed_yuan": 8617.646699999916,
+                "missed_positive_fraction": 0.7027211243194347,
+                "captured_negative_fraction": 0.762731004757011,
+                "loss_precision": 0.5,
+                "loss_count_recall": 0.75
+              }
+            },
+            "0": {
+              "gross": {
+                "n": 16,
+                "positive_count": 10,
+                "negative_count": 6,
+                "zero_count": 0,
+                "positive_yuan": 8853.99999999996,
+                "negative_yuan": 3922.399999999984,
+                "signed_yuan": 4931.599999999976,
+                "missed_positive_fraction": 0.1852324506165343,
+                "captured_negative_fraction": 0.15757103431098754,
+                "loss_precision": 0.375,
+                "loss_count_recall": 0.17142857142857143
+              },
+              "net_entry": {
+                "n": 16,
+                "positive_count": 9,
+                "negative_count": 7,
+                "zero_count": 0,
+                "positive_yuan": 7878.040199999969,
+                "negative_yuan": 4526.723699999995,
+                "signed_yuan": 3351.316499999975,
+                "missed_positive_fraction": 0.18240857865529547,
+                "captured_negative_fraction": 0.15887387047453516,
+                "loss_precision": 0.4375,
+                "loss_count_recall": 0.175
+              }
+            },
+            "1": {
+              "gross": {
+                "n": 7,
+                "positive_count": 4,
+                "negative_count": 3,
+                "zero_count": 0,
+                "positive_yuan": 5355.700000000014,
+                "negative_yuan": 1937.1999999999814,
+                "signed_yuan": 3418.500000000033,
+                "missed_positive_fraction": 0.11204533948124915,
+                "captured_negative_fraction": 0.07782138682114097,
+                "loss_precision": 0.42857142857142855,
+                "loss_count_recall": 0.08571428571428572
+              },
+              "net_entry": {
+                "n": 7,
+                "positive_count": 4,
+                "negative_count": 3,
+                "zero_count": 0,
+                "positive_yuan": 4961.1308000000145,
+                "negative_yuan": 2233.6779999999812,
+                "signed_yuan": 2727.452800000033,
+                "missed_positive_fraction": 0.11487029702526971,
+                "captured_negative_fraction": 0.07839512476845367,
+                "loss_precision": 0.42857142857142855,
+                "loss_count_recall": 0.075
+              }
+            }
+          },
+          "exclusion_fraction": 0.7228915662650602
+        }
+      },
+      "AllDaily_gain_vs_PR": -0.018070506590269098,
+      "exclusion_transition": {
+        "common_low": {
+          "gross": {
+            "n": 56,
+            "positive_count": 31,
+            "negative_count": 24,
+            "zero_count": 1,
+            "positive_yuan": 28472.199999999957,
+            "negative_yuan": 18162.700000000055,
+            "signed_yuan": 10309.499999999905,
+            "missed_positive_fraction": 0.5956601965715048,
+            "captured_negative_fraction": 0.7296337509892398,
+            "loss_precision": 0.42857142857142855,
+            "loss_count_recall": 0.6857142857142857
+          },
+          "net_entry": {
+            "n": 56,
+            "positive_count": 28,
+            "negative_count": 28,
+            "zero_count": 0,
+            "positive_yuan": 25430.267399999993,
+            "negative_yuan": 20663.369500000088,
+            "signed_yuan": 4766.897899999903,
+            "missed_positive_fraction": 0.5888138183476284,
+            "captured_negative_fraction": 0.7252197631391725,
+            "loss_precision": 0.5,
+            "loss_count_recall": 0.7
+          }
+        },
+        "AllDaily_added_low": {
+          "gross": {
+            "n": 4,
+            "positive_count": 2,
+            "negative_count": 2,
+            "zero_count": 0,
+            "positive_yuan": 5117.5000000000055,
+            "negative_yuan": 870.5999999999921,
+            "signed_yuan": 4246.900000000013,
+            "missed_positive_fraction": 0.1070620133307115,
+            "captured_negative_fraction": 0.03497382787863172,
+            "loss_precision": 0.5,
+            "loss_count_recall": 0.05714285714285714
+          },
+          "net_entry": {
+            "n": 4,
+            "positive_count": 2,
+            "negative_count": 2,
+            "zero_count": 0,
+            "positive_yuan": 4919.540200000005,
+            "negative_yuan": 1068.7913999999919,
+            "signed_yuan": 3850.748800000013,
+            "missed_positive_fraction": 0.1139073059718066,
+            "captured_negative_fraction": 0.03751124161783854,
+            "loss_precision": 0.5,
+            "loss_count_recall": 0.05
+          }
+        },
+        "AllDaily_released_low": {
+          "gross": {
+            "n": 5,
+            "positive_count": 3,
+            "negative_count": 2,
+            "zero_count": 0,
+            "positive_yuan": 2007.8999999999721,
+            "negative_yuan": 1188.2000000000114,
+            "signed_yuan": 819.699999999961,
+            "missed_positive_fraction": 0.042006803432678534,
+            "captured_negative_fraction": 0.04773248596989546,
+            "loss_precision": 0.4,
+            "loss_count_recall": 0.05714285714285714
+          },
+          "net_entry": {
+            "n": 5,
+            "positive_count": 3,
+            "negative_count": 2,
+            "zero_count": 0,
+            "positive_yuan": 1711.3811999999725,
+            "negative_yuan": 1385.4743000000115,
+            "signed_yuan": 325.906899999961,
+            "missed_positive_fraction": 0.03962541498955415,
+            "captured_negative_fraction": 0.04862582279629732,
+            "loss_precision": 0.4,
+            "loss_count_recall": 0.05
+          }
+        },
+        "neither_low": {
+          "gross": {
+            "n": 18,
+            "positive_count": 11,
+            "negative_count": 7,
+            "zero_count": 0,
+            "positive_yuan": 12201.800000000003,
+            "negative_yuan": 4671.399999999955,
+            "signed_yuan": 7530.400000000048,
+            "missed_positive_fraction": 0.25527098666510495,
+            "captured_negative_fraction": 0.1876599351622331,
+            "loss_precision": 0.3888888888888889,
+            "loss_count_recall": 0.2
+          },
+          "net_entry": {
+            "n": 18,
+            "positive_count": 10,
+            "negative_count": 8,
+            "zero_count": 0,
+            "positive_yuan": 11127.789800000011,
+            "negative_yuan": 5374.927399999965,
+            "signed_yuan": 5752.862400000047,
+            "missed_positive_fraction": 0.257653460691011,
+            "captured_negative_fraction": 0.18864317244669151,
+            "loss_precision": 0.4444444444444444,
+            "loss_count_recall": 0.2
+          }
+        }
+      }
+    },
+    "1": {
+      "n": 83,
+      "gross_total": {
+        "n": 83,
+        "positive_count": 47,
+        "negative_count": 36,
+        "zero_count": 0,
+        "positive_yuan": 80123.09999999998,
+        "negative_yuan": 43886.2,
+        "signed_yuan": 36236.89999999998,
+        "missed_positive_fraction": 1.0,
+        "captured_negative_fraction": 1.0,
+        "loss_precision": 0.43373493975903615,
+        "loss_count_recall": 1.0
+      },
+      "net_entry_total": {
+        "n": 83,
+        "positive_count": 43,
+        "negative_count": 40,
+        "zero_count": 0,
+        "positive_yuan": 75616.39619999997,
+        "negative_yuan": 47573.870099999986,
+        "signed_yuan": 28042.52609999999,
+        "missed_positive_fraction": 1.0,
+        "captured_negative_fraction": 1.0,
+        "loss_precision": 0.4819277108433735,
+        "loss_count_recall": 1.0
+      },
+      "mean_prediction_mse": 0.00042391436726537426,
+      "models": {
+        "PR": {
+          "mse": 0.0004184336779702152,
+          "gain_vs_mean": 0.012928765143098153,
+          "sign_accuracy_zero_threshold": 0.6265060240963856,
+          "balanced_accuracy_zero_threshold": 0.5986997635933806,
+          "groups": {
+            "-1": {
+              "gross": {
+                "n": 24,
+                "positive_count": 10,
+                "negative_count": 14,
+                "zero_count": 0,
+                "positive_yuan": 10470.699999999975,
+                "negative_yuan": 14776.800000000012,
+                "signed_yuan": -4306.1000000000395,
+                "missed_positive_fraction": 0.13068266205376447,
+                "captured_negative_fraction": 0.3367072109227961,
+                "loss_precision": 0.5833333333333334,
+                "loss_count_recall": 0.3888888888888889
+              },
+              "net_entry": {
+                "n": 24,
+                "positive_count": 10,
+                "negative_count": 14,
+                "zero_count": 0,
+                "positive_yuan": 9485.958499999973,
+                "negative_yuan": 16163.982700000013,
+                "signed_yuan": -6678.024200000041,
+                "missed_positive_fraction": 0.12544843415851623,
+                "captured_negative_fraction": 0.3397659821667529,
+                "loss_precision": 0.5833333333333334,
+                "loss_count_recall": 0.35
+              }
+            },
+            "0": {
+              "gross": {
+                "n": 17,
+                "positive_count": 10,
+                "negative_count": 7,
+                "zero_count": 0,
+                "positive_yuan": 18212.100000000017,
+                "negative_yuan": 8871.700000000008,
+                "signed_yuan": 9340.40000000001,
+                "missed_positive_fraction": 0.2273014898325205,
+                "captured_negative_fraction": 0.2021523850321971,
+                "loss_precision": 0.4117647058823529,
+                "loss_count_recall": 0.19444444444444445
+              },
+              "net_entry": {
+                "n": 17,
+                "positive_count": 9,
+                "negative_count": 8,
+                "zero_count": 0,
+                "positive_yuan": 17255.350400000007,
+                "negative_yuan": 9591.0933,
+                "signed_yuan": 7664.257100000009,
+                "missed_positive_fraction": 0.228195884320655,
+                "captured_negative_fraction": 0.20160422685477514,
+                "loss_precision": 0.47058823529411764,
+                "loss_count_recall": 0.2
+              }
+            },
+            "1": {
+              "gross": {
+                "n": 42,
+                "positive_count": 27,
+                "negative_count": 15,
+                "zero_count": 0,
+                "positive_yuan": 51440.29999999998,
+                "negative_yuan": 20237.69999999998,
+                "signed_yuan": 31202.60000000001,
+                "missed_positive_fraction": 0.6420158481137149,
+                "captured_negative_fraction": 0.46114040404500684,
+                "loss_precision": 0.35714285714285715,
+                "loss_count_recall": 0.4166666666666667
+              },
+              "net_entry": {
+                "n": 42,
+                "positive_count": 24,
+                "negative_count": 18,
+                "zero_count": 0,
+                "positive_yuan": 48875.087299999985,
+                "negative_yuan": 21818.79409999997,
+                "signed_yuan": 27056.293200000015,
+                "missed_positive_fraction": 0.6463556815208288,
+                "captured_negative_fraction": 0.45862979097847195,
+                "loss_precision": 0.42857142857142855,
+                "loss_count_recall": 0.45
+              }
+            }
+          },
+          "exclusion_fraction": 0.2891566265060241
+        },
+        "AllDaily": {
+          "mse": 0.00042850414800172087,
+          "gain_vs_mean": -0.01082714125957751,
+          "sign_accuracy_zero_threshold": 0.5662650602409639,
+          "balanced_accuracy_zero_threshold": 0.5357565011820331,
+          "groups": {
+            "-1": {
+              "gross": {
+                "n": 26,
+                "positive_count": 12,
+                "negative_count": 14,
+                "zero_count": 0,
+                "positive_yuan": 17609.899999999987,
+                "negative_yuan": 16177.800000000017,
+                "signed_yuan": 1432.0999999999708,
+                "missed_positive_fraction": 0.2197855549772786,
+                "captured_negative_fraction": 0.36863068572808805,
+                "loss_precision": 0.5384615384615384,
+                "loss_count_recall": 0.3888888888888889
+              },
+              "net_entry": {
+                "n": 26,
+                "positive_count": 12,
+                "negative_count": 14,
+                "zero_count": 0,
+                "positive_yuan": 16427.432099999987,
+                "negative_yuan": 17563.493800000015,
+                "signed_yuan": -1136.061700000029,
+                "missed_positive_fraction": 0.2172469586695272,
+                "captured_negative_fraction": 0.36918362460488624,
+                "loss_precision": 0.5384615384615384,
+                "loss_count_recall": 0.35
+              }
+            },
+            "0": {
+              "gross": {
+                "n": 11,
+                "positive_count": 5,
+                "negative_count": 6,
+                "zero_count": 0,
+                "positive_yuan": 5616.500000000006,
+                "negative_yuan": 6238.000000000013,
+                "signed_yuan": -621.5000000000061,
+                "missed_positive_fraction": 0.07009838610837583,
+                "captured_negative_fraction": 0.1421403539153541,
+                "loss_precision": 0.5454545454545454,
+                "loss_count_recall": 0.16666666666666666
+              },
+              "net_entry": {
+                "n": 11,
+                "positive_count": 4,
+                "negative_count": 7,
+                "zero_count": 0,
+                "positive_yuan": 5152.944599999999,
+                "negative_yuan": 6860.9653000000035,
+                "signed_yuan": -1708.020700000006,
+                "missed_positive_fraction": 0.06814586331740577,
+                "captured_negative_fraction": 0.14421709408081151,
+                "loss_precision": 0.6363636363636364,
+                "loss_count_recall": 0.175
+              }
+            },
+            "1": {
+              "gross": {
+                "n": 46,
+                "positive_count": 30,
+                "negative_count": 16,
+                "zero_count": 0,
+                "positive_yuan": 56896.69999999999,
+                "negative_yuan": 21470.39999999997,
+                "signed_yuan": 35426.30000000001,
+                "missed_positive_fraction": 0.7101160589143456,
+                "captured_negative_fraction": 0.48922896035655783,
+                "loss_precision": 0.34782608695652173,
+                "loss_count_recall": 0.4444444444444444
+              },
+              "net_entry": {
+                "n": 46,
+                "positive_count": 27,
+                "negative_count": 19,
+                "zero_count": 0,
+                "positive_yuan": 54036.01949999997,
+                "negative_yuan": 23149.410999999964,
+                "signed_yuan": 30886.608500000013,
+                "missed_positive_fraction": 0.714607178013067,
+                "captured_negative_fraction": 0.48659928131430225,
+                "loss_precision": 0.41304347826086957,
+                "loss_count_recall": 0.475
+              }
+            }
+          },
+          "exclusion_fraction": 0.3132530120481928
+        }
+      },
+      "AllDaily_gain_vs_PR": -0.02406706381846857,
+      "exclusion_transition": {
+        "common_low": {
+          "gross": {
+            "n": 18,
+            "positive_count": 8,
+            "negative_count": 10,
+            "zero_count": 0,
+            "positive_yuan": 8002.499999999972,
+            "negative_yuan": 12604.500000000005,
+            "signed_yuan": -4602.000000000034,
+            "missed_positive_fraction": 0.09987756339931897,
+            "captured_negative_fraction": 0.2872087353199868,
+            "loss_precision": 0.5555555555555556,
+            "loss_count_recall": 0.2777777777777778
+          },
+          "net_entry": {
+            "n": 18,
+            "positive_count": 8,
+            "negative_count": 10,
+            "zero_count": 0,
+            "positive_yuan": 7216.041099999971,
+            "negative_yuan": 13595.477300000002,
+            "signed_yuan": -6379.436200000033,
+            "missed_positive_fraction": 0.09542958224184683,
+            "captured_negative_fraction": 0.28577614710391214,
+            "loss_precision": 0.5555555555555556,
+            "loss_count_recall": 0.25
+          }
+        },
+        "AllDaily_added_low": {
+          "gross": {
+            "n": 8,
+            "positive_count": 4,
+            "negative_count": 4,
+            "zero_count": 0,
+            "positive_yuan": 9607.400000000016,
+            "negative_yuan": 3573.300000000011,
+            "signed_yuan": 6034.100000000006,
+            "missed_positive_fraction": 0.11990799157795964,
+            "captured_negative_fraction": 0.08142195040810121,
+            "loss_precision": 0.5,
+            "loss_count_recall": 0.1111111111111111
+          },
+          "net_entry": {
+            "n": 8,
+            "positive_count": 4,
+            "negative_count": 4,
+            "zero_count": 0,
+            "positive_yuan": 9211.391000000016,
+            "negative_yuan": 3968.0165000000106,
+            "signed_yuan": 5243.374500000004,
+            "missed_positive_fraction": 0.12181737642768037,
+            "captured_negative_fraction": 0.08340747750097405,
+            "loss_precision": 0.5,
+            "loss_count_recall": 0.1
+          }
+        },
+        "AllDaily_released_low": {
+          "gross": {
+            "n": 6,
+            "positive_count": 2,
+            "negative_count": 4,
+            "zero_count": 0,
+            "positive_yuan": 2468.2000000000025,
+            "negative_yuan": 2172.3000000000093,
+            "signed_yuan": 295.8999999999929,
+            "missed_positive_fraction": 0.030805098654445508,
+            "captured_negative_fraction": 0.049498475602809296,
+            "loss_precision": 0.6666666666666666,
+            "loss_count_recall": 0.1111111111111111
+          },
+          "net_entry": {
+            "n": 6,
+            "positive_count": 2,
+            "negative_count": 4,
+            "zero_count": 0,
+            "positive_yuan": 2269.9174000000025,
+            "negative_yuan": 2568.505400000009,
+            "signed_yuan": -298.588000000007,
+            "missed_positive_fraction": 0.030018851916669406,
+            "captured_negative_fraction": 0.05398983506284073,
+            "loss_precision": 0.6666666666666666,
+            "loss_count_recall": 0.1
+          }
+        },
+        "neither_low": {
+          "gross": {
+            "n": 51,
+            "positive_count": 33,
+            "negative_count": 18,
+            "zero_count": 0,
+            "positive_yuan": 60044.99999999999,
+            "negative_yuan": 25536.099999999973,
+            "signed_yuan": 34508.900000000016,
+            "missed_positive_fraction": 0.7494093463682759,
+            "captured_negative_fraction": 0.5818708386691027,
+            "loss_precision": 0.35294117647058826,
+            "loss_count_recall": 0.5
+          },
+          "net_entry": {
+            "n": 51,
+            "positive_count": 29,
+            "negative_count": 22,
+            "zero_count": 0,
+            "positive_yuan": 56919.04669999998,
+            "negative_yuan": 27441.870899999958,
+            "signed_yuan": 29477.175800000023,
+            "missed_positive_fraction": 0.7527341894138033,
+            "captured_negative_fraction": 0.5768265403322731,
+            "loss_precision": 0.43137254901960786,
+            "loss_count_recall": 0.55
+          }
+        }
+      }
+    },
+    "2": {
+      "n": 80,
+      "gross_total": {
+        "n": 80,
+        "positive_count": 48,
+        "negative_count": 31,
+        "zero_count": 1,
+        "positive_yuan": 78108.10000000002,
+        "negative_yuan": 48533.80000000005,
+        "signed_yuan": 29574.299999999974,
+        "missed_positive_fraction": 1.0,
+        "captured_negative_fraction": 1.0,
+        "loss_precision": 0.3875,
+        "loss_count_recall": 1.0
+      },
+      "net_entry_total": {
+        "n": 80,
+        "positive_count": 48,
+        "negative_count": 32,
+        "zero_count": 0,
+        "positive_yuan": 73374.74370000004,
+        "negative_yuan": 51687.07690000005,
+        "signed_yuan": 21687.666799999977,
+        "missed_positive_fraction": 1.0,
+        "captured_negative_fraction": 1.0,
+        "loss_precision": 0.4,
+        "loss_count_recall": 1.0
+      },
+      "mean_prediction_mse": 0.0003806491219387998,
+      "models": {
+        "PR": {
+          "mse": 0.0003773037088284834,
+          "gain_vs_mean": 0.008788705706916922,
+          "sign_accuracy_zero_threshold": 0.5625,
+          "balanced_accuracy_zero_threshold": 0.5065832784726794,
+          "groups": {
+            "-1": {
+              "gross": {
+                "n": 22,
+                "positive_count": 12,
+                "negative_count": 9,
+                "zero_count": 1,
+                "positive_yuan": 18952.99999999999,
+                "negative_yuan": 16680.699999999983,
+                "signed_yuan": 2272.3000000000034,
+                "missed_positive_fraction": 0.24265089024057665,
+                "captured_negative_fraction": 0.3436924370232697,
+                "loss_precision": 0.4090909090909091,
+                "loss_count_recall": 0.2903225806451613
+              },
+              "net_entry": {
+                "n": 22,
+                "positive_count": 12,
+                "negative_count": 10,
+                "zero_count": 0,
+                "positive_yuan": 17768.78289999999,
+                "negative_yuan": 17669.357499999987,
+                "signed_yuan": 99.42540000000277,
+                "missed_positive_fraction": 0.24216483770831873,
+                "captured_negative_fraction": 0.341852520199299,
+                "loss_precision": 0.45454545454545453,
+                "loss_count_recall": 0.3125
+              }
+            },
+            "0": {
+              "gross": {
+                "n": 19,
+                "positive_count": 12,
+                "negative_count": 7,
+                "zero_count": 0,
+                "positive_yuan": 14576.600000000017,
+                "negative_yuan": 9375.50000000002,
+                "signed_yuan": 5201.1,
+                "missed_positive_fraction": 0.18662084982223373,
+                "captured_negative_fraction": 0.19317465354041946,
+                "loss_precision": 0.3684210526315789,
+                "loss_count_recall": 0.22580645161290322
+              },
+              "net_entry": {
+                "n": 19,
+                "positive_count": 12,
+                "negative_count": 7,
+                "zero_count": 0,
+                "positive_yuan": 13393.835700000014,
+                "negative_yuan": 10063.750600000018,
+                "signed_yuan": 3330.0850999999984,
+                "missed_positive_fraction": 0.18254013608227443,
+                "captured_negative_fraction": 0.19470535390249566,
+                "loss_precision": 0.3684210526315789,
+                "loss_count_recall": 0.21875
+              }
+            },
+            "1": {
+              "gross": {
+                "n": 39,
+                "positive_count": 24,
+                "negative_count": 15,
+                "zero_count": 0,
+                "positive_yuan": 44578.50000000003,
+                "negative_yuan": 22477.600000000042,
+                "signed_yuan": 22100.899999999976,
+                "missed_positive_fraction": 0.5707282599371899,
+                "captured_negative_fraction": 0.46313290943631075,
+                "loss_precision": 0.38461538461538464,
+                "loss_count_recall": 0.4838709677419355
+              },
+              "net_entry": {
+                "n": 39,
+                "positive_count": 24,
+                "negative_count": 15,
+                "zero_count": 0,
+                "positive_yuan": 42212.12510000002,
+                "negative_yuan": 23953.968800000042,
+                "signed_yuan": 18258.156299999977,
+                "missed_positive_fraction": 0.5752950262094068,
+                "captured_negative_fraction": 0.46344212589820527,
+                "loss_precision": 0.38461538461538464,
+                "loss_count_recall": 0.46875
+              }
+            }
+          },
+          "exclusion_fraction": 0.275
+        },
+        "AllDaily": {
+          "mse": 0.0003866603962117588,
+          "gain_vs_mean": -0.015792166398128415,
+          "sign_accuracy_zero_threshold": 0.525,
+          "balanced_accuracy_zero_threshold": 0.4818959842001317,
+          "groups": {
+            "-1": {
+              "gross": {
+                "n": 29,
+                "positive_count": 18,
+                "negative_count": 11,
+                "zero_count": 0,
+                "positive_yuan": 26895.999999999993,
+                "negative_yuan": 21301.49999999999,
+                "signed_yuan": 5594.500000000001,
+                "missed_positive_fraction": 0.34434328834013356,
+                "captured_negative_fraction": 0.4389003127717172,
+                "loss_precision": 0.3793103448275862,
+                "loss_count_recall": 0.3548387096774194
+              },
+              "net_entry": {
+                "n": 29,
+                "positive_count": 18,
+                "negative_count": 11,
+                "zero_count": 0,
+                "positive_yuan": 25121.571099999994,
+                "negative_yuan": 22388.44099999999,
+                "signed_yuan": 2733.1301000000003,
+                "missed_positive_fraction": 0.34237354480871574,
+                "captured_negative_fraction": 0.433153552933847,
+                "loss_precision": 0.3793103448275862,
+                "loss_count_recall": 0.34375
+              }
+            },
+            "0": {
+              "gross": {
+                "n": 16,
+                "positive_count": 10,
+                "negative_count": 5,
+                "zero_count": 1,
+                "positive_yuan": 13776.200000000004,
+                "negative_yuan": 5585.100000000005,
+                "signed_yuan": 8191.100000000001,
+                "missed_positive_fraction": 0.1763735131183578,
+                "captured_negative_fraction": 0.11507650338526965,
+                "loss_precision": 0.3125,
+                "loss_count_recall": 0.16129032258064516
+              },
+              "net_entry": {
+                "n": 16,
+                "positive_count": 10,
+                "negative_count": 6,
+                "zero_count": 0,
+                "positive_yuan": 12788.964800000005,
+                "negative_yuan": 6174.503000000005,
+                "signed_yuan": 6614.461800000002,
+                "missed_positive_fraction": 0.1742965515803226,
+                "captured_negative_fraction": 0.11945931885345211,
+                "loss_precision": 0.375,
+                "loss_count_recall": 0.1875
+              }
+            },
+            "1": {
+              "gross": {
+                "n": 35,
+                "positive_count": 20,
+                "negative_count": 15,
+                "zero_count": 0,
+                "positive_yuan": 37435.90000000003,
+                "negative_yuan": 21647.200000000048,
+                "signed_yuan": 15788.699999999977,
+                "missed_positive_fraction": 0.47928319854150886,
+                "captured_negative_fraction": 0.4460231838430131,
+                "loss_precision": 0.42857142857142855,
+                "loss_count_recall": 0.4838709677419355
+              },
+              "net_entry": {
+                "n": 35,
+                "positive_count": 20,
+                "negative_count": 15,
+                "zero_count": 0,
+                "positive_yuan": 35464.207800000026,
+                "negative_yuan": 23124.132900000048,
+                "signed_yuan": 12340.074899999978,
+                "missed_positive_fraction": 0.48332990361096156,
+                "captured_negative_fraction": 0.4473871282127008,
+                "loss_precision": 0.42857142857142855,
+                "loss_count_recall": 0.46875
+              }
+            }
+          },
+          "exclusion_fraction": 0.3625
+        }
+      },
+      "AllDaily_gain_vs_PR": -0.024798821650409142,
+      "exclusion_transition": {
+        "common_low": {
+          "gross": {
+            "n": 20,
+            "positive_count": 11,
+            "negative_count": 9,
+            "zero_count": 0,
+            "positive_yuan": 16274.999999999987,
+            "negative_yuan": 16680.699999999986,
+            "signed_yuan": -405.6999999999984,
+            "missed_positive_fraction": 0.2083650735327064,
+            "captured_negative_fraction": 0.3436924370232698,
+            "loss_precision": 0.45,
+            "loss_count_recall": 0.2903225806451613
+          },
+          "net_entry": {
+            "n": 20,
+            "positive_count": 11,
+            "negative_count": 9,
+            "zero_count": 0,
+            "positive_yuan": 15190.177899999984,
+            "negative_yuan": 17569.60629999999,
+            "signed_yuan": -2379.4284,
+            "missed_positive_fraction": 0.20702188701478186,
+            "captured_negative_fraction": 0.33992261419604425,
+            "loss_precision": 0.45,
+            "loss_count_recall": 0.28125
+          }
+        },
+        "AllDaily_added_low": {
+          "gross": {
+            "n": 9,
+            "positive_count": 7,
+            "negative_count": 2,
+            "zero_count": 0,
+            "positive_yuan": 10621.000000000004,
+            "negative_yuan": 4620.800000000005,
+            "signed_yuan": 6000.2,
+            "missed_positive_fraction": 0.13597821480742717,
+            "captured_negative_fraction": 0.09520787574844748,
+            "loss_precision": 0.2222222222222222,
+            "loss_count_recall": 0.06451612903225806
+          },
+          "net_entry": {
+            "n": 9,
+            "positive_count": 7,
+            "negative_count": 2,
+            "zero_count": 0,
+            "positive_yuan": 9931.393200000004,
+            "negative_yuan": 4818.834700000004,
+            "signed_yuan": 5112.5585,
+            "missed_positive_fraction": 0.1353516577939338,
+            "captured_negative_fraction": 0.09323093873780275,
+            "loss_precision": 0.2222222222222222,
+            "loss_count_recall": 0.0625
+          }
+        },
+        "AllDaily_released_low": {
+          "gross": {
+            "n": 2,
+            "positive_count": 1,
+            "negative_count": 0,
+            "zero_count": 1,
+            "positive_yuan": 2678.0000000000023,
+            "negative_yuan": 0.0,
+            "signed_yuan": 2678.0000000000023,
+            "missed_positive_fraction": 0.034285816707870266,
+            "captured_negative_fraction": 0.0,
+            "loss_precision": 0.0,
+            "loss_count_recall": 0.0
+          },
+          "net_entry": {
+            "n": 2,
+            "positive_count": 1,
+            "negative_count": 1,
+            "zero_count": 0,
+            "positive_yuan": 2578.6050000000023,
+            "negative_yuan": 99.75120000000001,
+            "signed_yuan": 2478.853800000002,
+            "missed_positive_fraction": 0.03514295069353682,
+            "captured_negative_fraction": 0.0019299060032547499,
+            "loss_precision": 0.5,
+            "loss_count_recall": 0.03125
+          }
+        },
+        "neither_low": {
+          "gross": {
+            "n": 49,
+            "positive_count": 29,
+            "negative_count": 20,
+            "zero_count": 0,
+            "positive_yuan": 48534.100000000035,
+            "negative_yuan": 27232.300000000057,
+            "signed_yuan": 21301.799999999977,
+            "missed_positive_fraction": 0.6213708949519964,
+            "captured_negative_fraction": 0.5610996872282829,
+            "loss_precision": 0.40816326530612246,
+            "loss_count_recall": 0.6451612903225806
+          },
+          "net_entry": {
+            "n": 49,
+            "positive_count": 29,
+            "negative_count": 20,
+            "zero_count": 0,
+            "positive_yuan": 45674.56760000003,
+            "negative_yuan": 29198.884700000057,
+            "signed_yuan": 16475.682899999978,
+            "missed_positive_fraction": 0.6224835044977474,
+            "captured_negative_fraction": 0.5649165410628982,
+            "loss_precision": 0.40816326530612246,
+            "loss_count_recall": 0.625
+          }
+        }
+      }
+    },
+    "3": {
+      "n": 80,
+      "gross_total": {
+        "n": 80,
+        "positive_count": 36,
+        "negative_count": 42,
+        "zero_count": 2,
+        "positive_yuan": 50301.60000000007,
+        "negative_yuan": 72638.40000000007,
+        "signed_yuan": -22336.800000000003,
+        "missed_positive_fraction": 1.0,
+        "captured_negative_fraction": 1.0,
+        "loss_precision": 0.525,
+        "loss_count_recall": 1.0
+      },
+      "net_entry_total": {
+        "n": 80,
+        "positive_count": 36,
+        "negative_count": 44,
+        "zero_count": 0,
+        "positive_yuan": 46750.68480000006,
+        "negative_yuan": 76975.14980000006,
+        "signed_yuan": -30224.465,
+        "missed_positive_fraction": 1.0,
+        "captured_negative_fraction": 1.0,
+        "loss_precision": 0.55,
+        "loss_count_recall": 1.0
+      },
+      "mean_prediction_mse": 0.0004052590034631441,
+      "models": {
+        "PR": {
+          "mse": 0.0004124570216768847,
+          "gain_vs_mean": -0.017761525721155857,
+          "sign_accuracy_zero_threshold": 0.525,
+          "balanced_accuracy_zero_threshold": 0.5375939849624061,
+          "groups": {
+            "-1": {
+              "gross": {
+                "n": 25,
+                "positive_count": 10,
+                "negative_count": 14,
+                "zero_count": 1,
+                "positive_yuan": 9245.300000000025,
+                "negative_yuan": 20217.60000000002,
+                "signed_yuan": -10972.299999999996,
+                "missed_positive_fraction": 0.18379733447842636,
+                "captured_negative_fraction": 0.27833212185290424,
+                "loss_precision": 0.56,
+                "loss_count_recall": 0.3333333333333333
+              },
+              "net_entry": {
+                "n": 25,
+                "positive_count": 10,
+                "negative_count": 15,
+                "zero_count": 0,
+                "positive_yuan": 8256.847300000025,
+                "negative_yuan": 21695.703900000022,
+                "signed_yuan": -13438.8566,
+                "missed_positive_fraction": 0.1766144674740682,
+                "captured_negative_fraction": 0.28185335080699,
+                "loss_precision": 0.6,
+                "loss_count_recall": 0.3409090909090909
+              }
+            },
+            "0": {
+              "gross": {
+                "n": 19,
+                "positive_count": 5,
+                "negative_count": 13,
+                "zero_count": 1,
+                "positive_yuan": 5472.29999999999,
+                "negative_yuan": 18129.79999999998,
+                "signed_yuan": -12657.49999999999,
+                "missed_positive_fraction": 0.10878978004675761,
+                "captured_negative_fraction": 0.24958974867287778,
+                "loss_precision": 0.6842105263157895,
+                "loss_count_recall": 0.30952380952380953
+              },
+              "net_entry": {
+                "n": 19,
+                "positive_count": 5,
+                "negative_count": 14,
+                "zero_count": 0,
+                "positive_yuan": 4979.664299999991,
+                "negative_yuan": 19512.51109999998,
+                "signed_yuan": -14532.84679999999,
+                "missed_positive_fraction": 0.10651532317233531,
+                "captured_negative_fraction": 0.2534910441967073,
+                "loss_precision": 0.7368421052631579,
+                "loss_count_recall": 0.3181818181818182
+              }
+            },
+            "1": {
+              "gross": {
+                "n": 36,
+                "positive_count": 21,
+                "negative_count": 15,
+                "zero_count": 0,
+                "positive_yuan": 35584.00000000005,
+                "negative_yuan": 34291.00000000006,
+                "signed_yuan": 1292.9999999999873,
+                "missed_positive_fraction": 0.7074128854748161,
+                "captured_negative_fraction": 0.47207812947421784,
+                "loss_precision": 0.4166666666666667,
+                "loss_count_recall": 0.35714285714285715
+              },
+              "net_entry": {
+                "n": 36,
+                "positive_count": 21,
+                "negative_count": 15,
+                "zero_count": 0,
+                "positive_yuan": 33514.17320000005,
+                "negative_yuan": 35766.934800000054,
+                "signed_yuan": -2252.7616000000094,
+                "missed_positive_fraction": 0.7168702093535965,
+                "captured_negative_fraction": 0.46465560499630265,
+                "loss_precision": 0.4166666666666667,
+                "loss_count_recall": 0.3409090909090909
+              }
+            }
+          },
+          "exclusion_fraction": 0.3125
+        },
+        "AllDaily": {
+          "mse": 0.0004215977342871535,
+          "gain_vs_mean": -0.040316762081500146,
+          "sign_accuracy_zero_threshold": 0.525,
+          "balanced_accuracy_zero_threshold": 0.5375939849624061,
+          "groups": {
+            "-1": {
+              "gross": {
+                "n": 23,
+                "positive_count": 8,
+                "negative_count": 14,
+                "zero_count": 1,
+                "positive_yuan": 8087.900000000016,
+                "negative_yuan": 20013.50000000002,
+                "signed_yuan": -11925.600000000002,
+                "missed_positive_fraction": 0.1607881260238244,
+                "captured_negative_fraction": 0.27552231326681204,
+                "loss_precision": 0.6086956521739131,
+                "loss_count_recall": 0.3333333333333333
+              },
+              "net_entry": {
+                "n": 23,
+                "positive_count": 8,
+                "negative_count": 15,
+                "zero_count": 0,
+                "positive_yuan": 7298.656900000016,
+                "negative_yuan": 21491.370900000016,
+                "signed_yuan": -14192.714,
+                "missed_positive_fraction": 0.1561187163615624,
+                "captured_negative_fraction": 0.27919881878554004,
+                "loss_precision": 0.6521739130434783,
+                "loss_count_recall": 0.3409090909090909
+              }
+            },
+            "0": {
+              "gross": {
+                "n": 17,
+                "positive_count": 5,
+                "negative_count": 12,
+                "zero_count": 0,
+                "positive_yuan": 2417.500000000003,
+                "negative_yuan": 22181.600000000017,
+                "signed_yuan": -19764.100000000013,
+                "missed_positive_fraction": 0.04806010146794535,
+                "captured_negative_fraction": 0.30537016233837744,
+                "loss_precision": 0.7058823529411765,
+                "loss_count_recall": 0.2857142857142857
+              },
+              "net_entry": {
+                "n": 17,
+                "positive_count": 5,
+                "negative_count": 12,
+                "zero_count": 0,
+                "positive_yuan": 1922.8333000000032,
+                "negative_yuan": 23367.194800000016,
+                "signed_yuan": -21444.361500000014,
+                "missed_positive_fraction": 0.04112952159366017,
+                "captured_negative_fraction": 0.3035680328094665,
+                "loss_precision": 0.7058823529411765,
+                "loss_count_recall": 0.2727272727272727
+              }
+            },
+            "1": {
+              "gross": {
+                "n": 40,
+                "positive_count": 23,
+                "negative_count": 16,
+                "zero_count": 1,
+                "positive_yuan": 39796.20000000004,
+                "negative_yuan": 30443.30000000003,
+                "signed_yuan": 9352.900000000012,
+                "missed_positive_fraction": 0.7911517725082301,
+                "captured_negative_fraction": 0.41910752439481047,
+                "loss_precision": 0.4,
+                "loss_count_recall": 0.38095238095238093
+              },
+              "net_entry": {
+                "n": 40,
+                "positive_count": 23,
+                "negative_count": 17,
+                "zero_count": 0,
+                "positive_yuan": 37529.194600000046,
+                "negative_yuan": 32116.584100000033,
+                "signed_yuan": 5412.610500000014,
+                "missed_positive_fraction": 0.8027517620447775,
+                "captured_negative_fraction": 0.41723314840499354,
+                "loss_precision": 0.425,
+                "loss_count_recall": 0.38636363636363635
+              }
+            }
+          },
+          "exclusion_fraction": 0.2875
+        }
+      },
+      "AllDaily_gain_vs_PR": -0.02216161231322067,
+      "exclusion_transition": {
+        "common_low": {
+          "gross": {
+            "n": 21,
+            "positive_count": 8,
+            "negative_count": 12,
+            "zero_count": 1,
+            "positive_yuan": 8087.900000000016,
+            "negative_yuan": 18021.100000000024,
+            "signed_yuan": -9933.200000000012,
+            "missed_positive_fraction": 0.1607881260238244,
+            "captured_negative_fraction": 0.24809329500649802,
+            "loss_precision": 0.5714285714285714,
+            "loss_count_recall": 0.2857142857142857
+          },
+          "net_entry": {
+            "n": 21,
+            "positive_count": 8,
+            "negative_count": 13,
+            "zero_count": 0,
+            "positive_yuan": 7298.656900000016,
+            "negative_yuan": 19301.53670000003,
+            "signed_yuan": -12002.879800000012,
+            "missed_positive_fraction": 0.1561187163615624,
+            "captured_negative_fraction": 0.25075023238213967,
+            "loss_precision": 0.6190476190476191,
+            "loss_count_recall": 0.29545454545454547
+          }
+        },
+        "AllDaily_added_low": {
+          "gross": {
+            "n": 2,
+            "positive_count": 0,
+            "negative_count": 2,
+            "zero_count": 0,
+            "positive_yuan": 0.0,
+            "negative_yuan": 1992.3999999999894,
+            "signed_yuan": -1992.3999999999894,
+            "missed_positive_fraction": 0.0,
+            "captured_negative_fraction": 0.02742901826031393,
+            "loss_precision": 1.0,
+            "loss_count_recall": 0.047619047619047616
+          },
+          "net_entry": {
+            "n": 2,
+            "positive_count": 0,
+            "negative_count": 2,
+            "zero_count": 0,
+            "positive_yuan": 0.0,
+            "negative_yuan": 2189.8341999999893,
+            "signed_yuan": -2189.8341999999893,
+            "missed_positive_fraction": 0.0,
+            "captured_negative_fraction": 0.02844858640340038,
+            "loss_precision": 1.0,
+            "loss_count_recall": 0.045454545454545456
+          }
+        },
+        "AllDaily_released_low": {
+          "gross": {
+            "n": 4,
+            "positive_count": 2,
+            "negative_count": 2,
+            "zero_count": 0,
+            "positive_yuan": 1157.4000000000087,
+            "negative_yuan": 2196.4999999999955,
+            "signed_yuan": -1039.0999999999865,
+            "missed_positive_fraction": 0.023009208454601984,
+            "captured_negative_fraction": 0.030238826846406216,
+            "loss_precision": 0.5,
+            "loss_count_recall": 0.047619047619047616
+          },
+          "net_entry": {
+            "n": 4,
+            "positive_count": 2,
+            "negative_count": 2,
+            "zero_count": 0,
+            "positive_yuan": 958.1904000000087,
+            "negative_yuan": 2394.167199999996,
+            "signed_yuan": -1435.9767999999867,
+            "missed_positive_fraction": 0.02049575111250579,
+            "captured_negative_fraction": 0.03110311842485032,
+            "loss_precision": 0.5,
+            "loss_count_recall": 0.045454545454545456
+          }
+        },
+        "neither_low": {
+          "gross": {
+            "n": 53,
+            "positive_count": 26,
+            "negative_count": 26,
+            "zero_count": 1,
+            "positive_yuan": 41056.30000000004,
+            "negative_yuan": 50428.40000000005,
+            "signed_yuan": -9372.100000000017,
+            "missed_positive_fraction": 0.8162026655215735,
+            "captured_negative_fraction": 0.6942388598867817,
+            "loss_precision": 0.49056603773584906,
+            "loss_count_recall": 0.6190476190476191
+          },
+          "net_entry": {
+            "n": 53,
+            "positive_count": 26,
+            "negative_count": 27,
+            "zero_count": 0,
+            "positive_yuan": 38493.83750000004,
+            "negative_yuan": 53089.61170000005,
+            "signed_yuan": -14595.774200000009,
+            "missed_positive_fraction": 0.8233855325259318,
+            "captured_negative_fraction": 0.6896980627896097,
+            "loss_precision": 0.5094339622641509,
+            "loss_count_recall": 0.6136363636363636
+          }
+        }
+      }
+    }
+  },
+  "drop5_extreme": {
+    "n": 321,
+    "gross_total": {
+      "n": 321,
+      "positive_count": 174,
+      "negative_count": 143,
+      "zero_count": 4,
+      "positive_yuan": 230555.6,
+      "negative_yuan": 184777.7000000001,
+      "signed_yuan": 45777.89999999987,
+      "missed_positive_fraction": 1.0,
+      "captured_negative_fraction": 1.0,
+      "loss_precision": 0.4454828660436137,
+      "loss_count_recall": 1.0
+    },
+    "net_entry_total": {
+      "n": 321,
+      "positive_count": 166,
+      "negative_count": 155,
+      "zero_count": 0,
+      "positive_yuan": 213547.3728,
+      "negative_yuan": 199456.93940000012,
+      "signed_yuan": 14090.43339999987,
+      "missed_positive_fraction": 1.0,
+      "captured_negative_fraction": 1.0,
+      "loss_precision": 0.48286604361370716,
+      "loss_count_recall": 1.0
+    },
+    "mean_prediction_mse": 0.00027927997325377126,
+    "models": {
+      "PR": {
+        "mse": 0.00029067046920324026,
+        "gain_vs_mean": -0.04078522285992525,
+        "sign_accuracy_zero_threshold": 0.5327102803738317,
+        "balanced_accuracy_zero_threshold": 0.5250255362614913,
+        "groups": {
+          "-1": {
+            "gross": {
+              "n": 132,
+              "positive_count": 66,
+              "negative_count": 63,
+              "zero_count": 3,
+              "positive_yuan": 69149.09999999992,
+              "negative_yuan": 71026.00000000009,
+              "signed_yuan": -1876.9000000001702,
+              "missed_positive_fraction": 0.2999237494122889,
+              "captured_negative_fraction": 0.3843862111066435,
+              "loss_precision": 0.4772727272727273,
+              "loss_count_recall": 0.4405594405594406
+            },
+            "net_entry": {
+              "n": 132,
+              "positive_count": 63,
+              "negative_count": 69,
+              "zero_count": 0,
+              "positive_yuan": 62653.23729999995,
+              "negative_yuan": 77577.88790000012,
+              "signed_yuan": -14924.65060000017,
+              "missed_positive_fraction": 0.2933926860279311,
+              "captured_negative_fraction": 0.38894554450382823,
+              "loss_precision": 0.5227272727272727,
+              "loss_count_recall": 0.44516129032258067
+            }
+          },
+          "0": {
+            "gross": {
+              "n": 67,
+              "positive_count": 35,
+              "negative_count": 31,
+              "zero_count": 1,
+              "positive_yuan": 42736.60000000001,
+              "negative_yuan": 34480.99999999996,
+              "signed_yuan": 8255.60000000004,
+              "missed_positive_fraction": 0.1853635305323315,
+              "captured_negative_fraction": 0.18660801601058974,
+              "loss_precision": 0.4626865671641791,
+              "loss_count_recall": 0.21678321678321677
+            },
+            "net_entry": {
+              "n": 67,
+              "positive_count": 33,
+              "negative_count": 34,
+              "zero_count": 0,
+              "positive_yuan": 39326.03160000001,
+              "negative_yuan": 37679.579599999975,
+              "signed_yuan": 1646.452000000043,
+              "missed_positive_fraction": 0.18415600756105396,
+              "captured_negative_fraction": 0.18891084819283027,
+              "loss_precision": 0.5074626865671642,
+              "loss_count_recall": 0.21935483870967742
+            }
+          },
+          "1": {
+            "gross": {
+              "n": 122,
+              "positive_count": 73,
+              "negative_count": 49,
+              "zero_count": 0,
+              "positive_yuan": 118669.90000000007,
+              "negative_yuan": 79270.70000000006,
+              "signed_yuan": 39399.200000000004,
+              "missed_positive_fraction": 0.5147127200553795,
+              "captured_negative_fraction": 0.42900577288276676,
+              "loss_precision": 0.4016393442622951,
+              "loss_count_recall": 0.34265734265734266
+            },
+            "net_entry": {
+              "n": 122,
+              "positive_count": 70,
+              "negative_count": 52,
+              "zero_count": 0,
+              "positive_yuan": 111568.10390000005,
+              "negative_yuan": 84199.47190000005,
+              "signed_yuan": 27368.631999999998,
+              "missed_positive_fraction": 0.522451306411015,
+              "captured_negative_fraction": 0.42214360730334155,
+              "loss_precision": 0.4262295081967213,
+              "loss_count_recall": 0.33548387096774196
+            }
+          }
+        },
+        "exclusion_fraction": 0.411214953271028
+      },
+      "AllDaily": {
+        "mse": 0.00029625331688670054,
+        "gain_vs_mean": -0.06077536973088371,
+        "sign_accuracy_zero_threshold": 0.514018691588785,
+        "balanced_accuracy_zero_threshold": 0.506109059479846,
+        "groups": {
+          "-1": {
+            "gross": {
+              "n": 137,
+              "positive_count": 70,
+              "negative_count": 65,
+              "zero_count": 2,
+              "positive_yuan": 78695.49999999996,
+              "negative_yuan": 76526.10000000006,
+              "signed_yuan": 2169.399999999884,
+              "missed_positive_fraction": 0.34132981371955373,
+              "captured_negative_fraction": 0.4141522488915059,
+              "loss_precision": 0.4744525547445255,
+              "loss_count_recall": 0.45454545454545453
+            },
+            "net_entry": {
+              "n": 137,
+              "positive_count": 67,
+              "negative_count": 70,
+              "zero_count": 0,
+              "positive_yuan": 71808.44969999998,
+              "negative_yuan": 83175.46660000009,
+              "signed_yuan": -11367.01690000012,
+              "missed_positive_fraction": 0.33626473020229064,
+              "captured_negative_fraction": 0.41700964052795464,
+              "loss_precision": 0.5109489051094891,
+              "loss_count_recall": 0.45161290322580644
+            }
+          },
+          "0": {
+            "gross": {
+              "n": 59,
+              "positive_count": 30,
+              "negative_count": 28,
+              "zero_count": 1,
+              "positive_yuan": 30664.199999999975,
+              "negative_yuan": 32753.500000000015,
+              "signed_yuan": -2089.300000000037,
+              "missed_positive_fraction": 0.13300132375878085,
+              "captured_negative_fraction": 0.17725894412583332,
+              "loss_precision": 0.4745762711864407,
+              "loss_count_recall": 0.1958041958041958
+            },
+            "net_entry": {
+              "n": 59,
+              "positive_count": 28,
+              "negative_count": 31,
+              "zero_count": 0,
+              "positive_yuan": 27742.78289999998,
+              "negative_yuan": 35657.66680000002,
+              "signed_yuan": -7914.883900000039,
+              "missed_positive_fraction": 0.1299139508776948,
+              "captured_negative_fraction": 0.1787737589239274,
+              "loss_precision": 0.5254237288135594,
+              "loss_count_recall": 0.2
+            }
+          },
+          "1": {
+            "gross": {
+              "n": 125,
+              "positive_count": 74,
+              "negative_count": 50,
+              "zero_count": 1,
+              "positive_yuan": 121195.9000000001,
+              "negative_yuan": 75498.10000000003,
+              "signed_yuan": 45697.800000000025,
+              "missed_positive_fraction": 0.5256688625216654,
+              "captured_negative_fraction": 0.4085888069826607,
+              "loss_precision": 0.4,
+              "loss_count_recall": 0.34965034965034963
+            },
+            "net_entry": {
+              "n": 125,
+              "positive_count": 71,
+              "negative_count": 54,
+              "zero_count": 0,
+              "positive_yuan": 113996.14020000004,
+              "negative_yuan": 80623.80600000003,
+              "signed_yuan": 33372.33420000003,
+              "missed_positive_fraction": 0.5338213189200145,
+              "captured_negative_fraction": 0.404216600548118,
+              "loss_precision": 0.432,
+              "loss_count_recall": 0.34838709677419355
+            }
+          }
+        },
+        "exclusion_fraction": 0.42679127725856697
+      }
+    },
+    "AllDaily_gain_vs_PR": -0.01920679351694532,
+    "exclusion_transition": {
+      "common_low": {
+        "gross": {
+          "n": 115,
+          "positive_count": 58,
+          "negative_count": 55,
+          "zero_count": 2,
+          "positive_yuan": 60837.59999999993,
+          "negative_yuan": 65469.000000000065,
+          "signed_yuan": -4631.4000000001415,
+          "missed_positive_fraction": 0.2638738768435897,
+          "captured_negative_fraction": 0.3543122357297446,
+          "loss_precision": 0.4782608695652174,
+          "loss_count_recall": 0.38461538461538464
+        },
+        "net_entry": {
+          "n": 115,
+          "positive_count": 55,
+          "negative_count": 60,
+          "zero_count": 0,
+          "positive_yuan": 55135.14329999995,
+          "negative_yuan": 71129.98980000011,
+          "signed_yuan": -15994.846500000143,
+          "missed_positive_fraction": 0.25818694267729225,
+          "captured_negative_fraction": 0.35661827567379223,
+          "loss_precision": 0.5217391304347826,
+          "loss_count_recall": 0.3870967741935484
+        }
+      },
+      "AllDaily_added_low": {
+        "gross": {
+          "n": 22,
+          "positive_count": 12,
+          "negative_count": 10,
+          "zero_count": 0,
+          "positive_yuan": 17857.90000000002,
+          "negative_yuan": 11057.099999999997,
+          "signed_yuan": 6800.800000000024,
+          "missed_positive_fraction": 0.07745593687596405,
+          "captured_negative_fraction": 0.059840013161761345,
+          "loss_precision": 0.45454545454545453,
+          "loss_count_recall": 0.06993006993006994
+        },
+        "net_entry": {
+          "n": 22,
+          "positive_count": 12,
+          "negative_count": 10,
+          "zero_count": 0,
+          "positive_yuan": 16673.306400000016,
+          "negative_yuan": 12045.476799999997,
+          "signed_yuan": 4627.829600000021,
+          "missed_positive_fraction": 0.07807778752499836,
+          "captured_negative_fraction": 0.06039136485416254,
+          "loss_precision": 0.45454545454545453,
+          "loss_count_recall": 0.06451612903225806
+        }
+      },
+      "AllDaily_released_low": {
+        "gross": {
+          "n": 17,
+          "positive_count": 8,
+          "negative_count": 8,
+          "zero_count": 1,
+          "positive_yuan": 8311.499999999985,
+          "negative_yuan": 5557.000000000016,
+          "signed_yuan": 2754.49999999997,
+          "missed_positive_fraction": 0.036049872568699196,
+          "captured_negative_fraction": 0.030073975376898904,
+          "loss_precision": 0.47058823529411764,
+          "loss_count_recall": 0.055944055944055944
+        },
+        "net_entry": {
+          "n": 17,
+          "positive_count": 8,
+          "negative_count": 9,
+          "zero_count": 0,
+          "positive_yuan": 7518.093999999986,
+          "negative_yuan": 6447.898100000016,
+          "signed_yuan": 1070.19589999997,
+          "missed_positive_fraction": 0.03520574335063881,
+          "captured_negative_fraction": 0.03232726883003606,
+          "loss_precision": 0.5294117647058824,
+          "loss_count_recall": 0.05806451612903226
+        }
+      },
+      "neither_low": {
+        "gross": {
+          "n": 167,
+          "positive_count": 96,
+          "negative_count": 70,
+          "zero_count": 1,
+          "positive_yuan": 143548.60000000003,
+          "negative_yuan": 102694.60000000006,
+          "signed_yuan": 40854.000000000015,
+          "missed_positive_fraction": 0.622620313711747,
+          "captured_negative_fraction": 0.5557737757315953,
+          "loss_precision": 0.41916167664670656,
+          "loss_count_recall": 0.48951048951048953
+        },
+        "net_entry": {
+          "n": 167,
+          "positive_count": 91,
+          "negative_count": 76,
+          "zero_count": 0,
+          "positive_yuan": 134220.82910000006,
+          "negative_yuan": 109833.57470000001,
+          "signed_yuan": 24387.25440000002,
+          "missed_positive_fraction": 0.6285295264470707,
+          "captured_negative_fraction": 0.5506630906420092,
+          "loss_precision": 0.4550898203592814,
+          "loss_count_recall": 0.49032258064516127
+        }
+      }
+    }
+  },
+  "actual_C0031_first_entry": {
+    "n": 82,
+    "gross_total": {
+      "n": 82,
+      "positive_count": 50,
+      "negative_count": 31,
+      "zero_count": 1,
+      "positive_yuan": 96811.59999999999,
+      "negative_yuan": 47750.4,
+      "signed_yuan": 49061.19999999998,
+      "missed_positive_fraction": 1.0,
+      "captured_negative_fraction": 1.0,
+      "loss_precision": 0.3780487804878049,
+      "loss_count_recall": 1.0
+    },
+    "net_entry_total": {
+      "n": 82,
+      "positive_count": 49,
+      "negative_count": 33,
+      "zero_count": 0,
+      "positive_yuan": 91918.0156,
+      "negative_yuan": 50929.31090000001,
+      "signed_yuan": 40988.70469999998,
+      "missed_positive_fraction": 1.0,
+      "captured_negative_fraction": 1.0,
+      "loss_precision": 0.4024390243902439,
+      "loss_count_recall": 1.0
+    },
+    "mean_prediction_mse": 0.0005611620614643744,
+    "models": {
+      "PR": {
+        "mse": 0.0005867990244526726,
+        "gain_vs_mean": -0.045685488647250194,
+        "sign_accuracy_zero_threshold": 0.524390243902439,
+        "balanced_accuracy_zero_threshold": 0.4468690702087286,
+        "groups": {
+          "-1": {
+            "gross": {
+              "n": 12,
+              "positive_count": 9,
+              "negative_count": 3,
+              "zero_count": 0,
+              "positive_yuan": 7534.09999999999,
+              "negative_yuan": 2209.9000000000005,
+              "signed_yuan": 5324.199999999989,
+              "missed_positive_fraction": 0.07782228575914447,
+              "captured_negative_fraction": 0.04628024058437208,
+              "loss_precision": 0.25,
+              "loss_count_recall": 0.0967741935483871
+            },
+            "net_entry": {
+              "n": 12,
+              "positive_count": 9,
+              "negative_count": 3,
+              "zero_count": 0,
+              "positive_yuan": 6646.877199999988,
+              "negative_yuan": 2507.328000000001,
+              "signed_yuan": 4139.549199999989,
+              "missed_positive_fraction": 0.07231310594133397,
+              "captured_negative_fraction": 0.04923153201352269,
+              "loss_precision": 0.25,
+              "loss_count_recall": 0.09090909090909091
+            }
+          },
+          "0": {
+            "gross": {
+              "n": 18,
+              "positive_count": 11,
+              "negative_count": 6,
+              "zero_count": 1,
+              "positive_yuan": 21147.999999999996,
+              "negative_yuan": 5254.900000000012,
+              "signed_yuan": 15893.099999999988,
+              "missed_positive_fraction": 0.21844489709910797,
+              "captured_negative_fraction": 0.11004933990081783,
+              "loss_precision": 0.3333333333333333,
+              "loss_count_recall": 0.1935483870967742
+            },
+            "net_entry": {
+              "n": 18,
+              "positive_count": 11,
+              "negative_count": 7,
+              "zero_count": 0,
+              "positive_yuan": 20064.1796,
+              "negative_yuan": 5944.698100000012,
+              "signed_yuan": 14119.481499999987,
+              "missed_positive_fraction": 0.2182834286513905,
+              "captured_negative_fraction": 0.11672449508834824,
+              "loss_precision": 0.3888888888888889,
+              "loss_count_recall": 0.21212121212121213
+            }
+          },
+          "1": {
+            "gross": {
+              "n": 52,
+              "positive_count": 30,
+              "negative_count": 22,
+              "zero_count": 0,
+              "positive_yuan": 68129.5,
+              "negative_yuan": 40285.6,
+              "signed_yuan": 27843.90000000001,
+              "missed_positive_fraction": 0.7037328171417475,
+              "captured_negative_fraction": 0.8436704195148103,
+              "loss_precision": 0.4230769230769231,
+              "loss_count_recall": 0.7096774193548387
+            },
+            "net_entry": {
+              "n": 52,
+              "positive_count": 29,
+              "negative_count": 23,
+              "zero_count": 0,
+              "positive_yuan": 65206.9588,
+              "negative_yuan": 42477.2848,
+              "signed_yuan": 22729.674000000006,
+              "missed_positive_fraction": 0.7094034654072754,
+              "captured_negative_fraction": 0.8340439728981291,
+              "loss_precision": 0.4423076923076923,
+              "loss_count_recall": 0.696969696969697
+            }
+          }
+        },
+        "exclusion_fraction": 0.14634146341463414
+      },
+      "AllDaily": {
+        "mse": 0.0005988792882177266,
+        "gain_vs_mean": -0.06721271686636765,
+        "sign_accuracy_zero_threshold": 0.5365853658536586,
+        "balanced_accuracy_zero_threshold": 0.4629981024667931,
+        "groups": {
+          "-1": {
+            "gross": {
+              "n": 16,
+              "positive_count": 10,
+              "negative_count": 6,
+              "zero_count": 0,
+              "positive_yuan": 17140.400000000016,
+              "negative_yuan": 5554.100000000003,
+              "signed_yuan": 11586.30000000001,
+              "missed_positive_fraction": 0.17704903131442945,
+              "captured_negative_fraction": 0.11631525599785558,
+              "loss_precision": 0.375,
+              "loss_count_recall": 0.1935483870967742
+            },
+            "net_entry": {
+              "n": 16,
+              "positive_count": 10,
+              "negative_count": 6,
+              "zero_count": 0,
+              "positive_yuan": 16154.164400000014,
+              "negative_yuan": 6147.096500000003,
+              "signed_yuan": 10007.067900000011,
+              "missed_positive_fraction": 0.17574535627812243,
+              "captured_negative_fraction": 0.12069859951708088,
+              "loss_precision": 0.375,
+              "loss_count_recall": 0.18181818181818182
+            }
+          },
+          "0": {
+            "gross": {
+              "n": 14,
+              "positive_count": 8,
+              "negative_count": 6,
+              "zero_count": 0,
+              "positive_yuan": 7767.4999999999745,
+              "negative_yuan": 8961.200000000013,
+              "signed_yuan": -1193.7000000000378,
+              "missed_positive_fraction": 0.08023315387825401,
+              "captured_negative_fraction": 0.18766753786355744,
+              "loss_precision": 0.42857142857142855,
+              "loss_count_recall": 0.1935483870967742
+            },
+            "net_entry": {
+              "n": 14,
+              "positive_count": 8,
+              "negative_count": 6,
+              "zero_count": 0,
+              "positive_yuan": 6978.651599999976,
+              "negative_yuan": 9551.155700000012,
+              "signed_yuan": -2572.5041000000374,
+              "missed_positive_fraction": 0.07592256593494144,
+              "captured_negative_fraction": 0.1875375011209902,
+              "loss_precision": 0.42857142857142855,
+              "loss_count_recall": 0.18181818181818182
+            }
+          },
+          "1": {
+            "gross": {
+              "n": 52,
+              "positive_count": 32,
+              "negative_count": 19,
+              "zero_count": 1,
+              "positive_yuan": 71903.7,
+              "negative_yuan": 33235.09999999999,
+              "signed_yuan": 38668.600000000006,
+              "missed_positive_fraction": 0.7427178148073165,
+              "captured_negative_fraction": 0.6960172061385871,
+              "loss_precision": 0.36538461538461536,
+              "loss_count_recall": 0.6129032258064516
+            },
+            "net_entry": {
+              "n": 52,
+              "positive_count": 31,
+              "negative_count": 21,
+              "zero_count": 0,
+              "positive_yuan": 68785.1996,
+              "negative_yuan": 35231.0587,
+              "signed_yuan": 33554.1409,
+              "missed_positive_fraction": 0.7483320777869361,
+              "captured_negative_fraction": 0.691763899361929,
+              "loss_precision": 0.40384615384615385,
+              "loss_count_recall": 0.6363636363636364
+            }
+          }
+        },
+        "exclusion_fraction": 0.1951219512195122
+      }
+    },
+    "AllDaily_gain_vs_PR": -0.02058671412468982,
+    "exclusion_transition": {
+      "common_low": {
+        "gross": {
+          "n": 10,
+          "positive_count": 8,
+          "negative_count": 2,
+          "zero_count": 0,
+          "positive_yuan": 6837.499999999996,
+          "negative_yuan": 1674.1000000000001,
+          "signed_yuan": 5163.399999999997,
+          "missed_positive_fraction": 0.07062686702833129,
+          "captured_negative_fraction": 0.035059392172631015,
+          "loss_precision": 0.2,
+          "loss_count_recall": 0.06451612903225806
+        },
+        "net_entry": {
+          "n": 10,
+          "positive_count": 8,
+          "negative_count": 2,
+          "zero_count": 0,
+          "positive_yuan": 6049.194399999997,
+          "negative_yuan": 1872.6729,
+          "signed_yuan": 4176.521499999997,
+          "missed_positive_fraction": 0.06581075930016048,
+          "captured_negative_fraction": 0.03677004198381957,
+          "loss_precision": 0.2,
+          "loss_count_recall": 0.06060606060606061
+        }
+      },
+      "AllDaily_added_low": {
+        "gross": {
+          "n": 6,
+          "positive_count": 2,
+          "negative_count": 4,
+          "zero_count": 0,
+          "positive_yuan": 10302.900000000018,
+          "negative_yuan": 3880.0000000000036,
+          "signed_yuan": 6422.900000000015,
+          "missed_positive_fraction": 0.10642216428609814,
+          "captured_negative_fraction": 0.08125586382522457,
+          "loss_precision": 0.6666666666666666,
+          "loss_count_recall": 0.12903225806451613
+        },
+        "net_entry": {
+          "n": 6,
+          "positive_count": 2,
+          "negative_count": 4,
+          "zero_count": 0,
+          "positive_yuan": 10104.970000000018,
+          "negative_yuan": 4274.423600000004,
+          "signed_yuan": 5830.546400000014,
+          "missed_positive_fraction": 0.10993459697796193,
+          "captured_negative_fraction": 0.08392855753326131,
+          "loss_precision": 0.6666666666666666,
+          "loss_count_recall": 0.12121212121212122
+        }
+      },
+      "AllDaily_released_low": {
+        "gross": {
+          "n": 2,
+          "positive_count": 1,
+          "negative_count": 1,
+          "zero_count": 0,
+          "positive_yuan": 696.5999999999921,
+          "negative_yuan": 535.8000000000005,
+          "signed_yuan": 160.7999999999916,
+          "missed_positive_fraction": 0.007195418730813169,
+          "captured_negative_fraction": 0.011220848411741063,
+          "loss_precision": 0.5,
+          "loss_count_recall": 0.03225806451612903
+        },
+        "net_entry": {
+          "n": 2,
+          "positive_count": 1,
+          "negative_count": 1,
+          "zero_count": 0,
+          "positive_yuan": 597.6827999999921,
+          "negative_yuan": 634.6551000000005,
+          "signed_yuan": -36.97230000000839,
+          "missed_positive_fraction": 0.006502346641173486,
+          "captured_negative_fraction": 0.012461490029703119,
+          "loss_precision": 0.5,
+          "loss_count_recall": 0.030303030303030304
+        }
+      },
+      "neither_low": {
+        "gross": {
+          "n": 64,
+          "positive_count": 39,
+          "negative_count": 24,
+          "zero_count": 1,
+          "positive_yuan": 78974.59999999998,
+          "negative_yuan": 41660.5,
+          "signed_yuan": 37314.09999999998,
+          "missed_positive_fraction": 0.8157555499547574,
+          "captured_negative_fraction": 0.8724638955904034,
+          "loss_precision": 0.375,
+          "loss_count_recall": 0.7741935483870968
+        },
+        "net_entry": {
+          "n": 64,
+          "positive_count": 38,
+          "negative_count": 26,
+          "zero_count": 0,
+          "positive_yuan": 75166.1684,
+          "negative_yuan": 44147.55930000001,
+          "signed_yuan": 31018.609099999983,
+          "missed_positive_fraction": 0.8177522970807041,
+          "captured_negative_fraction": 0.866839910453216,
+          "loss_precision": 0.40625,
+          "loss_count_recall": 0.7878787878787878
+        }
+      }
+    }
+  },
+  "actual_years": {
+    "2025": {
+      "n": 33,
+      "gross_total": {
+        "n": 33,
+        "positive_count": 19,
+        "negative_count": 14,
+        "zero_count": 0,
+        "positive_yuan": 35744.69999999999,
+        "negative_yuan": 16739.099999999977,
+        "signed_yuan": 19005.600000000013,
+        "missed_positive_fraction": 1.0,
+        "captured_negative_fraction": 1.0,
+        "loss_precision": 0.42424242424242425,
+        "loss_count_recall": 1.0
+      },
+      "net_entry_total": {
+        "n": 33,
+        "positive_count": 18,
+        "negative_count": 15,
+        "zero_count": 0,
+        "positive_yuan": 33901.1729,
+        "negative_yuan": 18151.461999999985,
+        "signed_yuan": 15749.710900000013,
+        "missed_positive_fraction": 1.0,
+        "captured_negative_fraction": 1.0,
+        "loss_precision": 0.45454545454545453,
+        "loss_count_recall": 1.0
+      },
+      "mean_prediction_mse": 0.0005374812390973851,
+      "models": {
+        "PR": {
+          "mse": 0.0005627857237183862,
+          "gain_vs_mean": -0.04707975419476207,
+          "sign_accuracy_zero_threshold": 0.36363636363636365,
+          "balanced_accuracy_zero_threshold": 0.3533834586466165,
+          "groups": {
+            "-1": {
+              "gross": {
+                "n": 11,
+                "positive_count": 8,
+                "negative_count": 3,
+                "zero_count": 0,
+                "positive_yuan": 6655.69999999999,
+                "negative_yuan": 2209.9000000000005,
+                "signed_yuan": 4445.799999999988,
+                "missed_positive_fraction": 0.18620103120182827,
+                "captured_negative_fraction": 0.1320202400368003,
+                "loss_precision": 0.2727272727272727,
+                "loss_count_recall": 0.21428571428571427
+              },
+              "net_entry": {
+                "n": 11,
+                "positive_count": 8,
+                "negative_count": 3,
+                "zero_count": 0,
+                "positive_yuan": 5865.265899999988,
+                "negative_yuan": 2507.328000000001,
+                "signed_yuan": 3357.9378999999876,
+                "missed_positive_fraction": 0.1730107072490105,
+                "captured_negative_fraction": 0.13813366658839948,
+                "loss_precision": 0.2727272727272727,
+                "loss_count_recall": 0.2
+              }
+            },
+            "0": {
+              "gross": {
+                "n": 6,
+                "positive_count": 4,
+                "negative_count": 2,
+                "zero_count": 0,
+                "positive_yuan": 5398.300000000005,
+                "negative_yuan": 2548.5000000000095,
+                "signed_yuan": 2849.7999999999947,
+                "missed_positive_fraction": 0.15102378814201842,
+                "captured_negative_fraction": 0.15224832876319594,
+                "loss_precision": 0.3333333333333333,
+                "loss_count_recall": 0.14285714285714285
+              },
+              "net_entry": {
+                "n": 6,
+                "positive_count": 4,
+                "negative_count": 2,
+                "zero_count": 0,
+                "positive_yuan": 5002.493300000005,
+                "negative_yuan": 2745.699900000009,
+                "signed_yuan": 2256.793399999995,
+                "missed_positive_fraction": 0.14756106860243778,
+                "captured_negative_fraction": 0.15126604677904246,
+                "loss_precision": 0.3333333333333333,
+                "loss_count_recall": 0.13333333333333333
+              }
+            },
+            "1": {
+              "gross": {
+                "n": 16,
+                "positive_count": 7,
+                "negative_count": 9,
+                "zero_count": 0,
+                "positive_yuan": 23690.699999999997,
+                "negative_yuan": 11980.699999999966,
+                "signed_yuan": 11710.000000000031,
+                "missed_positive_fraction": 0.6627751806561534,
+                "captured_negative_fraction": 0.7157314312000038,
+                "loss_precision": 0.5625,
+                "loss_count_recall": 0.6428571428571429
+              },
+              "net_entry": {
+                "n": 16,
+                "positive_count": 6,
+                "negative_count": 10,
+                "zero_count": 0,
+                "positive_yuan": 23033.413700000005,
+                "negative_yuan": 12898.434099999973,
+                "signed_yuan": 10134.979600000033,
+                "missed_positive_fraction": 0.6794282241485516,
+                "captured_negative_fraction": 0.7106002866325579,
+                "loss_precision": 0.625,
+                "loss_count_recall": 0.6666666666666666
+              }
+            }
+          },
+          "exclusion_fraction": 0.3333333333333333
+        },
+        "AllDaily": {
+          "mse": 0.0005472982679973243,
+          "gain_vs_mean": -0.01826487733120752,
+          "sign_accuracy_zero_threshold": 0.42424242424242425,
+          "balanced_accuracy_zero_threshold": 0.41541353383458646,
+          "groups": {
+            "-1": {
+              "gross": {
+                "n": 13,
+                "positive_count": 8,
+                "negative_count": 5,
+                "zero_count": 0,
+                "positive_yuan": 8774.000000000007,
+                "negative_yuan": 4123.700000000003,
+                "signed_yuan": 4650.300000000006,
+                "missed_positive_fraction": 0.24546296374007925,
+                "captured_negative_fraction": 0.24635135700246777,
+                "loss_precision": 0.38461538461538464,
+                "loss_count_recall": 0.35714285714285715
+              },
+              "net_entry": {
+                "n": 13,
+                "positive_count": 8,
+                "negative_count": 5,
+                "zero_count": 0,
+                "positive_yuan": 7983.535100000008,
+                "negative_yuan": 4618.118100000002,
+                "signed_yuan": 3365.4170000000054,
+                "missed_positive_fraction": 0.23549436249741107,
+                "captured_negative_fraction": 0.2544212747160535,
+                "loss_precision": 0.38461538461538464,
+                "loss_count_recall": 0.3333333333333333
+              }
+            },
+            "0": {
+              "gross": {
+                "n": 6,
+                "positive_count": 3,
+                "negative_count": 3,
+                "zero_count": 0,
+                "positive_yuan": 3142.3999999999846,
+                "negative_yuan": 5600.200000000004,
+                "signed_yuan": -2457.80000000002,
+                "missed_positive_fraction": 0.08791233385648742,
+                "captured_negative_fraction": 0.33455801088469583,
+                "loss_precision": 0.5,
+                "loss_count_recall": 0.21428571428571427
+              },
+              "net_entry": {
+                "n": 6,
+                "positive_count": 3,
+                "negative_count": 3,
+                "zero_count": 0,
+                "positive_yuan": 2845.3520999999846,
+                "negative_yuan": 5896.099000000005,
+                "signed_yuan": -3050.7469000000206,
+                "missed_positive_fraction": 0.08393078635931162,
+                "captured_negative_fraction": 0.324827774203533,
+                "loss_precision": 0.5,
+                "loss_count_recall": 0.2
+              }
+            },
+            "1": {
+              "gross": {
+                "n": 14,
+                "positive_count": 8,
+                "negative_count": 6,
+                "zero_count": 0,
+                "positive_yuan": 23828.3,
+                "negative_yuan": 7015.199999999969,
+                "signed_yuan": 16813.100000000028,
+                "missed_positive_fraction": 0.6666247024034334,
+                "captured_negative_fraction": 0.4190906321128363,
+                "loss_precision": 0.42857142857142855,
+                "loss_count_recall": 0.42857142857142855
+              },
+              "net_entry": {
+                "n": 14,
+                "positive_count": 7,
+                "negative_count": 7,
+                "zero_count": 0,
+                "positive_yuan": 23072.285700000008,
+                "negative_yuan": 7637.244899999977,
+                "signed_yuan": 15435.04080000003,
+                "missed_positive_fraction": 0.6805748511432773,
+                "captured_negative_fraction": 0.42075095108041344,
+                "loss_precision": 0.5,
+                "loss_count_recall": 0.4666666666666667
+              }
+            }
+          },
+          "exclusion_fraction": 0.3939393939393939
+        }
+      },
+      "AllDaily_gain_vs_PR": 0.0275192761087375,
+      "exclusion_transition": {
+        "common_low": {
+          "gross": {
+            "n": 9,
+            "positive_count": 7,
+            "negative_count": 2,
+            "zero_count": 0,
+            "positive_yuan": 5959.099999999997,
+            "negative_yuan": 1674.1000000000001,
+            "signed_yuan": 4284.999999999996,
+            "missed_positive_fraction": 0.1667128273562234,
+            "captured_negative_fraction": 0.10001135066998838,
+            "loss_precision": 0.2222222222222222,
+            "loss_count_recall": 0.14285714285714285
+          },
+          "net_entry": {
+            "n": 9,
+            "positive_count": 7,
+            "negative_count": 2,
+            "zero_count": 0,
+            "positive_yuan": 5267.583099999996,
+            "negative_yuan": 1872.6729,
+            "signed_yuan": 3394.910199999996,
+            "missed_positive_fraction": 0.15538055616948865,
+            "captured_negative_fraction": 0.1031692598645774,
+            "loss_precision": 0.2222222222222222,
+            "loss_count_recall": 0.13333333333333333
+          }
+        },
+        "AllDaily_added_low": {
+          "gross": {
+            "n": 4,
+            "positive_count": 1,
+            "negative_count": 3,
+            "zero_count": 0,
+            "positive_yuan": 2814.900000000012,
+            "negative_yuan": 2449.600000000002,
+            "signed_yuan": 365.30000000000973,
+            "missed_positive_fraction": 0.07875013638385586,
+            "captured_negative_fraction": 0.14634000633247937,
+            "loss_precision": 0.75,
+            "loss_count_recall": 0.21428571428571427
+          },
+          "net_entry": {
+            "n": 4,
+            "positive_count": 1,
+            "negative_count": 3,
+            "zero_count": 0,
+            "positive_yuan": 2715.9520000000116,
+            "negative_yuan": 2745.445200000002,
+            "signed_yuan": -29.493199999990235,
+            "missed_positive_fraction": 0.08011380632792242,
+            "captured_negative_fraction": 0.15125201485147613,
+            "loss_precision": 0.75,
+            "loss_count_recall": 0.2
+          }
+        },
+        "AllDaily_released_low": {
+          "gross": {
+            "n": 2,
+            "positive_count": 1,
+            "negative_count": 1,
+            "zero_count": 0,
+            "positive_yuan": 696.5999999999921,
+            "negative_yuan": 535.8000000000005,
+            "signed_yuan": 160.7999999999916,
+            "missed_positive_fraction": 0.019488203845604866,
+            "captured_negative_fraction": 0.03200888936681191,
+            "loss_precision": 0.5,
+            "loss_count_recall": 0.07142857142857142
+          },
+          "net_entry": {
+            "n": 2,
+            "positive_count": 1,
+            "negative_count": 1,
+            "zero_count": 0,
+            "positive_yuan": 597.6827999999921,
+            "negative_yuan": 634.6551000000005,
+            "signed_yuan": -36.97230000000839,
+            "missed_positive_fraction": 0.017630151079521858,
+            "captured_negative_fraction": 0.03496440672382208,
+            "loss_precision": 0.5,
+            "loss_count_recall": 0.06666666666666667
+          }
+        },
+        "neither_low": {
+          "gross": {
+            "n": 18,
+            "positive_count": 10,
+            "negative_count": 8,
+            "zero_count": 0,
+            "positive_yuan": 26274.099999999995,
+            "negative_yuan": 12079.599999999975,
+            "signed_yuan": 14194.500000000018,
+            "missed_positive_fraction": 0.7350488324143161,
+            "captured_negative_fraction": 0.7216397536307204,
+            "loss_precision": 0.4444444444444444,
+            "loss_count_recall": 0.5714285714285714
+          },
+          "net_entry": {
+            "n": 18,
+            "positive_count": 9,
+            "negative_count": 9,
+            "zero_count": 0,
+            "positive_yuan": 25319.954999999998,
+            "negative_yuan": 12898.68879999998,
+            "signed_yuan": 12421.266200000016,
+            "missed_positive_fraction": 0.7468754864230671,
+            "captured_negative_fraction": 0.7106143185601242,
+            "loss_precision": 0.5,
+            "loss_count_recall": 0.6
+          }
+        }
+      }
+    },
+    "2026": {
+      "n": 49,
+      "gross_total": {
+        "n": 49,
+        "positive_count": 31,
+        "negative_count": 17,
+        "zero_count": 1,
+        "positive_yuan": 61066.899999999994,
+        "negative_yuan": 31011.300000000032,
+        "signed_yuan": 30055.59999999997,
+        "missed_positive_fraction": 1.0,
+        "captured_negative_fraction": 1.0,
+        "loss_precision": 0.3469387755102041,
+        "loss_count_recall": 1.0
+      },
+      "net_entry_total": {
+        "n": 49,
+        "positive_count": 31,
+        "negative_count": 18,
+        "zero_count": 0,
+        "positive_yuan": 58016.842699999994,
+        "negative_yuan": 32777.84890000003,
+        "signed_yuan": 25238.99379999997,
+        "missed_positive_fraction": 1.0,
+        "captured_negative_fraction": 1.0,
+        "loss_precision": 0.3673469387755102,
+        "loss_count_recall": 1.0
+      },
+      "mean_prediction_mse": 0.000577110370405408,
+      "models": {
+        "PR": {
+          "mse": 0.0006029712473961716,
+          "gain_vs_mean": -0.04481097259194433,
+          "sign_accuracy_zero_threshold": 0.6326530612244898,
+          "balanced_accuracy_zero_threshold": 0.484375,
+          "groups": {
+            "-1": {
+              "gross": {
+                "n": 1,
+                "positive_count": 1,
+                "negative_count": 0,
+                "zero_count": 0,
+                "positive_yuan": 878.4000000000007,
+                "negative_yuan": 0.0,
+                "signed_yuan": 878.4000000000007,
+                "missed_positive_fraction": 0.014384224514425996,
+                "captured_negative_fraction": 0.0,
+                "loss_precision": 0.0,
+                "loss_count_recall": 0.0
+              },
+              "net_entry": {
+                "n": 1,
+                "positive_count": 1,
+                "negative_count": 0,
+                "zero_count": 0,
+                "positive_yuan": 781.6113000000006,
+                "negative_yuan": 0.0,
+                "signed_yuan": 781.6113000000006,
+                "missed_positive_fraction": 0.013472144701869493,
+                "captured_negative_fraction": 0.0,
+                "loss_precision": 0.0,
+                "loss_count_recall": 0.0
+              }
+            },
+            "0": {
+              "gross": {
+                "n": 12,
+                "positive_count": 7,
+                "negative_count": 4,
+                "zero_count": 1,
+                "positive_yuan": 15749.699999999992,
+                "negative_yuan": 2706.4000000000024,
+                "signed_yuan": 13043.299999999988,
+                "missed_positive_fraction": 0.2579089490378584,
+                "captured_negative_fraction": 0.08727141396845664,
+                "loss_precision": 0.3333333333333333,
+                "loss_count_recall": 0.23529411764705882
+              },
+              "net_entry": {
+                "n": 12,
+                "positive_count": 7,
+                "negative_count": 5,
+                "zero_count": 0,
+                "positive_yuan": 15061.686299999994,
+                "negative_yuan": 3198.9982000000027,
+                "signed_yuan": 11862.688099999992,
+                "missed_positive_fraction": 0.2596088583772587,
+                "captured_negative_fraction": 0.09759634348671366,
+                "loss_precision": 0.4166666666666667,
+                "loss_count_recall": 0.2777777777777778
+              }
+            },
+            "1": {
+              "gross": {
+                "n": 36,
+                "positive_count": 23,
+                "negative_count": 13,
+                "zero_count": 0,
+                "positive_yuan": 44438.80000000001,
+                "negative_yuan": 28304.900000000034,
+                "signed_yuan": 16133.89999999997,
+                "missed_positive_fraction": 0.7277068264477159,
+                "captured_negative_fraction": 0.9127285860315435,
+                "loss_precision": 0.3611111111111111,
+                "loss_count_recall": 0.7647058823529411
+              },
+              "net_entry": {
+                "n": 36,
+                "positive_count": 23,
+                "negative_count": 13,
+                "zero_count": 0,
+                "positive_yuan": 42173.5451,
+                "negative_yuan": 29578.85070000003,
+                "signed_yuan": 12594.694399999973,
+                "missed_positive_fraction": 0.7269189969208719,
+                "captured_negative_fraction": 0.9024036565132864,
+                "loss_precision": 0.3611111111111111,
+                "loss_count_recall": 0.7222222222222222
+              }
+            }
+          },
+          "exclusion_fraction": 0.02040816326530612
+        },
+        "AllDaily": {
+          "mse": 0.0006336175263253445,
+          "gain_vs_mean": -0.0979139499438233,
+          "sign_accuracy_zero_threshold": 0.6122448979591837,
+          "balanced_accuracy_zero_threshold": 0.46875,
+          "groups": {
+            "-1": {
+              "gross": {
+                "n": 3,
+                "positive_count": 2,
+                "negative_count": 1,
+                "zero_count": 0,
+                "positive_yuan": 8366.400000000007,
+                "negative_yuan": 1430.4000000000012,
+                "signed_yuan": 6936.000000000006,
+                "missed_positive_fraction": 0.1370038433259263,
+                "captured_negative_fraction": 0.04612512213289994,
+                "loss_precision": 0.3333333333333333,
+                "loss_count_recall": 0.058823529411764705
+              },
+              "net_entry": {
+                "n": 3,
+                "positive_count": 2,
+                "negative_count": 1,
+                "zero_count": 0,
+                "positive_yuan": 8170.629300000007,
+                "negative_yuan": 1528.9784000000013,
+                "signed_yuan": 6641.650900000005,
+                "missed_positive_fraction": 0.14083202256023505,
+                "captured_negative_fraction": 0.04664669742864059,
+                "loss_precision": 0.3333333333333333,
+                "loss_count_recall": 0.05555555555555555
+              }
+            },
+            "0": {
+              "gross": {
+                "n": 8,
+                "positive_count": 5,
+                "negative_count": 3,
+                "zero_count": 0,
+                "positive_yuan": 4625.099999999991,
+                "negative_yuan": 3361.0000000000086,
+                "signed_yuan": 1264.0999999999829,
+                "missed_positive_fraction": 0.07573824772503585,
+                "captured_negative_fraction": 0.10837984863582001,
+                "loss_precision": 0.375,
+                "loss_count_recall": 0.17647058823529413
+              },
+              "net_entry": {
+                "n": 8,
+                "positive_count": 5,
+                "negative_count": 3,
+                "zero_count": 0,
+                "positive_yuan": 4133.299499999991,
+                "negative_yuan": 3655.0567000000083,
+                "signed_yuan": 478.2427999999826,
+                "missed_positive_fraction": 0.07124309610181513,
+                "captured_negative_fraction": 0.11150996244906128,
+                "loss_precision": 0.375,
+                "loss_count_recall": 0.16666666666666666
+              }
+            },
+            "1": {
+              "gross": {
+                "n": 38,
+                "positive_count": 24,
+                "negative_count": 13,
+                "zero_count": 1,
+                "positive_yuan": 48075.400000000016,
+                "negative_yuan": 26219.900000000023,
+                "signed_yuan": 21855.499999999975,
+                "missed_positive_fraction": 0.7872579089490381,
+                "captured_negative_fraction": 0.8454950292312802,
+                "loss_precision": 0.34210526315789475,
+                "loss_count_recall": 0.7647058823529411
+              },
+              "net_entry": {
+                "n": 38,
+                "positive_count": 24,
+                "negative_count": 14,
+                "zero_count": 0,
+                "positive_yuan": 45712.9139,
+                "negative_yuan": 27593.81380000003,
+                "signed_yuan": 18119.10009999998,
+                "missed_positive_fraction": 0.7879248813379498,
+                "captured_negative_fraction": 0.8418433401222982,
+                "loss_precision": 0.3684210526315789,
+                "loss_count_recall": 0.7777777777777778
+              }
+            }
+          },
+          "exclusion_fraction": 0.061224489795918366
+        }
+      },
+      "AllDaily_gain_vs_PR": -0.05082543995507849,
+      "exclusion_transition": {
+        "common_low": {
+          "gross": {
+            "n": 1,
+            "positive_count": 1,
+            "negative_count": 0,
+            "zero_count": 0,
+            "positive_yuan": 878.4000000000007,
+            "negative_yuan": 0.0,
+            "signed_yuan": 878.4000000000007,
+            "missed_positive_fraction": 0.014384224514425996,
+            "captured_negative_fraction": 0.0,
+            "loss_precision": 0.0,
+            "loss_count_recall": 0.0
+          },
+          "net_entry": {
+            "n": 1,
+            "positive_count": 1,
+            "negative_count": 0,
+            "zero_count": 0,
+            "positive_yuan": 781.6113000000006,
+            "negative_yuan": 0.0,
+            "signed_yuan": 781.6113000000006,
+            "missed_positive_fraction": 0.013472144701869493,
+            "captured_negative_fraction": 0.0,
+            "loss_precision": 0.0,
+            "loss_count_recall": 0.0
+          }
+        },
+        "AllDaily_added_low": {
+          "gross": {
+            "n": 2,
+            "positive_count": 1,
+            "negative_count": 1,
+            "zero_count": 0,
+            "positive_yuan": 7488.0000000000055,
+            "negative_yuan": 1430.4000000000012,
+            "signed_yuan": 6057.600000000005,
+            "missed_positive_fraction": 0.12261961881150028,
+            "captured_negative_fraction": 0.04612512213289994,
+            "loss_precision": 0.5,
+            "loss_count_recall": 0.058823529411764705
+          },
+          "net_entry": {
+            "n": 2,
+            "positive_count": 1,
+            "negative_count": 1,
+            "zero_count": 0,
+            "positive_yuan": 7389.0180000000055,
+            "negative_yuan": 1528.9784000000013,
+            "signed_yuan": 5860.039600000004,
+            "missed_positive_fraction": 0.12735987785836553,
+            "captured_negative_fraction": 0.04664669742864059,
+            "loss_precision": 0.5,
+            "loss_count_recall": 0.05555555555555555
+          }
+        },
+        "AllDaily_released_low": {
+          "gross": {
+            "n": 0,
+            "positive_count": 0,
+            "negative_count": 0,
+            "zero_count": 0,
+            "positive_yuan": 0.0,
+            "negative_yuan": 0.0,
+            "signed_yuan": 0.0,
+            "missed_positive_fraction": 0.0,
+            "captured_negative_fraction": 0.0,
+            "loss_precision": null,
+            "loss_count_recall": 0.0
+          },
+          "net_entry": {
+            "n": 0,
+            "positive_count": 0,
+            "negative_count": 0,
+            "zero_count": 0,
+            "positive_yuan": 0.0,
+            "negative_yuan": 0.0,
+            "signed_yuan": 0.0,
+            "missed_positive_fraction": 0.0,
+            "captured_negative_fraction": 0.0,
+            "loss_precision": null,
+            "loss_count_recall": 0.0
+          }
+        },
+        "neither_low": {
+          "gross": {
+            "n": 46,
+            "positive_count": 29,
+            "negative_count": 16,
+            "zero_count": 1,
+            "positive_yuan": 52700.49999999999,
+            "negative_yuan": 29580.90000000003,
+            "signed_yuan": 23119.599999999962,
+            "missed_positive_fraction": 0.8629961566740739,
+            "captured_negative_fraction": 0.9538748778671001,
+            "loss_precision": 0.34782608695652173,
+            "loss_count_recall": 0.9411764705882353
+          },
+          "net_entry": {
+            "n": 46,
+            "positive_count": 29,
+            "negative_count": 17,
+            "zero_count": 0,
+            "positive_yuan": 49846.213399999986,
+            "negative_yuan": 31248.870500000037,
+            "signed_yuan": 18597.34289999996,
+            "missed_positive_fraction": 0.859167977439765,
+            "captured_negative_fraction": 0.9533533025713595,
+            "loss_precision": 0.3695652173913043,
+            "loss_count_recall": 0.9444444444444444
+          }
+        }
+      }
+    }
+  },
+  "actual_periods": {
+    "0": {
+      "n": 18,
+      "gross_total": {
+        "n": 18,
+        "positive_count": 12,
+        "negative_count": 6,
+        "zero_count": 0,
+        "positive_yuan": 14897.199999999993,
+        "negative_yuan": 4102.099999999982,
+        "signed_yuan": 10795.100000000013,
+        "missed_positive_fraction": 1.0,
+        "captured_negative_fraction": 1.0,
+        "loss_precision": 0.3333333333333333,
+        "loss_count_recall": 1.0
+      },
+      "net_entry_total": {
+        "n": 18,
+        "positive_count": 12,
+        "negative_count": 6,
+        "zero_count": 0,
+        "positive_yuan": 13710.658399999995,
+        "negative_yuan": 4696.386799999982,
+        "signed_yuan": 9014.271600000013,
+        "missed_positive_fraction": 1.0,
+        "captured_negative_fraction": 1.0,
+        "loss_precision": 0.3333333333333333,
+        "loss_count_recall": 1.0
+      },
+      "mean_prediction_mse": 0.00015980396936623824,
+      "models": {
+        "PR": {
+          "mse": 0.00019395514840444923,
+          "gain_vs_mean": -0.21370670061357133,
+          "sign_accuracy_zero_threshold": 0.2777777777777778,
+          "balanced_accuracy_zero_threshold": 0.375,
+          "groups": {
+            "-1": {
+              "gross": {
+                "n": 11,
+                "positive_count": 8,
+                "negative_count": 3,
+                "zero_count": 0,
+                "positive_yuan": 6655.69999999999,
+                "negative_yuan": 2209.9000000000005,
+                "signed_yuan": 4445.799999999988,
+                "missed_positive_fraction": 0.4467752329296775,
+                "captured_negative_fraction": 0.5387240681602131,
+                "loss_precision": 0.2727272727272727,
+                "loss_count_recall": 0.5
+              },
+              "net_entry": {
+                "n": 11,
+                "positive_count": 8,
+                "negative_count": 3,
+                "zero_count": 0,
+                "positive_yuan": 5865.265899999988,
+                "negative_yuan": 2507.328000000001,
+                "signed_yuan": 3357.9378999999876,
+                "missed_positive_fraction": 0.4277887851104211,
+                "captured_negative_fraction": 0.5338844747626006,
+                "loss_precision": 0.2727272727272727,
+                "loss_count_recall": 0.5
+              }
+            },
+            "0": {
+              "gross": {
+                "n": 4,
+                "positive_count": 3,
+                "negative_count": 1,
+                "zero_count": 0,
+                "positive_yuan": 5260.700000000004,
+                "negative_yuan": 474.6000000000005,
+                "signed_yuan": 4786.100000000003,
+                "missed_positive_fraction": 0.35313347474693274,
+                "captured_negative_fraction": 0.11569683820482253,
+                "loss_precision": 0.25,
+                "loss_count_recall": 0.16666666666666666
+              },
+              "net_entry": {
+                "n": 4,
+                "positive_count": 3,
+                "negative_count": 1,
+                "zero_count": 0,
+                "positive_yuan": 4963.621300000004,
+                "negative_yuan": 573.7914000000004,
+                "signed_yuan": 4389.829900000003,
+                "missed_positive_fraction": 0.3620264727768293,
+                "captured_negative_fraction": 0.12217720226962624,
+                "loss_precision": 0.25,
+                "loss_count_recall": 0.16666666666666666
+              }
+            },
+            "1": {
+              "gross": {
+                "n": 3,
+                "positive_count": 1,
+                "negative_count": 2,
+                "zero_count": 0,
+                "positive_yuan": 2980.8000000000025,
+                "negative_yuan": 1417.599999999981,
+                "signed_yuan": 1563.2000000000214,
+                "missed_positive_fraction": 0.20009129232338987,
+                "captured_negative_fraction": 0.3455790936349643,
+                "loss_precision": 0.6666666666666666,
+                "loss_count_recall": 0.3333333333333333
+              },
+              "net_entry": {
+                "n": 3,
+                "positive_count": 1,
+                "negative_count": 2,
+                "zero_count": 0,
+                "positive_yuan": 2881.771200000003,
+                "negative_yuan": 1615.267399999981,
+                "signed_yuan": 1266.5038000000216,
+                "missed_positive_fraction": 0.21018474211274957,
+                "captured_negative_fraction": 0.3439383229677733,
+                "loss_precision": 0.6666666666666666,
+                "loss_count_recall": 0.3333333333333333
+              }
+            }
+          },
+          "exclusion_fraction": 0.6111111111111112
+        },
+        "AllDaily": {
+          "mse": 0.00020297447399337978,
+          "gain_vs_mean": -0.27014663527038874,
+          "sign_accuracy_zero_threshold": 0.3333333333333333,
+          "balanced_accuracy_zero_threshold": 0.41666666666666663,
+          "groups": {
+            "-1": {
+              "gross": {
+                "n": 11,
+                "positive_count": 8,
+                "negative_count": 3,
+                "zero_count": 0,
+                "positive_yuan": 8774.000000000007,
+                "negative_yuan": 2148.7000000000007,
+                "signed_yuan": 6625.3000000000075,
+                "missed_positive_fraction": 0.5889697392798655,
+                "captured_negative_fraction": 0.5238048804271007,
+                "loss_precision": 0.2727272727272727,
+                "loss_count_recall": 0.5
+              },
+              "net_entry": {
+                "n": 11,
+                "positive_count": 8,
+                "negative_count": 3,
+                "zero_count": 0,
+                "positive_yuan": 7983.535100000008,
+                "negative_yuan": 2446.4643000000005,
+                "signed_yuan": 5537.070800000007,
+                "missed_positive_fraction": 0.5822867777086482,
+                "captured_negative_fraction": 0.5209247883926448,
+                "loss_precision": 0.2727272727272727,
+                "loss_count_recall": 0.5
+              }
+            },
+            "0": {
+              "gross": {
+                "n": 4,
+                "positive_count": 3,
+                "negative_count": 1,
+                "zero_count": 0,
+                "positive_yuan": 3142.3999999999846,
+                "negative_yuan": 535.8000000000005,
+                "signed_yuan": 2606.5999999999844,
+                "missed_positive_fraction": 0.21093896839674475,
+                "captured_negative_fraction": 0.13061602593793492,
+                "loss_precision": 0.25,
+                "loss_count_recall": 0.16666666666666666
+              },
+              "net_entry": {
+                "n": 4,
+                "positive_count": 3,
+                "negative_count": 1,
+                "zero_count": 0,
+                "positive_yuan": 2845.3520999999846,
+                "negative_yuan": 634.6551000000005,
+                "signed_yuan": 2210.696999999984,
+                "missed_positive_fraction": 0.2075284801786022,
+                "captured_negative_fraction": 0.135136888639582,
+                "loss_precision": 0.25,
+                "loss_count_recall": 0.16666666666666666
+              }
+            },
+            "1": {
+              "gross": {
+                "n": 3,
+                "positive_count": 1,
+                "negative_count": 2,
+                "zero_count": 0,
+                "positive_yuan": 2980.8000000000025,
+                "negative_yuan": 1417.599999999981,
+                "signed_yuan": 1563.2000000000214,
+                "missed_positive_fraction": 0.20009129232338987,
+                "captured_negative_fraction": 0.3455790936349643,
+                "loss_precision": 0.6666666666666666,
+                "loss_count_recall": 0.3333333333333333
+              },
+              "net_entry": {
+                "n": 3,
+                "positive_count": 1,
+                "negative_count": 2,
+                "zero_count": 0,
+                "positive_yuan": 2881.771200000003,
+                "negative_yuan": 1615.267399999981,
+                "signed_yuan": 1266.5038000000216,
+                "missed_positive_fraction": 0.21018474211274957,
+                "captured_negative_fraction": 0.3439383229677733,
+                "loss_precision": 0.6666666666666666,
+                "loss_count_recall": 0.3333333333333333
+              }
+            }
+          },
+          "exclusion_fraction": 0.6111111111111112
+        }
+      },
+      "AllDaily_gain_vs_PR": -0.04650212001654519,
+      "exclusion_transition": {
+        "common_low": {
+          "gross": {
+            "n": 9,
+            "positive_count": 7,
+            "negative_count": 2,
+            "zero_count": 0,
+            "positive_yuan": 5959.099999999997,
+            "negative_yuan": 1674.1000000000001,
+            "signed_yuan": 4284.999999999996,
+            "missed_positive_fraction": 0.40001476787584234,
+            "captured_negative_fraction": 0.40810804222227826,
+            "loss_precision": 0.2222222222222222,
+            "loss_count_recall": 0.3333333333333333
+          },
+          "net_entry": {
+            "n": 9,
+            "positive_count": 7,
+            "negative_count": 2,
+            "zero_count": 0,
+            "positive_yuan": 5267.583099999996,
+            "negative_yuan": 1872.6729,
+            "signed_yuan": 3394.910199999996,
+            "missed_positive_fraction": 0.3841962177396235,
+            "captured_negative_fraction": 0.3987475861230185,
+            "loss_precision": 0.2222222222222222,
+            "loss_count_recall": 0.3333333333333333
+          }
+        },
+        "AllDaily_added_low": {
+          "gross": {
+            "n": 2,
+            "positive_count": 1,
+            "negative_count": 1,
+            "zero_count": 0,
+            "positive_yuan": 2814.900000000012,
+            "negative_yuan": 474.6000000000005,
+            "signed_yuan": 2340.3000000000116,
+            "missed_positive_fraction": 0.1889549714040231,
+            "captured_negative_fraction": 0.11569683820482253,
+            "loss_precision": 0.5,
+            "loss_count_recall": 0.16666666666666666
+          },
+          "net_entry": {
+            "n": 2,
+            "positive_count": 1,
+            "negative_count": 1,
+            "zero_count": 0,
+            "positive_yuan": 2715.9520000000116,
+            "negative_yuan": 573.7914000000004,
+            "signed_yuan": 2142.1606000000115,
+            "missed_positive_fraction": 0.19809055996902475,
+            "captured_negative_fraction": 0.12217720226962624,
+            "loss_precision": 0.5,
+            "loss_count_recall": 0.16666666666666666
+          }
+        },
+        "AllDaily_released_low": {
+          "gross": {
+            "n": 2,
+            "positive_count": 1,
+            "negative_count": 1,
+            "zero_count": 0,
+            "positive_yuan": 696.5999999999921,
+            "negative_yuan": 535.8000000000005,
+            "signed_yuan": 160.7999999999916,
+            "missed_positive_fraction": 0.04676046505383511,
+            "captured_negative_fraction": 0.13061602593793492,
+            "loss_precision": 0.5,
+            "loss_count_recall": 0.16666666666666666
+          },
+          "net_entry": {
+            "n": 2,
+            "positive_count": 1,
+            "negative_count": 1,
+            "zero_count": 0,
+            "positive_yuan": 597.6827999999921,
+            "negative_yuan": 634.6551000000005,
+            "signed_yuan": -36.97230000000839,
+            "missed_positive_fraction": 0.04359256737079762,
+            "captured_negative_fraction": 0.135136888639582,
+            "loss_precision": 0.5,
+            "loss_count_recall": 0.16666666666666666
+          }
+        },
+        "neither_low": {
+          "gross": {
+            "n": 5,
+            "positive_count": 3,
+            "negative_count": 2,
+            "zero_count": 0,
+            "positive_yuan": 5426.599999999995,
+            "negative_yuan": 1417.599999999981,
+            "signed_yuan": 4009.000000000014,
+            "missed_positive_fraction": 0.3642697956662995,
+            "captured_negative_fraction": 0.3455790936349643,
+            "loss_precision": 0.4,
+            "loss_count_recall": 0.3333333333333333
+          },
+          "net_entry": {
+            "n": 5,
+            "positive_count": 3,
+            "negative_count": 2,
+            "zero_count": 0,
+            "positive_yuan": 5129.440499999995,
+            "negative_yuan": 1615.267399999981,
+            "signed_yuan": 3514.173100000014,
+            "missed_positive_fraction": 0.3741206549205542,
+            "captured_negative_fraction": 0.3439383229677733,
+            "loss_precision": 0.4,
+            "loss_count_recall": 0.3333333333333333
+          }
+        }
+      }
+    },
+    "1": {
+      "n": 23,
+      "gross_total": {
+        "n": 23,
+        "positive_count": 14,
+        "negative_count": 9,
+        "zero_count": 0,
+        "positive_yuan": 41857.2,
+        "negative_yuan": 13359.799999999992,
+        "signed_yuan": 28497.400000000012,
+        "missed_positive_fraction": 1.0,
+        "captured_negative_fraction": 1.0,
+        "loss_precision": 0.391304347826087,
+        "loss_count_recall": 1.0
+      },
+      "net_entry_total": {
+        "n": 23,
+        "positive_count": 13,
+        "negative_count": 10,
+        "zero_count": 0,
+        "positive_yuan": 40514.336100000015,
+        "negative_yuan": 14276.453999999996,
+        "signed_yuan": 26237.88210000001,
+        "missed_positive_fraction": 1.0,
+        "captured_negative_fraction": 1.0,
+        "loss_precision": 0.43478260869565216,
+        "loss_count_recall": 1.0
+      },
+      "mean_prediction_mse": 0.001033810420774093,
+      "models": {
+        "PR": {
+          "mse": 0.0010380870248784008,
+          "gain_vs_mean": -0.004136739210952811,
+          "sign_accuracy_zero_threshold": 0.5652173913043478,
+          "balanced_accuracy_zero_threshold": 0.4642857142857143,
+          "groups": {
+            "-1": {
+              "gross": {
+                "n": 1,
+                "positive_count": 1,
+                "negative_count": 0,
+                "zero_count": 0,
+                "positive_yuan": 878.4000000000007,
+                "negative_yuan": 0.0,
+                "signed_yuan": 878.4000000000007,
+                "missed_positive_fraction": 0.020985636879676632,
+                "captured_negative_fraction": 0.0,
+                "loss_precision": 0.0,
+                "loss_count_recall": 0.0
+              },
+              "net_entry": {
+                "n": 1,
+                "positive_count": 1,
+                "negative_count": 0,
+                "zero_count": 0,
+                "positive_yuan": 781.6113000000006,
+                "negative_yuan": 0.0,
+                "signed_yuan": 781.6113000000006,
+                "missed_positive_fraction": 0.019292215428898522,
+                "captured_negative_fraction": 0.0,
+                "loss_precision": 0.0,
+                "loss_count_recall": 0.0
+              }
+            },
+            "0": {
+              "gross": {
+                "n": 5,
+                "positive_count": 4,
+                "negative_count": 1,
+                "zero_count": 0,
+                "positive_yuan": 14129.199999999997,
+                "negative_yuan": 2073.900000000009,
+                "signed_yuan": 12055.299999999988,
+                "missed_positive_fraction": 0.33755721835192026,
+                "captured_negative_fraction": 0.1552343597958061,
+                "loss_precision": 0.2,
+                "loss_count_recall": 0.1111111111111111
+              },
+              "net_entry": {
+                "n": 5,
+                "positive_count": 4,
+                "negative_count": 1,
+                "zero_count": 0,
+                "positive_yuan": 13736.170799999996,
+                "negative_yuan": 2171.908500000009,
+                "signed_yuan": 11564.26229999999,
+                "missed_positive_fraction": 0.3390446968227623,
+                "captured_negative_fraction": 0.15213221014125844,
+                "loss_precision": 0.2,
+                "loss_count_recall": 0.1
+              }
+            },
+            "1": {
+              "gross": {
+                "n": 17,
+                "positive_count": 9,
+                "negative_count": 8,
+                "zero_count": 0,
+                "positive_yuan": 26849.600000000002,
+                "negative_yuan": 11285.89999999998,
+                "signed_yuan": 15563.700000000019,
+                "missed_positive_fraction": 0.6414571447684031,
+                "captured_negative_fraction": 0.8447656402041936,
+                "loss_precision": 0.47058823529411764,
+                "loss_count_recall": 0.8888888888888888
+              },
+              "net_entry": {
+                "n": 17,
+                "positive_count": 8,
+                "negative_count": 9,
+                "zero_count": 0,
+                "positive_yuan": 25996.55400000001,
+                "negative_yuan": 12104.54549999999,
+                "signed_yuan": 13892.008500000022,
+                "missed_positive_fraction": 0.641663087748339,
+                "captured_negative_fraction": 0.8478677898587417,
+                "loss_precision": 0.5294117647058824,
+                "loss_count_recall": 0.9
+              }
+            }
+          },
+          "exclusion_fraction": 0.043478260869565216
+        },
+        "AllDaily": {
+          "mse": 0.0010624534062496547,
+          "gain_vs_mean": -0.027706226306090542,
+          "sign_accuracy_zero_threshold": 0.5652173913043478,
+          "balanced_accuracy_zero_threshold": 0.4841269841269841,
+          "groups": {
+            "-1": {
+              "gross": {
+                "n": 4,
+                "positive_count": 2,
+                "negative_count": 2,
+                "zero_count": 0,
+                "positive_yuan": 8366.400000000007,
+                "negative_yuan": 1975.0000000000018,
+                "signed_yuan": 6391.400000000005,
+                "missed_positive_fraction": 0.1998795906080676,
+                "captured_negative_fraction": 0.14783155436458653,
+                "loss_precision": 0.5,
+                "loss_count_recall": 0.2222222222222222
+              },
+              "net_entry": {
+                "n": 4,
+                "positive_count": 2,
+                "negative_count": 2,
+                "zero_count": 0,
+                "positive_yuan": 8170.629300000007,
+                "negative_yuan": 2171.6538000000014,
+                "signed_yuan": 5998.975500000005,
+                "missed_positive_fraction": 0.20167254573375581,
+                "captured_negative_fraction": 0.15211436957664712,
+                "loss_precision": 0.5,
+                "loss_count_recall": 0.2
+              }
+            },
+            "0": {
+              "gross": {
+                "n": 3,
+                "positive_count": 1,
+                "negative_count": 2,
+                "zero_count": 0,
+                "positive_yuan": 2866.999999999996,
+                "negative_yuan": 5064.400000000004,
+                "signed_yuan": -2197.4000000000083,
+                "missed_positive_fraction": 0.0684947870378333,
+                "captured_negative_fraction": 0.37907753110076553,
+                "loss_precision": 0.6666666666666666,
+                "loss_count_recall": 0.2222222222222222
+              },
+              "net_entry": {
+                "n": 3,
+                "positive_count": 1,
+                "negative_count": 2,
+                "zero_count": 0,
+                "positive_yuan": 2768.911999999996,
+                "negative_yuan": 5261.443900000004,
+                "signed_yuan": -2492.531900000008,
+                "missed_positive_fraction": 0.06834400527175355,
+                "captured_negative_fraction": 0.3685399679780431,
+                "loss_precision": 0.6666666666666666,
+                "loss_count_recall": 0.2
+              }
+            },
+            "1": {
+              "gross": {
+                "n": 16,
+                "positive_count": 11,
+                "negative_count": 5,
+                "zero_count": 0,
+                "positive_yuan": 30623.799999999996,
+                "negative_yuan": 6320.399999999983,
+                "signed_yuan": 24303.400000000012,
+                "missed_positive_fraction": 0.7316256223540991,
+                "captured_negative_fraction": 0.47309091453464774,
+                "loss_precision": 0.3125,
+                "loss_count_recall": 0.5555555555555556
+              },
+              "net_entry": {
+                "n": 16,
+                "positive_count": 10,
+                "negative_count": 6,
+                "zero_count": 0,
+                "positive_yuan": 29574.794800000003,
+                "negative_yuan": 6843.35629999999,
+                "signed_yuan": 22731.43850000001,
+                "missed_positive_fraction": 0.7299834489944904,
+                "captured_negative_fraction": 0.47934566244530974,
+                "loss_precision": 0.375,
+                "loss_count_recall": 0.6
+              }
+            }
+          },
+          "exclusion_fraction": 0.17391304347826086
+        }
+      },
+      "AllDaily_gain_vs_PR": -0.023472387947540474,
+      "exclusion_transition": {
+        "common_low": {
+          "gross": {
+            "n": 1,
+            "positive_count": 1,
+            "negative_count": 0,
+            "zero_count": 0,
+            "positive_yuan": 878.4000000000007,
+            "negative_yuan": 0.0,
+            "signed_yuan": 878.4000000000007,
+            "missed_positive_fraction": 0.020985636879676632,
+            "captured_negative_fraction": 0.0,
+            "loss_precision": 0.0,
+            "loss_count_recall": 0.0
+          },
+          "net_entry": {
+            "n": 1,
+            "positive_count": 1,
+            "negative_count": 0,
+            "zero_count": 0,
+            "positive_yuan": 781.6113000000006,
+            "negative_yuan": 0.0,
+            "signed_yuan": 781.6113000000006,
+            "missed_positive_fraction": 0.019292215428898522,
+            "captured_negative_fraction": 0.0,
+            "loss_precision": 0.0,
+            "loss_count_recall": 0.0
+          }
+        },
+        "AllDaily_added_low": {
+          "gross": {
+            "n": 3,
+            "positive_count": 1,
+            "negative_count": 2,
+            "zero_count": 0,
+            "positive_yuan": 7488.0000000000055,
+            "negative_yuan": 1975.0000000000018,
+            "signed_yuan": 5513.000000000004,
+            "missed_positive_fraction": 0.17889395372839095,
+            "captured_negative_fraction": 0.14783155436458653,
+            "loss_precision": 0.6666666666666666,
+            "loss_count_recall": 0.2222222222222222
+          },
+          "net_entry": {
+            "n": 3,
+            "positive_count": 1,
+            "negative_count": 2,
+            "zero_count": 0,
+            "positive_yuan": 7389.0180000000055,
+            "negative_yuan": 2171.6538000000014,
+            "signed_yuan": 5217.3642000000045,
+            "missed_positive_fraction": 0.18238033030485726,
+            "captured_negative_fraction": 0.15211436957664712,
+            "loss_precision": 0.6666666666666666,
+            "loss_count_recall": 0.2
+          }
+        },
+        "AllDaily_released_low": {
+          "gross": {
+            "n": 0,
+            "positive_count": 0,
+            "negative_count": 0,
+            "zero_count": 0,
+            "positive_yuan": 0.0,
+            "negative_yuan": 0.0,
+            "signed_yuan": 0.0,
+            "missed_positive_fraction": 0.0,
+            "captured_negative_fraction": 0.0,
+            "loss_precision": null,
+            "loss_count_recall": 0.0
+          },
+          "net_entry": {
+            "n": 0,
+            "positive_count": 0,
+            "negative_count": 0,
+            "zero_count": 0,
+            "positive_yuan": 0.0,
+            "negative_yuan": 0.0,
+            "signed_yuan": 0.0,
+            "missed_positive_fraction": 0.0,
+            "captured_negative_fraction": 0.0,
+            "loss_precision": null,
+            "loss_count_recall": 0.0
+          }
+        },
+        "neither_low": {
+          "gross": {
+            "n": 19,
+            "positive_count": 12,
+            "negative_count": 7,
+            "zero_count": 0,
+            "positive_yuan": 33490.79999999999,
+            "negative_yuan": 11384.799999999988,
+            "signed_yuan": 22106.000000000007,
+            "missed_positive_fraction": 0.8001204093919323,
+            "captured_negative_fraction": 0.8521684456354134,
+            "loss_precision": 0.3684210526315789,
+            "loss_count_recall": 0.7777777777777778
+          },
+          "net_entry": {
+            "n": 19,
+            "positive_count": 11,
+            "negative_count": 8,
+            "zero_count": 0,
+            "positive_yuan": 32343.706800000004,
+            "negative_yuan": 12104.800199999992,
+            "signed_yuan": 20238.906600000006,
+            "missed_positive_fraction": 0.7983274542662441,
+            "captured_negative_fraction": 0.8478856304233527,
+            "loss_precision": 0.42105263157894735,
+            "loss_count_recall": 0.8
+          }
+        }
+      }
+    },
+    "2": {
+      "n": 18,
+      "gross_total": {
+        "n": 18,
+        "positive_count": 12,
+        "negative_count": 6,
+        "zero_count": 0,
+        "positive_yuan": 20913.59999999998,
+        "negative_yuan": 10680.900000000025,
+        "signed_yuan": 10232.699999999953,
+        "missed_positive_fraction": 1.0,
+        "captured_negative_fraction": 1.0,
+        "loss_precision": 0.3333333333333333,
+        "loss_count_recall": 1.0
+      },
+      "net_entry_total": {
+        "n": 18,
+        "positive_count": 12,
+        "negative_count": 6,
+        "zero_count": 0,
+        "positive_yuan": 19729.73369999998,
+        "negative_yuan": 11270.276300000021,
+        "signed_yuan": 8459.457399999956,
+        "missed_positive_fraction": 1.0,
+        "captured_negative_fraction": 1.0,
+        "loss_precision": 0.3333333333333333,
+        "loss_count_recall": 1.0
+      },
+      "mean_prediction_mse": 0.00043322583612903594,
+      "models": {
+        "PR": {
+          "mse": 0.0004220738082033929,
+          "gain_vs_mean": 0.025741834848283185,
+          "sign_accuracy_zero_threshold": 0.6666666666666666,
+          "balanced_accuracy_zero_threshold": 0.5,
+          "groups": {
+            "-1": {
+              "gross": {
+                "n": 0,
+                "positive_count": 0,
+                "negative_count": 0,
+                "zero_count": 0,
+                "positive_yuan": 0.0,
+                "negative_yuan": 0.0,
+                "signed_yuan": 0.0,
+                "missed_positive_fraction": 0.0,
+                "captured_negative_fraction": 0.0,
+                "loss_precision": null,
+                "loss_count_recall": 0.0
+              },
+              "net_entry": {
+                "n": 0,
+                "positive_count": 0,
+                "negative_count": 0,
+                "zero_count": 0,
+                "positive_yuan": 0.0,
+                "negative_yuan": 0.0,
+                "signed_yuan": 0.0,
+                "missed_positive_fraction": 0.0,
+                "captured_negative_fraction": 0.0,
+                "loss_precision": null,
+                "loss_count_recall": 0.0
+              }
+            },
+            "0": {
+              "gross": {
+                "n": 2,
+                "positive_count": 1,
+                "negative_count": 1,
+                "zero_count": 0,
+                "positive_yuan": 498.00000000000045,
+                "negative_yuan": 490.0000000000004,
+                "signed_yuan": 8.000000000000021,
+                "missed_positive_fraction": 0.023812256139545605,
+                "captured_negative_fraction": 0.04587628383375926,
+                "loss_precision": 0.5,
+                "loss_count_recall": 0.16666666666666666
+              },
+              "net_entry": {
+                "n": 2,
+                "positive_count": 1,
+                "negative_count": 1,
+                "zero_count": 0,
+                "positive_yuan": 399.74460000000045,
+                "negative_yuan": 587.9020000000004,
+                "signed_yuan": -188.15739999999997,
+                "missed_positive_fraction": 0.020261023594048858,
+                "captured_negative_fraction": 0.052163938518525875,
+                "loss_precision": 0.5,
+                "loss_count_recall": 0.16666666666666666
+              }
+            },
+            "1": {
+              "gross": {
+                "n": 16,
+                "positive_count": 11,
+                "negative_count": 5,
+                "zero_count": 0,
+                "positive_yuan": 20415.59999999998,
+                "negative_yuan": 10190.900000000025,
+                "signed_yuan": 10224.699999999955,
+                "missed_positive_fraction": 0.9761877438604545,
+                "captured_negative_fraction": 0.9541237161662408,
+                "loss_precision": 0.3125,
+                "loss_count_recall": 0.8333333333333334
+              },
+              "net_entry": {
+                "n": 16,
+                "positive_count": 11,
+                "negative_count": 5,
+                "zero_count": 0,
+                "positive_yuan": 19329.98909999998,
+                "negative_yuan": 10682.374300000021,
+                "signed_yuan": 8647.614799999956,
+                "missed_positive_fraction": 0.9797389764059512,
+                "captured_negative_fraction": 0.9478360614814741,
+                "loss_precision": 0.3125,
+                "loss_count_recall": 0.8333333333333334
+              }
+            }
+          },
+          "exclusion_fraction": 0.0
+        },
+        "AllDaily": {
+          "mse": 0.0004278151298969196,
+          "gain_vs_mean": 0.01248934338834018,
+          "sign_accuracy_zero_threshold": 0.6666666666666666,
+          "balanced_accuracy_zero_threshold": 0.5,
+          "groups": {
+            "-1": {
+              "gross": {
+                "n": 0,
+                "positive_count": 0,
+                "negative_count": 0,
+                "zero_count": 0,
+                "positive_yuan": 0.0,
+                "negative_yuan": 0.0,
+                "signed_yuan": 0.0,
+                "missed_positive_fraction": 0.0,
+                "captured_negative_fraction": 0.0,
+                "loss_precision": null,
+                "loss_count_recall": 0.0
+              },
+              "net_entry": {
+                "n": 0,
+                "positive_count": 0,
+                "negative_count": 0,
+                "zero_count": 0,
+                "positive_yuan": 0.0,
+                "negative_yuan": 0.0,
+                "signed_yuan": 0.0,
+                "missed_positive_fraction": 0.0,
+                "captured_negative_fraction": 0.0,
+                "loss_precision": null,
+                "loss_count_recall": 0.0
+              }
+            },
+            "0": {
+              "gross": {
+                "n": 2,
+                "positive_count": 1,
+                "negative_count": 1,
+                "zero_count": 0,
+                "positive_yuan": 498.00000000000045,
+                "negative_yuan": 490.0000000000004,
+                "signed_yuan": 8.000000000000021,
+                "missed_positive_fraction": 0.023812256139545605,
+                "captured_negative_fraction": 0.04587628383375926,
+                "loss_precision": 0.5,
+                "loss_count_recall": 0.16666666666666666
+              },
+              "net_entry": {
+                "n": 2,
+                "positive_count": 1,
+                "negative_count": 1,
+                "zero_count": 0,
+                "positive_yuan": 399.74460000000045,
+                "negative_yuan": 587.9020000000004,
+                "signed_yuan": -188.15739999999997,
+                "missed_positive_fraction": 0.020261023594048858,
+                "captured_negative_fraction": 0.052163938518525875,
+                "loss_precision": 0.5,
+                "loss_count_recall": 0.16666666666666666
+              }
+            },
+            "1": {
+              "gross": {
+                "n": 16,
+                "positive_count": 11,
+                "negative_count": 5,
+                "zero_count": 0,
+                "positive_yuan": 20415.59999999998,
+                "negative_yuan": 10190.900000000025,
+                "signed_yuan": 10224.699999999955,
+                "missed_positive_fraction": 0.9761877438604545,
+                "captured_negative_fraction": 0.9541237161662408,
+                "loss_precision": 0.3125,
+                "loss_count_recall": 0.8333333333333334
+              },
+              "net_entry": {
+                "n": 16,
+                "positive_count": 11,
+                "negative_count": 5,
+                "zero_count": 0,
+                "positive_yuan": 19329.98909999998,
+                "negative_yuan": 10682.374300000021,
+                "signed_yuan": 8647.614799999956,
+                "missed_positive_fraction": 0.9797389764059512,
+                "captured_negative_fraction": 0.9478360614814741,
+                "loss_precision": 0.3125,
+                "loss_count_recall": 0.8333333333333334
+              }
+            }
+          },
+          "exclusion_fraction": 0.0
+        }
+      },
+      "AllDaily_gain_vs_PR": -0.013602648593536992,
+      "exclusion_transition": {
+        "common_low": {
+          "gross": {
+            "n": 0,
+            "positive_count": 0,
+            "negative_count": 0,
+            "zero_count": 0,
+            "positive_yuan": 0.0,
+            "negative_yuan": 0.0,
+            "signed_yuan": 0.0,
+            "missed_positive_fraction": 0.0,
+            "captured_negative_fraction": 0.0,
+            "loss_precision": null,
+            "loss_count_recall": 0.0
+          },
+          "net_entry": {
+            "n": 0,
+            "positive_count": 0,
+            "negative_count": 0,
+            "zero_count": 0,
+            "positive_yuan": 0.0,
+            "negative_yuan": 0.0,
+            "signed_yuan": 0.0,
+            "missed_positive_fraction": 0.0,
+            "captured_negative_fraction": 0.0,
+            "loss_precision": null,
+            "loss_count_recall": 0.0
+          }
+        },
+        "AllDaily_added_low": {
+          "gross": {
+            "n": 0,
+            "positive_count": 0,
+            "negative_count": 0,
+            "zero_count": 0,
+            "positive_yuan": 0.0,
+            "negative_yuan": 0.0,
+            "signed_yuan": 0.0,
+            "missed_positive_fraction": 0.0,
+            "captured_negative_fraction": 0.0,
+            "loss_precision": null,
+            "loss_count_recall": 0.0
+          },
+          "net_entry": {
+            "n": 0,
+            "positive_count": 0,
+            "negative_count": 0,
+            "zero_count": 0,
+            "positive_yuan": 0.0,
+            "negative_yuan": 0.0,
+            "signed_yuan": 0.0,
+            "missed_positive_fraction": 0.0,
+            "captured_negative_fraction": 0.0,
+            "loss_precision": null,
+            "loss_count_recall": 0.0
+          }
+        },
+        "AllDaily_released_low": {
+          "gross": {
+            "n": 0,
+            "positive_count": 0,
+            "negative_count": 0,
+            "zero_count": 0,
+            "positive_yuan": 0.0,
+            "negative_yuan": 0.0,
+            "signed_yuan": 0.0,
+            "missed_positive_fraction": 0.0,
+            "captured_negative_fraction": 0.0,
+            "loss_precision": null,
+            "loss_count_recall": 0.0
+          },
+          "net_entry": {
+            "n": 0,
+            "positive_count": 0,
+            "negative_count": 0,
+            "zero_count": 0,
+            "positive_yuan": 0.0,
+            "negative_yuan": 0.0,
+            "signed_yuan": 0.0,
+            "missed_positive_fraction": 0.0,
+            "captured_negative_fraction": 0.0,
+            "loss_precision": null,
+            "loss_count_recall": 0.0
+          }
+        },
+        "neither_low": {
+          "gross": {
+            "n": 18,
+            "positive_count": 12,
+            "negative_count": 6,
+            "zero_count": 0,
+            "positive_yuan": 20913.59999999998,
+            "negative_yuan": 10680.900000000025,
+            "signed_yuan": 10232.699999999953,
+            "missed_positive_fraction": 1.0,
+            "captured_negative_fraction": 1.0,
+            "loss_precision": 0.3333333333333333,
+            "loss_count_recall": 1.0
+          },
+          "net_entry": {
+            "n": 18,
+            "positive_count": 12,
+            "negative_count": 6,
+            "zero_count": 0,
+            "positive_yuan": 19729.73369999998,
+            "negative_yuan": 11270.276300000021,
+            "signed_yuan": 8459.457399999956,
+            "missed_positive_fraction": 1.0,
+            "captured_negative_fraction": 1.0,
+            "loss_precision": 0.3333333333333333,
+            "loss_count_recall": 1.0
+          }
+        }
+      }
+    },
+    "3": {
+      "n": 23,
+      "gross_total": {
+        "n": 23,
+        "positive_count": 12,
+        "negative_count": 10,
+        "zero_count": 1,
+        "positive_yuan": 19143.600000000013,
+        "negative_yuan": 19607.600000000013,
+        "signed_yuan": -463.9999999999994,
+        "missed_positive_fraction": 1.0,
+        "captured_negative_fraction": 1.0,
+        "loss_precision": 0.43478260869565216,
+        "loss_count_recall": 1.0
+      },
+      "net_entry_total": {
+        "n": 23,
+        "positive_count": 12,
+        "negative_count": 11,
+        "zero_count": 0,
+        "positive_yuan": 17963.287400000016,
+        "negative_yuan": 20686.193800000012,
+        "signed_yuan": -2722.906399999999,
+        "missed_positive_fraction": 1.0,
+        "captured_negative_fraction": 1.0,
+        "loss_precision": 0.4782608695652174,
+        "loss_count_recall": 1.0
+      },
+      "mean_prediction_mse": 0.0005027440375373753,
+      "models": {
+        "PR": {
+          "mse": 0.00057186944408586,
+          "gain_vs_mean": -0.1374962234999073,
+          "sign_accuracy_zero_threshold": 0.5652173913043478,
+          "balanced_accuracy_zero_threshold": 0.5,
+          "groups": {
+            "-1": {
+              "gross": {
+                "n": 0,
+                "positive_count": 0,
+                "negative_count": 0,
+                "zero_count": 0,
+                "positive_yuan": 0.0,
+                "negative_yuan": 0.0,
+                "signed_yuan": 0.0,
+                "missed_positive_fraction": 0.0,
+                "captured_negative_fraction": 0.0,
+                "loss_precision": null,
+                "loss_count_recall": 0.0
+              },
+              "net_entry": {
+                "n": 0,
+                "positive_count": 0,
+                "negative_count": 0,
+                "zero_count": 0,
+                "positive_yuan": 0.0,
+                "negative_yuan": 0.0,
+                "signed_yuan": 0.0,
+                "missed_positive_fraction": 0.0,
+                "captured_negative_fraction": 0.0,
+                "loss_precision": null,
+                "loss_count_recall": 0.0
+              }
+            },
+            "0": {
+              "gross": {
+                "n": 7,
+                "positive_count": 3,
+                "negative_count": 3,
+                "zero_count": 1,
+                "positive_yuan": 1260.0999999999945,
+                "negative_yuan": 2216.400000000002,
+                "signed_yuan": -956.3000000000075,
+                "missed_positive_fraction": 0.06582356505568408,
+                "captured_negative_fraction": 0.11303780166874072,
+                "loss_precision": 0.42857142857142855,
+                "loss_count_recall": 0.3
+              },
+              "net_entry": {
+                "n": 7,
+                "positive_count": 3,
+                "negative_count": 4,
+                "zero_count": 0,
+                "positive_yuan": 964.6428999999946,
+                "negative_yuan": 2611.0962000000018,
+                "signed_yuan": -1646.4533000000076,
+                "missed_positive_fraction": 0.05370079977677102,
+                "captured_negative_fraction": 0.1262241002498971,
+                "loss_precision": 0.5714285714285714,
+                "loss_count_recall": 0.36363636363636365
+              }
+            },
+            "1": {
+              "gross": {
+                "n": 16,
+                "positive_count": 9,
+                "negative_count": 7,
+                "zero_count": 0,
+                "positive_yuan": 17883.50000000002,
+                "negative_yuan": 17391.20000000001,
+                "signed_yuan": 492.300000000008,
+                "missed_positive_fraction": 0.9341764349443159,
+                "captured_negative_fraction": 0.8869621983312593,
+                "loss_precision": 0.4375,
+                "loss_count_recall": 0.7
+              },
+              "net_entry": {
+                "n": 16,
+                "positive_count": 9,
+                "negative_count": 7,
+                "zero_count": 0,
+                "positive_yuan": 16998.64450000002,
+                "negative_yuan": 18075.097600000012,
+                "signed_yuan": -1076.4530999999918,
+                "missed_positive_fraction": 0.9462992002232289,
+                "captured_negative_fraction": 0.873775899750103,
+                "loss_precision": 0.4375,
+                "loss_count_recall": 0.6363636363636364
+              }
+            }
+          },
+          "exclusion_fraction": 0.0
+        },
+        "AllDaily": {
+          "mse": 0.0005790200182646141,
+          "gain_vs_mean": -0.1517193144663962,
+          "sign_accuracy_zero_threshold": 0.5652173913043478,
+          "balanced_accuracy_zero_threshold": 0.5,
+          "groups": {
+            "-1": {
+              "gross": {
+                "n": 1,
+                "positive_count": 0,
+                "negative_count": 1,
+                "zero_count": 0,
+                "positive_yuan": 0.0,
+                "negative_yuan": 1430.4000000000012,
+                "signed_yuan": -1430.4000000000012,
+                "missed_positive_fraction": 0.0,
+                "captured_negative_fraction": 0.072951304596177,
+                "loss_precision": 1.0,
+                "loss_count_recall": 0.1
+              },
+              "net_entry": {
+                "n": 1,
+                "positive_count": 0,
+                "negative_count": 1,
+                "zero_count": 0,
+                "positive_yuan": 0.0,
+                "negative_yuan": 1528.9784000000013,
+                "signed_yuan": -1528.9784000000013,
+                "missed_positive_fraction": 0.0,
+                "captured_negative_fraction": 0.07391298828496909,
+                "loss_precision": 1.0,
+                "loss_count_recall": 0.09090909090909091
+              }
+            },
+            "0": {
+              "gross": {
+                "n": 5,
+                "positive_count": 3,
+                "negative_count": 2,
+                "zero_count": 0,
+                "positive_yuan": 1260.0999999999945,
+                "negative_yuan": 2871.0000000000077,
+                "signed_yuan": -1610.9000000000133,
+                "missed_positive_fraction": 0.06582356505568408,
+                "captured_negative_fraction": 0.14642281564291426,
+                "loss_precision": 0.4,
+                "loss_count_recall": 0.2
+              },
+              "net_entry": {
+                "n": 5,
+                "positive_count": 3,
+                "negative_count": 2,
+                "zero_count": 0,
+                "positive_yuan": 964.6428999999946,
+                "negative_yuan": 3067.154700000008,
+                "signed_yuan": -2102.5118000000134,
+                "missed_positive_fraction": 0.05370079977677102,
+                "captured_negative_fraction": 0.1482706161246544,
+                "loss_precision": 0.4,
+                "loss_count_recall": 0.18181818181818182
+              }
+            },
+            "1": {
+              "gross": {
+                "n": 17,
+                "positive_count": 9,
+                "negative_count": 7,
+                "zero_count": 1,
+                "positive_yuan": 17883.500000000022,
+                "negative_yuan": 15306.200000000006,
+                "signed_yuan": 2577.300000000015,
+                "missed_positive_fraction": 0.934176434944316,
+                "captured_negative_fraction": 0.7806258797609088,
+                "loss_precision": 0.4117647058823529,
+                "loss_count_recall": 0.7
+              },
+              "net_entry": {
+                "n": 17,
+                "positive_count": 9,
+                "negative_count": 8,
+                "zero_count": 0,
+                "positive_yuan": 16998.64450000002,
+                "negative_yuan": 16090.060700000004,
+                "signed_yuan": 908.5838000000161,
+                "missed_positive_fraction": 0.9462992002232289,
+                "captured_negative_fraction": 0.7778163955903764,
+                "loss_precision": 0.47058823529411764,
+                "loss_count_recall": 0.7272727272727273
+              }
+            }
+          },
+          "exclusion_fraction": 0.043478260869565216
+        }
+      },
+      "AllDaily_gain_vs_PR": -0.012503857747084846,
+      "exclusion_transition": {
+        "common_low": {
+          "gross": {
+            "n": 0,
+            "positive_count": 0,
+            "negative_count": 0,
+            "zero_count": 0,
+            "positive_yuan": 0.0,
+            "negative_yuan": 0.0,
+            "signed_yuan": 0.0,
+            "missed_positive_fraction": 0.0,
+            "captured_negative_fraction": 0.0,
+            "loss_precision": null,
+            "loss_count_recall": 0.0
+          },
+          "net_entry": {
+            "n": 0,
+            "positive_count": 0,
+            "negative_count": 0,
+            "zero_count": 0,
+            "positive_yuan": 0.0,
+            "negative_yuan": 0.0,
+            "signed_yuan": 0.0,
+            "missed_positive_fraction": 0.0,
+            "captured_negative_fraction": 0.0,
+            "loss_precision": null,
+            "loss_count_recall": 0.0
+          }
+        },
+        "AllDaily_added_low": {
+          "gross": {
+            "n": 1,
+            "positive_count": 0,
+            "negative_count": 1,
+            "zero_count": 0,
+            "positive_yuan": 0.0,
+            "negative_yuan": 1430.4000000000012,
+            "signed_yuan": -1430.4000000000012,
+            "missed_positive_fraction": 0.0,
+            "captured_negative_fraction": 0.072951304596177,
+            "loss_precision": 1.0,
+            "loss_count_recall": 0.1
+          },
+          "net_entry": {
+            "n": 1,
+            "positive_count": 0,
+            "negative_count": 1,
+            "zero_count": 0,
+            "positive_yuan": 0.0,
+            "negative_yuan": 1528.9784000000013,
+            "signed_yuan": -1528.9784000000013,
+            "missed_positive_fraction": 0.0,
+            "captured_negative_fraction": 0.07391298828496909,
+            "loss_precision": 1.0,
+            "loss_count_recall": 0.09090909090909091
+          }
+        },
+        "AllDaily_released_low": {
+          "gross": {
+            "n": 0,
+            "positive_count": 0,
+            "negative_count": 0,
+            "zero_count": 0,
+            "positive_yuan": 0.0,
+            "negative_yuan": 0.0,
+            "signed_yuan": 0.0,
+            "missed_positive_fraction": 0.0,
+            "captured_negative_fraction": 0.0,
+            "loss_precision": null,
+            "loss_count_recall": 0.0
+          },
+          "net_entry": {
+            "n": 0,
+            "positive_count": 0,
+            "negative_count": 0,
+            "zero_count": 0,
+            "positive_yuan": 0.0,
+            "negative_yuan": 0.0,
+            "signed_yuan": 0.0,
+            "missed_positive_fraction": 0.0,
+            "captured_negative_fraction": 0.0,
+            "loss_precision": null,
+            "loss_count_recall": 0.0
+          }
+        },
+        "neither_low": {
+          "gross": {
+            "n": 22,
+            "positive_count": 12,
+            "negative_count": 9,
+            "zero_count": 1,
+            "positive_yuan": 19143.600000000013,
+            "negative_yuan": 18177.20000000001,
+            "signed_yuan": 966.400000000002,
+            "missed_positive_fraction": 1.0,
+            "captured_negative_fraction": 0.927048695403823,
+            "loss_precision": 0.4090909090909091,
+            "loss_count_recall": 0.9
+          },
+          "net_entry": {
+            "n": 22,
+            "positive_count": 12,
+            "negative_count": 10,
+            "zero_count": 0,
+            "positive_yuan": 17963.287400000016,
+            "negative_yuan": 19157.215400000012,
+            "signed_yuan": -1193.927999999998,
+            "missed_positive_fraction": 1.0,
+            "captured_negative_fraction": 0.9260870117150309,
+            "loss_precision": 0.45454545454545453,
+            "loss_count_recall": 0.9090909090909091
+          }
+        }
+      }
+    }
+  },
+  "intervals": {
+    "10": {
+      "AllDaily_gain_vs_PR": {
+        "interval": [
+          -0.05537043206997711,
+          0.004192469986744693
+        ],
+        "valid_draws": 499
+      },
+      "PR_amount_fraction_spread": {
+        "interval": [
+          -0.046348274455062566,
+          0.24040093977159213
+        ],
+        "valid_draws": 499
+      },
+      "AllDaily_amount_fraction_spread": {
+        "interval": [
+          -0.06852119388803642,
+          0.19597399678890887
+        ],
+        "valid_draws": 499
+      }
+    },
+    "20": {
+      "AllDaily_gain_vs_PR": {
+        "interval": [
+          -0.05350951813933168,
+          0.0028331401129712565
+        ],
+        "valid_draws": 499
+      },
+      "PR_amount_fraction_spread": {
+        "interval": [
+          -0.01644590657166582,
+          0.21805256593347555
+        ],
+        "valid_draws": 499
+      },
+      "AllDaily_amount_fraction_spread": {
+        "interval": [
+          -0.0620911268469175,
+          0.1742183016403392
+        ],
+        "valid_draws": 499
+      }
+    }
+  },
+  "actual_intervals": {
+    "10": {
+      "AllDaily_gain_vs_PR": {
+        "interval": [
+          -0.0759289568801805,
+          0.03571704784999127
+        ],
+        "valid_draws": 499
+      },
+      "PR_amount_fraction_spread": {
+        "interval": [
+          -0.11762391007076785,
+          0.05444799202538355
+        ],
+        "valid_draws": 499
+      },
+      "AllDaily_amount_fraction_spread": {
+        "interval": [
+          -0.2635075644722777,
+          0.12889881164556066
+        ],
+        "valid_draws": 499
+      }
+    },
+    "20": {
+      "AllDaily_gain_vs_PR": {
+        "interval": [
+          -0.0687876396988381,
+          0.03262914224021166
+        ],
+        "valid_draws": 499
+      },
+      "PR_amount_fraction_spread": {
+        "interval": [
+          -0.0805542741362031,
+          0.03677459310317354
+        ],
+        "valid_draws": 499
+      },
+      "AllDaily_amount_fraction_spread": {
+        "interval": [
+          -0.21925735142226174,
+          0.10175849874545505
+        ],
+        "valid_draws": 499
+      }
+    }
+  }
+}
