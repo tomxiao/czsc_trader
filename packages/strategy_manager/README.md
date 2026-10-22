@@ -10,7 +10,7 @@ SM提供研究登记、冻结发布及生命周期所需的强类型契约和存
 | --- | --- | --- |
 | 候选身份与来源 | `CandidateKey`、`CandidateRegistrationOrigin`、`CandidateRegistration`、`CandidateDerivation` | `StrategyRegistry.register_candidate/get_candidate_registration/get_candidate` |
 | 用户决定 | `ResearchDecision`、`DecisionReference`、`DecisionAction`及三类subject | TDR `record_research_decision`核验并写入研究目录 |
-| 技术检验记录 | `InspectionProtocol`、`InspectionCheckResult`、`CandidateInspectionReport`、`FreezePlan` | TDR `inspect_candidate`执行计算并保存实验内证据 |
+| 技术检验记录 | `InspectionCaseResult`、`InspectionGoalResult`、`CandidateInspectionReport`、`FreezePlan`、`InspectedRelease` | TDR `inspect_candidate`执行计算并保存实验内证据 |
 | 冻结提交 | `FreezeCandidateRequest`、`FreezeVersionRequest`、`FreezeReceipt` | `StrategyRegistry.freeze_version/get_freeze_result` |
 | 策略身份查询 | `StrategyFamily`、`StrategyVersion` | `StrategyRegistry.list_families/get_family/get_version/versions` |
 | 生命周期与运行资格 | `PaperTradingApproval`、版本及绩效证据 | `validate_all/evidence/lifecycle_events/current_qualification/approve_paper_trading` |
@@ -48,31 +48,35 @@ record = registry.get_candidate(record.key, evidence_root=evidence_root)
 `get_candidate(key, *, evidence_root=...)`继续核验登记引用的全部文件，研究员通过TDR加载候选。
 序列化记录须包含上述两个版本字段，旧schema 1/2登记明确拒绝，不自动迁移。
 研究员通过TDR的`register_candidate/load_candidate`使用上述能力。TDR将载荷和源码快照保存到
-`research/<策略ID>/experiments/<来源实验ID>/evidence/`，登记引用显式发布的账户评价证据。
-批次根、登记记录及其所引用的不可变实体须一起保留，才能继续加载、检验及冻结。
+`research/<策略ID>/assets/candidates/<候选ID>/`，登记引用显式发布的账户评价证据。
+阶段五运行加载只核对登记元数据、载荷、源码及依赖；来源研究引用作为元数据保留，不要求阶段一至四档案可读。
 
 `ResearchDecision`将`APPROVE/REJECT/DEFER`与以下对象之一绑定：
 
 - `StageAdvanceSubject`：已有交付回执和拟推进阶段。
-- `CandidateSelectionSubject`：阶段四交付、候选键及内容哈希。
+- `CandidateSelectionSubject`：schema 2，直接绑定候选键、内容哈希及登记记录哈希，不依赖阶段四交付。
 - `FreezeSubject`：候选内容、检验报告、冻结计划哈希和明确版本。
 
 决定必须留存`confirmation_source`和原因；同一决定ID内容冲突拒绝写入。宿主负责核验真实用户
 授权，TDR验证决定及引用并保存到`research/<策略ID>/decisions/`。确认材料及检验证据使用
 `ResearchEvidenceRef(owner, path, sha256)`，路径相对`ResearchEvidenceOwner`，以仓库根目录解析。
 批次owner对应`research/<策略ID>/`；实验owner对应
-`research/<策略ID>/experiments/<实验ID>/`。
+`research/<策略ID>/assets/evidence/<实验ID>/`。
 决定留痕不自动驱动研究阶段或参数搜索。
 
 ## 原子冻结与查询状态
 
-TDR检验候选、复算及发布文件，保存`CandidateInspectionReport`；报告的`origin`独立绑定候选
-登记身份，`plan`为`FreezePlan | None`。技术失败仍保存检查状态和原因，已完成检查保留，
-未执行项标为`INCOMPLETE`；计划尚未形成时可保存`plan=None`的失败报告并交付。
+TDR直接消费技术交接材料，保存schema 2的`CandidateInspectionReport`。报告只含两个目标：
+`behavior_equivalence`和`pte_runtime`，每项使用`InspectionGoalResult`保存状态、场景及证据。
+未运行目标为`NOT_RUN`，运行未完成为`INCOMPLETE`；任一目标失败则整体`FAIL`。只有两个目标
+均通过且计划、受检包和环境完整时整体才为`PASS`。旧八项检查报告明确拒绝，不转译为新版通过。
+报告的`origin`独立绑定候选登记身份；`plan/release/environment`在未准备完成时可以为`None`。
+`FreezePlan`使用schema 2和强类型日期，移除递归登记证据字段。`InspectedRelease`保存版本记录、
+manifest、文件到持久证据的映射及release/package哈希；删除临时工作区后仍可重建同一待冻结包。
 请求参数、声明引用身份或授权错误仍明确拒绝；候选材料损坏及运行不一致按技术检查结果留证。
 执行冻结必须具备完整计划、检验通过及用户对该确切计划的明确批准。
 `FreezePlan.origin`使用`CandidateOrigin`绑定登记键、内容指纹、登记记录及其哈希；TDR验证
-检验闭包、实际选型和精确冻结批准，并在发布前再次核验候选及依赖。
+本次技术材料、实际选型和精确冻结批准，并在发布前再次核验候选及依赖；不展开研究历史。
 平台存储请求`FreezeVersionRequest(request_id, request_sha256, version, family, staged_package,
 package_sha256, journal_root)`携带已准备的schema 5版本、族、发布包和独立事务日志目录。
 SM在写锁内核验发布身份及文件闭包；研究批准的认证由TDR业务入口负责。
@@ -104,8 +108,8 @@ SM底层`get_freeze_result(request_id, *, journal_root)`必须显式提供日志
 | 路径（相对仓库） | 内容 |
 | --- | --- |
 | `research/registrations/<策略ID>/candidates/` | 候选登记记录 |
-| `research/<策略ID>/experiments/<来源实验ID>/evidence/payload/`、`evidence/source/` | 登记候选载荷及源码快照；schema 3登记引用这些实体 |
-| `research/<策略ID>/experiments/<检验实验ID>/evidence/inspection/` | 检验、计划引用的内容寻址证据 |
+| `research/<策略ID>/assets/candidates/<候选ID>/payload/`、`source/` | 登记候选载荷及源码快照；schema 3登记引用这些实体 |
+| `research/<策略ID>/assets/evidence/<检验实验ID>/inspection/` | 检验、计划引用的内容寻址证据 |
 | `research/<策略ID>/decisions/` | 用户决定；确认材料由决定中的证据引用定位 |
 | `research/<策略ID>/freeze_requests/<请求ID>/` | 冻结请求及提交／失败事实 |
 | `strategies/<策略ID>/versions/`、`releases/` | 不可变版本和发布文件闭包 |

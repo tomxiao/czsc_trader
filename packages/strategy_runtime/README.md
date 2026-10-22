@@ -36,6 +36,25 @@ TDR/REX受管入口；候选登记、检验和获批冻结见[TDR说明](../../s
 注入宿主配置的DFLS；纯`describe`和`identify`不需要数据入口。策略状态、计算上下文及信号缓存
 归属于`StrategyInstance`，原始数据资产由DFLS的数据空间统一管理。
 
+## 平台技术检验边界
+
+`validate_release_package(strategy_root, release_id) -> VerifiedReleasePackage`供正式部署与隔离检验
+共用。它认证实际schema 5版本、manifest、完整文件清单、运行绑定和源码闭包，返回
+`release/package_sha256/runtime_binding/source_root`。该认证不授予模拟交易资格，也不生成部署回执。
+`load_strategy_deployment`继续要求正式回执；共享认证按manifest声明的安全相对路径读取，
+既有冻结发布文件与内容身份无需改写。
+
+平台构造`InspectionRuntimePermit`，将run、发布、包、协议和受管临时根绑定。PTE以
+`StrategyRuntime(strategy_root, inspection_permit=permit)`进入检验路径；每次描述或实例化发布
+都会通过`load_inspection_deployment`重验实际包和隔离根。显式源码覆盖也必须与认证包一致。
+技术许可不写成正式部署回执，普通入口不接受技术许可封套。许可不替代PTE自身的隔离账户准入。
+
+`InspectionControl/InspectionProgress/InspectionStage`提供无宿主依赖的预算、取消和进度类型。
+`InspectionEnvironment/ImplementationFileIdentity`记录实际执行环境；
+`collect_inspection_environment(repository_root)`从当前解释器解析到的平台包源码位置采集清单和
+精确依赖版本，数据仓库或隔离仓库路径不能替代执行文件身份，Git提交仅作辅助信息。
+环境配置摘要覆盖固定的检验协议、渠道模型和准入模型；请求预算和场景配置在各自运行记录留证。
+
 ## 实例初始化
 
 ```python

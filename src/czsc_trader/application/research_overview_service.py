@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from hashlib import sha256
 import json
 
-from strategy_manager import CandidateKey, CandidateRegistration, StrategyFamily
+from strategy_manager import CandidateKey, CandidateRegistration, StrategyFamily, ResearchEvidenceRef
 
 from .context import RepositoryContext
 from ..research_tools import delivery as d
@@ -187,30 +187,76 @@ def _deliveries(reader, batch, limitations):
             value = _json(reader.read(f"{path}/delivery.json"))
             if type(value) is not dict or type(value.get("schema_version")) is not int:
                 raise ValueError("invalid delivery envelope")
-            if value["schema_version"] != 8:
-                limitations.append(OverviewLimitation("UNSUPPORTED_DELIVERY_SCHEMA", path, "Retained delivery is not schema 8; no compatibility interpretation was performed."))
+            schema = value["schema_version"]
+            legacy = stage is d.DeliveryStage.INSPECTION and schema == 8
+            if schema not in (8, 9):
+                limitations.append(OverviewLimitation("UNSUPPORTED_DELIVERY_SCHEMA", path, "Retained delivery uses an unsupported schema; no compatibility interpretation was performed."))
                 continue
+            if not legacy and schema != d._schema_version(stage):
+                raise ValueError(f"delivery stage/schema differs: {path}")
             if set(value) != {"schema_version", "definition", "content"}:
                 raise ValueError("delivery envelope fields differ")
-            definition = d.DeliveryDefinition.from_dict(value["definition"])
-            content = d.DeliveryContent.from_dict(value["content"])
-            expected_payload = {
-                d.DeliveryStage.MANDATE: d.ResearchMandate,
-                d.DeliveryStage.COMPONENTS: d.ComponentPanel,
-                d.DeliveryStage.CANDIDATES: d.CandidateSet,
-                d.DeliveryStage.ASSESSMENT: d.CandidateAssessmentDelivery,
-                d.DeliveryStage.INSPECTION: d.CandidateInspectionDelivery,
-            }
-            if type(content.payload) is not expected_payload[stage]:
-                raise ValueError("delivery stage and payload differ")
-            if (definition.batch, definition.stage, definition.revision) != (batch, stage, int(revision_name)):
+            raw_definition = value["definition"]
+            if (type(raw_definition) is not dict
+                or set(raw_definition) != {"type", "batch", "stage", "revision", "predecessors", "schema_version"}
+                or raw_definition["type"] != "DeliveryDefinition"
+                or type(raw_definition["schema_version"]) is not int
+                or type(raw_definition["revision"]) is not int
+                or raw_definition["schema_version"] != schema):
+                raise ValueError(f"delivery definition schema differs: {path}")
+            if (ResearchBatchRef.from_dict(raw_definition["batch"]), d.DeliveryStage(raw_definition["stage"]),
+                raw_definition["revision"]) != (batch, stage, int(revision_name)):
                 raise ValueError("delivery directory and identity differ")
+            if legacy:
+                # This is an authenticated envelope, not a compatibility parser
+                # for the historical inspection protocol or its PASS result.
+                if type(raw_definition["predecessors"]) is not list:
+                    raise ValueError("invalid legacy predecessor metadata")
+                predecessors = tuple(d.DeliveryReference.from_dict(item) for item in raw_definition["predecessors"])
+                if (len({(item.stage, item.revision) for item in predecessors}) != len(predecessors)
+                    or any(item.batch != batch or (item.stage is stage and item.revision >= int(revision_name))
+                           for item in predecessors)):
+                    raise ValueError("legacy predecessor identity differs")
+                raw_content = value["content"]
+                if type(raw_content) is not dict or type(raw_content.get("report")) is not str:
+                    raise ValueError("invalid legacy report metadata")
+                status = d.DeliveryStatus(raw_content["status"])
+                report_text = raw_content["report"]
+                content = None
+                limitations.append(OverviewLimitation("UNSUPPORTED_LEGACY_INSPECTION", path,
+                    "Historical inspection metadata only; its technical result and coverage are unknown under the current protocol."))
+            else:
+                definition = d.DeliveryDefinition.from_dict(raw_definition)
+                content = d.DeliveryContent.from_dict(value["content"])
+                expected_payload = {
+                    d.DeliveryStage.MANDATE: d.ResearchMandate,
+                    d.DeliveryStage.COMPONENTS: d.ComponentPanel,
+                    d.DeliveryStage.CANDIDATES: d.CandidateSet,
+                    d.DeliveryStage.ASSESSMENT: d.CandidateAssessmentDelivery,
+                    d.DeliveryStage.INSPECTION: d.CandidateInspectionDelivery,
+                }
+                if type(content.payload) is not expected_payload[stage]:
+                    raise ValueError("delivery stage and payload differ")
+                predecessors, status, report_text = definition.predecessors, content.status, content.report
             receipt_path = f"{path}/receipt.json"
-            receipt = d.DeliveryReceipt.from_dict(_json(reader.read(receipt_path)))
-            reference = receipt.reference
-            if (reference.batch, reference.stage, reference.revision) != (batch, stage, definition.revision) or d._digest(receipt.files) != reference.content_sha256:
+            raw_receipt = _json(reader.read(receipt_path))
+            if (type(raw_receipt) is not dict or set(raw_receipt) != {"type", "reference", "files", "schema_version"}
+                or raw_receipt["type"] != "DeliveryReceipt"
+                or type(raw_receipt["schema_version"]) is not int or raw_receipt["schema_version"] != schema):
+                raise ValueError(f"delivery receipt schema differs: {path}")
+            if legacy:
+                reference = d.DeliveryReference.from_dict(raw_receipt["reference"])
+                if type(raw_receipt["files"]) is not list:
+                    raise ValueError("invalid legacy file manifest")
+                files = tuple(d.PublicationFile.from_dict(item) for item in raw_receipt["files"])
+                if not files or len({item.path.casefold() for item in files}) != len(files):
+                    raise ValueError("invalid legacy file manifest")
+            else:
+                receipt = d.DeliveryReceipt.from_dict(raw_receipt)
+                reference, files = receipt.reference, receipt.files
+            if (reference.batch, reference.stage, reference.revision) != (batch, stage, int(revision_name)) or d._digest(files) != reference.content_sha256:
                 raise ValueError("delivery receipt identity differs")
-            expected = {entry.path for entry in receipt.files} | {"receipt.json"}
+            expected = {entry.path for entry in files} | {"receipt.json"}
             def scan(relative, prefix=""):
                 paths = set()
                 for name, directory in reader.listing(relative):
@@ -218,9 +264,9 @@ def _deliveries(reader, batch, limitations):
                 return paths
             if scan(path) != expected:
                 raise ValueError("delivery file manifest differs")
-            for entry in receipt.files:
+            for entry in files:
                 reader.authenticate(f"{path}/{entry.path}", entry.sha256)
-            if reader.read(f"{path}/report.md") != content.report.encode("utf-8"):
+            if reader.read(f"{path}/report.md") != report_text.encode("utf-8"):
                 raise ValueError("delivery report differs")
             public = f"research/{batch.strategy_id}/deliveries/{stage_name}/{revision_name}"
             if {name for name, _ in reader.listing(public)} != {"receipt.json", "report.md"}:
@@ -233,12 +279,16 @@ def _deliveries(reader, batch, limitations):
                     if ref.experiment.strategy_id != batch.strategy_id:
                         raise ValueError("delivery evidence belongs to another batch")
                     reader.authenticate(f"{path}/{ref.path}", ref.sha256)
-            for previous in definition.predecessors:
+                elif isinstance(ref, ResearchEvidenceRef):
+                    if ref.owner.strategy_id != batch.strategy_id:
+                        raise ValueError("inspection evidence belongs to another batch")
+                    reader.authenticate(f"{path}/support/{ref.sha256}", ref.sha256)
+            for previous in (() if legacy else predecessors):
                 predecessor = f"{parent}/{previous.stage.value}/{previous.revision}/receipt.json"
                 saved = d.DeliveryReceipt.from_dict(_json(reader.read(predecessor)))
                 if saved.reference != previous:
                     raise ValueError("predecessor reference differs")
-            result.append((DeliveryOverview(reference, content.status, definition.predecessors, reader.source(receipt_path)), content))
+            result.append((DeliveryOverview(reference, status, predecessors, reader.source(receipt_path)), content))
     return result
 
 
@@ -278,7 +328,19 @@ def _accounts(reader, batch, limitations):
         ExperimentRef(batch.strategy_id, experiment)
         for name, directory in reader.listing(f"{parent}/{experiment}"):
             if directory:
-                raise ValueError("published evidence must be files")
+                path = f"{parent}/{experiment}/{name}"
+                if name != "inspection":
+                    raise ResearchOverviewError("INVALID_EVIDENCE_LAYOUT", path, "unknown evidence namespace")
+                for digest, nested in reader.listing(path):
+                    item = f"{path}/{digest}"
+                    try:
+                        d._hash(digest)
+                        if nested:
+                            raise ValueError("inspection objects cannot contain directories")
+                        reader.authenticate(item, digest)
+                    except (ValueError, OSError) as exc:
+                        raise ResearchOverviewError("INVALID_INSPECTION_EVIDENCE", item, str(exc)) from exc
+                continue
             if not name.endswith(".json"):
                 continue
             path = f"{parent}/{experiment}/{name}"
@@ -348,6 +410,8 @@ def get_research_overview(repository: RepositoryContext, batch: ResearchBatchRef
             stage = item.reference.stage
             if stage not in latest or latest[stage].reference.revision < item.reference.revision:
                 latest[stage] = item
+            if content is None:
+                continue
             if isinstance(content.payload, d.ComponentPanel):
                 components.append(ComponentPanelOverview(item.reference, content.payload.components))
             if isinstance(content.payload, d.CandidateSet):
@@ -367,7 +431,8 @@ def get_research_overview(repository: RepositoryContext, batch: ResearchBatchRef
                 stage, revision = d.DeliveryStage(parts[-2]), int(parts[-1])
                 if stage in latest and latest[stage].reference.revision < revision:
                     del latest[stage]
-        search_sources = tuple(dict.fromkeys(item.source for item, content in retained if isinstance(content.payload, d.CandidateSet)))
+        search_sources = tuple(dict.fromkeys(item.source for item, content in retained
+                                             if content is not None and isinstance(content.payload, d.CandidateSet)))
         candidate_sources = tuple(item.source for item in candidates) or (reader.source(f"research/registrations/{batch.strategy_id}/candidates"),)
         unsupported_candidates = any(x.code == "UNSUPPORTED_CANDIDATE_SCHEMA" for x in limitations)
         counts = [ResearchCount(ResearchCountKind.REGISTERED_CANDIDATES,

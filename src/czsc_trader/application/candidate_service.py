@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, replace
 from hashlib import sha256
+from importlib import metadata
 import json
 from pathlib import Path
 
@@ -138,8 +139,14 @@ def _registered_root(context, record):
 
 def load_candidate(context: RepositoryContext, key: CandidateKey) -> StrategyCandidate:
     registry = StrategyRegistry(context.research_registry_root)
-    record = registry.get_candidate(key, evidence_root=context.research_root / key.strategy_id)
+    # Runtime admission authenticates executable content, not historical research.
+    record = registry.get_candidate_registration(key)
     root = _registered_root(context, record)
+    for name, expected in record.dependencies:
+        if metadata.version(name) != expected:
+            raise ValueError(f"registered candidate dependency version differs: {name}")
+    for ref in record.source_files:
+        ref.resolve(root)
     payload = json.loads(record.payload.resolve(root).read_text(encoding="utf-8"))
     source = root / record.source_root
     candidate = StrategyCandidate(key.strategy_id, key.candidate_id, payload, source)

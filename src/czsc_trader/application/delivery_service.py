@@ -13,7 +13,7 @@ from factor_signal_catalog import FactorDefinition, SignalDefinition
 from strategy_evaluator import AssessmentEvidence, AssessmentPanel, assess_candidates, compare_candidates
 from strategy_evaluator.research_models import is_frequency_target
 from strategy_manager.write_lock import RegistryWriteLock
-from strategy_manager.errors import RegistryError
+from strategy_manager.errors import RegistryError, StrategyManagerError
 
 from .context import RepositoryContext
 from ..research_tools import delivery as d
@@ -208,18 +208,19 @@ def _validate_content(definition, content, root, context, scope=d.DeliveryValida
 
 
 def _support_references(context, content):
-    """Select inspection and decision evidence rather than whole directories."""
-    from strategy_manager import ResearchEvidenceRef
-    from .research_evidence import read_decision
-
+    """Follow technical roles only; registration provenance is not a dependency."""
     if not isinstance(content.payload, d.CandidateInspectionDelivery):
         return ()
+    from .research_evidence import (
+        read_decision, validate_inspection, inspection_evidence_references,
+    )
     payload = content.payload
-    records = [payload.inspection]
-    for reference in (payload.inspection.selection, *payload.decisions):
-        records.extend((reference, read_decision(context.root, reference)))
-    return tuple(dict.fromkeys(x for record in records for x in _walk(record)
-                              if isinstance(x, ResearchEvidenceRef)))
+    report = validate_inspection(context.root, payload.inspection)
+    references = [payload.inspection, *inspection_evidence_references(context.root, report)]
+    for reference in (report.selection, *payload.decisions):
+        decision = read_decision(context.root, reference)
+        references.extend((reference.evidence, decision.confirmation_source))
+    return tuple(dict.fromkeys(references))
 
 
 def _validate_inspection_delivery(definition, content, root, context):
@@ -229,17 +230,12 @@ def _validate_inspection_delivery(definition, content, root, context):
     payload = content.payload
     if payload.inspection.owner.strategy_id != definition.strategy_id:
         _fail("INSPECTION_OWNER", "inspection", "inspection and delivery batch differ")
-    if payload.source_assessment not in definition.predecessors:
-        _fail("INSPECTION_SOURCE", "source_assessment", "assessment predecessor missing")
-    report = f.CandidateInspectionReport.from_dict(json.loads(_read_evidence(root, payload.inspection_evidence)))
-    if report != payload.inspection or report != validate_inspection(context.root, report.reference):
+    report_bytes = _resolve(root, f"support/{payload.inspection.sha256}").read_bytes()
+    if _file_hash(report_bytes) != payload.inspection.sha256:
+        _fail("INSPECTION_REPORT", "inspection", "report snapshot hash differs")
+    report = f.CandidateInspectionReport.from_dict(_decode_json(report_bytes.decode("utf-8")))
+    if report.reference != payload.inspection or report != validate_inspection(context.root, payload.inspection):
         _fail("INSPECTION_REPORT", "inspection", "inspection differs from persisted evidence")
-    selection = read_decision(context.root, report.selection)
-    receipt_path = _public_delivery_path(context, payload.source_assessment) / "receipt.json"
-    if (not isinstance(selection.subject, f.CandidateSelectionSubject)
-        or selection.subject.delivery.path != receipt_path.relative_to(context.root).as_posix()
-        or selection.subject.delivery.sha256 != _file_hash(receipt_path.read_bytes())):
-        _fail("INSPECTION_SELECTION", "source_assessment", "selection refers to another assessment")
     for ref in payload.decisions:
         record = read_decision(context.root, ref)
         if record.strategy_id != definition.strategy_id:
@@ -448,8 +444,12 @@ def _read_delivery(context, reference, root, visited, scope=d.DeliveryValidation
         session.identities.add((identity, reference.content_sha256))
     visited = visited | {identity}
     document = _read_json(_resolve(root, "delivery.json"))
+    if (reference.stage is d.DeliveryStage.INSPECTION and type(document) is dict
+        and document.get("schema_version") == 8):
+        _fail("UNSUPPORTED_LEGACY_INSPECTION", "delivery.json", "legacy inspection cannot certify the current protocol")
     if (type(document) is not dict or set(document) != {"schema_version", "definition", "content"}
-        or type(document["schema_version"]) is not int or document["schema_version"] != 8):
+        or type(document["schema_version"]) is not int
+        or document["schema_version"] != d._schema_version(reference.stage)):
         _fail("DELIVERY_SCHEMA", "delivery.json", "unsupported delivery schema")
     receipt = d.DeliveryReceipt.from_dict(_read_json(_resolve(root, "receipt.json")))
     if receipt.reference != reference or d._digest(receipt.files) != reference.content_sha256:
@@ -470,6 +470,8 @@ def _read_delivery(context, reference, root, visited, scope=d.DeliveryValidation
             return receipt
         session.recursive_expansions += 1
     definition = d.DeliveryDefinition.from_dict(document["definition"])
+    if definition.schema_version != document["schema_version"] or receipt.schema_version != document["schema_version"]:
+        _fail("DELIVERY_SCHEMA", "delivery.json", "envelope, definition and receipt schemas differ")
     content = d.DeliveryContent.from_dict(document["content"])
     if (definition.batch, definition.stage, definition.revision) != identity:
         _fail("DELIVERY_IDENTITY", "definition", "definition differs from reference")
@@ -501,7 +503,7 @@ def validate_delivery(context: RepositoryContext, reference: d.DeliveryReference
         return d.DeliveryValidation(d.ValidationStatus.PASS, scope, stats=session.stats())
     except d.DeliveryValidationError as exc:
         return d.DeliveryValidation(d.ValidationStatus.FAIL, scope, exc.issues, session.stats())
-    except (OSError, ValueError, TypeError, KeyError) as exc:
+    except (OSError, ValueError, TypeError, KeyError, StrategyManagerError) as exc:
         return d.DeliveryValidation(d.ValidationStatus.FAIL, scope,
             (d.DeliveryIssue("INVALID_DELIVERY", "delivery", str(exc)),), session.stats())
     finally:
@@ -554,7 +556,7 @@ def _assemble_delivery(context, definition, content):
     try:
         definition = d.DeliveryDefinition.from_dict(definition.to_dict())
         content = d.DeliveryContent.from_dict(content.to_dict())
-        document = {"schema_version": 8, "definition": definition.to_dict(), "content": content.to_dict()}
+        document = {"schema_version": definition.schema_version, "definition": definition.to_dict(), "content": content.to_dict()}
         destination = _delivery_path(context, definition)
         public_destination = _public_delivery_path(context, definition)
         if destination.exists() or public_destination.exists():
@@ -604,7 +606,7 @@ def _assemble_delivery(context, definition, content):
         (staging / "report.md").write_bytes(content.report.encode("utf-8"))
         files = _manifest(staging)
         reference = d.DeliveryReference(definition.batch, definition.stage, definition.revision, d._digest(files))
-        receipt = d.DeliveryReceipt(reference, files)
+        receipt = d.DeliveryReceipt(reference, files, schema_version=definition.schema_version)
         (staging / "receipt.json").write_bytes(d._canonical(receipt))
         _read_delivery(context, reference, staging, set(), published=False, account_cache=account_cache)
         if session is not None:
@@ -630,7 +632,7 @@ def _assemble_delivery(context, definition, content):
         return receipt
     except (d.DeliveryValidationError, d.DeliveryConflictError):
         raise
-    except (OSError, ValueError, TypeError, KeyError) as exc:
+    except (OSError, ValueError, TypeError, KeyError, StrategyManagerError) as exc:
         raise d.DeliveryValidationError((d.DeliveryIssue("ASSEMBLY_FAILED", "delivery", str(exc)),)) from exc
     finally:
         if not completed:

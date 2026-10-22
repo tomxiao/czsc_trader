@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, datetime, time, timedelta, timezone
 from decimal import Decimal
 import json
@@ -36,7 +36,7 @@ from strategy_runtime import (
     RuntimeDefinition, RuntimeContractError,
     SignalHistoryMode,
 )
-from dataflows import Dataflows, DataRequest, Dataset, PreparePolicy
+from dataflows import Dataflows, DataRequest, Dataset, PreparePolicy, EvidenceParameters
 from strategy_manager import Qualification, StrategyRegistry
 
 from .audit import AuditRecorder
@@ -103,22 +103,27 @@ def _load_manifest(path: Path) -> dict[str, object]:
     return value
 
 
-def _strategy_identity(repo_root: Path, release: StrategyRelease) -> dict[str, str]:
+def _strategy_identity(repo_root: Path, release: StrategyRelease, inspection_permit=None) -> dict[str, str]:
     registry = StrategyRegistry(repo_root / "strategies")
     stored = registry.get_version(release.strategy_family_id, release.version)
     if stored.release_hash != release.release_hash:
         raise AdviceClientError("strategy registry differs from loaded release")
     family = registry.get_family(release.strategy_family_id)
-    qualification = registry.current_qualification(release.strategy_family_id, release.version)
-    if qualification not in {Qualification.PAPER_READY, Qualification.LIVE_READY}:
-        raise AdviceClientError(f"{release.release_id} is not approved for paper trading")
+    if inspection_permit is not None:
+        inspection_permit.validate_release(release.release_id, release.release_hash)
+        qualification = "INSPECTION"
+    else:
+        qualification = registry.current_qualification(release.strategy_family_id, release.version)
+        if qualification not in {Qualification.PAPER_READY, Qualification.LIVE_READY}:
+            raise AdviceClientError(f"{release.release_id} is not approved for paper trading")
+        qualification = qualification.value
     return {
         "strategy_id": release.strategy_family_id,
         "name": family.name,
         "version": release.version,
         "release_id": release.release_id,
         "release_hash": release.release_hash,
-        "qualification": qualification.value,
+        "qualification": qualification,
     }
 
 
@@ -138,6 +143,7 @@ def _decision_from_plan(
     plan: ExecutionPlan,
     identity: dict[str, str],
     definition: RuntimeDefinition,
+    inspection_permit=None,
 ) -> AdviceDecision:
     if (plan.references.pricing.basis is not ExecutionPriceBasis.UNADJUSTED
             or plan.references.execution_basis != "UNADJUSTED_CLOSE"):
@@ -200,7 +206,9 @@ def _decision_from_plan(
         "input_identity_hashes": dict(plan.input_identities),
     }
     try:
-        return AdviceDecision.from_cli_payload({"status": "PASS", "result": payload})
+        if inspection_permit is None:
+            return AdviceDecision.from_cli_payload({"status": "PASS", "result": payload})
+        return AdviceDecision.from_cli_payload({"status": "PASS", "result": payload}, inspection_permit=inspection_permit)
     except AdviceContractError as exc:
         raise AdviceClientError(f"SRT execution plan violates PTE contract: {exc}") from exc
 
@@ -219,9 +227,23 @@ class SrtAdviceClient:
         audit: AuditRecorder | None = None,
         now: Callable[[], datetime] | None = None,
         session_resolver: Callable[[date], date | None] | None = None,
+        inspection_permit=None,
+        inspection_bindings: tuple[StrategyInputBinding, ...] = (),
     ) -> None:
         self.repo_root = Path(repo_root).resolve()
         self.data_dir = Path(data_dir).resolve()
+        self.inspection_permit = inspection_permit
+        self.inspection_bindings = inspection_bindings
+        if inspection_permit is not None:
+            from strategy_runtime.inspection import InspectionRuntimePermit
+            if type(inspection_permit) is not InspectionRuntimePermit:
+                raise TypeError("SRT advice requires a typed inspection permit")
+            inspection_permit.validate_path(self.repo_root)
+            inspection_permit.validate_path(self.data_dir)
+            if self.repo_root != inspection_permit.isolated_repository.resolve():
+                raise AdviceClientError("inspection repository differs from permit")
+        elif inspection_bindings:
+            raise AdviceClientError("explicit inspection bindings require a technical permit")
         self.dataflows = dataflows
         self.symbol = symbol.upper() if symbol else None
         self.asset = asset
@@ -240,6 +262,31 @@ class SrtAdviceClient:
     def _prepare_strategy(self, strategy: StrategyInstance) -> DataPreparationResult:
         """Bind a trading window once; restart and account retries reuse that binding."""
         flows = self._flows()
+        if self.inspection_permit is not None:
+            matches = [x for x in self.inspection_bindings if x.plan.tradable_window == strategy.tradable_window]
+            if len(matches) != 1:
+                raise AdviceClientError("inspection requires one explicit binding per trading window")
+            supplied = matches[0]
+            calendar = flows.fetch(strategy.calendar_request(), prepared=supplied.prepared)
+            if not calendar.ready:
+                raise AdviceClientError("inspection calendar input unavailable")
+            plan = strategy.plan_inputs(calendar)
+            comparable_requests = dict(plan.requests)
+            for name, derived in plan.requests.items():
+                bound = supplied.plan.requests.get(name)
+                if (derived.dataset is Dataset.STRATEGY_FEATURE_EVIDENCE and bound is not None
+                        and isinstance(derived.parameters, EvidenceParameters)
+                        and isinstance(bound.parameters, EvidenceParameters)):
+                    comparable_requests[name] = replace(derived, parameters=replace(
+                        derived.parameters, repository_root=bound.parameters.repository_root))
+            plan = replace(plan, requests=comparable_requests)
+            if replace(supplied.plan, strategy=plan.strategy) != plan:
+                raise AdviceClientError("inspection input plan differs from published implementation")
+            binding = StrategyInputBinding(plan, supplied.prepared)
+            result = strategy.prepare_data(binding=binding)
+            path = self.data_dir / "input-bindings" / f"{canonical_sha256(plan.to_dict())}.json"
+            self._write_json(path, {"binding": binding.to_dict(), "binding_sha256": binding.identity})
+            return result
         calendar_request = strategy.calendar_request()
         calendar_prepared = flows.prepare((calendar_request,), policy=PreparePolicy.REUSE)
         if not calendar_prepared.ready:
@@ -282,7 +329,11 @@ class SrtAdviceClient:
         path = self.repo_root / "strategies" / strategy_id / "versions" / f"{strategy_version}.json"
         payload = _load_manifest(path)
         release = StrategyRelease.from_mapping(payload)
-        deployment = load_strategy_deployment(self.repo_root / "strategies", release.release_id)
+        if self.inspection_permit is None:
+            deployment = load_strategy_deployment(self.repo_root / "strategies", release.release_id)
+        else:
+            from strategy_runtime.deployment import load_inspection_deployment
+            deployment = load_inspection_deployment(self.repo_root / "strategies", release.release_id, self.inspection_permit)
         if deployment.release_hash != release.release_hash:
             raise AdviceClientError("strategy differs from committed deployment")
         return release
@@ -360,7 +411,7 @@ class SrtAdviceClient:
         directory = (account_root / relative).resolve()
         if relative.is_absolute() or not directory.is_relative_to(account_root):
             raise AdviceClientError("prepared-data directory is unsafe")
-        strategy = StrategyRuntime(self.repo_root / "strategies", dataflows=self._flows()).create(
+        strategy = StrategyRuntime(self.repo_root / "strategies", dataflows=self._flows(), inspection_permit=self.inspection_permit).create(
             StrategyInit(
                 release,
                 TradableWindow(trading_date, trading_date),
@@ -454,7 +505,7 @@ class SrtAdviceClient:
             or entry.get("release_hash") != release.release_hash
         ):
             return None
-        runtime_sha256 = StrategyRuntime(self.repo_root / "strategies").describe(
+        runtime_sha256 = StrategyRuntime(self.repo_root / "strategies", inspection_permit=self.inspection_permit).describe(
             release, symbol=symbol.upper()
         ).runtime_sha256
         if entry.get("runtime_sha256") != runtime_sha256:
@@ -543,7 +594,7 @@ class SrtAdviceClient:
             release=release,
             symbol=symbol,
         ) or self._new_space(root, account_id)
-        strategy = StrategyRuntime(self.repo_root / "strategies", dataflows=self._flows()).create(
+        strategy = StrategyRuntime(self.repo_root / "strategies", dataflows=self._flows(), inspection_permit=self.inspection_permit).create(
             StrategyInit(
                 release,
                 TradableWindow(trading_date, trading_date),
@@ -611,13 +662,13 @@ class SrtAdviceClient:
         if asset != "etf":
             raise AdviceClientError("PTE currently requires one ETF strategy")
         release = self._load_release(strategy_id, strategy_version)
-        definition = StrategyRuntime(self.repo_root / "strategies").describe(
+        definition = StrategyRuntime(self.repo_root / "strategies", inspection_permit=self.inspection_permit).describe(
             release, symbol=symbol.upper(),
         )
         _require_supported_feedback(definition)
         if definition.tradable_symbol != symbol.upper():
             raise AdviceClientError("SRT execution-pricing symbol differs from account")
-        identity = _strategy_identity(self.repo_root, release)
+        identity = _strategy_identity(self.repo_root, release, self.inspection_permit)
         stored = StrategyRegistry(self.repo_root / "strategies").get_version(strategy_id, strategy_version)
         if stored.release_hash != release.release_hash:
             raise AdviceClientError("strategy changed during account binding validation")
@@ -629,8 +680,8 @@ class SrtAdviceClient:
         )
         return AccountStrategyBinding(
             strategy_id, strategy_version, release.release_hash, identity["name"],
-            Qualification(identity["qualification"]), date.fromisoformat(stored.selection_data_cutoff),
-            definition.tradable_symbol, fee_rate,
+            None if self.inspection_permit is not None else Qualification(identity["qualification"]), date.fromisoformat(stored.selection_data_cutoff),
+            definition.tradable_symbol, fee_rate, inspection_permit=self.inspection_permit,
         )
 
     def _audit_call(self, started: float, *, error=None, **scope) -> None:
@@ -702,7 +753,7 @@ class SrtAdviceClient:
                 raise AdviceClientError("PTE does not support persisted SRT strategy state yet")
             if strategy.identity.symbol != selected_symbol:
                 raise AdviceClientError("SRT strategy symbol differs from account")
-            identity = _strategy_identity(self.repo_root, release)
+            identity = _strategy_identity(self.repo_root, release, self.inspection_permit)
             generated_at = self.now()
             generated_at = (
                 generated_at.replace(tzinfo=_BEIJING)
@@ -724,7 +775,7 @@ class SrtAdviceClient:
                 state=ExecutionState(state_revision, generated_at, cycle_target_quantity),
             )
             decision = _decision_from_plan(
-                plan, identity, prepared.instance.definition
+                plan, identity, prepared.instance.definition, self.inspection_permit
             )
         except Exception as exc:
             self._audit_call(started, error=exc, **scope)

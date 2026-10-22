@@ -1,91 +1,61 @@
-"""Called technical inspection and freeze operations; research owns all scheduling."""
-
+"""Two-goal inspection and publication of the exact inspected package."""
 from dataclasses import dataclass, replace
-from datetime import date
 from hashlib import sha256
-from importlib import metadata
 import json
-from pathlib import Path
+import shutil
+import time
+from uuid import uuid4
 
-import pandas as pd
-from strategy_evaluator import (
-    audit_replay,
-    AuditStatus,
-    compare_ledgers,
-    LedgerComparisonRequest,
-    LedgerComparisonMode,
-    LedgerComparisonStatus,
-    ReplayEvidence,
-    AssessmentEvidence,
-)
-from strategy_manager import StrategyRegistry, CandidateKey, canonical_sha256
+from strategy_manager import StrategyRegistry, StrategyVersion, canonical_sha256
 from strategy_manager import freeze_contracts as f
 from strategy_manager.freeze_store import FreezeVersionRequest
 from strategy_manager.write_lock import RegistryWriteLock
-from .research_evidence import (
-    record_decision,
-    build_version,
-    read_decision,
-    validate_inspection,
-    validate_approval,
-    validate_migration_selection,
-    validate_migration_target,
-    validate_migration_files,
-)
-from strategy_runtime import (
-    StrategyRuntime,
-    StrategyRelease,
-    RuntimeBindingSpec, RuntimeBinding,
-    StrategyInputBinding,
-)
-from strategy_runtime import StrategyInit, TradableWindow, ExecutionPolicy
-
+from strategy_runtime import StrategyRuntime, RuntimeBinding, RuntimeBindingSpec
+from strategy_runtime.contracts import StrategyIdentity
+from strategy_runtime.deployment import validate_release_package
+from strategy_runtime.inspection import (InspectionControl, InspectionStage,
+                                         InspectionEnvironment, collect_inspection_environment)
+from paper_trading_engine.inspection import PteReleaseInspectionRequest, inspect_release
 from .context import RepositoryContext
 from .candidate_service import load_candidate, _registered_root
-from .runtime_acceptance import runtime_readiness, require_same_runtime_content
+from .research_evidence import (record_decision, read_decision, validate_inspection, validate_approval,
+    build_version_from_plan, validate_migration_selection, validate_migration_target, validate_migration_files)
+from .inspection_contracts import CandidateInspectionRequest, InspectionPublicationError, InspectionInputError
+from .inspection_inputs import replay_identity, authenticate_execution, copy_pte_inputs, portable_value
+from .inspection_execution import Controller, Interrupted, equivalence_jobs, compare_baseline, goal
 from .delivery_service import validate_delivery, _delivery_path, _public_delivery_path, _resolve
 from ..research_tools import delivery as d
-from ..research_tools.evaluation import (
-    EvaluationRequest, serialize_evaluation_evidence, validate_evaluation_evidence,
-)
-from ..research_tools.context import ResearchContext, ExperimentRef
-from ..backtesting.audit_adapter import build_replay_evidence
-from ..backtesting.metrics import calculate_metrics
-from ..backtesting.models import StrategyIdentity, StrategySnapshot
-from ..backtesting.result import BacktestResult
-from ..backtesting.signal_replay import SignalReplay
-from trading_execution_engine import HistoricalExecutor
 from ..temp_workspace import create_temporary_directory
 
 
 def _bytes(value):
-    return json.dumps(
-        value,
-        default=dict,
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-        allow_nan=False,
-    ).encode()
+    return json.dumps(value, default=dict, ensure_ascii=False, sort_keys=True,
+                      separators=(",", ":"), allow_nan=False).encode()
 
 
 def _read(path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-@dataclass(frozen=True)
+@dataclass
 class _EvidenceStore:
     context: RepositoryContext
     owner: f.ResearchEvidenceOwner
+
+    def __post_init__(self):
+        self.references = []
 
     def put(self, data):
         digest = sha256(data).hexdigest()
         prefix = "inspection" if self.owner.experiment_id else "decisions/objects"
         ref = f.ResearchEvidenceRef(self.owner, f"{prefix}/{digest}", digest)
-        target = _resolve(self.context.root, ref.repository_path)
         from .evidence_service import _publish_bytes
-        _publish_bytes(self.context.root, target, data)
-        ref.resolve(self.context.root)
+        try:
+            _publish_bytes(self.context.root, _resolve(self.context.root, ref.repository_path), data)
+            ref.resolve(self.context.root)
+        except Exception as exc:
+            raise InspectionPublicationError("PERSIST", self.references, None, str(exc)) from exc
+        self.references.append(ref)
         return ref
 
     def put_json(self, value):
@@ -104,775 +74,301 @@ def _delivery(context, ref):
     return receipt.reference, d.DeliveryContent.from_dict(document["content"])
 
 
-def record_research_decision(
-    context: RepositoryContext, decision: f.ResearchDecision
-) -> f.DecisionReference:
+def record_research_decision(context: RepositoryContext, decision: f.ResearchDecision) -> f.DecisionReference:
     if type(decision) is not f.ResearchDecision:
         raise TypeError("record_research_decision requires ResearchDecision")
-    StrategyRegistry(context.research_registry_root).get_family(decision.strategy_id)
+    registry = StrategyRegistry(context.research_registry_root)
+    registry.get_family(decision.strategy_id)
     subject = decision.subject
-    if type(subject) is f.FrozenMigrationSelectionSubject:
+    if type(subject) is f.CandidateSelectionSubject:
+        registered = registry.get_candidate_registration(subject.candidate)
+        if (subject.content_sha256, subject.registration_sha256) != (registered.content_sha256, registered.record_sha256):
+            raise ValueError("selection differs from candidate registration identity")
+    elif type(subject) is f.FrozenMigrationSelectionSubject:
         validate_migration_selection(context, subject)
-    elif isinstance(subject, (f.StageAdvanceSubject, f.CandidateSelectionSubject)):
-        reference, content = _delivery(context, subject.delivery)
+    elif type(subject) is f.StageAdvanceSubject:
+        reference, _ = _delivery(context, subject.delivery)
         if reference.strategy_id != decision.strategy_id:
             raise ValueError("decision delivery family differs")
-        if isinstance(subject, f.CandidateSelectionSubject):
-            if reference.stage is not d.DeliveryStage.ASSESSMENT:
-                raise ValueError("candidate selection requires assessment delivery")
-            candidates = content.payload.assessment_request.centers
-            if not any(
-                x.candidate_id
-                == f"{subject.candidate.strategy_id}-{subject.candidate.candidate_id}"
-                and x.content_sha256 == subject.content_sha256
-                for x in candidates
-            ):
-                raise ValueError("selected candidate is absent from assessment")
     else:
         report = validate_inspection(context.root, subject.inspection)
         plan = report.plan
-        if plan is None:
-            raise ValueError("freeze decision requires an inspected plan")
-        if subject != f.FreezeSubject(
-            plan.origin.candidate,
-            plan.origin.content_sha256,
-            subject.inspection,
-            plan.sha256,
-            plan.version,
-        ):
+        if plan is None or subject != f.FreezeSubject(plan.origin.candidate, plan.origin.content_sha256,
+                                                      subject.inspection, plan.sha256, plan.version):
             raise ValueError("freeze decision does not match inspected plan")
     store = _EvidenceStore(context, f.ResearchEvidenceOwner(decision.strategy_id))
     source = store.put(decision.confirmation_source.resolve(context.root).read_bytes())
     return record_decision(context, replace(decision, confirmation_source=source))
 
 
-@dataclass(frozen=True, slots=True)
-class InspectionReplay:
-    reference: d.EvaluationEvidenceRef
-    reproduction_request: EvaluationRequest
-
-    def __post_init__(self):
-        if (
-            type(self.reference) is not d.EvaluationEvidenceRef
-            or type(self.reproduction_request) is not EvaluationRequest
-        ):
-            raise TypeError("inspection replay requires typed evaluation inputs/results")
-
-
-@dataclass(frozen=True, slots=True)
-class CandidateInspectionRequest:
-    candidate: CandidateKey
-    selection: f.DecisionReference
-    protocol: f.InspectionProtocol
-    research: ResearchContext
-    experiment: ExperimentRef
-    replays: tuple[InspectionReplay, ...]
-    version: str
-    parent_version: str | None
-    change_summary: str
-    selection_data_cutoff: str
-    forward_start: str
-    additional_files: tuple[f.FreezeFile, ...] = ()
-    remaining_risks: tuple[str, ...] = ()
-
-    def __post_init__(self):
-        for name, kind in (
-            ("candidate", CandidateKey),
-            ("selection", f.DecisionReference),
-            ("protocol", f.InspectionProtocol),
-        ):
-            if not isinstance(getattr(self, name), kind):
-                raise TypeError(f"inspection {name} requires {kind}")
-        if type(self.research) is not ResearchContext or type(self.experiment) is not ExperimentRef:
-            raise TypeError("inspection requires ResearchContext and ExperimentRef")
-        if self.research.batch.strategy_id != self.candidate.strategy_id or self.experiment.strategy_id != self.candidate.strategy_id:
-            raise ValueError("inspection research family differs")
-        for name, kind in (
-            ("replays", InspectionReplay),
-            ("additional_files", f.FreezeFile),
-            ("remaining_risks", str),
-        ):
-            value = getattr(self, name)
-            if type(value) is not tuple or not all(type(x) is kind for x in value):
-                raise TypeError(f"inspection {name} requires typed tuple")
-        f._version(self.version)
-        if self.parent_version is not None:
-            f._version(self.parent_version)
-            if int(self.parent_version[1:]) >= int(self.version[1:]):
-                raise ValueError("parent must precede target version")
-        if not self.change_summary.strip():
-            raise ValueError("inspection change summary is required")
-        if date.fromisoformat(self.forward_start) <= date.fromisoformat(self.selection_data_cutoff):
-            raise ValueError("forward_start must follow selection cutoff")
+def describe_inspection_environment(repository: RepositoryContext) -> InspectionEnvironment:
+    if type(repository) is not RepositoryContext:
+        raise TypeError("environment requires RepositoryContext")
+    return collect_inspection_environment(repository.root)
 
 
 def _copy_plan(context, request, registration, store, origin):
     evidence_root = _registered_root(context, registration)
-
-    def copy(ref, root):
-        return store.put(ref.resolve(root).read_bytes())
-
-    prefix = f"{registration.source_root}/"
-    files = tuple(
-        f.FreezeFile(ref.path.removeprefix(prefix), copy(ref, evidence_root))
-        for ref in registration.source_files
-    )
-    files += tuple(
-        f.FreezeFile(item.path, copy(item.source, context.root))
-        for item in request.additional_files
-    )
+    prefix = registration.source_root + "/"
+    files = tuple(f.FreezeFile(ref.path.removeprefix(prefix), store.put(ref.resolve(evidence_root).read_bytes()))
+                  for ref in registration.source_files)
+    files += tuple(f.FreezeFile(item.path, store.put(item.source.resolve(context.root).read_bytes()))
+                   for item in request.additional_files)
     definition = StrategyRuntime().describe(load_candidate(context, registration.key))
-    binding = RuntimeBindingSpec(
-        tuple(registration_file.path.removeprefix(prefix) for registration_file in registration.source_files),
-        definition.implementation.source_sha256,
-        tuple(item.path for item in files), definition.observation.sha256,
-    )
-    return f.FreezePlan(
-        origin,
-        request.version,
-        request.parent_version,
-        request.change_summary,
-        registration.origin.experiment_id,
-        request.selection_data_cutoff,
-        request.forward_start,
-        copy(registration.payload, evidence_root),
-        files,
-        store.put_json(binding.to_dict()),
-        tuple(
-            copy(ref, evidence_root)
-            for ref in (
-                *registration.origin.evidence,
-                *((registration.derivation.evidence,) if registration.derivation else ()),
-            )
-        ),
-    )
+    binding = RuntimeBindingSpec(tuple(x.path.removeprefix(prefix) for x in registration.source_files),
+        definition.implementation.source_sha256, tuple(x.path for x in files), definition.observation.sha256)
+    target = request.target
+    return f.FreezePlan(origin, target.version, target.parent_version, target.change_summary,
+        registration.origin.experiment_id, target.selection_data_cutoff, target.forward_start,
+        store.put(registration.payload.resolve(evidence_root).read_bytes()), files, store.put_json(binding.to_dict()))
 
 
-def _materialize(context, plan):
-    stage = create_temporary_directory(context.root, "freeze-package")
+def _package(context, plan, store, repository, selection_subject=None):
+    version = build_version_from_plan(context.root, plan, selection_subject)
+    root = repository / "strategies" / version.strategy_id
+    package = root / "releases" / version.version
+    package.mkdir(parents=True)
     for file in plan.source_files:
-        target = stage / "src/strategy_runtime" / file.path
-        if not target.resolve().is_relative_to(stage.resolve()):
-            raise ValueError("freeze file escapes staging")
+        target = package / "src/strategy_runtime" / file.path
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(file.source.resolve(context.root).read_bytes())
-    return stage
+    binding = RuntimeBinding(version.release_id, version.release_hash,
+                              RuntimeBindingSpec.from_dict(_read(plan.runtime_binding.resolve(context.root))))
+    (package / "runtime_binding.json").write_bytes(_bytes(binding.to_dict()))
+    files = tuple(f.FreezeFile(p.relative_to(package).as_posix(), store.put(p.read_bytes()))
+                  for p in sorted(package.rglob("*")) if p.is_file())
+    manifest = {"schema_version": 1, "strategy_version_id": version.release_id,
+        "strategy_version_hash": version.release_hash,
+        "source_candidate_id": f"{version.strategy_id}-{version.source_candidate}",
+        "candidate_package_hash": plan.sha256, "runtime_root": "src/strategy_runtime",
+        "runtime_binding": "runtime_binding.json", "files": {x.path: x.source.sha256 for x in files}}
+    manifest["package_hash"] = canonical_sha256(manifest)
+    (package / "release_manifest.json").write_bytes(_bytes(manifest))
+    (root / "versions").mkdir()
+    (root / "versions" / f"{version.version}.json").write_bytes(_bytes(version.to_dict()))
+    family = StrategyRegistry(context.research_registry_root).get_family(version.strategy_id)
+    (root / "family.json").write_bytes(_bytes(family.to_dict()))
+    verified = validate_release_package(repository / "strategies", version.release_id)
+    return f.InspectedRelease(store.put_json(version.to_dict()), store.put_json(manifest), files,
+                              version.release_hash, manifest["package_hash"]), verified
 
 
-def _binding(context, plan):
-    template = _read(plan.runtime_binding.resolve(context.root))
-    RuntimeBindingSpec.from_dict(template)
-    payload = _read(plan.payload.resolve(context.root))
-    runtime = payload["runtime"]
-    if (
-        template["source_files"] != runtime["source_files"]
-        or template["implementation_sha256"] != runtime["source_sha256"]
-    ):
-        raise ValueError("binding differs from candidate runtime")
-    installed = template["install_files"]
-    if (
-        type(installed) is not list
-        or len(set(installed)) != len(installed)
-        or set(installed) != {x.path for x in plan.source_files}
-    ):
-        raise ValueError("binding install files differ from plan")
-    candidate = load_candidate(context, plan.origin.candidate)
-    definition = StrategyRuntime().describe(candidate)
-    if template['observation_sha256'] != definition.observation.sha256:
-        raise ValueError('binding observation differs from candidate')
-    return template
-
-
-def _authenticate(context, request, result, store):
-    value = serialize_evaluation_evidence(request, result)
-    projection = tuple(AssessmentEvidence.from_dict(x) for x in value["assessment_evidence"])
-    return projection, store.put_json(value)
-
-
-class _InvalidInspectionReference(ValueError):
-    """A declared reference does not identify the requested evaluation."""
-
-
-def _load_reference(context, reference, store):
-    value = _read(reference.evidence.resolve(context.root))
-    if reference.evidence.schema != "account_evaluation" or value.get("schema_version") != 7:
-        raise ValueError("inspection requires platform account evaluation evidence")
-    validate_evaluation_evidence(value)
-    if value["request_identity"]["experiment_id"] != reference.evidence.experiment.experiment_id:
-        raise _InvalidInspectionReference("reference evaluation origin differs")
-    projection = tuple(AssessmentEvidence.from_dict(x) for x in value["assessment_evidence"])
-    selected = set(reference.evaluation_ids)
-    if selected and not selected.issubset({x.evaluation_id for x in projection}):
-        raise _InvalidInspectionReference("reference assessment identity differs")
-    source = store.put_json(value)
-    if selected:
-        projection = tuple(x for x in projection if x.evaluation_id in selected)
-        value = {**value, "runs": [x for x in value["runs"]
-            if canonical_sha256(x["identity"]) in selected]}
-    return value, projection, source
-
-
-def _replay_evidence(request, run):
-    return build_replay_evidence(
-        run.signals,
-        request.execution_data,
-        run.execution,
-        request.initial_cash,
-        calculate_metrics(run.execution, request.initial_cash),
-    )
-
-
-def _reference_signals(run):
-    # Construct each typed column directly: read_json inference changes object
-    # nulls to NaN and datetime units, causing false reproduction differences.
-    columns = [x["name"] for x in run["signals"]["schema"]["fields"]]
-    return pd.DataFrame(
-        {
-            name: pd.Series(
-                [row[name] for row in run["signals"]["data"]], dtype=run["signal_dtypes"][name]
-            )
-            for name in columns
-        }
-    )
-
-
-def _inspect_release_replay(context, execution, request, run, release, source_root, tolerance, binding):
-    """Exercise from_release through the managed runtime port, without deployment."""
-    window = TradableWindow(run.signals.evaluation_start.date(), run.signals.evaluation_end.date())
-    root = create_temporary_directory(context.root, "inspection-runtime")
-    candidate = execution.runtime.create(StrategyInit(request.strategy, window, root / "candidate",
-                                                     pricing=request.execution_data.pricing))
-    frozen = execution.runtime.create(
-        StrategyInit(release, window, root / "release", source_root=source_root, runtime_binding=binding,
-                     pricing=request.execution_data.pricing)
-    )
-    candidate_binding = StrategyInputBinding.from_mapping(run.signals.support_data["input_binding"])
-    candidate_prepared = candidate.prepare_data(binding=candidate_binding)
-    # The prospective release must reproduce the same admitted inputs. SRT
-    # independently re-derives and authenticates this plan for the release.
-    frozen_plan = replace(candidate_binding.plan, strategy=frozen.identity)
-    frozen_binding = StrategyInputBinding(frozen_plan, candidate_binding.prepared)
-    prepared = frozen.prepare_data(binding=frozen_binding)
-    left_signals, right_signals = candidate.inspect_signals(), frozen.inspect_signals()
-    signal_equal = True
-    try:
-        pd.testing.assert_frame_equal(
-            left_signals, right_signals, check_exact=tolerance == 0, atol=tolerance, rtol=0
-        )
-    except AssertionError:
-        signal_equal = False
-    def identities(bound):
-        result = {}
-        for name, request in bound.plan.requests.items():
-            if name == bound.plan.calendar_name:
-                result[name] = bound.plan.calendar_sha256
-                continue
-            data = execution.data.fetch(request, prepared=bound.prepared)
-            if not data.ready:
-                raise ValueError("inspection input reference cannot be read")
-            result[name] = data.identity.content_sha256
-        return result
-    if (
-        candidate_prepared.data_identity != run.signals.data_identity
-        or identities(candidate_binding) != identities(frozen_binding)
-        or candidate_binding.plan.signal_dates != frozen_plan.signal_dates
-        or candidate_binding.plan.calculation_dates != frozen_plan.calculation_dates
-        or candidate_prepared.available_through != prepared.available_through
-    ):
-        raise ValueError("prospective release prepared input content/coverage differs")
-    policy = frozen.definition.execution
-    settings = dict(policy.settings)
-    fee = next(x.one_way_cost for x in request.costs if x.scenario_id == run.scenario_id)
-    if policy.policy_type == "FROZEN_RULE":
-        settings["capital"] = {**settings["capital"], "fee_rate": fee}
-    else:
-        settings["one_way_cost"] = fee
-    policy = ExecutionPolicy(policy.policy_type, settings)
-    frozen = execution.runtime.create(
-        StrategyInit(
-            release, window, root / "release", execution_policy=policy, source_root=source_root, runtime_binding=binding,
-            pricing=request.execution_data.pricing
-        )
-    )
-    frozen.prepare_data(binding=frozen_binding)
-    channel = HistoricalExecutor(
-        strategy_reference=release.release_id,
-        symbol=request.symbol,
-        execution_daily=request.execution_data.execution_daily,
-        execution_intraday=request.execution_data.execution_intraday,
-        execution_five_minute=request.execution_data.execution_five_minute,
-        evaluation_start=run.signals.evaluation_start,
-        evaluation_end=run.signals.evaluation_end,
-        initial_cash=request.initial_cash,
-        execution_policy=policy,
-        order_types=frozen.definition.capabilities.order_types,
-        checkpoints=frozen.definition.capabilities.checkpoints,
-        pricing=request.execution_data.pricing,
-        market_rules=request.execution_data.market_rules,
-    )
-    from ..backtesting.observation import ObservationExecutor
-    observed = ObservationExecutor(frozen.definition, channel)
-    ledger = frozen.run_window(executor=observed)
-    left_observations = tuple(run.execution.observations)
-    def economic_observations(items):
-        return [{k: v for k, v in item.to_dict().items() if k not in
-                 ('strategy', 'signal_identity', 'plan_identity')} for item in items]
-    if economic_observations(left_observations) != economic_observations(observed.observations):
-        raise ValueError('candidate and frozen observation facts differ')
-    identity = StrategyIdentity("REGISTERED", release.release_id, "prospective_inspection")
-    result = BacktestResult(
-        identity, ledger.decisions, ledger.orders, ledger.fills, ledger.account_daily, ledger.trades, tuple(observed.observations)
-    )
-    support = dict(run.signals.support_data)
-    support.update(
-        release_id=release.release_id,
-        runtime_sha256=frozen.definition.runtime_sha256,
-        input_binding=frozen_binding.to_dict(),
-        prepared_data_identity=prepared.data_identity,
-        execution_policy={"policy_type": policy.policy_type, "settings": settings},
-    )
-    replay = SignalReplay(
-        StrategySnapshot(
-            identity,
-            release.release_hash,
-            sha256(_bytes(release.payload)).hexdigest(),
-            dict(release.payload),
-            runtime_root=source_root,
-        ),
-        release,
-        ledger.decisions,
-        right_signals.index.min(),
-        right_signals.index.max(),
-        run.signals.evaluation_start,
-        run.signals.evaluation_end,
-        root / "release",
-        prepared.data_identity,
-        support,
-    )
-    evidence = build_replay_evidence(
-        replay,
-        request.execution_data,
-        result,
-        request.initial_cash,
-        calculate_metrics(result, request.initial_cash),
-    )
-    comparison = compare_ledgers(
-        LedgerComparisonRequest(
-            _replay_evidence(request, run), evidence, LedgerComparisonMode.ECONOMIC, tolerance
-        )
-    )
-    audit = audit_replay(evidence, tolerance=tolerance)
-    return {
-        "release_id": release.release_id,
-        "release_hash": release.release_hash,
-        "candidate_prepared_identity": candidate_prepared.data_identity,
-        "release_prepared_identity": prepared.data_identity,
-        "input_identities": identities(candidate_binding),
-        "candidate_input_binding": candidate_binding.to_dict(),
-        "release_input_binding": frozen_binding.to_dict(),
-        "evidence": evidence.to_dict(),
-        "audit": audit.to_dict(),
-        "comparison": comparison.to_dict(),
-        "candidate_signals": json.loads(left_signals.to_json(orient="table", date_format="iso")),
-        "release_signals": json.loads(right_signals.to_json(orient="table", date_format="iso")),
-        "signal_equivalence": signal_equal,
-    }
-
-
-def inspect_candidate(
-    context: RepositoryContext, request: CandidateInspectionRequest
-) -> f.CandidateInspectionReport:
+def inspect_candidate(context: RepositoryContext, request: CandidateInspectionRequest, *, control: InspectionControl | None = None) -> f.CandidateInspectionReport:
+    if type(context) is not RepositoryContext:
+        raise InspectionInputError("INVALID_TYPE", "repository", "inspection requires RepositoryContext")
     if type(request) is not CandidateInspectionRequest:
-        raise TypeError("inspect_candidate requires CandidateInspectionRequest")
-    if type(request.research) is not ResearchContext or request.research.repository.root.resolve() != context.root.resolve():
-        raise TypeError("inspection requires the local ResearchContext")
+        raise InspectionInputError("INVALID_TYPE", "request", "inspect_candidate requires CandidateInspectionRequest")
+    if request.research.repository.root.resolve() != context.root.resolve():
+        raise InspectionInputError("IDENTITY_MISMATCH", "research", "inspection requires local ResearchContext")
+    control = InspectionControl() if control is None else control
+    if type(control) is not InspectionControl:
+        raise InspectionInputError("INVALID_TYPE", "control", "inspection control requires InspectionControl")
+    if not request.experiment.resolve(context.root).is_dir():
+        raise InspectionInputError("NOT_FOUND", "experiment", "inspection experiment does not exist")
+    try:
+        registration = StrategyRegistry(context.research_registry_root).get_candidate_registration(request.candidate)
+    except Exception as exc:
+        raise InspectionInputError("INVALID_REFERENCE", "candidate", str(exc)) from exc
+    try:
+        selection = read_decision(context.root, request.selection)
+    except Exception as exc:
+        raise InspectionInputError("INVALID_REFERENCE", "selection", str(exc)) from exc
+    subject = selection.subject
+    if (selection.action is not f.DecisionAction.APPROVE
+            or type(subject) not in (f.CandidateSelectionSubject, f.FrozenMigrationSelectionSubject)
+            or subject.candidate != request.candidate or subject.content_sha256 != registration.content_sha256
+            or (isinstance(subject, f.CandidateSelectionSubject) and subject.registration_sha256 != registration.record_sha256)):
+        raise InspectionInputError("IDENTITY_MISMATCH", "selection", "inspection requires matching candidate selection")
     owner = f.ResearchEvidenceOwner(request.candidate.strategy_id, request.experiment.experiment_id)
-    experiment_root = context.research_root / owner.strategy_id / "experiments" / owner.experiment_id
-    if not experiment_root.is_dir():
-        raise ValueError("inspection experiment does not exist")
     store = _EvidenceStore(context, owner)
-    registration = StrategyRegistry(context.research_registry_root).get_candidate_registration(request.candidate)
-    selection = read_decision(context.root, request.selection)
-    if (
-        selection.action is not f.DecisionAction.APPROVE
-        or type(selection.subject) not in (f.CandidateSelectionSubject, f.FrozenMigrationSelectionSubject)
-        or selection.subject.candidate != request.candidate
-        or selection.subject.content_sha256 != registration.content_sha256
-    ):
-        raise ValueError("inspection requires matching candidate selection")
-    migration = type(selection.subject) is f.FrozenMigrationSelectionSubject
-    if migration:
-        validate_migration_target(context, selection.subject, request.version, request.parent_version,
-                                  request.selection_data_cutoff, request.forward_start, available=True)
-        validate_migration_files(context, selection.subject, request.additional_files)
-        selected_evidence = []
-        for reference in registration.origin.evidence:
-            value = _read(reference.resolve(_registered_root(context, registration)))
-            validate_evaluation_evidence(value)
-            selected_evidence.extend(AssessmentEvidence.from_dict(item) for item in value["assessment_evidence"])
-        note = ("Contract migration equivalence covers declared windows, not a new alpha or unseen holdout; "
-                "original selection cutoff/forward start are inherited and are not production activation dates.")
-        request = replace(request, remaining_risks=(*request.remaining_risks, note))
-    else:
-        _, assessment = _delivery(context, selection.subject.delivery)
-        selected_evidence = assessment.payload.assessment_request.evidence
-    origin = f.CandidateOrigin(registration.key, registration.content_sha256,
-                              store.put_json(registration.to_dict()))
-    plan = None
-    completed_checks = {}
-
-    def failed_preparation(kind, exc):
-        error_detail = f"{type(exc).__name__}: {exc}"
-        detail = store.put_json({"check": kind.value, "error_type": type(exc).__name__,
-                                 "error": str(exc), "candidate": request.candidate.to_dict(),
-                                 "registration_sha256": registration.record_sha256,
-                                 "requested_plan": {"version": request.version,
-                                     "parent_version": request.parent_version,
-                                     "change_summary": request.change_summary,
-                                     "selection_data_cutoff": request.selection_data_cutoff,
-                                     "forward_start": request.forward_start,
-                                     "additional_files": [item.to_dict() for item in request.additional_files]}})
-        checks = tuple(completed_checks[item] if item in completed_checks and item is not kind
-            else f.InspectionCheckResult(
-                item, f.InspectionStatus.FAIL if item is kind else f.InspectionStatus.INCOMPLETE,
-                (origin.registration, detail), error_detail if item is kind else
-                "not started because inspection preparation failed") for item in f.InspectionCheck)
-        report = f.CandidateInspectionReport(
-            origin, plan, request.selection, request.protocol,
-            canonical_sha256({"origin": origin.sha256, "selection": request.selection.sha256,
-                              "protocol": request.protocol.sha256, "failure": detail.sha256,
-                              "risks": request.remaining_risks}), checks, request.remaining_risks, owner)
-        store.put_json(report.to_dict())
-        return report
-
+    run_id = "inspection-" + uuid4().hex
     try:
-        for name, version in registration.dependencies:
-            if metadata.version(name) != version:
-                raise ValueError(f"installed dependency version differs: {name}")
+        workspace = _resolve(context.root, ".tmp/strategy-inspection/" + run_id)
+    except Exception as exc:
+        raise InspectionInputError("UNSAFE_PATH", "workspace", str(exc)) from exc
+    workspace.mkdir(parents=True)
+    controller = Controller(run_id, control, workspace)
+    origin = f.CandidateOrigin(registration.key, registration.content_sha256, store.put_json(registration.to_dict()))
+    protocol = store.put_json(portable_value(request.protocol.to_dict()))
+    normalized = {"schema_version": 2, "candidate": request.candidate.to_dict(), "selection": request.selection.to_dict(),
+        "experiment": request.experiment.to_dict(), "target": request.target.to_dict(), "protocol_sha256": protocol.sha256,
+        "replays": [replay_identity(x) for x in request.replays], "additional_files": [x.to_dict() for x in request.additional_files],
+        "remaining_risks": list(request.remaining_risks), "data_kind": request.data_kind.value}
+    request_ref = store.put_json(normalized)
+    environment_ref = plan = release = None
+    behavior, pte = [], []
+    quiescent = True
+    failure_reason = f.InspectionReason.EXECUTION_ERROR
+    try:
+        controller.tick(force=True)
+        environment = describe_inspection_environment(context)
+        environment_ref = store.put_json(environment.to_dict())
+        expected = request.protocol.pte.environment
+        if (expected.platform_build_sha256 != environment.platform_build_sha256
+                or expected.pte_contract_version != environment.pte_contract_version
+                or expected.srt_contract_version != environment.srt_contract_version):
+            raise Interrupted(f.InspectionReason.ENVIRONMENT_MISMATCH, "requested runtime environment differs")
+        failure_reason = f.InspectionReason.CONTENT_MISMATCH
         candidate = load_candidate(context, request.candidate)
-        if candidate.payload["runtime"].get("contract_version") != 2:
-            raise ValueError("new freeze inspection requires implementation contract version 2")
-        if candidate.payload.get("decision_feedback", "UNDECLARED") == "UNDECLARED":
-            raise ValueError("new freeze inspection requires explicit decision feedback semantics")
-    except Exception as exc:
-        return failed_preparation(f.InspectionCheck.CONTENT, exc)
-    completed_checks[f.InspectionCheck.CONTENT] = f.InspectionCheckResult(
-        f.InspectionCheck.CONTENT, f.InspectionStatus.PASS, (origin.registration,),
-        "registered candidate source, payload and installed dependencies verified")
-    try:
+        definition = request.research.runtime.describe(candidate)
+        identity = StrategyIdentity(definition.strategy_family_id, definition.release_id,
+            definition.release_hash, definition.runtime_sha256, definition.tradable_symbol)
+        failure_reason = f.InspectionReason.INPUT_MISMATCH
+        for scenario in request.protocol.pte.scenarios:
+            for step in scenario.decisions:
+                if step.binding.plan.strategy != identity:
+                    raise ValueError("PTE input binding differs from selected candidate")
+                if step.binding.plan.tradable_window.end > request.target.selection_data_cutoff:
+                    raise ValueError("PTE input exceeds selection cutoff")
+        failure_reason = f.InspectionReason.CONTENT_MISMATCH
+        if candidate.payload["runtime"].get("contract_version") != 2 or candidate.payload.get("decision_feedback", "UNDECLARED") == "UNDECLARED":
+            raise Interrupted(f.InspectionReason.UNSUPPORTED_CONTRACT, "inspection requires implementation contract 2 and declared feedback")
+        if type(subject) is f.FrozenMigrationSelectionSubject:
+            t = request.target
+            validate_migration_target(context, subject, t.version, t.parent_version,
+                                      t.selection_data_cutoff.isoformat(), t.forward_start.isoformat(), available=True)
+            validate_migration_files(context, subject, request.additional_files)
         plan = _copy_plan(context, request, registration, store, origin)
-    except Exception as exc:
-        return failed_preparation(f.InspectionCheck.PACKAGE, exc)
-    evidence = store.put_json(plan.to_dict())
-    checks = list(completed_checks.values())
-
-    def check(kind, status, detail, refs=(evidence,)):
-        checks.append(f.InspectionCheckResult(kind, status, refs, detail))
-
-    try:
-        stage = _materialize(context, plan)
-    except Exception as exc:
-        return failed_preparation(f.InspectionCheck.PACKAGE, exc)
-    try:
-        _binding(context, plan)
-        check(
-            f.InspectionCheck.PACKAGE,
-            f.InspectionStatus.PASS,
-            "source, observation and install closure verified",
-        )
-    except Exception as exc:
-        check(f.InspectionCheck.PACKAGE, f.InspectionStatus.FAIL, f"{type(exc).__name__}: {exc}")
-    release = None
-    binding = None
-    try:
-        release = StrategyRelease._from_runtime_identity(
-            strategy_family_id=request.candidate.strategy_id,
-            version=plan.version,
-            release_id=f"{request.candidate.strategy_id}-{plan.version}",
-            release_hash=plan.sha256,
-            payload=_read(plan.payload.resolve(context.root)),
-        )
-        binding = RuntimeBinding(release.release_id, release.release_hash, RuntimeBindingSpec.from_dict(_binding(context, plan)))
-        runtime = request.research.runtime
-        left = runtime_readiness(runtime.describe(candidate))
-        right = runtime_readiness(
-            runtime.describe(release, source_root=stage / "src/strategy_runtime", runtime_binding=binding)
-        )
-        require_same_runtime_content(left, right)
-        check(
-            f.InspectionCheck.RUNTIME,
-            f.InspectionStatus.PASS,
-            "candidate and prospective release runtime contracts match",
-        )
-    except Exception as exc:
-        check(f.InspectionCheck.RUNTIME, f.InspectionStatus.FAIL, f"{type(exc).__name__}: {exc}")
-    covered = []
-    comparisons, audits, signals, sources, release_replays = [], [], [], [], []
-    errors = []
-    unavailable_references = []
-    signal_errors = []
-    static_ready = all(x.status is f.InspectionStatus.PASS for x in checks)
-    for replay in request.replays if static_ready else ():
-        new_request = replay.reproduction_request
-        if (new_request.strategy.strategy_family_id, new_request.strategy.candidate_id) != (
-            request.candidate.strategy_id,
-            request.candidate.candidate_id,
-        ) or Path(new_request.repository_root).resolve() != context.root.resolve():
-            raise ValueError("inspection replay candidate/repository differs")
-        try:
-            baseline, projection, ref = _load_reference(context, replay.reference, store)
-        except _InvalidInspectionReference:
-            raise
-        except Exception as exc:
-            errors.append(f"reference {replay.reference.evidence.path}: {type(exc).__name__}: {exc}")
-            unavailable_references.append(replay.reference.to_dict())
-            continue
-        if (
-            baseline["request_identity"]["data_cutoff"] > plan.selection_data_cutoff
-            or new_request.data_cutoff.isoformat() > plan.selection_data_cutoff
-        ):
-            raise ValueError("reproduction cutoff exceeds frozen selection cutoff")
-        if not all(
-            p in selected_evidence
-            and p.candidate.candidate_id
-            == f"{request.candidate.strategy_id}-{request.candidate.candidate_id}"
-            and p.candidate.content_sha256 == registration.content_sha256
-            for p in projection
-        ):
-            raise ValueError("reference evaluation is absent from " + (
-                "registered migration evidence" if migration else "selected assessment"))
-        sources.append(ref)
-        try:
-            current_request = replace(new_request, strategy=candidate)
-            current_request = request.research.evaluation.prepare(current_request)
-            current = request.research.evaluation.evaluate(current_request)
-            _, current_ref = _authenticate(
-                context, current_request, current, store
-            )
-            sources.append(current_ref)
-            old = {(x["window_id"], x["scenario_id"]): x for x in baseline["runs"]}
-            if len(old) != len(baseline["runs"]):
-                raise ValueError("duplicate reference coordinates")
-            if set(old) != {(x.window_id, x.scenario_id) for x in current.runs}:
-                raise ValueError("reproduction coordinates differ from reference")
-            for run in current.runs:
-                previous = old[(run.window_id, run.scenario_id)]
-                if (
-                    run.identity.content_sha256,
-                    run.identity.input_sha256,
-                    run.identity.protocol_sha256,
-                ) != (
-                    previous["identity"]["content_sha256"],
-                    previous["identity"]["input_sha256"],
-                    previous["identity"]["protocol_sha256"],
-                ):
-                    raise ValueError("reproduction content/input/protocol identity differs")
-                a, b = (
-                    ReplayEvidence.from_dict(previous["replay_evidence"]),
-                    _replay_evidence(current_request, run),
-                )
-                audit = audit_replay(b, tolerance=request.protocol.tolerance)
-                audits.append(audit.to_dict())
-                compared = compare_ledgers(
-                    LedgerComparisonRequest(
-                        a, b, LedgerComparisonMode.ECONOMIC, request.protocol.tolerance
-                    )
-                )
-                comparisons.append(compared.to_dict())
+        release, verified = _package(context, plan, store, workspace / "repository", subject)
+        failure_reason = f.InspectionReason.INPUT_MISMATCH
+        input_origins = []
+        for replay in request.replays:
+            controller.tick()
+            input_origins.append(store.put_json({"data_kind": request.data_kind.value,
+                "data_kind_source": "CALLER_DECLARATION", **authenticate_execution(
+                    request.research.data, replay, request.target.selection_data_cutoff)}))
+        controller.stage = InspectionStage.EQUIVALENCE
+        failure_reason = f.InspectionReason.EXECUTION_ERROR
+        controller.tick(force=True)
+        jobs = equivalence_jobs(request, candidate, verified, workspace, controller)
+        quiescent = jobs.interruption is None or jobs.interruption.quiescent
+        for index, ok, facts in jobs.completed:
+            replay = request.replays[index]
+            refs = []
+            reason = f.InspectionReason.OK if ok and facts["passed"] else f.InspectionReason.BEHAVIOR_DIFFERENCE if ok else f.InspectionReason.EXECUTION_ERROR
+            if ok:
                 try:
-                    pd.testing.assert_frame_equal(
-                        _reference_signals(previous),
-                        run.signals.decisions,
-                        check_exact=request.protocol.tolerance == 0,
-                        atol=request.protocol.tolerance,
-                        rtol=0,
-                    )
-                    signals.append(True)
-                except AssertionError as exc:
-                    signals.append(False)
-                    signal_errors.append(str(exc))
-                if release is None:
-                    raise ValueError("prospective release runtime unavailable")
-                release_replay = _inspect_release_replay(
-                    context,
-                    request.research,
-                    current_request,
-                    run,
-                    release,
-                    stage / "src/strategy_runtime",
-                    request.protocol.tolerance,
-                    binding,
-                )
-                release_replays.append(release_replay)
-                comparisons.append(release_replay["comparison"])
-                audits.append(release_replay["audit"])
-                signals.append(release_replay["signal_equivalence"])
-                covered.append(f.InspectionCoordinate(run.window_id, run.scenario_id))
-        except Exception as exc:
-            errors.append(f"{type(exc).__name__}: {exc}")
-    detail = store.put_json(
-        {
-            "coverage": [x.to_dict() for x in covered],
-            "audits": audits,
-            "comparisons": comparisons,
-            "signal_equivalence": signals,
-            "signal_errors": signal_errors,
-            "errors": errors,
-            "unavailable_references": unavailable_references,
-            "release_replays": release_replays,
-            "sources": [x.to_dict() for x in sources],
-        },
-    )
-    refs = (detail, *sources)
-    complete = set(covered) == set(request.protocol.coordinates) and len(covered) == len(
-        request.protocol.coordinates
-    )
-    check(
-        f.InspectionCheck.COVERAGE,
-        f.InspectionStatus.PASS if complete else f.InspectionStatus.INCOMPLETE,
-        "actual reproduction coverage compared with explicit protocol",
-        refs,
-    )
-    check(
-        f.InspectionCheck.REPRODUCTION,
-        f.InspectionStatus.FAIL
-        if errors
-        else (f.InspectionStatus.PASS if complete else f.InspectionStatus.INCOMPLETE),
-        "; ".join(errors) or (
-            "fresh managed evaluations persisted" if static_ready
-            else "reproduction not started because static inspection failed"
-        ),
-        refs,
-    )
-    for kind, values in (
-        (f.InspectionCheck.LEDGER_AUDIT, [x["status"] == AuditStatus.PASS.value for x in audits]),
-        (
-            f.InspectionCheck.LEDGER_EQUIVALENCE,
-            [x["status"] == LedgerComparisonStatus.EQUIVALENT.value for x in comparisons],
-        ),
-        (f.InspectionCheck.SIGNAL_EQUIVALENCE, signals),
-    ):
-        status = (
-            f.InspectionStatus.FAIL
-            if any(not x for x in values)
-            else (f.InspectionStatus.PASS if complete and values else f.InspectionStatus.INCOMPLETE)
-        )
-        detail = f"{sum(values)}/{len(values)} reproduction coordinates passed"
-        if kind is f.InspectionCheck.SIGNAL_EQUIVALENCE and signal_errors:
-            detail += "; " + "; ".join(signal_errors)
-        check(kind, status, detail, refs)
-    request_hash = canonical_sha256(
-        {
-            "plan": plan.sha256,
-            "selection": request.selection.sha256,
-            "protocol": request.protocol.sha256,
-            "sources": [x.to_dict() for x in sources],
-            "risks": request.remaining_risks,
-        }
-    )
-    report = f.CandidateInspectionReport(
-        origin,
-        plan,
-        request.selection,
-        request.protocol,
-        request_hash,
-        tuple(checks),
-        request.remaining_risks,
-        owner,
-    )
-    store.put_json(report.to_dict())
+                    baseline, sources = compare_baseline(context, replay, facts["candidate"], registration, request.protocol.float_tolerance, store)
+                    facts["baseline"] = baseline
+                    refs.extend(sources)
+                    if baseline["status"] == "FAIL":
+                        reason = f.InspectionReason.BASELINE_DIFFERENCE
+                except InspectionPublicationError:
+                    raise
+                except Exception as exc:
+                    facts["baseline"] = {"status": "FAIL", "error": str(exc)}
+                    reason = f.InspectionReason.BASELINE_DIFFERENCE
+            refs.append(input_origins[index])
+            refs.append(store.put_json(facts))
+            behavior.append(f.InspectionCaseResult("replay-" + str(index),
+                f.InspectionStatus.PASS if reason is f.InspectionReason.OK else f.InspectionStatus.FAIL,
+                reason, "candidate/frozen behavior and requested baseline", tuple(refs)))
+        if jobs.interruption is not None:
+            raise jobs.interruption
+        controller.stage = InspectionStage.PTE
+        controller.tick(force=True)
+        spaces, copies = copy_pte_inputs(request.research.data, request.protocol.pte, workspace, controller.tick)
+        pte_request = PteReleaseInspectionRequest(run_id, workspace / "repository", workspace, verified.release.release_id,
+            release.release_sha256, release.package_sha256, spaces, copies, request.protocol.pte)
+        outcome = inspect_release(pte_request, control=InspectionControl(controller.remaining(), control.max_workers,
+            control.cancelled, lambda progress: controller.progress(progress.completed, progress.total, progress.message, force=True)))
+        controller.stage = InspectionStage.PERSIST
+        artifacts = {}
+        for item in outcome.artifacts:
+            path = workspace / item.path
+            if not path.resolve().is_relative_to(workspace.resolve()) or sha256(path.read_bytes()).hexdigest() != item.sha256:
+                raise ValueError("PTE artifact identity differs")
+            artifacts[item.artifact_id] = store.put(path.read_bytes())
+        coverage = store.put_json({"status": outcome.status.value, "coverage": [x.to_dict() for x in outcome.coverage],
+                                  "input_copies": [x.to_dict() for x in copies], "environment": outcome.environment.to_dict(),
+                                  "data_kind": request.data_kind.value, "channel_kind": "SYNTHETIC",
+                                  "artifacts": [{**item.to_dict(), "reference": artifacts[item.artifact_id].to_dict()}
+                                                for item in outcome.artifacts]})
+        for case in outcome.scenarios:
+            status = f.InspectionStatus(case.status.value)
+            reason = f.InspectionReason.OK if status is f.InspectionStatus.PASS else f.InspectionReason.PTE_FAILURE
+            if case.code in f.InspectionReason._value2member_map_ and status is not f.InspectionStatus.PASS:
+                reason = f.InspectionReason(case.code)
+            pte.append(f.InspectionCaseResult(case.case_id, status, reason, case.summary,
+                (coverage, *(artifacts[x] for x in case.artifact_ids))))
+        status = f.InspectionStatus(outcome.status.value)
+        pte.append(f.InspectionCaseResult("pte-coverage", status,
+            f.InspectionReason.OK if status is f.InspectionStatus.PASS else f.InspectionReason.COVERAGE_MISSING,
+            "observed PTE scenario capability coverage", (coverage, *artifacts.values())))
+        controller.stage = InspectionStage.FINALIZE
+        if control.timeout_seconds is not None and time.monotonic() - controller.started >= control.timeout_seconds:
+            raise Interrupted(f.InspectionReason.RESOURCE_LIMIT, "inspection total deadline exceeded after evidence collection")
+        load_candidate(context, request.candidate)
+        if StrategyRegistry(context.research_registry_root).get_candidate_registration(request.candidate) != registration:
+            raise Interrupted(f.InspectionReason.CONTENT_MISMATCH, "candidate registration changed during inspection")
+        final_package = validate_release_package(workspace / "repository/strategies", verified.release.release_id)
+        if final_package.package_sha256 != release.package_sha256 or final_package.release.release_hash != release.release_sha256:
+            raise Interrupted(f.InspectionReason.CONTENT_MISMATCH, "inspected package changed during execution")
+        final_environment = describe_inspection_environment(context)
+        if final_environment.to_dict() != environment.to_dict() or outcome.environment.to_dict() != environment.to_dict():
+            raise Interrupted(f.InspectionReason.ENVIRONMENT_MISMATCH, "runtime environment changed during inspection")
+    except InspectionPublicationError:
+        raise
+    except Exception as exc:
+        quiescent = quiescent and getattr(exc, "quiescent", True)
+        reason = exc.reason if isinstance(exc, Interrupted) else failure_reason
+        if not quiescent:
+            reason = f.InspectionReason.RESOURCE_LIMIT
+        status = f.InspectionStatus.INCOMPLETE if reason in (f.InspectionReason.CANCELLED, f.InspectionReason.RESOURCE_LIMIT) else f.InspectionStatus.FAIL
+        detail = store.put_json({"stage": controller.stage.value, "reason": reason.value, "type": type(exc).__name__, "message": str(exc)})
+        target = pte if controller.stage in (InspectionStage.PTE, InspectionStage.PERSIST, InspectionStage.FINALIZE) else behavior
+        target.append(f.InspectionCaseResult("execution-" + controller.stage.value.lower(), status, reason, str(exc) or type(exc).__name__, (detail,)))
+    measurements = store.put_json({"run_id": run_id, "elapsed_seconds": time.monotonic() - controller.started,
+                                   "max_workers": control.max_workers, "timeout_seconds": control.timeout_seconds})
+    report = f.CandidateInspectionReport(run_id, owner, origin, request.selection, request_ref, protocol,
+        environment_ref, plan, release, goal(behavior), goal(pte), measurements, request.remaining_risks)
+    try:
+        store.put_json(report.to_dict())
+    except InspectionPublicationError as exc:
+        # A candidate reference is not evidence of successful publication.
+        raise InspectionPublicationError("REPORT", exc.partial_evidence, None, str(exc)) from exc
+    if quiescent:
+        try:
+            shutil.rmtree(workspace)
+        except OSError as exc:
+            raise InspectionPublicationError("CLEANUP", store.references, report.reference, str(exc)) from exc
     return report
 
 
-def freeze_candidate(
-    context: RepositoryContext, request: f.FreezeCandidateRequest
-) -> f.FreezeReceipt:
+def freeze_candidate(context: RepositoryContext, request: f.FreezeCandidateRequest) -> f.FreezeReceipt:
     if type(request) is not f.FreezeCandidateRequest:
         raise TypeError("freeze_candidate requires FreezeCandidateRequest")
-    registry = StrategyRegistry(context.strategy_root)
     existing = get_freeze_result(context, request.request_id)
     if existing.status is not f.FreezeStatus.NOT_FOUND:
         if existing.request_sha256 is not None and existing.request_sha256 != request.sha256:
             raise ValueError("freeze request ID already binds different content")
         return existing
     report = validate_approval(context.root, request)
-    # Revalidate the selected delivery and registered candidate before materialization.
+    plan, release = report.plan, report.release
     selection = read_decision(context.root, report.selection)
-    if type(selection.subject) is f.FrozenMigrationSelectionSubject:
-        if report.plan.version == selection.subject.original.version:
-            raise ValueError("same-version migration requires the explicit runtime upgrade API")
-        validate_migration_target(context, selection.subject, report.plan.version, report.plan.parent_version,
-                                  report.plan.selection_data_cutoff, report.plan.forward_start, available=True)
-    else:
-        _delivery(context, selection.subject.delivery)
-    actual_candidate = load_candidate(context, report.plan.origin.candidate)
-    if actual_candidate.payload["runtime"].get("contract_version") != 2:
-        raise ValueError("new freeze requires implementation contract version 2")
-    if actual_candidate.payload.get("decision_feedback", "UNDECLARED") == "UNDECLARED":
-        raise ValueError("new freeze requires explicit decision feedback semantics")
-    registration = StrategyRegistry(context.research_registry_root).get_candidate(
-        report.plan.origin.candidate, evidence_root=context.research_root / report.plan.origin.candidate.strategy_id
-    )
-    plan = report.plan
-    evidence_root = _registered_root(context, registration)
-    if (registration.record_sha256 != plan.origin.registration_sha256
-        or registration.content_sha256 != plan.origin.content_sha256):
+    if isinstance(selection.subject, f.FrozenMigrationSelectionSubject) and plan.version == selection.subject.original.version:
+        raise ValueError("same-version migration requires the explicit runtime upgrade API")
+    load_candidate(context, plan.origin.candidate)
+    registered = StrategyRegistry(context.research_registry_root).get_candidate_registration(plan.origin.candidate)
+    if registered.record_sha256 != plan.origin.registration_sha256:
         raise ValueError("candidate changed since inspection")
-    if registration.payload.resolve(evidence_root).read_bytes() != plan.payload.resolve(context.root).read_bytes():
-        raise ValueError("freeze payload differs from registered candidate")
-    runtime_descriptor = _read(plan.payload.resolve(context.root))["runtime"]
-    planned = {x.path: x.source.sha256 for x in plan.source_files}
-    prefix = f"{registration.source_root}/"
-    if {x.path.removeprefix(prefix): x.sha256 for x in registration.source_files} != {
-        name: planned.get(name) for name in runtime_descriptor["source_files"]
-    }:
-        raise ValueError("freeze source differs from registration")
-    for name, expected in registration.dependencies:
-        if metadata.version(name) != expected:
-            raise ValueError(f"installed dependency changed since inspection: {name}")
-    stage = _materialize(context, report.plan)
-    template = _binding(context, report.plan)
-    version = build_version(context.root, request)
-    binding = {**template, "release_id": version.release_id, "release_hash": version.release_hash}
-    (stage / "runtime_binding.json").write_bytes(_bytes(binding))
-    runtime = StrategyRuntime()
-    actual = runtime.describe(
-        StrategyRelease.from_mapping(version.to_dict()),
-        source_root=stage / "src/strategy_runtime",
-        runtime_binding=RuntimeBinding.from_dict(binding),
-    )
-    candidate = runtime.describe(load_candidate(context, report.plan.origin.candidate))
-    require_same_runtime_content(runtime_readiness(candidate), runtime_readiness(actual))
-    manifest = {
-        "schema_version": 1,
-        "strategy_version_id": version.release_id,
-        "strategy_version_hash": version.release_hash,
-        "source_candidate_id": f"{version.strategy_id}-{version.source_candidate}",
-        "candidate_package_hash": report.plan.sha256,
-        "runtime_root": "src/strategy_runtime",
-        "runtime_binding": "runtime_binding.json",
-        "files": {
-            p.relative_to(stage).as_posix(): sha256(p.read_bytes()).hexdigest()
-            for p in stage.rglob("*")
-            if p.is_file()
-        },
-    }
-    manifest["package_hash"] = canonical_sha256(manifest)
-    (stage / "release_manifest.json").write_bytes(_bytes(manifest))
+    version = StrategyVersion.from_dict(_read(release.version_record.resolve(context.root)))
+    stage = create_temporary_directory(context.root, "freeze-package")
+    for file in release.files:
+        target = stage / file.path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(file.source.resolve(context.root).read_bytes())
+    (stage / "release_manifest.json").write_bytes(release.manifest.resolve(context.root).read_bytes())
     journal_root = _journal_root(context, request.request_id)
     operation_path = journal_root / request.request_id.value / "research_request.json"
-    lock = RegistryWriteLock(context.root / ".tmp/freeze-locks" / request.request_id.strategy_id)
-    with lock.hold():
-        if operation_path.exists():
-            if f.FreezeCandidateRequest.from_dict(_read(operation_path)) != request:
-                raise ValueError("freeze request ID already binds different content")
-        else:
-            _write_request(context, operation_path, request.to_dict())
-        return registry.freeze_version(FreezeVersionRequest(
+    with RegistryWriteLock(context.root / ".tmp/freeze-locks" / request.request_id.strategy_id).hold():
+        if operation_path.exists() and f.FreezeCandidateRequest.from_dict(_read(operation_path)) != request:
+            raise ValueError("freeze request ID already binds different content")
+        _write_request(context, operation_path, request.to_dict())
+        return StrategyRegistry(context.strategy_root).freeze_version(FreezeVersionRequest(
             request.request_id, request.sha256, version,
             StrategyRegistry(context.research_registry_root).get_family(version.strategy_id),
-            stage, manifest["package_hash"], journal_root,
-        ))
+            stage, release.package_sha256, journal_root))
 
 
 def _journal_root(context, request_id):

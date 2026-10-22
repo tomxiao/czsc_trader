@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass, fields, is_dataclass
 from datetime import date
 from enum import StrEnum
-import math
 import re
 from types import UnionType
 from typing import get_args, get_origin, get_type_hints
@@ -33,10 +32,16 @@ def _encode(value):
         return [_encode(x) for x in value]
     if isinstance(value, StrEnum):
         return value.value
+    if type(value) is date:
+        return value.isoformat()
     return value
 
 
 def _decode(value, kind):
+    if kind is date:
+        if type(value) is not str:
+            raise TypeError("date must be an ISO string")
+        return date.fromisoformat(value)
     if get_origin(kind) is UnionType:
         for part in get_args(kind):
             try:
@@ -171,12 +176,16 @@ class StageAdvanceSubject(Record):
 
 @dataclass(frozen=True, slots=True)
 class CandidateSelectionSubject(Record):
-    delivery: CandidateEvidence
     candidate: CandidateKey
     content_sha256: str
+    registration_sha256: str
+    schema_version: int = 2
 
     def _validate(self):
         _hash(self.content_sha256)
+        _hash(self.registration_sha256)
+        if self.schema_version != 2:
+            raise ValueError("unsupported candidate selection schema")
 
 
 @dataclass(frozen=True, slots=True)
@@ -286,14 +295,16 @@ class FreezePlan(Record):
     parent_version: str | None
     change_summary: str
     source_experiment: str
-    selection_data_cutoff: str
-    forward_start: str
+    selection_data_cutoff: date
+    forward_start: date
     payload: ResearchEvidenceRef
     source_files: tuple[FreezeFile, ...]
     runtime_binding: ResearchEvidenceRef
-    registration_evidence: tuple[ResearchEvidenceRef, ...]
+    schema_version: int = 2
 
     def _validate(self):
+        if self.schema_version != 2:
+            raise ValueError("unsupported freeze plan schema")
         _version(self.version)
         if self.parent_version is not None:
             _version(self.parent_version)
@@ -301,7 +312,7 @@ class FreezePlan(Record):
                 raise ValueError("parent must precede target version")
         if not self.change_summary.strip() or not self.source_experiment.strip():
             raise ValueError("freeze plan description/origin required")
-        if date.fromisoformat(self.forward_start) <= date.fromisoformat(self.selection_data_cutoff):
+        if self.forward_start <= self.selection_data_cutoff:
             raise ValueError("forward_start must follow selection cutoff")
         if not self.source_files or len({x.path.casefold() for x in self.source_files}) != len(
             self.source_files
@@ -312,18 +323,23 @@ class FreezePlan(Record):
 class InspectionStatus(StrEnum):
     PASS = "PASS"
     FAIL = "FAIL"
+    NOT_RUN = "NOT_RUN"
     INCOMPLETE = "INCOMPLETE"
 
 
-class InspectionCheck(StrEnum):
-    CONTENT = "CONTENT"
-    RUNTIME = "RUNTIME"
-    COVERAGE = "COVERAGE"
-    REPRODUCTION = "REPRODUCTION"
-    LEDGER_AUDIT = "LEDGER_AUDIT"
-    SIGNAL_EQUIVALENCE = "SIGNAL_EQUIVALENCE"
-    LEDGER_EQUIVALENCE = "LEDGER_EQUIVALENCE"
-    PACKAGE = "PACKAGE"
+class InspectionReason(StrEnum):
+    OK = "OK"
+    CONTENT_MISMATCH = "CONTENT_MISMATCH"
+    INPUT_MISMATCH = "INPUT_MISMATCH"
+    UNSUPPORTED_CONTRACT = "UNSUPPORTED_CONTRACT"
+    BEHAVIOR_DIFFERENCE = "BEHAVIOR_DIFFERENCE"
+    BASELINE_DIFFERENCE = "BASELINE_DIFFERENCE"
+    PTE_FAILURE = "PTE_FAILURE"
+    COVERAGE_MISSING = "COVERAGE_MISSING"
+    ENVIRONMENT_MISMATCH = "ENVIRONMENT_MISMATCH"
+    CANCELLED = "CANCELLED"
+    RESOURCE_LIMIT = "RESOURCE_LIMIT"
+    EXECUTION_ERROR = "EXECUTION_ERROR"
 
 
 @dataclass(frozen=True, slots=True)
@@ -337,63 +353,101 @@ class InspectionCoordinate(Record):
 
 
 @dataclass(frozen=True, slots=True)
-class InspectionProtocol(Record):
-    coordinates: tuple[InspectionCoordinate, ...]
-    tolerance: float = 0.0
-    method_version: str = "candidate-inspection-v1"
+class InspectionCaseResult(Record):
+    case_id: str
+    status: InspectionStatus
+    reason_code: InspectionReason
+    summary: str
+    evidence: tuple[ResearchEvidenceRef, ...]
 
     def _validate(self):
-        if self.method_version != "candidate-inspection-v1":
-            raise ValueError("unsupported inspection method")
-        if not self.coordinates or len(set(self.coordinates)) != len(self.coordinates):
-            raise ValueError("inspection requires unique coordinates")
-        if not math.isfinite(self.tolerance) or self.tolerance < 0:
-            raise ValueError("inspection tolerance must be finite and nonnegative")
+        _id(self.case_id)
+        if not self.summary.strip():
+            raise ValueError("inspection case requires summary")
+        if self.status is InspectionStatus.PASS and (self.reason_code is not InspectionReason.OK or not self.evidence):
+            raise ValueError("passing inspection case requires OK and evidence")
+        if self.status is not InspectionStatus.PASS and self.reason_code is InspectionReason.OK:
+            raise ValueError("unfinished or failed inspection cannot use OK")
 
 
 @dataclass(frozen=True, slots=True)
-class InspectionCheckResult(Record):
-    check: InspectionCheck
+class InspectionGoalResult(Record):
     status: InspectionStatus
+    cases: tuple[InspectionCaseResult, ...]
     evidence: tuple[ResearchEvidenceRef, ...]
-    detail: str
 
     def _validate(self):
-        if not self.detail.strip() or not self.evidence:
-            raise ValueError("inspection check requires details and evidence")
+        if len({x.case_id for x in self.cases}) != len(self.cases):
+            raise ValueError("duplicate inspection case")
+        if self.status is InspectionStatus.PASS and (
+            not self.cases or not self.evidence or any(x.status is not InspectionStatus.PASS for x in self.cases)
+        ):
+            raise ValueError("passing goal requires passing cases and evidence")
+        if any(x.status is InspectionStatus.FAIL for x in self.cases) and self.status is not InspectionStatus.FAIL:
+            raise ValueError("failed case requires failed goal")
+        if self.status is InspectionStatus.NOT_RUN and self.cases:
+            raise ValueError("not-run goal cannot contain executed cases")
+
+
+@dataclass(frozen=True, slots=True)
+class InspectedRelease(Record):
+    version_record: ResearchEvidenceRef
+    manifest: ResearchEvidenceRef
+    files: tuple[FreezeFile, ...]
+    release_sha256: str
+    package_sha256: str
+
+    def _validate(self):
+        _hash(self.release_sha256)
+        _hash(self.package_sha256)
+        if not self.files or len({x.path.casefold() for x in self.files}) != len(self.files):
+            raise ValueError("inspected release files must be nonempty and unique")
+        if any(x.path.casefold() == "release_manifest.json" for x in self.files):
+            raise ValueError("manifest cannot include itself")
+        if any(type(x.source) is not ResearchEvidenceRef for x in self.files):
+            raise ValueError("inspected release requires persistent research evidence")
+        if "runtime_binding.json" not in {x.path for x in self.files}:
+            raise ValueError("inspected release requires runtime binding")
 
 
 @dataclass(frozen=True, slots=True)
 class CandidateInspectionReport(Record):
-    origin: CandidateOrigin
-    plan: FreezePlan | None
-    selection: DecisionReference
-    protocol: InspectionProtocol
-    request_sha256: str
-    checks: tuple[InspectionCheckResult, ...]
-    remaining_risks: tuple[str, ...]
+    run_id: str
     owner: ResearchEvidenceOwner
+    origin: CandidateOrigin
+    selection: DecisionReference
+    request: ResearchEvidenceRef
+    protocol: ResearchEvidenceRef
+    environment: ResearchEvidenceRef | None
+    plan: FreezePlan | None
+    release: InspectedRelease | None
+    behavior_equivalence: InspectionGoalResult
+    pte_runtime: InspectionGoalResult
+    measurements: ResearchEvidenceRef
+    remaining_risks: tuple[str, ...]
+    schema_version: int = 2
 
     def _validate(self):
-        _hash(self.request_sha256)
+        if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}", self.run_id) is None:
+            raise ValueError("invalid inspection run identifier")
+        if self.schema_version != 2:
+            raise ValueError("unsupported inspection report schema")
         if self.owner.experiment_id is None or self.owner.strategy_id != self.origin.candidate.strategy_id:
             raise ValueError("inspection must belong to its candidate research experiment")
         if self.plan is not None and self.plan.origin != self.origin:
             raise ValueError("inspection plan origin differs from report")
-        if len({x.check for x in self.checks}) != len(self.checks):
-            raise ValueError("duplicate inspection check")
         if any(not x.strip() for x in self.remaining_risks):
             raise ValueError("risk must be nonempty")
 
     @property
     def status(self):
-        if any(x.status is InspectionStatus.FAIL for x in self.checks):
+        statuses = (self.behavior_equivalence.status, self.pte_runtime.status)
+        if InspectionStatus.FAIL in statuses:
             return InspectionStatus.FAIL
-        if self.plan is None or {x.check for x in self.checks} != set(InspectionCheck) or any(
-            x.status is InspectionStatus.INCOMPLETE for x in self.checks
-        ):
-            return InspectionStatus.INCOMPLETE
-        return InspectionStatus.PASS
+        if (all(x is InspectionStatus.PASS for x in statuses)
+                and self.plan is not None and self.release is not None and self.environment is not None):
+            return InspectionStatus.PASS
+        return InspectionStatus.INCOMPLETE
 
     @property
     def reference(self) -> ResearchEvidenceRef:

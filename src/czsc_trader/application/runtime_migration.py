@@ -16,7 +16,7 @@ import re
 import shutil
 from uuid import uuid4
 
-from strategy_manager import StrategyRegistry, CandidateKey, canonical_sha256
+from strategy_manager import StrategyRegistry, StrategyVersion, CandidateKey, canonical_sha256
 from strategy_manager import freeze_contracts as f
 from strategy_manager.freeze_contracts import FrozenVersionReference
 from strategy_manager.write_lock import RegistryWriteLock
@@ -413,7 +413,7 @@ def _upgrade_inputs(context, request):
         raise ValueError("runtime upgrade requires current original frozen CAS identity")
     registry = StrategyRegistry(context.strategy_root)
     stored = registry.get_version(request.original.strategy_id, request.original.version)
-    if (report.plan.parent_version, report.plan.selection_data_cutoff, report.plan.forward_start) != (
+    if (report.plan.parent_version, report.plan.selection_data_cutoff.isoformat(), report.plan.forward_start.isoformat()) != (
             stored.parent_version, stored.selection_data_cutoff, stored.forward_start):
         raise ValueError("same-version upgrade must preserve frozen origin and dates")
     return report, candidate, stored, manifest, binding, source
@@ -443,29 +443,25 @@ def prepare_frozen_runtime_upgrade(
     if destination.exists():
         raise FileExistsError("runtime upgrade preparation already exists")
     report, candidate, stored, manifest, binding, source = _upgrade_inputs(context, request)
-    version = replace(stored, strategy_payload=json.loads(json.dumps(dict(candidate.payload), default=dict)), release_hash="0" * 64)
-    version = replace(version, release_hash=canonical_sha256(version.release_payload()))
+    # Publish the exact package that passed both technical goals, preserving the
+    # original version metadata through the migration-specific version builder.
+    release = report.release
+    version = StrategyVersion.from_dict(json.loads(release.version_record.resolve(context.root).read_bytes()))
     family, number = stored.strategy_id, stored.version
     reference = stored.release_id
     stage_root = destination / "staged"
     package = stage_root / family / "releases" / number
-    shutil.copytree(context.strategy_root / family / "releases" / number, package)
-    runtime_root = package / manifest["runtime_root"]
-    for name in candidate.payload["runtime"]["source_files"]:
-        (runtime_root / name).write_bytes((candidate.source_root / name).read_bytes())
-    new_binding = {**binding, "release_hash": version.release_hash,
-                   "implementation_sha256": candidate.payload["runtime"]["source_sha256"]}
-    (package / manifest["runtime_binding"]).write_bytes(_upgrade_json(new_binding))
-    new_manifest = {**manifest, "strategy_version_hash": version.release_hash,
-                    "candidate_package_hash": report.plan.sha256,
-                    "files": {name: digest for name, digest in _upgrade_files(package).items()
-                              if name != "release_manifest.json"}}
-    new_manifest.pop("package_hash")
-    new_manifest["package_hash"] = canonical_sha256(new_manifest)
-    (package / "release_manifest.json").write_bytes(_upgrade_json(new_manifest))
+    package.mkdir(parents=True)
+    for item in release.files:
+        target = package / item.path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(item.source.resolve(context.root).read_bytes())
+    manifest_bytes = release.manifest.resolve(context.root).read_bytes()
+    (package / "release_manifest.json").write_bytes(manifest_bytes)
+    new_manifest = json.loads(manifest_bytes)
     version_path = stage_root / family / "versions" / f"{number}.json"
     version_path.parent.mkdir(parents=True)
-    version_path.write_bytes(_upgrade_json(version.to_dict()))
+    version_path.write_bytes(release.version_record.resolve(context.root).read_bytes())
     deployment_path = context.strategy_root / "deployments" / f"{reference}.json"
     old_deployment = None
     if deployment_path.exists():
@@ -555,27 +551,24 @@ def apply_frozen_runtime_upgrade(
         expected_version = replace(stored, strategy_payload=json.loads(json.dumps(dict(candidate.payload), default=dict)), release_hash="0" * 64)
         expected_version = replace(expected_version, release_hash=canonical_sha256(expected_version.release_payload()))
         staged_version = stage / family / "versions" / f"{number}.json"
-        if staged_version.read_bytes() != _upgrade_json(expected_version.to_dict()):
+        if (staged_version.read_bytes() != report.release.version_record.resolve(context.root).read_bytes()
+                or StrategyVersion.from_dict(json.loads(staged_version.read_bytes())) != expected_version):
             raise ValueError("runtime upgrade changes frozen history fields")
         staged_context = replace(context, strategy_root=stage)
         staged_manifest, staged_binding, staged_source = validate_release_package(
             staged_context, reference, expected_release=prospective_release(expected_version))
         if staged_manifest["package_hash"] != prepared.migrated.package_hash:
             raise ValueError("runtime upgrade staged package identity differs")
-        expected_manifest = {**old_manifest, "strategy_version_hash": expected_version.release_hash,
-            "candidate_package_hash": report.plan.sha256, "files": staged_manifest["files"]}
-        expected_manifest.pop("package_hash")
-        expected_manifest["package_hash"] = canonical_sha256(expected_manifest)
-        if (staged_manifest != expected_manifest
-                or set(staged_manifest["files"]) != set(old_manifest["files"])
-                or expected_version.release_hash != prepared.migrated.release_hash):
-            raise ValueError("runtime upgrade changes original package provenance/closure")
+        expected_manifest = json.loads(report.release.manifest.resolve(context.root).read_bytes())
+        if (staged_manifest != expected_manifest or staged_manifest["package_hash"] != report.release.package_sha256
+                or expected_version.release_hash != report.release.release_sha256):
+            raise ValueError("runtime upgrade differs from the inspected package")
         if {key: value for key, value in staged_binding.items() if key not in {"release_hash", "implementation_sha256"}} != {
                 key: value for key, value in binding.items() if key not in {"release_hash", "implementation_sha256"}}:
             raise ValueError("runtime upgrade changes original binding contracts")
         for name in binding["install_files"]:
             expected = ((candidate.source_root / name).read_bytes() if name in candidate.payload["runtime"]["source_files"]
-                        else (package / staged_manifest["runtime_root"] / name).read_bytes())
+                        else (package / old_manifest["runtime_root"] / name).read_bytes())
             if (staged_source / name).read_bytes() != expected:
                 raise ValueError("runtime upgrade staged source differs from reviewed conversion")
         expected_stage_files = {f"{family}/releases/{number}/{name}" for name in staged_manifest["files"]}

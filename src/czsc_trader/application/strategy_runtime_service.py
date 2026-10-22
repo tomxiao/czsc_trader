@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-from hashlib import sha256
 import json
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 from typing import Any
 
 from strategy_manager import StrategyRegistry, canonical_sha256
@@ -38,29 +37,6 @@ def _write_object(path: Path, value: dict[str, Any]) -> None:
     temporary.replace(path)
 
 
-def _file_sha256(path: Path) -> str:
-    digest = sha256()
-    with path.open("rb") as stream:
-        for block in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(block)
-    return digest.hexdigest()
-
-
-def _safe_relative(value: object, field: str) -> str:
-    if not isinstance(value, str) or not value:
-        raise ValueError(f"{field} must be a non-empty relative path")
-    path = PurePosixPath(value)
-    if (
-        path.is_absolute()
-        or ".." in path.parts
-        or str(path) != value
-        or "\\" in value
-        or ":" in value
-    ):
-        raise ValueError(f"{field} contains an unsafe path")
-    return value
-
-
 def _version_parts(reference: str) -> tuple[str, str]:
     strategy_id, separator, version = reference.rpartition("-")
     if (
@@ -80,81 +56,12 @@ def validate_release_package(
     *,
     expected_release=None,
 ) -> tuple[dict[str, Any], dict[str, Any], Path]:
-    strategy_id, version = _version_parts(reference)
-    root = context.strategy_root / strategy_id / "releases" / version
-    manifest = _read_object(root / "release_manifest.json")
-    expected_fields = {
-        "schema_version",
-        "strategy_version_id",
-        "strategy_version_hash",
-        "source_candidate_id",
-        "candidate_package_hash",
-        "runtime_root",
-        "runtime_binding",
-        "files",
-        "package_hash",
-    }
-    if set(manifest) != expected_fields or manifest["schema_version"] != 1:
-        raise ValueError("strategy version package manifest is invalid")
-    identity = dict(manifest)
-    package_hash = identity.pop("package_hash")
-    if package_hash != canonical_sha256(identity) or manifest["strategy_version_id"] != reference:
-        raise ValueError("strategy version package identity is invalid")
-    files = manifest["files"]
-    if not isinstance(files, dict) or not files:
-        raise ValueError("strategy version package has no file identities")
-    normalized_files: set[str] = set()
-    for name, expected_hash in files.items():
-        safe_name = _safe_relative(name, "files")
-        relative = PurePosixPath(safe_name)
-        path = root.joinpath(*relative.parts)
-        if (
-            not isinstance(expected_hash, str)
-            or not path.is_file()
-            or _file_sha256(path) != expected_hash
-        ):
-            raise ValueError(f"strategy version package file differs: {name}")
-        normalized_files.add(safe_name)
-    actual_files = {
-        path.relative_to(root).as_posix()
-        for path in root.rglob("*")
-        if path.is_file() and path != root / "release_manifest.json"
-    }
-    if normalized_files != actual_files:
-        raise ValueError("strategy version package contains untracked or missing files")
-    runtime_root = root / _safe_relative(manifest["runtime_root"], "runtime_root")
-    binding = _read_object(root / _safe_relative(manifest["runtime_binding"], "runtime_binding"))
-    RuntimeBinding.from_dict(binding)
-    if (
-        binding.get("release_id") != reference
-        or binding.get("release_hash") != manifest["strategy_version_hash"]
-    ):
-        raise ValueError("strategy version runtime binding identity differs")
-    install_files = binding.get("install_files")
-    if not isinstance(install_files, list) or not install_files:
-        raise ValueError("strategy version runtime binding has no install files")
-    normalized_install_files = tuple(
-        _safe_relative(name, "install_files") for name in install_files
-    )
-    if len(normalized_install_files) != len(set(normalized_install_files)):
-        raise ValueError("strategy version runtime binding repeats install files")
-    release = expected_release
-    if release is None:
-        registry = StrategyRegistry(context.strategy_root)
-        stored = registry.get_version(strategy_id, version)
-        if stored.release_hash != manifest["strategy_version_hash"]:
-            raise ValueError("strategy version package differs from frozen registry identity")
-        release = prospective_release(stored)
-    elif (
-        release.release_id != reference or release.release_hash != manifest["strategy_version_hash"]
-    ):
-        raise ValueError("strategy version package differs from expected release identity")
-    StrategyRuntime().describe(
-        release,
-        source_root=runtime_root,
-        runtime_binding=RuntimeBinding.from_dict(binding),
-    )
-    return manifest, binding, runtime_root
+    from strategy_runtime.deployment import validate_release_package as authenticate
+    verified = authenticate(context.strategy_root, reference)
+    if expected_release is not None and verified.release != expected_release:
+        raise ValueError("strategy package differs from expected release identity")
+    package = verified.source_root.parent.parent
+    return _read_object(package / "release_manifest.json"), verified.runtime_binding.to_dict(), verified.source_root
 
 
 def _receipt_path(root: Path, reference: str) -> Path:

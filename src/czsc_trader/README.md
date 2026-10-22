@@ -36,7 +36,9 @@ TDR 为研究员提供批次上下文、研究概览、账户评价与诊断、�
 | 账户评价证据／请求身份 | 7／6 |
 | 已发布账户评价／回测 manifest | 5／5 |
 | 实验报告快照 | 1 |
-| 阶段交付定义、文档和回执 | 8 |
+| 阶段一至四交付定义、文档和回执 | 8 |
+| INSPECTION交付定义、文档和回执 | 9 |
+| 选型对象／冻结计划／技术检验报告 | 2／2／2 |
 | SM 候选登记／候选内容身份 | 3／2 |
 | SM 冻结版本／SRT 发布记录 | 5／5 |
 | SRT 运行定义／运行绑定 | 3／2 |
@@ -576,8 +578,8 @@ if checked.status is not ValidationStatus.PASS:
 选定证据的 `evidence/` 浅快照及必要的决定／检验 `support/`。
 公开目录 `research/<批次>/deliveries/<阶段>/<修订>/` 保存对应的 `report.md` 和 `receipt.json`。
 发布与校验核对两处报告及回执的字节一致性；完整包只包含已选定材料。
-`DeliveryDefinition`、`DeliveryReceipt` 和 `delivery.json` 使用 schema 8，读取时拒绝旧交付格式，
-不自动迁移历史原件。账户评价证据使用 schema 7，请求身份使用 schema 6，`StrategyVersion` 继续使用 schema 5。
+阶段一至四的`DeliveryDefinition`、`DeliveryReceipt`和`delivery.json`使用schema 8；新`INSPECTION`三处均使用schema 9且`predecessors=()`。
+旧阶段五schema 8仅在概览展示有限元数据并列出限制，显式交付校验拒绝，不解释为新版通过，不自动迁移历史原件。账户评价证据使用 schema 7，请求身份使用 schema 6，`StrategyVersion` 继续使用 schema 5。
 修订号在“批次＋阶段”内唯一，同内容重复发布复用，冲突拒绝覆盖，失败不留下可见的半成品修订。
 前驱为同批次的 `DeliveryReference`；同阶段前驱只能是更早修订。
 
@@ -626,37 +628,41 @@ StrategyVersion和运行发布合同不变，不更改已冻结策略、SM状态
 
 ## 8. 技术检验、用户决定与冻结
 
-1. 用户依据阶段四交付选择明确的候选。通过 `record_research_decision` 保存真实选择与确认来源。
-2. `inspect_candidate(repository, CandidateInspectionRequest)` 使用批次上下文，对已登记候选及拟冻结版本进行技术检验。
-3. 向用户交付检验报告、已形成的 `FreezePlan`、风险和待决定事项。检验通过后仍需用户对该计划的明确批准。
-4. 保存批准决定，再调用 `freeze_candidate(repository, FreezeCandidateRequest)`；用 `get_freeze_result` 核对事务状态。
-5. 冻结后的状态用阶段五新修订交付，已发布的待批准修订继续保留。
+阶段五只回答两个问题：同一技术输入下，Candidate和最终格式StrategyVersion是否行为等价；该发布包能否在隔离环境通过真实PTE部署加载、决策、订单、账户与恢复链路。研究判断及阶段推进由RSCH负责。
 
-| 契约 | 核心字段与意义 |
+1. `record_research_decision`保存真实选型：`CandidateSelectionSubject(candidate, content_sha256, registration_sha256)`，schema 2，不绑定阶段四回执。
+2. `describe_inspection_environment(repository)`读取实际执行的平台源码清单、构建哈希、依赖版本及SRT/PTE契约，用于构造PTE环境要求。
+3. 构造`CandidateInspectionRequest(candidate, selection, research, experiment, target, protocol, replays, data_kind, additional_files=(), remaining_risks=())`，调用`inspect_candidate(repository, request, control=InspectionControl(...))`。
+4. 交付两目标结果、精确`FreezePlan`及`InspectedRelease`、风险和待决定事项；取得用户对该报告、计划和版本的冻结批准。
+5. 调用`freeze_candidate`，以`get_freeze_result`核实事务；只有`COMMITTED`表示已冻结。部署、账户和生产生效分别授权。
+
+公共输入从`czsc_trader.application`导入；控制及环境从`strategy_runtime.inspection`导入；PTE场景从`paper_trading_engine.inspection`导入。
+
+| 类型 | 核心字段 |
 | --- | --- |
-| `ResearchDecision`（SM） | `decision_id/strategy_id/action/subject/confirmation_source/reason`；真实批准、拒绝或待定 |
-| `CandidateSelectionSubject`（SM） | 阶段四回执、候选键及内容哈希 |
-| `InspectionReplay`（TDR） | `reference: EvaluationEvidenceRef`、`reproduction_request: EvaluationRequest`；已发布账户证据与可重放的请求 |
-| `CandidateInspectionRequest`（TDR） | 候选、选择、协议、`research: ResearchContext`、`experiment: ExperimentRef`、replays、版本及父版本、变更说明、选择截止日、前瞻起始日、附加发布文件和剩余风险 |
-| `CandidateInspectionReport`（SM） | `origin` 独立绑定候选登记身份；`plan: FreezePlan \| None`、实际选型、协议、逐项检查、风险及所属实验 |
-| `FreezeSubject`（SM） | 候选内容、检验报告、冻结计划哈希和准确版本 |
-| `FreezeCandidateRequest`（SM） | `request_id/inspection/approval`；绑定准确检验和批准 |
+| `FreezeTarget` | version、parent_version、change_summary、date类型selection_data_cutoff和forward_start |
+| `InspectionReplay` | coordinate、候选StrategyInputBinding、完整BacktestExecutionData、initial_cash、one_way_cost、可选baseline |
+| `InspectionProtocol` | `candidate-inspection-v2`、`ECONOMIC_V1`、float_tolerance、PteInspectionProtocol |
+| `InspectionControl` | 总timeout_seconds、max_workers、cancelled、on_progress；默认一个回放worker |
+| `CandidateInspectionReport` | schema 2；run_id、owner、origin、selection、request/protocol/environment引用、plan/release、behavior_equivalence、pte_runtime、measurements、remaining_risks |
+| `InspectedRelease` | 最终version_record、manifest、文件闭包，以及release_sha256和package_sha256 |
+| `CandidateInspectionDelivery` | inspection报告引用、decisions、freeze、pending_decisions；无source_assessment |
 
-请求与引用的构造见 [SM 手册](../../packages/strategy_manager/README.md) 及 [公开类型](application/inspection_service.py)。
-技术检验保存于批次 `assets/evidence/<实验>/inspection/`，可以在同一实验追加独立检验；每次报告与计划以内容身份保存。
-检验核对可交付文件、源代码闭包、依赖、数据截止日、实际信号和账户账本，以及冻结运行的技术等价性。
-重放需要保留原绑定引用及对应批次数据资产，不能只保存一份账户 JSON。
+回放输入必须为显式准备的DFLS资产，包含日历、行情、价格单位及市场规则；不需要基准收益、SE排序或研究历史档案。候选加载核验登记元数据、payload、源码及依赖，不解引用登记中的研究来源和派生证据。原回测baseline缺省时保存`NOT_REQUESTED`辅助事实；提供时精确核对身份、窗口、输入和执行条件并比较账本，差异使目标A失败。
 
-检验先核验请求、登记身份及实际选型，再检查候选材料和运行依赖。源码、载荷、依赖、
-计划构建或重放等技术失败会保存失败报告和原因；已完成项保留实际状态，后续未执行项标为 `INCOMPLETE`。
-计划尚未形成时报告保留 `origin` 且 `plan=None`，可作为阶段五 `BLOCKED` 交付，
-由 RSCH 编写报告并说明未完成项和待决定事项；无计划或检验未通过均不能冻结。
-请求参数、声明引用身份和授权错误仍明确拒绝；候选材料损坏及运行不一致按技术检查结果留证。
+先构造最终schema 5版本及manifest 1发布包，再用同一包做两目标检验。`FreezePlan` schema 2不含研究历史闭包；manifest的既有`candidate_package_hash`字段绑定plan哈希。冻结直接提交报告保存的同一版本与发布字节，既有冻结事务请求ID、幂等性和状态保持。
 
-SM 在独立事务日志中保存事实，发布包准备完成后以版本文件的原子写入作为运行可见性边界。
-冻结返回 `NOT_FOUND/IN_PROGRESS/COMMITTED/FAILED/UNKNOWN`，仅 `COMMITTED` 携带确定的版本引用。
-同请求同内容复用既有状态，同请求不同内容或版本冲突拒绝；不自动换号、重试或回滚。
-冻结初始资格为 `RESEARCH`，模拟交易资格、SRT 部署、PTE 账户及生产变更另行授权。
+目标A通过正常SRT/TXE路径运行候选及发布实现，比较信号、决策、订单、成交、账户、交易与观察事实。只归一化纯运行身份；离散数量、状态、时点严格一致，明确金融浮点字段才适用容差。目标B使用正常PTE业务组件和独立的离线成交渠道；检查进入／持有／退出、无成交或部分成交、重复决定／回报、重启后与连续运行一致，以及适用故障。多档持仓调整按能力声明验证。测试许可、数据库及部署回执受隔离路径和包身份约束，普通PTE入口拒绝技术检验数据库。
+
+检验提供PREPARE、EQUIVALENCE、PTE、PERSIST、FINALIZE进度；长回放和PTE场景使用可终止子进程。取消或总超时先停止并等待worker退出，再保存已完成事实和未完成原因。回调错误明确失败。发布失败抛`InspectionPublicationError(phase, partial_evidence, report_reference, message)`，不得把未发布结果当作已交付。
+
+技术报告独立保存于`research/<策略>/assets/evidence/<实验>/inspection/<sha256>`。临时运行位于`.tmp/strategy-inspection/<run_id>/`，包含候选工作区、隔离repository、私有DFLS输入、场景状态和进度；成功后清理，失败可保留诊断。输入复制通过DFLS公开fetch/prepare完成；`content_mapping.role`是规范DataRequest的SHA256键，用来区分同名角色的不同窗口，源与隔离内容哈希须一致。实际数据来源与元数据随技术证据保存。请求必须显式提供`InspectionDataKind.HISTORICAL/SYNTHETIC`，标记为调用方声明；PTE离线成交渠道始终标为SYNTHETIC，不能作为真实账户收益。
+
+报告只有两目标均PASS且plan/release/environment完整才PASS。技术故障保存FAIL，未启动目标为NOT_RUN，取消／超时或覆盖不足为INCOMPLETE；无计划、缺证或未通过均不能冻结。`INSPECTION`交付不递归研究前驱；概览识别合法`inspection/<hash>`证据但不把它计入账户数量。旧八项检验报告、旧选型与旧InspectionReplay执行接口已经移除，历史原件保持不变。
+
+冻结返回`NOT_FOUND/IN_PROGRESS/COMMITTED/FAILED/UNKNOWN`。同请求同内容复用既有状态，同请求不同内容或版本冲突拒绝；不自动换号或重试。冻结初始资格仍是`RESEARCH`。
+
+更完整字段、API和目录表见[阶段五公共契约](../../docs/superpowers/specs/2026-10-22-stage5-public-contracts.md)。
 
 ## 9. 目录与保存责任
 

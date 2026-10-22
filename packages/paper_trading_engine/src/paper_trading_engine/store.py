@@ -185,6 +185,8 @@ class PaperStore:
         try:
             store._connection.execute("PRAGMA query_only=ON")
             store._connection.execute("BEGIN")
+            if store._connection.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='inspection_context'").fetchone():
+                raise ValueError("normal PTE entry rejects an inspection database")
             row = store._connection.execute(
                 "SELECT value FROM settings WHERE key='runtime_database_schema_version'"
             ).fetchone()
@@ -195,7 +197,13 @@ class PaperStore:
             raise
         return store
 
-    def __init__(self, path: Path) -> None:
+    def __init__(self, path: Path, *, inspection_permit=None) -> None:
+        from strategy_runtime.inspection import InspectionRuntimePermit
+        if inspection_permit is not None:
+            if type(inspection_permit) is not InspectionRuntimePermit:
+                raise TypeError("inspection store requires authenticated runtime permit")
+            inspection_permit.validate_path(Path(path))
+        self._inspection_permit = inspection_permit
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._lock = RLock()
@@ -204,6 +212,27 @@ class PaperStore:
         self._connection = sqlite3.connect(self.path, check_same_thread=False)
         self._connection.row_factory = sqlite3.Row
         try:
+            marked = self._connection.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='inspection_context'"
+            ).fetchone()
+            if marked and inspection_permit is None:
+                raise ValueError("normal PTE entry rejects an inspection database")
+            if inspection_permit is not None:
+                self._connection.execute(
+                    "CREATE TABLE IF NOT EXISTS inspection_context (run_id TEXT PRIMARY KEY, release_id TEXT NOT NULL, release_hash TEXT NOT NULL, package_hash TEXT NOT NULL, protocol_hash TEXT NOT NULL)"
+                )
+                expected = (inspection_permit.run_id, inspection_permit.release_id,
+                            inspection_permit.release_sha256, inspection_permit.package_sha256,
+                            inspection_permit.protocol_sha256)
+                rows = self._connection.execute("SELECT * FROM inspection_context").fetchall()
+                if rows and (len(rows) != 1 or tuple(rows[0]) != expected):
+                    raise ValueError("inspection database belongs to another permit")
+                if not rows:
+                    self._connection.execute("INSERT INTO inspection_context VALUES(?,?,?,?,?)", expected)
+                self._connection.execute(
+                    "CREATE TABLE IF NOT EXISTS inspection_admissions (account_id TEXT PRIMARY KEY, release_id TEXT NOT NULL, release_hash TEXT NOT NULL, run_id TEXT NOT NULL)"
+                )
+                self._connection.commit()
             _validate_database_schema(self._connection)
         except Exception:
             self._connection.close()
@@ -989,7 +1018,12 @@ class PaperStore:
                 raise ValueError("strategy version has invalid format")
             if re.fullmatch(r"[0-9a-f]{64}", str(release_hash)) is None:
                 raise ValueError("strategy release hash has invalid format")
-            if qualification_snapshot not in {"PAPER_READY", "LIVE_READY"}:
+            permit = getattr(self, "_inspection_permit", None)
+            if permit is not None:
+                permit.validate_release(f"{strategy_id}-{strategy_version}", release_hash)
+                if qualification_snapshot != "INSPECTION":
+                    raise ValueError("technical accounts must record INSPECTION admission")
+            elif qualification_snapshot not in {"PAPER_READY", "LIVE_READY"}:
                 raise ValueError("strategy qualification does not permit paper trading")
         try:
             selection_data_cutoff = date.fromisoformat(
@@ -999,6 +1033,10 @@ class PaperStore:
             raise ValueError("selection_data_cutoff must be a nonempty ISO date") from exc
         now = _utc_now()
         with self.atomic_decision_update():
+            if getattr(self, "_inspection_permit", None) is not None:
+                permit = self._inspection_permit
+                self._connection.execute("INSERT INTO inspection_admissions VALUES(?,?,?,?)",
+                    (account_id, permit.release_id, permit.release_sha256, permit.run_id))
             if cash > self.capital_pool_balance().unallocated_cash:
                 raise ValueError("initial cash exceeds unallocated capital pool cash")
             self._connection.execute(
@@ -1363,9 +1401,18 @@ class PaperStore:
                 raise ValueError("system reconciliation account has no strategy lifecycle")
             if account["run_state"] == RunState.RETIRED:
                 raise ValueError("retired account cannot be paused or resumed")
+            qualified = account["qualification_snapshot"] in {"PAPER_READY", "LIVE_READY"}
+            if self._inspection_permit is not None:
+                permit = self._inspection_permit
+                admission = self._connection.execute(
+                    "SELECT release_id,release_hash,run_id FROM inspection_admissions WHERE account_id=?",
+                    (account_id,),
+                ).fetchone()
+                qualified = (account["qualification_snapshot"] == "INSPECTION" and admission is not None
+                             and tuple(admission) == (permit.release_id, permit.release_sha256, permit.run_id))
             if target == RunState.RUNNING and (
                 AccountHealth(account["health"]) != AccountHealth.OK
-                or account["qualification_snapshot"] not in {"PAPER_READY", "LIVE_READY"}
+                or not qualified
                 or self.unresolved_account_intents(account_id)
                 or self.attention_account_intents(account_id)
                 or self.account_invariant_violations()

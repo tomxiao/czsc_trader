@@ -7,7 +7,8 @@ from dataclasses import dataclass, fields
 import inspect
 from pathlib import Path, PurePosixPath
 
-from .deployment import load_strategy_deployment
+from .deployment import load_strategy_deployment, load_inspection_deployment
+from .inspection import InspectionRuntimePermit
 from .binding import RuntimeBinding
 from .errors import RuntimeCompatibilityError
 from .implementation_identity import implementation_sha256, strategy_source_root
@@ -48,8 +49,17 @@ class _BoundStrategy:
 class StrategyLoader:
     """Load one strategy without a central release switch or registry patch."""
 
-    def __init__(self, strategy_root: Path | None = None) -> None:
+    def __init__(self, strategy_root: Path | None = None, *, inspection_permit: InspectionRuntimePermit | None = None) -> None:
         self.strategy_root = None if strategy_root is None else Path(strategy_root).resolve()
+        if inspection_permit is not None and type(inspection_permit) is not InspectionRuntimePermit:
+            raise TypeError("inspection_permit requires InspectionRuntimePermit")
+        self.inspection_permit = inspection_permit
+        if inspection_permit is not None:
+            if strategy_root is None:
+                raise RuntimeCompatibilityError("inspection requires its isolated strategy root")
+            admitted = inspection_permit.validate_path(strategy_root)
+            if admitted != inspection_permit.isolated_repository / "strategies":
+                raise RuntimeCompatibilityError("inspection strategy root differs from permit")
 
     def _release_source(
         self,
@@ -57,6 +67,12 @@ class StrategyLoader:
         source_root: Path | None,
         runtime_binding: RuntimeBinding | None,
     ) -> tuple[Path, RuntimeBinding]:
+        if self.inspection_permit is not None:
+            deployment = load_inspection_deployment(self.strategy_root, release.release_id, self.inspection_permit)
+            if ((source_root is not None and Path(source_root).resolve() != deployment.source_root)
+                    or (runtime_binding is not None and runtime_binding != deployment.binding)):
+                raise RuntimeCompatibilityError("inspection source overrides differ from authenticated package")
+            source_root, runtime_binding = deployment.source_root, deployment.binding
         if source_root is None and runtime_binding is None:
             if self.strategy_root is None:
                 raise RuntimeCompatibilityError(
@@ -249,6 +265,8 @@ class StrategyLoader:
         return _BoundStrategy(strategy, runtime)
 
     def load_candidate(self, candidate: StrategyCandidate) -> _BoundStrategy:
+        if self.inspection_permit is not None:
+            raise RuntimeCompatibilityError("inspection runtime permit admits only its frozen release")
         if not isinstance(candidate, StrategyCandidate):
             raise RuntimeCompatibilityError("candidate loading requires a StrategyCandidate")
         _, _, factory = self._declared_factory(candidate.payload, source_root=candidate.source_root)

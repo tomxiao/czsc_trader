@@ -7,6 +7,7 @@ from pathlib import Path
 from dataflows import Dataflows
 
 from .binding import RuntimeBinding
+from .inspection import InspectionRuntimePermit
 from .contracts import StrategyIdentity, TradableWindow
 from .loader import StrategyLoader
 from .models import ExecutionPolicy, RuntimeDefinition, StrategyCandidate, StrategyRelease
@@ -44,8 +45,9 @@ class StrategyRuntime:
         strategy_root: Path | None = None,
         *,
         dataflows: Dataflows | None = None,
+        inspection_permit: InspectionRuntimePermit | None = None,
     ) -> None:
-        self._loader = StrategyLoader(strategy_root)
+        self._loader = StrategyLoader(strategy_root, inspection_permit=inspection_permit)
         self._dataflows = dataflows
 
     def _load(
@@ -115,6 +117,8 @@ class StrategyRuntime:
         )
 
     def create(self, request: StrategyInit) -> StrategyInstance:
+        if self._loader.inspection_permit is not None:
+            self._loader.inspection_permit.validate_path(request.data_dir)
         algorithm = self._load(
             request.source,
             request.symbol,

@@ -33,8 +33,8 @@ from .freeze_contracts import (
     CandidateOrigin, CandidateInspectionReport, CandidateSelectionSubject, FrozenMigrationSelectionSubject,
     DecisionAction, DecisionReference, FreezeCandidateRequest, FreezeFile,
     FreezePlan, FreezeReceipt, FreezeRequestId, FreezeStatus,
-    FreezeSubject, FrozenVersionReference, InspectionCheck, InspectionCheckResult,
-    InspectionCoordinate, InspectionProtocol, InspectionStatus, ResearchDecision,
+    FreezeSubject, FrozenVersionReference, InspectedRelease, InspectionCaseResult, InspectionGoalResult, InspectionReason,
+    InspectionCoordinate, InspectionStatus, ResearchDecision,
     StageAdvanceSubject,
 )
 from .freeze_store import FreezeVersionRequest
@@ -45,8 +45,8 @@ __all__ = [
     "CandidateOrigin", "CandidateInspectionReport", "CandidateSelectionSubject", "FrozenMigrationSelectionSubject",
     "DecisionAction", "DecisionReference", "FreezeCandidateRequest", "FreezeFile",
     "FreezePlan", "FreezeReceipt", "FreezeRequestId", "FreezeStatus",
-    "FreezeSubject", "FrozenVersionReference", "InspectionCheck", "InspectionCheckResult",
-    "InspectionCoordinate", "InspectionProtocol", "InspectionStatus", "ResearchDecision",
+    "FreezeSubject", "FrozenVersionReference", "InspectedRelease", "InspectionCaseResult", "InspectionGoalResult", "InspectionReason",
+    "InspectionCoordinate", "InspectionStatus", "ResearchDecision",
     "StageAdvanceSubject", "FreezeVersionRequest",
     "CandidateKey", "CandidateEvidence", "CandidateRegistrationOrigin", "CandidateRegistration",
     "CandidateDerivation", "CandidateDerivationKind", "CandidateIdentityConflict",

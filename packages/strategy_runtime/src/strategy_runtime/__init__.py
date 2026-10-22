@@ -42,7 +42,10 @@ from .errors import (
     RuntimeExecutionError,
     StrategyRuntimeError,
 )
-from .deployment import StrategyDeployment, deployment_inventory, load_strategy_deployment
+from .deployment import (StrategyDeployment, VerifiedReleasePackage, deployment_inventory,
+                         load_strategy_deployment, load_inspection_deployment, validate_release_package)
+from .inspection import (InspectionControl, InspectionProgress, InspectionStage, InspectionEnvironment,
+                         ImplementationFileIdentity, InspectionRuntimePermit, collect_inspection_environment)
 from .models import (
     CutoffRule,
     DecisionContract,
@@ -68,6 +71,9 @@ from .strategy import StrategyInstance
 __version__ = "0.1.0"
 
 __all__ = [
+    "VerifiedReleasePackage", "load_inspection_deployment", "validate_release_package",
+    "InspectionControl", "InspectionProgress", "InspectionStage", "InspectionEnvironment",
+    "ImplementationFileIdentity", "InspectionRuntimePermit", "collect_inspection_environment",
     "ExecutionPriceBasis", "ExecutionPricing",
     "StrategyInputPlan", "StrategyInputBinding",
     "RuntimeBinding", "RuntimeBindingSpec",

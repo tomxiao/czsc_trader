@@ -164,7 +164,7 @@ class AdviceDecision:
     observation: dict[str, Any] | None = None
 
     @classmethod
-    def from_cli_payload(cls, payload: object) -> "AdviceDecision":
+    def from_cli_payload(cls, payload: object, *, inspection_permit=None) -> "AdviceDecision":
         outer = _object(payload, "CLI payload")
         if outer.get("status") != "PASS":
             raise AdviceContractError("advice command failed")
@@ -259,7 +259,14 @@ class AdviceDecision:
             raise AdviceContractError("strategy release id is inconsistent")
         if re.fullmatch(r"[0-9a-f]{64}", release_hash) is None:
             raise AdviceContractError("strategy release hash has invalid format")
-        if strategy["qualification"] not in {"PAPER_READY", "LIVE_READY"}:
+        if inspection_permit is not None:
+            from strategy_runtime.inspection import InspectionRuntimePermit
+            if type(inspection_permit) is not InspectionRuntimePermit:
+                raise AdviceContractError("invalid inspection permit")
+            inspection_permit.validate_release(str(strategy["release_id"]), release_hash)
+            if strategy["qualification"] != "INSPECTION":
+                raise AdviceContractError("inspection decision requires technical admission")
+        elif strategy["qualification"] not in {"PAPER_READY", "LIVE_READY"}:
             raise AdviceContractError("strategy qualification does not permit paper trading")
         if not str(strategy["name"]).strip():
             raise AdviceContractError("strategy name is required")

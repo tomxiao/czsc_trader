@@ -2,7 +2,7 @@
 
 提出方：RSCH；修订日期：2026-10-22。本版依据用户对两个技术目的的确认及重新定义要求，替代提交`708f1549`中的需求提案。
 
-状态：供DEV后续评审和实施。当前平台尚未实现本版要求；本次不启动开发、检验、冻结、部署或PTE运行，不改写既有研究证据。
+状态：DEV已按[公共契约](../../docs/superpowers/specs/2026-10-22-stage5-public-contracts.md)在`codex/stage5-technical-validation`完成实现及[聚焦验证](../../docs/superpowers/plans/2026-10-22-stage5-technical-validation.md)；本文件保留RSCH需求边界。本次仅使用隔离合成测试，不执行S015研究检验、冻结或正式PTE部署，不改写既有研究证据。
 
 ## 1. 阶段五的定义
 

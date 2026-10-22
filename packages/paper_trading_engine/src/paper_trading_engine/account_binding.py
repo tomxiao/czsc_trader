@@ -1,12 +1,13 @@
 """Validated account-facing identity of an installed paper-trading strategy."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from enum import StrEnum
 import math
 import re
 
 from strategy_manager import Qualification
+from strategy_runtime.inspection import InspectionRuntimePermit
 
 
 @dataclass(frozen=True, slots=True)
@@ -15,10 +16,11 @@ class AccountStrategyBinding:
     version: str
     release_hash: str
     name: str
-    qualification: Qualification
+    qualification: Qualification | None
     selection_data_cutoff: date
     symbol: str
     fee_rate: float
+    inspection_permit: InspectionRuntimePermit | None = field(default=None, kw_only=True, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         for name, pattern in (
@@ -32,7 +34,14 @@ class AccountStrategyBinding:
                 raise ValueError(f"invalid account binding {name}")
         if type(self.name) is not str or not self.name.strip():
             raise ValueError("account binding requires a name")
-        if type(self.qualification) is not Qualification or self.qualification not in {
+        if self.inspection_permit is not None:
+            from strategy_runtime.inspection import InspectionRuntimePermit
+            if type(self.inspection_permit) is not InspectionRuntimePermit:
+                raise ValueError("invalid technical account permit")
+            self.inspection_permit.validate_release(self.release_id, self.release_hash)
+            if self.qualification is not None:
+                raise ValueError("technical account cannot claim formal qualification")
+        elif type(self.qualification) is not Qualification or self.qualification not in {
             Qualification.PAPER_READY,
             Qualification.LIVE_READY,
         }:

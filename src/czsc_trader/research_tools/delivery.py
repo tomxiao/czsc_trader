@@ -9,7 +9,7 @@ from typing import Generic, TypeVar
 from ..backtesting.benchmark_contracts import EvaluationBenchmark
 
 from strategy_manager import CandidateKey
-from strategy_manager import CandidateInspectionReport, DecisionReference, FreezeReceipt
+from strategy_manager import ResearchEvidenceRef, DecisionReference, FreezeReceipt
 from strategy_evaluator import (
     CandidateAssessmentRequest,
     AssessmentPanel,
@@ -48,6 +48,10 @@ class ValidationStatus(StrEnum):
     FAIL = "FAIL"
 
 
+def _schema_version(stage: DeliveryStage) -> int:
+    return 9 if stage is DeliveryStage.INSPECTION else 8
+
+
 @dataclass(frozen=True, slots=True)
 class DeliveryReference(_Record):
     batch: ResearchBatchRef
@@ -78,8 +82,10 @@ class DeliveryDefinition(_Record):
         return self.batch.strategy_id
 
     def _validate(self):
-        if self.revision < 1 or self.schema_version != 8:
+        if self.revision < 1 or self.schema_version != _schema_version(self.stage):
             raise ValueError("invalid delivery revision/schema")
+        if self.stage is DeliveryStage.INSPECTION and self.predecessors:
+            raise ValueError("inspection has no research delivery predecessors")
         _unique(((x.stage,x.revision) for x in self.predecessors), "predecessor")
         for ref in self.predecessors:
             if ref.batch != self.batch:
@@ -452,18 +458,18 @@ class CandidateAssessmentDelivery(_Record):
 
 @dataclass(frozen=True, slots=True)
 class CandidateInspectionDelivery(_Record):
-    source_assessment: DeliveryReference
-    inspection: CandidateInspectionReport
-    inspection_evidence: EvidenceRef
+    inspection: ResearchEvidenceRef
     decisions: tuple[DecisionReference, ...]
     freeze: FreezeReceipt | None
     pending_decisions: tuple[str, ...]
 
     def _validate(self):
-        if self.source_assessment.stage is not DeliveryStage.ASSESSMENT:
-            raise ValueError("inspection delivery requires assessment predecessor")
-        if self.source_assessment.strategy_id != self.inspection.origin.candidate.strategy_id:
-            raise ValueError("inspection delivery candidate family differs")
+        if self.inspection.owner.experiment_id is None:
+            raise ValueError("inspection report requires an experiment owner")
+        if any(item.evidence.owner.strategy_id != self.inspection.owner.strategy_id for item in self.decisions):
+            raise ValueError("inspection decisions must belong to its research batch")
+        if self.freeze is not None and self.freeze.request_id.strategy_id != self.inspection.owner.strategy_id:
+            raise ValueError("inspection freeze must belong to its research batch")
         _unique((x.decision_id for x in self.decisions), "decision ID")
         if self.freeze is None and not self.pending_decisions:
             raise ValueError("unfrozen inspection must identify pending user decisions")
@@ -569,7 +575,7 @@ class DeliveryReceipt(_Record):
     schema_version: int = 8
 
     def _validate(self):
-        if self.schema_version != 8:
+        if self.schema_version != _schema_version(self.reference.stage):
             raise ValueError("unsupported receipt schema")
         if not self.files:
             raise ValueError("receipt requires file manifest")

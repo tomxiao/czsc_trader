@@ -1,8 +1,8 @@
 # 阶段五公共契约、API与存储设计
 
-状态：DEV设计提案，待评审，尚未实施。基线：`ad468f4a`。依据：[RSCH新版需求](../../../research/S015/DEV_STAGE5_REQUIREMENTS.md)。本轮只提交设计，不创建开发分支、不运行检验、不冻结或部署。
+状态：已获用户批准，已在`codex/stage5-technical-validation`实现并通过[聚焦验证](../plans/2026-10-22-stage5-technical-validation.md)。设计基线：`ad468f4a`。依据：[RSCH新版需求](../../../research/S015/DEV_STAGE5_REQUIREMENTS.md)。本次实施只使用隔离合成测试，不冻结S015研究候选或操作生产。
 
-本文代码块为拟议签名和字段定义，不是当前已可调用的API。保留名称表示改造现有入口；新增名称均明确列出。最终实施须同步类型、序列化、调用方和模块文档。
+本文定义已获批准的公共契约。当前调用方式和状态处理见[TDR手册](../../../src/czsc_trader/README.md#8-技术检验用户决定与冻结)；公共类型、序列化及调用方随实施同步。
 
 ## 1. 范围与设计决定
 
@@ -98,6 +98,7 @@ class CandidateInspectionRequest:
     target: FreezeTarget
     protocol: InspectionProtocol
     replays: tuple[InspectionReplay, ...]
+    data_kind: InspectionDataKind          # HISTORICAL或SYNTHETIC，显式来源声明
     additional_files: tuple[FreezeFile, ...] = ()
     remaining_risks: tuple[str, ...] = ()
 
@@ -422,17 +423,17 @@ def get_freeze_result(
 | 正式发布包 | `strategies/<S>/releases/<version>/` | 仅获批冻结提交 |
 | 正式SRT部署回执 | `strategies/deployments/<S>-<version>.json` | 后续独立部署操作，本次检验不写 |
 
-检验证据目录中的对象包括：规范化请求、协议、环境清单、输入描述、登记快照、payload、源码/安装字节、版本记录、绑定、manifest、比较与PTE轨迹、覆盖、计时、计划和最终报告。每个对象仍是单个`<sha>`文件，名称语义由引用和schema说明，不另造可变“最终结果目录”。
+检验证据目录中的对象包括：规范化请求、协议、环境清单、输入描述、登记快照、payload、源码/安装字节、版本记录、绑定、manifest、比较与PTE轨迹、覆盖、计时和最终报告。计划以内嵌强类型对象保存在最终报告中，其安装字节使用显式引用。独立对象均为单个`<sha>`文件，名称语义由引用和schema说明，不另造可变“最终结果目录”。
 
 规范化请求不含ResearchContext/Python实例、绝对路径、DataFrame或pickle。`BacktestExecutionData`被转换为DFLS准备引用、具名请求/角色、内容身份、日历、pricing及市场规则；受检帧必须重读认证资产或与其逐项一致。报告引用的技术材料完整保留；DFLS资产依照引用保留，不强行复制整批数据进入交付包。
 
-每次输入快照记录`data_kind=HISTORICAL | SYNTHETIC`和精确资产身份，禁止把合成轨迹混入真实收益证据。请求hash覆盖规范化内容及协议/目标，排除临时路径、run ID、进度、耗时及输出报告；环境实际身份单独绑定在报告内。
+每次输入快照记录`data_kind=HISTORICAL | SYNTHETIC`和精确资产身份。实施明确由`CandidateInspectionRequest.data_kind: InspectionDataKind`提供强类型声明（同一请求输入须使用同一数据类别），保存`CALLER_DECLARATION`来源标记及DFLS实际供应商元数据，不由平台猜测来源；PTE离线渠道始终标为SYNTHETIC。禁止把合成轨迹混入真实收益证据。请求hash覆盖规范化内容及协议/目标，排除临时路径、run ID、进度、耗时及输出报告；环境实际身份单独绑定在报告内。
 
-临时布局拟定如下，不使用系统临时目录：
+临时布局如下，不使用系统临时目录：
 
 ```text
 .tmp/strategy-inspection/<run_id>/
-  candidate/                              # 受管候选运行工作区
+  candidate/<index>/                      # 候选与冻结版本的等价回放工作区
   repository/
     strategies/<S>/family.json            # 所需元数据；无正式批准事件
     strategies/<S>/versions/<version>.json
@@ -440,17 +441,19 @@ def get_freeze_result(
       src/strategy_runtime/<file>
       runtime_binding.json
       release_manifest.json
-  admission/permit.json                   # 技术许可，与发布包分离
-  admission/deployment.json               # 测试域部署封套
-  scenarios/<scenario_id>/
-    data/                                 # 私有DFLS副本或受管准备空间
-    state/runtime.db                      # 隔离PTE账户事实及技术许可
-    trace/                                # 事件、检查点及诊断
-  faults/<case_id>/                        # 负向场景副本
+  inputs/<index>/data/                    # 按公开DFLS API生成的私有准备空间
+  scenarios/<case_id>/<restart|continuous>/
+    runtime.db                            # 隔离PTE账户事实及技术准入标记
+    trace.jsonl                           # 实际事件与检查点
+    result.json                           # 场景结果
+  scenarios/<case_id>/<restart|continuous>-worker.log # 子进程诊断
+  scenarios/<fault_case_id>/restart-repository/ # 包损坏场景的私有发布副本
+  pte-request.json                         # 显式输入及协议
+  pte-summary.json                         # 结果与覆盖清单
   progress.jsonl
 ```
 
-PTE默认部署加载路径不能自动回退到`admission/`；仅显式隔离上下文读取。所有故障写入作用于私有副本，禁止通过硬链接修改正式输入。恢复从隔离数据库重新读取，不能从上次内存对象复原。测试运行根与账户ID不进入最终发布包hash。
+技术许可通过强类型`InspectionRuntimePermit`显式传递，技术部署封套由共享包认证结果生成；隔离数据库保存`INSPECTION`身份与准入记录。普通部署和账户入口不接受该技术资格。所有故障写入作用于私有副本，禁止通过硬链接修改正式输入。恢复从隔离数据库重新读取，不能从上次内存对象复原。测试运行根与账户ID不进入最终发布包hash。
 
 成功、失败和取消均按“停止工作组件并确认静止 → 收集/认证已有结果 → 发布可获得证据 → 清理临时目录”的顺序收尾。必要时终止受管子进程；不能对仍在变化的数据库或轨迹形成成功快照。无法确认静止则INCOMPLETE并保留诊断。发布失败可保留临时诊断并返回路径。清理只作用于本次已确认的受管根，删除临时根不影响已正式发布的报告或之后的冻结。
 
@@ -474,4 +477,4 @@ PTE默认部署加载路径不能自动回退到`admission/`；仅显式隔离�
 
 实施验收覆盖契约非法输入、哈希和身份不一致、可选基准有/无、两目标状态组合、无历史档案运行、报告发布、冻结幂等、PTE隔离及恢复；性能测量覆盖输入校验到交付发布的完整链路。仓库级全量回归仍按用户安排。
 
-下一步：用户评审以上API、字段、格式版本及路径。获准实施并确认开发分支后，再修改平台代码；本设计文档不是实施或生产操作授权。
+本版已完成实现与聚焦验证，开发分支为`codex/stage5-technical-validation`。下一步由RSCH按本契约开展新检验；S015新检验、精确冻结批准和正式PTE部署沿各自授权边界执行。
