@@ -4,6 +4,7 @@ The inspection trust boundary is supplied separately here; full governance and
 market acceptance are exercised by their own public-path tests and evidence.
 """
 
+from dataclasses import replace
 import json
 from pathlib import Path
 import shutil
@@ -15,9 +16,39 @@ from strategy_runtime import RuntimeCompatibilityError
 from czsc_trader.application import RepositoryContext, validate_release_package
 from czsc_trader.application import runtime_migration as m
 from czsc_trader.application import research_evidence as e
-from strategy_manager import StrategyRegistry, CandidateKey
+from czsc_trader.application.inspection_service import _EvidenceStore
+from strategy_manager import StrategyRegistry, CandidateKey, canonical_sha256
 from strategy_manager import freeze_contracts as f
 from test_runtime_migration import preparations as preparations
+
+
+def _inspected_migration_release(context, owner, stored, candidate, manifest, binding, source):
+    """Persist exact reviewed bytes at the mocked completed-inspection boundary."""
+    version = replace(stored, strategy_payload=json.loads(json.dumps(dict(candidate.payload), default=dict)),
+                      release_hash="0" * 64)
+    version = replace(version, release_hash=canonical_sha256(version.release_payload()))
+    migrated_binding = {**binding, "release_hash": version.release_hash,
+                        "implementation_sha256": candidate.payload["runtime"]["source_sha256"]}
+    store = _EvidenceStore(context, owner)
+    package = context.strategy_root / stored.strategy_id / "releases" / stored.version
+    files = []
+    prefix = manifest["runtime_root"] + "/"
+    for path in sorted(manifest["files"]):
+        if path == "runtime_binding.json":
+            ref = store.put_json(migrated_binding)
+        elif path.startswith(prefix):
+            relative = path.removeprefix(prefix)
+            root = candidate.source_root if relative in candidate.payload["runtime"]["source_files"] else source
+            ref = store.put((root / relative).read_bytes())
+        else:
+            ref = store.put((package / path).read_bytes())
+        files.append(f.FreezeFile(path, ref))
+    inspected_manifest = {key: value for key, value in manifest.items() if key != "package_hash"}
+    inspected_manifest.update(strategy_version_hash=version.release_hash, candidate_package_hash="b" * 64,
+                              files={item.path: item.source.sha256 for item in files})
+    inspected_manifest["package_hash"] = canonical_sha256(inspected_manifest)
+    return f.InspectedRelease(store.put_json(version.to_dict()), store.put_json(inspected_manifest),
+                              tuple(files), version.release_hash, inspected_manifest["package_hash"])
 
 
 @pytest.fixture
@@ -41,7 +72,8 @@ def upgrade(preparations, tmp_path, monkeypatch):
     (strategies / "S002/lifecycle.jsonl").write_text(json.dumps(lifecycle) + "\n")
     ref = f.ResearchEvidenceRef(f.ResearchEvidenceOwner("S002", "EX001_20261020"), "a" * 64 + ".json", "a" * 64)
     candidate = results["S002-v1"].candidate
-    report = SimpleNamespace(plan=SimpleNamespace(sha256="b" * 64))
+    release = _inspected_migration_release(context, ref.owner, stored, candidate, original_manifest, binding, source)
+    report = SimpleNamespace(plan=SimpleNamespace(sha256="b" * 64), release=release)
     # Only replace the completed inspection boundary. Package authentication,
     # exact source publication, CAS, archive, lifecycle and rollback stay real.
     monkeypatch.setattr(m, "_upgrade_inputs", lambda *args: (
@@ -62,6 +94,12 @@ def test_upgrade_prepares_then_preserves_history_archives_and_commits_idempotent
     prepared = m.prepare_frozen_runtime_upgrade(context, request)
     assert _bytes(context.strategy_root) == before
     assert prepared.migrated.version == prepared.original.version == "v1"
+    release = m._upgrade_inputs(context, request)[0].release
+    stage = prepared.plan_path.parent / "staged/S002"
+    assert (stage / "versions/v1.json").read_bytes() == release.version_record.resolve(context.root).read_bytes()
+    assert (stage / "releases/v1/release_manifest.json").read_bytes() == release.manifest.resolve(context.root).read_bytes()
+    for item in release.files:
+        assert (stage / "releases/v1" / item.path).read_bytes() == item.source.resolve(context.root).read_bytes()
     receipt = m.apply_frozen_runtime_upgrade(context, prepared)
     assert receipt.status == "COMMITTED"
     current = StrategyRegistry(context.strategy_root).get_version("S002", "v1")

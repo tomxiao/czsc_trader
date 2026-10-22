@@ -4,6 +4,7 @@ import json
 from test_current_contracts import current_frozen as current_frozen, inspection as inspection, completed as completed, managed_evaluation as managed_evaluation
 
 import pytest
+from strategy_runtime import RuntimeCompatibilityError
 
 from czsc_trader.application import (
     ValidationError,
@@ -22,10 +23,11 @@ def test_strategy_commands_cover_only_installed_srt_versions(current_frozen):
     assert list_installed_strategies(context).result["strategies"] == []
     untracked = repo / "strategies" / "S900" / "releases" / "v1" / "untracked.py"
     untracked.write_text("raise RuntimeError('must not be deployed')\n", encoding="utf-8")
-    with pytest.raises(ValueError, match="untracked or missing files"):
+    with pytest.raises(RuntimeCompatibilityError, match="package inventory differs"):
         validate_release_package(context, "S900-v1")
-    with pytest.raises(ValidationError, match="untracked or missing files"):
+    with pytest.raises(ValidationError, match="package inventory differs") as error:
         deploy_strategy(context, "S900-v1")
+    assert error.value.code == "strategy_deploy_failed"
     assert not (context.strategy_root / "deployments/S900-v1.json").exists()
     untracked.unlink()
     deployed = deploy_strategy(context, "S900-v1")

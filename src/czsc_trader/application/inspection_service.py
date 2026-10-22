@@ -348,7 +348,11 @@ def freeze_candidate(context: RepositoryContext, request: f.FreezeCandidateReque
     selection = read_decision(context.root, report.selection)
     if isinstance(selection.subject, f.FrozenMigrationSelectionSubject) and plan.version == selection.subject.original.version:
         raise ValueError("same-version migration requires the explicit runtime upgrade API")
-    load_candidate(context, plan.origin.candidate)
+    candidate = load_candidate(context, plan.origin.candidate)
+    if candidate.payload["runtime"].get("contract_version") != 2:
+        raise ValueError("freeze requires implementation contract version 2")
+    if candidate.payload.get("decision_feedback", "UNDECLARED") == "UNDECLARED":
+        raise ValueError("freeze requires explicit decision feedback semantics")
     registered = StrategyRegistry(context.research_registry_root).get_candidate_registration(plan.origin.candidate)
     if registered.record_sha256 != plan.origin.registration_sha256:
         raise ValueError("candidate changed since inspection")
