@@ -1,0 +1,25 @@
+{
+  "reviewer": "RSCH read-only subagent full_period_comparison_review",
+  "status": "PASS",
+  "scope": [
+    "415-session same window",
+    "100000 initial cash and zero position",
+    "entire execution_data identical",
+    "per-fill fee=0.001*price*quantity",
+    "daily equity=cash+quantity*close",
+    "final equity reconstructed from fills",
+    "maximum drawdown includes initial capital",
+    "peak/trough/recovery",
+    "both conditions required"
+  ],
+  "net_return": {
+    "S011-v1": 0.915802915,
+    "C0031": 1.069991586
+  },
+  "max_drawdown_magnitude": {
+    "S011-v1": 0.072486637491,
+    "C0031": 0.15073830222
+  },
+  "conclusion": "Return passes, drawdown fails; C0031 does not satisfy the new PTE necessary condition. Other default requirements are not declared fully revalidated.",
+  "terminal_position_note": "C0031 has 140100 research units; S011 cash only. No forced terminal liquidation; marks include unrealized P&L."
+}

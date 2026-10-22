@@ -1,0 +1,119 @@
+{
+  "authorization": "同意，切换RSCH，重做修复后的S011-v1与C0031的全周期比较，重点看收益和回撤，请自主完成。",
+  "prior_requirement": "全周期的收益、回撤均好于S011-v1，其他维度延用默认指标，才值得占用PTE的资源",
+  "window": {
+    "start": "2025-02-06",
+    "end": "2026-10-21",
+    "expected_sessions": 415
+  },
+  "boundary_reason": "S011 restored canonical first execution day; S015 starts earlier, so this is the longest common unchanged-strategy window.",
+  "account": {
+    "initial_cash": 100000,
+    "initial_quantity": 0,
+    "fee_per_side": 0.001,
+    "price_basis": "HFQ_RESEARCH",
+    "lot_size": 100,
+    "execution": "DAILY_RANGE_V3",
+    "force_end_liquidation": false
+  },
+  "primary_checks": [
+    "C0031 net return strictly exceeds S011-v1",
+    "C0031 absolute maximum drawdown strictly below S011-v1"
+  ],
+  "diagnostics": [
+    "year slices from continuous account",
+    "maximum drawdown peak/trough/recovery",
+    "default metrics",
+    "rolling 60-session trade frequency",
+    "252-session rolling returns and drawdowns, step 21"
+  ],
+  "scope": "Two fixed independent TDR accounts; no optimization, new candidate, freeze, deployment or production action.",
+  "default_requirements": "Unchanged. If the necessary comparative gate fails, do not rerun 32 perturbations or fee stress.",
+  "known_limit": "Previously observed history; rerunning does not create independent out-of-sample evidence. CLI buyhold differs from mandate limit-buyhold; do not claim default benchmark acceptance from it.",
+  "resources": {
+    "parallel_accounts": 2,
+    "native_threads_per_account": 1
+  },
+  "identities": {
+    "s011_version": {
+      "schema_version": 5,
+      "strategy_id": "S011",
+      "version": "v1",
+      "release_id": "S011-v1",
+      "parent_version": null,
+      "change_summary": "修复历史输入最低数量：daily/bars为20，market为21；保留原公式、参数、固定起点和交易规则。",
+      "source_experiment": "EX080_20261022",
+      "source_candidate": "C9902",
+      "selection_data_cutoff": "2026-10-21",
+      "forward_start": "2026-10-22",
+      "strategy_payload": {
+        "decision_feedback": "MARKET_INTENT",
+        "parameters": {
+          "entry": 0.325,
+          "exit": 0.025,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.003,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 2,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py",
+            "calculation.py"
+          ],
+          "source_sha256": "f68db302a6debc64a361a59203cdb38916af8e6eab329aeb5a4b668f65532450"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "release_hash": "5da4a999f28aa699ef60641bc26d34f66e124dda8236063aeeea9b18afa9e89e"
+    },
+    "c0031_registration": {
+      "key": {
+        "strategy_id": "S015",
+        "candidate_id": "C0031"
+      },
+      "content_sha256": "6a6e536c6c2f017c43d238633267c05f1f2b9d647aa22d52506d9e8e0a81d580",
+      "source_sha256": "cf52f1bdc5077e7eb38cccf670f54e5f0cfa62cf010854a80951750ae0326bf2",
+      "dependency_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "payload": {
+        "path": "assets/candidates/C0031/payload/2548a1ff4e9d0bdf93657fbe61fa66df9958fe438d6dbe05931633f41bf1b7db.json",
+        "sha256": "2548a1ff4e9d0bdf93657fbe61fa66df9958fe438d6dbe05931633f41bf1b7db"
+      },
+      "source_files": [
+        {
+          "path": "assets/candidates/C0031/source/cf52f1bdc5077e7eb38cccf670f54e5f0cfa62cf010854a80951750ae0326bf2/strategy_runtime/strategies/range_gate_reversal.py",
+          "sha256": "0c074893bb5b57a0fb43a0042741ea6bf10a70936ac0cb1821cbe75e1b655f09"
+        }
+      ],
+      "source_root": "assets/candidates/C0031/source/cf52f1bdc5077e7eb38cccf670f54e5f0cfa62cf010854a80951750ae0326bf2/strategy_runtime",
+      "dependencies": [],
+      "origin": {
+        "experiment_id": "EX003_20261021",
+        "evidence": [
+          {
+            "path": "assets/evidence/EX003_20261021/99521e89055c860ed93c79ed3f089a9af1efefd1c9d2b60a2c71b346722eb6f3.json",
+            "sha256": "99521e89055c860ed93c79ed3f089a9af1efefd1c9d2b60a2c71b346722eb6f3"
+          }
+        ]
+      },
+      "derivation": null,
+      "schema_version": 3,
+      "identity_schema_version": 2
+    },
+    "frozen_files": {
+      "strategies/S011/family.json": "c8b2a9553f0d1befd7043729eb242ba235f679c8dbecf1ed75e1f71b8849f68c",
+      "strategies/S011/lifecycle.jsonl": "b37ed6b41d7e05111c88dd19f79ec2228d3fecb28804c873e463c5c9c1e5a3ec",
+      "strategies/S011/versions/v1.json": "4540d2a6b331189499c28aef635dcd0f47edf0682cd64eb30f0282f17a4a3cc0",
+      "strategies/S011/releases/v1/release_manifest.json": "a1ef62bba63ae5f503f737fd013a600ce3c8e2f98899f972846ab01744ae2a40",
+      "strategies/S011/releases/v1/runtime_binding.json": "2296fa83903000f3132b512a069fb51457d5c558f066824454117e3653eaac52",
+      "strategies/S011/releases/v1/src/strategy_runtime/calculation.py": "edd27ec4d3d5641320ada2774a5661520b35639dc704bcf9e71cf1162dc25571",
+      "strategies/S011/releases/v1/src/strategy_runtime/strategies/s011_reversal.py": "39fcbb5aa5e751c3f286b667eba285d20a6078c7fd85a85dfc5a911c443674af",
+      "strategies/deployments/S011-v1.json": "2feb54b3502085c7b655cb8b6f91059eac895f554acd3ea41568c3c75f2764ce"
+    }
+  }
+}
