@@ -1,11 +1,10 @@
 """S011 warmup admission through real runtime/DFLS contracts, with synthetic prices.
 
-The exchange closure fixture deliberately includes Chinese New Year. Weekdays
-alone incorrectly make the original 30-session requirement appear satisfiable.
-No signal calculator or feature function is mocked.
+The exchange closure fixture deliberately includes Chinese New Year. Coverage
+is measured in trading sessions, not weekdays. All checks use the installed
+S011-v1 release; no signal calculator or feature function is mocked.
 """
 
-from copy import deepcopy
 from dataclasses import replace
 from datetime import date
 import json
@@ -19,15 +18,11 @@ from dataflows import Dataflows, DataSpace, DataStatus, Dataset, PreparePolicy, 
 from dataflows.history_repair import frame_content_sha256
 from dataflows.ohlcv_quality import bind_quality_frame, build_quality_evidence
 from strategy_runtime import (
-    RuntimeExecutionError, StrategyCandidate, StrategyInit, StrategyRelease,
-    StrategyRuntime, TradableWindow, implementation_sha256,
+    RuntimeExecutionError, StrategyInit, StrategyRelease, StrategyRuntime, TradableWindow,
 )
 
 
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE = ROOT / "research/S011/experiments/EX080_20261022/src/strategy_runtime"
-ORIGINAL_HASH = "fee15dd2fcae4484df7610f8aadbec0ab2682da55e608bc0deaa2a080000a535"
-ORIGINAL_ROOT = ROOT / "strategies/revisions/S011-v1" / ORIGINAL_HASH / "strategies"
 CLOCKS = ("10:00", "10:30", "11:00", "11:30", "13:30", "14:00", "14:30", "15:00")
 CN_CLOSED = pd.DatetimeIndex(["2025-01-01", *pd.date_range("2025-01-28", "2025-02-04")])
 US_CLOSED = pd.DatetimeIndex(["2024-12-25", "2025-01-01", "2025-01-09", "2025-01-20"])
@@ -40,13 +35,11 @@ def _sessions(start, end, closed=CN_CLOSED):
 
 
 @pytest.fixture(scope="module")
-def sources():
-    raw = json.loads((ORIGINAL_ROOT / "S011/versions/v1.json").read_text(encoding="utf-8"))
-    payload = deepcopy(raw["strategy_payload"])
-    payload["runtime"]["source_sha256"] = implementation_sha256(
-        tuple(payload["runtime"]["source_files"]), source_root=SOURCE,
-    )
-    return StrategyRelease.from_mapping(raw), StrategyCandidate("S011", "C9902", payload, SOURCE)
+def release():
+    raw = json.loads((ROOT / "strategies/S011/versions/v1.json").read_text(encoding="utf-8"))
+    installed = StrategyRelease.from_mapping(raw)
+    assert installed.release_id == "S011-v1"
+    return installed
 
 
 def _ohlcv(dates, volume):
@@ -104,8 +97,7 @@ def _flows(root, *, defect=None):
 
 
 def _instance(source, flows, root):
-    strategies = ORIGINAL_ROOT if isinstance(source, StrategyRelease) and source.release_hash == ORIGINAL_HASH else ROOT / "strategies"
-    return StrategyRuntime(strategies, dataflows=flows).create(StrategyInit(source, WINDOW, root / "runtime"))
+    return StrategyRuntime(ROOT / "strategies", dataflows=flows).create(StrategyInit(source, WINDOW, root / "runtime"))
 
 
 def _plan(instance, flows):
@@ -115,38 +107,24 @@ def _plan(instance, flows):
     return instance.plan_inputs(flows.fetch(request, prepared=calendar.reference))
 
 
-def test_real_holiday_boundary_rejects_v1_but_repaired_candidate_computes(sources, tmp_path):
+def test_installed_v1_computes_at_real_holiday_boundary(release, tmp_path):
     assert len(_sessions("2024-12-26", "2025-02-05")) == 23
     assert len(pd.bdate_range("2024-12-26", "2025-02-05")) == 30
-    original, candidate = sources
     flows = _flows(tmp_path)
-    old = _instance(original, flows, tmp_path / "old")
-    old_plan = _plan(old, flows)
-    rejected = flows.prepare(tuple(old_plan.requests.values()), policy=PreparePolicy.REUSE)
-    failures = [item for item in rejected.items if not item.ready]
-    assert not rejected.ready
-    assert len(failures) == 3  # daily, bars and market, independently of SPX.
-    for item in failures:
-        assert item.status is DataStatus.INCOMPLETE
-        context = item.error.context
-        assert context.get("minimum_sessions", context.get("minimum_observations")) == 30
-        assert context.get("actual_sessions", context.get("actual_observations")) == 23
-    with pytest.raises(RuntimeExecutionError, match="fewer.*required"):
-        old.prepare_data(policy=PreparePolicy.REUSE)
-    repaired = _instance(candidate, flows, tmp_path / "repaired")
-    repaired.prepare_data(policy=PreparePolicy.REUSE)
-    history = repaired.inspect_signals()
+    installed = _instance(release, flows, tmp_path)
+    installed.prepare_data(policy=PreparePolicy.REUSE)
+    history = installed.inspect_signals()
     assert history.index.tolist() == [pd.Timestamp("2025-02-05")]
     assert np.isfinite(history[["tail", "market", "spx", "risk5", "score"]].to_numpy()).all()
-    assert repaired.input_binding.plan.requests["daily"].start == "2024-12-26"
-    assert repaired.input_binding.plan.requests["spx"].start == "2024-12-16"
+    assert installed.input_binding.plan.requests["daily"].start == "2024-12-26"
+    assert installed.input_binding.plan.requests["spx"].start == "2024-12-16"
 
 
 @pytest.mark.parametrize("name,minimum", [("daily", 20), ("bars", 20), ("market", 21), ("spx", 30)])
 @pytest.mark.parametrize("deficit", [0, 1])
-def test_declared_coverage_accepts_exact_minimum_and_rejects_one_less(sources, tmp_path, name, minimum, deficit):
+def test_declared_coverage_accepts_exact_minimum_and_rejects_one_less(release, tmp_path, name, minimum, deficit):
     flows = _flows(tmp_path)
-    instance = _instance(sources[1], flows, tmp_path)
+    instance = _instance(release, flows, tmp_path)
     request = _plan(instance, flows).requests[name]
     assert request.coverage.minimum_observations == request.coverage.minimum_sessions == minimum
     # Slice the requested interval, retaining its actual runtime-declared coverage.
@@ -164,9 +142,9 @@ def test_declared_coverage_accepts_exact_minimum_and_rejects_one_less(sources, t
 
 
 @pytest.mark.parametrize("defect", ["incomplete_bars", "nonfinite_market"])
-def test_lower_minimum_does_not_admit_invalid_inputs(sources, tmp_path, defect):
+def test_declared_coverage_does_not_admit_invalid_inputs(release, tmp_path, defect):
     flows = _flows(tmp_path, defect=defect)
-    instance = _instance(sources[1], flows, tmp_path)
+    instance = _instance(release, flows, tmp_path)
     plan = _plan(instance, flows)
     result = flows.prepare(tuple(plan.requests.values()), policy=PreparePolicy.REUSE)
     assert not result.ready
@@ -176,16 +154,3 @@ def test_lower_minimum_does_not_admit_invalid_inputs(sources, tmp_path, defect):
     assert "incomplete" in failed[0].error.message if defect == "incomplete_bars" else "invalid numeric" in failed[0].error.message
     with pytest.raises(RuntimeExecutionError, match="incomplete|invalid numeric"):
         instance.prepare_data(policy=PreparePolicy.REUSE)
-
-
-def test_installed_v1_computes_at_real_holiday_boundary(sources, tmp_path):
-    """The installed package, not only its candidate, must admit the repaired start."""
-    raw = json.loads((ROOT / "strategies/S011/versions/v1.json").read_text(encoding="utf-8"))
-    release = StrategyRelease.from_mapping(raw)
-    assert release.release_id == "S011-v1" and release.release_hash != ORIGINAL_HASH
-    flows = _flows(tmp_path)
-    installed = _instance(release, flows, tmp_path / "installed")
-    candidate = _instance(sources[1], flows, tmp_path / "candidate")
-    installed.prepare_data(policy=PreparePolicy.REUSE)
-    candidate.prepare_data(policy=PreparePolicy.REUSE)
-    pd.testing.assert_frame_equal(installed.inspect_signals(), candidate.inspect_signals())
