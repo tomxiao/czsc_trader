@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-- 身份RSCH；标的159326.SZ；分支`codex/159326-new-research`。用户已明确选择C0031进入阶段五；技术检验及INSPECTION/1交付完成，精确冻结计划待批准；收尾概览刷新失败，详见文末。
+- 身份RSCH；标的159326.SZ；分支`codex/159326-new-research`。阶段五开发已合并，C0031按新契约完成行为等价与真实隔离PTE运行，两项目标PASS；[INSPECTION/2](deliveries/INSPECTION/2/report.md)已发布，FULL与REPORT_PUBLICATION均PASS。精确S015-v1冻结计划待批准。下文EX006概览失败等均为历史记录；本轮没有刷新全研究概览。
 - 阶段三目标已完成；来源交付[CANDIDATES/2](deliveries/CANDIDATES/2/report.md)，业务COMPLETE、FULL与实验REPORT_PUBLICATION校验PASS。阶段四EX005已完成，完整覆盖98个交接身份；阶段四交付为[ASSESSMENT/1](deliveries/ASSESSMENT/1/report.md)，FULL与REPORT_PUBLICATION均PASS。
 - 开发池固定2025-01-02至2026-10-21共434日，此前75日仅预热，保留完整2025自然年。全部均属已见开发信息，没有独立封存验证结论。
 
@@ -107,3 +107,15 @@ EX003及CANDIDATES/1原件保持不可变。用户随后明确批准阶段三补
 - 用户要求细化公共契约、API及存储路径，设计见[阶段五公共契约、API与存储设计](../../docs/superpowers/specs/2026-10-22-stage5-public-contracts.md)。文档中的新类型和签名均为拟议契约，尚未实现。
 - 设计覆盖直接候选选择、技术回放与可选原结果、真实PTE隔离场景、受检包及报告身份、INSPECTION发布、精确批准和冻结事务。明确检验/发布/冻结不依赖阶段一至四档案。
 - 当前仅修改设计及交接文档，未创建开发分支、修改平台代码、运行检验、冻结、部署或操作生产。下一步评审契约及格式版本，实施范围和分支仍待用户批准。
+
+## 新契约阶段五完成（EX007，2026-10-22）
+
+- 用户同意继续后，将`codex/stage5-technical-validation`提交`0efb580d`快进合并回本研究分支，并切换RSCH。上述设计待实施等表述为历史时点，当前使用已实现公共API。
+- 新实验[EX007](experiments/EX007_20261022/report.md)保留C0031原内容及输入。行为等价与隔离PTE运行均PASS，正式检验33.689秒；标准0.1%及双倍0.2%费用各434日，候选与最终包差异0，两原baseline差异0。
+- PTE事前定义14个检查点，重启与连续运行各16条轨迹一致；包损坏、缺失输入、未来输入三个故障均按预期拒绝且无新增订单。六项必需能力覆盖通过，多档仓位变化对该二元周期策略不适用。合成成交场景最终现金94239.7676元、持仓0，仅为技术预期值。
+- 独立复核当前显式26个技术引用通过，不执行全历史研究审计。交付装配7.025秒，独立本节点FULL校验2.940秒，实验REPORT_PUBLICATION通过。见[发布回执](experiments/EX007_20261022/others/delivery_validation.json)、[独立复核](experiments/EX007_20261022/others/review.json)。没有全仓回归或全研究概览刷新。
+- [INSPECTION/2](deliveries/INSPECTION/2/report.md)内容身份`de35000fc598892ecdb5b92c23d02375fac8d67259b7c96f1b1fada005bdba56`；交付schema9、技术报告schema2。EX006与INSPECTION/1原件保留，不作为本次审批对象。
+- 候选内容`6a6e536c6c2f017c43d238633267c05f1f2b9d647aa22d52506d9e8e0a81d580`；本次技术报告`98215325336015111500f544f5915656534bf495f48aa6578ed992146ceea8f1`；精确计划`64fe00d612cb46299cf9bde3e54599c2815269b20a5210d3c89147afd82521d1`；发布身份`3abf72327d5f959f7d492b6f0fee94d10f18369c079075ad2943bc57f98a7a90`；包身份`d06cb3654debb967c1e479c81f3242ad2869f9ac2c514be6cd1f934c286a15e9`。
+- 下一步申请批准[精确冻结对象](experiments/EX007_20261022/others/freeze_approval_subject.json)及[冻结计划](experiments/EX007_20261022/others/freeze_plan.json)，将同一受检包冻结为S015-v1，无父版本；批准后才能执行冻结并发布带回执的新修订。选择截止2026-10-21，前瞻数据分界2026-10-22，不表示PTE已启动。
+- 尚未创建冻结版本，未部署、启用PTE或操作生产，也未合并master、打tag或推送。已见样本、选择偏差、持有天数未扰动、价格范围成交及历史时钟等限制继续保留。
+- 需独立保存`assets/data/`、`assets/evidence/EX007_20261022/`、`assets/runs/EX007_20261022/`、`assets/deliveries/INSPECTION/2/`及显式引用的EX003/EX005/EX006资产；Git只保存报告、协议、脚本、决定和公开引用，不包含全部受检包与输入证据。

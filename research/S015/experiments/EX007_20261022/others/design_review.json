@@ -1,0 +1,30 @@
+{
+  "status": "DESIGN_PASS",
+  "reviewer": "independent RSCH subagent s015_inspection_review",
+  "timing": "before formal prepare and all A/B execution",
+  "blocking_findings": [],
+  "checks": [
+    "C0031 fixed content and original 434 sessions; standard .001 and stress .002 costs",
+    "Explicit original baselines; no search, expanded data, freezing or production calls",
+    "PTE expectations independently derived from source rules and Decimal arithmetic",
+    "14 checkpoints, partial-fill restart/control, repeated decision/report and three negative cases",
+    "Published protocol and source hashes checked before execution; no output-derived expected values"
+  ],
+  "arithmetic": {
+    "limit_price": "1.129",
+    "cycle_quantity": 88400,
+    "partial_quantity": 44200,
+    "reserved_cash": "99903.4036",
+    "initial_available_cash": "96.5964",
+    "partial_available_cash": "848.7478",
+    "partial_frozen_cash": "49951.7018",
+    "fully_bought_cash": "1600.8992",
+    "final_cash": "94239.7676"
+  },
+  "limits": [
+    "Design review is not an execution PASS",
+    "One historical cycle and declared faults; synthetic fills; no live broker or liquidity conclusion",
+    "forward_start is an evidence boundary, not an activation date",
+    "POSITION_CHANGE is not applicable to binary intent with a fixed cycle quantity"
+  ]
+}
