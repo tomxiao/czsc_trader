@@ -1,6 +1,6 @@
 # 阶段五公共契约、API与存储设计
 
-状态：已获用户批准，已在`codex/stage5-technical-validation`实现并通过[聚焦验证](../plans/2026-10-22-stage5-technical-validation.md)。设计基线：`ad468f4a`。依据：[RSCH新版需求](../../../research/S015/DEV_STAGE5_REQUIREMENTS.md)。本次实施只使用隔离合成测试，不冻结S015研究候选或操作生产。
+状态：已获用户批准，已在`codex/stage5-technical-validation`实现并通过[聚焦验证](../plans/2026-10-22-stage5-technical-validation.md)。设计基线：`ad468f4a`。依据：用户确认的行为等价与PTE运行检验双目标。本次实施只使用隔离合成测试，不冻结S015研究候选或操作生产。
 
 本文定义已获批准的公共契约。当前调用方式和状态处理见[TDR手册](../../../src/czsc_trader/README.md#8-技术检验用户决定与冻结)；公共类型、序列化及调用方随实施同步。
 
