@@ -26,6 +26,8 @@ from strategy_runtime import (
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "research/S011/experiments/EX080_20261022/src/strategy_runtime"
+ORIGINAL_HASH = "fee15dd2fcae4484df7610f8aadbec0ab2682da55e608bc0deaa2a080000a535"
+ORIGINAL_ROOT = ROOT / "strategies/revisions/S011-v1" / ORIGINAL_HASH / "strategies"
 CLOCKS = ("10:00", "10:30", "11:00", "11:30", "13:30", "14:00", "14:30", "15:00")
 CN_CLOSED = pd.DatetimeIndex(["2025-01-01", *pd.date_range("2025-01-28", "2025-02-04")])
 US_CLOSED = pd.DatetimeIndex(["2024-12-25", "2025-01-01", "2025-01-09", "2025-01-20"])
@@ -39,7 +41,7 @@ def _sessions(start, end, closed=CN_CLOSED):
 
 @pytest.fixture(scope="module")
 def sources():
-    raw = json.loads((ROOT / "strategies/S011/versions/v1.json").read_text(encoding="utf-8"))
+    raw = json.loads((ORIGINAL_ROOT / "S011/versions/v1.json").read_text(encoding="utf-8"))
     payload = deepcopy(raw["strategy_payload"])
     payload["runtime"]["source_sha256"] = implementation_sha256(
         tuple(payload["runtime"]["source_files"]), source_root=SOURCE,
@@ -102,7 +104,8 @@ def _flows(root, *, defect=None):
 
 
 def _instance(source, flows, root):
-    return StrategyRuntime(ROOT / "strategies", dataflows=flows).create(StrategyInit(source, WINDOW, root / "runtime"))
+    strategies = ORIGINAL_ROOT if isinstance(source, StrategyRelease) and source.release_hash == ORIGINAL_HASH else ROOT / "strategies"
+    return StrategyRuntime(strategies, dataflows=flows).create(StrategyInit(source, WINDOW, root / "runtime"))
 
 
 def _plan(instance, flows):
@@ -173,3 +176,16 @@ def test_lower_minimum_does_not_admit_invalid_inputs(sources, tmp_path, defect):
     assert "incomplete" in failed[0].error.message if defect == "incomplete_bars" else "invalid numeric" in failed[0].error.message
     with pytest.raises(RuntimeExecutionError, match="incomplete|invalid numeric"):
         instance.prepare_data(policy=PreparePolicy.REUSE)
+
+
+def test_installed_v1_computes_at_real_holiday_boundary(sources, tmp_path):
+    """The installed package, not only its candidate, must admit the repaired start."""
+    raw = json.loads((ROOT / "strategies/S011/versions/v1.json").read_text(encoding="utf-8"))
+    release = StrategyRelease.from_mapping(raw)
+    assert release.release_id == "S011-v1" and release.release_hash != ORIGINAL_HASH
+    flows = _flows(tmp_path)
+    installed = _instance(release, flows, tmp_path / "installed")
+    candidate = _instance(sources[1], flows, tmp_path / "candidate")
+    installed.prepare_data(policy=PreparePolicy.REUSE)
+    candidate.prepare_data(policy=PreparePolicy.REUSE)
+    pd.testing.assert_frame_equal(installed.inspect_signals(), candidate.inspect_signals())

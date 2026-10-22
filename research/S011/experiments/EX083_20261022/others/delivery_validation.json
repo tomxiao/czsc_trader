@@ -1,0 +1,48 @@
+{
+  "delivery": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S011"
+    },
+    "stage": "INSPECTION",
+    "revision": 3,
+    "content_sha256": "4f51fd0c4079d17660bc4b336ad21af05dd9106ec2d94712732e9e1592a113c9"
+  },
+  "full": {
+    "type": "DeliveryValidation",
+    "status": "PASS",
+    "scope": "FULL",
+    "issues": [],
+    "stats": {
+      "type": "DeliveryValidationStats",
+      "unique_deliveries": 1,
+      "reference_visits": 1,
+      "recursive_expansions": 1,
+      "semantic_reuses": 0,
+      "files_hashed": 149,
+      "bytes_hashed": 15378914,
+      "elapsed_seconds": 1.8112772000022233
+    }
+  },
+  "experiment": {
+    "type": "ExperimentValidation",
+    "status": "PASS",
+    "scope": "REPORT_PUBLICATION",
+    "issues": [],
+    "report": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S011",
+        "experiment_id": "EX083_20261022"
+      },
+      "evidence_id": "94ab10ce1c6ba1ac4b8cb1f7fd5a6a15fa6781eff54c7abc741aa3053293e57a.json",
+      "sha256": "94ab10ce1c6ba1ac4b8cb1f7fd5a6a15fa6781eff54c7abc741aa3053293e57a",
+      "media_type": "application/json",
+      "name": "experiment-report",
+      "schema": "experiment_report",
+      "schema_version": 1
+    }
+  }
+}
