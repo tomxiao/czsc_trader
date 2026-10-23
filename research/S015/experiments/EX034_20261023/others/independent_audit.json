@@ -1,0 +1,40 @@
+{
+  "status": "PASS",
+  "checks": 33554,
+  "features_recomputed": 434,
+  "event_rows_reexecuted": 1386,
+  "structure_events_checked": 28,
+  "bootstrap_contrasts": 9,
+  "bootstrap_draws_each": 499,
+  "frequency_series_dynamic_programming": 11,
+  "windows_each": 375,
+  "source_sha256": "8f100671f21f73e615fa5375cc8d6f7aea5b9b4bf0324ca3dc0d15899dafb2ce",
+  "frozen_source_sha256": "2016da5963cd36788b7cac92a31ae87ea9b696962f029921ea9de90874e7a20e",
+  "data_identities": {
+    "etf.ohlcv": "c8a95f32246e33682c33dddc776337103de437d712b5fc5d85edec2bbfe1e223",
+    "etf.unadjusted_daily": "86ef09152a3cf19de3d05da1c18af2ea9b070926008a0dd197306488292b8f92",
+    "etf.unadjusted_intraday": "6f13f697b5770b96484b9f569d7636743297382bd95fe193d004f789ed26856a"
+  },
+  "scope": [
+    "Authenticated frozen protocol/source and prior event evidence",
+    "Independent scalar features from hash-pinned prepared DFLS data",
+    "Public TXE execution reconstruction and fee arithmetic for all prior and additional event rows",
+    "Structure horizon and same-event h5 pairing",
+    "All group, segment, matching, bootstrap, opportunity-loss denominators",
+    "Independent dynamic-programming optimum versus greedy frequency upper bound"
+  ],
+  "findings": [
+    "No implementation discrepancy found",
+    "Frequency bound is mathematical maximum for recorded fixed event intervals with same-day turnover allowed; any feasible subset is bounded above",
+    "Matching uses contemporaneous known features but is descriptive and reuses controls; not a forward predictor or causal identification",
+    "Structure exit horizon is a maximum decision horizon; unfilled market exits may occur later under retry contract"
+  ],
+  "limitations": [
+    "Not independent out-of-sample validation; repeated development-pool exposure",
+    "Audit shares public TXE engine and prepared-data loader, not independently validated engine internals",
+    "No supplier historical publication-clock or revised-price PIT proof",
+    "Independent overlapping events do not form an account; sums are not portfolio PnL",
+    "Frequency upper bound only rules out these frozen entries/exits, not every alternative price-action strategy",
+    "No new strategy qualification, continuous account or search"
+  ]
+}

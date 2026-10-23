@@ -1,0 +1,296 @@
+{
+  "delivery": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S015"
+    },
+    "stage": "COMPONENTS",
+    "revision": 11,
+    "content_sha256": "82b56cccf799126a143d3cbe448b073fc06aa9181b06045f861f4a791dd5aed3"
+  },
+  "assembly": {
+    "type": "DeliveryValidation",
+    "status": "PASS",
+    "scope": "FULL",
+    "issues": [],
+    "stats": {
+      "type": "DeliveryValidationStats",
+      "unique_deliveries": 11,
+      "reference_visits": 12,
+      "recursive_expansions": 11,
+      "semantic_reuses": 1,
+      "files_hashed": 4122,
+      "bytes_hashed": 566058510,
+      "elapsed_seconds": 4.862612099968828,
+      "authentication_seconds": 0.0,
+      "recomputation_seconds": 0.0,
+      "final_recheck_seconds": 1.0102095999754965,
+      "accounts_authenticated": 0,
+      "account_reuses": 0,
+      "file_read_task_seconds": 0.5341868966352195,
+      "file_hash_task_seconds": 1.0288961040787399,
+      "package_load_seconds": 0.7748094000853598
+    }
+  },
+  "experiment": {
+    "type": "ExperimentValidation",
+    "status": "PASS",
+    "scope": "REPORT_PUBLICATION",
+    "issues": [],
+    "report": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX034_20261023"
+      },
+      "evidence_id": "bb6ff8920229b98df76a1f449ac2929f1728218d9012cd3677a92037859a5e8b.json",
+      "sha256": "bb6ff8920229b98df76a1f449ac2929f1728218d9012cd3677a92037859a5e8b",
+      "media_type": "application/json",
+      "name": "experiment-report",
+      "schema": "experiment_report",
+      "schema_version": 1
+    }
+  },
+  "report": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX034_20261023"
+    },
+    "evidence_id": "bb6ff8920229b98df76a1f449ac2929f1728218d9012cd3677a92037859a5e8b.json",
+    "sha256": "bb6ff8920229b98df76a1f449ac2929f1728218d9012cd3677a92037859a5e8b",
+    "media_type": "application/json",
+    "name": "experiment-report",
+    "schema": "experiment_report",
+    "schema_version": 1
+  },
+  "materials": {
+    "src/deliver.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX034_20261023"
+      },
+      "evidence_id": "7940fc33e53891317512d0181c9c7172befe158b01abea19c3c8d13f460e1c39.py",
+      "sha256": "7940fc33e53891317512d0181c9c7172befe158b01abea19c3c8d13f460e1c39",
+      "media_type": "text/x-python",
+      "name": "deliver",
+      "schema": null,
+      "schema_version": null
+    },
+    "src/independent_audit.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX034_20261023"
+      },
+      "evidence_id": "8f100671f21f73e615fa5375cc8d6f7aea5b9b4bf0324ca3dc0d15899dafb2ce.py",
+      "sha256": "8f100671f21f73e615fa5375cc8d6f7aea5b9b4bf0324ca3dc0d15899dafb2ce",
+      "media_type": "text/x-python",
+      "name": "independent_audit",
+      "schema": null,
+      "schema_version": null
+    },
+    "src/study.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX034_20261023"
+      },
+      "evidence_id": "2016da5963cd36788b7cac92a31ae87ea9b696962f029921ea9de90874e7a20e.py",
+      "sha256": "2016da5963cd36788b7cac92a31ae87ea9b696962f029921ea9de90874e7a20e",
+      "media_type": "text/x-python",
+      "name": "study",
+      "schema": null,
+      "schema_version": null
+    },
+    "protocols/price_path.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX034_20261023"
+      },
+      "evidence_id": "3b20ba68e618c1e1189e1b4a5148a2c3c9fd0e5f50f91488bd74ee59c2f1cc40.json",
+      "sha256": "3b20ba68e618c1e1189e1b4a5148a2c3c9fd0e5f50f91488bd74ee59c2f1cc40",
+      "media_type": "application/json",
+      "name": "price_path",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/additional_events.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX034_20261023"
+      },
+      "evidence_id": "929b439dfc1cc2438d262f22a89325887e34ead9f9ffe0909c371f444d4b6e5f.csv",
+      "sha256": "929b439dfc1cc2438d262f22a89325887e34ead9f9ffe0909c371f444d4b6e5f",
+      "media_type": "text/csv",
+      "name": "additional_events",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/adjusted_prices.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX034_20261023"
+      },
+      "evidence_id": "376f846c012eb898234ee661b26e0e095791cde047c9b595bbae4599dffb9c07.csv",
+      "sha256": "376f846c012eb898234ee661b26e0e095791cde047c9b595bbae4599dffb9c07",
+      "media_type": "text/csv",
+      "name": "adjusted_prices",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/checks.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX034_20261023"
+      },
+      "evidence_id": "349dfa391dfd3b495066c0b98c3c3dd9ed8b369480f3b00e45295b80b8e4f6ee.json",
+      "sha256": "349dfa391dfd3b495066c0b98c3c3dd9ed8b369480f3b00e45295b80b8e4f6ee",
+      "media_type": "application/json",
+      "name": "checks",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/descriptive_summary.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX034_20261023"
+      },
+      "evidence_id": "ddfb96af882d46553a3e04f716b537be50a178d674daa982c6bb76797c3b8e9a.json",
+      "sha256": "ddfb96af882d46553a3e04f716b537be50a178d674daa982c6bb76797c3b8e9a",
+      "media_type": "application/json",
+      "name": "descriptive_summary",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/exit_pairs.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX034_20261023"
+      },
+      "evidence_id": "ddb407377dbdcb56aef9d40992877b75b80e72382bfe720fb0822c1a2897658b.csv",
+      "sha256": "ddb407377dbdcb56aef9d40992877b75b80e72382bfe720fb0822c1a2897658b",
+      "media_type": "text/csv",
+      "name": "exit_pairs",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/features.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX034_20261023"
+      },
+      "evidence_id": "ccee85e21381f45d56dc51944bb28b2f0f06118d9e3dfc4e29ac2b74b53f833d.csv",
+      "sha256": "ccee85e21381f45d56dc51944bb28b2f0f06118d9e3dfc4e29ac2b74b53f833d",
+      "media_type": "text/csv",
+      "name": "features",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/independent_audit.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX034_20261023"
+      },
+      "evidence_id": "e191bb71e7dae1558110f67ea510f98b156b6c27e9115815ea5879b9db35466e.json",
+      "sha256": "e191bb71e7dae1558110f67ea510f98b156b6c27e9115815ea5879b9db35466e",
+      "media_type": "application/json",
+      "name": "independent_audit",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/input_refs.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX034_20261023"
+      },
+      "evidence_id": "c87df386bae569f08893a450c49d2bced6d62dce2d9b3f61fcca92a45a03d775.json",
+      "sha256": "c87df386bae569f08893a450c49d2bced6d62dce2d9b3f61fcca92a45a03d775",
+      "media_type": "application/json",
+      "name": "input_refs",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/labeled_events.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX034_20261023"
+      },
+      "evidence_id": "919fe3c963ffa0d5b65a3dd097ee69adcb7d42f48d837dca7b2390d5e583f67d.csv",
+      "sha256": "919fe3c963ffa0d5b65a3dd097ee69adcb7d42f48d837dca7b2390d5e583f67d",
+      "media_type": "text/csv",
+      "name": "labeled_events",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/protocol_refs.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX034_20261023"
+      },
+      "evidence_id": "7f15ab0bc65b6be856d856f4c2c00871b4a26c077b9654e7a63ebb0c950325d5.json",
+      "sha256": "7f15ab0bc65b6be856d856f4c2c00871b4a26c077b9654e7a63ebb0c950325d5",
+      "media_type": "application/json",
+      "name": "protocol_refs",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/results.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX034_20261023"
+      },
+      "evidence_id": "e408162d94bdf0dba4215d1f914a94dc7cdf273cb8473b957d633ed14708d907.json",
+      "sha256": "e408162d94bdf0dba4215d1f914a94dc7cdf273cb8473b957d633ed14708d907",
+      "media_type": "application/json",
+      "name": "results",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/structure_events.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX034_20261023"
+      },
+      "evidence_id": "e5d9c18dfd0972efc028a864f460b1e5b119ec26be59c6348ce2fc09bd85465d.csv",
+      "sha256": "e5d9c18dfd0972efc028a864f460b1e5b119ec26be59c6348ce2fc09bd85465d",
+      "media_type": "text/csv",
+      "name": "structure_events",
+      "schema": null,
+      "schema_version": null
+    }
+  }
+}

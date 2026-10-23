@@ -1,0 +1,76 @@
+{
+  "authorization": "用户同意新增1轮阶段二价格路径固定对照，先冻结定义再执行；无阶段三账户或搜索授权。",
+  "budget": {
+    "rounds": 1,
+    "parameter_searches": 0,
+    "continuous_accounts": 0,
+    "new_external_sources": 0
+  },
+  "scope": "原S015 MANDATE/3、159326.SZ、75日预热及434日开发池至2026-10-21；415日门槛不变，本轮不验收账户。已反复观察的开发池，不是独立验证。",
+  "mechanism": "突破既有价格边界后得到接受，可能有尚未完成的向上重新定价；跌回原区间为竞争解释。价格不能证明参与者身份或资金因果。",
+  "features": "使用认证HFQ日OHLC保持分红前后边界一致。b收盘严格高于b之前20日High最大值U，b为突破；T=b+2统一观察完成。T-1和T两次收盘都>U为accepted，否则rejected，等于U视为跌回。每个b独立标记，不事后挑选、不因后续突破重置旧U；相邻锚点可能同一行情。",
+  "retest": "accepted且min(Low[b+1],Low[b+2])<=U+0.25*ATR20[b之前]，且Close[T]>Close[T-1]；仅预声明次级子集。ATR为此前20日TR均值，TR=max(H-L,abs(H-prevC),abs(L-prevC))。",
+  "labels": "复用EX026已认证独立10万元事件，T+1原1%限价买，双侧0.1%费、原tick/lot/HFQ/DAILY_RANGE_V3/卖出重试。主h3；h1/h5为固定期限诊断；入场日唯一h1有成交标记的entry_net，仅扣买费。未成交、右截尾单列。",
+  "structure_exit": "仅accepted事件：T+1起每日收盘检查Close<U或等于U，首次失效当晚决定次日市场卖；最迟T+5决定T+6卖，最多5日。未到失效/最长观察则沿用h5右截尾。与同事件h5配对；不在买入日即时止损。新h2/h4仅用于补齐原公共TXE事件标签，不构建连续账户。",
+  "contrasts": [
+    "accepted-rejected at h3 primary",
+    "accepted-rejected at h1/h5 and entry mark",
+    "retest-(accepted without retest) secondary, same four targets",
+    "accepted structure_exit-h5 paired secondary"
+  ],
+  "matching": "每个accepted在同一个固定时间段的rejected中找最近对照；要求abs(r5差)<=0.05且vol20比在[0.5,2]，距离=(r5差/0.05)^2+(log(vol比)/log(2))^2；平局较早position；允许复用并报告独立对照数。只使用双方标签有效样本，按accepted等权；不匹配结果，不足不填补。另报告r5/vol20/确认涨幅/突破幅度平衡，不能主张因果。",
+  "statistics": "全期及原5固定段；损益金额及笔数分别报告。过滤掉rejected的亏损识别/盈利遗漏以全部anchor为分母；另报只选accepted/retest相对全434日的机会代价。事件重叠，金额不能作为账户损益。主对比和结构配对在完整434日轴上作20日块499次bootstrap seed13；区间不作为经济硬门，不校正历史选择。",
+  "frequency": "按各期限真实事件入/退出日，在每个滚动60日窗口的退出事件中，以最早退出贪心求互不重叠区间最大数量；允许同日卖后买作为乐观上界。非连续账户，不宣称真实频率达标。",
+  "segments": [
+    [
+      0,
+      100
+    ],
+    [
+      100,
+      184
+    ],
+    [
+      184,
+      268
+    ],
+    [
+      268,
+      352
+    ],
+    [
+      352,
+      434
+    ]
+  ],
+  "verification": "全部434日前缀特征核对；旧h1/h3/h5所选事件逐字段复算；独立审计状态、损益、结构退出、匹配、频率；源代码先发布后计算。",
+  "limitations": "HFQ历史修订和17:30供应商历史可得性未认证；日区间撮合无容量。没有新资金输入或源查询；结构和阈值选择属于开发选择历史。",
+  "prior_source": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX026_20261023"
+    },
+    "evidence_id": "564a82fbdfd2919e9bcbac7a43d9395efe68dc2647dda02b7679afdc30817001.py",
+    "sha256": "564a82fbdfd2919e9bcbac7a43d9395efe68dc2647dda02b7679afdc30817001",
+    "media_type": "text/x-python",
+    "name": "study",
+    "schema": null,
+    "schema_version": null
+  },
+  "prior_labels": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX026_20261023"
+    },
+    "evidence_id": "b14e2764684adbafd4cad6203a87ed3e587f8c928833eb7b89d9e33a50e52653.csv",
+    "sha256": "b14e2764684adbafd4cad6203a87ed3e587f8c928833eb7b89d9e33a50e52653",
+    "media_type": "text/csv",
+    "name": "events",
+    "schema": null,
+    "schema_version": null
+  }
+}
