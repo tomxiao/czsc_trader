@@ -1,0 +1,576 @@
+{
+  "delivery": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S015"
+    },
+    "stage": "CANDIDATES",
+    "revision": 4,
+    "content_sha256": "32cda315e6f0fdd57a7610b389ef14df84ab8a73666f588c3cca9dea48d0ab6a"
+  },
+  "assembly": {
+    "type": "DeliveryValidation",
+    "status": "PASS",
+    "scope": "FULL",
+    "issues": [],
+    "stats": {
+      "type": "DeliveryValidationStats",
+      "unique_deliveries": 12,
+      "reference_visits": 18,
+      "recursive_expansions": 12,
+      "semantic_reuses": 6,
+      "files_hashed": 4496,
+      "bytes_hashed": 2645346871,
+      "elapsed_seconds": 10.793697400018573,
+      "authentication_seconds": 0.0,
+      "recomputation_seconds": 0.0,
+      "final_recheck_seconds": 3.3367736999643967,
+      "accounts_authenticated": 0,
+      "account_reuses": 0,
+      "file_read_task_seconds": 1.5217083991738036,
+      "file_hash_task_seconds": 5.037149901385419,
+      "package_load_seconds": 3.398826699820347
+    }
+  },
+  "experiment": {
+    "type": "ExperimentValidation",
+    "status": "PASS",
+    "scope": "REPORT_PUBLICATION",
+    "issues": [],
+    "report": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "f280241e1f3e78189990212c241545916bcdfafa40a2145ed392dd2a78eb6711.json",
+      "sha256": "f280241e1f3e78189990212c241545916bcdfafa40a2145ed392dd2a78eb6711",
+      "media_type": "application/json",
+      "name": "experiment-report",
+      "schema": "experiment_report",
+      "schema_version": 1
+    }
+  },
+  "report": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX033_20261023"
+    },
+    "evidence_id": "f280241e1f3e78189990212c241545916bcdfafa40a2145ed392dd2a78eb6711.json",
+    "sha256": "f280241e1f3e78189990212c241545916bcdfafa40a2145ed392dd2a78eb6711",
+    "media_type": "application/json",
+    "name": "experiment-report",
+    "schema": "experiment_report",
+    "schema_version": 1
+  },
+  "materials": {
+    "src/account_diagnosis.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "47889ad768e09b285a882344ee099b1c165caab3f92325bc0b14cbb84a05b912.py",
+      "sha256": "47889ad768e09b285a882344ee099b1c165caab3f92325bc0b14cbb84a05b912",
+      "media_type": "text/x-python",
+      "name": "account_diagnosis",
+      "schema": null,
+      "schema_version": null
+    },
+    "src/deliver.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "3312e13c3ff23962b7ccc7f2d0c2015864bee5fc58d1e4506ac1cbce4c555be4.py",
+      "sha256": "3312e13c3ff23962b7ccc7f2d0c2015864bee5fc58d1e4506ac1cbce4c555be4",
+      "media_type": "text/x-python",
+      "name": "deliver",
+      "schema": null,
+      "schema_version": null
+    },
+    "src/independent_audit.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "61424bf5145fcbf293dc0c4271775c910d0ba05e939098a21d1b92767f1c8830.py",
+      "sha256": "61424bf5145fcbf293dc0c4271775c910d0ba05e939098a21d1b92767f1c8830",
+      "media_type": "text/x-python",
+      "name": "independent_audit",
+      "schema": null,
+      "schema_version": null
+    },
+    "src/run.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "427b399a22d7442367d5bd9d54792733cc5e9fa0ee5b46a1d1424ea191a7cbe4.py",
+      "sha256": "427b399a22d7442367d5bd9d54792733cc5e9fa0ee5b46a1d1424ea191a7cbe4",
+      "media_type": "text/x-python",
+      "name": "run",
+      "schema": null,
+      "schema_version": null
+    },
+    "src/strategy_runtime/strategies/funding_trend.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "81af0cb5702860f49494313039277857a29cd3ab5a9f3c0c041e2b8e59a2e209.py",
+      "sha256": "81af0cb5702860f49494313039277857a29cd3ab5a9f3c0c041e2b8e59a2e209",
+      "media_type": "text/x-python",
+      "name": "funding_trend",
+      "schema": null,
+      "schema_version": null
+    },
+    "protocols/fixed_prototype.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "b111d47ad0e36f09da8e271e74e2a25d57b4217bfbf3de2cce45000498e8f230.json",
+      "sha256": "b111d47ad0e36f09da8e271e74e2a25d57b4217bfbf3de2cce45000498e8f230",
+      "media_type": "application/json",
+      "name": "fixed_prototype",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/account_diagnosis.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "2ed9f1bdc44ecf29c648c6cde7e5160f277f0a76f130b4f5dd536abf7d1167c6.json",
+      "sha256": "2ed9f1bdc44ecf29c648c6cde7e5160f277f0a76f130b4f5dd536abf7d1167c6",
+      "media_type": "application/json",
+      "name": "account_diagnosis",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/C3300_full_account_daily.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "253495bfc457bc97ac4b98145776df909216f7e9e885bcb697f9fef47b808bd2.csv",
+      "sha256": "253495bfc457bc97ac4b98145776df909216f7e9e885bcb697f9fef47b808bd2",
+      "media_type": "text/csv",
+      "name": "C3300_full_account_daily",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/C3300_full_decisions.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "22768f51f373504ffa9f0433e3587b7fa50db9e2aec23cf4a95790b60c2f0fdc.csv",
+      "sha256": "22768f51f373504ffa9f0433e3587b7fa50db9e2aec23cf4a95790b60c2f0fdc",
+      "media_type": "text/csv",
+      "name": "C3300_full_decisions",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/C3300_full_fills.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "2efe1085c6b27b99a4d68218a39de1866f7ac946270748a82b87c3c6c68a5015.csv",
+      "sha256": "2efe1085c6b27b99a4d68218a39de1866f7ac946270748a82b87c3c6c68a5015",
+      "media_type": "text/csv",
+      "name": "C3300_full_fills",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/C3300_full_orders.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "05d59f0c62648d1f0d88751254e330425a7a9571b0f5649a8eeab132c28e0d82.csv",
+      "sha256": "05d59f0c62648d1f0d88751254e330425a7a9571b0f5649a8eeab132c28e0d82",
+      "media_type": "text/csv",
+      "name": "C3300_full_orders",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/C3300_full_trades.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "8ffc0a7a52d643fce041ece995d688b88700c9a976756cf768a34faac2a2ca9f.csv",
+      "sha256": "8ffc0a7a52d643fce041ece995d688b88700c9a976756cf768a34faac2a2ca9f",
+      "media_type": "text/csv",
+      "name": "C3300_full_trades",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/C3300_s011_common_account_daily.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "f8359d3a3361d4bf3a2e9ed32376a683c52a005febbcc1e37213abb33f2f42f9.csv",
+      "sha256": "f8359d3a3361d4bf3a2e9ed32376a683c52a005febbcc1e37213abb33f2f42f9",
+      "media_type": "text/csv",
+      "name": "C3300_s011_common_account_daily",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/C3300_s011_common_decisions.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "b948807e4ebdbcc1eb23ab2119f7d619239563f54642a4874bdde1042ef1f7a1.csv",
+      "sha256": "b948807e4ebdbcc1eb23ab2119f7d619239563f54642a4874bdde1042ef1f7a1",
+      "media_type": "text/csv",
+      "name": "C3300_s011_common_decisions",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/C3300_s011_common_fills.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "d4845529ae492a7bd89e08ed73012f0d085ae92c3c1dc45d39f647f626a4d91e.csv",
+      "sha256": "d4845529ae492a7bd89e08ed73012f0d085ae92c3c1dc45d39f647f626a4d91e",
+      "media_type": "text/csv",
+      "name": "C3300_s011_common_fills",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/C3300_s011_common_orders.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "94f21a3910e43772e1ce13dffccd836040bbfb4a745a7023f37be26df84b128c.csv",
+      "sha256": "94f21a3910e43772e1ce13dffccd836040bbfb4a745a7023f37be26df84b128c",
+      "media_type": "text/csv",
+      "name": "C3300_s011_common_orders",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/C3300_s011_common_trades.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "0fd85417bd081b858250e67c73bcea320c761371c027ebbd32f4d5154d8a8122.csv",
+      "sha256": "0fd85417bd081b858250e67c73bcea320c761371c027ebbd32f4d5154d8a8122",
+      "media_type": "text/csv",
+      "name": "C3300_s011_common_trades",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/C3301_full_account_daily.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "39dd584fbc80959f110e27e641d3a4757dc2f880e7e2c7e1cee13f7a38aa053e.csv",
+      "sha256": "39dd584fbc80959f110e27e641d3a4757dc2f880e7e2c7e1cee13f7a38aa053e",
+      "media_type": "text/csv",
+      "name": "C3301_full_account_daily",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/C3301_full_decisions.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "39ceea74d96346c5022b510c866491afc2c43fbf2ea0bd8e05dd31647aa5e0b1.csv",
+      "sha256": "39ceea74d96346c5022b510c866491afc2c43fbf2ea0bd8e05dd31647aa5e0b1",
+      "media_type": "text/csv",
+      "name": "C3301_full_decisions",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/C3301_full_fills.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "e00592b9357a2158ec7707f470362b5f40233671b903e27ddda3322592abeec8.csv",
+      "sha256": "e00592b9357a2158ec7707f470362b5f40233671b903e27ddda3322592abeec8",
+      "media_type": "text/csv",
+      "name": "C3301_full_fills",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/C3301_full_orders.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "b1b2cf07f83b06f4f1cf1dc71b2c01b5133b9631fd086bedb3ddba3e8aec452c.csv",
+      "sha256": "b1b2cf07f83b06f4f1cf1dc71b2c01b5133b9631fd086bedb3ddba3e8aec452c",
+      "media_type": "text/csv",
+      "name": "C3301_full_orders",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/C3301_full_trades.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "468c223388c5fb92ecbab0ba7c5a5a16ce29965d349f72b5af3b7f5545cfd0b1.csv",
+      "sha256": "468c223388c5fb92ecbab0ba7c5a5a16ce29965d349f72b5af3b7f5545cfd0b1",
+      "media_type": "text/csv",
+      "name": "C3301_full_trades",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/C3301_s011_common_account_daily.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "fdbe60994db4ba4a8b4814f8ce84619fb6045406e67f89cc91c9022d215a43a8.csv",
+      "sha256": "fdbe60994db4ba4a8b4814f8ce84619fb6045406e67f89cc91c9022d215a43a8",
+      "media_type": "text/csv",
+      "name": "C3301_s011_common_account_daily",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/C3301_s011_common_decisions.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "2194b504cabbe7b05db37aa7ed935301332f428868cfa4608e6ee35a818b7dea.csv",
+      "sha256": "2194b504cabbe7b05db37aa7ed935301332f428868cfa4608e6ee35a818b7dea",
+      "media_type": "text/csv",
+      "name": "C3301_s011_common_decisions",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/C3301_s011_common_fills.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "7b893d17dd1e3e80d66fab9e66bd98006da84347328e633ba5adb81e636243fe.csv",
+      "sha256": "7b893d17dd1e3e80d66fab9e66bd98006da84347328e633ba5adb81e636243fe",
+      "media_type": "text/csv",
+      "name": "C3301_s011_common_fills",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/C3301_s011_common_orders.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "662ab7423ac470262d2f783d2ecc13489be8d3af43c523a278b153a116cf23a8.csv",
+      "sha256": "662ab7423ac470262d2f783d2ecc13489be8d3af43c523a278b153a116cf23a8",
+      "media_type": "text/csv",
+      "name": "C3301_s011_common_orders",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/C3301_s011_common_trades.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "d06ca496552b2cefefe780387c5a4759c318a507f575049ddd136d87628158a3.csv",
+      "sha256": "d06ca496552b2cefefe780387c5a4759c318a507f575049ddd136d87628158a3",
+      "media_type": "text/csv",
+      "name": "C3301_s011_common_trades",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/cycle_accounting.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "6c20fafa55598a82eb81d309d1c4c65341902bed40ae436378bde8b20de0ff48.csv",
+      "sha256": "6c20fafa55598a82eb81d309d1c4c65341902bed40ae436378bde8b20de0ff48",
+      "media_type": "text/csv",
+      "name": "cycle_accounting",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/independent_audit.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "58523b7663dcd5c94290baf149a1b9029fdaa635d0971b0b333cde2552ddf893.json",
+      "sha256": "58523b7663dcd5c94290baf149a1b9029fdaa635d0971b0b333cde2552ddf893",
+      "media_type": "application/json",
+      "name": "independent_audit",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/progress.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "32b45f20c293a981ecf6929ee1e8874252e55e9276176762b4ccc61a7ee33a7b.json",
+      "sha256": "32b45f20c293a981ecf6929ee1e8874252e55e9276176762b4ccc61a7ee33a7b",
+      "media_type": "application/json",
+      "name": "progress",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/protocol_ref.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "6bb4a50e6aa3cc099f3837db513169133972613fe060a353b2c63466e80e37cb.json",
+      "sha256": "6bb4a50e6aa3cc099f3837db513169133972613fe060a353b2c63466e80e37cb",
+      "media_type": "application/json",
+      "name": "protocol_ref",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/results.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "72c2cdb77ff96ebfcbcff72e2ad10602247318a8b9af8e4e3b3d3c73dfa2b8c2.json",
+      "sha256": "72c2cdb77ff96ebfcbcff72e2ad10602247318a8b9af8e4e3b3d3c73dfa2b8c2",
+      "media_type": "application/json",
+      "name": "results",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/signal_checks.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "e8ce87ec7dd52ca38f15b7be9fa1b243581a4b1b65735b4288e4d8503221afa7.json",
+      "sha256": "e8ce87ec7dd52ca38f15b7be9fa1b243581a4b1b65735b4288e4d8503221afa7",
+      "media_type": "application/json",
+      "name": "signal_checks",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/signals_0.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "776e5497c568eac13976704c6ce41b5450e9939943cad59b86d102048543c7c0.csv",
+      "sha256": "776e5497c568eac13976704c6ce41b5450e9939943cad59b86d102048543c7c0",
+      "media_type": "text/csv",
+      "name": "signals_0",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/signals_1.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "3e58a275829a379ec29c854cabf0979b303f0fe69f3b8ae6d7775c329a1a9cda.csv",
+      "sha256": "3e58a275829a379ec29c854cabf0979b303f0fe69f3b8ae6d7775c329a1a9cda",
+      "media_type": "text/csv",
+      "name": "signals_1",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/source_refs.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX033_20261023"
+      },
+      "evidence_id": "aa3365403b533174c37bace648af7766b4f63507c6d76d9143a8a7bca190a41f.json",
+      "sha256": "aa3365403b533174c37bace648af7766b4f63507c6d76d9143a8a7bca190a41f",
+      "media_type": "application/json",
+      "name": "source_refs",
+      "schema": null,
+      "schema_version": null
+    }
+  }
+}

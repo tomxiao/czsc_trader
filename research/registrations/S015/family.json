@@ -33,8 +33,8 @@
         "strategy_id": "S015",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "652e6fb4803793afc5c5cc57eee26a2f8b8d68850c507035d43375fb72000b2c",
-      "revision": 3,
+      "content_sha256": "32cda315e6f0fdd57a7610b389ef14df84ab8a73666f588c3cca9dea48d0ab6a",
+      "revision": 4,
       "stage": "CANDIDATES",
       "type": "DeliveryReference"
     },
@@ -77,11 +77,11 @@
       "type": "EvidenceRef"
     },
     "current_experiment": {
-      "experiment_id": "EX032_20261023",
+      "experiment_id": "EX033_20261023",
       "strategy_id": "S015",
       "type": "ExperimentRef"
     },
-    "current_phase": "阶段二状态固定对照完成：新增有限预测辅助证据，尚未验证交易有效，合格候选0",
+    "current_phase": "阶段三单轮四中心完成：频率通过但两臂亏损，资金状态减亏未形成合格策略",
     "data_boundary": "保留原获准ETF数据及S011固定基线引用；不扩大新候选输入或封存样本范围",
     "development_window": {
       "end": "2026-10-21",
@@ -94,17 +94,17 @@
       "completed": 1,
       "remaining": 0,
       "source": {
-        "evidence_id": "c3376102b22f1c6d16f3bce5d9c7dcdc7e659729e74b8b29965319463fbb2ff7.json",
+        "evidence_id": "b111d47ad0e36f09da8e271e74e2a25d57b4217bfbf3de2cce45000498e8f230.json",
         "experiment": {
-          "experiment_id": "EX032_20261023",
+          "experiment_id": "EX033_20261023",
           "strategy_id": "S015",
           "type": "ExperimentRef"
         },
         "media_type": "application/json",
-        "name": "state_control",
+        "name": "fixed_prototype",
         "schema": null,
         "schema_version": null,
-        "sha256": "c3376102b22f1c6d16f3bce5d9c7dcdc7e659729e74b8b29965319463fbb2ff7",
+        "sha256": "b111d47ad0e36f09da8e271e74e2a25d57b4217bfbf3de2cce45000498e8f230",
         "type": "EvidenceRef"
       }
     },
@@ -171,7 +171,7 @@
       "stage": "MANDATE",
       "type": "DeliveryReference"
     },
-    "next_gate": "本轮额度0；建议另批阶段三最小原型与去状态消融，优先机会密度和连续账户兑现；未自动推进或扩大搜索",
+    "next_gate": "停止本原型邻近调参；额度0。建议先评审尚未定价的资金需求与已知趋势的机制诊断，新增实验/数据契约/DEV工作须另批，不自动进入阶段四",
     "objective": "在固定共同窗口同时严格优于修复后S011-v1的累计净收益和最大回撤，并满足原开发池默认标准",
     "pending_freeze_candidate_count": 0,
     "pending_selection_candidate_count": 0,
@@ -194,10 +194,29 @@
         "type": "EvidenceRef"
       }
     },
-    "proposal_path": "research/S015/experiments/EX032_20261023/protocols/state_control.json",
+    "proposal_path": "research/S015/experiments/EX033_20261023/protocols/fixed_prototype.json",
     "qualified_candidate_count": 0,
     "research_symbol": "159326.SZ",
-    "selected_candidate": null
+    "selected_candidate": null,
+    "state_diagnostic_budget": {
+      "authorized": 1,
+      "completed": 1,
+      "remaining": 0,
+      "source": {
+        "evidence_id": "c3376102b22f1c6d16f3bce5d9c7dcdc7e659729e74b8b29965319463fbb2ff7.json",
+        "experiment": {
+          "experiment_id": "EX032_20261023",
+          "strategy_id": "S015",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "state_control",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "c3376102b22f1c6d16f3bce5d9c7dcdc7e659729e74b8b29965319463fbb2ff7",
+        "type": "EvidenceRef"
+      }
+    }
   },
   "research_state": "RESEARCHING",
   "schema_version": 2,
@@ -205,5 +224,5 @@
     "159326.SZ"
   ],
   "strategy_id": "S015",
-  "updated_at": "2026-10-23T16:09:39+08:00"
+  "updated_at": "2026-10-23T16:54:06+08:00"
 }
