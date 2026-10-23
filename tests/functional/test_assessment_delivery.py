@@ -304,6 +304,206 @@ def test_parallel_authentication_failure_never_publishes_a_delivery(completed):
     assert not (context.root / "research/S900/deliveries/CANDIDATES/1").exists()
 
 
+def _account_attachment_content(research, references, location):
+    """Explicit account references need no CandidateEntry or registration."""
+    if location == "component-test":
+        protocol = attachment(research, "component-protocol")
+        test = d.ComponentTestResult("comparison", "EX999_20261007", protocol,
+            d.ComponentTestStatus.SUPPORTED, "允许复用本批次其他实验的账户", references)
+        component = d.ComponentEntry("component", d.ExperimentDefinitionRef(protocol, "prototype"),
+            "入场", "收益", "一日", "固定对照", "决策前", "复权价格", "开发池", "研究员判断", (test,))
+        return d.DeliveryStage.COMPONENTS, content(d.ComponentPanel((component,), "组件账户证据"))
+    if location == "component-attachment":
+        return d.DeliveryStage.COMPONENTS, content(evidence=references)
+    searches = ((d.SearchSummary("search", "固定对照", "开发池", 1, 1,
+        "未选出候选", evidence=references),) if location == "search" else ())
+    return d.DeliveryStage.CANDIDATES, content(d.CandidateSet((), (), searches, "无候选交接"),
+        evidence=references if location == "candidate-attachment" else ())
+
+
+def _reseal_test_delivery(context, receipt, value):
+    """Forge only the isolated fixture's outer envelope to test inner authentication."""
+    from czsc_trader.application.delivery_service import _manifest, _public_delivery_path
+
+    root = published(context, receipt)
+    document = json.loads((root / "delivery.json").read_bytes())
+    document["content"] = value.to_dict()
+    (root / "delivery.json").write_bytes(d._canonical(document))
+    files = _manifest(root)
+    forged = replace(receipt, reference=replace(receipt.reference, content_sha256=d._digest(files)), files=files)
+    for directory in (root, _public_delivery_path(context, receipt.reference)):
+        (directory / "receipt.json").write_bytes(d._canonical(forged))
+    return forged.reference
+
+
+def test_unregistered_account_prototype_is_accepted_in_all_attachment_roles(managed_evaluation, monkeypatch):
+    research, request = managed_evaluation
+    request = research.evaluation.prepare(request)
+    result = research.evaluation.evaluate(request)
+    account = publish_evidence(research, EvaluationEvidenceWrite(
+        ExperimentRef("S900", request.experiment_id), "unregistered-account", request, result))
+
+    def no_registration(*args, **kwargs):
+        pytest.fail("account attachment must not require candidate registration")
+
+    monkeypatch.setattr(StrategyRegistry, "get_candidate_registration", no_registration)
+    for revision, location in enumerate(("component-test", "component-attachment", "candidate-attachment", "search"), 1):
+        stage, value = _account_attachment_content(research, (account,), location)
+        assembled = assemble_delivery(research.repository, d.DeliveryDefinition(research.batch, stage, revision), value)
+        assert assembled.validation.stats.accounts_authenticated == 1
+        for scope in d.DeliveryValidationScope:
+            checked = validate_delivery(research.repository, assembled.receipt.reference, scope=scope)
+            assert checked.status is d.ValidationStatus.PASS
+            assert checked.stats.accounts_authenticated == 1
+
+
+@pytest.mark.parametrize("location", ["component-test", "component-attachment", "candidate-attachment", "search"])
+def test_account_attachment_roles_reject_opaque_material_relabelled_as_account(completed, location):
+    context, research, _, _, _ = completed
+    material = attachment(research, "opaque", {"schema_version": 7})
+    stage, ordinary = _account_attachment_content(research, (material,), location)
+    definition = d.DeliveryDefinition(research.batch, stage, 1)
+    receipt = assemble_delivery(context, definition, ordinary).receipt
+    account = replace(material, schema="account_evaluation", schema_version=7)
+    _, claimed = _account_attachment_content(research, (account,), location)
+    with pytest.raises(d.DeliveryValidationError) as failed:
+        assemble_delivery(context, replace(definition, revision=2), claimed)
+    assert failed.value.issues[0].code == "ACCOUNT_AUTHENTICATION"
+    assert failed.value.issues[0].field_path == account.path
+    for prefix in ("assets/deliveries", "deliveries"):
+        assert not (context.root / f"research/S900/{prefix}/{stage.value}/2").exists()
+    forged = _reseal_test_delivery(context, receipt, claimed)
+    for scope in d.DeliveryValidationScope:
+        checked = validate_delivery(context, forged, scope=scope)
+        assert checked.status is d.ValidationStatus.FAIL
+        assert checked.issues[0].code == "ACCOUNT_AUTHENTICATION"
+        assert checked.issues[0].field_path == account.path
+
+
+@pytest.mark.parametrize("workers", [1, 2])
+@pytest.mark.parametrize("damage,code", [
+    ("json", "ACCOUNT_AUTHENTICATION"),
+    ("duplicate-key", "ACCOUNT_AUTHENTICATION"),
+    ("identity-type", "ACCOUNT_AUTHENTICATION"),
+    ("missing-scenario", "ACCOUNT_AUTHENTICATION"),
+    ("deep-json", "ACCOUNT_AUTHENTICATION"),
+    ("ledger", "ACCOUNT_AUTHENTICATION"),
+    ("version", "EVALUATION_REFERENCE"),
+    ("hash", "EVIDENCE_HASH"),
+])
+def test_account_attachment_failures_have_same_codes_in_serial_and_parallel(completed, workers, damage, code):
+    from strategy_runtime.resources import ExecutionResources
+    from czsc_trader.research_tools.evidence import MaterialEvidenceWrite
+
+    context, research, _, _, evaluation = completed
+    good = evaluation.evidence
+    data = good.resolve(context.root).read_bytes()
+    if damage == "json":
+        data = b'{"schema_version":'
+    elif damage == "deep-json":
+        data = b"[" * 100_000 + b"0" + b"]" * 100_000
+    elif damage == "duplicate-key":
+        data = b'{"schema_version":7,' + data.lstrip()[1:]
+    elif damage in ("ledger", "identity-type", "missing-scenario"):
+        document = json.loads(data)
+        if damage == "ledger":
+            document["runs"][0]["ledgers"]["account_daily"]["data"][0]["cash"] += 1.0
+        elif damage == "missing-scenario":
+            from strategy_runtime import canonical_sha256
+
+            document["request_identity"]["costs"] = []
+            document["request_hash"] = canonical_sha256(document["request_identity"])
+            for record in document["assessment_evidence"]:
+                record["request_sha256"] = document["request_hash"]
+        else:
+            document["request_identity"] = []
+        data = json.dumps(document).encode()
+    else:
+        data += b"\n"
+    material = publish_evidence(research, MaterialEvidenceWrite(
+        good.experiment, "tampered-account", data, "application/json", "json"))
+    bad = replace(material, schema="account_evaluation", schema_version=8 if damage == "version" else 7)
+    resources = ExecutionResources(max_workers=workers)
+    definition = d.DeliveryDefinition(research.batch, d.DeliveryStage.COMPONENTS, 1)
+    # Ordinary material remains opaque even if its bytes are malformed JSON.
+    receipt = assemble_delivery(context, definition, content(evidence=(good, material)), resources=resources).receipt
+    claimed = content(evidence=(good, bad))
+    if damage != "hash":
+        with pytest.raises(d.DeliveryValidationError) as failed:
+            assemble_delivery(context, replace(definition, revision=2), claimed, resources=resources)
+        assert failed.value.issues[0].code == code
+        assert failed.value.issues[0].field_path == bad.path
+        assert failed.value.issues[0].message.strip()
+        assert not (context.root / "research/S900/assets/deliveries/COMPONENTS/2").exists()
+        assert not (context.root / "research/S900/deliveries/COMPONENTS/2").exists()
+    else:
+        # Re-sign the manifest, but preserve the account reference's original hash.
+        (published(context, receipt) / bad.path).write_bytes(data + b"changed")
+    forged = _reseal_test_delivery(context, receipt, claimed)
+    for scope in d.DeliveryValidationScope:
+        checked = validate_delivery(context, forged, scope=scope, resources=resources)
+        assert checked.status is d.ValidationStatus.FAIL
+        assert checked.issues[0].code == code
+        assert checked.issues[0].field_path == bad.path
+        assert checked.issues[0].message.strip()
+
+
+@pytest.mark.parametrize("workers", [1, 2])
+def test_account_attachment_cache_rechecks_each_reference_owner(completed, workers):
+    from strategy_runtime.resources import ExecutionResources
+    from czsc_trader.research_tools.evidence import MaterialEvidenceWrite
+
+    context, research, _, _, evaluation = completed
+    good = evaluation.evidence
+    # A second distinct but valid document makes max_workers=2 actually use workers.
+    companion = publish_evidence(research, MaterialEvidenceWrite(good.experiment, "companion-account",
+        good.resolve(context.root).read_bytes() + b"\n", "application/json", "json"))
+    companion = replace(companion, schema="account_evaluation", schema_version=7)
+    resources = ExecutionResources(max_workers=workers)
+    definition = d.DeliveryDefinition(research.batch, d.DeliveryStage.COMPONENTS, 1)
+    receipt = assemble_delivery(context, definition, content(evidence=(good, companion)), resources=resources).receipt
+    wrong = replace(good, experiment=ExperimentRef("S900", "EX999_20261007"))
+    # The correct and incorrect owner references intentionally have identical bytes/hash.
+    target = context.root / wrong.repository_path
+    target.parent.mkdir(parents=True)
+    target.write_bytes(good.resolve(context.root).read_bytes())
+    claimed = content(evidence=(good, companion, wrong))
+    with pytest.raises(d.DeliveryValidationError) as failed:
+        assemble_delivery(context, replace(definition, revision=2), claimed, resources=resources)
+    assert failed.value.issues[0].code == "EVALUATION_REFERENCE"
+    forged = _reseal_test_delivery(context, receipt, claimed)
+    for scope in d.DeliveryValidationScope:
+        checked = validate_delivery(context, forged, scope=scope, resources=resources)
+        assert checked.status is d.ValidationStatus.FAIL
+        assert checked.issues[0].code == "EVALUATION_REFERENCE"
+
+
+@pytest.mark.parametrize("damage,code", [
+    ("candidate", "CANDIDATE_CONFLICT"), ("evaluation-id", "EVALUATION_REFERENCE"),
+])
+def test_candidate_binding_remains_required_after_shared_account_authentication(completed, damage, code):
+    context, research, request, result, evaluation = completed
+    candidate = build_assessment_evidence(request, result)[0].candidate
+    entry = d.CandidateEntry(d.CandidateIdentityRef(CandidateKey("S900", "C0001"), candidate.content_sha256),
+        "合成机制", "验证候选绑定", (evaluation,))
+    value = content(d.CandidateSet((entry,), (), (), "验证额外身份约束"), evidence=(evaluation.evidence,))
+    definition = d.DeliveryDefinition(research.batch, d.DeliveryStage.CANDIDATES, 1)
+    receipt = assemble_delivery(context, definition, value).receipt
+    if damage == "candidate":
+        entry = replace(entry, identity=replace(entry.identity, content_sha256="0" * 64))
+    else:
+        entry = replace(entry, evaluations=(replace(evaluation, evaluation_ids=("0" * 64,)),))
+    changed = replace(value, payload=replace(value.payload, candidates=(entry,)))
+    with pytest.raises(d.DeliveryValidationError) as failed:
+        assemble_delivery(context, replace(definition, revision=2), changed)
+    assert failed.value.issues[0].code == code
+    forged = _reseal_test_delivery(context, receipt, changed)
+    for scope in d.DeliveryValidationScope:
+        checked = validate_delivery(context, forged, scope=scope)
+        assert checked.status is d.ValidationStatus.FAIL
+        assert checked.issues[0].code == code
+
+
 def test_assembly_rechecks_account_bytes_after_cached_certification(completed, monkeypatch):
     from czsc_trader.application import delivery_service
 

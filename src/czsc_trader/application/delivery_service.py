@@ -115,11 +115,11 @@ class _ValidationSession:
                 done, _ = wait(pending, return_when=FIRST_COMPLETED)
                 for future in done:
                     reference = pending.pop(future)
-                    projection, size, error, read_seconds, hash_seconds = future.result()
+                    projection, size, issues, read_seconds, hash_seconds = future.result()
                     self.file_read_task_seconds += read_seconds
                     self.file_hash_task_seconds += hash_seconds
-                    if error is not None:
-                        _fail("ACCOUNT_AUTHENTICATION", reference.path, error)
+                    if issues:
+                        raise d.DeliveryValidationError(issues)
                     self.account_cache[reference.sha256] = projection
                     self.files_hashed += 1
                     self.bytes_hashed += size
@@ -240,22 +240,26 @@ def _account_evidence(root, ref, account_cache=None):
     return _account_document(root, ref, account_cache)[1]
 
 
-def _certify_account(data):
+def _certify_account(data, reference):
     from ..research_tools.evaluation import validate_evaluation_evidence
 
-    value = _decode_json(data.decode("utf-8"))
-    validate_evaluation_evidence(value)
-    records = tuple(AssessmentEvidence.from_dict(item) for item in value["assessment_evidence"])
-    # Retain only fields needed for later identity/plan checks. Raw JSON and
-    # account ledgers are deliberately released after full certification.
-    projection = {"request_hash": value["request_hash"], "request_identity": value["request_identity"],
-                  "execution_policies": tuple(run["signal_support"]["execution_policy"]
-                                              for run in value["runs"])}
+    try:
+        value = _decode_json(data.decode("utf-8"))
+        validate_evaluation_evidence(value)
+        records = tuple(AssessmentEvidence.from_dict(item) for item in value["assessment_evidence"])
+        # Retain only fields needed for later identity/plan checks. Raw JSON and
+        # account ledgers are deliberately released after full certification.
+        projection = {"request_hash": value["request_hash"], "request_identity": value["request_identity"],
+                      "execution_policies": tuple(run["signal_support"]["execution_policy"]
+                                                  for run in value["runs"])}
+    except (ValueError, TypeError, KeyError, AttributeError, IndexError, OverflowError,
+            StopIteration, RecursionError, StrategyManagerError) as exc:
+        _fail("ACCOUNT_AUTHENTICATION", reference.path, str(exc) or type(exc).__name__)
     return projection, records
 
 
 def _authenticate_account(root, reference, native_threads):
-    """Spawn boundary returns compact facts or a plain error, never exceptions."""
+    """Return compact facts or typed issues; propagate infrastructure failures."""
     read_seconds = hash_seconds = 0.0
     try:
         with threadpool_limits(limits=native_threads):
@@ -268,9 +272,9 @@ def _authenticate_account(root, reference, native_threads):
             hash_seconds = perf_counter() - started
             if digest != reference.sha256:
                 _fail("EVIDENCE_HASH", reference.path, "evidence hash differs")
-            return _certify_account(data), len(data), None, read_seconds, hash_seconds
-    except (OSError, ValueError, TypeError, KeyError, StrategyManagerError) as exc:
-        return None, 0, str(exc), read_seconds, hash_seconds
+            return _certify_account(data, reference), len(data), (), read_seconds, hash_seconds
+    except d.DeliveryValidationError as exc:
+        return None, 0, exc.issues, read_seconds, hash_seconds
 
 
 def _account_document(root, ref, account_cache=None):
@@ -287,7 +291,7 @@ def _account_document(root, ref, account_cache=None):
             session.progress(d.DeliveryValidationPhase.AUTHENTICATION, 0, 1)
         try:
             with threadpool_limits(limits=1 if session is None else session.resources.native_threads_per_worker):
-                value, records = _certify_account(data)
+                value, records = _certify_account(data, ref)
         finally:
             if session is not None:
                 session.authentication_seconds += perf_counter() - started
@@ -331,18 +335,21 @@ def _validate_content(definition, content, root, context, scope=d.DeliveryValida
     }
     if type(content.payload) is not expected[definition.stage]:
         _fail("STAGE_CONTENT", "content.payload", "stage and content type differ")
+    references = _references(content)
+    for reference in references:
+        if reference.experiment.strategy_id != definition.strategy_id:
+            _fail("EVIDENCE_OWNER", reference.path, "evidence belongs to another batch")
+        if reference.schema == "account_evaluation" and reference.schema_version != 7:
+            _fail("EVALUATION_REFERENCE", reference.path, "published account evaluation schema 7 required")
     session = _validation_session.get()
     if session is not None:
-        if isinstance(content.payload, d.CandidateSet):
-            session.preload_accounts(root, tuple(reference.evidence
-                for candidate in content.payload.candidates for reference in candidate.evaluations))
-        elif isinstance(content.payload, d.CandidateAssessmentDelivery):
-            session.preload_accounts(root, _references(content))
+        session.preload_accounts(root, references)
     for value in _walk(content):
         if isinstance(value, EvidenceRef):
-            if value.experiment.strategy_id != definition.strategy_id:
-                _fail("EVIDENCE_OWNER", value.path, "evidence belongs to another batch")
-            _read_evidence(root, value)
+            if value.schema == "account_evaluation":
+                _account_document(root, value, account_cache)
+            else:
+                _read_evidence(root, value)
         elif isinstance(value, d.CatalogDefinitionRef):
             cls = FactorDefinition if value.kind is d.CatalogDefinitionKind.FACTOR else SignalDefinition
             catalog = cls.from_dict(_read_json(_resolve(root, value.evidence.path)))

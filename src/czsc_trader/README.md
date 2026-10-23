@@ -580,7 +580,7 @@ child_result = research.evaluation.evaluate(child_request)
 返回值包含 `receipt: DeliveryReceipt` 和 `validation: DeliveryValidation`；后者是包含安装后完整性复核的本次 `FULL PASS`，无需紧接着再调用一次完整校验。
 同内容修订的重复组装也重新执行 FULL。后续独立调用 `validate_delivery(..., resources=None, on_progress=None)` 时重新读取当前文件，绝不以历史 PASS 代替认证。
 两个入口的独立账户认证默认采用 `ExecutionResources` 的本机 70% 逻辑核预算，显式资源可覆盖；单项认证直接执行。
-认证缓存只在本次调用内保存按 SHA-256 标识的必要事实，每次消费仍核验文件当前字节；最终复核覆盖前驱及公开副本。
+认证缓存只在本次调用内保存按 SHA-256 标识的必要事实，每次消费仍核验文件当前字节和账户引用所属实验；最终复核覆盖前驱及公开副本。
 `DeliveryValidationProgress` 回调报告 `PACKAGE_LOAD`、`AUTHENTICATION`、`RECOMPUTATION`、`FINAL_RECHECK` 阶段、完成数量及累计墙钟耗时。
 `PACKAGE_LOAD` 在读取每个交付包之前立即发出；`package_load_seconds` 累计包封装读取、清单哈希与强类型解析的墙钟时间，包含失败读取，排除递归前驱、账户认证和 SE 复算。
 `DeliveryValidationStats` 记录认证墙钟时间（含并行进程启动及结果传输）、SE 复算时间、最终复核时间、认证账户数和缓存复用数；阶段数值不包含其他序列化及 I/O，不将这些局部计时之和称为端到端时间。
@@ -594,6 +594,36 @@ child_result = research.evaluation.evaluate(child_request)
 平台将其 UTF-8 字节原样写入 `report.md`；目前不提供报告模板或自动生成报告。
 报告使用的额外材料通过 `evidence: tuple[EvidenceRef, ...] = ()` 显式关联，
 与内容契约中的证据一起核验和浅快照；平台不会从报告文字自动提取证据引用。
+
+所有位置上显式声明 `schema="account_evaluation"` 的 `EvidenceRef` 都须通过账户认证，
+包括组件测试、顶层 `DeliveryContent.evidence`、`SearchSummary.evidence` 和候选评价引用。
+账户仅接受 schema 7，认证请求与结果身份、保存账本及数值一致性；不支持的版本明确拒绝。
+`INTEGRITY` 和 `FULL` 均执行此认证，不重跑策略。普通材料仍检查归属、路径及文件哈希，
+平台不会扫描材料 JSON 或 Markdown 中嵌套的账户声明；支撑正式账户结论的引用必须直接纳入强类型交付。
+同批次可以复用其他实验账户，但账户内来源必须与该引用自身的实验身份一致；
+`CandidateEntry.evaluations` 还须匹配声明候选的身份及 `evaluation_ids`。
+
+未登记原型可通过现有评价与发布 API 形成正式账户，不要求先登记候选。
+RSCH 应用普通材料显式保存完整参数、源码文件及依赖，并直接关联所需材料引用；账户身份哈希本身不构成原型恢复包。
+组件信息诊断和否定结论仍可使用普通材料，不要求每项测试都产生账户。
+账户认证不判断组件有效性、基线与变体是否只改变一个因素，或研究目标是否达成。
+
+证据不合法时，`assemble_delivery` 抛出 `DeliveryValidationError`，不留下本次未完成的正式修订；
+`validate_delivery` 返回 `FAIL` 及 `DeliveryIssue`。错误参数类型仍抛出 `TypeError`，
+同修订不同内容仍抛出 `DeliveryConflictError`。进入引用与账户认证后的错误分类如下；
+初始证据复制、交付包清单等前置检查失败时，仍报告各自阶段的错误，例如 `ASSEMBLY_FAILED` 或 `DELIVERY_FILES`：
+
+| 错误码 | 含义 |
+| --- | --- |
+| `EVIDENCE_OWNER` | 引用属于其他批次 |
+| `EVIDENCE_HASH` | 当前证据字节与引用哈希不符 |
+| `EVALUATION_REFERENCE` | 不支持的账户版本、账户来源不符，或声明的运行编号不存在 |
+| `ACCOUNT_AUTHENTICATION` | 账户 JSON、请求、账本或结果认证失败 |
+| `CANDIDATE_CONFLICT` | 账户候选身份与交付声明不一致 |
+
+单个故障的分类不因串行或并行认证改变；多个故障并存时不保证首先返回哪一个。
+工作进程失败明确失败，不自动回退到串行或普通材料校验。历史交付原件保持不变；
+此前仅通过文件哈希检查的非法账户附件会在新的校验中被拒绝，不自动改写历史回执或研究资格。
 
 | 阶段 | 交付内容 | 主要校验 |
 | --- | --- | --- |
