@@ -1,0 +1,706 @@
+{
+  "delivery": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S015"
+    },
+    "stage": "COMPONENTS",
+    "revision": 9,
+    "content_sha256": "ab5398373713fc3542f5e38864f3f92d4fe709380f99c62df03bbaa5a2f21e03"
+  },
+  "assembly": {
+    "type": "DeliveryValidation",
+    "status": "PASS",
+    "scope": "FULL",
+    "issues": [],
+    "stats": {
+      "type": "DeliveryValidationStats",
+      "unique_deliveries": 9,
+      "reference_visits": 10,
+      "recursive_expansions": 9,
+      "semantic_reuses": 1,
+      "files_hashed": 2483,
+      "bytes_hashed": 322848210,
+      "elapsed_seconds": 3.355861200019717,
+      "authentication_seconds": 0.0,
+      "recomputation_seconds": 0.0,
+      "final_recheck_seconds": 0.7822828999487683,
+      "accounts_authenticated": 0,
+      "account_reuses": 0,
+      "file_read_task_seconds": 0.36936090094968677,
+      "file_hash_task_seconds": 0.6418119029840454,
+      "package_load_seconds": 0.6548625000286847
+    }
+  },
+  "experiments": {
+    "1": {
+      "type": "ExperimentValidation",
+      "status": "PASS",
+      "scope": "REPORT_PUBLICATION",
+      "issues": [],
+      "report": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX027_20261023"
+        },
+        "evidence_id": "f3229f1b7435fe9dc358c4bdca81c886e2d722cc689f9a7bc492d8b01215039a.json",
+        "sha256": "f3229f1b7435fe9dc358c4bdca81c886e2d722cc689f9a7bc492d8b01215039a",
+        "media_type": "application/json",
+        "name": "experiment-report",
+        "schema": "experiment_report",
+        "schema_version": 1
+      }
+    },
+    "2": {
+      "type": "ExperimentValidation",
+      "status": "PASS",
+      "scope": "REPORT_PUBLICATION",
+      "issues": [],
+      "report": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX028_20261023"
+        },
+        "evidence_id": "3abdea2205be98f926de04f3f284225f70c049d27f67c9ba10167326bd1b5641.json",
+        "sha256": "3abdea2205be98f926de04f3f284225f70c049d27f67c9ba10167326bd1b5641",
+        "media_type": "application/json",
+        "name": "experiment-report",
+        "schema": "experiment_report",
+        "schema_version": 1
+      }
+    },
+    "3": {
+      "type": "ExperimentValidation",
+      "status": "PASS",
+      "scope": "REPORT_PUBLICATION",
+      "issues": [],
+      "report": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX029_20261023"
+        },
+        "evidence_id": "203235860294a8e789ded349349fee3cbf36a7ac275ad7f66e162ac74a30a4e5.json",
+        "sha256": "203235860294a8e789ded349349fee3cbf36a7ac275ad7f66e162ac74a30a4e5",
+        "media_type": "application/json",
+        "name": "experiment-report",
+        "schema": "experiment_report",
+        "schema_version": 1
+      }
+    },
+    "4": {
+      "type": "ExperimentValidation",
+      "status": "PASS",
+      "scope": "REPORT_PUBLICATION",
+      "issues": [],
+      "report": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX030_20261023"
+        },
+        "evidence_id": "ba2e115fec2ab7bea44458d2bcbc76bc90864f1b33576dfd4da2bd1196201db5.json",
+        "sha256": "ba2e115fec2ab7bea44458d2bcbc76bc90864f1b33576dfd4da2bd1196201db5",
+        "media_type": "application/json",
+        "name": "experiment-report",
+        "schema": "experiment_report",
+        "schema_version": 1
+      }
+    },
+    "5": {
+      "type": "ExperimentValidation",
+      "status": "PASS",
+      "scope": "REPORT_PUBLICATION",
+      "issues": [],
+      "report": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX031_20261023"
+        },
+        "evidence_id": "54f5dff1dde0f7dd30a0ce84a17cc9780c202324a66ea0b242aa312f4209b8d8.json",
+        "sha256": "54f5dff1dde0f7dd30a0ce84a17cc9780c202324a66ea0b242aa312f4209b8d8",
+        "media_type": "application/json",
+        "name": "experiment-report",
+        "schema": "experiment_report",
+        "schema_version": 1
+      }
+    }
+  },
+  "rounds": {
+    "1": {
+      "materials": {
+        "src/deliver.py": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX027_20261023"
+          },
+          "evidence_id": "09752c9c49b2413b5334bbc11d787830d319ea89dd7513778acab6d9b39c696a.py",
+          "sha256": "09752c9c49b2413b5334bbc11d787830d319ea89dd7513778acab6d9b39c696a",
+          "media_type": "text/x-python",
+          "name": "deliver",
+          "schema": null,
+          "schema_version": null
+        },
+        "src/funding_study.py": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX027_20261023"
+          },
+          "evidence_id": "380ca635bc26c2cadcb7f09c43df7d0553c7815ece1240ee0389b217950e6167.py",
+          "sha256": "380ca635bc26c2cadcb7f09c43df7d0553c7815ece1240ee0389b217950e6167",
+          "media_type": "text/x-python",
+          "name": "funding_study",
+          "schema": null,
+          "schema_version": null
+        },
+        "src/survey.py": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX027_20261023"
+          },
+          "evidence_id": "d42d0351dac70162d36e991d0875dd205e63ef0918cf1b243ec6a4af6dfb4e3c.py",
+          "sha256": "d42d0351dac70162d36e991d0875dd205e63ef0918cf1b243ec6a4af6dfb4e3c",
+          "media_type": "text/x-python",
+          "name": "survey",
+          "schema": null,
+          "schema_version": null
+        },
+        "protocols/coverage_resolution.json": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX027_20261023"
+          },
+          "evidence_id": "114a78853cde18cac3c1c5d2245c02be2fe5cabf533efdcaab4ad2d3bcdb3af0.json",
+          "sha256": "114a78853cde18cac3c1c5d2245c02be2fe5cabf533efdcaab4ad2d3bcdb3af0",
+          "media_type": "application/json",
+          "name": "coverage_resolution",
+          "schema": null,
+          "schema_version": null
+        },
+        "protocols/funding_five_rounds.json": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX027_20261023"
+          },
+          "evidence_id": "a4060a3cb928f7b7b1a4a06b1ddd63cfee3a014a95c3bf36bce4d43c76ad74f7.json",
+          "sha256": "a4060a3cb928f7b7b1a4a06b1ddd63cfee3a014a95c3bf36bce4d43c76ad74f7",
+          "media_type": "application/json",
+          "name": "funding_five_rounds",
+          "schema": null,
+          "schema_version": null
+        },
+        "protocols/source_column_resolution.json": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX027_20261023"
+          },
+          "evidence_id": "bdda3b800a1d722b5b9fd1c1cf069f6fbc515dc0ba025029163a7651d09da79d.json",
+          "sha256": "bdda3b800a1d722b5b9fd1c1cf069f6fbc515dc0ba025029163a7651d09da79d",
+          "media_type": "application/json",
+          "name": "source_column_resolution",
+          "schema": null,
+          "schema_version": null
+        },
+        "others/coverage_probe.json": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX027_20261023"
+          },
+          "evidence_id": "28e16c33cd7e3e9dd6ab9a840cb631c0164acb8b1974974677e7a5809eb3810a.json",
+          "sha256": "28e16c33cd7e3e9dd6ab9a840cb631c0164acb8b1974974677e7a5809eb3810a",
+          "media_type": "application/json",
+          "name": "coverage_probe",
+          "schema": null,
+          "schema_version": null
+        },
+        "others/coverage_resolution_ref.json": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX027_20261023"
+          },
+          "evidence_id": "d605687efccb715f6a7d9dfa407caa23354448bb78d9f8957aa9ecacc074bd15.json",
+          "sha256": "d605687efccb715f6a7d9dfa407caa23354448bb78d9f8957aa9ecacc074bd15",
+          "media_type": "application/json",
+          "name": "coverage_resolution_ref",
+          "schema": null,
+          "schema_version": null
+        },
+        "others/features_lag1.csv": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX027_20261023"
+          },
+          "evidence_id": "175325035b38378d11f52edf71d8eecd2796bc3cb2df08892763c0517c504899.csv",
+          "sha256": "175325035b38378d11f52edf71d8eecd2796bc3cb2df08892763c0517c504899",
+          "media_type": "text/csv",
+          "name": "features_lag1",
+          "schema": null,
+          "schema_version": null
+        },
+        "others/features_lag2.csv": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX027_20261023"
+          },
+          "evidence_id": "06d4fd4d3a0d31157f5b78ff01b52d24cf359fb609a8077f7eec6a0666da2b4b.csv",
+          "sha256": "06d4fd4d3a0d31157f5b78ff01b52d24cf359fb609a8077f7eec6a0666da2b4b",
+          "media_type": "text/csv",
+          "name": "features_lag2",
+          "schema": null,
+          "schema_version": null
+        },
+        "others/features_lag3.csv": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX027_20261023"
+          },
+          "evidence_id": "63daa7340029c842e3e5ebe3f5f3b414492412137d0346a1ce0f6ed8daaab96c.csv",
+          "sha256": "63daa7340029c842e3e5ebe3f5f3b414492412137d0346a1ce0f6ed8daaab96c",
+          "media_type": "text/csv",
+          "name": "features_lag3",
+          "schema": null,
+          "schema_version": null
+        },
+        "others/input_refs.json": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX027_20261023"
+          },
+          "evidence_id": "8077a7ff9755e10fc273a56fac32fe869518875db822126b09446725471ba902.json",
+          "sha256": "8077a7ff9755e10fc273a56fac32fe869518875db822126b09446725471ba902",
+          "media_type": "application/json",
+          "name": "input_refs",
+          "schema": null,
+          "schema_version": null
+        },
+        "others/own_share_identity.json": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX027_20261023"
+          },
+          "evidence_id": "c20fb96d2f4f7175b353f2934f839afc5cb66943a7b41b3c96874db6b766f164.json",
+          "sha256": "c20fb96d2f4f7175b353f2934f839afc5cb66943a7b41b3c96874db6b766f164",
+          "media_type": "application/json",
+          "name": "own_share_identity",
+          "schema": null,
+          "schema_version": null
+        },
+        "others/own_share_preparation.json": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX027_20261023"
+          },
+          "evidence_id": "dd15470b699a3fee6de9a7d3614e19072ed5a144967bbfdfb0e06a46e1d31636.json",
+          "sha256": "dd15470b699a3fee6de9a7d3614e19072ed5a144967bbfdfb0e06a46e1d31636",
+          "media_type": "application/json",
+          "name": "own_share_preparation",
+          "schema": null,
+          "schema_version": null
+        },
+        "others/own_share_preparation_resolved.json": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX027_20261023"
+          },
+          "evidence_id": "4d54537a59c75559baf0dd0ccf8e8d329cd9d564e3888f0b2e3693560b4dfa6e.json",
+          "sha256": "4d54537a59c75559baf0dd0ccf8e8d329cd9d564e3888f0b2e3693560b4dfa6e",
+          "media_type": "application/json",
+          "name": "own_share_preparation_resolved",
+          "schema": null,
+          "schema_version": null
+        },
+        "others/own_shares.csv": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX027_20261023"
+          },
+          "evidence_id": "b5c38cc1f4ec7c6262c438d2a70352b18865c9543a7febea7820c1c2264babd3.csv",
+          "sha256": "b5c38cc1f4ec7c6262c438d2a70352b18865c9543a7febea7820c1c2264babd3",
+          "media_type": "text/csv",
+          "name": "own_shares",
+          "schema": null,
+          "schema_version": null
+        },
+        "others/protocol_ref.json": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX027_20261023"
+          },
+          "evidence_id": "4c313b7020f6cb691ffe541592f8dfd2713a86de14166895ecf33c612c76d7e0.json",
+          "sha256": "4c313b7020f6cb691ffe541592f8dfd2713a86de14166895ecf33c612c76d7e0",
+          "media_type": "application/json",
+          "name": "protocol_ref",
+          "schema": null,
+          "schema_version": null
+        },
+        "others/provider_feasibility.json": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX027_20261023"
+          },
+          "evidence_id": "d6aa1d5dc24978538533c371c1c3d9401987bb095f8ef5242f012ebebe38584d.json",
+          "sha256": "d6aa1d5dc24978538533c371c1c3d9401987bb095f8ef5242f012ebebe38584d",
+          "media_type": "application/json",
+          "name": "provider_feasibility",
+          "schema": null,
+          "schema_version": null
+        },
+        "others/round_refs.json": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX027_20261023"
+          },
+          "evidence_id": "f7925f105bfa3c8e47ca13b22edefd191ffe2e7c5ca6db85f5c7a4e92bc683a1.json",
+          "sha256": "f7925f105bfa3c8e47ca13b22edefd191ffe2e7c5ca6db85f5c7a4e92bc683a1",
+          "media_type": "application/json",
+          "name": "round_refs",
+          "schema": null,
+          "schema_version": null
+        },
+        "others/survey_results.json": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX027_20261023"
+          },
+          "evidence_id": "6cbed53f93930fc80c8ce1c15b90174167add2ccdde3aedc1eb592b4b1b5c4e3.json",
+          "sha256": "6cbed53f93930fc80c8ce1c15b90174167add2ccdde3aedc1eb592b4b1b5c4e3",
+          "media_type": "application/json",
+          "name": "survey_results",
+          "schema": null,
+          "schema_version": null
+        }
+      },
+      "report": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX027_20261023"
+        },
+        "evidence_id": "f3229f1b7435fe9dc358c4bdca81c886e2d722cc689f9a7bc492d8b01215039a.json",
+        "sha256": "f3229f1b7435fe9dc358c4bdca81c886e2d722cc689f9a7bc492d8b01215039a",
+        "media_type": "application/json",
+        "name": "experiment-report",
+        "schema": "experiment_report",
+        "schema_version": 1
+      }
+    },
+    "2": {
+      "materials": {
+        "protocols/round.json": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX028_20261023"
+          },
+          "evidence_id": "4f4751928f99130bf0d9c4a262d9eba23cb7343ab4016a577bd6d8b34201c267.json",
+          "sha256": "4f4751928f99130bf0d9c4a262d9eba23cb7343ab4016a577bd6d8b34201c267",
+          "media_type": "application/json",
+          "name": "round",
+          "schema": null,
+          "schema_version": null
+        },
+        "others/results.json": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX028_20261023"
+          },
+          "evidence_id": "2799fef974c485f91f14a3996a06312724a47913c36ffdd6f57d4450da207efc.json",
+          "sha256": "2799fef974c485f91f14a3996a06312724a47913c36ffdd6f57d4450da207efc",
+          "media_type": "application/json",
+          "name": "results",
+          "schema": null,
+          "schema_version": null
+        }
+      },
+      "report": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX028_20261023"
+        },
+        "evidence_id": "3abdea2205be98f926de04f3f284225f70c049d27f67c9ba10167326bd1b5641.json",
+        "sha256": "3abdea2205be98f926de04f3f284225f70c049d27f67c9ba10167326bd1b5641",
+        "media_type": "application/json",
+        "name": "experiment-report",
+        "schema": "experiment_report",
+        "schema_version": 1
+      }
+    },
+    "3": {
+      "materials": {
+        "protocols/round.json": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX029_20261023"
+          },
+          "evidence_id": "71149dfc5bcf545b0db400c6ecc7cbd1e3e4fc4fa6605f142acdf0e6935b2e27.json",
+          "sha256": "71149dfc5bcf545b0db400c6ecc7cbd1e3e4fc4fa6605f142acdf0e6935b2e27",
+          "media_type": "application/json",
+          "name": "round",
+          "schema": null,
+          "schema_version": null
+        },
+        "others/results.json": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX029_20261023"
+          },
+          "evidence_id": "05c995bbc2c1ca8881c34a1aaec6bfa3cba5cd5992f646ec4ad82368ef0cae02.json",
+          "sha256": "05c995bbc2c1ca8881c34a1aaec6bfa3cba5cd5992f646ec4ad82368ef0cae02",
+          "media_type": "application/json",
+          "name": "results",
+          "schema": null,
+          "schema_version": null
+        }
+      },
+      "report": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX029_20261023"
+        },
+        "evidence_id": "203235860294a8e789ded349349fee3cbf36a7ac275ad7f66e162ac74a30a4e5.json",
+        "sha256": "203235860294a8e789ded349349fee3cbf36a7ac275ad7f66e162ac74a30a4e5",
+        "media_type": "application/json",
+        "name": "experiment-report",
+        "schema": "experiment_report",
+        "schema_version": 1
+      }
+    },
+    "4": {
+      "materials": {
+        "protocols/round.json": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX030_20261023"
+          },
+          "evidence_id": "ff45030fcc729625cacfd96b443e8821dff5ab6f29ad7a45d74964835b00b659.json",
+          "sha256": "ff45030fcc729625cacfd96b443e8821dff5ab6f29ad7a45d74964835b00b659",
+          "media_type": "application/json",
+          "name": "round",
+          "schema": null,
+          "schema_version": null
+        },
+        "others/predictions.csv": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX030_20261023"
+          },
+          "evidence_id": "af40b1218aa0a150bafa294519d43216e536e18c120b85ccce93b1bc87a0b244.csv",
+          "sha256": "af40b1218aa0a150bafa294519d43216e536e18c120b85ccce93b1bc87a0b244",
+          "media_type": "text/csv",
+          "name": "predictions",
+          "schema": null,
+          "schema_version": null
+        },
+        "others/results.json": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX030_20261023"
+          },
+          "evidence_id": "87360575ef94db3095aa8a99bd2257b3a70645e79a296a9ace70e16a913e9d2c.json",
+          "sha256": "87360575ef94db3095aa8a99bd2257b3a70645e79a296a9ace70e16a913e9d2c",
+          "media_type": "application/json",
+          "name": "results",
+          "schema": null,
+          "schema_version": null
+        }
+      },
+      "report": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX030_20261023"
+        },
+        "evidence_id": "ba2e115fec2ab7bea44458d2bcbc76bc90864f1b33576dfd4da2bd1196201db5.json",
+        "sha256": "ba2e115fec2ab7bea44458d2bcbc76bc90864f1b33576dfd4da2bd1196201db5",
+        "media_type": "application/json",
+        "name": "experiment-report",
+        "schema": "experiment_report",
+        "schema_version": 1
+      }
+    },
+    "5": {
+      "materials": {
+        "src/independent_audit.py": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX031_20261023"
+          },
+          "evidence_id": "74491addc7bf35ee9b7a9122bc07cd844dfa617ef33b348a35fa3be97d03e91f.py",
+          "sha256": "74491addc7bf35ee9b7a9122bc07cd844dfa617ef33b348a35fa3be97d03e91f",
+          "media_type": "text/x-python",
+          "name": "independent_audit",
+          "schema": null,
+          "schema_version": null
+        },
+        "protocols/round.json": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX031_20261023"
+          },
+          "evidence_id": "fb9449d729971187d7f7467b77f86e128c09bba8ee704f074b2d33a108544f78.json",
+          "sha256": "fb9449d729971187d7f7467b77f86e128c09bba8ee704f074b2d33a108544f78",
+          "media_type": "application/json",
+          "name": "round",
+          "schema": null,
+          "schema_version": null
+        },
+        "others/independent_audit.json": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX031_20261023"
+          },
+          "evidence_id": "d68d6523e60616af4f9b3a10a31a85b85bde7226e9a3fd746b9f64dfe85be826.json",
+          "sha256": "d68d6523e60616af4f9b3a10a31a85b85bde7226e9a3fd746b9f64dfe85be826",
+          "media_type": "application/json",
+          "name": "independent_audit",
+          "schema": null,
+          "schema_version": null
+        },
+        "others/period_tables.md": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX031_20261023"
+          },
+          "evidence_id": "3cb6ebab7fa3b2c0eca12cd8875513b3a98a75a00688f3bae478e82564b49cc1.md",
+          "sha256": "3cb6ebab7fa3b2c0eca12cd8875513b3a98a75a00688f3bae478e82564b49cc1",
+          "media_type": "text/markdown",
+          "name": "period_tables",
+          "schema": null,
+          "schema_version": null
+        },
+        "others/predictions_lag2.csv": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX031_20261023"
+          },
+          "evidence_id": "d9151b8e9b2439884da4e32f26dfc4c4012a30189eaf4400eae1e8b8ed8778d5.csv",
+          "sha256": "d9151b8e9b2439884da4e32f26dfc4c4012a30189eaf4400eae1e8b8ed8778d5",
+          "media_type": "text/csv",
+          "name": "predictions_lag2",
+          "schema": null,
+          "schema_version": null
+        },
+        "others/predictions_lag3.csv": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX031_20261023"
+          },
+          "evidence_id": "a0bfaa6c535a7854554f64a387e63bef64cd1ea1e652df88a49e2d59e1da21ee.csv",
+          "sha256": "a0bfaa6c535a7854554f64a387e63bef64cd1ea1e652df88a49e2d59e1da21ee",
+          "media_type": "text/csv",
+          "name": "predictions_lag3",
+          "schema": null,
+          "schema_version": null
+        },
+        "others/results.json": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX031_20261023"
+          },
+          "evidence_id": "d30007213dc864d83215bef186692fc23a8111340e04e2a203f50a5f65ab1af1.json",
+          "sha256": "d30007213dc864d83215bef186692fc23a8111340e04e2a203f50a5f65ab1af1",
+          "media_type": "application/json",
+          "name": "results",
+          "schema": null,
+          "schema_version": null
+        }
+      },
+      "report": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX031_20261023"
+        },
+        "evidence_id": "54f5dff1dde0f7dd30a0ce84a17cc9780c202324a66ea0b242aa312f4209b8d8.json",
+        "sha256": "54f5dff1dde0f7dd30a0ce84a17cc9780c202324a66ea0b242aa312f4209b8d8",
+        "media_type": "application/json",
+        "name": "experiment-report",
+        "schema": "experiment_report",
+        "schema_version": 1
+      }
+    }
+  }
+}

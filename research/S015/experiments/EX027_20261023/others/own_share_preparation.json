@@ -1,0 +1,39 @@
+{
+  "status": "FAILED",
+  "items": [
+    {
+      "request": {
+        "dataset": "etf.share_size",
+        "symbol": "159326.SZ",
+        "start": "2024-09-09",
+        "end": "2026-10-21",
+        "required_cutoff": "2026-10-21",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": 0,
+          "minimum_observations": 509,
+          "minimum_sessions": 509,
+          "observations_through": null
+        }
+      },
+      "status": "INCOMPLETE",
+      "identity": null,
+      "error": {
+        "code": "INCOMPLETE_DATA",
+        "message": "published dataframe has fewer observations than required",
+        "retryable": true,
+        "context": {
+          "dataset": "etf.share_size",
+          "symbol": "159326.SZ",
+          "start": "2024-09-09",
+          "end": "2026-10-21",
+          "minimum_observations": 509,
+          "actual_observations": 508,
+          "observations_through": null
+        }
+      }
+    }
+  ],
+  "reference": null
+}

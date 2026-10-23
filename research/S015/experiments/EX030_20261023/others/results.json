@@ -1,0 +1,698 @@
+{
+  "net_h1": {
+    "n": 325,
+    "base_mse": 0.0004486646312901991,
+    "fund_mse": 0.00046697634797733377,
+    "relative_mse_gain": -0.04081381818414509,
+    "filters": {
+      "base": {
+        "reject_n": 193,
+        "rejected_negative_n": 106,
+        "rejected_positive_n": 87,
+        "caught_negative_yuan": 156891.306,
+        "missed_positive_yuan": 118514.87490000008,
+        "caught_negative_fraction": 0.5926171413934533,
+        "missed_positive_fraction": 0.4832510889863672
+      },
+      "fund": {
+        "reject_n": 151,
+        "rejected_negative_n": 88,
+        "rejected_positive_n": 63,
+        "caught_negative_yuan": 131578.04269999996,
+        "missed_positive_yuan": 81854.02940000001,
+        "caught_negative_fraction": 0.4970027053954137,
+        "missed_positive_fraction": 0.3337644230637592
+      }
+    },
+    "folds": {
+      "100:184": {
+        "n": 83,
+        "base_mse": 0.00021318939484951056,
+        "fund_mse": 0.00022973667918318088,
+        "relative_mse_gain": -0.07761776492377104,
+        "filters": {
+          "base": {
+            "reject_n": 75,
+            "rejected_negative_n": 39,
+            "rejected_positive_n": 36,
+            "caught_negative_yuan": 30334.500100000005,
+            "missed_positive_yuan": 44293.07480000003,
+            "caught_negative_fraction": 0.8910477397789646,
+            "missed_positive_fraction": 0.9601226676296392
+          },
+          "fund": {
+            "reject_n": 68,
+            "rejected_negative_n": 38,
+            "rejected_positive_n": 30,
+            "caught_negative_yuan": 29285.367400000014,
+            "missed_positive_yuan": 38477.102600000006,
+            "caught_negative_fraction": 0.8602304420492684,
+            "missed_positive_fraction": 0.8340522431053106
+          }
+        },
+        "train_n": 98,
+        "max_train_label_date": "2025-06-05",
+        "first_test_decision": "2025-06-06"
+      },
+      "184:268": {
+        "n": 83,
+        "base_mse": 0.00058950412686957,
+        "fund_mse": 0.0006183108555295443,
+        "relative_mse_gain": -0.048866033920654584,
+        "filters": {
+          "base": {
+            "reject_n": 34,
+            "rejected_negative_n": 21,
+            "rejected_positive_n": 13,
+            "caught_negative_yuan": 34842.98739999999,
+            "missed_positive_yuan": 24469.744599999976,
+            "caught_negative_fraction": 0.5336315890288809,
+            "missed_positive_fraction": 0.29791134235386935
+          },
+          "fund": {
+            "reject_n": 20,
+            "rejected_negative_n": 14,
+            "rejected_positive_n": 6,
+            "caught_negative_yuan": 25534.097699999988,
+            "missed_positive_yuan": 13559.022299999988,
+            "caught_negative_fraction": 0.3910629411205334,
+            "missed_positive_fraction": 0.1650767754396198
+          }
+        },
+        "train_n": 181,
+        "max_train_label_date": "2025-10-09",
+        "first_test_decision": "2025-10-10"
+      },
+      "268:352": {
+        "n": 80,
+        "base_mse": 0.0005094624823369734,
+        "fund_mse": 0.0005310967518256167,
+        "relative_mse_gain": -0.0424648923889428,
+        "filters": {
+          "base": {
+            "reject_n": 43,
+            "rejected_negative_n": 18,
+            "rejected_positive_n": 25,
+            "caught_negative_yuan": 32735.1958,
+            "missed_positive_yuan": 35224.22650000004,
+            "caught_negative_fraction": 0.48160367925532155,
+            "missed_positive_fraction": 0.475111881897161
+          },
+          "fund": {
+            "reject_n": 28,
+            "rejected_negative_n": 11,
+            "rejected_positive_n": 17,
+            "caught_negative_yuan": 21248.349100000007,
+            "missed_positive_yuan": 18689.950500000006,
+            "caught_negative_fraction": 0.31260796994107193,
+            "missed_positive_fraction": 0.2520940397263168
+          }
+        },
+        "train_n": 264,
+        "max_train_label_date": "2026-02-06",
+        "first_test_decision": "2026-02-09"
+      },
+      "352:434": {
+        "n": 79,
+        "base_mse": 0.0004865246111351032,
+        "fund_mse": 0.0004922990831066829,
+        "relative_mse_gain": -0.011868817813979193,
+        "filters": {
+          "base": {
+            "reject_n": 41,
+            "rejected_negative_n": 28,
+            "rejected_positive_n": 13,
+            "caught_negative_yuan": 58978.622699999985,
+            "missed_positive_yuan": 14527.829000000014,
+            "caught_negative_fraction": 0.605317703499663,
+            "missed_positive_fraction": 0.3391522194264117
+          },
+          "fund": {
+            "reject_n": 35,
+            "rejected_negative_n": 25,
+            "rejected_positive_n": 10,
+            "caught_negative_yuan": 55510.22849999998,
+            "missed_positive_yuan": 11127.954000000016,
+            "caught_negative_fraction": 0.5697203918660098,
+            "missed_positive_fraction": 0.2597821255175166
+          }
+        },
+        "train_n": 344,
+        "max_train_label_date": "2026-06-18",
+        "first_test_decision": "2026-06-22"
+      }
+    },
+    "omit_largest5_absolute_label": {
+      "n": 320,
+      "base_mse": 0.00038234228391803045,
+      "fund_mse": 0.0004071239359293032,
+      "relative_mse_gain": -0.06481535800153782,
+      "filters": {
+        "base": {
+          "reject_n": 191,
+          "rejected_negative_n": 105,
+          "rejected_positive_n": 86,
+          "caught_negative_yuan": 150902.864,
+          "missed_positive_yuan": 110423.34690000009,
+          "caught_negative_fraction": 0.5831889497232091,
+          "missed_positive_fraction": 0.513193862390973
+        },
+        "fund": {
+          "reject_n": 149,
+          "rejected_negative_n": 87,
+          "rejected_positive_n": 62,
+          "caught_negative_yuan": 125589.60069999997,
+          "missed_positive_yuan": 74571.4814,
+          "caught_negative_fraction": 0.485361678280607,
+          "missed_positive_fraction": 0.34657187667513617
+        }
+      }
+    },
+    "paired_mse_improvement_block20_ci95": [
+      -4.72438933863249e-05,
+      4.552497028604344e-06
+    ]
+  },
+  "net_h3": {
+    "n": 323,
+    "base_mse": 0.0011584416876879013,
+    "fund_mse": 0.0013426521907532855,
+    "relative_mse_gain": -0.15901577526361677,
+    "filters": {
+      "base": {
+        "reject_n": 129,
+        "rejected_negative_n": 57,
+        "rejected_positive_n": 72,
+        "caught_negative_yuan": 119632.15279999997,
+        "missed_positive_yuan": 152097.75030000004,
+        "caught_negative_fraction": 0.30759115266993065,
+        "missed_positive_fraction": 0.34792978273453395
+      },
+      "fund": {
+        "reject_n": 116,
+        "rejected_negative_n": 57,
+        "rejected_positive_n": 59,
+        "caught_negative_yuan": 132483.05469999998,
+        "missed_positive_yuan": 118403.06579999995,
+        "caught_negative_fraction": 0.3406326355468417,
+        "missed_positive_fraction": 0.2708518231048201
+      }
+    },
+    "folds": {
+      "100:184": {
+        "n": 83,
+        "base_mse": 0.0006148425641644002,
+        "fund_mse": 0.0008172777663265811,
+        "relative_mse_gain": -0.32924721540269397,
+        "filters": {
+          "base": {
+            "reject_n": 74,
+            "rejected_negative_n": 26,
+            "rejected_positive_n": 48,
+            "caught_negative_yuan": 34432.619099999996,
+            "missed_positive_yuan": 92161.20320000003,
+            "caught_negative_fraction": 0.9194379812087633,
+            "missed_positive_fraction": 0.8872288897339811
+          },
+          "fund": {
+            "reject_n": 68,
+            "rejected_negative_n": 25,
+            "rejected_positive_n": 43,
+            "caught_negative_yuan": 36133.14939999997,
+            "missed_positive_yuan": 84537.93229999999,
+            "caught_negative_fraction": 0.964846439434827,
+            "missed_positive_fraction": 0.8138402409109977
+          }
+        },
+        "train_n": 96,
+        "max_train_label_date": "2025-06-05",
+        "first_test_decision": "2025-06-06"
+      },
+      "184:268": {
+        "n": 83,
+        "base_mse": 0.0013064588940503632,
+        "fund_mse": 0.0015890029379528447,
+        "relative_mse_gain": -0.21626707521315214,
+        "filters": {
+          "base": {
+            "reject_n": 17,
+            "rejected_negative_n": 7,
+            "rejected_positive_n": 10,
+            "caught_negative_yuan": 17215.616500000007,
+            "missed_positive_yuan": 19522.7732,
+            "caught_negative_fraction": 0.21319197055037045,
+            "missed_positive_fraction": 0.13006741321840914
+          },
+          "fund": {
+            "reject_n": 18,
+            "rejected_negative_n": 9,
+            "rejected_positive_n": 9,
+            "caught_negative_yuan": 25043.537100000012,
+            "missed_positive_yuan": 12106.456199999991,
+            "caught_negative_fraction": 0.310130109130876,
+            "missed_positive_fraction": 0.08065736486535481
+          }
+        },
+        "train_n": 179,
+        "max_train_label_date": "2025-10-09",
+        "first_test_decision": "2025-10-10"
+      },
+      "268:352": {
+        "n": 80,
+        "base_mse": 0.0011487596770793046,
+        "fund_mse": 0.0013560792268887962,
+        "relative_mse_gain": -0.1804725165289549,
+        "filters": {
+          "base": {
+            "reject_n": 16,
+            "rejected_negative_n": 8,
+            "rejected_positive_n": 8,
+            "caught_negative_yuan": 14937.3553,
+            "missed_positive_yuan": 27176.33150000002,
+            "caught_negative_fraction": 0.16610270559092138,
+            "missed_positive_fraction": 0.2013445158369585
+          },
+          "fund": {
+            "reject_n": 6,
+            "rejected_negative_n": 4,
+            "rejected_positive_n": 2,
+            "caught_negative_yuan": 6054.405099999994,
+            "missed_positive_yuan": 9732.568099999982,
+            "caught_negative_fraction": 0.06732470692810473,
+            "missed_positive_fraction": 0.07210683354906539
+          }
+        },
+        "train_n": 262,
+        "max_train_label_date": "2026-02-06",
+        "first_test_decision": "2026-02-09"
+      },
+      "352:434": {
+        "n": 77,
+        "base_mse": 0.0015949074016236668,
+        "fund_mse": 0.001629467805285911,
+        "relative_mse_gain": -0.021669222694095325,
+        "filters": {
+          "base": {
+            "reject_n": 22,
+            "rejected_negative_n": 16,
+            "rejected_positive_n": 6,
+            "caught_negative_yuan": 53046.561899999964,
+            "missed_positive_yuan": 13237.442399999993,
+            "caught_negative_fraction": 0.29339493558781127,
+            "missed_positive_fraction": 0.2746144261835283
+          },
+          "fund": {
+            "reject_n": 24,
+            "rejected_negative_n": 19,
+            "rejected_positive_n": 5,
+            "caught_negative_yuan": 65251.963099999986,
+            "missed_positive_yuan": 12026.10919999999,
+            "caught_negative_fraction": 0.3609017215251937,
+            "missed_positive_fraction": 0.2494849818707011
+          }
+        },
+        "train_n": 342,
+        "max_train_label_date": "2026-06-18",
+        "first_test_decision": "2026-06-22"
+      }
+    },
+    "omit_largest5_absolute_label": {
+      "n": 318,
+      "base_mse": 0.0010210272801204898,
+      "fund_mse": 0.0012289439845644525,
+      "relative_mse_gain": -0.20363481808187012,
+      "filters": {
+        "base": {
+          "reject_n": 128,
+          "rejected_negative_n": 56,
+          "rejected_positive_n": 72,
+          "caught_negative_yuan": 110550.79879999999,
+          "missed_positive_yuan": 152097.75030000004,
+          "caught_negative_fraction": 0.2983812768859797,
+          "missed_positive_fraction": 0.37642016519531146
+        },
+        "fund": {
+          "reject_n": 115,
+          "rejected_negative_n": 56,
+          "rejected_positive_n": 59,
+          "caught_negative_yuan": 123401.70069999996,
+          "missed_positive_yuan": 118403.06579999995,
+          "caught_negative_fraction": 0.3330664040825319,
+          "missed_positive_fraction": 0.2930306431236367
+        }
+      }
+    },
+    "paired_mse_improvement_block20_ci95": [
+      -0.0003825810156969524,
+      -1.369769768386209e-05
+    ]
+  },
+  "net_h5": {
+    "n": 321,
+    "base_mse": 0.0021413905170330535,
+    "fund_mse": 0.002610590300288568,
+    "relative_mse_gain": -0.21910986320496173,
+    "filters": {
+      "base": {
+        "reject_n": 95,
+        "rejected_negative_n": 30,
+        "rejected_positive_n": 65,
+        "caught_negative_yuan": 82788.5333,
+        "missed_positive_yuan": 155117.28,
+        "caught_negative_fraction": 0.16858874672750213,
+        "missed_positive_fraction": 0.25409651021232504
+      },
+      "fund": {
+        "reject_n": 92,
+        "rejected_negative_n": 33,
+        "rejected_positive_n": 59,
+        "caught_negative_yuan": 101791.2542,
+        "missed_positive_yuan": 143408.7543,
+        "caught_negative_fraction": 0.20728546924744934,
+        "missed_positive_fraction": 0.23491685775773505
+      }
+    },
+    "folds": {
+      "100:184": {
+        "n": 83,
+        "base_mse": 0.0010431668346998354,
+        "fund_mse": 0.001392331489375056,
+        "relative_mse_gain": -0.3347160234208275,
+        "filters": {
+          "base": {
+            "reject_n": 73,
+            "rejected_negative_n": 17,
+            "rejected_positive_n": 56,
+            "caught_negative_yuan": 28949.383000000038,
+            "missed_positive_yuan": 128529.23940000003,
+            "caught_negative_fraction": 0.9788212546554808,
+            "missed_positive_fraction": 0.8370652260629612
+          },
+          "fund": {
+            "reject_n": 64,
+            "rejected_negative_n": 14,
+            "rejected_positive_n": 50,
+            "caught_negative_yuan": 22566.750300000025,
+            "missed_positive_yuan": 118860.5225,
+            "caught_negative_fraction": 0.7630150474068115,
+            "missed_positive_fraction": 0.7740963114765321
+          }
+        },
+        "train_n": 94,
+        "max_train_label_date": "2025-06-05",
+        "first_test_decision": "2025-06-06"
+      },
+      "184:268": {
+        "n": 83,
+        "base_mse": 0.0021726464882808874,
+        "fund_mse": 0.003154553225490966,
+        "relative_mse_gain": -0.45194040655321466,
+        "filters": {
+          "base": {
+            "reject_n": 11,
+            "rejected_negative_n": 5,
+            "rejected_positive_n": 6,
+            "caught_negative_yuan": 12811.828799999987,
+            "missed_positive_yuan": 19758.651799999992,
+            "caught_negative_fraction": 0.14199399233256316,
+            "missed_positive_fraction": 0.09044076502951676
+          },
+          "fund": {
+            "reject_n": 12,
+            "rejected_negative_n": 7,
+            "rejected_positive_n": 5,
+            "caught_negative_yuan": 20555.243200000004,
+            "missed_positive_yuan": 11384.060999999978,
+            "caught_negative_fraction": 0.2278145525434101,
+            "missed_positive_fraction": 0.052107967507311614
+          }
+        },
+        "train_n": 177,
+        "max_train_label_date": "2025-10-09",
+        "first_test_decision": "2025-10-10"
+      },
+      "268:352": {
+        "n": 80,
+        "base_mse": 0.002129241910995381,
+        "fund_mse": 0.0026888790860755095,
+        "relative_mse_gain": -0.26283400312109606,
+        "filters": {
+          "base": {
+            "reject_n": 2,
+            "rejected_negative_n": 1,
+            "rejected_positive_n": 1,
+            "caught_negative_yuan": 346.5780999999945,
+            "missed_positive_yuan": 2514.660399999997,
+            "caught_negative_fraction": 0.0031193847722977763,
+            "missed_positive_fraction": 0.013669348225303421
+          },
+          "fund": {
+            "reject_n": 2,
+            "rejected_negative_n": 0,
+            "rejected_positive_n": 2,
+            "caught_negative_yuan": 0.0,
+            "missed_positive_yuan": 8849.442400000004,
+            "caught_negative_fraction": 0.0,
+            "missed_positive_fraction": 0.048104352287634954
+          }
+        },
+        "train_n": 260,
+        "max_train_label_date": "2026-02-06",
+        "first_test_decision": "2026-02-09"
+      },
+      "352:434": {
+        "n": 75,
+        "base_mse": 0.00333512663040773,
+        "fund_mse": 0.0032733030423027975,
+        "relative_mse_gain": 0.0185371036713452,
+        "filters": {
+          "base": {
+            "reject_n": 9,
+            "rejected_negative_n": 7,
+            "rejected_positive_n": 2,
+            "caught_negative_yuan": 40680.74339999999,
+            "missed_positive_yuan": 4314.728399999997,
+            "caught_negative_fraction": 0.15636840499287505,
+            "missed_positive_fraction": 0.07919191833466416
+          },
+          "fund": {
+            "reject_n": 14,
+            "rejected_negative_n": 12,
+            "rejected_positive_n": 2,
+            "caught_negative_yuan": 58669.260699999984,
+            "missed_positive_yuan": 4314.728399999997,
+            "caught_negative_fraction": 0.2255125632185514,
+            "missed_positive_fraction": 0.07919191833466416
+          }
+        },
+        "train_n": 340,
+        "max_train_label_date": "2026-06-18",
+        "first_test_decision": "2026-06-22"
+      }
+    },
+    "omit_largest5_absolute_label": {
+      "n": 316,
+      "base_mse": 0.0019412564910053836,
+      "fund_mse": 0.002459190726878516,
+      "relative_mse_gain": -0.2668036080100329,
+      "filters": {
+        "base": {
+          "reject_n": 95,
+          "rejected_negative_n": 30,
+          "rejected_positive_n": 65,
+          "caught_negative_yuan": 82788.5333,
+          "missed_positive_yuan": 155117.28,
+          "caught_negative_fraction": 0.17298987739060345,
+          "missed_positive_fraction": 0.27730715034255216
+        },
+        "fund": {
+          "reject_n": 92,
+          "rejected_negative_n": 33,
+          "rejected_positive_n": 59,
+          "caught_negative_yuan": 101791.2542,
+          "missed_positive_yuan": 143408.7543,
+          "caught_negative_fraction": 0.21269680572410563,
+          "missed_positive_fraction": 0.25637551786047447
+        }
+      }
+    },
+    "paired_mse_improvement_block20_ci95": [
+      -0.0011130310107023823,
+      -1.4846741555736555e-05
+    ]
+  },
+  "entry_net_h1": {
+    "n": 326,
+    "base_mse": 0.00033797320100941895,
+    "fund_mse": 0.00037206115392977656,
+    "relative_mse_gain": -0.10085992859359161,
+    "filters": {
+      "base": {
+        "reject_n": 157,
+        "rejected_negative_n": 83,
+        "rejected_positive_n": 74,
+        "caught_negative_yuan": 98226.78120000011,
+        "missed_positive_yuan": 77948.78739999996,
+        "caught_negative_fraction": 0.47979008648752003,
+        "missed_positive_fraction": 0.3262400089206076
+      },
+      "fund": {
+        "reject_n": 124,
+        "rejected_negative_n": 70,
+        "rejected_positive_n": 54,
+        "caught_negative_yuan": 83071.16010000007,
+        "missed_positive_yuan": 52330.43039999998,
+        "caught_negative_fraction": 0.40576224327095844,
+        "missed_positive_fraction": 0.21901918746865895
+      }
+    },
+    "folds": {
+      "100:184": {
+        "n": 83,
+        "base_mse": 0.00015522441260435054,
+        "fund_mse": 0.0001795956609967435,
+        "relative_mse_gain": -0.15700654287230265,
+        "filters": {
+          "base": {
+            "reject_n": 68,
+            "rejected_negative_n": 34,
+            "rejected_positive_n": 34,
+            "caught_negative_yuan": 25148.01380000007,
+            "missed_positive_yuan": 32062.880699999958,
+            "caught_negative_fraction": 0.8826167780359644,
+            "missed_positive_fraction": 0.7423857136551957
+          },
+          "fund": {
+            "reject_n": 64,
+            "rejected_negative_n": 34,
+            "rejected_positive_n": 30,
+            "caught_negative_yuan": 24104.964400000074,
+            "missed_positive_yuan": 30522.675699999978,
+            "caught_negative_fraction": 0.8460090002574927,
+            "missed_positive_fraction": 0.7067237218710237
+          }
+        },
+        "train_n": 99,
+        "max_train_label_date": "2025-06-05",
+        "first_test_decision": "2025-06-06"
+      },
+      "184:268": {
+        "n": 83,
+        "base_mse": 0.00041374233493948856,
+        "fund_mse": 0.0005109633043103087,
+        "relative_mse_gain": -0.23497950574731274,
+        "filters": {
+          "base": {
+            "reject_n": 28,
+            "rejected_negative_n": 16,
+            "rejected_positive_n": 12,
+            "caught_negative_yuan": 16902.84940000003,
+            "missed_positive_yuan": 13705.007299999977,
+            "caught_negative_fraction": 0.35529691749841547,
+            "missed_positive_fraction": 0.181243857003595
+          },
+          "fund": {
+            "reject_n": 13,
+            "rejected_negative_n": 8,
+            "rejected_positive_n": 5,
+            "caught_negative_yuan": 15600.582600000003,
+            "missed_positive_yuan": 4849.801899999989,
+            "caught_negative_fraction": 0.32792334462610834,
+            "missed_positive_fraction": 0.06413690870922503
+          }
+        },
+        "train_n": 182,
+        "max_train_label_date": "2025-10-09",
+        "first_test_decision": "2025-10-10"
+      },
+      "268:352": {
+        "n": 80,
+        "base_mse": 0.0003763261930991712,
+        "fund_mse": 0.00038655528393888273,
+        "relative_mse_gain": -0.02718144797594757,
+        "filters": {
+          "base": {
+            "reject_n": 32,
+            "rejected_negative_n": 15,
+            "rejected_positive_n": 17,
+            "caught_negative_yuan": 26117.331699999995,
+            "missed_positive_yuan": 23663.15799999999,
+            "caught_negative_fraction": 0.5052971316317555,
+            "missed_positive_fraction": 0.3224973172887551
+          },
+          "fund": {
+            "reject_n": 15,
+            "rejected_negative_n": 7,
+            "rejected_positive_n": 8,
+            "caught_negative_yuan": 11887.548499999983,
+            "missed_positive_yuan": 5996.594999999997,
+            "caught_negative_fraction": 0.22999072907525886,
+            "missed_positive_fraction": 0.08172560063061583
+          }
+        },
+        "train_n": 265,
+        "max_train_label_date": "2026-02-06",
+        "first_test_decision": "2026-02-09"
+      },
+      "352:434": {
+        "n": 80,
+        "base_mse": 0.0004106116004374781,
+        "fund_mse": 0.00041313899181889016,
+        "relative_mse_gain": -0.006155187478189328,
+        "filters": {
+          "base": {
+            "reject_n": 29,
+            "rejected_negative_n": 18,
+            "rejected_positive_n": 11,
+            "caught_negative_yuan": 30058.586300000024,
+            "missed_positive_yuan": 8517.741400000026,
+            "caught_negative_fraction": 0.3904972757844506,
+            "missed_positive_fraction": 0.18219500818948461
+          },
+          "fund": {
+            "reject_n": 32,
+            "rejected_negative_n": 21,
+            "rejected_positive_n": 11,
+            "caught_negative_yuan": 31478.064600000012,
+            "missed_positive_yuan": 10961.35780000002,
+            "caught_negative_fraction": 0.40893801027718146,
+            "missed_positive_fraction": 0.2344641120636591
+          }
+        },
+        "train_n": 345,
+        "max_train_label_date": "2026-06-18",
+        "first_test_decision": "2026-06-22"
+      }
+    },
+    "omit_largest5_absolute_label": {
+      "n": 321,
+      "base_mse": 0.00028583963875429433,
+      "fund_mse": 0.0003302898505644028,
+      "relative_mse_gain": -0.15550751464641177,
+      "filters": {
+        "base": {
+          "reject_n": 155,
+          "rejected_negative_n": 81,
+          "rejected_positive_n": 74,
+          "caught_negative_yuan": 87934.2072000001,
+          "missed_positive_yuan": 77948.78739999996,
+          "caught_negative_fraction": 0.4522525076510311,
+          "missed_positive_fraction": 0.35680320584268066
+        },
+        "fund": {
+          "reject_n": 123,
+          "rejected_negative_n": 69,
+          "rejected_positive_n": 54,
+          "caught_negative_yuan": 77799.44010000007,
+          "missed_positive_yuan": 52330.43039999998,
+          "caught_negative_fraction": 0.40012860750589874,
+          "missed_positive_fraction": 0.23953759837253452
+        }
+      }
+    },
+    "paired_mse_improvement_block20_ci95": [
+      -9.648062268639622e-05,
+      3.716855438699196e-06
+    ]
+  }
+}

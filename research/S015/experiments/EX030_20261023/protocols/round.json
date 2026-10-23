@@ -1,0 +1,35 @@
+{
+  "parent": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX027_20261023"
+    },
+    "evidence_id": "a4060a3cb928f7b7b1a4a06b1ddd63cfee3a014a95c3bf36bce4d43c76ad74f7.json",
+    "sha256": "a4060a3cb928f7b7b1a4a06b1ddd63cfee3a014a95c3bf36bce4d43c76ad74f7",
+    "media_type": "application/json",
+    "name": "funding_five_rounds",
+    "schema": null,
+    "schema_version": null
+  },
+  "source": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX027_20261023"
+    },
+    "evidence_id": "2369798215e119f61b4fe672887b8e3b89b7674061719becc7f6c25dd3f3a923.py",
+    "sha256": "2369798215e119f61b4fe672887b8e3b89b7674061719becc7f6c25dd3f3a923",
+    "media_type": "text/x-python",
+    "name": "funding_study",
+    "schema": null,
+    "schema_version": null
+  },
+  "round": {
+    "round": 4,
+    "question": "资金在量价之外是否有预测增量",
+    "plan": "固定Ridge alpha10，基线r1/r5/vol20/pressure/range20，相比增加资金f1/f5/f20/persist5四项；训练只用退出严格早于测试起点的标签，训练期标准化，测试段[100,184),[184,268),[268,352),[352,434)。h1/3/5事件净收益和入场日净收益分别报告。零阈值预测盈利/亏损的得失，不按测试调参。"
+  }
+}
