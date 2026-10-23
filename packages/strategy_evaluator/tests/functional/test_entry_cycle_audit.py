@@ -2,6 +2,7 @@
 from copy import deepcopy
 from dataclasses import replace
 import json
+import math
 
 import pytest
 from strategy_evaluator import AuditStatus, ReplayEvidence, audit_replay
@@ -40,6 +41,20 @@ def cycle_replay():
         decisions=tuple(decisions), account_daily=tuple(accounts),
         **{name: tuple({**row, "cycle_id": "c" * 64} for row in getattr(source, name))
            for name in ("orders", "fills", "trades")})
+
+
+def test_binary64_fee_roundoff_preserves_exact_cycle_cost_and_rejects_wrong_fee():
+    source = cycle_replay()
+    fills = tuple({**row, "fees": math.nextafter(row["fees"], math.inf)}
+                  if row["side"] == "BUY" else row for row in source.fills)
+    rounded = replace(source, fills=fills)
+    result = audit_replay(rounded)
+    assert result.status is AuditStatus.PASS, result.reason_codes
+    wrong = replace(source, fills=tuple({**row, "fees": row["fees"] + 0.01}
+                    if row["side"] == "BUY" else row for row in fills))
+    rejected = audit_replay(wrong)
+    assert rejected.status is AuditStatus.FAIL
+    assert "ENTRY_CYCLE_ALLOCATION_MISMATCH" in rejected.reason_codes
 
 
 @pytest.mark.parametrize("corruption", ["budget", "quantity", "reset_cost", "released", "ratio", "scope", "undeclared", "unknown_fields", "market_buy"])

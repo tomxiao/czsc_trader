@@ -159,8 +159,13 @@ def _audit(evidence, tolerance):
             if fill["side"] == "BUY":
                 if after["phase"] != "ACTIVE":
                     raise ValueError("buy in exiting cycle")
+                gross = _decimal(fill["quantity"]) * _decimal(fill["price"])
+                # Fill tables retain binary64 fees, while the cycle contract
+                # accumulates exact decimal price/quantity/configured-fee facts.
+                # Check the reported fee, then reconstruct that exact contract.
+                close(_decimal(fill["fees"]), gross * fee)
                 after = {**after, "buy_cost_including_fees": after["buy_cost_including_fees"]
-                         + _decimal(fill["quantity"]) * _decimal(fill["price"]) + _decimal(fill["fees"])}
+                         + gross * (1 + fee)}
                 # Historical replay uses the configured fee and a LIMIT buy.
                 # PTE's unexpected real-channel fee facts have a separate audit.
                 if after["buy_cost_including_fees"] > after["cash_budget"] + tolerance:
