@@ -1,0 +1,178 @@
+{
+  "authorization": "用户批准方案后回复：同意，请继续。新增1轮阶段二固定诊断。",
+  "proposal_sha256": "0d18cf9b2410796a16761e9ee2691b57e759bf5be2dc413223241944cdd2bce2",
+  "mandate": "MANDATE/3 unchanged; current qualified candidates=0",
+  "definitions": {
+    "A": "Close[T]>max(Close[T-20:T]) excluding T",
+    "B": "A and mean((High-Low)/Close,T-5:T)<mean((High-Low)/Close,T-20:T), excluding T",
+    "C": "30m13:30Close>10:00barOpen AND 15:00Close>13:30Close"
+  },
+  "horizons": [
+    1,
+    3,
+    5
+  ],
+  "buy": "T+1 only, no retry. Signal raw close+1%, original tick/lot/upper-guard/fee sizing and HFQ scaling, public resolve_fill DAILY_RANGE_V3.",
+  "sell": "Decision T+h; first attempt T+h+1, then daily market reissue until filled/end. Buy processed before exit censoring. h1 cannot sell buy day.",
+  "capital": 100000,
+  "fee_per_side": 0.001,
+  "new_continuous_strategy_accounts": 0,
+  "event_design_cells": 9,
+  "unique_daily_horizon_rows": 1302,
+  "coverage": "NO_NEXT_SESSION, BUY_UNFILLED, EXIT_RIGHT_CENSORED, SELL_UNFILLED_AT_END, CLOSED separately; entry mark remains for bought censored events; completed labels use CLOSED only.",
+  "statistics": "Unweighted independent100k events; net=quantity*(sell-buy)-bothfees. Gross entry and subsequent separated. Preentry return is not profit. All/in/out, B vs A-notB, C vs prior pressure>=0 fourcells; pressure>=.0025 separate historical threshold diagnostic only.",
+  "segments": [
+    [
+      0,
+      100
+    ],
+    [
+      100,
+      184
+    ],
+    [
+      184,
+      268
+    ],
+    [
+      268,
+      352
+    ],
+    [
+      352,
+      434
+    ]
+  ],
+  "bootstrap": {
+    "axis": "all434 actual trading days with masks and missing values",
+    "blocks": [
+      10,
+      20
+    ],
+    "draws": 499,
+    "seed": 13,
+    "interval": [
+      0.025,
+      0.975
+    ],
+    "contrasts": [
+      "A-out",
+      "B-out",
+      "C-out",
+      "B-A_notB"
+    ],
+    "inference": "exploratory uncorrected; no economic gate"
+  },
+  "resources": {
+    "processes": 3,
+    "native_threads": 1,
+    "seed": 13
+  },
+  "verification": "Prefix truncation and future perturbation at every decision day; independent feature/label arithmetic; historical h1/h3 overlapping labels; synthetic fill edge cases; serial vs spawned worker precheck.",
+  "data": {
+    "etf.ohlcv": "c8a95f32246e33682c33dddc776337103de437d712b5fc5d85edec2bbfe1e223",
+    "etf.unadjusted_daily": "86ef09152a3cf19de3d05da1c18af2ea9b070926008a0dd197306488292b8f92",
+    "etf.unadjusted_intraday": "6f13f697b5770b96484b9f569d7636743297382bd95fe193d004f789ed26856a"
+  },
+  "publication_limits": "Historical vendor availability by17:30 and adjusted-price publication clock not certified; daily range fill model without volume capacity. No new source/refresh/window.",
+  "sources": {
+    "inputs": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX010_20261023"
+      },
+      "evidence_id": "889af03cb1bc6515d320ed8d6aa439f3da93d341460df2ddd217510e04502f6a.json",
+      "sha256": "889af03cb1bc6515d320ed8d6aa439f3da93d341460df2ddd217510e04502f6a",
+      "media_type": "application/json",
+      "name": "input_facts",
+      "schema": null,
+      "schema_version": null
+    },
+    "entry_labels": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX015_20261023"
+      },
+      "evidence_id": "4997bb122e11575faa4784700d46a61c17847b20aa6a6683562d0dd80ee4376a.csv",
+      "sha256": "4997bb122e11575faa4784700d46a61c17847b20aa6a6683562d0dd80ee4376a",
+      "media_type": "text/csv",
+      "name": "entry_labels",
+      "schema": null,
+      "schema_version": null
+    },
+    "old_event_labels": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX010_20261023"
+      },
+      "evidence_id": "bb36e3eed3da9a4e6b67adcbc7b97501d082ae8771a0c3d9165ee174f8de4ba7.csv",
+      "sha256": "bb36e3eed3da9a4e6b67adcbc7b97501d082ae8771a0c3d9165ee174f8de4ba7",
+      "media_type": "text/csv",
+      "name": "event_labels",
+      "schema": null,
+      "schema_version": null
+    },
+    "execution_contract": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX003_20261021"
+      },
+      "evidence_id": "99521e89055c860ed93c79ed3f089a9af1efefd1c9d2b60a2c71b346722eb6f3.json",
+      "sha256": "99521e89055c860ed93c79ed3f089a9af1efefd1c9d2b60a2c71b346722eb6f3",
+      "media_type": "application/json",
+      "name": "grid_0031",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "EX013_20261023": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX013_20261023"
+      },
+      "evidence_id": "3c0607e97f8c4b7b4eadd223e5564ca9eec71e97a99dcc7d4bb4bf463fffc550.json",
+      "sha256": "3c0607e97f8c4b7b4eadd223e5564ca9eec71e97a99dcc7d4bb4bf463fffc550",
+      "media_type": "application/json",
+      "name": "experiment-report",
+      "schema": "experiment_report",
+      "schema_version": 1
+    },
+    "EX015_20261023": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX015_20261023"
+      },
+      "evidence_id": "fed9b766ccd370d36b7930d9628a9f00f49cea15f7640223cb117e166bacbdd5.json",
+      "sha256": "fed9b766ccd370d36b7930d9628a9f00f49cea15f7640223cb117e166bacbdd5",
+      "media_type": "application/json",
+      "name": "experiment-report",
+      "schema": "experiment_report",
+      "schema_version": 1
+    },
+    "EX024_20261023": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX024_20261023"
+      },
+      "evidence_id": "63bbfc60ee7853fa06b97e82c6cc407aa65002e10716882297d36d4de09ff7bc.json",
+      "sha256": "63bbfc60ee7853fa06b97e82c6cc407aa65002e10716882297d36d4de09ff7bc",
+      "media_type": "application/json",
+      "name": "experiment-report",
+      "schema": "experiment_report",
+      "schema_version": 1
+    }
+  }
+}

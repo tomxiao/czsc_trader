@@ -1,0 +1,83 @@
+{
+  "status": "PASS",
+  "existing_event_rows": 1302,
+  "new_events": 0,
+  "new_accounts": 0,
+  "summary_records_verified": 327,
+  "partition_identities_verified": 162,
+  "interval_window_bounds_verified": 3375,
+  "exhaustive_synthetic_cases": 260,
+  "independent_algorithm": "Unit-weight interval scheduling dynamic programming; synthetic exhaustive subset cross-check.",
+  "bound_scope": "Per-window optimistic maximum for subsets of exact fixed-horizon one-buy-one-sell events; same-day reentry allowed, independent window optimization, no cash constraint. Not a bound on altered entry/exit or combined mechanisms.",
+  "fixed_cells": [
+    {
+      "condition": "A",
+      "horizon": 1,
+      "median_upper": 11,
+      "windows_ge3_upper": 365,
+      "windows": 375
+    },
+    {
+      "condition": "B",
+      "horizon": 1,
+      "median_upper": 6,
+      "windows_ge3_upper": 354,
+      "windows": 375
+    },
+    {
+      "condition": "C",
+      "horizon": 1,
+      "median_upper": 18,
+      "windows_ge3_upper": 375,
+      "windows": 375
+    },
+    {
+      "condition": "A",
+      "horizon": 3,
+      "median_upper": 6,
+      "windows_ge3_upper": 340,
+      "windows": 375
+    },
+    {
+      "condition": "B",
+      "horizon": 3,
+      "median_upper": 3,
+      "windows_ge3_upper": 302,
+      "windows": 375
+    },
+    {
+      "condition": "C",
+      "horizon": 3,
+      "median_upper": 12,
+      "windows_ge3_upper": 375,
+      "windows": 375
+    },
+    {
+      "condition": "A",
+      "horizon": 5,
+      "median_upper": 4,
+      "windows_ge3_upper": 300,
+      "windows": 375
+    },
+    {
+      "condition": "B",
+      "horizon": 5,
+      "median_upper": 3,
+      "windows_ge3_upper": 199,
+      "windows": 375
+    },
+    {
+      "condition": "C",
+      "horizon": 5,
+      "median_upper": 8,
+      "windows_ge3_upper": 375,
+      "windows": 375
+    }
+  ],
+  "input_sha256": {
+    "events.csv": "b14e2764684adbafd4cad6203a87ed3e587f8c928833eb7b89d9e33a50e52653",
+    "results.json": "587935ba61ecc872039cc27250f3976739bdd4d285fec51afe3683d2d703c160",
+    "supplement.json": "28b78484ab8ad9a9f5d0bc16e2d196dcbc8592f78fa48dfd29f8f4dc532168f8"
+  },
+  "audit_source_sha256": "f3dc201c2059657c93503e11fe95a2657aab7aeb8d31d229b89fabb5aa0eafaf"
+}

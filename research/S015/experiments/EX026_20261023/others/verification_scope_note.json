@@ -1,0 +1,11 @@
+{
+  "type": "Technical verification scope disclosure, no new research or changed labels",
+  "reason": "Repeated whole-prefix minute group parsing was CPU intensive. The initial audit loop was explicitly stopped before completion; no PASS claimed for it.",
+  "scope": "Independent scalar definitions at all434 dates. Actual features function:75prior rows+current at all434 dates; perturb next available day at433 dates. Additionally full prefixes and all future rows perturbed at5fixed segment starts 0,99,183,267,351. Source dependency inspection confirms maximum20 prior daily rows and current8minute bars.",
+  "planned_vs_actual": "Initial protocol said full prefix/future everydate. Actual verification uses exhaustive local dependency checks plus5full-history checks; disclose rather than claim434full-history tests.",
+  "research_events_recomputed": 0,
+  "new_strategy_accounts": 0,
+  "results_unchanged": true,
+  "metadata_isolation": "Authenticated input identities and EvidenceRefs retained separately. Clear local DataFrame attrs before repeated audit slicing to avoid copying provenance payload; source assets and all numeric values unchanged.",
+  "final_status": "PASS; see audit.json. Two incomplete audit attempts are not claimed as completed tests; no event outcomes recomputed."
+}
