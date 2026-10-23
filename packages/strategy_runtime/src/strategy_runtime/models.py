@@ -261,6 +261,11 @@ class ExecutionPolicy:
         canonical_sha256(self.settings)
         if self.policy_type == "FROZEN_RULE":
             capital = self.settings.get("capital", {})
+            if capital.get("mode") == "signal_cash_fraction":
+                if capital.get("target_scope") != "entry_cycle" or "allocation_fraction" in capital:
+                    raise RuntimeContractError(
+                        "signal cash fraction requires entry_cycle scope and signal-owned fraction"
+                    )
             if capital.get("mode") == "target_equity_fraction":
                 if (capital.get("target_scope") != "decision"
                         or isinstance(capital.get("allocation_fraction"), bool)

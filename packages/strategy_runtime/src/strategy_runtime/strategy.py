@@ -40,6 +40,7 @@ from .preparation import PreparedInputs, prepare_inputs, acquire_binding, calend
 from .input_binding import StrategyInputPlan, StrategyInputBinding
 from .prepared_store import save_prepared_inputs
 from .signals import StrategySignal
+from .entry_cycle import CycleTarget
 from .calculation import HistoryCalculationContext
 
 
@@ -108,6 +109,9 @@ class StrategyInstance:
         self._tradable_window = tradable_window
         self._data_dir = Path(data_dir).resolve()
         self._execution_policy = execution_policy
+        cycle_mode = execution_policy.settings.get("capital", {}).get("mode") == "signal_cash_fraction"
+        if cycle_mode != (algorithm.definition.decision.output_kind == "CYCLE_TARGET"):
+            raise RuntimeContractError("CYCLE_TARGET and signal_cash_fraction must be declared together")
         self._dataflows = dataflows
         self._pricing_contract = pricing
         if pricing.anchor_date is not None and pricing.anchor_date >= tradable_window.start:
@@ -290,6 +294,13 @@ class StrategyInstance:
             self.definition.decision.maximum_target,
         ).all():
             raise RuntimeContractError("strategy history contains invalid target positions")
+        if self._execution_policy.settings.get("capital", {}).get("mode") == "signal_cash_fraction":
+            if self.definition.decision.output_kind != "CYCLE_TARGET":
+                raise RuntimeContractError("signal allocation requires CYCLE_TARGET decision contract")
+            if "entry_allocation_fraction" not in history or not targets.isin([0., 1.]).all():
+                raise RuntimeContractError("cycle history requires binary target and entry_allocation_fraction")
+            for active, fraction in zip(targets, history["entry_allocation_fraction"], strict=True):
+                CycleTarget(bool(active), None if not active and pd.isna(fraction) else fraction)
         cached = (history, sessions)
         self._history_cache[cache_key] = cached
         return cached
@@ -313,6 +324,11 @@ class StrategyInstance:
             ) from None
         row = history.iloc[signal_position]
         target_position = float(row["target_position"])
+        cycle_target = None
+        if self._execution_policy.settings.get("capital", {}).get("mode") == "signal_cash_fraction":
+            fraction = row["entry_allocation_fraction"]
+            cycle_target = CycleTarget(bool(target_position),
+                                       None if not target_position and pd.isna(fraction) else fraction)
         if not (
             self.definition.decision.minimum_target
             <= target_position
@@ -351,6 +367,7 @@ class StrategyInstance:
         return StrategySignal(
             trading_date=point.trading_date,
             target_position=target_position,
+            cycle_target=cycle_target,
             evidence=evidence,
             next_state={
                 "signal_date": signal_date.isoformat(),
@@ -419,10 +436,17 @@ class StrategyInstance:
         if signal.evidence.get("signal_date") != signal_date.isoformat():
             raise RuntimeContractError("strategy signal evidence refers to another date")
         references = data.price_reference(signal_date, point.trading_date)
+        signal_identity = signal_identity_for(
+            strategy=self._identity, signal_date=signal_date,
+            target_position=signal.target_position, input_identities=data.input_identities,
+            price_identities=data.price_identities, cycle_target=signal.cycle_target)
+        if signal.cycle_target is None and state.entry_cycle is not None:
+            raise RuntimeContractError("entry allocation state cannot be consumed by another capital mode")
         raw = dict(
             build_execution_plan(
                 deployment_settings={"cycle_target_quantity": state.cycle_target_quantity},
-                available_cash=float(portfolio.available_cash),
+                available_cash=(portfolio.available_cash if signal.cycle_target is not None
+                                else float(portfolio.available_cash)),
                 position_quantity=portfolio.position_quantity,
                 target_position=signal.target_position,
                 policy=self._execution_policy,
@@ -430,6 +454,8 @@ class StrategyInstance:
                 execution_reference_price=float(references.execution_price),
                 price_scale=float(references.price_scale),
                 unadjusted_reference_price=float(references.execution_price / references.price_scale),
+                cycle_target=signal.cycle_target, entry_cycle=state.entry_cycle,
+                opening_signal_identity=signal_identity, account_id=portfolio.account_id,
             )
         )
         orders = tuple(_planned_order(value) for value in raw.get("orders", ()))
@@ -461,13 +487,6 @@ class StrategyInstance:
             )
         )
         required_checkpoints = tuple(sorted({leg.checkpoint for leg in legs}))
-        signal_identity = signal_identity_for(
-            strategy=self._identity,
-            signal_date=signal_date,
-            target_position=signal.target_position,
-            input_identities=data.input_identities,
-            price_identities=data.price_identities,
-        )
         cycle_target = int(raw["cycle_target_quantity"])
         target_quantity = int(raw["target_quantity"])
         plan_mode = str(raw.get("plan_mode", "NONE"))
@@ -475,6 +494,8 @@ class StrategyInstance:
             raw=raw,
             execution_policy=self._execution_policy,
         )
+        cycle_facts = {name: raw.get(name) for name in (
+            "cycle_target", "entry_cycle_before", "entry_cycle_after", "cycle_status")}
         plan_identity = plan_identity_for(
             signal_identity=signal_identity,
             actual_quantity=portfolio.position_quantity,
@@ -485,6 +506,8 @@ class StrategyInstance:
             allocation_fraction=allocation_fraction,
             orders=orders,
             legs=legs,
+            **cycle_facts,
+            available_cash=portfolio.available_cash, fee_rate=Decimal(str(raw["fee_rate"])),
         )
         return ExecutionPlan(
             strategy=self._identity,
@@ -518,6 +541,7 @@ class StrategyInstance:
             input_identities=data.input_identities,
             price_identities=data.price_identities,
             evidence=MappingProxyType(dict(signal.evidence)),
+            **cycle_facts,
         )
 
     def run_window(self, *, executor: WindowExecutor):

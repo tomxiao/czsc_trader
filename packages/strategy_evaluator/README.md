@@ -6,6 +6,12 @@ SE按显式协议提供指标、协议校验、比较、帕累托分层、PBO、
 
 研究员通过TDR受管评价API取得SRT/TXE账户事实，再组合SE公共函数。SE不获取行情、不加载策略、不写治理状态。旧资格裁定、冻结健康政策、自动冻结建议及对应报告入口已删除。
 
+`audit_replay`对`signal_cash_fraction / entry_cycle`额外执行`ENTRY_CYCLE_ALLOCATION`检查，独立核对信号比例、
+开仓现金预算、整手目标、周期内不变性、后续补买数量与剩余预算、成交含费累计和退出后的状态释放。
+检查消费正式决策/账户账本中的周期事实，不调用SRT规划器或TXE执行器；外层哈希重新计算也不能使不一致周期事实通过。
+动态周期的历史回放限定LIMIT买入，按照配置费用核对成交不超过剩余预算；这与PTE保存渠道实际异常费用事实的通路分别处理。
+当前`diagnose_account_replays`的全仓/现金分解不支持动态周期分配，明确返回`UNSUPPORTED`，不将其解释成固定100%资金策略。
+
 阶段四使用`assess_candidates`和`compare_candidates`，输入与输出均为强类型不可变记录。
 `validate_protocol`、`screen_candidates`、`rank_candidates`保留既有协议计算语义；新阶段交付
 按下述研究契约进行复算。统计风险标签不等于冻结决定或未来成功概率。

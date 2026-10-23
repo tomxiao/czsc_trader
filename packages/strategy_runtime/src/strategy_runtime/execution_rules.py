@@ -6,12 +6,14 @@ adaptation belong in ``execution_planner`` and are excluded from frozen hashes.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_UP
 from math import isfinite
 from typing import Any, Mapping
 
 from .errors import RuntimeContractError
+from .entry_cycle import CycleTarget, EntryCycleState, EntryCyclePhase, EntryCyclePlanStatus
+from .models import canonical_sha256
 
 
 @dataclass(frozen=True, slots=True)
@@ -26,6 +28,10 @@ class ExecutionRuleInput:
     execution_reference_price: float
     price_scale: float = 1.0
     unadjusted_reference_price: float | None = None
+    cycle_target: CycleTarget | None = None
+    entry_cycle: EntryCycleState | None = None
+    opening_signal_identity: str | None = None
+    account_id: str | None = None
 
     def __post_init__(self) -> None:
         if not isfinite(self.price_scale) or self.price_scale <= 0:
@@ -70,6 +76,8 @@ def _target_plan(
     request: ExecutionRuleInput,
 ) -> dict[str, Any]:
     settings = dict(request.settings)
+    if settings["capital"]["mode"] == "signal_cash_fraction":
+        return _signal_cash_plan(request)
     instrument = dict(settings["instrument"])
     capital = dict(settings["capital"])
     entry = dict(settings["entry"])
@@ -207,6 +215,71 @@ def _target_plan(
             "target_scope": capital["target_scope"],
         },
     }
+
+
+def _signal_cash_plan(request: ExecutionRuleInput) -> dict[str, Any]:
+    """Propose a budget/quantity lock; only the account host may adopt it."""
+    target, previous = request.cycle_target, request.entry_cycle
+    if not isinstance(target, CycleTarget) or request.target_position not in (0., 1.) or bool(request.target_position) != target.active:
+        raise RuntimeContractError("signal cash fraction requires matching typed binary cycle target")
+    capital = request.settings["capital"]
+    if capital.get("target_scope") != "entry_cycle" or "allocation_fraction" in capital:
+        raise RuntimeContractError("signal cash fraction requires signal-owned entry allocation")
+    if not request.account_id or not request.opening_signal_identity:
+        raise RuntimeContractError("entry cycle requires account and signal identities")
+    cash = Decimal(str(request.available_cash))
+    fee = Decimal(str(capital["fee_rate"]))
+    actual = request.position_quantity
+    if not cash.is_finite() or cash < 0 or not fee.is_finite() or not 0 <= fee < 1:
+        raise RuntimeContractError("invalid cycle cash or fee")
+    if type(actual) is not int or actual < 0 or actual % 100:
+        raise RuntimeContractError("invalid cycle position quantity")
+    if previous is not None and not isinstance(previous, EntryCycleState):
+        raise RuntimeContractError("entry cycle state requires typed facts")
+    old_quantity = request.deployment_settings.get("cycle_target_quantity")
+    if previous is None:
+        if actual or old_quantity is not None:
+            raise RuntimeContractError("new entry allocation requires flat account without legacy cycle")
+    elif old_quantity != previous.target_quantity or actual > previous.target_quantity:
+        raise RuntimeContractError("account quantity differs from entry cycle")
+
+    settings = {**request.settings, "capital": {**capital, "mode": "available_cash_fraction", "allocation_fraction": 1.}}
+    after = previous
+    status = EntryCyclePlanStatus.IDLE
+    if previous is None and target.active:
+        budget = cash * target.entry_fraction
+        probe = _target_plan(replace(request, settings=settings, available_cash=budget))
+        quantity = int(probe["cycle_target_quantity"])
+        if quantity:
+            after = EntryCycleState(
+                canonical_sha256({"account": request.account_id, "opening_signal": request.opening_signal_identity}),
+                request.opening_signal_identity, target.entry_fraction, budget, quantity,
+                Decimal(0), EntryCyclePhase.ACTIVE)
+            status = EntryCyclePlanStatus.OPEN
+        else:
+            status = EntryCyclePlanStatus.INSUFFICIENT_LOT
+    elif previous is not None:
+        status = EntryCyclePlanStatus.HOLD
+        if not target.active or previous.phase is EntryCyclePhase.EXITING:
+            after = replace(previous, phase=EntryCyclePhase.EXITING)
+            status = EntryCyclePlanStatus.EXIT
+
+    effective = bool(after is not None and after.phase is EntryCyclePhase.ACTIVE)
+    budget_cash = min(cash, after.remaining_budget) if effective else cash
+    raw = _target_plan(replace(
+        request, settings=settings, available_cash=budget_cash,
+        target_position=float(effective),
+        deployment_settings={"cycle_target_quantity": None if after is None else after.target_quantity}))
+    raw["cycle_target_quantity"] = 0 if after is None else after.target_quantity
+    if effective and not raw["orders"] and actual < after.target_quantity:
+        status = EntryCyclePlanStatus.BUDGET_LIMIT
+    fraction = after.allocation_fraction if after is not None else (target.entry_fraction or Decimal(1))
+    raw.update(
+        target_position=request.target_position, available_cash=float(cash),
+        unallocated_cash=float((cash - Decimal(str(raw["estimated_order_cost"]))).quantize(Decimal(".01"))),
+        capital_rule={"mode": "signal_cash_fraction", "target_scope": "entry_cycle", "allocation_fraction": str(fraction)},
+        cycle_target=target, entry_cycle_before=previous, entry_cycle_after=after, cycle_status=status)
+    return raw
 
 
 def _intraday_overlay_plan(

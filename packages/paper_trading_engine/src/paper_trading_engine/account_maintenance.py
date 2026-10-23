@@ -1,15 +1,16 @@
 """Offline, atomic replacement of account execution bindings."""
 
-from dataclasses import asdict
 from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
 import os
+import json
 import sqlite3
 from threading import RLock
 from uuid import uuid4
 
 from dataflows import DataSpace
+from strategy_runtime import EntryCycleState
 
 from .account_binding import AccountBindingUpdate, AccountBindingUpdateResult, AccountBindingUpdateStatus
 from .account_engine import AccountEngine
@@ -23,6 +24,11 @@ from .runtime_lock import RuntimeDatabaseLock
 from .runtime_release import load_release
 from .srt_advice_client import SrtAdviceClient
 from .store import PaperStore, RUNTIME_DATABASE_SCHEMA_VERSION, _update_account_bindings
+
+
+def _entry_cycle(account):
+    value = account.get("entry_cycle_json")
+    return None if value is None else EntryCycleState.from_dict(json.loads(value))
 
 
 def _restore_current_indexes(snapshots: dict[Path, bytes | None]) -> None:
@@ -150,6 +156,7 @@ def update_account_bindings(
                     int(account["quantity"]), float(cash), total_assets=float(account["total_assets"]),
                     trading_date=prepared.tradable_window.start, portfolio_revision=portfolio_revision,
                     state_revision=state_revision, cycle_target_quantity=account["cycle_target"],
+                    entry_cycle=_entry_cycle(account),
                     strategy_id=binding.strategy_id, strategy_version=binding.version,
                     account_id=update.account_id, symbol=binding.symbol, asset=account["asset_type"], prepared=prepared,
                 )
@@ -162,7 +169,7 @@ def update_account_bindings(
                         portfolio_revision, state_revision, signal_date, prepared.tradable_window.start, cash):
                     raise ValueError(f"{update.account_id}: replacement decision differs from bound portfolio or preparation")
                 value = AccountEngine(store, client)._assign_decision_id(update.account_id, None, value)
-                bindings.append((update, binding, asdict(value)))
+                bindings.append((update, binding, value.to_store_payload()))
             if load_release(runtime_root, target_release_id).manifest_sha256 != release.manifest_sha256:
                 raise ValueError("target release changed during account binding validation")
             connection.execute("BEGIN IMMEDIATE")

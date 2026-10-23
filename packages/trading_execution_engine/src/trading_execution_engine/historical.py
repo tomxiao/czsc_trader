@@ -5,9 +5,11 @@ from __future__ import annotations
 from strategy_runtime import ExecutionOutcomeStatus
 
 from datetime import datetime, time
+from dataclasses import replace
 from decimal import Decimal, InvalidOperation
 from hashlib import sha256
 from math import isfinite
+import json
 import pandas as pd
 from strategy_runtime import (
     ExecutionCapabilities,
@@ -16,11 +18,14 @@ from strategy_runtime import (
     ExecutionState,
     ExecutionPolicy,
     ExecutionPricing,
+    EntryCyclePhase,
+    EntryCycleState,
     OrderType,
     PortfolioSnapshot,
     RuntimeContractError,
     RuntimeExecutionError,
     TradingPoint,
+    canonical_sha256,
 )
 from .fills import OrderSpec, resolve_fill, DailyQuote
 from .market import MarketExecutionRules, SuspensionInformation
@@ -234,6 +239,7 @@ class HistoricalExecutor:
         self._quantity = 0
         self._cycle_target: int | None = None
         self._cycle_id: str | None = None
+        self._entry_cycle: EntryCycleState | None = None
         self._revision = 0
         self._last_execution: pd.Timestamp | None = None
         self._plans: dict[str, ExecutionPlan] = {}
@@ -274,7 +280,7 @@ class HistoricalExecutor:
             self._revision,
             as_of,
             pricing=self._pricing,
-        ), ExecutionState(self._revision, as_of, self._cycle_target)
+        ), ExecutionState(self._revision, as_of, self._cycle_target, entry_cycle=self._entry_cycle)
 
     def execute(self, plan: ExecutionPlan) -> ExecutionOutcome:
         if self._execution_failure is not None:
@@ -353,6 +359,7 @@ class HistoricalExecutor:
                     tzinfo=plan.generated_at.tzinfo,
                 ),
                 self._cycle_target,
+                entry_cycle=self._entry_cycle,
             ),
             status=ExecutionOutcomeStatus.SETTLED,
         )
@@ -485,6 +492,18 @@ class HistoricalExecutor:
             raise RuntimeContractError("historical plan position differs from ledger")
         if abs(float(plan.available_cash) - self._cash) > 1e-6:
             raise RuntimeContractError("historical plan cash differs from ledger")
+        dynamic = self._policy.settings.get("capital", {}).get("mode") == "signal_cash_fraction"
+        if dynamic != (plan.capital_mode == "signal_cash_fraction"):
+            raise RuntimeContractError("historical plan capital mode differs from execution policy")
+        if plan.entry_cycle_before != self._entry_cycle:
+            raise RuntimeContractError("historical plan entry cycle differs from ledger")
+        if dynamic and plan.entry_cycle_after is not None:
+            expected_cycle_id = canonical_sha256({
+                "account": self._account_id,
+                "opening_signal": plan.entry_cycle_after.opening_signal_identity,
+            })
+            if plan.entry_cycle_after.cycle_id != expected_cycle_id:
+                raise RuntimeContractError("historical entry cycle belongs to another account")
 
     def _execute_target(
         self,
@@ -498,7 +517,13 @@ class HistoricalExecutor:
         target = (int(plan.target_position) if plan.target_position in (0.0, 1.0)
                   else float(plan.target_position))
         decision_id = self._decision_id(plan)
-        if target > 0 and self._quantity == 0 and self._cycle_id is None:
+        dynamic = plan.capital_mode == "signal_cash_fraction"
+        if dynamic:
+            # The executor adopts a valid plan, not its earlier preview. All
+            # orders in historical execution are terminal in this session.
+            self._entry_cycle = plan.entry_cycle_after
+            self._cycle_id = None if self._entry_cycle is None else self._entry_cycle.cycle_id
+        elif target > 0 and self._quantity == 0 and self._cycle_id is None:
             self._cycle_id = _id("CYC", self._strategy_reference, signal_date)
         exit_time: pd.Timestamp | None = None
         exit_quantity = 0
@@ -547,6 +572,15 @@ class HistoricalExecutor:
                 if required is not None and required > self._cash + 1e-8:
                     trigger = fill_price = fill_time = None
                     reason = "INSUFFICIENT_CASH"
+                if fill_price is not None and self._entry_cycle is not None:
+                    cycle_cost = Decimal(quantity) * Decimal(str(fill_price)) * (1 + plan.fee_rate)
+                    remaining = self._entry_cycle.cash_budget - self._entry_cycle.buy_cost_including_fees
+                    if cycle_cost > remaining:
+                        trigger = fill_price = fill_time = None
+                        reason = "ENTRY_CYCLE_BUDGET_EXCEEDED"
+                    elif quantity + self._quantity > self._entry_cycle.target_quantity:
+                        trigger = fill_price = fill_time = None
+                        reason = "ENTRY_CYCLE_TARGET_EXCEEDED"
             elif quantity > self._quantity:
                 trigger = fill_price = fill_time = None
                 reason = "INSUFFICIENT_POSITION"
@@ -572,6 +606,14 @@ class HistoricalExecutor:
             if side == "BUY":
                 self._cash -= gross + fees
                 self._quantity += quantity
+                if self._entry_cycle is not None:
+                    self._entry_cycle = replace(
+                        self._entry_cycle,
+                        buy_cost_including_fees=(
+                            self._entry_cycle.buy_cost_including_fees
+                            + Decimal(quantity) * Decimal(str(fill_price)) * (1 + plan.fee_rate)
+                        ),
+                    )
             else:
                 self._cash += gross - fees
                 self._quantity -= quantity
@@ -638,8 +680,14 @@ class HistoricalExecutor:
                 }
             )
             self._open_trade = None
-        self._cycle_target = plan.cycle_target_quantity
-        if self._quantity == 0 and (target == 0 or exit_quantity):
+        if dynamic:
+            if self._entry_cycle is not None and self._entry_cycle.phase is EntryCyclePhase.EXITING and self._quantity == 0:
+                self._entry_cycle = None
+            self._cycle_target = None if self._entry_cycle is None else self._entry_cycle.target_quantity
+            self._cycle_id = None if self._entry_cycle is None else self._entry_cycle.cycle_id
+        else:
+            self._cycle_target = plan.cycle_target_quantity
+        if not dynamic and self._quantity == 0 and (target == 0 or exit_quantity):
             self._cycle_target = None
             self._cycle_id = None
         self._state_by_date[execution_date] = {
@@ -650,6 +698,16 @@ class HistoricalExecutor:
             "cash": self._cash,
             "quantity": self._quantity,
         }
+        if dynamic:
+            self._state_by_date[execution_date].update({
+                "entry_cycle_id": None if self._entry_cycle is None else self._entry_cycle.cycle_id,
+                "entry_cycle_phase": None if self._entry_cycle is None else self._entry_cycle.phase.value,
+                "entry_cycle_cash_budget": None if self._entry_cycle is None else str(self._entry_cycle.cash_budget),
+                "entry_cycle_buy_cost_including_fees": (
+                    None if self._entry_cycle is None else str(self._entry_cycle.buy_cost_including_fees)
+                ),
+                "entry_cycle": json.dumps(None if self._entry_cycle is None else self._entry_cycle.to_dict(), sort_keys=True, separators=(",", ":")),
+            })
 
     def _execute_overlay(
         self,
@@ -828,6 +886,27 @@ class HistoricalExecutor:
             "target_position": plan.target_position,
             "plan_mode": plan.plan_mode,
         }
+        if plan.capital_mode == "signal_cash_fraction":
+            cycle = plan.entry_cycle_after or plan.entry_cycle_before
+            settled_cycle = self._entry_cycle or cycle
+            row.update({
+                "plan_identity": plan.plan_identity,
+                "signal_identity": plan.signal_identity,
+                "cycle_target": json.dumps(plan.cycle_target.to_dict(), sort_keys=True, separators=(",", ":")),
+                "entry_cycle_before": json.dumps(None if plan.entry_cycle_before is None else plan.entry_cycle_before.to_dict(), sort_keys=True, separators=(",", ":")),
+                "entry_cycle_after": json.dumps(None if plan.entry_cycle_after is None else plan.entry_cycle_after.to_dict(), sort_keys=True, separators=(",", ":")),
+                "cycle_id": None if cycle is None else cycle.cycle_id,
+                "entry_allocation_fraction": (
+                    None if plan.cycle_target.entry_fraction is None else str(plan.cycle_target.entry_fraction)
+                ),
+                "cycle_allocation_fraction": None if cycle is None else str(cycle.allocation_fraction),
+                "cycle_cash_budget": None if cycle is None else str(cycle.cash_budget),
+                "cycle_target_quantity": None if cycle is None else cycle.target_quantity,
+                "cycle_buy_cost_including_fees": (
+                    None if settled_cycle is None else str(settled_cycle.buy_cost_including_fees)
+                ),
+                "cycle_status": plan.cycle_status.value,
+            })
         for key, value in plan.evidence.items():
             if key not in row:
                 row[key] = value
@@ -837,6 +916,11 @@ class HistoricalExecutor:
         cash = self._opening_cash
         quantity = self._opening_quantity
         rows: list[dict[str, object]] = []
+        cycle_facts = dict.fromkeys((
+            "entry_cycle_id", "entry_cycle_phase", "entry_cycle_cash_budget",
+            "entry_cycle_buy_cost_including_fees",
+        ))
+        cycle_facts["entry_cycle"] = "null"
         source_positions = self._daily.index.searchsorted(self._evaluation.index, side="right") - 1
         for day, close, source_position in zip(
             self._evaluation.index, self._evaluation["close"].array, source_positions
@@ -875,4 +959,8 @@ class HistoricalExecutor:
                     "equity": cash + quantity * float(close),
                 }
             )
+            if self._policy.settings.get("capital", {}).get("mode") == "signal_cash_fraction":
+                if state is not None:
+                    cycle_facts = {key: state[key] for key in cycle_facts}
+                rows[-1].update(cycle_facts)
         return rows

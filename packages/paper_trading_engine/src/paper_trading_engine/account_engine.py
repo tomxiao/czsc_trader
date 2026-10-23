@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, replace
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from hashlib import sha256
 import json
 from threading import RLock
+
+from strategy_runtime import EntryCycleState
 
 from .audit import AuditRecorder
 from .broker import TERMINAL_INTENT_STATUSES
@@ -90,6 +92,7 @@ class AccountEngine:
             "total_assets": str(account["total_assets"]),
             "quantity": int(account["quantity"]),
             "cycle_target": account.get("cycle_target"),
+            "entry_cycle_json": account.get("entry_cycle_json"),
             "active_intents": cls._replacement_intent_snapshot(intents),
         }
         encoded = json.dumps(facts, sort_keys=True, separators=(",", ":"))
@@ -98,7 +101,7 @@ class AccountEngine:
     @staticmethod
     def _state_revision(account) -> int:
         encoded = json.dumps(
-            {"cycle_target": account.get("cycle_target")},
+            {"cycle_target": account.get("cycle_target"), "entry_cycle_json": account.get("entry_cycle_json")},
             sort_keys=True,
             separators=(",", ":"),
         )
@@ -283,6 +286,7 @@ class AccountEngine:
             portfolio_revision=portfolio_revision,
             state_revision=state_revision,
             cycle_target_quantity=account["cycle_target"],
+            entry_cycle=None if account.get("entry_cycle_json") is None else EntryCycleState.from_dict(json.loads(account["entry_cycle_json"])),
             strategy_id=account["strategy_id"],
             strategy_version=account["strategy_version"],
             account_id=account_id,
@@ -341,7 +345,7 @@ class AccountEngine:
                 "账户策略状态在策略计算期间发生变化，决策未提交"
             )
 
-        payload = asdict(decision)
+        payload = decision.to_store_payload()
         payload["prepared_data_identity"] = prepared.data_identity
         payload["prepared_data_reference"] = dict(prepared.data_reference)
         previous = json.loads(previous_payload) if previous_payload else None
@@ -580,7 +584,7 @@ class AccountEngine:
                     decision_id=decision.decision_id,
                     symbol=decision.symbol,
                     valid_session=decision.valid_session.isoformat(),
-                    fee_rate=decision.fee_rate,
+                    fee_rate=payload["fee_rate"],
                     legs=plan_rows,
                     audit_events=plan_events,
                 )
@@ -611,7 +615,7 @@ class AccountEngine:
                     decision_id=decision.decision_id,
                     symbol=decision.symbol,
                     valid_session=decision.valid_session.isoformat(),
-                    fee_rate=decision.fee_rate,
+                    fee_rate=payload["fee_rate"],
                     orders=immediate_rows,
                     audit_events=immediate_events,
                 )

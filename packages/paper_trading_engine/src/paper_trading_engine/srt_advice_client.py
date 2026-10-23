@@ -21,6 +21,7 @@ from strategy_runtime import (
     ExecutionPriceBasis,
     ExecutionPricing,
     ExecutionState,
+    EntryCycleState,
     PortfolioSnapshot,
     StrategyInit,
     StrategyInstance,
@@ -168,7 +169,9 @@ def _decision_from_plan(
     except RuntimeContractError as exc:
         observation = unavailable_observation(str(exc)).to_dict()
     payload = {
-        "contract_version": "advice.v5" if plan.plan_mode != "NONE" or legs else "advice.v4",
+        "contract_version": "advice.v6" if plan.capital_mode == "signal_cash_fraction" else (
+            "advice.v5" if plan.plan_mode != "NONE" or legs else "advice.v4"
+        ),
         "decision_id": source_decision_id,
         "source_decision_id": source_decision_id,
         "signal_identity": plan.signal_identity,
@@ -205,6 +208,21 @@ def _decision_from_plan(
         "observation": observation,
         "input_identity_hashes": dict(plan.input_identities),
     }
+    if plan.capital_mode == "signal_cash_fraction":
+        payload.update(
+            cycle_target=plan.cycle_target.to_dict(),
+            entry_cycle_before=None if plan.entry_cycle_before is None else plan.entry_cycle_before.to_dict(),
+            entry_cycle_after=None if plan.entry_cycle_after is None else plan.entry_cycle_after.to_dict(),
+            cycle_status=plan.cycle_status.value,
+            identity_facts={
+                "target_position": plan.target_position,
+                "price_identity_hashes": dict(plan.price_identities),
+                "allocation_fraction": str(plan.allocation_fraction),
+                "available_cash": str(plan.available_cash),
+                "fee_rate": str(plan.fee_rate),
+                "order_limit_prices": [None if order.limit_price is None else str(order.limit_price) for order in plan.orders],
+            },
+        )
     try:
         if inspection_permit is None:
             return AdviceDecision.from_cli_payload({"status": "PASS", "result": payload})
@@ -714,6 +732,7 @@ class SrtAdviceClient:
         portfolio_revision: int,
         state_revision: int,
         cycle_target_quantity: int | None = None,
+        entry_cycle: EntryCycleState | None = None,
         strategy_id: str | None = None,
         strategy_version: str | None = None,
         baseline: str | None = None,
@@ -772,7 +791,9 @@ class SrtAdviceClient:
                     portfolio_revision,
                     generated_at,
                 ),
-                state=ExecutionState(state_revision, generated_at, cycle_target_quantity),
+                state=ExecutionState(
+                    state_revision, generated_at, cycle_target_quantity, entry_cycle=entry_cycle,
+                ),
             )
             decision = _decision_from_plan(
                 plan, identity, prepared.instance.definition, self.inspection_permit

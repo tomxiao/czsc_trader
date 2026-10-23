@@ -73,8 +73,8 @@ _FLOAT_FIELDS = frozenset({
     "gross_return", "net_return", "market_value", "pnl", "realized_pnl",
     "max_drawdown", "calmar", "win_loss_ratio", "return", "sharpe", "win_rate", "annual_return",
 })
-_ID_FIELDS = ("decision_id", "order_id", "fill_id", "cycle_id")
-COMPARISON_EXCLUSIONS = ("strategy_hash", "content_hash", "economic renaming: decision_id/order_id/fill_id/cycle_id")
+_ID_FIELDS = ("decision_id", "order_id", "fill_id", "cycle_id", "signal_identity", "plan_identity")
+COMPARISON_EXCLUSIONS = ("strategy_hash", "content_hash", "economic renaming: decision_id/order_id/fill_id/cycle_id/signal_identity/plan_identity (including cycle references)")
 
 
 def _economic_payload(value):
@@ -83,14 +83,28 @@ def _economic_payload(value):
     result.pop("strategy_hash", None)
     result.pop("content_hash", None)
     ids = {name: {} for name in _ID_FIELDS}
+    aliases = {"entry_cycle_id": "cycle_id", "opening_signal_identity": "signal_identity"}
+
+    def normalize(row):
+        for field, raw in row.items():
+            name = aliases.get(field, field)
+            if name in ids and raw is not None:
+                mapping = ids[name]
+                if raw not in mapping:
+                    mapping[raw] = f"{name}:{len(mapping)}"
+                row[field] = mapping[raw]
+        for field in ("entry_cycle_before", "entry_cycle_after", "entry_cycle"):
+            if field in row:
+                state = json.loads(row[field])
+                if state is not None:
+                    if not isinstance(state, dict):
+                        raise ValueError("cycle fact must be an object or null")
+                    normalize(state)
+                row[field] = state
+
     for table in ("decisions", "orders", "fills", "account_daily", "trades"):
         for row in result.get(table, ()):
-            for name, mapping in ids.items():
-                raw = row.get(name)
-                if raw is not None:
-                    if raw not in mapping:
-                        mapping[raw] = f"{name}:{len(mapping)}"
-                    row[name] = mapping[raw]
+            normalize(row)
     return result
 
 

@@ -1,4 +1,4 @@
-from dataclasses import asdict, replace
+from dataclasses import replace
 from datetime import date, datetime, time, timezone
 import re
 from time import monotonic, sleep
@@ -807,7 +807,7 @@ def test_existing_decision_id_is_preserved_when_same_decision_is_recomputed(new_
     )
     store.set_virtual_paused("s001-v1", False)
     old_decision = decision()
-    old_payload = asdict(old_decision)
+    old_payload = old_decision.to_store_payload()
     old_payload["prepared_data_identity"] = preparation(old_decision).data_identity
     old_payload["prepared_data_reference"] = preparation(old_decision).data_reference
     old_payload.pop("source_decision_id")

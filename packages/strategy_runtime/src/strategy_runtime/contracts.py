@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import date, datetime, time
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from enum import StrEnum
 import math
 import re
@@ -14,6 +14,7 @@ from typing import Mapping, Protocol, TypeAlias, runtime_checkable
 from .errors import RuntimeContractError
 from .models import canonical_sha256
 from .pricing import ExecutionPriceBasis, ExecutionPricing
+from .entry_cycle import CycleTarget, EntryCycleState, EntryCyclePlanStatus, EntryCyclePhase
 
 
 _SHA256 = re.compile(r"[0-9a-f]{64}")
@@ -126,8 +127,14 @@ class ExecutionState:
     revision: int
     as_of: datetime
     cycle_target_quantity: int | None = None
+    entry_cycle: EntryCycleState | None = field(default=None, kw_only=True)
 
     def __post_init__(self) -> None:
+        if self.entry_cycle is not None:
+            if not isinstance(self.entry_cycle, EntryCycleState):
+                raise RuntimeContractError("entry_cycle requires EntryCycleState")
+            if self.cycle_target_quantity != self.entry_cycle.target_quantity:
+                raise RuntimeContractError("cycle quantity differs from entry cycle state")
         if self.revision < 0:
             raise RuntimeContractError("execution state revision must be non-negative")
         if self.as_of.tzinfo is None:
@@ -288,9 +295,12 @@ def signal_identity_for(
     target_position: float,
     input_identities: Mapping[str, str],
     price_identities: Mapping[str, str],
+    cycle_target: CycleTarget | None = None,
 ) -> str:
     """Return the stable identity of strategy facts before account sizing."""
 
+    if cycle_target is not None and not isinstance(cycle_target, CycleTarget):
+        raise RuntimeContractError("signal identity requires typed CycleTarget")
     return canonical_sha256(
         {
             "strategy": strategy.reference_id,
@@ -300,6 +310,7 @@ def signal_identity_for(
             "target_position": target_position,
             "inputs": dict(sorted(input_identities.items())),
             "prices": dict(sorted(price_identities.items())),
+            **({"cycle_target": cycle_target.to_dict()} if cycle_target is not None else {}),
         }
     )
 
@@ -315,9 +326,20 @@ def plan_identity_for(
     allocation_fraction: Decimal,
     orders: tuple[PlannedOrder, ...],
     legs: tuple[PlanLeg, ...],
+    cycle_target: CycleTarget | None = None,
+    entry_cycle_before: EntryCycleState | None = None,
+    entry_cycle_after: EntryCycleState | None = None,
+    cycle_status: EntryCyclePlanStatus | None = None,
+    available_cash: Decimal | None = None,
+    fee_rate: Decimal | None = None,
 ) -> str:
     """Return the stable identity of one fully sized execution plan."""
 
+    if cycle_target is not None:
+        if not isinstance(cycle_target, CycleTarget) or not isinstance(cycle_status, EntryCyclePlanStatus):
+            raise RuntimeContractError("cycle plan identity requires typed target and status")
+        if available_cash is None or fee_rate is None:
+            raise RuntimeContractError("cycle plan identity requires cash and fee facts")
     return canonical_sha256(
         {
             "signal_identity": signal_identity,
@@ -327,6 +349,11 @@ def plan_identity_for(
             "plan_mode": plan_mode,
             "capital_mode": capital_mode,
             "allocation_fraction": str(allocation_fraction),
+            **({"cycle_target": cycle_target.to_dict(),
+                "available_cash": str(available_cash), "fee_rate": str(fee_rate),
+                "entry_cycle_before": None if entry_cycle_before is None else entry_cycle_before.to_dict(),
+                "entry_cycle_after": None if entry_cycle_after is None else entry_cycle_after.to_dict(),
+                "cycle_status": cycle_status.value} if cycle_target is not None else {}),
             "orders": [
                 {
                     "side": order.side.value,
@@ -362,6 +389,103 @@ def plan_identity_for(
     )
 
 
+def validate_entry_cycle_plan_facts(
+    *, cycle_target: CycleTarget, entry_cycle_before: EntryCycleState | None,
+    entry_cycle_after: EntryCycleState | None, cycle_status: EntryCyclePlanStatus,
+    target_position: float, actual_quantity: int, target_quantity: int,
+    cycle_target_quantity: int, allocation_fraction: Decimal, available_cash: Decimal,
+    fee_rate: Decimal, signal_identity: str, orders: tuple[PlannedOrder, ...],
+    plan_mode: str, legs: tuple[PlanLeg, ...],
+) -> None:
+    """Validate signal allocation semantics at SRT and account adoption boundaries."""
+    if not isinstance(orders, tuple) or any(not isinstance(order, PlannedOrder) for order in orders):
+        raise RuntimeContractError("entry cycle orders require typed PlannedOrder values")
+    if any(type(q) is not int or q < 0 or q % 100 for q in
+           (actual_quantity, target_quantity, cycle_target_quantity)):
+        raise RuntimeContractError("entry cycle quantities require non-negative whole lots")
+    if isinstance(target_position, bool) or type(target_position) not in (float, int):
+        raise RuntimeContractError("entry cycle target requires numeric binary position")
+    for name, value in (("available_cash", available_cash), ("fee_rate", fee_rate),
+                        ("allocation_fraction", allocation_fraction)):
+        if isinstance(value, bool):
+            raise RuntimeContractError(f"{name} cannot be boolean")
+        try:
+            _money(value, name)
+        except (InvalidOperation, TypeError) as exc:
+            raise RuntimeContractError(f"{name} requires a finite decimal") from exc
+    if not 0 <= Decimal(str(fee_rate)) < 1 or not 0 < Decimal(str(allocation_fraction)) <= 1:
+        raise RuntimeContractError("entry cycle fee or allocation outside bounds")
+    if not isinstance(cycle_target, CycleTarget) or not isinstance(cycle_status, EntryCyclePlanStatus):
+        raise RuntimeContractError("signal cash fraction requires typed cycle target and status")
+    if target_position not in (0., 1.) or bool(target_position) != cycle_target.active:
+        raise RuntimeContractError("cycle target differs from binary target position")
+    if plan_mode != "NONE" or type(legs) is not tuple or legs:
+        raise RuntimeContractError("entry cycle plans require immediate orders without overlay legs")
+    for state in (entry_cycle_before, entry_cycle_after):
+        if state is not None and not isinstance(state, EntryCycleState):
+            raise RuntimeContractError("plan cycle requires EntryCycleState")
+    if entry_cycle_after is not None:
+        if actual_quantity > entry_cycle_after.target_quantity:
+            raise RuntimeContractError("account position exceeds locked cycle target")
+        if cycle_target_quantity != entry_cycle_after.target_quantity:
+            raise RuntimeContractError("plan cycle quantity differs from locked state")
+        if Decimal(str(allocation_fraction)) != entry_cycle_after.allocation_fraction:
+            raise RuntimeContractError("plan allocation differs from locked state")
+        before, after = entry_cycle_before, entry_cycle_after
+        if before is not None:
+            if {k: v for k, v in before.to_dict().items() if k != "phase"} != {
+                k: v for k, v in after.to_dict().items() if k != "phase"
+            }:
+                raise RuntimeContractError("planning cannot rewrite locked allocation or actual fills")
+            if before.phase is EntryCyclePhase.EXITING and after.phase is not EntryCyclePhase.EXITING:
+                raise RuntimeContractError("exiting cycle cannot become active again")
+            expected_phase = (EntryCyclePhase.EXITING if not cycle_target.active
+                              or before.phase is EntryCyclePhase.EXITING else EntryCyclePhase.ACTIVE)
+            if after.phase is not expected_phase:
+                raise RuntimeContractError("cycle phase transition differs from signal and prior phase")
+        elif (not cycle_target.active or after.phase is not EntryCyclePhase.ACTIVE
+              or after.buy_cost_including_fees != 0 or actual_quantity != 0
+              or after.opening_signal_identity != signal_identity
+              or after.allocation_fraction != cycle_target.entry_fraction
+              or after.cash_budget != Decimal(str(available_cash)) * after.allocation_fraction):
+            raise RuntimeContractError("invalid initial cycle allocation")
+        if not cycle_target.active and after.phase is not EntryCyclePhase.EXITING:
+            raise RuntimeContractError("inactive signal requires exiting cycle")
+        buy_orders = [o for o in orders if o.side is OrderSide.BUY]
+        sell_orders = [o for o in orders if o.side is OrderSide.SELL]
+        buy_quantity = sum(o.quantity for o in buy_orders)
+        sell_quantity = sum(o.quantity for o in sell_orders)
+        if after.phase is EntryCyclePhase.ACTIVE:
+            if sell_orders or target_quantity != actual_quantity + buy_quantity:
+                raise RuntimeContractError("active cycle requires buy-only target quantities")
+            if before is None and buy_quantity != after.target_quantity:
+                raise RuntimeContractError("opening orders must establish the locked target")
+            expected_status = (EntryCyclePlanStatus.OPEN if before is None else
+                               EntryCyclePlanStatus.BUDGET_LIMIT if not buy_orders and actual_quantity < after.target_quantity
+                               else EntryCyclePlanStatus.HOLD)
+        else:
+            if buy_orders or sell_quantity != actual_quantity or target_quantity != 0:
+                raise RuntimeContractError("exiting cycle requires full liquidation orders")
+            expected_status = EntryCyclePlanStatus.EXIT
+        if cycle_status is not expected_status:
+            raise RuntimeContractError("cycle plan status differs from execution facts")
+        if buy_orders:
+            if after.phase is EntryCyclePhase.EXITING or any(o.order_type is not OrderType.LIMIT or o.limit_price is None for o in buy_orders):
+                raise RuntimeContractError("entry cycle buys require active limited orders")
+            cost = sum((o.quantity * o.limit_price * (1 + Decimal(str(fee_rate)))
+                        for o in buy_orders), Decimal(0))
+            if (cost > min(after.remaining_budget, Decimal(str(available_cash)))
+                    or sum(o.quantity for o in buy_orders) > after.target_quantity - actual_quantity):
+                raise RuntimeContractError("entry cycle orders exceed budget or quantity")
+    elif cycle_target_quantity != 0 or actual_quantity != 0 or orders:
+        raise RuntimeContractError("plan without entry cycle cannot hold or trade")
+    elif target_quantity != 0 or cycle_status is not (
+            EntryCyclePlanStatus.INSUFFICIENT_LOT if cycle_target.active else EntryCyclePlanStatus.IDLE):
+        raise RuntimeContractError("empty cycle plan has inconsistent target or status")
+    if entry_cycle_before is not None and entry_cycle_after is None:
+        raise RuntimeContractError("only settled account facts may release an entry cycle")
+
+
 @dataclass(frozen=True, slots=True)
 class ExecutionPlan:
     """Complete channel-neutral plan produced by SRT for one decision point."""
@@ -394,8 +518,33 @@ class ExecutionPlan:
     input_identities: Mapping[str, str]
     price_identities: Mapping[str, str]
     evidence: Mapping[str, JsonValue] = field(default_factory=dict)
+    cycle_target: CycleTarget | None = field(default=None, kw_only=True)
+    entry_cycle_before: EntryCycleState | None = field(default=None, kw_only=True)
+    entry_cycle_after: EntryCycleState | None = field(default=None, kw_only=True)
+    cycle_status: EntryCyclePlanStatus | None = field(default=None, kw_only=True)
 
     def __post_init__(self) -> None:
+        if self.capital_mode == "signal_cash_fraction":
+            validate_entry_cycle_plan_facts(
+                cycle_target=self.cycle_target,
+                entry_cycle_before=self.entry_cycle_before,
+                entry_cycle_after=self.entry_cycle_after,
+                cycle_status=self.cycle_status,
+                target_position=self.target_position,
+                actual_quantity=self.actual_quantity,
+                target_quantity=self.target_quantity,
+                cycle_target_quantity=self.cycle_target_quantity,
+                allocation_fraction=self.allocation_fraction,
+                available_cash=self.available_cash,
+                fee_rate=self.fee_rate,
+                signal_identity=self.signal_identity,
+                orders=self.orders,
+                plan_mode=self.plan_mode,
+                legs=self.legs,
+            )
+        elif any(v is not None for v in (self.cycle_target, self.entry_cycle_before,
+                                        self.entry_cycle_after, self.cycle_status)):
+            raise RuntimeContractError("cycle allocation fields require signal cash fraction mode")
         object.__setattr__(self, "symbol", _text(self.symbol, "symbol").upper())
         if self.symbol != self.strategy.symbol:
             raise RuntimeContractError("plan symbol differs from strategy")
@@ -449,6 +598,7 @@ class ExecutionPlan:
             target_position=self.target_position,
             input_identities=self.input_identities,
             price_identities=self.price_identities,
+            cycle_target=self.cycle_target,
         )
         if self.signal_identity != expected_signal:
             raise RuntimeContractError("signal identity differs from signal facts")
@@ -462,6 +612,11 @@ class ExecutionPlan:
             allocation_fraction=self.allocation_fraction,
             orders=self.orders,
             legs=self.legs,
+            cycle_target=self.cycle_target,
+            entry_cycle_before=self.entry_cycle_before,
+            entry_cycle_after=self.entry_cycle_after,
+            cycle_status=self.cycle_status,
+            available_cash=self.available_cash, fee_rate=self.fee_rate,
         )
         if self.plan_identity != expected_plan:
             raise RuntimeContractError("plan identity differs from execution facts")

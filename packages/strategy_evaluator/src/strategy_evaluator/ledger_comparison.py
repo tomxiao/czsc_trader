@@ -107,15 +107,29 @@ def _references(payload: dict) -> None:
 
 
 def _normalize(payload: dict) -> None:
-    maps = {field: {} for field in (*_OWNERS, "cycle_id")}
+    maps = {field: {} for field in (*_OWNERS, "cycle_id", "signal_identity", "plan_identity")}
+    aliases = {"entry_cycle_id": "cycle_id", "opening_signal_identity": "signal_identity"}
+
+    def normalize(record):
+        for field, value in record.items():
+            identity = aliases.get(field, field)
+            if identity in maps and value is not None:
+                mapping = maps[identity]
+                if value not in mapping:
+                    mapping[value] = f"{identity}:{len(mapping)}"
+                record[field] = mapping[value]
+        for field in ("entry_cycle_before", "entry_cycle_after", "entry_cycle"):
+            if field in record:
+                state = json.loads(record[field])
+                if state is not None:
+                    if not isinstance(state, dict):
+                        raise ValueError("cycle fact must be an object or null")
+                    normalize(state)
+                record[field] = state
+
     for table in _TABLES:
         for row in payload[table]:
-            for field, mapping in maps.items():
-                if field in row and row[field] is not None:
-                    value = row[field]
-                    if value not in mapping:
-                        mapping[value] = f"{field}:{len(mapping)}"
-                    row[field] = mapping[value]
+            normalize(row)
     payload.pop("strategy_hash")
 
 
@@ -212,7 +226,10 @@ def compare_ledgers(request: LedgerComparisonRequest) -> LedgerComparisonResult:
         return result(LedgerComparisonStatus.INCOMPARABLE, mismatches)
     if request.mode is LedgerComparisonMode.ECONOMIC:
         for payload in payloads:
-            _normalize(payload)
+            try:
+                _normalize(payload)
+            except (ValueError, TypeError) as exc:
+                return result(LedgerComparisonStatus.INVALID, [LedgerDifference("replay", str(exc))])
     differences = []
     if not same_evidence:
         _differences(*payloads, "replay", request.tolerance, differences)

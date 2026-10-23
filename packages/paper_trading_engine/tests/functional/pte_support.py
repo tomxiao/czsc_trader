@@ -15,7 +15,6 @@ from paper_trading_engine.broker import (
 
 def adopt_test_decision(store, *, account_id, decision_id, valid_session, orders=None, legs=None):
     """Persist an explicit synthetic plan through the real decision adoption API."""
-    from dataclasses import asdict
     from datetime import timedelta
 
     try:
@@ -23,7 +22,7 @@ def adopt_test_decision(store, *, account_id, decision_id, valid_session, orders
     except KeyError:
         pass
     account = store.virtual_account(account_id)
-    payload = asdict(decision())
+    payload = decision().to_store_payload()
     planned = [leg["order"] if "order" in leg else leg for leg in (legs or orders or [])]
     delta = sum(order["quantity"] * (1 if order["side"] == "BUY" else -1) for order in planned)
     normalized_legs = [{**leg, "order": {key: leg[key] for key in ("side", "quantity", "order_type", "limit_price")}}

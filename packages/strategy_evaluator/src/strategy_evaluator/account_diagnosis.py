@@ -139,6 +139,8 @@ def _close(left, right):
 def _decompose(evaluation_id, replay, start, end):
     if replay.execution_spec.get("mode") == "CORE_EVENT_INTRADAY_ROTATION":
         raise _Unsupported("intraday overlay is outside full-position/cash diagnosis")
+    if replay.execution_spec.get("capital_mode") == "signal_cash_fraction":
+        raise _Unsupported("signal-owned cycle allocation is outside full-position/cash diagnosis")
     if replay.execution_spec.get("allocation_fraction", 1.0) != 1.0:
         raise _Unsupported("fractional capital allocation is outside full-position/cash diagnosis")
     rows = replay.account_daily

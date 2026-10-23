@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from contextlib import contextmanager, nullcontext
+from dataclasses import replace
 from datetime import date, datetime, timezone
 import hashlib
 import json
@@ -12,6 +13,8 @@ import re
 from threading import RLock
 from typing import Any
 from uuid import NAMESPACE_URL, uuid4, uuid5
+
+from strategy_runtime import EntryCycleState, EntryCyclePhase, CycleTarget, EntryCyclePlanStatus, canonical_sha256
 
 from .audit import (
     EVENT_CATALOG,
@@ -43,8 +46,8 @@ from .channel import (
 
 
 DEFAULT_FUTU_CAPITAL_POOL = "1000000.0000"
-RUNTIME_DATABASE_SCHEMA_VERSION = 5
-RUNTIME_DATABASE_COMPATIBLE_VERSIONS = (1, 2, 3, 4, 5)
+RUNTIME_DATABASE_SCHEMA_VERSION = 6
+RUNTIME_DATABASE_COMPATIBLE_VERSIONS = (1, 2, 3, 4, 5, 6)
 
 
 def _utc_now() -> str:
@@ -240,7 +243,7 @@ class PaperStore:
         stored_schema = self._connection.execute(
             "SELECT value FROM settings WHERE key='runtime_database_schema_version'"
         ).fetchone()
-        if stored_schema is not None and int(stored_schema[0]) in {3, 4, 5}:
+        if stored_schema is not None and int(stored_schema[0]) in {3, 4, 5, 6}:
             self._initialize_lifecycle()
             return
         self._connection.executescript(
@@ -398,6 +401,7 @@ class PaperStore:
                 average_cost TEXT NOT NULL DEFAULT '0.0000',
                 realized_pnl TEXT NOT NULL DEFAULT '0.0000',
                 cycle_target INTEGER,
+                entry_cycle_json TEXT,
                 paused INTEGER NOT NULL DEFAULT 0,
                 observation_start TEXT,
                 last_settlement_session TEXT,
@@ -567,6 +571,7 @@ class PaperStore:
             now = _utc_now()
             migrate_lifecycle(self._connection, now)
             migrate_account_health(self._connection, now)
+            self._ensure_column("virtual_accounts", "entry_cycle_json", "TEXT")
             self._connection.execute(
                 "INSERT INTO settings(key,value) VALUES('runtime_database_schema_version',?) "
                 "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
@@ -1268,7 +1273,7 @@ class PaperStore:
                 raise ValueError("virtual account has trading history; capital migration refused")
             now = _utc_now()
             self._connection.execute(
-                "UPDATE virtual_accounts SET initial_cash=?,cash=?,total_assets=?,cycle_target=NULL,"
+                "UPDATE virtual_accounts SET initial_cash=?,cash=?,total_assets=?,cycle_target=NULL,entry_cycle_json=NULL,"
                 "last_decision_id=NULL,last_decision_payload=NULL,updated_at=? WHERE account_id=?",
                 (str(new_value), str(new_value), str(new_value), now, account_id),
             )
@@ -1361,7 +1366,7 @@ class PaperStore:
             )
             self._connection.execute(
                 "UPDATE virtual_accounts SET run_state='RETIRED',cash='0.0000',total_assets='0.0000',"
-                "cycle_target=NULL,last_decision_id=NULL,last_decision_payload=NULL,updated_at=? "
+                "cycle_target=NULL,entry_cycle_json=NULL,last_decision_id=NULL,last_decision_payload=NULL,updated_at=? "
                 "WHERE account_id=?", (now, request.account_id),
             )
             for decision in self.account_decisions(request.account_id):
@@ -2317,6 +2322,69 @@ class PaperStore:
                for row in self.account_intents(account_id)):
             raise ValueError("another decision still owns execution intents")
 
+    def _entry_cycle_adoption(self, account, payload):
+        """Validate the account-owned cycle before changing any adopted plan."""
+        from decimal import Decimal
+        from .contracts import _validate_cycle_decision, OrderSpec
+
+        raw = account.get("entry_cycle_json")
+        current = None if raw is None else EntryCycleState.from_dict(json.loads(raw))
+        if payload.get("capital_mode") != "signal_cash_fraction":
+            if current is not None:
+                raise ValueError("an existing entry cycle cannot change capital mode")
+            return None
+        if payload.get("contract_version") != "advice.v6":
+            raise ValueError("signal cash fraction requires advice.v6")
+        required = {"cycle_target", "entry_cycle_before", "entry_cycle_after", "cycle_status"}
+        if not required <= payload.keys():
+            raise ValueError("entry-cycle decision fields are incomplete")
+        signal = CycleTarget.from_dict(payload["cycle_target"])
+        before = None if payload["entry_cycle_before"] is None else EntryCycleState.from_dict(payload["entry_cycle_before"])
+        after = None if payload["entry_cycle_after"] is None else EntryCycleState.from_dict(payload["entry_cycle_after"])
+        status = EntryCyclePlanStatus(payload["cycle_status"])
+        if current != before:
+            raise ValueError("entry-cycle state changed before decision adoption")
+        if int(payload["actual_quantity"]) != account["quantity"] or Decimal(str(payload["available_cash"])) != Decimal(account["cash"]):
+            raise ValueError("entry-cycle decision differs from current account cash or position")
+        if after is not None and after.cycle_id != canonical_sha256({
+            "account": account["account_id"], "opening_signal": after.opening_signal_identity,
+        }):
+            raise ValueError("entry-cycle identity belongs to another account or opening signal")
+        _validate_cycle_decision(
+            signal=signal, before=before, after=after, status=status,
+            actual_quantity=int(payload["actual_quantity"]), target_quantity=int(payload["target_quantity"]),
+            cycle_quantity=int(payload["cycle_target_quantity"]),
+            orders=tuple(OrderSpec.from_payload(order) for order in planned_orders(payload)),
+            cash=Decimal(str(payload["available_cash"])), fee=Decimal(str(payload["fee_rate"])),
+            fraction=Decimal(str(payload["allocation_fraction"])), signal_identity=str(payload["signal_identity"]),
+        )
+        if current is None:
+            if account["quantity"] or account["cycle_target"]:
+                raise ValueError("new entry-cycle mode requires an empty account without a legacy target")
+            if any(row["status"] not in TERMINAL_INTENT_STATUSES for row in self.account_intents(account["account_id"])):
+                raise ValueError("entry-cycle opening requires all earlier intents terminal")
+        return None if after is None else json.dumps(after.to_dict(), sort_keys=True, separators=(",", ":"))
+
+    def _release_completed_entry_cycle(self, account_id):
+        """Release only after flat holdings and fully reconciled terminal orders."""
+        account = self.virtual_account(account_id)
+        raw = account.get("entry_cycle_json")
+        if raw is None or account["quantity"]:
+            return
+        state = EntryCycleState.from_dict(json.loads(raw))
+        if state.phase != EntryCyclePhase.EXITING:
+            return
+        if any(row["status"] not in TERMINAL_INTENT_STATUSES for row in self.account_intents(account_id)):
+            return
+        for row in self._connection.execute("SELECT payload,cumulative_filled_quantity FROM orders WHERE account_id=?", (account_id,)):
+            report = json.loads(row["payload"])
+            if report.get("status") not in TERMINAL_ORDER_STATUSES or int(report.get("cumulative_filled_quantity", 0)) != int(row["cumulative_filled_quantity"]):
+                return
+        self._connection.execute(
+            "UPDATE virtual_accounts SET entry_cycle_json=NULL,cycle_target=NULL,updated_at=? WHERE account_id=?",
+            (_utc_now(), account_id),
+        )
+
     def save_account_decision(
         self, account_id: str, payload: dict[str, object], *, _in_transaction: bool = False,
     ) -> dict[str, Any]:
@@ -2356,6 +2424,7 @@ class PaperStore:
                 if self.account_decision(account_id, decision_id)["status"] in {DecisionState.CANCELLED, DecisionState.INCOMPLETE, DecisionState.SUPERSEDED}:
                     raise ValueError("terminal decision cannot become active again")
             else:
+                entry_cycle_json = self._entry_cycle_adoption(account, json.loads(encoded))
                 prior_decision = None
                 adopted = self._connection.execute(
                     "SELECT decision_id FROM decision_adoptions WHERE account_id=? AND valid_session=?",
@@ -2384,9 +2453,11 @@ class PaperStore:
             )
             if existing is None:
                 self._connection.execute(
-                    "UPDATE virtual_accounts SET last_decision_id=?,last_decision_payload=?,cycle_target=?,updated_at=? WHERE account_id=?",
-                    (decision_id, encoded, cycle_target, _utc_now(), account_id),
+                    "UPDATE virtual_accounts SET last_decision_id=?,last_decision_payload=?,cycle_target=?,entry_cycle_json=?,updated_at=? WHERE account_id=?",
+                    (decision_id, encoded, cycle_target, entry_cycle_json, _utc_now(), account_id),
                 )
+                if not planned_orders(json.loads(encoded)):
+                    self._release_completed_entry_cycle(account_id)
             else:
                 self._connection.execute(
                     "UPDATE virtual_accounts SET last_decision_id=?,last_decision_payload=?,updated_at=? WHERE account_id=?",
@@ -2772,6 +2843,7 @@ class PaperStore:
                 )
             if status != "SUPERSEDED":
                 self._refresh_decision_state(intent["account_id"], intent["decision_id"])
+            self._release_completed_entry_cycle(intent["account_id"])
             if audit_event is not None:
                 self._insert_audit_event(audit_event)
         result = self.account_intent(intent_id)
@@ -2790,6 +2862,11 @@ class PaperStore:
             ).fetchone()
             if order is None:
                 raise KeyError(channel_order_id)
+            decision_payload = self.account_decision(order["account_id"], order["decision_id"])["payload"]
+            if decision_payload.get("capital_mode") == "signal_cash_fraction":
+                reported = payload.get("cumulative_filled_quantity")
+                if type(reported) is not int or reported != int(order["cumulative_filled_quantity"]):
+                    raise ValueError("entry-cycle order report requires cumulative fills to be applied first")
             intent = self._connection.execute(
                 "SELECT status FROM intents WHERE intent_id=?", (order["intent_id"],)
             ).fetchone()
@@ -2810,6 +2887,7 @@ class PaperStore:
                 self.release_account_intent(intent_id, status, _in_transaction=True)
             else:
                 self._refresh_decision_state(order["account_id"], order["decision_id"])
+            self._release_completed_entry_cycle(order["account_id"])
         return self.account_order(channel_order_id)
 
     def account_order(self, channel_order_id: str) -> dict[str, Any]:
@@ -2943,6 +3021,18 @@ class PaperStore:
                 cash + frozen + Decimal(quantity) * incremental_price
             ).quantize(Decimal("0.0001"))
             cycle_target = account["cycle_target"]
+            cycle_json = account["entry_cycle_json"]
+            if cycle_json is not None:
+                cycle = EntryCycleState.from_dict(json.loads(cycle_json))
+                adopted = self.account_decision(order["account_id"], order["decision_id"])["payload"]
+                owned = adopted.get("entry_cycle_after")
+                if owned is None or owned["cycle_id"] != cycle.cycle_id:
+                    raise ValueError("fill belongs to another entry cycle")
+                if intent["side"] == "BUY":
+                    cycle = replace(cycle, buy_cost_including_fees=cycle.buy_cost_including_fees + incremental_value + fee)
+                    cycle_json = json.dumps(cycle.to_dict(), sort_keys=True, separators=(",", ":"))
+            elif self.account_decision(order["account_id"], order["decision_id"])["payload"].get("capital_mode") == "signal_cash_fraction":
+                raise ValueError("entry-cycle fill has no active owning cycle")
             if intent_payload.get("role") == "CORE_SETUP":
                 # Earlier increments of this same setup order are already in
                 # the account. The position before the order must be flat.
@@ -2952,10 +3042,10 @@ class PaperStore:
                     cycle_target = quantity
             self._connection.execute(
                 "UPDATE virtual_accounts SET cash=?,frozen_cash=?,quantity=?,average_cost=?,"
-                "realized_pnl=?,total_assets=?,cycle_target=?,updated_at=? WHERE account_id=?",
+                "realized_pnl=?,total_assets=?,cycle_target=?,entry_cycle_json=?,updated_at=? WHERE account_id=?",
                 (
                     str(cash), str(frozen), quantity, str(cost), str(realized),
-                    str(total_assets), cycle_target, _utc_now(), order["account_id"],
+                    str(total_assets), cycle_target, cycle_json, _utc_now(), order["account_id"],
                 ),
             )
             order_payload["cumulative_filled_quantity"] = cumulative_quantity

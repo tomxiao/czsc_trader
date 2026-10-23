@@ -2,17 +2,39 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import date, time
+from decimal import Decimal, InvalidOperation
 import math
 import re
 from typing import Any
 
-from strategy_runtime import StrategyObservation, ObservationUnavailable
+from strategy_runtime import (
+    StrategyObservation, ObservationUnavailable, CycleTarget, EntryCycleState,
+    EntryCyclePlanStatus,
+    StrategyIdentity, PlannedOrder, OrderSide, OrderType,
+    validate_entry_cycle_plan_facts,
+)
+from strategy_runtime.contracts import signal_identity_for, plan_identity_for
 
 
 class AdviceContractError(ValueError):
     """The strategy CLI emitted a payload PTE cannot execute safely."""
+
+
+def _validate_cycle_decision(*, signal, before, after, status, actual_quantity,
+                             target_quantity, cycle_quantity, orders, cash, fee, fraction,
+                             signal_identity):
+    """Adapt PTE values to the same semantic validator used by SRT plans."""
+    validate_entry_cycle_plan_facts(
+        cycle_target=signal, entry_cycle_before=before, entry_cycle_after=after, cycle_status=status,
+        target_position=float(signal.active), actual_quantity=actual_quantity, target_quantity=target_quantity,
+        cycle_target_quantity=cycle_quantity, allocation_fraction=fraction, available_cash=cash, fee_rate=fee,
+        signal_identity=signal_identity,
+        orders=tuple(PlannedOrder(OrderSide(order.side), order.quantity, OrderType(order.order_type),
+                                  Decimal(str(order.limit_price))) for order in orders),
+        plan_mode="NONE", legs=(),
+    )
 
 
 def _object(value: object, name: str) -> dict[str, Any]:
@@ -162,6 +184,29 @@ class AdviceDecision:
     input_identity_hashes: dict[str, str] | None = None
     strategy_output: dict[str, Any] | None = None
     observation: dict[str, Any] | None = None
+    cycle_target: CycleTarget | None = None
+    entry_cycle_before: EntryCycleState | None = None
+    entry_cycle_after: EntryCycleState | None = None
+    cycle_status: EntryCyclePlanStatus | None = None
+    identity_facts: dict[str, Any] | None = None
+
+    def to_store_payload(self) -> dict[str, Any]:
+        """Serialize the adopted decision without changing legacy advice schemas."""
+        value = asdict(self)
+        fields = ("cycle_target", "entry_cycle_before", "entry_cycle_after", "cycle_status", "identity_facts")
+        if self.contract_version != "advice.v6":
+            for name in fields:
+                value.pop(name)
+        else:
+            for name in fields[:3]:
+                item = getattr(self, name)
+                value[name] = None if item is None else item.to_dict()
+            value["cycle_status"] = None if self.cycle_status is None else self.cycle_status.value
+            if self.identity_facts is None:
+                raise AdviceContractError("advice.v6 requires authenticated identity facts")
+            for name in ("available_cash", "fee_rate", "allocation_fraction"):
+                value[name] = self.identity_facts[name]
+        return value
 
     @classmethod
     def from_cli_payload(cls, payload: object, *, inspection_permit=None) -> "AdviceDecision":
@@ -170,7 +215,7 @@ class AdviceDecision:
             raise AdviceContractError("advice command failed")
         value = _object(outer.get("result"), "result")
         version = str(value.get("contract_version", ""))
-        if version not in {"advice.v4", "advice.v5"}:
+        if version not in {"advice.v4", "advice.v5", "advice.v6"}:
             raise AdviceContractError(f"unsupported advice contract version: {version}")
         try:
             signal_date = date.fromisoformat(str(value["signal_date"]))
@@ -200,9 +245,9 @@ class AdviceDecision:
         plan_legs = tuple(PlanLegSpec.from_payload(item) for item in plan_value)
         if tuple(item.sequence for item in plan_legs) != tuple(range(len(plan_legs))):
             raise AdviceContractError("execution plan leg sequences must be contiguous")
-        if version == "advice.v4":
+        if version in {"advice.v4", "advice.v6"}:
             if plan_mode != "NONE" or plan_legs:
-                raise AdviceContractError("advice.v4 cannot contain an execution plan")
+                raise AdviceContractError("immediate-order advice cannot contain plan legs")
             if (delta == 0) != (len(orders) == 0):
                 raise AdviceContractError("orders presence does not match quantity delta")
             if orders:
@@ -302,7 +347,7 @@ class AdviceDecision:
             "allocation fraction",
             nonnegative=True,
         )
-        if capital_mode not in {"full_available_cash", "available_cash_fraction", "target_equity_fraction"}:
+        if capital_mode not in {"full_available_cash", "available_cash_fraction", "target_equity_fraction", "signal_cash_fraction"}:
             raise AdviceContractError("capital mode is unsupported")
         if not 0 < allocation_fraction <= 1:
             raise AdviceContractError("allocation fraction must be in (0, 1]")
@@ -311,6 +356,25 @@ class AdviceDecision:
             raise AdviceContractError("capital target scope is unsupported")
         if capital_mode in {"full_available_cash", "target_equity_fraction"} and allocation_fraction != 1.0:
             raise AdviceContractError("full cash and target equity modes require allocation fraction one")
+        dynamic = capital_mode == "signal_cash_fraction"
+        if dynamic != (version == "advice.v6"):
+            raise AdviceContractError("signal cash fraction requires advice.v6 exclusively")
+        cycle_fields = ("cycle_target", "entry_cycle_before", "entry_cycle_after", "cycle_status")
+        typed_cycle_target = before = after = cycle_status = None
+        if dynamic:
+            if any(name not in value for name in cycle_fields):
+                raise AdviceContractError("advice.v6 requires explicit entry-cycle fields")
+            try:
+                typed_cycle_target = CycleTarget.from_dict(value["cycle_target"])
+                before = None if value["entry_cycle_before"] is None else EntryCycleState.from_dict(value["entry_cycle_before"])
+                after = None if value["entry_cycle_after"] is None else EntryCycleState.from_dict(value["entry_cycle_after"])
+                cycle_status = EntryCyclePlanStatus(value["cycle_status"])
+            except (ValueError, TypeError, KeyError) as exc:
+                raise AdviceContractError(f"invalid entry-cycle contract: {exc}") from exc
+            if cycle_target != (0 if after is None else after.target_quantity):
+                raise AdviceContractError("cycle target quantity differs from entry-cycle state")
+        elif any(value.get(name) is not None for name in (*cycle_fields, "identity_facts")):
+            raise AdviceContractError("legacy capital mode cannot carry entry-cycle fields")
         if valid_session <= signal_date:
             raise AdviceContractError("valid session must be after signal date")
         if data_cutoff != signal_date:
@@ -340,6 +404,65 @@ class AdviceDecision:
             for name, identity in input_identities.items()
         ):
             raise AdviceContractError("input identity hash has invalid format")
+        identity_facts = None
+        if dynamic:
+            identity_facts = _object(value.get("identity_facts"), "identity facts")
+            if set(identity_facts) != {"target_position", "price_identity_hashes", "allocation_fraction", "available_cash", "fee_rate", "order_limit_prices"}:
+                raise AdviceContractError("entry-cycle identity facts are incomplete")
+            target_position = identity_facts["target_position"]
+            if type(target_position) not in {float, int} or target_position not in {0, 1} or bool(target_position) != typed_cycle_target.active:
+                raise AdviceContractError("identity target differs from cycle signal")
+            prices = _object(identity_facts["price_identity_hashes"], "price identities")
+            if any(not isinstance(k, str) or re.fullmatch(r"[0-9a-f]{64}", str(v)) is None for k, v in prices.items()):
+                raise AdviceContractError("price identity has invalid format")
+            exact_prices = identity_facts["order_limit_prices"]
+            if not isinstance(exact_prices, list) or len(exact_prices) != len(orders):
+                raise AdviceContractError("identity order prices differ from executable orders")
+            try:
+                if not isinstance(identity_facts["allocation_fraction"], str):
+                    raise ValueError("allocation fraction identity must use a decimal string")
+                exact_fraction = Decimal(identity_facts["allocation_fraction"])
+                if not exact_fraction.is_finite() or float(exact_fraction) != allocation_fraction:
+                    raise ValueError("allocation fraction identity differs from execution")
+                exact_money = {}
+                for name, number in (("available_cash", available_cash), ("fee_rate", fee_rate)):
+                    if not isinstance(identity_facts[name], str):
+                        raise ValueError(f"{name} identity requires a decimal string")
+                    exact = Decimal(identity_facts[name])
+                    if not exact.is_finite() or float(exact) != number:
+                        raise ValueError(f"{name} identity differs from execution")
+                    exact_money[name] = exact
+                typed_orders = []
+                for spec, exact in zip(orders, exact_prices, strict=True):
+                    if not isinstance(exact, str):
+                        raise ValueError("order price identity requires a decimal string")
+                    price = Decimal(exact)
+                    if not price.is_finite() or float(price) != spec.limit_price:
+                        raise ValueError("order price identity differs from execution")
+                    typed_orders.append(PlannedOrder(OrderSide(spec.side), spec.quantity, OrderType(spec.order_type), price))
+                expected_signal = signal_identity_for(
+                    strategy=StrategyIdentity(strategy_id, str(strategy["release_id"]), release_hash, runtime_sha256, str(value["symbol"])),
+                    signal_date=signal_date, target_position=float(target_position),
+                    input_identities=input_identities, price_identities=prices, cycle_target=typed_cycle_target,
+                )
+                expected_plan = plan_identity_for(
+                    signal_identity=expected_signal, actual_quantity=actual, target_quantity=target,
+                    cycle_target_quantity=cycle_target, plan_mode=plan_mode, capital_mode=capital_mode,
+                    allocation_fraction=exact_fraction, orders=tuple(typed_orders), legs=(),
+                    cycle_target=typed_cycle_target, entry_cycle_before=before, entry_cycle_after=after,
+                    cycle_status=cycle_status,
+                    **exact_money,
+                )
+                if expected_signal != signal_identity or expected_plan != plan_identity:
+                    raise ValueError("entry-cycle identity differs from decision facts")
+                _validate_cycle_decision(
+                    signal=typed_cycle_target, before=before, after=after, status=cycle_status,
+                    actual_quantity=actual, target_quantity=target, cycle_quantity=cycle_target,
+                    orders=orders, cash=exact_money["available_cash"], fee=exact_money["fee_rate"],
+                    fraction=exact_fraction, signal_identity=signal_identity,
+                )
+            except (ValueError, TypeError, InvalidOperation) as exc:
+                raise AdviceContractError(str(exc)) from exc
         strategy_output = _object(value.get("strategy_output"), "strategy output")
         try:
             raw_observation = value.get("observation")
@@ -397,4 +520,9 @@ class AdviceDecision:
             },
             strategy_output=dict(strategy_output),
             observation=observation,
+            cycle_target=typed_cycle_target,
+            entry_cycle_before=before,
+            entry_cycle_after=after,
+            cycle_status=cycle_status,
+            identity_facts=identity_facts,
         )

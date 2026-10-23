@@ -707,6 +707,14 @@ def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAud
                 account = accounts.get(str(order["execution_date"])[:10])
                 affordable = (str(order["side"]) == "SELL" or account is not None and expected_fill is not None
                     and quantity * expected_fill[1] * (1 + fee_rate) <= float(account["cash_before"]) + tolerance)
+                if (affordable and order["side"] == "BUY" and expected_fill is not None
+                        and spec.get("capital_mode") == "signal_cash_fraction"):
+                    try:
+                        cycle = json.loads(decision["entry_cycle_after"])
+                        remaining = Decimal(cycle["cash_budget"]) - Decimal(cycle["buy_cost_including_fees"])
+                        affordable = Decimal(quantity) * Decimal(str(expected_fill[1])) * (1 + Decimal(str(fee_rate))) <= remaining
+                    except (ValueError, TypeError, KeyError, ArithmeticError):
+                        affordable = False
                 if expected_fill is not None and affordable:
                     reasons.append("MISSED_ELIGIBLE_FILL")
                 continue
@@ -828,6 +836,11 @@ def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAud
         ):
             reasons.append("ACCOUNT_LEDGER_MISMATCH")
     checks.append("ACCOUNT_LEDGER")
+
+    from ._entry_cycle_audit import audit_entry_cycles
+    reasons.extend(audit_entry_cycles(evidence, tolerance))
+    if spec.get("capital_mode") == "signal_cash_fraction":
+        checks.append("ENTRY_CYCLE_ALLOCATION")
 
     expected_trades: dict[str, dict[str, Any]] = {}
     fills_by_cycle: dict[str, list[Mapping[str, Any]]] = {}

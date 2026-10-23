@@ -1,6 +1,7 @@
 """Strategy Runtime (SRT) public contracts."""
 
 from .input_binding import StrategyInputPlan, StrategyInputBinding
+from .entry_cycle import CycleTarget, EntryCycleState, EntryCyclePhase, EntryCyclePlanStatus
 from .pricing import ExecutionPriceBasis, ExecutionPricing
 from .resources import ExecutionResources, default_worker_count
 from .algorithm import StrategyImplementation, StrategyImplementationV2
@@ -36,6 +37,7 @@ from .contracts import (
     TradableWindow,
     TradingPoint,
     WindowExecutor,
+    validate_entry_cycle_plan_facts,
 )
 from .errors import (
     RuntimeCompatibilityError,
@@ -72,6 +74,8 @@ from .strategy import StrategyInstance
 __version__ = "0.1.0"
 
 __all__ = [
+    "CycleTarget", "EntryCycleState", "EntryCyclePhase", "EntryCyclePlanStatus",
+    "validate_entry_cycle_plan_facts",
     "ExecutionResources", "default_worker_count",
     "VerifiedReleasePackage", "load_inspection_deployment", "validate_release_package",
     "InspectionControl", "InspectionProgress", "InspectionStage", "InspectionEnvironment",

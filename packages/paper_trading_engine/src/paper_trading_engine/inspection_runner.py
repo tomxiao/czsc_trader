@@ -118,6 +118,7 @@ def _snapshot(store, account_id, broker):
         "available_cash": str(money(account["cash"])),
         "frozen_cash": str(money(account["frozen_cash"])),
         "cycle_target_quantity": account.get("cycle_target"),
+        "entry_cycle": None if account.get("entry_cycle_json") is None else json.loads(account["entry_cycle_json"]),
         "target_quantity": payload.get("target_quantity"),
         "health": str(account["health"]),
         "cumulative_order_count": len(broker.called),

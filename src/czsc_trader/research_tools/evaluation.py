@@ -935,7 +935,7 @@ def _evaluate_strategy(request: EvaluationRequest, *, dataflows: Dataflows, work
         },
         "srt_execution_source": {
             name: sha256((Path(__import__("strategy_runtime").__file__).parent / name).read_bytes()).hexdigest()
-            for name in ("execution_planner.py", "execution_rules.py", "contracts.py")
+            for name in ("execution_planner.py", "execution_rules.py", "contracts.py", "entry_cycle.py")
         },
         "packages": {
             name: metadata.version(name) for name in (

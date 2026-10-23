@@ -123,6 +123,16 @@ def test_scaling_is_unsupported_and_unexplained_cash_is_invalid():
     )
 
 
+def test_dynamic_cycle_allocation_is_explicitly_unsupported_even_for_one_full_buy():
+    replay = account()
+    result = calculate(replace(replay, execution_spec={
+        "capital_mode": "signal_cash_fraction", "target_scope": "entry_cycle",
+        "allocation_fraction": 1.0,
+    }))
+    assert result.status is AccountDiagnosisStatus.UNSUPPORTED
+    assert "signal-owned cycle allocation" in result.issues[0]
+
+
 def test_paths_use_unique_entry_session_and_preserve_open_exit_unknown():
     result = calculate(account(), alternative=account(open_end=True), alternative_id="other")
     assert result.status is AccountDiagnosisStatus.COMPUTED

@@ -223,6 +223,7 @@ SRT 计算目标仓位、订单数量、委托类型、委托价和生效时点�
 | --- | --- | --- |
 | `full_available_cash` / `available_cash_fraction` | `entry_cycle` | 仅接受0/1目标；按既有开仓周期目标份额买入或补买，0表示清仓 |
 | `target_equity_fraction` | `decision` | 接受有限的0至1目标比例；每次决策按当前实际现金与持仓重新计算目标份额，支持加仓、部分减仓与清仓 |
+| `signal_cash_fraction` | `entry_cycle` | 策略每次开仓指定可用现金比例；采纳计划时锁定预算和目标份额，后续仅按剩余预算补买，退出结清后释放 |
 
 多档位模式须显式设置`allocation_fraction=1`，例如：
 
@@ -240,6 +241,49 @@ capital = {
 减仓只卖出实际份额与目标份额的差额。比例不变时，价格变化也可能触发再平衡。
 费用、整手取整、未成交及次日成交价格变化均可能使实际仓位比例偏离信号目标；目标比例不保证精确成交比例。
 该模式不沿用上次开仓周期目标来限制新目标。非法比例或资金模式组合明确失败。
+
+### 信号指定周期投入比例
+
+使用`DecisionContract("CYCLE_TARGET", 0., 1., "NEXT_SESSION")`，资金声明为：
+
+```python
+capital = {
+    "mode": "signal_cash_fraction",
+    "target_scope": "entry_cycle",
+    "fee_rate": 0.001,
+}
+```
+
+该声明禁止静态`allocation_fraction`。策略历史须同时输出二元`target_position`与
+`entry_allocation_fraction`：正目标必须给出有限的`(0, 1]`比例；零目标的比例为空值。
+SRT将其校验为公开强类型`CycleTarget(active, entry_fraction)`。比例不能从观察/诊断字段推断。
+固定比例对照也通过该列明确输出常数，从而在同一资金契约下比较。
+
+`plan_at(point, portfolio, state)`仍为纯计算。首份开仓计划被执行宿主采纳后，
+`ExecutionState.entry_cycle`保存`EntryCycleState`：周期及开仓信号身份、分配比例、
+含买入费用的现金预算、目标份额、实际累计买入成本及`ACTIVE/EXITING`阶段。
+其数量与`cycle_target_quantity`一致；新模式不能从旧目标数量或已有持仓猜测预算。
+`EntryCycleState.to_dict()/from_dict()`使用显式字段及十进制字符串。
+
+首次预算为可用现金乘信号比例，目标份额按限价、费用和整手规则向下取整。
+后续补买同时受剩余目标份额、剩余预算及实际可用现金限制，不再次乘开仓比例。
+日内价格变化、持有期间的新比例都不重设该周期的预算或目标，也不触发每日再平衡。
+实际买入成本按确认成交和费用累计；异常实际费用导致超预算时保留事实，剩余可买预算为零。
+
+`ExecutionPlan`明确携带`cycle_target`、`entry_cycle_before`、`entry_cycle_after`和
+`cycle_status`。后者为`OPEN/HOLD/EXIT/IDLE/INSUFFICIENT_LOT/BUDGET_LIMIT`，
+表达周期计划结果，不表示订单已成交。预算不足一手时不建立周期；需要退出时进入
+`EXITING`，即使随后收到正目标也继续退出。持仓归零且相关委托终结后由宿主释放周期。
+未知委托/成交状态不允许推断为已结清。计划采纳验证旧状态，成交增量更新新状态，二者均须幂等。
+
+信号身份包含当日`CycleTarget`，计划身份包含前后周期事实、状态、实际可用现金和费用率。相同比例的不同周期、
+相同目标但不同预算的计划不可混用。新模式字段缺失、旧状态混入或预算/份额越界明确失败。
+`validate_entry_cycle_plan_facts(...)`是SRT计划与PTE接收/采纳共用的纯校验入口，
+显式接收类型化目标、前后周期、状态、仓位/目标数量、比例/现金/费用、信号身份及订单。
+它验证唯一合法阶段转移、开仓/补买数量、预算及订单方向，不修改账户，也不代替宿主核验
+账户归属、状态版本和未终结委托。`CYCLE_TARGET`与`signal_cash_fraction`必须双向配套声明。
+现有固定比例周期与权益再平衡模式维持各自业务语义；新模式的预算上限使其补买路径可能与
+旧固定比例模式不同，研究对照须统一资金契约，不能假定逐笔等价。
 
 执行结果必须返回`ExecutionOutcome`：`status`显式使用`ExecutionOutcomeStatus.SETTLED`或
 `FAILED`，`portfolio`和`state`分别使用`PortfolioSnapshot`和`ExecutionState`，

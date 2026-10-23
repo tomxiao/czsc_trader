@@ -138,6 +138,7 @@ def build_replay_evidence(
             "exit_order_type": exit_order_type,
             "fee_rate": capital["fee_rate"],
             "capital_mode": capital["mode"],
+            "target_scope": capital["target_scope"],
             "allocation_fraction": capital.get("allocation_fraction", 1.0),
             "instrument": {
                 "lot_size": instrument["lot_size"],

@@ -15,7 +15,7 @@ from paper_trading_engine.account_health_migration import (
 )
 from paper_trading_engine.release_cli import verify_release_configuration
 from paper_trading_engine.lifecycle import AccountHealth
-from paper_trading_engine.store import PaperStore
+from paper_trading_engine.store import PaperStore, RUNTIME_DATABASE_SCHEMA_VERSION
 from test_release_runtime import release_verification_runtime  # noqa: F401
 
 
@@ -233,7 +233,8 @@ def test_store_migrates_v4_and_new_accounts_override_legacy_default(new_store, t
         assert connection.execute("SELECT health FROM virtual_accounts WHERE account_id='legacy'").fetchone()[0] == "READY"
     store = PaperStore(path)
     try:
-        assert store.get_setting("runtime_database_schema_version") == "5"
+        assert store.get_setting("runtime_database_schema_version") == str(RUNTIME_DATABASE_SCHEMA_VERSION)
+        assert store.virtual_account("legacy")["entry_cycle_json"] is None
         assert store.virtual_account("legacy")["health"] is AccountHealth.OK
         assert store.virtual_account("blocked")["health"] is AccountHealth.BLOCKED
         assert store.virtual_account("blocked")["last_error"] == "unresolved order"

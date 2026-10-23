@@ -6,6 +6,7 @@ from typing import Any, Mapping
 
 from .execution_rules import ExecutionRuleInput, build_frozen_execution_plan
 from .models import ExecutionPolicy
+from .entry_cycle import CycleTarget, EntryCycleState
 
 
 def build_execution_plan(
@@ -19,6 +20,10 @@ def build_execution_plan(
     execution_reference_price: float,
     price_scale: float = 1.0,
     unadjusted_reference_price: float | None = None,
+    cycle_target: CycleTarget | None = None,
+    entry_cycle: EntryCycleState | None = None,
+    opening_signal_identity: str | None = None,
+    account_id: str | None = None,
 ) -> Mapping[str, Any]:
     """Build the concrete order plan carried by an SRT execution instruction."""
 
@@ -34,5 +39,7 @@ def build_execution_plan(
             execution_reference_price=execution_reference_price,
             price_scale=price_scale,
             unadjusted_reference_price=unadjusted_reference_price,
+            cycle_target=cycle_target, entry_cycle=entry_cycle,
+            opening_signal_identity=opening_signal_identity, account_id=account_id,
         )
     )

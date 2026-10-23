@@ -626,6 +626,99 @@ def test_pte_transports_equity_mode_and_rejects_mismatched_scope(prepared_accoun
             original_parse(bad)
 
 
+@pytest.fixture
+def cycle_transport(prepared_account, monkeypatch):
+    """The real PTE adapter consumes a typed signal-allocation execution plan."""
+    from copy import deepcopy
+    from decimal import Decimal
+    from paper_trading_engine.contracts import AdviceDecision
+    from strategy_runtime import CycleTarget, EntryCycleState, EntryCyclePhase, EntryCyclePlanStatus
+    from strategy_runtime.contracts import plan_identity_for, signal_identity_for
+
+    client, prepared = prepared_account
+    original_plan = prepared.instance.plan_at
+    captured = []
+    parser = AdviceDecision.from_cli_payload
+
+    def cycle_plan(**kwargs):
+        original = original_plan(**kwargs)
+        target = CycleTarget(True, Decimal("0.5"))
+        signal = signal_identity_for(
+            strategy=original.strategy, signal_date=original.signal_date, target_position=1.,
+            input_identities=original.input_identities, price_identities=original.price_identities, cycle_target=target,
+        )
+        quantity = original.target_quantity // 200 * 100
+        order = replace(original.orders[0], quantity=quantity)
+        state = EntryCycleState(
+            canonical_sha256({"account": "s900-v1", "opening_signal": signal}), signal,
+            Decimal("0.5"), original.available_cash / 2, quantity, Decimal(0), EntryCyclePhase.ACTIVE,
+        )
+        cycle_fields = dict(cycle_target=target, entry_cycle_before=None, entry_cycle_after=state,
+                            cycle_status=EntryCyclePlanStatus.OPEN)
+        identity = plan_identity_for(
+            signal_identity=signal, actual_quantity=0, target_quantity=quantity, cycle_target_quantity=quantity,
+            plan_mode="NONE", capital_mode="signal_cash_fraction", allocation_fraction=Decimal("0.5"),
+            orders=(order,), legs=(), **cycle_fields,
+            available_cash=original.available_cash, fee_rate=original.fee_rate,
+        )
+        cost = order.limit_price * quantity * (1 + original.fee_rate)
+        return replace(
+            original, signal_identity=signal, plan_identity=identity,
+            target_quantity=quantity, cycle_target_quantity=quantity, target_position=1.,
+            capital_mode="signal_cash_fraction", allocation_fraction=Decimal("0.5"),
+            orders=(order,), estimated_order_cost=cost, unallocated_cash=original.available_cash - cost,
+            evidence={}, **cycle_fields,
+        )
+
+    def capture(value):
+        captured.append(deepcopy(value))
+        return parser(value)
+
+    monkeypatch.setattr(prepared.instance, "plan_at", cycle_plan)
+    monkeypatch.setattr(AdviceDecision, "from_cli_payload", capture)
+    value = _decision(client, prepared)
+    return value, captured[0], parser
+
+
+def test_pte_v6_transports_typed_cycle_and_preserves_legacy_serialization(cycle_transport):
+    from decimal import Decimal
+    from pte_support import decision
+
+    value, payload, _ = cycle_transport
+    assert value.contract_version == "advice.v6"
+    assert value.entry_cycle_before is None
+    assert value.entry_cycle_after.cash_budget == Decimal("50000")
+    assert value.cycle_target.entry_fraction == Decimal("0.5")
+    assert value.to_store_payload()["entry_cycle_after"] == payload["result"]["entry_cycle_after"]
+    assert "entry_cycle_before" in value.to_store_payload()
+    assert "entry_cycle_before" not in decision().to_store_payload()
+
+
+@pytest.mark.parametrize("mutation", ["budget", "order", "signal_fraction", "missing_state", "old_version", "fee", "cash"])
+def test_pte_v6_rejects_identity_or_cycle_transport_tampering(cycle_transport, mutation):
+    from paper_trading_engine.contracts import AdviceContractError
+
+    _, payload, parser = cycle_transport
+    value = payload["result"]
+    if mutation == "budget":
+        value["entry_cycle_after"]["cash_budget"] = "75000"
+    elif mutation == "order":
+        value["orders"][0]["limit_price"] += .001
+        value["order"]["limit_price"] += .001
+    elif mutation == "signal_fraction":
+        value["cycle_target"]["entry_fraction"] = "0.75"
+    elif mutation == "missing_state":
+        value.pop("entry_cycle_before")
+    elif mutation == "fee":
+        value["fee_rate"] /= 2
+    elif mutation == "cash":
+        value["available_cash"] += 1
+    else:
+        value["contract_version"] = "advice.v4"
+    with pytest.raises(AdviceContractError):
+        parser(payload)
+
+
 @pytest.mark.parametrize('feedback', list(DecisionFeedback))
 def test_contract_two_feedback_gates_binding_and_prepared_decisions(
     prepared_account, monkeypatch, feedback,
