@@ -1,0 +1,2968 @@
+{
+  "status": "COMPLETED_DESCRIPTIVE_ARITHMETIC",
+  "counts": [
+    {
+      "experiment": "EX042_20261023",
+      "new_configurations": 6,
+      "account_scenarios": 12,
+      "technical_precheck_extra_scenarios": 2,
+      "qualified_centers": 0
+    },
+    {
+      "experiment": "EX043_20261023",
+      "new_configurations": 24,
+      "account_scenarios": 48,
+      "technical_precheck_extra_scenarios": 0,
+      "qualified_centers": 0
+    },
+    {
+      "experiment": "EX044_20261023",
+      "new_configurations": 3,
+      "account_scenarios": 6,
+      "technical_precheck_extra_scenarios": 0,
+      "qualified_centers": 0
+    },
+    {
+      "experiment": "EX045_20261023",
+      "new_configurations": 12,
+      "account_scenarios": 24,
+      "technical_precheck_extra_scenarios": 2,
+      "qualified_centers": 0
+    },
+    {
+      "experiment": "EX046_20261023",
+      "new_configurations": 67,
+      "account_scenarios": 134,
+      "technical_precheck_extra_scenarios": 0,
+      "qualified_centers": 0
+    },
+    {
+      "experiment": "EX047_20261023",
+      "new_configurations": 47,
+      "account_scenarios": 94,
+      "technical_precheck_extra_scenarios": 0,
+      "qualified_centers": 0
+    }
+  ],
+  "total_configurations": 159,
+  "standard_accounts": 318,
+  "technical_repeat_accounts": 4,
+  "full_center_pass": 13,
+  "common_return_pass": 0,
+  "common_dd_pass": 0,
+  "joint_pass": 0,
+  "best_return": {
+    "experiment": "EX046_20261023",
+    "candidate": "C4605",
+    "parameters": {
+      "family": "A",
+      "mode": "risk",
+      "hold": 8,
+      "exposure": 1.0,
+      "exit_rule": "fixed"
+    },
+    "net_return": 0.61631525,
+    "dd": 0.20432108426620987,
+    "cagr": 0.32153799496749014,
+    "closed": 36,
+    "frequency_median": 5.0,
+    "frequency_good": 370,
+    "full_pass": false,
+    "common_return_pass": false,
+    "common_dd_pass": false,
+    "joint_pass": false,
+    "evidence": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX046_20261023"
+      },
+      "evidence_id": "9d426e4e1ec581c2a6c5237fe82410e45f4339f77cd9ec463ca5b079acef341a.json",
+      "sha256": "9d426e4e1ec581c2a6c5237fe82410e45f4339f77cd9ec463ca5b079acef341a",
+      "media_type": "application/json",
+      "name": "C4605",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    }
+  },
+  "lowest_dd": {
+    "experiment": "EX043_20261023",
+    "candidate": "C4320",
+    "parameters": {
+      "family": "B",
+      "mode": "and",
+      "hold": 1,
+      "exposure": 1.0,
+      "exit_rule": "fixed"
+    },
+    "net_return": 0.03275906000000073,
+    "dd": 0.11440925867492213,
+    "cagr": 0.018892720648385986,
+    "closed": 66,
+    "frequency_median": 8.0,
+    "frequency_good": 363,
+    "full_pass": false,
+    "common_return_pass": false,
+    "common_dd_pass": false,
+    "joint_pass": false,
+    "evidence": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX043_20261023"
+      },
+      "evidence_id": "21607c92805b7a727834e4b825bf634f9dbda949e28f0b6923e73d91f3e5b6d6.json",
+      "sha256": "21607c92805b7a727834e4b825bf634f9dbda949e28f0b6923e73d91f3e5b6d6",
+      "media_type": "application/json",
+      "name": "C4320",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    }
+  },
+  "return_dd_frontier": [
+    {
+      "experiment": "EX043_20261023",
+      "candidate": "C4307",
+      "parameters": {
+        "family": "A",
+        "mode": "risk",
+        "hold": 7,
+        "exposure": 1.0,
+        "exit_rule": "fixed"
+      },
+      "net_return": 0.565342189000001,
+      "dd": 0.16538252336885273,
+      "cagr": 0.2971761134448865,
+      "closed": 39,
+      "frequency_median": 6.0,
+      "frequency_good": 371,
+      "full_pass": true,
+      "common_return_pass": false,
+      "common_dd_pass": false,
+      "joint_pass": false,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX043_20261023"
+        },
+        "evidence_id": "7d287bd5d878ab20fa1b1084099c8dca2a878c2e00580aacbd81323b981187f4.json",
+        "sha256": "7d287bd5d878ab20fa1b1084099c8dca2a878c2e00580aacbd81323b981187f4",
+        "media_type": "application/json",
+        "name": "C4307",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "experiment": "EX043_20261023",
+      "candidate": "C4320",
+      "parameters": {
+        "family": "B",
+        "mode": "and",
+        "hold": 1,
+        "exposure": 1.0,
+        "exit_rule": "fixed"
+      },
+      "net_return": 0.03275906000000073,
+      "dd": 0.11440925867492213,
+      "cagr": 0.018892720648385986,
+      "closed": 66,
+      "frequency_median": 8.0,
+      "frequency_good": 363,
+      "full_pass": false,
+      "common_return_pass": false,
+      "common_dd_pass": false,
+      "joint_pass": false,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX043_20261023"
+        },
+        "evidence_id": "21607c92805b7a727834e4b825bf634f9dbda949e28f0b6923e73d91f3e5b6d6.json",
+        "sha256": "21607c92805b7a727834e4b825bf634f9dbda949e28f0b6923e73d91f3e5b6d6",
+        "media_type": "application/json",
+        "name": "C4320",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "experiment": "EX045_20261023",
+      "candidate": "C4507",
+      "parameters": {
+        "family": "B",
+        "mode": "path",
+        "hold": 7,
+        "exposure": 1.0,
+        "exit_rule": "permission"
+      },
+      "net_return": 0.592300716000002,
+      "dd": 0.1846718102998669,
+      "cagr": 0.31010134104831666,
+      "closed": 72,
+      "frequency_median": 11.0,
+      "frequency_good": 352,
+      "full_pass": true,
+      "common_return_pass": false,
+      "common_dd_pass": false,
+      "joint_pass": false,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX045_20261023"
+        },
+        "evidence_id": "d06ce1044aad58047eb8d3e2400ec91947b051eae4e3ac99df09806a4c853614.json",
+        "sha256": "d06ce1044aad58047eb8d3e2400ec91947b051eae4e3ac99df09806a4c853614",
+        "media_type": "application/json",
+        "name": "C4507",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "experiment": "EX046_20261023",
+      "candidate": "C4605",
+      "parameters": {
+        "family": "A",
+        "mode": "risk",
+        "hold": 8,
+        "exposure": 1.0,
+        "exit_rule": "fixed"
+      },
+      "net_return": 0.61631525,
+      "dd": 0.20432108426620987,
+      "cagr": 0.32153799496749014,
+      "closed": 36,
+      "frequency_median": 5.0,
+      "frequency_good": 370,
+      "full_pass": false,
+      "common_return_pass": false,
+      "common_dd_pass": false,
+      "joint_pass": false,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX046_20261023"
+        },
+        "evidence_id": "9d426e4e1ec581c2a6c5237fe82410e45f4339f77cd9ec463ca5b079acef341a.json",
+        "sha256": "9d426e4e1ec581c2a6c5237fe82410e45f4339f77cd9ec463ca5b079acef341a",
+        "media_type": "application/json",
+        "name": "C4605",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "experiment": "EX046_20261023",
+      "candidate": "C4607",
+      "parameters": {
+        "family": "A",
+        "mode": "and",
+        "hold": 6,
+        "exposure": 1.0,
+        "exit_rule": "fixed"
+      },
+      "net_return": 0.5427782390000011,
+      "dd": 0.12862872306093076,
+      "cagr": 0.286285928769451,
+      "closed": 36,
+      "frequency_median": 6.0,
+      "frequency_good": 369,
+      "full_pass": true,
+      "common_return_pass": false,
+      "common_dd_pass": false,
+      "joint_pass": false,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX046_20261023"
+        },
+        "evidence_id": "59ac1127016bf42fc8ef21712fa4ab6b481c2a92702026bc66993781faa97774.json",
+        "sha256": "59ac1127016bf42fc8ef21712fa4ab6b481c2a92702026bc66993781faa97774",
+        "media_type": "application/json",
+        "name": "C4607",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "experiment": "EX046_20261023",
+      "candidate": "C4656",
+      "parameters": {
+        "family": "B",
+        "mode": "and",
+        "hold": 1,
+        "exposure": 1.0,
+        "exit_rule": "permission"
+      },
+      "net_return": 0.03275906000000073,
+      "dd": 0.11440925867492213,
+      "cagr": 0.018892720648385986,
+      "closed": 66,
+      "frequency_median": 8.0,
+      "frequency_good": 363,
+      "full_pass": false,
+      "common_return_pass": false,
+      "common_dd_pass": false,
+      "joint_pass": false,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX046_20261023"
+        },
+        "evidence_id": "bb275918b75f30447d8fc5a5ee7f29f7097f80ea4e42fd0d87c2a705233a209a.json",
+        "sha256": "bb275918b75f30447d8fc5a5ee7f29f7097f80ea4e42fd0d87c2a705233a209a",
+        "media_type": "application/json",
+        "name": "C4656",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "experiment": "EX047_20261023",
+      "candidate": "C4722",
+      "parameters": {
+        "family": "B",
+        "mode": "path",
+        "hold": 17,
+        "exposure": 1.0,
+        "exit_rule": "permission"
+      },
+      "net_return": 0.5811547120000029,
+      "dd": 0.18466579418491835,
+      "cagr": 0.30476861980240644,
+      "closed": 66,
+      "frequency_median": 9.0,
+      "frequency_good": 342,
+      "full_pass": true,
+      "common_return_pass": false,
+      "common_dd_pass": false,
+      "joint_pass": false,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX047_20261023"
+        },
+        "evidence_id": "5b2f0626fe5294f150c4230c21b87bcfbb79f45899bd749318d526744293dce1.json",
+        "sha256": "5b2f0626fe5294f150c4230c21b87bcfbb79f45899bd749318d526744293dce1",
+        "media_type": "application/json",
+        "name": "C4722",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    }
+  ],
+  "family_summary": [
+    {
+      "family": "A",
+      "mode": "path",
+      "exit_rule": "fixed",
+      "count": 9,
+      "best_return": {
+        "experiment": "EX044_20261023",
+        "candidate": "C4400",
+        "parameters": {
+          "family": "A",
+          "mode": "path",
+          "hold": 9,
+          "exposure": 1.0,
+          "exit_rule": "fixed"
+        },
+        "net_return": 0.36538190900000056,
+        "dd": 0.3017526267753776,
+        "cagr": 0.19821475816603273,
+        "closed": 38,
+        "frequency_median": 6.0,
+        "frequency_good": 370,
+        "full_pass": false,
+        "common_return_pass": false,
+        "common_dd_pass": false,
+        "joint_pass": false,
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX044_20261023"
+          },
+          "evidence_id": "1d5f1b3e7cf054e82658fd72452e6b86ce6d9ad9657eef93a488230bbe442f2d.json",
+          "sha256": "1d5f1b3e7cf054e82658fd72452e6b86ce6d9ad9657eef93a488230bbe442f2d",
+          "media_type": "application/json",
+          "name": "C4400",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      },
+      "lowest_dd": {
+        "experiment": "EX043_20261023",
+        "candidate": "C4300",
+        "parameters": {
+          "family": "A",
+          "mode": "path",
+          "hold": 1,
+          "exposure": 1.0,
+          "exit_rule": "fixed"
+        },
+        "net_return": -0.1937417939999997,
+        "dd": 0.2526813212484623,
+        "cagr": -0.11754073632716955,
+        "closed": 154,
+        "frequency_median": 24.0,
+        "frequency_good": 375,
+        "full_pass": false,
+        "common_return_pass": false,
+        "common_dd_pass": false,
+        "joint_pass": false,
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX043_20261023"
+          },
+          "evidence_id": "c77d7137dcc01fbb96d479995df726fe747e46fb5a24b6c431e3a2bc7e3e3ca2.json",
+          "sha256": "c77d7137dcc01fbb96d479995df726fe747e46fb5a24b6c431e3a2bc7e3e3ca2",
+          "media_type": "application/json",
+          "name": "C4300",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      }
+    },
+    {
+      "family": "A",
+      "mode": "path",
+      "exit_rule": "permission",
+      "count": 16,
+      "best_return": {
+        "experiment": "EX047_20261023",
+        "candidate": "C4702",
+        "parameters": {
+          "family": "A",
+          "mode": "path",
+          "hold": 12,
+          "exposure": 1.0,
+          "exit_rule": "permission"
+        },
+        "net_return": 0.5112736690000015,
+        "dd": 0.25174038062049897,
+        "cagr": 0.27096828140411344,
+        "closed": 84,
+        "frequency_median": 12.0,
+        "frequency_good": 375,
+        "full_pass": false,
+        "common_return_pass": false,
+        "common_dd_pass": false,
+        "joint_pass": false,
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX047_20261023"
+          },
+          "evidence_id": "d4ab1f9e4ae1c3bf19087c993904db0bc6a5e7f55a7cec0265c3f5642d8f573a.json",
+          "sha256": "d4ab1f9e4ae1c3bf19087c993904db0bc6a5e7f55a7cec0265c3f5642d8f573a",
+          "media_type": "application/json",
+          "name": "C4702",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      },
+      "lowest_dd": {
+        "experiment": "EX046_20261023",
+        "candidate": "C4623",
+        "parameters": {
+          "family": "A",
+          "mode": "path",
+          "hold": 4,
+          "exposure": 1.0,
+          "exit_rule": "permission"
+        },
+        "net_return": 0.34332800299999966,
+        "dd": 0.20573721475468376,
+        "cagr": 0.1869387203256645,
+        "closed": 102,
+        "frequency_median": 14.0,
+        "frequency_good": 375,
+        "full_pass": false,
+        "common_return_pass": false,
+        "common_dd_pass": false,
+        "joint_pass": false,
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX046_20261023"
+          },
+          "evidence_id": "1f065a7d2e3fcbb1c8b466184aff0c8753231729e3143bedf593c5e825bb31e9.json",
+          "sha256": "1f065a7d2e3fcbb1c8b466184aff0c8753231729e3143bedf593c5e825bb31e9",
+          "media_type": "application/json",
+          "name": "C4623",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      }
+    },
+    {
+      "family": "A",
+      "mode": "risk",
+      "exit_rule": "fixed",
+      "count": 9,
+      "best_return": {
+        "experiment": "EX046_20261023",
+        "candidate": "C4605",
+        "parameters": {
+          "family": "A",
+          "mode": "risk",
+          "hold": 8,
+          "exposure": 1.0,
+          "exit_rule": "fixed"
+        },
+        "net_return": 0.61631525,
+        "dd": 0.20432108426620987,
+        "cagr": 0.32153799496749014,
+        "closed": 36,
+        "frequency_median": 5.0,
+        "frequency_good": 370,
+        "full_pass": false,
+        "common_return_pass": false,
+        "common_dd_pass": false,
+        "joint_pass": false,
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX046_20261023"
+          },
+          "evidence_id": "9d426e4e1ec581c2a6c5237fe82410e45f4339f77cd9ec463ca5b079acef341a.json",
+          "sha256": "9d426e4e1ec581c2a6c5237fe82410e45f4339f77cd9ec463ca5b079acef341a",
+          "media_type": "application/json",
+          "name": "C4605",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      },
+      "lowest_dd": {
+        "experiment": "EX043_20261023",
+        "candidate": "C4307",
+        "parameters": {
+          "family": "A",
+          "mode": "risk",
+          "hold": 7,
+          "exposure": 1.0,
+          "exit_rule": "fixed"
+        },
+        "net_return": 0.565342189000001,
+        "dd": 0.16538252336885273,
+        "cagr": 0.2971761134448865,
+        "closed": 39,
+        "frequency_median": 6.0,
+        "frequency_good": 371,
+        "full_pass": true,
+        "common_return_pass": false,
+        "common_dd_pass": false,
+        "joint_pass": false,
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX043_20261023"
+          },
+          "evidence_id": "7d287bd5d878ab20fa1b1084099c8dca2a878c2e00580aacbd81323b981187f4.json",
+          "sha256": "7d287bd5d878ab20fa1b1084099c8dca2a878c2e00580aacbd81323b981187f4",
+          "media_type": "application/json",
+          "name": "C4307",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      }
+    },
+    {
+      "family": "A",
+      "mode": "risk",
+      "exit_rule": "permission",
+      "count": 18,
+      "best_return": {
+        "experiment": "EX047_20261023",
+        "candidate": "C4713",
+        "parameters": {
+          "family": "A",
+          "mode": "risk",
+          "hold": 16,
+          "exposure": 1.0,
+          "exit_rule": "permission"
+        },
+        "net_return": 0.1203405130000017,
+        "dd": 0.22673515521148468,
+        "cagr": 0.06820562968785793,
+        "closed": 65,
+        "frequency_median": 9.0,
+        "frequency_good": 375,
+        "full_pass": false,
+        "common_return_pass": false,
+        "common_dd_pass": false,
+        "joint_pass": false,
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX047_20261023"
+          },
+          "evidence_id": "e142855be8f17becfd8f73887ff141e954b3d8338c6c30ffdeae7ae57e627eea.json",
+          "sha256": "e142855be8f17becfd8f73887ff141e954b3d8338c6c30ffdeae7ae57e627eea",
+          "media_type": "application/json",
+          "name": "C4713",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      },
+      "lowest_dd": {
+        "experiment": "EX047_20261023",
+        "candidate": "C4713",
+        "parameters": {
+          "family": "A",
+          "mode": "risk",
+          "hold": 16,
+          "exposure": 1.0,
+          "exit_rule": "permission"
+        },
+        "net_return": 0.1203405130000017,
+        "dd": 0.22673515521148468,
+        "cagr": 0.06820562968785793,
+        "closed": 65,
+        "frequency_median": 9.0,
+        "frequency_good": 375,
+        "full_pass": false,
+        "common_return_pass": false,
+        "common_dd_pass": false,
+        "joint_pass": false,
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX047_20261023"
+          },
+          "evidence_id": "e142855be8f17becfd8f73887ff141e954b3d8338c6c30ffdeae7ae57e627eea.json",
+          "sha256": "e142855be8f17becfd8f73887ff141e954b3d8338c6c30ffdeae7ae57e627eea",
+          "media_type": "application/json",
+          "name": "C4713",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      }
+    },
+    {
+      "family": "A",
+      "mode": "and",
+      "exit_rule": "fixed",
+      "count": 9,
+      "best_return": {
+        "experiment": "EX046_20261023",
+        "candidate": "C4607",
+        "parameters": {
+          "family": "A",
+          "mode": "and",
+          "hold": 6,
+          "exposure": 1.0,
+          "exit_rule": "fixed"
+        },
+        "net_return": 0.5427782390000011,
+        "dd": 0.12862872306093076,
+        "cagr": 0.286285928769451,
+        "closed": 36,
+        "frequency_median": 6.0,
+        "frequency_good": 369,
+        "full_pass": true,
+        "common_return_pass": false,
+        "common_dd_pass": false,
+        "joint_pass": false,
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX046_20261023"
+          },
+          "evidence_id": "59ac1127016bf42fc8ef21712fa4ab6b481c2a92702026bc66993781faa97774.json",
+          "sha256": "59ac1127016bf42fc8ef21712fa4ab6b481c2a92702026bc66993781faa97774",
+          "media_type": "application/json",
+          "name": "C4607",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      },
+      "lowest_dd": {
+        "experiment": "EX046_20261023",
+        "candidate": "C4607",
+        "parameters": {
+          "family": "A",
+          "mode": "and",
+          "hold": 6,
+          "exposure": 1.0,
+          "exit_rule": "fixed"
+        },
+        "net_return": 0.5427782390000011,
+        "dd": 0.12862872306093076,
+        "cagr": 0.286285928769451,
+        "closed": 36,
+        "frequency_median": 6.0,
+        "frequency_good": 369,
+        "full_pass": true,
+        "common_return_pass": false,
+        "common_dd_pass": false,
+        "joint_pass": false,
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX046_20261023"
+          },
+          "evidence_id": "59ac1127016bf42fc8ef21712fa4ab6b481c2a92702026bc66993781faa97774.json",
+          "sha256": "59ac1127016bf42fc8ef21712fa4ab6b481c2a92702026bc66993781faa97774",
+          "media_type": "application/json",
+          "name": "C4607",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      }
+    },
+    {
+      "family": "A",
+      "mode": "and",
+      "exit_rule": "permission",
+      "count": 9,
+      "best_return": {
+        "experiment": "EX046_20261023",
+        "candidate": "C4638",
+        "parameters": {
+          "family": "A",
+          "mode": "and",
+          "hold": 5,
+          "exposure": 1.0,
+          "exit_rule": "permission"
+        },
+        "net_return": 0.024059322999999466,
+        "dd": 0.17984944353052135,
+        "cagr": 0.013900246140549744,
+        "closed": 71,
+        "frequency_median": 10.0,
+        "frequency_good": 375,
+        "full_pass": false,
+        "common_return_pass": false,
+        "common_dd_pass": false,
+        "joint_pass": false,
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX046_20261023"
+          },
+          "evidence_id": "3eddc4ed749743bcf034437e0deb1015e478c2f226a2fe7388ced400acaa2d45.json",
+          "sha256": "3eddc4ed749743bcf034437e0deb1015e478c2f226a2fe7388ced400acaa2d45",
+          "media_type": "application/json",
+          "name": "C4638",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      },
+      "lowest_dd": {
+        "experiment": "EX045_20261023",
+        "candidate": "C4504",
+        "parameters": {
+          "family": "A",
+          "mode": "and",
+          "hold": 3,
+          "exposure": 1.0,
+          "exit_rule": "permission"
+        },
+        "net_return": -0.034059189999998796,
+        "dd": 0.1797778926396606,
+        "cagr": -0.019919859027053954,
+        "closed": 72,
+        "frequency_median": 10.0,
+        "frequency_good": 375,
+        "full_pass": false,
+        "common_return_pass": false,
+        "common_dd_pass": false,
+        "joint_pass": false,
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX045_20261023"
+          },
+          "evidence_id": "fe357bbc80d43614644cff16bdfc55fab9ee63d91d9466afa1c6ddb00e3496dc.json",
+          "sha256": "fe357bbc80d43614644cff16bdfc55fab9ee63d91d9466afa1c6ddb00e3496dc",
+          "media_type": "application/json",
+          "name": "C4504",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      }
+    },
+    {
+      "family": "B",
+      "mode": "path",
+      "exit_rule": "fixed",
+      "count": 9,
+      "best_return": {
+        "experiment": "EX042_20261023",
+        "candidate": "C4203",
+        "parameters": {
+          "family": "B",
+          "mode": "path",
+          "hold": 3,
+          "exposure": 1.0,
+          "exit_rule": "fixed"
+        },
+        "net_return": 0.5392838710000025,
+        "dd": 0.3310214765253199,
+        "cagr": 0.28459346301146105,
+        "closed": 74,
+        "frequency_median": 12.0,
+        "frequency_good": 369,
+        "full_pass": false,
+        "common_return_pass": false,
+        "common_dd_pass": false,
+        "joint_pass": false,
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX042_20261023"
+          },
+          "evidence_id": "a2f6ab43b1a8739ae84df03fd603c826818afd787df04d2c1d2a00ca3a02d80f.json",
+          "sha256": "a2f6ab43b1a8739ae84df03fd603c826818afd787df04d2c1d2a00ca3a02d80f",
+          "media_type": "application/json",
+          "name": "C4203",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      },
+      "lowest_dd": {
+        "experiment": "EX043_20261023",
+        "candidate": "C4312",
+        "parameters": {
+          "family": "B",
+          "mode": "path",
+          "hold": 1,
+          "exposure": 1.0,
+          "exit_rule": "fixed"
+        },
+        "net_return": 0.0783877210000008,
+        "dd": 0.19930678408483238,
+        "cagr": 0.044793848526350155,
+        "closed": 129,
+        "frequency_median": 19.0,
+        "frequency_good": 375,
+        "full_pass": false,
+        "common_return_pass": false,
+        "common_dd_pass": false,
+        "joint_pass": false,
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX043_20261023"
+          },
+          "evidence_id": "a94f5f1add10c919bdd059d030ff9efb240eda452e44b9447f4cfd7dc4beb000.json",
+          "sha256": "a94f5f1add10c919bdd059d030ff9efb240eda452e44b9447f4cfd7dc4beb000",
+          "media_type": "application/json",
+          "name": "C4312",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      }
+    },
+    {
+      "family": "B",
+      "mode": "path",
+      "exit_rule": "permission",
+      "count": 23,
+      "best_return": {
+        "experiment": "EX045_20261023",
+        "candidate": "C4507",
+        "parameters": {
+          "family": "B",
+          "mode": "path",
+          "hold": 7,
+          "exposure": 1.0,
+          "exit_rule": "permission"
+        },
+        "net_return": 0.592300716000002,
+        "dd": 0.1846718102998669,
+        "cagr": 0.31010134104831666,
+        "closed": 72,
+        "frequency_median": 11.0,
+        "frequency_good": 352,
+        "full_pass": true,
+        "common_return_pass": false,
+        "common_dd_pass": false,
+        "joint_pass": false,
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX045_20261023"
+          },
+          "evidence_id": "d06ce1044aad58047eb8d3e2400ec91947b051eae4e3ac99df09806a4c853614.json",
+          "sha256": "d06ce1044aad58047eb8d3e2400ec91947b051eae4e3ac99df09806a4c853614",
+          "media_type": "application/json",
+          "name": "C4507",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      },
+      "lowest_dd": {
+        "experiment": "EX046_20261023",
+        "candidate": "C4644",
+        "parameters": {
+          "family": "B",
+          "mode": "path",
+          "hold": 4,
+          "exposure": 1.0,
+          "exit_rule": "permission"
+        },
+        "net_return": 0.4730801850000006,
+        "dd": 0.1582786192410327,
+        "cagr": 0.2522176994151555,
+        "closed": 83,
+        "frequency_median": 13.0,
+        "frequency_good": 361,
+        "full_pass": false,
+        "common_return_pass": false,
+        "common_dd_pass": false,
+        "joint_pass": false,
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX046_20261023"
+          },
+          "evidence_id": "f788f19886e9172b4e6f9cdddd6b0758d62f6673f8f2b718bd0385b03879e45f.json",
+          "sha256": "f788f19886e9172b4e6f9cdddd6b0758d62f6673f8f2b718bd0385b03879e45f",
+          "media_type": "application/json",
+          "name": "C4644",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      }
+    },
+    {
+      "family": "B",
+      "mode": "risk",
+      "exit_rule": "fixed",
+      "count": 9,
+      "best_return": {
+        "experiment": "EX046_20261023",
+        "candidate": "C4613",
+        "parameters": {
+          "family": "B",
+          "mode": "risk",
+          "hold": 6,
+          "exposure": 1.0,
+          "exit_rule": "fixed"
+        },
+        "net_return": 0.3207488170000006,
+        "dd": 0.1798079504723702,
+        "cagr": 0.17531338505986938,
+        "closed": 31,
+        "frequency_median": 4.0,
+        "frequency_good": 331,
+        "full_pass": false,
+        "common_return_pass": false,
+        "common_dd_pass": false,
+        "joint_pass": false,
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX046_20261023"
+          },
+          "evidence_id": "08c76f31d1985635d49186f644aa519acffcef57284250d20c7ac5992bc26e8a.json",
+          "sha256": "08c76f31d1985635d49186f644aa519acffcef57284250d20c7ac5992bc26e8a",
+          "media_type": "application/json",
+          "name": "C4613",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      },
+      "lowest_dd": {
+        "experiment": "EX043_20261023",
+        "candidate": "C4316",
+        "parameters": {
+          "family": "B",
+          "mode": "risk",
+          "hold": 1,
+          "exposure": 1.0,
+          "exit_rule": "fixed"
+        },
+        "net_return": -0.15037807400000036,
+        "dd": 0.15925738793028665,
+        "cagr": -0.09028521743737328,
+        "closed": 79,
+        "frequency_median": 11.0,
+        "frequency_good": 369,
+        "full_pass": false,
+        "common_return_pass": false,
+        "common_dd_pass": false,
+        "joint_pass": false,
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX043_20261023"
+          },
+          "evidence_id": "f5bf24acc09e2b40bf42e310c3ccdb235ae9199389394edd8d3dce592227d9c8.json",
+          "sha256": "f5bf24acc09e2b40bf42e310c3ccdb235ae9199389394edd8d3dce592227d9c8",
+          "media_type": "application/json",
+          "name": "C4316",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      }
+    },
+    {
+      "family": "B",
+      "mode": "risk",
+      "exit_rule": "permission",
+      "count": 24,
+      "best_return": {
+        "experiment": "EX047_20261023",
+        "candidate": "C4735",
+        "parameters": {
+          "family": "B",
+          "mode": "risk",
+          "hold": 17,
+          "exposure": 1.0,
+          "exit_rule": "permission"
+        },
+        "net_return": 0.03895387900000036,
+        "dd": 0.19387711972370092,
+        "cagr": 0.022436966699090455,
+        "closed": 43,
+        "frequency_median": 6.0,
+        "frequency_good": 353,
+        "full_pass": false,
+        "common_return_pass": false,
+        "common_dd_pass": false,
+        "joint_pass": false,
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX047_20261023"
+          },
+          "evidence_id": "63adcf6767acf4c7ece5db721a90cd6872b50aed5fee6e6c75de609b90f5c497.json",
+          "sha256": "63adcf6767acf4c7ece5db721a90cd6872b50aed5fee6e6c75de609b90f5c497",
+          "media_type": "application/json",
+          "name": "C4735",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      },
+      "lowest_dd": {
+        "experiment": "EX046_20261023",
+        "candidate": "C4651",
+        "parameters": {
+          "family": "B",
+          "mode": "risk",
+          "hold": 4,
+          "exposure": 1.0,
+          "exit_rule": "permission"
+        },
+        "net_return": -0.0032196500000012396,
+        "dd": 0.15121715041518646,
+        "cagr": -0.0018707381791784883,
+        "closed": 50,
+        "frequency_median": 7.0,
+        "frequency_good": 360,
+        "full_pass": false,
+        "common_return_pass": false,
+        "common_dd_pass": false,
+        "joint_pass": false,
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX046_20261023"
+          },
+          "evidence_id": "2b81874f954faf065e417c03a9368911541df4288a2bee4a3546207508e67dbd.json",
+          "sha256": "2b81874f954faf065e417c03a9368911541df4288a2bee4a3546207508e67dbd",
+          "media_type": "application/json",
+          "name": "C4651",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      }
+    },
+    {
+      "family": "B",
+      "mode": "and",
+      "exit_rule": "fixed",
+      "count": 9,
+      "best_return": {
+        "experiment": "EX046_20261023",
+        "candidate": "C4620",
+        "parameters": {
+          "family": "B",
+          "mode": "and",
+          "hold": 9,
+          "exposure": 1.0,
+          "exit_rule": "fixed"
+        },
+        "net_return": 0.19575845000000114,
+        "dd": 0.25916357471638796,
+        "cagr": 0.10938757753271355,
+        "closed": 22,
+        "frequency_median": 3.0,
+        "frequency_good": 263,
+        "full_pass": false,
+        "common_return_pass": false,
+        "common_dd_pass": false,
+        "joint_pass": false,
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX046_20261023"
+          },
+          "evidence_id": "0b82f9fdb67ecd7ff91f9b69b19f9b59131909c33f80af1162b3df68a94e3783.json",
+          "sha256": "0b82f9fdb67ecd7ff91f9b69b19f9b59131909c33f80af1162b3df68a94e3783",
+          "media_type": "application/json",
+          "name": "C4620",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      },
+      "lowest_dd": {
+        "experiment": "EX043_20261023",
+        "candidate": "C4320",
+        "parameters": {
+          "family": "B",
+          "mode": "and",
+          "hold": 1,
+          "exposure": 1.0,
+          "exit_rule": "fixed"
+        },
+        "net_return": 0.03275906000000073,
+        "dd": 0.11440925867492213,
+        "cagr": 0.018892720648385986,
+        "closed": 66,
+        "frequency_median": 8.0,
+        "frequency_good": 363,
+        "full_pass": false,
+        "common_return_pass": false,
+        "common_dd_pass": false,
+        "joint_pass": false,
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX043_20261023"
+          },
+          "evidence_id": "21607c92805b7a727834e4b825bf634f9dbda949e28f0b6923e73d91f3e5b6d6.json",
+          "sha256": "21607c92805b7a727834e4b825bf634f9dbda949e28f0b6923e73d91f3e5b6d6",
+          "media_type": "application/json",
+          "name": "C4320",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      }
+    },
+    {
+      "family": "B",
+      "mode": "and",
+      "exit_rule": "permission",
+      "count": 15,
+      "best_return": {
+        "experiment": "EX047_20261023",
+        "candidate": "C4743",
+        "parameters": {
+          "family": "B",
+          "mode": "and",
+          "hold": 10,
+          "exposure": 1.0,
+          "exit_rule": "permission"
+        },
+        "net_return": 0.12385171399999906,
+        "dd": 0.1451739766218304,
+        "cagr": 0.07014824255624452,
+        "closed": 45,
+        "frequency_median": 6.0,
+        "frequency_good": 333,
+        "full_pass": false,
+        "common_return_pass": false,
+        "common_dd_pass": false,
+        "joint_pass": false,
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX047_20261023"
+          },
+          "evidence_id": "66eb2333542996270c32f8a23a6cda8ca5201734686d561d34c33d2b39a3d505.json",
+          "sha256": "66eb2333542996270c32f8a23a6cda8ca5201734686d561d34c33d2b39a3d505",
+          "media_type": "application/json",
+          "name": "C4743",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      },
+      "lowest_dd": {
+        "experiment": "EX046_20261023",
+        "candidate": "C4656",
+        "parameters": {
+          "family": "B",
+          "mode": "and",
+          "hold": 1,
+          "exposure": 1.0,
+          "exit_rule": "permission"
+        },
+        "net_return": 0.03275906000000073,
+        "dd": 0.11440925867492213,
+        "cagr": 0.018892720648385986,
+        "closed": 66,
+        "frequency_median": 8.0,
+        "frequency_good": 363,
+        "full_pass": false,
+        "common_return_pass": false,
+        "common_dd_pass": false,
+        "joint_pass": false,
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S015",
+            "experiment_id": "EX046_20261023"
+          },
+          "evidence_id": "bb275918b75f30447d8fc5a5ee7f29f7097f80ea4e42fd0d87c2a705233a209a.json",
+          "sha256": "bb275918b75f30447d8fc5a5ee7f29f7097f80ea4e42fd0d87c2a705233a209a",
+          "media_type": "application/json",
+          "name": "C4656",
+          "schema": "account_evaluation",
+          "schema_version": 7
+        }
+      }
+    }
+  ],
+  "full_center_candidates": [
+    {
+      "experiment": "EX043_20261023",
+      "candidate": "C4307",
+      "parameters": {
+        "family": "A",
+        "mode": "risk",
+        "hold": 7,
+        "exposure": 1.0,
+        "exit_rule": "fixed"
+      },
+      "net_return": 0.565342189000001,
+      "dd": 0.16538252336885273,
+      "cagr": 0.2971761134448865,
+      "closed": 39,
+      "frequency_median": 6.0,
+      "frequency_good": 371,
+      "full_pass": true,
+      "common_return_pass": false,
+      "common_dd_pass": false,
+      "joint_pass": false,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX043_20261023"
+        },
+        "evidence_id": "7d287bd5d878ab20fa1b1084099c8dca2a878c2e00580aacbd81323b981187f4.json",
+        "sha256": "7d287bd5d878ab20fa1b1084099c8dca2a878c2e00580aacbd81323b981187f4",
+        "media_type": "application/json",
+        "name": "C4307",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "experiment": "EX043_20261023",
+      "candidate": "C4311",
+      "parameters": {
+        "family": "A",
+        "mode": "and",
+        "hold": 7,
+        "exposure": 1.0,
+        "exit_rule": "fixed"
+      },
+      "net_return": 0.5085557110000003,
+      "dd": 0.2217713454714767,
+      "cagr": 0.2696405536660478,
+      "closed": 35,
+      "frequency_median": 6.0,
+      "frequency_good": 365,
+      "full_pass": true,
+      "common_return_pass": false,
+      "common_dd_pass": false,
+      "joint_pass": false,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX043_20261023"
+        },
+        "evidence_id": "f1972c69346e96ac79e868f07fd710b8c97629d04e61f0fd49a50fa861530a28.json",
+        "sha256": "f1972c69346e96ac79e868f07fd710b8c97629d04e61f0fd49a50fa861530a28",
+        "media_type": "application/json",
+        "name": "C4311",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "experiment": "EX045_20261023",
+      "candidate": "C4507",
+      "parameters": {
+        "family": "B",
+        "mode": "path",
+        "hold": 7,
+        "exposure": 1.0,
+        "exit_rule": "permission"
+      },
+      "net_return": 0.592300716000002,
+      "dd": 0.1846718102998669,
+      "cagr": 0.31010134104831666,
+      "closed": 72,
+      "frequency_median": 11.0,
+      "frequency_good": 352,
+      "full_pass": true,
+      "common_return_pass": false,
+      "common_dd_pass": false,
+      "joint_pass": false,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX045_20261023"
+        },
+        "evidence_id": "d06ce1044aad58047eb8d3e2400ec91947b051eae4e3ac99df09806a4c853614.json",
+        "sha256": "d06ce1044aad58047eb8d3e2400ec91947b051eae4e3ac99df09806a4c853614",
+        "media_type": "application/json",
+        "name": "C4507",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "experiment": "EX046_20261023",
+      "candidate": "C4607",
+      "parameters": {
+        "family": "A",
+        "mode": "and",
+        "hold": 6,
+        "exposure": 1.0,
+        "exit_rule": "fixed"
+      },
+      "net_return": 0.5427782390000011,
+      "dd": 0.12862872306093076,
+      "cagr": 0.286285928769451,
+      "closed": 36,
+      "frequency_median": 6.0,
+      "frequency_good": 369,
+      "full_pass": true,
+      "common_return_pass": false,
+      "common_dd_pass": false,
+      "joint_pass": false,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX046_20261023"
+        },
+        "evidence_id": "59ac1127016bf42fc8ef21712fa4ab6b481c2a92702026bc66993781faa97774.json",
+        "sha256": "59ac1127016bf42fc8ef21712fa4ab6b481c2a92702026bc66993781faa97774",
+        "media_type": "application/json",
+        "name": "C4607",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "experiment": "EX046_20261023",
+      "candidate": "C4663",
+      "parameters": {
+        "family": "B",
+        "mode": "path",
+        "hold": 15,
+        "exposure": 1.0,
+        "exit_rule": "permission"
+      },
+      "net_return": 0.5547030059999991,
+      "dd": 0.184686417960366,
+      "cagr": 0.29204951598083384,
+      "closed": 66,
+      "frequency_median": 9.0,
+      "frequency_good": 342,
+      "full_pass": true,
+      "common_return_pass": false,
+      "common_dd_pass": false,
+      "joint_pass": false,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX046_20261023"
+        },
+        "evidence_id": "6531b568162007bae9a4423c251d7901e92be47fb42a433daa200a7a94cc37a4.json",
+        "sha256": "6531b568162007bae9a4423c251d7901e92be47fb42a433daa200a7a94cc37a4",
+        "media_type": "application/json",
+        "name": "C4663",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "experiment": "EX047_20261023",
+      "candidate": "C4716",
+      "parameters": {
+        "family": "B",
+        "mode": "path",
+        "hold": 10,
+        "exposure": 1.0,
+        "exit_rule": "permission"
+      },
+      "net_return": 0.5089909890000006,
+      "dd": 0.1846952348032228,
+      "cagr": 0.2698532552328663,
+      "closed": 69,
+      "frequency_median": 10.0,
+      "frequency_good": 344,
+      "full_pass": true,
+      "common_return_pass": false,
+      "common_dd_pass": false,
+      "joint_pass": false,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX047_20261023"
+        },
+        "evidence_id": "cdff8262aa2ce3908dead1a84452eb9277aad01d07bf565d8427c0e40e1daafe.json",
+        "sha256": "cdff8262aa2ce3908dead1a84452eb9277aad01d07bf565d8427c0e40e1daafe",
+        "media_type": "application/json",
+        "name": "C4716",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "experiment": "EX047_20261023",
+      "candidate": "C4719",
+      "parameters": {
+        "family": "B",
+        "mode": "path",
+        "hold": 13,
+        "exposure": 1.0,
+        "exit_rule": "permission"
+      },
+      "net_return": 0.5538177390000014,
+      "dd": 0.18458560289258208,
+      "cagr": 0.2916222791659906,
+      "closed": 66,
+      "frequency_median": 9.0,
+      "frequency_good": 342,
+      "full_pass": true,
+      "common_return_pass": false,
+      "common_dd_pass": false,
+      "joint_pass": false,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX047_20261023"
+        },
+        "evidence_id": "106b0b18782a1a5f1a0d6619234ef3b24ee934ccce0bca09cb1fc4af4fb5730e.json",
+        "sha256": "106b0b18782a1a5f1a0d6619234ef3b24ee934ccce0bca09cb1fc4af4fb5730e",
+        "media_type": "application/json",
+        "name": "C4719",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "experiment": "EX047_20261023",
+      "candidate": "C4720",
+      "parameters": {
+        "family": "B",
+        "mode": "path",
+        "hold": 14,
+        "exposure": 1.0,
+        "exit_rule": "permission"
+      },
+      "net_return": 0.5428377030000024,
+      "dd": 0.18462240778802452,
+      "cagr": 0.28631471570500544,
+      "closed": 66,
+      "frequency_median": 9.0,
+      "frequency_good": 342,
+      "full_pass": true,
+      "common_return_pass": false,
+      "common_dd_pass": false,
+      "joint_pass": false,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX047_20261023"
+        },
+        "evidence_id": "6d11453de8f4d3c5356a5b7107f68ec74938d4d4f400a53e5551001920175730.json",
+        "sha256": "6d11453de8f4d3c5356a5b7107f68ec74938d4d4f400a53e5551001920175730",
+        "media_type": "application/json",
+        "name": "C4720",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "experiment": "EX047_20261023",
+      "candidate": "C4721",
+      "parameters": {
+        "family": "B",
+        "mode": "path",
+        "hold": 16,
+        "exposure": 1.0,
+        "exit_rule": "permission"
+      },
+      "net_return": 0.5556722929999998,
+      "dd": 0.18465870596022682,
+      "cagr": 0.29251718452401154,
+      "closed": 66,
+      "frequency_median": 9.0,
+      "frequency_good": 342,
+      "full_pass": true,
+      "common_return_pass": false,
+      "common_dd_pass": false,
+      "joint_pass": false,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX047_20261023"
+        },
+        "evidence_id": "f079d52fa09bccb1281d7e3c4cbd5c350f58b85940af08303576b417bec40e9a.json",
+        "sha256": "f079d52fa09bccb1281d7e3c4cbd5c350f58b85940af08303576b417bec40e9a",
+        "media_type": "application/json",
+        "name": "C4721",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "experiment": "EX047_20261023",
+      "candidate": "C4722",
+      "parameters": {
+        "family": "B",
+        "mode": "path",
+        "hold": 17,
+        "exposure": 1.0,
+        "exit_rule": "permission"
+      },
+      "net_return": 0.5811547120000029,
+      "dd": 0.18466579418491835,
+      "cagr": 0.30476861980240644,
+      "closed": 66,
+      "frequency_median": 9.0,
+      "frequency_good": 342,
+      "full_pass": true,
+      "common_return_pass": false,
+      "common_dd_pass": false,
+      "joint_pass": false,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX047_20261023"
+        },
+        "evidence_id": "5b2f0626fe5294f150c4230c21b87bcfbb79f45899bd749318d526744293dce1.json",
+        "sha256": "5b2f0626fe5294f150c4230c21b87bcfbb79f45899bd749318d526744293dce1",
+        "media_type": "application/json",
+        "name": "C4722",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "experiment": "EX047_20261023",
+      "candidate": "C4723",
+      "parameters": {
+        "family": "B",
+        "mode": "path",
+        "hold": 18,
+        "exposure": 1.0,
+        "exit_rule": "permission"
+      },
+      "net_return": 0.5258000409999999,
+      "dd": 0.18463412308368987,
+      "cagr": 0.2780475332987058,
+      "closed": 65,
+      "frequency_median": 8.0,
+      "frequency_good": 342,
+      "full_pass": true,
+      "common_return_pass": false,
+      "common_dd_pass": false,
+      "joint_pass": false,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX047_20261023"
+        },
+        "evidence_id": "881e09c99898790fefc58aafbc6864e075f234adeacd0cd81b01e4a921c241ff.json",
+        "sha256": "881e09c99898790fefc58aafbc6864e075f234adeacd0cd81b01e4a921c241ff",
+        "media_type": "application/json",
+        "name": "C4723",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "experiment": "EX047_20261023",
+      "candidate": "C4724",
+      "parameters": {
+        "family": "B",
+        "mode": "path",
+        "hold": 19,
+        "exposure": 1.0,
+        "exit_rule": "permission"
+      },
+      "net_return": 0.4914234790000005,
+      "dd": 0.18464396159519425,
+      "cagr": 0.26124822072249154,
+      "closed": 65,
+      "frequency_median": 8.0,
+      "frequency_good": 342,
+      "full_pass": true,
+      "common_return_pass": false,
+      "common_dd_pass": false,
+      "joint_pass": false,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX047_20261023"
+        },
+        "evidence_id": "d51342a9466c4d5238bfcbe0a207dfdc5463e23cf45e9037b040815dfdedd216.json",
+        "sha256": "d51342a9466c4d5238bfcbe0a207dfdc5463e23cf45e9037b040815dfdedd216",
+        "media_type": "application/json",
+        "name": "C4724",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "experiment": "EX047_20261023",
+      "candidate": "C4725",
+      "parameters": {
+        "family": "B",
+        "mode": "path",
+        "hold": 20,
+        "exposure": 1.0,
+        "exit_rule": "permission"
+      },
+      "net_return": 0.522990000000001,
+      "dd": 0.18466969949366496,
+      "cagr": 0.2766803061520564,
+      "closed": 65,
+      "frequency_median": 8.0,
+      "frequency_good": 342,
+      "full_pass": true,
+      "common_return_pass": false,
+      "common_dd_pass": false,
+      "joint_pass": false,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX047_20261023"
+        },
+        "evidence_id": "ca380111b0790ea759bdbd6fc25c9ffcf0dbde4381378b97380c46899c455391.json",
+        "sha256": "ca380111b0790ea759bdbd6fc25c9ffcf0dbde4381378b97380c46899c455391",
+        "media_type": "application/json",
+        "name": "C4725",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    }
+  ],
+  "time_diagnostics": [
+    {
+      "candidate": "C4307",
+      "years": [
+        {
+          "year": 2025,
+          "sessions": 243,
+          "start": "2025-01-02",
+          "end": "2025-12-31",
+          "return": 0.22691170200000021,
+          "local_peak_dd": 0.11641510540849909,
+          "inherited_peak_dd": 0.11641510540849909
+        },
+        {
+          "year": 2026,
+          "sessions": 191,
+          "start": "2026-01-05",
+          "end": "2026-10-21",
+          "return": 0.2758393178973857,
+          "local_peak_dd": 0.16538252336885273,
+          "inherited_peak_dd": 0.16538252336885273
+        }
+      ],
+      "rolling252_step21": [
+        {
+          "start": "2025-01-02",
+          "end": "2026-01-15",
+          "return": 0.3163358820000002,
+          "local_peak_dd": 0.11641510540849909
+        },
+        {
+          "start": "2025-02-10",
+          "end": "2026-02-13",
+          "return": 0.40144844100000054,
+          "local_peak_dd": 0.11641510540849909
+        },
+        {
+          "start": "2025-03-11",
+          "end": "2026-03-24",
+          "return": 0.477242740027384,
+          "local_peak_dd": 0.11641510540849909
+        },
+        {
+          "start": "2025-04-10",
+          "end": "2026-04-23",
+          "return": 0.715270908377865,
+          "local_peak_dd": 0.08737988340570779
+        },
+        {
+          "start": "2025-05-14",
+          "end": "2026-05-27",
+          "return": 0.7496514909881538,
+          "local_peak_dd": 0.08737988340570779
+        },
+        {
+          "start": "2025-06-13",
+          "end": "2026-06-26",
+          "return": 0.8539443971445544,
+          "local_peak_dd": 0.08737988340570779
+        },
+        {
+          "start": "2025-07-14",
+          "end": "2026-07-27",
+          "return": 0.708536688628898,
+          "local_peak_dd": 0.1632049885682504
+        },
+        {
+          "start": "2025-08-12",
+          "end": "2026-08-25",
+          "return": 0.6747816760660037,
+          "local_peak_dd": 0.1632049885682504
+        },
+        {
+          "start": "2025-09-10",
+          "end": "2026-09-23",
+          "return": 0.6579888213042473,
+          "local_peak_dd": 0.1632049885682504
+        }
+      ]
+    },
+    {
+      "candidate": "C4311",
+      "years": [
+        {
+          "year": 2025,
+          "sessions": 243,
+          "start": "2025-01-02",
+          "end": "2025-12-31",
+          "return": 0.28136448699999983,
+          "local_peak_dd": 0.14299739960674884,
+          "inherited_peak_dd": 0.14299739960674884
+        },
+        {
+          "year": 2026,
+          "sessions": 191,
+          "start": "2026-01-05",
+          "end": "2026-10-21",
+          "return": 0.17730413657078392,
+          "local_peak_dd": 0.2217713454714767,
+          "inherited_peak_dd": 0.2217713454714767
+        }
+      ],
+      "rolling252_step21": [
+        {
+          "start": "2025-01-02",
+          "end": "2026-01-15",
+          "return": 0.3747385349999999,
+          "local_peak_dd": 0.14299739960674884
+        },
+        {
+          "start": "2025-02-10",
+          "end": "2026-02-13",
+          "return": 0.46359509600000015,
+          "local_peak_dd": 0.14299739960674884
+        },
+        {
+          "start": "2025-03-11",
+          "end": "2026-03-24",
+          "return": 0.5624484426197476,
+          "local_peak_dd": 0.14299739960674884
+        },
+        {
+          "start": "2025-04-10",
+          "end": "2026-04-23",
+          "return": 0.8411694226637643,
+          "local_peak_dd": 0.08735850715837645
+        },
+        {
+          "start": "2025-05-14",
+          "end": "2026-05-27",
+          "return": 0.8334639402164079,
+          "local_peak_dd": 0.08735850715837645
+        },
+        {
+          "start": "2025-06-13",
+          "end": "2026-06-26",
+          "return": 0.9555166770656742,
+          "local_peak_dd": 0.08735850715837645
+        },
+        {
+          "start": "2025-07-14",
+          "end": "2026-07-27",
+          "return": 0.758577864627066,
+          "local_peak_dd": 0.16325122979896078
+        },
+        {
+          "start": "2025-08-12",
+          "end": "2026-08-25",
+          "return": 0.7320767987529511,
+          "local_peak_dd": 0.16325122979896078
+        },
+        {
+          "start": "2025-09-10",
+          "end": "2026-09-23",
+          "return": 0.5670058019815372,
+          "local_peak_dd": 0.16325122979896078
+        }
+      ]
+    },
+    {
+      "candidate": "C4507",
+      "years": [
+        {
+          "year": 2025,
+          "sessions": 243,
+          "start": "2025-01-02",
+          "end": "2025-12-31",
+          "return": 0.17421398900000118,
+          "local_peak_dd": 0.13335298594734368,
+          "inherited_peak_dd": 0.13335298594734368
+        },
+        {
+          "year": 2026,
+          "sessions": 191,
+          "start": "2026-01-05",
+          "end": "2026-10-21",
+          "return": 0.35605667358473303,
+          "local_peak_dd": 0.1846718102998669,
+          "inherited_peak_dd": 0.1846718102998669
+        }
+      ],
+      "rolling252_step21": [
+        {
+          "start": "2025-01-02",
+          "end": "2026-01-15",
+          "return": 0.32064540500000094,
+          "local_peak_dd": 0.13335298594734368
+        },
+        {
+          "start": "2025-02-10",
+          "end": "2026-02-13",
+          "return": 0.43087658800000095,
+          "local_peak_dd": 0.13335298594734368
+        },
+        {
+          "start": "2025-03-11",
+          "end": "2026-03-24",
+          "return": 0.6136410748172514,
+          "local_peak_dd": 0.13335298594734368
+        },
+        {
+          "start": "2025-04-10",
+          "end": "2026-04-23",
+          "return": 0.936160507239644,
+          "local_peak_dd": 0.12418415871991706
+        },
+        {
+          "start": "2025-05-14",
+          "end": "2026-05-27",
+          "return": 0.8370998190321304,
+          "local_peak_dd": 0.12418415871991706
+        },
+        {
+          "start": "2025-06-13",
+          "end": "2026-06-26",
+          "return": 1.0646635836776164,
+          "local_peak_dd": 0.12418415871991706
+        },
+        {
+          "start": "2025-07-14",
+          "end": "2026-07-27",
+          "return": 0.8451786542841804,
+          "local_peak_dd": 0.17264161933988054
+        },
+        {
+          "start": "2025-08-12",
+          "end": "2026-08-25",
+          "return": 0.7442549313923323,
+          "local_peak_dd": 0.17264161933988054
+        },
+        {
+          "start": "2025-09-10",
+          "end": "2026-09-23",
+          "return": 0.6851832543676972,
+          "local_peak_dd": 0.17264161933988054
+        }
+      ]
+    },
+    {
+      "candidate": "C4607",
+      "years": [
+        {
+          "year": 2025,
+          "sessions": 243,
+          "start": "2025-01-02",
+          "end": "2025-12-31",
+          "return": 0.11315473300000001,
+          "local_peak_dd": 0.12536999135303206,
+          "inherited_peak_dd": 0.12536999135303206
+        },
+        {
+          "year": 2026,
+          "sessions": 191,
+          "start": "2026-01-05",
+          "end": "2026-10-21",
+          "return": 0.3859512907447711,
+          "local_peak_dd": 0.12862872306093076,
+          "inherited_peak_dd": 0.12862872306093076
+        }
+      ],
+      "rolling252_step21": [
+        {
+          "start": "2025-01-02",
+          "end": "2026-01-15",
+          "return": 0.18701369300000015,
+          "local_peak_dd": 0.12536999135303206
+        },
+        {
+          "start": "2025-02-10",
+          "end": "2026-02-13",
+          "return": 0.41083419899999973,
+          "local_peak_dd": 0.12536999135303206
+        },
+        {
+          "start": "2025-03-11",
+          "end": "2026-03-24",
+          "return": 0.4334469922274786,
+          "local_peak_dd": 0.12536999135303206
+        },
+        {
+          "start": "2025-04-10",
+          "end": "2026-04-23",
+          "return": 0.5986480352931709,
+          "local_peak_dd": 0.10351543115618589
+        },
+        {
+          "start": "2025-05-14",
+          "end": "2026-05-27",
+          "return": 0.7409130226193892,
+          "local_peak_dd": 0.10351543115618589
+        },
+        {
+          "start": "2025-06-13",
+          "end": "2026-06-26",
+          "return": 0.8989497376038085,
+          "local_peak_dd": 0.10351543115618589
+        },
+        {
+          "start": "2025-07-14",
+          "end": "2026-07-27",
+          "return": 0.7143851961411485,
+          "local_peak_dd": 0.12119035336556438
+        },
+        {
+          "start": "2025-08-12",
+          "end": "2026-08-25",
+          "return": 0.729570414450069,
+          "local_peak_dd": 0.12119035336556438
+        },
+        {
+          "start": "2025-09-10",
+          "end": "2026-09-23",
+          "return": 0.7035853105639094,
+          "local_peak_dd": 0.12119035336556438
+        }
+      ]
+    },
+    {
+      "candidate": "C4663",
+      "years": [
+        {
+          "year": 2025,
+          "sessions": 243,
+          "start": "2025-01-02",
+          "end": "2025-12-31",
+          "return": 0.1704111100000001,
+          "local_peak_dd": 0.13772871413296628,
+          "inherited_peak_dd": 0.13772871413296628
+        },
+        {
+          "year": 2026,
+          "sessions": 191,
+          "start": "2026-01-05",
+          "end": "2026-10-21",
+          "return": 0.32833924141406934,
+          "local_peak_dd": 0.1846864179603661,
+          "inherited_peak_dd": 0.1846864179603661
+        }
+      ],
+      "rolling252_step21": [
+        {
+          "start": "2025-01-02",
+          "end": "2026-01-15",
+          "return": 0.34097146199999995,
+          "local_peak_dd": 0.13772871413296628
+        },
+        {
+          "start": "2025-02-10",
+          "end": "2026-02-13",
+          "return": 0.45288076099999985,
+          "local_peak_dd": 0.13772871413296628
+        },
+        {
+          "start": "2025-03-11",
+          "end": "2026-03-24",
+          "return": 0.5500759194298286,
+          "local_peak_dd": 0.13772871413296628
+        },
+        {
+          "start": "2025-04-10",
+          "end": "2026-04-23",
+          "return": 0.8598595055409954,
+          "local_peak_dd": 0.13772871413296628
+        },
+        {
+          "start": "2025-05-14",
+          "end": "2026-05-27",
+          "return": 0.7969527430813599,
+          "local_peak_dd": 0.13772871413296628
+        },
+        {
+          "start": "2025-06-13",
+          "end": "2026-06-26",
+          "return": 1.0195658294851162,
+          "local_peak_dd": 0.13772871413296628
+        },
+        {
+          "start": "2025-07-14",
+          "end": "2026-07-27",
+          "return": 0.8049948819805317,
+          "local_peak_dd": 0.17258901172099206
+        },
+        {
+          "start": "2025-08-12",
+          "end": "2026-08-25",
+          "return": 0.6840748262492757,
+          "local_peak_dd": 0.17258901172099206
+        },
+        {
+          "start": "2025-09-10",
+          "end": "2026-09-23",
+          "return": 0.6269889271252853,
+          "local_peak_dd": 0.17258901172099206
+        }
+      ]
+    },
+    {
+      "candidate": "C4716",
+      "years": [
+        {
+          "year": 2025,
+          "sessions": 243,
+          "start": "2025-01-02",
+          "end": "2025-12-31",
+          "return": 0.1492059299999997,
+          "local_peak_dd": 0.13335298594734368,
+          "inherited_peak_dd": 0.13335298594734368
+        },
+        {
+          "year": 2026,
+          "sessions": 191,
+          "start": "2026-01-05",
+          "end": "2026-10-21",
+          "return": 0.31307274841507393,
+          "local_peak_dd": 0.1846952348032228,
+          "inherited_peak_dd": 0.1846952348032228
+        }
+      ],
+      "rolling252_step21": [
+        {
+          "start": "2025-01-02",
+          "end": "2026-01-15",
+          "return": 0.3141882499999995,
+          "local_peak_dd": 0.13335298594734368
+        },
+        {
+          "start": "2025-02-10",
+          "end": "2026-02-13",
+          "return": 0.4238600609999996,
+          "local_peak_dd": 0.13335298594734368
+        },
+        {
+          "start": "2025-03-11",
+          "end": "2026-03-24",
+          "return": 0.5045293151481012,
+          "local_peak_dd": 0.13656210547328362
+        },
+        {
+          "start": "2025-04-10",
+          "end": "2026-04-23",
+          "return": 0.805240607840447,
+          "local_peak_dd": 0.13656210547328362
+        },
+        {
+          "start": "2025-05-14",
+          "end": "2026-05-27",
+          "return": 0.779345710845945,
+          "local_peak_dd": 0.13656210547328362
+        },
+        {
+          "start": "2025-06-13",
+          "end": "2026-06-26",
+          "return": 0.9997384262689539,
+          "local_peak_dd": 0.13656210547328362
+        },
+        {
+          "start": "2025-07-14",
+          "end": "2026-07-27",
+          "return": 0.7871696849876701,
+          "local_peak_dd": 0.1726311483992733
+        },
+        {
+          "start": "2025-08-12",
+          "end": "2026-08-25",
+          "return": 0.6633039192440013,
+          "local_peak_dd": 0.1726311483992733
+        },
+        {
+          "start": "2025-09-10",
+          "end": "2026-09-23",
+          "return": 0.6069888445993237,
+          "local_peak_dd": 0.1726311483992733
+        }
+      ]
+    },
+    {
+      "candidate": "C4719",
+      "years": [
+        {
+          "year": 2025,
+          "sessions": 243,
+          "start": "2025-01-02",
+          "end": "2025-12-31",
+          "return": 0.1840382830000009,
+          "local_peak_dd": 0.13773746262508157,
+          "inherited_peak_dd": 0.13773746262508157
+        },
+        {
+          "year": 2026,
+          "sessions": 191,
+          "start": "2026-01-05",
+          "end": "2026-10-21",
+          "return": 0.3123036318243777,
+          "local_peak_dd": 0.18458560289258208,
+          "inherited_peak_dd": 0.18458560289258208
+        }
+      ],
+      "rolling252_step21": [
+        {
+          "start": "2025-01-02",
+          "end": "2026-01-15",
+          "return": 0.3565582590000005,
+          "local_peak_dd": 0.13773746262508157
+        },
+        {
+          "start": "2025-02-10",
+          "end": "2026-02-13",
+          "return": 0.4697696740000006,
+          "local_peak_dd": 0.13773746262508157
+        },
+        {
+          "start": "2025-03-11",
+          "end": "2026-03-24",
+          "return": 0.5490588562728949,
+          "local_peak_dd": 0.13773746262508157
+        },
+        {
+          "start": "2025-04-10",
+          "end": "2026-04-23",
+          "return": 0.8587301412669583,
+          "local_peak_dd": 0.13773746262508157
+        },
+        {
+          "start": "2025-05-14",
+          "end": "2026-05-27",
+          "return": 0.7890850892055934,
+          "local_peak_dd": 0.13773746262508157
+        },
+        {
+          "start": "2025-06-13",
+          "end": "2026-06-26",
+          "return": 1.0105657295625186,
+          "local_peak_dd": 0.13773746262508157
+        },
+        {
+          "start": "2025-07-14",
+          "end": "2026-07-27",
+          "return": 0.7970324788429599,
+          "local_peak_dd": 0.17252760099910935
+        },
+        {
+          "start": "2025-08-12",
+          "end": "2026-08-25",
+          "return": 0.6767203556301453,
+          "local_peak_dd": 0.17252760099910935
+        },
+        {
+          "start": "2025-09-10",
+          "end": "2026-09-23",
+          "return": 0.6199229922284482,
+          "local_peak_dd": 0.17252760099910935
+        }
+      ]
+    },
+    {
+      "candidate": "C4720",
+      "years": [
+        {
+          "year": 2025,
+          "sessions": 243,
+          "start": "2025-01-02",
+          "end": "2025-12-31",
+          "return": 0.180448524,
+          "local_peak_dd": 0.13762296920745076,
+          "inherited_peak_dd": 0.13762296920745076
+        },
+        {
+          "year": 2026,
+          "sessions": 191,
+          "start": "2026-01-05",
+          "end": "2026-10-21",
+          "return": 0.30699278421055687,
+          "local_peak_dd": 0.18462240778802452,
+          "inherited_peak_dd": 0.18462240778802452
+        }
+      ],
+      "rolling252_step21": [
+        {
+          "start": "2025-01-02",
+          "end": "2026-01-15",
+          "return": 0.3525330280000001,
+          "local_peak_dd": 0.13762296920745076
+        },
+        {
+          "start": "2025-02-10",
+          "end": "2026-02-13",
+          "return": 0.46541476400000037,
+          "local_peak_dd": 0.13762296920745076
+        },
+        {
+          "start": "2025-03-11",
+          "end": "2026-03-24",
+          "return": 0.5381179210049087,
+          "local_peak_dd": 0.13762296920745076
+        },
+        {
+          "start": "2025-04-10",
+          "end": "2026-04-23",
+          "return": 0.8455661110430919,
+          "local_peak_dd": 0.13762296920745076
+        },
+        {
+          "start": "2025-05-14",
+          "end": "2026-05-27",
+          "return": 0.7680199452493282,
+          "local_peak_dd": 0.13762296920745076
+        },
+        {
+          "start": "2025-06-13",
+          "end": "2026-06-26",
+          "return": 0.9870141116874831,
+          "local_peak_dd": 0.13762296920745076
+        },
+        {
+          "start": "2025-07-14",
+          "end": "2026-07-27",
+          "return": 0.775864737916975,
+          "local_peak_dd": 0.17258904669026853
+        },
+        {
+          "start": "2025-08-12",
+          "end": "2026-08-25",
+          "return": 0.657022198890381,
+          "local_peak_dd": 0.17258904669026853
+        },
+        {
+          "start": "2025-09-10",
+          "end": "2026-09-23",
+          "return": 0.6008932021051552,
+          "local_peak_dd": 0.17258904669026853
+        }
+      ]
+    },
+    {
+      "candidate": "C4721",
+      "years": [
+        {
+          "year": 2025,
+          "sessions": 243,
+          "start": "2025-01-02",
+          "end": "2025-12-31",
+          "return": 0.18272681400000024,
+          "local_peak_dd": 0.13770234636226564,
+          "inherited_peak_dd": 0.13770234636226564
+        },
+        {
+          "year": 2026,
+          "sessions": 191,
+          "start": "2026-01-05",
+          "end": "2026-10-21",
+          "return": 0.3153268147685706,
+          "local_peak_dd": 0.18465870596022693,
+          "inherited_peak_dd": 0.18465870596022693
+        }
+      ],
+      "rolling252_step21": [
+        {
+          "start": "2025-01-02",
+          "end": "2026-01-15",
+          "return": 0.35520139799999995,
+          "local_peak_dd": 0.13770234636226564
+        },
+        {
+          "start": "2025-02-10",
+          "end": "2026-02-13",
+          "return": 0.4682729699999997,
+          "local_peak_dd": 0.13770234636226564
+        },
+        {
+          "start": "2025-03-11",
+          "end": "2026-03-24",
+          "return": 0.5510572915503176,
+          "local_peak_dd": 0.13770234636226564
+        },
+        {
+          "start": "2025-04-10",
+          "end": "2026-04-23",
+          "return": 0.8611145383566017,
+          "local_peak_dd": 0.13770234636226564
+        },
+        {
+          "start": "2025-05-14",
+          "end": "2026-05-27",
+          "return": 0.7795805771737478,
+          "local_peak_dd": 0.13770234636226564
+        },
+        {
+          "start": "2025-06-13",
+          "end": "2026-06-26",
+          "return": 0.9998691100184185,
+          "local_peak_dd": 0.13770234636226564
+        },
+        {
+          "start": "2025-07-14",
+          "end": "2026-07-27",
+          "return": 0.787296076914866,
+          "local_peak_dd": 0.1726044309714887
+        },
+        {
+          "start": "2025-08-12",
+          "end": "2026-08-25",
+          "return": 0.6676617619367322,
+          "local_peak_dd": 0.1726044309714887
+        },
+        {
+          "start": "2025-09-10",
+          "end": "2026-09-23",
+          "return": 0.6112090569789987,
+          "local_peak_dd": 0.1726044309714887
+        }
+      ]
+    },
+    {
+      "candidate": "C4722",
+      "years": [
+        {
+          "year": 2025,
+          "sessions": 243,
+          "start": "2025-01-02",
+          "end": "2025-12-31",
+          "return": 0.18149364900000076,
+          "local_peak_dd": 0.1376715477592937,
+          "inherited_peak_dd": 0.1376715477592937
+        },
+        {
+          "year": 2026,
+          "sessions": 191,
+          "start": "2026-01-05",
+          "end": "2026-10-21",
+          "return": 0.3382676354953491,
+          "local_peak_dd": 0.18466579418491835,
+          "inherited_peak_dd": 0.18466579418491835
+        }
+      ],
+      "rolling252_step21": [
+        {
+          "start": "2025-01-02",
+          "end": "2026-01-15",
+          "return": 0.3537504970000003,
+          "local_peak_dd": 0.1376715477592937
+        },
+        {
+          "start": "2025-02-10",
+          "end": "2026-02-13",
+          "return": 0.466682226000001,
+          "local_peak_dd": 0.1376715477592937
+        },
+        {
+          "start": "2025-03-11",
+          "end": "2026-03-24",
+          "return": 0.5764358916745809,
+          "local_peak_dd": 0.1376715477592937
+        },
+        {
+          "start": "2025-04-10",
+          "end": "2026-04-23",
+          "return": 0.8914800792152069,
+          "local_peak_dd": 0.1376715477592937
+        },
+        {
+          "start": "2025-05-14",
+          "end": "2026-05-27",
+          "return": 0.8104663715501197,
+          "local_peak_dd": 0.1376715477592937
+        },
+        {
+          "start": "2025-06-13",
+          "end": "2026-06-26",
+          "return": 1.034706198003045,
+          "local_peak_dd": 0.1376715477592937
+        },
+        {
+          "start": "2025-07-14",
+          "end": "2026-07-27",
+          "return": 0.818474048405675,
+          "local_peak_dd": 0.17261428194666373
+        },
+        {
+          "start": "2025-08-12",
+          "end": "2026-08-25",
+          "return": 0.6967082231998096,
+          "local_peak_dd": 0.17261428194666373
+        },
+        {
+          "start": "2025-09-10",
+          "end": "2026-09-23",
+          "return": 0.6392721422221956,
+          "local_peak_dd": 0.17261428194666373
+        }
+      ]
+    },
+    {
+      "candidate": "C4723",
+      "years": [
+        {
+          "year": 2025,
+          "sessions": 243,
+          "start": "2025-01-02",
+          "end": "2025-12-31",
+          "return": 0.17689278700000033,
+          "local_peak_dd": 0.13767818677431143,
+          "inherited_peak_dd": 0.13767818677431143
+        },
+        {
+          "year": 2026,
+          "sessions": 191,
+          "start": "2026-01-05",
+          "end": "2026-10-21",
+          "return": 0.29646477389787873,
+          "local_peak_dd": 0.18463412308368998,
+          "inherited_peak_dd": 0.18463412308368998
+        }
+      ],
+      "rolling252_step21": [
+        {
+          "start": "2025-01-02",
+          "end": "2026-01-15",
+          "return": 0.34849642700000016,
+          "local_peak_dd": 0.13767818677431143
+        },
+        {
+          "start": "2025-02-10",
+          "end": "2026-02-13",
+          "return": 0.4610086269999998,
+          "local_peak_dd": 0.13767818677431143
+        },
+        {
+          "start": "2025-03-11",
+          "end": "2026-03-24",
+          "return": 0.5211635502350995,
+          "local_peak_dd": 0.13798030548625595
+        },
+        {
+          "start": "2025-04-10",
+          "end": "2026-04-23",
+          "return": 0.8252291592124164,
+          "local_peak_dd": 0.13798030548625595
+        },
+        {
+          "start": "2025-05-14",
+          "end": "2026-05-27",
+          "return": 0.7538367509572885,
+          "local_peak_dd": 0.13798030548625595
+        },
+        {
+          "start": "2025-06-13",
+          "end": "2026-06-26",
+          "return": 0.9710825162324535,
+          "local_peak_dd": 0.13798030548625595
+        },
+        {
+          "start": "2025-07-14",
+          "end": "2026-07-27",
+          "return": 0.7616241157776762,
+          "local_peak_dd": 0.17258458149709055
+        },
+        {
+          "start": "2025-08-12",
+          "end": "2026-08-25",
+          "return": 0.6436794459480937,
+          "local_peak_dd": 0.17258458149709055
+        },
+        {
+          "start": "2025-09-10",
+          "end": "2026-09-23",
+          "return": 0.5880376222040933,
+          "local_peak_dd": 0.17258458149709055
+        }
+      ]
+    },
+    {
+      "candidate": "C4724",
+      "years": [
+        {
+          "year": 2025,
+          "sessions": 243,
+          "start": "2025-01-02",
+          "end": "2025-12-31",
+          "return": 0.15164763900000056,
+          "local_peak_dd": 0.13762355691312844,
+          "inherited_peak_dd": 0.13762355691312844
+        },
+        {
+          "year": 2026,
+          "sessions": 191,
+          "start": "2026-01-05",
+          "end": "2026-10-21",
+          "return": 0.29503454745501334,
+          "local_peak_dd": 0.18464396159519425,
+          "inherited_peak_dd": 0.18464396159519425
+        }
+      ],
+      "rolling252_step21": [
+        {
+          "start": "2025-01-02",
+          "end": "2026-01-15",
+          "return": 0.31954976700000026,
+          "local_peak_dd": 0.13762355691312844
+        },
+        {
+          "start": "2025-02-10",
+          "end": "2026-02-13",
+          "return": 0.4296411070000008,
+          "local_peak_dd": 0.13762355691312844
+        },
+        {
+          "start": "2025-03-11",
+          "end": "2026-03-24",
+          "return": 0.48695785935372493,
+          "local_peak_dd": 0.138881334551742
+        },
+        {
+          "start": "2025-04-10",
+          "end": "2026-04-23",
+          "return": 0.7841152937333795,
+          "local_peak_dd": 0.138881334551742
+        },
+        {
+          "start": "2025-05-14",
+          "end": "2026-05-27",
+          "return": 0.7519864847897317,
+          "local_peak_dd": 0.138881334551742
+        },
+        {
+          "start": "2025-06-13",
+          "end": "2026-06-26",
+          "return": 0.968956653281495,
+          "local_peak_dd": 0.138881334551742
+        },
+        {
+          "start": "2025-07-14",
+          "end": "2026-07-27",
+          "return": 0.7597518478559984,
+          "local_peak_dd": 0.1726003343856195
+        },
+        {
+          "start": "2025-08-12",
+          "end": "2026-08-25",
+          "return": 0.6419086421874842,
+          "local_peak_dd": 0.1726003343856195
+        },
+        {
+          "start": "2025-09-10",
+          "end": "2026-09-23",
+          "return": 0.58626462112307,
+          "local_peak_dd": 0.1726003343856195
+        }
+      ]
+    },
+    {
+      "candidate": "C4725",
+      "years": [
+        {
+          "year": 2025,
+          "sessions": 243,
+          "start": "2025-01-02",
+          "end": "2025-12-31",
+          "return": 0.17611094400000038,
+          "local_peak_dd": 0.1376121813786838,
+          "inherited_peak_dd": 0.1376121813786838
+        },
+        {
+          "year": 2026,
+          "sessions": 191,
+          "start": "2026-01-05",
+          "end": "2026-10-21",
+          "return": 0.29493735924287123,
+          "local_peak_dd": 0.18466969949366496,
+          "inherited_peak_dd": 0.18466969949366496
+        }
+      ],
+      "rolling252_step21": [
+        {
+          "start": "2025-01-02",
+          "end": "2026-01-15",
+          "return": 0.3475422399999999,
+          "local_peak_dd": 0.1376121813786838
+        },
+        {
+          "start": "2025-02-10",
+          "end": "2026-02-13",
+          "return": 0.4600044469999993,
+          "local_peak_dd": 0.1376121813786838
+        },
+        {
+          "start": "2025-03-11",
+          "end": "2026-03-24",
+          "return": 0.5185606568441297,
+          "local_peak_dd": 0.1389534944012064
+        },
+        {
+          "start": "2025-04-10",
+          "end": "2026-04-23",
+          "return": 0.8219975080963431,
+          "local_peak_dd": 0.1389534944012064
+        },
+        {
+          "start": "2025-05-14",
+          "end": "2026-05-27",
+          "return": 0.7520889776978117,
+          "local_peak_dd": 0.1389534944012064
+        },
+        {
+          "start": "2025-06-13",
+          "end": "2026-06-26",
+          "return": 0.9689561397241766,
+          "local_peak_dd": 0.1389534944012064
+        },
+        {
+          "start": "2025-07-14",
+          "end": "2026-07-27",
+          "return": 0.759699121602442,
+          "local_peak_dd": 0.17261286167753576
+        },
+        {
+          "start": "2025-08-12",
+          "end": "2026-08-25",
+          "return": 0.641925567533427,
+          "local_peak_dd": 0.17261286167753576
+        },
+        {
+          "start": "2025-09-10",
+          "end": "2026-09-23",
+          "return": 0.5862717337339471,
+          "local_peak_dd": 0.17261286167753576
+        }
+      ]
+    },
+    {
+      "candidate": "C4605",
+      "years": [
+        {
+          "year": 2025,
+          "sessions": 243,
+          "start": "2025-01-02",
+          "end": "2025-12-31",
+          "return": 0.34247786299999916,
+          "local_peak_dd": 0.12472758384320859,
+          "inherited_peak_dd": 0.12472758384320859
+        },
+        {
+          "year": 2026,
+          "sessions": 191,
+          "start": "2026-01-05",
+          "end": "2026-10-21",
+          "return": 0.20397907075209698,
+          "local_peak_dd": 0.20432108426620987,
+          "inherited_peak_dd": 0.20432108426620987
+        }
+      ],
+      "rolling252_step21": [
+        {
+          "start": "2025-01-02",
+          "end": "2026-01-15",
+          "return": 0.4403505589999992,
+          "local_peak_dd": 0.12472758384320859
+        },
+        {
+          "start": "2025-02-10",
+          "end": "2026-02-13",
+          "return": 0.5647466469999993,
+          "local_peak_dd": 0.12472758384320859
+        },
+        {
+          "start": "2025-03-11",
+          "end": "2026-03-24",
+          "return": 0.5955883705470044,
+          "local_peak_dd": 0.12472758384320859
+        },
+        {
+          "start": "2025-04-10",
+          "end": "2026-04-23",
+          "return": 0.851147256701577,
+          "local_peak_dd": 0.11350581474998267
+        },
+        {
+          "start": "2025-05-14",
+          "end": "2026-05-27",
+          "return": 0.8661711904255998,
+          "local_peak_dd": 0.11350581474998267
+        },
+        {
+          "start": "2025-06-13",
+          "end": "2026-06-26",
+          "return": 1.041477753608702,
+          "local_peak_dd": 0.11350581474998267
+        },
+        {
+          "start": "2025-07-14",
+          "end": "2026-07-27",
+          "return": 0.7700422869253147,
+          "local_peak_dd": 0.19035417411437394
+        },
+        {
+          "start": "2025-08-12",
+          "end": "2026-08-25",
+          "return": 0.6498077699212996,
+          "local_peak_dd": 0.1984055274414993
+        },
+        {
+          "start": "2025-09-10",
+          "end": "2026-09-23",
+          "return": 0.6479025794042552,
+          "local_peak_dd": 0.1984055274414993
+        }
+      ]
+    },
+    {
+      "candidate": "C4320",
+      "years": [
+        {
+          "year": 2025,
+          "sessions": 243,
+          "start": "2025-01-02",
+          "end": "2025-12-31",
+          "return": 0.06480034499999987,
+          "local_peak_dd": 0.11127825678704117,
+          "inherited_peak_dd": 0.11127825678704117
+        },
+        {
+          "year": 2026,
+          "sessions": 191,
+          "start": "2026-01-05",
+          "end": "2026-10-21",
+          "return": -0.030091354825771743,
+          "local_peak_dd": 0.11440925867492213,
+          "inherited_peak_dd": 0.11440925867492213
+        }
+      ],
+      "rolling252_step21": [
+        {
+          "start": "2025-01-02",
+          "end": "2026-01-15",
+          "return": 0.05916267100000039,
+          "local_peak_dd": 0.11127825678704117
+        },
+        {
+          "start": "2025-02-10",
+          "end": "2026-02-13",
+          "return": 0.05916267100000039,
+          "local_peak_dd": 0.11127825678704117
+        },
+        {
+          "start": "2025-03-11",
+          "end": "2026-03-24",
+          "return": 0.17219447519856135,
+          "local_peak_dd": 0.11127825678704117
+        },
+        {
+          "start": "2025-04-10",
+          "end": "2026-04-23",
+          "return": 0.23566377165386254,
+          "local_peak_dd": 0.05923442711260862
+        },
+        {
+          "start": "2025-05-14",
+          "end": "2026-05-27",
+          "return": 0.20898159697827756,
+          "local_peak_dd": 0.06594704141452212
+        },
+        {
+          "start": "2025-06-13",
+          "end": "2026-06-26",
+          "return": 0.22987491542121874,
+          "local_peak_dd": 0.06594704141452212
+        },
+        {
+          "start": "2025-07-14",
+          "end": "2026-07-27",
+          "return": 0.22687474029962518,
+          "local_peak_dd": 0.06594704141452212
+        },
+        {
+          "start": "2025-08-12",
+          "end": "2026-08-25",
+          "return": 0.19172970378543375,
+          "local_peak_dd": 0.08627389447884115
+        },
+        {
+          "start": "2025-09-10",
+          "end": "2026-09-23",
+          "return": 0.13425493464050864,
+          "local_peak_dd": 0.09430487794476139
+        }
+      ]
+    }
+  ],
+  "source_hashes": {
+    "EX042_20261023/others/results.json": "48ae3e015a6d3dd82471d5e107c618519512beea9cef0d592416125a56203a8d",
+    "EX043_20261023/others/results.json": "d398f2b878c83ba78a6d4bbedce2e8a7236f38a166899e9fc5e6b980fd25c34b",
+    "EX044_20261023/others/results.json": "545b6b062119f8e051d9baac5b6daa8e44a1be3be87c1ca70a45fa68a36dd601",
+    "EX045_20261023/others/results.json": "b7c198b41d7e4af7c1fa8eedf6b5f13318ea5291df3d900662fe559413429ba6",
+    "EX046_20261023/others/results.json": "a771c61ff8158d59b00c9e6b9f52d3dfeaa0ca0eccafd7b604e0599b548290d4",
+    "EX047_20261023/others/results.json": "a880f61d0155756a9cd9ef627d4891a7fa43d3fdee07239e79945a26f681e6df",
+    "EX043_20261023/others/C4307_full_account_daily.csv": "189d4d205d79ecdb3184101c82d2ac714b5f4a206079e0d855009949e144bb21",
+    "EX043_20261023/others/C4311_full_account_daily.csv": "8a9222ac45c4a5b9b8d3f52bfcb5efce294609e8e4b8300dfbe119e5fe7e01d9",
+    "EX045_20261023/others/C4507_full_account_daily.csv": "c019a08796daed5b35123dda9d0192b3ebb2dc65701a5614dda579220e98ca1a",
+    "EX046_20261023/others/C4607_full_account_daily.csv": "5902050b6cef4a116bd2dd20775672b2feb08e4de90f4b08691d1e54e71d388a",
+    "EX046_20261023/others/C4663_full_account_daily.csv": "3ca18f8d098dfd1ab64b3a8e82556b492ec8d8c13165a2ef96f78875d448c521",
+    "EX047_20261023/others/C4716_full_account_daily.csv": "7e94e3f9ed0f1821aa47e604d8a9e9558118cdaf6e472a3c72ab40f28647fcbd",
+    "EX047_20261023/others/C4719_full_account_daily.csv": "af0a67ba054001a652166d4c1990d66c2d3b776e56ae4dfd437b4d65968ec958",
+    "EX047_20261023/others/C4720_full_account_daily.csv": "46e1d71dd5a8b842e3aa4a2a00c61ee23a5f0cf48f7807b0878555eabaeac7e7",
+    "EX047_20261023/others/C4721_full_account_daily.csv": "915c8326a3e37b84a0bacad67958cab61a7f8322ef19dbab5ce9b54132ab7b81",
+    "EX047_20261023/others/C4722_full_account_daily.csv": "c43603e6f4cb135ea38f54b994ad341b11d10e3ca9eced8de277a51149147e60",
+    "EX047_20261023/others/C4723_full_account_daily.csv": "7e30505e3027a2ab584028de244c414644ffbe21d3b5ebc30f193b5d555603fa",
+    "EX047_20261023/others/C4724_full_account_daily.csv": "2e185d2055ef0765a571e7918cec524dd0ae5ed9b26999a8374f21930e0474fa",
+    "EX047_20261023/others/C4725_full_account_daily.csv": "5e20712615719c943304fb360b87f5768beb5c72d4d09badea0403d4c371c0e8",
+    "EX046_20261023/others/C4605_full_account_daily.csv": "e250b018d011bc5ce43153d8dafd6f48f6e646267daad16b13430c019f0940b8",
+    "EX043_20261023/others/C4320_full_account_daily.csv": "65a31e1770b67deae16b3ca30cde24b1a12c2982ed0425e424fef0b704488202",
+    "EX047_20261023/others/runtime_checks.json": "7272a8da845d32cb1f3cd656edec686ab57d681832146aed40f7eba0109cd971"
+  },
+  "limitations": "Repeatedly observed development sample; 159 configurations include exact duplicate intention paths in some cases and are not 159 independent signals. Time slices inherit original equity and positions; no independent recapitalization, significance test, stage-four perturbation or fee stress. Local peak and inherited peak drawdowns are labelled separately; partial calendar years not annualized. Frontier ignores frequency and is descriptive, not candidate qualification.",
+  "finite_domain": {
+    "fixed_representatives": 54,
+    "permission_representatives": 101,
+    "above_bound_redundant_identities": 4,
+    "maximum_permission_runs": {
+      "A/path": 16,
+      "A/risk": 18,
+      "A/and": 8,
+      "B/path": 22,
+      "B/risk": 24,
+      "B/and": 13
+    },
+    "scope": "Fixed model, threshold, full exposure, canonical historical input only; no claim of independent information or distinct behavior for every representative."
+  }
+}

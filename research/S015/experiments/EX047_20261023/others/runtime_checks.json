@@ -1,0 +1,2472 @@
+{
+  "status": "PASS",
+  "maximum_permission_runs": {
+    "A/path": 16,
+    "A/risk": 18,
+    "A/and": 8,
+    "B/path": 22,
+    "B/risk": 24,
+    "B/and": 13
+  },
+  "permission_runtime_sha256": "e20095c04649d90a18745c74b5d72e14b675e97e6864bebc4c6bad4018d5a6fd",
+  "permission_source": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX045_20261023"
+    },
+    "evidence_id": "e20095c04649d90a18745c74b5d72e14b675e97e6864bebc4c6bad4018d5a6fd.py",
+    "sha256": "e20095c04649d90a18745c74b5d72e14b675e97e6864bebc4c6bad4018d5a6fd",
+    "media_type": "text/x-python",
+    "name": "price_information",
+    "schema": null,
+    "schema_version": null
+  },
+  "original_source": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX042_20261023"
+    },
+    "evidence_id": "a529270216b53a96b6beb6ca6e2b85da7a5c4f4e913c7428bef455e61731cc08.py",
+    "sha256": "a529270216b53a96b6beb6ca6e2b85da7a5c4f4e913c7428bef455e61731cc08",
+    "media_type": "text/x-python",
+    "name": "price_information",
+    "schema": null,
+    "schema_version": null
+  },
+  "feature_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX036_20261023"
+    },
+    "evidence_id": "3e9b7f1a697bab6a690c01805ccdcb529c330411184f06b33aeedef60fc3d091.csv",
+    "sha256": "3e9b7f1a697bab6a690c01805ccdcb529c330411184f06b33aeedef60fc3d091",
+    "media_type": "text/csv",
+    "name": "model_features",
+    "schema": null,
+    "schema_version": null
+  },
+  "prior_raw_replay_check": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX045_20261023"
+    },
+    "evidence_id": "ddb91f7f551d04fac68dbdc24b4a3f34f5d67da2cbe1842d9640d42d27a25a05.json",
+    "sha256": "ddb91f7f551d04fac68dbdc24b4a3f34f5d67da2cbe1842d9640d42d27a25a05",
+    "media_type": "application/json",
+    "name": "runtime_checks",
+    "schema": null,
+    "schema_version": null
+  },
+  "unchanged_feature_AST": true,
+  "schedule_refs": {
+    "A": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "8d1cb290d56fb72b8476943190d638205cde53da85f4d54b65635d1963b9b138.json",
+      "sha256": "8d1cb290d56fb72b8476943190d638205cde53da85f4d54b65635d1963b9b138",
+      "media_type": "application/json",
+      "name": "models_A",
+      "schema": null,
+      "schema_version": null
+    },
+    "B": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "ce893e3fda81e3ad0aad2398f92e9e2b69fb50c5565eb43a32983178c7c80523.json",
+      "sha256": "ce893e3fda81e3ad0aad2398f92e9e2b69fb50c5565eb43a32983178c7c80523",
+      "media_type": "application/json",
+      "name": "models_B",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "groups": [
+    {
+      "family": "A",
+      "mode": "path",
+      "maximum_run": 16,
+      "holds_checked": [
+        16,
+        17,
+        434
+      ],
+      "all_columns_exactly_equal": true,
+      "canonical_rows": 435,
+      "true_runs": [
+        {
+          "start": "2025-02-27",
+          "end": "2025-03-03",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-03-07",
+          "end": "2025-03-10",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-03-13",
+          "end": "2025-03-13",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-03-17",
+          "end": "2025-04-08",
+          "length": 16,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-04-10",
+          "end": "2025-04-17",
+          "length": 6,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-04-22",
+          "end": "2025-04-24",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-04-28",
+          "end": "2025-04-30",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-05-07",
+          "end": "2025-05-07",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-05-09",
+          "end": "2025-05-09",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-05-13",
+          "end": "2025-05-13",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-05-15",
+          "end": "2025-05-15",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-05-21",
+          "end": "2025-05-22",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-05-27",
+          "end": "2025-05-28",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-05-30",
+          "end": "2025-06-03",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-06-10",
+          "end": "2025-06-10",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-06-13",
+          "end": "2025-06-13",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-06-17",
+          "end": "2025-06-17",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-06-19",
+          "end": "2025-06-20",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-07-01",
+          "end": "2025-07-01",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-07-03",
+          "end": "2025-07-04",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-07-09",
+          "end": "2025-07-10",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-07-15",
+          "end": "2025-07-16",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-07-18",
+          "end": "2025-07-18",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-07-23",
+          "end": "2025-07-23",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-07-25",
+          "end": "2025-07-28",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-07-30",
+          "end": "2025-07-31",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-08-06",
+          "end": "2025-08-07",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-08-12",
+          "end": "2025-08-12",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-08-14",
+          "end": "2025-08-14",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-08-20",
+          "end": "2025-08-21",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-08-27",
+          "end": "2025-08-28",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-09-01",
+          "end": "2025-09-04",
+          "length": 4,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-09-09",
+          "end": "2025-09-10",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-09-12",
+          "end": "2025-09-16",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-09-18",
+          "end": "2025-09-18",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-09-22",
+          "end": "2025-09-23",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-09-25",
+          "end": "2025-09-29",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-10-14",
+          "end": "2025-10-14",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-10-17",
+          "end": "2025-10-21",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-10-30",
+          "end": "2025-10-31",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-11-04",
+          "end": "2025-11-06",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-11-10",
+          "end": "2025-11-24",
+          "length": 11,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-11-27",
+          "end": "2025-12-01",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-12-03",
+          "end": "2025-12-08",
+          "length": 4,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-12-11",
+          "end": "2025-12-22",
+          "length": 8,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-12-24",
+          "end": "2026-01-14",
+          "length": 14,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-01-16",
+          "end": "2026-01-16",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-01-21",
+          "end": "2026-02-06",
+          "length": 13,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-02-11",
+          "end": "2026-02-12",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-02-24",
+          "end": "2026-02-26",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-03-02",
+          "end": "2026-03-06",
+          "length": 5,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-03-10",
+          "end": "2026-03-23",
+          "length": 10,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-03-25",
+          "end": "2026-04-08",
+          "length": 10,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-04-10",
+          "end": "2026-04-15",
+          "length": 4,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-04-17",
+          "end": "2026-05-06",
+          "length": 11,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-05-08",
+          "end": "2026-05-18",
+          "length": 7,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-05-21",
+          "end": "2026-05-21",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-05-25",
+          "end": "2026-05-28",
+          "length": 4,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-06-01",
+          "end": "2026-06-01",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-06-04",
+          "end": "2026-06-08",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-06-10",
+          "end": "2026-06-18",
+          "length": 7,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-06-23",
+          "end": "2026-06-23",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-06-25",
+          "end": "2026-07-02",
+          "length": 6,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-07-06",
+          "end": "2026-07-08",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-07-10",
+          "end": "2026-07-20",
+          "length": 7,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-07-22",
+          "end": "2026-07-22",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-07-24",
+          "end": "2026-07-24",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-07-28",
+          "end": "2026-07-28",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-07-30",
+          "end": "2026-07-31",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-08-04",
+          "end": "2026-08-06",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-08-10",
+          "end": "2026-08-10",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-08-12",
+          "end": "2026-08-12",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-08-17",
+          "end": "2026-08-24",
+          "length": 6,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-08-26",
+          "end": "2026-08-26",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-01",
+          "end": "2026-09-01",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-03",
+          "end": "2026-09-04",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-08",
+          "end": "2026-09-08",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-10",
+          "end": "2026-09-10",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-16",
+          "end": "2026-09-17",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-21",
+          "end": "2026-09-22",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-24",
+          "end": "2026-09-28",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-30",
+          "end": "2026-10-12",
+          "length": 4,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-10-14",
+          "end": "2026-10-16",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-10-20",
+          "end": "2026-10-21",
+          "length": 2,
+          "truncated_at_end": true
+        }
+      ],
+      "permission_sha256": "bd74c5c764d78db64cb9fa6e28f7db485b3f22d0a86dc1b93f9208d99714c9f3"
+    },
+    {
+      "family": "A",
+      "mode": "risk",
+      "maximum_run": 18,
+      "holds_checked": [
+        18,
+        19,
+        434
+      ],
+      "all_columns_exactly_equal": true,
+      "canonical_rows": 435,
+      "true_runs": [
+        {
+          "start": "2025-03-04",
+          "end": "2025-03-05",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-03-07",
+          "end": "2025-03-11",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-03-17",
+          "end": "2025-03-20",
+          "length": 4,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-03-26",
+          "end": "2025-03-26",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-03-28",
+          "end": "2025-03-28",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-04-02",
+          "end": "2025-04-02",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-04-14",
+          "end": "2025-04-30",
+          "length": 13,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-05-12",
+          "end": "2025-05-13",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-05-16",
+          "end": "2025-05-20",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-05-30",
+          "end": "2025-06-05",
+          "length": 4,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-06-11",
+          "end": "2025-06-13",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-06-17",
+          "end": "2025-06-18",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-06-23",
+          "end": "2025-06-23",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-07-02",
+          "end": "2025-07-03",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-07-07",
+          "end": "2025-07-07",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-07-10",
+          "end": "2025-07-11",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-07-17",
+          "end": "2025-07-17",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-07-21",
+          "end": "2025-07-21",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-07-24",
+          "end": "2025-07-24",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-08-01",
+          "end": "2025-08-05",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-08-07",
+          "end": "2025-08-07",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-08-11",
+          "end": "2025-08-13",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-08-18",
+          "end": "2025-08-18",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-09-10",
+          "end": "2025-09-10",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-09-12",
+          "end": "2025-09-15",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-09-22",
+          "end": "2025-09-22",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-09-25",
+          "end": "2025-09-25",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-09-29",
+          "end": "2025-09-29",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-10-09",
+          "end": "2025-10-09",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-10-13",
+          "end": "2025-10-13",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-10-27",
+          "end": "2025-10-31",
+          "length": 5,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-11-14",
+          "end": "2025-11-18",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-11-20",
+          "end": "2025-12-11",
+          "length": 16,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-12-15",
+          "end": "2025-12-16",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-12-29",
+          "end": "2026-01-09",
+          "length": 8,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-01-13",
+          "end": "2026-01-13",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-01-27",
+          "end": "2026-01-27",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-02-02",
+          "end": "2026-02-02",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-02-05",
+          "end": "2026-02-09",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-02-11",
+          "end": "2026-02-24",
+          "length": 4,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-02-26",
+          "end": "2026-03-02",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-03-04",
+          "end": "2026-03-04",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-03-16",
+          "end": "2026-03-17",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-03-19",
+          "end": "2026-03-19",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-03-23",
+          "end": "2026-03-30",
+          "length": 6,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-04-01",
+          "end": "2026-04-01",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-04-07",
+          "end": "2026-04-22",
+          "length": 12,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-04-30",
+          "end": "2026-05-07",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-05-11",
+          "end": "2026-05-11",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-05-13",
+          "end": "2026-05-13",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-06-01",
+          "end": "2026-06-01",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-06-03",
+          "end": "2026-06-10",
+          "length": 6,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-06-12",
+          "end": "2026-06-22",
+          "length": 6,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-06-26",
+          "end": "2026-06-26",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-07-06",
+          "end": "2026-07-06",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-07-16",
+          "end": "2026-07-16",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-07-23",
+          "end": "2026-07-23",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-07-27",
+          "end": "2026-08-19",
+          "length": 18,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-08-21",
+          "end": "2026-08-21",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-08-28",
+          "end": "2026-09-15",
+          "length": 13,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-18",
+          "end": "2026-09-22",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-24",
+          "end": "2026-09-24",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-29",
+          "end": "2026-09-30",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-10-13",
+          "end": "2026-10-13",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-10-15",
+          "end": "2026-10-16",
+          "length": 2,
+          "truncated_at_end": false
+        }
+      ],
+      "permission_sha256": "230f63b4d98a0987137056e4481c6d2259e5fa07fde90b05e6ed954ce90a9ae4"
+    },
+    {
+      "family": "A",
+      "mode": "and",
+      "maximum_run": 8,
+      "holds_checked": [
+        8,
+        9,
+        434
+      ],
+      "all_columns_exactly_equal": true,
+      "canonical_rows": 435,
+      "true_runs": [
+        {
+          "start": "2025-03-07",
+          "end": "2025-03-10",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-03-17",
+          "end": "2025-03-20",
+          "length": 4,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-03-26",
+          "end": "2025-03-26",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-03-28",
+          "end": "2025-03-28",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-04-02",
+          "end": "2025-04-02",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-04-14",
+          "end": "2025-04-17",
+          "length": 4,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-04-22",
+          "end": "2025-04-24",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-04-28",
+          "end": "2025-04-30",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-05-13",
+          "end": "2025-05-13",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-05-30",
+          "end": "2025-06-03",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-06-13",
+          "end": "2025-06-13",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-06-17",
+          "end": "2025-06-17",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-07-03",
+          "end": "2025-07-03",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-07-10",
+          "end": "2025-07-10",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-08-07",
+          "end": "2025-08-07",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-08-12",
+          "end": "2025-08-12",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-09-10",
+          "end": "2025-09-10",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-09-12",
+          "end": "2025-09-15",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-09-22",
+          "end": "2025-09-22",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-09-25",
+          "end": "2025-09-25",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-09-29",
+          "end": "2025-09-29",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-10-30",
+          "end": "2025-10-31",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-11-14",
+          "end": "2025-11-18",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-11-20",
+          "end": "2025-11-24",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-11-27",
+          "end": "2025-12-01",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-12-03",
+          "end": "2025-12-08",
+          "length": 4,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-12-11",
+          "end": "2025-12-11",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-12-15",
+          "end": "2025-12-16",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-12-29",
+          "end": "2026-01-09",
+          "length": 8,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-01-13",
+          "end": "2026-01-13",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-01-27",
+          "end": "2026-01-27",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-02-02",
+          "end": "2026-02-02",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-02-05",
+          "end": "2026-02-06",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-02-11",
+          "end": "2026-02-12",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-02-24",
+          "end": "2026-02-24",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-02-26",
+          "end": "2026-02-26",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-03-02",
+          "end": "2026-03-02",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-03-04",
+          "end": "2026-03-04",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-03-16",
+          "end": "2026-03-17",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-03-19",
+          "end": "2026-03-19",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-03-23",
+          "end": "2026-03-23",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-03-25",
+          "end": "2026-03-30",
+          "length": 4,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-04-01",
+          "end": "2026-04-01",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-04-07",
+          "end": "2026-04-08",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-04-10",
+          "end": "2026-04-15",
+          "length": 4,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-04-17",
+          "end": "2026-04-22",
+          "length": 4,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-04-30",
+          "end": "2026-05-06",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-05-11",
+          "end": "2026-05-11",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-05-13",
+          "end": "2026-05-13",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-06-01",
+          "end": "2026-06-01",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-06-04",
+          "end": "2026-06-08",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-06-10",
+          "end": "2026-06-10",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-06-12",
+          "end": "2026-06-18",
+          "length": 5,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-06-26",
+          "end": "2026-06-26",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-07-06",
+          "end": "2026-07-06",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-07-16",
+          "end": "2026-07-16",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-07-28",
+          "end": "2026-07-28",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-07-30",
+          "end": "2026-07-31",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-08-04",
+          "end": "2026-08-06",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-08-10",
+          "end": "2026-08-10",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-08-12",
+          "end": "2026-08-12",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-08-17",
+          "end": "2026-08-19",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-08-21",
+          "end": "2026-08-21",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-01",
+          "end": "2026-09-01",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-03",
+          "end": "2026-09-04",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-08",
+          "end": "2026-09-08",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-10",
+          "end": "2026-09-10",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-21",
+          "end": "2026-09-22",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-24",
+          "end": "2026-09-24",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-30",
+          "end": "2026-09-30",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-10-15",
+          "end": "2026-10-16",
+          "length": 2,
+          "truncated_at_end": false
+        }
+      ],
+      "permission_sha256": "907e0e4eae81d3d8ba840c215a6bc1d549f3daa92dad9e774a4589d2f08f7cfc"
+    },
+    {
+      "family": "B",
+      "mode": "path",
+      "maximum_run": 22,
+      "holds_checked": [
+        22,
+        23,
+        434
+      ],
+      "all_columns_exactly_equal": true,
+      "canonical_rows": 435,
+      "true_runs": [
+        {
+          "start": "2025-02-27",
+          "end": "2025-03-03",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-03-07",
+          "end": "2025-03-10",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-03-13",
+          "end": "2025-03-13",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-03-17",
+          "end": "2025-03-18",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-03-24",
+          "end": "2025-03-24",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-03-27",
+          "end": "2025-03-31",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-04-02",
+          "end": "2025-05-07",
+          "length": 22,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-07-23",
+          "end": "2025-08-08",
+          "length": 13,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-08-12",
+          "end": "2025-08-12",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-08-14",
+          "end": "2025-08-14",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-08-19",
+          "end": "2025-08-21",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-08-27",
+          "end": "2025-08-27",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-09-01",
+          "end": "2025-09-04",
+          "length": 4,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-09-09",
+          "end": "2025-09-09",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-09-15",
+          "end": "2025-09-15",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-09-26",
+          "end": "2025-09-26",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-10-14",
+          "end": "2025-10-14",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-10-17",
+          "end": "2025-10-17",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-10-22",
+          "end": "2025-10-22",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-10-24",
+          "end": "2025-10-24",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-10-28",
+          "end": "2025-10-28",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-10-30",
+          "end": "2025-10-31",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-11-04",
+          "end": "2025-11-04",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-11-06",
+          "end": "2025-11-25",
+          "length": 14,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-11-27",
+          "end": "2025-12-11",
+          "length": 11,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-12-15",
+          "end": "2025-12-22",
+          "length": 6,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-12-24",
+          "end": "2026-01-12",
+          "length": 12,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-01-14",
+          "end": "2026-01-14",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-01-20",
+          "end": "2026-01-23",
+          "length": 4,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-01-29",
+          "end": "2026-01-29",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-02-04",
+          "end": "2026-02-06",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-02-11",
+          "end": "2026-03-17",
+          "length": 19,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-03-19",
+          "end": "2026-03-23",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-03-26",
+          "end": "2026-03-31",
+          "length": 4,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-04-02",
+          "end": "2026-04-03",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-04-10",
+          "end": "2026-04-15",
+          "length": 4,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-04-17",
+          "end": "2026-04-28",
+          "length": 8,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-05-06",
+          "end": "2026-05-06",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-05-08",
+          "end": "2026-05-18",
+          "length": 7,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-05-21",
+          "end": "2026-05-21",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-05-25",
+          "end": "2026-05-27",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-05-29",
+          "end": "2026-06-01",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-06-04",
+          "end": "2026-06-08",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-06-10",
+          "end": "2026-06-12",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-06-17",
+          "end": "2026-06-18",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-06-23",
+          "end": "2026-06-23",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-06-26",
+          "end": "2026-06-29",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-07-01",
+          "end": "2026-07-08",
+          "length": 6,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-07-10",
+          "end": "2026-07-13",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-07-15",
+          "end": "2026-07-20",
+          "length": 4,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-07-24",
+          "end": "2026-07-24",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-08-06",
+          "end": "2026-08-06",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-08-10",
+          "end": "2026-08-10",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-08-17",
+          "end": "2026-08-20",
+          "length": 4,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-08-26",
+          "end": "2026-08-26",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-01",
+          "end": "2026-09-01",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-03",
+          "end": "2026-09-04",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-08",
+          "end": "2026-09-08",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-10",
+          "end": "2026-09-10",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-16",
+          "end": "2026-09-17",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-21",
+          "end": "2026-09-23",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-10-08",
+          "end": "2026-10-08",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-10-12",
+          "end": "2026-10-12",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-10-15",
+          "end": "2026-10-15",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-10-20",
+          "end": "2026-10-21",
+          "length": 2,
+          "truncated_at_end": true
+        }
+      ],
+      "permission_sha256": "2c3b8f9f0b7d3b6585a44dc99796ee05f396376cda9f1f58190f0cd33bfe40a4"
+    },
+    {
+      "family": "B",
+      "mode": "risk",
+      "maximum_run": 24,
+      "holds_checked": [
+        24,
+        25,
+        434
+      ],
+      "all_columns_exactly_equal": true,
+      "canonical_rows": 435,
+      "true_runs": [
+        {
+          "start": "2025-03-04",
+          "end": "2025-03-05",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-03-07",
+          "end": "2025-03-07",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-03-13",
+          "end": "2025-03-13",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-03-17",
+          "end": "2025-03-20",
+          "length": 4,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-03-26",
+          "end": "2025-03-26",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-03-28",
+          "end": "2025-03-28",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-04-02",
+          "end": "2025-04-02",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-04-15",
+          "end": "2025-04-15",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-04-17",
+          "end": "2025-05-07",
+          "length": 12,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-06-26",
+          "end": "2025-06-30",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-07-08",
+          "end": "2025-07-09",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-07-21",
+          "end": "2025-08-21",
+          "length": 24,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-08-27",
+          "end": "2025-08-27",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-09-02",
+          "end": "2025-09-02",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-09-09",
+          "end": "2025-09-10",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-09-12",
+          "end": "2025-09-12",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-10-13",
+          "end": "2025-10-14",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-10-17",
+          "end": "2025-10-17",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-10-22",
+          "end": "2025-10-22",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-10-24",
+          "end": "2025-11-04",
+          "length": 8,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-11-06",
+          "end": "2025-11-12",
+          "length": 5,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-11-14",
+          "end": "2025-11-18",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-11-21",
+          "end": "2025-11-21",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-12-02",
+          "end": "2025-12-03",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-12-05",
+          "end": "2025-12-11",
+          "length": 5,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-12-15",
+          "end": "2025-12-16",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-12-18",
+          "end": "2025-12-18",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-12-26",
+          "end": "2026-01-05",
+          "length": 5,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-01-07",
+          "end": "2026-01-09",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-02-13",
+          "end": "2026-02-13",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-02-27",
+          "end": "2026-03-03",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-04-15",
+          "end": "2026-04-15",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-04-20",
+          "end": "2026-04-22",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-05-06",
+          "end": "2026-05-11",
+          "length": 4,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-05-13",
+          "end": "2026-05-14",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-06-08",
+          "end": "2026-06-08",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-06-26",
+          "end": "2026-06-26",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-08-13",
+          "end": "2026-08-13",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-08-18",
+          "end": "2026-08-19",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-08-31",
+          "end": "2026-08-31",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-02",
+          "end": "2026-09-02",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-04",
+          "end": "2026-09-15",
+          "length": 8,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-18",
+          "end": "2026-09-24",
+          "length": 5,
+          "truncated_at_end": false
+        }
+      ],
+      "permission_sha256": "adc02e9be2aef1c83e00c5363423edd78883238afc21f2cd0e1332429299e3b2"
+    },
+    {
+      "family": "B",
+      "mode": "and",
+      "maximum_run": 13,
+      "holds_checked": [
+        13,
+        14,
+        434
+      ],
+      "all_columns_exactly_equal": true,
+      "canonical_rows": 435,
+      "true_runs": [
+        {
+          "start": "2025-03-07",
+          "end": "2025-03-07",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-03-13",
+          "end": "2025-03-13",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-03-17",
+          "end": "2025-03-18",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-03-28",
+          "end": "2025-03-28",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-04-02",
+          "end": "2025-04-02",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-04-15",
+          "end": "2025-04-15",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-04-17",
+          "end": "2025-05-07",
+          "length": 12,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-07-23",
+          "end": "2025-08-08",
+          "length": 13,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-08-12",
+          "end": "2025-08-12",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-08-14",
+          "end": "2025-08-14",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-08-19",
+          "end": "2025-08-21",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-08-27",
+          "end": "2025-08-27",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-09-02",
+          "end": "2025-09-02",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-09-09",
+          "end": "2025-09-09",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-10-14",
+          "end": "2025-10-14",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-10-17",
+          "end": "2025-10-17",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-10-22",
+          "end": "2025-10-22",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-10-24",
+          "end": "2025-10-24",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-10-28",
+          "end": "2025-10-28",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-10-30",
+          "end": "2025-10-31",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-11-04",
+          "end": "2025-11-04",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-11-06",
+          "end": "2025-11-12",
+          "length": 5,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-11-14",
+          "end": "2025-11-18",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-11-21",
+          "end": "2025-11-21",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-12-02",
+          "end": "2025-12-03",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-12-05",
+          "end": "2025-12-11",
+          "length": 5,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-12-15",
+          "end": "2025-12-16",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-12-18",
+          "end": "2025-12-18",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2025-12-26",
+          "end": "2026-01-05",
+          "length": 5,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-01-07",
+          "end": "2026-01-09",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-02-13",
+          "end": "2026-02-13",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-02-27",
+          "end": "2026-03-03",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-04-15",
+          "end": "2026-04-15",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-04-20",
+          "end": "2026-04-22",
+          "length": 3,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-05-06",
+          "end": "2026-05-06",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-05-08",
+          "end": "2026-05-11",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-05-13",
+          "end": "2026-05-14",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-06-08",
+          "end": "2026-06-08",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-06-26",
+          "end": "2026-06-26",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-08-18",
+          "end": "2026-08-19",
+          "length": 2,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-04",
+          "end": "2026-09-04",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-08",
+          "end": "2026-09-08",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-10",
+          "end": "2026-09-10",
+          "length": 1,
+          "truncated_at_end": false
+        },
+        {
+          "start": "2026-09-21",
+          "end": "2026-09-23",
+          "length": 3,
+          "truncated_at_end": false
+        }
+      ],
+      "permission_sha256": "b45c9c0c48da37b74090231aed9db877ef03d0ca793479062a5860c23b4f4d9a"
+    }
+  ],
+  "pair_comparison_rows": 6960,
+  "independent_scalar_rows": 2610,
+  "above_bound_redundant_identities": [
+    {
+      "family": "A",
+      "mode": "and",
+      "hold": 9,
+      "representative_hold": 8,
+      "canonical_rows": 435,
+      "status": "PASS"
+    },
+    {
+      "family": "B",
+      "mode": "path",
+      "hold": 30,
+      "representative_hold": 22,
+      "canonical_rows": 435,
+      "status": "PASS"
+    },
+    {
+      "family": "B",
+      "mode": "and",
+      "hold": 15,
+      "representative_hold": 13,
+      "canonical_rows": 435,
+      "status": "PASS"
+    },
+    {
+      "family": "B",
+      "mode": "and",
+      "hold": 30,
+      "representative_hold": 13,
+      "canonical_rows": 435,
+      "status": "PASS"
+    }
+  ],
+  "new_configurations": 47,
+  "reused_parameter_identities": 112,
+  "combined_parameter_identities": 159,
+  "fixed_representatives": 54,
+  "permission_representatives": 101,
+  "finite_domain_representatives": 155,
+  "prior_domain_source_counts": {
+    "completed_result": 112,
+    "frozen_plan_not_completed_result": 0
+  },
+  "proof": "Permission depends only on the fixed input/model schedule, not hold. Start in cash intent. Every false day resets active age to 0 and cannot open a cycle. On a true run of length L<=M and hold>=M, the kth true day starts with age k-1<hold, so target stays positive and end-of-day age=k. The next false day resets all caps to 0; at sample-end truncation the states still agree. Induction across runs proves identical full outputs for all hold>=M on this fixed sequence, not only the three tested caps.",
+  "limitations": "This is a finite seen-development-path bound, not a future maximum duration. It requires identical inputs, trained schedule, permission rule, canonical cash start and execution contract. The 155 representatives are parameter expressions, not necessarily 155 distinct target paths. No full-account performance is computed here.",
+  "accounts_created": 0
+}

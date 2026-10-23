@@ -1,0 +1,289 @@
+{
+  "status": "PASS",
+  "source_sha256": "e20095c04649d90a18745c74b5d72e14b675e97e6864bebc4c6bad4018d5a6fd",
+  "source_baseline": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX042_20261023"
+    },
+    "evidence_id": "a529270216b53a96b6beb6ca6e2b85da7a5c4f4e913c7428bef455e61731cc08.py",
+    "sha256": "a529270216b53a96b6beb6ca6e2b85da7a5c4f4e913c7428bef455e61731cc08",
+    "media_type": "text/x-python",
+    "name": "price_information",
+    "schema": null,
+    "schema_version": null
+  },
+  "original_source_sha256": "a529270216b53a96b6beb6ca6e2b85da7a5c4f4e913c7428bef455e61731cc08",
+  "fixed_equivalence": [
+    {
+      "family": "A",
+      "mode": "path",
+      "hold": 3,
+      "canonical_rows": 435,
+      "development_rows": 434
+    },
+    {
+      "family": "A",
+      "mode": "path",
+      "hold": 7,
+      "canonical_rows": 435,
+      "development_rows": 434
+    },
+    {
+      "family": "A",
+      "mode": "risk",
+      "hold": 3,
+      "canonical_rows": 435,
+      "development_rows": 434
+    },
+    {
+      "family": "A",
+      "mode": "risk",
+      "hold": 7,
+      "canonical_rows": 435,
+      "development_rows": 434
+    },
+    {
+      "family": "A",
+      "mode": "and",
+      "hold": 3,
+      "canonical_rows": 435,
+      "development_rows": 434
+    },
+    {
+      "family": "A",
+      "mode": "and",
+      "hold": 7,
+      "canonical_rows": 435,
+      "development_rows": 434
+    },
+    {
+      "family": "B",
+      "mode": "path",
+      "hold": 3,
+      "canonical_rows": 435,
+      "development_rows": 434
+    },
+    {
+      "family": "B",
+      "mode": "path",
+      "hold": 7,
+      "canonical_rows": 435,
+      "development_rows": 434
+    },
+    {
+      "family": "B",
+      "mode": "risk",
+      "hold": 3,
+      "canonical_rows": 435,
+      "development_rows": 434
+    },
+    {
+      "family": "B",
+      "mode": "risk",
+      "hold": 7,
+      "canonical_rows": 435,
+      "development_rows": 434
+    },
+    {
+      "family": "B",
+      "mode": "and",
+      "hold": 3,
+      "canonical_rows": 435,
+      "development_rows": 434
+    },
+    {
+      "family": "B",
+      "mode": "and",
+      "hold": 7,
+      "canonical_rows": 435,
+      "development_rows": 434
+    }
+  ],
+  "fixed_equivalence_development_outputs": 5208,
+  "fixed_equivalence_canonical_outputs": 5220,
+  "feature_prefixes": 7,
+  "intention_prefixes": 84,
+  "canonical_window_calculations": 24,
+  "checks": [
+    "all_13_feature_implementation_AST_identical_to_authenticated_EX042",
+    "435_canonical_rows_and_13_actual_features_exactly_match_original",
+    "seven_market_history_prefixes_exact",
+    "twelve_fixed_configs_A_B_path_risk_and_hold3_7_all435_outputs_exactly_equal_EX042",
+    "permission_mode_uses_identical_models_predictions_thresholds_and_permissions",
+    "twelve_permission_configs_independent_scalar_state_recompute",
+    "84_intention_prefixes_exact",
+    "24_runtime_window_scopes_replay_same_canonical_history",
+    "unchanged_market_sell_and_entry_cycle_available_cash_execution_contract",
+    "permanent_permission_still_exits_at_hold_and_does_not_reenter_same_day",
+    "entry_T_permission_lost_Tplus1_exit_intent_then_market_sell_next_session",
+    "permission_return_can_start_cycle_only_on_later_signal_day",
+    "future_model_change_does_not_affect_prior_intents",
+    "six_permission_role_combinations_exit_only_on_relevant_prediction_failure",
+    "inclusive_path_zero_risk_threshold_boundary_and_empty_schedule",
+    "eight_invalid_or_missing_exit_rule_inputs_rejected"
+  ],
+  "permission_cycle_diagnostics": [
+    {
+      "family": "A",
+      "mode": "path",
+      "hold": 3,
+      "opened_intent_cycles": 109,
+      "early_permission_exits": 58,
+      "maximum_age_exits": 50,
+      "not_actual_trades": true
+    },
+    {
+      "family": "A",
+      "mode": "path",
+      "hold": 7,
+      "opened_intent_cycles": 91,
+      "early_permission_exits": 78,
+      "maximum_age_exits": 12,
+      "not_actual_trades": true
+    },
+    {
+      "family": "A",
+      "mode": "risk",
+      "hold": 3,
+      "opened_intent_cycles": 85,
+      "early_permission_exits": 49,
+      "maximum_age_exits": 36,
+      "not_actual_trades": true
+    },
+    {
+      "family": "A",
+      "mode": "risk",
+      "hold": 7,
+      "opened_intent_cycles": 71,
+      "early_permission_exits": 63,
+      "maximum_age_exits": 8,
+      "not_actual_trades": true
+    },
+    {
+      "family": "A",
+      "mode": "and",
+      "hold": 3,
+      "opened_intent_cycles": 73,
+      "early_permission_exits": 56,
+      "maximum_age_exits": 17,
+      "not_actual_trades": true
+    },
+    {
+      "family": "A",
+      "mode": "and",
+      "hold": 7,
+      "opened_intent_cycles": 71,
+      "early_permission_exits": 70,
+      "maximum_age_exits": 1,
+      "not_actual_trades": true
+    },
+    {
+      "family": "B",
+      "mode": "path",
+      "hold": 3,
+      "opened_intent_cycles": 88,
+      "early_permission_exits": 44,
+      "maximum_age_exits": 43,
+      "not_actual_trades": true
+    },
+    {
+      "family": "B",
+      "mode": "path",
+      "hold": 7,
+      "opened_intent_cycles": 73,
+      "early_permission_exits": 62,
+      "maximum_age_exits": 10,
+      "not_actual_trades": true
+    },
+    {
+      "family": "B",
+      "mode": "risk",
+      "hold": 3,
+      "opened_intent_cycles": 56,
+      "early_permission_exits": 32,
+      "maximum_age_exits": 24,
+      "not_actual_trades": true
+    },
+    {
+      "family": "B",
+      "mode": "risk",
+      "hold": 7,
+      "opened_intent_cycles": 46,
+      "early_permission_exits": 40,
+      "maximum_age_exits": 6,
+      "not_actual_trades": true
+    },
+    {
+      "family": "B",
+      "mode": "and",
+      "hold": 3,
+      "opened_intent_cycles": 52,
+      "early_permission_exits": 37,
+      "maximum_age_exits": 15,
+      "not_actual_trades": true
+    },
+    {
+      "family": "B",
+      "mode": "and",
+      "hold": 7,
+      "opened_intent_cycles": 46,
+      "early_permission_exits": 44,
+      "maximum_age_exits": 2,
+      "not_actual_trades": true
+    }
+  ],
+  "schedule_refs": {
+    "A": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "8d1cb290d56fb72b8476943190d638205cde53da85f4d54b65635d1963b9b138.json",
+      "sha256": "8d1cb290d56fb72b8476943190d638205cde53da85f4d54b65635d1963b9b138",
+      "media_type": "application/json",
+      "name": "models_A",
+      "schema": null,
+      "schema_version": null
+    },
+    "B": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "ce893e3fda81e3ad0aad2398f92e9e2b69fb50c5565eb43a32983178c7c80523.json",
+      "sha256": "ce893e3fda81e3ad0aad2398f92e9e2b69fb50c5565eb43a32983178c7c80523",
+      "media_type": "application/json",
+      "name": "models_B",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "data_identities": {
+    "etf.ohlcv": "c8a95f32246e33682c33dddc776337103de437d712b5fc5d85edec2bbfe1e223",
+    "etf.unadjusted_daily": "86ef09152a3cf19de3d05da1c18af2ea9b070926008a0dd197306488292b8f92",
+    "etf.unadjusted_intraday": "6f13f697b5770b96484b9f569d7636743297382bd95fe193d004f789ed26856a"
+  },
+  "input_facts": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX010_20261023"
+    },
+    "evidence_id": "889af03cb1bc6515d320ed8d6aa439f3da93d341460df2ddd217510e04502f6a.json",
+    "sha256": "889af03cb1bc6515d320ed8d6aa439f3da93d341460df2ddd217510e04502f6a",
+    "media_type": "application/json",
+    "name": "input_facts",
+    "schema": null,
+    "schema_version": null
+  },
+  "accounts_created": 0,
+  "limits": "Signals and market-intent ages only. No account evaluation, fills, actual hold duration, fees or performance claim. Existing NEXT_SESSION/MARKET policy retained; account runner must bind new source identity."
+}

@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "checks": 2918,
+  "first_release": "2025-02-27",
+  "first_release_position": 34,
+  "releases": 20,
+  "model_fits_independently_reconstructed": 80,
+  "prediction_rows": 868,
+  "full_prefix_replays": 868,
+  "training_samples_strictly_known_before_release": true,
+  "sha256": {
+    "src/audit_training.py": "58af199a4bab47407acb2797321577c7c387918ca61113cf5a0bcb6fd8faf900",
+    "src/models.py": "f238a628dcccd01031706b8e42d506b1348b79e7f2a14d11e768af674fe7f560",
+    "protocols/stage3_plan.json": "877449a4d6255f816ed9fc86ae4a807815f67d43e8773933de3c63d1f043f8bb",
+    "others/models_A.json": "8d1cb290d56fb72b8476943190d638205cde53da85f4d54b65635d1963b9b138",
+    "others/models_B.json": "ce893e3fda81e3ad0aad2398f92e9e2b69fb50c5565eb43a32983178c7c80523",
+    "others/training_manifest.json": "4768c70196b0fcb396fdca9bafd498f207c1b93ec762935b70afbdee7edec0d8",
+    "others/model_predictions.csv": "f0b2d437c6b98de547d557306b063ffdd60d9d048610f6cd9fc0e60935419d3b",
+    "others/training_summary.json": "1b1dfbfb1382cf681ff35b5377db0b731d703fca4f0b365238ef3350deed2cb8"
+  },
+  "method": "Authenticated features and TXE-derived labels; independent mature-sample release schedule, little-endian sample/XY hashes, augmented least-squares Ridge, training-fitted risk median, every prediction and every cutoff replay with future schedules/features removed.",
+  "limitations": [
+    "Uses the previously independently audited fixed label definitions; does not independently reconstruct original TXE fills here.",
+    "Runtime feature recomputation, candidate payload identity and account execution require their separate audits.",
+    "Thirty initial matured samples and selected mechanisms use seen development data; prefix causality does not establish independent predictive validity."
+  ]
+}

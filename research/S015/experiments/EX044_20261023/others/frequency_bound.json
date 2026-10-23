@@ -1,0 +1,111 @@
+{
+  "status": "PROVEN_FOR_DECLARED_FIXED_CYCLE",
+  "question": "Can a fixed hold H >= 10 in this exact single-position cycle satisfy the original 434-session median closed-trade frequency >= 6?",
+  "answer": "No. The 60-session rolling CLOSED-count median is at most 5 under the stated execution and intention invariants.",
+  "constants": {
+    "sessions": 434,
+    "rolling_window": 60,
+    "rolling_windows": 375,
+    "windows_with_at_least_six_needed_for_median_six": 188
+  },
+  "assumptions": [
+    "One long-only instrument, one non-overlapping account cycle; CLOSED counts an entire position reaching zero, not partial sells or additional buys.",
+    "Every entry intention starts H consecutive positive target decisions, then at least one zero target decision; no same-decision reentry and no early exit.",
+    "T+1 execution follows binary available_cash_fraction/entry_cycle: positive targets can only buy/hold, zero targets can only sell/hold; no simultaneous exit and new entry.",
+    "No forced end-window liquidation, external exit, overlapping subpositions, or intraday multi-round trips. Initial position is zero.",
+    "Entry failures may shorten realized holding duration but do not reset the H-decision clock. Failed exits can postpone or merge cycles, never create an extra closed cycle during a positive target run."
+  ],
+  "spacing_argument": "Two successive completed cycles require distinct positive intention runs. Between a close in the earlier zero-target run and the next close there are at least H positive-target execution sessions and the next zero-target execution session. Therefore successive CLOSED exit session indices differ by at least H+1. Later buy fills, buy retries and delayed sells cannot increase cycle density under these invariants.",
+  "H10_proof": {
+    "minimum_exit_spacing": 11,
+    "closed_count_upper_bound": 40,
+    "count_argument": "On indices 0..433, N <= floor(433/11)+1 = 40, even permitting an unrealistically early first close.",
+    "six_exit_span_lower_bound": 55,
+    "windows_per_consecutive_six_block_upper_bound": 5,
+    "window_argument": "For six consecutive exits e1..e6, e6-e1 >= 55. A length-60 window start s containing them satisfies e6-59 <= s <= e1, allowing at most 60-(e6-e1) <= 5 integer starts.",
+    "windows_with_at_least_six_upper_bound": 175,
+    "union_argument": "Every window with >=6 exits contains a consecutive six-exit block. There are at most N-5 such blocks, so the union has at most 5*(N-5) <= 175 windows. This is below 188 required for the median to reach 6.",
+    "median_upper_bound": 5
+  },
+  "H_ge_11_proof": {
+    "six_exit_span_lower_bound": 60,
+    "maximum_span_inside_60_session_window": 59,
+    "windows_with_at_least_six_upper_bound": 0,
+    "median_upper_bound": 5
+  },
+  "observed_EX044_execution_checks": [
+    {
+      "candidate": "C4400",
+      "window": "full",
+      "hold": 9,
+      "closed": 38,
+      "minimum_closed_exit_spacing": 10,
+      "complete_positive_intention_runs": 38,
+      "all_complete_run_lengths_equal_hold": true,
+      "trailing_open_intention_length": 5,
+      "sell_delay_sessions": 0
+    },
+    {
+      "candidate": "C4400",
+      "window": "s011_common",
+      "hold": 9,
+      "closed": 38,
+      "minimum_closed_exit_spacing": 10,
+      "complete_positive_intention_runs": 38,
+      "all_complete_run_lengths_equal_hold": true,
+      "trailing_open_intention_length": 5,
+      "sell_delay_sessions": 0
+    },
+    {
+      "candidate": "C4401",
+      "window": "full",
+      "hold": 9,
+      "closed": 32,
+      "minimum_closed_exit_spacing": 10,
+      "complete_positive_intention_runs": 32,
+      "all_complete_run_lengths_equal_hold": true,
+      "trailing_open_intention_length": 6,
+      "sell_delay_sessions": 0
+    },
+    {
+      "candidate": "C4401",
+      "window": "s011_common",
+      "hold": 9,
+      "closed": 32,
+      "minimum_closed_exit_spacing": 10,
+      "complete_positive_intention_runs": 32,
+      "all_complete_run_lengths_equal_hold": true,
+      "trailing_open_intention_length": 6,
+      "sell_delay_sessions": 0
+    },
+    {
+      "candidate": "C4402",
+      "window": "full",
+      "hold": 9,
+      "closed": 28,
+      "minimum_closed_exit_spacing": 10,
+      "complete_positive_intention_runs": 28,
+      "all_complete_run_lengths_equal_hold": true,
+      "trailing_open_intention_length": 4,
+      "sell_delay_sessions": 0
+    },
+    {
+      "candidate": "C4402",
+      "window": "s011_common",
+      "hold": 9,
+      "closed": 28,
+      "minimum_closed_exit_spacing": 10,
+      "complete_positive_intention_runs": 28,
+      "all_complete_run_lengths_equal_hold": true,
+      "trailing_open_intention_length": 4,
+      "sell_delay_sessions": 0
+    }
+  ],
+  "synthetic_calendar_checks": {
+    "cases": 618,
+    "seed": 13,
+    "maximum_H10_windows_ge_six_seen": 171,
+    "role": "Sanity checks supporting the algebraic proof, not exhaustive strategy backtests."
+  },
+  "scope_limit": "This excludes only H>=10 for the stated fixed binary single-cycle construction. It does not exclude holding rules with early exits, variable holding, separate concurrent subpositions, different frequency counting, or another execution model. It does not assert that H<=9 will satisfy frequency or economics. No new economic gate is introduced."
+}

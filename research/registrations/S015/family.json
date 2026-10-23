@@ -33,8 +33,8 @@
         "strategy_id": "S015",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "32cda315e6f0fdd57a7610b389ef14df84ab8a73666f588c3cca9dea48d0ab6a",
-      "revision": 4,
+      "content_sha256": "a41bbbda40606a2c8ca8a9e93bc046a501b6601f1de33fb37b4bc3d9ec1cdefc",
+      "revision": 5,
       "stage": "CANDIDATES",
       "type": "DeliveryReference"
     },
@@ -77,11 +77,11 @@
       "type": "EvidenceRef"
     },
     "current_experiment": {
-      "experiment_id": "EX041_20261023",
+      "experiment_id": "EX047_20261023",
       "strategy_id": "S015",
       "type": "ExperimentRef"
     },
-    "current_phase": "第一性原理阶段二完成：信号普查、职责验证、归因反证及固定合成已交付；2个信息家族有限用途，资格0",
+    "current_phase": "阶段三完成：固定价格模型退出构造域已覆盖，联合中心0",
     "data_boundary": "保留原获准ETF数据及S011固定基线引用；不扩大新候选输入或封存样本范围",
     "development_window": {
       "end": "2026-10-21",
@@ -91,20 +91,20 @@
     },
     "experiment_budget": {
       "authorized": null,
-      "completed": 7,
+      "completed": 6,
       "remaining": null,
       "source": {
-        "evidence_id": "4f77248d908b1c19c1d2fe4a3890ccfe3e44bd51f3339db4bc2c5a30061ea7dd.md",
+        "evidence_id": "877449a4d6255f816ed9fc86ae4a807815f67d43e8773933de3c63d1f043f8bb.json",
         "experiment": {
-          "experiment_id": "EX035_20261023",
+          "experiment_id": "EX042_20261023",
           "strategy_id": "S015",
           "type": "ExperimentRef"
         },
-        "media_type": "text/markdown",
-        "name": "research_plan",
+        "media_type": "application/json",
+        "name": "stage3_plan",
         "schema": null,
         "schema_version": null,
-        "sha256": "4f77248d908b1c19c1d2fe4a3890ccfe3e44bd51f3339db4bc2c5a30061ea7dd",
+        "sha256": "877449a4d6255f816ed9fc86ae4a807815f67d43e8773933de3c63d1f043f8bb",
         "type": "EvidenceRef"
       },
       "unlimited": true
@@ -172,7 +172,7 @@
       "stage": "MANDATE",
       "type": "DeliveryReference"
     },
-    "next_gate": "当前阶段二额度不限且没有耗尽；本轮因关键问题已得到证据收口。请用户决定阶段三固定策略账户研究、补证或调整目标。未经阶段三授权不构建完整账户。",
+    "next_gate": "建议结束当前固定组件的期限/退出调参，回到收益机制诊断；阶段四未执行且不自动进入。新阶段或新增数据源须确认。",
     "objective": "在固定共同窗口同时严格优于修复后S011-v1的累计净收益和最大回撤，并满足原开发池默认标准",
     "pending_freeze_candidate_count": 0,
     "pending_selection_candidate_count": 0,
@@ -195,10 +195,30 @@
         "type": "EvidenceRef"
       }
     },
-    "proposal_path": "research/S015/experiments/EX033_20261023/protocols/fixed_prototype.json",
+    "proposal_path": "research/S015/experiments/EX042_20261023/protocols/stage3_plan.json",
     "qualified_candidate_count": 0,
     "research_symbol": "159326.SZ",
     "selected_candidate": null,
+    "stage2_completed_budget": {
+      "authorized": null,
+      "completed": 7,
+      "remaining": null,
+      "source": {
+        "evidence_id": "4f77248d908b1c19c1d2fe4a3890ccfe3e44bd51f3339db4bc2c5a30061ea7dd.md",
+        "experiment": {
+          "experiment_id": "EX035_20261023",
+          "strategy_id": "S015",
+          "type": "ExperimentRef"
+        },
+        "media_type": "text/markdown",
+        "name": "research_plan",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "4f77248d908b1c19c1d2fe4a3890ccfe3e44bd51f3339db4bc2c5a30061ea7dd",
+        "type": "EvidenceRef"
+      },
+      "unlimited": true
+    },
     "state_diagnostic_budget": {
       "authorized": 1,
       "completed": 1,
@@ -225,5 +245,5 @@
     "159326.SZ"
   ],
   "strategy_id": "S015",
-  "updated_at": "2026-10-23T19:59:24+08:00"
+  "updated_at": "2026-10-23T21:33:05+08:00"
 }

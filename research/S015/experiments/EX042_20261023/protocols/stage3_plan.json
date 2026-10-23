@@ -1,0 +1,89 @@
+{
+  "authorization": "用户同意执行阶段三，承接不限轮数研究授权；同分支，原目标及数据边界不变，不自动进入阶段四/冻结/PTE。",
+  "question": "路径的收益许可与波动的风险许可在实际连续账户中能否兑现，单职责与交集有什么代价？",
+  "selection_history": "EX035-041同一开发池已见，采用两家族有限用途。阶段二4折信号只覆盖100以后，不能倒填434日。现在以明确历史学习程序构造全窗口账户，结果不能直接照搬阶段二比例。",
+  "training": "Canonical434dates; train positions before D with actual known_date<D, target valid. First D with at least30 mature net3 AND loss3 examples, thereafter every20 canonical trading days. Expanding history, Ridge alpha10, train mean/population std, unpenalized intercept. No data before authorized pool is invented. Before first model: cash. All models share releases; independent100k/zero holdings windows share canonical learning timeline.",
+  "models": {
+    "A": {
+      "path": [
+        "return_time_balance",
+        "extrema_order",
+        "excursion_balance",
+        "halfday_balance"
+      ],
+      "risk": [
+        "range_expansion",
+        "prior_range_compression",
+        "shock_concentration",
+        "gap_energy_share"
+      ]
+    },
+    "B": {
+      "path": [
+        "r1",
+        "r5",
+        "vol20",
+        "range20",
+        "pressure",
+        "return_time_balance",
+        "extrema_order",
+        "excursion_balance",
+        "halfday_balance"
+      ],
+      "risk": [
+        "r1",
+        "r5",
+        "vol20",
+        "range20",
+        "pressure",
+        "range_expansion",
+        "prior_range_compression",
+        "shock_concentration",
+        "gap_energy_share"
+      ]
+    }
+  },
+  "thresholds": "path predicted net3>=0; risk predicted loss3<=same-model fitted-training prediction median. No threshold search. all intermediate outcomes not yet known are excluded.",
+  "runtime": "Model schedules embedded in immutable candidate parameter identity, never read mutable research files at runtime. SRT recomputes13 inputs from actual bound price data. Only effective model date<=D, max_training_known<D. Research replay validity through2026-10-21, no future-autotraining/deployment claim.",
+  "first_accounts": "6 fixed modes A/B x path/risk/and; hold3 intent, exposure1. At T trigger, positive targets T,T+1,T+2, zero atT+3; usually sellT+4. Changes in intervening scores do not exit early. Canonical intent sequence, not actual-fill clock. entry_cycle locks initial quantity, can retry entry during positive target days; record this mismatch with isolated events.",
+  "execution": "PublicSRTV2/TDR. available_cash_fraction allocation1 entry_cycle; binary targets. Same1% raw-close limit and originaltick/lot/upperguard/fees, marketexit, noforceendexit/no leverage. Switch from prior daily equity rebalance is explicit construction, not hidden compatibility fallback.",
+  "evaluation": "434 full and415 S011common, each100k initial cash. Original full economic/frequency and415 strict return>.9158029150000013/DD<.07248663749114126. Do not introduce stats or yearly-performance hard gates. Standard .001 one-way; stage4 not authorized now.",
+  "followup": "After fixed centers, diagnose realized execution/fees/holding/selection. Only investigate evidenced construction issues with prospective successor protocols; finite broad hold/exposure domains viaOptuna if justified, inspect genuine adjustable-domain boundary improvements; no obligation endless search, no new numeric experiment cap.",
+  "resources": {
+    "account_workers": 4,
+    "native_threads": 1,
+    "seed": 13,
+    "fit": "small deterministic matrices serial; full accounts spawn4, serial/parallel equality preflight"
+  },
+  "sources": {
+    "others/model_features.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX036_20261023"
+      },
+      "evidence_id": "3e9b7f1a697bab6a690c01805ccdcb529c330411184f06b33aeedef60fc3d091.csv",
+      "sha256": "3e9b7f1a697bab6a690c01805ccdcb529c330411184f06b33aeedef60fc3d091",
+      "media_type": "text/csv",
+      "name": "model_features",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/labels.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX036_20261023"
+      },
+      "evidence_id": "41de21975b1c02be2c8712a2a94989df8a5bef8f3746622546c093670c6bd848.csv",
+      "sha256": "41de21975b1c02be2c8712a2a94989df8a5bef8f3746622546c093670c6bd848",
+      "media_type": "text/csv",
+      "name": "labels",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "limitations": "Already-seen data, multiple selected hypotheses, labels publicTXE but historical publication/revisionPIT unverified. Adaptive historical schedule is not a deployable online learner."
+}

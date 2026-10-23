@@ -1,0 +1,270 @@
+{
+  "authorization": "阶段三已授权，自主实验额度不限，既定目标和数据不变。",
+  "question": "固定持有可能忽略新的风险或机会信息；当原入场许可失效时，下一交易日退出能否改善收益回撤取舍？",
+  "selection_history": "EX042/43固定持有30配置均未过联合中心；A-risk7与A-and7仅过434中心。EX042高收益B-path首日贡献大，EX043 A-risk7后续贡献大，故不先假定提早退出有利。",
+  "configurations": [
+    {
+      "family": "A",
+      "mode": "path",
+      "hold": 3,
+      "exposure": 1.0,
+      "exit_rule": "permission"
+    },
+    {
+      "family": "A",
+      "mode": "path",
+      "hold": 7,
+      "exposure": 1.0,
+      "exit_rule": "permission"
+    },
+    {
+      "family": "A",
+      "mode": "risk",
+      "hold": 3,
+      "exposure": 1.0,
+      "exit_rule": "permission"
+    },
+    {
+      "family": "A",
+      "mode": "risk",
+      "hold": 7,
+      "exposure": 1.0,
+      "exit_rule": "permission"
+    },
+    {
+      "family": "A",
+      "mode": "and",
+      "hold": 3,
+      "exposure": 1.0,
+      "exit_rule": "permission"
+    },
+    {
+      "family": "A",
+      "mode": "and",
+      "hold": 7,
+      "exposure": 1.0,
+      "exit_rule": "permission"
+    },
+    {
+      "family": "B",
+      "mode": "path",
+      "hold": 3,
+      "exposure": 1.0,
+      "exit_rule": "permission"
+    },
+    {
+      "family": "B",
+      "mode": "path",
+      "hold": 7,
+      "exposure": 1.0,
+      "exit_rule": "permission"
+    },
+    {
+      "family": "B",
+      "mode": "risk",
+      "hold": 3,
+      "exposure": 1.0,
+      "exit_rule": "permission"
+    },
+    {
+      "family": "B",
+      "mode": "risk",
+      "hold": 7,
+      "exposure": 1.0,
+      "exit_rule": "permission"
+    },
+    {
+      "family": "B",
+      "mode": "and",
+      "hold": 3,
+      "exposure": 1.0,
+      "exit_rule": "permission"
+    },
+    {
+      "family": "B",
+      "mode": "and",
+      "hold": 7,
+      "exposure": 1.0,
+      "exit_rule": "permission"
+    }
+  ],
+  "state": "收盘作决定，次日执行；在持仓意图周期若age>=hold或当日当前mode许可为false则目标0，退出当日不重新进入；空闲且许可true才新周期。退出由已知预测决定，不能阻止已发生的当日亏损。",
+  "controls": "EX042 hold3与EX043 hold7的同家族同mode固定持有共12配置原证据复用；新源fixed模式逐字段等同旧源，permission只改变退出状态机。",
+  "domain": "固定3/7持有上限，唯一新类别permission exit；不调模型、训练时钟、许可阈值或仓位。若边界改善，根据频率/归因另立协议验证。",
+  "methods": "Optuna固定排队、TDR4进程/原生1/seed13；首配置串行与并行双窗口5账本/hash比对。",
+  "scope": "12新配置24正式账户场景，2技术重复场景；同434/415独立10万元，同限价、手续费与现金周期；无阶段四。",
+  "controls_results": [
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "48ae3e015a6d3dd82471d5e107c618519512beea9cef0d592416125a56203a8d.json",
+      "sha256": "48ae3e015a6d3dd82471d5e107c618519512beea9cef0d592416125a56203a8d",
+      "media_type": "application/json",
+      "name": "results",
+      "schema": null,
+      "schema_version": null
+    },
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX043_20261023"
+      },
+      "evidence_id": "d398f2b878c83ba78a6d4bbedce2e8a7236f38a166899e9fc5e6b980fd25c34b.json",
+      "sha256": "d398f2b878c83ba78a6d4bbedce2e8a7236f38a166899e9fc5e6b980fd25c34b",
+      "media_type": "application/json",
+      "name": "results",
+      "schema": null,
+      "schema_version": null
+    }
+  ],
+  "dependencies": {
+    "src/accounts.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "268d0f8ed31b92a17fd3e4edc5d4bb6ba2803b400c281fd9ec5d547462cf02ad.py",
+      "sha256": "268d0f8ed31b92a17fd3e4edc5d4bb6ba2803b400c281fd9ec5d547462cf02ad",
+      "media_type": "text/x-python",
+      "name": "accounts",
+      "schema": null,
+      "schema_version": null
+    },
+    "src/strategy_runtime/strategies/price_information.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "a529270216b53a96b6beb6ca6e2b85da7a5c4f4e913c7428bef455e61731cc08.py",
+      "sha256": "a529270216b53a96b6beb6ca6e2b85da7a5c4f4e913c7428bef455e61731cc08",
+      "media_type": "text/x-python",
+      "name": "price_information",
+      "schema": null,
+      "schema_version": null
+    },
+    "protocols/accounts.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "bd4848f1307c55ae58147b85328533136ee92d62469a30f641473d6d98813713.json",
+      "sha256": "bd4848f1307c55ae58147b85328533136ee92d62469a30f641473d6d98813713",
+      "media_type": "application/json",
+      "name": "accounts",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/models_A.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "8d1cb290d56fb72b8476943190d638205cde53da85f4d54b65635d1963b9b138.json",
+      "sha256": "8d1cb290d56fb72b8476943190d638205cde53da85f4d54b65635d1963b9b138",
+      "media_type": "application/json",
+      "name": "models_A",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/models_B.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "ce893e3fda81e3ad0aad2398f92e9e2b69fb50c5565eb43a32983178c7c80523.json",
+      "sha256": "ce893e3fda81e3ad0aad2398f92e9e2b69fb50c5565eb43a32983178c7c80523",
+      "media_type": "application/json",
+      "name": "models_B",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/training_manifest.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "4768c70196b0fcb396fdca9bafd498f207c1b93ec762935b70afbdee7edec0d8.json",
+      "sha256": "4768c70196b0fcb396fdca9bafd498f207c1b93ec762935b70afbdee7edec0d8",
+      "media_type": "application/json",
+      "name": "training_manifest",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/training_audit.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "644a6e89731ca7e272975b268eb8ee44c1fde12916f4f95bd9179bfd6704a0ba.json",
+      "sha256": "644a6e89731ca7e272975b268eb8ee44c1fde12916f4f95bd9179bfd6704a0ba",
+      "media_type": "application/json",
+      "name": "training_audit",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/runtime_checks.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "30c6ea964f20cf2dd77bdb372565a24720d130a1b01da0e67210ed55a2a7986e.json",
+      "sha256": "30c6ea964f20cf2dd77bdb372565a24720d130a1b01da0e67210ed55a2a7986e",
+      "media_type": "application/json",
+      "name": "runtime_checks",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "binding_correction": {
+    "src/run_accounts.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "81ec099a266b6ab12efb1b2b545bedc6482c499a32348df33120afda00fd5155.py",
+      "sha256": "81ec099a266b6ab12efb1b2b545bedc6482c499a32348df33120afda00fd5155",
+      "media_type": "text/x-python",
+      "name": "run_accounts",
+      "schema": null,
+      "schema_version": null
+    },
+    "protocols/binding_correction.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "13da86efcb6da25f9d7b0f145daa97264e096b0294fb099b626b5af5fe9e6b08.json",
+      "sha256": "13da86efcb6da25f9d7b0f145daa97264e096b0294fb099b626b5af5fe9e6b08",
+      "media_type": "application/json",
+      "name": "binding_correction",
+      "schema": null,
+      "schema_version": null
+    }
+  }
+}

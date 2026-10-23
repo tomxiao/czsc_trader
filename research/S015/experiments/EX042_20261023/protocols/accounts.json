@@ -1,0 +1,82 @@
+{
+  "configurations": [
+    {
+      "family": "A",
+      "mode": "path",
+      "hold": 3,
+      "exposure": 1.0
+    },
+    {
+      "family": "A",
+      "mode": "risk",
+      "hold": 3,
+      "exposure": 1.0
+    },
+    {
+      "family": "A",
+      "mode": "and",
+      "hold": 3,
+      "exposure": 1.0
+    },
+    {
+      "family": "B",
+      "mode": "path",
+      "hold": 3,
+      "exposure": 1.0
+    },
+    {
+      "family": "B",
+      "mode": "risk",
+      "hold": 3,
+      "exposure": 1.0
+    },
+    {
+      "family": "B",
+      "mode": "and",
+      "hold": 3,
+      "exposure": 1.0
+    }
+  ],
+  "protocol": {
+    "stage3_plan.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "877449a4d6255f816ed9fc86ae4a807815f67d43e8773933de3c63d1f043f8bb.json",
+      "sha256": "877449a4d6255f816ed9fc86ae4a807815f67d43e8773933de3c63d1f043f8bb",
+      "media_type": "application/json",
+      "name": "stage3_plan",
+      "schema": null,
+      "schema_version": null
+    },
+    "models.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "f238a628dcccd01031706b8e42d506b1348b79e7f2a14d11e768af674fe7f560.py",
+      "sha256": "f238a628dcccd01031706b8e42d506b1348b79e7f2a14d11e768af674fe7f560",
+      "media_type": "text/x-python",
+      "name": "models",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "training_manifest": "4768c70196b0fcb396fdca9bafd498f207c1b93ec762935b70afbdee7edec0d8",
+  "execution": "available_cash_fraction/entry_cycle; locked cycle size, retries until intent ends, no daily equity rebalance; 434/415 independent100k accounts on same canonical history.",
+  "optuna": "Fixed queued six configurations, four objectives (full net/DD, common net/DD) for complete tracking; no threshold/hold/size search in this first experiment.",
+  "preflight": "Serial first configuration then evaluate_many reproduce same two windows and all five ledgers before collecting other configurations. Extra2account scenarios technical only.",
+  "counts": {
+    "configurations": 6,
+    "account_scenarios": 12,
+    "technical_extra": 2,
+    "processes": 4,
+    "native_threads": 1,
+    "seed": 13
+  }
+}

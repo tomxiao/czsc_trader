@@ -1,0 +1,69 @@
+{
+  "status": "PASS",
+  "source_sha256": "a529270216b53a96b6beb6ca6e2b85da7a5c4f4e913c7428bef455e61731cc08",
+  "feature_rows": 434,
+  "feature_columns": [
+    "r1",
+    "r5",
+    "vol20",
+    "range20",
+    "pressure",
+    "return_time_balance",
+    "extrema_order",
+    "excursion_balance",
+    "halfday_balance",
+    "range_expansion",
+    "prior_range_compression",
+    "shock_concentration",
+    "gap_energy_share"
+  ],
+  "maximum_absolute_feature_difference": 1.1102230246251565e-16,
+  "checks": [
+    "all_434_by_13_features_match_authenticated_EX036",
+    "canonical_seed_cash_only",
+    "six_full_prefixes_exact",
+    "fixed_three_signal_day_cycle_no_same_day_reentry",
+    "empty_model_schedule_stays_cash",
+    "future_model_never_used_early",
+    "prediction_change_does_not_exit_active_cycle",
+    "three_permission_modes_use_their_declared_predictors",
+    "seven_invalid_parameter_boundaries_rejected",
+    "two_window_scope_contracts_construct",
+    "entry_cycle_available_cash_contract"
+  ],
+  "future_coefficient_guard": "Strictly earlier train_known_max and latest schedule date <= each signal date",
+  "input_loader": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX026_20261023"
+    },
+    "evidence_id": "564a82fbdfd2919e9bcbac7a43d9395efe68dc2647dda02b7679afdc30817001.py",
+    "sha256": "564a82fbdfd2919e9bcbac7a43d9395efe68dc2647dda02b7679afdc30817001",
+    "media_type": "text/x-python",
+    "name": "study",
+    "schema": null,
+    "schema_version": null
+  },
+  "prior_features": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX036_20261023"
+    },
+    "evidence_id": "3e9b7f1a697bab6a690c01805ccdcb529c330411184f06b33aeedef60fc3d091.csv",
+    "sha256": "3e9b7f1a697bab6a690c01805ccdcb529c330411184f06b33aeedef60fc3d091",
+    "media_type": "text/csv",
+    "name": "model_features",
+    "schema": null,
+    "schema_version": null
+  },
+  "data_identities": {
+    "etf.ohlcv": "c8a95f32246e33682c33dddc776337103de437d712b5fc5d85edec2bbfe1e223",
+    "etf.unadjusted_daily": "86ef09152a3cf19de3d05da1c18af2ea9b070926008a0dd197306488292b8f92",
+    "etf.unadjusted_intraday": "6f13f697b5770b96484b9f569d7636743297382bd95fe193d004f789ed26856a"
+  },
+  "accounts_created": 0
+}

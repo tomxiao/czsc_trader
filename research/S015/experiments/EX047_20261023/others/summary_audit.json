@@ -1,0 +1,26 @@
+{
+  "status": "PASS",
+  "scope": "Independent arithmetic and source-ledger audit; not execution of final delivery.",
+  "configuration_identities": 159,
+  "finite_representatives": 155,
+  "above_bound_redundant_identities": 4,
+  "standard_accounts": 318,
+  "technical_repeat_accounts": 4,
+  "account_summary_values_checked": 2226,
+  "time_slices_recomputed": 165,
+  "time_candidates": 15,
+  "best_return_candidate": "C4605",
+  "lowest_drawdown_candidate": "C4320",
+  "joint_pass": 0,
+  "empty_handoff_allowed": true,
+  "delivery_static_guard": "joint_pass==0 required; empty CandidateSet with prior searches preserved; no historical registry writes in delivery script",
+  "permission_bound_review": "Fixed hold-independent permission sequence; false resets age; on any true run L<=M, kth day begins with age k-1<M, so all caps>=M remain identical. Historical fixed-path statement only.",
+  "sha256": {
+    "src/audit_accounts.py": "81c48588353c75e9dd5b8ae14743fa799472f3b8fd59fb733625441fcf01e642",
+    "src/summarize.py": "a5e31dc353ad6a90bebfc9e579bd81f0154207331f4eea1f02758dd1b34a9dd7",
+    "src/deliver.py": "cf5fc68f4a662e3f60bc46c71320b6ef097479f8f6cfeefa234fc8ae30d90d32",
+    "others/search_summary.json": "074815847e9c946c12072cc966429204cc8680218dd8861b1d9ca3c5314cfae9",
+    "others/all_centers.csv": "fd8a9fb589a37c23b8d3d5edc609d3cd9f6108a642049190d73a90b6da64b854"
+  },
+  "limitations": "Representative selection is descriptive and based on seen development results. Local and inherited drawdowns are separately labelled; no stage-four economic validation or final delivery mutation is performed by this audit."
+}
