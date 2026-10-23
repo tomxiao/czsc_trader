@@ -57,8 +57,8 @@
         "strategy_id": "S015",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "ab5398373713fc3542f5e38864f3f92d4fe709380f99c62df03bbaa5a2f21e03",
-      "revision": 9,
+      "content_sha256": "311cc9846337c5cf201deb4897ccffc5019b09618baa5a8b23fe2e95996921fd",
+      "revision": 10,
       "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
@@ -77,11 +77,11 @@
       "type": "EvidenceRef"
     },
     "current_experiment": {
-      "experiment_id": "EX031_20261023",
+      "experiment_id": "EX032_20261023",
       "strategy_id": "S015",
       "type": "ExperimentRef"
     },
-    "current_phase": "阶段二资金信息五轮完成；中期份额状态有线索，未确认有效组件，合格候选0",
+    "current_phase": "阶段二状态固定对照完成：新增有限预测辅助证据，尚未验证交易有效，合格候选0",
     "data_boundary": "保留原获准ETF数据及S011固定基线引用；不扩大新候选输入或封存样本范围",
     "development_window": {
       "end": "2026-10-21",
@@ -90,21 +90,21 @@
       "start": "2025-01-02"
     },
     "experiment_budget": {
-      "authorized": 5,
-      "completed": 5,
+      "authorized": 1,
+      "completed": 1,
       "remaining": 0,
       "source": {
-        "evidence_id": "a4060a3cb928f7b7b1a4a06b1ddd63cfee3a014a95c3bf36bce4d43c76ad74f7.json",
+        "evidence_id": "c3376102b22f1c6d16f3bce5d9c7dcdc7e659729e74b8b29965319463fbb2ff7.json",
         "experiment": {
-          "experiment_id": "EX027_20261023",
+          "experiment_id": "EX032_20261023",
           "strategy_id": "S015",
           "type": "ExperimentRef"
         },
         "media_type": "application/json",
-        "name": "funding_five_rounds",
+        "name": "state_control",
         "schema": null,
         "schema_version": null,
-        "sha256": "a4060a3cb928f7b7b1a4a06b1ddd63cfee3a014a95c3bf36bce4d43c76ad74f7",
+        "sha256": "c3376102b22f1c6d16f3bce5d9c7dcdc7e659729e74b8b29965319463fbb2ff7",
         "type": "EvidenceRef"
       }
     },
@@ -124,6 +124,25 @@
         "schema": null,
         "schema_version": null,
         "sha256": "625f0754b490a1063942f6f6102351211beb0a5a0e9eb7f2f34dcd03c2591249",
+        "type": "EvidenceRef"
+      }
+    },
+    "funding_five_round_budget": {
+      "authorized": 5,
+      "completed": 5,
+      "remaining": 0,
+      "source": {
+        "evidence_id": "a4060a3cb928f7b7b1a4a06b1ddd63cfee3a014a95c3bf36bce4d43c76ad74f7.json",
+        "experiment": {
+          "experiment_id": "EX027_20261023",
+          "strategy_id": "S015",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "funding_five_rounds",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "a4060a3cb928f7b7b1a4a06b1ddd63cfee3a014a95c3bf36bce4d43c76ad74f7",
         "type": "EvidenceRef"
       }
     },
@@ -152,7 +171,7 @@
       "stage": "MANDATE",
       "type": "DeliveryReference"
     },
-    "next_gate": "预算已用完；建议另批中期份额状态与价格/时段对照，解决连续外推和背景混杂后再决定阶段三，不自动新增实验或DEV接入",
+    "next_gate": "本轮额度0；建议另批阶段三最小原型与去状态消融，优先机会密度和连续账户兑现；未自动推进或扩大搜索",
     "objective": "在固定共同窗口同时严格优于修复后S011-v1的累计净收益和最大回撤，并满足原开发池默认标准",
     "pending_freeze_candidate_count": 0,
     "pending_selection_candidate_count": 0,
@@ -175,7 +194,7 @@
         "type": "EvidenceRef"
       }
     },
-    "proposal_path": "research/S015/experiments/EX027_20261023/protocols/funding_five_rounds.json",
+    "proposal_path": "research/S015/experiments/EX032_20261023/protocols/state_control.json",
     "qualified_candidate_count": 0,
     "research_symbol": "159326.SZ",
     "selected_candidate": null
@@ -186,5 +205,5 @@
     "159326.SZ"
   ],
   "strategy_id": "S015",
-  "updated_at": "2026-10-23T15:51:32+08:00"
+  "updated_at": "2026-10-23T16:09:39+08:00"
 }
