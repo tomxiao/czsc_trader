@@ -1,0 +1,631 @@
+{
+  "analysis": "Prospectively requested h3 opportunity-cost decomposition; deterministic reuse, not a new experiment",
+  "rounds_added": 0,
+  "event_reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX026_20261023"
+    },
+    "evidence_id": "b14e2764684adbafd4cad6203a87ed3e587f8c928833eb7b89d9e33a50e52653.csv",
+    "sha256": "b14e2764684adbafd4cad6203a87ed3e587f8c928833eb7b89d9e33a50e52653",
+    "media_type": "text/csv",
+    "name": "events",
+    "schema": null,
+    "schema_version": null
+  },
+  "features_sha256": "3466b4d0bbdde182806351c50c58feb99c820b531ef1306ad3c9c77d7adddd97",
+  "population": {
+    "all_development_sessions": 434,
+    "feature_ready_opportunities": 431,
+    "feature_not_ready": 3,
+    "start": "2025-01-07",
+    "end": "2026-10-21",
+    "horizon": 3,
+    "status_counts": {
+      "CLOSED": 420,
+      "BUY_UNFILLED": 7,
+      "EXIT_RIGHT_CENSORED": 3,
+      "NO_NEXT_SESSION": 1
+    }
+  },
+  "semantics": {
+    "capital": "Each event independently starts with 100000 yuan. Events overlap; their sums are not a continuous portfolio/account PnL.",
+    "entry_net": "Actual entry-session marked PnL after buy fee; label can be observed before the three-day exit is available.",
+    "net": "Actual closed three-session event PnL after both fees; unfilled or right-censored outcomes remain unobserved, never zero-filled.",
+    "fractions": "Selected/rejected positive amounts divided by all observed positive amounts in the feature_ready population; negative fractions analogously use absolute loss amounts. Not prediction accuracy.",
+    "execution": "Authenticated EX026 event labels make one T+1 buy attempt, unlike continuous-account cycle retry semantics."
+  },
+  "rows": [
+    {
+      "mode": "U",
+      "label": "entry_net",
+      "denominator": {
+        "observations": 423,
+        "positive_count": 218,
+        "negative_count": 205,
+        "zero_count": 0,
+        "positive_amount_yuan": 278521.49610000005,
+        "negative_amount_yuan": 247080.84840000013,
+        "net_amount_yuan": 31440.647699999903
+      },
+      "selected": {
+        "observations": 423,
+        "positive_count": 218,
+        "negative_count": 205,
+        "zero_count": 0,
+        "positive_amount_yuan": 278521.49610000005,
+        "negative_amount_yuan": 247080.84840000013,
+        "net_amount_yuan": 31440.647699999903,
+        "positive_amount_fraction": 1.0,
+        "negative_amount_fraction": 1.0,
+        "signals": 431,
+        "unobserved_labels": 8,
+        "status_counts": {
+          "CLOSED": 420,
+          "BUY_UNFILLED": 7,
+          "EXIT_RIGHT_CENSORED": 3,
+          "NO_NEXT_SESSION": 1
+        }
+      },
+      "rejected": {
+        "observations": 0,
+        "positive_count": 0,
+        "negative_count": 0,
+        "zero_count": 0,
+        "positive_amount_yuan": 0.0,
+        "negative_amount_yuan": -0.0,
+        "net_amount_yuan": 0.0,
+        "positive_amount_fraction": 0.0,
+        "negative_amount_fraction": -0.0,
+        "signals": 0,
+        "unobserved_labels": 0,
+        "status_counts": {}
+      }
+    },
+    {
+      "mode": "U",
+      "label": "net",
+      "denominator": {
+        "observations": 420,
+        "positive_count": 219,
+        "negative_count": 201,
+        "zero_count": 0,
+        "positive_amount_yuan": 506046.7799,
+        "negative_amount_yuan": 471032.80289999995,
+        "net_amount_yuan": 35013.977000000035
+      },
+      "selected": {
+        "observations": 420,
+        "positive_count": 219,
+        "negative_count": 201,
+        "zero_count": 0,
+        "positive_amount_yuan": 506046.7799,
+        "negative_amount_yuan": 471032.80289999995,
+        "net_amount_yuan": 35013.977000000035,
+        "positive_amount_fraction": 1.0,
+        "negative_amount_fraction": 1.0,
+        "signals": 431,
+        "unobserved_labels": 11,
+        "status_counts": {
+          "CLOSED": 420,
+          "BUY_UNFILLED": 7,
+          "EXIT_RIGHT_CENSORED": 3,
+          "NO_NEXT_SESSION": 1
+        }
+      },
+      "rejected": {
+        "observations": 0,
+        "positive_count": 0,
+        "negative_count": 0,
+        "zero_count": 0,
+        "positive_amount_yuan": 0.0,
+        "negative_amount_yuan": -0.0,
+        "net_amount_yuan": 0.0,
+        "positive_amount_fraction": 0.0,
+        "negative_amount_fraction": -0.0,
+        "signals": 0,
+        "unobserved_labels": 0,
+        "status_counts": {}
+      }
+    },
+    {
+      "mode": "center",
+      "label": "entry_net",
+      "denominator": {
+        "observations": 423,
+        "positive_count": 218,
+        "negative_count": 205,
+        "zero_count": 0,
+        "positive_amount_yuan": 278521.49610000005,
+        "negative_amount_yuan": 247080.84840000013,
+        "net_amount_yuan": 31440.647699999903
+      },
+      "selected": {
+        "observations": 237,
+        "positive_count": 124,
+        "negative_count": 113,
+        "zero_count": 0,
+        "positive_amount_yuan": 162492.8245,
+        "negative_amount_yuan": 123613.05280000015,
+        "net_amount_yuan": 38879.77169999984,
+        "positive_amount_fraction": 0.5834121487041659,
+        "negative_amount_fraction": 0.5002939466999179,
+        "signals": 241,
+        "unobserved_labels": 4,
+        "status_counts": {
+          "CLOSED": 236,
+          "BUY_UNFILLED": 3,
+          "EXIT_RIGHT_CENSORED": 1,
+          "NO_NEXT_SESSION": 1
+        }
+      },
+      "rejected": {
+        "observations": 186,
+        "positive_count": 94,
+        "negative_count": 92,
+        "zero_count": 0,
+        "positive_amount_yuan": 116028.67160000009,
+        "negative_amount_yuan": 123467.7956,
+        "net_amount_yuan": -7439.12399999992,
+        "positive_amount_fraction": 0.4165878512958342,
+        "negative_amount_fraction": 0.4997060533000822,
+        "signals": 190,
+        "unobserved_labels": 4,
+        "status_counts": {
+          "CLOSED": 184,
+          "BUY_UNFILLED": 4,
+          "EXIT_RIGHT_CENSORED": 2
+        }
+      }
+    },
+    {
+      "mode": "center",
+      "label": "net",
+      "denominator": {
+        "observations": 420,
+        "positive_count": 219,
+        "negative_count": 201,
+        "zero_count": 0,
+        "positive_amount_yuan": 506046.7799,
+        "negative_amount_yuan": 471032.80289999995,
+        "net_amount_yuan": 35013.977000000035
+      },
+      "selected": {
+        "observations": 236,
+        "positive_count": 128,
+        "negative_count": 108,
+        "zero_count": 0,
+        "positive_amount_yuan": 290937.6339,
+        "negative_amount_yuan": 203589.96480000002,
+        "net_amount_yuan": 87347.66910000003,
+        "positive_amount_fraction": 0.5749224092632153,
+        "negative_amount_fraction": 0.43222035396804853,
+        "signals": 241,
+        "unobserved_labels": 5,
+        "status_counts": {
+          "CLOSED": 236,
+          "BUY_UNFILLED": 3,
+          "EXIT_RIGHT_CENSORED": 1,
+          "NO_NEXT_SESSION": 1
+        }
+      },
+      "rejected": {
+        "observations": 184,
+        "positive_count": 91,
+        "negative_count": 93,
+        "zero_count": 0,
+        "positive_amount_yuan": 215109.146,
+        "negative_amount_yuan": 267442.8381,
+        "net_amount_yuan": -52333.692099999964,
+        "positive_amount_fraction": 0.42507759073678475,
+        "negative_amount_fraction": 0.5677796460319516,
+        "signals": 190,
+        "unobserved_labels": 6,
+        "status_counts": {
+          "CLOSED": 184,
+          "BUY_UNFILLED": 4,
+          "EXIT_RIGHT_CENSORED": 2
+        }
+      }
+    },
+    {
+      "mode": "distributed",
+      "label": "entry_net",
+      "denominator": {
+        "observations": 423,
+        "positive_count": 218,
+        "negative_count": 205,
+        "zero_count": 0,
+        "positive_amount_yuan": 278521.49610000005,
+        "negative_amount_yuan": 247080.84840000013,
+        "net_amount_yuan": 31440.647699999903
+      },
+      "selected": {
+        "observations": 81,
+        "positive_count": 39,
+        "negative_count": 42,
+        "zero_count": 0,
+        "positive_amount_yuan": 38426.94229999998,
+        "negative_amount_yuan": 50621.54690000002,
+        "net_amount_yuan": -12194.604600000046,
+        "positive_amount_fraction": 0.13796759976545298,
+        "negative_amount_fraction": 0.20487847288774322,
+        "signals": 82,
+        "unobserved_labels": 1,
+        "status_counts": {
+          "CLOSED": 81,
+          "BUY_UNFILLED": 1
+        }
+      },
+      "rejected": {
+        "observations": 342,
+        "positive_count": 179,
+        "negative_count": 163,
+        "zero_count": 0,
+        "positive_amount_yuan": 240094.5538000001,
+        "negative_amount_yuan": 196459.30150000015,
+        "net_amount_yuan": 43635.25229999995,
+        "positive_amount_fraction": 0.8620324002345472,
+        "negative_amount_fraction": 0.7951215271122569,
+        "signals": 349,
+        "unobserved_labels": 7,
+        "status_counts": {
+          "CLOSED": 339,
+          "BUY_UNFILLED": 6,
+          "EXIT_RIGHT_CENSORED": 3,
+          "NO_NEXT_SESSION": 1
+        }
+      }
+    },
+    {
+      "mode": "distributed",
+      "label": "net",
+      "denominator": {
+        "observations": 420,
+        "positive_count": 219,
+        "negative_count": 201,
+        "zero_count": 0,
+        "positive_amount_yuan": 506046.7799,
+        "negative_amount_yuan": 471032.80289999995,
+        "net_amount_yuan": 35013.977000000035
+      },
+      "selected": {
+        "observations": 81,
+        "positive_count": 40,
+        "negative_count": 41,
+        "zero_count": 0,
+        "positive_amount_yuan": 93477.21060000005,
+        "negative_amount_yuan": 82819.21329999999,
+        "net_amount_yuan": 10657.997300000077,
+        "positive_amount_fraction": 0.18472049287315315,
+        "negative_amount_fraction": 0.17582472556074288,
+        "signals": 82,
+        "unobserved_labels": 1,
+        "status_counts": {
+          "CLOSED": 81,
+          "BUY_UNFILLED": 1
+        }
+      },
+      "rejected": {
+        "observations": 339,
+        "positive_count": 179,
+        "negative_count": 160,
+        "zero_count": 0,
+        "positive_amount_yuan": 412569.56930000003,
+        "negative_amount_yuan": 388213.58960000006,
+        "net_amount_yuan": 24355.979699999967,
+        "positive_amount_fraction": 0.8152795071268469,
+        "negative_amount_fraction": 0.8241752744392573,
+        "signals": 349,
+        "unobserved_labels": 10,
+        "status_counts": {
+          "CLOSED": 339,
+          "BUY_UNFILLED": 6,
+          "EXIT_RIGHT_CENSORED": 3,
+          "NO_NEXT_SESSION": 1
+        }
+      }
+    },
+    {
+      "mode": "concentrated",
+      "label": "entry_net",
+      "denominator": {
+        "observations": 423,
+        "positive_count": 218,
+        "negative_count": 205,
+        "zero_count": 0,
+        "positive_amount_yuan": 278521.49610000005,
+        "negative_amount_yuan": 247080.84840000013,
+        "net_amount_yuan": 31440.647699999903
+      },
+      "selected": {
+        "observations": 64,
+        "positive_count": 31,
+        "negative_count": 33,
+        "zero_count": 0,
+        "positive_amount_yuan": 31713.002300000033,
+        "negative_amount_yuan": 35970.60100000008,
+        "net_amount_yuan": -4257.598700000048,
+        "positive_amount_fraction": 0.11386195587795432,
+        "negative_amount_fraction": 0.14558231134841798,
+        "signals": 65,
+        "unobserved_labels": 1,
+        "status_counts": {
+          "CLOSED": 64,
+          "BUY_UNFILLED": 1
+        }
+      },
+      "rejected": {
+        "observations": 359,
+        "positive_count": 187,
+        "negative_count": 172,
+        "zero_count": 0,
+        "positive_amount_yuan": 246808.49380000005,
+        "negative_amount_yuan": 211110.24740000008,
+        "net_amount_yuan": 35698.246399999945,
+        "positive_amount_fraction": 0.8861380441220458,
+        "negative_amount_fraction": 0.8544176886515822,
+        "signals": 366,
+        "unobserved_labels": 7,
+        "status_counts": {
+          "CLOSED": 356,
+          "BUY_UNFILLED": 6,
+          "EXIT_RIGHT_CENSORED": 3,
+          "NO_NEXT_SESSION": 1
+        }
+      }
+    },
+    {
+      "mode": "concentrated",
+      "label": "net",
+      "denominator": {
+        "observations": 420,
+        "positive_count": 219,
+        "negative_count": 201,
+        "zero_count": 0,
+        "positive_amount_yuan": 506046.7799,
+        "negative_amount_yuan": 471032.80289999995,
+        "net_amount_yuan": 35013.977000000035
+      },
+      "selected": {
+        "observations": 64,
+        "positive_count": 31,
+        "negative_count": 33,
+        "zero_count": 0,
+        "positive_amount_yuan": 49458.82400000004,
+        "negative_amount_yuan": 54672.066200000016,
+        "net_amount_yuan": -5213.242199999981,
+        "positive_amount_fraction": 0.09773567576059589,
+        "negative_amount_fraction": 0.11606849005717097,
+        "signals": 65,
+        "unobserved_labels": 1,
+        "status_counts": {
+          "CLOSED": 64,
+          "BUY_UNFILLED": 1
+        }
+      },
+      "rejected": {
+        "observations": 356,
+        "positive_count": 188,
+        "negative_count": 168,
+        "zero_count": 0,
+        "positive_amount_yuan": 456587.95590000006,
+        "negative_amount_yuan": 416360.7367,
+        "net_amount_yuan": 40227.21920000002,
+        "positive_amount_fraction": 0.9022643242394043,
+        "negative_amount_fraction": 0.8839315099428292,
+        "signals": 366,
+        "unobserved_labels": 10,
+        "status_counts": {
+          "CLOSED": 356,
+          "BUY_UNFILLED": 6,
+          "EXIT_RIGHT_CENSORED": 3,
+          "NO_NEXT_SESSION": 1
+        }
+      }
+    },
+    {
+      "mode": "impulse",
+      "label": "entry_net",
+      "denominator": {
+        "observations": 423,
+        "positive_count": 218,
+        "negative_count": 205,
+        "zero_count": 0,
+        "positive_amount_yuan": 278521.49610000005,
+        "negative_amount_yuan": 247080.84840000013,
+        "net_amount_yuan": 31440.647699999903
+      },
+      "selected": {
+        "observations": 24,
+        "positive_count": 13,
+        "negative_count": 11,
+        "zero_count": 0,
+        "positive_amount_yuan": 11116.455800000036,
+        "negative_amount_yuan": 12022.537000000031,
+        "net_amount_yuan": -906.0811999999951,
+        "positive_amount_fraction": 0.039912380034066726,
+        "negative_amount_fraction": 0.04865831195680816,
+        "signals": 24,
+        "unobserved_labels": 0,
+        "status_counts": {
+          "CLOSED": 24
+        }
+      },
+      "rejected": {
+        "observations": 399,
+        "positive_count": 205,
+        "negative_count": 194,
+        "zero_count": 0,
+        "positive_amount_yuan": 267405.0403,
+        "negative_amount_yuan": 235058.31140000012,
+        "net_amount_yuan": 32346.728899999907,
+        "positive_amount_fraction": 0.9600876199659332,
+        "negative_amount_fraction": 0.951341688043192,
+        "signals": 407,
+        "unobserved_labels": 8,
+        "status_counts": {
+          "CLOSED": 396,
+          "BUY_UNFILLED": 7,
+          "EXIT_RIGHT_CENSORED": 3,
+          "NO_NEXT_SESSION": 1
+        }
+      }
+    },
+    {
+      "mode": "impulse",
+      "label": "net",
+      "denominator": {
+        "observations": 420,
+        "positive_count": 219,
+        "negative_count": 201,
+        "zero_count": 0,
+        "positive_amount_yuan": 506046.7799,
+        "negative_amount_yuan": 471032.80289999995,
+        "net_amount_yuan": 35013.977000000035
+      },
+      "selected": {
+        "observations": 24,
+        "positive_count": 10,
+        "negative_count": 14,
+        "zero_count": 0,
+        "positive_amount_yuan": 18906.051600000028,
+        "negative_amount_yuan": 23784.077800000014,
+        "net_amount_yuan": -4878.026199999985,
+        "positive_amount_fraction": 0.03736028436686437,
+        "negative_amount_fraction": 0.05049346383854579,
+        "signals": 24,
+        "unobserved_labels": 0,
+        "status_counts": {
+          "CLOSED": 24
+        }
+      },
+      "rejected": {
+        "observations": 396,
+        "positive_count": 209,
+        "negative_count": 187,
+        "zero_count": 0,
+        "positive_amount_yuan": 487140.7283,
+        "negative_amount_yuan": 447248.72510000004,
+        "net_amount_yuan": 39892.003200000036,
+        "positive_amount_fraction": 0.9626397156331357,
+        "negative_amount_fraction": 0.9495065361614544,
+        "signals": 407,
+        "unobserved_labels": 11,
+        "status_counts": {
+          "CLOSED": 396,
+          "BUY_UNFILLED": 7,
+          "EXIT_RIGHT_CENSORED": 3,
+          "NO_NEXT_SESSION": 1
+        }
+      }
+    },
+    {
+      "mode": "momentum",
+      "label": "entry_net",
+      "denominator": {
+        "observations": 423,
+        "positive_count": 218,
+        "negative_count": 205,
+        "zero_count": 0,
+        "positive_amount_yuan": 278521.49610000005,
+        "negative_amount_yuan": 247080.84840000013,
+        "net_amount_yuan": 31440.647699999903
+      },
+      "selected": {
+        "observations": 228,
+        "positive_count": 115,
+        "negative_count": 113,
+        "zero_count": 0,
+        "positive_amount_yuan": 143843.69279999996,
+        "negative_amount_yuan": 128279.23860000008,
+        "net_amount_yuan": 15564.454199999873,
+        "positive_amount_fraction": 0.5164545459297493,
+        "negative_amount_fraction": 0.5191792056352678,
+        "signals": 232,
+        "unobserved_labels": 4,
+        "status_counts": {
+          "CLOSED": 226,
+          "BUY_UNFILLED": 3,
+          "EXIT_RIGHT_CENSORED": 2,
+          "NO_NEXT_SESSION": 1
+        }
+      },
+      "rejected": {
+        "observations": 195,
+        "positive_count": 103,
+        "negative_count": 92,
+        "zero_count": 0,
+        "positive_amount_yuan": 134677.8033000001,
+        "negative_amount_yuan": 118801.60980000006,
+        "net_amount_yuan": 15876.193500000038,
+        "positive_amount_fraction": 0.48354545407025074,
+        "negative_amount_fraction": 0.4808207943647323,
+        "signals": 199,
+        "unobserved_labels": 4,
+        "status_counts": {
+          "CLOSED": 194,
+          "BUY_UNFILLED": 4,
+          "EXIT_RIGHT_CENSORED": 1
+        }
+      }
+    },
+    {
+      "mode": "momentum",
+      "label": "net",
+      "denominator": {
+        "observations": 420,
+        "positive_count": 219,
+        "negative_count": 201,
+        "zero_count": 0,
+        "positive_amount_yuan": 506046.7799,
+        "negative_amount_yuan": 471032.80289999995,
+        "net_amount_yuan": 35013.977000000035
+      },
+      "selected": {
+        "observations": 226,
+        "positive_count": 121,
+        "negative_count": 105,
+        "zero_count": 0,
+        "positive_amount_yuan": 280427.82180000003,
+        "negative_amount_yuan": 195638.25049999997,
+        "net_amount_yuan": 84789.57130000001,
+        "positive_amount_fraction": 0.5541539496712446,
+        "negative_amount_fraction": 0.4153389090855608,
+        "signals": 232,
+        "unobserved_labels": 6,
+        "status_counts": {
+          "CLOSED": 226,
+          "BUY_UNFILLED": 3,
+          "EXIT_RIGHT_CENSORED": 2,
+          "NO_NEXT_SESSION": 1
+        }
+      },
+      "rejected": {
+        "observations": 194,
+        "positive_count": 98,
+        "negative_count": 96,
+        "zero_count": 0,
+        "positive_amount_yuan": 225618.95810000005,
+        "negative_amount_yuan": 275394.5524,
+        "net_amount_yuan": -49775.59429999998,
+        "positive_amount_fraction": 0.44584605032875546,
+        "negative_amount_fraction": 0.5846610909144392,
+        "signals": 199,
+        "unobserved_labels": 5,
+        "status_counts": {
+          "CLOSED": 194,
+          "BUY_UNFILLED": 4,
+          "EXIT_RIGHT_CENSORED": 1
+        }
+      }
+    }
+  ],
+  "checks": {
+    "partition_reconciled": true,
+    "existing_EX051_summary_reconciled": true,
+    "account_equivalence_claimed": false
+  }
+}

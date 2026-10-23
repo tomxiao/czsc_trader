@@ -1,0 +1,135 @@
+{
+  "round": 3,
+  "maximum_rounds": 20,
+  "stage": 2,
+  "configurations": [
+    {
+      "mode": "center_first",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "center_cont",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "center_above",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "center_step",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "center_pull",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "center_first",
+      "exit_mode": "process",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "center",
+      "exit_mode": "reversal",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "center_first",
+      "exit_mode": "reversal",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "center",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-02-27"
+    },
+    {
+      "mode": "center",
+      "exit_mode": "process",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-02-27"
+    }
+  ],
+  "question": "Does positive center migration work through first transition, continuation, closing location, or current center step? Does exiting only when cumulative migration reverses preserve continuation value?",
+  "exploratory_origin": "EX051 center first events higher than all; EX052 center fixed3 improves return/DD vs ordinary close momentum, while distributed/close-high restriction loses money. EX052 center process lowers DD with reduced return. The distinctions below are new prospective checks of an observed lead, not independent confirmation.",
+  "comparisons": [
+    "first vs continuation fixed3 versus existingC5202",
+    "above vs below center fixed3 versus existingC5202",
+    "positive current center step vs nonpositive current step fixed3",
+    "first process vs first fixed3",
+    "center reversal vs C5206 immediate failure exit",
+    "first reversal vs center reversal",
+    "late center fixed/process vs C5209 and EX049 BP/U"
+  ],
+  "rules": "All previous definitions unchanged. First=center_gain>0 and prior center_gain<=0. Continuation=positive today and yesterday. Above/below is adjusted close>=median intraday price or below. Step/pull partitions current center increment. Reversal exit=center_gain<=0. No same-day exit/reentry. Fees/time/cycle budget unchanged.",
+  "objectives": "MANDATE/3 unchanged; stage2 complete prototype and conditional role evidence, center pass not full qualification.",
+  "limits": "Selection after EX051/52 visible; no independent holdout; partitions are complementary signal groups but accounts are separately funded and need not sum. Late start makes BP comparison clearer but cannot erase early losses.",
+  "next": "Follow actual account explanation; retain whole center rule if partitions dilute advantage; test representative scales or mechanism-specific holding only if a concrete supported improvement remains.",
+  "summary_source": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX025_20261023"
+    },
+    "evidence_id": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5.py",
+    "sha256": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5",
+    "media_type": "text/x-python",
+    "name": "execution_suite_v4",
+    "schema": null,
+    "schema_version": null
+  }
+}

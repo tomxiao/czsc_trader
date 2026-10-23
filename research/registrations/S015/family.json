@@ -77,11 +77,22 @@
       "type": "EvidenceRef"
     },
     "current_experiment": {
-      "experiment_id": "EX050_20261024",
+      "experiment_id": "EX057_20261024",
       "strategy_id": "S015",
       "type": "ExperimentRef"
     },
-    "current_phase": "阶段二新资金契约固定对照完成：有限用途与反证已交付，联合中心0，等待阶段三决定",
+    "current_phase": "阶段二已完成：PROTOTYPES/1；等待用户决定是否进入阶段三",
+    "current_prototypes": {
+      "batch": {
+        "strategy_id": "S015",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "463ae84ebc118b683d25ce4318e508f7594d5971b4e0077c79a72c80da169688",
+      "revision": 1,
+      "stage": "PROTOTYPES",
+      "type": "DeliveryReference"
+    },
+    "current_stage2_report": "research/S015/deliveries/PROTOTYPES/1/report.md",
     "data_boundary": "保留原获准ETF数据及S011固定基线引用；不扩大新候选输入或封存样本范围",
     "development_window": {
       "end": "2026-10-21",
@@ -90,25 +101,13 @@
       "start": "2025-01-02"
     },
     "experiment_budget": {
-      "authorized": null,
-      "completed": 3,
-      "remaining": null,
-      "scope": "本轮P0/P1/P2，12固定配置24正式窗口及4技术重复；P3未触发",
-      "source": {
-        "evidence_id": "aed37671c1d0c03d23b62a126b8800f8aaeee42661fd53e5dcd2815a59e5d8ca.md",
-        "experiment": {
-          "experiment_id": "EX049_20261024",
-          "strategy_id": "S015",
-          "type": "ExperimentRef"
-        },
-        "media_type": "text/markdown",
-        "name": "research_plan_20261024",
-        "schema": null,
-        "schema_version": null,
-        "sha256": "aed37671c1d0c03d23b62a126b8800f8aaeee42661fd53e5dcd2815a59e5d8ca",
-        "type": "EvidenceRef"
-      },
-      "unlimited": true
+      "authorization": "用户：研究指南及平台能力都已经优化升级。请你以成功交付阶段二为目标自主执行研究。授权20轮实验的额度。",
+      "authorized": 20,
+      "closure": "阶段二已交付；剩余额度未自动进入阶段三",
+      "completed": 7,
+      "remaining": 13,
+      "scope": "本轮EX051起，每个事前问题及其对照为1轮；技术重跑另记；不自动进入阶段三",
+      "unlimited": false
     },
     "funding_budget_prior": {
       "authorized": 1,
@@ -173,7 +172,7 @@
       "stage": "MANDATE",
       "type": "DeliveryReference"
     },
-    "next_gate": "请用户决定是否进入阶段三完善价格路径机会/持有价值/资金占用结构；不自动继续份额或风险阈值搜索，不推进选型冻结。",
+    "next_gate": "须用户明确批准阶段三后才开展以达标为目标的完善；保持原目标和数据边界，不自动消费剩余13轮。",
     "objective": "在固定共同窗口同时严格优于修复后S011-v1的累计净收益和最大回撤，并满足原开发池默认标准",
     "pending_freeze_candidate_count": 0,
     "pending_selection_candidate_count": 0,
@@ -220,6 +219,7 @@
       },
       "unlimited": true
     },
+    "stage2_conclusion": "有依据的上涨中心折让原型家族；C5506主发展、C5303参照，退出方案保留取舍；尚无合格策略。",
     "state_diagnostic_budget": {
       "authorized": 1,
       "completed": 1,
@@ -246,5 +246,5 @@
     "159326.SZ"
   ],
   "strategy_id": "S015",
-  "updated_at": "2026-10-24T03:22:57+08:00"
+  "updated_at": "2026-10-24T05:36:54+08:00"
 }

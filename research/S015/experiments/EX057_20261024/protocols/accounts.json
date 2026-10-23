@@ -1,0 +1,73 @@
+{
+  "round": 7,
+  "maximum_rounds": 20,
+  "stage": 2,
+  "configurations": [
+    {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02",
+      "center_kind": "median",
+      "fee_rate": 0.002
+    },
+    {
+      "mode": "center_below",
+      "exit_mode": "repair",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02",
+      "center_kind": "median",
+      "fee_rate": 0.002
+    },
+    {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02",
+      "center_kind": "mean",
+      "fee_rate": 0.002
+    }
+  ],
+  "question": "Do representative complete prototypes retain their economic case after doubling both-side transaction cost and recomputing fee-aware cycle sizing?",
+  "controls": [
+    {
+      "candidate_id": "C5303",
+      "experiment_id": "EX053_20261024"
+    },
+    {
+      "candidate_id": "C5404",
+      "experiment_id": "EX054_20261024"
+    },
+    {
+      "candidate_id": "C5506",
+      "experiment_id": "EX055_20261024"
+    }
+  ],
+  "rules": "Only cost changes .001 to .002. Both EvaluationCost and runtime frozen capitalfee use .002; cycle qty/budget recalculated using cost. All signals and parameters (includingcenter3) identical to stated controls; no gross-minus-fixedfees shortcut. LimitBuyHold samecost rerun.",
+  "diagnosis": "Report full/common return/DD,fullCAGR,buyholdCAGR/DD,frequency,fees. Original stress criterion:fullnetCAGR>0and>stressbuyholdCAGR;DD<stressbuyholdDDand<=25%. StresscomparisonS011 labels not treated as primary acceptance becausefixedreference standardcost.",
+  "limits": "This is focused stage2 execution-sensitivity evidence, not stage4 completed selfcheck or32pointjointperturbation. Newstresscandidateidentitydistinct fromstandard and linked byexplicitcontrol/sourceequivalence.",
+  "next": "Deliver complete prototypes and their tradeoffs; seek explicit stage3 authorization for goal-directed refinement,notconsume remainingbudget onnear-threshold tuning.",
+  "summary_source": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX025_20261023"
+    },
+    "evidence_id": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5.py",
+    "sha256": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5",
+    "media_type": "text/x-python",
+    "name": "execution_suite_v4",
+    "schema": null,
+    "schema_version": null
+  }
+}

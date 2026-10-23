@@ -1,0 +1,23 @@
+{
+  "decision_feedback": "MARKET_INTENT",
+  "parameters": {
+    "mode": "center_below",
+    "exit_mode": "fixed",
+    "lookback": 3,
+    "concentration": 0.75,
+    "hold": 3,
+    "allocation": 1.0,
+    "start": "2025-01-02",
+    "center_kind": "median",
+    "fee_rate": 0.002
+  },
+  "runtime": {
+    "module": "strategy_runtime.strategies.price_process",
+    "qualname": "PriceProcess",
+    "contract_version": 2,
+    "source_files": [
+      "strategies/price_process.py"
+    ],
+    "source_sha256": "4efff51bed032a020144e57510c20f95952519a55c3f47fe12dcb89c12788a2f"
+  }
+}

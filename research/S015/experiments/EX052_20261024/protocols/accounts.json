@@ -1,0 +1,135 @@
+{
+  "round": 2,
+  "maximum_rounds": 20,
+  "stage": 2,
+  "configurations": [
+    {
+      "mode": "U",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "momentum",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "center",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "distributed",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "concentrated",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "impulse",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "center",
+      "exit_mode": "process",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "distributed",
+      "exit_mode": "process",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "impulse",
+      "exit_mode": "stall",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "U",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-02-27"
+    },
+    {
+      "mode": "distributed",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-02-27"
+    }
+  ],
+  "question": "Process formation and mechanism-specific exit versus common fixed3 rules; does complete account preserve opportunity advantage?",
+  "prospective": "Declared before EX051 event results and before any new account result; six competing entrance controls plus three exit variants and two late-start comparisons.",
+  "comparisons": [
+    "distributed_fixed vs concentrated_fixed and center_fixed and momentum_fixed and U_fixed",
+    "center_process vs center_fixed",
+    "distributed_process vs distributed_fixed",
+    "impulse_stall vs impulse_fixed",
+    "distributed_late vs U_late; EX049 BP/U have same late model readiness but different mechanism"
+  ],
+  "contract": "434/full and415/s011_common independent100000 empty accounts, single159326.SZ long-only no leverage;17:30 T signals/T+1;limit buy signal close+1%,market exit,lot100,tick.001,oneway.001,HFQ_RESEARCH DAILY_RANGE_V3;CYCLE_TARGET signal_cash_fraction entry_cycle;noforcedendexit.",
+  "rules": "Three-session centers and.75 concentration representative definitions. Process exits when dcenter<0 and close<center, positive step rearms. Impulse stall exits close below signal center-.5*step or two sessions without new center high. No same-day re-entry; fixed3 uses original intent age even if buy unfilled. Both data and model calendar independently reproduced before comparison start.",
+  "objectives": "Unchanged MANDATE/3; all economic and frequency metrics separately reported; no new annual/statistical gates. Both center pass is not32perturbation/fee-stress qualification.",
+  "causality": "EX051 physical feature prefix checks; all intentions prefix-equivalent; serial/parallel exact five ledgers first arm; source and parameters published before account computation.",
+  "limits": "Repeated development sample; overlapping evaluation windows; event labels one buy attempt differ from account cycle retries; known minute volume issue excluded; few events never counted as independent information.",
+  "next": "Diagnose strongest complete prototype and its losses, test one concrete alternative explanation or role revision; no broad parameter enumeration.",
+  "summary_source": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX025_20261023"
+    },
+    "evidence_id": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5.py",
+    "sha256": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5",
+    "media_type": "text/x-python",
+    "name": "execution_suite_v4",
+    "schema": null,
+    "schema_version": null
+  }
+}

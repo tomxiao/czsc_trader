@@ -1,0 +1,152 @@
+{
+  "round": 5,
+  "maximum_rounds": 20,
+  "stage": 2,
+  "configurations": [
+    {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "lookback": 2,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02",
+      "center_kind": "median"
+    },
+    {
+      "mode": "center_below",
+      "exit_mode": "repair",
+      "lookback": 2,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02",
+      "center_kind": "median"
+    },
+    {
+      "mode": "center_below",
+      "exit_mode": "repair_or_reversal",
+      "lookback": 2,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02",
+      "center_kind": "median"
+    },
+    {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "lookback": 5,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02",
+      "center_kind": "median"
+    },
+    {
+      "mode": "center_below",
+      "exit_mode": "repair",
+      "lookback": 5,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02",
+      "center_kind": "median"
+    },
+    {
+      "mode": "center_below",
+      "exit_mode": "repair_or_reversal",
+      "lookback": 5,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02",
+      "center_kind": "median"
+    },
+    {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02",
+      "center_kind": "mean"
+    },
+    {
+      "mode": "center_below",
+      "exit_mode": "repair",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02",
+      "center_kind": "mean"
+    },
+    {
+      "mode": "center_below",
+      "exit_mode": "repair_or_reversal",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02",
+      "center_kind": "mean"
+    },
+    {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02",
+      "center_kind": "daily_mid"
+    },
+    {
+      "mode": "center_below",
+      "exit_mode": "repair",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02",
+      "center_kind": "daily_mid"
+    },
+    {
+      "mode": "center_below",
+      "exit_mode": "repair_or_reversal",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02",
+      "center_kind": "daily_mid"
+    }
+  ],
+  "question": "Is migration-plus-discount an interpretable prototype family or a three-session median coincidence? Do intraday center definitions improve over a daily range midpoint?",
+  "origin": "EX054 below-only43.96/DD27.24 and falling_below -12.34/DD25.47 vs center_below88.83/DD9.90 supports conditional context. Repair84.34/DD8.13,repair-or-reversal60.54/DD6.30 exposes real profit/risk tradeoff. Representative alternatives test sensitivity rather than dense optimization.",
+  "comparisons": [
+    "median lookback2 and5 vs original3 for three exit mechanisms",
+    "8bar logmean vs logmedian at3",
+    "daily geometric high-low midpoint vs intraday center at3"
+  ],
+  "definition": "Daily center is .5*(logHigh+logLow) using rawdaily +adjustment. Mean is mean8logcloses. Signals,fees,capital,holdingclock unchanged. n changes feature readiness by up to2 initial sessions; report rather than hiding it.",
+  "scope": "12 prospectively fixed structural variants, no allocation search or fine threshold grid; MANDATE/3 unchanged. Existing n3 median accounts reused, not recomputed or count inflated.",
+  "decision": "Broad survival supports mechanism development; large sign/return reversals qualify robustness limits and determine whether specific role is credible. Do not declare allvariants independent evidence or full32perturbation pass.",
+  "limits": "Selected after four rounds on fully seen development. Neither year splits nor new center formula create independent samples.",
+  "summary_source": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX025_20261023"
+    },
+    "evidence_id": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5.py",
+    "sha256": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5",
+    "media_type": "text/x-python",
+    "name": "execution_suite_v4",
+    "schema": null,
+    "schema_version": null
+  }
+}

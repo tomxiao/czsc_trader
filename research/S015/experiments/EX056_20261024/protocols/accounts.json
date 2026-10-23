@@ -1,0 +1,93 @@
+{
+  "round": 6,
+  "maximum_rounds": 20,
+  "stage": 2,
+  "configurations": [
+    {
+      "mode": "center",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02",
+      "center_kind": "mean"
+    },
+    {
+      "mode": "below",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02",
+      "center_kind": "mean"
+    },
+    {
+      "mode": "falling_below",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02",
+      "center_kind": "mean"
+    },
+    {
+      "mode": "center_above",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02",
+      "center_kind": "mean"
+    },
+    {
+      "mode": "center_first",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02",
+      "center_kind": "mean"
+    },
+    {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-02-27",
+      "center_kind": "mean"
+    }
+  ],
+  "question": "Does mean-center improvement retain joint necessity of upward migration and temporary closing discount, and what is selected/lost entry-session profit and loss?",
+  "origin": "EX055 all12representative variants positive; mean3fixed full102.90/DD7.46 andcommon101.64/DD7.46. DD stillfails strict7.2487,notqualified. Dailymidfixed92.28/DD9.51 shows mechanism does not require intraday uniqueness. New mean controls confirm roles rather than assume median ablation generalizes.",
+  "comparisons": [
+    "center-only and below-only vs C5506 mean combination",
+    "falling_below andcenter_above complementary states",
+    "center_first vs prior median first as secondary low-risk alternative",
+    "late mean combination vs C5409 and EX049 BP/U on same start"
+  ],
+  "event_diagnostic": "AuthenticatedEX0263day events joined exactmean/medianfeatures: U,center,below,fallingbelow,centerabove,centerbelow selected/excluded entry_net andnet positive/negative amounts and counts; event means annual and bysignal1day/5dayreturn sign; these are diagnostic,notentryfilters. Account firstentry pnl and subsequent audited separately.",
+  "objectives": "UnchangedMANDATE/3, sourcecode identical toEX055 withprospectivefixedparameters. No new economic or statisticalgate.",
+  "limits": "Mean definition selected after EX055; confirmation on same seen sample not independent. Late start aligns oldmodelreadydate butcannotreplace434/415originalgoals. No claim futureloss classification perfect.",
+  "next": "Completeprototypeevidence and representativecoststress; if components survive, remaining goal-directed allocation/exit optimization belongs stage3 and requires approval.",
+  "summary_source": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX025_20261023"
+    },
+    "evidence_id": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5.py",
+    "sha256": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5",
+    "media_type": "text/x-python",
+    "name": "execution_suite_v4",
+    "schema": null,
+    "schema_version": null
+  }
+}

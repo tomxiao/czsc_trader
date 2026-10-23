@@ -1,0 +1,198 @@
+{
+  "round": 1,
+  "maximum_rounds": 20,
+  "stage": 2,
+  "question": "分散推进与集中冲击是否区分T+1实际买入后的剩余收益？",
+  "definition": "m=median(log of eight 30m closes)+log(adjusted daily close/raw daily close); d=diff(m); D=m-m[-3]; q=max(positive d in3)/sum(positive d in3); prior20 logarithmic TR mean excludes today.",
+  "arms": {
+    "U": {
+      "mode": "U",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    "momentum": {
+      "mode": "momentum",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    "center": {
+      "mode": "center",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    "distributed": {
+      "mode": "distributed",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    "concentrated": {
+      "mode": "concentrated",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    "impulse": {
+      "mode": "impulse",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    }
+  },
+  "distributed": "D>0, at least2 of3 d>0, q<=.75, close>=m; concentrated:D>0,q>.75,close>=m; impulse:d>priorATR and close>=m.",
+  "labels": "Reuse authenticated EX026 h1/h3/h5 events: one next-session entry attempt, actual lot/fee/limit contracts; three-day net primary; entry-day after buyfee secondary. Overlapping 100000-yuan standalone opportunities, never a continuous account.",
+  "matching": "distributed vs concentrated, same calendar year, abs(log r3 difference)<=.03, vol ratio .5..2; closest squared scaled distance, reuse allowed; disclose balance and unique controls. Diagnostic not causal.",
+  "episode": "First day of each contiguous permission spell reported separately to reveal duplicate observations; not a newly independent sample.",
+  "statistics": "All and annual means, signed sums; h3 selected/excluded loss and profit amounts; 20-session block bootstrap499, seed13 for distributed-minus-concentrated descriptive interval; no new acceptance gate.",
+  "scope": "Fixed509daily(75warmup+434development) and3472intraday, no new sources;2025-01-02..2026-10-21; repeated development selection.",
+  "sources": {
+    "inputs": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX010_20261023"
+      },
+      "evidence_id": "889af03cb1bc6515d320ed8d6aa439f3da93d341460df2ddd217510e04502f6a.json",
+      "sha256": "889af03cb1bc6515d320ed8d6aa439f3da93d341460df2ddd217510e04502f6a",
+      "media_type": "application/json",
+      "name": "input_facts",
+      "schema": null,
+      "schema_version": null
+    },
+    "entry_labels": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX015_20261023"
+      },
+      "evidence_id": "4997bb122e11575faa4784700d46a61c17847b20aa6a6683562d0dd80ee4376a.csv",
+      "sha256": "4997bb122e11575faa4784700d46a61c17847b20aa6a6683562d0dd80ee4376a",
+      "media_type": "text/csv",
+      "name": "entry_labels",
+      "schema": null,
+      "schema_version": null
+    },
+    "old_event_labels": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX010_20261023"
+      },
+      "evidence_id": "bb36e3eed3da9a4e6b67adcbc7b97501d082ae8771a0c3d9165ee174f8de4ba7.csv",
+      "sha256": "bb36e3eed3da9a4e6b67adcbc7b97501d082ae8771a0c3d9165ee174f8de4ba7",
+      "media_type": "text/csv",
+      "name": "event_labels",
+      "schema": null,
+      "schema_version": null
+    },
+    "execution_contract": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX003_20261021"
+      },
+      "evidence_id": "99521e89055c860ed93c79ed3f089a9af1efefd1c9d2b60a2c71b346722eb6f3.json",
+      "sha256": "99521e89055c860ed93c79ed3f089a9af1efefd1c9d2b60a2c71b346722eb6f3",
+      "media_type": "application/json",
+      "name": "grid_0031",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "EX013_20261023": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX013_20261023"
+      },
+      "evidence_id": "3c0607e97f8c4b7b4eadd223e5564ca9eec71e97a99dcc7d4bb4bf463fffc550.json",
+      "sha256": "3c0607e97f8c4b7b4eadd223e5564ca9eec71e97a99dcc7d4bb4bf463fffc550",
+      "media_type": "application/json",
+      "name": "experiment-report",
+      "schema": "experiment_report",
+      "schema_version": 1
+    },
+    "EX015_20261023": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX015_20261023"
+      },
+      "evidence_id": "fed9b766ccd370d36b7930d9628a9f00f49cea15f7640223cb117e166bacbdd5.json",
+      "sha256": "fed9b766ccd370d36b7930d9628a9f00f49cea15f7640223cb117e166bacbdd5",
+      "media_type": "application/json",
+      "name": "experiment-report",
+      "schema": "experiment_report",
+      "schema_version": 1
+    },
+    "EX024_20261023": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX024_20261023"
+      },
+      "evidence_id": "63bbfc60ee7853fa06b97e82c6cc407aa65002e10716882297d36d4de09ff7bc.json",
+      "sha256": "63bbfc60ee7853fa06b97e82c6cc407aa65002e10716882297d36d4de09ff7bc",
+      "media_type": "application/json",
+      "name": "experiment-report",
+      "schema": "experiment_report",
+      "schema_version": 1
+    }
+  },
+  "loader": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX026_20261023"
+    },
+    "evidence_id": "564a82fbdfd2919e9bcbac7a43d9395efe68dc2647dda02b7679afdc30817001.py",
+    "sha256": "564a82fbdfd2919e9bcbac7a43d9395efe68dc2647dda02b7679afdc30817001",
+    "media_type": "text/x-python",
+    "name": "study",
+    "schema": null,
+    "schema_version": null
+  },
+  "events": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX026_20261023"
+    },
+    "evidence_id": "b14e2764684adbafd4cad6203a87ed3e587f8c928833eb7b89d9e33a50e52653.csv",
+    "sha256": "b14e2764684adbafd4cad6203a87ed3e587f8c928833eb7b89d9e33a50e52653",
+    "media_type": "text/csv",
+    "name": "events",
+    "schema": null,
+    "schema_version": null
+  },
+  "next": "Move plausible competing processes to minimal public complete accounts; low event mean is evidence, not automatic veto of all prototype combinations."
+}

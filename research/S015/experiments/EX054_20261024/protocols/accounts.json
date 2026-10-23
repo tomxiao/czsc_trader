@@ -1,0 +1,125 @@
+{
+  "round": 4,
+  "maximum_rounds": 20,
+  "stage": 2,
+  "configurations": [
+    {
+      "mode": "below",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "falling_below",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "center_below",
+      "exit_mode": "process",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "center_below",
+      "exit_mode": "reversal",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "center_below",
+      "exit_mode": "repair",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "center_below",
+      "exit_mode": "repair_or_reversal",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "center_below",
+      "exit_mode": "fixed_guard",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "center_first_below",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "center_below_step",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02"
+    },
+    {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-02-27"
+    }
+  ],
+  "question": "Does price-center migration add context to a closing discount, or is this just generic decline/rebound? Does closing discount repair, state failure or short fixed horizon define profitable ownership?",
+  "exploratory_origin": "EX053 center_below fixed3 full88.83/DD9.90,comparison87.68/DD9.91,near but fails strict91.58/7.25 goals; center_above loses22.65%. This revealed discount interaction, not proof of new mechanism. New contrasts declared before new results.",
+  "comparisons": [
+    "below only vs existingC5303 and falling_below isolates migration context",
+    "center_below process/reversal vs existingC5303 tests process exits",
+    "repair vs repair_or_reversal vs fixed3 distinguishes completion of local discount from loss of favorable state",
+    "fixed_guard vs existingC5303 tests earlier state-failure cut with same maximum3intentdays",
+    "first_below and step_below vs existingC5303 tests need for fresh/ongoing migration",
+    "late center_below vs EX049 BP and C5209 same start"
+  ],
+  "rules": "Closing discount=log adjusted close<adjusted median8barclose. No RSI, drawdown percentile, prior loss or downtrend requirement. Falling_below removes positive3center gain. Repair exits when closing price>=current center; repair_or_reversal also exits nonpositive3center gain. Fixed_guard exits usual daily center failure or age3. Other rules unchanged; MARKET_INTENT nonfixed exits rearm only on positive centerstep.",
+  "objectives": "Unchanged MANDATE/3, all goals separately; no center qualification claim; defaultfee.001,cash100000,434/415,separateaccounts,sameexecution.",
+  "limits": "Adaptive selection from repeated development. If below-only/falling control explains advantage, report generic reversion and do not market it as distinct continuation mechanism. Current account differences not causal participant claims.",
+  "next": "If interaction survives complete controls, test representative scales and largest losses with explicit alternative; if false, retain narrower conclusion and reframe research.",
+  "summary_source": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX025_20261023"
+    },
+    "evidence_id": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5.py",
+    "sha256": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5",
+    "media_type": "text/x-python",
+    "name": "execution_suite_v4",
+    "schema": null,
+    "schema_version": null
+  }
+}

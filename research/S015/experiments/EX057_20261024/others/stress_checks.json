@@ -1,0 +1,619 @@
+{
+  "status": "PASS",
+  "formal_accounts": 6,
+  "technical_accounts": 2,
+  "serial_equal": true,
+  "full_stress_gate_passes": 3,
+  "source_sha256": "31db5264814274ee8c624115de869d934db6c87c52ec6609de32ea6497df701a",
+  "accounts": [
+    {
+      "candidate": "C5700",
+      "control_candidate": "C5303",
+      "control_experiment": "EX053_20261024",
+      "window": "full",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX057_20261024"
+        },
+        "evidence_id": "cf4a1180ee5c1cda2ae9be69f4af8709a2e6d3d34f676fc09df18411304f76d5.json",
+        "sha256": "cf4a1180ee5c1cda2ae9be69f4af8709a2e6d3d34f676fc09df18411304f76d5",
+        "media_type": "application/json",
+        "name": "C5700",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "control_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX053_20261024"
+        },
+        "evidence_id": "ab03c2025dbaf38946936f8069396aae441a5b918d849cccdf93cadd2d894f5a.json",
+        "sha256": "ab03c2025dbaf38946936f8069396aae441a5b918d849cccdf93cadd2d894f5a",
+        "media_type": "application/json",
+        "name": "C5303",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "exact_signal_rows": 434,
+      "exact_decision_columns": [
+        "signal_date",
+        "valid_session",
+        "target_position",
+        "entry_allocation_fraction",
+        "atr",
+        "center_gain",
+        "concentration",
+        "dcenter",
+        "entry_signal",
+        "exit_signal",
+        "feature_ready",
+        "intent_age",
+        "m",
+        "p",
+        "permission",
+        "prior_positive",
+        "r1",
+        "r3",
+        "r5",
+        "up_count",
+        "vol20"
+      ],
+      "request_runtime_and_benchmark_fee_consistent": true,
+      "fees": 28489.580400000003,
+      "account": {
+        "net_return": 0.6989141959999983,
+        "cagr": 0.36034146452473315,
+        "drawdown": 0.10441524686242432
+      },
+      "pressure_buyhold": {
+        "net_return": 0.30796920800000005,
+        "cagr": 0.168696614087108,
+        "drawdown": 0.3628729436208131
+      },
+      "standard_account": {
+        "net_return": 0.8883056589999994,
+        "cagr": 0.4464387301949242,
+        "dd": 0.09904385909340274,
+        "fees": 15133.1341,
+        "closed": 53,
+        "frequency_median": 7.0,
+        "frequency_good": 375,
+        "frequency_windows": 375,
+        "benchmark_cagr": 0.16938742022084918,
+        "benchmark_dd": 0.36289990457799626,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "f3cdbb7920d8741ffafce3be218e89ed6573bac7bb033557667953582a492154"
+      },
+      "checks": {
+        "cagr_positive": true,
+        "cagr_above_pressure_buyhold": true,
+        "drawdown_below_pressure_buyhold": true,
+        "drawdown_at_most_25pct": true
+      },
+      "is_declared_stress_gate_window": true,
+      "declared_stress_gate_pass": true
+    },
+    {
+      "candidate": "C5700",
+      "control_candidate": "C5303",
+      "control_experiment": "EX053_20261024",
+      "window": "s011_common",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX057_20261024"
+        },
+        "evidence_id": "cf4a1180ee5c1cda2ae9be69f4af8709a2e6d3d34f676fc09df18411304f76d5.json",
+        "sha256": "cf4a1180ee5c1cda2ae9be69f4af8709a2e6d3d34f676fc09df18411304f76d5",
+        "media_type": "application/json",
+        "name": "C5700",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "control_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX053_20261024"
+        },
+        "evidence_id": "ab03c2025dbaf38946936f8069396aae441a5b918d849cccdf93cadd2d894f5a.json",
+        "sha256": "ab03c2025dbaf38946936f8069396aae441a5b918d849cccdf93cadd2d894f5a",
+        "media_type": "application/json",
+        "name": "C5303",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "exact_signal_rows": 415,
+      "exact_decision_columns": [
+        "signal_date",
+        "valid_session",
+        "target_position",
+        "entry_allocation_fraction",
+        "atr",
+        "center_gain",
+        "concentration",
+        "dcenter",
+        "entry_signal",
+        "exit_signal",
+        "feature_ready",
+        "intent_age",
+        "m",
+        "p",
+        "permission",
+        "prior_positive",
+        "r1",
+        "r3",
+        "r5",
+        "up_count",
+        "vol20"
+      ],
+      "request_runtime_and_benchmark_fee_consistent": true,
+      "fees": 27279.1,
+      "account": {
+        "net_return": 0.6981559999999982,
+        "cagr": 0.3792692021597177,
+        "drawdown": 0.10437228793782338
+      },
+      "pressure_buyhold": {
+        "net_return": 0.37095467999999987,
+        "cagr": 0.21116799882428428,
+        "drawdown": 0.36401378781001426
+      },
+      "standard_account": {
+        "net_return": 0.8768107719999998,
+        "cagr": 0.46564511925081775,
+        "dd": 0.099065693042803,
+        "fees": 14446.122800000001,
+        "closed": 50,
+        "frequency_median": 7.0,
+        "frequency_good": 356,
+        "frequency_windows": 356,
+        "benchmark_cagr": 0.21191223556449157,
+        "benchmark_dd": 0.3640287011470468,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "59cf97cfa4dd4875644920a0d7344a41536c228196bfe3cb60646905fad27db3",
+        "return_superior": false,
+        "dd_superior": false,
+        "dual_pass": false
+      },
+      "checks": {
+        "cagr_positive": true,
+        "cagr_above_pressure_buyhold": true,
+        "drawdown_below_pressure_buyhold": true,
+        "drawdown_at_most_25pct": true
+      },
+      "is_declared_stress_gate_window": false,
+      "declared_stress_gate_pass": null
+    },
+    {
+      "candidate": "C5701",
+      "control_candidate": "C5404",
+      "control_experiment": "EX054_20261024",
+      "window": "full",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX057_20261024"
+        },
+        "evidence_id": "bb3ebfc8f510aa209e0859d3523fbfc86e18adc79d70cf7c6c45f64936c02e21.json",
+        "sha256": "bb3ebfc8f510aa209e0859d3523fbfc86e18adc79d70cf7c6c45f64936c02e21",
+        "media_type": "application/json",
+        "name": "C5701",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "control_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX054_20261024"
+        },
+        "evidence_id": "41611f77b500019bfd731f4d16d3dabc3dc3f692f69585142908cfd555ac19b3.json",
+        "sha256": "41611f77b500019bfd731f4d16d3dabc3dc3f692f69585142908cfd555ac19b3",
+        "media_type": "application/json",
+        "name": "C5404",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "exact_signal_rows": 434,
+      "exact_decision_columns": [
+        "signal_date",
+        "valid_session",
+        "target_position",
+        "entry_allocation_fraction",
+        "atr",
+        "center_gain",
+        "concentration",
+        "dcenter",
+        "entry_signal",
+        "exit_signal",
+        "feature_ready",
+        "intent_age",
+        "m",
+        "p",
+        "permission",
+        "prior_positive",
+        "r1",
+        "r3",
+        "r5",
+        "up_count",
+        "vol20"
+      ],
+      "request_runtime_and_benchmark_fee_consistent": true,
+      "fees": 32475.645800000006,
+      "account": {
+        "net_return": 0.6224045420000004,
+        "cagr": 0.32442660293402303,
+        "drawdown": 0.0884886975690351
+      },
+      "pressure_buyhold": {
+        "net_return": 0.30796920800000005,
+        "cagr": 0.168696614087108,
+        "drawdown": 0.3628729436208131
+      },
+      "standard_account": {
+        "net_return": 0.8434119650000016,
+        "cagr": 0.4263705467301482,
+        "dd": 0.08125375622744746,
+        "fees": 17455.5035,
+        "closed": 64,
+        "frequency_median": 9.0,
+        "frequency_good": 375,
+        "frequency_windows": 375,
+        "benchmark_cagr": 0.16938742022084918,
+        "benchmark_dd": 0.36289990457799626,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "cdfc81345652a7fd8f68a48c32d8d8ce014537818624871ce22512b1779f596a"
+      },
+      "checks": {
+        "cagr_positive": true,
+        "cagr_above_pressure_buyhold": true,
+        "drawdown_below_pressure_buyhold": true,
+        "drawdown_at_most_25pct": true
+      },
+      "is_declared_stress_gate_window": true,
+      "declared_stress_gate_pass": true
+    },
+    {
+      "candidate": "C5701",
+      "control_candidate": "C5404",
+      "control_experiment": "EX054_20261024",
+      "window": "s011_common",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX057_20261024"
+        },
+        "evidence_id": "bb3ebfc8f510aa209e0859d3523fbfc86e18adc79d70cf7c6c45f64936c02e21.json",
+        "sha256": "bb3ebfc8f510aa209e0859d3523fbfc86e18adc79d70cf7c6c45f64936c02e21",
+        "media_type": "application/json",
+        "name": "C5701",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "control_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX054_20261024"
+        },
+        "evidence_id": "41611f77b500019bfd731f4d16d3dabc3dc3f692f69585142908cfd555ac19b3.json",
+        "sha256": "41611f77b500019bfd731f4d16d3dabc3dc3f692f69585142908cfd555ac19b3",
+        "media_type": "application/json",
+        "name": "C5404",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "exact_signal_rows": 415,
+      "exact_decision_columns": [
+        "signal_date",
+        "valid_session",
+        "target_position",
+        "entry_allocation_fraction",
+        "atr",
+        "center_gain",
+        "concentration",
+        "dcenter",
+        "entry_signal",
+        "exit_signal",
+        "feature_ready",
+        "intent_age",
+        "m",
+        "p",
+        "permission",
+        "prior_positive",
+        "r1",
+        "r3",
+        "r5",
+        "up_count",
+        "vol20"
+      ],
+      "request_runtime_and_benchmark_fee_consistent": true,
+      "fees": 30185.4724,
+      "account": {
+        "net_return": 0.5859222760000018,
+        "cagr": 0.323174006115188,
+        "drawdown": 0.08851078412177193
+      },
+      "pressure_buyhold": {
+        "net_return": 0.37095467999999987,
+        "cagr": 0.21116799882428428,
+        "drawdown": 0.36401378781001426
+      },
+      "standard_account": {
+        "net_return": 0.7876174590000005,
+        "cagr": 0.4229460167544583,
+        "dd": 0.08123397166359414,
+        "fees": 16149.3541,
+        "closed": 60,
+        "frequency_median": 9.0,
+        "frequency_good": 356,
+        "frequency_windows": 356,
+        "benchmark_cagr": 0.21191223556449157,
+        "benchmark_dd": 0.3640287011470468,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "72baf4c0cb82e899987378300ed7deaf6126ac907fa4e2c518593bcd4fce0de6",
+        "return_superior": false,
+        "dd_superior": false,
+        "dual_pass": false
+      },
+      "checks": {
+        "cagr_positive": true,
+        "cagr_above_pressure_buyhold": true,
+        "drawdown_below_pressure_buyhold": true,
+        "drawdown_at_most_25pct": true
+      },
+      "is_declared_stress_gate_window": false,
+      "declared_stress_gate_pass": null
+    },
+    {
+      "candidate": "C5702",
+      "control_candidate": "C5506",
+      "control_experiment": "EX055_20261024",
+      "window": "full",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX057_20261024"
+        },
+        "evidence_id": "8ec869c16991bc3b3e91473455be7a165b12707d2a83079e06382d5b4fc31b93.json",
+        "sha256": "8ec869c16991bc3b3e91473455be7a165b12707d2a83079e06382d5b4fc31b93",
+        "media_type": "application/json",
+        "name": "C5702",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "control_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX055_20261024"
+        },
+        "evidence_id": "51a16cbe2c86bd05eea98ff101a963c16cb635dbd79a623738282d4e720e21eb.json",
+        "sha256": "51a16cbe2c86bd05eea98ff101a963c16cb635dbd79a623738282d4e720e21eb",
+        "media_type": "application/json",
+        "name": "C5506",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "exact_signal_rows": 434,
+      "exact_decision_columns": [
+        "signal_date",
+        "valid_session",
+        "target_position",
+        "entry_allocation_fraction",
+        "atr",
+        "center_gain",
+        "concentration",
+        "dcenter",
+        "entry_signal",
+        "exit_signal",
+        "feature_ready",
+        "intent_age",
+        "m",
+        "p",
+        "permission",
+        "prior_positive",
+        "r1",
+        "r3",
+        "r5",
+        "up_count",
+        "vol20"
+      ],
+      "request_runtime_and_benchmark_fee_consistent": true,
+      "fees": 29783.019399999997,
+      "account": {
+        "net_return": 0.8197708059999993,
+        "cagr": 0.4157202200871508,
+        "drawdown": 0.08012117639379723
+      },
+      "pressure_buyhold": {
+        "net_return": 0.30796920800000005,
+        "cagr": 0.168696614087108,
+        "drawdown": 0.3628729436208131
+      },
+      "standard_account": {
+        "net_return": 1.0289851199999984,
+        "cagr": 0.5080647350441618,
+        "dd": 0.0746056684583768,
+        "fees": 15854.688000000002,
+        "closed": 55,
+        "frequency_median": 8.0,
+        "frequency_good": 375,
+        "frequency_windows": 375,
+        "benchmark_cagr": 0.16938742022084918,
+        "benchmark_dd": 0.36289990457799626,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "ef078673b89a1faa597ed7ef1497000d54520e9c220c5daef4e9f417564bbddb"
+      },
+      "checks": {
+        "cagr_positive": true,
+        "cagr_above_pressure_buyhold": true,
+        "drawdown_below_pressure_buyhold": true,
+        "drawdown_at_most_25pct": true
+      },
+      "is_declared_stress_gate_window": true,
+      "declared_stress_gate_pass": true
+    },
+    {
+      "candidate": "C5702",
+      "control_candidate": "C5506",
+      "control_experiment": "EX055_20261024",
+      "window": "s011_common",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX057_20261024"
+        },
+        "evidence_id": "8ec869c16991bc3b3e91473455be7a165b12707d2a83079e06382d5b4fc31b93.json",
+        "sha256": "8ec869c16991bc3b3e91473455be7a165b12707d2a83079e06382d5b4fc31b93",
+        "media_type": "application/json",
+        "name": "C5702",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "control_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX055_20261024"
+        },
+        "evidence_id": "51a16cbe2c86bd05eea98ff101a963c16cb635dbd79a623738282d4e720e21eb.json",
+        "sha256": "51a16cbe2c86bd05eea98ff101a963c16cb635dbd79a623738282d4e720e21eb",
+        "media_type": "application/json",
+        "name": "C5506",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "exact_signal_rows": 415,
+      "exact_decision_columns": [
+        "signal_date",
+        "valid_session",
+        "target_position",
+        "entry_allocation_fraction",
+        "atr",
+        "center_gain",
+        "concentration",
+        "dcenter",
+        "entry_signal",
+        "exit_signal",
+        "feature_ready",
+        "intent_age",
+        "m",
+        "p",
+        "permission",
+        "prior_positive",
+        "r1",
+        "r3",
+        "r5",
+        "up_count",
+        "vol20"
+      ],
+      "request_runtime_and_benchmark_fee_consistent": true,
+      "fees": 28572.682,
+      "account": {
+        "net_return": 0.818961179999999,
+        "cagr": 0.43804441577531916,
+        "drawdown": 0.08006328298820098
+      },
+      "pressure_buyhold": {
+        "net_return": 0.37095467999999987,
+        "cagr": 0.21116799882428428,
+        "drawdown": 0.36401378781001426
+      },
+      "standard_account": {
+        "net_return": 1.0163614829999998,
+        "cagr": 0.5308855893499869,
+        "dd": 0.07458973572104455,
+        "fees": 15159.751699999999,
+        "closed": 52,
+        "frequency_median": 8.0,
+        "frequency_good": 356,
+        "frequency_windows": 356,
+        "benchmark_cagr": 0.21191223556449157,
+        "benchmark_dd": 0.3640287011470468,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "d39f341b09b55840ff5c2280b710411c4d2089a0c753d647249e9db2edeb587d",
+        "return_superior": true,
+        "dd_superior": false,
+        "dual_pass": false
+      },
+      "checks": {
+        "cagr_positive": true,
+        "cagr_above_pressure_buyhold": true,
+        "drawdown_below_pressure_buyhold": true,
+        "drawdown_at_most_25pct": true
+      },
+      "is_declared_stress_gate_window": false,
+      "declared_stress_gate_pass": null
+    }
+  ],
+  "limitations": [
+    "Stress gates apply to full434 only; 415-day figures are descriptive.",
+    "Standard-cost S011 comparison is not a doubled-cost hard gate.",
+    "Unchanged signals do not imply unchanged quantity; capital sizing recomputes fees and budgets.",
+    "This focused stress check is not completed strategy qualification or a 32-point joint perturbation."
+  ]
+}
