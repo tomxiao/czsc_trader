@@ -8,7 +8,7 @@ from strategy_manager import CandidateKey, ResearchState
 from ._records import _Record, _digest, _hash, _path, _text, _unique
 from .context import ExperimentRef, ResearchBatchRef
 from .delivery import (
-    ComponentEntry, DeliveryReference, DeliveryStatus, SearchSummary,
+    ComponentEntry, DeliveryReference, DeliveryStatus, SearchSummary, PrototypePanel,
 )
 from .evidence import EvidenceRef, ExperimentOutcome
 
@@ -94,6 +94,12 @@ class ComponentPanelOverview(_Record):
 
 
 @dataclass(frozen=True, slots=True)
+class PrototypePanelOverview(_Record):
+    delivery: DeliveryReference
+    panel: PrototypePanel
+
+
+@dataclass(frozen=True, slots=True)
 class CandidateOverview(_Record):
     key: CandidateKey
     content_sha256: str
@@ -153,6 +159,7 @@ class ResearchOverview(_Record):
     deliveries: tuple[DeliveryOverview, ...]
     experiments: tuple[ExperimentOverview, ...]
     component_tests: tuple[ComponentPanelOverview, ...]
+    prototype_panels: tuple[PrototypePanelOverview, ...]
     candidates: tuple[CandidateOverview, ...]
     handoffs: tuple[CandidateHandoffOverview, ...]
     searches: tuple[SearchOverview, ...]

@@ -14,7 +14,7 @@ from ..research_tools.evidence import EvidenceRef, managed_path
 from ..research_tools.experiment_artifacts import ExperimentReportSnapshot
 from ..research_tools.evaluation import EvaluationIdentity
 from ..research_tools.overview import (
-    CandidateHandoffOverview, CandidateOverview, ComponentPanelOverview, CountBasis,
+    CandidateHandoffOverview, CandidateOverview, ComponentPanelOverview, PrototypePanelOverview, CountBasis,
     DeliveryOverview, ExperimentOverview, ExperimentReportState, OverviewLimitation,
     ResearchCount, ResearchCountKind, ResearchOverview, ResearchOverviewError,
     ResearchSnapshot, ResearchSourceKind, ResearchSourceRef, SearchOverview,
@@ -189,7 +189,7 @@ def _deliveries(reader, batch, limitations):
                 raise ValueError("invalid delivery envelope")
             schema = value["schema_version"]
             legacy = stage is d.DeliveryStage.INSPECTION and schema == 8
-            if schema not in (8, 9):
+            if schema not in (8, 9, 10):
                 limitations.append(OverviewLimitation("UNSUPPORTED_DELIVERY_SCHEMA", path, "Retained delivery uses an unsupported schema; no compatibility interpretation was performed."))
                 continue
             if not legacy and schema != d._schema_version(stage):
@@ -231,6 +231,7 @@ def _deliveries(reader, batch, limitations):
                 expected_payload = {
                     d.DeliveryStage.MANDATE: d.ResearchMandate,
                     d.DeliveryStage.COMPONENTS: d.ComponentPanel,
+                    d.DeliveryStage.PROTOTYPES: d.PrototypePanel,
                     d.DeliveryStage.CANDIDATES: d.CandidateSet,
                     d.DeliveryStage.ASSESSMENT: d.CandidateAssessmentDelivery,
                     d.DeliveryStage.INSPECTION: d.CandidateInspectionDelivery,
@@ -405,6 +406,7 @@ def get_research_overview(repository: RepositoryContext, batch: ResearchBatchRef
         latest = {}
         search_records = {}
         components = []
+        prototypes = []
         handoffs = []
         for item, content in retained:
             stage = item.reference.stage
@@ -414,6 +416,8 @@ def get_research_overview(repository: RepositoryContext, batch: ResearchBatchRef
                 continue
             if isinstance(content.payload, d.ComponentPanel):
                 components.append(ComponentPanelOverview(item.reference, content.payload.components))
+            if isinstance(content.payload, d.PrototypePanel):
+                prototypes.append(PrototypePanelOverview(item.reference, content.payload))
             if isinstance(content.payload, d.CandidateSet):
                 handoffs.append(CandidateHandoffOverview(item.reference, content.payload.handoff))
                 for search in content.payload.searches:
@@ -454,7 +458,7 @@ def get_research_overview(repository: RepositoryContext, batch: ResearchBatchRef
         sources = reader.finish()
         snapshot = ResearchSnapshot(d._digest(sources), datetime.now(timezone.utc).isoformat(), sources)
         return ResearchOverview(batch, snapshot, family.research_state,
-            tuple(latest[stage] for stage in sorted(latest)), experiments, tuple(components), candidates,
+            tuple(latest[stage] for stage in sorted(latest)), experiments, tuple(components), tuple(prototypes), candidates,
             tuple(handoffs), searches, tuple(counts), tuple(limitations))
     except ResearchOverviewError:
         raise

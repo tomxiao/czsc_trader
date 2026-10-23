@@ -329,6 +329,7 @@ def _validate_content(definition, content, root, context, scope=d.DeliveryValida
     expected = {
         d.DeliveryStage.MANDATE: d.ResearchMandate,
         d.DeliveryStage.COMPONENTS: d.ComponentPanel,
+        d.DeliveryStage.PROTOTYPES: d.PrototypePanel,
         d.DeliveryStage.CANDIDATES: d.CandidateSet,
         d.DeliveryStage.ASSESSMENT: d.CandidateAssessmentDelivery,
         d.DeliveryStage.INSPECTION: d.CandidateInspectionDelivery,
@@ -361,8 +362,23 @@ def _validate_content(definition, content, root, context, scope=d.DeliveryValida
         elif isinstance(value, d.CandidateIdentityRef):
             if value.key.strategy_id != definition.strategy_id:
                 _fail("CANDIDATE_FAMILY", value.key.candidate_id, "candidate family differs")
+        elif isinstance(value, d.PrototypeReference):
+            if value.delivery not in definition.predecessors:
+                _fail("PROTOTYPE_REFERENCE", value.prototype_id,
+                      "prototype source must be an exact declared predecessor")
+            # Predecessors have already been authenticated by _read_delivery.
+            document = _read_json(_resolve(_delivery_path(context, value.delivery), "delivery.json"))
+            previous = d.DeliveryContent.from_dict(document["content"]).payload
+            if not isinstance(previous, d.PrototypePanel) or value.prototype_id not in {
+                item.prototype_id for item in previous.prototypes
+            }:
+                _fail("PROTOTYPE_REFERENCE", value.prototype_id, "prototype absent from source delivery")
     payload = content.payload
-    if isinstance(payload, d.CandidateSet):
+    if isinstance(payload, d.PrototypePanel):
+        for prototype in payload.prototypes:
+            for ref in prototype.evaluations:
+                _check_evaluation(root, ref, prototype.identity, account_cache)
+    elif isinstance(payload, d.CandidateSet):
         for candidate in payload.candidates:
             if not candidate.evaluations:
                 _fail("CANDIDATE_EVIDENCE", candidate.identity.key.candidate_id,

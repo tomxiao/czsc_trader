@@ -125,7 +125,9 @@ from czsc_trader.research_tools import ResearchBatchRef
 overview = get_research_overview(repository, ResearchBatchRef("S900"))
 ```
 
-返回登记状态、各阶段最高已支持修订、实验报告状态、组件测试声明、候选、交接集合、搜索声明、计数、限制及来源快照。来源包含文件/目录位置、存在状态和哈希；调用结束前复核读取清单，检测并发变化即报错，不自动重试。
+返回登记状态、各阶段最高已支持修订、实验报告状态、组件测试声明、原型面板、候选、交接集合、搜索声明、计数、限制及来源快照。来源包含文件/目录位置、存在状态和哈希；调用结束前复核读取清单，检测并发变化即报错，不自动重试。
+
+`ResearchOverview.prototype_panels`包含`PrototypePanelOverview(delivery, panel)`，提供精确交付引用和完整原型面板，包括实现身份、组件职责、账户引用、对照和研究建议。原型不进入候选登记计数，不跨修订累加为独立原型数量；`DEVELOP`等研究建议不代表阶段获批。缺少历史原型交付时返回空元组，不从组件或候选报告自动推断原型。
 
 计数的`basis`为`VERIFIED`（已认证登记事实）、`DECLARED`（已保存的声明）或`UNKNOWN`（`value=None`及原因）。重复交付中的相同搜索声明只展示一次；多个可能重叠的搜索声明不相加。账户评价数只覆盖保留的评价身份声明，不等于账户账本已认证，也不是完整尝试次数。没有受管的经济路径分组声明时，该计数保持未知，不在概览中重算。
 
@@ -609,7 +611,7 @@ child_result = research.evaluation.evaluate(child_request)
 `INTEGRITY` 和 `FULL` 均执行此认证，不重跑策略。普通材料仍检查归属、路径及文件哈希，
 平台不会扫描材料 JSON 或 Markdown 中嵌套的账户声明；支撑正式账户结论的引用必须直接纳入强类型交付。
 同批次可以复用其他实验账户，但账户内来源必须与该引用自身的实验身份一致；
-`CandidateEntry.evaluations` 还须匹配声明候选的身份及 `evaluation_ids`。
+`CandidateEntry.evaluations`及`PrototypeEntry.evaluations`还须匹配所声明实现的编号、内容哈希及`evaluation_ids`。
 
 未登记原型可通过现有评价与发布 API 形成正式账户，不要求先登记候选。
 RSCH 应用普通材料显式保存完整参数、源码文件及依赖，并直接关联所需材料引用；账户身份哈希本身不构成原型恢复包。
@@ -628,6 +630,7 @@ RSCH 应用普通材料显式保存完整参数、源码文件及依赖，并直
 | `EVALUATION_REFERENCE` | 不支持的账户版本、账户来源不符，或声明的运行编号不存在 |
 | `ACCOUNT_AUTHENTICATION` | 账户 JSON、请求、账本或结果认证失败 |
 | `CANDIDATE_CONFLICT` | 账户候选身份与交付声明不一致 |
+| `PROTOTYPE_REFERENCE` | 原型来源未列入精确前驱，或来源交付中不存在所声明的原型编号 |
 
 单个故障的分类不因串行或并行认证改变；多个故障并存时不保证首先返回哪一个。
 工作进程失败明确失败，不自动回退到串行或普通材料校验。历史交付原件保持不变；
@@ -637,6 +640,7 @@ RSCH 应用普通材料显式保存完整参数、源码文件及依赖，并直
 | --- | --- | --- |
 | `MANDATE` | `ResearchMandate` | 目标、约束、基准及明确确认依据 |
 | `COMPONENTS` | `ComponentPanel` | 组件定义、测试结论、边界及证据；引用 FSC 定义时核对所提交定义快照的身份 |
+| `PROTOTYPES` | `PrototypePanel` | 阶段二原型、组件职责与对照、定义及账户身份、精确来源引用；不要求候选登记 |
 | `CANDIDATES` | `CandidateSet` | 候选内容及真实账户证据；handoff 对象须已登记且来源完整 |
 | `ASSESSMENT` | `CandidateAssessmentDelivery` | 精确交接范围、已确认目标／窗口／基准、保存事实，以及 SE 自检和比较重算 |
 | `INSPECTION` | `CandidateInspectionDelivery` | 实际选型、技术检验、决定及冻结事务证据 |
@@ -646,6 +650,64 @@ RSCH 应用普通材料显式保存完整参数、源码文件及依赖，并直
 组件测试仍需协议及结果证据，包含影响结论的负面结果；协议可共享，材料可来自同批次多个实验，
 实验划分由 RSCH 决定。FSC 定义引用不依赖当前可变目录，提交的定义快照须与声明身份一致。
 研究方法与用户要求由 RSCH 保证，平台校验产物契约。
+
+### 策略原型交付
+
+`PrototypePanel`包含`prototypes`、`components`、`comparisons`及`conclusion`。原型与组件、对照编号在面板内分别唯一；组件条目复用`ComponentEntry`。`PrototypeComponentUse(component_id, role, rationale)`说明组件在某一原型中的职责与采用依据，必须指向同面板中的组件；同一组件可承担不同职责。
+
+`PrototypeEntry`保存以下内容：
+
+| 字段 | 语义 |
+| --- | --- |
+| `prototype_id`、`identity` | 面板内原型编号及`CandidateIdentityRef`实现身份；复用编号与内容哈希类型，不触发SM候选登记 |
+| `definition`、`evidence` | `ExperimentDefinitionRef`定义快照与入口说明，以及显式发布的源码、参数、依赖、反证等材料引用 |
+| `hypothesis`、`components` | 收益或风险机制假设及组件职责 |
+| `evaluations` | 正式账户引用；空集合时必须填写`missing_evaluation_reason`，有账户时不得同时声明缺少账户 |
+| `disposition`、`judgment` | `PrototypeDisposition.DEVELOP/INVESTIGATE/STOP`分别表示建议发展、继续研究、停止，并附研究员判断 |
+| `limitations`、`next_step` | 局限与下一步；平台不据此增加经济门槛或批准阶段推进 |
+| `sources` | `PrototypeReference(delivery, prototype_id)`来源；精确来源交付须列入`DeliveryDefinition.predecessors`，来源面板中必须存在该编号 |
+
+`PrototypeComparison`声明`subject_id`、`control_id`、比较问题、协议引用、结果证据及结论。两端须为当前面板中不同的原型，结果证据不能为空；跨修订承接使用条目的`sources`关联精确旧版本。发布与校验认证材料字节、来源与账户实现身份，不执行定义入口，也不证明文字说明与源码语义一致、组件有效或对照公平。实现可恢复性由RSCH通过完整的源码、参数及依赖材料保证；单个定义引用或账户哈希不构成恢复包。
+
+完整负面交付允许空原型面板；未取得完整账户的原型也能保留判断和缺证原因。`DeliveryStatus.COMPLETE`表示本次交付工作完成，不等于原型验证充分或策略达标。以下函数展示尚缺账户的原型交付；调用者传入同批次真实的实现身份、已发布定义与材料引用、组件条目，并按实际研究改写说明。它不运行实验或登记候选。
+
+```python
+from czsc_trader.application import assemble_delivery
+from czsc_trader.research_tools import (
+    DeliveryContent, DeliveryDefinition, DeliveryStage, DeliveryStatus,
+    PrototypeComponentUse, PrototypeDisposition, PrototypeEntry, PrototypePanel,
+)
+
+def publish_prototype_without_account(
+    repository, batch, revision, identity, definition, component, implementation_evidence, facts=(),
+):
+    prototype = PrototypeEntry(
+        prototype_id="P01", identity=identity, definition=definition,
+        hypothesis="价格过程持续期间可能保留可执行的后续收益，尚待账户验证",
+        components=(PrototypeComponentUse(
+            component.component_id, "判断过程是否持续", "检验剩余机会的工作假设",
+        ),),
+        evaluations=(), disposition=PrototypeDisposition.INVESTIGATE,
+        judgment="保留工作原型，尚不能评价整体账户价值",
+        limitations=("尚未形成完整账户及必要基线对照",),
+        next_step="按已授权方案形成完整账户与必要对照",
+        evidence=implementation_evidence,
+        missing_evaluation_reason="账户验证尚未执行",
+    )
+    return assemble_delivery(
+        repository,
+        DeliveryDefinition(batch, DeliveryStage.PROTOTYPES, revision, schema_version=10),
+        DeliveryContent(
+            payload=PrototypePanel((prototype,), (component,), (), "保存待验证原型及证据缺口"),
+            status=DeliveryStatus.COMPLETE, facts=facts, explanations=(),
+            report="本次保存待验证原型。账户尚缺，不能据此建议阶段推进或宣称策略达标。",
+        ),
+    )
+```
+
+定义和关联材料随交付浅快照保存；后续验证不依赖可变实验工作目录。通过原有`validate_delivery`和`get_research_overview`读取验证结果与面板，无须新增原型查询服务。既有`COMPONENTS`、`CANDIDATES`保持原格式与语义，新交付显式引用既有证据即可，不自动迁移或改变历史研究资格。
+
+### 候选交付与公共存储规则
 
 继续前例，用该候选形成阶段三交付；实际修订号与前驱引用由 RSCH 按已发布记录指定。
 
@@ -678,7 +740,7 @@ if checked.status is not ValidationStatus.PASS:
 选定证据的 `evidence/` 浅快照及必要的决定／检验 `support/`。
 公开目录 `research/<批次>/deliveries/<阶段>/<修订>/` 保存对应的 `report.md` 和 `receipt.json`。
 发布与校验核对两处报告及回执的字节一致性；完整包只包含已选定材料。
-阶段一至四的`DeliveryDefinition`、`DeliveryReceipt`和`delivery.json`使用schema 8；新`INSPECTION`三处均使用schema 9且`predecessors=()`。
+`MANDATE`、`COMPONENTS`、`CANDIDATES`、`ASSESSMENT`的`DeliveryDefinition`、`DeliveryReceipt`和`delivery.json`使用schema 8；`INSPECTION`三处均使用schema 9且`predecessors=()`；`PROTOTYPES`三处均使用schema 10，构造`DeliveryDefinition`时须显式指定`schema_version=10`。
 旧阶段五schema 8仅在概览展示有限元数据并列出限制，显式交付校验拒绝，不解释为新版通过，不自动迁移历史原件。账户评价证据使用 schema 7，请求身份使用 schema 6，`StrategyVersion` 继续使用 schema 5。
 修订号在“批次＋阶段”内唯一，同内容重复发布复用，冲突拒绝覆盖，失败不留下可见的半成品修订。
 前驱为同批次的 `DeliveryReference`；同阶段前驱只能是更早修订。

@@ -32,6 +32,7 @@ Scalar = str | int | float | bool
 class DeliveryStage(StrEnum):
     MANDATE = "MANDATE"
     COMPONENTS = "COMPONENTS"
+    PROTOTYPES = "PROTOTYPES"
     CANDIDATES = "CANDIDATES"
     ASSESSMENT = "ASSESSMENT"
     INSPECTION = "INSPECTION"
@@ -49,6 +50,8 @@ class ValidationStatus(StrEnum):
 
 
 def _schema_version(stage: DeliveryStage) -> int:
+    if stage is DeliveryStage.PROTOTYPES:
+        return 10
     return 9 if stage is DeliveryStage.INSPECTION else 8
 
 
@@ -316,6 +319,105 @@ class EvaluationEvidenceRef(_Record):
             _hash(value)
 
 
+class PrototypeDisposition(StrEnum):
+    DEVELOP = "DEVELOP"
+    INVESTIGATE = "INVESTIGATE"
+    STOP = "STOP"
+
+
+@dataclass(frozen=True, slots=True)
+class PrototypeReference(_Record):
+    delivery: DeliveryReference
+    prototype_id: str
+
+    def _validate(self):
+        if self.delivery.stage is not DeliveryStage.PROTOTYPES:
+            raise ValueError("prototype reference requires a PROTOTYPES delivery")
+        _text(self.prototype_id, "prototype_id")
+
+
+@dataclass(frozen=True, slots=True)
+class PrototypeComponentUse(_Record):
+    component_id: str
+    role: str
+    rationale: str
+
+    def _validate(self):
+        for name in ("component_id", "role", "rationale"):
+            _text(getattr(self, name), name)
+
+
+@dataclass(frozen=True, slots=True)
+class PrototypeEntry(_Record):
+    prototype_id: str
+    identity: CandidateIdentityRef
+    definition: ExperimentDefinitionRef
+    hypothesis: str
+    components: tuple[PrototypeComponentUse, ...]
+    evaluations: tuple[EvaluationEvidenceRef, ...]
+    disposition: PrototypeDisposition
+    judgment: str
+    limitations: tuple[str, ...]
+    next_step: str
+    evidence: tuple[EvidenceRef, ...]
+    missing_evaluation_reason: str | None = None
+    sources: tuple[PrototypeReference, ...] = ()
+
+    def _validate(self):
+        for name in ("prototype_id", "hypothesis", "judgment", "next_step"):
+            _text(getattr(self, name), name)
+        for item in self.limitations:
+            _text(item, "prototype limitation")
+        _unique(((x.component_id, x.role) for x in self.components), "prototype component role")
+        _unique((x.evidence for x in self.evaluations), "prototype evaluation evidence")
+        _unique(self.evidence, "prototype evidence")
+        _unique(self.sources, "prototype source")
+        if not self.evaluations:
+            _text(self.missing_evaluation_reason, "missing_evaluation_reason")
+        elif self.missing_evaluation_reason is not None:
+            raise ValueError("account-backed prototype cannot declare missing evaluations")
+
+
+@dataclass(frozen=True, slots=True)
+class PrototypeComparison(_Record):
+    comparison_id: str
+    subject_id: str
+    control_id: str
+    question: str
+    protocol: EvidenceRef
+    evidence: tuple[EvidenceRef, ...]
+    conclusion: str
+
+    def _validate(self):
+        for name in ("comparison_id", "subject_id", "control_id", "question", "conclusion"):
+            _text(getattr(self, name), name)
+        if self.subject_id == self.control_id:
+            raise ValueError("prototype comparison requires different entries")
+        if not self.evidence:
+            raise ValueError("prototype comparison requires result evidence")
+        _unique(self.evidence, "prototype comparison evidence")
+
+
+@dataclass(frozen=True, slots=True)
+class PrototypePanel(_Record):
+    prototypes: tuple[PrototypeEntry, ...]
+    components: tuple[ComponentEntry, ...]
+    comparisons: tuple[PrototypeComparison, ...]
+    conclusion: str
+
+    def _validate(self):
+        _text(self.conclusion, "prototype panel conclusion")
+        _unique((x.prototype_id for x in self.prototypes), "prototype_id")
+        _unique((x.component_id for x in self.components), "component_id")
+        _unique((x.comparison_id for x in self.comparisons), "comparison_id")
+        component_ids = {x.component_id for x in self.components}
+        prototype_ids = {x.prototype_id for x in self.prototypes}
+        if any(use.component_id not in component_ids for item in self.prototypes for use in item.components):
+            raise ValueError("prototype refers to an absent component")
+        if any(x.subject_id not in prototype_ids or x.control_id not in prototype_ids for x in self.comparisons):
+            raise ValueError("prototype comparison refers to an absent entry")
+
+
 @dataclass(frozen=True, slots=True)
 class CandidateEntry(_Record):
     identity: CandidateIdentityRef
@@ -480,6 +582,7 @@ class CandidateInspectionDelivery(_Record):
 StageContent = (
     ResearchMandate
     | ComponentPanel
+    | PrototypePanel
     | CandidateSet
     | CandidateAssessmentDelivery
     | CandidateInspectionDelivery
@@ -509,7 +612,7 @@ class DeliveryContent(_Record, Generic[T]):
             _text(item, "incomplete item")
         known = {x.fact_id for x in self.facts}
         refs = [x.fact_ids for x in self.explanations]
-        if isinstance(self.payload, ComponentPanel):
+        if isinstance(self.payload, (ComponentPanel, PrototypePanel)):
             refs.extend(t.fact_ids for c in self.payload.components for t in c.tests)
         if any(ref not in known for group in refs for ref in group):
             raise ValueError("unknown fact reference")
