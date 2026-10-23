@@ -1,0 +1,88 @@
+{
+  "status": "PASS",
+  "tsfresh_version": "0.21.1",
+  "workers": 2,
+  "native_threads": 1,
+  "sample_days": 3,
+  "serial_parallel_equal_cells": 18,
+  "calculator_equal_cells": 18,
+  "undefined_values_preserved": true,
+  "missing_input_rejected": true,
+  "settings": {
+    "u": {
+      "autocorrelation": [
+        {
+          "lag": 1
+        }
+      ],
+      "cid_ce": [
+        {
+          "normalize": true
+        }
+      ],
+      "number_crossing_m": [
+        {
+          "m": 0.0
+        }
+      ],
+      "energy_ratio_by_chunks": [
+        {
+          "num_segments": 2,
+          "segment_focus": 1
+        }
+      ]
+    },
+    "q": {
+      "number_crossing_m": [
+        {
+          "m": 0.0
+        }
+      ],
+      "cid_ce": [
+        {
+          "normalize": true
+        }
+      ]
+    }
+  },
+  "columns": {
+    "u__autocorrelation__lag_1": "return_autocorrelation1",
+    "u__cid_ce__normalize_True": "return_roughness",
+    "u__number_crossing_m__m_0.0": "return_zero_crossings",
+    "u__energy_ratio_by_chunks__num_segments_2__segment_focus_1": "afternoon_energy_share",
+    "q__number_crossing_m__m_0.0": "open_reference_crossings",
+    "q__cid_ce__normalize_True": "path_roughness"
+  },
+  "calculators": {
+    "autocorrelation": {
+      "signature": "(x, lag)",
+      "source_sha256": "67f9a1d3c8b946f3055c0484f6379af2e6a4e9fa2441100979e4d9e748d34168",
+      "documentation": "Calculates the autocorrelation of the specified lag, according to the formula [1]\n\n.. math::\n\n    \\frac{1}{(n-l)\\sigma^{2}} \\sum_{t=1}^{n-l}(X_{t}-\\mu )(X_{t+l}-\\mu)\n\nwhere :math:`n` is the length of the time series :math:`X_i`, :math:`\\sigma^2` its variance and :math:`\\mu` its\nmean. `l` denotes the lag.\n\n.. rubric:: References\n\n[1] https://en.wikipedia.org/wiki/Autocorrelation#Estimation\n\n:param x: the time series to calculate the feature of\n:type x: numpy.ndarray\n:param lag: the lag\n:type lag: int\n:return: the value of this feature\n:return type: float\n\n\n*This function is of type: simple*"
+    },
+    "energy_ratio_by_chunks": {
+      "signature": "(x, param)",
+      "source_sha256": "b9c0961fdea5675ad077854174b0b361e3e56c70655db1a3725dcde952f64ec2",
+      "documentation": "Calculates the sum of squares of chunk i out of N chunks expressed as a ratio with the sum of squares over the whole\nseries.\n\nTakes as input parameters the number num_segments of segments to divide the series into and segment_focus\nwhich is the segment number (starting at zero) to return a feature on.\n\nIf the length of the time series is not a multiple of the number of segments, the remaining data points are\ndistributed on the bins starting from the first. For example, if your time series consists of 8 entries, the\nfirst two bins will contain 3 and the last two values, e.g. `[ 0.,  1.,  2.], [ 3.,  4.,  5.]` and `[ 6.,  7.]`.\n\nNote that the answer for `num_segments = 1` is a trivial \"1\" but we handle this scenario\nin case somebody calls it. Sum of the ratios should be 1.0.\n\n:param x: the time series to calculate the feature of\n:type x: numpy.ndarray\n:param param: contains dictionaries {\"num_segments\": N, \"segment_focus\": i} with N, i both ints\n:return: the feature values\n:return type: List[Tuple[str, float]]\n\n\n*This function is of type: combiner*"
+    },
+    "cid_ce": {
+      "signature": "(x, normalize)",
+      "source_sha256": "9e5842a7da9a8620259057fc4b0abb2339ec6e991b135abad604ca8260feb43b",
+      "documentation": "This function calculator is an estimate for a time series complexity [1] (A more complex time series has more peaks,\nvalleys etc.). It calculates the value of\n\n.. math::\n\n    \\sqrt{ \\sum_{i=1}^{n-1} ( x_{i} - x_{i-1})^2 }\n\n.. rubric:: References\n\n|  [1] Batista, Gustavo EAPA, et al (2014).\n|  CID: an efficient complexity-invariant distance for time series.\n|  Data Mining and Knowledge Discovery 28.3 (2014): 634-669.\n\n:param x: the time series to calculate the feature of\n:type x: numpy.ndarray\n:param normalize: should the time series be z-transformed?\n:type normalize: bool\n\n:return: the value of this feature\n:return type: float\n\n\n*This function is of type: simple*"
+    },
+    "number_crossing_m": {
+      "signature": "(x, m)",
+      "source_sha256": "c7dc6fbbf4f88ce10185ea4f036a7ed7dcbefbeba837726bd054356ca8cf3996",
+      "documentation": "Calculates the number of crossings of x on m. A crossing is defined as two sequential values where the first value\nis lower than m and the next is greater, or vice-versa. If you set m to zero, you will get the number of zero\ncrossings.\n\n:param x: the time series to calculate the feature of\n:type x: numpy.ndarray\n:param m: the threshold for the crossing\n:type m: float\n:return: the value of this feature\n:return type: int\n\n\n*This function is of type: simple*"
+    }
+  },
+  "unfilled_library_outputs": {
+    "0": [],
+    "1": [
+      "return_autocorrelation1",
+      "afternoon_energy_share"
+    ],
+    "2": [
+      "return_autocorrelation1"
+    ]
+  }
+}

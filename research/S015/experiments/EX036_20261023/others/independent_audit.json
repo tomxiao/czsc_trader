@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "scalar_or_array_checks": 58516,
+  "targets": 9,
+  "model_specifications": 90,
+  "fold_fits": 360,
+  "univariate_bins": 2592,
+  "prediction_rows": 2922,
+  "label_rows": 3906,
+  "sha256": {
+    "src/independent_audit.py": "ab3671b8d0240fb925191175f4097154de0549d86e01750427e04ba44dde3c21",
+    "src/validate.py": "e3b85c8fe05d0f9ee3a1397cb6448a2302eace7db22580b42929c3119464af89",
+    "protocols/component_validation.json": "8294888d7c876d0d56d70a8a16f004d52c2cdf2b2f9a9dd6d7b3f2f554249910",
+    "others/labels.csv": "41de21975b1c02be2c8712a2a94989df8a5bef8f3746622546c093670c6bd848",
+    "others/model_features.csv": "3e9b7f1a697bab6a690c01805ccdcb529c330411184f06b33aeedef60fc3d091",
+    "others/predictions.csv": "5c904277750e214d3feb5ff486439c7f559e0a3a466a64ee5e013e8678642ba4",
+    "others/univariate_bins.csv": "706e4649e45fb5bc2cc4962feb32a6d9579e56782ff951a2b4f3248485fd8e2f",
+    "others/folds.json": "6d5203c5147586d5f805fe8c1481372db66150b67c90d084fc6d79e269079e03",
+    "others/results.json": "5c52778d994a10c2c092cf9fba1f20d7d92a2d4de9087e0d831348f46461518a"
+  },
+  "method": "Independent label cashflows and close-risk reconstruction; augmented least-squares Ridge; all folds, predictions, utility denominators, rankings, bins and paired MSE bootstrap intervals. Authenticated inputs; no strategy accounts.",
+  "limitations": [
+    "Conditional on executed and complete events for monetary labels.",
+    "Equal-count per-fold selection is retrospective and not executable.",
+    "MSE block intervals are exploratory and unadjusted for multiple comparisons; all development observations have been seen."
+  ]
+}

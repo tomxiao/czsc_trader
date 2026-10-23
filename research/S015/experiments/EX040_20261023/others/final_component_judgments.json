@@ -1,0 +1,82 @@
+[
+  {
+    "id": "price_composition_a",
+    "experiment": 40,
+    "protocol": "protocols/composition.json",
+    "source": "src/composition.py",
+    "role": "A收益许可与亏损风险许可交集的职责互补检验",
+    "judgment": "交集比路径单独选择三日事件净额高、比风险单独选择低；末折亏损且区间宽，互补未确证，不升级为完整策略。",
+    "tests": [
+      {
+        "id": "composition-A-net3",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "共同323事件，固定两许可交集分别对照单职责。更高平均收益伴随更少机会和更多盈利遗漏，未证明全面互补，也未验证实际账户风险；完整分母和反证在结果中保留。"
+      },
+      {
+        "id": "composition-A-entry",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "共同323事件，固定两许可交集分别对照单职责。更高平均收益伴随更少机会和更多盈利遗漏，未证明全面互补，也未验证实际账户风险；完整分母和反证在结果中保留。"
+      }
+    ]
+  },
+  {
+    "id": "price_composition_b",
+    "experiment": 40,
+    "protocol": "protocols/composition.json",
+    "source": "src/composition.py",
+    "role": "B收益许可与亏损风险许可交集的职责互补检验",
+    "judgment": "交集比路径单独选择三日事件净额高、比风险单独选择低；末折亏损且区间宽，互补未确证，不升级为完整策略。",
+    "tests": [
+      {
+        "id": "composition-B-net3",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "共同323事件，固定两许可交集分别对照单职责。更高平均收益伴随更少机会和更多盈利遗漏，未证明全面互补，也未验证实际账户风险；完整分母和反证在结果中保留。"
+      },
+      {
+        "id": "composition-B-entry",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "共同323事件，固定两许可交集分别对照单职责。更高平均收益伴随更少机会和更多盈利遗漏，未证明全面互补，也未验证实际账户风险；完整分母和反证在结果中保留。"
+      }
+    ]
+  },
+  {
+    "id": "price_tsfresh_roughness6",
+    "experiment": 41,
+    "protocol": "protocols/tsfresh_plan.json",
+    "source": "src/study.py",
+    "role": "相邻关系、粗糙度及穿越的固定三职责检验",
+    "judgment": "六个额外时序表达无稳定独立用途；旧基线加此家族的亏损过滤有有限正向线索，需与既有波动信息区分，未升级SUPPORTED。",
+    "tests": [
+      {
+        "id": "tsfresh-tsfresh-net3",
+        "status": "INEFFECTIVE",
+        "explanation": "全结果保留。独立表达三职责均弱于训练均值；旧基线上loss3的损失识别/盈利遗漏有改善，但末折亏损、区间跨0，且没有证明对已有波动家族再添信息。未将误差符号用作新经济硬门。"
+      },
+      {
+        "id": "tsfresh-tsfresh-entry",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "全结果保留。独立表达三职责均弱于训练均值；旧基线上loss3的损失识别/盈利遗漏有改善，但末折亏损、区间跨0，且没有证明对已有波动家族再添信息。未将误差符号用作新经济硬门。"
+      },
+      {
+        "id": "tsfresh-tsfresh-loss3",
+        "status": "INEFFECTIVE",
+        "explanation": "全结果保留。独立表达三职责均弱于训练均值；旧基线上loss3的损失识别/盈利遗漏有改善，但末折亏损、区间跨0，且没有证明对已有波动家族再添信息。未将误差符号用作新经济硬门。"
+      },
+      {
+        "id": "tsfresh-legacy_tsfresh-net3",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "全结果保留。独立表达三职责均弱于训练均值；旧基线上loss3的损失识别/盈利遗漏有改善，但末折亏损、区间跨0，且没有证明对已有波动家族再添信息。未将误差符号用作新经济硬门。"
+      },
+      {
+        "id": "tsfresh-legacy_tsfresh-entry",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "全结果保留。独立表达三职责均弱于训练均值；旧基线上loss3的损失识别/盈利遗漏有改善，但末折亏损、区间跨0，且没有证明对已有波动家族再添信息。未将误差符号用作新经济硬门。"
+      },
+      {
+        "id": "tsfresh-legacy_tsfresh-loss3",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "全结果保留。独立表达三职责均弱于训练均值；旧基线上loss3的损失识别/盈利遗漏有改善，但末折亏损、区间跨0，且没有证明对已有波动家族再添信息。未将误差符号用作新经济硬门。"
+      }
+    ]
+  }
+]

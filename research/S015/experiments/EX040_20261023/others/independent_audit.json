@@ -1,0 +1,26 @@
+{
+  "status": "PASS",
+  "checks": 4484,
+  "common_events": 323,
+  "policies": 8,
+  "outcomes": 2,
+  "groups": 10,
+  "paired_comparisons": 8,
+  "bootstrap_intervals_checked": 160,
+  "frequency_windows_dp_checked": 2200,
+  "new_fits": 0,
+  "sha256": {
+    "src/audit.py": "4212878ac95d90c098cff4d8386675d6e8748071f5c6831a1f89e35b2ae1e6ff",
+    "src/composition.py": "af147fe82a5c5e9fa511e8f114e6c4a9651a7965ac5211871969fed0eb36c12b",
+    "protocols/composition.json": "484f1be42766aff98fc84ca7b60ab19228361911b9b5b0d5f84d740c5b8c2727",
+    "others/decisions.csv": "f6bb80da07e49477f357b6ddbb54271d7ccd1e89e72da743d8e26a53da1ed592",
+    "others/results.json": "c1d2994feb9ae7167e0dd2565b3ba21b10b886e1263f4f2b93829201c68f5e31",
+    "others/design_counts.json": "d08830b4a0b56dcc02decb3d2d1f452430ad86bf65cb788fbe0dbb780baaef2c"
+  },
+  "method": "Reconstructed selections and labels from authenticated frozen sources; prior decisions verified against their already-frozen thresholds. Independently recomputed amounts/counts/folds/four states/common extreme omission, all paired increments and block intervals; DP interval bound checked against reported greedy counts. Imported source bytes authenticated.",
+  "limitations": [
+    "Adaptive fixed composition on previously seen development events.",
+    "AND vs legacy can add events; AND vs each own component is a strict subset.",
+    "Event amounts are not continuous-account returns; frequency is only an optimistic bound."
+  ]
+}

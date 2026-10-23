@@ -1,0 +1,95 @@
+{
+  "authorization": "用户批准按第一性原理框架返回阶段二自主执行，实验预算不限制；本轮为分职责组件验证，不构造完整策略。",
+  "plan": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX035_20261023"
+    },
+    "evidence_id": "4f77248d908b1c19c1d2fe4a3890ccfe3e44bd51f3339db4bc2c5a30061ea7dd.md",
+    "sha256": "4f77248d908b1c19c1d2fe4a3890ccfe3e44bd51f3339db4bc2c5a30061ea7dd",
+    "media_type": "text/markdown",
+    "name": "research_plan",
+    "schema": null,
+    "schema_version": null
+  },
+  "dictionary": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX035_20261023"
+    },
+    "evidence_id": "3a0e0ebdca8f3f558ab87d3b5e0df06a51685467deb6b9fb9def2a2c072a972e.json",
+    "sha256": "3a0e0ebdca8f3f558ab87d3b5e0df06a51685467deb6b9fb9def2a2c072a972e",
+    "media_type": "application/json",
+    "name": "signal_dictionary",
+    "schema": null,
+    "schema_version": null
+  },
+  "features": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX035_20261023"
+    },
+    "evidence_id": "33bae49e6a90276bf589674d2359740afc36122e9de44e888e6907f5f23a9511.csv",
+    "sha256": "33bae49e6a90276bf589674d2359740afc36122e9de44e888e6907f5f23a9511",
+    "media_type": "text/csv",
+    "name": "features",
+    "schema": null,
+    "schema_version": null
+  },
+  "targets": [
+    "net1",
+    "net3",
+    "net5",
+    "entry",
+    "loss3",
+    "drawdown3",
+    "hold1",
+    "hold3",
+    "fill"
+  ],
+  "folds": [
+    [
+      100,
+      184
+    ],
+    [
+      184,
+      268
+    ],
+    [
+      268,
+      352
+    ],
+    [
+      352,
+      434
+    ]
+  ],
+  "baseline": [
+    "r1",
+    "r5",
+    "vol20",
+    "range20"
+  ],
+  "legacy_baseline": [
+    "r1",
+    "r5",
+    "vol20",
+    "range20",
+    "pressure"
+  ],
+  "models": "constant, price, legacy, six price+family models, price+all24; Ridge alpha10, standardized on training only, unpenalized intercept; fill projected [0,1]. Holding targets add known unrealized PnL to price and legacy/family bases, not constant.",
+  "purge": "Training position<test start and label actual known_date strictly before first test date. Test outcomes never define features, scaling, bins, directions or selected participation count.",
+  "targets_detail": "net1/3/5 original CLOSED event net/100000; entry original h1 marked entry_net/100000; loss3=max(-net3,0); drawdown3=max(0,-min(quantity*(Close[entry:exit)-buyprice)-buyfee)/100000), closes before actual exit only; hold1 at D compares net3-net1 for seed D-1; hold3 compares net5-net3 for seed D-3; both require bought by D, CLOSED both, same quantity, known=max exits; held_unreal uses D close. fill is buy_price nonmissing when next session exists.",
+  "univariate": "24 signals x9 targets x4 folds, train-only tertiles. Report all three test-bin outcomes; training best/worst economic direction per signal also reported. Tied cutpoints are retained and support disclosed, not optimized.",
+  "utilities": "For signed net/entry/holding targets predict<0 means exclude/exit; report caught loss/missed profit amounts and counts. Same-count diagnostic: top ceil(n/2) per test fold using model prediction (low for risk), tie earlier position; references price and legacy on same observations. Per-fold ranking is a retrospective allocation diagnostic requiring future prediction distribution, not an executable selection rule; fixed zero rule is causal. Risk reports mean/amount of selected risk, not profit. Fill reports Brier/no trading utility.",
+  "bootstrap": "Paired MSE reduction vs price and legacy using 499 block20 draws across full434 time axis, seed13; signed-target zero-rule retained event amount difference vs price also bootstrapped. Equal-count diagnostic and risk/fill utility are point estimates only. All comparisons/folds/largest absolute5 omission; report-only no new gates.",
+  "scope": "Original boundaries, costs, events and known historical-publication limitations. Fixed targets share overlapping future paths; all seen development data. No causal identification or new independent sample.",
+  "next": "Use results to identify role-specific mechanisms and competing explanations. Stage2 followups may test predeclared nonlinear expression/ablation/conditional backgrounds; unlimited budget is not open-ended optimization or stage3 authority."
+}

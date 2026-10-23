@@ -1,0 +1,211 @@
+{
+  "families": {
+    "direction_efficiency": [
+      "drift5_scaled",
+      "efficiency5",
+      "intraday_efficiency",
+      "step_persistence"
+    ],
+    "up_down_asymmetry": [
+      "semivariance_balance",
+      "largest_step_balance",
+      "post_drop_recovery",
+      "run_length_balance"
+    ],
+    "location_response": [
+      "prior_range_position",
+      "close_location",
+      "open_side_occupation",
+      "wick_rejection"
+    ],
+    "volatility_transition": [
+      "range_expansion",
+      "prior_range_compression",
+      "shock_concentration",
+      "gap_energy_share"
+    ],
+    "temporal_order": [
+      "return_time_balance",
+      "extrema_order",
+      "excursion_balance",
+      "halfday_balance"
+    ],
+    "scale_relationship": [
+      "direction_alignment",
+      "drift_acceleration",
+      "intraday_daily_energy",
+      "nested_range_ratio"
+    ]
+  },
+  "signals": {
+    "drift5_scaled": {
+      "definition": "sum(r[-5:])/(abs(sum(r[-5:]))+sqrt(5)*population_std(r[-20:])); r=log adjusted close returns",
+      "role": "opportunity,state",
+      "mechanism": "Multi-day displacement may describe unfinished repricing.",
+      "counterexample": "Post-fill returns reverse, or displacement has no incremental information.",
+      "limitations": "A plain momentum control; not a newly independent price-path mechanism."
+    },
+    "efficiency5": {
+      "definition": "sum(r[-5:])/sum(abs(r[-5:]))",
+      "role": "opportunity,state",
+      "mechanism": "Less reversal for the same displacement may indicate persistent demand.",
+      "counterexample": "Benefit disappears conditional on five-day return and volatility.",
+      "limitations": "Strongly related to momentum; endpoint-controlled comparison required."
+    },
+    "intraday_efficiency": {
+      "definition": "sum(u)/sum(abs(u)); u[0]=log(Cbar[0]/day_open), u[j]=log(Cbar[j]/Cbar[j-1])",
+      "role": "opportunity,state",
+      "mechanism": "Smooth same-day progress may persist after next-session execution.",
+      "counterexample": "Information expires before next-day fill or predicts reversal instead.",
+      "limitations": "Includes between-bar jumps; cannot resolve within-bar paths."
+    },
+    "step_persistence": {
+      "definition": "mean(sign(u[:-1])*sign(u[1:])); zero moves have sign zero",
+      "role": "state,opportunity",
+      "mechanism": "Persistence versus alternation may distinguish sustained movement from churn.",
+      "counterexample": "Any apparent effect is explained by endpoint return or variance.",
+      "limitations": "Directionless persistence; eight steps provide only seven adjacent pairs."
+    },
+    "semivariance_balance": {
+      "definition": "(sum(max(u,0)^2)-sum(min(u,0)^2))/sum(u^2)",
+      "role": "risk,opportunity",
+      "mechanism": "Unequal upward and downward shocks may identify asymmetric risk.",
+      "counterexample": "Magnitude and direction controls explain the entire relation.",
+      "limitations": "Not net buying; correlated with signed daily displacement."
+    },
+    "largest_step_balance": {
+      "definition": "(max(max(u,0))-max(max(-u,0)))/(max(max(u,0))+max(max(-u,0)))",
+      "role": "risk,opportunity",
+      "mechanism": "The strongest opposing moves may identify fragility or persistence.",
+      "counterexample": "Largest moves are transitory noise with no post-fill information.",
+      "limitations": "Sensitive to one 30-minute interval; no participant interpretation."
+    },
+    "post_drop_recovery": {
+      "definition": "After the earliest negative u within absolute 1e-12 log-return of min(u), sum(remaining u)/sum(abs(remaining u)); 0 if no negative step or no remaining movement",
+      "role": "risk,opportunity",
+      "mechanism": "Response after an adverse move may reveal resilience rather than the drop alone.",
+      "counterexample": "Recovery merely consumes the future upside before entry.",
+      "limitations": "Zero also denotes no observed negative shock or no subsequent movement; report these structural cases separately. The fixed 1e-12 tie tolerance makes equivalent log-price steps invariant to floating-point price-unit rounding."
+    },
+    "run_length_balance": {
+      "definition": "(longest strictly positive u run-longest strictly negative u run)/8; zeros break runs",
+      "role": "state,opportunity",
+      "mechanism": "Directional duration may differ even when final returns match.",
+      "counterexample": "Run effects disappear after controlling endpoint and efficiency.",
+      "limitations": "Only nine possible run lengths; correlated with persistence and efficiency."
+    },
+    "prior_range_position": {
+      "definition": "(2*C-H20prev-L20prev)/(abs(2*C-H20prev-L20prev)+(H20prev-L20prev)); H/L exclude current day",
+      "role": "state,opportunity",
+      "mechanism": "Relative location may condition remaining reward and risk across the whole range.",
+      "counterexample": "Only prior returns explain its apparent usefulness.",
+      "limitations": "Continuous all-day location, not a breakout event; bounded compression discards absolute range size."
+    },
+    "close_location": {
+      "definition": "(2*C-H-L)/(H-L) on adjusted current daily OHLC",
+      "role": "opportunity,risk",
+      "mechanism": "Retention of the day range may describe acceptance or late rejection.",
+      "counterexample": "Current-day strength does not survive the next-session execution delay.",
+      "limitations": "No ordering of daily high and low is inferred; familiar range-position expression."
+    },
+    "open_side_occupation": {
+      "definition": "mean(sign(eight bar closes-first bar Open))",
+      "role": "state,opportunity",
+      "mechanism": "Time spent above versus below the opening reference may add information beyond final close.",
+      "counterexample": "Occupation has no value after conditioning on open-to-close return.",
+      "limitations": "Eight equally weighted snapshots, not exact time occupancy or traded volume."
+    },
+    "wick_rejection": {
+      "definition": "sum(min(O,C)-L-(H-max(O,C)))/sum(H-L) over eight bars",
+      "role": "risk,opportunity",
+      "mechanism": "Asymmetric return from bar extremes may indicate failure to sustain one direction.",
+      "counterexample": "Wicks reflect ordinary volatility and contain no incremental forward information.",
+      "limitations": "No within-bar high-low order; raw OHLC does not prove rejection by an identified participant."
+    },
+    "range_expansion": {
+      "definition": "(TRtoday-mean(TR[-21:-1]))/(TRtoday+mean(TR[-21:-1])); TR=max(H-L,abs(H-prevC),abs(L-prevC))",
+      "role": "risk,sizing,state",
+      "mechanism": "A sudden change in activity may forecast future risk or available space.",
+      "counterexample": "Range expansion forecasts only already-realized movement.",
+      "limitations": "Unsigned risk descriptor; positive expected return is not assumed."
+    },
+    "prior_range_compression": {
+      "definition": "(mean(TR previous5)-mean(TR previous20))/(mean(TR previous5)+mean(TR previous20)); excludes current day",
+      "role": "state,risk",
+      "mechanism": "Recent compression or expansion may condition future movement size.",
+      "counterexample": "Compression has no incremental size information versus baseline volatility.",
+      "limitations": "Does not assign a direction; related to rolling volatility states."
+    },
+    "shock_concentration": {
+      "definition": "max(u^2)/sum(u^2); 0 when every observed step is zero",
+      "role": "risk,state",
+      "mechanism": "One-shock movement may differ from movement distributed over the session.",
+      "counterexample": "Concentration effects are explained by magnitude or gap exposure.",
+      "limitations": "Range [1/8,1] for non-flat days; flat-day 0 is a distinct observed state."
+    },
+    "gap_energy_share": {
+      "definition": "g^2/(g^2+sum(u^2)); g=log(adjusted day Open/previous adjusted Close)",
+      "role": "risk,execution",
+      "mechanism": "Overnight-dominated movement may leave different executable daytime opportunity.",
+      "counterexample": "All information is realized before the allowed order can execute.",
+      "limitations": "Gap is adjusted, intraday is raw dimensionless; one historical price snapshot does not certify historical publication time."
+    },
+    "return_time_balance": {
+      "definition": "dot(linspace(-1,1,8),u)/sum(abs(u))",
+      "role": "opportunity,execution",
+      "mechanism": "Timing of signed movement may distinguish early adjustment from ongoing repricing.",
+      "counterexample": "Time weighting is redundant with endpoint return or half-day contrast.",
+      "limitations": "Linear full-session weighting; not a tail-only rule; no intraday trading authorization."
+    },
+    "extrema_order": {
+      "definition": "(earliest argmax(bar High)-earliest argmin(bar Low))/7; 0 when same bar",
+      "role": "state,opportunity",
+      "mechanism": "Low-before-high and high-before-low paths may imply different residual movement.",
+      "counterexample": "Order supplies no information after endpoint and volatility controls.",
+      "limitations": "Same-bar order is unknown and encoded zero, not asserted simultaneous; ties choose earliest observed bar."
+    },
+    "excursion_balance": {
+      "definition": "(maximum subsequent rise-maximum subsequent fall)/sum(abs(u)) on log path [day Open,eight closes]",
+      "role": "risk,holding_diagnostic",
+      "mechanism": "Observed drawup versus drawdown may distinguish path resilience.",
+      "counterexample": "Excursion balance only restates terminal return or fails on future held-position outcomes.",
+      "limitations": "Close-sampled path misses within-bar extremes; entry labels cannot validate a holding/exit rule."
+    },
+    "halfday_balance": {
+      "definition": "(sum(u[4:])-sum(u[:4]))/sum(abs(u))",
+      "role": "opportunity,execution",
+      "mechanism": "Morning and afternoon contribution may differ in persistence to executable next day.",
+      "counterexample": "Difference vanishes at actual fill or is redundant with return_time_balance.",
+      "limitations": "Four bars per half; u[4] includes the transition from morning close to first afternoon close."
+    },
+    "direction_alignment": {
+      "definition": "efficiency5*intraday_efficiency",
+      "role": "state,conditional_opportunity",
+      "mechanism": "Daily and intraday directional agreement may condition continuation or exhaustion.",
+      "counterexample": "Interaction adds nothing beyond its two constituent signals.",
+      "limitations": "Derived interaction, explicitly not a third independent information source; symmetric in simultaneous sign reversal."
+    },
+    "drift_acceleration": {
+      "definition": "(mean(r last5)-mean(r preceding15))/(abs(mean(r last5)-mean(r preceding15))+population_std(r last20))",
+      "role": "state,opportunity",
+      "mechanism": "Recent drift relative to the preceding background may identify a changing adjustment process.",
+      "counterexample": "Acceleration is only another representation of ordinary momentum.",
+      "limitations": "Overlapping observations across days; baseline return controls and chronology required."
+    },
+    "intraday_daily_energy": {
+      "definition": "(sum(u^2)-mean(r last20 squared))/(sum(u^2)+mean(r last20 squared))",
+      "role": "risk,sizing,state",
+      "mechanism": "Current intraday movement energy relative to daily background may forecast risk regime changes.",
+      "counterexample": "Scale difference is mechanical or adds nothing beyond range expansion.",
+      "limitations": "Different return sampling scales; daily mean-square includes gaps and drift, not a formal variance decomposition."
+    },
+    "nested_range_ratio": {
+      "definition": "(current H-L)/(current H-L+max(H previous5)-min(L previous5))",
+      "role": "risk,state",
+      "mechanism": "Current daily excursion compared with broader space may reveal scale expansion.",
+      "counterexample": "Nested-range information is redundant with TR expansion or range position.",
+      "limitations": "Unsigned adjusted-price range comparison; does not infer breakout or profitable direction."
+    }
+  },
+  "purpose": "普查时不查看新特征与收益关系；先固定表达，不挑选赢者。"
+}

@@ -1,0 +1,33 @@
+"""Publish attribution before testing standalone information sufficiency."""
+from hashlib import sha256
+from attribution import ROOT,HERE,EX,read,save,context,material
+from czsc_trader.application import RepositoryContext,publish_evidence,validate_experiment
+from czsc_trader.research_tools import EvidenceRef,ExperimentReportWrite,ExperimentOutcome,ExperimentValidationRequest,ExperimentValidationScope
+def main():
+    assert not (HERE/'others/published_refs.json').exists();assert read(HERE/'others/independent_audit.json')['status']=='PASS'
+    r=read(HERE/'others/results.json');out=['# S015 组件归因与实际机会代价','', 'Status: COMPLETED','',
+      '在公开EX036/37选择历史后冻结八个用途的归因。每用途含完整家族、四个单独表达、四个删项和同基线，共80个目标/变体规格、320次拟合，其中64个单表达/删项规格为新增，其余复现。无连续账户或参数寻优。','',
+      '收益/持有用预测>=0参与/继续；风险用同模型训练拟合预测中位数作阈值，测试时不重排。风险规则一律用同日实际net3标签衡量盈利代价。训练拟合分布不是训练外校准；金额为相互重叠事件的描述，不是账户。','',
+      '| 用途 | MSE改善 | 基线识别亏损/遗漏盈利 | 完整家族识别亏损/遗漏盈利 | 参与n基线/家族 |','| --- | ---: | --- | --- | ---: |']
+    for k,z in r.items():
+        a=z['baseline']['utility'];b=z['full']['utility'];out.append(f"| {k} | {100*z['full']['mse_gain_vs_baseline']:.3f}% | {100*a['caught_loss_fraction']:.2f}% / {100*a['missed_profit_fraction']:.2f}% | {100*b['caught_loss_fraction']:.2f}% / {100*b['missed_profit_fraction']:.2f}% | {a['selected']['n']}/{b['selected']['n']} |")
+    out+=['','## 关键归因与反证','',
+      '时间顺序net3：完整家族误差改善2.1652%，删除极值先后/上下行程差后只剩0.134%/−0.051%，两者共同承载主要信息；不能直接从最佳删项另立规则。四折保留事件净额增量约+10367/−5761/+12141/+32197元，最后一折贡献较大；已知5日涨幅正/非正两类都有正增量。删最大绝对5个payoff后增量仍在。','',
+      '重要反证：该net3模型比历史量价基线好，但点预测MSE仍比训练期均值基线差约0.889%。因此适合讨论条件筛选的有限信息，不能称精确收益预测已确证。四折模型中extrema_order系数为负、excursion_balance为正；这些是相关表达的条件权重，不能单独解释为先高后低必涨或证明订单流因果。','',
+      '波动转换：loss3过滤增加亏损识别，同时减少遗漏盈利，主要信息与过去短长波幅变化有关；完整家族保留149事件，基线137。drawdown3也改善风险取舍，但少参与8事件。收益/风险和不同期限并不等价；最后一折仍亏损，差额区间较宽。','',
+      '尺度分箱：loss3虽然MSE改善4.536%，但错过盈利59.55%（基线48.95%），保留事件净额反降。单独direction_alignment与删除drift_acceleration的变体出现更好结果，但属于本轮选择后的新线索，不能自动升级组件或跳入策略。','',
+      '退出：波动家族对hold1/3只有约0.7%的点预测增量且仍弱于训练均值基线；不能宣称已经找到稳定退出规则。','',
+      '频率是已预测位置100:434内部275个完整60日窗口的乐观非重叠上界，允许同日切换。time/net3、vol/loss3中位上界17/9，所有275窗口至少3笔；只说明这一已预测子段未被稀疏性排除，不是原434日实际频率通过。','',
+      '全部变体、分折、涨跌背景、极值删除和20日块区间见结果。独立审计13,592项核对通过，另以动态规划核验16,500个频率窗口。审计与区间不替代经济目标。','',
+      '下一诊断：移除历史涨跌/量价压力基线，直接以路径、波动及组合预测同类职责，比较训练均值并分当日与5日涨跌背景。目的是区分“有辅助信息”和“足以形成不同收益机制”，不构造完整策略。','',
+      '证据：[协议](protocols/attribution.json)、[结果](others/results.json)、[预测和参与](others/predictions.csv)、[训练阈值](others/thresholds.json)、[系数](others/coefficients.json)、[独立审计](others/independent_audit.json)。']
+    (HERE/'report.md').write_text('\n'.join(out)+'\n',encoding='utf-8',newline='\n');refs=[];materials={};inp=read(HERE/'others/input_refs.json')
+    for v in [*inp['evidence'].values(),inp['dictionary'],inp['events'],inp['prior_predictions']]:refs.append(EvidenceRef.from_dict(v))
+    for sub in ('src','protocols','others'):
+        for p in sorted((HERE/sub).glob('*')):
+            if p.suffix in ('.py','.json','.csv','.md'):
+                ref=material(p);materials[f'{sub}/{p.name}']=ref.to_dict();refs.append(ref)
+    rr=publish_evidence(context(),ExperimentReportWrite(EX,sha256((HERE/'report.md').read_bytes()).hexdigest(),ExperimentOutcome.COMPLETED,tuple(dict.fromkeys(refs))))
+    v=validate_experiment(RepositoryContext.discover(ROOT),ExperimentValidationRequest(EX,ExperimentValidationScope.REPORT_PUBLICATION));assert v.status.value=='PASS',v.issues
+    save(HERE/'others/published_refs.json',{'report':rr.to_dict(),'materials':materials,'validation':v.to_dict()});print('EX038_PUBLISHED',flush=True)
+if __name__=='__main__':main()

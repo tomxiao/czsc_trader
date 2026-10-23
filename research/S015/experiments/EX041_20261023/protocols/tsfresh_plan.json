@@ -1,0 +1,182 @@
+{
+  "authorization": "User approved first-principles price census and unlimited stage-two component rounds; EX041 fills applicable actual tsfresh-tool census and roughness coverage. No new dependency/source/date/funding model, no stage-three account.",
+  "reason_for_tool": "An ordered eight-observation session path is a short time series; tsfresh provides inspectable fixed serial-dependence, roughness, crossing and energy-timing expressions. EX035 used custom expressions only, so this is a documented supplement, not a retroactive claim it used tsfresh.",
+  "settings": {
+    "u": {
+      "autocorrelation": [
+        {
+          "lag": 1
+        }
+      ],
+      "cid_ce": [
+        {
+          "normalize": true
+        }
+      ],
+      "number_crossing_m": [
+        {
+          "m": 0.0
+        }
+      ],
+      "energy_ratio_by_chunks": [
+        {
+          "num_segments": 2,
+          "segment_focus": 1
+        }
+      ]
+    },
+    "q": {
+      "number_crossing_m": [
+        {
+          "m": 0.0
+        }
+      ],
+      "cid_ce": [
+        {
+          "normalize": true
+        }
+      ]
+    }
+  },
+  "columns": {
+    "u__autocorrelation__lag_1": "return_autocorrelation1",
+    "u__cid_ce__normalize_True": "return_roughness",
+    "u__number_crossing_m__m_0.0": "return_zero_crossings",
+    "u__energy_ratio_by_chunks__num_segments_2__segment_focus_1": "afternoon_energy_share",
+    "q__number_crossing_m__m_0.0": "open_reference_crossings",
+    "q__cid_ce__normalize_True": "path_roughness"
+  },
+  "family": "tsfresh_roughness6",
+  "definitions": {
+    "return_autocorrelation1": "Eight log-close increments u: lag1 centered autocovariance divided by variance, tsfresh exact implementation. Adds magnitude-sensitive serial dependence beyond sign persistence.",
+    "return_roughness": "cid_ce(normalize=True) on u: norm of adjacent standardized-return changes. Describes roughness in return acceleration; unsigned risk/state information.",
+    "return_zero_crossings": "number_crossing_m(m=0) on u: changes of strict-positive indicator between adjacent steps, including equality on nonpositive side. Discloses library equality convention; not inferred tick crossings.",
+    "afternoon_energy_share": "energy_ratio_by_chunks(num_segments=2,segment_focus=1) on eight u: last four squared moves / all eight squared moves. Unsigned timing concentration, distinct from signed halfday balance but possibly redundant.",
+    "open_reference_crossings": "number_crossing_m(m=0) on q=log(eight closes/day open). Repeated sign-side changes around opening reference; eight snapshots only, not all intrabar crossings.",
+    "path_roughness": "cid_ce(normalize=True) on eight q: norm of adjacent standardized cumulative-price changes. Omits open-to-first-close in the difference, follows the fixed library formula, not an interpolated path."
+  },
+  "input": "Existing authenticated raw 159326.SZ 30-minute snapshot, 434 dates through 2026-10-21, exactly eight times as EX035. u[0]=log(first close/day open), u[i]=log(close[i]/close[i-1]); q[i]=log(close[i]/day open). Entire day is observed at T decision; no within-bar high-low ordering.",
+  "library": "Installed tsfresh 0.21.1; extract_features uses exactly the six specified calculators, n_jobs=2, native threads=1, no imputer. Frozen preflight records API/source identities and serial-parallel equality on three synthetic paths.",
+  "undefined": "Library undefined outputs remain NaN. A six-feature complete-case cohort is frozen before labels are read; report all missingness and dates. All four comparison models train/test on the SAME complete-case rows; no zero fill, no silently dropped expressions. Synthetic flat-series undefined autocorrelation and energy are preserved.",
+  "census": "Extract once with two workers; independently call the fixed calculators on every isolated day, compare 434x6 cells; three chronological prefix checks (1,100,434 days). Correlations with all 24 prior price expressions report redundancy, not an automatic efficacy gate.",
+  "validation": "One six-expression family, no expression/parameter search. Targets net3,entry,loss3 exactly EX039 authenticated labels. Four purged expanding folds and linear Ridge alpha10 exactly old helper. Models constant, legacy=old PRICE+pressure, tsfresh=six new columns, legacy_tsfresh=legacy+six. Entry costs only buy fee; net3 includes original both-side fees; risk payoff is same-row net3.",
+  "purge": "position<test start and actual known_date strictly before first test date; same complete-case cohort for all models. All preprocessing/standardization train-only. This already-seen pool is NOT independent validation.",
+  "participation": "Signed net3/entry prediction>=0. loss3 model prediction <= median of SAME MODEL training fitted predictions, fixed per fold. No held-position/exit claim and no test-ranking calibration.",
+  "diagnostics": "All models and four folds: MSE, gains versus constant/legacy, actual retained/excluded event amounts and counts, loss caught/profit missed, paired full-axis block20 499 draws seed13 intervals for MSE reduction and retained payoff increment. Also omit five largest abs payoff events. Intervals/report diagnostics are not new user acceptance gates.",
+  "verification": "Original-path dependency modules loaded only after byte equality to authenticated EvidenceRef. Independently refit predictions via augmented least-squares Ridge rather than normal-equation helper, check purging/thresholds/utility and regenerate summaries. Source hash verified before every mode.",
+  "limits": "Eight observations have coarse resolution; high correlation/redundant transformations do not add economic information. Single cutoff/current HFQ-publication limitations unchanged. Overlapping events cannot be summed into account returns. No new candidates/continuous accounts.",
+  "dependencies": {
+    "ridge_source": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX036_20261023"
+      },
+      "evidence_id": "e3b85c8fe05d0f9ee3a1397cb6448a2302eace7db22580b42929c3119464af89.py",
+      "sha256": "e3b85c8fe05d0f9ee3a1397cb6448a2302eace7db22580b42929c3119464af89",
+      "media_type": "text/x-python",
+      "name": "validate",
+      "schema": null,
+      "schema_version": null
+    },
+    "utility_source": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX038_20261023"
+      },
+      "evidence_id": "64d2b8b63314a843d4424083969f4cba73f8967c109ded0af752c47949da32fe.py",
+      "sha256": "64d2b8b63314a843d4424083969f4cba73f8967c109ded0af752c47949da32fe",
+      "media_type": "text/x-python",
+      "name": "attribution",
+      "schema": null,
+      "schema_version": null
+    },
+    "interval_source": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX039_20261023"
+      },
+      "evidence_id": "e7c1d43104867b87d9455e1ae5fe66fb7e61a8dc2200bd706e89153ac903126f.py",
+      "sha256": "e7c1d43104867b87d9455e1ae5fe66fb7e61a8dc2200bd706e89153ac903126f",
+      "media_type": "text/x-python",
+      "name": "standalone",
+      "schema": null,
+      "schema_version": null
+    },
+    "model_features": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX036_20261023"
+      },
+      "evidence_id": "3e9b7f1a697bab6a690c01805ccdcb529c330411184f06b33aeedef60fc3d091.csv",
+      "sha256": "3e9b7f1a697bab6a690c01805ccdcb529c330411184f06b33aeedef60fc3d091",
+      "media_type": "text/csv",
+      "name": "model_features",
+      "schema": null,
+      "schema_version": null
+    },
+    "labels": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX036_20261023"
+      },
+      "evidence_id": "41de21975b1c02be2c8712a2a94989df8a5bef8f3746622546c093670c6bd848.csv",
+      "sha256": "41de21975b1c02be2c8712a2a94989df8a5bef8f3746622546c093670c6bd848",
+      "media_type": "text/csv",
+      "name": "labels",
+      "schema": null,
+      "schema_version": null
+    },
+    "baseline_predictions": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX039_20261023"
+      },
+      "evidence_id": "010cad6111795b245ee072f1f486794fcec2c48ee5c424fc1a9805a5df2bc4de.csv",
+      "sha256": "010cad6111795b245ee072f1f486794fcec2c48ee5c424fc1a9805a5df2bc4de",
+      "media_type": "text/csv",
+      "name": "predictions",
+      "schema": null,
+      "schema_version": null
+    },
+    "price_census": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX035_20261023"
+      },
+      "evidence_id": "33bae49e6a90276bf589674d2359740afc36122e9de44e888e6907f5f23a9511.csv",
+      "sha256": "33bae49e6a90276bf589674d2359740afc36122e9de44e888e6907f5f23a9511",
+      "media_type": "text/csv",
+      "name": "features",
+      "schema": null,
+      "schema_version": null
+    },
+    "price_input_refs": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX035_20261023"
+      },
+      "evidence_id": "4ec75cc81bedbe4b04e09bfeb518f78ba1c0c0969ab149a9ff978b82a3c676fb.json",
+      "sha256": "4ec75cc81bedbe4b04e09bfeb518f78ba1c0c0969ab149a9ff978b82a3c676fb",
+      "media_type": "application/json",
+      "name": "input_refs",
+      "schema": null,
+      "schema_version": null
+    }
+  }
+}

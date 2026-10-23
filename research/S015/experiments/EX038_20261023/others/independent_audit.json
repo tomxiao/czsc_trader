@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "checks": 13592,
+  "fits": 320,
+  "cases": 8,
+  "variants": 80,
+  "thresholds": 320,
+  "coefficient_sets": 32,
+  "frequency_windows_checked_by_dynamic_programming": 16500,
+  "sha256": {
+    "src/independent_audit.py": "d655d3c624505cb0a291b8870b4a4a30373c146f058328003d11dd59c110b5df",
+    "src/attribution.py": "64d2b8b63314a843d4424083969f4cba73f8967c109ded0af752c47949da32fe",
+    "protocols/attribution.json": "48059e21a651fe6db53af24e3e22cb1ae5ce40a42d3928b701207530b5e03935",
+    "others/predictions.csv": "4b8224be6de3037e71e6bc093b2c3602681209305d643190c32b06f0a001aec9",
+    "others/thresholds.json": "5b88ee88ddbe30c687815358f5b7618c6e1d9560dbf36a5654367758b93b94e2",
+    "others/coefficients.json": "706efa136df3b0c78289a08244172b37c525d69d63c8326697bd6c6a8fb56037",
+    "others/results.json": "dcbb362720962d330e93d0ee2d4e94ad7c499c005b32667cc051cc530bfb8d2d"
+  },
+  "method": "Authenticated inputs; independent augmented-lstsq coefficients and predictions; train-only median fitted risk thresholds; actual net3 payoff for risk rules; all amounts, folds/states, omissions and block bootstrap; dynamic-programming nonoverlap bounds.",
+  "limitations": [
+    "Adaptive seen-development attribution, not independent validation.",
+    "Frequency is an optimistic bound on modeled-period event exits, not full-account frequency acceptance.",
+    "Event amounts and holding increments are not account returns."
+  ]
+}
