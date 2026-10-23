@@ -1,0 +1,12 @@
+{
+  "status": "SUPERSEDED_TECHNICAL_AUDIT_FAILURE",
+  "candidate": "C4900",
+  "window": "full",
+  "evidence_hash": "d303c31ee0c01c9ea3765ad2aa1b7dd4d16d0c1b70aa1065f779f27fc521f3fb",
+  "original_status": "FAIL",
+  "original_reason_codes": ["ENTRY_CYCLE_ALLOCATION_MISMATCH"],
+  "cause": "Independent SE cycle audit accumulated persisted float fill fees into exact Decimal budget cost, causing representation noise to disagree with TXE decimal contract facts.",
+  "resolution": "DEV repaired the SE auditor to validate actual fees with the established tolerance and reconstruct exact cycle buy cost as Decimal quantity * price * (1 + fee rate). Existing accounts, strategy implementation, schedules and evidence references remain unchanged.",
+  "successor": "account_audit.json",
+  "account_reexecution": false
+}

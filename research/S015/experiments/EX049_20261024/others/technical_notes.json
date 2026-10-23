@@ -1,0 +1,15 @@
+{
+  "account_computation": "7 fixed configurations, 14 formal window scenarios plus 2 serial technical repeats; no parameter changes after preregistration.",
+  "preparation_correction": "Before any training protocol was published, draft EX032 prediction reference index was corrected from nonexistent published_refs.json to delivery_validation.json. No training or account had run on the failed attempt.",
+  "overview_start": {
+    "status": "CONCURRENT_CHANGE",
+    "message": "The public overview did not return a snapshot: EX048/report.md changed during the full historical read. Do not treat this failed call as a verified overview. Retry only after all research mutations settle."
+  },
+  "platform_audit_correction": {
+    "original_status": "ENTRY_CYCLE_ALLOCATION_MISMATCH",
+    "cause": "Exact Decimal cycle cost differed from reconstruction using binary64 fee strings by about 1e-14 yuan.",
+    "resolution": "SE now checks reported fees with its existing monetary tolerance and independently reconstructs exact configured-fee cycle cost. Identity, phase, quantity and exact state continuity remain strict. Saved accounts and research parameters are unchanged.",
+    "focused_tests": "19 passed: cycle audit, TDR formal evaluation authentication and historical cycle allocation; Ruff passed.",
+    "pre_fix_failure_evidence": "../../EX050_20261024/others/audit_blocker.json"
+  }
+}

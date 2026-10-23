@@ -1,0 +1,114 @@
+{
+  "status": "FAIL",
+  "reason_codes": [
+    "ENTRY_CYCLE_ALLOCATION_MISMATCH"
+  ],
+  "trace": [
+    {
+      "function": "equal",
+      "line": 73,
+      "error": "cycle facts differ",
+      "facts": {
+        "left": "98799.701000",
+        "right": "98799.70100000000001"
+      }
+    },
+    {
+      "function": "_audit",
+      "line": 169,
+      "error": "cycle facts differ",
+      "facts": {
+        "account": {
+          "cash": "465.11780000000726",
+          "cash_before": "99264.81880000001",
+          "close": "1.098",
+          "date": "2025-03-10T00:00:00",
+          "entry_cycle": "{\"allocation_fraction\":\"1.0\",\"buy_cost_including_fees\":\"98799.701000\",\"cash_budget\":\"99264.818800000010\",\"cycle_id\":\"93b015faf676a255a715a5f7520e77038a6a0dc817ec1d172b3e791a4e3c58fc\",\"opening_signal_identity\":\"bc29b55d7202a56ef6652b83b9fb7cbbaa5e0fe5228a2a68c8a5ee8bfcc4fde0\",\"phase\":\"ACTIVE\",\"target_quantity\":89000}",
+          "entry_cycle_buy_cost_including_fees": "98799.701000",
+          "entry_cycle_cash_budget": "99264.818800000010",
+          "entry_cycle_id": "93b015faf676a255a715a5f7520e77038a6a0dc817ec1d172b3e791a4e3c58fc",
+          "entry_cycle_phase": "ACTIVE",
+          "equity": "98187.11780000002",
+          "quantity": "89000",
+          "quantity_before": "0",
+          "signal_date": "2025-03-07T00:00:00",
+          "target_position": "1",
+          "trading_status": "None",
+          "valuation_source_date": "2025-03-10T00:00:00"
+        },
+        "day": "2025-03-10",
+        "decision": {
+          "action": "BUY",
+          "cycle_allocation_fraction": "1.0",
+          "cycle_buy_cost_including_fees": "98799.701000",
+          "cycle_cash_budget": "99264.818800000010",
+          "cycle_id": "93b015faf676a255a715a5f7520e77038a6a0dc817ec1d172b3e791a4e3c58fc",
+          "cycle_status": "OPEN",
+          "cycle_target": "{\"active\":true,\"entry_fraction\":\"1.0\"}",
+          "cycle_target_quantity": "89000.0",
+          "decision_id": "DEC-039B4EA27D0DB64E4184",
+          "entry_allocation_fraction": "1.0",
+          "entry_cycle_after": "{\"allocation_fraction\":\"1.0\",\"buy_cost_including_fees\":\"0\",\"cash_budget\":\"99264.818800000010\",\"cycle_id\":\"93b015faf676a255a715a5f7520e77038a6a0dc817ec1d172b3e791a4e3c58fc\",\"opening_signal_identity\":\"bc29b55d7202a56ef6652b83b9fb7cbbaa5e0fe5228a2a68c8a5ee8bfcc4fde0\",\"phase\":\"ACTIVE\",\"target_quantity\":89000}",
+          "entry_cycle_before": "null",
+          "excursion_balance": "0.04362048638284506",
+          "extrema_order": "-0.5714285714285714",
+          "feature_ready": "True",
+          "gap_energy_share": "0.3044989933102689",
+          "halfday_balance": "-0.47742316277898383",
+          "intent_age": "1",
+          "model_ready": "1.0",
+          "path_prediction": "0.00710448894860893",
+          "permission": "1.0",
+          "plan_identity": "039b4ea27d0db64e4184ee4a0745faf4c1721d70577e0e26ed9d098628927062",
+          "plan_mode": "NONE",
+          "pressure": "-3.8131956267783984e-05",
+          "prior_range_compression": "-0.06478873239436757",
+          "r1": "-0.008984725965858087",
+          "r5": "0.012855831037649201",
+          "range20": "0.01642824437597048",
+          "range_expansion": "-0.14893617021276534",
+          "return_time_balance": "-0.16725466876271608",
+          "risk_allowed": "1.0",
+          "risk_prediction": "0.0017391253994804242",
+          "risk_threshold": "0.0048339571472813874",
+          "shock_concentration": "0.4417853366937619",
+          "signal_date": "2025-03-07T00:00:00",
+          "signal_identity": "bc29b55d7202a56ef6652b83b9fb7cbbaa5e0fe5228a2a68c8a5ee8bfcc4fde0",
+          "target_position": "1.0",
+          "valid_session": "2025-03-10T00:00:00",
+          "vol20": "0.010512433786706387"
+        },
+        "after": "{'allocation_fraction': Decimal('1.0'), 'buy_cost_including_fees': Decimal('98799.70100000000001'), 'cash_budget': Decimal('99264.818800000010'), 'cycle_id': '93b015faf676a255a715a5f7520e77038a6a0dc817ec1d172b3e791a4e3c58fc', 'opening_signal_identity': 'bc29b55d7202a56ef6652b83b9fb7cbbaa5e0fe5228a2a68c8a5ee8bfcc4fde0', 'phase': 'ACTIVE', 'target_quantity': 89000}",
+        "before": "None",
+        "fraction": "1.0",
+        "cash": "99264.81880000001",
+        "price": "1.114",
+        "unit": "1.115114",
+        "desired": "89000",
+        "remaining": "99264.818800000010",
+        "expected_quantity": "89000"
+      }
+    },
+    {
+      "function": "audit_entry_cycles",
+      "line": 48,
+      "error": "cycle facts differ",
+      "facts": {}
+    }
+  ],
+  "reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX050_20261024"
+    },
+    "evidence_id": "7ae332f0402dadd6c17bb0fcd486291c6d0cd05cbc694e6fcb3709a346c0d5c2.json",
+    "sha256": "7ae332f0402dadd6c17bb0fcd486291c6d0cd05cbc694e6fcb3709a346c0d5c2",
+    "media_type": "application/json",
+    "name": "C5000",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  },
+  "scope": "Read-only exception tracing of public audit_replay, no code/input modifications."
+}

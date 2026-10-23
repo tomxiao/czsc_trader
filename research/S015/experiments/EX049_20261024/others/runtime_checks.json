@@ -1,0 +1,61 @@
+{
+  "status": "PASS",
+  "source_sha256": "5b5746b00d9a12454150320e811fcad12f490c3cde5ef33d8dc33bb05b55c634",
+  "feature_rows": 434,
+  "price_features": [
+    "r1",
+    "r5",
+    "vol20",
+    "range20",
+    "pressure",
+    "return_time_balance",
+    "extrema_order",
+    "excursion_balance",
+    "halfday_balance",
+    "range_expansion",
+    "prior_range_compression",
+    "shock_concentration",
+    "gap_energy_share"
+  ],
+  "share_lags": [
+    1,
+    3
+  ],
+  "independent_share_state_rows": 870,
+  "price_share_prefixes": 12,
+  "configuration_signal_prefixes": 42,
+  "scope_checks": 14,
+  "checks": [
+    "Authenticated prior 13 price/path features",
+    "Independent scalar 20-session share ratios at lag1/lag3",
+    "Future-truncated data and coefficient schedules",
+    "Seven configurations predictions and three-intent-day state machine",
+    "CYCLE_TARGET signal_cash_fraction entry_cycle with signal-owned allocation",
+    "Flat allocation NaN legal and no static policy allocation",
+    "Five malformed parameter boundaries rejected"
+  ],
+  "input_loader": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX026_20261023"
+    },
+    "evidence_id": "564a82fbdfd2919e9bcbac7a43d9395efe68dc2647dda02b7679afdc30817001.py",
+    "sha256": "564a82fbdfd2919e9bcbac7a43d9395efe68dc2647dda02b7679afdc30817001",
+    "media_type": "text/x-python",
+    "name": "study",
+    "schema": null,
+    "schema_version": null
+  },
+  "data_identities": {
+    "etf.ohlcv": "c8a95f32246e33682c33dddc776337103de437d712b5fc5d85edec2bbfe1e223",
+    "etf.unadjusted_daily": "86ef09152a3cf19de3d05da1c18af2ea9b070926008a0dd197306488292b8f92",
+    "etf.unadjusted_intraday": "6f13f697b5770b96484b9f569d7636743297382bd95fe193d004f789ed26856a"
+  },
+  "accounts_created": 0,
+  "limits": [
+    "Budget locking and actual execution are verified separately from formal accounts.",
+    "Historical share revision/PIT assumption remains a limitation."
+  ]
+}

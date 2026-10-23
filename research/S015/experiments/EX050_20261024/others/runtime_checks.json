@@ -1,0 +1,131 @@
+{
+  "status": "PASS",
+  "source_sha256": "dcecd2fd0fb52e8540ec1720dfb8ff3e402ba97fa4096c5f10a42f8d04d43a34",
+  "authenticated_sources": {
+    "others/models_A.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "8d1cb290d56fb72b8476943190d638205cde53da85f4d54b65635d1963b9b138.json",
+      "sha256": "8d1cb290d56fb72b8476943190d638205cde53da85f4d54b65635d1963b9b138",
+      "media_type": "application/json",
+      "name": "models_A",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/training_manifest.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "4768c70196b0fcb396fdca9bafd498f207c1b93ec762935b70afbdee7edec0d8.json",
+      "sha256": "4768c70196b0fcb396fdca9bafd498f207c1b93ec762935b70afbdee7edec0d8",
+      "media_type": "application/json",
+      "name": "training_manifest",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/training_audit.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "644a6e89731ca7e272975b268eb8ee44c1fde12916f4f95bd9179bfd6704a0ba.json",
+      "sha256": "644a6e89731ca7e272975b268eb8ee44c1fde12916f4f95bd9179bfd6704a0ba",
+      "media_type": "application/json",
+      "name": "training_audit",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/runtime_checks.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "30c6ea964f20cf2dd77bdb372565a24720d130a1b01da0e67210ed55a2a7986e.json",
+      "sha256": "30c6ea964f20cf2dd77bdb372565a24720d130a1b01da0e67210ed55a2a7986e",
+      "media_type": "application/json",
+      "name": "runtime_checks",
+      "schema": null,
+      "schema_version": null
+    },
+    "src/strategy_runtime/strategies/price_information.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "a529270216b53a96b6beb6ca6e2b85da7a5c4f4e913c7428bef455e61731cc08.py",
+      "sha256": "a529270216b53a96b6beb6ca6e2b85da7a5c4f4e913c7428bef455e61731cc08",
+      "media_type": "text/x-python",
+      "name": "price_information",
+      "schema": null,
+      "schema_version": null
+    },
+    "summary_source": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX025_20261023"
+      },
+      "evidence_id": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5.py",
+      "sha256": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5",
+      "media_type": "text/x-python",
+      "name": "execution_suite_v4",
+      "schema": null,
+      "schema_version": null
+    },
+    "training_input:others/model_features.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX036_20261023"
+      },
+      "evidence_id": "3e9b7f1a697bab6a690c01805ccdcb529c330411184f06b33aeedef60fc3d091.csv",
+      "sha256": "3e9b7f1a697bab6a690c01805ccdcb529c330411184f06b33aeedef60fc3d091",
+      "media_type": "text/csv",
+      "name": "model_features",
+      "schema": null,
+      "schema_version": null
+    },
+    "training_input:others/labels.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX036_20261023"
+      },
+      "evidence_id": "41de21975b1c02be2c8712a2a94989df8a5bef8f3746622546c093670c6bd848.csv",
+      "sha256": "41de21975b1c02be2c8712a2a94989df8a5bef8f3746622546c093670c6bd848",
+      "media_type": "text/csv",
+      "name": "labels",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "model_releases": 20,
+  "new_model_fits": 0,
+  "feature_rows": 434,
+  "checks": [
+    "five_CYCLE_TARGET_signal_cash_fraction_contracts",
+    "four_path_arms_identical_old_intent_clock",
+    "25_physically_truncated_model_and_feature_prefixes",
+    "flat_fraction_null",
+    "positive_fraction_bounds",
+    "within_intention_fraction_locked"
+  ],
+  "training_causality": "Authenticated prior audit + all model known dates strictly before releases; unchanged40 A-role models. No new fitted coefficients.",
+  "limits": "Runtime feature fields are verified against actual bound inputs in the post-account audit; prefix equality does not establish predictive usefulness."
+}

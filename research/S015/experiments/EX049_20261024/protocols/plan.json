@@ -1,0 +1,194 @@
+{
+  "question": "Does lagged20-day ETF share state add implementable screening value beyond old price/volume and/or intraday path, in the same three-intent-day all-cash-entry container?",
+  "authority": "User autonomous stage2 under research_plan_20261024.md P1, no experiment cap; same research branch, source limits and original goals.",
+  "arms": [
+    [
+      "U",
+      1
+    ],
+    [
+      "B",
+      1
+    ],
+    [
+      "BF",
+      1
+    ],
+    [
+      "BP",
+      1
+    ],
+    [
+      "BPF",
+      1
+    ],
+    [
+      "BF",
+      3
+    ],
+    [
+      "BPF",
+      3
+    ]
+  ],
+  "columns": {
+    "U": [
+      "r1",
+      "r5",
+      "vol20",
+      "range20",
+      "pressure"
+    ],
+    "B": [
+      "r1",
+      "r5",
+      "vol20",
+      "range20",
+      "pressure"
+    ],
+    "BF": [
+      "r1",
+      "r5",
+      "vol20",
+      "range20",
+      "pressure",
+      "state_positive",
+      "state_zero"
+    ],
+    "BP": [
+      "r1",
+      "r5",
+      "vol20",
+      "range20",
+      "pressure",
+      "return_time_balance",
+      "extrema_order",
+      "excursion_balance",
+      "halfday_balance"
+    ],
+    "BPF": [
+      "r1",
+      "r5",
+      "vol20",
+      "range20",
+      "pressure",
+      "return_time_balance",
+      "extrema_order",
+      "excursion_balance",
+      "halfday_balance",
+      "state_positive",
+      "state_zero"
+    ]
+  },
+  "training": "Canonical434dates; net3 closed-event labels mature known_date strictly before release, position earlier, minimum30; first ready then every20canonicaldays. Ridge10 with train mean/pop std and unpenalized intercept; threshold0 fixed. U shares B readiness, coefficient schedule but ignores score. Before first model cash. No unavailable/preheat synthetic labels.",
+  "funding": "20-session TotalShare ratio state: expansion>0, unchanged==0, contraction reference; primary previoussession lag1, sensitivity lag3. Previousday08:30 availability assumption, no certified historicalrevision PIT. Share is units, not monetary flow.",
+  "runtime": "Recompute declared price/path/share from public bound frames; embed frozen schedules only. Actual date availability and latest effective coefficients. Exact 3positive intent days, no same-exit-signal reentry, CYCLE_TARGET signal_cash_fraction entry_cycle allocation1 with locked budget including buy fees, standardfees/tick/limit/lot. Funding input identical admitted contract across arms.",
+  "accounts": "7 fixed parameter identities × independent full434/common415 cash100000; no threshold/hold tuning; publicSRT/TDR. First serial technical replay retained plus all5ledgers, reproduce with parallel public execution.",
+  "diagnosis": "Event common cohort measured separately for entryday and net3: count and gross opportunity amounts caught/missed; allready and oldpositions>=100 subsets, fourfold contributions, price5direction. Bridge old EX032 models on sharedvalidnet3 positions; factor differences F/B and F/BP and path with/withoutF, no single component significance requirement. Account return/cost/frequency/exposure and capital blocking are distinct.",
+  "limits": "Seen development data, selected old state/net3; no fresh out of sample. Net3 prediction need not identify entry-day loss. Isolated event sums not account PnL, no causality claim. Two account windows sharepoststartupcashpath, not independent evidence.",
+  "sources": {
+    "price_features": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX036_20261023"
+      },
+      "evidence_id": "3e9b7f1a697bab6a690c01805ccdcb529c330411184f06b33aeedef60fc3d091.csv",
+      "sha256": "3e9b7f1a697bab6a690c01805ccdcb529c330411184f06b33aeedef60fc3d091",
+      "media_type": "text/csv",
+      "name": "model_features",
+      "schema": null,
+      "schema_version": null
+    },
+    "labels": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX036_20261023"
+      },
+      "evidence_id": "41de21975b1c02be2c8712a2a94989df8a5bef8f3746622546c093670c6bd848.csv",
+      "sha256": "41de21975b1c02be2c8712a2a94989df8a5bef8f3746622546c093670c6bd848",
+      "media_type": "text/csv",
+      "name": "labels",
+      "schema": null,
+      "schema_version": null
+    },
+    "shares": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX027_20261023"
+      },
+      "evidence_id": "b5c38cc1f4ec7c6262c438d2a70352b18865c9543a7febea7820c1c2264babd3.csv",
+      "sha256": "b5c38cc1f4ec7c6262c438d2a70352b18865c9543a7febea7820c1c2264babd3",
+      "media_type": "text/csv",
+      "name": "own_shares",
+      "schema": null,
+      "schema_version": null
+    },
+    "funding_lag1": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX027_20261023"
+      },
+      "evidence_id": "175325035b38378d11f52edf71d8eecd2796bc3cb2df08892763c0517c504899.csv",
+      "sha256": "175325035b38378d11f52edf71d8eecd2796bc3cb2df08892763c0517c504899",
+      "media_type": "text/csv",
+      "name": "features_lag1",
+      "schema": null,
+      "schema_version": null
+    },
+    "funding_lag3": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX027_20261023"
+      },
+      "evidence_id": "63daa7340029c842e3e5ebe3f5f3b414492412137d0346a1ce0f6ed8daaab96c.csv",
+      "sha256": "63daa7340029c842e3e5ebe3f5f3b414492412137d0346a1ce0f6ed8daaab96c",
+      "media_type": "text/csv",
+      "name": "features_lag3",
+      "schema": null,
+      "schema_version": null
+    },
+    "events": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX026_20261023"
+      },
+      "evidence_id": "b14e2764684adbafd4cad6203a87ed3e587f8c928833eb7b89d9e33a50e52653.csv",
+      "sha256": "b14e2764684adbafd4cad6203a87ed3e587f8c928833eb7b89d9e33a50e52653",
+      "media_type": "text/csv",
+      "name": "events",
+      "schema": null,
+      "schema_version": null
+    },
+    "old_predictions": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX032_20261023"
+      },
+      "evidence_id": "b4b67c820e001940e00bee20d774e96782d18b1e0a0d9eefa2c2f053966eea4e.csv",
+      "sha256": "b4b67c820e001940e00bee20d774e96782d18b1e0a0d9eefa2c2f053966eea4e",
+      "media_type": "text/csv",
+      "name": "predictions",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "resources": {
+    "max_workers": 4,
+    "native_threads": 1,
+    "seed": 13
+  }
+}

@@ -1,0 +1,166 @@
+{
+  "question": "风险状态分配能否优于一般少持仓，在同一A-path三日意图容器中产生有针对性的目标改善？",
+  "authorization": "用户同意切换RSCH、按新资金契约修订阶段二对照方案，并恢复实验并自主完成。",
+  "stage": 2,
+  "configurations": [
+    {
+      "allocation_mode": "fixed100",
+      "hold": 3
+    },
+    {
+      "allocation_mode": "fixed50",
+      "hold": 3
+    },
+    {
+      "allocation_mode": "fixed75",
+      "hold": 3
+    },
+    {
+      "allocation_mode": "risk_reject",
+      "hold": 3
+    },
+    {
+      "allocation_mode": "risk_half",
+      "hold": 3
+    }
+  ],
+  "execution": "All five arms CYCLE_TARGET + signal_cash_fraction/entry_cycle, including fixed100. Host adoption locks inclusive-fee budget and target quantity; retries limited by both; no daily equity rebalance.",
+  "clock": "Canonical market-intent clock from EX042: three positive signal days, then one zero day; no same-day re-entry. Risk evaluated for admission/allocation at intention start, no intervening reallocation or early exit. Actual holding can be shorter due to late fill.",
+  "arms": {
+    "fixed100": "path>=0, 100%",
+    "fixed50": "path>=0, 50%",
+    "fixed75": "path>=0, 75%",
+    "risk_reject": "path>=0 and risk<=training-fitted median, 100%",
+    "risk_half": "path>=0; risk<=training-fitted median:100%, else50%"
+  },
+  "models": "Reuse authenticated EX042 A schedule exactly: four path and four volatility features, Ridge10, >=30 mature labels, releases every20 sessions from2025-02-27; no refit, no threshold/hold/fraction search.",
+  "windows": "434 (2025-01-02..2026-10-21) and415 (2025-02-06..2026-10-21), independent100k cash. Same original LimitBuyHold, 1% limit buy, market sell, 100-share lots, .001 tick, .001 fee each side, DAILY_RANGE_V3; no forced terminal sale.",
+  "targets": "All original434 center conditions and415 strict return>0.9158029150000013 and DD<0.07248663749114126. No new statistical/economic gates;32 perturbations and fee stress not in stage2.",
+  "counts": {
+    "configurations": 5,
+    "formal_account_scenarios": 10,
+    "serial_technical_scenarios": 2,
+    "workers": 4,
+    "native_threads": 1,
+    "seed": 13
+  },
+  "preflight": "First fixed100 serial with max_workers1, then same request in public evaluate_many; exact result hash and five ledgers. Preserve serial formal evidence and exports, count technical separately.",
+  "analysis": "All objectives, fees, frequency, exposure, closed-cycle gains/losses, rejected/reduced model-ready common events. Cycle attribution and opportunity denominators distinguished from executable counterfactual accounts. Compare dynamic to both fixed reductions without optimizing exposure match.",
+  "selection": "Seen development pool and all prior selection retained; five configurations not independent hypotheses. Fixed50/75 are prospective controls, not ex-post fitted average exposure.",
+  "stop": "If broad reduction explains tradeoff, stop risk-allocation route; targeted benefit retained conditionally for stage3 design only. No P3 activation without a concrete distinguishable holding question.",
+  "sources": {
+    "others/models_A.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "8d1cb290d56fb72b8476943190d638205cde53da85f4d54b65635d1963b9b138.json",
+      "sha256": "8d1cb290d56fb72b8476943190d638205cde53da85f4d54b65635d1963b9b138",
+      "media_type": "application/json",
+      "name": "models_A",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/training_manifest.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "4768c70196b0fcb396fdca9bafd498f207c1b93ec762935b70afbdee7edec0d8.json",
+      "sha256": "4768c70196b0fcb396fdca9bafd498f207c1b93ec762935b70afbdee7edec0d8",
+      "media_type": "application/json",
+      "name": "training_manifest",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/training_audit.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "644a6e89731ca7e272975b268eb8ee44c1fde12916f4f95bd9179bfd6704a0ba.json",
+      "sha256": "644a6e89731ca7e272975b268eb8ee44c1fde12916f4f95bd9179bfd6704a0ba",
+      "media_type": "application/json",
+      "name": "training_audit",
+      "schema": null,
+      "schema_version": null
+    },
+    "others/runtime_checks.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "30c6ea964f20cf2dd77bdb372565a24720d130a1b01da0e67210ed55a2a7986e.json",
+      "sha256": "30c6ea964f20cf2dd77bdb372565a24720d130a1b01da0e67210ed55a2a7986e",
+      "media_type": "application/json",
+      "name": "runtime_checks",
+      "schema": null,
+      "schema_version": null
+    },
+    "src/strategy_runtime/strategies/price_information.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX042_20261023"
+      },
+      "evidence_id": "a529270216b53a96b6beb6ca6e2b85da7a5c4f4e913c7428bef455e61731cc08.py",
+      "sha256": "a529270216b53a96b6beb6ca6e2b85da7a5c4f4e913c7428bef455e61731cc08",
+      "media_type": "text/x-python",
+      "name": "price_information",
+      "schema": null,
+      "schema_version": null
+    },
+    "summary_source": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX025_20261023"
+      },
+      "evidence_id": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5.py",
+      "sha256": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5",
+      "media_type": "text/x-python",
+      "name": "execution_suite_v4",
+      "schema": null,
+      "schema_version": null
+    },
+    "training_input:others/model_features.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX036_20261023"
+      },
+      "evidence_id": "3e9b7f1a697bab6a690c01805ccdcb529c330411184f06b33aeedef60fc3d091.csv",
+      "sha256": "3e9b7f1a697bab6a690c01805ccdcb529c330411184f06b33aeedef60fc3d091",
+      "media_type": "text/csv",
+      "name": "model_features",
+      "schema": null,
+      "schema_version": null
+    },
+    "training_input:others/labels.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX036_20261023"
+      },
+      "evidence_id": "41de21975b1c02be2c8712a2a94989df8a5bef8f3746622546c093670c6bd848.csv",
+      "sha256": "41de21975b1c02be2c8712a2a94989df8a5bef8f3746622546c093670c6bd848",
+      "media_type": "text/csv",
+      "name": "labels",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "input_limit": "Prior EX042 unused intraday Volume discrepancy retained; only OHLC path fields and daily Amount/Volume used. No new external inputs or updated cutoff."
+}
