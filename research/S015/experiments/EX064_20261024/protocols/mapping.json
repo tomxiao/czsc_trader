@@ -1,0 +1,30 @@
+{
+  "version": "S015-EX064-stage4-finite-neighborhood-v1",
+  "payload_root": "parameters",
+  "axes": {
+    "allocation": {
+      "unit": "fraction",
+      "step": 0.05,
+      "domain": "(0,1]",
+      "meaning": "entry-cycle cash allocation"
+    },
+    "lookback": {
+      "unit": "sessions",
+      "step": 1,
+      "domain": "integer[2,10]"
+    },
+    "hold": {
+      "unit": "sessions",
+      "step": 1,
+      "domain": "integer[1,30]"
+    },
+    "confirmation": {
+      "unit": "sessions",
+      "step": 1,
+      "domain": "integer[1,5]",
+      "active": "confirmed_guard, including joint activation"
+    }
+  },
+  "fixed": "all undeclared payload leaves and original source; mode/exit/rearm are structure; inactive concentration/failure_buffer/max_hold remain fixed",
+  "comparison": "Use exact design comparison_sha256; no forced pooling across boundary shapes or axes."
+}

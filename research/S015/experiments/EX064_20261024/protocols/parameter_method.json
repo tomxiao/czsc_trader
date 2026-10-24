@@ -1,0 +1,91 @@
+{
+  "version": "S015-finite-neighborhood-v1",
+  "source_mandate": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S015"
+    },
+    "stage": "MANDATE",
+    "revision": 3,
+    "content_sha256": "5563c98c1a2ed876b6d75b775437f35ec2c31777818ad0f9b67e89c90d30d90a"
+  },
+  "purpose": "LOCAL_SENSITIVITY",
+  "enumeration": "Complete declared Cartesian product; remove center and invalid domain/constraint points before outcomes; no sampling, clipping, padding or post-outcome deletion.",
+  "axes": {
+    "allocation": {
+      "kind": "REAL",
+      "unit": "fraction",
+      "domain": "(0,1]",
+      "offsets": [
+        -0.05,
+        0.05
+      ]
+    },
+    "lookback": {
+      "kind": "INTEGER",
+      "unit": "trading_sessions",
+      "domain": [
+        2,
+        10
+      ],
+      "offsets": [
+        -1,
+        1
+      ]
+    },
+    "hold": {
+      "kind": "INTEGER",
+      "unit": "trading_sessions",
+      "domain": [
+        1,
+        30
+      ],
+      "offsets": [
+        -1,
+        1
+      ]
+    },
+    "confirmation": {
+      "kind": "INTEGER",
+      "unit": "trading_sessions",
+      "domain": [
+        1,
+        5
+      ],
+      "offsets": [
+        -1,
+        1
+      ],
+      "applicability": "confirmed_guard only; retained when a joint neighbor activates it"
+    }
+  },
+  "feasibility": "Keep original source and full payload. Require hold <= max_hold <= 30 where max_hold exists; all other original runtime constraints remain applicable.",
+  "fixed": [
+    "mode",
+    "exit_mode",
+    "center_kind",
+    "rearm_mode",
+    "start",
+    "inactive parameters",
+    "execution contract",
+    "data window"
+  ],
+  "point_gate": {
+    "minimum_numerator": 13,
+    "minimum_denominator": 16,
+    "required_passes": "ceil(13*N/16)",
+    "all_N_valid_required": true,
+    "economic_conditions": "Exactly inherit old joint_targets and all_point_targets."
+  },
+  "scope": "434-session parameter evaluation only; 415-session S011 comparison and frequency conditions remain center gates, not additional parameter-point gates.",
+  "expected_design_counts": {
+    "17": 4,
+    "26": 7,
+    "53": 4,
+    "80": 1
+  },
+  "expected_noncenter_points": 542,
+  "interpretation": "Configuration count is not independent hypothesis or distinct behavior count. New outcomes do not revise old qualifications. No outcome available at method publication.",
+  "comparability": "Use generated comparison_sha256; distinct shapes or constraints are not forcibly pooled for ranking."
+}

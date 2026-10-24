@@ -1,0 +1,2094 @@
+{
+  "type": "ParameterEvaluationPlan",
+  "design": {
+    "type": "ParameterNeighborhoodDesign",
+    "center": {
+      "type": "AssessmentCandidate",
+      "candidate_id": "S015-C5901",
+      "content_sha256": "61f06df64888df44da711812c321017ffe3ff46cad1a5c29c0c02c591d9b7182"
+    },
+    "protocol": {
+      "type": "ParameterNeighborhoodProtocol",
+      "purpose": "LOCAL_SENSITIVITY",
+      "max_combinations": 10000,
+      "quantile_method": "LINEAR",
+      "version": "parameter-cartesian-neighborhood-v1"
+    },
+    "space": {
+      "type": "ParameterNeighborhoodSpace",
+      "axes": [
+        {
+          "type": "ParameterAxis",
+          "name": "allocation",
+          "center": 1.0,
+          "domain": {
+            "type": "RealDomain",
+            "lower": 0.0,
+            "upper": 1.0,
+            "lower_closed": false,
+            "upper_closed": true,
+            "quantum": null,
+            "origin": 0.0
+          },
+          "rule": {
+            "type": "NumericOffsets",
+            "offsets": [
+              -0.05,
+              0.05
+            ]
+          },
+          "payload_path": [
+            "allocation"
+          ],
+          "unit": "fraction"
+        },
+        {
+          "type": "ParameterAxis",
+          "name": "lookback",
+          "center": 3,
+          "domain": {
+            "type": "IntegerDomain",
+            "lower": 2,
+            "upper": 10,
+            "step": 1,
+            "origin": 0
+          },
+          "rule": {
+            "type": "NumericOffsets",
+            "offsets": [
+              -1,
+              1
+            ]
+          },
+          "payload_path": [
+            "lookback"
+          ],
+          "unit": "sessions"
+        },
+        {
+          "type": "ParameterAxis",
+          "name": "hold",
+          "center": 3,
+          "domain": {
+            "type": "IntegerDomain",
+            "lower": 1,
+            "upper": 30,
+            "step": 1,
+            "origin": 0
+          },
+          "rule": {
+            "type": "NumericOffsets",
+            "offsets": [
+              -1,
+              1
+            ]
+          },
+          "payload_path": [
+            "hold"
+          ],
+          "unit": "sessions"
+        },
+        {
+          "type": "ParameterAxis",
+          "name": "confirmation",
+          "center": 2,
+          "domain": {
+            "type": "IntegerDomain",
+            "lower": 1,
+            "upper": 5,
+            "step": 1,
+            "origin": 0
+          },
+          "rule": {
+            "type": "NumericOffsets",
+            "offsets": [
+              -1,
+              1
+            ]
+          },
+          "payload_path": [
+            "confirmation"
+          ],
+          "unit": "sessions"
+        }
+      ],
+      "mapping_sha256": "775872155e05d7880dd8fc4d46c414449cd191b49b5acfae0552f65b45a932bf",
+      "feasibility_sha256": "e378b748a35312977f3bdd6d585590a9384efce4253f284d4a533369b18f2645"
+    },
+    "points": [
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 0,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 1,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 2,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 3,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 4,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 5,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 6,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 7,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 8,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 9,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 10,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 11,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 12,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 13,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 14,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 15,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 16,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 17,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 18,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 19,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 20,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 21,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 22,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 23,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 24,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 25,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 26,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 27,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 28,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 29,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 30,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 31,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 32,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 33,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 34,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 35,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 36,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 37,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 38,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 39,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 40,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 41,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 42,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 43,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 44,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 45,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 46,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 47,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 48,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 49,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 2
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 50,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 51,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 52,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "hold",
+            "value": 4
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "confirmation",
+            "value": 3
+          }
+        ]
+      }
+    ],
+    "generated_combinations": 81,
+    "rejections": [
+      {
+        "type": "NeighborhoodRejection",
+        "reason": "OUT_OF_DOMAIN",
+        "count": 27
+      },
+      {
+        "type": "NeighborhoodRejection",
+        "reason": "CENTER",
+        "count": 1
+      }
+    ],
+    "constraint_exclusions": []
+  },
+  "center": {
+    "type": "ParameterEvaluationCandidate",
+    "candidate": {
+      "type": "AssessmentCandidate",
+      "candidate_id": "S015-C5901",
+      "content_sha256": "61f06df64888df44da711812c321017ffe3ff46cad1a5c29c0c02c591d9b7182"
+    },
+    "runtime_identity_sha256": "f118643cfbc84b45a1fade45b4b948b2a92542ebdc95ef1094f14b6017080fb9",
+    "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":2,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":3,\"lookback\":3,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+  },
+  "center_request_sha256": "19314a19fd31b1f0dc30b0cade79bc91650b65ca92c457652a0ad063f340751c",
+  "nonparameter_context_sha256": "e0667a841d8e6fbe732742100b9c6a9198f3211b1b2f216996ba8c8b14e869ce",
+  "children": [
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7026",
+        "content_sha256": "8cd2c4a78e364363cbb3f594632606339b0f76d4dd8acf91e71c41a3c7e97aab"
+      },
+      "runtime_identity_sha256": "57646db0be914300bfd74998b3ebf0006b0e74126bf630f77c41e72ff663cc38",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":1,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":3,\"lookback\":3,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7027",
+        "content_sha256": "0dc01eb741859d5e719f0655c1de8978e0d277cb88a65326ef371c96ebb0e5fc"
+      },
+      "runtime_identity_sha256": "7299488689ba75a71257e87c32f6d85ae1ba830aed0f49c8b7153fa066294eda",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":3,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":3,\"lookback\":3,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7028",
+        "content_sha256": "70544956afdc6770b69a4471d41df51716a181765985f4690423efcf58cfad67"
+      },
+      "runtime_identity_sha256": "930916b21156df4c30ecd72210522670ae58669413a8896916dd7f29633d6c8d",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":2,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":2,\"lookback\":3,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7029",
+        "content_sha256": "10d91479b6a0f6e2852efcbb74d9bf56d74a0af1fc473e477d2cf2723f911876"
+      },
+      "runtime_identity_sha256": "30a2a7f8c7a04316b044433fbb07826591812c809364c4771a3be7a8e7bc1b43",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":1,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":2,\"lookback\":3,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7030",
+        "content_sha256": "29992892d7c76f9c9d40648b2822af4366ffbc86b680847283e01dc694d19220"
+      },
+      "runtime_identity_sha256": "a036cdc176c6e08ae8650746381cbcfef5a897e76d9ac6f6c5ee68e8750096c8",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":3,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":2,\"lookback\":3,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7031",
+        "content_sha256": "8ace8f2172e404dca4ae0f01a99d55ecf7650b3a7c17760ecf2b4543b3239618"
+      },
+      "runtime_identity_sha256": "01075e21d9a1ac4835d2da438e7d1fef2bb651cccf962f0e219515eb08c801ea",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":2,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":4,\"lookback\":3,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7032",
+        "content_sha256": "a1b723130c014acf34f4233364c59f880919c37d5581bf31289972e425c1b507"
+      },
+      "runtime_identity_sha256": "a43ccf90ddb978259c80e8d94e0d6ff628f6c02bd2d12700bdf081a1d26bc42e",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":1,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":4,\"lookback\":3,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7033",
+        "content_sha256": "9c6631106eea7e2f6519b3c5158be9cc6fcf166030a39927ece10d1c5bf2bda8"
+      },
+      "runtime_identity_sha256": "0671b8d7c78a398ff6bb1c76170f8dafe73ca0b9ce5e09d069fb43786c1a7649",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":3,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":4,\"lookback\":3,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7034",
+        "content_sha256": "2d50c29cf6a860736eca8530596f0a2e80881f9a132aa9c1119d2102850de6c5"
+      },
+      "runtime_identity_sha256": "8f665a5cd1a6fa04aa98592e00dafbb74d23c76f1a3d156c1fead1271202c071",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":2,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":3,\"lookback\":2,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7035",
+        "content_sha256": "67779b17bfa39d0b5648f76aa7cd40ec312fb1d4774d8ecaab182fff8b98e008"
+      },
+      "runtime_identity_sha256": "e17a4cce0b8345a13b1a6f3dba7a1fb07981ffd64c3bdcd81edf0663acc05fa8",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":1,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":3,\"lookback\":2,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7036",
+        "content_sha256": "ae4e6e2c4315ca4718a2a28932b799f7c59c78b3771f8ec8cd88b5483f53a7ca"
+      },
+      "runtime_identity_sha256": "f39fdd91abeca0a0d7f79085937e307c0af2feb102fa908529de0285d5d8e8b7",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":3,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":3,\"lookback\":2,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7037",
+        "content_sha256": "b31ff3530c3413fbb2e8b3d47a698744d4071f2dc048b3fe51603068a9f6b704"
+      },
+      "runtime_identity_sha256": "70d8022a244d341ee4e40368f525c57120232dfbc830b19f928f3ed57044a073",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":2,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":2,\"lookback\":2,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7038",
+        "content_sha256": "146f4396af9dff648cc27afb7b4c64eef2adf3139e35aafccabd369ed53f5497"
+      },
+      "runtime_identity_sha256": "d19882d028d8ddd40a37c25d1de106bc74ac4f613c53421994cd120e762c727b",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":1,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":2,\"lookback\":2,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7039",
+        "content_sha256": "ea9dbf573a7701f644797f340ecaee58eee72e253f8f3c72ef673b0720d94b74"
+      },
+      "runtime_identity_sha256": "3338733f9c73e828068393f1baa9afa898bf92009e0cbe51258c439c6e5e1bcc",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":3,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":2,\"lookback\":2,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7040",
+        "content_sha256": "52578046116ec6df030e79b3c81bde170eb17a52a7ea4aa27d29632384651fae"
+      },
+      "runtime_identity_sha256": "811fa990c93dbcb5fa89fa99f5eddeca72ffc9762e51523c333f8e062efef594",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":2,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":4,\"lookback\":2,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7041",
+        "content_sha256": "6bf3130c4e4686475f6ec94f1f32d34cb554d0a7fd1abb70ee4c5b409e88f290"
+      },
+      "runtime_identity_sha256": "aa544c830e032cfbb231db4c37530b15557a401f9e3fb8164e36ff55a8723071",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":1,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":4,\"lookback\":2,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7042",
+        "content_sha256": "377ad08bcc5e88dec0648273edef82317a91d7021865cc589d385363235ac8f3"
+      },
+      "runtime_identity_sha256": "af4a82a4845d733d2fe634c4f4acc8075376387bd3f68c74367c57868fda4ba2",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":3,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":4,\"lookback\":2,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7043",
+        "content_sha256": "c4ae350f4467e1f126552e6fe489d3b43ccb1ba5086a312f7e2f0b2cf1e81ae5"
+      },
+      "runtime_identity_sha256": "251f560a2a15ae48d67d21c7f09b1f70ef74bb676ee0084f5a4862793511c30a",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":2,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":3,\"lookback\":4,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7044",
+        "content_sha256": "8a2496e4b5d59c302a5c9d61958c2dae0900f64c21514144f7be7efac82dd532"
+      },
+      "runtime_identity_sha256": "0e1fecf3b34611c706404df523d381958367457f2ff32fddb056fe95baae7155",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":1,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":3,\"lookback\":4,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7045",
+        "content_sha256": "13f006551334cbfb26c6e0c1f72aa3c6b32330a24a1cf4f1b88c204bd1e03331"
+      },
+      "runtime_identity_sha256": "335d46967e544f1da360137d89cd97f514e77849a205987355ac422c8e7ce45e",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":3,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":3,\"lookback\":4,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7046",
+        "content_sha256": "a21a7175876c2e917432a64631d30d4870eb79586eea09a049ed4b59cfba7427"
+      },
+      "runtime_identity_sha256": "aada235ac9700bb529e92575fd9a0cc1d58e8b604b41ec1c5210cde0b7630179",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":2,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":2,\"lookback\":4,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7047",
+        "content_sha256": "902e9ee3d0f61746a91694417c155cfce27c6141114c4207c329c62c44d0c32c"
+      },
+      "runtime_identity_sha256": "2eeef20e12500296702a4417977aed164fa0c4432943559a2faf6fcab8e32c14",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":1,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":2,\"lookback\":4,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7048",
+        "content_sha256": "cec13ea12eac9c5d821e78014d4f6dbb5dd07d0c869cbde646642689090dd4a3"
+      },
+      "runtime_identity_sha256": "e85ccba71f8285d0ef51304cb2456cdc2f826beeb86c846504cb09f05e0a043a",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":3,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":2,\"lookback\":4,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7049",
+        "content_sha256": "a47d53aa940c4444f5570a1eae90694fad3878a94b20754ef3a8f9b4779546b6"
+      },
+      "runtime_identity_sha256": "1e5f6c6b90123ce5bcc814f67df1a3e4ed73801dc7d706d585661aace2b7c6c7",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":2,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":4,\"lookback\":4,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7050",
+        "content_sha256": "57f13a3c07fdfd18e3ac76315b29eb922dc271889d20002cdd841601625f5b0c"
+      },
+      "runtime_identity_sha256": "2c3f668270e10c2c6d2addc331e449978ada0e1d1427eb0ada5a4bf87c989fba",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":1,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":4,\"lookback\":4,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7051",
+        "content_sha256": "beacdec564c76da49027b2b4624f8c354a51f725370db05ab45546bb93705319"
+      },
+      "runtime_identity_sha256": "a60bff6c1fbf5c2343a17466e3309d65dbc930faee7044feffee3acc168074c4",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":1.0,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":3,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":4,\"lookback\":4,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7052",
+        "content_sha256": "808148f2da44a41e3184c84e23982cb6b92f8d6d32bf6ae46d604874f218a55e"
+      },
+      "runtime_identity_sha256": "06d82a2b4f87184f4fdc014e7cdea0400b0e1ece39d31a4622acec91963fd614",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":2,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":3,\"lookback\":3,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7053",
+        "content_sha256": "8c405abbf4a00aa78924c42c4a37e6d3d0f583b6d13c086b1ecaa681adca5707"
+      },
+      "runtime_identity_sha256": "97838b4107ed004e8811b6351237d2b262bff64f82dad0cc6409a13507ba6b4b",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":1,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":3,\"lookback\":3,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7054",
+        "content_sha256": "709e2d3ee8c2ccc575bc6ad2d75be93717b41e8c6525cdeaa1c169c7903d00ce"
+      },
+      "runtime_identity_sha256": "d24636bd9f3d7a7fe33c821396b72d0a80df7ebd916393eaa036ef077457fac8",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":3,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":3,\"lookback\":3,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7055",
+        "content_sha256": "f26b483ec7e8386f89cf2b7dfda046b5fa459624136123dca81fed73a3d2e4fe"
+      },
+      "runtime_identity_sha256": "da7010a53a50e4226422b2855e9c7da2f0d100f4aad90e855846a57755df5bbd",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":2,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":2,\"lookback\":3,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7056",
+        "content_sha256": "2e07ddc567434765951b4a8301626efff7b33b01d591bd011cacfa860dba1dfd"
+      },
+      "runtime_identity_sha256": "2a2c842d036629b195b3563596f030c2fd3ab331189ff40aa8a97a21ab232a9c",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":1,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":2,\"lookback\":3,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7057",
+        "content_sha256": "485d4fb230ddc583fc76b16dfe016448570e22bcf6d8431d653bcfa50c4ec5ab"
+      },
+      "runtime_identity_sha256": "157454cbb285b260aeb59c92f388f7b6fbeb804cb5754b0ef7bb30492562d192",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":3,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":2,\"lookback\":3,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7058",
+        "content_sha256": "e99e44be0633eda1abeb1bfce1acfeab1f1628880440c8ea2bf031b4f820e350"
+      },
+      "runtime_identity_sha256": "aeef3f99042a295b3d665b0708e71dce7592e7bb535f99da3c49b6728b2a5888",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":2,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":4,\"lookback\":3,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7059",
+        "content_sha256": "4d61873b86f7f69419b70b65226dbd15987e70915d71a3f25472a7cb467ed4d5"
+      },
+      "runtime_identity_sha256": "d7efc146e47cf76249df00649d1ca544c5bf6a246e778976723174c45cfa9b3e",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":1,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":4,\"lookback\":3,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7060",
+        "content_sha256": "32d7e4f718409344f1e3be131fb5ab36aa5919ef6e33dd122a7df2440fe42d46"
+      },
+      "runtime_identity_sha256": "3492acb7f232f922e2ba4c1382e222dbcf5e1e9790cd7216e095bbec948b792c",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":3,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":4,\"lookback\":3,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7061",
+        "content_sha256": "8e32434b4c3621e40071077322cb825bd94614c4a37c367e54246138e54f47b4"
+      },
+      "runtime_identity_sha256": "8dda0b8a8a00b1ff19af998ae6408a946285b93dae84b4d81ea7098bf33c8e99",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":2,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":3,\"lookback\":2,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7062",
+        "content_sha256": "f3336918bedcad0780ee143819680f1f964f148e174e52cad0dad5e30e220ac4"
+      },
+      "runtime_identity_sha256": "46d4999b549b906f93054c99c1f68ceb7d45e289ba459802e106ab0bc10aa766",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":1,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":3,\"lookback\":2,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7063",
+        "content_sha256": "11192c5b68fa5c282448527915518e530630f79ccdbae689b8b1562e5b8ff15e"
+      },
+      "runtime_identity_sha256": "381e069d48b0ec40a9dd1bca43005bb8c005515eb773cdd4d1bfd9e5365aba49",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":3,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":3,\"lookback\":2,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7064",
+        "content_sha256": "69d5dfcb6650027cdb8692d3fdc8091517dbe7ba3b00aa052eda60ddfcd014e1"
+      },
+      "runtime_identity_sha256": "ed9d9c6975a7ccb699701742ce25b0b17747dc5759ce3c574b00bd061d37a5dd",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":2,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":2,\"lookback\":2,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7065",
+        "content_sha256": "32093d4b338ca7c066c29d3b3c55685649625f83ea97994415a06fd6f0c656a2"
+      },
+      "runtime_identity_sha256": "d03678a53058c4efb340f619ae41c384a1a20690f66869ad70462b98b0be0696",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":1,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":2,\"lookback\":2,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7066",
+        "content_sha256": "fd1d61d8a461009e2f305dda8612d59e7387b33eee079f88dfec68354a3a54c9"
+      },
+      "runtime_identity_sha256": "455cabb3e2a5bb52c859ac687ce761da9bad0642bcd6c6a72e190ae6341b0c7c",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":3,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":2,\"lookback\":2,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7067",
+        "content_sha256": "ac908e8f3a720a8b54f9951929532dd7baf5311acb6660888f1bc4735e60ac81"
+      },
+      "runtime_identity_sha256": "a3c64940c2df5968c7b3f5816819964c2f7fd9a085d03f68cae0556ac2d7a6b3",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":2,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":4,\"lookback\":2,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7068",
+        "content_sha256": "5abd20d707c2d44ef7a1865b464f35324fef84083838f9ee66d7744a6f3ae785"
+      },
+      "runtime_identity_sha256": "742f103b62cd58d38ab5c649c833acd21295d0b890853bf7add024380e98a4c6",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":1,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":4,\"lookback\":2,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7069",
+        "content_sha256": "32b3c5b8d90a2fe589a5004325b9ad3b3916c761c3480ed1a09f43a86eeaefb7"
+      },
+      "runtime_identity_sha256": "d6b7c8e71d94d8fda8d61a349d268ff55bdfbd206e274c587b8d10b39ce94be6",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":3,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":4,\"lookback\":2,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7070",
+        "content_sha256": "617dd92594e88200ae89a40536bf52bfa375b5135d4999782319191c00058f5b"
+      },
+      "runtime_identity_sha256": "6ec7f11787f2a700aeae8992fc8e53c3da03197ada6b8d28e4f2992fd6007215",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":2,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":3,\"lookback\":4,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7071",
+        "content_sha256": "8f964c3e3101d5306441e2596de535bdc964765532a3ffa436f7bc8000092c58"
+      },
+      "runtime_identity_sha256": "62a6d2bd51860aad23b3cf055f4093632e7d62d929105db85ceadd5bfb443f8f",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":1,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":3,\"lookback\":4,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7072",
+        "content_sha256": "2cec8b81c962353a6b00e684a2d6b06c8229ce04adbac03f9eb24150efb054f1"
+      },
+      "runtime_identity_sha256": "eadc0d32d4d9098d9c794455f2009560debf2cbe3e8eeee8e96fca0b551decfc",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":3,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":3,\"lookback\":4,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7073",
+        "content_sha256": "c38603203d6195e7b478333b9afee985048e0f0a233c1cd07504a6dec3c444dd"
+      },
+      "runtime_identity_sha256": "cc8ae31fd5fc0c568ee0e9d27d711ad48a6413e43da4a06969962bf5cc4932e7",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":2,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":2,\"lookback\":4,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7074",
+        "content_sha256": "392c6f17c45157f01664e3abff752a947a5234e870d4402464f184285f1c3051"
+      },
+      "runtime_identity_sha256": "7a3001d7e4c126dc0c31b1fb6ab4aadb0076e334cf4ddd93ca01c231add0083e",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":1,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":2,\"lookback\":4,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7075",
+        "content_sha256": "214f6d4871939e8cbd99a2431c67e5e1a0c59b60737fbe2cbd10f6dbd110bfca"
+      },
+      "runtime_identity_sha256": "b88baba09cb8a787b0be60bc08f056e91829a809b7f345bb787b5b8a5109d11a",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":3,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":2,\"lookback\":4,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7076",
+        "content_sha256": "a85c0419d9169e8ff318909050e34297043ef538e29a1581b82e8ee7324e4c81"
+      },
+      "runtime_identity_sha256": "61aa510e7902a803331ace65027fd1acc6b624fd946355cfb9b887c061bafd38",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":2,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":4,\"lookback\":4,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7077",
+        "content_sha256": "3286972a693e19511e8c4ca5bc890a161c3ee97d0fe3660adadb1642f6743ccd"
+      },
+      "runtime_identity_sha256": "8840f14c0205f9700381fd51a02565e84bd7f8640c36abfa113cfc2a056a422e",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":1,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":4,\"lookback\":4,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C7078",
+        "content_sha256": "45bc02b7bc3d906c20761db92bb8157968328fb6d671845c56c35b04f8205bb9"
+      },
+      "runtime_identity_sha256": "024ecde09a48f882ade91a59dc2fc26e4a2d25f752f128256d248ba7ebe16ece",
+      "payload_json": "{\"decision_feedback\":\"MARKET_INTENT\",\"parameters\":{\"allocation\":0.95,\"center_kind\":\"mean\",\"concentration\":0.75,\"confirmation\":3,\"exit_mode\":\"confirmed_guard\",\"failure_buffer\":0.0,\"hold\":4,\"lookback\":4,\"max_hold\":10,\"mode\":\"center_below\",\"start\":\"2025-01-02\"},\"runtime\":{\"contract_version\":2,\"module\":\"strategy_runtime.strategies.price_process\",\"qualname\":\"PriceProcess\",\"source_files\":[\"strategies/price_process.py\"],\"source_sha256\":\"91b8945ae3e7b2daafae7675fa54f6e1647d48111b541cc64fc06f20e95a3b39\"}}"
+    }
+  ],
+  "mapping_evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX064_20261024"
+    },
+    "evidence_id": "775872155e05d7880dd8fc4d46c414449cd191b49b5acfae0552f65b45a932bf.json",
+    "sha256": "775872155e05d7880dd8fc4d46c414449cd191b49b5acfae0552f65b45a932bf",
+    "media_type": "application/json",
+    "name": "mapping",
+    "schema": null,
+    "schema_version": null
+  },
+  "feasibility_evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX064_20261024"
+    },
+    "evidence_id": "e378b748a35312977f3bdd6d585590a9384efce4253f284d4a533369b18f2645.json",
+    "sha256": "e378b748a35312977f3bdd6d585590a9384efce4253f284d4a533369b18f2645",
+    "media_type": "application/json",
+    "name": "feasibility",
+    "schema": null,
+    "schema_version": null
+  },
+  "center_inputs": [
+    {
+      "type": "ParameterEvaluationInput",
+      "window_id": "full",
+      "binding_json": "{\"plan\":{\"calculation_dates\":[\"2024-12-31\",\"2025-01-02\",\"2025-01-03\",\"2025-01-06\",\"2025-01-07\",\"2025-01-08\",\"2025-01-09\",\"2025-01-10\",\"2025-01-13\",\"2025-01-14\",\"2025-01-15\",\"2025-01-16\",\"2025-01-17\",\"2025-01-20\",\"2025-01-21\",\"2025-01-22\",\"2025-01-23\",\"2025-01-24\",\"2025-01-27\",\"2025-02-05\",\"2025-02-06\",\"2025-02-07\",\"2025-02-10\",\"2025-02-11\",\"2025-02-12\",\"2025-02-13\",\"2025-02-14\",\"2025-02-17\",\"2025-02-18\",\"2025-02-19\",\"2025-02-20\",\"2025-02-21\",\"2025-02-24\",\"2025-02-25\",\"2025-02-26\",\"2025-02-27\",\"2025-02-28\",\"2025-03-03\",\"2025-03-04\",\"2025-03-05\",\"2025-03-06\",\"2025-03-07\",\"2025-03-10\",\"2025-03-11\",\"2025-03-12\",\"2025-03-13\",\"2025-03-14\",\"2025-03-17\",\"2025-03-18\",\"2025-03-19\",\"2025-03-20\",\"2025-03-21\",\"2025-03-24\",\"2025-03-25\",\"2025-03-26\",\"2025-03-27\",\"2025-03-28\",\"2025-03-31\",\"2025-04-01\",\"2025-04-02\",\"2025-04-03\",\"2025-04-07\",\"2025-04-08\",\"2025-04-09\",\"2025-04-10\",\"2025-04-11\",\"2025-04-14\",\"2025-04-15\",\"2025-04-16\",\"2025-04-17\",\"2025-04-18\",\"2025-04-21\",\"2025-04-22\",\"2025-04-23\",\"2025-04-24\",\"2025-04-25\",\"2025-04-28\",\"2025-04-29\",\"2025-04-30\",\"2025-05-06\",\"2025-05-07\",\"2025-05-08\",\"2025-05-09\",\"2025-05-12\",\"2025-05-13\",\"2025-05-14\",\"2025-05-15\",\"2025-05-16\",\"2025-05-19\",\"2025-05-20\",\"2025-05-21\",\"2025-05-22\",\"2025-05-23\",\"2025-05-26\",\"2025-05-27\",\"2025-05-28\",\"2025-05-29\",\"2025-05-30\",\"2025-06-03\",\"2025-06-04\",\"2025-06-05\",\"2025-06-06\",\"2025-06-09\",\"2025-06-10\",\"2025-06-11\",\"2025-06-12\",\"2025-06-13\",\"2025-06-16\",\"2025-06-17\",\"2025-06-18\",\"2025-06-19\",\"2025-06-20\",\"2025-06-23\",\"2025-06-24\",\"2025-06-25\",\"2025-06-26\",\"2025-06-27\",\"2025-06-30\",\"2025-07-01\",\"2025-07-02\",\"2025-07-03\",\"2025-07-04\",\"2025-07-07\",\"2025-07-08\",\"2025-07-09\",\"2025-07-10\",\"2025-07-11\",\"2025-07-14\",\"2025-07-15\",\"2025-07-16\",\"2025-07-17\",\"2025-07-18\",\"2025-07-21\",\"2025-07-22\",\"2025-07-23\",\"2025-07-24\",\"2025-07-25\",\"2025-07-28\",\"2025-07-29\",\"2025-07-30\",\"2025-07-31\",\"2025-08-01\",\"2025-08-04\",\"2025-08-05\",\"2025-08-06\",\"2025-08-07\",\"2025-08-08\",\"2025-08-11\",\"2025-08-12\",\"2025-08-13\",\"2025-08-14\",\"2025-08-15\",\"2025-08-18\",\"2025-08-19\",\"2025-08-20\",\"2025-08-21\",\"2025-08-22\",\"2025-08-25\",\"2025-08-26\",\"2025-08-27\",\"2025-08-28\",\"2025-08-29\",\"2025-09-01\",\"2025-09-02\",\"2025-09-03\",\"2025-09-04\",\"2025-09-05\",\"2025-09-08\",\"2025-09-09\",\"2025-09-10\",\"2025-09-11\",\"2025-09-12\",\"2025-09-15\",\"2025-09-16\",\"2025-09-17\",\"2025-09-18\",\"2025-09-19\",\"2025-09-22\",\"2025-09-23\",\"2025-09-24\",\"2025-09-25\",\"2025-09-26\",\"2025-09-29\",\"2025-09-30\",\"2025-10-09\",\"2025-10-10\",\"2025-10-13\",\"2025-10-14\",\"2025-10-15\",\"2025-10-16\",\"2025-10-17\",\"2025-10-20\",\"2025-10-21\",\"2025-10-22\",\"2025-10-23\",\"2025-10-24\",\"2025-10-27\",\"2025-10-28\",\"2025-10-29\",\"2025-10-30\",\"2025-10-31\",\"2025-11-03\",\"2025-11-04\",\"2025-11-05\",\"2025-11-06\",\"2025-11-07\",\"2025-11-10\",\"2025-11-11\",\"2025-11-12\",\"2025-11-13\",\"2025-11-14\",\"2025-11-17\",\"2025-11-18\",\"2025-11-19\",\"2025-11-20\",\"2025-11-21\",\"2025-11-24\",\"2025-11-25\",\"2025-11-26\",\"2025-11-27\",\"2025-11-28\",\"2025-12-01\",\"2025-12-02\",\"2025-12-03\",\"2025-12-04\",\"2025-12-05\",\"2025-12-08\",\"2025-12-09\",\"2025-12-10\",\"2025-12-11\",\"2025-12-12\",\"2025-12-15\",\"2025-12-16\",\"2025-12-17\",\"2025-12-18\",\"2025-12-19\",\"2025-12-22\",\"2025-12-23\",\"2025-12-24\",\"2025-12-25\",\"2025-12-26\",\"2025-12-29\",\"2025-12-30\",\"2025-12-31\",\"2026-01-05\",\"2026-01-06\",\"2026-01-07\",\"2026-01-08\",\"2026-01-09\",\"2026-01-12\",\"2026-01-13\",\"2026-01-14\",\"2026-01-15\",\"2026-01-16\",\"2026-01-19\",\"2026-01-20\",\"2026-01-21\",\"2026-01-22\",\"2026-01-23\",\"2026-01-26\",\"2026-01-27\",\"2026-01-28\",\"2026-01-29\",\"2026-01-30\",\"2026-02-02\",\"2026-02-03\",\"2026-02-04\",\"2026-02-05\",\"2026-02-06\",\"2026-02-09\",\"2026-02-10\",\"2026-02-11\",\"2026-02-12\",\"2026-02-13\",\"2026-02-24\",\"2026-02-25\",\"2026-02-26\",\"2026-02-27\",\"2026-03-02\",\"2026-03-03\",\"2026-03-04\",\"2026-03-05\",\"2026-03-06\",\"2026-03-09\",\"2026-03-10\",\"2026-03-11\",\"2026-03-12\",\"2026-03-13\",\"2026-03-16\",\"2026-03-17\",\"2026-03-18\",\"2026-03-19\",\"2026-03-20\",\"2026-03-23\",\"2026-03-24\",\"2026-03-25\",\"2026-03-26\",\"2026-03-27\",\"2026-03-30\",\"2026-03-31\",\"2026-04-01\",\"2026-04-02\",\"2026-04-03\",\"2026-04-07\",\"2026-04-08\",\"2026-04-09\",\"2026-04-10\",\"2026-04-13\",\"2026-04-14\",\"2026-04-15\",\"2026-04-16\",\"2026-04-17\",\"2026-04-20\",\"2026-04-21\",\"2026-04-22\",\"2026-04-23\",\"2026-04-24\",\"2026-04-27\",\"2026-04-28\",\"2026-04-29\",\"2026-04-30\",\"2026-05-06\",\"2026-05-07\",\"2026-05-08\",\"2026-05-11\",\"2026-05-12\",\"2026-05-13\",\"2026-05-14\",\"2026-05-15\",\"2026-05-18\",\"2026-05-19\",\"2026-05-20\",\"2026-05-21\",\"2026-05-22\",\"2026-05-25\",\"2026-05-26\",\"2026-05-27\",\"2026-05-28\",\"2026-05-29\",\"2026-06-01\",\"2026-06-02\",\"2026-06-03\",\"2026-06-04\",\"2026-06-05\",\"2026-06-08\",\"2026-06-09\",\"2026-06-10\",\"2026-06-11\",\"2026-06-12\",\"2026-06-15\",\"2026-06-16\",\"2026-06-17\",\"2026-06-18\",\"2026-06-22\",\"2026-06-23\",\"2026-06-24\",\"2026-06-25\",\"2026-06-26\",\"2026-06-29\",\"2026-06-30\",\"2026-07-01\",\"2026-07-02\",\"2026-07-03\",\"2026-07-06\",\"2026-07-07\",\"2026-07-08\",\"2026-07-09\",\"2026-07-10\",\"2026-07-13\",\"2026-07-14\",\"2026-07-15\",\"2026-07-16\",\"2026-07-17\",\"2026-07-20\",\"2026-07-21\",\"2026-07-22\",\"2026-07-23\",\"2026-07-24\",\"2026-07-27\",\"2026-07-28\",\"2026-07-29\",\"2026-07-30\",\"2026-07-31\",\"2026-08-03\",\"2026-08-04\",\"2026-08-05\",\"2026-08-06\",\"2026-08-07\",\"2026-08-10\",\"2026-08-11\",\"2026-08-12\",\"2026-08-13\",\"2026-08-14\",\"2026-08-17\",\"2026-08-18\",\"2026-08-19\",\"2026-08-20\",\"2026-08-21\",\"2026-08-24\",\"2026-08-25\",\"2026-08-26\",\"2026-08-27\",\"2026-08-28\",\"2026-08-31\",\"2026-09-01\",\"2026-09-02\",\"2026-09-03\",\"2026-09-04\",\"2026-09-07\",\"2026-09-08\",\"2026-09-09\",\"2026-09-10\",\"2026-09-11\",\"2026-09-14\",\"2026-09-15\",\"2026-09-16\",\"2026-09-17\",\"2026-09-18\",\"2026-09-21\",\"2026-09-22\",\"2026-09-23\",\"2026-09-24\",\"2026-09-28\",\"2026-09-29\",\"2026-09-30\",\"2026-10-08\",\"2026-10-09\",\"2026-10-12\",\"2026-10-13\",\"2026-10-14\",\"2026-10-15\",\"2026-10-16\",\"2026-10-19\",\"2026-10-20\"],\"calendar_dates\":[\"2024-09-09\",\"2024-09-10\",\"2024-09-11\",\"2024-09-12\",\"2024-09-13\",\"2024-09-18\",\"2024-09-19\",\"2024-09-20\",\"2024-09-23\",\"2024-09-24\",\"2024-09-25\",\"2024-09-26\",\"2024-09-27\",\"2024-09-30\",\"2024-10-08\",\"2024-10-09\",\"2024-10-10\",\"2024-10-11\",\"2024-10-14\",\"2024-10-15\",\"2024-10-16\",\"2024-10-17\",\"2024-10-18\",\"2024-10-21\",\"2024-10-22\",\"2024-10-23\",\"2024-10-24\",\"2024-10-25\",\"2024-10-28\",\"2024-10-29\",\"2024-10-30\",\"2024-10-31\",\"2024-11-01\",\"2024-11-04\",\"2024-11-05\",\"2024-11-06\",\"2024-11-07\",\"2024-11-08\",\"2024-11-11\",\"2024-11-12\",\"2024-11-13\",\"2024-11-14\",\"2024-11-15\",\"2024-11-18\",\"2024-11-19\",\"2024-11-20\",\"2024-11-21\",\"2024-11-22\",\"2024-11-25\",\"2024-11-26\",\"2024-11-27\",\"2024-11-28\",\"2024-11-29\",\"2024-12-02\",\"2024-12-03\",\"2024-12-04\",\"2024-12-05\",\"2024-12-06\",\"2024-12-09\",\"2024-12-10\",\"2024-12-11\",\"2024-12-12\",\"2024-12-13\",\"2024-12-16\",\"2024-12-17\",\"2024-12-18\",\"2024-12-19\",\"2024-12-20\",\"2024-12-23\",\"2024-12-24\",\"2024-12-25\",\"2024-12-26\",\"2024-12-27\",\"2024-12-30\",\"2024-12-31\",\"2025-01-02\",\"2025-01-03\",\"2025-01-06\",\"2025-01-07\",\"2025-01-08\",\"2025-01-09\",\"2025-01-10\",\"2025-01-13\",\"2025-01-14\",\"2025-01-15\",\"2025-01-16\",\"2025-01-17\",\"2025-01-20\",\"2025-01-21\",\"2025-01-22\",\"2025-01-23\",\"2025-01-24\",\"2025-01-27\",\"2025-02-05\",\"2025-02-06\",\"2025-02-07\",\"2025-02-10\",\"2025-02-11\",\"2025-02-12\",\"2025-02-13\",\"2025-02-14\",\"2025-02-17\",\"2025-02-18\",\"2025-02-19\",\"2025-02-20\",\"2025-02-21\",\"2025-02-24\",\"2025-02-25\",\"2025-02-26\",\"2025-02-27\",\"2025-02-28\",\"2025-03-03\",\"2025-03-04\",\"2025-03-05\",\"2025-03-06\",\"2025-03-07\",\"2025-03-10\",\"2025-03-11\",\"2025-03-12\",\"2025-03-13\",\"2025-03-14\",\"2025-03-17\",\"2025-03-18\",\"2025-03-19\",\"2025-03-20\",\"2025-03-21\",\"2025-03-24\",\"2025-03-25\",\"2025-03-26\",\"2025-03-27\",\"2025-03-28\",\"2025-03-31\",\"2025-04-01\",\"2025-04-02\",\"2025-04-03\",\"2025-04-07\",\"2025-04-08\",\"2025-04-09\",\"2025-04-10\",\"2025-04-11\",\"2025-04-14\",\"2025-04-15\",\"2025-04-16\",\"2025-04-17\",\"2025-04-18\",\"2025-04-21\",\"2025-04-22\",\"2025-04-23\",\"2025-04-24\",\"2025-04-25\",\"2025-04-28\",\"2025-04-29\",\"2025-04-30\",\"2025-05-06\",\"2025-05-07\",\"2025-05-08\",\"2025-05-09\",\"2025-05-12\",\"2025-05-13\",\"2025-05-14\",\"2025-05-15\",\"2025-05-16\",\"2025-05-19\",\"2025-05-20\",\"2025-05-21\",\"2025-05-22\",\"2025-05-23\",\"2025-05-26\",\"2025-05-27\",\"2025-05-28\",\"2025-05-29\",\"2025-05-30\",\"2025-06-03\",\"2025-06-04\",\"2025-06-05\",\"2025-06-06\",\"2025-06-09\",\"2025-06-10\",\"2025-06-11\",\"2025-06-12\",\"2025-06-13\",\"2025-06-16\",\"2025-06-17\",\"2025-06-18\",\"2025-06-19\",\"2025-06-20\",\"2025-06-23\",\"2025-06-24\",\"2025-06-25\",\"2025-06-26\",\"2025-06-27\",\"2025-06-30\",\"2025-07-01\",\"2025-07-02\",\"2025-07-03\",\"2025-07-04\",\"2025-07-07\",\"2025-07-08\",\"2025-07-09\",\"2025-07-10\",\"2025-07-11\",\"2025-07-14\",\"2025-07-15\",\"2025-07-16\",\"2025-07-17\",\"2025-07-18\",\"2025-07-21\",\"2025-07-22\",\"2025-07-23\",\"2025-07-24\",\"2025-07-25\",\"2025-07-28\",\"2025-07-29\",\"2025-07-30\",\"2025-07-31\",\"2025-08-01\",\"2025-08-04\",\"2025-08-05\",\"2025-08-06\",\"2025-08-07\",\"2025-08-08\",\"2025-08-11\",\"2025-08-12\",\"2025-08-13\",\"2025-08-14\",\"2025-08-15\",\"2025-08-18\",\"2025-08-19\",\"2025-08-20\",\"2025-08-21\",\"2025-08-22\",\"2025-08-25\",\"2025-08-26\",\"2025-08-27\",\"2025-08-28\",\"2025-08-29\",\"2025-09-01\",\"2025-09-02\",\"2025-09-03\",\"2025-09-04\",\"2025-09-05\",\"2025-09-08\",\"2025-09-09\",\"2025-09-10\",\"2025-09-11\",\"2025-09-12\",\"2025-09-15\",\"2025-09-16\",\"2025-09-17\",\"2025-09-18\",\"2025-09-19\",\"2025-09-22\",\"2025-09-23\",\"2025-09-24\",\"2025-09-25\",\"2025-09-26\",\"2025-09-29\",\"2025-09-30\",\"2025-10-09\",\"2025-10-10\",\"2025-10-13\",\"2025-10-14\",\"2025-10-15\",\"2025-10-16\",\"2025-10-17\",\"2025-10-20\",\"2025-10-21\",\"2025-10-22\",\"2025-10-23\",\"2025-10-24\",\"2025-10-27\",\"2025-10-28\",\"2025-10-29\",\"2025-10-30\",\"2025-10-31\",\"2025-11-03\",\"2025-11-04\",\"2025-11-05\",\"2025-11-06\",\"2025-11-07\",\"2025-11-10\",\"2025-11-11\",\"2025-11-12\",\"2025-11-13\",\"2025-11-14\",\"2025-11-17\",\"2025-11-18\",\"2025-11-19\",\"2025-11-20\",\"2025-11-21\",\"2025-11-24\",\"2025-11-25\",\"2025-11-26\",\"2025-11-27\",\"2025-11-28\",\"2025-12-01\",\"2025-12-02\",\"2025-12-03\",\"2025-12-04\",\"2025-12-05\",\"2025-12-08\",\"2025-12-09\",\"2025-12-10\",\"2025-12-11\",\"2025-12-12\",\"2025-12-15\",\"2025-12-16\",\"2025-12-17\",\"2025-12-18\",\"2025-12-19\",\"2025-12-22\",\"2025-12-23\",\"2025-12-24\",\"2025-12-25\",\"2025-12-26\",\"2025-12-29\",\"2025-12-30\",\"2025-12-31\",\"2026-01-05\",\"2026-01-06\",\"2026-01-07\",\"2026-01-08\",\"2026-01-09\",\"2026-01-12\",\"2026-01-13\",\"2026-01-14\",\"2026-01-15\",\"2026-01-16\",\"2026-01-19\",\"2026-01-20\",\"2026-01-21\",\"2026-01-22\",\"2026-01-23\",\"2026-01-26\",\"2026-01-27\",\"2026-01-28\",\"2026-01-29\",\"2026-01-30\",\"2026-02-02\",\"2026-02-03\",\"2026-02-04\",\"2026-02-05\",\"2026-02-06\",\"2026-02-09\",\"2026-02-10\",\"2026-02-11\",\"2026-02-12\",\"2026-02-13\",\"2026-02-24\",\"2026-02-25\",\"2026-02-26\",\"2026-02-27\",\"2026-03-02\",\"2026-03-03\",\"2026-03-04\",\"2026-03-05\",\"2026-03-06\",\"2026-03-09\",\"2026-03-10\",\"2026-03-11\",\"2026-03-12\",\"2026-03-13\",\"2026-03-16\",\"2026-03-17\",\"2026-03-18\",\"2026-03-19\",\"2026-03-20\",\"2026-03-23\",\"2026-03-24\",\"2026-03-25\",\"2026-03-26\",\"2026-03-27\",\"2026-03-30\",\"2026-03-31\",\"2026-04-01\",\"2026-04-02\",\"2026-04-03\",\"2026-04-07\",\"2026-04-08\",\"2026-04-09\",\"2026-04-10\",\"2026-04-13\",\"2026-04-14\",\"2026-04-15\",\"2026-04-16\",\"2026-04-17\",\"2026-04-20\",\"2026-04-21\",\"2026-04-22\",\"2026-04-23\",\"2026-04-24\",\"2026-04-27\",\"2026-04-28\",\"2026-04-29\",\"2026-04-30\",\"2026-05-06\",\"2026-05-07\",\"2026-05-08\",\"2026-05-11\",\"2026-05-12\",\"2026-05-13\",\"2026-05-14\",\"2026-05-15\",\"2026-05-18\",\"2026-05-19\",\"2026-05-20\",\"2026-05-21\",\"2026-05-22\",\"2026-05-25\",\"2026-05-26\",\"2026-05-27\",\"2026-05-28\",\"2026-05-29\",\"2026-06-01\",\"2026-06-02\",\"2026-06-03\",\"2026-06-04\",\"2026-06-05\",\"2026-06-08\",\"2026-06-09\",\"2026-06-10\",\"2026-06-11\",\"2026-06-12\",\"2026-06-15\",\"2026-06-16\",\"2026-06-17\",\"2026-06-18\",\"2026-06-22\",\"2026-06-23\",\"2026-06-24\",\"2026-06-25\",\"2026-06-26\",\"2026-06-29\",\"2026-06-30\",\"2026-07-01\",\"2026-07-02\",\"2026-07-03\",\"2026-07-06\",\"2026-07-07\",\"2026-07-08\",\"2026-07-09\",\"2026-07-10\",\"2026-07-13\",\"2026-07-14\",\"2026-07-15\",\"2026-07-16\",\"2026-07-17\",\"2026-07-20\",\"2026-07-21\",\"2026-07-22\",\"2026-07-23\",\"2026-07-24\",\"2026-07-27\",\"2026-07-28\",\"2026-07-29\",\"2026-07-30\",\"2026-07-31\",\"2026-08-03\",\"2026-08-04\",\"2026-08-05\",\"2026-08-06\",\"2026-08-07\",\"2026-08-10\",\"2026-08-11\",\"2026-08-12\",\"2026-08-13\",\"2026-08-14\",\"2026-08-17\",\"2026-08-18\",\"2026-08-19\",\"2026-08-20\",\"2026-08-21\",\"2026-08-24\",\"2026-08-25\",\"2026-08-26\",\"2026-08-27\",\"2026-08-28\",\"2026-08-31\",\"2026-09-01\",\"2026-09-02\",\"2026-09-03\",\"2026-09-04\",\"2026-09-07\",\"2026-09-08\",\"2026-09-09\",\"2026-09-10\",\"2026-09-11\",\"2026-09-14\",\"2026-09-15\",\"2026-09-16\",\"2026-09-17\",\"2026-09-18\",\"2026-09-21\",\"2026-09-22\",\"2026-09-23\",\"2026-09-24\",\"2026-09-28\",\"2026-09-29\",\"2026-09-30\",\"2026-10-08\",\"2026-10-09\",\"2026-10-12\",\"2026-10-13\",\"2026-10-14\",\"2026-10-15\",\"2026-10-16\",\"2026-10-19\",\"2026-10-20\",\"2026-10-21\"],\"calendar_name\":\"calendar\",\"calendar_sha256\":\"6d460f60ebdd614f77776602f03fa084a10fc059bde1d90755390ebeecd9f427\",\"requests\":{\"calendar\":{\"coverage\":null,\"dataset\":\"calendar.trading_sessions\",\"end\":\"2026-10-21\",\"frequency\":\"daily\",\"parameter_type\":\"NoParameters\",\"parameters\":{},\"required_cutoff\":\"2026-10-21\",\"start\":\"2024-09-09\",\"symbol\":\"SZSE\"},\"execution\":{\"coverage\":{\"maximum_start_lag_days\":0,\"minimum_observations\":1,\"minimum_sessions\":21,\"observations_through\":\"2024-12-31\"},\"dataset\":\"etf.unadjusted_daily\",\"end\":\"2026-10-20\",\"frequency\":\"daily\",\"parameter_type\":\"NoParameters\",\"parameters\":{},\"required_cutoff\":\"2026-10-20\",\"start\":\"2024-09-09\",\"symbol\":\"159326.SZ\"},\"intraday\":{\"coverage\":{\"maximum_start_lag_days\":0,\"minimum_observations\":8,\"minimum_sessions\":0,\"observations_through\":\"2025-01-02\"},\"dataset\":\"etf.unadjusted_intraday\",\"end\":\"2026-10-20\",\"frequency\":\"30m\",\"parameter_type\":\"NoParameters\",\"parameters\":{},\"required_cutoff\":\"2026-10-20\",\"start\":\"2025-01-02\",\"symbol\":\"159326.SZ\"},\"market\":{\"coverage\":{\"maximum_start_lag_days\":0,\"minimum_observations\":1,\"minimum_sessions\":21,\"observations_through\":\"2024-12-31\"},\"dataset\":\"etf.ohlcv\",\"end\":\"2026-10-20\",\"frequency\":\"daily\",\"parameter_type\":\"NoParameters\",\"parameters\":{},\"required_cutoff\":\"2026-10-20\",\"start\":\"2024-09-09\",\"symbol\":\"159326.SZ\"}},\"signal_dates\":{\"2025-01-02\":\"2024-12-31\",\"2025-01-03\":\"2025-01-02\",\"2025-01-06\":\"2025-01-03\",\"2025-01-07\":\"2025-01-06\",\"2025-01-08\":\"2025-01-07\",\"2025-01-09\":\"2025-01-08\",\"2025-01-10\":\"2025-01-09\",\"2025-01-13\":\"2025-01-10\",\"2025-01-14\":\"2025-01-13\",\"2025-01-15\":\"2025-01-14\",\"2025-01-16\":\"2025-01-15\",\"2025-01-17\":\"2025-01-16\",\"2025-01-20\":\"2025-01-17\",\"2025-01-21\":\"2025-01-20\",\"2025-01-22\":\"2025-01-21\",\"2025-01-23\":\"2025-01-22\",\"2025-01-24\":\"2025-01-23\",\"2025-01-27\":\"2025-01-24\",\"2025-02-05\":\"2025-01-27\",\"2025-02-06\":\"2025-02-05\",\"2025-02-07\":\"2025-02-06\",\"2025-02-10\":\"2025-02-07\",\"2025-02-11\":\"2025-02-10\",\"2025-02-12\":\"2025-02-11\",\"2025-02-13\":\"2025-02-12\",\"2025-02-14\":\"2025-02-13\",\"2025-02-17\":\"2025-02-14\",\"2025-02-18\":\"2025-02-17\",\"2025-02-19\":\"2025-02-18\",\"2025-02-20\":\"2025-02-19\",\"2025-02-21\":\"2025-02-20\",\"2025-02-24\":\"2025-02-21\",\"2025-02-25\":\"2025-02-24\",\"2025-02-26\":\"2025-02-25\",\"2025-02-27\":\"2025-02-26\",\"2025-02-28\":\"2025-02-27\",\"2025-03-03\":\"2025-02-28\",\"2025-03-04\":\"2025-03-03\",\"2025-03-05\":\"2025-03-04\",\"2025-03-06\":\"2025-03-05\",\"2025-03-07\":\"2025-03-06\",\"2025-03-10\":\"2025-03-07\",\"2025-03-11\":\"2025-03-10\",\"2025-03-12\":\"2025-03-11\",\"2025-03-13\":\"2025-03-12\",\"2025-03-14\":\"2025-03-13\",\"2025-03-17\":\"2025-03-14\",\"2025-03-18\":\"2025-03-17\",\"2025-03-19\":\"2025-03-18\",\"2025-03-20\":\"2025-03-19\",\"2025-03-21\":\"2025-03-20\",\"2025-03-24\":\"2025-03-21\",\"2025-03-25\":\"2025-03-24\",\"2025-03-26\":\"2025-03-25\",\"2025-03-27\":\"2025-03-26\",\"2025-03-28\":\"2025-03-27\",\"2025-03-31\":\"2025-03-28\",\"2025-04-01\":\"2025-03-31\",\"2025-04-02\":\"2025-04-01\",\"2025-04-03\":\"2025-04-02\",\"2025-04-07\":\"2025-04-03\",\"2025-04-08\":\"2025-04-07\",\"2025-04-09\":\"2025-04-08\",\"2025-04-10\":\"2025-04-09\",\"2025-04-11\":\"2025-04-10\",\"2025-04-14\":\"2025-04-11\",\"2025-04-15\":\"2025-04-14\",\"2025-04-16\":\"2025-04-15\",\"2025-04-17\":\"2025-04-16\",\"2025-04-18\":\"2025-04-17\",\"2025-04-21\":\"2025-04-18\",\"2025-04-22\":\"2025-04-21\",\"2025-04-23\":\"2025-04-22\",\"2025-04-24\":\"2025-04-23\",\"2025-04-25\":\"2025-04-24\",\"2025-04-28\":\"2025-04-25\",\"2025-04-29\":\"2025-04-28\",\"2025-04-30\":\"2025-04-29\",\"2025-05-06\":\"2025-04-30\",\"2025-05-07\":\"2025-05-06\",\"2025-05-08\":\"2025-05-07\",\"2025-05-09\":\"2025-05-08\",\"2025-05-12\":\"2025-05-09\",\"2025-05-13\":\"2025-05-12\",\"2025-05-14\":\"2025-05-13\",\"2025-05-15\":\"2025-05-14\",\"2025-05-16\":\"2025-05-15\",\"2025-05-19\":\"2025-05-16\",\"2025-05-20\":\"2025-05-19\",\"2025-05-21\":\"2025-05-20\",\"2025-05-22\":\"2025-05-21\",\"2025-05-23\":\"2025-05-22\",\"2025-05-26\":\"2025-05-23\",\"2025-05-27\":\"2025-05-26\",\"2025-05-28\":\"2025-05-27\",\"2025-05-29\":\"2025-05-28\",\"2025-05-30\":\"2025-05-29\",\"2025-06-03\":\"2025-05-30\",\"2025-06-04\":\"2025-06-03\",\"2025-06-05\":\"2025-06-04\",\"2025-06-06\":\"2025-06-05\",\"2025-06-09\":\"2025-06-06\",\"2025-06-10\":\"2025-06-09\",\"2025-06-11\":\"2025-06-10\",\"2025-06-12\":\"2025-06-11\",\"2025-06-13\":\"2025-06-12\",\"2025-06-16\":\"2025-06-13\",\"2025-06-17\":\"2025-06-16\",\"2025-06-18\":\"2025-06-17\",\"2025-06-19\":\"2025-06-18\",\"2025-06-20\":\"2025-06-19\",\"2025-06-23\":\"2025-06-20\",\"2025-06-24\":\"2025-06-23\",\"2025-06-25\":\"2025-06-24\",\"2025-06-26\":\"2025-06-25\",\"2025-06-27\":\"2025-06-26\",\"2025-06-30\":\"2025-06-27\",\"2025-07-01\":\"2025-06-30\",\"2025-07-02\":\"2025-07-01\",\"2025-07-03\":\"2025-07-02\",\"2025-07-04\":\"2025-07-03\",\"2025-07-07\":\"2025-07-04\",\"2025-07-08\":\"2025-07-07\",\"2025-07-09\":\"2025-07-08\",\"2025-07-10\":\"2025-07-09\",\"2025-07-11\":\"2025-07-10\",\"2025-07-14\":\"2025-07-11\",\"2025-07-15\":\"2025-07-14\",\"2025-07-16\":\"2025-07-15\",\"2025-07-17\":\"2025-07-16\",\"2025-07-18\":\"2025-07-17\",\"2025-07-21\":\"2025-07-18\",\"2025-07-22\":\"2025-07-21\",\"2025-07-23\":\"2025-07-22\",\"2025-07-24\":\"2025-07-23\",\"2025-07-25\":\"2025-07-24\",\"2025-07-28\":\"2025-07-25\",\"2025-07-29\":\"2025-07-28\",\"2025-07-30\":\"2025-07-29\",\"2025-07-31\":\"2025-07-30\",\"2025-08-01\":\"2025-07-31\",\"2025-08-04\":\"2025-08-01\",\"2025-08-05\":\"2025-08-04\",\"2025-08-06\":\"2025-08-05\",\"2025-08-07\":\"2025-08-06\",\"2025-08-08\":\"2025-08-07\",\"2025-08-11\":\"2025-08-08\",\"2025-08-12\":\"2025-08-11\",\"2025-08-13\":\"2025-08-12\",\"2025-08-14\":\"2025-08-13\",\"2025-08-15\":\"2025-08-14\",\"2025-08-18\":\"2025-08-15\",\"2025-08-19\":\"2025-08-18\",\"2025-08-20\":\"2025-08-19\",\"2025-08-21\":\"2025-08-20\",\"2025-08-22\":\"2025-08-21\",\"2025-08-25\":\"2025-08-22\",\"2025-08-26\":\"2025-08-25\",\"2025-08-27\":\"2025-08-26\",\"2025-08-28\":\"2025-08-27\",\"2025-08-29\":\"2025-08-28\",\"2025-09-01\":\"2025-08-29\",\"2025-09-02\":\"2025-09-01\",\"2025-09-03\":\"2025-09-02\",\"2025-09-04\":\"2025-09-03\",\"2025-09-05\":\"2025-09-04\",\"2025-09-08\":\"2025-09-05\",\"2025-09-09\":\"2025-09-08\",\"2025-09-10\":\"2025-09-09\",\"2025-09-11\":\"2025-09-10\",\"2025-09-12\":\"2025-09-11\",\"2025-09-15\":\"2025-09-12\",\"2025-09-16\":\"2025-09-15\",\"2025-09-17\":\"2025-09-16\",\"2025-09-18\":\"2025-09-17\",\"2025-09-19\":\"2025-09-18\",\"2025-09-22\":\"2025-09-19\",\"2025-09-23\":\"2025-09-22\",\"2025-09-24\":\"2025-09-23\",\"2025-09-25\":\"2025-09-24\",\"2025-09-26\":\"2025-09-25\",\"2025-09-29\":\"2025-09-26\",\"2025-09-30\":\"2025-09-29\",\"2025-10-09\":\"2025-09-30\",\"2025-10-10\":\"2025-10-09\",\"2025-10-13\":\"2025-10-10\",\"2025-10-14\":\"2025-10-13\",\"2025-10-15\":\"2025-10-14\",\"2025-10-16\":\"2025-10-15\",\"2025-10-17\":\"2025-10-16\",\"2025-10-20\":\"2025-10-17\",\"2025-10-21\":\"2025-10-20\",\"2025-10-22\":\"2025-10-21\",\"2025-10-23\":\"2025-10-22\",\"2025-10-24\":\"2025-10-23\",\"2025-10-27\":\"2025-10-24\",\"2025-10-28\":\"2025-10-27\",\"2025-10-29\":\"2025-10-28\",\"2025-10-30\":\"2025-10-29\",\"2025-10-31\":\"2025-10-30\",\"2025-11-03\":\"2025-10-31\",\"2025-11-04\":\"2025-11-03\",\"2025-11-05\":\"2025-11-04\",\"2025-11-06\":\"2025-11-05\",\"2025-11-07\":\"2025-11-06\",\"2025-11-10\":\"2025-11-07\",\"2025-11-11\":\"2025-11-10\",\"2025-11-12\":\"2025-11-11\",\"2025-11-13\":\"2025-11-12\",\"2025-11-14\":\"2025-11-13\",\"2025-11-17\":\"2025-11-14\",\"2025-11-18\":\"2025-11-17\",\"2025-11-19\":\"2025-11-18\",\"2025-11-20\":\"2025-11-19\",\"2025-11-21\":\"2025-11-20\",\"2025-11-24\":\"2025-11-21\",\"2025-11-25\":\"2025-11-24\",\"2025-11-26\":\"2025-11-25\",\"2025-11-27\":\"2025-11-26\",\"2025-11-28\":\"2025-11-27\",\"2025-12-01\":\"2025-11-28\",\"2025-12-02\":\"2025-12-01\",\"2025-12-03\":\"2025-12-02\",\"2025-12-04\":\"2025-12-03\",\"2025-12-05\":\"2025-12-04\",\"2025-12-08\":\"2025-12-05\",\"2025-12-09\":\"2025-12-08\",\"2025-12-10\":\"2025-12-09\",\"2025-12-11\":\"2025-12-10\",\"2025-12-12\":\"2025-12-11\",\"2025-12-15\":\"2025-12-12\",\"2025-12-16\":\"2025-12-15\",\"2025-12-17\":\"2025-12-16\",\"2025-12-18\":\"2025-12-17\",\"2025-12-19\":\"2025-12-18\",\"2025-12-22\":\"2025-12-19\",\"2025-12-23\":\"2025-12-22\",\"2025-12-24\":\"2025-12-23\",\"2025-12-25\":\"2025-12-24\",\"2025-12-26\":\"2025-12-25\",\"2025-12-29\":\"2025-12-26\",\"2025-12-30\":\"2025-12-29\",\"2025-12-31\":\"2025-12-30\",\"2026-01-05\":\"2025-12-31\",\"2026-01-06\":\"2026-01-05\",\"2026-01-07\":\"2026-01-06\",\"2026-01-08\":\"2026-01-07\",\"2026-01-09\":\"2026-01-08\",\"2026-01-12\":\"2026-01-09\",\"2026-01-13\":\"2026-01-12\",\"2026-01-14\":\"2026-01-13\",\"2026-01-15\":\"2026-01-14\",\"2026-01-16\":\"2026-01-15\",\"2026-01-19\":\"2026-01-16\",\"2026-01-20\":\"2026-01-19\",\"2026-01-21\":\"2026-01-20\",\"2026-01-22\":\"2026-01-21\",\"2026-01-23\":\"2026-01-22\",\"2026-01-26\":\"2026-01-23\",\"2026-01-27\":\"2026-01-26\",\"2026-01-28\":\"2026-01-27\",\"2026-01-29\":\"2026-01-28\",\"2026-01-30\":\"2026-01-29\",\"2026-02-02\":\"2026-01-30\",\"2026-02-03\":\"2026-02-02\",\"2026-02-04\":\"2026-02-03\",\"2026-02-05\":\"2026-02-04\",\"2026-02-06\":\"2026-02-05\",\"2026-02-09\":\"2026-02-06\",\"2026-02-10\":\"2026-02-09\",\"2026-02-11\":\"2026-02-10\",\"2026-02-12\":\"2026-02-11\",\"2026-02-13\":\"2026-02-12\",\"2026-02-24\":\"2026-02-13\",\"2026-02-25\":\"2026-02-24\",\"2026-02-26\":\"2026-02-25\",\"2026-02-27\":\"2026-02-26\",\"2026-03-02\":\"2026-02-27\",\"2026-03-03\":\"2026-03-02\",\"2026-03-04\":\"2026-03-03\",\"2026-03-05\":\"2026-03-04\",\"2026-03-06\":\"2026-03-05\",\"2026-03-09\":\"2026-03-06\",\"2026-03-10\":\"2026-03-09\",\"2026-03-11\":\"2026-03-10\",\"2026-03-12\":\"2026-03-11\",\"2026-03-13\":\"2026-03-12\",\"2026-03-16\":\"2026-03-13\",\"2026-03-17\":\"2026-03-16\",\"2026-03-18\":\"2026-03-17\",\"2026-03-19\":\"2026-03-18\",\"2026-03-20\":\"2026-03-19\",\"2026-03-23\":\"2026-03-20\",\"2026-03-24\":\"2026-03-23\",\"2026-03-25\":\"2026-03-24\",\"2026-03-26\":\"2026-03-25\",\"2026-03-27\":\"2026-03-26\",\"2026-03-30\":\"2026-03-27\",\"2026-03-31\":\"2026-03-30\",\"2026-04-01\":\"2026-03-31\",\"2026-04-02\":\"2026-04-01\",\"2026-04-03\":\"2026-04-02\",\"2026-04-07\":\"2026-04-03\",\"2026-04-08\":\"2026-04-07\",\"2026-04-09\":\"2026-04-08\",\"2026-04-10\":\"2026-04-09\",\"2026-04-13\":\"2026-04-10\",\"2026-04-14\":\"2026-04-13\",\"2026-04-15\":\"2026-04-14\",\"2026-04-16\":\"2026-04-15\",\"2026-04-17\":\"2026-04-16\",\"2026-04-20\":\"2026-04-17\",\"2026-04-21\":\"2026-04-20\",\"2026-04-22\":\"2026-04-21\",\"2026-04-23\":\"2026-04-22\",\"2026-04-24\":\"2026-04-23\",\"2026-04-27\":\"2026-04-24\",\"2026-04-28\":\"2026-04-27\",\"2026-04-29\":\"2026-04-28\",\"2026-04-30\":\"2026-04-29\",\"2026-05-06\":\"2026-04-30\",\"2026-05-07\":\"2026-05-06\",\"2026-05-08\":\"2026-05-07\",\"2026-05-11\":\"2026-05-08\",\"2026-05-12\":\"2026-05-11\",\"2026-05-13\":\"2026-05-12\",\"2026-05-14\":\"2026-05-13\",\"2026-05-15\":\"2026-05-14\",\"2026-05-18\":\"2026-05-15\",\"2026-05-19\":\"2026-05-18\",\"2026-05-20\":\"2026-05-19\",\"2026-05-21\":\"2026-05-20\",\"2026-05-22\":\"2026-05-21\",\"2026-05-25\":\"2026-05-22\",\"2026-05-26\":\"2026-05-25\",\"2026-05-27\":\"2026-05-26\",\"2026-05-28\":\"2026-05-27\",\"2026-05-29\":\"2026-05-28\",\"2026-06-01\":\"2026-05-29\",\"2026-06-02\":\"2026-06-01\",\"2026-06-03\":\"2026-06-02\",\"2026-06-04\":\"2026-06-03\",\"2026-06-05\":\"2026-06-04\",\"2026-06-08\":\"2026-06-05\",\"2026-06-09\":\"2026-06-08\",\"2026-06-10\":\"2026-06-09\",\"2026-06-11\":\"2026-06-10\",\"2026-06-12\":\"2026-06-11\",\"2026-06-15\":\"2026-06-12\",\"2026-06-16\":\"2026-06-15\",\"2026-06-17\":\"2026-06-16\",\"2026-06-18\":\"2026-06-17\",\"2026-06-22\":\"2026-06-18\",\"2026-06-23\":\"2026-06-22\",\"2026-06-24\":\"2026-06-23\",\"2026-06-25\":\"2026-06-24\",\"2026-06-26\":\"2026-06-25\",\"2026-06-29\":\"2026-06-26\",\"2026-06-30\":\"2026-06-29\",\"2026-07-01\":\"2026-06-30\",\"2026-07-02\":\"2026-07-01\",\"2026-07-03\":\"2026-07-02\",\"2026-07-06\":\"2026-07-03\",\"2026-07-07\":\"2026-07-06\",\"2026-07-08\":\"2026-07-07\",\"2026-07-09\":\"2026-07-08\",\"2026-07-10\":\"2026-07-09\",\"2026-07-13\":\"2026-07-10\",\"2026-07-14\":\"2026-07-13\",\"2026-07-15\":\"2026-07-14\",\"2026-07-16\":\"2026-07-15\",\"2026-07-17\":\"2026-07-16\",\"2026-07-20\":\"2026-07-17\",\"2026-07-21\":\"2026-07-20\",\"2026-07-22\":\"2026-07-21\",\"2026-07-23\":\"2026-07-22\",\"2026-07-24\":\"2026-07-23\",\"2026-07-27\":\"2026-07-24\",\"2026-07-28\":\"2026-07-27\",\"2026-07-29\":\"2026-07-28\",\"2026-07-30\":\"2026-07-29\",\"2026-07-31\":\"2026-07-30\",\"2026-08-03\":\"2026-07-31\",\"2026-08-04\":\"2026-08-03\",\"2026-08-05\":\"2026-08-04\",\"2026-08-06\":\"2026-08-05\",\"2026-08-07\":\"2026-08-06\",\"2026-08-10\":\"2026-08-07\",\"2026-08-11\":\"2026-08-10\",\"2026-08-12\":\"2026-08-11\",\"2026-08-13\":\"2026-08-12\",\"2026-08-14\":\"2026-08-13\",\"2026-08-17\":\"2026-08-14\",\"2026-08-18\":\"2026-08-17\",\"2026-08-19\":\"2026-08-18\",\"2026-08-20\":\"2026-08-19\",\"2026-08-21\":\"2026-08-20\",\"2026-08-24\":\"2026-08-21\",\"2026-08-25\":\"2026-08-24\",\"2026-08-26\":\"2026-08-25\",\"2026-08-27\":\"2026-08-26\",\"2026-08-28\":\"2026-08-27\",\"2026-08-31\":\"2026-08-28\",\"2026-09-01\":\"2026-08-31\",\"2026-09-02\":\"2026-09-01\",\"2026-09-03\":\"2026-09-02\",\"2026-09-04\":\"2026-09-03\",\"2026-09-07\":\"2026-09-04\",\"2026-09-08\":\"2026-09-07\",\"2026-09-09\":\"2026-09-08\",\"2026-09-10\":\"2026-09-09\",\"2026-09-11\":\"2026-09-10\",\"2026-09-14\":\"2026-09-11\",\"2026-09-15\":\"2026-09-14\",\"2026-09-16\":\"2026-09-15\",\"2026-09-17\":\"2026-09-16\",\"2026-09-18\":\"2026-09-17\",\"2026-09-21\":\"2026-09-18\",\"2026-09-22\":\"2026-09-21\",\"2026-09-23\":\"2026-09-22\",\"2026-09-24\":\"2026-09-23\",\"2026-09-28\":\"2026-09-24\",\"2026-09-29\":\"2026-09-28\",\"2026-09-30\":\"2026-09-29\",\"2026-10-08\":\"2026-09-30\",\"2026-10-09\":\"2026-10-08\",\"2026-10-12\":\"2026-10-09\",\"2026-10-13\":\"2026-10-12\",\"2026-10-14\":\"2026-10-13\",\"2026-10-15\":\"2026-10-14\",\"2026-10-16\":\"2026-10-15\",\"2026-10-19\":\"2026-10-16\",\"2026-10-20\":\"2026-10-19\",\"2026-10-21\":\"2026-10-20\"},\"strategy\":{\"reference_id\":\"S015-C5901\",\"release_hash\":\"f118643cfbc84b45a1fade45b4b948b2a92542ebdc95ef1094f14b6017080fb9\",\"runtime_sha256\":\"c818b0d6518b51240c9e8d2c08bbda581ddf5b234769e4754ae50f66bac8a29f\",\"strategy_id\":\"S015\",\"symbol\":\"159326.SZ\"},\"tradable_window\":{\"end\":\"2026-10-21\",\"start\":\"2025-01-02\"}},\"prepared\":{\"manifest_sha256\":\"9101439e2b62a0a5ff89a37e08fc6ef98baa0299acf592cd7bce1e006e02ca04\",\"preparation_id\":\"63728ef9-ae1a-4075-80d7-2c6a55bb63d4\",\"space_id\":\"67b4df74-e6d9-4fa4-9200-b5694e5d7018\"},\"schema_version\":1}"
+    }
+  ],
+  "execution_contract_json": "{\"checkpoints\":[],\"decision_effective_time_rule\":\"NEXT_SESSION\",\"decision_output_kind\":\"CYCLE_TARGET\",\"order_types\":[\"LIMIT\",\"MARKET\"],\"policy\":{\"policy_type\":\"FROZEN_RULE\",\"settings\":{\"capital\":{\"mode\":\"signal_cash_fraction\",\"target_scope\":\"entry_cycle\"},\"entry\":{\"limit_parameter\":0.01,\"order_type\":\"LIMIT\"},\"exit\":{\"limit_ratio\":0.1,\"order_type\":\"MARKET\"},\"instrument\":{\"lot_size\":100,\"maximum_order_quantity\":1000000,\"price_limit_ratio\":0.1,\"price_tick\":0.001}}}}",
+  "schema_version": 2
+}

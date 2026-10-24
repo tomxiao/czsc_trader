@@ -1,0 +1,159 @@
+{
+  "source": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S015"
+    },
+    "stage": "MANDATE",
+    "revision": 3,
+    "content_sha256": "5563c98c1a2ed876b6d75b775437f35ec2c31777818ad0f9b67e89c90d30d90a"
+  },
+  "reference": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S015"
+    },
+    "stage": "MANDATE",
+    "revision": 4,
+    "content_sha256": "c43e72867f5e0a3927c9adfaf11cb1d3b0c76e523a705b3ff054dc5b1546a6d4"
+  },
+  "schema_version": 11,
+  "validation": {
+    "type": "DeliveryValidation",
+    "status": "PASS",
+    "scope": "FULL",
+    "issues": [],
+    "stats": {
+      "type": "DeliveryValidationStats",
+      "unique_deliveries": 4,
+      "reference_visits": 5,
+      "recursive_expansions": 4,
+      "semantic_reuses": 1,
+      "files_hashed": 334,
+      "bytes_hashed": 3784182,
+      "elapsed_seconds": 0.5180748000275344,
+      "authentication_seconds": 0.0,
+      "recomputation_seconds": 0.0,
+      "final_recheck_seconds": 0.19108140002936125,
+      "accounts_authenticated": 0,
+      "account_reuses": 0,
+      "file_read_task_seconds": 0.04906770051456988,
+      "file_hash_task_seconds": 0.010894399951212108,
+      "package_load_seconds": 0.12154270010069013
+    }
+  },
+  "changed_items": [
+    "performance",
+    "current-authorization"
+  ],
+  "parameter_economic_conditions_unchanged": true,
+  "other_targets_exactly_unchanged": true,
+  "other_items_exactly_unchanged": true,
+  "old_publication_files_unchanged": 4,
+  "authorization": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX064_20261024"
+    },
+    "evidence_id": "7fc5beb057ad0b6447c55d10a3e9ed6e1f27d66056fc834e15fc9895576b04b7.json",
+    "sha256": "7fc5beb057ad0b6447c55d10a3e9ed6e1f27d66056fc834e15fc9895576b04b7",
+    "media_type": "application/json",
+    "name": "mandate_authorization",
+    "schema": null,
+    "schema_version": null
+  },
+  "method": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX064_20261024"
+    },
+    "evidence_id": "40d7b15800cb7800be821f2c52b17f20c23babbccf39131bada6f50c46d5e30d.json",
+    "sha256": "40d7b15800cb7800be821f2c52b17f20c23babbccf39131bada6f50c46d5e30d",
+    "media_type": "application/json",
+    "name": "parameter_method",
+    "schema": null,
+    "schema_version": null
+  },
+  "new_target": {
+    "type": "ParameterNeighborhoodTarget",
+    "target_id": "parameters",
+    "minimum_numerator": 13,
+    "minimum_denominator": 16,
+    "joint_targets": [
+      {
+        "type": "ResearchTarget",
+        "target_id": "point-positive",
+        "metric": "NET_ANNUAL_RETURN",
+        "lower": {
+          "type": "BenchmarkBound",
+          "multiplier": 1.25,
+          "inclusive": true
+        },
+        "upper": null,
+        "when": {
+          "type": "BenchmarkCondition",
+          "metric": "NET_ANNUAL_RETURN",
+          "operator": "GT",
+          "value": 0.0
+        },
+        "scope": "STANDARD",
+        "one_way_cost": 0.001
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "point-nonpositive",
+        "metric": "NET_ANNUAL_RETURN",
+        "lower": {
+          "type": "ConstantBound",
+          "value": 0.0,
+          "inclusive": false
+        },
+        "upper": null,
+        "when": {
+          "type": "BenchmarkCondition",
+          "metric": "NET_ANNUAL_RETURN",
+          "operator": "LE",
+          "value": 0.0
+        },
+        "scope": "STANDARD",
+        "one_way_cost": 0.001
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "point-relative-dd",
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "lower": null,
+        "upper": {
+          "type": "BenchmarkBound",
+          "multiplier": 0.9,
+          "inclusive": true
+        },
+        "when": null,
+        "scope": "STANDARD",
+        "one_way_cost": 0.001
+      }
+    ],
+    "all_point_targets": [
+      {
+        "type": "ResearchTarget",
+        "target_id": "point-cap",
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "lower": null,
+        "upper": {
+          "type": "ConstantBound",
+          "value": 0.25,
+          "inclusive": true
+        },
+        "when": null,
+        "scope": "STANDARD",
+        "one_way_cost": 0.001
+      }
+    ]
+  }
+}
