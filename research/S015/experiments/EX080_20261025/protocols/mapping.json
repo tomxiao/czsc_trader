@@ -1,0 +1,36 @@
+{
+  "version": "S015-EX080-price-repair-stage4-v1",
+  "payload_root": "parameters",
+  "axes": {
+    "center_kind": {
+      "domain": [
+        "mean",
+        "median"
+      ],
+      "meaning": "price-center definition",
+      "treatment": "structure fixed, not a local perturbation"
+    },
+    "lookback": {
+      "domain": "integer[1,30]",
+      "unit": "sessions",
+      "minimum_legal_step": 1,
+      "relative_limit": 0.05
+    },
+    "allocation": {
+      "domain": "continuous(0,1]",
+      "unit": "fraction",
+      "relative_limit": 0.05,
+      "meaning": "entry-cycle cash allocation; .025 search grid is not a lawful quantum"
+    },
+    "minimum_repair_space": {
+      "domain": "continuous[0,.05]",
+      "unit": "price_ratio",
+      "positive_center": "relative .05",
+      "zero_reference_scale": 0.002002002002001957,
+      "zero_absolute_limit": 0.00010010010010009785,
+      "zero_reason": "Standard roundtrip fee hurdle is an ex ante business scale, not performance-selected. Zero has no relative scale; use5% of this reference only for zero centers."
+    }
+  },
+  "constraints": "Pure payload domains only; no performance-based feasibility, no clipping or rounding. Fixed center_kind and out-of-cap lookback.",
+  "comparison": "Exact design comparison_sha256, actual scales and shapes; never force a global ranking."
+}
