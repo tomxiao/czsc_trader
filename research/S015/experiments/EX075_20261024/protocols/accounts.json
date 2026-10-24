@@ -1,0 +1,42 @@
+{
+  "stage": 2,
+  "round": 9,
+  "maximum_rounds": 20,
+  "question": "完整原型是否依靠低费用、入场已完成的修复或少数交易？是否能减少入场日亏损、代价是什么？",
+  "design": "C7400/C7401完全相同源、参数与内容身份；每侧费用0.2%，两窗口各独立10万元；与EX074标准费用配对。保留输入绑定，费用同时影响买入预算。",
+  "diagnostics": "历史完整账分解入场日净损益及后续恢复；机会激活固定锚在实际成交价处是否已达到；逐年和滚动窗口；旧C6105盈利入场覆盖，区分已持仓与空仓，非反事实利润。",
+  "support": "费用压力按原MANDATE/5四项标准判断；入场日亏损不预设消除，检查是否仍有机会修复暴露和过度收益集中。",
+  "refute": "如大部分盈利来自成交时已超过目标的周期，降级修复机制解释；明显交易队列依赖如实披露，不用事后删亏损修复账户。",
+  "configurations": [
+    {
+      "center_kind": "mean",
+      "lookback": 3,
+      "allocation": 1.0
+    },
+    {
+      "center_kind": "median",
+      "lookback": 3,
+      "allocation": 1.0
+    }
+  ],
+  "resources": {
+    "workers": 8,
+    "native_threads": 1,
+    "seed": 13
+  },
+  "scope": "阶段二原型证据，不构成阶段四全项自检；不改变经济门槛或数据许可。",
+  "summary_source": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX025_20261023"
+    },
+    "evidence_id": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5.py",
+    "sha256": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5",
+    "media_type": "text/x-python",
+    "name": "execution_suite_v4",
+    "schema": null,
+    "schema_version": null
+  }
+}

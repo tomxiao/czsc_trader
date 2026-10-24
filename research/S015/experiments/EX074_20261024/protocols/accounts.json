@@ -1,0 +1,42 @@
+{
+  "stage": 2,
+  "round": 8,
+  "maximum_rounds": 20,
+  "question": "删除失活试验参数后，金融逻辑的最小表达是否保持原完整账户？",
+  "design": "mean/median，lookback3，allocation1；仅三个有效参数。保持机会激活锚、中心失效与原执行；不优化。",
+  "financial_logic": "上涨中心背景中收盘低于中心，承担暂时偏离风险；固定激活中心为完成线，中心退回激活时旧中心为失败线；无持有期限。三日是背景测量尺度而非持仓到期，跨尺度弱点仍保留。",
+  "support": "全历史信号、截断前缀、完整账户经济字段与C7001/C7005逐值等价；不同内容身份及观察字段如实单列。",
+  "refute": "任何经济差异先视为实现失败，不接受数值近似替代。",
+  "configurations": [
+    {
+      "center_kind": "mean",
+      "lookback": 3,
+      "allocation": 1.0
+    },
+    {
+      "center_kind": "median",
+      "lookback": 3,
+      "allocation": 1.0
+    }
+  ],
+  "resources": {
+    "workers": 8,
+    "native_threads": 1,
+    "seed": 13
+  },
+  "scope": "unchanged S015 retained 434/415 development data; no independent sample; no stage3/4",
+  "summary_source": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX025_20261023"
+    },
+    "evidence_id": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5.py",
+    "sha256": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5",
+    "media_type": "text/x-python",
+    "name": "execution_suite_v4",
+    "schema": null,
+    "schema_version": null
+  }
+}
