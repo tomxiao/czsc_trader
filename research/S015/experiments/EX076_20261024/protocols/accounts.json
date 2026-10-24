@@ -1,0 +1,112 @@
+{
+  "stage": 3,
+  "round": 1,
+  "authorization": "同意，请按这个方向自主执行并完成阶段三",
+  "branch": "codex/s015-stage2-dual-objective",
+  "stage2_reference": {
+    "batch": {
+      "strategy_id": "S015",
+      "type": "ResearchBatchRef"
+    },
+    "content_sha256": "5b21365bfd4fbdeb82fddadbd625f3afea351168f037d87f338ba66d2480f39f",
+    "revision": 4,
+    "stage": "PROTOTYPES",
+    "type": "DeliveryReference"
+  },
+  "question": "信号时的修复空间过滤能否改善完整账户，而非只降低成交越过目标比例？",
+  "financial_logic": "修复目标必须提供承担费用与执行偏差的余地；只改变新机会激活，不改变持有、退出及续买合同。门槛是研究变量，不是新增验收硬门。",
+  "design": "mean/median x 0、标准双边费、费加0.5%买价余量、费加1%买价余量；背景3日、投入1固定。每侧假设费.001，必要价格比=(1+余量)*(1+.001)/(1-.001)。",
+  "hurdles": [
+    0.0,
+    0.002002002002001957,
+    0.007012012012011848,
+    0.012022022022021961
+  ],
+  "configurations": [
+    {
+      "center_kind": "mean",
+      "lookback": 3,
+      "allocation": 1.0,
+      "minimum_repair_space": 0.0
+    },
+    {
+      "center_kind": "mean",
+      "lookback": 3,
+      "allocation": 1.0,
+      "minimum_repair_space": 0.002002002002001957
+    },
+    {
+      "center_kind": "mean",
+      "lookback": 3,
+      "allocation": 1.0,
+      "minimum_repair_space": 0.007012012012011848
+    },
+    {
+      "center_kind": "mean",
+      "lookback": 3,
+      "allocation": 1.0,
+      "minimum_repair_space": 0.012022022022021961
+    },
+    {
+      "center_kind": "median",
+      "lookback": 3,
+      "allocation": 1.0,
+      "minimum_repair_space": 0.0
+    },
+    {
+      "center_kind": "median",
+      "lookback": 3,
+      "allocation": 1.0,
+      "minimum_repair_space": 0.002002002002001957
+    },
+    {
+      "center_kind": "median",
+      "lookback": 3,
+      "allocation": 1.0,
+      "minimum_repair_space": 0.007012012012011848
+    },
+    {
+      "center_kind": "median",
+      "lookback": 3,
+      "allocation": 1.0,
+      "minimum_repair_space": 0.012022022022021961
+    }
+  ],
+  "support": "在既有434/415中心目标及频率下观察收益风险改进，比较旧盈利覆盖、实际首次成交与续买空间；不以单项比例改善替代经济价值。",
+  "refute": "门槛减少成交越过目标却损失收益或频率，则其当前用途无益；允许保留零门槛原型。",
+  "scope": "既有S015159326.SZ数据，434/415独立10万元窗口及原预热；不新增数据、变更执行、阶段四或冻结。",
+  "search_followup": {
+    "fixed_joint_grid": "两中心 x 背景2..10 x 门槛0/费用/费用+1%，100%投入；背景3日门槛0/费用再比较75/85/95%投入；复用本轮已评配置。",
+    "adaptive": "64次真实四参数约束TPE提议，每8次全部反馈后下一批；门槛0..2%，背景2..10，投入.6..1步.025。",
+    "budget": "本轮8配置；联合阶段最多124个新增配置；条件扩边最多64个新增配置。阶段三自主范围最多196个新配置，预计3至4个研究问题。技术重复单列，不继承阶段二剩余额度为新阶段限制。",
+    "boundary": "若10日、门槛2%或投入60%暂定边界出现达标/有意义前沿改善，按证据扩至15/20日、3%或40/50%并检验；背景2日有改善补测1日。零门槛、100%投入为机制/无杠杆自然边界。",
+    "stop": "完成问题对照、联合覆盖及反馈搜索，处理真实边界改善；如无新的方向证据停止，不为赢家继续加过滤或改持有规则。"
+  },
+  "resources": {
+    "workers": 8,
+    "native_threads": 1,
+    "seed": 13
+  },
+  "dependencies": {
+    "research\\S015\\experiments\\EX074_20261024\\src\\strategy_runtime\\strategies\\price_process.py": "4533faaf8865cae68bd59c6b6852ecb41eaa123aa549a660469ae38fcd51d78b"
+  },
+  "limitations": [
+    "激活门槛不保证延迟首次成交、续买和次日卖出仍有空间；精确规划还含档位与涨跌停。",
+    "实际费用压力保持信号门槛假设费不变。",
+    "全部数据已见，旧选择历史和资格不清零。"
+  ],
+  "summary_source": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX025_20261023"
+    },
+    "evidence_id": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5.py",
+    "sha256": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5",
+    "media_type": "text/x-python",
+    "name": "execution_suite_v4",
+    "schema": null,
+    "schema_version": null
+  }
+}

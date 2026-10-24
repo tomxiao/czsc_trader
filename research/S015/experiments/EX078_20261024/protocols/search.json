@@ -1,0 +1,78 @@
+{
+  "stage": 3,
+  "authorization": "同意，请按这个方向自主执行并完成阶段三",
+  "question": "正确纳入原8个强对照约束后，32次反馈搜索是否改变候选集合或方向？",
+  "financial_logic": "同一固定目标与中心失效，只联合选择信号时可观察修复空间、近期中心测量及风险预算；没有固定持有期。",
+  "fixed_grid": [],
+  "inherited": "EX076八配置+EX077全部124配置，用公共ask/tell重放实际已观测结果，逐条核验sampler constraints，不产生新账户。",
+  "adaptive": {
+    "proposals": 32,
+    "batch_size": 8,
+    "sampler": "multivariate constrained TPE",
+    "seed": 13,
+    "space": {
+      "center_kind": [
+        "mean",
+        "median"
+      ],
+      "lookback": [
+        2,
+        10
+      ],
+      "allocation": [
+        0.6,
+        1.0,
+        0.025
+      ],
+      "minimum_repair_space": [
+        0.0,
+        0.02
+      ]
+    }
+  },
+  "objectives": [
+    "434 net maximize",
+    "434 dd minimize",
+    "415 net maximize",
+    "415 dd minimize"
+  ],
+  "eligibility": "原434经济双频率和415严格双优，独立核验，无加权抵消。成本/入场亏损诊断不追加硬门。",
+  "resources": {
+    "workers": 8,
+    "native_threads": 1
+  },
+  "boundary_and_stopping": "若10日、门槛2%或投入60%暂定边界出现达标/有意义前沿改善，按证据扩至15/20日、3%或40/50%并检验；背景2日有改善补测1日。零门槛、100%投入为机制/无杠杆自然边界。；完成问题对照、联合覆盖及反馈搜索，处理真实边界改善；如无新的方向证据停止，不为赢家继续加过滤或改持有规则。",
+  "budget": "使用首轮预留64配置中的至多32；阶段三总新配置上限仍196，余32用于有证据的扩边。",
+  "source": "Exact EX076 runtime; no duplicate source clone or changed account semantics.",
+  "dependencies": {
+    "research\\S015\\experiments\\EX076_20261024\\src\\accounts.py": "5aa8056ae61e18ebd1605dc42572eeeea01235dd688647024b1d7f4037b3e09f",
+    "research\\S015\\experiments\\EX076_20261024\\src\\strategy_runtime\\strategies\\price_process.py": "8ae8b895bea8a136bd8250829665fb123fb5827bd280aa41922f3f8c8f2888d3",
+    "research\\S015\\experiments\\EX016_20261023\\src\\suite.py": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5",
+    "research\\S015\\experiments\\EX074_20261024\\src\\account_audit.py": "2991397672dc773a1f29451be10182b11181756ea1609627c0c9618513e95c56",
+    "research\\S015\\experiments\\EX077_20261024\\others\\results.json": "171d031e23cd8681778d0990f2168f3075cb6c53f6b90fa8443eb5b5313caf7b"
+  },
+  "limits": [
+    "激活门槛不保证延迟首次成交、续买和次日卖出仍有空间；精确规划还含档位与涨跌停。",
+    "实际费用压力保持信号门槛假设费不变。",
+    "全部数据已见，旧选择历史和资格不清零。"
+  ],
+  "scope": "既有S015159326.SZ数据，434/415独立10万元窗口及原预热；不新增数据、变更执行、阶段四或冻结。",
+  "repair_review": {
+    "status": "SAMPLER_INITIALIZATION_DEVIATION",
+    "missing_sampler_constraint_trials": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "completed_trials": 132,
+    "affected": "Eight inherited controls had values and user attributes but no sampler constraint system facts; lower priority in EX077.",
+    "unaffected": "All124 new accounts and exact economic/frequency checks, including60fixed and64adaptive proposals, remain genuine.",
+    "repair": "Public enqueue/ask/suggest/set_user_attr/tell on all132 retained configurations before32additional proposals; independently assert constraints for every replayed observation.",
+    "no_retrospective_claim": "Do not claim EX077 inherited controls were correctly constrained or overwrite its experiment."
+  }
+}

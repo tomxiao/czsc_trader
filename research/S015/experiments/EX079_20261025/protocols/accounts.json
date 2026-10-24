@@ -1,0 +1,184 @@
+{
+  "stage": 3,
+  "round": 4,
+  "authorization": "同意，请按这个方向自主执行并完成阶段三",
+  "question": "同一策略身份、固定信号空间假设，实际费用翻倍后，费用空间筛选的收益风险取舍是否保留？",
+  "design": "均值3日、中位3日、中位8日分别比较零门槛和标准双边费门槛；固定原参数和源，不按压力结果重选门槛。",
+  "candidate_ids": [
+    "C7600",
+    "C7601",
+    "C7604",
+    "C7605",
+    "C9039",
+    "C9040"
+  ],
+  "configurations": [
+    {
+      "center_kind": "mean",
+      "lookback": 3,
+      "allocation": 1.0,
+      "minimum_repair_space": 0.0
+    },
+    {
+      "center_kind": "mean",
+      "lookback": 3,
+      "allocation": 1.0,
+      "minimum_repair_space": 0.002002002002001957
+    },
+    {
+      "center_kind": "median",
+      "lookback": 3,
+      "allocation": 1.0,
+      "minimum_repair_space": 0.0
+    },
+    {
+      "center_kind": "median",
+      "lookback": 3,
+      "allocation": 1.0,
+      "minimum_repair_space": 0.002002002002001957
+    },
+    {
+      "center_kind": "median",
+      "lookback": 8,
+      "allocation": 1.0,
+      "minimum_repair_space": 0.0
+    },
+    {
+      "center_kind": "median",
+      "lookback": 8,
+      "allocation": 1.0,
+      "minimum_repair_space": 0.002002002002001957
+    }
+  ],
+  "standard_sources": {
+    "C7600": {
+      "experiment": "EX076_20261024",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX076_20261024"
+        },
+        "evidence_id": "1194ceb72294b52db2e8b8108c082981e62c0b7cc6db0c480f0c9786253e9c77.json",
+        "sha256": "1194ceb72294b52db2e8b8108c082981e62c0b7cc6db0c480f0c9786253e9c77",
+        "media_type": "application/json",
+        "name": "C7600",
+        "schema": "account_evaluation",
+        "schema_version": 8
+      }
+    },
+    "C7601": {
+      "experiment": "EX076_20261024",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX076_20261024"
+        },
+        "evidence_id": "e0770f337dcee45838a29bed53f37d3cf9a2b063daed4f9eff59d3ba8f96c030.json",
+        "sha256": "e0770f337dcee45838a29bed53f37d3cf9a2b063daed4f9eff59d3ba8f96c030",
+        "media_type": "application/json",
+        "name": "C7601",
+        "schema": "account_evaluation",
+        "schema_version": 8
+      }
+    },
+    "C7604": {
+      "experiment": "EX076_20261024",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX076_20261024"
+        },
+        "evidence_id": "ffdbd0e809cb5f3887fdc5738ce174a6816691948b3f26a7381f275a92512084.json",
+        "sha256": "ffdbd0e809cb5f3887fdc5738ce174a6816691948b3f26a7381f275a92512084",
+        "media_type": "application/json",
+        "name": "C7604",
+        "schema": "account_evaluation",
+        "schema_version": 8
+      }
+    },
+    "C7605": {
+      "experiment": "EX076_20261024",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX076_20261024"
+        },
+        "evidence_id": "ba142bae1790afeeeb338becc10b3db2409b65b05ece63f4ade752cf3ecf7708.json",
+        "sha256": "ba142bae1790afeeeb338becc10b3db2409b65b05ece63f4ade752cf3ecf7708",
+        "media_type": "application/json",
+        "name": "C7605",
+        "schema": "account_evaluation",
+        "schema_version": 8
+      }
+    },
+    "C9039": {
+      "experiment": "EX077_20261024",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX077_20261024"
+        },
+        "evidence_id": "a47474776e32b8c2b1b3a33e8dd29a6d0ba6f1a5f8e6b8b18998a96d7f82e61b.json",
+        "sha256": "a47474776e32b8c2b1b3a33e8dd29a6d0ba6f1a5f8e6b8b18998a96d7f82e61b",
+        "media_type": "application/json",
+        "name": "C9039",
+        "schema": "account_evaluation",
+        "schema_version": 8
+      }
+    },
+    "C9040": {
+      "experiment": "EX077_20261024",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX077_20261024"
+        },
+        "evidence_id": "8de0b9b7151ccf624688645e4aaf7572bf01b8f5ca4c982bd7d9629eb3c177d4.json",
+        "sha256": "8de0b9b7151ccf624688645e4aaf7572bf01b8f5ca4c982bd7d9629eb3c177d4",
+        "media_type": "application/json",
+        "name": "C9040",
+        "schema": "account_evaluation",
+        "schema_version": 8
+      }
+    }
+  },
+  "scope": "原434/415窗口、原预热、原数据。每侧费用从.001增加至.002；只做阶段三机制支持，不是完整阶段四。",
+  "support": "若成本翻倍后费用门槛仍改善均值/中位3日净收益及中位8日回撤，支持成本效率解释；否则削弱其可实施价值。收益、回撤和频率各自陈述。",
+  "pressure_gate": "原同费用买入持有比较：正年化、年化高于基准、回撤低于正回撤基准且不高于25%；不是新增门槛，不要求压力账户战胜低成本S011。",
+  "resources": {
+    "workers": 8,
+    "native_threads": 1,
+    "seed": 13
+  },
+  "limitations": [
+    "六代表不代表全部29候选通过阶段四费用检查。",
+    "全部开发数据已见；时间切片只作描述。",
+    "信号门槛仍按.001固定，不随压力费用提高。"
+  ],
+  "summary_source": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX025_20261023"
+    },
+    "evidence_id": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5.py",
+    "sha256": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5",
+    "media_type": "text/x-python",
+    "name": "execution_suite_v4",
+    "schema": null,
+    "schema_version": null
+  }
+}
