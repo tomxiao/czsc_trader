@@ -1,0 +1,3340 @@
+{
+  "centers": 16,
+  "new_formal_stress_accounts": 16,
+  "new_serial_technical_accounts": 1,
+  "authenticated_full_account_projections": 192,
+  "parameter_design_count": 0,
+  "parameter_accounts": 0,
+  "status_counts": {
+    "INCOMPARABLE": 16
+  },
+  "acceptance_counts": {
+    "INDETERMINATE": 16
+  },
+  "family_diagnostics": [
+    {
+      "type": "FamilyDiagnostic",
+      "name": "PBO",
+      "status": "AVAILABLE",
+      "value": 0.5833333333333334,
+      "reason": null
+    },
+    {
+      "type": "FamilyDiagnostic",
+      "name": "DSR_RAW",
+      "status": "AVAILABLE",
+      "value": 0.07103904247856146,
+      "reason": null
+    },
+    {
+      "type": "FamilyDiagnostic",
+      "name": "DSR_EFFECTIVE",
+      "status": "AVAILABLE",
+      "value": 0.7210969798605351,
+      "reason": null
+    }
+  ],
+  "rows": [
+    {
+      "candidate_id": "S015-C5806",
+      "content_sha256": "757719e4190c1245caebce1a30b53edf1a16b61283871277ac4f3cb7ddfea2c1",
+      "status": "INCOMPARABLE",
+      "acceptance_status": "INDETERMINATE",
+      "pareto_layer": null,
+      "rank_in_layer": null,
+      "rank_min": null,
+      "rank_max": null,
+      "reasons": [
+        "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+        "PARAMETER_RETURN_Q10:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "PARAMETER_DRAWDOWN_Q90:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "MISSING_DECLARED_PARAMETER_METHOD"
+      ],
+      "coverage_gaps": [
+        "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "diagnostics": {
+        "FREQUENCY_COVERAGE": {
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FULL_SAMPLE_FREQUENCY": {
+          "value": 7.6036866359447,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "BENCHMARK_POSITIVE_YEAR_FREQUENCY": {
+          "value": 8.148148148148149,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "NET_ANNUAL_RETURN": {
+          "value": 0.47836258490041494,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "DRAWDOWN_MAGNITUDE": {
+          "value": 0.07104093067596018,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_MEDIAN": {
+          "value": 8.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_Q10": {
+          "value": 6.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PARAMETER_RETURN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_RETURN_Q10": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_Q90": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "ROLLING_EXCESS_Q10": {
+          "value": -0.07572203171643421,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "STRESS_ANNUAL_LOSS": {
+          "value": 0.08615700265364867,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PROFIT_CONCENTRATION": {
+          "value": 0.3728448326734115,
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      },
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -0.1910641123298348,
+        "upper_95": 0.7367978312214206,
+        "reason": null
+      },
+      "target_checks": [
+        {
+          "target_id": "center-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-nonpositive",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "center-relative-dd",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-cap",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "median",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "coverage",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "parameters",
+          "status": "INDETERMINATE",
+          "reason": "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+          "valid_points": 0,
+          "joint_passes": 0
+        },
+        {
+          "target_id": "stress-profit",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-excess",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-zero",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "stress-cap",
+          "status": "PASSED",
+          "reason": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "S015-C5901",
+      "content_sha256": "61f06df64888df44da711812c321017ffe3ff46cad1a5c29c0c02c591d9b7182",
+      "status": "INCOMPARABLE",
+      "acceptance_status": "INDETERMINATE",
+      "pareto_layer": null,
+      "rank_in_layer": null,
+      "rank_min": null,
+      "rank_max": null,
+      "reasons": [
+        "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+        "PARAMETER_RETURN_Q10:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "PARAMETER_DRAWDOWN_Q90:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "MISSING_DECLARED_PARAMETER_METHOD"
+      ],
+      "coverage_gaps": [
+        "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "diagnostics": {
+        "FREQUENCY_COVERAGE": {
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FULL_SAMPLE_FREQUENCY": {
+          "value": 6.912442396313364,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "BENCHMARK_POSITIVE_YEAR_FREQUENCY": {
+          "value": 7.407407407407407,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "NET_ANNUAL_RETURN": {
+          "value": 0.479888224063048,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "DRAWDOWN_MAGNITUDE": {
+          "value": 0.061434555316357664,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_MEDIAN": {
+          "value": 7.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_Q10": {
+          "value": 5.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PARAMETER_RETURN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_RETURN_Q10": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_Q90": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "ROLLING_EXCESS_Q10": {
+          "value": -0.1575871239305518,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "STRESS_ANNUAL_LOSS": {
+          "value": 0.0826223257796932,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PROFIT_CONCENTRATION": {
+          "value": 0.39478440504244205,
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      },
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -0.22156696542843726,
+        "upper_95": 0.7669080246382864,
+        "reason": null
+      },
+      "target_checks": [
+        {
+          "target_id": "center-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-nonpositive",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "center-relative-dd",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-cap",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "median",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "coverage",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "parameters",
+          "status": "INDETERMINATE",
+          "reason": "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+          "valid_points": 0,
+          "joint_passes": 0
+        },
+        {
+          "target_id": "stress-profit",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-excess",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-zero",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "stress-cap",
+          "status": "PASSED",
+          "reason": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "S015-C5902",
+      "content_sha256": "0dc01eb741859d5e719f0655c1de8978e0d277cb88a65326ef371c96ebb0e5fc",
+      "status": "INCOMPARABLE",
+      "acceptance_status": "INDETERMINATE",
+      "pareto_layer": null,
+      "rank_in_layer": null,
+      "rank_min": null,
+      "rank_max": null,
+      "reasons": [
+        "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+        "PARAMETER_RETURN_Q10:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "PARAMETER_DRAWDOWN_Q90:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "MISSING_DECLARED_PARAMETER_METHOD"
+      ],
+      "coverage_gaps": [
+        "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "diagnostics": {
+        "FREQUENCY_COVERAGE": {
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FULL_SAMPLE_FREQUENCY": {
+          "value": 6.912442396313364,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "BENCHMARK_POSITIVE_YEAR_FREQUENCY": {
+          "value": 7.407407407407407,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "NET_ANNUAL_RETURN": {
+          "value": 0.5184721865987441,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "DRAWDOWN_MAGNITUDE": {
+          "value": 0.061441075469607975,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_MEDIAN": {
+          "value": 7.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_Q10": {
+          "value": 5.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PARAMETER_RETURN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_RETURN_Q10": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_Q90": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "ROLLING_EXCESS_Q10": {
+          "value": -0.14580939136099244,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "STRESS_ANNUAL_LOSS": {
+          "value": 0.08482496726494881,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PROFIT_CONCENTRATION": {
+          "value": 0.39150627235007235,
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      },
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -0.18692409616491718,
+        "upper_95": 0.7952204989980971,
+        "reason": null
+      },
+      "target_checks": [
+        {
+          "target_id": "center-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-nonpositive",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "center-relative-dd",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-cap",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "median",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "coverage",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "parameters",
+          "status": "INDETERMINATE",
+          "reason": "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+          "valid_points": 0,
+          "joint_passes": 0
+        },
+        {
+          "target_id": "stress-profit",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-excess",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-zero",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "stress-cap",
+          "status": "PASSED",
+          "reason": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "S015-C6015",
+      "content_sha256": "07b7e19ce20f2e510f853194fb224871e6a0ac1eacf4c5c1571721bf2919761b",
+      "status": "INCOMPARABLE",
+      "acceptance_status": "INDETERMINATE",
+      "pareto_layer": null,
+      "rank_in_layer": null,
+      "rank_min": null,
+      "rank_max": null,
+      "reasons": [
+        "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+        "PARAMETER_RETURN_Q10:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "PARAMETER_DRAWDOWN_Q90:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "MISSING_DECLARED_PARAMETER_METHOD"
+      ],
+      "coverage_gaps": [
+        "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "diagnostics": {
+        "FREQUENCY_COVERAGE": {
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FULL_SAMPLE_FREQUENCY": {
+          "value": 7.6036866359447,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "BENCHMARK_POSITIVE_YEAR_FREQUENCY": {
+          "value": 8.148148148148149,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "NET_ANNUAL_RETURN": {
+          "value": 0.4666493992913312,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "DRAWDOWN_MAGNITUDE": {
+          "value": 0.06958257821103109,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_MEDIAN": {
+          "value": 8.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_Q10": {
+          "value": 6.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PARAMETER_RETURN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_RETURN_Q10": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_Q90": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "ROLLING_EXCESS_Q10": {
+          "value": -0.09815494981147702,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "STRESS_ANNUAL_LOSS": {
+          "value": 0.08375627537558072,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PROFIT_CONCENTRATION": {
+          "value": 0.37296234097969416,
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      },
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -0.20663504796664142,
+        "upper_95": 0.7208886665417362,
+        "reason": null
+      },
+      "target_checks": [
+        {
+          "target_id": "center-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-nonpositive",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "center-relative-dd",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-cap",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "median",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "coverage",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "parameters",
+          "status": "INDETERMINATE",
+          "reason": "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+          "valid_points": 0,
+          "joint_passes": 0
+        },
+        {
+          "target_id": "stress-profit",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-excess",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-zero",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "stress-cap",
+          "status": "PASSED",
+          "reason": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "S015-C6016",
+      "content_sha256": "40bfd26ab72281c19d3e369deaa41eb39fdb478419d0818983d9cfcffd5cc000",
+      "status": "INCOMPARABLE",
+      "acceptance_status": "INDETERMINATE",
+      "pareto_layer": null,
+      "rank_in_layer": null,
+      "rank_min": null,
+      "rank_max": null,
+      "reasons": [
+        "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+        "PARAMETER_RETURN_Q10:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "PARAMETER_DRAWDOWN_Q90:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "MISSING_DECLARED_PARAMETER_METHOD"
+      ],
+      "coverage_gaps": [
+        "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "diagnostics": {
+        "FREQUENCY_COVERAGE": {
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FULL_SAMPLE_FREQUENCY": {
+          "value": 7.6036866359447,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "BENCHMARK_POSITIVE_YEAR_FREQUENCY": {
+          "value": 8.148148148148149,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "NET_ANNUAL_RETURN": {
+          "value": 0.4725328187911184,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "DRAWDOWN_MAGNITUDE": {
+          "value": 0.07031251179103204,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_MEDIAN": {
+          "value": 8.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_Q10": {
+          "value": 6.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PARAMETER_RETURN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_RETURN_Q10": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_Q90": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "ROLLING_EXCESS_Q10": {
+          "value": -0.0869491751785314,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "STRESS_ANNUAL_LOSS": {
+          "value": 0.08497258606743396,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PROFIT_CONCENTRATION": {
+          "value": 0.3728916921810625,
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      },
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -0.20012696205495292,
+        "upper_95": 0.7298716912860431,
+        "reason": null
+      },
+      "target_checks": [
+        {
+          "target_id": "center-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-nonpositive",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "center-relative-dd",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-cap",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "median",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "coverage",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "parameters",
+          "status": "INDETERMINATE",
+          "reason": "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+          "valid_points": 0,
+          "joint_passes": 0
+        },
+        {
+          "target_id": "stress-profit",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-excess",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-zero",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "stress-cap",
+          "status": "PASSED",
+          "reason": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "S015-C6017",
+      "content_sha256": "79c84e571b25dc04a091d13f96aebbcf79b56717d97123b409440665d307c8a7",
+      "status": "INCOMPARABLE",
+      "acceptance_status": "INDETERMINATE",
+      "pareto_layer": null,
+      "rank_in_layer": null,
+      "rank_min": null,
+      "rank_max": null,
+      "reasons": [
+        "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+        "PARAMETER_RETURN_Q10:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "PARAMETER_DRAWDOWN_Q90:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "MISSING_DECLARED_PARAMETER_METHOD"
+      ],
+      "coverage_gaps": [
+        "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "diagnostics": {
+        "FREQUENCY_COVERAGE": {
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FULL_SAMPLE_FREQUENCY": {
+          "value": 7.6036866359447,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "BENCHMARK_POSITIVE_YEAR_FREQUENCY": {
+          "value": 8.148148148148149,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "NET_ANNUAL_RETURN": {
+          "value": 0.48432159048709855,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "DRAWDOWN_MAGNITUDE": {
+          "value": 0.07174229143342148,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_MEDIAN": {
+          "value": 8.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_Q10": {
+          "value": 6.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PARAMETER_RETURN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_RETURN_Q10": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_Q90": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "ROLLING_EXCESS_Q10": {
+          "value": -0.06425712278040185,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "STRESS_ANNUAL_LOSS": {
+          "value": 0.08748479935965747,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PROFIT_CONCENTRATION": {
+          "value": 0.3728787330508006,
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      },
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -0.1868495299257251,
+        "upper_95": 0.7438230112307262,
+        "reason": null
+      },
+      "target_checks": [
+        {
+          "target_id": "center-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-nonpositive",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "center-relative-dd",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-cap",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "median",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "coverage",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "parameters",
+          "status": "INDETERMINATE",
+          "reason": "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+          "valid_points": 0,
+          "joint_passes": 0
+        },
+        {
+          "target_id": "stress-profit",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-excess",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-zero",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "stress-cap",
+          "status": "PASSED",
+          "reason": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "S015-C6018",
+      "content_sha256": "8aae6d4434412d0f499fa20d3d4373ff1ea361cd5d3b7888280da1b63ca3143a",
+      "status": "INCOMPARABLE",
+      "acceptance_status": "INDETERMINATE",
+      "pareto_layer": null,
+      "rank_in_layer": null,
+      "rank_min": null,
+      "rank_max": null,
+      "reasons": [
+        "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+        "PARAMETER_RETURN_Q10:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "PARAMETER_DRAWDOWN_Q90:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "MISSING_DECLARED_PARAMETER_METHOD"
+      ],
+      "coverage_gaps": [
+        "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "diagnostics": {
+        "FREQUENCY_COVERAGE": {
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FULL_SAMPLE_FREQUENCY": {
+          "value": 7.6036866359447,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "BENCHMARK_POSITIVE_YEAR_FREQUENCY": {
+          "value": 8.148148148148149,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "NET_ANNUAL_RETURN": {
+          "value": 0.49018524852186096,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "DRAWDOWN_MAGNITUDE": {
+          "value": 0.07248505603223543,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_MEDIAN": {
+          "value": 8.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_Q10": {
+          "value": 6.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PARAMETER_RETURN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_RETURN_Q10": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_Q90": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "ROLLING_EXCESS_Q10": {
+          "value": -0.05310091509194445,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "STRESS_ANNUAL_LOSS": {
+          "value": 0.08863911348383358,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PROFIT_CONCENTRATION": {
+          "value": 0.37285194572159314,
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      },
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -0.18116048462490508,
+        "upper_95": 0.7541863521080483,
+        "reason": null
+      },
+      "target_checks": [
+        {
+          "target_id": "center-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-nonpositive",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "center-relative-dd",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-cap",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "median",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "coverage",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "parameters",
+          "status": "INDETERMINATE",
+          "reason": "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+          "valid_points": 0,
+          "joint_passes": 0
+        },
+        {
+          "target_id": "stress-profit",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-excess",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-zero",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "stress-cap",
+          "status": "PASSED",
+          "reason": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "S015-C6101",
+      "content_sha256": "01eac0344bdce2d30b96808053fa224d054c24ff63b00ec4bd3ca0fa8ecb3431",
+      "status": "INCOMPARABLE",
+      "acceptance_status": "INDETERMINATE",
+      "pareto_layer": null,
+      "rank_in_layer": null,
+      "rank_min": null,
+      "rank_max": null,
+      "reasons": [
+        "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+        "PARAMETER_RETURN_Q10:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "PARAMETER_DRAWDOWN_Q90:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "MISSING_DECLARED_PARAMETER_METHOD"
+      ],
+      "coverage_gaps": [
+        "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "diagnostics": {
+        "FREQUENCY_COVERAGE": {
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FULL_SAMPLE_FREQUENCY": {
+          "value": 7.6036866359447,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "BENCHMARK_POSITIVE_YEAR_FREQUENCY": {
+          "value": 8.148148148148149,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "NET_ANNUAL_RETURN": {
+          "value": 0.47836258490041494,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "DRAWDOWN_MAGNITUDE": {
+          "value": 0.07104093067596018,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_MEDIAN": {
+          "value": 8.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_Q10": {
+          "value": 6.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PARAMETER_RETURN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_RETURN_Q10": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_Q90": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "ROLLING_EXCESS_Q10": {
+          "value": -0.07572203171643421,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "STRESS_ANNUAL_LOSS": {
+          "value": 0.08615700265364867,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PROFIT_CONCENTRATION": {
+          "value": 0.3728448326734115,
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      },
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -0.1910641123298348,
+        "upper_95": 0.7367978312214206,
+        "reason": null
+      },
+      "target_checks": [
+        {
+          "target_id": "center-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-nonpositive",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "center-relative-dd",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-cap",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "median",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "coverage",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "parameters",
+          "status": "INDETERMINATE",
+          "reason": "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+          "valid_points": 0,
+          "joint_passes": 0
+        },
+        {
+          "target_id": "stress-profit",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-excess",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-zero",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "stress-cap",
+          "status": "PASSED",
+          "reason": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "S015-C6104",
+      "content_sha256": "d011129b89904b0f97533b10d1db18ba0f8c205045e7a0b2721e88d7a51ebb4e",
+      "status": "INCOMPARABLE",
+      "acceptance_status": "INDETERMINATE",
+      "pareto_layer": null,
+      "rank_in_layer": null,
+      "rank_min": null,
+      "rank_max": null,
+      "reasons": [
+        "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+        "PARAMETER_RETURN_Q10:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "PARAMETER_DRAWDOWN_Q90:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "MISSING_DECLARED_PARAMETER_METHOD"
+      ],
+      "coverage_gaps": [
+        "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "diagnostics": {
+        "FREQUENCY_COVERAGE": {
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FULL_SAMPLE_FREQUENCY": {
+          "value": 6.912442396313364,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "BENCHMARK_POSITIVE_YEAR_FREQUENCY": {
+          "value": 7.407407407407407,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "NET_ANNUAL_RETURN": {
+          "value": 0.48800487215601973,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "DRAWDOWN_MAGNITUDE": {
+          "value": 0.05848146874555038,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_MEDIAN": {
+          "value": 7.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_Q10": {
+          "value": 5.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PARAMETER_RETURN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_RETURN_Q10": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_Q90": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "ROLLING_EXCESS_Q10": {
+          "value": -0.19326417684748498,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "STRESS_ANNUAL_LOSS": {
+          "value": 0.07910293275939928,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PROFIT_CONCENTRATION": {
+          "value": 0.39175716306556657,
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      },
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -0.2190763037980252,
+        "upper_95": 0.7573667990930246,
+        "reason": null
+      },
+      "target_checks": [
+        {
+          "target_id": "center-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-nonpositive",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "center-relative-dd",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-cap",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "median",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "coverage",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "parameters",
+          "status": "INDETERMINATE",
+          "reason": "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+          "valid_points": 0,
+          "joint_passes": 0
+        },
+        {
+          "target_id": "stress-profit",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-excess",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-zero",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "stress-cap",
+          "status": "PASSED",
+          "reason": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "S015-C6105",
+      "content_sha256": "df1bb7b1a65e80f19712cb131a98a971ffafaf660f0d1d7f60368b6555241daa",
+      "status": "INCOMPARABLE",
+      "acceptance_status": "INDETERMINATE",
+      "pareto_layer": null,
+      "rank_in_layer": null,
+      "rank_min": null,
+      "rank_max": null,
+      "reasons": [
+        "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+        "PARAMETER_RETURN_Q10:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "PARAMETER_DRAWDOWN_Q90:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "MISSING_DECLARED_PARAMETER_METHOD"
+      ],
+      "coverage_gaps": [
+        "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "diagnostics": {
+        "FREQUENCY_COVERAGE": {
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FULL_SAMPLE_FREQUENCY": {
+          "value": 6.912442396313364,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "BENCHMARK_POSITIVE_YEAR_FREQUENCY": {
+          "value": 7.407407407407407,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "NET_ANNUAL_RETURN": {
+          "value": 0.5184721865987441,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "DRAWDOWN_MAGNITUDE": {
+          "value": 0.061441075469607975,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_MEDIAN": {
+          "value": 7.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_Q10": {
+          "value": 5.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PARAMETER_RETURN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_RETURN_Q10": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_Q90": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "ROLLING_EXCESS_Q10": {
+          "value": -0.14580939136099244,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "STRESS_ANNUAL_LOSS": {
+          "value": 0.08482496726494881,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PROFIT_CONCENTRATION": {
+          "value": 0.39150627235007235,
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      },
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -0.18692409616491718,
+        "upper_95": 0.7952204989980971,
+        "reason": null
+      },
+      "target_checks": [
+        {
+          "target_id": "center-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-nonpositive",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "center-relative-dd",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-cap",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "median",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "coverage",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "parameters",
+          "status": "INDETERMINATE",
+          "reason": "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+          "valid_points": 0,
+          "joint_passes": 0
+        },
+        {
+          "target_id": "stress-profit",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-excess",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-zero",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "stress-cap",
+          "status": "PASSED",
+          "reason": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "S015-C6116",
+      "content_sha256": "d77bfc650f7cea38eef0c4b73cb001b7c146c01b6444049cbc4f3ba8f788f835",
+      "status": "INCOMPARABLE",
+      "acceptance_status": "INDETERMINATE",
+      "pareto_layer": null,
+      "rank_in_layer": null,
+      "rank_min": null,
+      "rank_max": null,
+      "reasons": [
+        "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+        "PARAMETER_RETURN_Q10:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "PARAMETER_DRAWDOWN_Q90:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "MISSING_DECLARED_PARAMETER_METHOD"
+      ],
+      "coverage_gaps": [
+        "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "diagnostics": {
+        "FREQUENCY_COVERAGE": {
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FULL_SAMPLE_FREQUENCY": {
+          "value": 6.912442396313364,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "BENCHMARK_POSITIVE_YEAR_FREQUENCY": {
+          "value": 7.407407407407407,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "NET_ANNUAL_RETURN": {
+          "value": 0.45206517902373045,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "DRAWDOWN_MAGNITUDE": {
+          "value": 0.05848606291718872,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_MEDIAN": {
+          "value": 7.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_Q10": {
+          "value": 5.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PARAMETER_RETURN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_RETURN_Q10": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_Q90": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "ROLLING_EXCESS_Q10": {
+          "value": -0.20416432893654327,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "STRESS_ANNUAL_LOSS": {
+          "value": 0.07712610407008591,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PROFIT_CONCENTRATION": {
+          "value": 0.39515300462847086,
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      },
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -0.25286424561986254,
+        "upper_95": 0.72839544872255,
+        "reason": null
+      },
+      "target_checks": [
+        {
+          "target_id": "center-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-nonpositive",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "center-relative-dd",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-cap",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "median",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "coverage",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "parameters",
+          "status": "INDETERMINATE",
+          "reason": "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+          "valid_points": 0,
+          "joint_passes": 0
+        },
+        {
+          "target_id": "stress-profit",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-excess",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-zero",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "stress-cap",
+          "status": "PASSED",
+          "reason": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "S015-C6117",
+      "content_sha256": "fd4bb350029d47348655fcc91444fa8d1f1b5f60db4a0fceae58720b83738735",
+      "status": "INCOMPARABLE",
+      "acceptance_status": "INDETERMINATE",
+      "pareto_layer": null,
+      "rank_in_layer": null,
+      "rank_min": null,
+      "rank_max": null,
+      "reasons": [
+        "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+        "PARAMETER_RETURN_Q10:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "PARAMETER_DRAWDOWN_Q90:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "MISSING_DECLARED_PARAMETER_METHOD"
+      ],
+      "coverage_gaps": [
+        "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "diagnostics": {
+        "FREQUENCY_COVERAGE": {
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FULL_SAMPLE_FREQUENCY": {
+          "value": 6.912442396313364,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "BENCHMARK_POSITIVE_YEAR_FREQUENCY": {
+          "value": 7.407407407407407,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "NET_ANNUAL_RETURN": {
+          "value": 0.479888224063048,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "DRAWDOWN_MAGNITUDE": {
+          "value": 0.061434555316357664,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_MEDIAN": {
+          "value": 7.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_Q10": {
+          "value": 5.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PARAMETER_RETURN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_RETURN_Q10": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_Q90": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "ROLLING_EXCESS_Q10": {
+          "value": -0.1575871239305518,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "STRESS_ANNUAL_LOSS": {
+          "value": 0.0826223257796932,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PROFIT_CONCENTRATION": {
+          "value": 0.39478440504244205,
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      },
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -0.22156696542843726,
+        "upper_95": 0.7669080246382864,
+        "reason": null
+      },
+      "target_checks": [
+        {
+          "target_id": "center-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-nonpositive",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "center-relative-dd",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-cap",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "median",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "coverage",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "parameters",
+          "status": "INDETERMINATE",
+          "reason": "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+          "valid_points": 0,
+          "joint_passes": 0
+        },
+        {
+          "target_id": "stress-profit",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-excess",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-zero",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "stress-cap",
+          "status": "PASSED",
+          "reason": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "S015-C6201",
+      "content_sha256": "b8156bd40a841b1adf8f962cc6f17ccd9bd5a0b5913a9c4f845447f5276c86f5",
+      "status": "INCOMPARABLE",
+      "acceptance_status": "INDETERMINATE",
+      "pareto_layer": null,
+      "rank_in_layer": null,
+      "rank_min": null,
+      "rank_max": null,
+      "reasons": [
+        "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+        "PARAMETER_RETURN_Q10:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "PARAMETER_DRAWDOWN_Q90:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "MISSING_DECLARED_PARAMETER_METHOD"
+      ],
+      "coverage_gaps": [
+        "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "diagnostics": {
+        "FREQUENCY_COVERAGE": {
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FULL_SAMPLE_FREQUENCY": {
+          "value": 6.912442396313364,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "BENCHMARK_POSITIVE_YEAR_FREQUENCY": {
+          "value": 7.407407407407407,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "NET_ANNUAL_RETURN": {
+          "value": 0.47291004146027693,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "DRAWDOWN_MAGNITUDE": {
+          "value": 0.056966218725242435,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_MEDIAN": {
+          "value": 7.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_Q10": {
+          "value": 5.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PARAMETER_RETURN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_RETURN_Q10": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_Q90": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "ROLLING_EXCESS_Q10": {
+          "value": -0.21662096629880953,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "STRESS_ANNUAL_LOSS": {
+          "value": 0.0762252470187339,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PROFIT_CONCENTRATION": {
+          "value": 0.39193283652745914,
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      },
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -0.23047148107427717,
+        "upper_95": 0.7352187366451558,
+        "reason": null
+      },
+      "target_checks": [
+        {
+          "target_id": "center-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-nonpositive",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "center-relative-dd",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-cap",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "median",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "coverage",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "parameters",
+          "status": "INDETERMINATE",
+          "reason": "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+          "valid_points": 0,
+          "joint_passes": 0
+        },
+        {
+          "target_id": "stress-profit",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-excess",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-zero",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "stress-cap",
+          "status": "PASSED",
+          "reason": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "S015-C6202",
+      "content_sha256": "1fc035d32831ca6368f8550c9ecf32b8b3f55f9df3e50da1fe7c4e3c5dcf4331",
+      "status": "INCOMPARABLE",
+      "acceptance_status": "INDETERMINATE",
+      "pareto_layer": null,
+      "rank_in_layer": null,
+      "rank_min": null,
+      "rank_max": null,
+      "reasons": [
+        "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+        "PARAMETER_RETURN_Q10:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "PARAMETER_DRAWDOWN_Q90:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "MISSING_DECLARED_PARAMETER_METHOD"
+      ],
+      "coverage_gaps": [
+        "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "diagnostics": {
+        "FREQUENCY_COVERAGE": {
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FULL_SAMPLE_FREQUENCY": {
+          "value": 6.912442396313364,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "BENCHMARK_POSITIVE_YEAR_FREQUENCY": {
+          "value": 7.407407407407407,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "NET_ANNUAL_RETURN": {
+          "value": 0.4759106679897134,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "DRAWDOWN_MAGNITUDE": {
+          "value": 0.05728585570813838,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_MEDIAN": {
+          "value": 7.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_Q10": {
+          "value": 5.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PARAMETER_RETURN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_RETURN_Q10": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_Q90": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "ROLLING_EXCESS_Q10": {
+          "value": -0.2119912295297705,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "STRESS_ANNUAL_LOSS": {
+          "value": 0.07686185685798841,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PROFIT_CONCENTRATION": {
+          "value": 0.39192153067522667,
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      },
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -0.22804581145132521,
+        "upper_95": 0.7390298441879618,
+        "reason": null
+      },
+      "target_checks": [
+        {
+          "target_id": "center-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-nonpositive",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "center-relative-dd",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-cap",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "median",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "coverage",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "parameters",
+          "status": "INDETERMINATE",
+          "reason": "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+          "valid_points": 0,
+          "joint_passes": 0
+        },
+        {
+          "target_id": "stress-profit",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-excess",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-zero",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "stress-cap",
+          "status": "PASSED",
+          "reason": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "S015-C6203",
+      "content_sha256": "80bf375dfbda37048a1352aa13ffd1f15c002a21cc2192a7b542e5a00ad2da88",
+      "status": "INCOMPARABLE",
+      "acceptance_status": "INDETERMINATE",
+      "pareto_layer": null,
+      "rank_in_layer": null,
+      "rank_min": null,
+      "rank_max": null,
+      "reasons": [
+        "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+        "PARAMETER_RETURN_Q10:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "PARAMETER_DRAWDOWN_Q90:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "MISSING_DECLARED_PARAMETER_METHOD"
+      ],
+      "coverage_gaps": [
+        "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "diagnostics": {
+        "FREQUENCY_COVERAGE": {
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FULL_SAMPLE_FREQUENCY": {
+          "value": 6.912442396313364,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "BENCHMARK_POSITIVE_YEAR_FREQUENCY": {
+          "value": 7.407407407407407,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "NET_ANNUAL_RETURN": {
+          "value": 0.5030990623224711,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "DRAWDOWN_MAGNITUDE": {
+          "value": 0.059956229005649564,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_MEDIAN": {
+          "value": 7.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_Q10": {
+          "value": 5.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PARAMETER_RETURN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_RETURN_Q10": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_Q90": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "ROLLING_EXCESS_Q10": {
+          "value": -0.16988190473787382,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "STRESS_ANNUAL_LOSS": {
+          "value": 0.08187321711762374,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PROFIT_CONCENTRATION": {
+          "value": 0.3915930039271704,
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      },
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -0.20523682959294484,
+        "upper_95": 0.7780015156532235,
+        "reason": null
+      },
+      "target_checks": [
+        {
+          "target_id": "center-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-nonpositive",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "center-relative-dd",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-cap",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "median",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "coverage",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "parameters",
+          "status": "INDETERMINATE",
+          "reason": "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+          "valid_points": 0,
+          "joint_passes": 0
+        },
+        {
+          "target_id": "stress-profit",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-excess",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-zero",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "stress-cap",
+          "status": "PASSED",
+          "reason": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "S015-C6206",
+      "content_sha256": "3fc8667d7ac6efdeb32d6cacdb350af1660821ee1b161e4a32103b439243f207",
+      "status": "INCOMPARABLE",
+      "acceptance_status": "INDETERMINATE",
+      "pareto_layer": null,
+      "rank_in_layer": null,
+      "rank_min": null,
+      "rank_max": null,
+      "reasons": [
+        "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+        "PARAMETER_RETURN_Q10:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "PARAMETER_DRAWDOWN_Q90:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+        "MISSING_DECLARED_PARAMETER_METHOD"
+      ],
+      "coverage_gaps": [
+        "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "diagnostics": {
+        "FREQUENCY_COVERAGE": {
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FULL_SAMPLE_FREQUENCY": {
+          "value": 6.912442396313364,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "BENCHMARK_POSITIVE_YEAR_FREQUENCY": {
+          "value": 7.407407407407407,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "NET_ANNUAL_RETURN": {
+          "value": 0.4659020864198018,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "DRAWDOWN_MAGNITUDE": {
+          "value": 0.05997816799457212,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_MEDIAN": {
+          "value": 7.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "FREQUENCY_Q10": {
+          "value": 5.0,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PARAMETER_RETURN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_DEGRADATION": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_RETURN_Q10": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "PARAMETER_DRAWDOWN_Q90": {
+          "value": null,
+          "status": "INSUFFICIENT_DATA",
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+        },
+        "ROLLING_EXCESS_Q10": {
+          "value": -0.18097030266433198,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "STRESS_ANNUAL_LOSS": {
+          "value": 0.07978203943653428,
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        "PROFIT_CONCENTRATION": {
+          "value": 0.3950114000983843,
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      },
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -0.23711847569588757,
+        "upper_95": 0.7488307331274473,
+        "reason": null
+      },
+      "target_checks": [
+        {
+          "target_id": "center-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-nonpositive",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "center-relative-dd",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "center-cap",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "median",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "coverage",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "parameters",
+          "status": "INDETERMINATE",
+          "reason": "PARAMETER_DESIGN_MISSING_OR_DIFFERS",
+          "valid_points": 0,
+          "joint_passes": 0
+        },
+        {
+          "target_id": "stress-profit",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-excess",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-positive",
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "target_id": "stress-dd-zero",
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE"
+        },
+        {
+          "target_id": "stress-cap",
+          "status": "PASSED",
+          "reason": null
+        }
+      ]
+    }
+  ],
+  "sensitivities": [
+    {
+      "name": "bins_half",
+      "rows": [
+        {
+          "candidate_id": "S015-C5806",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C5901",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C5902",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6015",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6016",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6017",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6018",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6101",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6104",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6105",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6116",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6117",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6201",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6202",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6203",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6206",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        }
+      ]
+    },
+    {
+      "name": "bins_double",
+      "rows": [
+        {
+          "candidate_id": "S015-C5806",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C5901",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C5902",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6015",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6016",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6017",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6018",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6101",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6104",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6105",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6116",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6117",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6201",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6202",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6203",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6206",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        }
+      ]
+    },
+    {
+      "name": "adjacent_swap_0",
+      "rows": [
+        {
+          "candidate_id": "S015-C5806",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C5901",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C5902",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6015",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6016",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6017",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6018",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6101",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6104",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6105",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6116",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6117",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6201",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6202",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6203",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6206",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        }
+      ]
+    },
+    {
+      "name": "adjacent_swap_1",
+      "rows": [
+        {
+          "candidate_id": "S015-C5806",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C5901",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C5902",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6015",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6016",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6017",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6018",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6101",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6104",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6105",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6116",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6117",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6201",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6202",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6203",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6206",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        }
+      ]
+    },
+    {
+      "name": "adjacent_swap_2",
+      "rows": [
+        {
+          "candidate_id": "S015-C5806",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C5901",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C5902",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6015",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6016",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6017",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6018",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6101",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6104",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6105",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6116",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6117",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6201",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6202",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6203",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6206",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        }
+      ]
+    },
+    {
+      "name": "adjacent_swap_3",
+      "rows": [
+        {
+          "candidate_id": "S015-C5806",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C5901",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C5902",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6015",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6016",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6017",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6018",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6101",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6104",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6105",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6116",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6117",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6201",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6202",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6203",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6206",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        }
+      ]
+    },
+    {
+      "name": "adjacent_swap_4",
+      "rows": [
+        {
+          "candidate_id": "S015-C5806",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C5901",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C5902",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6015",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6016",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6017",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6018",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6101",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6104",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6105",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6116",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6117",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6201",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6202",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6203",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        },
+        {
+          "candidate_id": "S015-C6206",
+          "status": "INCOMPARABLE",
+          "rank_min": null,
+          "rank_max": null
+        }
+      ]
+    }
+  ]
+}

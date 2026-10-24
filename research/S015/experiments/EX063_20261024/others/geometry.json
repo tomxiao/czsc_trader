@@ -1,0 +1,1917 @@
+{
+  "status": "GEOMETRY_EVALUATED_NO_ACCOUNTS",
+  "protocol": {
+    "type": "ParameterPerturbationProtocol",
+    "radius": 0.05,
+    "point_count": 32,
+    "seed": 13,
+    "max_attempts": 100000,
+    "distance_tolerance": 1e-10,
+    "version": "parameter-total-domain-l2-v1",
+    "random_generator": "PCG64",
+    "integer_rounding": "HALF_EVEN",
+    "quantile_method": "LINEAR"
+  },
+  "mapping_source": "DOMAINS = {'allocation': (0.0, 1.0), 'lookback': (2.0, 10.0), 'hold': (1.0, 30.0), 'confirmation': (1.0, 5.0)}\ndef coordinate_names(parameters):\n    if parameters[\"mode\"] != \"center_below\" or parameters[\"center_kind\"] != \"mean\":\n        raise ValueError(\"This design supports only the handed-off mean-center-below family\")\n    if parameters[\"exit_mode\"] not in (\"fixed\", \"confirmed_guard\"):\n        raise ValueError(\"Exit mode outside reviewed geometry scope\")\n    names = (\"allocation\", \"lookback\", \"hold\")\n    if parameters[\"exit_mode\"] == \"confirmed_guard\":\n        names += (\"confirmation\",)\n    return names\n\ndef mapping(parameters, coordinates):\n    \"\"\"Map only active coordinates; keep every other payload parameter fixed.\"\"\"\n    names = coordinate_names(parameters)\n    if len(names) != len(coordinates):\n        raise ValueError(\"Coordinate count differs from active parameter space\")\n    mapped = dict(parameters)\n    for name, value in zip(names, coordinates, strict=True):\n        if name != \"allocation\" and not float(value).is_integer():\n            raise ValueError(\"Integer coordinates cannot be silently rounded\")\n        mapped[name] = float(value) if name == \"allocation\" else int(value)\n    return mapped\n",
+  "feasibility_source": "DOMAINS = {'allocation': (0.0, 1.0), 'lookback': (2.0, 10.0), 'hold': (1.0, 30.0), 'confirmation': (1.0, 5.0)}\ndef coordinate_names(parameters):\n    if parameters[\"mode\"] != \"center_below\" or parameters[\"center_kind\"] != \"mean\":\n        raise ValueError(\"This design supports only the handed-off mean-center-below family\")\n    if parameters[\"exit_mode\"] not in (\"fixed\", \"confirmed_guard\"):\n        raise ValueError(\"Exit mode outside reviewed geometry scope\")\n    names = (\"allocation\", \"lookback\", \"hold\")\n    if parameters[\"exit_mode\"] == \"confirmed_guard\":\n        names += (\"confirmation\",)\n    return names\n\ndef mapping(parameters, coordinates):\n    \"\"\"Map only active coordinates; keep every other payload parameter fixed.\"\"\"\n    names = coordinate_names(parameters)\n    if len(names) != len(coordinates):\n        raise ValueError(\"Coordinate count differs from active parameter space\")\n    mapped = dict(parameters)\n    for name, value in zip(names, coordinates, strict=True):\n        if name != \"allocation\" and not float(value).is_integer():\n            raise ValueError(\"Integer coordinates cannot be silently rounded\")\n        mapped[name] = float(value) if name == \"allocation\" else int(value)\n    return mapped\n\ndef feasibility(parameters, coordinates):\n    \"\"\"Pure predeclared executable-domain constraints; no economic observations.\"\"\"\n    mapped = mapping(parameters, coordinates)\n    if not 0.0 < mapped[\"allocation\"] <= 1.0:\n        return False\n    for name in coordinate_names(parameters)[1:]:\n        lower, upper = DOMAINS[name]\n        if not lower <= mapped[name] <= upper:\n            return False\n    # Existing runtime validation keeps this payload constraint even for fixed exit.\n    if \"max_hold\" in mapped and not mapped[\"hold\"] <= mapped[\"max_hold\"] <= 30:\n        return False\n    return True\n",
+  "domain_basis": {
+    "allocation": "Existing runtime (0,1], represented by [0,1] envelope plus pure >0 constraint",
+    "lookback": "Existing integer 2..10; minimum normalized nonzero step=1/8 > 0.05",
+    "hold": "Existing integer 1..30; only center-1/center/center+1 fit radius 0.05",
+    "confirmation": "Existing guard integer 1..5; minimum step=1/4 > 0.05; absent from fixed exits",
+    "excluded": "concentration, failure_buffer, max_hold, start and categorical rules remain fixed; none added as inactive continuous coordinates"
+  },
+  "rows": [
+    {
+      "candidate_id": "C5806",
+      "active_coordinates": [
+        "allocation",
+        "lookback",
+        "hold"
+      ],
+      "fixed_payload_parameters": {
+        "mode": "center_below",
+        "exit_mode": "fixed",
+        "concentration": 0.75,
+        "start": "2025-01-02",
+        "center_kind": "mean"
+      },
+      "request": {
+        "type": "ParameterDesignRequest",
+        "center": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S015-C5806",
+          "content_sha256": "757719e4190c1245caebce1a30b53edf1a16b61283871277ac4f3cb7ddfea2c1"
+        },
+        "protocol": {
+          "type": "ParameterPerturbationProtocol",
+          "radius": 0.05,
+          "point_count": 32,
+          "seed": 13,
+          "max_attempts": 100000,
+          "distance_tolerance": 1e-10,
+          "version": "parameter-total-domain-l2-v1",
+          "random_generator": "PCG64",
+          "integer_rounding": "HALF_EVEN",
+          "quantile_method": "LINEAR"
+        },
+        "space": {
+          "type": "ParameterSpace",
+          "coordinates": [
+            {
+              "type": "ParameterCoordinate",
+              "name": "allocation",
+              "center": 0.95,
+              "lower": 0.0,
+              "upper": 1.0,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "lookback",
+              "center": 3.0,
+              "lower": 2.0,
+              "upper": 10.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "hold",
+              "center": 3.0,
+              "lower": 1.0,
+              "upper": 30.0,
+              "kind": "INTEGER"
+            }
+          ],
+          "mapping_sha256": "eda01059a6da499d052709892de76d15d993a62ea50a13f4e35a3f5300bcae40",
+          "feasibility_sha256": "e489cda374f55d2a9274c87eadd8c6323fbc0f56466c506aeccc855699a0394e"
+        }
+      },
+      "result": {
+        "type": "ParameterDesignResult",
+        "request_sha256": "48b5ca4ee5de47c1f8b5d18c601b18341dec624e2abb9841f101d5874b3f9e59",
+        "status": "DESIGN_FAILED",
+        "design": null,
+        "attempts": 100000,
+        "rejections": [
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DUPLICATE",
+            "count": 99994
+          }
+        ],
+        "reason": "SAMPLING_BUDGET_EXHAUSTED"
+      },
+      "mathematical_feasible_point_count": 6,
+      "mathematical_points_explanation_only": [
+        [
+          0.9137931034482758,
+          3,
+          2
+        ],
+        [
+          0.9862068965517241,
+          3,
+          2
+        ],
+        [
+          0.8999999999999999,
+          3,
+          3
+        ],
+        [
+          1.0,
+          3,
+          3
+        ],
+        [
+          0.9137931034482758,
+          3,
+          4
+        ],
+        [
+          0.9862068965517241,
+          3,
+          4
+        ]
+      ],
+      "sampler_accepted_float_tuples": 6,
+      "float_note": "Different floating-point encodings near one mathematical point do not create independent or economically meaningful perturbations."
+    },
+    {
+      "candidate_id": "C5901",
+      "active_coordinates": [
+        "allocation",
+        "lookback",
+        "hold",
+        "confirmation"
+      ],
+      "fixed_payload_parameters": {
+        "mode": "center_below",
+        "exit_mode": "confirmed_guard",
+        "concentration": 0.75,
+        "start": "2025-01-02",
+        "center_kind": "mean",
+        "failure_buffer": 0.0,
+        "max_hold": 10
+      },
+      "request": {
+        "type": "ParameterDesignRequest",
+        "center": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S015-C5901",
+          "content_sha256": "61f06df64888df44da711812c321017ffe3ff46cad1a5c29c0c02c591d9b7182"
+        },
+        "protocol": {
+          "type": "ParameterPerturbationProtocol",
+          "radius": 0.05,
+          "point_count": 32,
+          "seed": 13,
+          "max_attempts": 100000,
+          "distance_tolerance": 1e-10,
+          "version": "parameter-total-domain-l2-v1",
+          "random_generator": "PCG64",
+          "integer_rounding": "HALF_EVEN",
+          "quantile_method": "LINEAR"
+        },
+        "space": {
+          "type": "ParameterSpace",
+          "coordinates": [
+            {
+              "type": "ParameterCoordinate",
+              "name": "allocation",
+              "center": 1.0,
+              "lower": 0.0,
+              "upper": 1.0,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "lookback",
+              "center": 3.0,
+              "lower": 2.0,
+              "upper": 10.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "hold",
+              "center": 3.0,
+              "lower": 1.0,
+              "upper": 30.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "confirmation",
+              "center": 2.0,
+              "lower": 1.0,
+              "upper": 5.0,
+              "kind": "INTEGER"
+            }
+          ],
+          "mapping_sha256": "eda01059a6da499d052709892de76d15d993a62ea50a13f4e35a3f5300bcae40",
+          "feasibility_sha256": "e489cda374f55d2a9274c87eadd8c6323fbc0f56466c506aeccc855699a0394e"
+        }
+      },
+      "result": {
+        "type": "ParameterDesignResult",
+        "request_sha256": "6417171e3722eacbab3f3b7268b71bd965e5268097fec4544bca30fbefd382ab",
+        "status": "DESIGN_FAILED",
+        "design": null,
+        "attempts": 100000,
+        "rejections": [
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DOMAIN",
+            "count": 50011
+          },
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DUPLICATE",
+            "count": 49986
+          }
+        ],
+        "reason": "SAMPLING_BUDGET_EXHAUSTED"
+      },
+      "mathematical_feasible_point_count": 3,
+      "mathematical_points_explanation_only": [
+        [
+          0.9637931034482758,
+          3,
+          2,
+          2
+        ],
+        [
+          0.95,
+          3,
+          3,
+          2
+        ],
+        [
+          0.9637931034482758,
+          3,
+          4,
+          2
+        ]
+      ],
+      "sampler_accepted_float_tuples": 3,
+      "float_note": "Different floating-point encodings near one mathematical point do not create independent or economically meaningful perturbations."
+    },
+    {
+      "candidate_id": "C5902",
+      "active_coordinates": [
+        "allocation",
+        "lookback",
+        "hold",
+        "confirmation"
+      ],
+      "fixed_payload_parameters": {
+        "mode": "center_below",
+        "exit_mode": "confirmed_guard",
+        "concentration": 0.75,
+        "start": "2025-01-02",
+        "center_kind": "mean",
+        "failure_buffer": 0.0,
+        "max_hold": 10
+      },
+      "request": {
+        "type": "ParameterDesignRequest",
+        "center": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S015-C5902",
+          "content_sha256": "0dc01eb741859d5e719f0655c1de8978e0d277cb88a65326ef371c96ebb0e5fc"
+        },
+        "protocol": {
+          "type": "ParameterPerturbationProtocol",
+          "radius": 0.05,
+          "point_count": 32,
+          "seed": 13,
+          "max_attempts": 100000,
+          "distance_tolerance": 1e-10,
+          "version": "parameter-total-domain-l2-v1",
+          "random_generator": "PCG64",
+          "integer_rounding": "HALF_EVEN",
+          "quantile_method": "LINEAR"
+        },
+        "space": {
+          "type": "ParameterSpace",
+          "coordinates": [
+            {
+              "type": "ParameterCoordinate",
+              "name": "allocation",
+              "center": 1.0,
+              "lower": 0.0,
+              "upper": 1.0,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "lookback",
+              "center": 3.0,
+              "lower": 2.0,
+              "upper": 10.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "hold",
+              "center": 3.0,
+              "lower": 1.0,
+              "upper": 30.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "confirmation",
+              "center": 3.0,
+              "lower": 1.0,
+              "upper": 5.0,
+              "kind": "INTEGER"
+            }
+          ],
+          "mapping_sha256": "eda01059a6da499d052709892de76d15d993a62ea50a13f4e35a3f5300bcae40",
+          "feasibility_sha256": "e489cda374f55d2a9274c87eadd8c6323fbc0f56466c506aeccc855699a0394e"
+        }
+      },
+      "result": {
+        "type": "ParameterDesignResult",
+        "request_sha256": "d0bd8dfa28f28995777864bad883f1ed4ffb565a7f58453da0e277ed11fb7182",
+        "status": "DESIGN_FAILED",
+        "design": null,
+        "attempts": 100000,
+        "rejections": [
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DOMAIN",
+            "count": 50011
+          },
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DUPLICATE",
+            "count": 49986
+          }
+        ],
+        "reason": "SAMPLING_BUDGET_EXHAUSTED"
+      },
+      "mathematical_feasible_point_count": 3,
+      "mathematical_points_explanation_only": [
+        [
+          0.9637931034482758,
+          3,
+          2,
+          3
+        ],
+        [
+          0.95,
+          3,
+          3,
+          3
+        ],
+        [
+          0.9637931034482758,
+          3,
+          4,
+          3
+        ]
+      ],
+      "sampler_accepted_float_tuples": 3,
+      "float_note": "Different floating-point encodings near one mathematical point do not create independent or economically meaningful perturbations."
+    },
+    {
+      "candidate_id": "C6015",
+      "active_coordinates": [
+        "allocation",
+        "lookback",
+        "hold"
+      ],
+      "fixed_payload_parameters": {
+        "mode": "center_below",
+        "exit_mode": "fixed",
+        "concentration": 0.75,
+        "start": "2025-01-02",
+        "center_kind": "mean"
+      },
+      "request": {
+        "type": "ParameterDesignRequest",
+        "center": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S015-C6015",
+          "content_sha256": "07b7e19ce20f2e510f853194fb224871e6a0ac1eacf4c5c1571721bf2919761b"
+        },
+        "protocol": {
+          "type": "ParameterPerturbationProtocol",
+          "radius": 0.05,
+          "point_count": 32,
+          "seed": 13,
+          "max_attempts": 100000,
+          "distance_tolerance": 1e-10,
+          "version": "parameter-total-domain-l2-v1",
+          "random_generator": "PCG64",
+          "integer_rounding": "HALF_EVEN",
+          "quantile_method": "LINEAR"
+        },
+        "space": {
+          "type": "ParameterSpace",
+          "coordinates": [
+            {
+              "type": "ParameterCoordinate",
+              "name": "allocation",
+              "center": 0.93,
+              "lower": 0.0,
+              "upper": 1.0,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "lookback",
+              "center": 3.0,
+              "lower": 2.0,
+              "upper": 10.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "hold",
+              "center": 3.0,
+              "lower": 1.0,
+              "upper": 30.0,
+              "kind": "INTEGER"
+            }
+          ],
+          "mapping_sha256": "eda01059a6da499d052709892de76d15d993a62ea50a13f4e35a3f5300bcae40",
+          "feasibility_sha256": "e489cda374f55d2a9274c87eadd8c6323fbc0f56466c506aeccc855699a0394e"
+        }
+      },
+      "result": {
+        "type": "ParameterDesignResult",
+        "request_sha256": "badd7f834bb4ffedf0861e9d26575b1a5ca4f612e34e9ae423a6a8833e689b24",
+        "status": "DESIGN_FAILED",
+        "design": null,
+        "attempts": 100000,
+        "rejections": [
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DUPLICATE",
+            "count": 99994
+          }
+        ],
+        "reason": "SAMPLING_BUDGET_EXHAUSTED"
+      },
+      "mathematical_feasible_point_count": 6,
+      "mathematical_points_explanation_only": [
+        [
+          0.8937931034482759,
+          3,
+          2
+        ],
+        [
+          0.9662068965517242,
+          3,
+          2
+        ],
+        [
+          0.88,
+          3,
+          3
+        ],
+        [
+          0.9800000000000001,
+          3,
+          3
+        ],
+        [
+          0.8937931034482759,
+          3,
+          4
+        ],
+        [
+          0.9662068965517242,
+          3,
+          4
+        ]
+      ],
+      "sampler_accepted_float_tuples": 6,
+      "float_note": "Different floating-point encodings near one mathematical point do not create independent or economically meaningful perturbations."
+    },
+    {
+      "candidate_id": "C6016",
+      "active_coordinates": [
+        "allocation",
+        "lookback",
+        "hold"
+      ],
+      "fixed_payload_parameters": {
+        "mode": "center_below",
+        "exit_mode": "fixed",
+        "concentration": 0.75,
+        "start": "2025-01-02",
+        "center_kind": "mean"
+      },
+      "request": {
+        "type": "ParameterDesignRequest",
+        "center": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S015-C6016",
+          "content_sha256": "40bfd26ab72281c19d3e369deaa41eb39fdb478419d0818983d9cfcffd5cc000"
+        },
+        "protocol": {
+          "type": "ParameterPerturbationProtocol",
+          "radius": 0.05,
+          "point_count": 32,
+          "seed": 13,
+          "max_attempts": 100000,
+          "distance_tolerance": 1e-10,
+          "version": "parameter-total-domain-l2-v1",
+          "random_generator": "PCG64",
+          "integer_rounding": "HALF_EVEN",
+          "quantile_method": "LINEAR"
+        },
+        "space": {
+          "type": "ParameterSpace",
+          "coordinates": [
+            {
+              "type": "ParameterCoordinate",
+              "name": "allocation",
+              "center": 0.94,
+              "lower": 0.0,
+              "upper": 1.0,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "lookback",
+              "center": 3.0,
+              "lower": 2.0,
+              "upper": 10.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "hold",
+              "center": 3.0,
+              "lower": 1.0,
+              "upper": 30.0,
+              "kind": "INTEGER"
+            }
+          ],
+          "mapping_sha256": "eda01059a6da499d052709892de76d15d993a62ea50a13f4e35a3f5300bcae40",
+          "feasibility_sha256": "e489cda374f55d2a9274c87eadd8c6323fbc0f56466c506aeccc855699a0394e"
+        }
+      },
+      "result": {
+        "type": "ParameterDesignResult",
+        "request_sha256": "11130c4d140d5d0c452706c081be8d1f77b70b1032b62ec5d0989a373dfd0aae",
+        "status": "DESIGN_FAILED",
+        "design": null,
+        "attempts": 100000,
+        "rejections": [
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DUPLICATE",
+            "count": 99994
+          }
+        ],
+        "reason": "SAMPLING_BUDGET_EXHAUSTED"
+      },
+      "mathematical_feasible_point_count": 6,
+      "mathematical_points_explanation_only": [
+        [
+          0.9037931034482758,
+          3,
+          2
+        ],
+        [
+          0.9762068965517241,
+          3,
+          2
+        ],
+        [
+          0.8899999999999999,
+          3,
+          3
+        ],
+        [
+          0.99,
+          3,
+          3
+        ],
+        [
+          0.9037931034482758,
+          3,
+          4
+        ],
+        [
+          0.9762068965517241,
+          3,
+          4
+        ]
+      ],
+      "sampler_accepted_float_tuples": 6,
+      "float_note": "Different floating-point encodings near one mathematical point do not create independent or economically meaningful perturbations."
+    },
+    {
+      "candidate_id": "C6017",
+      "active_coordinates": [
+        "allocation",
+        "lookback",
+        "hold"
+      ],
+      "fixed_payload_parameters": {
+        "mode": "center_below",
+        "exit_mode": "fixed",
+        "concentration": 0.75,
+        "start": "2025-01-02",
+        "center_kind": "mean"
+      },
+      "request": {
+        "type": "ParameterDesignRequest",
+        "center": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S015-C6017",
+          "content_sha256": "79c84e571b25dc04a091d13f96aebbcf79b56717d97123b409440665d307c8a7"
+        },
+        "protocol": {
+          "type": "ParameterPerturbationProtocol",
+          "radius": 0.05,
+          "point_count": 32,
+          "seed": 13,
+          "max_attempts": 100000,
+          "distance_tolerance": 1e-10,
+          "version": "parameter-total-domain-l2-v1",
+          "random_generator": "PCG64",
+          "integer_rounding": "HALF_EVEN",
+          "quantile_method": "LINEAR"
+        },
+        "space": {
+          "type": "ParameterSpace",
+          "coordinates": [
+            {
+              "type": "ParameterCoordinate",
+              "name": "allocation",
+              "center": 0.96,
+              "lower": 0.0,
+              "upper": 1.0,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "lookback",
+              "center": 3.0,
+              "lower": 2.0,
+              "upper": 10.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "hold",
+              "center": 3.0,
+              "lower": 1.0,
+              "upper": 30.0,
+              "kind": "INTEGER"
+            }
+          ],
+          "mapping_sha256": "eda01059a6da499d052709892de76d15d993a62ea50a13f4e35a3f5300bcae40",
+          "feasibility_sha256": "e489cda374f55d2a9274c87eadd8c6323fbc0f56466c506aeccc855699a0394e"
+        }
+      },
+      "result": {
+        "type": "ParameterDesignResult",
+        "request_sha256": "c9ac7c182c2c57a68383f5756800ae90e439fa229a6b00ac66b7afc50464b1da",
+        "status": "DESIGN_FAILED",
+        "design": null,
+        "attempts": 100000,
+        "rejections": [
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DOMAIN",
+            "count": 17096
+          },
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DUPLICATE",
+            "count": 82899
+          }
+        ],
+        "reason": "SAMPLING_BUDGET_EXHAUSTED"
+      },
+      "mathematical_feasible_point_count": 5,
+      "mathematical_points_explanation_only": [
+        [
+          0.9237931034482758,
+          3,
+          2
+        ],
+        [
+          0.9962068965517241,
+          3,
+          2
+        ],
+        [
+          0.9099999999999999,
+          3,
+          3
+        ],
+        [
+          0.9237931034482758,
+          3,
+          4
+        ],
+        [
+          0.9962068965517241,
+          3,
+          4
+        ]
+      ],
+      "sampler_accepted_float_tuples": 5,
+      "float_note": "Different floating-point encodings near one mathematical point do not create independent or economically meaningful perturbations."
+    },
+    {
+      "candidate_id": "C6018",
+      "active_coordinates": [
+        "allocation",
+        "lookback",
+        "hold"
+      ],
+      "fixed_payload_parameters": {
+        "mode": "center_below",
+        "exit_mode": "fixed",
+        "concentration": 0.75,
+        "start": "2025-01-02",
+        "center_kind": "mean"
+      },
+      "request": {
+        "type": "ParameterDesignRequest",
+        "center": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S015-C6018",
+          "content_sha256": "8aae6d4434412d0f499fa20d3d4373ff1ea361cd5d3b7888280da1b63ca3143a"
+        },
+        "protocol": {
+          "type": "ParameterPerturbationProtocol",
+          "radius": 0.05,
+          "point_count": 32,
+          "seed": 13,
+          "max_attempts": 100000,
+          "distance_tolerance": 1e-10,
+          "version": "parameter-total-domain-l2-v1",
+          "random_generator": "PCG64",
+          "integer_rounding": "HALF_EVEN",
+          "quantile_method": "LINEAR"
+        },
+        "space": {
+          "type": "ParameterSpace",
+          "coordinates": [
+            {
+              "type": "ParameterCoordinate",
+              "name": "allocation",
+              "center": 0.97,
+              "lower": 0.0,
+              "upper": 1.0,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "lookback",
+              "center": 3.0,
+              "lower": 2.0,
+              "upper": 10.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "hold",
+              "center": 3.0,
+              "lower": 1.0,
+              "upper": 30.0,
+              "kind": "INTEGER"
+            }
+          ],
+          "mapping_sha256": "eda01059a6da499d052709892de76d15d993a62ea50a13f4e35a3f5300bcae40",
+          "feasibility_sha256": "e489cda374f55d2a9274c87eadd8c6323fbc0f56466c506aeccc855699a0394e"
+        }
+      },
+      "result": {
+        "type": "ParameterDesignResult",
+        "request_sha256": "3f69e23c1a5ecb36935362bebe65ae70ae899d0475781da975e3bff85fee384e",
+        "status": "DESIGN_FAILED",
+        "design": null,
+        "attempts": 100000,
+        "rejections": [
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DOMAIN",
+            "count": 49805
+          },
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DUPLICATE",
+            "count": 50192
+          }
+        ],
+        "reason": "SAMPLING_BUDGET_EXHAUSTED"
+      },
+      "mathematical_feasible_point_count": 3,
+      "mathematical_points_explanation_only": [
+        [
+          0.9337931034482758,
+          3,
+          2
+        ],
+        [
+          0.9199999999999999,
+          3,
+          3
+        ],
+        [
+          0.9337931034482758,
+          3,
+          4
+        ]
+      ],
+      "sampler_accepted_float_tuples": 3,
+      "float_note": "Different floating-point encodings near one mathematical point do not create independent or economically meaningful perturbations."
+    },
+    {
+      "candidate_id": "C6101",
+      "active_coordinates": [
+        "allocation",
+        "lookback",
+        "hold"
+      ],
+      "fixed_payload_parameters": {
+        "mode": "center_below",
+        "exit_mode": "fixed",
+        "concentration": 0.75,
+        "start": "2025-01-02",
+        "center_kind": "mean",
+        "confirmation": 1,
+        "failure_buffer": 0.0,
+        "max_hold": 10,
+        "rearm_mode": "immediate"
+      },
+      "request": {
+        "type": "ParameterDesignRequest",
+        "center": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S015-C6101",
+          "content_sha256": "01eac0344bdce2d30b96808053fa224d054c24ff63b00ec4bd3ca0fa8ecb3431"
+        },
+        "protocol": {
+          "type": "ParameterPerturbationProtocol",
+          "radius": 0.05,
+          "point_count": 32,
+          "seed": 13,
+          "max_attempts": 100000,
+          "distance_tolerance": 1e-10,
+          "version": "parameter-total-domain-l2-v1",
+          "random_generator": "PCG64",
+          "integer_rounding": "HALF_EVEN",
+          "quantile_method": "LINEAR"
+        },
+        "space": {
+          "type": "ParameterSpace",
+          "coordinates": [
+            {
+              "type": "ParameterCoordinate",
+              "name": "allocation",
+              "center": 0.95,
+              "lower": 0.0,
+              "upper": 1.0,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "lookback",
+              "center": 3.0,
+              "lower": 2.0,
+              "upper": 10.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "hold",
+              "center": 3.0,
+              "lower": 1.0,
+              "upper": 30.0,
+              "kind": "INTEGER"
+            }
+          ],
+          "mapping_sha256": "eda01059a6da499d052709892de76d15d993a62ea50a13f4e35a3f5300bcae40",
+          "feasibility_sha256": "e489cda374f55d2a9274c87eadd8c6323fbc0f56466c506aeccc855699a0394e"
+        }
+      },
+      "result": {
+        "type": "ParameterDesignResult",
+        "request_sha256": "9a81f5d6f8851d849be431ba4d2e7149a760493090b62e1d5b50dc953dfa53e9",
+        "status": "DESIGN_FAILED",
+        "design": null,
+        "attempts": 100000,
+        "rejections": [
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DUPLICATE",
+            "count": 99994
+          }
+        ],
+        "reason": "SAMPLING_BUDGET_EXHAUSTED"
+      },
+      "mathematical_feasible_point_count": 6,
+      "mathematical_points_explanation_only": [
+        [
+          0.9137931034482758,
+          3,
+          2
+        ],
+        [
+          0.9862068965517241,
+          3,
+          2
+        ],
+        [
+          0.8999999999999999,
+          3,
+          3
+        ],
+        [
+          1.0,
+          3,
+          3
+        ],
+        [
+          0.9137931034482758,
+          3,
+          4
+        ],
+        [
+          0.9862068965517241,
+          3,
+          4
+        ]
+      ],
+      "sampler_accepted_float_tuples": 6,
+      "float_note": "Different floating-point encodings near one mathematical point do not create independent or economically meaningful perturbations."
+    },
+    {
+      "candidate_id": "C6104",
+      "active_coordinates": [
+        "allocation",
+        "lookback",
+        "hold"
+      ],
+      "fixed_payload_parameters": {
+        "mode": "center_below",
+        "exit_mode": "fixed",
+        "concentration": 0.75,
+        "start": "2025-01-02",
+        "center_kind": "mean",
+        "confirmation": 1,
+        "failure_buffer": 0.0,
+        "max_hold": 10,
+        "rearm_mode": "positive_step"
+      },
+      "request": {
+        "type": "ParameterDesignRequest",
+        "center": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S015-C6104",
+          "content_sha256": "d011129b89904b0f97533b10d1db18ba0f8c205045e7a0b2721e88d7a51ebb4e"
+        },
+        "protocol": {
+          "type": "ParameterPerturbationProtocol",
+          "radius": 0.05,
+          "point_count": 32,
+          "seed": 13,
+          "max_attempts": 100000,
+          "distance_tolerance": 1e-10,
+          "version": "parameter-total-domain-l2-v1",
+          "random_generator": "PCG64",
+          "integer_rounding": "HALF_EVEN",
+          "quantile_method": "LINEAR"
+        },
+        "space": {
+          "type": "ParameterSpace",
+          "coordinates": [
+            {
+              "type": "ParameterCoordinate",
+              "name": "allocation",
+              "center": 0.95,
+              "lower": 0.0,
+              "upper": 1.0,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "lookback",
+              "center": 3.0,
+              "lower": 2.0,
+              "upper": 10.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "hold",
+              "center": 3.0,
+              "lower": 1.0,
+              "upper": 30.0,
+              "kind": "INTEGER"
+            }
+          ],
+          "mapping_sha256": "eda01059a6da499d052709892de76d15d993a62ea50a13f4e35a3f5300bcae40",
+          "feasibility_sha256": "e489cda374f55d2a9274c87eadd8c6323fbc0f56466c506aeccc855699a0394e"
+        }
+      },
+      "result": {
+        "type": "ParameterDesignResult",
+        "request_sha256": "7e4b3d2058a11585ad53714e2bd2ae32db99c23e7b0182a5a87a96e07210dfcb",
+        "status": "DESIGN_FAILED",
+        "design": null,
+        "attempts": 100000,
+        "rejections": [
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DUPLICATE",
+            "count": 99994
+          }
+        ],
+        "reason": "SAMPLING_BUDGET_EXHAUSTED"
+      },
+      "mathematical_feasible_point_count": 6,
+      "mathematical_points_explanation_only": [
+        [
+          0.9137931034482758,
+          3,
+          2
+        ],
+        [
+          0.9862068965517241,
+          3,
+          2
+        ],
+        [
+          0.8999999999999999,
+          3,
+          3
+        ],
+        [
+          1.0,
+          3,
+          3
+        ],
+        [
+          0.9137931034482758,
+          3,
+          4
+        ],
+        [
+          0.9862068965517241,
+          3,
+          4
+        ]
+      ],
+      "sampler_accepted_float_tuples": 6,
+      "float_note": "Different floating-point encodings near one mathematical point do not create independent or economically meaningful perturbations."
+    },
+    {
+      "candidate_id": "C6105",
+      "active_coordinates": [
+        "allocation",
+        "lookback",
+        "hold"
+      ],
+      "fixed_payload_parameters": {
+        "mode": "center_below",
+        "exit_mode": "fixed",
+        "concentration": 0.75,
+        "start": "2025-01-02",
+        "center_kind": "mean",
+        "confirmation": 1,
+        "failure_buffer": 0.0,
+        "max_hold": 10,
+        "rearm_mode": "positive_step"
+      },
+      "request": {
+        "type": "ParameterDesignRequest",
+        "center": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S015-C6105",
+          "content_sha256": "df1bb7b1a65e80f19712cb131a98a971ffafaf660f0d1d7f60368b6555241daa"
+        },
+        "protocol": {
+          "type": "ParameterPerturbationProtocol",
+          "radius": 0.05,
+          "point_count": 32,
+          "seed": 13,
+          "max_attempts": 100000,
+          "distance_tolerance": 1e-10,
+          "version": "parameter-total-domain-l2-v1",
+          "random_generator": "PCG64",
+          "integer_rounding": "HALF_EVEN",
+          "quantile_method": "LINEAR"
+        },
+        "space": {
+          "type": "ParameterSpace",
+          "coordinates": [
+            {
+              "type": "ParameterCoordinate",
+              "name": "allocation",
+              "center": 1.0,
+              "lower": 0.0,
+              "upper": 1.0,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "lookback",
+              "center": 3.0,
+              "lower": 2.0,
+              "upper": 10.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "hold",
+              "center": 3.0,
+              "lower": 1.0,
+              "upper": 30.0,
+              "kind": "INTEGER"
+            }
+          ],
+          "mapping_sha256": "eda01059a6da499d052709892de76d15d993a62ea50a13f4e35a3f5300bcae40",
+          "feasibility_sha256": "e489cda374f55d2a9274c87eadd8c6323fbc0f56466c506aeccc855699a0394e"
+        }
+      },
+      "result": {
+        "type": "ParameterDesignResult",
+        "request_sha256": "f532ce7ccd1df0d29b9408afff79aca5395b801c0ca39ce4fed4ce0c1f3e2908",
+        "status": "DESIGN_FAILED",
+        "design": null,
+        "attempts": 100000,
+        "rejections": [
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DOMAIN",
+            "count": 49805
+          },
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DUPLICATE",
+            "count": 50192
+          }
+        ],
+        "reason": "SAMPLING_BUDGET_EXHAUSTED"
+      },
+      "mathematical_feasible_point_count": 3,
+      "mathematical_points_explanation_only": [
+        [
+          0.9637931034482758,
+          3,
+          2
+        ],
+        [
+          0.95,
+          3,
+          3
+        ],
+        [
+          0.9637931034482758,
+          3,
+          4
+        ]
+      ],
+      "sampler_accepted_float_tuples": 3,
+      "float_note": "Different floating-point encodings near one mathematical point do not create independent or economically meaningful perturbations."
+    },
+    {
+      "candidate_id": "C6116",
+      "active_coordinates": [
+        "allocation",
+        "lookback",
+        "hold",
+        "confirmation"
+      ],
+      "fixed_payload_parameters": {
+        "mode": "center_below",
+        "exit_mode": "confirmed_guard",
+        "concentration": 0.75,
+        "start": "2025-01-02",
+        "center_kind": "mean",
+        "failure_buffer": 0.0,
+        "max_hold": 10,
+        "rearm_mode": "positive_step"
+      },
+      "request": {
+        "type": "ParameterDesignRequest",
+        "center": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S015-C6116",
+          "content_sha256": "d77bfc650f7cea38eef0c4b73cb001b7c146c01b6444049cbc4f3ba8f788f835"
+        },
+        "protocol": {
+          "type": "ParameterPerturbationProtocol",
+          "radius": 0.05,
+          "point_count": 32,
+          "seed": 13,
+          "max_attempts": 100000,
+          "distance_tolerance": 1e-10,
+          "version": "parameter-total-domain-l2-v1",
+          "random_generator": "PCG64",
+          "integer_rounding": "HALF_EVEN",
+          "quantile_method": "LINEAR"
+        },
+        "space": {
+          "type": "ParameterSpace",
+          "coordinates": [
+            {
+              "type": "ParameterCoordinate",
+              "name": "allocation",
+              "center": 0.95,
+              "lower": 0.0,
+              "upper": 1.0,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "lookback",
+              "center": 3.0,
+              "lower": 2.0,
+              "upper": 10.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "hold",
+              "center": 3.0,
+              "lower": 1.0,
+              "upper": 30.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "confirmation",
+              "center": 2.0,
+              "lower": 1.0,
+              "upper": 5.0,
+              "kind": "INTEGER"
+            }
+          ],
+          "mapping_sha256": "eda01059a6da499d052709892de76d15d993a62ea50a13f4e35a3f5300bcae40",
+          "feasibility_sha256": "e489cda374f55d2a9274c87eadd8c6323fbc0f56466c506aeccc855699a0394e"
+        }
+      },
+      "result": {
+        "type": "ParameterDesignResult",
+        "request_sha256": "1838268da52be2010315957186ab3808b3ad79e6093e5aa66a6cc1f40bab8db4",
+        "status": "DESIGN_FAILED",
+        "design": null,
+        "attempts": 100000,
+        "rejections": [
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DUPLICATE",
+            "count": 99994
+          }
+        ],
+        "reason": "SAMPLING_BUDGET_EXHAUSTED"
+      },
+      "mathematical_feasible_point_count": 6,
+      "mathematical_points_explanation_only": [
+        [
+          0.9137931034482758,
+          3,
+          2,
+          2
+        ],
+        [
+          0.9862068965517241,
+          3,
+          2,
+          2
+        ],
+        [
+          0.8999999999999999,
+          3,
+          3,
+          2
+        ],
+        [
+          1.0,
+          3,
+          3,
+          2
+        ],
+        [
+          0.9137931034482758,
+          3,
+          4,
+          2
+        ],
+        [
+          0.9862068965517241,
+          3,
+          4,
+          2
+        ]
+      ],
+      "sampler_accepted_float_tuples": 6,
+      "float_note": "Different floating-point encodings near one mathematical point do not create independent or economically meaningful perturbations."
+    },
+    {
+      "candidate_id": "C6117",
+      "active_coordinates": [
+        "allocation",
+        "lookback",
+        "hold",
+        "confirmation"
+      ],
+      "fixed_payload_parameters": {
+        "mode": "center_below",
+        "exit_mode": "confirmed_guard",
+        "concentration": 0.75,
+        "start": "2025-01-02",
+        "center_kind": "mean",
+        "failure_buffer": 0.0,
+        "max_hold": 10,
+        "rearm_mode": "positive_step"
+      },
+      "request": {
+        "type": "ParameterDesignRequest",
+        "center": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S015-C6117",
+          "content_sha256": "fd4bb350029d47348655fcc91444fa8d1f1b5f60db4a0fceae58720b83738735"
+        },
+        "protocol": {
+          "type": "ParameterPerturbationProtocol",
+          "radius": 0.05,
+          "point_count": 32,
+          "seed": 13,
+          "max_attempts": 100000,
+          "distance_tolerance": 1e-10,
+          "version": "parameter-total-domain-l2-v1",
+          "random_generator": "PCG64",
+          "integer_rounding": "HALF_EVEN",
+          "quantile_method": "LINEAR"
+        },
+        "space": {
+          "type": "ParameterSpace",
+          "coordinates": [
+            {
+              "type": "ParameterCoordinate",
+              "name": "allocation",
+              "center": 1.0,
+              "lower": 0.0,
+              "upper": 1.0,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "lookback",
+              "center": 3.0,
+              "lower": 2.0,
+              "upper": 10.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "hold",
+              "center": 3.0,
+              "lower": 1.0,
+              "upper": 30.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "confirmation",
+              "center": 2.0,
+              "lower": 1.0,
+              "upper": 5.0,
+              "kind": "INTEGER"
+            }
+          ],
+          "mapping_sha256": "eda01059a6da499d052709892de76d15d993a62ea50a13f4e35a3f5300bcae40",
+          "feasibility_sha256": "e489cda374f55d2a9274c87eadd8c6323fbc0f56466c506aeccc855699a0394e"
+        }
+      },
+      "result": {
+        "type": "ParameterDesignResult",
+        "request_sha256": "fb7b0f7341579972b9cd42e5c684b783478ec70166ff5519baeb55c436d6de4b",
+        "status": "DESIGN_FAILED",
+        "design": null,
+        "attempts": 100000,
+        "rejections": [
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DOMAIN",
+            "count": 50011
+          },
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DUPLICATE",
+            "count": 49986
+          }
+        ],
+        "reason": "SAMPLING_BUDGET_EXHAUSTED"
+      },
+      "mathematical_feasible_point_count": 3,
+      "mathematical_points_explanation_only": [
+        [
+          0.9637931034482758,
+          3,
+          2,
+          2
+        ],
+        [
+          0.95,
+          3,
+          3,
+          2
+        ],
+        [
+          0.9637931034482758,
+          3,
+          4,
+          2
+        ]
+      ],
+      "sampler_accepted_float_tuples": 3,
+      "float_note": "Different floating-point encodings near one mathematical point do not create independent or economically meaningful perturbations."
+    },
+    {
+      "candidate_id": "C6201",
+      "active_coordinates": [
+        "allocation",
+        "lookback",
+        "hold"
+      ],
+      "fixed_payload_parameters": {
+        "mode": "center_below",
+        "exit_mode": "fixed",
+        "concentration": 0.75,
+        "start": "2025-01-02",
+        "center_kind": "mean",
+        "confirmation": 1,
+        "failure_buffer": 0.0,
+        "max_hold": 30,
+        "rearm_mode": "positive_step"
+      },
+      "request": {
+        "type": "ParameterDesignRequest",
+        "center": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S015-C6201",
+          "content_sha256": "b8156bd40a841b1adf8f962cc6f17ccd9bd5a0b5913a9c4f845447f5276c86f5"
+        },
+        "protocol": {
+          "type": "ParameterPerturbationProtocol",
+          "radius": 0.05,
+          "point_count": 32,
+          "seed": 13,
+          "max_attempts": 100000,
+          "distance_tolerance": 1e-10,
+          "version": "parameter-total-domain-l2-v1",
+          "random_generator": "PCG64",
+          "integer_rounding": "HALF_EVEN",
+          "quantile_method": "LINEAR"
+        },
+        "space": {
+          "type": "ParameterSpace",
+          "coordinates": [
+            {
+              "type": "ParameterCoordinate",
+              "name": "allocation",
+              "center": 0.925,
+              "lower": 0.0,
+              "upper": 1.0,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "lookback",
+              "center": 3.0,
+              "lower": 2.0,
+              "upper": 10.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "hold",
+              "center": 3.0,
+              "lower": 1.0,
+              "upper": 30.0,
+              "kind": "INTEGER"
+            }
+          ],
+          "mapping_sha256": "eda01059a6da499d052709892de76d15d993a62ea50a13f4e35a3f5300bcae40",
+          "feasibility_sha256": "e489cda374f55d2a9274c87eadd8c6323fbc0f56466c506aeccc855699a0394e"
+        }
+      },
+      "result": {
+        "type": "ParameterDesignResult",
+        "request_sha256": "5079fa60c5ddcd1450907ce8a7bc3c68d071557dd34eeae836a476445cb8911e",
+        "status": "DESIGN_FAILED",
+        "design": null,
+        "attempts": 100000,
+        "rejections": [
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DUPLICATE",
+            "count": 99994
+          }
+        ],
+        "reason": "SAMPLING_BUDGET_EXHAUSTED"
+      },
+      "mathematical_feasible_point_count": 6,
+      "mathematical_points_explanation_only": [
+        [
+          0.8887931034482759,
+          3,
+          2
+        ],
+        [
+          0.9612068965517242,
+          3,
+          2
+        ],
+        [
+          0.875,
+          3,
+          3
+        ],
+        [
+          0.9750000000000001,
+          3,
+          3
+        ],
+        [
+          0.8887931034482759,
+          3,
+          4
+        ],
+        [
+          0.9612068965517242,
+          3,
+          4
+        ]
+      ],
+      "sampler_accepted_float_tuples": 6,
+      "float_note": "Different floating-point encodings near one mathematical point do not create independent or economically meaningful perturbations."
+    },
+    {
+      "candidate_id": "C6202",
+      "active_coordinates": [
+        "allocation",
+        "lookback",
+        "hold"
+      ],
+      "fixed_payload_parameters": {
+        "mode": "center_below",
+        "exit_mode": "fixed",
+        "concentration": 0.75,
+        "start": "2025-01-02",
+        "center_kind": "mean",
+        "confirmation": 1,
+        "failure_buffer": 0.0,
+        "max_hold": 30,
+        "rearm_mode": "positive_step"
+      },
+      "request": {
+        "type": "ParameterDesignRequest",
+        "center": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S015-C6202",
+          "content_sha256": "1fc035d32831ca6368f8550c9ecf32b8b3f55f9df3e50da1fe7c4e3c5dcf4331"
+        },
+        "protocol": {
+          "type": "ParameterPerturbationProtocol",
+          "radius": 0.05,
+          "point_count": 32,
+          "seed": 13,
+          "max_attempts": 100000,
+          "distance_tolerance": 1e-10,
+          "version": "parameter-total-domain-l2-v1",
+          "random_generator": "PCG64",
+          "integer_rounding": "HALF_EVEN",
+          "quantile_method": "LINEAR"
+        },
+        "space": {
+          "type": "ParameterSpace",
+          "coordinates": [
+            {
+              "type": "ParameterCoordinate",
+              "name": "allocation",
+              "center": 0.93,
+              "lower": 0.0,
+              "upper": 1.0,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "lookback",
+              "center": 3.0,
+              "lower": 2.0,
+              "upper": 10.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "hold",
+              "center": 3.0,
+              "lower": 1.0,
+              "upper": 30.0,
+              "kind": "INTEGER"
+            }
+          ],
+          "mapping_sha256": "eda01059a6da499d052709892de76d15d993a62ea50a13f4e35a3f5300bcae40",
+          "feasibility_sha256": "e489cda374f55d2a9274c87eadd8c6323fbc0f56466c506aeccc855699a0394e"
+        }
+      },
+      "result": {
+        "type": "ParameterDesignResult",
+        "request_sha256": "8bb738abb557f726cc6e6101228cc0ddd719e9430761e4286291485d93ed0313",
+        "status": "DESIGN_FAILED",
+        "design": null,
+        "attempts": 100000,
+        "rejections": [
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DUPLICATE",
+            "count": 99994
+          }
+        ],
+        "reason": "SAMPLING_BUDGET_EXHAUSTED"
+      },
+      "mathematical_feasible_point_count": 6,
+      "mathematical_points_explanation_only": [
+        [
+          0.8937931034482759,
+          3,
+          2
+        ],
+        [
+          0.9662068965517242,
+          3,
+          2
+        ],
+        [
+          0.88,
+          3,
+          3
+        ],
+        [
+          0.9800000000000001,
+          3,
+          3
+        ],
+        [
+          0.8937931034482759,
+          3,
+          4
+        ],
+        [
+          0.9662068965517242,
+          3,
+          4
+        ]
+      ],
+      "sampler_accepted_float_tuples": 6,
+      "float_note": "Different floating-point encodings near one mathematical point do not create independent or economically meaningful perturbations."
+    },
+    {
+      "candidate_id": "C6203",
+      "active_coordinates": [
+        "allocation",
+        "lookback",
+        "hold"
+      ],
+      "fixed_payload_parameters": {
+        "mode": "center_below",
+        "exit_mode": "fixed",
+        "concentration": 0.75,
+        "start": "2025-01-02",
+        "center_kind": "mean",
+        "confirmation": 1,
+        "failure_buffer": 0.0,
+        "max_hold": 30,
+        "rearm_mode": "positive_step"
+      },
+      "request": {
+        "type": "ParameterDesignRequest",
+        "center": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S015-C6203",
+          "content_sha256": "80bf375dfbda37048a1352aa13ffd1f15c002a21cc2192a7b542e5a00ad2da88"
+        },
+        "protocol": {
+          "type": "ParameterPerturbationProtocol",
+          "radius": 0.05,
+          "point_count": 32,
+          "seed": 13,
+          "max_attempts": 100000,
+          "distance_tolerance": 1e-10,
+          "version": "parameter-total-domain-l2-v1",
+          "random_generator": "PCG64",
+          "integer_rounding": "HALF_EVEN",
+          "quantile_method": "LINEAR"
+        },
+        "space": {
+          "type": "ParameterSpace",
+          "coordinates": [
+            {
+              "type": "ParameterCoordinate",
+              "name": "allocation",
+              "center": 0.975,
+              "lower": 0.0,
+              "upper": 1.0,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "lookback",
+              "center": 3.0,
+              "lower": 2.0,
+              "upper": 10.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "hold",
+              "center": 3.0,
+              "lower": 1.0,
+              "upper": 30.0,
+              "kind": "INTEGER"
+            }
+          ],
+          "mapping_sha256": "eda01059a6da499d052709892de76d15d993a62ea50a13f4e35a3f5300bcae40",
+          "feasibility_sha256": "e489cda374f55d2a9274c87eadd8c6323fbc0f56466c506aeccc855699a0394e"
+        }
+      },
+      "result": {
+        "type": "ParameterDesignResult",
+        "request_sha256": "364e3117034fb8d68080b2bea90facb1639312855b961ad54fac68fb05f3e031",
+        "status": "DESIGN_FAILED",
+        "design": null,
+        "attempts": 100000,
+        "rejections": [
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DOMAIN",
+            "count": 49805
+          },
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DUPLICATE",
+            "count": 50192
+          }
+        ],
+        "reason": "SAMPLING_BUDGET_EXHAUSTED"
+      },
+      "mathematical_feasible_point_count": 3,
+      "mathematical_points_explanation_only": [
+        [
+          0.9387931034482758,
+          3,
+          2
+        ],
+        [
+          0.9249999999999999,
+          3,
+          3
+        ],
+        [
+          0.9387931034482758,
+          3,
+          4
+        ]
+      ],
+      "sampler_accepted_float_tuples": 3,
+      "float_note": "Different floating-point encodings near one mathematical point do not create independent or economically meaningful perturbations."
+    },
+    {
+      "candidate_id": "C6206",
+      "active_coordinates": [
+        "allocation",
+        "lookback",
+        "hold",
+        "confirmation"
+      ],
+      "fixed_payload_parameters": {
+        "mode": "center_below",
+        "exit_mode": "confirmed_guard",
+        "concentration": 0.75,
+        "start": "2025-01-02",
+        "center_kind": "mean",
+        "failure_buffer": 0.0,
+        "max_hold": 30,
+        "rearm_mode": "positive_step"
+      },
+      "request": {
+        "type": "ParameterDesignRequest",
+        "center": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S015-C6206",
+          "content_sha256": "3fc8667d7ac6efdeb32d6cacdb350af1660821ee1b161e4a32103b439243f207"
+        },
+        "protocol": {
+          "type": "ParameterPerturbationProtocol",
+          "radius": 0.05,
+          "point_count": 32,
+          "seed": 13,
+          "max_attempts": 100000,
+          "distance_tolerance": 1e-10,
+          "version": "parameter-total-domain-l2-v1",
+          "random_generator": "PCG64",
+          "integer_rounding": "HALF_EVEN",
+          "quantile_method": "LINEAR"
+        },
+        "space": {
+          "type": "ParameterSpace",
+          "coordinates": [
+            {
+              "type": "ParameterCoordinate",
+              "name": "allocation",
+              "center": 0.975,
+              "lower": 0.0,
+              "upper": 1.0,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "lookback",
+              "center": 3.0,
+              "lower": 2.0,
+              "upper": 10.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "hold",
+              "center": 3.0,
+              "lower": 1.0,
+              "upper": 30.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "confirmation",
+              "center": 2.0,
+              "lower": 1.0,
+              "upper": 5.0,
+              "kind": "INTEGER"
+            }
+          ],
+          "mapping_sha256": "eda01059a6da499d052709892de76d15d993a62ea50a13f4e35a3f5300bcae40",
+          "feasibility_sha256": "e489cda374f55d2a9274c87eadd8c6323fbc0f56466c506aeccc855699a0394e"
+        }
+      },
+      "result": {
+        "type": "ParameterDesignResult",
+        "request_sha256": "72fe5a49b07e879f82cf115b2ca5393ef4239cd6bee057d5b374bd2df634c8aa",
+        "status": "DESIGN_FAILED",
+        "design": null,
+        "attempts": 100000,
+        "rejections": [
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DOMAIN",
+            "count": 50011
+          },
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DUPLICATE",
+            "count": 49986
+          }
+        ],
+        "reason": "SAMPLING_BUDGET_EXHAUSTED"
+      },
+      "mathematical_feasible_point_count": 3,
+      "mathematical_points_explanation_only": [
+        [
+          0.9387931034482758,
+          3,
+          2,
+          2
+        ],
+        [
+          0.9249999999999999,
+          3,
+          3,
+          2
+        ],
+        [
+          0.9387931034482758,
+          3,
+          4,
+          2
+        ]
+      ],
+      "sampler_accepted_float_tuples": 3,
+      "float_note": "Different floating-point encodings near one mathematical point do not create independent or economically meaningful perturbations."
+    }
+  ],
+  "limitations": [
+    "At most six mathematical points per center, before upper-bound truncation; 32 distinct real points are impossible in the unchanged reviewed domains.",
+    "Failure of this design is not a measured strategy loss or a new economic acceptance threshold.",
+    "No radius/domain relaxation, inactive coordinate, partial quantile, account, registry write or publication is produced."
+  ]
+}
