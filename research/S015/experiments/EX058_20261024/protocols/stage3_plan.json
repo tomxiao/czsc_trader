@@ -1,0 +1,56 @@
+{
+  "authorization": "同意，请自主完成阶段三，并汇报结论",
+  "role": "RSCH",
+  "stage": 3,
+  "branch": "codex/s015-stage2-dual-objective",
+  "predecessor": {
+    "batch": {
+      "strategy_id": "S015",
+      "type": "ResearchBatchRef"
+    },
+    "content_sha256": "463ae84ebc118b683d25ce4318e508f7594d5971b4e0077c79a72c80da169688",
+    "revision": 1,
+    "stage": "PROTOTYPES",
+    "type": "DeliveryReference"
+  },
+  "mandate": {
+    "batch": {
+      "strategy_id": "S015",
+      "type": "ResearchBatchRef"
+    },
+    "content_sha256": "5563c98c1a2ed876b6d75b775437f35ec2c31777818ad0f9b67e89c90d30d90a",
+    "revision": 3,
+    "stage": "MANDATE",
+    "type": "DeliveryReference"
+  },
+  "scope": "承接C5506均值中心上移且收盘低于中心的条件修复原型；C5303中位及修复退出为对照。仅S015原434/415已见窗口，既有价格输入。",
+  "researcher_budget": {
+    "maximum_rounds": 6,
+    "maximum_configurations": 288,
+    "maximum_formal_accounts": 576,
+    "workers": 4,
+    "native_threads": 1,
+    "seed": 13,
+    "source": "本轮用户自主完成阶段三授权下研究员自定上限，不转用此前阶段二13轮余额。"
+  },
+  "sequence": [
+    "固定入场，分离投入比例与持有期限；对照中位及修复退出。",
+    "固定标准投入，比较延迟确认的中心失效、修复/失效的组合及有界持有延续，避免直接拟合亏损交易日期。",
+    "按前两轮机制证据开展有限交互、参数邻域及必要扩边；事前固定各轮配置。",
+    "对达标及前沿做必要删项、竞争解释、时间及真实账户损益诊断；补足边界后收口。"
+  ],
+  "hypotheses": [
+    "较短期限可能牺牲修复收益并增加费用；较长期限可能增加下跌暴露并降低交易频率。",
+    "恒定减少投入改善回撤，但也减少收益；作为退出/状态规则必须超越的竞争解释。",
+    "单日中心下移不必等于持有价值消失；连续下移或折让扩大可成为可观察失效条件，须与单日失效及恒定减仓对照。"
+  ],
+  "boundaries": {
+    "allocation": "0<allocation<=1 为不加杠杆硬界；初试0.8..1为暂定域，若向下改善则扩至0.6/0.7。",
+    "hold": "初试1..7为暂定期限域，贴边改善需扩至10/14，频率约束独立。",
+    "lookback": "初试3，阶段二2/5已见；有线索再检查2/4/5，不默认为独立信息。"
+  },
+  "selection": "Optuna管理全部固定配置与结果；4目标为两个窗口净收益最大/回撤最小，经济门不加权抵消。全部同时达标及收益回撤前沿登记并核验可加载。",
+  "stop": "回答投入/持有价值及关键反证、完成必要边界比较后交付；首次过线不停止，不能穷举到达标或为耗完预算而试验。核心机制被否定则建议回阶段二；平台阻断如实报告。",
+  "limitations": "全部开发数据已见，434/415高度重叠；正式时钟20:31并对代表核验17:30计划等价；无历史发布时点认证。32联合扰动、完整费用压力及正式排序留阶段四，未获授权自动推进。",
+  "invariants": "CYCLE_TARGET/signal_cash_fraction/entry_cycle；每侧0.1%；1%限买、市价退出、100份整手；日范围成交、无量约束、期末不强平。不得改目标、数据、平台、研究指南、生产、master或远端。"
+}

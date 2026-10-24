@@ -33,8 +33,8 @@
         "strategy_id": "S015",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "a41bbbda40606a2c8ca8a9e93bc046a501b6601f1de33fb37b4bc3d9ec1cdefc",
-      "revision": 5,
+      "content_sha256": "9e021c2a0ed2361ed7f06b916a0935ac4a08de73c9519fbeea7f477af0c2b9e1",
+      "revision": 6,
       "stage": "CANDIDATES",
       "type": "DeliveryReference"
     },
@@ -76,12 +76,8 @@
       "sha256": "a98afb636c869d182cecca9450ef7b6a3ae9cc53deac01e3ef7eb4a907ff8078",
       "type": "EvidenceRef"
     },
-    "current_experiment": {
-      "experiment_id": "EX057_20261024",
-      "strategy_id": "S015",
-      "type": "ExperimentRef"
-    },
-    "current_phase": "阶段二已完成：PROTOTYPES/1；等待用户决定是否进入阶段三",
+    "current_experiment": "EX062_20261024",
+    "current_phase": "阶段三已完成：CANDIDATES/6；等待用户决定阶段四",
     "current_prototypes": {
       "batch": {
         "strategy_id": "S015",
@@ -93,6 +89,7 @@
       "type": "DeliveryReference"
     },
     "current_stage2_report": "research/S015/deliveries/PROTOTYPES/1/report.md",
+    "current_stage3_report": "research/S015/deliveries/CANDIDATES/6/report.md",
     "data_boundary": "保留原获准ETF数据及S011固定基线引用；不扩大新候选输入或封存样本范围",
     "development_window": {
       "end": "2026-10-21",
@@ -172,7 +169,7 @@
       "stage": "MANDATE",
       "type": "DeliveryReference"
     },
-    "next_gate": "须用户明确批准阶段三后才开展以达标为目标的完善；保持原目标和数据边界，不自动消费剩余13轮。",
+    "next_gate": "用户批准阶段四后，对16中心达标候选检验真实有效参数、费用压力及正式自检；不自动选型、冻结或生产。",
     "objective": "在固定共同窗口同时严格优于修复后S011-v1的累计净收益和最大回撤，并满足原开发池默认标准",
     "pending_freeze_candidate_count": 0,
     "pending_selection_candidate_count": 0,
@@ -220,6 +217,35 @@
       "unlimited": true
     },
     "stage2_conclusion": "有依据的上涨中心折让原型家族；C5506主发展、C5303参照，退出方案保留取舍；尚无合格策略。",
+    "stage3_authorization": {
+      "evidence_id": "cf087dd48cbd45f0efbf10fb0c9b3e357fccdeba901b88644206b9ee1436c74a.json",
+      "experiment": {
+        "experiment_id": "EX058_20261024",
+        "strategy_id": "S015",
+        "type": "ExperimentRef"
+      },
+      "media_type": "application/json",
+      "name": "stage3_plan",
+      "schema": null,
+      "schema_version": null,
+      "sha256": "cf087dd48cbd45f0efbf10fb0c9b3e357fccdeba901b88644206b9ee1436c74a",
+      "type": "EvidenceRef"
+    },
+    "stage3_budget": {
+      "closure": "阶段三完成，未使用第6轮；阶段二13轮余额不自动转用，阶段四尚待用户批准。",
+      "completed_configurations": 126,
+      "completed_rounds": 5,
+      "formal_accounts": 252,
+      "maximum_configurations": 288,
+      "maximum_formal_accounts": 576,
+      "maximum_rounds": 6,
+      "native_threads": 1,
+      "seed": 13,
+      "source": "本轮用户自主完成阶段三授权下研究员自定上限，不转用此前阶段二13轮余额。",
+      "technical_accounts": 6,
+      "workers": 4
+    },
+    "stage3_conclusion": "5轮126配置，16联合中心达标身份/13净值组，28身份登记加载及FULL交付通过；主代表C6105，时间/尺度反证保留；完整资格0。",
     "state_diagnostic_budget": {
       "authorized": 1,
       "completed": 1,
@@ -246,5 +272,5 @@
     "159326.SZ"
   ],
   "strategy_id": "S015",
-  "updated_at": "2026-10-24T05:36:54+08:00"
+  "updated_at": "2026-10-24T10:24:28+08:00"
 }

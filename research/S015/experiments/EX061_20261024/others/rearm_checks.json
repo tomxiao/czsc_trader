@@ -1,0 +1,836 @@
+{
+  "status": "PASS",
+  "source_sha256": "85887fb029f4a2b52c0cb73f686ac5f6d0cac9f984ebb187a03c71ae9ec069ad",
+  "new_runtime_source": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX061_20261024"
+    },
+    "evidence_id": "69c8d0db2ef25c4440086db07e3a7e2d6674969c1db92202f4359572c701869c.py",
+    "sha256": "69c8d0db2ef25c4440086db07e3a7e2d6674969c1db92202f4359572c701869c",
+    "media_type": "text/x-python",
+    "name": "price_process",
+    "schema": null,
+    "schema_version": null
+  },
+  "old_runtime_source": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX059_20261024"
+    },
+    "evidence_id": "4c8a6ac04e9c8b403d46439b4271605976e5fc4fd766cc3ec3220c73366f136c.py",
+    "sha256": "4c8a6ac04e9c8b403d46439b4271605976e5fc4fd766cc3ec3220c73366f136c",
+    "media_type": "text/x-python",
+    "name": "price_process",
+    "schema": null,
+    "schema_version": null
+  },
+  "new_account_simulations": 0,
+  "new_strategy_evaluations": 0,
+  "boundary_examples": [
+    {
+      "name": "positive_step_latches_before_later_negative_step_entry",
+      "rows": [
+        {
+          "synthetic_date": "2025-01-02T00:00:00.000",
+          "feature_ready": true,
+          "center_gain": 0.03,
+          "m": 1.01,
+          "p": 1.0,
+          "dcenter": 0.01,
+          "atr": 0.02,
+          "r3": 0.03,
+          "prior_positive": true,
+          "up_count": 2,
+          "concentration": 0.5,
+          "target_position": 1.0,
+          "entry_allocation_fraction": 1.0,
+          "intent_age": 1,
+          "permission": 1.0,
+          "exit_signal": 0.0,
+          "entry_signal": 1.0
+        },
+        {
+          "synthetic_date": "2025-01-03T00:00:00.000",
+          "feature_ready": true,
+          "center_gain": 0.03,
+          "m": 1.02,
+          "p": 1.01,
+          "dcenter": 0.01,
+          "atr": 0.02,
+          "r3": 0.03,
+          "prior_positive": true,
+          "up_count": 2,
+          "concentration": 0.5,
+          "target_position": 0.0,
+          "entry_allocation_fraction": null,
+          "intent_age": 0,
+          "permission": 1.0,
+          "exit_signal": 1.0,
+          "entry_signal": 0.0
+        },
+        {
+          "synthetic_date": "2025-01-04T00:00:00.000",
+          "feature_ready": true,
+          "center_gain": 0.03,
+          "m": 1.01,
+          "p": 1.0,
+          "dcenter": -0.01,
+          "atr": 0.02,
+          "r3": 0.03,
+          "prior_positive": true,
+          "up_count": 2,
+          "concentration": 0.5,
+          "target_position": 0.0,
+          "entry_allocation_fraction": null,
+          "intent_age": 0,
+          "permission": 1.0,
+          "exit_signal": 0.0,
+          "entry_signal": 0.0
+        },
+        {
+          "synthetic_date": "2025-01-05T00:00:00.000",
+          "feature_ready": true,
+          "center_gain": 0.03,
+          "m": 1.02,
+          "p": 1.03,
+          "dcenter": 0.01,
+          "atr": 0.02,
+          "r3": 0.03,
+          "prior_positive": true,
+          "up_count": 2,
+          "concentration": 0.5,
+          "target_position": 0.0,
+          "entry_allocation_fraction": null,
+          "intent_age": 0,
+          "permission": 0.0,
+          "exit_signal": 0.0,
+          "entry_signal": 0.0
+        },
+        {
+          "synthetic_date": "2025-01-06T00:00:00.000",
+          "feature_ready": true,
+          "center_gain": 0.03,
+          "m": 1.01,
+          "p": 1.0,
+          "dcenter": -0.01,
+          "atr": 0.02,
+          "r3": 0.03,
+          "prior_positive": true,
+          "up_count": 2,
+          "concentration": 0.5,
+          "target_position": 1.0,
+          "entry_allocation_fraction": 1.0,
+          "intent_age": 1,
+          "permission": 1.0,
+          "exit_signal": 0.0,
+          "entry_signal": 1.0
+        }
+      ],
+      "checks": "Exit-day positive step does not rearm; later positive flat day rearms even without permission; a subsequent negative-step permitted day enters."
+    },
+    {
+      "name": "initial_armed_state",
+      "initial_negative_step_can_enter": true,
+      "meaning": "positive_step is a post-exit rearm constraint, not an unconditional positive-entry-day filter."
+    }
+  ],
+  "confirmation_at_least_hold_equalities": [
+    {
+      "hold": 1,
+      "confirmation": 1,
+      "rearm_mode": "immediate",
+      "equal": true
+    },
+    {
+      "hold": 1,
+      "confirmation": 2,
+      "rearm_mode": "immediate",
+      "equal": true
+    },
+    {
+      "hold": 1,
+      "confirmation": 3,
+      "rearm_mode": "immediate",
+      "equal": true
+    },
+    {
+      "hold": 1,
+      "confirmation": 4,
+      "rearm_mode": "immediate",
+      "equal": true
+    },
+    {
+      "hold": 1,
+      "confirmation": 5,
+      "rearm_mode": "immediate",
+      "equal": true
+    },
+    {
+      "hold": 1,
+      "confirmation": 1,
+      "rearm_mode": "positive_step",
+      "equal": true
+    },
+    {
+      "hold": 1,
+      "confirmation": 2,
+      "rearm_mode": "positive_step",
+      "equal": true
+    },
+    {
+      "hold": 1,
+      "confirmation": 3,
+      "rearm_mode": "positive_step",
+      "equal": true
+    },
+    {
+      "hold": 1,
+      "confirmation": 4,
+      "rearm_mode": "positive_step",
+      "equal": true
+    },
+    {
+      "hold": 1,
+      "confirmation": 5,
+      "rearm_mode": "positive_step",
+      "equal": true
+    },
+    {
+      "hold": 2,
+      "confirmation": 2,
+      "rearm_mode": "immediate",
+      "equal": true
+    },
+    {
+      "hold": 2,
+      "confirmation": 3,
+      "rearm_mode": "immediate",
+      "equal": true
+    },
+    {
+      "hold": 2,
+      "confirmation": 4,
+      "rearm_mode": "immediate",
+      "equal": true
+    },
+    {
+      "hold": 2,
+      "confirmation": 5,
+      "rearm_mode": "immediate",
+      "equal": true
+    },
+    {
+      "hold": 2,
+      "confirmation": 2,
+      "rearm_mode": "positive_step",
+      "equal": true
+    },
+    {
+      "hold": 2,
+      "confirmation": 3,
+      "rearm_mode": "positive_step",
+      "equal": true
+    },
+    {
+      "hold": 2,
+      "confirmation": 4,
+      "rearm_mode": "positive_step",
+      "equal": true
+    },
+    {
+      "hold": 2,
+      "confirmation": 5,
+      "rearm_mode": "positive_step",
+      "equal": true
+    },
+    {
+      "hold": 3,
+      "confirmation": 3,
+      "rearm_mode": "immediate",
+      "equal": true
+    },
+    {
+      "hold": 3,
+      "confirmation": 4,
+      "rearm_mode": "immediate",
+      "equal": true
+    },
+    {
+      "hold": 3,
+      "confirmation": 5,
+      "rearm_mode": "immediate",
+      "equal": true
+    },
+    {
+      "hold": 3,
+      "confirmation": 3,
+      "rearm_mode": "positive_step",
+      "equal": true
+    },
+    {
+      "hold": 3,
+      "confirmation": 4,
+      "rearm_mode": "positive_step",
+      "equal": true
+    },
+    {
+      "hold": 3,
+      "confirmation": 5,
+      "rearm_mode": "positive_step",
+      "equal": true
+    },
+    {
+      "hold": 4,
+      "confirmation": 4,
+      "rearm_mode": "immediate",
+      "equal": true
+    },
+    {
+      "hold": 4,
+      "confirmation": 5,
+      "rearm_mode": "immediate",
+      "equal": true
+    },
+    {
+      "hold": 4,
+      "confirmation": 4,
+      "rearm_mode": "positive_step",
+      "equal": true
+    },
+    {
+      "hold": 4,
+      "confirmation": 5,
+      "rearm_mode": "positive_step",
+      "equal": true
+    },
+    {
+      "hold": 5,
+      "confirmation": 5,
+      "rearm_mode": "immediate",
+      "equal": true
+    },
+    {
+      "hold": 5,
+      "confirmation": 5,
+      "rearm_mode": "positive_step",
+      "equal": true
+    }
+  ],
+  "legacy_mappings": [
+    {
+      "candidate": "C5900",
+      "exit_mode": "confirmed_guard",
+      "mapped_rearm_mode": "positive_step",
+      "rows": 434,
+      "retained_full_signals_equal_exactly": true,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX059_20261024"
+        },
+        "evidence_id": "c5f690ee3c19137dee03fe7e902731461efebf17e2e563e068cc38038cbae784.json",
+        "sha256": "c5f690ee3c19137dee03fe7e902731461efebf17e2e563e068cc38038cbae784",
+        "media_type": "application/json",
+        "name": "C5900",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "candidate": "C5901",
+      "exit_mode": "confirmed_guard",
+      "mapped_rearm_mode": "positive_step",
+      "rows": 434,
+      "retained_full_signals_equal_exactly": true,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX059_20261024"
+        },
+        "evidence_id": "692e343b19e3a8f01e99bec14702a058dc8f57f8c0113a7286804dc7f1719ab7.json",
+        "sha256": "692e343b19e3a8f01e99bec14702a058dc8f57f8c0113a7286804dc7f1719ab7",
+        "media_type": "application/json",
+        "name": "C5901",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "candidate": "C5902",
+      "exit_mode": "confirmed_guard",
+      "mapped_rearm_mode": "positive_step",
+      "rows": 434,
+      "retained_full_signals_equal_exactly": true,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX059_20261024"
+        },
+        "evidence_id": "0e403803ffd6389aa43d71a067cad32d1813cc6cfb0117c576468ba174a08ef0.json",
+        "sha256": "0e403803ffd6389aa43d71a067cad32d1813cc6cfb0117c576468ba174a08ef0",
+        "media_type": "application/json",
+        "name": "C5902",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "candidate": "C5903",
+      "exit_mode": "confirmed_guard",
+      "mapped_rearm_mode": "positive_step",
+      "rows": 434,
+      "retained_full_signals_equal_exactly": true,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX059_20261024"
+        },
+        "evidence_id": "fad076d24ec668c009cdd737b947dbb555a6b55e90b45cd67b9dc4cfcbeead53.json",
+        "sha256": "fad076d24ec668c009cdd737b947dbb555a6b55e90b45cd67b9dc4cfcbeead53",
+        "media_type": "application/json",
+        "name": "C5903",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "candidate": "C5904",
+      "exit_mode": "confirmed_guard",
+      "mapped_rearm_mode": "positive_step",
+      "rows": 434,
+      "retained_full_signals_equal_exactly": true,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX059_20261024"
+        },
+        "evidence_id": "8375a4097e27d726c1505a8c1bb58c5332134977c70ebd77c708e10dba34475b.json",
+        "sha256": "8375a4097e27d726c1505a8c1bb58c5332134977c70ebd77c708e10dba34475b",
+        "media_type": "application/json",
+        "name": "C5904",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "candidate": "C5905",
+      "exit_mode": "confirmed_guard",
+      "mapped_rearm_mode": "positive_step",
+      "rows": 434,
+      "retained_full_signals_equal_exactly": true,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX059_20261024"
+        },
+        "evidence_id": "2bb2a36f8a433a73ea7cffc3f0cdd39d242eb2dcb1b3112a3fa7a78231ca746f.json",
+        "sha256": "2bb2a36f8a433a73ea7cffc3f0cdd39d242eb2dcb1b3112a3fa7a78231ca746f",
+        "media_type": "application/json",
+        "name": "C5905",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "candidate": "C5906",
+      "exit_mode": "anchored_guard",
+      "mapped_rearm_mode": "positive_step",
+      "rows": 434,
+      "retained_full_signals_equal_exactly": true,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX059_20261024"
+        },
+        "evidence_id": "cb4c365518d407e76fb47a63ab8bfe4f8f2a9fcb325abccc1ea7511167f9c73e.json",
+        "sha256": "cb4c365518d407e76fb47a63ab8bfe4f8f2a9fcb325abccc1ea7511167f9c73e",
+        "media_type": "application/json",
+        "name": "C5906",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "candidate": "C5907",
+      "exit_mode": "anchored_guard",
+      "mapped_rearm_mode": "positive_step",
+      "rows": 434,
+      "retained_full_signals_equal_exactly": true,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX059_20261024"
+        },
+        "evidence_id": "48341e6fd8d64a18611762b39040e1db74b3149992b8b4c35640e19623b5dc66.json",
+        "sha256": "48341e6fd8d64a18611762b39040e1db74b3149992b8b4c35640e19623b5dc66",
+        "media_type": "application/json",
+        "name": "C5907",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "candidate": "C5908",
+      "exit_mode": "anchored_guard",
+      "mapped_rearm_mode": "positive_step",
+      "rows": 434,
+      "retained_full_signals_equal_exactly": true,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX059_20261024"
+        },
+        "evidence_id": "45d13cf6034a820fd90c5063cb27080b4a58c994b3d7fdb36e019c3de145fa65.json",
+        "sha256": "45d13cf6034a820fd90c5063cb27080b4a58c994b3d7fdb36e019c3de145fa65",
+        "media_type": "application/json",
+        "name": "C5908",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "candidate": "C5909",
+      "exit_mode": "anchored_guard",
+      "mapped_rearm_mode": "positive_step",
+      "rows": 434,
+      "retained_full_signals_equal_exactly": true,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX059_20261024"
+        },
+        "evidence_id": "56fdcc5e28aebee389438ceac047335f42e4df91049d4b137e5aea13cf7b4683.json",
+        "sha256": "56fdcc5e28aebee389438ceac047335f42e4df91049d4b137e5aea13cf7b4683",
+        "media_type": "application/json",
+        "name": "C5909",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "candidate": "C5910",
+      "exit_mode": "anchored_guard",
+      "mapped_rearm_mode": "positive_step",
+      "rows": 434,
+      "retained_full_signals_equal_exactly": true,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX059_20261024"
+        },
+        "evidence_id": "22a05e4fda78d1aa7f1b3890c8662ba13b6e8a84010246121fce22c915ce0fff.json",
+        "sha256": "22a05e4fda78d1aa7f1b3890c8662ba13b6e8a84010246121fce22c915ce0fff",
+        "media_type": "application/json",
+        "name": "C5910",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "candidate": "C5911",
+      "exit_mode": "anchored_guard",
+      "mapped_rearm_mode": "positive_step",
+      "rows": 434,
+      "retained_full_signals_equal_exactly": true,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX059_20261024"
+        },
+        "evidence_id": "c3ae90dbf86bd4ecd43b2eacf6aa6657bee276697097c57f4564a535290ea16a.json",
+        "sha256": "c3ae90dbf86bd4ecd43b2eacf6aa6657bee276697097c57f4564a535290ea16a",
+        "media_type": "application/json",
+        "name": "C5911",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "candidate": "C5912",
+      "exit_mode": "repair_cap",
+      "mapped_rearm_mode": "positive_step",
+      "rows": 434,
+      "retained_full_signals_equal_exactly": true,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX059_20261024"
+        },
+        "evidence_id": "19e1d397d57fa7a513b376b4a4430d187788c72e05969665cd5217a17d97a1df.json",
+        "sha256": "19e1d397d57fa7a513b376b4a4430d187788c72e05969665cd5217a17d97a1df",
+        "media_type": "application/json",
+        "name": "C5912",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "candidate": "C5913",
+      "exit_mode": "repair_cap",
+      "mapped_rearm_mode": "positive_step",
+      "rows": 434,
+      "retained_full_signals_equal_exactly": true,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX059_20261024"
+        },
+        "evidence_id": "29da2b25f0e2e1fc78cffdb8594a0b69faf0769b8f9e110b26e46fefa27bba53.json",
+        "sha256": "29da2b25f0e2e1fc78cffdb8594a0b69faf0769b8f9e110b26e46fefa27bba53",
+        "media_type": "application/json",
+        "name": "C5913",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "candidate": "C5914",
+      "exit_mode": "repair_cap",
+      "mapped_rearm_mode": "positive_step",
+      "rows": 434,
+      "retained_full_signals_equal_exactly": true,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX059_20261024"
+        },
+        "evidence_id": "3202621f194cec71e534b7559b3e0559f08f0b1b1f7ab66abc64dc4cd0f446f5.json",
+        "sha256": "3202621f194cec71e534b7559b3e0559f08f0b1b1f7ab66abc64dc4cd0f446f5",
+        "media_type": "application/json",
+        "name": "C5914",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "candidate": "C5915",
+      "exit_mode": "extend_repair",
+      "mapped_rearm_mode": "positive_step",
+      "rows": 434,
+      "retained_full_signals_equal_exactly": true,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX059_20261024"
+        },
+        "evidence_id": "e9b6b21781c938ecd8d4efb20ec84470858a25e89442469a3bac996cced4a49d.json",
+        "sha256": "e9b6b21781c938ecd8d4efb20ec84470858a25e89442469a3bac996cced4a49d",
+        "media_type": "application/json",
+        "name": "C5915",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "candidate": "C5916",
+      "exit_mode": "extend_repair",
+      "mapped_rearm_mode": "positive_step",
+      "rows": 434,
+      "retained_full_signals_equal_exactly": true,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX059_20261024"
+        },
+        "evidence_id": "8c38566db852d64a0ed3354613a47d27a160145371ac6249e3bc6682d98f4789.json",
+        "sha256": "8c38566db852d64a0ed3354613a47d27a160145371ac6249e3bc6682d98f4789",
+        "media_type": "application/json",
+        "name": "C5916",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "candidate": "C5917",
+      "exit_mode": "extend_repair",
+      "mapped_rearm_mode": "positive_step",
+      "rows": 434,
+      "retained_full_signals_equal_exactly": true,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX059_20261024"
+        },
+        "evidence_id": "06aed4c2d97c4309d37936e65f37476a4fd0398b87acc530f7cf38454c0879a9.json",
+        "sha256": "06aed4c2d97c4309d37936e65f37476a4fd0398b87acc530f7cf38454c0879a9",
+        "media_type": "application/json",
+        "name": "C5917",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "candidate": "C5918",
+      "exit_mode": "fixed",
+      "mapped_rearm_mode": "immediate",
+      "rows": 434,
+      "retained_full_signals_equal_exactly": true,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX059_20261024"
+        },
+        "evidence_id": "e216e1b56154fc14bcdfc8f146edbbd2b83a8c90c2304bee5a5c9078148e763b.json",
+        "sha256": "e216e1b56154fc14bcdfc8f146edbbd2b83a8c90c2304bee5a5c9078148e763b",
+        "media_type": "application/json",
+        "name": "C5918",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "candidate": "C5919",
+      "exit_mode": "repair",
+      "mapped_rearm_mode": "positive_step",
+      "rows": 434,
+      "retained_full_signals_equal_exactly": true,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX059_20261024"
+        },
+        "evidence_id": "22a7cd3a63401ab59b6f1818eb9f05a2299d45dab7aab6f2284901ecbfd75fdb.json",
+        "sha256": "22a7cd3a63401ab59b6f1818eb9f05a2299d45dab7aab6f2284901ecbfd75fdb",
+        "media_type": "application/json",
+        "name": "C5919",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "candidate": "C5920",
+      "exit_mode": "repair_or_reversal",
+      "mapped_rearm_mode": "positive_step",
+      "rows": 434,
+      "retained_full_signals_equal_exactly": true,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX059_20261024"
+        },
+        "evidence_id": "e3d80d82b0c789ec9dc1c4236a566e3dd358d9c1e5fdede8559de44d2dd03bcd.json",
+        "sha256": "e3d80d82b0c789ec9dc1c4236a566e3dd358d9c1e5fdede8559de44d2dd03bcd",
+        "media_type": "application/json",
+        "name": "C5920",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "candidate": "C5921",
+      "exit_mode": "fixed",
+      "mapped_rearm_mode": "immediate",
+      "rows": 434,
+      "retained_full_signals_equal_exactly": true,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX059_20261024"
+        },
+        "evidence_id": "a359f5f7f0db62c1cfb3ef6282c1fc90fb2c5ba6b96f250bb655f89a311bd7a1.json",
+        "sha256": "a359f5f7f0db62c1cfb3ef6282c1fc90fb2c5ba6b96f250bb655f89a311bd7a1",
+        "media_type": "application/json",
+        "name": "C5921",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "candidate": "C5922",
+      "exit_mode": "repair",
+      "mapped_rearm_mode": "positive_step",
+      "rows": 434,
+      "retained_full_signals_equal_exactly": true,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX059_20261024"
+        },
+        "evidence_id": "706fe0e1f1b7208ca0e02f204bfa9ff6f4baccd0d6483ac74616d511f0a6ef0c.json",
+        "sha256": "706fe0e1f1b7208ca0e02f204bfa9ff6f4baccd0d6483ac74616d511f0a6ef0c",
+        "media_type": "application/json",
+        "name": "C5922",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    },
+    {
+      "candidate": "C5923",
+      "exit_mode": "repair_or_reversal",
+      "mapped_rearm_mode": "positive_step",
+      "rows": 434,
+      "retained_full_signals_equal_exactly": true,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX059_20261024"
+        },
+        "evidence_id": "08122b15c43dccb7ffc45eac52ab69c543f88803ee361dd0216f52e6223f4496.json",
+        "sha256": "08122b15c43dccb7ffc45eac52ab69c543f88803ee361dd0216f52e6223f4496",
+        "media_type": "application/json",
+        "name": "C5923",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      }
+    }
+  ],
+  "limits": [
+    "Synthetic rows are deliberately controlled state-machine inputs; their dates are labels, not an exchange calendar or new market experiment.",
+    "Guard confirmation>=hold cannot cause earlier exit because failed_streak<=age and age>=hold already exits.",
+    "Initial armed=True permits an initial negative-step entry; post-exit positive_step is a latched state.",
+    "No economic effect is inferred from synthetic signals; only actual factorial accounts can isolate observed account effects."
+  ]
+}
