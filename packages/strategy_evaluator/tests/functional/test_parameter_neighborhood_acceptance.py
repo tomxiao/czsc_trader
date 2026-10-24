@@ -32,7 +32,12 @@ def neighborhood_row(passes=14, total=17):
 
 
 def check(item, goal=None):
-    return compare((item,), targets=(goal or target(),)).rows[0].target_checks[0]
+    # Exercise current acceptance for neighborhood contexts, retaining explicit
+    # historical comparison only for the sphere isolation cases below.
+    current = item.parameter_context is None or isinstance(
+        item.parameter_context, ParameterNeighborhoodContext
+    )
+    return compare((item,), targets=(goal or target(),), current=current).rows[0].target_checks[0]
 
 
 @pytest.mark.parametrize("passes,status", [(13, "FAILED"), (14, "PASSED"), (17, "PASSED")])

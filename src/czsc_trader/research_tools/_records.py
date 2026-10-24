@@ -10,6 +10,8 @@ import re
 from types import UnionType
 from typing import TypeVar, Union, get_args, get_origin, get_type_hints
 
+from strategy_evaluator import research_models as _se_records
+
 
 @lru_cache(maxsize=256)
 def _record_hints(record_type):
@@ -88,6 +90,8 @@ class _Record:
 
 
 def _encode(value):
+    if isinstance(value, _se_records.ResearchRecord):
+        return _se_records.encode(value)
     if is_dataclass(value):
         return {
             "type": type(value).__name__,
@@ -105,6 +109,8 @@ def _encode(value):
 def _decode(value, annotation):
     if isinstance(annotation, TypeVar):
         annotation = annotation.__bound__
+    if isinstance(annotation, type) and issubclass(annotation, _se_records.ResearchRecord):
+        return _se_records.decode(value, annotation)
     origin = get_origin(annotation)
     if origin in (Union, UnionType):
         for part in get_args(annotation):

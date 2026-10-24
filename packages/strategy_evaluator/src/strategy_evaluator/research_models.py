@@ -40,9 +40,11 @@ def digest(value):
 
 def encode(value):
     if is_dataclass(value):
+        names = (value._serialized_fields() if hasattr(value, "_serialized_fields")
+                 else tuple(f.name for f in fields(value)))
         return {
             "type": type(value).__name__,
-            **{f.name: encode(getattr(value, f.name)) for f in fields(value)},
+            **{name: encode(getattr(value, name)) for name in names},
         }
     if isinstance(value, StrEnum):
         return value.value
@@ -82,10 +84,12 @@ def decode(value, annotation):
         return tuple(decode(x, get_args(annotation)[0]) for x in value)
     if isinstance(annotation, type) and is_dataclass(annotation):
         names = {f.name for f in fields(annotation)}
-        require(type(value) is dict and set(value) == names | {"type"}, "record fields differ")
+        defaults = (annotation._decode_defaults(value)
+                    if hasattr(annotation, "_decode_defaults") else {})
+        require(type(value) is dict and set(value) == (names - defaults.keys()) | {"type"}, "record fields differ")
         require(value["type"] == annotation.__name__, "record discriminator differs")
         hints = _record_hints(annotation)
-        return annotation(**{k: decode(value[k], hints[k]) for k in names})
+        return annotation(**{k: defaults[k] if k in defaults else decode(value[k], hints[k]) for k in names})
     if isinstance(annotation, type) and issubclass(annotation, StrEnum):
         require(type(value) is str, "enum requires string")
         return annotation(value)
@@ -989,6 +993,18 @@ class CandidateAssessment(ResearchRecord):
                         and x.candidate != self.candidate
                         and x.scenario == self.baseline_scenario
                         for x in self.parameter_performances), "invalid parameter performance identity")
+        if (isinstance(self.parameter_context, ParameterNeighborhoodContext)
+                and not self.parameter_context.is_applicable):
+            require(not self.parameter_performances, "inapplicable parameter check has no point facts")
+            for diagnostic in self.diagnostics:
+                if diagnostic.metric in (
+                    ResearchMetric.PARAMETER_RETURN_Q10, ResearchMetric.PARAMETER_DRAWDOWN_Q90,
+                    ResearchMetric.PARAMETER_RETURN_DEGRADATION, ResearchMetric.PARAMETER_DRAWDOWN_DEGRADATION,
+                ):
+                    require(diagnostic.value is None, "inapplicable parameter check has no measurement")
+                    require(diagnostic.status is (DiagnosticStatus.NOT_APPLICABLE
+                            if self.baseline_scenario is not None else DiagnosticStatus.INSUFFICIENT_DATA),
+                            "parameter applicability and diagnostic status differ")
         require(self.stress_performance is None or (
             self.stress_performance.candidate == self.candidate
             and self.stress_performance.scenario == self.stress_scenario
@@ -1054,10 +1070,15 @@ class AssessmentPanel(ResearchRecord):
 
     def validate(self):
         require(
-            self.formula_version in ("research-assessment-v5", "research-assessment-v6"),
+            self.formula_version in ("research-assessment-v5", "research-assessment-v6", "research-assessment-v7"),
             "unsupported assessment formula version",
         )
         unique((x.candidate.candidate_id for x in self.rows), "panel candidate")
+        if self.formula_version == "research-assessment-v7":
+            require(all(row.parameter_context is None or (
+                isinstance(row.parameter_context, ParameterNeighborhoodContext)
+                and row.parameter_context.protocol.version == "parameter-cartesian-neighborhood-v2"
+            ) for row in self.rows), "current panel requires current parameter context")
 
 
 class ComparisonOperator(StrEnum):
@@ -1280,10 +1301,10 @@ class ComparisonPolicy(ResearchRecord):
     pareto_basis: ParetoBasis
     missing_evidence_policy: MissingEvidencePolicy
     sensitivities: tuple[ComparisonVariant, ...] = ()
-    formula_version: str = "research-ranking-v3"
+    formula_version: str = "research-ranking-v4"
 
     def validate(self):
-        require(self.formula_version == "research-ranking-v3", "unsupported ranking formula version")
+        require(self.formula_version in ("research-ranking-v3", "research-ranking-v4"), "unsupported ranking formula version")
         ComparisonVariant("baseline", self.bins)
         unique((x.name for x in self.sensitivities), "sensitivity name")
         require(
@@ -1440,8 +1461,22 @@ class CandidateRank(ResearchRecord):
     rank_min: int | None
     rank_max: int | None
     acceptance_status: TargetCheckStatus = TargetCheckStatus.INDETERMINATE
+    # None is solely the exact historical v3 representation; current rows use a tuple.
+    floor_metrics: tuple[ResearchMetric, ...] | None = None
+
+    def _serialized_fields(self):
+        return tuple(f.name for f in fields(self)
+                     if f.name != "floor_metrics" or self.floor_metrics is not None)
+
+    @classmethod
+    def _decode_defaults(cls, value):
+        # This one historical field omission is supported; all other fields remain strict.
+        return {"floor_metrics": None} if type(value) is dict and "floor_metrics" not in value else {}
 
     def validate(self):
+        require(self.floor_metrics in (None, (), (
+            ResearchMetric.PARAMETER_RETURN_Q10, ResearchMetric.PARAMETER_DRAWDOWN_Q90,
+        )), "floor policy only covers both inapplicable parameter metrics")
         require((self.rank_min is None) == (self.rank_max is None), "rank interval incomplete")
         if self.rank_min is not None:
             require(

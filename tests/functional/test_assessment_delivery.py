@@ -215,7 +215,7 @@ def acceptance_targets():
 def test_acceptance_contract_persists_and_full_validation_rejects_forged_facts(prepared_acceptance_delivery):
     context, definition, value = prepared_acceptance_delivery
     receipt = assemble_delivery(context, definition, value).receipt
-    assert receipt.schema_version == 11
+    assert receipt.schema_version == 12
     saved = json.loads((published(context, receipt) / "delivery.json").read_text(encoding="utf-8"))
     assert d.DeliveryContent.from_dict(saved["content"]) == value
     for scope in d.DeliveryValidationScope:
@@ -236,6 +236,14 @@ def test_acceptance_contract_persists_and_full_validation_rejects_forged_facts(p
         assemble_delivery(context, replace(definition, revision=2), replace(value, payload=changed)).receipt
     with pytest.raises(ValueError, match="invalid delivery revision/schema"):
         replace(definition, schema_version=7)
+    from czsc_trader.application import delivery_service
+    with pytest.raises(d.DeliveryValidationError, match="version differs"):
+        delivery_service._validate_parameter_method_schema(replace(definition, schema_version=11), value.payload)
+    old_panel = replace(value.payload.assessment, formula_version="research-assessment-v6")
+    old_comparison = replace(value.payload.comparison_request, panel=old_panel)
+    with pytest.raises(d.DeliveryValidationError, match="version differs"):
+        delivery_service._validate_parameter_method_schema(definition, replace(value.payload,
+            assessment=old_panel, comparison_request=old_comparison))
 
 
 @pytest.mark.parametrize("change", ["coverage", "joint-count", "nested-limit", "stress-cost", "omit"])
@@ -549,8 +557,8 @@ def test_stage_four_roundtrip_recomputation_and_source_cleanup(completed):
     context, _, _, _, _ = completed
     definition, value = prepare(completed)
     comparison = value.payload.comparison_request
-    assert comparison.panel.formula_version == "research-assessment-v6"
-    assert comparison.policy.formula_version == "research-ranking-v3"
+    assert comparison.panel.formula_version == "research-assessment-v7"
+    assert comparison.policy.formula_version == "research-ranking-v4"
     assert len(comparison.policy.bins) == 8
     comparison = replace(comparison, policy=replace(comparison.policy, sensitivities=(m.ComparisonVariant("coarse-bins", comparison.policy.bins),)))
     value = replace(value, payload=replace(value.payload, comparison_request=comparison, comparison=compare_candidates(comparison)))

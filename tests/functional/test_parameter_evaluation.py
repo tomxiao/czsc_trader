@@ -12,7 +12,8 @@ from strategy_evaluator import (
     PerturbationLink,
 )
 from strategy_evaluator.parameter_neighborhood import (
-    ParameterAxis, RealDomain, IntegerDomain, NumericOffsets,
+    ParameterAxis, RealDomain, RealSetDomain, IntegerDomain, BoundedLocalStep, AbsoluteChangeLimit,
+    RelativeChangeLimit,
     ParameterNeighborhoodSpace, ParameterNeighborhoodProtocol, ParameterNeighborhoodRequest,
     build_parameter_neighborhood_design,
 )
@@ -32,17 +33,20 @@ from test_research_contract_upgrade import managed_evaluation as managed_evaluat
 from test_research_delivery import attachment, published
 
 
-def parameter_plan(research, request, *, child_parameters=None, vary_lookback=False):
+def parameter_plan(research, request, *, child_parameters=None, vary_lookback=False, not_applicable=False):
     request = research.evaluation.prepare(request)
     mapping = attachment(research, "parameter-map", {"parameter": "threshold", "unit": "fraction"})
     feasible = attachment(research, "parameter-constraint", {"constraint": "domain"})
     center = AssessmentCandidate(request.strategy.reference_id,
         StrategyRuntime().identify(request.strategy, dependencies=request.dependencies).content_sha256)
     protocol = ParameterNeighborhoodProtocol()
-    axes = (ParameterAxis("threshold", .5, RealDomain(0., 1.), NumericOffsets((-.05, .05)),
+    axes = (ParameterAxis("threshold", .5, RealDomain(0., 1.), BoundedLocalStep(AbsoluteChangeLimit(.05)),
                           ("threshold",), "fraction"),)
+    if not_applicable:
+        axes = (ParameterAxis("threshold", .5, RealSetDomain((0., .5, 1.)),
+                              BoundedLocalStep(RelativeChangeLimit(.05)), ("threshold",), "fraction"),)
     if vary_lookback:
-        axes += (ParameterAxis("lookback", 1, IntegerDomain(1, 10), NumericOffsets((1,)),
+        axes += (ParameterAxis("lookback", 1, IntegerDomain(1, 10), BoundedLocalStep(AbsoluteChangeLimit(1.)),
                                ("lookback",), "sessions"),)
     space = ParameterNeighborhoodSpace(axes, mapping.sha256, feasible.sha256)
     design = build_parameter_neighborhood_design(ParameterNeighborhoodRequest(center, protocol, space),
@@ -200,6 +204,75 @@ def test_adapter_rejects_altered_raw_input_binding(managed_evaluation):
         support_data={**run.signals.support_data, "input_binding": {}})),))
     with pytest.raises(ValueError, match="input binding differs"):
         build_assessment_evidence(request, changed)
+
+
+def test_not_applicable_plan_and_delivery_retain_authenticated_center_without_child_accounts(fresh_completed):
+    """A zero-point plan is evidence-backed NA, not missing or a fabricated account."""
+    from czsc_trader.research_tools import delivery as d
+    from czsc_trader.research_tools.parameter_evaluation import read_parameter_plan, _payload_json
+
+    context, research, request, center_result, _ = fresh_completed
+    group = m.ParameterNeighborhoodTarget("point-economics", 13, 16,
+        (m.ResearchTarget("point-return", m.ResearchMetric.NET_ANNUAL_RETURN,
+                         lower=m.ConstantBound(-1.0, True)),),
+        (m.ResearchTarget("point-dd", m.ResearchMetric.DRAWDOWN_MAGNITUDE,
+                         upper=m.ConstantBound(.25, True)),))
+    center_target = m.ResearchTarget("center-return", m.ResearchMetric.NET_ANNUAL_RETURN,
+                                    lower=m.ConstantBound(-1.0, True))
+    definition, content = prepare(fresh_completed, (center_target, group))
+    center, plan, reference, children = parameter_plan(research, request, not_applicable=True)
+    assert plan.schema_version == 3 and children == plan.children == ()
+    assert not plan.design.is_applicable
+    assert read_parameter_plan(reference, context.root) == plan
+    with pytest.raises(ValueError, match="no point to bind"):
+        plan.bind_point(reference, 0, repository_root=context.root)
+    bad_payload = json.loads(plan.center.payload_json)
+    bad_payload["parameters"]["threshold"] = .4
+    with pytest.raises(ValueError, match="center payload differs"):
+        replace(plan, center=replace(plan.center, payload_json=_payload_json(bad_payload)))
+    omitted = json.loads(plan.center.payload_json)
+    omitted["parameters"]["nested"] = {"unreported": 20}
+    with pytest.raises(ValueError, match="every parameter payload leaf"):
+        replace(plan, center=replace(plan.center, payload_json=_payload_json(omitted)))
+    empty_design = build_parameter_neighborhood_design(ParameterNeighborhoodRequest(
+        plan.design.center, plan.design.protocol, replace(plan.design.space, axes=())),
+        feasibility=lambda values: True).design
+    with pytest.raises(ValueError, match="every parameter payload leaf"):
+        replace(plan, design=empty_design)
+
+    assessment = replace(assessment_request(build_assessment_evidence(center, center_result)),
+                         parameter_designs=(plan.design,))
+    panel = assess_candidates(assessment)
+    comparison = replace(comparison_request(panel), targets=content.payload.comparison_request.targets)
+    compared = compare_candidates(comparison)
+    checked = compared.rows[0].target_checks[1]
+    assert checked.status is m.TargetCheckStatus.NOT_APPLICABLE
+    assert compared.rows[0].acceptance_status is m.TargetCheckStatus.PASSED
+    for metric in (m.ResearchMetric.PARAMETER_RETURN_Q10, m.ResearchMetric.PARAMETER_DRAWDOWN_Q90):
+        diagnostic = next(x for x in panel.rows[0].diagnostics if x.metric is metric)
+        assert diagnostic.status is m.DiagnosticStatus.NOT_APPLICABLE and diagnostic.value is None
+    payload = replace(content.payload, assessment_request=assessment, assessment=panel,
+                      comparison_request=comparison, comparison=compared, parameter_plans=(reference,))
+    forged_center_payload = json.loads(plan.center.payload_json)
+    forged_center_payload["parameters"] = {}
+    forged = replace(plan, design=empty_design,
+                     center=replace(plan.center, payload_json=_payload_json(forged_center_payload)))
+    forged_ref = publish_evidence(research, MaterialEvidenceWrite(reference.experiment,
+        "forged-empty-parameters", json.dumps(forged.to_dict()).encode(), "application/json", "json"))
+    forged_request = replace(assessment, parameter_designs=(empty_design,))
+    forged_panel = assess_candidates(forged_request)
+    forged_comparison = replace(comparison, panel=forged_panel)
+    forged_payload = replace(payload, assessment_request=forged_request, assessment=forged_panel,
+        comparison_request=forged_comparison, comparison=compare_candidates(forged_comparison),
+        parameter_plans=(forged_ref,))
+    with pytest.raises(d.DeliveryValidationError, match="payload runtime identity differs"):
+        assemble_delivery(context, definition, replace(content, payload=forged_payload))
+    assembled = assemble_delivery(context, definition, replace(content, payload=payload))
+    assert assembled.receipt.schema_version == 12
+    assert assembled.validation.status is d.ValidationStatus.PASS
+    assert assembled.validation.stats.accounts_authenticated == 1
+    assert validate_delivery(context, assembled.receipt.reference).status is d.ValidationStatus.PASS
+    assert d.DeliveryContent.from_dict(replace(content, payload=payload).to_dict()).payload == payload
 
 
 def test_parameter_plan_rejects_parameter_driven_execution_switch(managed_evaluation):

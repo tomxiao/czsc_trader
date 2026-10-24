@@ -215,6 +215,11 @@ def _parameter_neighborhood(target, row):
             m.TargetCheckStatus.INDETERMINATE,
             "STRUCTURAL_CONTROL_NOT_ACCEPTANCE",
         )
+    if not context.is_applicable:
+        return m.ParameterNeighborhoodCheck(
+            target, 0, 0, 0, 0, (), m.TargetCheckStatus.NOT_APPLICABLE,
+            "NO_APPLICABLE_LOCAL_NEIGHBORHOOD",
+        )
     required = context.prescribed_points
     minimum = (
         required * target.minimum_numerator + target.minimum_denominator - 1

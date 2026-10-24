@@ -528,13 +528,13 @@ assessment_evidence = build_assessment_evidence(bound_request, result)
 
 ### 参数扰动评价
 
-SE生成`ParameterNeighborhoodDesign`，RSCH按具名点准备实际策略载荷；TDR认证声明值与载荷路径、同源执行条件和真实账户。按参数自然尺度声明合法域与局部规则，完整展开联合点集并固定N，不使用通用半径或固定32点。类型、完整点集与分位数口径见[SE参数扰动](../../packages/strategy_evaluator/README.md)。
+SE生成`ParameterNeighborhoodDesign`，RSCH按具名点准备实际策略载荷；TDR认证声明值与载荷路径、同源执行条件和真实账户。新局部设计使用v2协议及`BoundedLocalStep(RelativeChangeLimit(...) | AbsoluteChangeLimit(...))`，按合法域和最小步长判断幅度上限，仅展开适用变化，其他参数保持中心值。全部变化不适用时仍保存零点设计及适用性依据，不制造邻域账户。类型、完整点集与分位数口径见[SE参数扰动](../../packages/strategy_evaluator/README.md)。
 
 默认五项独立检验时，参数计划中的中心和全部子候选只声明同一基准窗口、标准费用；
 中心费用压力另建独立请求，不与子点交叉。完整非参数契约包含整个窗口及费用列表，
 不得用双费用中心请求搭配单费用子请求，也不得改写已有证据的请求身份来复用。
 中心标准账本同时支撑时间稳定性、收益集中性及收益区间；完整身份核对通过的既有结果可复用。
-没有可复用证据时，每中心需要N+2个策略账户场景：N个邻域点、中心标准与中心压力；研究族补证另计。
+没有可复用证据时，每中心需要N+2个策略账户场景：N个邻域点、中心标准与中心压力；整项不适用时只需中心标准与中心压力，研究族补证另计。
 
 先用 `MaterialEvidenceWrite` 发布坐标映射及可行性约束材料；其原始字节哈希应分别等于
 `ParameterNeighborhoodSpace.mapping_sha256`、`feasibility_sha256`。中心和全部子候选通过
@@ -552,16 +552,18 @@ plan_reference = publish_evidence(research, MaterialEvidenceWrite(
     experiment, "parameter-evaluation-plan",
     json.dumps(plan.to_dict(), ensure_ascii=False).encode("utf-8"), "application/json", "json",
 ))
-point_binding = plan.bind_point(plan_reference, 0, repository_root=repository.root)
-child_request = replace(prepared_children[0], lineage=EvaluationLineage(derivation, point_binding))
-child_result = research.evaluation.evaluate(child_request)
+if design.is_applicable:
+    point_binding = plan.bind_point(plan_reference, 0, repository_root=repository.root)
+    child_request = replace(prepared_children[0], lineage=EvaluationLineage(derivation, point_binding))
+    child_result = research.evaluation.evaluate(child_request)
 ```
 
 上例需导入 `json` 及 `dataclasses.replace`；`derivation` 为实际中心与该子候选的 `PARAMETERS` 派生关系。
-新`ParameterEvaluationPlan`使用schema 2，保存中心和各子候选的完整规范 JSON 载荷、内容身份、
+新`ParameterEvaluationPlan`使用schema 3，保存中心和各子候选的完整规范 JSON 载荷、内容身份、
 规定点集、中心请求身份、中心输入准备身份、固定执行契约和映射／约束材料引用。
 各子载荷及有效内容必须互不相同，也必须不同于中心；相同行为不构成拒绝理由。
-每个轴的`payload_path`相对于载荷`parameters`；中心值须匹配声明的精确类型和值，子载荷只允许在这些路径替换为对应具名点值。缺路径、隐藏改参、声明外变更、类型替换及多个点坍缩到同一内容均拒绝。旧plan schema 1保留读取与证据认证，`create`、`bind_point`及新评价均拒绝旧球面设计；不会自动转换旧点集。
+每个轴的`payload_path`相对于载荷`parameters`；中心值须匹配声明的精确类型和值，子载荷只允许在这些路径替换为对应具名点值。缺路径、隐藏改参、声明外变更、类型替换及多个点坍缩到同一内容均拒绝。不适用设计允许`children=()`，仍核验中心载荷、真实请求、输入、映射与约束材料，禁止`bind_point`。旧plan schema 1（球面）和2（v1邻域）保留读取与证据认证；`create`、`bind_point`及新评价均拒绝旧版本，不自动转换旧点集。
+schema 3整项不适用计划还要求轴路径覆盖`parameters`的全部标量叶子，包括嵌套参数和显式固定的结构参数；空轴只适用于空参数对象。列表等当前轴契约无法表达的非标量叶子明确拒绝，不能通过遗漏参数取得整项豁免。该检查只核验结构覆盖，不判断参数是否真正参与策略决策。
 `ParameterEvaluationBinding` 保存已发布计划引用及 SE `ParameterNeighborhoodBinding`，进入请求哈希和账户证据。
 普通评价可以不提供该绑定；带绑定的评价必须核验计划已经发布、文件字节一致、点序号及实际载荷匹配。
 
@@ -579,7 +581,7 @@ child_result = research.evaluation.evaluate(child_request)
 
 `build_assessment_evidence` 把已认证点绑定传给 SE；缺失或失败账户仍按实际状态处理，不能填零。
 阶段四 `CandidateAssessmentDelivery.parameter_plans` 显式引用计划。交付浅快照计划及其映射／约束材料，
-核对实际中心请求、全部规定父子关系和保存账户的点身份，并在 `FULL` 范围重算 SE。
+核对实际中心请求、全部规定父子关系和保存账户的点身份，并在 `FULL` 范围重算 SE。不适用设计也必须关联计划；缺计划或缺账户不能冒充不适用。部分参数适用时，固定轴仍进入映射核验；全不适用时校验真实中心，不要求子账户。
 发布后的校验读取交付快照，不依赖实验工作目录、原计划材料文件或可变源码。一次调用内按完整身份、位置及校验范围复用已完成节点的递归展开和语义计算；循环检测独立维护，每次引用仍认证当前文件，结束前再次核对输入。不同调用不复用成功状态。`validate_delivery`返回`stats`记录不同交付数、引用访问、展开、语义复用、文件哈希次数/字节量及耗时；统计不进入交付身份。
 平台只认证声明、身份及确定性计算；坐标业务含义、映射合理性及研究授权由 RSCH 负责。
 
@@ -739,7 +741,7 @@ if checked.status is not ValidationStatus.PASS:
 选定证据的 `evidence/` 浅快照及必要的决定／检验 `support/`。
 公开目录 `research/<批次>/deliveries/<阶段>/<修订>/` 保存对应的 `report.md` 和 `receipt.json`。
 发布与校验核对两处报告及回执的字节一致性；完整包只包含已选定材料。
-新`MANDATE`和`ASSESSMENT`的`DeliveryDefinition`、`DeliveryReceipt`与`delivery.json`使用schema 11；旧schema 8仅只读认证，不允许新写。`COMPONENTS`、`CANDIDATES`保持schema 8，`INSPECTION`保持schema 9且`predecessors=()`，`PROTOTYPES`保持schema 10；构造时省略版本按阶段选取当前版本，序列化记录必须保存明确整数版本。
+新`MANDATE`和`ASSESSMENT`的`DeliveryDefinition`、`DeliveryReceipt`与`delivery.json`使用schema 12；旧schema 8、11仅只读认证，不允许新写。`COMPONENTS`、`CANDIDATES`保持schema 8，`INSPECTION`保持schema 9且`predecessors=()`，`PROTOTYPES`保持schema 10；构造时省略版本按阶段选取当前版本，序列化记录必须保存明确整数版本。
 旧阶段五schema 8仅在概览展示有限元数据并列出限制，显式交付校验拒绝，不解释为新版通过，不自动迁移历史原件。新账户评价证据使用schema 8，请求身份使用schema 7；历史7/6只读，`StrategyVersion`继续使用schema 5。
 修订号在“批次＋阶段”内唯一，同内容重复发布复用，冲突拒绝覆盖，失败不留下可见的半成品修订。
 前驱为同批次的 `DeliveryReference`；同阶段前驱只能是更早修订。
@@ -748,11 +750,12 @@ if checked.status is not ValidationStatus.PASS:
 校验默认 `DeliveryValidationScope.FULL`，核对文件身份和关联事实，并重算阶段四 SE 结果；
 `INTEGRITY` 仍核对文件、引用及保存事实，但不重新执行阶段四 SE 自检和排序计算。两者都不重跑整个研究过程。
 两种范围均核验 `report.md` 与提交的 `report` 字节一致；该检查不判断文字解释或研究结论的正确性。
-阶段四使用 SE 自检公式 `research-assessment-v5` 与排序公式 `research-ranking-v3`，
+阶段四使用 SE 自检公式 `research-assessment-v7` 与排序公式 `research-ranking-v4`，
 按中心收益和回撤分层、同层稳健性优先及交易频率最后比较；指标、分箱与频率口径见
 [SE 比较政策](../../packages/strategy_evaluator/README.md#比较请求与政策)。
 盈利年份合并频率由已保存基准净值与实际退出日计算，频率硬门仍须绑定已确认的目标及精确窗口。
 新交付拒绝旧自检或排序字段；受支持的历史交付按原版本只读认证，不自动改写历史排名。
+参数项正式不适用时，两项邻域指标保留`NOT_APPLICABLE`及空实测值，验收不将其计为通过或失败；排序仍包含该候选，通过`floor_metrics`明确两项最低得分来源，不用0收益、0回撤或中心值填补。其余条件和证据继续校验，真实缺失与执行失败仍按原政策处理。帕累托层级优先，同层最低得分相同后继续比较后续指标。
 阶段五继续核验实际决定、检验及冻结状态；交付快照不取代运行发布和批准事实。
 
 ### 完整目标集合的交付绑定
@@ -773,14 +776,14 @@ if checked.status is not ValidationStatus.PASS:
 由`frequency_window_item_id`引用；`benchmark_item_id`绑定已确认基准。
 新自检协议使用`NeighborhoodSelfCheckProtocol`，显式设置`frequency_min_closed_cycles=3`及
 `parameter_protocol=ParameterNeighborhoodProtocol(...)`，不再设置`minimum_perturbations`。
-完整邻域固定N，`ParameterNeighborhoodTarget("parameters", 13, 16, ...)`要求至少ceil(13N/16)点联合通过；N=17时需14点且全部17点满足全部点条件。不要用排序频率替代双频率目标。
+适用邻域固定N，`ParameterNeighborhoodTarget("parameters", 13, 16, ...)`要求至少ceil(13N/16)点联合通过；N=17时需14点且全部17点满足全部点条件。经完整设计确认整项不适用时，目标仍须绑定原约定，结果为`NOT_APPLICABLE`，不以0/0通过率伪装达标。不要用排序频率替代双频率目标。
 `target_bindings`只绑定参数组外层ID，内层条件随整个组的强类型值精确核对。
 
 技术校验`PASS`表示交付真实、可复算；研究验收读取`comparison.rows[*].acceptance_status`及
 `target_checks`，推荐排序还须满足可比性和完整证据政策。研究未达标或证据不足的真实报告可正常留存，
 不能将保存成功当作研究通过。`INTEGRITY`不重算数值，不得替代FULL声称复算成功。
 
-schema 7阶段交付仍不支持；本次新增schema 11的MANDATE/ASSESSMENT保留指定旧schema 8的读取认证，不改写历史原件。新ASSESSMENT包含邻域设计时须使用`NeighborhoodSelfCheckProtocol`与`ParameterNeighborhoodTarget`，无自动协议转换；无设计的缺失诊断可以如实留存。
+schema 7阶段交付仍不支持；schema 12的MANDATE/ASSESSMENT保留指定旧schema 8、11的读取认证，不改写历史原件。FULL验证按旧封装分别重算v5/v3及v6/v3；不以新公式重解释旧结果。新ASSESSMENT包含邻域设计时须使用v2 `NeighborhoodSelfCheckProtocol.parameter_protocol`与`ParameterNeighborhoodTarget`，无自动协议转换；无设计的缺失诊断可以如实留存，但不会取得不适用待遇。
 已有schema 7账户证据可经认证显式引用。旧MANDATE中的32点/26点目标不能自动变成新比例目标；新研究需经确认建立新MANDATE和相应交付，历史资格与结论不变。
 StrategyVersion和运行发布合同不变，不更改已冻结策略、SM状态或PTE运行行为。
 

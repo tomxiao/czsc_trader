@@ -6,12 +6,14 @@ import numpy as np
 import pytest
 
 from strategy_evaluator import (
-    assess_candidates,
-    compare_candidates,
     pareto_layers,
     CandidateProfile,
 )
 from strategy_evaluator import research_models as m
+from strategy_evaluator.research_assessment import (
+    recompute_historical_assessment as assess_candidates,
+    recompute_historical_comparison as compare_candidates,
+)
 from strategy_evaluator import research_assessment as assessment
 from strategy_evaluator import search_bias
 
@@ -288,6 +290,7 @@ def policy(resolution=0.01, frequency_metric=m.ResearchMetric.FULL_SAMPLE_FREQUE
         ),
         pareto_basis=m.ParetoBasis.RAW,
         missing_evidence_policy=m.MissingEvidencePolicy.REQUIRE_COMPLETE,
+        formula_version="research-ranking-v3",
     )
 
 
@@ -353,14 +356,20 @@ def row(who, annual=0.1, drawdown=0.1, degradation=0.02, missing=None):
     )
 
 
-def compare(rows, selected_policy=None, targets=()):
-    panel = m.AssessmentPanel("a" * 64, "b" * 64, rows, (), ())
-    return compare_candidates(
+def compare(rows, selected_policy=None, targets=(), *, current=False):
+    # Historical fixtures retain v3; current tests explicitly opt into v7/v4.
+    from strategy_evaluator import compare_candidates as current_compare
+    panel = m.AssessmentPanel("a" * 64, "b" * 64, rows, (), (),
+        formula_version="research-assessment-v7" if current else "research-assessment-v5")
+    selected_policy = selected_policy or policy()
+    if current:
+        selected_policy = replace(selected_policy, formula_version="research-ranking-v4")
+    return (current_compare if current else compare_candidates)(
         m.CandidateComparisonRequest(
             tuple(x.candidate for x in rows),
-            m.ResearchTargets(targets, 60),
+            m.ResearchTargets(targets, (rows[0].frequency_window_days or 60) if current else 60),
             panel,
-            selected_policy or policy(),
+            selected_policy,
         )
     )
 

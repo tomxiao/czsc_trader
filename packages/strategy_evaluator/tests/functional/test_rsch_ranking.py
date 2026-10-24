@@ -5,7 +5,7 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from strategy_evaluator import assess_candidates
+from strategy_evaluator.research_assessment import recompute_historical_assessment as assess_candidates
 from strategy_evaluator import research_models as m
 from test_research_assessment import candidate, compare, evidence, policy, request, row, values
 from test_parameter_perturbation import build, design_request

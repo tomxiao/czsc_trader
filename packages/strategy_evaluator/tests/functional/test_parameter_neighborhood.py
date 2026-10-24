@@ -8,6 +8,8 @@ import pytest
 from strategy_evaluator import research_models as m
 from strategy_evaluator.parameter_neighborhood import (
     AdjacentLevels,
+    AbsoluteChangeLimit,
+    BoundedLocalStep,
     BooleanDomain,
     CategoricalDomain,
     ExplicitValues,
@@ -27,6 +29,8 @@ from strategy_evaluator.parameter_neighborhood import (
     ParameterNeighborhoodRequest,
     ParameterNeighborhoodResult,
     ParameterNeighborhoodSpace,
+    ParameterStepStatus,
+    RelativeChangeLimit,
     RealDomain,
     RealSetDomain,
     StudyPurpose,
@@ -45,7 +49,7 @@ def axis(name="allocation", center=0.95, domain=None, rule=None, path=None, unit
     )
 
 
-def request(*axes, purpose=StudyPurpose.LOCAL_SENSITIVITY, limit=10000):
+def request(*axes, purpose=StudyPurpose.STRUCTURAL_CONTROL, limit=10000):
     return ParameterNeighborhoodRequest(
         m.AssessmentCandidate("S001-C0001", "a" * 64),
         ParameterNeighborhoodProtocol(purpose, limit),
@@ -185,9 +189,9 @@ def test_categories_and_booleans_require_structural_control():
     )
     flag = axis("enabled", True, BooleanDomain(), ExplicitValues((False,)), unit="boolean")
     with pytest.raises(ValueError, match="STRUCTURAL_CONTROL"):
-        request(cat)
+        request(cat, purpose=StudyPurpose.LOCAL_SENSITIVITY)
     with pytest.raises(ValueError, match="STRUCTURAL_CONTROL"):
-        request(flag)
+        request(flag, purpose=StudyPurpose.LOCAL_SENSITIVITY)
     result = build(request(cat, flag, purpose=StudyPurpose.STRUCTURAL_CONTROL))
     assert rows(result.design) == [("mean", False), ("median", True), ("median", False)]
     assert type(result.design.points[0].values[1].value) is bool
@@ -291,7 +295,7 @@ def test_comparison_identity_contains_actual_boundary_shape_and_semantics():
         request(axis(unit="other-unit")),
         request(axis(rule=NumericOffsets((-0.01, 0.01)))),
         replace(request(), space=replace(request().space, feasibility_sha256="d" * 64)),
-        request(purpose=StudyPurpose.STRUCTURAL_CONTROL),
+        request(axis(domain=RealDomain(0.0, 2.0, False))),
     ):
         assert build(altered).design.comparison_sha256 != base.comparison_sha256
     context = ParameterNeighborhoodContext(
@@ -420,3 +424,121 @@ def test_partition_order_and_excluded_points_are_strict():
                 design.constraint_exclusions[1],
             ),
         )
+
+
+def local_axis(name="hold", center=3, domain=None, limit=None):
+    return axis(name, center, domain or IntegerDomain(1, 30),
+                BoundedLocalStep(limit or RelativeChangeLimit(0.05)), unit="sessions")
+
+
+def local_request(*axes):
+    return request(*axes, purpose=StudyPurpose.LOCAL_SENSITIVITY)
+
+
+@pytest.mark.parametrize("center, expected", [(3, []), (20, [(19,), (21,)])])
+def test_bounded_integer_applicability_uses_legal_minimum_and_inclusive_limit(center, expected):
+    result = build(local_request(local_axis(center=center)))
+    assert rows(result.design) == expected
+    assert result.design.is_applicable is bool(expected)
+    assert result.status is (m.ParameterDesignStatus.COMPLETE if expected
+                            else m.ParameterDesignStatus.NOT_APPLICABLE)
+    facts = result.design.axis_applicability[0]
+    assert facts.is_applicable is bool(expected)
+    assert [x.status for x in facts.decisions] == [
+        ParameterStepStatus.INCLUDED if expected else ParameterStepStatus.LIMIT_EXCEEDED
+    ] * 2
+    assert ParameterNeighborhoodResult.from_dict(result.to_dict()) == result
+    assert type(result.design).from_dict(result.design.to_dict()).axis_applicability == (facts,)
+    if not expected:
+        with pytest.raises(ValueError, match="outside neighborhood"):
+            result.design.bind_point(0)
+
+
+def test_partial_applicability_keeps_fixed_coordinates_in_every_child():
+    allocation = axis(center=1.0, rule=BoundedLocalStep(RelativeChangeLimit(0.05)))
+    result = build(local_request(local_axis(), allocation))
+    assert rows(result.design) == [(3, 0.95)]
+    assert [x.is_applicable for x in result.design.axis_applicability] == [False, True]
+    assert result.design.axis_applicability[1].decisions[1].status is ParameterStepStatus.OUT_OF_DOMAIN
+    with pytest.raises(ValueError):
+        replace(result.design, points=(replace(result.design.points[0], values=(
+            NamedParameterValue("hold", 2), NamedParameterValue("allocation", 0.95))),))
+
+
+@pytest.mark.parametrize("domain, center, limit, expected", [
+    (RealDomain(0.0, 1.0, quantum=0.1), 0.3, RelativeChangeLimit(0.05), []),
+    (RealDomain(0.0, 1.0, quantum=0.1), 0.3, AbsoluteChangeLimit(0.1), [(0.2,), (0.4,)]),
+    (IntegerSetDomain((18, 20, 21)), 20, RelativeChangeLimit(0.05), [(21,)]),
+    (RealSetDomain((0.8, 1.0, 1.05)), 1.0, RelativeChangeLimit(0.05), [(1.05,)]),
+    (OrdinalDomain(("low", "medium", "high")), "medium", AbsoluteChangeLimit(1.0), [("low",), ("high",)]),
+    (OrdinalDomain((10, 20, 30)), 20, RelativeChangeLimit(0.05), []),
+    (IntegerDomain(-30, -1), -20, RelativeChangeLimit(0.05), [(-21,), (-19,)]),
+])
+def test_bounded_neighbors_follow_domain_and_declared_scale(domain, center, limit, expected):
+    result = build(local_request(local_axis(center=center, domain=domain, limit=limit)))
+    assert rows(result.design) == expected
+
+
+def test_zero_center_requires_absolute_scale_and_missing_scale_is_not_exemption():
+    with pytest.raises(ValueError, match="nonzero numeric business scale"):
+        local_axis(center=0, domain=IntegerDomain(-2, 2))
+    assert rows(build(local_request(local_axis(center=0, domain=IntegerDomain(-2, 2),
+                    limit=AbsoluteChangeLimit(1.0)))).design) == [(-1,), (1,)]
+    with pytest.raises(ValueError, match="nonzero numeric business scale"):
+        local_axis(center="medium", domain=OrdinalDomain(("low", "medium", "high")))
+    with pytest.raises(ValueError, match="smaller limit"):
+        local_axis(center=1.0, domain=RealDomain(0.99, 1.01))
+    with pytest.raises(ValueError, match="distinct legal value"):
+        local_axis(center=1e308, domain=RealDomain(0.0, 1.7e308), limit=AbsoluteChangeLimit(1.0))
+
+
+def test_empty_or_constraint_excluded_local_space_has_explicit_inapplicability():
+    req = replace(local_request(local_axis()), space=ParameterNeighborhoodSpace((), "b" * 64, "c" * 64))
+    empty = build(req)
+    assert empty.status is m.ParameterDesignStatus.NOT_APPLICABLE
+    assert empty.design.axis_applicability == ()
+    constrained = build(local_request(local_axis(center=20)), lambda values: values[0].value == 20)
+    assert constrained.status is m.ParameterDesignStatus.NOT_APPLICABLE
+    assert len(constrained.constraint_exclusions) == 2
+    with pytest.raises(ValueError, match="accounting|partition"):
+        replace(constrained.design, constraint_exclusions=())
+    context = ParameterNeighborhoodContext(empty.design.protocol, empty.design.sha256,
+        empty.design.space.sha256, 0, 0, 0, empty.design.comparison_sha256)
+    assert not context.is_applicable
+    with pytest.raises(ValueError, match="coverage"):
+        replace(context, valid_points=1)
+    infeasible = build(local_request(local_axis()), lambda values: False)
+    assert infeasible.status is m.ParameterDesignStatus.DESIGN_FAILED
+    with pytest.raises(ValueError, match="status differs"):
+        replace(empty, status=m.ParameterDesignStatus.COMPLETE)
+
+
+def test_current_local_contract_cannot_bypass_limits_with_explicit_offsets():
+    with pytest.raises(ValueError, match="bounded local steps"):
+        local_request(axis("hold", 3, IntegerDomain(1, 30), NumericOffsets((-1, 1))))
+    cat = axis("mode", "mean", CategoricalDomain(("mean", "median")),
+               ExplicitValues(("mean",)), unit="category")
+    result = build(local_request(cat, local_axis()))
+    assert result.status is m.ParameterDesignStatus.NOT_APPLICABLE
+    assert result.design.axis_applicability[0].structural_only
+    with pytest.raises(ValueError, match="requires neighborhood v2"):
+        replace(local_request(local_axis()), protocol=ParameterNeighborhoodProtocol(
+            version="parameter-cartesian-neighborhood-v1"))
+
+
+def test_legacy_design_is_hash_stable_read_only_and_never_accepts_zero_points():
+    # Same original record schema; v1 data is reconstructed, never regenerated.
+    old = replace(build().design, protocol=ParameterNeighborhoodProtocol(
+        version="parameter-cartesian-neighborhood-v1"))
+    raw = old.to_dict()
+    assert set(raw) == {"type", "center", "protocol", "space", "points", "generated_combinations",
+                       "rejections", "constraint_exclusions"}
+    decoded = type(old).from_dict(raw)
+    assert decoded.to_dict() == raw and decoded.sha256 == old.sha256
+    with pytest.raises(ValueError, match="read-only"):
+        build(ParameterNeighborhoodRequest(old.center, old.protocol, old.space))
+    with pytest.raises(ValueError, match="noncenter point"):
+        replace(old, points=())
+    with pytest.raises(ValueError, match="coverage"):
+        ParameterNeighborhoodContext(old.protocol, old.sha256, old.space.sha256,
+                                     1, 0, 0, old.comparison_sha256)

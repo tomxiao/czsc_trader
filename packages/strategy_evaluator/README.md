@@ -102,23 +102,33 @@ SE保留原始计算结果，不统一舍入或强制线程数。受管交付的
 
 | 参数类别 | 合法域 | 局部规则 |
 | --- | --- | --- |
-| REAL | `RealDomain`的有限上下界、开闭边界及可选`quantum/origin`，或`RealSetDomain`精确值集 | `NumericOffsets`或`ExplicitValues`，值必须为float |
-| INTEGER | `IntegerDomain(lower, upper, step, origin)`或`IntegerSetDomain` | 整数`NumericOffsets`或`ExplicitValues`，bool不能冒充int |
-| ORDINAL | `OrdinalDomain(levels)`，同型标签按声明顺序排列 | `AdjacentLevels(steps)`或`ExplicitValues` |
+| REAL | `RealDomain`的有限上下界、开闭边界及可选`quantum/origin`，或`RealSetDomain`精确值集 | 局部自检使用`BoundedLocalStep`；值必须为float |
+| INTEGER | `IntegerDomain(lower, upper, step, origin)`或`IntegerSetDomain` | 局部自检使用`BoundedLocalStep`；bool不能冒充int |
+| ORDINAL | `OrdinalDomain(levels)`，同型标签按声明顺序排列 | 局部自检使用`BoundedLocalStep`及显式尺度 |
 | CATEGORICAL | `CategoricalDomain(values)`，非空字符串集合 | `ExplicitValues` |
 | BOOLEAN | `BooleanDomain()` | `ExplicitValues`，值必须为bool |
 
 类别只描述值的性质；单位、用途、合法域和邻域规则独立表达。新增类型、规则或设计方法须扩展具体强类型并显式校验版本，不以任意字典或`CUSTOM`兜底。当前不支持条件激活表达式；生效参数集发生变化时另立结构对照。
 
+当前局部方法为`parameter-cartesian-neighborhood-v2`。`BoundedLocalStep`接收
+`RelativeChangeLimit(fraction)`或`AbsoluteChangeLimit(amount)`，均为显式正有限float；相对限额
+按非零中心绝对值计算，零中心须使用绝对限额。连续实数尝试限额端点；整数、量化实数、数值集合
+从合法域取得最近合法变化，按精确十进制数值比较是否超限，等于上限允许。按方向分别判定，可保留单侧。
+数值有序参数按标签数值差计算变化；字符串有序参数须显式使用按等级步数计的绝对限额，
+不将字符串等级编号当作百分比。研究员负责数值标签与业务尺度的对应关系。
+`NumericOffsets/AdjacentLevels/ExplicitValues`仍服务于结构对照和历史读取，不能绕过当前局部限幅。
+
 每轴隐式包含中心。`build_parameter_neighborhood_design`展开全部轴的笛卡尔积，剔除中心、
 越域、重复及纯约束不成立的组合；拒绝原因与组合数留证，合法点全部保留并等权。
 不裁剪、不四舍五入、不随机抽样、不截取成功前缀；超过`max_combinations`直接返回
 `DESIGN_FAILED / COMBINATION_LIMIT_EXCEEDED`，不调用约束或返回部分设计。
-无合法非中心点时为`DESIGN_FAILED / NO_FEASIBLE_NONCENTER_POINTS`，不能自动判定稳健性通过。
+完整核验后无合法非中心点时，局部设计返回`NOT_APPLICABLE`，保留非空设计对象及空点集；不等于稳健性通过。
+参数和上下文错误仍拒绝，资源超限或中心不满足约束仍为`DESIGN_FAILED`。连续域中存在较小合法变化、
+但给定的两个端点均越域时，须改用明确的较小限额，不能据此声称最小合法变化超限，也不自动裁剪。
 
 ```python
 from strategy_evaluator import (
-    ParameterAxis, IntegerDomain, RealDomain, NumericOffsets,
+    ParameterAxis, IntegerDomain, RealDomain, BoundedLocalStep, RelativeChangeLimit,
     ParameterNeighborhoodSpace, ParameterNeighborhoodProtocol,
     ParameterNeighborhoodRequest, ParameterDesignStatus,
     build_parameter_neighborhood_design,
@@ -127,12 +137,12 @@ from strategy_evaluator import (
 # center为AssessmentCandidate；两个哈希来自事前发布的映射和纯约束材料。
 space = ParameterNeighborhoodSpace(
     axes=(
-        ParameterAxis("lookback", 3, IntegerDomain(2, 10), NumericOffsets((-1, 1)),
+        ParameterAxis("lookback", 3, IntegerDomain(2, 10), BoundedLocalStep(RelativeChangeLimit(0.05)),
                       ("lookback",), "sessions"),
-        ParameterAxis("hold", 3, IntegerDomain(1, 30), NumericOffsets((-1, 1)),
+        ParameterAxis("hold", 3, IntegerDomain(1, 30), BoundedLocalStep(RelativeChangeLimit(0.05)),
                       ("hold",), "sessions"),
         ParameterAxis("allocation", 1.0, RealDomain(0.0, 1.0, lower_closed=False),
-                      NumericOffsets((-0.05,)), ("allocation",), "cash_fraction"),
+                      BoundedLocalStep(RelativeChangeLimit(0.05)), ("allocation",), "cash_fraction"),
     ),
     mapping_sha256=mapping_source_sha256,
     feasibility_sha256=constraint_source_sha256,
@@ -142,7 +152,8 @@ result = build_parameter_neighborhood_design(
     feasibility=lambda named_values: True,
 )
 if result.status is ParameterDesignStatus.COMPLETE:
-    assert result.design.point_count == 3 * 3 * 2 - 1 == 17
+    # 两个3日参数的最小变化为33.3%，保持中心；仅投入比例变为0.95。
+    assert result.design.point_count == 1
     point_binding = result.design.bind_point(0)
 ```
 
@@ -152,6 +163,9 @@ if result.status is ParameterDesignStatus.COMPLETE:
 纯约束排除点逐一保存在`constraint_exclusions: tuple[NeighborhoodConstraintExclusion, ...]`。
 反序列化时重枚举域内组合，核对保留点与排除点的完整分区；只删除点并调整拒绝计数不能通过。
 约束回调必须返回真正的bool；源码哈希不能证明其未使用收益筛选，研究员仍须说明纯度。
+`design.axis_applicability`返回按序的强类型逐轴判断，`design.is_applicable`标识是否有实际邻点；
+两者从已入哈希的域、规则、点集与排除证据重建，不另存可与设计矛盾的豁免声明。
+只有整体不适用时允许零点；空点集不能绑定任何点。部分轴不适用时，其中心值仍在全部点中保留。
 
 `StudyPurpose.LOCAL_SENSITIVITY`用于固定结构的局部参数敏感性；类别或布尔取值的改变必须
 声明`STRUCTURAL_CONTROL`。结构对照可另用普通账户评价取得证据，不使用局部参数计划，也不能进入局部稳健性验收或
@@ -163,6 +177,8 @@ if result.status is ParameterDesignStatus.COMPLETE:
 全部N点在中心相同的标准评价条件下有效后，才用等权LINEAR分位数计算
 `PARAMETER_RETURN_Q10`和`PARAMETER_DRAWDOWN_Q90`；缺失、失败或不可比点不缩小分母，
 不填零、不替换，也不以已完成子集冒充完整分位数。相对中心的退化仍单独报告。
+整项不适用时仍提供正式设计，四项参数诊断均为`NOT_APPLICABLE`且`value=None`，不生成邻域账户，
+其余诊断照常执行。缺失设计、缺点、失败和不适用是不同状态。
 
 `CandidateAssessment.parameter_context`保存`ParameterNeighborhoodContext`，包括协议、
 设计和空间哈希、维度、规定及有效点数、`comparison_sha256`。
@@ -171,9 +187,10 @@ if result.status is ParameterDesignStatus.COMPLETE:
 便声称分位数可直接同排。普通候选排序还要求经济上下文可比；缺失或不一致明确保留原因。
 `compare_parameter_robustness`只返回参数诊断及可比性，不产生总体候选赢家。
 
-新公式版本为`research-assessment-v6`。旧`SelfCheckProtocol`、球面设计/点绑定与
-`research-assessment-v5`仅用于历史读取和认证；旧生成入口拒绝旧球面请求，新评价不得重新绑定
-旧计划。既有证据和资格不自动迁移或改写。强类型记录的`to_dict/from_dict/sha256`保留精确身份。
+新公式版本为`research-assessment-v7`。`assess_candidates`只接收当前v2邻域协议；历史
+`SelfCheckProtocol`、球面设计、v1邻域及v5/v6面板保留精确读取身份。必要的历史数值复核由
+`strategy_evaluator.research_assessment.recompute_historical_assessment`执行；该入口不升级旧协议，
+不创建新版本交付。生成器拒绝旧方法，新评价不得重新绑定旧计划。既有证据和资格不自动迁移或改写。
 
 相关账户计划与绑定详见[TDR公开API](../../src/czsc_trader/README.md)。
 
@@ -186,14 +203,14 @@ if result.status is ParameterDesignStatus.COMPLETE:
 年度表现、集中度、区间和PBO/DSR仍是诊断，不自动生成数值门槛。
 
 `ComparisonPolicy(version, bins, pareto_basis, missing_evidence_policy, sensitivities=(),
-formula_version="research-ranking-v3")`
+formula_version="research-ranking-v4")`
 必须显式声明分层基础及缺失证据政策：
 
 | 字段 | 支持选项与语义 |
 | --- | --- |
 | `pareto_basis` | `ParetoBasis.RAW`使用原始净年化与回撤；`BINNED`使用协议分箱后的两项指标分层 |
-| `missing_evidence_policy` | `MissingEvidencePolicy.REQUIRE_COMPLETE`要求两项分层、五项稳健性及一项频率，共八项证据齐备；`PREFIX_PARTIAL`允许按已知指标前缀判断部分先后关系，遇到影响判断的缺失值保留成对不可比 |
-| `formula_version` | 固定为`research-ranking-v3`，连同研究协议`version`进入请求身份；旧字段集合和公式版本明确拒绝，不自动升级历史交付 |
+| `missing_evidence_policy` | `MissingEvidencePolicy.REQUIRE_COMPLETE`要求全部适用证据齐备；参数项确认不适用时两项敏感度采用最低得分。`PREFIX_PARTIAL`允许按已知指标前缀判断部分先后关系，遇到影响判断的缺失值保留成对不可比 |
+| `formula_version` | 当前`research-ranking-v4`，连同研究协议`version`进入请求身份；v3仅用于历史读取和明确的历史复核，不自动升级交付 |
 
 `bins`恰含净年化、回撤、上述五项稳健性及一个`FREQUENCY_METRICS`指标。
 层级优先；层内固定按六项指标比较：扰动净年化Q10（高）、扰动回撤Q90（低）、滚动超额Q10（高）、
@@ -204,6 +221,12 @@ formula_version="research-ranking-v3")`
 候选ID只用于稳定展示。结果包含`pairs`两两比较关系以及每个候选的`rank_min/rank_max`；
 `rank_in_layer`仅在能确定名次时填写，完整并列采用竞赛排名。状态为
 `TARGET_NOT_MET/INCOMPARABLE/RANKED/TIED/PARTIALLY_ORDERED`，缺失值不填零。
+`CandidateRank.floor_metrics`在当前结果中是空元组或恰好两项参数排序指标；仅正式参数项不适用
+时由比较器填入后者。相应`bin_values`仍为`None`，排序使用明确的最低得分标记，低于有效实测得分；
+双方均为最低得分时继续比较后续项。收益/回撤方向不影响最低得分的统一最差待遇，不能填成0回撤。
+两项参数指标不适用不阻止候选参与同一排序，中心收益和回撤分层仍优先。真实缺失与计算失败不取得此待遇，
+两个实际邻域的不可比也不因此消除。`compare_candidates`要求v7面板及v4排序协议；历史v3排序通过
+`strategy_evaluator.research_assessment.recompute_historical_comparison`复核，旧结果不增加最低得分字段或改变哈希。
 交易频率最后参与层内排序。排序只选择一项频率，验收可同时声明中位数及覆盖率等多项条件；
 它们不必等于排序指标，但窗口须与面板一致。选择覆盖率排序时，必须显式声明同口径覆盖率目标。
 未达标、证据不足和不可比候选仍保留结果。
@@ -237,6 +260,8 @@ formula_version="research-ranking-v3")`
 | `NeighborhoodSelfCheckProtocol.frequency_min_closed_cycles` | 显式传入覆盖统计的闭合笔数阈值，例如3；`None`表示未请求该统计，不能用中位数或Q10补齐 |
 
 这些目标组成`ResearchTargets.requirements`。参数与窗口数接受有约束的整数，拒绝布尔值冒充整数。
+正式局部设计不适用时，参数目标返回`NOT_APPLICABLE`，不当作零点通过；其他目标继续验收。
+总体验收仍优先保留失败和证据不足，只在全部适用条件通过时返回通过，逐项不适用状态不丢失。
 参数条件按每个点自己的标准场景基准计算；压力条件只使用压力账户自己的基准。成本未声明表示
 该原子目标没有费用约束；下例明确声明标准0.001、压力0.002，不从场景名称推断费用。
 

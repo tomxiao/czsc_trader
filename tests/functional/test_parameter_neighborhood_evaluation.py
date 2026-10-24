@@ -57,7 +57,7 @@ def test_plan_authenticates_declared_center_payload(prepared_parameter_plan, mut
 
 def test_new_plan_schema_cannot_be_downgraded(prepared_parameter_plan):
     _, _, plan, _, _ = prepared_parameter_plan
-    assert plan.schema_version == 2
+    assert plan.schema_version == 3
     saved = plan.to_dict()
     saved["schema_version"] = 1
     with pytest.raises(ValueError, match="schema differs"):
@@ -81,13 +81,13 @@ def test_create_rejects_hidden_parameter_even_when_execution_is_unchanged(manage
 
 def test_nested_payload_path_preserves_exact_typed_values(prepared_parameter_plan):
     from strategy_evaluator.parameter_neighborhood import (
-        ParameterAxis, IntegerDomain, NumericOffsets, ParameterNeighborhoodSpace,
+        ParameterAxis, IntegerDomain, BoundedLocalStep, AbsoluteChangeLimit, ParameterNeighborhoodSpace,
         ParameterNeighborhoodRequest, build_parameter_neighborhood_design,
     )
 
     _, _, plan, _, _ = prepared_parameter_plan
     space = ParameterNeighborhoodSpace((ParameterAxis("nested_hold", 3, IntegerDomain(1, 10),
-        NumericOffsets((-1, 1)), ("timing", "hold"), "sessions"),),
+        BoundedLocalStep(AbsoluteChangeLimit(1.)), ("timing", "hold"), "sessions"),),
         plan.mapping_evidence.sha256, plan.feasibility_evidence.sha256)
     design = build_parameter_neighborhood_design(ParameterNeighborhoodRequest(
         plan.design.center, plan.design.protocol, space), feasibility=lambda values: True).design
@@ -141,3 +141,27 @@ def test_legacy_sphere_plan_is_readable_but_cannot_start_new_work(prepared_param
     request = replace(children[0], lineage=replace(children[0].lineage, parameter_binding=oldbinding))
     with pytest.raises(ValueError, match="read-only|legacy|schema 2"):
         research.evaluation.prepare(request)
+
+
+def test_legacy_cartesian_plan_remains_read_only_without_changing_serialization(prepared_parameter_plan):
+    from strategy_evaluator.parameter_neighborhood import NumericOffsets
+    from czsc_trader.application import publish_evidence
+    from czsc_trader.research_tools import MaterialEvidenceWrite
+    from czsc_trader.research_tools.parameter_evaluation import read_parameter_plan
+
+    research, center, plan, reference, _ = prepared_parameter_plan
+    old_axis = replace(plan.design.space.axes[0], rule=NumericOffsets((-.05, .05)))
+    legacy_design = replace(plan.design,
+        protocol=replace(plan.design.protocol, version="parameter-cartesian-neighborhood-v1"),
+        space=replace(plan.design.space, axes=(old_axis,)))
+    legacy = replace(plan, design=legacy_design, schema_version=2)
+    original = legacy.to_dict()
+    assert ParameterEvaluationPlan.from_dict(original).to_dict() == original
+    oldref = publish_evidence(research, MaterialEvidenceWrite(reference.experiment,
+        "legacy-cartesian-plan", json.dumps(original).encode(), "application/json", "json"))
+    assert read_parameter_plan(oldref, center.repository_root).to_dict() == original
+    with pytest.raises(ValueError, match="read-only"):
+        ParameterEvaluationPlan.create(legacy_design, center, (), mapping_evidence=plan.mapping_evidence,
+            feasibility_evidence=plan.feasibility_evidence, dataflows=research.data)
+    with pytest.raises(ValueError, match="read-only"):
+        legacy.bind_point(oldref, 0, repository_root=center.repository_root)

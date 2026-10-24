@@ -65,10 +65,11 @@ class ParameterEvaluationPlan(_Record):
     feasibility_evidence: EvidenceRef
     center_inputs: tuple[ParameterEvaluationInput, ...]
     execution_contract_json: str
-    schema_version: int = 2
+    schema_version: int = 3
 
     def _validate(self):
-        expected = 2 if type(self.design) is ParameterNeighborhoodDesign else 1
+        expected = (3 if self.design.protocol.version == "parameter-cartesian-neighborhood-v2" else 2
+                    ) if type(self.design) is ParameterNeighborhoodDesign else 1
         if self.schema_version != expected:
             raise ValueError("parameter evaluation plan schema differs from design kind")
         _hash(self.center_request_sha256)
@@ -96,10 +97,16 @@ class ParameterEvaluationPlan(_Record):
             raise ValueError("parameter mapping and feasibility evidence must belong to center family")
         if any(x.candidate.candidate_id.split("-", 1)[0] != family for x in self.children):
             raise ValueError("parameter children must belong to center strategy family")
-        if self.schema_version == 2:
+        if self.schema_version in (2, 3):
             if self.design.protocol.purpose is not StudyPurpose.LOCAL_SENSITIVITY:
                 raise ValueError("parameter evaluation plans require local sensitivity; structural controls are separate")
             _validate_parameter_payloads(self.design, self.center, self.children)
+        if self.schema_version == 3 and not self.design.is_applicable:
+            parameters = json.loads(self.center.payload_json).get("parameters")
+            if type(parameters) is not dict:
+                raise ValueError("not-applicable plan requires an explicit parameter object")
+            if {axis.payload_path for axis in self.design.space.axes} != _parameter_leaf_paths(parameters):
+                raise ValueError("not-applicable plan must cover every parameter payload leaf")
 
     @classmethod
     def create(cls, design: ParameterNeighborhoodDesign, center: EvaluationRequest,
@@ -110,6 +117,8 @@ class ParameterEvaluationPlan(_Record):
 
         if type(design) is not ParameterNeighborhoodDesign:
             raise TypeError("new parameter plan requires ParameterNeighborhoodDesign; legacy sphere plans are read-only")
+        if design.protocol.version != "parameter-cartesian-neighborhood-v2":
+            raise ValueError("historical parameter designs are read-only; new plans require neighborhood v2")
         if type(children) is not tuple or any(type(x) is not EvaluationRequest for x in children):
             raise TypeError("parameter children require a tuple of EvaluationRequest")
         if type(center) is not EvaluationRequest:
@@ -153,8 +162,10 @@ class ParameterEvaluationPlan(_Record):
 
     def bind_point(self, reference: EvidenceRef, index: int, *, repository_root: Path) -> ParameterEvaluationBinding:
         """Bind only after the exact plan bytes have been explicitly published."""
-        if self.schema_version != 2:
-            raise ValueError("legacy sphere parameter plans are read-only")
+        if self.schema_version != 3:
+            raise ValueError("historical parameter plans are read-only")
+        if not self.design.is_applicable:
+            raise ValueError("not-applicable parameter plans have no point to bind")
         if read_parameter_plan(reference, repository_root) != self:
             raise ValueError("published parameter plan differs")
         if reference.experiment.strategy_id != self.design.center.candidate_id.split("-", 1)[0]:
@@ -209,8 +220,8 @@ def validate_parameter_request(request, dataflows: Dataflows) -> None:
 
     binding = request.lineage.parameter_binding
     plan = read_parameter_plan(binding.plan, request.repository_root)
-    if plan.schema_version != 2:
-        raise ValueError("legacy sphere parameter plans are read-only; new evaluations require schema 2")
+    if plan.schema_version != 3:
+        raise ValueError("historical parameter plans are read-only; new evaluations require schema 3")
     if binding.plan.experiment.strategy_id != request.strategy.strategy_family_id:
         raise ValueError("parameter plan belongs to another strategy family")
     validate_parameter_contract(_request_contract(request)[0], plan, binding)
@@ -239,6 +250,20 @@ def _parameter_parent(payload: dict, path: tuple[str, ...]) -> tuple[dict, str]:
     if type(node) is not dict or path[-1] not in node:
         raise ValueError(f"parameter payload path does not exist: {path}")
     return node, path[-1]
+
+
+def _parameter_leaf_paths(parameters: dict, prefix: tuple[str, ...] = ()) -> set[tuple[str, ...]]:
+    """NA requires an exhaustive structural declaration, not inference of active rules."""
+    paths = set()
+    for name, value in parameters.items():
+        path = (*prefix, name)
+        if type(value) is dict:
+            paths.update(_parameter_leaf_paths(value, path))
+        elif type(value) in (float, int, str, bool):
+            paths.add(path)
+        else:
+            raise ValueError("not-applicable plan requires mapped scalar parameter leaves")
+    return paths
 
 
 def _validate_parameter_payloads(design, center, children) -> None:

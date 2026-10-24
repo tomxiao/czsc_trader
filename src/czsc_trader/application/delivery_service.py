@@ -470,7 +470,23 @@ def _validate_parameter_method_schema(definition, payload):
     if any(isinstance(value, forbidden) for value in _walk(payload)):
         _fail("PARAMETER_METHOD_SCHEMA", "content.payload",
               "parameter method differs from the delivery schema; historical methods are read-only")
-    if (definition.stage is d.DeliveryStage.ASSESSMENT and definition.schema_version == 11
+    expected_method = {11: "parameter-cartesian-neighborhood-v1",
+                       12: "parameter-cartesian-neighborhood-v2"}.get(definition.schema_version)
+    if expected_method is not None and any(
+        isinstance(value, ParameterNeighborhoodProtocol) and value.version != expected_method
+        for value in _walk(payload)
+    ):
+        _fail("PARAMETER_METHOD_SCHEMA", "content.payload",
+              "parameter neighborhood version differs from delivery schema")
+    if definition.stage is d.DeliveryStage.ASSESSMENT:
+        expected_assessment = {8: "research-assessment-v5", 11: "research-assessment-v6",
+                               12: "research-assessment-v7"}[definition.schema_version]
+        expected_ranking = "research-ranking-v4" if definition.schema_version == 12 else "research-ranking-v3"
+        if (payload.assessment.formula_version != expected_assessment
+            or payload.comparison_request.policy.formula_version != expected_ranking):
+            _fail("PARAMETER_METHOD_SCHEMA", "content.payload",
+                  "assessment or ranking version differs from delivery schema")
+    if (definition.stage is d.DeliveryStage.ASSESSMENT and definition.schema_version in (11, 12)
             and payload.assessment_request.parameter_designs
             and not any(isinstance(target, m.ParameterNeighborhoodTarget)
                         for target in payload.comparison_request.targets.requirements)):
@@ -576,11 +592,17 @@ def _validate_assessment_delivery(definition, payload, root, context, content, s
     if session is not None:
         session.progress(d.DeliveryValidationPhase.RECOMPUTATION, 0, 2)
     try:
-        if not _assessment_recomputation_matches(assess_candidates(payload.assessment_request), payload.assessment):
+        assess, compare = assess_candidates, compare_candidates
+        if definition.schema_version in (8, 11):
+            from strategy_evaluator.research_assessment import (
+                recompute_historical_assessment, recompute_historical_comparison,
+            )
+            assess, compare = recompute_historical_assessment, recompute_historical_comparison
+        if not _assessment_recomputation_matches(assess(payload.assessment_request), payload.assessment):
             _fail("ASSESSMENT_RESULT", "assessment", "assessment differs from numeric recomputation")
         if session is not None:
             session.progress(d.DeliveryValidationPhase.RECOMPUTATION, 1, 2)
-        if compare_candidates(payload.comparison_request) != payload.comparison:
+        if compare(payload.comparison_request) != payload.comparison:
             _fail("COMPARISON_RESULT", "comparison", "comparison differs from numeric recomputation")
         if session is not None:
             session.progress(d.DeliveryValidationPhase.RECOMPUTATION, 2, 2)
@@ -590,6 +612,7 @@ def _validate_assessment_delivery(definition, payload, root, context, content, s
 
 
 def _validate_parameter_plans(payload, root, saved_requests, saved_policies):
+    from strategy_runtime import StrategyCandidate
     from ..research_tools.parameter_evaluation import (
         ParameterEvaluationPlan, ParameterEvaluationBinding, validate_parameter_contract,
         parameter_execution_policy,
@@ -602,6 +625,13 @@ def _validate_parameter_plans(payload, root, saved_requests, saved_policies):
         _read_evidence(root, plan.feasibility_evidence)
         if plan.design.sha256 in plans:
             _fail("PARAMETER_PLAN", reference.path, "duplicate parameter design")
+        if plan.schema_version == 3:
+            for candidate in (plan.center, *plan.children):
+                family, name = candidate.candidate.candidate_id.split("-", 1)
+                actual_identity = StrategyCandidate(family, name,
+                    json.loads(candidate.payload_json)).runtime_identity_sha256
+                if actual_identity != candidate.runtime_identity_sha256:
+                    _fail("PARAMETER_PAYLOAD", reference.path, "planned payload runtime identity differs")
         plans[plan.design.sha256] = (reference, plan)
         central = saved_requests.get(plan.center_request_sha256)
         evidence = tuple(x for x in payload.assessment_request.evidence if x.candidate == plan.design.center
@@ -612,6 +642,8 @@ def _validate_parameter_plans(payload, root, saved_requests, saved_policies):
             or central["content_sha256"] != plan.design.center.content_sha256
             or central["strategy_reference"] != plan.design.center.candidate_id):
             _fail("PARAMETER_CENTER", reference.path, "planned center differs from saved center account")
+        if plan.schema_version == 3 and central["strategy_identity"] != plan.center.runtime_identity_sha256:
+            _fail("PARAMETER_CENTER", reference.path, "planned center runtime identity differs from saved account")
         center_bindings = {x.window_id: json.loads(x.binding_json) for x in plan.center_inputs}
         if central["input_bindings"] != center_bindings:
             _fail("PARAMETER_CENTER", reference.path, "planned center input identities differ")

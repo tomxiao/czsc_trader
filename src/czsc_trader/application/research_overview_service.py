@@ -190,7 +190,7 @@ def _deliveries(reader, batch, limitations):
                 raise ValueError("invalid delivery envelope")
             schema = value["schema_version"]
             legacy = stage is d.DeliveryStage.INSPECTION and schema == 8
-            if schema not in (8, 9, 10, 11):
+            if schema not in (8, 9, 10, 11, 12):
                 limitations.append(OverviewLimitation("UNSUPPORTED_DELIVERY_SCHEMA", path, "Retained delivery uses an unsupported schema; no compatibility interpretation was performed."))
                 continue
             if not legacy and schema not in d._readable_schema_versions(stage):

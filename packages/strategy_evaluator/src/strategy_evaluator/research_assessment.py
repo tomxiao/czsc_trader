@@ -183,6 +183,26 @@ def _family(request):
 def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPanel:
     if type(request) is not m.CandidateAssessmentRequest:
         raise TypeError("assess_candidates requires CandidateAssessmentRequest")
+    m.require(isinstance(request.protocol, m.NeighborhoodSelfCheckProtocol)
+              and request.protocol.parameter_protocol.version == "parameter-cartesian-neighborhood-v2",
+              "historical assessment protocols are read-only")
+    return _assess_candidates(request)
+
+
+def recompute_historical_assessment(request: m.CandidateAssessmentRequest) -> m.AssessmentPanel:
+    """Recompute stored v5/v6 evidence without upgrading its protocol or identity."""
+    if type(request) is not m.CandidateAssessmentRequest:
+        raise TypeError("historical assessment requires CandidateAssessmentRequest")
+    m.require(isinstance(request.protocol, m.SelfCheckProtocol) or (
+        isinstance(request.protocol, m.NeighborhoodSelfCheckProtocol)
+        and request.protocol.parameter_protocol.version == "parameter-cartesian-neighborhood-v1"
+    ), "historical assessment requires a historical protocol")
+    return _assess_candidates(request)
+
+
+def _assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPanel:
+    if type(request) is not m.CandidateAssessmentRequest:
+        raise TypeError("assess_candidates requires CandidateAssessmentRequest")
     # Revalidate at the public boundary, including values restored from storage.
     request = m.CandidateAssessmentRequest.from_dict(request.to_dict())
     p = request.protocol
@@ -338,7 +358,17 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
                 and {x.parameter_point.point_index for x in links}
                 == set(range(_point_count(design)))
             )
-            if (
+            if isinstance(design, m.ParameterNeighborhoodDesign) and not design.is_applicable:
+                for metric in (
+                    m.ResearchMetric.PARAMETER_RETURN_Q10,
+                    m.ResearchMetric.PARAMETER_DRAWDOWN_Q90,
+                    m.ResearchMetric.PARAMETER_RETURN_DEGRADATION,
+                    m.ResearchMetric.PARAMETER_DRAWDOWN_DEGRADATION,
+                ):
+                    put(metric, status=m.DiagnosticStatus.NOT_APPLICABLE,
+                        reason="NO_APPLICABLE_LOCAL_NEIGHBORHOOD", sources=(base,))
+                gaps.append("NO_APPLICABLE_LOCAL_NEIGHBORHOOD")
+            elif (
                 len(neighbors) >= (1 if isinstance(p, m.NeighborhoodSelfCheckProtocol) else p.minimum_perturbations)
                 and comparable
                 and declared_complete
@@ -489,7 +519,8 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
         )
     family, limitations = _family(request)
     return m.AssessmentPanel(request.sha256, p.sha256, tuple(rows), family, limitations,
-        formula_version="research-assessment-v6" if isinstance(p, m.NeighborhoodSelfCheckProtocol)
+        formula_version=("research-assessment-v7" if p.parameter_protocol.version == "parameter-cartesian-neighborhood-v2"
+                         else "research-assessment-v6") if isinstance(p, m.NeighborhoodSelfCheckProtocol)
         else "research-assessment-v5")
 
 
@@ -557,6 +588,17 @@ def _bin(value, spec):
 
 def _compare_pair(a, b, layer, order, parameter_methods):
     for metric, left, right in zip(order, a.bin_values, b.bin_values):
+        floor_a, floor_b = metric in (a.floor_metrics or ()), metric in (b.floor_metrics or ())
+        if floor_a or floor_b:
+            if floor_a and floor_b:
+                continue
+            # A missing real measurement never becomes a floor or a valid comparison.
+            if (right if floor_a else left) is None:
+                return m.PairwiseComparison(a.candidate, b.candidate, layer,
+                    m.PairwiseRelation.INCOMPARABLE, metric, "MISSING_METRIC")
+            return m.PairwiseComparison(a.candidate, b.candidate, layer,
+                m.PairwiseRelation.B_BEFORE_A if floor_a else m.PairwiseRelation.A_BEFORE_B,
+                metric, None)
         if metric in (
             m.ResearchMetric.PARAMETER_RETURN_Q10,
             m.ResearchMetric.PARAMETER_DRAWDOWN_Q90,
@@ -661,6 +703,13 @@ def _rank(request, bins, order):
     records, profiles, eligible_rows = [], [], []
     for row in request.panel.rows:
         metrics = {x.metric: x for x in row.diagnostics}
+        floor_metrics = () if request.policy.formula_version == "research-ranking-v4" else None
+        if (floor_metrics is not None
+                and isinstance(row.parameter_context, m.ParameterNeighborhoodContext)
+                and not row.parameter_context.is_applicable
+                and all(metrics[x].status is m.DiagnosticStatus.NOT_APPLICABLE for x in (
+                    m.ResearchMetric.PARAMETER_RETURN_Q10, m.ResearchMetric.PARAMETER_DRAWDOWN_Q90))):
+            floor_metrics = (m.ResearchMetric.PARAMETER_RETURN_Q10, m.ResearchMetric.PARAMETER_DRAWDOWN_Q90)
         checks = tuple(
             _check_target(x, row, request.targets.frequency_window_days)
             for x in request.targets.requirements
@@ -673,7 +722,7 @@ def _rank(request, bins, order):
         ]
         missing = [
             metric for metric in (*m.BENCHMARK_METRICS, *order)
-            if metrics[metric].value is None
+            if metrics[metric].value is None and metric not in (floor_metrics or ())
         ]
         reasons.extend(f"{metric.value}:{metrics[metric].reason}" for metric in missing)
         missing_parameter_method = row.parameter_context is None
@@ -722,7 +771,8 @@ def _rank(request, bins, order):
         )
         records.append(
             m.CandidateRank(
-                row.candidate, status, checks, None, None, values, tuple(reasons), None, None, accepted
+                row.candidate, status, checks, None, None, values, tuple(reasons), None, None, accepted,
+                floor_metrics,
             )
         )
         if status is m.ComparisonStatus.RANKED:
@@ -747,7 +797,8 @@ def _rank(request, bins, order):
         for x in eligible_rows
     }
     incompatible_parameter_methods = (
-        len(set(parameter_methods.values())) > 1
+        len({key for who, key in parameter_methods.items()
+             if not any(record.candidate == who and record.floor_metrics for record in records)}) > 1
         and request.policy.missing_evidence_policy is m.MissingEvidencePolicy.REQUIRE_COMPLETE
     )
     if len(contexts) > 1 or len(stress_contexts) > 1 or incompatible_parameter_methods:
@@ -803,6 +854,25 @@ def _rank(request, bins, order):
 
 
 def compare_candidates(request: m.CandidateComparisonRequest) -> m.CandidateComparison:
+    if type(request) is not m.CandidateComparisonRequest:
+        raise TypeError("compare_candidates requires CandidateComparisonRequest")
+    m.require(request.policy.formula_version == "research-ranking-v4"
+              and request.panel.formula_version == "research-assessment-v7",
+              "historical comparison protocols are read-only")
+    return _compare_candidates(request)
+
+
+def recompute_historical_comparison(request: m.CandidateComparisonRequest) -> m.CandidateComparison:
+    """Read-only numeric verification of stored v3 rankings from v5/v6 panels."""
+    if type(request) is not m.CandidateComparisonRequest:
+        raise TypeError("historical comparison requires CandidateComparisonRequest")
+    m.require(request.policy.formula_version == "research-ranking-v3"
+              and request.panel.formula_version in ("research-assessment-v5", "research-assessment-v6"),
+              "historical comparison requires historical formulas")
+    return _compare_candidates(request)
+
+
+def _compare_candidates(request: m.CandidateComparisonRequest) -> m.CandidateComparison:
     if type(request) is not m.CandidateComparisonRequest:
         raise TypeError("compare_candidates requires CandidateComparisonRequest")
     request = m.CandidateComparisonRequest.from_dict(request.to_dict())

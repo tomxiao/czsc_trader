@@ -52,7 +52,7 @@ class ValidationStatus(StrEnum):
 
 def _schema_version(stage: DeliveryStage) -> int:
     if stage in (DeliveryStage.MANDATE, DeliveryStage.ASSESSMENT):
-        return 11
+        return 12
     if stage is DeliveryStage.PROTOTYPES:
         return 10
     return 9 if stage is DeliveryStage.INSPECTION else 8
@@ -60,7 +60,7 @@ def _schema_version(stage: DeliveryStage) -> int:
 
 def _readable_schema_versions(stage: DeliveryStage) -> tuple[int, ...]:
     if stage in (DeliveryStage.MANDATE, DeliveryStage.ASSESSMENT):
-        return (8, 11)
+        return (8, 11, 12)
     return (_schema_version(stage),)
 
 

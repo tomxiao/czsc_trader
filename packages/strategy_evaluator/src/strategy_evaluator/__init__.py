@@ -194,6 +194,8 @@ from .account_diagnosis import (
 
 from .research_models import (NeighborhoodSelfCheckProtocol, ParameterNeighborhoodTarget, ParameterNeighborhoodCheck)
 from .parameter_neighborhood import (
+    RelativeChangeLimit, AbsoluteChangeLimit, BoundedLocalStep,
+    ParameterStepStatus, ParameterStepDecision, ParameterAxisApplicability,
     ParameterKind, StudyPurpose, RealDomain, IntegerDomain, RealSetDomain, IntegerSetDomain,
     OrdinalDomain, CategoricalDomain, BooleanDomain, NumericOffsets, AdjacentLevels, ExplicitValues,
     ParameterAxis, NamedParameterValue, ParameterNeighborhoodSpace, ParameterNeighborhoodProtocol,
@@ -377,6 +379,8 @@ __all__ += [
 
 __all__ += [
     "NeighborhoodSelfCheckProtocol", "ParameterNeighborhoodTarget", "ParameterNeighborhoodCheck",
+    "RelativeChangeLimit", "AbsoluteChangeLimit", "BoundedLocalStep",
+    "ParameterStepStatus", "ParameterStepDecision", "ParameterAxisApplicability",
     "ParameterKind", "StudyPurpose", "RealDomain", "IntegerDomain", "RealSetDomain", "IntegerSetDomain",
     "OrdinalDomain", "CategoricalDomain", "BooleanDomain", "NumericOffsets", "AdjacentLevels", "ExplicitValues",
     "ParameterAxis", "NamedParameterValue", "ParameterNeighborhoodSpace", "ParameterNeighborhoodProtocol",

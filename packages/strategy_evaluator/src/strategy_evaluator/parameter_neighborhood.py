@@ -159,7 +159,75 @@ class ExplicitValues(m.ResearchRecord):
         m.require(bool(self.values), "empty explicit values")
 
 
-NeighborhoodRule = NumericOffsets | AdjacentLevels | ExplicitValues
+@dataclass(frozen=True)
+class RelativeChangeLimit(m.ResearchRecord):
+    fraction: float
+
+    def validate(self):
+        m.require(self.fraction > 0, "relative change limit must be positive")
+
+
+@dataclass(frozen=True)
+class AbsoluteChangeLimit(m.ResearchRecord):
+    amount: float
+
+    def validate(self):
+        m.require(self.amount > 0, "absolute change limit must be positive")
+
+
+@dataclass(frozen=True)
+class BoundedLocalStep(m.ResearchRecord):
+    limit: RelativeChangeLimit | AbsoluteChangeLimit
+
+
+NeighborhoodRule = NumericOffsets | AdjacentLevels | ExplicitValues | BoundedLocalStep
+
+
+class ParameterStepStatus(StrEnum):
+    INCLUDED = "INCLUDED"
+    LIMIT_EXCEEDED = "LIMIT_EXCEEDED"
+    OUT_OF_DOMAIN = "OUT_OF_DOMAIN"
+
+
+@dataclass(frozen=True)
+class ParameterStepDecision(m.ResearchRecord):
+    direction: int
+    value: ParameterValue | None
+    change: str | None
+    maximum_change: str
+    status: ParameterStepStatus
+
+    def validate(self):
+        m.require(self.direction in (-1, 1), "step direction must be -1 or 1")
+        m.require(Fraction(self.maximum_change) > 0, "maximum change must be positive")
+        if self.status is ParameterStepStatus.OUT_OF_DOMAIN:
+            m.require(self.value is None and self.change is None, "outside step has no value")
+        else:
+            m.require(self.value is not None and self.change is not None,
+                      "legal step requires value and change")
+            actual = Fraction(self.change)
+            m.require(actual > 0, "local change must be positive")
+            m.require((actual <= Fraction(self.maximum_change))
+                      == (self.status is ParameterStepStatus.INCLUDED), "step status differs")
+
+
+@dataclass(frozen=True)
+class ParameterAxisApplicability(m.ResearchRecord):
+    name: str
+    included_values: tuple[ParameterValue, ...]
+    decisions: tuple[ParameterStepDecision, ...]
+    structural_only: bool
+
+    @property
+    def is_applicable(self):
+        return bool(self.included_values)
+
+    def validate(self):
+        m.unique((x.direction for x in self.decisions), "step direction")
+        m.require(not self.structural_only or not self.decisions,
+                  "structural parameter cannot have numeric decisions")
+        m.require(self.included_values == tuple(x.value for x in self.decisions
+                  if x.status is ParameterStepStatus.INCLUDED), "included values differ")
 
 
 def domain_kind(domain):
@@ -230,7 +298,17 @@ class ParameterAxis(m.ResearchRecord):
             "payload path must contain nonempty keys",
         )
         m.require(_contains(self.domain, self.center), "center outside exact typed domain")
-        if isinstance(self.rule, NumericOffsets):
+        if isinstance(self.rule, BoundedLocalStep):
+            m.require(self.kind in (ParameterKind.REAL, ParameterKind.INTEGER, ParameterKind.ORDINAL),
+                      "bounded local step requires numeric or ordinal domain")
+            if isinstance(self.rule.limit, RelativeChangeLimit):
+                m.require(type(self.center) in (float, int) and self.center != 0,
+                          "relative limit requires nonzero numeric business scale")
+            if self.kind is ParameterKind.ORDINAL and type(self.center) is str:
+                m.require(isinstance(self.rule.limit, AbsoluteChangeLimit),
+                          "ordinal labels require an absolute level-step limit")
+            _bounded_decisions(self)
+        elif isinstance(self.rule, NumericOffsets):
             m.require(
                 self.kind in (ParameterKind.REAL, ParameterKind.INTEGER),
                 "numeric offsets require numeric domain",
@@ -256,7 +334,6 @@ class ParameterNeighborhoodSpace(m.ResearchRecord):
     feasibility_sha256: str
 
     def validate(self):
-        m.require(bool(self.axes), "empty neighborhood space")
         m.unique((x.name for x in self.axes), "axis name")
         paths = [x.payload_path for x in self.axes]
         for i, path in enumerate(paths):
@@ -278,12 +355,13 @@ class ParameterNeighborhoodProtocol(m.ResearchRecord):
     purpose: StudyPurpose = StudyPurpose.LOCAL_SENSITIVITY
     max_combinations: int = 10000
     quantile_method: m.QuantileMethod = m.QuantileMethod.LINEAR
-    version: str = "parameter-cartesian-neighborhood-v1"
+    version: str = "parameter-cartesian-neighborhood-v2"
 
     def validate(self):
         m.require(self.max_combinations > 0, "combination limit must be positive")
         m.require(
-            self.version == "parameter-cartesian-neighborhood-v1", "unsupported neighborhood method"
+            self.version in ("parameter-cartesian-neighborhood-v1", "parameter-cartesian-neighborhood-v2"),
+            "unsupported neighborhood method"
         )
         m.require(
             self.quantile_method is m.QuantileMethod.LINEAR, "neighborhood quantiles require LINEAR"
@@ -303,6 +381,10 @@ class ParameterNeighborhoodRequest(m.ResearchRecord):
     space: ParameterNeighborhoodSpace
 
     def validate(self):
+        if self.protocol.version == "parameter-cartesian-neighborhood-v1":
+            m.require(bool(self.space.axes), "empty historical neighborhood space")
+            m.require(all(not isinstance(a.rule, BoundedLocalStep) for a in self.space.axes),
+                      "bounded local step requires neighborhood v2")
         if self.protocol.purpose is StudyPurpose.LOCAL_SENSITIVITY:
             for axis in self.space.axes:
                 if axis.kind in (ParameterKind.CATEGORICAL, ParameterKind.BOOLEAN):
@@ -310,6 +392,9 @@ class ParameterNeighborhoodRequest(m.ResearchRecord):
                         all(x == axis.center for x in axis.rule.values),
                         "categorical/boolean changes require STRUCTURAL_CONTROL",
                     )
+                elif self.protocol.version == "parameter-cartesian-neighborhood-v2":
+                    m.require(isinstance(axis.rule, BoundedLocalStep),
+                              "local sensitivity v2 requires bounded local steps")
 
 
 class NeighborhoodRejectionReason(StrEnum):
@@ -363,7 +448,64 @@ class ParameterNeighborhoodBinding(m.ResearchRecord):
 _OUTSIDE = object()
 
 
+def _bounded_decisions(axis):
+    """Derive nearest discrete alternatives, or exact continuous limit endpoints."""
+    limit = axis.rule.limit
+    maximum = (_number(limit.fraction) * abs(_number(axis.center))
+               if isinstance(limit, RelativeChangeLimit) else _number(limit.amount))
+    domain = axis.domain
+    decisions = []
+    for direction in (-1, 1):
+        value = None
+        if isinstance(domain, (RealSetDomain, IntegerSetDomain, OrdinalDomain)):
+            values = domain.levels if isinstance(domain, OrdinalDomain) else domain.values
+            index = values.index(axis.center) + direction
+            if 0 <= index < len(values):
+                value = values[index]
+        else:
+            delta = (Fraction(domain.step) if isinstance(domain, IntegerDomain)
+                     else _number(domain.quantum) if domain.quantum is not None else maximum)
+            exact = _number(axis.center) + direction * delta
+            # Domain bounds are exact; avoid float overflow before rejecting the direction.
+            within = (_number(domain.lower) <= exact <= _number(domain.upper))
+            if isinstance(domain, RealDomain):
+                within = within and not (
+                    exact == _number(domain.lower) and not domain.lower_closed
+                    or exact == _number(domain.upper) and not domain.upper_closed
+                )
+            if within:
+                value = int(exact) if axis.kind is ParameterKind.INTEGER else float(exact)
+                m.require(value != axis.center and _contains(domain, value),
+                          "bounded change cannot be represented as a distinct legal value")
+        if value is None:
+            decisions.append(ParameterStepDecision(direction, None, None, str(maximum),
+                                                    ParameterStepStatus.OUT_OF_DOMAIN))
+            continue
+        change = (Fraction(1) if type(axis.center) is str
+                  else abs(_number(value) - _number(axis.center)))
+        decisions.append(ParameterStepDecision(
+            direction, value, str(change), str(maximum),
+            ParameterStepStatus.INCLUDED if change <= maximum else ParameterStepStatus.LIMIT_EXCEEDED,
+        ))
+    if isinstance(domain, RealDomain) and domain.quantum is None and domain.lower < domain.upper:
+        m.require(any(x.status is ParameterStepStatus.INCLUDED for x in decisions),
+                  "continuous local step misses domain; declare a smaller limit")
+    return tuple(decisions)
+
+
+def _axis_applicability(axis):
+    if axis.kind in (ParameterKind.CATEGORICAL, ParameterKind.BOOLEAN):
+        return ParameterAxisApplicability(axis.name, (), (), True)
+    m.require(isinstance(axis.rule, BoundedLocalStep), "applicability requires bounded local step")
+    decisions = _bounded_decisions(axis)
+    return ParameterAxisApplicability(axis.name, tuple(
+        x.value for x in decisions if x.status is ParameterStepStatus.INCLUDED
+    ), decisions, False)
+
+
 def _choice_count(axis):
+    if isinstance(axis.rule, BoundedLocalStep):
+        return 1 + len(_axis_applicability(axis).included_values)
     if isinstance(axis.rule, NumericOffsets):
         return 1 + len(axis.rule.offsets)
     if isinstance(axis.rule, ExplicitValues):
@@ -372,6 +514,8 @@ def _choice_count(axis):
 
 
 def _choices(axis):
+    if isinstance(axis.rule, BoundedLocalStep):
+        return (axis.center, *_axis_applicability(axis).included_values)
     if isinstance(axis.rule, NumericOffsets):
         values = []
         for offset in axis.rule.offsets:
@@ -447,7 +591,10 @@ class ParameterNeighborhoodDesign(m.ResearchRecord):
 
     def validate(self):
         ParameterNeighborhoodRequest(self.center, self.protocol, self.space)
-        m.require(bool(self.points), "completed neighborhood must contain a noncenter point")
+        m.require(bool(self.points) or (
+            self.protocol.version == "parameter-cartesian-neighborhood-v2"
+            and self.protocol.purpose is StudyPurpose.LOCAL_SENSITIVITY
+        ), "completed neighborhood must contain a noncenter point")
         m.require(
             tuple(x.index for x in self.points) == tuple(range(len(self.points))),
             "point indices differ",
@@ -507,6 +654,18 @@ class ParameterNeighborhoodDesign(m.ResearchRecord):
         return len(self.points)
 
     @property
+    def is_applicable(self):
+        return bool(self.points)
+
+    @property
+    def axis_applicability(self):
+        """Typed facts reconstructed from hashed inputs, never caller assertions."""
+        m.require(self.protocol.version == "parameter-cartesian-neighborhood-v2"
+                  and self.protocol.purpose is StudyPurpose.LOCAL_SENSITIVITY,
+                  "applicability requires local neighborhood v2")
+        return tuple(_axis_applicability(axis) for axis in self.space.axes)
+
+    @property
     def comparison_sha256(self):
         # Center locations are represented through actual local shape, not an
         # assumed common radius. Conditional exclusions remain part of identity.
@@ -537,10 +696,16 @@ class ParameterNeighborhoodResult(m.ResearchRecord):
 
     def validate(self):
         complete = self.status is m.ParameterDesignStatus.COMPLETE
+        not_applicable = self.status is m.ParameterDesignStatus.NOT_APPLICABLE
         m.require(
-            complete == (self.design is not None) == (self.reason is None),
+            (complete or not_applicable) == (self.design is not None)
+            and complete == (self.reason is None),
             "neighborhood result status differs",
         )
+        if self.design is not None:
+            m.require(self.design.is_applicable == complete, "design applicability differs")
+        if not_applicable:
+            m.require(self.reason == "NO_FEASIBLE_NONCENTER_POINTS", "inapplicable reason differs")
         m.require(self.generated_combinations >= 0, "negative combination count")
         m.unique((x.reason for x in self.rejections), "result rejection")
         m.unique((x.values for x in self.constraint_exclusions), "result constraint exclusion")
@@ -577,12 +742,20 @@ class ParameterNeighborhoodContext(m.ResearchRecord):
     comparison_sha256: str
 
     def validate(self):
+        minimum = (0 if self.protocol.version == "parameter-cartesian-neighborhood-v2"
+                   and self.protocol.purpose is StudyPurpose.LOCAL_SENSITIVITY else 1)
         m.require(
-            self.dimension > 0
-            and self.prescribed_points > 0
+            self.dimension >= minimum
+            and self.prescribed_points >= minimum
             and 0 <= self.valid_points <= self.prescribed_points,
             "invalid neighborhood coverage",
         )
+        m.require(self.prescribed_points == 0 or self.dimension > 0,
+                  "nonempty neighborhood requires parameter axes")
+
+    @property
+    def is_applicable(self):
+        return self.prescribed_points > 0
 
 
 def build_parameter_neighborhood_design(
@@ -602,6 +775,8 @@ def build_parameter_neighborhood_design(
     """
     if type(request) is not ParameterNeighborhoodRequest:
         raise TypeError("request requires ParameterNeighborhoodRequest")
+    m.require(request.protocol.version == "parameter-cartesian-neighborhood-v2",
+              "historical neighborhood generation is read-only")
     if not callable(feasibility):
         raise TypeError("feasibility must be callable")
     request = ParameterNeighborhoodRequest.from_dict(request.to_dict())
@@ -641,7 +816,7 @@ def build_parameter_neighborhood_design(
             continue
         points.append(ParameterNeighborhoodPoint(len(points), named))
     rejected = tuple(NeighborhoodRejection(r, n) for r, n in counts.items() if n)
-    if not points:
+    if not points and request.protocol.purpose is not StudyPurpose.LOCAL_SENSITIVITY:
         return ParameterNeighborhoodResult(
             request.sha256,
             m.ParameterDesignStatus.DESIGN_FAILED,
@@ -662,10 +837,10 @@ def build_parameter_neighborhood_design(
     )
     return ParameterNeighborhoodResult(
         request.sha256,
-        m.ParameterDesignStatus.COMPLETE,
+        m.ParameterDesignStatus.COMPLETE if points else m.ParameterDesignStatus.NOT_APPLICABLE,
         design,
         total,
         rejected,
-        None,
+        None if points else "NO_FEASIBLE_NONCENTER_POINTS",
         tuple(excluded),
     )

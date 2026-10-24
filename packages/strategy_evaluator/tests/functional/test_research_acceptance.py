@@ -6,7 +6,7 @@ from decimal import localcontext
 
 import pytest
 
-from strategy_evaluator import assess_candidates
+from strategy_evaluator.research_assessment import recompute_historical_assessment as assess_candidates
 from strategy_evaluator import research_models as m
 from test_research_assessment import candidate, compare, evidence, policy, protocol, row
 from test_research_comparison_v2 import benchmark
