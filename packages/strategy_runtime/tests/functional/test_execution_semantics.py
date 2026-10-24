@@ -44,7 +44,14 @@ def _instance(history):
         identity=None,
         tradable_window=TradableWindow(date(2026, 1, 6), date(2026, 1, 6)),
         data_dir=Path(".tmp"),
-        execution_policy=None,
+        execution_policy=ExecutionPolicy("FROZEN_RULE", {
+            "capital": {"fee_rate": 0.001, "mode": "target_equity_fraction",
+                        "target_scope": "decision", "allocation_fraction": 1.0},
+            "entry": {"limit_parameter": 0.0, "order_type": "LIMIT"},
+            "exit": {"limit_ratio": 0.1, "order_type": "MARKET"},
+            "instrument": {"lot_size": 100, "maximum_order_quantity": 1_000_000,
+                           "price_limit_ratio": 0.1, "price_tick": 0.001},
+        }),
     )
     instance._prepared_data = SimpleNamespace(
         _inputs=SimpleNamespace(results={}, signal_dates={date(2026, 1, 6): date(2026, 1, 5)}),
@@ -59,14 +66,6 @@ def _instance(history):
 def _plan(instance, mode):
     """Exercise the public planning chain with a prepared, fixed-price fixture."""
     instance._identity = StrategyIdentity("S900", "S900-C0001", "a" * 64, "b" * 64, "588080.SH")
-    instance._execution_policy = ExecutionPolicy("FROZEN_RULE", {
-        "capital": {"fee_rate": 0.001, "mode": "target_equity_fraction",
-                    "target_scope": "decision", "allocation_fraction": 1.0},
-        "entry": {"limit_parameter": 0.0, "order_type": "LIMIT"},
-        "exit": {"limit_ratio": 0.1, "order_type": "MARKET"},
-        "instrument": {"lot_size": 100, "maximum_order_quantity": 1_000_000,
-                       "price_limit_ratio": 0.1, "price_tick": 0.001},
-    })
     instance._prepared_data.price_reference = lambda *args: PriceReference(
         Decimal("10"), Decimal("10"), "hfq", "unadjusted",
     )

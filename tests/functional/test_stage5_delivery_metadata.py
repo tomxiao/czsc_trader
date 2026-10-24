@@ -62,8 +62,9 @@ def _retained_inspection(research, experiment, revision, schema, *, definition_s
 def test_inspection_requires_schema9_and_no_research_predecessors(overview_context):
     research, experiment = overview_context
     reference = d.DeliveryReference(research.batch, d.DeliveryStage.ASSESSMENT, 1, "1" * 64)
+    assert d.DeliveryDefinition(research.batch, d.DeliveryStage.INSPECTION, 1).schema_version == 9
     with pytest.raises(ValueError, match="schema"):
-        d.DeliveryDefinition(research.batch, d.DeliveryStage.INSPECTION, 1)
+        d.DeliveryDefinition(research.batch, d.DeliveryStage.INSPECTION, 1, schema_version=8)
     with pytest.raises(ValueError, match="predecessors"):
         d.DeliveryDefinition(research.batch, d.DeliveryStage.INSPECTION, 1, (reference,), 9)
     definition = d.DeliveryDefinition(research.batch, d.DeliveryStage.INSPECTION, 1, schema_version=9)
@@ -150,8 +151,9 @@ def test_inspection_receipt_schema_must_match_its_stage(overview_context):
     research, _ = overview_context
     reference = d.DeliveryReference(research.batch, d.DeliveryStage.INSPECTION, 1, "1" * 64)
     files = (d.PublicationFile("delivery.json", "2" * 64),)
+    assert d.DeliveryReceipt(reference, files).schema_version == 9
     with pytest.raises(ValueError, match="schema"):
-        d.DeliveryReceipt(reference, files)
+        d.DeliveryReceipt(reference, files, schema_version=8)
     receipt = d.DeliveryReceipt(reference, files, schema_version=9)
     assert d.DeliveryReceipt.from_dict(receipt.to_dict()) == receipt
     with pytest.raises(ValueError, match="schema"):
