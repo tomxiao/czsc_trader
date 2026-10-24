@@ -1,0 +1,31 @@
+{
+  "status": "DELIVERY_ASSEMBLY_REJECTED",
+  "code": "ASSESSMENT_EVIDENCE",
+  "evaluation_id": "48e5d72f5b0ccc0cf2edd92386f3eb7371a7830b7581718d3c679755666beae7",
+  "previous_report": {
+    "evidence_id": "43a6c00db091bd705b3683e0df2b962222aa992354188ea1c35d68559736ab7d.json",
+    "experiment": {
+      "experiment_id": "EX066_20261024",
+      "strategy_id": "S015",
+      "type": "ExperimentRef"
+    },
+    "media_type": "application/json",
+    "name": "experiment-report",
+    "schema": "experiment_report",
+    "schema_version": 1,
+    "sha256": "43a6c00db091bd705b3683e0df2b962222aa992354188ea1c35d68559736ab7d",
+    "type": "EvidenceRef"
+  },
+  "reviewed_input_sha256": "bd56186cf78cde847a4d9ef5c6186ebeeb7a16750399d949c7870bb5144219ed",
+  "original_publisher_sha256": "e8ec97a3f904f63ab60f802b2822839c4cf09b2c9e3158a52c6f406cfedc41bb",
+  "cause": "EX064 and EX066 center replays share economic evaluation_id, but experiment/attempt/request/result provenance differs. Flattening historical account references into the same delivery allowed the historical projection to replace current projection.",
+  "correction": "Keep ASSESSMENT/3 as a typed predecessor package. Current delivery direct account references bind only current evaluation projections and needed original family/stress sources. Preserve historical materials, original report and failed attempt. No account, target, parameter or computed result changes.",
+  "evidence_fields_changed": [
+    "experiment_id",
+    "attempt_id",
+    "request_sha256",
+    "result_sha256"
+  ],
+  "economic_fields_changed": [],
+  "new_accounts": 0
+}

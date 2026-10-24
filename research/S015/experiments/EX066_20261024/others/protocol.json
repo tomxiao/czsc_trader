@@ -1,0 +1,59 @@
+{
+  "version": "S015-EX066-stage4-bounded-applicability-v2",
+  "authorization": "有意义就好。请继续自主完成阶段四",
+  "source_candidates": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S015"
+    },
+    "stage": "CANDIDATES",
+    "revision": 7,
+    "content_sha256": "b614f360e2d5448e5ad81a5c3f47b6f2271ddfff5b8b7639f3337bc8bedeb4e1"
+  },
+  "source_mandate": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S015"
+    },
+    "stage": "MANDATE",
+    "revision": 5,
+    "content_sha256": "21b74f69453b3f9cd93ca674981e6f6cd0255ddb336af444215c3f457f83354b"
+  },
+  "centers": [
+    "C5806",
+    "C5901",
+    "C5902",
+    "C6015",
+    "C6016",
+    "C6017",
+    "C6018",
+    "C6101",
+    "C6104",
+    "C6105",
+    "C6116",
+    "C6117",
+    "C6201",
+    "C6202",
+    "C6203",
+    "C6206"
+  ],
+  "formal_accounts": {
+    "centers": 16,
+    "neighbors": 24
+  },
+  "technical_duplicates": 2,
+  "criteria": "All N points valid; joint passes >= ceil(13*N/16); every point drawdown <=25%; preserve original inner economics and all center goals.",
+  "data": "434 days 2025-01-02..2026-10-21, fixed original inputs/cutoff/cost/benchmark/capital; original415 gate and16 stress accounts reused, authenticated. No new sample.",
+  "selection": "No neighbor promotion; all16 centers tested to completion. Authenticate original176 plus EX065207 full-window sources. Exclude EX065 repeat proposals and known old-content/inactive-field aliases from expanded family; retain original historical columns and disclose their dependence. Fixed stage4 points are not promoted or added to search family.",
+  "resources": {
+    "workers": 8,
+    "native_threads": 1,
+    "seed": 13
+  },
+  "parameter_policy": "Relative change cap .05, nearest lawful integer step over cap held fixed; continuous allocation endpoints relative to center, no clipping. All active parameters and potentially jointly active confirmation retained in designs. Original economic goals unchanged; prior out-of-cap negatives remain disclosed.",
+  "ranking_policy": "Raw Pareto first, preserve original bins and sensitivity variants; research-ranking-v4 floors only for whole-item NOT_APPLICABLE; incomparable actual neighborhood shapes get separate supplemental rankings, no invented global winner.",
+  "family_policy": "Expanded family returns use all retained standard434 sources; same seed13, PBO10blocks, bootstrap2000/block10. Report raw/effective-trial DSR and historical coverage gap. No diagnostics become new gates.",
+  "limits": "Development sample only; official attribution remains unsupported; no stage5/freeze/PTE/new structural search."
+}

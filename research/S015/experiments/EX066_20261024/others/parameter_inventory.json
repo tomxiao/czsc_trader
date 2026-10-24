@@ -1,0 +1,2029 @@
+[
+  {
+    "candidate_id": "C5806",
+    "active_axes": [
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "allocation",
+        "included_values": [
+          0.9025,
+          0.9975
+        ],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 0.9025,
+            "change": "19/400",
+            "maximum_change": "19/400",
+            "status": "INCLUDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 0.9975,
+            "change": "19/400",
+            "maximum_change": "19/400",
+            "status": "INCLUDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "lookback",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "hold",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      }
+    ],
+    "points": [
+      [
+        {
+          "type": "NamedParameterValue",
+          "name": "allocation",
+          "value": 0.9025
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "lookback",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold",
+          "value": 3
+        }
+      ],
+      [
+        {
+          "type": "NamedParameterValue",
+          "name": "allocation",
+          "value": 0.9975
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "lookback",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold",
+          "value": 3
+        }
+      ]
+    ],
+    "fixed_structure": {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "concentration": 0.75,
+      "start": "2025-01-02",
+      "center_kind": "mean"
+    },
+    "scope": "Mean-center-below entry: concentration unused. Fixed/confirmed_guard exits: max_hold and failure_buffer unused. confirmation included for confirmed_guard even when only jointly effective. mode/exit/center_kind/rearm structure fixed; start is evaluation boundary."
+  },
+  {
+    "candidate_id": "C5901",
+    "active_axes": [
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "allocation",
+        "included_values": [
+          0.95
+        ],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 0.95,
+            "change": "1/20",
+            "maximum_change": "1/20",
+            "status": "INCLUDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": null,
+            "change": null,
+            "maximum_change": "1/20",
+            "status": "OUT_OF_DOMAIN"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "lookback",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "hold",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "confirmation",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 1,
+            "change": "1",
+            "maximum_change": "1/10",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 3,
+            "change": "1",
+            "maximum_change": "1/10",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      }
+    ],
+    "points": [
+      [
+        {
+          "type": "NamedParameterValue",
+          "name": "allocation",
+          "value": 0.95
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "lookback",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "confirmation",
+          "value": 2
+        }
+      ]
+    ],
+    "fixed_structure": {
+      "mode": "center_below",
+      "exit_mode": "confirmed_guard",
+      "concentration": 0.75,
+      "start": "2025-01-02",
+      "center_kind": "mean",
+      "failure_buffer": 0.0,
+      "max_hold": 10
+    },
+    "scope": "Mean-center-below entry: concentration unused. Fixed/confirmed_guard exits: max_hold and failure_buffer unused. confirmation included for confirmed_guard even when only jointly effective. mode/exit/center_kind/rearm structure fixed; start is evaluation boundary."
+  },
+  {
+    "candidate_id": "C5902",
+    "active_axes": [
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "allocation",
+        "included_values": [
+          0.95
+        ],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 0.95,
+            "change": "1/20",
+            "maximum_change": "1/20",
+            "status": "INCLUDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": null,
+            "change": null,
+            "maximum_change": "1/20",
+            "status": "OUT_OF_DOMAIN"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "lookback",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "hold",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "confirmation",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      }
+    ],
+    "points": [
+      [
+        {
+          "type": "NamedParameterValue",
+          "name": "allocation",
+          "value": 0.95
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "lookback",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "confirmation",
+          "value": 3
+        }
+      ]
+    ],
+    "fixed_structure": {
+      "mode": "center_below",
+      "exit_mode": "confirmed_guard",
+      "concentration": 0.75,
+      "start": "2025-01-02",
+      "center_kind": "mean",
+      "failure_buffer": 0.0,
+      "max_hold": 10
+    },
+    "scope": "Mean-center-below entry: concentration unused. Fixed/confirmed_guard exits: max_hold and failure_buffer unused. confirmation included for confirmed_guard even when only jointly effective. mode/exit/center_kind/rearm structure fixed; start is evaluation boundary."
+  },
+  {
+    "candidate_id": "C6015",
+    "active_axes": [
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "allocation",
+        "included_values": [
+          0.8835,
+          0.9765
+        ],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 0.8835,
+            "change": "93/2000",
+            "maximum_change": "93/2000",
+            "status": "INCLUDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 0.9765,
+            "change": "93/2000",
+            "maximum_change": "93/2000",
+            "status": "INCLUDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "lookback",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "hold",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      }
+    ],
+    "points": [
+      [
+        {
+          "type": "NamedParameterValue",
+          "name": "allocation",
+          "value": 0.8835
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "lookback",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold",
+          "value": 3
+        }
+      ],
+      [
+        {
+          "type": "NamedParameterValue",
+          "name": "allocation",
+          "value": 0.9765
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "lookback",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold",
+          "value": 3
+        }
+      ]
+    ],
+    "fixed_structure": {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "concentration": 0.75,
+      "start": "2025-01-02",
+      "center_kind": "mean"
+    },
+    "scope": "Mean-center-below entry: concentration unused. Fixed/confirmed_guard exits: max_hold and failure_buffer unused. confirmation included for confirmed_guard even when only jointly effective. mode/exit/center_kind/rearm structure fixed; start is evaluation boundary."
+  },
+  {
+    "candidate_id": "C6016",
+    "active_axes": [
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "allocation",
+        "included_values": [
+          0.893,
+          0.987
+        ],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 0.893,
+            "change": "47/1000",
+            "maximum_change": "47/1000",
+            "status": "INCLUDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 0.987,
+            "change": "47/1000",
+            "maximum_change": "47/1000",
+            "status": "INCLUDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "lookback",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "hold",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      }
+    ],
+    "points": [
+      [
+        {
+          "type": "NamedParameterValue",
+          "name": "allocation",
+          "value": 0.893
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "lookback",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold",
+          "value": 3
+        }
+      ],
+      [
+        {
+          "type": "NamedParameterValue",
+          "name": "allocation",
+          "value": 0.987
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "lookback",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold",
+          "value": 3
+        }
+      ]
+    ],
+    "fixed_structure": {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "concentration": 0.75,
+      "start": "2025-01-02",
+      "center_kind": "mean"
+    },
+    "scope": "Mean-center-below entry: concentration unused. Fixed/confirmed_guard exits: max_hold and failure_buffer unused. confirmation included for confirmed_guard even when only jointly effective. mode/exit/center_kind/rearm structure fixed; start is evaluation boundary."
+  },
+  {
+    "candidate_id": "C6017",
+    "active_axes": [
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "allocation",
+        "included_values": [
+          0.912
+        ],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 0.912,
+            "change": "6/125",
+            "maximum_change": "6/125",
+            "status": "INCLUDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": null,
+            "change": null,
+            "maximum_change": "6/125",
+            "status": "OUT_OF_DOMAIN"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "lookback",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "hold",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      }
+    ],
+    "points": [
+      [
+        {
+          "type": "NamedParameterValue",
+          "name": "allocation",
+          "value": 0.912
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "lookback",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold",
+          "value": 3
+        }
+      ]
+    ],
+    "fixed_structure": {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "concentration": 0.75,
+      "start": "2025-01-02",
+      "center_kind": "mean"
+    },
+    "scope": "Mean-center-below entry: concentration unused. Fixed/confirmed_guard exits: max_hold and failure_buffer unused. confirmation included for confirmed_guard even when only jointly effective. mode/exit/center_kind/rearm structure fixed; start is evaluation boundary."
+  },
+  {
+    "candidate_id": "C6018",
+    "active_axes": [
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "allocation",
+        "included_values": [
+          0.9215
+        ],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 0.9215,
+            "change": "97/2000",
+            "maximum_change": "97/2000",
+            "status": "INCLUDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": null,
+            "change": null,
+            "maximum_change": "97/2000",
+            "status": "OUT_OF_DOMAIN"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "lookback",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "hold",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      }
+    ],
+    "points": [
+      [
+        {
+          "type": "NamedParameterValue",
+          "name": "allocation",
+          "value": 0.9215
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "lookback",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold",
+          "value": 3
+        }
+      ]
+    ],
+    "fixed_structure": {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "concentration": 0.75,
+      "start": "2025-01-02",
+      "center_kind": "mean"
+    },
+    "scope": "Mean-center-below entry: concentration unused. Fixed/confirmed_guard exits: max_hold and failure_buffer unused. confirmation included for confirmed_guard even when only jointly effective. mode/exit/center_kind/rearm structure fixed; start is evaluation boundary."
+  },
+  {
+    "candidate_id": "C6101",
+    "active_axes": [
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "allocation",
+        "included_values": [
+          0.9025,
+          0.9975
+        ],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 0.9025,
+            "change": "19/400",
+            "maximum_change": "19/400",
+            "status": "INCLUDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 0.9975,
+            "change": "19/400",
+            "maximum_change": "19/400",
+            "status": "INCLUDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "lookback",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "hold",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      }
+    ],
+    "points": [
+      [
+        {
+          "type": "NamedParameterValue",
+          "name": "allocation",
+          "value": 0.9025
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "lookback",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold",
+          "value": 3
+        }
+      ],
+      [
+        {
+          "type": "NamedParameterValue",
+          "name": "allocation",
+          "value": 0.9975
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "lookback",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold",
+          "value": 3
+        }
+      ]
+    ],
+    "fixed_structure": {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "concentration": 0.75,
+      "start": "2025-01-02",
+      "center_kind": "mean",
+      "confirmation": 1,
+      "failure_buffer": 0.0,
+      "max_hold": 10,
+      "rearm_mode": "immediate"
+    },
+    "scope": "Mean-center-below entry: concentration unused. Fixed/confirmed_guard exits: max_hold and failure_buffer unused. confirmation included for confirmed_guard even when only jointly effective. mode/exit/center_kind/rearm structure fixed; start is evaluation boundary."
+  },
+  {
+    "candidate_id": "C6104",
+    "active_axes": [
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "allocation",
+        "included_values": [
+          0.9025,
+          0.9975
+        ],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 0.9025,
+            "change": "19/400",
+            "maximum_change": "19/400",
+            "status": "INCLUDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 0.9975,
+            "change": "19/400",
+            "maximum_change": "19/400",
+            "status": "INCLUDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "lookback",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "hold",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      }
+    ],
+    "points": [
+      [
+        {
+          "type": "NamedParameterValue",
+          "name": "allocation",
+          "value": 0.9025
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "lookback",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold",
+          "value": 3
+        }
+      ],
+      [
+        {
+          "type": "NamedParameterValue",
+          "name": "allocation",
+          "value": 0.9975
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "lookback",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold",
+          "value": 3
+        }
+      ]
+    ],
+    "fixed_structure": {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "concentration": 0.75,
+      "start": "2025-01-02",
+      "center_kind": "mean",
+      "confirmation": 1,
+      "failure_buffer": 0.0,
+      "max_hold": 10,
+      "rearm_mode": "positive_step"
+    },
+    "scope": "Mean-center-below entry: concentration unused. Fixed/confirmed_guard exits: max_hold and failure_buffer unused. confirmation included for confirmed_guard even when only jointly effective. mode/exit/center_kind/rearm structure fixed; start is evaluation boundary."
+  },
+  {
+    "candidate_id": "C6105",
+    "active_axes": [
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "allocation",
+        "included_values": [
+          0.95
+        ],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 0.95,
+            "change": "1/20",
+            "maximum_change": "1/20",
+            "status": "INCLUDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": null,
+            "change": null,
+            "maximum_change": "1/20",
+            "status": "OUT_OF_DOMAIN"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "lookback",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "hold",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      }
+    ],
+    "points": [
+      [
+        {
+          "type": "NamedParameterValue",
+          "name": "allocation",
+          "value": 0.95
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "lookback",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold",
+          "value": 3
+        }
+      ]
+    ],
+    "fixed_structure": {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "concentration": 0.75,
+      "start": "2025-01-02",
+      "center_kind": "mean",
+      "confirmation": 1,
+      "failure_buffer": 0.0,
+      "max_hold": 10,
+      "rearm_mode": "positive_step"
+    },
+    "scope": "Mean-center-below entry: concentration unused. Fixed/confirmed_guard exits: max_hold and failure_buffer unused. confirmation included for confirmed_guard even when only jointly effective. mode/exit/center_kind/rearm structure fixed; start is evaluation boundary."
+  },
+  {
+    "candidate_id": "C6116",
+    "active_axes": [
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "allocation",
+        "included_values": [
+          0.9025,
+          0.9975
+        ],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 0.9025,
+            "change": "19/400",
+            "maximum_change": "19/400",
+            "status": "INCLUDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 0.9975,
+            "change": "19/400",
+            "maximum_change": "19/400",
+            "status": "INCLUDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "lookback",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "hold",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "confirmation",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 1,
+            "change": "1",
+            "maximum_change": "1/10",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 3,
+            "change": "1",
+            "maximum_change": "1/10",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      }
+    ],
+    "points": [
+      [
+        {
+          "type": "NamedParameterValue",
+          "name": "allocation",
+          "value": 0.9025
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "lookback",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "confirmation",
+          "value": 2
+        }
+      ],
+      [
+        {
+          "type": "NamedParameterValue",
+          "name": "allocation",
+          "value": 0.9975
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "lookback",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "confirmation",
+          "value": 2
+        }
+      ]
+    ],
+    "fixed_structure": {
+      "mode": "center_below",
+      "exit_mode": "confirmed_guard",
+      "concentration": 0.75,
+      "start": "2025-01-02",
+      "center_kind": "mean",
+      "failure_buffer": 0.0,
+      "max_hold": 10,
+      "rearm_mode": "positive_step"
+    },
+    "scope": "Mean-center-below entry: concentration unused. Fixed/confirmed_guard exits: max_hold and failure_buffer unused. confirmation included for confirmed_guard even when only jointly effective. mode/exit/center_kind/rearm structure fixed; start is evaluation boundary."
+  },
+  {
+    "candidate_id": "C6117",
+    "active_axes": [
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "allocation",
+        "included_values": [
+          0.95
+        ],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 0.95,
+            "change": "1/20",
+            "maximum_change": "1/20",
+            "status": "INCLUDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": null,
+            "change": null,
+            "maximum_change": "1/20",
+            "status": "OUT_OF_DOMAIN"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "lookback",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "hold",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "confirmation",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 1,
+            "change": "1",
+            "maximum_change": "1/10",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 3,
+            "change": "1",
+            "maximum_change": "1/10",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      }
+    ],
+    "points": [
+      [
+        {
+          "type": "NamedParameterValue",
+          "name": "allocation",
+          "value": 0.95
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "lookback",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "confirmation",
+          "value": 2
+        }
+      ]
+    ],
+    "fixed_structure": {
+      "mode": "center_below",
+      "exit_mode": "confirmed_guard",
+      "concentration": 0.75,
+      "start": "2025-01-02",
+      "center_kind": "mean",
+      "failure_buffer": 0.0,
+      "max_hold": 10,
+      "rearm_mode": "positive_step"
+    },
+    "scope": "Mean-center-below entry: concentration unused. Fixed/confirmed_guard exits: max_hold and failure_buffer unused. confirmation included for confirmed_guard even when only jointly effective. mode/exit/center_kind/rearm structure fixed; start is evaluation boundary."
+  },
+  {
+    "candidate_id": "C6201",
+    "active_axes": [
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "allocation",
+        "included_values": [
+          0.87875,
+          0.97125
+        ],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 0.87875,
+            "change": "37/800",
+            "maximum_change": "37/800",
+            "status": "INCLUDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 0.97125,
+            "change": "37/800",
+            "maximum_change": "37/800",
+            "status": "INCLUDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "lookback",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "hold",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      }
+    ],
+    "points": [
+      [
+        {
+          "type": "NamedParameterValue",
+          "name": "allocation",
+          "value": 0.87875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "lookback",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold",
+          "value": 3
+        }
+      ],
+      [
+        {
+          "type": "NamedParameterValue",
+          "name": "allocation",
+          "value": 0.97125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "lookback",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold",
+          "value": 3
+        }
+      ]
+    ],
+    "fixed_structure": {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "concentration": 0.75,
+      "start": "2025-01-02",
+      "center_kind": "mean",
+      "confirmation": 1,
+      "failure_buffer": 0.0,
+      "max_hold": 30,
+      "rearm_mode": "positive_step"
+    },
+    "scope": "Mean-center-below entry: concentration unused. Fixed/confirmed_guard exits: max_hold and failure_buffer unused. confirmation included for confirmed_guard even when only jointly effective. mode/exit/center_kind/rearm structure fixed; start is evaluation boundary."
+  },
+  {
+    "candidate_id": "C6202",
+    "active_axes": [
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "allocation",
+        "included_values": [
+          0.8835,
+          0.9765
+        ],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 0.8835,
+            "change": "93/2000",
+            "maximum_change": "93/2000",
+            "status": "INCLUDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 0.9765,
+            "change": "93/2000",
+            "maximum_change": "93/2000",
+            "status": "INCLUDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "lookback",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "hold",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      }
+    ],
+    "points": [
+      [
+        {
+          "type": "NamedParameterValue",
+          "name": "allocation",
+          "value": 0.8835
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "lookback",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold",
+          "value": 3
+        }
+      ],
+      [
+        {
+          "type": "NamedParameterValue",
+          "name": "allocation",
+          "value": 0.9765
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "lookback",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold",
+          "value": 3
+        }
+      ]
+    ],
+    "fixed_structure": {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "concentration": 0.75,
+      "start": "2025-01-02",
+      "center_kind": "mean",
+      "confirmation": 1,
+      "failure_buffer": 0.0,
+      "max_hold": 30,
+      "rearm_mode": "positive_step"
+    },
+    "scope": "Mean-center-below entry: concentration unused. Fixed/confirmed_guard exits: max_hold and failure_buffer unused. confirmation included for confirmed_guard even when only jointly effective. mode/exit/center_kind/rearm structure fixed; start is evaluation boundary."
+  },
+  {
+    "candidate_id": "C6203",
+    "active_axes": [
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "allocation",
+        "included_values": [
+          0.92625
+        ],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 0.92625,
+            "change": "39/800",
+            "maximum_change": "39/800",
+            "status": "INCLUDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": null,
+            "change": null,
+            "maximum_change": "39/800",
+            "status": "OUT_OF_DOMAIN"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "lookback",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "hold",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      }
+    ],
+    "points": [
+      [
+        {
+          "type": "NamedParameterValue",
+          "name": "allocation",
+          "value": 0.92625
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "lookback",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold",
+          "value": 3
+        }
+      ]
+    ],
+    "fixed_structure": {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "concentration": 0.75,
+      "start": "2025-01-02",
+      "center_kind": "mean",
+      "confirmation": 1,
+      "failure_buffer": 0.0,
+      "max_hold": 30,
+      "rearm_mode": "positive_step"
+    },
+    "scope": "Mean-center-below entry: concentration unused. Fixed/confirmed_guard exits: max_hold and failure_buffer unused. confirmation included for confirmed_guard even when only jointly effective. mode/exit/center_kind/rearm structure fixed; start is evaluation boundary."
+  },
+  {
+    "candidate_id": "C6206",
+    "active_axes": [
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "allocation",
+        "included_values": [
+          0.92625
+        ],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 0.92625,
+            "change": "39/800",
+            "maximum_change": "39/800",
+            "status": "INCLUDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": null,
+            "change": null,
+            "maximum_change": "39/800",
+            "status": "OUT_OF_DOMAIN"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "lookback",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "hold",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 2,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 4,
+            "change": "1",
+            "maximum_change": "3/20",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      },
+      {
+        "type": "ParameterAxisApplicability",
+        "name": "confirmation",
+        "included_values": [],
+        "decisions": [
+          {
+            "type": "ParameterStepDecision",
+            "direction": -1,
+            "value": 1,
+            "change": "1",
+            "maximum_change": "1/10",
+            "status": "LIMIT_EXCEEDED"
+          },
+          {
+            "type": "ParameterStepDecision",
+            "direction": 1,
+            "value": 3,
+            "change": "1",
+            "maximum_change": "1/10",
+            "status": "LIMIT_EXCEEDED"
+          }
+        ],
+        "structural_only": false
+      }
+    ],
+    "points": [
+      [
+        {
+          "type": "NamedParameterValue",
+          "name": "allocation",
+          "value": 0.92625
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "lookback",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "confirmation",
+          "value": 2
+        }
+      ]
+    ],
+    "fixed_structure": {
+      "mode": "center_below",
+      "exit_mode": "confirmed_guard",
+      "concentration": 0.75,
+      "start": "2025-01-02",
+      "center_kind": "mean",
+      "failure_buffer": 0.0,
+      "max_hold": 30,
+      "rearm_mode": "positive_step"
+    },
+    "scope": "Mean-center-below entry: concentration unused. Fixed/confirmed_guard exits: max_hold and failure_buffer unused. confirmation included for confirmed_guard even when only jointly effective. mode/exit/center_kind/rearm structure fixed; start is evaluation boundary."
+  }
+]

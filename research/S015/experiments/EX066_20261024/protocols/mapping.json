@@ -1,0 +1,33 @@
+{
+  "version": "S015-EX066-stage4-bounded-applicability-v2",
+  "payload_root": "parameters",
+  "axes": {
+    "allocation": {
+      "unit": "fraction",
+      "relative_limit": 0.05,
+      "domain": "(0,1]",
+      "meaning": "entry-cycle cash allocation"
+    },
+    "lookback": {
+      "unit": "sessions",
+      "minimum_legal_step": 1,
+      "relative_limit": 0.05,
+      "domain": "integer[2,10]"
+    },
+    "hold": {
+      "unit": "sessions",
+      "minimum_legal_step": 1,
+      "relative_limit": 0.05,
+      "domain": "integer[1,30]"
+    },
+    "confirmation": {
+      "unit": "sessions",
+      "minimum_legal_step": 1,
+      "relative_limit": 0.05,
+      "domain": "integer[1,5]",
+      "active": "confirmed_guard, including joint activation"
+    }
+  },
+  "fixed": "all undeclared payload leaves and original source; mode/exit/rearm are structure; inactive concentration/failure_buffer/max_hold remain fixed",
+  "comparison": "Use exact design comparison_sha256; no forced pooling across boundary shapes or axes."
+}

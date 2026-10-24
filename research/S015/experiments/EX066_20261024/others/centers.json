@@ -1,0 +1,1740 @@
+[
+  {
+    "candidate_id": "C5806",
+    "parameters": {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 0.95,
+      "start": "2025-01-02",
+      "center_kind": "mean"
+    },
+    "request_hash": "0af75faecf3d63b0c243864e450a10483022ac1e72ff191503670a188beeb522",
+    "result_hash": "14039e4d0d17fdc9293026f42e9d460218d765a9eec9cfeb362d9922e46b4202",
+    "runs": {
+      "full": {
+        "net_return": 0.9606521360000007,
+        "cagr": 0.47836258490041494,
+        "dd": 0.07104093067596018,
+        "fees": 14764.986400000002,
+        "closed": 55,
+        "frequency_median": 8.0,
+        "frequency_good": 375,
+        "frequency_windows": 375,
+        "benchmark_cagr": 0.16938742022084918,
+        "benchmark_dd": 0.36289990457799626,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "7e687948eedbca30abc16badb2c0fc0742aafdc63cee48dad08115f2d825467e"
+      },
+      "s011_common": {
+        "net_return": 0.9490482789999994,
+        "cagr": 0.49964568172256674,
+        "dd": 0.07103921349497566,
+        "fees": 14110.8721,
+        "closed": 52,
+        "frequency_median": 8.0,
+        "frequency_good": 356,
+        "frequency_windows": 356,
+        "benchmark_cagr": 0.21191223556449157,
+        "benchmark_dd": 0.3640287011470468,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "b4562c4af457515c62ff2ff34cb0c598c616a4f88099bc1abf1c00166781d93a",
+        "return_superior": true,
+        "dd_superior": true,
+        "dual_pass": true
+      }
+    },
+    "both_center_pass": true,
+    "evidence": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX058_20261024"
+      },
+      "evidence_id": "d45625ee391068d5082b47f8082f83ec90b4020a17e95bea70d87437d32859b0.json",
+      "sha256": "d45625ee391068d5082b47f8082f83ec90b4020a17e95bea70d87437d32859b0",
+      "media_type": "application/json",
+      "name": "C5806",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "identity": {
+      "key": {
+        "strategy_id": "S015",
+        "candidate_id": "C5806"
+      },
+      "content_sha256": "757719e4190c1245caebce1a30b53edf1a16b61283871277ac4f3cb7ddfea2c1"
+    },
+    "years": [
+      {
+        "window": "full",
+        "year": 2025,
+        "net_return": 0.5112566879999998
+      },
+      {
+        "window": "full",
+        "year": 2026,
+        "net_return": 0.2973653989877336
+      },
+      {
+        "window": "s011_common",
+        "year": 2025,
+        "net_return": 0.502234531
+      },
+      {
+        "window": "s011_common",
+        "year": 2026,
+        "net_return": 0.2974327501995089
+      }
+    ]
+  },
+  {
+    "candidate_id": "C5901",
+    "parameters": {
+      "mode": "center_below",
+      "exit_mode": "confirmed_guard",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02",
+      "center_kind": "mean",
+      "confirmation": 2,
+      "failure_buffer": 0.0,
+      "max_hold": 10
+    },
+    "request_hash": "57d7c09a5a6adf7351e340ca59ec15213d1a0af502a0011331ed672d67d91cf9",
+    "result_hash": "31eb48d31bf90aa7716f36056a45b44179ffafa04020e6f72ba3308e42236234",
+    "runs": {
+      "full": {
+        "net_return": 0.964138095999999,
+        "cagr": 0.479888224063048,
+        "dd": 0.061434555316357664,
+        "fees": 13285.7904,
+        "closed": 50,
+        "frequency_median": 7.0,
+        "frequency_good": 375,
+        "frequency_windows": 375,
+        "benchmark_cagr": 0.16938742022084918,
+        "benchmark_dd": 0.36289990457799626,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "fe3dc18e8be07eff964cc8f3a3e7000e76c39f4e8c989b2161aa46f40d5a91e9"
+      },
+      "s011_common": {
+        "net_return": 1.0081883029999994,
+        "cagr": 0.5271145238350923,
+        "dd": 0.06148083619266709,
+        "fees": 12984.269699999999,
+        "closed": 47,
+        "frequency_median": 7.0,
+        "frequency_good": 356,
+        "frequency_windows": 356,
+        "benchmark_cagr": 0.21191223556449157,
+        "benchmark_dd": 0.3640287011470468,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "6ecf0524006ce4d1af7dd9daf9eb6a9cbd0b367a0fa5e7eecde2c0f60b35e79f",
+        "return_superior": true,
+        "dd_superior": true,
+        "dual_pass": true
+      }
+    },
+    "both_center_pass": true,
+    "evidence": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX059_20261024"
+      },
+      "evidence_id": "692e343b19e3a8f01e99bec14702a058dc8f57f8c0113a7286804dc7f1719ab7.json",
+      "sha256": "692e343b19e3a8f01e99bec14702a058dc8f57f8c0113a7286804dc7f1719ab7",
+      "media_type": "application/json",
+      "name": "C5901",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "identity": {
+      "key": {
+        "strategy_id": "S015",
+        "candidate_id": "C5901"
+      },
+      "content_sha256": "61f06df64888df44da711812c321017ffe3ff46cad1a5c29c0c02c591d9b7182"
+    },
+    "years": [
+      {
+        "window": "full",
+        "year": 2025,
+        "net_return": 0.3895731859999998
+      },
+      {
+        "window": "full",
+        "year": 2026,
+        "net_return": 0.4134830146326667
+      },
+      {
+        "window": "s011_common",
+        "year": 2025,
+        "net_return": 0.4208832
+      },
+      {
+        "window": "s011_common",
+        "year": 2026,
+        "net_return": 0.4133380583287911
+      }
+    ]
+  },
+  {
+    "candidate_id": "C5902",
+    "parameters": {
+      "mode": "center_below",
+      "exit_mode": "confirmed_guard",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02",
+      "center_kind": "mean",
+      "confirmation": 3,
+      "failure_buffer": 0.0,
+      "max_hold": 10
+    },
+    "request_hash": "bc8ecd52eebee8d90ce2a17ce2522a9f8bc5ca437c4c088b1e6d95560aa702f2",
+    "result_hash": "db0dfd626c421a97b84beea3ba4609be6c47f994c98b319646aa0a8fc030d34c",
+    "runs": {
+      "full": {
+        "net_return": 1.053160468000001,
+        "cagr": 0.5184721865987441,
+        "dd": 0.061441075469607975,
+        "fees": 13863.553200000002,
+        "closed": 50,
+        "frequency_median": 7.0,
+        "frequency_good": 375,
+        "frequency_windows": 375,
+        "benchmark_cagr": 0.16938742022084918,
+        "benchmark_dd": 0.36289990457799626,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "67871949ac2567389ea68e2f9700dfbfa9cd721459f82e725cb57c8b6e997bc1"
+      },
+      "s011_common": {
+        "net_return": 1.0217074719999992,
+        "cagr": 0.5333489553254278,
+        "dd": 0.061469666367958475,
+        "fees": 13060.2528,
+        "closed": 47,
+        "frequency_median": 7.0,
+        "frequency_good": 356,
+        "frequency_windows": 356,
+        "benchmark_cagr": 0.21191223556449157,
+        "benchmark_dd": 0.3640287011470468,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "8bcf4832fc7923022411d73bf198d79b8d4a6a3e26b951cfbf819452b5c6c777",
+        "return_superior": true,
+        "dd_superior": true,
+        "dual_pass": true
+      }
+    },
+    "both_center_pass": true,
+    "evidence": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX059_20261024"
+      },
+      "evidence_id": "0e403803ffd6389aa43d71a067cad32d1813cc6cfb0117c576468ba174a08ef0.json",
+      "sha256": "0e403803ffd6389aa43d71a067cad32d1813cc6cfb0117c576468ba174a08ef0",
+      "media_type": "application/json",
+      "name": "C5902",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "identity": {
+      "key": {
+        "strategy_id": "S015",
+        "candidate_id": "C5902"
+      },
+      "content_sha256": "0dc01eb741859d5e719f0655c1de8978e0d277cb88a65326ef371c96ebb0e5fc"
+    },
+    "years": [
+      {
+        "window": "full",
+        "year": 2025,
+        "net_return": 0.452594198000001
+      },
+      {
+        "window": "full",
+        "year": 2026,
+        "net_return": 0.4134439410723847
+      },
+      {
+        "window": "s011_common",
+        "year": 2025,
+        "net_return": 0.43037701500000014
+      },
+      {
+        "window": "s011_common",
+        "year": 2026,
+        "net_return": 0.413408808166565
+      }
+    ]
+  },
+  {
+    "candidate_id": "C6015",
+    "parameters": {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 0.93,
+      "start": "2025-01-02",
+      "center_kind": "mean"
+    },
+    "request_hash": "c01ebd6fbff5971c4d8aeb705d2eb853a2509b4f3267737d588489dbf97c0782",
+    "result_hash": "2a284210be7720ebfaf386b1e5563e89b43d89f72232f540b17c07c16201b7a2",
+    "runs": {
+      "full": {
+        "net_return": 0.9339750410000007,
+        "cagr": 0.4666493992913312,
+        "dd": 0.06958257821103109,
+        "fees": 14338.595899999998,
+        "closed": 55,
+        "frequency_median": 8.0,
+        "frequency_good": 375,
+        "frequency_windows": 375,
+        "benchmark_cagr": 0.16938742022084918,
+        "benchmark_dd": 0.36289990457799626,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "3f7ca841809d008018dea58274fb6fcf54a98263c566a69f9613217b015678a2"
+      },
+      "s011_common": {
+        "net_return": 0.9224298049999993,
+        "cagr": 0.4871755127608137,
+        "dd": 0.06957535318392538,
+        "fees": 13699.519499999999,
+        "closed": 52,
+        "frequency_median": 8.0,
+        "frequency_good": 356,
+        "frequency_windows": 356,
+        "benchmark_cagr": 0.21191223556449157,
+        "benchmark_dd": 0.3640287011470468,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "6e3a38496bf2c8b3861d82fadd81bd41cf02ad98282d0970e22a9c837391dfda",
+        "return_superior": true,
+        "dd_superior": true,
+        "dual_pass": true
+      }
+    },
+    "both_center_pass": true,
+    "evidence": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX060_20261024"
+      },
+      "evidence_id": "7cce6b97e1911702c6dd531692993ac70ce9c3f1b35f4770ba22bfc54e127b94.json",
+      "sha256": "7cce6b97e1911702c6dd531692993ac70ce9c3f1b35f4770ba22bfc54e127b94",
+      "media_type": "application/json",
+      "name": "C6015",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "identity": {
+      "key": {
+        "strategy_id": "S015",
+        "candidate_id": "C6015"
+      },
+      "content_sha256": "07b7e19ce20f2e510f853194fb224871e6a0ac1eacf4c5c1571721bf2919761b"
+    },
+    "years": [
+      {
+        "window": "full",
+        "year": 2025,
+        "net_return": 0.4984603910000005
+      },
+      {
+        "window": "full",
+        "year": 2026,
+        "net_return": 0.29064141609332683
+      },
+      {
+        "window": "s011_common",
+        "year": 2025,
+        "net_return": 0.4896606080000001
+      },
+      {
+        "window": "s011_common",
+        "year": 2026,
+        "net_return": 0.29051529903917483
+      }
+    ]
+  },
+  {
+    "candidate_id": "C6016",
+    "parameters": {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 0.94,
+      "start": "2025-01-02",
+      "center_kind": "mean"
+    },
+    "request_hash": "618d769d57acb4c018b7cfb300dd6317b33831a4f66c6e9dfcee3435d4710b4f",
+    "result_hash": "63669e02ef868671dc5c306969388d000a43c04f4d0e533774019ff7f5fb5024",
+    "runs": {
+      "full": {
+        "net_return": 0.947355529999999,
+        "cagr": 0.4725328187911184,
+        "dd": 0.07031251179103204,
+        "fees": 14551.247000000001,
+        "closed": 55,
+        "frequency_median": 8.0,
+        "frequency_good": 375,
+        "frequency_windows": 375,
+        "benchmark_cagr": 0.16938742022084918,
+        "benchmark_dd": 0.36289990457799626,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "bd0df90d8550f21dfafb069c7aade251507f390df5d016e40f78d38e896e3d10"
+      },
+      "s011_common": {
+        "net_return": 0.935918655999999,
+        "cagr": 0.49350315957942326,
+        "dd": 0.07030488209340136,
+        "fees": 13906.134399999999,
+        "closed": 52,
+        "frequency_median": 8.0,
+        "frequency_good": 356,
+        "frequency_windows": 356,
+        "benchmark_cagr": 0.21191223556449157,
+        "benchmark_dd": 0.3640287011470468,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "4576e2a0503bc0affa2e0c5143e8423dad433535fe535e2d54a85401b56717b2",
+        "return_superior": true,
+        "dd_superior": true,
+        "dual_pass": true
+      }
+    },
+    "both_center_pass": true,
+    "evidence": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX060_20261024"
+      },
+      "evidence_id": "4de6968e5d86f8f83633d8321c92f09633ff9185a6f373d7fbec3f480989bec3.json",
+      "sha256": "4de6968e5d86f8f83633d8321c92f09633ff9185a6f373d7fbec3f480989bec3",
+      "media_type": "application/json",
+      "name": "C6016",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "identity": {
+      "key": {
+        "strategy_id": "S015",
+        "candidate_id": "C6016"
+      },
+      "content_sha256": "40bfd26ab72281c19d3e369deaa41eb39fdb478419d0818983d9cfcffd5cc000"
+    },
+    "years": [
+      {
+        "window": "full",
+        "year": 2025,
+        "net_return": 0.5048158589999998
+      },
+      {
+        "window": "full",
+        "year": 2026,
+        "net_return": 0.29408227482004445
+      },
+      {
+        "window": "s011_common",
+        "year": 2025,
+        "net_return": 0.4959927119999994
+      },
+      {
+        "window": "s011_common",
+        "year": 2026,
+        "net_return": 0.2940695769913617
+      }
+    ]
+  },
+  {
+    "candidate_id": "C6017",
+    "parameters": {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 0.96,
+      "start": "2025-01-02",
+      "center_kind": "mean"
+    },
+    "request_hash": "7485a4d9d90b19c22e8538cb93e1a95c69c1dc3eb991ad215d53f7f6f51d0092",
+    "result_hash": "6264fa9321ef9c10ae55877ee7a6c7d6bad1f7c8585604854fbe684b3e2ce053",
+    "runs": {
+      "full": {
+        "net_return": 0.9742827060000001,
+        "cagr": 0.48432159048709855,
+        "dd": 0.07174229143342148,
+        "fees": 14979.729399999998,
+        "closed": 55,
+        "frequency_median": 8.0,
+        "frequency_good": 375,
+        "frequency_windows": 375,
+        "benchmark_cagr": 0.16938742022084918,
+        "benchmark_dd": 0.36289990457799626,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "a4fd32ce533429d8bdcd8142eb5aba096833f9716afc1a644fd47f777b8bec4f"
+      },
+      "s011_common": {
+        "net_return": 0.9622722569999986,
+        "cagr": 0.5058159405956897,
+        "dd": 0.07175948924993403,
+        "fees": 14317.0743,
+        "closed": 52,
+        "frequency_median": 8.0,
+        "frequency_good": 356,
+        "frequency_windows": 356,
+        "benchmark_cagr": 0.21191223556449157,
+        "benchmark_dd": 0.3640287011470468,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "cb6f60a380d6f44167f671b6048fcff33277adb1d83c89c2088629afa592fdd2",
+        "return_superior": true,
+        "dd_superior": true,
+        "dual_pass": true
+      }
+    },
+    "both_center_pass": true,
+    "evidence": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX060_20261024"
+      },
+      "evidence_id": "1cf9d42fa71382ff54fcd7e2aa6d04f2ad9943468bf514a3e4bbd4d218a0ff96.json",
+      "sha256": "1cf9d42fa71382ff54fcd7e2aa6d04f2ad9943468bf514a3e4bbd4d218a0ff96",
+      "media_type": "application/json",
+      "name": "C6017",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "identity": {
+      "key": {
+        "strategy_id": "S015",
+        "candidate_id": "C6017"
+      },
+      "content_sha256": "79c84e571b25dc04a091d13f96aebbcf79b56717d97123b409440665d307c8a7"
+    },
+    "years": [
+      {
+        "window": "full",
+        "year": 2025,
+        "net_return": 0.5176877999999996
+      },
+      {
+        "window": "full",
+        "year": 2026,
+        "net_return": 0.3008490323240396
+      },
+      {
+        "window": "s011_common",
+        "year": 2025,
+        "net_return": 0.5085975290000002
+      },
+      {
+        "window": "s011_common",
+        "year": 2026,
+        "net_return": 0.300726150798301
+      }
+    ]
+  },
+  {
+    "candidate_id": "C6018",
+    "parameters": {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 0.97,
+      "start": "2025-01-02",
+      "center_kind": "mean"
+    },
+    "request_hash": "90970bbdafde615a98c40b248e60ee439ae055287aa85ab8cced9174982f1f56",
+    "result_hash": "2dffee1efb1d594a64eb66c98e2dd14fd7636f2ccf74f0621faa7dd137ebd8d6",
+    "runs": {
+      "full": {
+        "net_return": 0.9877338129999989,
+        "cagr": 0.49018524852186096,
+        "dd": 0.07248505603223543,
+        "fees": 15195.3187,
+        "closed": 55,
+        "frequency_median": 8.0,
+        "frequency_good": 375,
+        "frequency_windows": 375,
+        "benchmark_cagr": 0.16938742022084918,
+        "benchmark_dd": 0.36289990457799626,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "176a4edde2d5acfd0a8753e23c64fe29302235cf8317cb8b3d8f17c38870f4b1"
+      },
+      "s011_common": {
+        "net_return": 0.9757786499999994,
+        "cagr": 0.5121011373585782,
+        "dd": 0.07246256319167343,
+        "fees": 14525.535,
+        "closed": 52,
+        "frequency_median": 8.0,
+        "frequency_good": 356,
+        "frequency_windows": 356,
+        "benchmark_cagr": 0.21191223556449157,
+        "benchmark_dd": 0.3640287011470468,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "973d11f721b8872cf5e74d4fd763e566fd675b488fe20f0507cd60bba3552a38",
+        "return_superior": true,
+        "dd_superior": true,
+        "dual_pass": true
+      }
+    },
+    "both_center_pass": true,
+    "evidence": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX060_20261024"
+      },
+      "evidence_id": "067b8df9a4a24df19e3c79ee17c9edb39d404778d5d937f2304c83b8e7c6477b.json",
+      "sha256": "067b8df9a4a24df19e3c79ee17c9edb39d404778d5d937f2304c83b8e7c6477b",
+      "media_type": "application/json",
+      "name": "C6018",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "identity": {
+      "key": {
+        "strategy_id": "S015",
+        "candidate_id": "C6018"
+      },
+      "content_sha256": "8aae6d4434412d0f499fa20d3d4373ff1ea361cd5d3b7888280da1b63ca3143a"
+    },
+    "years": [
+      {
+        "window": "full",
+        "year": 2025,
+        "net_return": 0.524047752
+      },
+      {
+        "window": "full",
+        "year": 2026,
+        "net_return": 0.30424641248379913
+      },
+      {
+        "window": "s011_common",
+        "year": 2025,
+        "net_return": 0.5148408480000002
+      },
+      {
+        "window": "s011_common",
+        "year": 2026,
+        "net_return": 0.304281339263172
+      }
+    ]
+  },
+  {
+    "candidate_id": "C6101",
+    "parameters": {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 0.95,
+      "start": "2025-01-02",
+      "center_kind": "mean",
+      "confirmation": 1,
+      "failure_buffer": 0.0,
+      "max_hold": 10,
+      "rearm_mode": "immediate"
+    },
+    "request_hash": "43c90a820086380dfe5b1021a6d74f30b03d65f879de73099770cfeed962bdfc",
+    "result_hash": "48a9ca3e963ec6c4d8a41303d8c3a3f22c676aa3de7fa7b9096798c90b220ddd",
+    "runs": {
+      "full": {
+        "net_return": 0.9606521360000007,
+        "cagr": 0.47836258490041494,
+        "dd": 0.07104093067596018,
+        "fees": 14764.986400000002,
+        "closed": 55,
+        "frequency_median": 8.0,
+        "frequency_good": 375,
+        "frequency_windows": 375,
+        "benchmark_cagr": 0.16938742022084918,
+        "benchmark_dd": 0.36289990457799626,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "7e687948eedbca30abc16badb2c0fc0742aafdc63cee48dad08115f2d825467e"
+      },
+      "s011_common": {
+        "net_return": 0.9490482789999994,
+        "cagr": 0.49964568172256674,
+        "dd": 0.07103921349497566,
+        "fees": 14110.8721,
+        "closed": 52,
+        "frequency_median": 8.0,
+        "frequency_good": 356,
+        "frequency_windows": 356,
+        "benchmark_cagr": 0.21191223556449157,
+        "benchmark_dd": 0.3640287011470468,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "b4562c4af457515c62ff2ff34cb0c598c616a4f88099bc1abf1c00166781d93a",
+        "return_superior": true,
+        "dd_superior": true,
+        "dual_pass": true
+      }
+    },
+    "both_center_pass": true,
+    "evidence": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX061_20261024"
+      },
+      "evidence_id": "eacab9b724ce7b4ec8f999cc5677752ecf288f9f28f8b1a44307ba1ae1acf9ab.json",
+      "sha256": "eacab9b724ce7b4ec8f999cc5677752ecf288f9f28f8b1a44307ba1ae1acf9ab",
+      "media_type": "application/json",
+      "name": "C6101",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "identity": {
+      "key": {
+        "strategy_id": "S015",
+        "candidate_id": "C6101"
+      },
+      "content_sha256": "01eac0344bdce2d30b96808053fa224d054c24ff63b00ec4bd3ca0fa8ecb3431"
+    },
+    "years": [
+      {
+        "window": "full",
+        "year": 2025,
+        "net_return": 0.5112566879999998
+      },
+      {
+        "window": "full",
+        "year": 2026,
+        "net_return": 0.2973653989877336
+      },
+      {
+        "window": "s011_common",
+        "year": 2025,
+        "net_return": 0.502234531
+      },
+      {
+        "window": "s011_common",
+        "year": 2026,
+        "net_return": 0.2974327501995089
+      }
+    ]
+  },
+  {
+    "candidate_id": "C6104",
+    "parameters": {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 0.95,
+      "start": "2025-01-02",
+      "center_kind": "mean",
+      "confirmation": 1,
+      "failure_buffer": 0.0,
+      "max_hold": 10,
+      "rearm_mode": "positive_step"
+    },
+    "request_hash": "f0b0190039a86382de438a47c0b6557c8d7376293fb4149fcfd2b295c39d631a",
+    "result_hash": "eacbf1522ace48a37a3ed03daf05e71fc53fc67fda2a8bd5bab8a6f960ed4102",
+    "runs": {
+      "full": {
+        "net_return": 0.9827276029999998,
+        "cagr": 0.48800487215601973,
+        "dd": 0.05848146874555038,
+        "fees": 12941.3397,
+        "closed": 50,
+        "frequency_median": 7.0,
+        "frequency_good": 375,
+        "frequency_windows": 375,
+        "benchmark_cagr": 0.16938742022084918,
+        "benchmark_dd": 0.36289990457799626,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "979dabf1ac498810047c8842672a7c6e635aa78187dc07a17cd6ce0f6e09c331"
+      },
+      "s011_common": {
+        "net_return": 0.9537656919999995,
+        "cagr": 0.5018486901548582,
+        "dd": 0.05846445463091343,
+        "fees": 12188.630799999999,
+        "closed": 47,
+        "frequency_median": 7.0,
+        "frequency_good": 356,
+        "frequency_windows": 356,
+        "benchmark_cagr": 0.21191223556449157,
+        "benchmark_dd": 0.3640287011470468,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "46741ea74298ea8de06144f2f79afb18c18c1431c167fa49245c3ba5aa012ec3",
+        "return_superior": true,
+        "dd_superior": true,
+        "dual_pass": true
+      }
+    },
+    "both_center_pass": true,
+    "evidence": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX061_20261024"
+      },
+      "evidence_id": "efaac5230450bf01f6a4840bd0570e745b770fa34a6948876cc67a41ad4a0011.json",
+      "sha256": "efaac5230450bf01f6a4840bd0570e745b770fa34a6948876cc67a41ad4a0011",
+      "media_type": "application/json",
+      "name": "C6104",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "identity": {
+      "key": {
+        "strategy_id": "S015",
+        "candidate_id": "C6104"
+      },
+      "content_sha256": "d011129b89904b0f97533b10d1db18ba0f8c205045e7a0b2721e88d7a51ebb4e"
+    },
+    "years": [
+      {
+        "window": "full",
+        "year": 2025,
+        "net_return": 0.4265038819999998
+      },
+      {
+        "window": "full",
+        "year": 2026,
+        "net_return": 0.38992093047805687
+      },
+      {
+        "window": "s011_common",
+        "year": 2025,
+        "net_return": 0.4056880459999992
+      },
+      {
+        "window": "s011_common",
+        "year": 2026,
+        "net_return": 0.38989991240204414
+      }
+    ]
+  },
+  {
+    "candidate_id": "C6105",
+    "parameters": {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02",
+      "center_kind": "mean",
+      "confirmation": 1,
+      "failure_buffer": 0.0,
+      "max_hold": 10,
+      "rearm_mode": "positive_step"
+    },
+    "request_hash": "821781d169f53835aac48d639e5a2076fe6f507400f17859665f7ea24d3b6d98",
+    "result_hash": "0fcb1dbe0c939d20aeab39fedd0485a657ad6e968f1c76f27b60d5a9fe76d77d",
+    "runs": {
+      "full": {
+        "net_return": 1.053160468000001,
+        "cagr": 0.5184721865987441,
+        "dd": 0.061441075469607975,
+        "fees": 13863.553200000002,
+        "closed": 50,
+        "frequency_median": 7.0,
+        "frequency_good": 375,
+        "frequency_windows": 375,
+        "benchmark_cagr": 0.16938742022084918,
+        "benchmark_dd": 0.36289990457799626,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "67871949ac2567389ea68e2f9700dfbfa9cd721459f82e725cb57c8b6e997bc1"
+      },
+      "s011_common": {
+        "net_return": 1.0217074719999992,
+        "cagr": 0.5333489553254278,
+        "dd": 0.061469666367958475,
+        "fees": 13060.2528,
+        "closed": 47,
+        "frequency_median": 7.0,
+        "frequency_good": 356,
+        "frequency_windows": 356,
+        "benchmark_cagr": 0.21191223556449157,
+        "benchmark_dd": 0.3640287011470468,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "8bcf4832fc7923022411d73bf198d79b8d4a6a3e26b951cfbf819452b5c6c777",
+        "return_superior": true,
+        "dd_superior": true,
+        "dual_pass": true
+      }
+    },
+    "both_center_pass": true,
+    "evidence": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX061_20261024"
+      },
+      "evidence_id": "047a337fa40bfd1690b68a04c52631e03a5e32e94464a793c51084ee85fe0097.json",
+      "sha256": "047a337fa40bfd1690b68a04c52631e03a5e32e94464a793c51084ee85fe0097",
+      "media_type": "application/json",
+      "name": "C6105",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "identity": {
+      "key": {
+        "strategy_id": "S015",
+        "candidate_id": "C6105"
+      },
+      "content_sha256": "df1bb7b1a65e80f19712cb131a98a971ffafaf660f0d1d7f60368b6555241daa"
+    },
+    "years": [
+      {
+        "window": "full",
+        "year": 2025,
+        "net_return": 0.452594198000001
+      },
+      {
+        "window": "full",
+        "year": 2026,
+        "net_return": 0.4134439410723847
+      },
+      {
+        "window": "s011_common",
+        "year": 2025,
+        "net_return": 0.43037701500000014
+      },
+      {
+        "window": "s011_common",
+        "year": 2026,
+        "net_return": 0.413408808166565
+      }
+    ]
+  },
+  {
+    "candidate_id": "C6116",
+    "parameters": {
+      "mode": "center_below",
+      "exit_mode": "confirmed_guard",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 0.95,
+      "start": "2025-01-02",
+      "center_kind": "mean",
+      "confirmation": 2,
+      "failure_buffer": 0.0,
+      "max_hold": 10,
+      "rearm_mode": "positive_step"
+    },
+    "request_hash": "19ce04bf32ffa8adaf12fdd62b022a0418e9f607df6ca589ab1a560bb09a8d7f",
+    "result_hash": "ffdf035eed647ffbbef188041407c6109b345bd1e6bfcf92f795b5378a39e65e",
+    "runs": {
+      "full": {
+        "net_return": 0.9009735759999986,
+        "cagr": 0.45206517902373045,
+        "dd": 0.05848606291718872,
+        "fees": 12429.6424,
+        "closed": 50,
+        "frequency_median": 7.0,
+        "frequency_good": 375,
+        "frequency_windows": 375,
+        "benchmark_cagr": 0.16938742022084918,
+        "benchmark_dd": 0.36289990457799626,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "5c4e3eaacc5977a26393b3fe5edc76f368621d92003842012cae7a2cd2a48be3"
+      },
+      "s011_common": {
+        "net_return": 0.9412961999999978,
+        "cagr": 0.4960209454025979,
+        "dd": 0.0584986391239436,
+        "fees": 12122.38,
+        "closed": 47,
+        "frequency_median": 7.0,
+        "frequency_good": 356,
+        "frequency_windows": 356,
+        "benchmark_cagr": 0.21191223556449157,
+        "benchmark_dd": 0.3640287011470468,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "dc67bf167ecdabd4f03000f5f8855814bce5592876f52d3b5099377619f19429",
+        "return_superior": true,
+        "dd_superior": true,
+        "dual_pass": true
+      }
+    },
+    "both_center_pass": true,
+    "evidence": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX061_20261024"
+      },
+      "evidence_id": "3439e0e1092213ba26078d9d04af2fec029050639d6df4da8ae89db015ef5718.json",
+      "sha256": "3439e0e1092213ba26078d9d04af2fec029050639d6df4da8ae89db015ef5718",
+      "media_type": "application/json",
+      "name": "C6116",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "identity": {
+      "key": {
+        "strategy_id": "S015",
+        "candidate_id": "C6116"
+      },
+      "content_sha256": "d77bfc650f7cea38eef0c4b73cb001b7c146c01b6444049cbc4f3ba8f788f835"
+    },
+    "years": [
+      {
+        "window": "full",
+        "year": 2025,
+        "net_return": 0.3677463249999997
+      },
+      {
+        "window": "full",
+        "year": 2026,
+        "net_return": 0.38985829554321705
+      },
+      {
+        "window": "s011_common",
+        "year": 2025,
+        "net_return": 0.39680333699999903
+      },
+      {
+        "window": "s011_common",
+        "year": 2026,
+        "net_return": 0.3898135468157171
+      }
+    ]
+  },
+  {
+    "candidate_id": "C6117",
+    "parameters": {
+      "mode": "center_below",
+      "exit_mode": "confirmed_guard",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 1.0,
+      "start": "2025-01-02",
+      "center_kind": "mean",
+      "confirmation": 2,
+      "failure_buffer": 0.0,
+      "max_hold": 10,
+      "rearm_mode": "positive_step"
+    },
+    "request_hash": "ba210b9fa4c7a07353257f9ac41aa4243b02586090c347c3f21fc21de4e9d387",
+    "result_hash": "48bf89e32665b010a481d0d61713ae36d596957c98970210f514966459caaf95",
+    "runs": {
+      "full": {
+        "net_return": 0.964138095999999,
+        "cagr": 0.479888224063048,
+        "dd": 0.061434555316357664,
+        "fees": 13285.7904,
+        "closed": 50,
+        "frequency_median": 7.0,
+        "frequency_good": 375,
+        "frequency_windows": 375,
+        "benchmark_cagr": 0.16938742022084918,
+        "benchmark_dd": 0.36289990457799626,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "fe3dc18e8be07eff964cc8f3a3e7000e76c39f4e8c989b2161aa46f40d5a91e9"
+      },
+      "s011_common": {
+        "net_return": 1.0081883029999994,
+        "cagr": 0.5271145238350923,
+        "dd": 0.06148083619266709,
+        "fees": 12984.269699999999,
+        "closed": 47,
+        "frequency_median": 7.0,
+        "frequency_good": 356,
+        "frequency_windows": 356,
+        "benchmark_cagr": 0.21191223556449157,
+        "benchmark_dd": 0.3640287011470468,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "6ecf0524006ce4d1af7dd9daf9eb6a9cbd0b367a0fa5e7eecde2c0f60b35e79f",
+        "return_superior": true,
+        "dd_superior": true,
+        "dual_pass": true
+      }
+    },
+    "both_center_pass": true,
+    "evidence": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX061_20261024"
+      },
+      "evidence_id": "f0cc86019a88d4422a2b042eb5b9858bb7f85d2a929b8c4192bb198d439194fc.json",
+      "sha256": "f0cc86019a88d4422a2b042eb5b9858bb7f85d2a929b8c4192bb198d439194fc",
+      "media_type": "application/json",
+      "name": "C6117",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "identity": {
+      "key": {
+        "strategy_id": "S015",
+        "candidate_id": "C6117"
+      },
+      "content_sha256": "fd4bb350029d47348655fcc91444fa8d1f1b5f60db4a0fceae58720b83738735"
+    },
+    "years": [
+      {
+        "window": "full",
+        "year": 2025,
+        "net_return": 0.3895731859999998
+      },
+      {
+        "window": "full",
+        "year": 2026,
+        "net_return": 0.4134830146326667
+      },
+      {
+        "window": "s011_common",
+        "year": 2025,
+        "net_return": 0.4208832
+      },
+      {
+        "window": "s011_common",
+        "year": 2026,
+        "net_return": 0.4133380583287911
+      }
+    ]
+  },
+  {
+    "candidate_id": "C6201",
+    "parameters": {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 0.925,
+      "start": "2025-01-02",
+      "center_kind": "mean",
+      "confirmation": 1,
+      "failure_buffer": 0.0,
+      "max_hold": 30,
+      "rearm_mode": "positive_step"
+    },
+    "request_hash": "5bd48a0292263354a06d40c0a3d516e77072b0b1e4fb14eef80a7f9a234a8787",
+    "result_hash": "0fdfc66214cef21b76dc1a8abeeb4a011361922505e4f03e570f083452e58968",
+    "runs": {
+      "full": {
+        "net_return": 0.9482147560000016,
+        "cagr": 0.47291004146027693,
+        "dd": 0.056966218725242435,
+        "fees": 12488.924400000002,
+        "closed": 50,
+        "frequency_median": 7.0,
+        "frequency_good": 375,
+        "frequency_windows": 375,
+        "benchmark_cagr": 0.16938742022084918,
+        "benchmark_dd": 0.36289990457799626,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "5a85ff3c67d3152afd88d743858ae5992027039318ec963366773aab6a37e80c"
+      },
+      "s011_common": {
+        "net_return": 0.920391966,
+        "cagr": 0.4862180442654638,
+        "dd": 0.05696396515505031,
+        "fees": 11763.003400000003,
+        "closed": 47,
+        "frequency_median": 7.0,
+        "frequency_good": 356,
+        "frequency_windows": 356,
+        "benchmark_cagr": 0.21191223556449157,
+        "benchmark_dd": 0.3640287011470468,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "1446baaef848c1f9eba5510adaa0dcce2823e469196e5f4c89ebeabfd7c16625",
+        "return_superior": true,
+        "dd_superior": true,
+        "dual_pass": true
+      }
+    },
+    "both_center_pass": true,
+    "evidence": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX062_20261024"
+      },
+      "evidence_id": "06cd28be36938d3c46cbb6cc671cbe377846a82345d04b2266e184385d3c4428.json",
+      "sha256": "06cd28be36938d3c46cbb6cc671cbe377846a82345d04b2266e184385d3c4428",
+      "media_type": "application/json",
+      "name": "C6201",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "identity": {
+      "key": {
+        "strategy_id": "S015",
+        "candidate_id": "C6201"
+      },
+      "content_sha256": "b8156bd40a841b1adf8f962cc6f17ccd9bd5a0b5913a9c4f845447f5276c86f5"
+    },
+    "years": [
+      {
+        "window": "full",
+        "year": 2025,
+        "net_return": 0.4134889810000004
+      },
+      {
+        "window": "full",
+        "year": 2026,
+        "net_return": 0.3783020470535956
+      },
+      {
+        "window": "s011_common",
+        "year": 2025,
+        "net_return": 0.3934615439999998
+      },
+      {
+        "window": "s011_common",
+        "year": 2026,
+        "net_return": 0.37814493286080975
+      }
+    ]
+  },
+  {
+    "candidate_id": "C6202",
+    "parameters": {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 0.93,
+      "start": "2025-01-02",
+      "center_kind": "mean",
+      "confirmation": 1,
+      "failure_buffer": 0.0,
+      "max_hold": 30,
+      "rearm_mode": "positive_step"
+    },
+    "request_hash": "f26d314a35979b2a8b009328e9bae2352e55ba5aac2584aaae5b57d378199db7",
+    "result_hash": "73d0853e9c3e39b7af983cfb4b8baa7b6e1641a348e03ae1c6ccc68176ffa9fa",
+    "runs": {
+      "full": {
+        "net_return": 0.9550551490000001,
+        "cagr": 0.4759106679897134,
+        "dd": 0.05728585570813838,
+        "fees": 12579.185099999999,
+        "closed": 50,
+        "frequency_median": 7.0,
+        "frequency_good": 375,
+        "frequency_windows": 375,
+        "benchmark_cagr": 0.16938742022084918,
+        "benchmark_dd": 0.36289990457799626,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "b437da81ca2319dd663ac969287b814f5f7bef8a50168dfdf663bfa0ee101b5f"
+      },
+      "s011_common": {
+        "net_return": 0.9270504920000007,
+        "cagr": 0.48934504401940515,
+        "dd": 0.05729310158906442,
+        "fees": 11847.550800000003,
+        "closed": 47,
+        "frequency_median": 7.0,
+        "frequency_good": 356,
+        "frequency_windows": 356,
+        "benchmark_cagr": 0.21191223556449157,
+        "benchmark_dd": 0.3640287011470468,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "b0e2e733010220963f0a1dd08e93f320654555f50dcd59c9b40f38bd840c21cc",
+        "return_superior": true,
+        "dd_superior": true,
+        "dual_pass": true
+      }
+    },
+    "both_center_pass": true,
+    "evidence": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX062_20261024"
+      },
+      "evidence_id": "905bd9ffdfdc46cee2e192ccb00a821c3b39231b54cda2dde188a33e0cec7582.json",
+      "sha256": "905bd9ffdfdc46cee2e192ccb00a821c3b39231b54cda2dde188a33e0cec7582",
+      "media_type": "application/json",
+      "name": "C6202",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "identity": {
+      "key": {
+        "strategy_id": "S015",
+        "candidate_id": "C6202"
+      },
+      "content_sha256": "1fc035d32831ca6368f8550c9ecf32b8b3f55f9df3e50da1fe7c4e3c5dcf4331"
+    },
+    "years": [
+      {
+        "window": "full",
+        "year": 2025,
+        "net_return": 0.41609557300000044
+      },
+      {
+        "window": "full",
+        "year": 2026,
+        "net_return": 0.38059548117802033
+      },
+      {
+        "window": "s011_common",
+        "year": 2025,
+        "net_return": 0.39592770400000066
+      },
+      {
+        "window": "s011_common",
+        "year": 2026,
+        "net_return": 0.38048015414987413
+      }
+    ]
+  },
+  {
+    "candidate_id": "C6203",
+    "parameters": {
+      "mode": "center_below",
+      "exit_mode": "fixed",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 0.975,
+      "start": "2025-01-02",
+      "center_kind": "mean",
+      "confirmation": 1,
+      "failure_buffer": 0.0,
+      "max_hold": 30,
+      "rearm_mode": "positive_step"
+    },
+    "request_hash": "cccb73046fcca5e54458a1265663ef0ecf9ce775c5534b1e87fc6443f0e70d32",
+    "result_hash": "630a88a96df3279d13b0c8514c19e035d9b5323783c6da40938d6b20419fa834",
+    "runs": {
+      "full": {
+        "net_return": 1.0174927580000004,
+        "cagr": 0.5030990623224711,
+        "dd": 0.059956229005649564,
+        "fees": 13397.924200000001,
+        "closed": 50,
+        "frequency_median": 7.0,
+        "frequency_good": 375,
+        "frequency_windows": 375,
+        "benchmark_cagr": 0.16938742022084918,
+        "benchmark_dd": 0.36289990457799626,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "b224faa7fac90e415f218c4561f4fa02120e612c3c2667ec899f6d3d8525a417"
+      },
+      "s011_common": {
+        "net_return": 0.9874748520000012,
+        "cagr": 0.517530340009982,
+        "dd": 0.05998993724222901,
+        "fees": 12621.1148,
+        "closed": 47,
+        "frequency_median": 7.0,
+        "frequency_good": 356,
+        "frequency_windows": 356,
+        "benchmark_cagr": 0.21191223556449157,
+        "benchmark_dd": 0.3640287011470468,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "3f141195c3e887da08c31ac44b08a381d16df45492fc5d93dddf21b78199d65a",
+        "return_superior": true,
+        "dd_superior": true,
+        "dual_pass": true
+      }
+    },
+    "both_center_pass": true,
+    "evidence": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX062_20261024"
+      },
+      "evidence_id": "b49a72fd868bceb28c1d94524cbbb7ce7bed03c629e89de9069de60f87470f99.json",
+      "sha256": "b49a72fd868bceb28c1d94524cbbb7ce7bed03c629e89de9069de60f87470f99",
+      "media_type": "application/json",
+      "name": "C6203",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "identity": {
+      "key": {
+        "strategy_id": "S015",
+        "candidate_id": "C6203"
+      },
+      "content_sha256": "80bf375dfbda37048a1352aa13ffd1f15c002a21cc2192a7b542e5a00ad2da88"
+    },
+    "years": [
+      {
+        "window": "full",
+        "year": 2025,
+        "net_return": 0.4393796509999994
+      },
+      {
+        "window": "full",
+        "year": 2026,
+        "net_return": 0.40164046129064057
+      },
+      {
+        "window": "s011_common",
+        "year": 2025,
+        "net_return": 0.41794922100000087
+      },
+      {
+        "window": "s011_common",
+        "year": 2026,
+        "net_return": 0.4016544616445048
+      }
+    ]
+  },
+  {
+    "candidate_id": "C6206",
+    "parameters": {
+      "mode": "center_below",
+      "exit_mode": "confirmed_guard",
+      "lookback": 3,
+      "concentration": 0.75,
+      "hold": 3,
+      "allocation": 0.975,
+      "start": "2025-01-02",
+      "center_kind": "mean",
+      "confirmation": 2,
+      "failure_buffer": 0.0,
+      "max_hold": 30,
+      "rearm_mode": "positive_step"
+    },
+    "request_hash": "fe48d10a0d0d1bbd03409550664ad54e6318c774811a2c6ca3db5a4dffe5de7c",
+    "result_hash": "18825102cfc4eb35f9fa0dc0884559e1e3cc6429ebde521d658c79a181869e19",
+    "runs": {
+      "full": {
+        "net_return": 0.9322782190000001,
+        "cagr": 0.4659020864198018,
+        "dd": 0.05997816799457212,
+        "fees": 12853.8781,
+        "closed": 50,
+        "frequency_median": 7.0,
+        "frequency_good": 375,
+        "frequency_windows": 375,
+        "benchmark_cagr": 0.16938742022084918,
+        "benchmark_dd": 0.36289990457799626,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "affe428ad81d2e06deea0cb3c5a296967e2271af826dc63d4ab49641cc7dfa33"
+      },
+      "s011_common": {
+        "net_return": 0.9744848189999982,
+        "cagr": 0.5114997858384158,
+        "dd": 0.05997812522205348,
+        "fees": 12550.8181,
+        "closed": 47,
+        "frequency_median": 7.0,
+        "frequency_good": 356,
+        "frequency_windows": 356,
+        "benchmark_cagr": 0.21191223556449157,
+        "benchmark_dd": 0.3640287011470468,
+        "checks": {
+          "return": true,
+          "relative_drawdown": true,
+          "absolute_drawdown": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "center_pass": true,
+        "equity_sha256": "ad164c5918e3353e5a88812cd2c6c57dee797512d77652770bd844df8118a891",
+        "return_superior": true,
+        "dd_superior": true,
+        "dual_pass": true
+      }
+    },
+    "both_center_pass": true,
+    "evidence": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX062_20261024"
+      },
+      "evidence_id": "f340ed9dd47dee140abe681f864ab326a71b8216924c6a4575b456b7de83757e.json",
+      "sha256": "f340ed9dd47dee140abe681f864ab326a71b8216924c6a4575b456b7de83757e",
+      "media_type": "application/json",
+      "name": "C6206",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "identity": {
+      "key": {
+        "strategy_id": "S015",
+        "candidate_id": "C6206"
+      },
+      "content_sha256": "3fc8667d7ac6efdeb32d6cacdb350af1660821ee1b161e4a32103b439243f207"
+    },
+    "years": [
+      {
+        "window": "full",
+        "year": 2025,
+        "net_return": 0.37865696799999937
+      },
+      {
+        "window": "full",
+        "year": 2026,
+        "net_return": 0.4015656278901141
+      },
+      {
+        "window": "s011_common",
+        "year": 2025,
+        "net_return": 0.4088306999999989
+      },
+      {
+        "window": "s011_common",
+        "year": 2026,
+        "net_return": 0.4015060993489137
+      }
+    ]
+  }
+]
