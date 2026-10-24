@@ -1,0 +1,75 @@
+{
+  "version": "S015-stage3-joint-search-v1",
+  "stage": 3,
+  "seed": 13,
+  "question": "Does joint lookback/holding-time exploration uncover feasible configurations beyond the earlier cross-shaped search, and can sizing/rearm interaction improve them?",
+  "hypothesis": "Entry opportunity and the exit/re-entry schedule interact; sizing trades return for drawdown and cannot be treated as identifying losses.",
+  "source": "Exact EX062 price_process.py; mean center below-price entry; fixed intent-age exit.",
+  "space": {
+    "lookback": [
+      2,
+      10
+    ],
+    "hold": [
+      1,
+      14
+    ],
+    "allocation": [
+      0.6,
+      1.0,
+      0.025
+    ],
+    "rearm_mode": [
+      "positive_step",
+      "immediate"
+    ]
+  },
+  "fixed": {
+    "mode": "center_below",
+    "exit_mode": "fixed",
+    "center_kind": "mean",
+    "max_hold": 30,
+    "confirmation": 1,
+    "failure_buffer": 0.0,
+    "concentration": 0.75,
+    "start": "2025-01-02"
+  },
+  "sequence": [
+    "128 queued real-parameter trials: complete 9x14 time grid at 100% positive-step rearm, plus 95%/100% immediate-rearm controls at 3/3.",
+    "96 adaptive multivariate constrained TPE suggestions in batches of 8; finish and tell each batch before asking the next; duplicates reuse exact same-run evidence."
+  ],
+  "budget": {
+    "planned_trials": 224,
+    "maximum_new_configurations": 256,
+    "conditional_boundary_reserve": 32,
+    "maximum_formal_accounts": 512,
+    "technical_accounts": 2,
+    "workers": 8,
+    "native_threads": 1
+  },
+  "objectives": [
+    "434 net return maximize",
+    "434 drawdown minimize",
+    "415 net return maximize",
+    "415 drawdown minimize"
+  ],
+  "constraints": "Sampler receives violations of all original 434 center economic/frequency gates and 415 dual gates. Final eligibility is checked independently using original strict/inclusive inequalities; no weighted score.",
+  "stopping": "Complete grid and 96 adaptive trials, then inspect feasible/better frontier at artificial bounds. If improvement appears at hold14 or lookback10, use up to32 explicitly declared successor boundary controls, extending strategy guard only if necessary. Otherwise close with explored scope and remaining gaps, without claiming global optimum.",
+  "historical_controls": [
+    "EX061:C6105",
+    "EX061:C6104",
+    "EX061:C6101",
+    "EX061:C6102",
+    "CANDIDATES/6 all16 passing centers retained"
+  ],
+  "history": "No old trial is retrospectively called adaptive. EX064 negative joint-neighborhood evidence remains. New max_hold30 is inactive for fixed exits; confirm original3/3 account equivalence.",
+  "data": "Existing S015 authorized 434/415 windows through2026-10-21 only, separate100000 cash accounts; no new sources or data.",
+  "execution": "CYCLE_TARGET/signal_cash_fraction/entry_cycle; per-side0.1%;1%limitbuy/marketexit;100-share lots; no terminal liquidation.",
+  "stage4": "Not executed here. 5%local cap is NOT the stage3 search domain. New designs keep over-limit parameters fixed; genuine whole-item nonapplicability retains empty measurements and minimum ranking scores.",
+  "limitations": "Repeatedly seen overlapping development windows; no independent validation. Fixed exit family only; existing confirmed-guard candidates remain controls, not declared globally optimized.",
+  "dependency_files": {
+    "research/S015/experiments/EX062_20261024/src/accounts.py": "89da06e9a88913a1c9158a9e967370f1ec51690e71026736b7d938437f359562",
+    "research/S015/experiments/EX016_20261023/src/suite.py": "288defe501f6561495d165cefcb444b25614ef6cc7b66c0260ee2e45f41023d5",
+    "research/S015/experiments/EX061_20261024/src/account_audit.py": "2991397672dc773a1f29451be10182b11181756ea1609627c0c9618513e95c56"
+  }
+}
