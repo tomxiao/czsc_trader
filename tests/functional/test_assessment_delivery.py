@@ -62,7 +62,7 @@ def completed(request, tmp_path, frozen_seed_root):
 
 
 def assessment_request(evidence):
-    protocol = m.SelfCheckProtocol(
+    protocol = m.NeighborhoodSelfCheckProtocol(
         "1",
         "full",
         "standard",
@@ -71,11 +71,11 @@ def assessment_request(evidence):
         1,
         m.QuantileMethod.LINEAR,
         1,
-        1,
         40,
         2,
         1,
         1e-7,
+        parameter_protocol=m.ParameterNeighborhoodProtocol(),
         pbo_blocks=2,
     )
     return m.CandidateAssessmentRequest(
@@ -201,7 +201,7 @@ def acceptance_targets():
         m.ResearchTarget("median", m.ResearchMetric.FREQUENCY_MEDIAN,
                          lower=m.ConstantBound(6.0, True)),
         m.FrequencyCoverageTarget("coverage", 60, 3, 9, 10),
-        m.ParameterGroupTarget("parameters", 32, 26,
+        m.ParameterNeighborhoodTarget("parameters", 13, 16,
             (m.ResearchTarget("point-return", m.ResearchMetric.NET_ANNUAL_RETURN,
                              lower=m.ConstantBound(0.0, False), one_way_cost=0.001),),
             (m.ResearchTarget("point-dd", m.ResearchMetric.DRAWDOWN_MAGNITUDE,
@@ -215,7 +215,7 @@ def acceptance_targets():
 def test_acceptance_contract_persists_and_full_validation_rejects_forged_facts(prepared_acceptance_delivery):
     context, definition, value = prepared_acceptance_delivery
     receipt = assemble_delivery(context, definition, value).receipt
-    assert receipt.schema_version == 8
+    assert receipt.schema_version == 11
     saved = json.loads((published(context, receipt) / "delivery.json").read_text(encoding="utf-8"))
     assert d.DeliveryContent.from_dict(saved["content"]) == value
     for scope in d.DeliveryValidationScope:
@@ -246,7 +246,7 @@ def test_acceptance_conditions_cannot_be_relaxed_after_confirmation(prepared_acc
     if change == "coverage":
         altered[1] = replace(altered[1], minimum_numerator=8)
     elif change == "joint-count":
-        altered[2] = replace(altered[2], minimum_joint_passes=25)
+        altered[2] = replace(altered[2], minimum_numerator=12)
     elif change == "nested-limit":
         altered[2] = replace(altered[2], all_point_targets=(replace(
             altered[2].all_point_targets[0], upper=m.ConstantBound(0.30, True)),))
@@ -274,7 +274,7 @@ def test_account_reuse_still_checks_current_file_and_reference_owner(completed):
     cache = {}
     first = delivery_service._account_document(root, reference, cache)
     assert set(cache) == {reference.sha256}
-    assert set(first[0]) == {"request_hash", "request_identity", "execution_policies"}
+    assert set(first[0]) == {"schema_version", "request_hash", "request_identity", "execution_policies"}
     wrong_owner = replace(reference, experiment=ExperimentRef("S900", "EX999_20261001"))
     with pytest.raises(d.DeliveryValidationError, match="origin differs"):
         delivery_service._account_document(root, wrong_owner, cache)
@@ -422,7 +422,7 @@ def test_account_attachment_failures_have_same_codes_in_serial_and_parallel(comp
         data += b"\n"
     material = publish_evidence(research, MaterialEvidenceWrite(
         good.experiment, "tampered-account", data, "application/json", "json"))
-    bad = replace(material, schema="account_evaluation", schema_version=8 if damage == "version" else 7)
+    bad = replace(material, schema="account_evaluation", schema_version=9 if damage == "version" else good.schema_version)
     resources = ExecutionResources(max_workers=workers)
     definition = d.DeliveryDefinition(research.batch, d.DeliveryStage.COMPONENTS, 1)
     # Ordinary material remains opaque even if its bytes are malformed JSON.
@@ -458,7 +458,7 @@ def test_account_attachment_cache_rechecks_each_reference_owner(completed, worke
     # A second distinct but valid document makes max_workers=2 actually use workers.
     companion = publish_evidence(research, MaterialEvidenceWrite(good.experiment, "companion-account",
         good.resolve(context.root).read_bytes() + b"\n", "application/json", "json"))
-    companion = replace(companion, schema="account_evaluation", schema_version=7)
+    companion = replace(companion, schema="account_evaluation", schema_version=good.schema_version)
     resources = ExecutionResources(max_workers=workers)
     definition = d.DeliveryDefinition(research.batch, d.DeliveryStage.COMPONENTS, 1)
     receipt = assemble_delivery(context, definition, content(evidence=(good, companion)), resources=resources).receipt
@@ -549,7 +549,7 @@ def test_stage_four_roundtrip_recomputation_and_source_cleanup(completed):
     context, _, _, _, _ = completed
     definition, value = prepare(completed)
     comparison = value.payload.comparison_request
-    assert comparison.panel.formula_version == "research-assessment-v5"
+    assert comparison.panel.formula_version == "research-assessment-v6"
     assert comparison.policy.formula_version == "research-ranking-v3"
     assert len(comparison.policy.bins) == 8
     comparison = replace(comparison, policy=replace(comparison.policy, sensitivities=(m.ComparisonVariant("coarse-bins", comparison.policy.bins),)))

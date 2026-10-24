@@ -97,7 +97,11 @@ def _serialize_worker(payload: bytes, native_threads: int) -> bytes:
 
 def _publish_serialized(context: ResearchContext, request: EvidenceWriteRequest, data: bytes) -> EvidenceRef:
     if isinstance(request, EvaluationEvidenceWrite):
-        media_type, suffix, schema, version = "application/json", "json", "account_evaluation", 7
+        media_type, suffix, schema, version = "application/json", "json", "account_evaluation", 8
+        document = json.loads(data)
+        if (document.get("schema_version") != version
+                or document.get("request_identity", {}).get("schema_version") != 7):
+            raise ValueError("new account publication requires schema 8 and request identity 7")
     else:
         media_type, suffix = request.media_type, request.suffix
         schema, version = None, None
@@ -183,7 +187,7 @@ def publish_evidence_many(context: ResearchContext,
                                     "result_hash": request.result.result_hash,
                                     "request_identity": request.request.strategy.runtime_identity_sha256,
                                     "experiment": request.experiment.to_dict(), "name": request.name,
-                                    "schema": "account_evaluation", "version": 7})
+                                    "schema": "account_evaluation", "version": 8})
             publication_keys[index] = key
             reference = checkpoint.load_publication(key)
             if reference is not None:
@@ -201,7 +205,8 @@ def publish_evidence_many(context: ResearchContext,
                             "execution_mode": request.result.execution_mode,
                             "input_bindings": {name: binding.to_dict() for name, binding in request.request.input_bindings.items()}}
                 if (reference.name != request.name or reference.experiment != request.experiment
-                        or (reference.schema, reference.schema_version) != ("account_evaluation", 7)
+                        or (reference.schema, reference.schema_version) != ("account_evaluation", 8)
+                        or payload.get("schema_version") != reference.schema_version
                         or any(payload.get(name) != value for name, value in expected.items())):
                     raise ValueError("publication checkpoint points to another evaluation")
                 from ..research_tools.evaluation import validate_evaluation_evidence

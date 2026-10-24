@@ -164,6 +164,7 @@ def _experiments(reader, batch):
 
 def _deliveries(reader, batch, limitations):
     result = []
+    account_versions = {}
     parent = f"research/{batch.strategy_id}/assets/deliveries"
     # A retained public receipt cannot silently disappear from the overview
     # merely because its complete package directory was removed.
@@ -189,10 +190,10 @@ def _deliveries(reader, batch, limitations):
                 raise ValueError("invalid delivery envelope")
             schema = value["schema_version"]
             legacy = stage is d.DeliveryStage.INSPECTION and schema == 8
-            if schema not in (8, 9, 10):
+            if schema not in (8, 9, 10, 11):
                 limitations.append(OverviewLimitation("UNSUPPORTED_DELIVERY_SCHEMA", path, "Retained delivery uses an unsupported schema; no compatibility interpretation was performed."))
                 continue
-            if not legacy and schema != d._schema_version(stage):
+            if not legacy and schema not in d._readable_schema_versions(stage):
                 raise ValueError(f"delivery stage/schema differs: {path}")
             if set(value) != {"schema_version", "definition", "content"}:
                 raise ValueError("delivery envelope fields differ")
@@ -280,6 +281,18 @@ def _deliveries(reader, batch, limitations):
                     if ref.experiment.strategy_id != batch.strategy_id:
                         raise ValueError("delivery evidence belongs to another batch")
                     reader.authenticate(f"{path}/{ref.path}", ref.sha256)
+                    if ref.schema == "account_evaluation":
+                        if ref.sha256 not in account_versions:
+                            account = _json(reader.read(f"{path}/{ref.path}"))
+                            version = account.get("schema_version")
+                            request_version = account.get("request_identity", {}).get("schema_version")
+                            if (type(version) is not int or type(request_version) is not int
+                                    or (version, request_version) not in ((7, 6), (8, 7))):
+                                raise ValueError("account declaration and request identity schemas differ")
+                            account_versions[ref.sha256] = version
+                            del account
+                        if ref.schema_version != account_versions[ref.sha256]:
+                            raise ValueError("account evidence schema differs from reference")
                 elif isinstance(ref, ResearchEvidenceRef):
                     if ref.owner.strategy_id != batch.strategy_id:
                         raise ValueError("inspection evidence belongs to another batch")
@@ -356,10 +369,13 @@ def _accounts(reader, batch, limitations):
                 continue
             if type(value) is not dict or value.get("source_kind") != "published_result":
                 continue
-            if value.get("schema_version") != 7:
-                limitations.append(OverviewLimitation("UNSUPPORTED_ACCOUNT_SCHEMA", path, "Published account declaration is not schema 7; excluded from retained identity counts."))
+            if type(value.get("schema_version")) is not int or value["schema_version"] not in (7, 8):
+                limitations.append(OverviewLimitation("UNSUPPORTED_ACCOUNT_SCHEMA", path, "Published account declaration is not schema 7 or 8; excluded from retained identity counts."))
                 continue
             request = value["request_identity"]
+            if (type(request.get("schema_version")) is not int
+                    or (value["schema_version"], request["schema_version"]) not in ((7, 6), (8, 7))):
+                raise ValueError("account declaration and request identity schemas differ")
             if request["experiment_id"] != experiment or not request["strategy_reference"].startswith(batch.strategy_id + "-"):
                 raise ValueError("account declaration belongs to another experiment or batch")
             projected = value["assessment_evidence"]

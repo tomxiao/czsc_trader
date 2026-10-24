@@ -220,7 +220,7 @@ class AssessmentEvidence(ResearchRecord):
     derivation_sha256: str | None = None
     behavior_sha256: str | None = None
     derivation_kind: AssessmentDerivationKind | None = None
-    parameter_point: ParameterPointBinding | None = None
+    parameter_point: ParameterPointBinding | ParameterNeighborhoodBinding | None = None
 
     def validate(self):
         require(re.fullmatch(r"[0-9a-f]{32}", self.attempt_id) is not None, "invalid attempt_id")
@@ -588,13 +588,19 @@ class ParameterDiagnosticContext(ResearchRecord):
         )
 
 
+from .parameter_neighborhood import (  # noqa: E402
+    ParameterNeighborhoodBinding, ParameterNeighborhoodDesign,
+    ParameterNeighborhoodProtocol, ParameterNeighborhoodContext, StudyPurpose,
+)
+
+
 @dataclass(frozen=True)
 class PerturbationLink(ResearchRecord):
     parent: AssessmentCandidate
     child: AssessmentCandidate
     weight: float
     derivation_sha256: str
-    parameter_point: ParameterPointBinding | None = None
+    parameter_point: ParameterPointBinding | ParameterNeighborhoodBinding | None = None
 
     def validate(self):
         require(
@@ -651,6 +657,50 @@ class SelfCheckProtocol(ResearchRecord):
             or self.minimum_perturbations <= self.parameter_protocol.point_count,
             "minimum perturbations exceeds prescribed point count",
         )
+
+
+@dataclass(frozen=True)
+class NeighborhoodSelfCheckProtocol(ResearchRecord):
+    version: str
+    baseline_window: str
+    standard_scenario: str
+    stress_scenario: str
+    rolling_window_days: int
+    rolling_step_days: int
+    quantile_method: QuantileMethod
+    minimum_rolling_windows: int
+    bootstrap_repetitions: int
+    bootstrap_block_length: int
+    seed: int
+    reconciliation_tolerance: float
+    parameter_protocol: ParameterNeighborhoodProtocol
+    pbo_blocks: int = 10
+    frequency_min_closed_cycles: int | None = None
+
+    def validate(self):
+        require(self.frequency_min_closed_cycles is None or self.frequency_min_closed_cycles > 0,
+                "frequency minimum must be positive")
+        for name in (
+            "rolling_window_days",
+            "rolling_step_days",
+            "minimum_rolling_windows",
+            "bootstrap_repetitions",
+            "bootstrap_block_length",
+        ):
+            require(getattr(self, name) > 0, f"{name} must be positive")
+        require(self.reconciliation_tolerance >= 0, "negative tolerance")
+        require(self.standard_scenario != self.stress_scenario, "stress must differ from standard")
+        require(
+            self.pbo_blocks >= 2 and self.pbo_blocks % 2 == 0, "PBO requires positive even blocks"
+        )
+        require(self.seed >= 0, "seed must be nonnegative")
+        require(
+            self.parameter_protocol is None
+            or self.quantile_method is self.parameter_protocol.quantile_method,
+            "declared parameter quantile differs",
+        )
+        require(self.parameter_protocol.purpose is StudyPurpose.LOCAL_SENSITIVITY,
+                "self-check requires local sensitivity protocol")
 
 
 class IncompleteEvaluationStatus(StrEnum):
@@ -711,12 +761,12 @@ class FamilyReturnEvidence(ResearchRecord):
 @dataclass(frozen=True)
 class CandidateAssessmentRequest(ResearchRecord):
     centers: tuple[AssessmentCandidate, ...]
-    protocol: SelfCheckProtocol
+    protocol: SelfCheckProtocol | NeighborhoodSelfCheckProtocol
     perturbations: tuple[PerturbationLink, ...]
     evidence: tuple[AssessmentEvidence, ...]
     incomplete: tuple[IncompleteEvaluation, ...] = ()
     family_returns: FamilyReturnEvidence | None = None
-    parameter_designs: tuple[ParameterPerturbationDesign, ...] = ()
+    parameter_designs: tuple[ParameterPerturbationDesign | ParameterNeighborhoodDesign, ...] = ()
 
     def validate(self):
         require(bool(self.centers), "explicit center set must be nonempty")
@@ -731,6 +781,8 @@ class CandidateAssessmentRequest(ResearchRecord):
         )
         designs = {x.center: x for x in self.parameter_designs}
         for link in self.perturbations:
+            if isinstance(self.protocol, NeighborhoodSelfCheckProtocol):
+                require(link.weight == 1.0, "neighborhood points require equal unit weights")
             if declared is not None:
                 require(
                     link.parent in designs and link.parameter_point is not None,
@@ -921,7 +973,7 @@ class CandidateAssessment(ResearchRecord):
     coverage_gaps: tuple[str, ...]
     behavior_sha256: str | None
     benchmark: BenchmarkAssessment
-    parameter_context: ParameterDiagnosticContext | None = None
+    parameter_context: ParameterDiagnosticContext | ParameterNeighborhoodContext | None = None
     frequency_coverage: FrequencyCoverageFacts | None = None
     parameter_performances: tuple[PerformanceFacts, ...] = ()
     stress_performance: PerformanceFacts | None = None
@@ -1002,7 +1054,7 @@ class AssessmentPanel(ResearchRecord):
 
     def validate(self):
         require(
-            self.formula_version == "research-assessment-v5",
+            self.formula_version in ("research-assessment-v5", "research-assessment-v6"),
             "unsupported assessment formula version",
         )
         unique((x.candidate.candidate_id for x in self.rows), "panel candidate")
@@ -1116,7 +1168,25 @@ class ParameterGroupTarget(ResearchRecord):
                 "parameter conditions require standard performance metrics")
 
 
-AcceptanceTarget = ResearchTarget | FrequencyCoverageTarget | ParameterGroupTarget
+@dataclass(frozen=True)
+class ParameterNeighborhoodTarget(ResearchRecord):
+    target_id: str
+    minimum_numerator: int
+    minimum_denominator: int
+    joint_targets: tuple[ResearchTarget, ...]
+    all_point_targets: tuple[ResearchTarget, ...]
+
+    def validate(self):
+        require(0 < self.minimum_numerator <= self.minimum_denominator,
+                "invalid neighborhood pass fraction")
+        require(bool(self.joint_targets) and bool(self.all_point_targets), "empty parameter conditions")
+        unique((x.target_id for x in (*self.joint_targets, *self.all_point_targets)), "point target")
+        require(all(x.scope is TargetScope.STANDARD and x.metric in BENCHMARK_METRICS
+                    for x in (*self.joint_targets, *self.all_point_targets)),
+                "parameter conditions require standard performance metrics")
+
+
+AcceptanceTarget = ResearchTarget | FrequencyCoverageTarget | ParameterGroupTarget | ParameterNeighborhoodTarget
 
 
 def is_frequency_target(target):
@@ -1334,10 +1404,35 @@ class ParameterGroupCheck(ResearchRecord):
 
 
 @dataclass(frozen=True)
+class ParameterNeighborhoodCheck(ResearchRecord):
+    target: ParameterNeighborhoodTarget
+    required_points: int
+    minimum_joint_passes: int
+    valid_points: int
+    joint_passes: int
+    points: tuple[ParameterPointCheck, ...]
+    status: TargetCheckStatus
+    reason: str | None
+
+    def validate(self):
+        require(0 <= self.joint_passes <= self.valid_points == len(self.points)
+                <= self.required_points, "invalid neighborhood result counts")
+        require(self.minimum_joint_passes == (
+            self.required_points * self.target.minimum_numerator + self.target.minimum_denominator - 1
+        ) // self.target.minimum_denominator, "invalid required joint pass count")
+        unique((x.point_index for x in self.points), "checked parameter point")
+        require(all(0 <= x.point_index < self.required_points for x in self.points), "point index outside design")
+        require((self.status is TargetCheckStatus.PASSED) == (self.reason is None), "invalid neighborhood result")
+        require(self.status is not TargetCheckStatus.PASSED or (
+            self.required_points > 0 and self.valid_points == self.required_points
+            and self.joint_passes >= self.minimum_joint_passes), "passed neighborhood requires complete coverage")
+
+
+@dataclass(frozen=True)
 class CandidateRank(ResearchRecord):
     candidate: AssessmentCandidate
     status: ComparisonStatus
-    target_checks: tuple[TargetCheck | FrequencyCoverageCheck | ParameterGroupCheck, ...]
+    target_checks: tuple[TargetCheck | FrequencyCoverageCheck | ParameterGroupCheck | ParameterNeighborhoodCheck, ...]
     pareto_layer: int | None
     rank_in_layer: int | None
     bin_values: tuple[int | None, ...]
@@ -1425,7 +1520,7 @@ class ParameterRobustnessComparisonRequest(ResearchRecord):
 class ParameterRobustnessRow(ResearchRecord):
     candidate: AssessmentCandidate
     evaluation_context_sha256: str | None
-    parameter_context: ParameterDiagnosticContext | None
+    parameter_context: ParameterDiagnosticContext | ParameterNeighborhoodContext | None
     metric_version: str | None
     frequency_window_days: int | None
     return_degradation: float | None

@@ -192,6 +192,16 @@ from .account_diagnosis import (
     diagnose_account_replays,
 )
 
+from .research_models import (NeighborhoodSelfCheckProtocol, ParameterNeighborhoodTarget, ParameterNeighborhoodCheck)
+from .parameter_neighborhood import (
+    ParameterKind, StudyPurpose, RealDomain, IntegerDomain, RealSetDomain, IntegerSetDomain,
+    OrdinalDomain, CategoricalDomain, BooleanDomain, NumericOffsets, AdjacentLevels, ExplicitValues,
+    ParameterAxis, NamedParameterValue, ParameterNeighborhoodSpace, ParameterNeighborhoodProtocol,
+    ParameterNeighborhoodRequest, ParameterNeighborhoodPoint, ParameterNeighborhoodBinding,
+    ParameterNeighborhoodDesign, ParameterNeighborhoodResult, ParameterNeighborhoodContext,
+    build_parameter_neighborhood_design, NeighborhoodConstraintExclusion,
+)
+
 __all__ = [
     "TargetScope",
     "FrequencyCoverageTarget",
@@ -362,4 +372,15 @@ __all__ += [
     "TargetCheckStatus",
     "PairwiseRelation",
     "PairwiseComparison",
+]
+
+
+__all__ += [
+    "NeighborhoodSelfCheckProtocol", "ParameterNeighborhoodTarget", "ParameterNeighborhoodCheck",
+    "ParameterKind", "StudyPurpose", "RealDomain", "IntegerDomain", "RealSetDomain", "IntegerSetDomain",
+    "OrdinalDomain", "CategoricalDomain", "BooleanDomain", "NumericOffsets", "AdjacentLevels", "ExplicitValues",
+    "ParameterAxis", "NamedParameterValue", "ParameterNeighborhoodSpace", "ParameterNeighborhoodProtocol",
+    "ParameterNeighborhoodRequest", "ParameterNeighborhoodPoint", "ParameterNeighborhoodBinding",
+    "ParameterNeighborhoodDesign", "ParameterNeighborhoodResult", "ParameterNeighborhoodContext",
+    "build_parameter_neighborhood_design", "NeighborhoodConstraintExclusion",
 ]

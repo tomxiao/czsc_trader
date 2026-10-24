@@ -145,7 +145,10 @@ def _coverage(target, row, window):
 
 def _parameter_group(target, row):
     context = row.parameter_context
-    if context is None or context.prescribed_points != target.required_points:
+    if (
+        type(context) is not m.ParameterDiagnosticContext
+        or context.prescribed_points != target.required_points
+    ):
         return m.ParameterGroupCheck(
             target,
             0,
@@ -188,11 +191,77 @@ def _parameter_group(target, row):
     return m.ParameterGroupCheck(target, len(points), joint_passes, points, status, reason)
 
 
+def _parameter_neighborhood(target, row):
+    context = row.parameter_context
+    if type(context) is not m.ParameterNeighborhoodContext:
+        return m.ParameterNeighborhoodCheck(
+            target,
+            0,
+            0,
+            0,
+            0,
+            (),
+            m.TargetCheckStatus.INDETERMINATE,
+            "PARAMETER_NEIGHBORHOOD_MISSING_OR_DIFFERS",
+        )
+    if context.protocol.purpose is not m.StudyPurpose.LOCAL_SENSITIVITY:
+        return m.ParameterNeighborhoodCheck(
+            target,
+            0,
+            0,
+            0,
+            0,
+            (),
+            m.TargetCheckStatus.INDETERMINATE,
+            "STRUCTURAL_CONTROL_NOT_ACCEPTANCE",
+        )
+    required = context.prescribed_points
+    minimum = (
+        required * target.minimum_numerator + target.minimum_denominator - 1
+    ) // target.minimum_denominator
+    points = tuple(
+        m.ParameterPointCheck(
+            facts.point_index,
+            facts.candidate,
+            facts.evaluation_id,
+            tuple(_performance_check(x, facts) for x in target.joint_targets),
+            tuple(_performance_check(x, facts) for x in target.all_point_targets),
+        )
+        for facts in sorted(row.parameter_performances, key=lambda x: x.point_index)
+    )
+    joint_passes = sum(
+        acceptance_status(x.joint_checks) is m.TargetCheckStatus.PASSED for x in points
+    )
+    if any(acceptance_status(x.all_point_checks) is m.TargetCheckStatus.FAILED for x in points):
+        status, reason = m.TargetCheckStatus.FAILED, "PARAMETER_ALL_POINT_TARGET_NOT_MET"
+    elif (
+        context.valid_points != required
+        or len(points) != required
+        or {x.point_index for x in points} != set(range(required))
+    ):
+        status, reason = m.TargetCheckStatus.INDETERMINATE, "INCOMPLETE_PARAMETER_COVERAGE"
+    elif any(
+        acceptance_status(checks) is m.TargetCheckStatus.INDETERMINATE
+        for x in points
+        for checks in (x.joint_checks, x.all_point_checks)
+    ):
+        status, reason = m.TargetCheckStatus.INDETERMINATE, "INDETERMINATE_PARAMETER_CONDITION"
+    elif joint_passes < minimum:
+        status, reason = m.TargetCheckStatus.FAILED, "PARAMETER_JOINT_COUNT_NOT_MET"
+    else:
+        status, reason = m.TargetCheckStatus.PASSED, None
+    return m.ParameterNeighborhoodCheck(
+        target, required, minimum, len(points), joint_passes, points, status, reason
+    )
+
+
 def check_target(target, row, frequency_window_days):
     if isinstance(target, m.FrequencyCoverageTarget):
         return _coverage(target, row, frequency_window_days)
     if isinstance(target, m.ParameterGroupTarget):
         return _parameter_group(target, row)
+    if isinstance(target, m.ParameterNeighborhoodTarget):
+        return _parameter_neighborhood(target, row)
     if target.scope is m.TargetScope.STRESS:
         return _performance_check(target, row.stress_performance)
     return _scalar(

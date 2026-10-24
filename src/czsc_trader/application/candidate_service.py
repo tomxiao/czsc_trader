@@ -57,7 +57,8 @@ def _publish(root: Path, relative: str, data: bytes, repository_root: Path) -> C
 def _evaluation_support(context, ref, candidate, identity):
     """Registration accepts platform account evidence bound to the actual candidate."""
     value = json.loads(ref.resolve(context.root).read_text(encoding="utf-8"))
-    if (ref.schema, ref.schema_version) != ("account_evaluation", 7) or value.get("schema_version") != 7:
+    if (ref.schema != "account_evaluation" or ref.schema_version not in (7, 8)
+        or value.get("schema_version") != ref.schema_version):
         raise ValueError("candidate requires platform account evaluation evidence")
     from ..research_tools.evaluation import validate_evaluation_evidence
     validate_evaluation_evidence(value)

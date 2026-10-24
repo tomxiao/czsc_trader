@@ -89,7 +89,7 @@ class _ValidationSession:
 
     def preload_accounts(self, root, references):
         missing = {ref.sha256: ref for ref in references
-                   if (ref.schema, ref.schema_version) == ("account_evaluation", 7)
+                   if ref.schema == "account_evaluation" and ref.schema_version in (7, 8)
                    and ref.sha256 not in self.account_cache}
         workers = min(self.resources.max_workers, len(missing))
         if workers < 2:
@@ -245,11 +245,15 @@ def _certify_account(data, reference):
 
     try:
         value = _decode_json(data.decode("utf-8"))
+        if (reference.schema != "account_evaluation" or reference.schema_version not in (7, 8)
+                or value.get("schema_version") != reference.schema_version):
+            raise ValueError("account evidence schema differs from its reference")
         validate_evaluation_evidence(value)
         records = tuple(AssessmentEvidence.from_dict(item) for item in value["assessment_evidence"])
         # Retain only fields needed for later identity/plan checks. Raw JSON and
         # account ledgers are deliberately released after full certification.
-        projection = {"request_hash": value["request_hash"], "request_identity": value["request_identity"],
+        projection = {"schema_version": value["schema_version"],
+                      "request_hash": value["request_hash"], "request_identity": value["request_identity"],
                       "execution_policies": tuple(run["signal_support"]["execution_policy"]
                                                   for run in value["runs"])}
     except (ValueError, TypeError, KeyError, AttributeError, IndexError, OverflowError,
@@ -278,8 +282,8 @@ def _authenticate_account(root, reference, native_threads):
 
 
 def _account_document(root, ref, account_cache=None):
-    if (ref.schema, ref.schema_version) != ("account_evaluation", 7):
-        _fail("EVALUATION_REFERENCE", ref.path, "published account evaluation schema 7 required")
+    if ref.schema != "account_evaluation" or ref.schema_version not in (7, 8):
+        _fail("EVALUATION_REFERENCE", ref.path, "published account evaluation schema 7 or 8 required")
     # Always authenticate the current file. Only immutable, identical bytes may
     # reuse account decoding/certification within this publication or validation.
     data = _read_evidence(root, ref)
@@ -300,6 +304,8 @@ def _account_document(root, ref, account_cache=None):
             session.progress(d.DeliveryValidationPhase.AUTHENTICATION, 1, 1)
     else:
         value, records = cached
+        if value["schema_version"] != ref.schema_version:
+            _fail("ACCOUNT_AUTHENTICATION", ref.path, "account evidence schema differs from its reference")
         if session is not None:
             session.account_reuses += 1
     request = value["request_identity"]
@@ -336,12 +342,13 @@ def _validate_content(definition, content, root, context, scope=d.DeliveryValida
     }
     if type(content.payload) is not expected[definition.stage]:
         _fail("STAGE_CONTENT", "content.payload", "stage and content type differ")
+    _validate_parameter_method_schema(definition, content.payload)
     references = _references(content)
     for reference in references:
         if reference.experiment.strategy_id != definition.strategy_id:
             _fail("EVIDENCE_OWNER", reference.path, "evidence belongs to another batch")
-        if reference.schema == "account_evaluation" and reference.schema_version != 7:
-            _fail("EVALUATION_REFERENCE", reference.path, "published account evaluation schema 7 required")
+        if reference.schema == "account_evaluation" and reference.schema_version not in (7, 8):
+            _fail("EVALUATION_REFERENCE", reference.path, "published account evaluation schema 7 or 8 required")
     session = _validation_session.get()
     if session is not None:
         session.preload_accounts(root, references)
@@ -444,6 +451,33 @@ def _validate_inspection_delivery(definition, content, root, context):
                 _fail("FREEZE_RECEIPT", "freeze", "freeze request report/approval differs")
 
 
+def _validate_parameter_method_schema(definition, payload):
+    """Versioned envelopes must not relabel either generation of parameter facts."""
+    from strategy_evaluator import research_models as m
+    from strategy_evaluator.parameter_neighborhood import (
+        ParameterNeighborhoodDesign, ParameterNeighborhoodProtocol,
+        ParameterNeighborhoodBinding, ParameterNeighborhoodContext,
+    )
+
+    if definition.stage not in (d.DeliveryStage.MANDATE, d.DeliveryStage.ASSESSMENT):
+        return
+    legacy = (m.ParameterGroupTarget, m.ParameterPerturbationDesign,
+              m.ParameterPerturbationProtocol, m.ParameterPointBinding, m.ParameterDiagnosticContext)
+    current = (ParameterNeighborhoodDesign, ParameterNeighborhoodProtocol,
+               ParameterNeighborhoodBinding, ParameterNeighborhoodContext,
+               m.ParameterNeighborhoodTarget, m.NeighborhoodSelfCheckProtocol)
+    forbidden = current if definition.schema_version == 8 else legacy
+    if any(isinstance(value, forbidden) for value in _walk(payload)):
+        _fail("PARAMETER_METHOD_SCHEMA", "content.payload",
+              "parameter method differs from the delivery schema; historical methods are read-only")
+    if (definition.stage is d.DeliveryStage.ASSESSMENT and definition.schema_version == 11
+            and payload.assessment_request.parameter_designs
+            and not any(isinstance(target, m.ParameterNeighborhoodTarget)
+                        for target in payload.comparison_request.targets.requirements)):
+        _fail("PARAMETER_METHOD_SCHEMA", "comparison.targets",
+              "neighborhood assessment requires a confirmed parameter ratio target")
+
+
 def _assessment_recomputation_matches(recomputed: AssessmentPanel, published: AssessmentPanel) -> bool:
     if replace(recomputed, family_diagnostics=published.family_diagnostics) != published:
         return False
@@ -468,8 +502,8 @@ def _validate_assessment_delivery(definition, payload, root, context, content, s
 
     def source(ref):
         document = _read_json(_resolve(_delivery_path(context, ref), "delivery.json"))
-        if document.get("schema_version") != 8:
-            _fail("ASSESSMENT_SOURCE", ref.stage.value, "assessment requires schema 8 handoffs")
+        if document.get("schema_version") not in d._readable_schema_versions(ref.stage):
+            _fail("ASSESSMENT_SOURCE", ref.stage.value, "unsupported assessment handoff schema")
         return d.DeliveryContent.from_dict(document["content"]).payload
 
     candidates = source(payload.source_candidates)
@@ -515,7 +549,7 @@ def _validate_assessment_delivery(definition, payload, root, context, content, s
     saved_requests = {}
     saved_policies = {}
     for reference in _references(content):
-        if (reference.schema, reference.schema_version) == ("account_evaluation", 7):
+        if reference.schema == "account_evaluation" and reference.schema_version in (7, 8):
             account, records = _account_document(root, reference, account_cache)
             saved_requests[account["request_hash"]] = account["request_identity"]
             saved_policies[account["request_hash"]] = account["execution_policies"]
@@ -644,7 +678,7 @@ def _read_delivery(context, reference, root, visited, scope=d.DeliveryValidation
             _fail("UNSUPPORTED_LEGACY_INSPECTION", "delivery.json", "legacy inspection cannot certify the current protocol")
         if (type(document) is not dict or set(document) != {"schema_version", "definition", "content"}
             or type(document["schema_version"]) is not int
-            or document["schema_version"] != d._schema_version(reference.stage)):
+            or document["schema_version"] not in d._readable_schema_versions(reference.stage)):
             _fail("DELIVERY_SCHEMA", "delivery.json", "unsupported delivery schema")
         receipt = d.DeliveryReceipt.from_dict(_read_json(_resolve(root, "receipt.json")))
         if receipt.reference != reference or d._digest(receipt.files) != reference.content_sha256:
@@ -737,6 +771,9 @@ def assemble_delivery(context: RepositoryContext, definition: d.DeliveryDefiniti
     if (type(context) is not RepositoryContext or type(definition) is not d.DeliveryDefinition
         or type(content) is not d.DeliveryContent):
         raise TypeError("assembly requires RepositoryContext, DeliveryDefinition and DeliveryContent")
+    if definition.schema_version != d._schema_version(definition.stage):
+        _fail("DELIVERY_SCHEMA", "definition.schema_version", "historical delivery schemas are read-only")
+    _validate_parameter_method_schema(definition, content.payload)
     lock = _resolve(context.root, f".tmp/delivery-publication/{definition.strategy_id}")
     session = _ValidationSession(resources, on_progress)
     token = _validation_session.set(session)

@@ -41,13 +41,12 @@ def _json(data):
 
 def _load(repository, run):
     ref = run.evidence
-    if (ref.schema, ref.schema_version, ref.media_type) != (
-        "account_evaluation",
-        7,
-        "application/json",
-    ):
-        raise ValueError("account diagnosis requires account_evaluation schema 7")
+    if (ref.schema != "account_evaluation" or ref.schema_version not in (7, 8)
+            or ref.media_type != "application/json"):
+        raise ValueError("account diagnosis requires account_evaluation schema 7 or 8")
     value = _json(ref._read_verified(repository.root)[1])
+    if value.get("schema_version") != ref.schema_version:
+        raise ValueError("account evidence schema differs from reference")
     validate_evaluation_evidence(value)
     request = value["request_identity"]
     if request["experiment_id"] != ref.experiment.experiment_id:

@@ -1,7 +1,6 @@
 from dataclasses import replace
 import math
 
-import numpy as np
 import pytest
 
 from strategy_evaluator import (
@@ -30,8 +29,17 @@ def design_request(dimension=8, count=32, radius=0.05):
     )
 
 
-def build(request=None, feasibility=lambda point: True):
-    return build_parameter_perturbation_design(request or design_request(), feasibility=feasibility)
+def build(request=None):
+    """Synthetic historical sphere records; never call the retired sampling API."""
+    req = request or design_request()
+    count, radius = req.protocol.point_count, req.protocol.radius
+    points = tuple(m.ParameterPerturbationPoint(i, (
+        5.0 + 10 * radius * math.cos(2 * math.pi * i / count),
+        5.0 + 10 * radius * math.sin(2 * math.pi * i / count),
+        *((5.0,) * (len(req.space.coordinates) - 2)),
+    ), radius) for i in range(count))
+    design = m.ParameterPerturbationDesign(req.center, req.protocol, req.space, points, count, ())
+    return m.ParameterDesignResult(req.sha256, m.ParameterDesignStatus.COMPLETE, design, count, (), None)
 
 
 def bound_request():
@@ -62,100 +70,30 @@ def bound_request():
 
 
 @pytest.mark.parametrize("dimension", [8, 13])
-def test_total_radius_not_coordinate_rms_and_roundtrip(dimension):
+def test_historical_sphere_record_roundtrip_radius_and_accounting(dimension):
     result = build(design_request(dimension))
-    assert result.status is m.ParameterDesignStatus.COMPLETE
-    assert result.attempts == 32
     assert m.ParameterDesignResult.from_dict(result.to_dict()) == result
     for point in result.design.points:
         distance = math.sqrt(sum(((v - 5.0) / 10.0) ** 2 for v in point.coordinates))
         assert distance == pytest.approx(0.05, abs=1e-15)
-    assert result == build(design_request(dimension))
-    assert (
-        result.design.protocol.method_sha256
-        == build(design_request(8)).design.protocol.method_sha256
-    )
-
-
-def test_affine_units_preserve_points_and_nonlinear_domain_does_not_claim_equivalence():
-    original = design_request()
-    converted = replace(
-        original,
-        space=replace(
-            original.space,
-            coordinates=tuple(
-                replace(
-                    c, center=7 + c.center * 100, lower=7 + c.lower * 100, upper=7 + c.upper * 100
-                )
-                for c in original.space.coordinates
-            ),
-        ),
-    )
-    first, second = build(original).design, build(converted).design
-    for a, b in zip(first.points, second.points):
-        assert np.array(b.coordinates) == pytest.approx(7 + np.array(a.coordinates) * 100)
-    assert first.sha256 != second.sha256
-    assert first.protocol.method_sha256 == second.protocol.method_sha256
     with pytest.raises(ValueError, match="radius"):
-        replace(first, points=(replace(first.points[0], actual_radius=0.1), *first.points[1:]))
+        replace(result.design, points=(replace(result.design.points[0], actual_radius=0.1), *result.design.points[1:]))
+    with pytest.raises(ValueError, match="accounting"):
+        replace(result, attempts=0)
 
 
-def test_mixed_integer_preserves_lattice_and_exact_total_radius():
-    req = design_request(3)
-    space = replace(
-        req.space,
-        coordinates=(
-            replace(req.space.coordinates[0], kind=ParameterCoordinateKind.INTEGER),
-            *req.space.coordinates[1:],
-        ),
-    )
-    result = build(replace(req, space=space))
-    assert result.status is m.ParameterDesignStatus.COMPLETE
-    assert all(p.coordinates[0].is_integer() for p in result.design.points)
-    assert all(abs(p.actual_radius - 0.05) < 1e-14 for p in result.design.points)
-    assert result.design.attempts == 32 + sum(r.count for r in result.design.rejections)
+def test_retired_sphere_generator_is_read_only():
+    with pytest.raises(TypeError, match="read-only"):
+        build_parameter_perturbation_design(design_request(), feasibility=lambda values: True)
 
 
-def test_integer_only_is_not_applicable_and_exhaustion_returns_no_partial_design():
-    req = design_request(2, 2)
-    integers = replace(
-        req.space,
-        coordinates=tuple(
-            replace(c, kind=ParameterCoordinateKind.INTEGER) for c in req.space.coordinates
-        ),
-    )
-    assert build(replace(req, space=integers)).status is m.ParameterDesignStatus.NOT_APPLICABLE
-    req = replace(req, protocol=replace(req.protocol, max_attempts=3))
-    result = build(req, lambda point: False)
-    assert result.status is m.ParameterDesignStatus.DESIGN_FAILED
-    assert result.design is None and result.attempts == 3
-    assert result.rejections == (
-        m.ParameterDesignRejection(m.ParameterRejectionReason.CONSTRAINT, 3),
-    )
-    assert (
-        build(
-            replace(
-                design_request(1, 3),
-                protocol=ParameterPerturbationProtocol(point_count=3, max_attempts=8),
-            )
-        ).status
-        is m.ParameterDesignStatus.DESIGN_FAILED
-    )
-
-
-def test_contract_boundaries_and_callback_type_are_strict():
+def test_historical_contract_type_boundaries_remain_strict():
     with pytest.raises(ValueError, match="domain"):
         ParameterCoordinate("x", 0.0, -1e308, 1e308, ParameterCoordinateKind.CONTINUOUS)
     with pytest.raises(ValueError, match="tolerance"):
         ParameterPerturbationProtocol(radius=1e-12)
     with pytest.raises(TypeError):
         ParameterPerturbationProtocol(point_count=True)
-    with pytest.raises(TypeError, match="Feasibility"):
-        build(feasibility=None)
-    with pytest.raises(TypeError, match="bool"):
-        build(feasibility=lambda point: 1)
-    with pytest.raises(ValueError, match="accounting"):
-        replace(build(), attempts=0)
 
 
 def test_complete_declared_coverage_computes_linear_quantiles():

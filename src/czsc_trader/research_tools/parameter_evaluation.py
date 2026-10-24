@@ -11,6 +11,9 @@ from typing import TYPE_CHECKING
 from strategy_evaluator import (
     AssessmentCandidate, ParameterPerturbationDesign, ParameterPointBinding,
 )
+from strategy_evaluator.parameter_neighborhood import (
+    ParameterNeighborhoodDesign, ParameterNeighborhoodBinding, StudyPurpose,
+)
 from dataflows import Dataflows
 from strategy_runtime import canonical_sha256, StrategyInputBinding, StrategyRuntime
 
@@ -37,7 +40,7 @@ class ParameterEvaluationCandidate(_Record):
 @dataclass(frozen=True, slots=True)
 class ParameterEvaluationBinding(_Record):
     plan: EvidenceRef
-    point: ParameterPointBinding
+    point: ParameterNeighborhoodBinding | ParameterPointBinding
 
 
 @dataclass(frozen=True, slots=True)
@@ -53,7 +56,7 @@ class ParameterEvaluationInput(_Record):
 class ParameterEvaluationPlan(_Record):
     """Complete prospective plan; coordinates are materialized by the researcher."""
 
-    design: ParameterPerturbationDesign
+    design: ParameterNeighborhoodDesign | ParameterPerturbationDesign
     center: ParameterEvaluationCandidate
     center_request_sha256: str
     nonparameter_context_sha256: str
@@ -62,11 +65,12 @@ class ParameterEvaluationPlan(_Record):
     feasibility_evidence: EvidenceRef
     center_inputs: tuple[ParameterEvaluationInput, ...]
     execution_contract_json: str
-    schema_version: int = 1
+    schema_version: int = 2
 
     def _validate(self):
-        if self.schema_version != 1:
-            raise ValueError("parameter evaluation plan requires schema 1")
+        expected = 2 if type(self.design) is ParameterNeighborhoodDesign else 1
+        if self.schema_version != expected:
+            raise ValueError("parameter evaluation plan schema differs from design kind")
         _hash(self.center_request_sha256)
         _hash(self.nonparameter_context_sha256)
         _unique((x.window_id for x in self.center_inputs), "parameter center input window")
@@ -92,16 +96,20 @@ class ParameterEvaluationPlan(_Record):
             raise ValueError("parameter mapping and feasibility evidence must belong to center family")
         if any(x.candidate.candidate_id.split("-", 1)[0] != family for x in self.children):
             raise ValueError("parameter children must belong to center strategy family")
+        if self.schema_version == 2:
+            if self.design.protocol.purpose is not StudyPurpose.LOCAL_SENSITIVITY:
+                raise ValueError("parameter evaluation plans require local sensitivity; structural controls are separate")
+            _validate_parameter_payloads(self.design, self.center, self.children)
 
     @classmethod
-    def create(cls, design: ParameterPerturbationDesign, center: EvaluationRequest,
+    def create(cls, design: ParameterNeighborhoodDesign, center: EvaluationRequest,
                children: tuple[EvaluationRequest, ...], *, mapping_evidence: EvidenceRef,
                feasibility_evidence: EvidenceRef, dataflows: Dataflows) -> ParameterEvaluationPlan:
         """Authenticate prepared inputs, without evaluating or publishing accounts."""
         from .evaluation import EvaluationRequest, _request_contract
 
-        if type(design) is not ParameterPerturbationDesign:
-            raise TypeError("parameter plan requires ParameterPerturbationDesign")
+        if type(design) is not ParameterNeighborhoodDesign:
+            raise TypeError("new parameter plan requires ParameterNeighborhoodDesign; legacy sphere plans are read-only")
         if type(children) is not tuple or any(type(x) is not EvaluationRequest for x in children):
             raise TypeError("parameter children require a tuple of EvaluationRequest")
         if type(center) is not EvaluationRequest:
@@ -145,6 +153,8 @@ class ParameterEvaluationPlan(_Record):
 
     def bind_point(self, reference: EvidenceRef, index: int, *, repository_root: Path) -> ParameterEvaluationBinding:
         """Bind only after the exact plan bytes have been explicitly published."""
+        if self.schema_version != 2:
+            raise ValueError("legacy sphere parameter plans are read-only")
         if read_parameter_plan(reference, repository_root) != self:
             raise ValueError("published parameter plan differs")
         if reference.experiment.strategy_id != self.design.center.candidate_id.split("-", 1)[0]:
@@ -199,6 +209,8 @@ def validate_parameter_request(request, dataflows: Dataflows) -> None:
 
     binding = request.lineage.parameter_binding
     plan = read_parameter_plan(binding.plan, request.repository_root)
+    if plan.schema_version != 2:
+        raise ValueError("legacy sphere parameter plans are read-only; new evaluations require schema 2")
     if binding.plan.experiment.strategy_id != request.strategy.strategy_family_id:
         raise ValueError("parameter plan belongs to another strategy family")
     validate_parameter_contract(_request_contract(request)[0], plan, binding)
@@ -213,6 +225,44 @@ def validate_parameter_request(request, dataflows: Dataflows) -> None:
 def _payload_json(payload) -> str:
     return json.dumps(payload, default=dict, ensure_ascii=False, sort_keys=True,
                       separators=(",", ":"), allow_nan=False)
+
+
+def _parameter_parent(payload: dict, path: tuple[str, ...]) -> tuple[dict, str]:
+    """Resolve an existing object leaf below parameters; never create or coerce it."""
+    if not path or any(type(part) is not str or not part for part in path):
+        raise ValueError("parameter payload path requires nonempty string components")
+    node = payload.get("parameters")
+    for part in path[:-1]:
+        if type(node) is not dict or part not in node:
+            raise ValueError(f"parameter payload path does not exist: {path}")
+        node = node[part]
+    if type(node) is not dict or path[-1] not in node:
+        raise ValueError(f"parameter payload path does not exist: {path}")
+    return node, path[-1]
+
+
+def _validate_parameter_payloads(design, center, children) -> None:
+    """Authenticate declared typed points against every byte of candidate payloads."""
+    original = json.loads(center.payload_json)
+    axes = design.space.axes
+    paths = tuple(axis.payload_path for axis in axes)
+    for i, path in enumerate(paths):
+        if any(path[:len(other)] == other or other[:len(path)] == path
+               for other in paths[:i]):
+            raise ValueError("parameter payload paths overlap")
+    for axis in axes:
+        parent, key = _parameter_parent(original, axis.payload_path)
+        if type(parent[key]) is not type(axis.center) or parent[key] != axis.center:
+            raise ValueError(f"parameter center payload differs at {axis.payload_path}")
+    for point, child in zip(design.points, children, strict=True):
+        expected = json.loads(center.payload_json)
+        if tuple(value.name for value in point.values) != tuple(axis.name for axis in axes):
+            raise ValueError("parameter point names differ from declared axes")
+        for axis, value in zip(axes, point.values, strict=True):
+            parent, key = _parameter_parent(expected, axis.payload_path)
+            parent[key] = value.value
+        if _payload_json(expected) != child.payload_json:
+            raise ValueError("parameter child payload differs from declared point mapping; undeclared changes are forbidden")
 
 
 def parameter_execution_policy(policy: dict) -> dict:

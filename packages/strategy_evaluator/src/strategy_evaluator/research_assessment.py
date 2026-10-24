@@ -321,6 +321,8 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
                 and x.context_sha256 == base.context_sha256
                 and x.metric_version == base.metric_version
                 and x.scenario_context == base.scenario_context
+                and (not isinstance(p, m.NeighborhoodSelfCheckProtocol)
+                     or (bool(base.benchmark_equity) and x.benchmark_equity == base.benchmark_equity))
                 for x in neighbors
             )
             if design is not None:
@@ -329,14 +331,15 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
                     and x.context_sha256 == base.context_sha256
                     and x.metric_version == base.metric_version
                     and x.scenario_context == base.scenario_context
+                    and (not isinstance(p, m.NeighborhoodSelfCheckProtocol) or bool(base.benchmark_equity))
                     and x.benchmark_equity == base.benchmark_equity)
             declared_complete = design is None or (
-                len(links) == design.protocol.point_count
+                len(links) == _point_count(design)
                 and {x.parameter_point.point_index for x in links}
-                == set(range(design.protocol.point_count))
+                == set(range(_point_count(design)))
             )
             if (
-                len(neighbors) >= p.minimum_perturbations
+                len(neighbors) >= (1 if isinstance(p, m.NeighborhoodSelfCheckProtocol) else p.minimum_perturbations)
                 and comparable
                 and declared_complete
                 and (p.parameter_protocol is None or design is not None)
@@ -485,7 +488,19 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
             )
         )
     family, limitations = _family(request)
-    return m.AssessmentPanel(request.sha256, p.sha256, tuple(rows), family, limitations)
+    return m.AssessmentPanel(request.sha256, p.sha256, tuple(rows), family, limitations,
+        formula_version="research-assessment-v6" if isinstance(p, m.NeighborhoodSelfCheckProtocol)
+        else "research-assessment-v5")
+
+
+def _point_count(design):
+    return design.point_count if isinstance(design, m.ParameterNeighborhoodDesign) else design.protocol.point_count
+
+
+def parameter_comparison_key(context):
+    if isinstance(context, m.ParameterNeighborhoodContext):
+        return ("neighborhood", context.comparison_sha256)
+    return ("legacy-sphere", context.protocol.method_sha256)
 
 
 def _parameter_context(request, center, evidence, base):
@@ -506,14 +521,21 @@ def _parameter_context(request, center, evidence, base):
             and neighbor.context_sha256 == base.context_sha256
             and neighbor.metric_version == base.metric_version
             and neighbor.scenario_context == base.scenario_context
+            and (not isinstance(request.protocol, m.NeighborhoodSelfCheckProtocol)
+                 or (bool(base.benchmark_equity) and neighbor.benchmark_equity == base.benchmark_equity))
         ):
             valid += 1
+    if isinstance(design, m.ParameterNeighborhoodDesign):
+        return m.ParameterNeighborhoodContext(
+            design.protocol, design.sha256, design.space.sha256, len(design.space.axes),
+            design.point_count, valid, design.comparison_sha256,
+        )
     return m.ParameterDiagnosticContext(
         design.protocol,
         design.sha256,
         design.space.sha256,
         len(design.space.coordinates),
-        design.protocol.point_count,
+        _point_count(design),
         valid,
     )
 
@@ -721,7 +743,7 @@ def _rank(request, bins, order):
     parameter_methods = {
         x.candidate: None
         if x.parameter_context is None
-        else x.parameter_context.protocol.method_sha256
+        else parameter_comparison_key(x.parameter_context)
         for x in eligible_rows
     }
     incompatible_parameter_methods = (

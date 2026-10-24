@@ -22,13 +22,13 @@ SE按显式协议提供指标、协议校验、比较、帕累托分层、PBO、
 ## 当前协议与计算入口
 
 `EvaluationProtocol.standard_version`使用`opc-v3`，公共标准常量为`OPC_V3`；
-`resolve_margins`拒绝其他标准版本。旧研究模型和旧自检计算器已删除，证据须满足当前强类型合同。
-历史产物原件保留供人工查阅，平台不承诺按旧公式或旧schema机器复验。
+`resolve_margins`拒绝其他标准版本。各计算入口按其显式版本和强类型合同校验证据。
+历史产物原件保持不变；本次明确保留的v5自检和旧球面计划只读认证见下节，不推及其他旧格式。
 
 工程压力审计的必需场景由`required_stress_scenarios()`返回：
 `total_cost_15bp/total_cost_20bp/total_cost_30bp/total_cost_50bp`。
 `audit_stress_results`缺少任一必需场景时返回`INSUFFICIENT`，旧别名不能替代。
-阶段四自检仍按`SelfCheckProtocol`显式指定标准和压力场景，研究员负责确定研究口径。
+新阶段四自检按`NeighborhoodSelfCheckProtocol`显式指定标准和压力场景，研究员负责确定研究口径。
 
 ## 候选自检与比较
 
@@ -58,7 +58,7 @@ TDR允许研究员自由定义成本评价场景，包括单场景及零成本�
 证据可比性。费用必须来自显式评价合同，场景名称不承担费率计算语义。
 
 `CandidateAssessmentRequest`显式指定中心候选、账户／成交／基准证据、参数扰动关系、
-未完成评价和`SelfCheckProtocol`。协议指定场景、窗口、覆盖、分位数算法、Bootstrap种子及
+未完成评价和`NeighborhoodSelfCheckProtocol`。协议指定场景、窗口、覆盖、分位数算法、Bootstrap种子及
 容差。参数邻域仅接纳真实`PARAMETERS`派生；缺失或不可比诊断保留状态和原因，失败与取消
 尝试保留记录，不填零或静默丢弃。主要结果包括净年化、回撤、已完成交易周期及频率、配对
 滚动超额收益、利润集中度、压力损失和参数退化；置信区间及家族PBO/DSR作为诊断报告。
@@ -92,81 +92,88 @@ SE保留原始计算结果，不统一舍入或强制线程数。受管交付的
 
 ### 参数扰动
 
-参数几何和账户评价分开。RSCH事前声明所有活跃数值坐标、有限上下界、中心、
-坐标映射及纯参数约束的源码哈希；SE生成坐标，TDR将完整计划与实际评价绑定。
-SE不猜测策略参数含义，也不读取账户收益筛选扰动点。
+参数邻域与账户评价分开。RSCH事前声明有效参数的自然尺度、精确类型、合法域、局部取值规则、
+载荷路径及纯参数约束；SE展开完整联合点集，TDR把每个具名点绑定到实际策略载荷。
+不再使用通用半径或固定点数，也不根据账户收益筛选点。
 
-公开契约为`ParameterCoordinate`、`ParameterSpace`、`ParameterPerturbationProtocol`、
-`ParameterDesignRequest`、`ParameterPerturbationDesign`及`ParameterPointBinding`。
-`ResearchRecord.to_dict/from_dict/sha256`提供严格序列化和内容身份；当前字段必须齐全，
-不自动补齐历史格式。自检输出公式版本为`research-assessment-v5`，历史原件保持不变。
+`ParameterAxis(name, center, domain, rule, payload_path, unit)`描述一个有效参数。
+`payload_path`是相对于策略载荷`parameters`的非空字符串元组，路径不得重复或互为父子；
+`unit`说明业务单位。五类参数及其合法域如下：
+
+| 参数类别 | 合法域 | 局部规则 |
+| --- | --- | --- |
+| REAL | `RealDomain`的有限上下界、开闭边界及可选`quantum/origin`，或`RealSetDomain`精确值集 | `NumericOffsets`或`ExplicitValues`，值必须为float |
+| INTEGER | `IntegerDomain(lower, upper, step, origin)`或`IntegerSetDomain` | 整数`NumericOffsets`或`ExplicitValues`，bool不能冒充int |
+| ORDINAL | `OrdinalDomain(levels)`，同型标签按声明顺序排列 | `AdjacentLevels(steps)`或`ExplicitValues` |
+| CATEGORICAL | `CategoricalDomain(values)`，非空字符串集合 | `ExplicitValues` |
+| BOOLEAN | `BooleanDomain()` | `ExplicitValues`，值必须为bool |
+
+类别只描述值的性质；单位、用途、合法域和邻域规则独立表达。新增类型、规则或设计方法须扩展具体强类型并显式校验版本，不以任意字典或`CUSTOM`兜底。当前不支持条件激活表达式；生效参数集发生变化时另立结构对照。
+
+每轴隐式包含中心。`build_parameter_neighborhood_design`展开全部轴的笛卡尔积，剔除中心、
+越域、重复及纯约束不成立的组合；拒绝原因与组合数留证，合法点全部保留并等权。
+不裁剪、不四舍五入、不随机抽样、不截取成功前缀；超过`max_combinations`直接返回
+`DESIGN_FAILED / COMBINATION_LIMIT_EXCEEDED`，不调用约束或返回部分设计。
+无合法非中心点时为`DESIGN_FAILED / NO_FEASIBLE_NONCENTER_POINTS`，不能自动判定稳健性通过。
 
 ```python
 from strategy_evaluator import (
-    ParameterCoordinate, ParameterCoordinateKind, ParameterSpace,
-    ParameterPerturbationProtocol, ParameterDesignRequest,
-    ParameterDesignStatus, build_parameter_perturbation_design,
+    ParameterAxis, IntegerDomain, RealDomain, NumericOffsets,
+    ParameterNeighborhoodSpace, ParameterNeighborhoodProtocol,
+    ParameterNeighborhoodRequest, ParameterDesignStatus,
+    build_parameter_neighborhood_design,
 )
 
-# center是AssessmentCandidate；坐标及两个源码哈希由RSCH事前确定。
-space = ParameterSpace(
-    coordinates=(
-        ParameterCoordinate("entry", 0.5, 0.0, 1.0, ParameterCoordinateKind.CONTINUOUS),
-        ParameterCoordinate("exit", 0.5, 0.0, 1.0, ParameterCoordinateKind.CONTINUOUS),
+# center为AssessmentCandidate；两个哈希来自事前发布的映射和纯约束材料。
+space = ParameterNeighborhoodSpace(
+    axes=(
+        ParameterAxis("lookback", 3, IntegerDomain(2, 10), NumericOffsets((-1, 1)),
+                      ("lookback",), "sessions"),
+        ParameterAxis("hold", 3, IntegerDomain(1, 30), NumericOffsets((-1, 1)),
+                      ("hold",), "sessions"),
+        ParameterAxis("allocation", 1.0, RealDomain(0.0, 1.0, lower_closed=False),
+                      NumericOffsets((-0.05,)), ("allocation",), "cash_fraction"),
     ),
     mapping_sha256=mapping_source_sha256,
     feasibility_sha256=constraint_source_sha256,
 )
-result = build_parameter_perturbation_design(
-    ParameterDesignRequest(center, ParameterPerturbationProtocol(), space),
-    feasibility=lambda coordinates: coordinates[0] >= coordinates[1],
+result = build_parameter_neighborhood_design(
+    ParameterNeighborhoodRequest(center, ParameterNeighborhoodProtocol(), space),
+    feasibility=lambda named_values: True,
 )
 if result.status is ParameterDesignStatus.COMPLETE:
-    point_binding = result.design.bind_point(0)  # 索引从0开始
+    assert result.design.point_count == 3 * 3 * 2 - 1 == 17
+    point_binding = result.design.bind_point(0)
 ```
 
-默认协议为总距离`0.05`、32点、种子13；研究默认只使用该档排序，10%和20%须由用户
-另外提出、各自建立协议和证据，不能混入同一分位数。算法固定为PCG64生成独立高斯方向，
-按完整参数域宽标准化，并归一化到总欧氏距离：
+`ParameterNeighborhoodPoint.values`与`ParameterNeighborhoodBinding.values`保存
+`NamedParameterValue(name, value)`元组；名字顺序与轴一致，精确保留float/int/str/bool类型。
+设计包含完整点集、组合计数及拒绝原因，`N = design.point_count`在评价前固定。
+纯约束排除点逐一保存在`constraint_exclusions: tuple[NeighborhoodConstraintExclusion, ...]`。
+反序列化时重枚举域内组合，核对保留点与排除点的完整分区；只删除点并调整拒绝计数不能通过。
+约束回调必须返回真正的bool；源码哈希不能证明其未使用收益筛选，研究员仍须说明纯度。
 
-`r = sqrt(sum(((x_i - center_i) / (upper_i - lower_i))**2))`
+`StudyPurpose.LOCAL_SENSITIVITY`用于固定结构的局部参数敏感性；类别或布尔取值的改变必须
+声明`STRUCTURAL_CONTROL`。结构对照可另用普通账户评价取得证据，不使用局部参数计划，也不能进入局部稳健性验收或
+混入局部分位数。纯整数及有序参数可直接使用相应邻域，不因缺少连续坐标而失败。
 
-距离不除以维数或维数平方根；8维和13维均保持同一总距离。连续坐标对仿射单位换算保持一致；
-整数坐标以原坐标的一个单位为离散步长；单位转换放入载荷映射，SE仍以原整数坐标采样，不能改变舍入精度后声称等价。
-该规则不保证任意非线性改写或经济风险等价。参数域、拆分坐标及映射变化必须另外解释，
-不能在见到结果后用于改善稳健性读数。
+新自检使用`NeighborhoodSelfCheckProtocol`，必须提供`parameter_protocol`，不含
+`minimum_perturbations`。`CandidateAssessmentRequest.parameter_designs`逐中心携带设计，
+每个`PerturbationLink`和`AssessmentEvidence.parameter_point`须绑定同一具名点。
+全部N点在中心相同的标准评价条件下有效后，才用等权LINEAR分位数计算
+`PARAMETER_RETURN_Q10`和`PARAMETER_DRAWDOWN_Q90`；缺失、失败或不可比点不缩小分母，
+不填零、不替换，也不以已完成子集冒充完整分位数。相对中心的退化仍单独报告。
 
-整数坐标按HALF_EVEN取整，保留其实际移动，再按剩余平方距离缩放连续坐标；
-整数移动正好用完半径时，连续移动为零。不得裁剪到边界。超域、约束失败、重复点、
-整数移动超出半径及退化方向只在评价前拒绝，记录原因计数与抽样次数；这是受约束的
-混合抽样，不声明为均匀球面样本。约束回调必须返回真正的`bool`，其业务纯度与源码
-身份由RSCH负责。SE核验几何与内容身份，不能仅凭源码哈希证明回调没有经济筛选。
+`CandidateAssessment.parameter_context`保存`ParameterNeighborhoodContext`，包括协议、
+设计和空间哈希、维度、规定及有效点数、`comparison_sha256`。
+比较不仅核对算法名，还核对参数名称、类别、单位、域/规则以及完整局部形状和约束身份；
+边界造成单侧点集、约束删点或其他形状不同，可能使比较档案不一致。不能只因使用同一生成器
+便声称分位数可直接同排。普通候选排序还要求经济上下文可比；缺失或不一致明确保留原因。
+`compare_parameter_robustness`只返回参数诊断及可比性，不产生总体候选赢家。
 
-`COMPLETE`返回全部规定点；全整数空间返回`NOT_APPLICABLE`，须另行评审离散方法；
-抽样预算耗尽或浮点坐标无法表达规定距离时返回`DESIGN_FAILED`，不返回可供评价的部分设计。
-非法协议直接拒绝，错误约束回调直接报错，没有自动放宽约束或更换算法。
-
-评价接入时，`SelfCheckProtocol.parameter_protocol`必须显式声明；
-`CandidateAssessmentRequest.parameter_designs`逐中心携带设计；每个`PerturbationLink`
-和对应`AssessmentEvidence.parameter_point`必须与设计同一点一致。
-绑定包括设计哈希、点序号、坐标及实际距离。全部规定点在同一中心原生评价条件下
-成功，才用LINEAR计算扰动净年化`PARAMETER_RETURN_Q10`及回撤幅度`PARAMETER_DRAWDOWN_Q90`，
-用于同层排序；另保留`max(0, 中心净年化-Q10)`及`max(0, Q90回撤-中心回撤)`作退化诊断；
-回撤含初始财富。没有成功的点不填零、不替换、不从已完成子集计算完整指标。
-无显式设计的旧式局部诊断没有新方法身份，不能用于统一参数排序。
-
-`CandidateAssessment.parameter_context`公开协议、设计/参数空间哈希、维度和覆盖数。
-协议的`method_sha256`包含算法、半径、点数、种子、距离容差及固定分位数/完整覆盖规则，
-排除策略特有参数域、映射、维度和抽样预算：这些信息另有内容身份，预算不改变已完成
-规定点的计算规则。具体参数域不同不自动导致跨族不可比。
-
-`compare_parameter_robustness(ParameterRobustnessComparisonRequest(rows))`仅返回参数
-退化对照及明确的`comparable/reasons/limitations`，保留各自评价上下文；方法、指标版本、
-频率窗口及完整覆盖必须一致。它允许披露后的原生经济上下文差异，不输出总体候选赢家。
-普通`compare_candidates`仍要求经济上下文一致。默认完整证据政策要求声明参数方法且方法一致；
-`PREFIX_PARTIAL`可保留已知前缀决定的关系；同层比较首先走到参数项时，
-缺失方法或方法不同的候选对明确不可比，不能把未经声明的局部诊断当作统一证据。
-参数退化是有限样本诊断，不是置信区间或新的经济验收门。
+新公式版本为`research-assessment-v6`。旧`SelfCheckProtocol`、球面设计/点绑定与
+`research-assessment-v5`仅用于历史读取和认证；旧生成入口拒绝旧球面请求，新评价不得重新绑定
+旧计划。既有证据和资格不自动迁移或改写。强类型记录的`to_dict/from_dict/sha256`保留精确身份。
 
 相关账户计划与绑定详见[TDR公开API](../../src/czsc_trader/README.md)。
 
@@ -226,8 +233,8 @@ formula_version="research-ranking-v3")`
 | --- | --- |
 | `ResearchTarget` | `target_id/metric/lower/upper/when`；`scope=TargetScope.STANDARD`使用中心，`STRESS`只支持压力净年化和回撤；可用`one_way_cost`声明必需每侧费用，缺失或不符为证据不足 |
 | `FrequencyCoverageTarget` | `target_id/window_days/minimum_closed_cycles/minimum_numerator/minimum_denominator`；例如`("coverage", 60, 3, 9, 10)`表示至少90%的完整60交易日窗口有至少3笔闭合交易 |
-| `ParameterGroupTarget` | `target_id/required_points/minimum_joint_passes/joint_targets/all_point_targets`；同一点须同时满足所有适用联合条件，全部设计点须满足全部点条件；内层仅支持标准场景收益和回撤 |
-| `SelfCheckProtocol.frequency_min_closed_cycles` | 显式传入覆盖统计的闭合笔数阈值，例如3；`None`表示未请求该统计，不能用中位数或Q10补齐 |
+| `ParameterNeighborhoodTarget` | `target_id/minimum_numerator/minimum_denominator/joint_targets/all_point_targets`；按完整设计N点要求至少ceil(N×分子/分母)点联合通过，全部N点须满足全部点条件；内层仅支持标准场景收益和回撤 |
+| `NeighborhoodSelfCheckProtocol.frequency_min_closed_cycles` | 显式传入覆盖统计的闭合笔数阈值，例如3；`None`表示未请求该统计，不能用中位数或Q10补齐 |
 
 这些目标组成`ResearchTargets.requirements`。参数与窗口数接受有约束的整数，拒绝布尔值冒充整数。
 参数条件按每个点自己的标准场景基准计算；压力条件只使用压力账户自己的基准。成本未声明表示
@@ -248,14 +255,14 @@ formula_version="research-ranking-v3")`
 比较使用未作展示舍入的数值；v3将基准值与倍数的最短十进制表示相乘后转换为float作为边界，
 避免`0.1 * 1.5`的乘法尾差误拒绝`0.15`；不加入额外容差，严格不等号仍严格执行。
 
-以下是2026-10-21获批标准的目标构造示例；`performance`是示例内的本地构造函数，不是平台API。
-研究协议需另行显式配置60日频率、32点设计、标准/压力场景与覆盖阈值3，再取得对应面板。
+以下是新比例参数标准的目标构造示例；`performance`是示例内的本地构造函数，不是平台API。
+研究协议需显式配置60日频率、完整邻域、标准/压力场景与覆盖阈值3，再取得面板。13/16为81.25%；N=17需至少14点联合通过，17点全部满足风险上限。旧32点/26点目标不自动转换。
 
 ```python
 from strategy_evaluator import (
     ResearchMetric as M, ResearchTarget, ResearchTargets, TargetScope,
     ConstantBound as C, BenchmarkBound as B, BenchmarkCondition, ComparisonOperator as Op,
-    FrequencyCoverageTarget, ParameterGroupTarget,
+    FrequencyCoverageTarget, ParameterNeighborhoodTarget,
 )
 
 def performance(prefix, multiple, dd_multiple):
@@ -274,7 +281,7 @@ targets = ResearchTargets((
     ResearchTarget("center-cap", M.DRAWDOWN_MAGNITUDE, upper=C(0.25, True), one_way_cost=0.001),
     ResearchTarget("median", M.FREQUENCY_MEDIAN, lower=C(6.0, True), one_way_cost=0.001),
     FrequencyCoverageTarget("coverage", 60, 3, 9, 10),
-    ParameterGroupTarget("parameters", 32, 26, performance("point", 1.25, 0.9), (
+    ParameterNeighborhoodTarget("parameters", 13, 16, performance("point", 1.25, 0.9), (
         ResearchTarget("point-cap", M.DRAWDOWN_MAGNITUDE, upper=C(0.25, True), one_way_cost=0.001),
     )),
     ResearchTarget("stress-profit", M.NET_ANNUAL_RETURN, lower=C(0.0, False), **pressure),
@@ -287,7 +294,7 @@ targets = ResearchTargets((
 ), frequency_window_days=60)
 ```
 
-`CandidateRank.target_checks`按目标返回`TargetCheck/FrequencyCoverageCheck/ParameterGroupCheck`。
+`CandidateRank.target_checks`按目标返回`TargetCheck/FrequencyCoverageCheck/ParameterNeighborhoodCheck`。
 原子结果有观察值、解析后边界、条件值和评价ID；覆盖结果带N/K；参数结果带有效点数、联合通过数、
 逐点联合与全部点检查。输出状态为`PASSED/FAILED/INDETERMINATE/NOT_APPLICABLE`：条件分支未触发
 仅该原子项不适用；不能把全不适用或空目标集合视为通过。参数组完整通过要求全部规定点有效，

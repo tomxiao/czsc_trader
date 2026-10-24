@@ -18,6 +18,7 @@ from strategy_evaluator import (
     ResearchTarget,
     FrequencyCoverageTarget,
     ParameterGroupTarget,
+    ParameterNeighborhoodTarget,
 )
 
 
@@ -50,9 +51,17 @@ class ValidationStatus(StrEnum):
 
 
 def _schema_version(stage: DeliveryStage) -> int:
+    if stage in (DeliveryStage.MANDATE, DeliveryStage.ASSESSMENT):
+        return 11
     if stage is DeliveryStage.PROTOTYPES:
         return 10
     return 9 if stage is DeliveryStage.INSPECTION else 8
+
+
+def _readable_schema_versions(stage: DeliveryStage) -> tuple[int, ...]:
+    if stage in (DeliveryStage.MANDATE, DeliveryStage.ASSESSMENT):
+        return (8, 11)
+    return (_schema_version(stage),)
 
 
 @dataclass(frozen=True, slots=True)
@@ -78,14 +87,25 @@ class DeliveryDefinition(_Record):
     stage: DeliveryStage
     revision: int
     predecessors: tuple[DeliveryReference, ...] = ()
-    schema_version: int = 8
+    schema_version: int | None = None
+
+    @classmethod
+    def from_dict(cls, value):
+        if type(value) is not dict or type(value.get("schema_version")) is not int:
+            raise ValueError("serialized delivery requires an explicit integer schema version")
+        return _Record.from_dict.__func__(cls, value)
+
+    def __post_init__(self):
+        if self.schema_version is None:
+            object.__setattr__(self, "schema_version", _schema_version(self.stage))
+        _Record.__post_init__(self)
 
     @property
     def strategy_id(self):
         return self.batch.strategy_id
 
     def _validate(self):
-        if self.revision < 1 or self.schema_version != _schema_version(self.stage):
+        if self.revision < 1 or self.schema_version not in _readable_schema_versions(self.stage):
             raise ValueError("invalid delivery revision/schema")
         if self.stage is DeliveryStage.INSPECTION and self.predecessors:
             raise ValueError("inspection has no research delivery predecessors")
@@ -141,7 +161,7 @@ class NumericRequirement(_Record):
 
 @dataclass(frozen=True, slots=True)
 class PerformanceRequirement(_Record):
-    targets: tuple[ResearchTarget | FrequencyCoverageTarget | ParameterGroupTarget, ...]
+    targets: tuple[ResearchTarget | FrequencyCoverageTarget | ParameterGroupTarget | ParameterNeighborhoodTarget, ...]
 
     def _validate(self):
         if not self.targets:
@@ -312,8 +332,8 @@ class EvaluationEvidenceRef(_Record):
     evaluation_ids: tuple[str, ...] = ()
 
     def _validate(self):
-        if (self.evidence.schema,self.evidence.schema_version) != ("account_evaluation",7):
-            raise ValueError("evaluation evidence requires published account schema 7")
+        if self.evidence.schema != "account_evaluation" or self.evidence.schema_version not in (7, 8):
+            raise ValueError("evaluation evidence requires published account schema 7 or 8")
         _unique(self.evaluation_ids, "evaluation ID")
         for value in self.evaluation_ids:
             _hash(value)
@@ -706,10 +726,21 @@ class PublicationFile(_Record):
 class DeliveryReceipt(_Record):
     reference: DeliveryReference
     files: tuple[PublicationFile, ...]
-    schema_version: int = 8
+    schema_version: int | None = None
+
+    @classmethod
+    def from_dict(cls, value):
+        if type(value) is not dict or type(value.get("schema_version")) is not int:
+            raise ValueError("serialized delivery requires an explicit integer schema version")
+        return _Record.from_dict.__func__(cls, value)
+
+    def __post_init__(self):
+        if self.schema_version is None:
+            object.__setattr__(self, "schema_version", _schema_version(self.reference.stage))
+        _Record.__post_init__(self)
 
     def _validate(self):
-        if self.schema_version != _schema_version(self.reference.stage):
+        if self.schema_version not in _readable_schema_versions(self.reference.stage):
             raise ValueError("unsupported receipt schema")
         if not self.files:
             raise ValueError("receipt requires file manifest")

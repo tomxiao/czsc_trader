@@ -8,9 +8,13 @@ import shutil
 
 import pytest
 from strategy_evaluator import (
-    AssessmentCandidate, ParameterCoordinate, ParameterCoordinateKind, ParameterDesignRequest, ParameterPerturbationProtocol,
-    ParameterSpace, build_parameter_perturbation_design, assess_candidates, compare_candidates,
+    AssessmentCandidate, assess_candidates, compare_candidates,
     PerturbationLink,
+)
+from strategy_evaluator.parameter_neighborhood import (
+    ParameterAxis, RealDomain, IntegerDomain, NumericOffsets,
+    ParameterNeighborhoodSpace, ParameterNeighborhoodProtocol, ParameterNeighborhoodRequest,
+    build_parameter_neighborhood_design,
 )
 from strategy_evaluator import research_models as m
 from strategy_manager import CandidateKey, CandidateDerivation, CandidateDerivationKind, CandidateEvidence
@@ -28,20 +32,24 @@ from test_research_contract_upgrade import managed_evaluation as managed_evaluat
 from test_research_delivery import attachment, published
 
 
-def parameter_plan(research, request, *, child_parameters=None):
+def parameter_plan(research, request, *, child_parameters=None, vary_lookback=False):
     request = research.evaluation.prepare(request)
     mapping = attachment(research, "parameter-map", {"parameter": "threshold", "unit": "fraction"})
     feasible = attachment(research, "parameter-constraint", {"constraint": "domain"})
     center = AssessmentCandidate(request.strategy.reference_id,
         StrategyRuntime().identify(request.strategy, dependencies=request.dependencies).content_sha256)
-    protocol = ParameterPerturbationProtocol(point_count=2)
-    space = ParameterSpace((ParameterCoordinate("threshold", .5, 0., 1., ParameterCoordinateKind.CONTINUOUS),),
-                           mapping.sha256, feasible.sha256)
-    design = build_parameter_perturbation_design(ParameterDesignRequest(center, protocol, space),
-                                               feasibility=lambda coordinates: True).design
+    protocol = ParameterNeighborhoodProtocol()
+    axes = (ParameterAxis("threshold", .5, RealDomain(0., 1.), NumericOffsets((-.05, .05)),
+                          ("threshold",), "fraction"),)
+    if vary_lookback:
+        axes += (ParameterAxis("lookback", 1, IntegerDomain(1, 10), NumericOffsets((1,)),
+                               ("lookback",), "sessions"),)
+    space = ParameterNeighborhoodSpace(axes, mapping.sha256, feasible.sha256)
+    design = build_parameter_neighborhood_design(ParameterNeighborhoodRequest(center, protocol, space),
+                                                 feasibility=lambda values: True).design
     children = []
     for point in design.points:
-        parameters = {**request.strategy.payload["parameters"], "threshold": point.coordinates[0]}
+        parameters = {**request.strategy.payload["parameters"], **{x.name: x.value for x in point.values}}
         if child_parameters is not None:
             parameters.update(child_parameters(point))
         payload = {**request.strategy.payload, "parameters": parameters}
@@ -57,7 +65,7 @@ def parameter_plan(research, request, *, child_parameters=None):
     for index, child in enumerate(children):
         derivation = CandidateDerivation(CandidateKey("S900", "C0001"), center.content_sha256,
             CandidateKey("S900", child.strategy.candidate_id), plan.children[index].candidate.content_sha256,
-            CandidateDerivationKind.PARAMETERS, {"threshold": design.points[index].coordinates[0]},
+            CandidateDerivationKind.PARAMETERS, {x.name: x.value for x in design.points[index].values},
             design.protocol.sha256, CandidateEvidence(reference.repository_path, reference.sha256))
         binding = plan.bind_point(reference, index, repository_root=request.repository_root)
         bound.append(replace(child, lineage=EvaluationLineage(derivation, binding)))
@@ -93,7 +101,7 @@ def test_published_parameter_point_reaches_authenticated_account_and_se(managed_
     assert evidence[0].parameter_point == plan.design.bind_point(0)
     saved = serialize_evaluation_evidence(children[0], result)
     validate_evaluation_evidence(json.loads(json.dumps(saved)))
-    assert saved["schema_version"] == 7
+    assert saved["schema_version"] == 8
     assert saved["request_identity"]["parameter_binding"]["plan"]["sha256"] == reference.sha256
     assert ParameterEvaluationPlan.from_dict(plan.to_dict()) == plan
     with pytest.raises(ValueError, match="nonparameter context"):
@@ -121,7 +129,7 @@ def test_parameter_plan_rejects_missing_publication_and_collapsed_payloads(prepa
 
 def test_parameter_assessment_delivery_replays_plan_after_source_cleanup(fresh_completed):
     context, research, request, center_result, _ = fresh_completed
-    group = m.ParameterGroupTarget("point-economics", 2, 2,
+    group = m.ParameterNeighborhoodTarget("point-economics", 1, 1,
         (m.ResearchTarget("point-return", m.ResearchMetric.NET_ANNUAL_RETURN,
                          lower=m.ConstantBound(-1.0, True)),),
         (m.ResearchTarget("point-dd", m.ResearchMetric.DRAWDOWN_MAGNITUDE,
@@ -139,7 +147,14 @@ def test_parameter_assessment_delivery_replays_plan_after_source_cleanup(fresh_c
             canonical_sha256(child.lineage.derivation.to_dict()), child.lineage.parameter_binding.point))
         content = replace(content, evidence=(*content.evidence, published_account))
     assessment = assessment_request(center_evidence)
-    assessment = replace(assessment, protocol=replace(assessment.protocol, parameter_protocol=plan.design.protocol),
+    protocol = m.NeighborhoodSelfCheckProtocol(
+        **{name: getattr(assessment.protocol, name) for name in (
+            "version", "baseline_window", "standard_scenario", "stress_scenario",
+            "rolling_window_days", "rolling_step_days", "quantile_method", "minimum_rolling_windows",
+            "bootstrap_repetitions", "bootstrap_block_length", "seed", "reconciliation_tolerance", "pbo_blocks")},
+        parameter_protocol=plan.design.protocol,
+    )
+    assessment = replace(assessment, protocol=protocol,
                          perturbations=tuple(links), evidence=(*center_evidence, *accounts),
                          parameter_designs=(plan.design,))
     panel = assess_candidates(assessment)
@@ -209,12 +224,11 @@ def test_parameter_plan_allows_genuine_lookback_extension(managed_evaluation):
     request = replace(request, strategy=replace(request.strategy, payload=payload),
                       runtime_binding={**request.runtime_binding, "implementation_sha256": source_hash},
                       windows=(replace(request.windows[0], start=date(2026, 9, 16)),))
-    center, plan, _, children = parameter_plan(research, request,
-        child_parameters=lambda point: {"lookback": 2 if point.coordinates[0] > .5 else 1})
+    center, plan, _, children = parameter_plan(research, request, vary_lookback=True)
     central_start = center.input_bindings["full"].plan.requests["flow"].start
     assert any(x.input_bindings["full"].plan.requests["flow"].start < central_start for x in children)
     assert all(research.evaluation.prepare(x).lineage.parameter_binding for x in children)
-    assert len(plan.children) == 2
+    assert len(plan.children) == 5
 
 
 @pytest.mark.parametrize("failure", ["source_contract", "raw_values"])

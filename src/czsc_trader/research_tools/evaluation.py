@@ -591,6 +591,10 @@ def _validate_costs(costs: tuple[EvaluationCost, ...]) -> None:
 def _request_contract(request: EvaluationRequest, *, require_execution: bool = True) -> tuple[dict[str, object], str]:
     if not isinstance(request, EvaluationRequest):
         raise TypeError("research evaluation requires an EvaluationRequest")
+    if request.lineage is not None and request.lineage.parameter_binding is not None:
+        from strategy_evaluator import ParameterNeighborhoodBinding
+        if type(request.lineage.parameter_binding.point) is not ParameterNeighborhoodBinding:
+            raise ValueError("legacy parameter bindings are historical read-only")
     root = Path(request.repository_root).resolve()
     if not root.is_dir():
         raise ValueError("evaluation repository root is unavailable")
@@ -727,7 +731,7 @@ def _request_identity_payload(
 ) -> dict[str, object]:
     """Project already authenticated request values without loading mutable source files."""
     return {
-        "schema_version": 6,
+        "schema_version": 7,
         "content_sha256": content_sha256,
         "lineage": None if request.lineage is None else request.lineage.derivation.to_dict(),
         "parameter_binding": None if request.lineage is None or request.lineage.parameter_binding is None
@@ -1069,7 +1073,7 @@ def serialize_evaluation_evidence(request: EvaluationRequest, result: Evaluation
         }
         runs.append(item)
     return {
-            "schema_version": 7,
+            "schema_version": 8,
             "source_kind": "published_result",
             "request_identity": _request_identity_payload(
                 request, result.runs[0].identity.content_sha256, result.runtime_binding_hash
@@ -1101,11 +1105,11 @@ def validate_evaluation_evidence(value: dict) -> None:
     from strategy_evaluator import AssessmentEvidence, ReplayEvidence, audit_replay, AuditStatus
     from ..backtesting.audit_adapter import _records
 
-    if not isinstance(value, dict) or value.get("schema_version") != 7 or value.get("source_kind") != "published_result":
-        raise ValueError("account evaluation evidence requires schema 7 published_result")
+    if not isinstance(value, dict) or type(value.get("schema_version")) is not int or value.get("schema_version") not in (7, 8) or value.get("source_kind") != "published_result":
+        raise ValueError("account evaluation evidence requires supported published_result schema")
     request = value["request_identity"]
-    if request.get("schema_version") != 6:
-        raise ValueError("evaluation request requires schema 6 market execution identities")
+    if type(request.get("schema_version")) is not int or (value["schema_version"], request.get("schema_version")) not in ((7, 6), (8, 7)):
+        raise ValueError("evaluation request and evidence schema versions differ")
     rules = MarketExecutionRules.from_dict(request.get("market_rules"))
     from ..backtesting.execution_data import MarketSecurity
 
@@ -1129,6 +1133,11 @@ def validate_evaluation_evidence(value: dict) -> None:
         raise ValueError("saved input bindings differ from authenticated request")
     parameter_binding = request["parameter_binding"]
     point = None if parameter_binding is None else ParameterEvaluationBinding.from_dict(parameter_binding).point
+    if point is not None:
+        from strategy_evaluator import ParameterPointBinding, ParameterNeighborhoodBinding
+        expected = ParameterPointBinding if value["schema_version"] == 7 else ParameterNeighborhoodBinding
+        if type(point) is not expected:
+            raise ValueError("parameter binding differs from evidence schema version")
     if any(item.parameter_point != point for item in projected):
         raise ValueError("assessment parameter point differs from authenticated request")
     if not projected or len(projected) != len(value["runs"]):
