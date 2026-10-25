@@ -1,0 +1,38 @@
+{
+  "status": "PASS",
+  "old_candidate_id": "C9304",
+  "new_candidate_id": "C9700",
+  "old_content_sha256": "abf26e331cac4cd030c30aa5f84269e0471d3a4c31b36f5e9f8a0dbf687beda1",
+  "new_content_sha256": "3f92791519e1f9422fef11bb5c9177db4d9d83e628ea5f5cba0ec684b9530d5f",
+  "old_source_sha256": "70073b012875a5ef9924d0af54365d2fac68ef4c57635bfa43bd47681e239ff6",
+  "new_source_sha256": "77f92743dd7c1ceb833848fc54573e676679d3284f41081128b5d6cae6228083",
+  "source_root": "research/S015/experiments/EX082_20261025/src/strategy_runtime",
+  "parameters": {
+    "center_kind": "median",
+    "lookback": 3,
+    "allocation": 1.0,
+    "minimum_repair_space": 0.0017298986606429072
+  },
+  "parameters_unchanged": true,
+  "old_source_unchanged": true,
+  "allowed_change": "Remove LAST definition and only the calendar_request end > LAST guard; preserve FIRST, original error text and all other source bytes.",
+  "source_files": [
+    {
+      "path": "strategies/price_process.py",
+      "old_file_sha256": "8ae8b895bea8a136bd8250829665fb123fb5827bd280aa41922f3f8c8f2888d3",
+      "new_file_sha256": "d60c8c594bf3019fd1c08ab8562217d60159d35d6154c7098c073bf809353267",
+      "old_bytes": 10887,
+      "new_bytes": 10830,
+      "changed": true,
+      "exact_allowed_transformation": true
+    }
+  ],
+  "minimal_diff": [
+    {
+      "path": "strategies/price_process.py",
+      "unified_diff": "--- C9304/strategies/price_process.py\n+++ C9700/strategies/price_process.py\n@@ -21,7 +21,6 @@\n )\r\n \r\n FIRST = date(2025, 1, 2)\r\n-LAST = date(2026, 10, 21)\r\n TIMES = (\"10:00\", \"10:30\", \"11:00\", \"11:30\", \"13:30\", \"14:00\", \"14:30\", \"15:00\")\r\n def validate_parameters(parameters):\r\n     p = dict(parameters)\r\n@@ -198,7 +197,7 @@\n         return self._definition\r\n \r\n     def calendar_request(self, tradable_window):\r\n-        if tradable_window.start < FIRST or tradable_window.end > LAST:\r\n+        if tradable_window.start < FIRST:\r\n             raise ValueError(\"outside approved development windows\")\r\n         return DataRequest(\r\n             Dataset.TRADING_CALENDAR,\r\n"
+    }
+  ],
+  "registration": "NOT_REQUESTED",
+  "research_evaluation": "NOT_REQUESTED"
+}

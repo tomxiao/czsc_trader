@@ -1,0 +1,10 @@
+{
+  "status": "SIGNAL_COMPARISON_ASSERTION_CORRECTED",
+  "original_assertion": "Raw full signal objects equal across distinct candidate identities",
+  "original_observation": "Standard account economic comparison EQUIVALENT with no differences; raw signals differ solely in all434 decision_id values.",
+  "cause": "decision_id hashes candidate reference, signal date and target. Identity change necessarily changes it.",
+  "scope": "Preserve first failure and account. Compare all other signal fields exactly and independently authenticate both sets of decision IDs. No economic tolerance or strategy changes.",
+  "basis": "src/czsc_trader/backtesting/srt_bridge.py:77-81",
+  "new_accounts": "Reuse the published standard account; run only the remaining fee_x2 account.",
+  "not_a_search": true
+}

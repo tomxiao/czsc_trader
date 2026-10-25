@@ -1,0 +1,217 @@
+{
+  "status": "PASS",
+  "inspection_run_id": "inspection-50bfbe0f50184ba08d7070bc739a3292",
+  "report_path": "research/S015/experiments/EX082_20261025/others/inspection_report.json",
+  "report_file_sha256": "058c07ad278a46584f4b353667add349a4ef7296d086633d970eb9dfc1b02218",
+  "design_path": "research/S015/experiments/EX082_20261025/others/pte_design.json",
+  "design_file_sha256": "e403eb6997661453cad9fe0f1fcfe3ff3219064e5545b0edb8014bbdf7f3c2c9",
+  "protocol_reference": {
+    "type": "ResearchEvidenceRef",
+    "owner": {
+      "type": "ResearchEvidenceOwner",
+      "strategy_id": "S015",
+      "experiment_id": "EX082_20261025"
+    },
+    "path": "inspection/081d4a7d0b6b1154b00c209219f7f760fb336b12c0e1efba84d392e861ec4760",
+    "sha256": "081d4a7d0b6b1154b00c209219f7f760fb336b12c0e1efba84d392e861ec4760"
+  },
+  "official_pte_status": "PASS",
+  "method": "Authenticate public trace/protocol references; check all predeclared Decimal cycle economics, target, phase, health and event completeness; compare full restart/continuous business snapshots.",
+  "results": [
+    {
+      "scenario_id": "c9304_partial_full_cycle",
+      "variant": "restart",
+      "status": "PASS",
+      "official_scenario_status": "PASS",
+      "trace_reference": {
+        "owner": {
+          "experiment_id": "EX082_20261025",
+          "strategy_id": "S015",
+          "type": "ResearchEvidenceOwner"
+        },
+        "path": "inspection/b20e236f4bbc091f6563a60f0ebe0a696fe13abad8e8b3c0360673d7004199d9",
+        "sha256": "b20e236f4bbc091f6563a60f0ebe0a696fe13abad8e8b3c0360673d7004199d9",
+        "type": "ResearchEvidenceRef"
+      },
+      "trace_sha256": "b20e236f4bbc091f6563a60f0ebe0a696fe13abad8e8b3c0360673d7004199d9",
+      "expected_event_count": 19,
+      "observed_event_count": 19,
+      "observed_nonempty_cycle_states": 14,
+      "identity_pair_count": 1,
+      "missing_events": [],
+      "errors": [],
+      "last_observed_event": "exit_repeated"
+    },
+    {
+      "scenario_id": "c9304_partial_full_cycle",
+      "variant": "continuous",
+      "status": "PASS",
+      "official_scenario_status": "PASS",
+      "trace_reference": {
+        "owner": {
+          "experiment_id": "EX082_20261025",
+          "strategy_id": "S015",
+          "type": "ResearchEvidenceOwner"
+        },
+        "path": "inspection/b20e236f4bbc091f6563a60f0ebe0a696fe13abad8e8b3c0360673d7004199d9",
+        "sha256": "b20e236f4bbc091f6563a60f0ebe0a696fe13abad8e8b3c0360673d7004199d9",
+        "type": "ResearchEvidenceRef"
+      },
+      "trace_sha256": "b20e236f4bbc091f6563a60f0ebe0a696fe13abad8e8b3c0360673d7004199d9",
+      "expected_event_count": 19,
+      "observed_event_count": 19,
+      "observed_nonempty_cycle_states": 14,
+      "identity_pair_count": 1,
+      "missing_events": [],
+      "errors": [],
+      "last_observed_event": "exit_repeated"
+    },
+    {
+      "scenario_id": "c9304_partial_cancel_blocked",
+      "variant": "restart",
+      "status": "PASS",
+      "official_scenario_status": "PASS",
+      "trace_reference": {
+        "owner": {
+          "experiment_id": "EX082_20261025",
+          "strategy_id": "S015",
+          "type": "ResearchEvidenceOwner"
+        },
+        "path": "inspection/e1326d105e037149b69d2984ed8cec0d7335bade19943241b7a3a86a74914e9e",
+        "sha256": "e1326d105e037149b69d2984ed8cec0d7335bade19943241b7a3a86a74914e9e",
+        "type": "ResearchEvidenceRef"
+      },
+      "trace_sha256": "e1326d105e037149b69d2984ed8cec0d7335bade19943241b7a3a86a74914e9e",
+      "expected_event_count": 9,
+      "observed_event_count": 9,
+      "observed_nonempty_cycle_states": 8,
+      "identity_pair_count": 1,
+      "missing_events": [],
+      "errors": [],
+      "last_observed_event": "entry_cancelled"
+    },
+    {
+      "scenario_id": "c9304_partial_cancel_blocked",
+      "variant": "continuous",
+      "status": "PASS",
+      "official_scenario_status": "PASS",
+      "trace_reference": {
+        "owner": {
+          "experiment_id": "EX082_20261025",
+          "strategy_id": "S015",
+          "type": "ResearchEvidenceOwner"
+        },
+        "path": "inspection/e1326d105e037149b69d2984ed8cec0d7335bade19943241b7a3a86a74914e9e",
+        "sha256": "e1326d105e037149b69d2984ed8cec0d7335bade19943241b7a3a86a74914e9e",
+        "type": "ResearchEvidenceRef"
+      },
+      "trace_sha256": "e1326d105e037149b69d2984ed8cec0d7335bade19943241b7a3a86a74914e9e",
+      "expected_event_count": 9,
+      "observed_event_count": 9,
+      "observed_nonempty_cycle_states": 8,
+      "identity_pair_count": 1,
+      "missing_events": [],
+      "errors": [],
+      "last_observed_event": "entry_cancelled"
+    }
+  ],
+  "restart_comparisons": [
+    {
+      "scenario_id": "c9304_partial_full_cycle",
+      "restart_after": [
+        "entry_partial"
+      ],
+      "observed_business_state_equality": true,
+      "status": "PASS",
+      "declared_recovery_scope_demonstrated": true
+    },
+    {
+      "scenario_id": "c9304_partial_cancel_blocked",
+      "restart_after": [
+        "entry_partial"
+      ],
+      "observed_business_state_equality": true,
+      "status": "PASS",
+      "declared_recovery_scope_demonstrated": true
+    }
+  ],
+  "supported_if_pass": [
+    "Complete positive opportunity: zero/partial/full fills, hold, EXITING, full exit and restart after partial fill.",
+    "Cancellation path: restart after partial fill, then reconcile cancellation to BLOCKED while retaining actual holdings and entry-cycle budget/target."
+  ],
+  "not_covered": [
+    "Restart after cancellation.",
+    "Operator acknowledgement, subsequent replenishment or automatic recovery from BLOCKED.",
+    "Forward-date operation, independent economic validation, freeze or live deployment approval."
+  ],
+  "preservation": "The original first-run FAIL and entry_cycle_audit_first.json remain unchanged.",
+  "reuse_provenance": {
+    "helper_source_sha256": {
+      "research/S015/experiments/EX081_20261025/src/audit_entry_cycle.py": "ac87a9a1ba93421fcf0d380825024f1d3d95254fedb53ecf348b1f4d522689f9",
+      "research/S015/experiments/EX081_20261025/src/audit_entry_cycle_v2.py": "20e907ab16618e9357587f2de4c64f3cf0a1baa14fede3486c38938b3071d1e6"
+    },
+    "helpers_unchanged_after_audit": true,
+    "candidate_facts_before": {
+      "C9304": {
+        "content_sha256": "abf26e331cac4cd030c30aa5f84269e0471d3a4c31b36f5e9f8a0dbf687beda1",
+        "source_sha256": "70073b012875a5ef9924d0af54365d2fac68ef4c57635bfa43bd47681e239ff6",
+        "registration_sha256": "32e59861d45d09eaa26162742fdd59a13800fffe24b05752a16fcea28bba7351",
+        "source_root": "research/S015/assets/candidates/C9304/source/70073b012875a5ef9924d0af54365d2fac68ef4c57635bfa43bd47681e239ff6/strategy_runtime",
+        "source_files": {
+          "strategies/price_process.py": "8ae8b895bea8a136bd8250829665fb123fb5827bd280aa41922f3f8c8f2888d3"
+        }
+      },
+      "C9700": {
+        "content_sha256": "3f92791519e1f9422fef11bb5c9177db4d9d83e628ea5f5cba0ec684b9530d5f",
+        "source_sha256": "77f92743dd7c1ceb833848fc54573e676679d3284f41081128b5d6cae6228083",
+        "registration_sha256": "bbdf9c59455fcec79217fcf70d335c594f1f2e3fcbf63531ae798cf6bfe17ef1",
+        "source_root": "research/S015/assets/candidates/C9700/source/77f92743dd7c1ceb833848fc54573e676679d3284f41081128b5d6cae6228083/strategy_runtime",
+        "source_files": {
+          "strategies/price_process.py": "d60c8c594bf3019fd1c08ab8562217d60159d35d6154c7098c073bf809353267"
+        }
+      }
+    },
+    "candidate_facts_after": {
+      "C9304": {
+        "content_sha256": "abf26e331cac4cd030c30aa5f84269e0471d3a4c31b36f5e9f8a0dbf687beda1",
+        "source_sha256": "70073b012875a5ef9924d0af54365d2fac68ef4c57635bfa43bd47681e239ff6",
+        "registration_sha256": "32e59861d45d09eaa26162742fdd59a13800fffe24b05752a16fcea28bba7351",
+        "source_root": "research/S015/assets/candidates/C9304/source/70073b012875a5ef9924d0af54365d2fac68ef4c57635bfa43bd47681e239ff6/strategy_runtime",
+        "source_files": {
+          "strategies/price_process.py": "8ae8b895bea8a136bd8250829665fb123fb5827bd280aa41922f3f8c8f2888d3"
+        }
+      },
+      "C9700": {
+        "content_sha256": "3f92791519e1f9422fef11bb5c9177db4d9d83e628ea5f5cba0ec684b9530d5f",
+        "source_sha256": "77f92743dd7c1ceb833848fc54573e676679d3284f41081128b5d6cae6228083",
+        "registration_sha256": "bbdf9c59455fcec79217fcf70d335c594f1f2e3fcbf63531ae798cf6bfe17ef1",
+        "source_root": "research/S015/assets/candidates/C9700/source/77f92743dd7c1ceb833848fc54573e676679d3284f41081128b5d6cae6228083/strategy_runtime",
+        "source_files": {
+          "strategies/price_process.py": "d60c8c594bf3019fd1c08ab8562217d60159d35d6154c7098c073bf809353267"
+        }
+      }
+    },
+    "candidate_registration_and_source_unchanged": true,
+    "report_origin_verified": {
+      "type": "CandidateOrigin",
+      "candidate": {
+        "type": "CandidateKey",
+        "strategy_id": "S015",
+        "candidate_id": "C9700"
+      },
+      "content_sha256": "3f92791519e1f9422fef11bb5c9177db4d9d83e628ea5f5cba0ec684b9530d5f",
+      "registration": {
+        "type": "ResearchEvidenceRef",
+        "owner": {
+          "type": "ResearchEvidenceOwner",
+          "strategy_id": "S015",
+          "experiment_id": "EX082_20261025"
+        },
+        "path": "inspection/bbdf9c59455fcec79217fcf70d335c594f1f2e3fcbf63531ae798cf6bfe17ef1",
+        "sha256": "bbdf9c59455fcec79217fcf70d335c594f1f2e3fcbf63531ae798cf6bfe17ef1"
+      }
+    },
+    "method": "Reuse the two unchanged EX081 public-evidence audit helpers with explicit EX082 report/design/output paths; scene labels remain protocol labels, not candidate identity.",
+    "draft_audit_sha256": "a83a5be2e8f9ffc48c4ca464d6fd7a3e1a707bd561bba4766af70c9964b8bed1"
+  }
+}
