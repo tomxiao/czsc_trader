@@ -475,6 +475,11 @@ def _bounded_decisions(axis):
                 )
             if within:
                 value = int(exact) if axis.kind is ParameterKind.INTEGER else float(exact)
+                if (isinstance(domain, RealDomain) and domain.quantum is None
+                        and abs(_number(value) - _number(axis.center)) > maximum):
+                    # Float conversion must not turn an exact legal endpoint into
+                    # an over-limit step. Keep the original cap, moving inward one ULP.
+                    value = math.nextafter(value, float(axis.center))
                 m.require(value != axis.center and _contains(domain, value),
                           "bounded change cannot be represented as a distinct legal value")
         if value is None:

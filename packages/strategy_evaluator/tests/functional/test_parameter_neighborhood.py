@@ -1,6 +1,7 @@
 """Contract and exact-boundary tests for complete typed neighborhoods."""
 
 from dataclasses import replace
+from fractions import Fraction
 import math
 
 import pytest
@@ -490,6 +491,47 @@ def test_zero_center_requires_absolute_scale_and_missing_scale_is_not_exemption(
         local_axis(center=1.0, domain=RealDomain(0.99, 1.01))
     with pytest.raises(ValueError, match="distinct legal value"):
         local_axis(center=1e308, domain=RealDomain(0.0, 1.7e308), limit=AbsoluteChangeLimit(1.0))
+
+
+@pytest.mark.parametrize("center, limit", [
+    (0.002002002002001957, RelativeChangeLimit(0.05)),
+    (-0.002002002002001957, RelativeChangeLimit(0.05)),
+    (0.0017298986606429072, RelativeChangeLimit(0.05)),
+    (0.002002002002001957, AbsoluteChangeLimit(0.00010010010010009785)),
+    (0.0, AbsoluteChangeLimit(0.00010010010010009785)),
+])
+def test_continuous_endpoints_preserve_both_directions_within_exact_limit(center, limit):
+    result = build(local_request(local_axis(
+        center=center, domain=RealDomain(-0.05, 0.05), limit=limit)))
+    assert result.design.point_count == 2
+    origin = Fraction(str(center))
+    maximum = (abs(origin) * Fraction(str(limit.fraction))
+               if isinstance(limit, RelativeChangeLimit) else Fraction(str(limit.amount)))
+    for decision in result.design.axis_applicability[0].decisions:
+        assert decision.status is ParameterStepStatus.INCLUDED
+        change = (Fraction(str(decision.value)) - origin) * decision.direction
+        assert 0 < change <= maximum
+        assert Fraction(decision.change) == change
+        # The chosen endpoint is the closest inward float, not an arbitrary smaller step.
+        nearest = float(origin + decision.direction * maximum)
+        assert decision.value in (nearest, math.nextafter(nearest, center))
+    restored = ParameterNeighborhoodResult.from_dict(result.to_dict())
+    assert restored == result and restored.sha256 == result.sha256
+
+
+@pytest.mark.parametrize("closed, expected", [(True, 2), (False, 1)])
+def test_continuous_endpoint_respects_exact_open_or_closed_domain(closed, expected):
+    result = build(local_request(local_axis(center=1.0,
+        domain=RealDomain(0.95, 2.0, lower_closed=closed))))
+    assert result.design.point_count == expected
+    assert result.design.axis_applicability[0].decisions[0].status is (
+        ParameterStepStatus.INCLUDED if closed else ParameterStepStatus.OUT_OF_DOMAIN)
+
+
+def test_continuous_rounding_cannot_collapse_a_direction_to_center():
+    with pytest.raises(ValueError, match="distinct legal value"):
+        local_axis(center=5e-324, domain=RealDomain(0.0, 1.0),
+                   limit=RelativeChangeLimit(0.05))
 
 
 def test_empty_or_constraint_excluded_local_space_has_explicit_inapplicability():
