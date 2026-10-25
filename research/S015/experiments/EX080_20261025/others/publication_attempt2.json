@@ -1,0 +1,43 @@
+{
+  "status": "ASSESSMENT_ASSEMBLY_FAILED",
+  "code": "ASSESSMENT_EVIDENCE",
+  "evaluation_id": "31e090f5681aac2c9dbe01a666fcac8dad005afe971373c35e9f299683a47362",
+  "message": "Source CANDIDATES/9 automatically imports all records from historical two-window candidate evaluation references, conflicting with the same economic evaluation ID of an actual exact single-window center replay. No candidate, numerical result or plan is changed.",
+  "repair": "Create CANDIDATES/10 as a provenance-only successor: bind centers to actual single-window full evaluations; preserve original 415 accounts through C9 predecessor and supporting evidence, not as current candidate evaluation references. Then assemble ASSESSMENT/5 from C10.",
+  "previous_report": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX080_20261025"
+    },
+    "evidence_id": "1ccd536e7615704b590bf71b9a0c53382fc237b24a008bcc559150bfceff79b6.json",
+    "sha256": "1ccd536e7615704b590bf71b9a0c53382fc237b24a008bcc559150bfceff79b6",
+    "media_type": "application/json",
+    "name": "experiment-report",
+    "schema": "experiment_report",
+    "schema_version": 1
+  },
+  "experiment_validation": {
+    "type": "ExperimentValidation",
+    "status": "PASS",
+    "scope": "REPORT_PUBLICATION",
+    "issues": [],
+    "report": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX080_20261025"
+      },
+      "evidence_id": "1ccd536e7615704b590bf71b9a0c53382fc237b24a008bcc559150bfceff79b6.json",
+      "sha256": "1ccd536e7615704b590bf71b9a0c53382fc237b24a008bcc559150bfceff79b6",
+      "media_type": "application/json",
+      "name": "experiment-report",
+      "schema": "experiment_report",
+      "schema_version": 1
+    }
+  },
+  "original_input_sha256": "814ca67487d6b0125aaa77ee8e56d8bd07b145c60f28e73ea782f93ecdab5929",
+  "assessment5_published": false
+}

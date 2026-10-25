@@ -1,0 +1,112 @@
+{
+  "version": "S015-EX080-price-repair-stage4-v1",
+  "authorization": "批准自主执行并完成阶段四",
+  "source_candidates": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S015"
+    },
+    "stage": "CANDIDATES",
+    "revision": 9,
+    "content_sha256": "31272c048a128a7f0bbbadb784baa500d45120ed215ac738c59044e6eef5698b"
+  },
+  "source_mandate": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S015"
+    },
+    "stage": "MANDATE",
+    "revision": 5,
+    "content_sha256": "21b74f69453b3f9cd93ca674981e6f6cd0255ddb336af444215c3f457f83354b"
+  },
+  "centers": [
+    "C7600",
+    "C7601",
+    "C7604",
+    "C7605",
+    "C9028",
+    "C9040",
+    "C9050",
+    "C9053",
+    "C9055",
+    "C9056",
+    "C9058",
+    "C9059",
+    "C9079",
+    "C9100",
+    "C9108",
+    "C9109",
+    "C9112",
+    "C9113",
+    "C9116",
+    "C9122",
+    "C9123",
+    "C9302",
+    "C9303",
+    "C9304",
+    "C9307",
+    "C9309",
+    "C9324",
+    "C9327",
+    "C9328"
+  ],
+  "formal_new_accounts": {
+    "neighbors": 177,
+    "stress": 24
+  },
+  "reused_accounts": {
+    "standard_centers": 29,
+    "stress": 5,
+    "common_415": 29
+  },
+  "technical_duplicates": 2,
+  "parameter_policy": {
+    "version": "S015-EX080-price-repair-stage4-v1",
+    "payload_root": "parameters",
+    "axes": {
+      "center_kind": {
+        "domain": [
+          "mean",
+          "median"
+        ],
+        "meaning": "price-center definition",
+        "treatment": "structure fixed, not a local perturbation"
+      },
+      "lookback": {
+        "domain": "integer[1,30]",
+        "unit": "sessions",
+        "minimum_legal_step": 1,
+        "relative_limit": 0.05
+      },
+      "allocation": {
+        "domain": "continuous(0,1]",
+        "unit": "fraction",
+        "relative_limit": 0.05,
+        "meaning": "entry-cycle cash allocation; .025 search grid is not a lawful quantum"
+      },
+      "minimum_repair_space": {
+        "domain": "continuous[0,.05]",
+        "unit": "price_ratio",
+        "positive_center": "relative .05",
+        "zero_reference_scale": 0.002002002002001957,
+        "zero_absolute_limit": 0.00010010010010009785,
+        "zero_reason": "Standard roundtrip fee hurdle is an ex ante business scale, not performance-selected. Zero has no relative scale; use5% of this reference only for zero centers."
+      }
+    },
+    "constraints": "Pure payload domains only; no performance-based feasibility, no clipping or rounding. Fixed center_kind and out-of-cap lookback.",
+    "comparison": "Exact design comparison_sha256, actual scales and shapes; never force a global ranking."
+  },
+  "economic_targets": "Unchanged MANDATE/5; neighbor joint >=ceil(13N/16), all points DD<=25%; do not apply center frequency or415 thresholds to neighbors.",
+  "time_and_uncertainty": "Reuse standard434 centers; rolling252 step21 including all fitting starts, annual partial years retained and marked; bootstrap2000/block10/seed13, PBO10blocks; diagnostics not hard gates.",
+  "family": "Preserve original372 retained columns and append authenticated same-contract stage2/3 decisions after explicit content/refactor-only dedup. Never dedup all equal performance into independent hypotheses. Detailed source/exclusion manifest fixed before statistical assessment; all known earlier selection gaps disclosed.",
+  "ranking": "Preserve original raw Pareto and6 ordered diagnostics, original bins/variants, exact neighborhood comparison hashes; whole-set and supplemental same-method groups. No candidate preselected.",
+  "resources": {
+    "workers": 8,
+    "native_threads": 1,
+    "seed": 13
+  },
+  "scope": "Same434/415, inputs,costs,capital,execution; no new data, no search/neighborhood promotion, stage5/freeze/PTE/prod.",
+  "reuse_limit": "Existing standard centers and same-content stress reuse. Neighborhood accounts require new frozen-plan lineage; preserve any stage3 economic duplicate without editing its provenance."
+}
