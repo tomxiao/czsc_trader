@@ -31,6 +31,7 @@ from .candidates import (
 from .freeze_contracts import (
     ResearchEvidenceOwner, ResearchEvidenceRef,
     CandidateOrigin, CandidateInspectionReport, CandidateSelectionSubject, FrozenMigrationSelectionSubject,
+    FrozenObservationUpgradeSelectionSubject,
     DecisionAction, DecisionReference, FreezeCandidateRequest, FreezeFile,
     FreezePlan, FreezeReceipt, FreezeRequestId, FreezeStatus,
     FreezeSubject, FrozenVersionReference, InspectedRelease, InspectionCaseResult, InspectionGoalResult, InspectionReason,
@@ -43,6 +44,7 @@ __all__ = [
     "PaperTradingApproval",
     "ResearchEvidenceOwner", "ResearchEvidenceRef",
     "CandidateOrigin", "CandidateInspectionReport", "CandidateSelectionSubject", "FrozenMigrationSelectionSubject",
+    "FrozenObservationUpgradeSelectionSubject",
     "DecisionAction", "DecisionReference", "FreezeCandidateRequest", "FreezeFile",
     "FreezePlan", "FreezeReceipt", "FreezeRequestId", "FreezeStatus",
     "FreezeSubject", "FrozenVersionReference", "InspectedRelease", "InspectionCaseResult", "InspectionGoalResult", "InspectionReason",

@@ -24,7 +24,7 @@ from .trading_window import SHANGHAI
 ACCOUNT_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
 INPUT_LIMIT = 5 * 1024 * 1024
 OUTPUT_LIMIT = 20 * 1024 * 1024
-CACHE_RENDER_REVISION = "pte-forward-chart-v8"
+CACHE_RENDER_REVISION = "pte-forward-chart-v9"
 
 
 def _path_comparison_key(path: Path) -> str:
@@ -264,13 +264,34 @@ class AccountChartService:
     def _decision(row: dict[str, Any]) -> dict[str, Any]:
         payload = dict(row.get("payload") or {})
         observation = payload.get("observation")
-        if not isinstance(observation, dict) or observation.get("status") != "READY":
+        is_v3_unavailable = isinstance(observation, dict) and (
+            observation.get("contract_version") == "strategy_observation.v3"
+            and observation.get("status") == "UNAVAILABLE"
+        )
+        if not isinstance(observation, dict) or (observation.get("status") != "READY" and not is_v3_unavailable):
             message = observation.get("message") if isinstance(observation, dict) else None
             raise ValueError(message or f'decision {row["decision_id"]} has no chart observation')
-        fact = ChartObservation.from_dict({
-            "status": observation["status"], "series": observation["series"],
-            "facts": observation.get("facts", []),
-        })
+        display = {"status": observation["status"]}
+        version = observation.get("contract_version")
+        if is_v3_unavailable:
+            from strategy_runtime import ObservationUnavailable
+
+            unavailable = ObservationUnavailable.from_dict(observation)
+            display["message"] = unavailable.message
+        else:
+            display.update(series=observation["series"], facts=observation.get("facts", []))
+        if version == "strategy_observation.v3" and not is_v3_unavailable:
+            from strategy_runtime import StrategyObservation
+
+            authenticated = StrategyObservation.from_dict(observation)
+            display.update(
+                signal_panel=authenticated.signal_panel.to_dict(),
+                definition_sha256=authenticated.definition_sha256,
+                release_hash=authenticated.strategy.release_hash,
+            )
+        elif not is_v3_unavailable and (version not in (None, "strategy_observation.v2") or "signal_panel" in observation):
+            raise ValueError("unsupported chart observation contract")
+        fact = ChartObservation.from_dict(display)
         return {
             "account_id": row["account_id"],
             "symbol": payload["symbol"],
@@ -291,6 +312,14 @@ class AccountChartService:
             isinstance(observation, dict)
             and observation.get("status") == "READY"
             and isinstance(observation.get("series"), list)
+        )
+
+    @classmethod
+    def _has_chart_observation(cls, row: dict[str, Any]) -> bool:
+        observation = (row.get("payload") or {}).get("observation")
+        return cls._has_ready_observation(row) or (
+            isinstance(observation, dict) and observation.get("contract_version") == "strategy_observation.v3"
+            and observation.get("status") == "UNAVAILABLE"
         )
 
     @staticmethod
@@ -345,11 +374,11 @@ class AccountChartService:
         decisions = [
             self._decision(row)
             for row in forward_decision_rows
-            if self._has_ready_observation(row)
+            if self._has_chart_observation(row)
         ]
         omitted_decision_count = len(forward_decision_rows) - len(decisions)
         observation_start = min(
-            (str(row["signal_date"]) for row in decisions), default=None,
+            (str(row["signal_date"]) for row in decisions if row["observation"]["status"] == "READY"), default=None,
         )
         intents = [
             self._intent(row)

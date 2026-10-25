@@ -15,6 +15,7 @@ _EXPORTS = {
     "PreparedFrozenRuntimeMigration": "runtime_migration",
     "prepare_frozen_runtime_migration": "runtime_migration",
     "validate_frozen_runtime_migration": "runtime_migration",
+    "validate_frozen_observation_upgrade": "runtime_migration",
     "FrozenRuntimeUpgradeRequest": "runtime_migration",
     "PreparedFrozenRuntimeUpgrade": "runtime_migration",
     "FrozenRuntimeUpgradeReceipt": "runtime_migration",

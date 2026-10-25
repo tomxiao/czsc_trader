@@ -84,7 +84,7 @@ def record_research_decision(context: RepositoryContext, decision: f.ResearchDec
         registered = registry.get_candidate_registration(subject.candidate)
         if (subject.content_sha256, subject.registration_sha256) != (registered.content_sha256, registered.record_sha256):
             raise ValueError("selection differs from candidate registration identity")
-    elif type(subject) is f.FrozenMigrationSelectionSubject:
+    elif type(subject) in (f.FrozenMigrationSelectionSubject, f.FrozenObservationUpgradeSelectionSubject):
         validate_migration_selection(context, subject)
     elif type(subject) is f.StageAdvanceSubject:
         reference, _ = _delivery(context, subject.delivery)
@@ -175,7 +175,7 @@ def inspect_candidate(context: RepositoryContext, request: CandidateInspectionRe
         raise InspectionInputError("INVALID_REFERENCE", "selection", str(exc)) from exc
     subject = selection.subject
     if (selection.action is not f.DecisionAction.APPROVE
-            or type(subject) not in (f.CandidateSelectionSubject, f.FrozenMigrationSelectionSubject)
+            or type(subject) not in (f.CandidateSelectionSubject, f.FrozenMigrationSelectionSubject, f.FrozenObservationUpgradeSelectionSubject)
             or subject.candidate != request.candidate or subject.content_sha256 != registration.content_sha256
             or (isinstance(subject, f.CandidateSelectionSubject) and subject.registration_sha256 != registration.record_sha256)):
         raise InspectionInputError("IDENTITY_MISMATCH", "selection", "inspection requires matching candidate selection")
@@ -223,7 +223,7 @@ def inspect_candidate(context: RepositoryContext, request: CandidateInspectionRe
         failure_reason = f.InspectionReason.CONTENT_MISMATCH
         if candidate.payload["runtime"].get("contract_version") != 2 or candidate.payload.get("decision_feedback", "UNDECLARED") == "UNDECLARED":
             raise Interrupted(f.InspectionReason.UNSUPPORTED_CONTRACT, "inspection requires implementation contract 2 and declared feedback")
-        if type(subject) is f.FrozenMigrationSelectionSubject:
+        if type(subject) in (f.FrozenMigrationSelectionSubject, f.FrozenObservationUpgradeSelectionSubject):
             t = request.target
             validate_migration_target(context, subject, t.version, t.parent_version,
                                       t.selection_data_cutoff.isoformat(), t.forward_start.isoformat(), available=True)

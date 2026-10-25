@@ -6,3 +6,11 @@
 .embedded .forward-brand p{font-size:11px}
 .embedded .forward-toolbar{padding:6px 12px}
 .embedded .forward-stage{min-height:0}
+.signal-panel-controls{position:absolute;z-index:2;display:flex;align-items:center;gap:8px;height:22px;min-width:0;font-size:11px;background:var(--surface)}
+.signal-panel-controls[hidden],.signal-panel-legend[hidden]{display:none}
+.signal-panel-controls select{min-width:0;max-width:60%;height:22px;border:1px solid var(--line);border-radius:4px;padding:1px 5px;background:var(--surface2);color:var(--text);font-size:11px}
+.signal-panel-controls select:focus-visible{outline:2px solid var(--position);outline-offset:1px}
+.signal-panel-unit{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+.signal-panel-legend{position:absolute;z-index:2;display:flex;gap:12px;height:14px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;font-size:10px;line-height:14px;scrollbar-width:none;background:var(--surface)}
+.signal-panel-legend span{flex:none}
+.signal-panel-description{color:var(--muted);margin-top:4px;white-space:normal}

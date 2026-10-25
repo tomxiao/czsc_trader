@@ -167,7 +167,9 @@ def _decision_from_plan(
     try:
         observation = materialize_observation(definition, plan).to_dict()
     except RuntimeContractError as exc:
-        observation = unavailable_observation(str(exc)).to_dict()
+        observation = unavailable_observation(
+            str(exc), contract_version=definition.observation.to_dict()["contract_version"],
+        ).to_dict()
     payload = {
         "contract_version": "advice.v6" if plan.capital_mode == "signal_cash_fraction" else (
             "advice.v5" if plan.plan_mode != "NONE" or legs else "advice.v4"

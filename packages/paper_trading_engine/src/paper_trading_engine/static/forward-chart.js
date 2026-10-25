@@ -9,7 +9,7 @@
   if(embedded)root.classList.add('embedded');
   const NS='http://www.w3.org/2000/svg';
   const css=name=>getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  const state={range:'all',layers:{signal:true,fill:true,position:true},selected:null};
+  const state={range:'all',layers:{signal:true,fill:true,position:true},selected:null,signalView:null};
   const bars=context.market_data.bars||[];
   const observations=context.observations||[];
   const decisions=[...(context.execution.decisions||[])].sort((a,b)=>Date.parse(a.generated_at)-Date.parse(b.generated_at));
@@ -17,8 +17,13 @@
   const snapshots=context.execution.snapshots||[];
   const cutoff=context.window.selection_data_cutoff;
   const byDate=new Map([...observations].sort((a,b)=>a.generated_at.localeCompare(b.generated_at)).map(item=>[item.signal_date,item]));
-  const observationById=new Map(observations.map(item=>[item.decision_id,item.observation]));
+  const observationById=new Map(observations.filter(item=>item.observation.status==='READY').map(item=>[item.decision_id,item.observation]));
   const snapshotByDate=new Map(snapshots.map(item=>[item.session,item]));
+  const signalControls=document.createElement('div');signalControls.className='signal-panel-controls';signalControls.hidden=true;
+  const signalSelect=document.createElement('select');signalSelect.setAttribute('aria-label','选择信号分组');
+  const signalUnit=document.createElement('span');signalUnit.className='signal-panel-unit';
+  const signalLegend=document.createElement('div');signalLegend.className='signal-panel-legend';signalLegend.hidden=true;
+  signalControls.appendChild(signalSelect);signalControls.appendChild(signalUnit);stage.appendChild(signalControls);stage.appendChild(signalLegend);
   const fmt=value=>Number(value).toLocaleString('zh-CN',{minimumFractionDigits:3,maximumFractionDigits:4});
   const shortDate=value=>String(value).slice(5);
   const actionLabel=value=>({BUY:'入场',ENTER:'入场',SELL:'退出',EXIT:'退出',ROTATE:'日内轮换',HOLD:'持有',WAIT:'等待',HOLD_POSITION:'持有',HOLD_CASH:'空仓观察',NO_EVENT:'无新增事件',INTRADAY_LONG_OVERLAY:'日内增强'}[String(value).toUpperCase()]||String(value||'无新增事件'));
@@ -107,6 +112,101 @@
     }
     return lines;
   }
+  const availabilityLabel=item=>item.status==='INACTIVE'?'当前不适用':item.status==='UNAVAILABLE'?'数据不可用':'有效';
+  const signalValue=(value,group)=>`${Number(group.format==='PERCENT'?value*100:value).toLocaleString('zh-CN',{minimumFractionDigits:group.precision,maximumFractionDigits:group.precision})}${group.format==='PERCENT'?'%':''}`;
+  const stateColor=index=>['--signal','--position','--fill','--up','--down'][index%5];
+  function signalViews(rows){
+    const views=new Map();let legacy=false;
+    rows.forEach(row=>{
+      const observation=byDate.get(row.date)?.observation;
+      if(observation?.status!=='READY')return;
+      if(!observation.signal_panel){legacy=true;return;}
+      const identity=observation.definition_sha256;
+      for(const [kind,items] of [['group',observation.signal_panel.groups],['state',observation.signal_panel.states]]){
+        for(const item of items){const key=`${identity}:${kind}:${item.key}`;if(!views.has(key))views.set(key,{key,kind,item,identity,since:row.date});}
+      }
+    });
+    const values=[...views.values()];
+    for(const view of values){const repeated=values.filter(other=>other.kind===view.kind&&other.item.key===view.item.key).length>1;view.label=`${view.kind==='state'?'状态 · ':''}${view.item.label}${repeated?`（${view.since} 起）`:''}`;}
+    if(values.length&&legacy)values.unshift({key:'legacy',kind:'legacy',label:'历史信号（原始值）'});
+    return values;
+  }
+  function signalItem(observation,view){
+    if(observation?.status!=='READY'||observation.definition_sha256!==view.identity)return null;
+    return observation.signal_panel;
+  }
+  function drawSignalPanel(rows,view,{left,innerW,top,height,x}){
+    const plotTop=top+25,plotBottom=top+height-17;
+    const definition=view.item;
+    const palette=['--signal','--position','--fill','--up','--down'];
+    let series=[],y=null;
+    const panels=rows.map(row=>({observation:byDate.get(row.date)?.observation,panel:signalItem(byDate.get(row.date)?.observation,view)}));
+    const legend=[];
+    if(view.kind==='group'){
+      const seriesMap=new Map();panels.forEach(({panel})=>(panel?.series||[]).filter(item=>item.group===definition.key).forEach(item=>seriesMap.set(item.key,item)));series=[...seriesMap.values()];
+      const available=panels.flatMap(({panel})=>(panel?.series||[]).filter(item=>item.group===definition.key&&item.status==='AVAILABLE'));
+      const values=available.flatMap(item=>[item.value,...item.guides.map(guide=>guide.value)]);
+      if(series.some(item=>item.render==='BAR'))values.push(0);
+      const [low,high]=values.length?extent(values):[0,1],pad=(high-low||Math.abs(low)||1)*.1;
+      y=scale(low-pad,high+pad,plotBottom,plotTop);
+      if(values.length)[low,high].forEach(value=>add(el('text',{x:left+innerW+8,y:y(value)+4,class:'axis'},signalValue(value,definition))));
+      for(const [seriesIndex,item] of series.entries()){
+        const color=css(palette[seriesIndex%palette.length]);legend.push({label:item.label,color,description:item.description});
+        let previous=null;const guidePrevious=new Map();
+        panels.forEach(({observation,panel},index)=>{
+          const sample=panel?.series.find(value=>value.key===item.key&&value.group===definition.key);
+          if(!sample||sample.status!=='AVAILABLE'){previous=null;guidePrevious.clear();return;}
+          const point=[x(index),y(sample.value)];
+          const identity=`${observation.release_hash}:${sample.segment_id??''}`;
+          const title=`${rows[index].date} ${sample.label} ${signalValue(sample.value,definition)} ${definition.unit}；${sample.description}`;
+          if(item.render==='BAR')add(el('rect',{x:point[0]-Math.max(1,Math.min(5,innerW/rows.length*.3)),y:Math.min(y(0),point[1]),width:Math.max(2,Math.min(10,innerW/rows.length*.6)),height:Math.max(1,Math.abs(y(0)-point[1])),fill:color,'data-signal-series':item.key,'aria-label':title}));
+          else if(previous&&previous.index===index-1&&previous.identity===identity){
+            const d=item.render==='STEP'?`M${previous.point[0]},${previous.point[1]} H${point[0]} V${point[1]}`:linePath([previous.point,point]);
+            add(el('path',{d,fill:'none',stroke:color,'stroke-width':2,'data-signal-line':item.key}));
+          }
+          const dot=add(el('circle',{cx:point[0],cy:point[1],r:2.5,fill:color,'data-signal-series':item.key,'aria-label':title}));dot.appendChild(el('title',{},title));
+          previous={point,index,identity};
+          const currentGuideKeys=new Set();
+          for(const guide of sample.guides){
+            currentGuideKeys.add(guide.key);const gp=[x(index),y(guide.value)],prev=guidePrevious.get(guide.key);
+            if(prev&&prev.index===index-1&&prev.identity===identity)add(el('path',{d:item.render==='STEP'?`M${prev.point[0]},${prev.point[1]} H${gp[0]} V${gp[1]}`:linePath([prev.point,gp]),fill:'none',stroke:color,'stroke-dasharray':'4 3','stroke-width':1,opacity:.6,'data-signal-guide-line':guide.key}));
+            add(el('circle',{cx:gp[0],cy:gp[1],r:1.5,fill:color,'data-signal-guide':guide.key,'aria-label':`${rows[index].date} ${guide.label} ${signalValue(guide.value,definition)}`}));
+            guidePrevious.set(guide.key,{point:gp,index,identity});
+          }
+          for(const key of guidePrevious.keys())if(!currentGuideKeys.has(key))guidePrevious.delete(key);
+        });
+      }
+      if(!available.length)add(el('text',{x:left+8,y:(plotTop+plotBottom)/2+4,class:'axis'},'该区间没有有效数值；请选择日期查看状态'));
+    }else{
+      definition.options.forEach((option,index)=>legend.push({label:option.label,color:css(stateColor(index))}));
+      let count=0;
+      panels.forEach(({panel},index)=>{
+        const sample=panel?.states.find(item=>item.key===definition.key);
+        if(!sample||sample.status!=='AVAILABLE')return;
+        const optionIndex=definition.options.findIndex(option=>option.key===sample.value),option=definition.options[optionIndex];
+        const half=rows.length===1?Math.min(24,innerW/2):innerW/(rows.length-1)*.38;
+        const start=Math.max(left,x(index)-half),end=Math.min(left+innerW,x(index)+half);
+        const node=add(el('rect',{x:start,y:plotTop,width:Math.max(2,end-start),height:Math.max(2,plotBottom-plotTop),rx:2,fill:css(stateColor(optionIndex)),'data-signal-state':sample.key,'aria-label':`${rows[index].date} ${sample.label}：${option.label}`}));
+        node.appendChild(el('title',{},`${rows[index].date} ${sample.label}：${option.label}；${sample.description}`));count++;
+      });
+      if(!count)add(el('text',{x:left+8,y:(plotTop+plotBottom)/2+4,class:'axis'},'该区间没有有效状态'));
+    }
+    signalLegend.replaceChildren(...legend.map(item=>{const node=document.createElement('span');node.textContent=item.label;node.style.color=item.color;node.title=item.description||item.label;return node;}));
+    return {view,series,y};
+  }
+  function signalDetails(observation,view){
+    if(observation?.status==='UNAVAILABLE')return `<div class="head">观察不可用</div><div class="signal-panel-description">${safe(observation.message)}</div>`;
+    const panel=signalItem(observation,view);
+    if(!panel)return '<div class="head">当日没有该声明的信号观察</div>';
+    const items=view.kind==='state'?panel.states.filter(item=>item.key===view.item.key):panel.series.filter(item=>item.group===view.item.key);
+    return `<div class="head">${safe(view.label)}</div><div class="grid">${items.map(item=>{
+      let value=availabilityLabel(item);
+      if(item.status==='AVAILABLE')value=view.kind==='state'?item.options.find(option=>option.key===item.value).label:signalValue(item.value,view.item);
+      if(item.reason)value+=` · ${item.reason}`;
+      const guides=item.status==='AVAILABLE'?(item.guides||[]).map(guide=>`<span>${safe(guide.label)}</span><span>${safe(signalValue(guide.value,view.item))}</span>`).join(''):'';
+      return `<span title="${safe(item.description)}">${safe(item.label)}</span><span>${safe(value)}</span>${guides}`;
+    }).join('')}</div><div class="signal-panel-description">${safe(view.item.description)}</div>`;
+  }
   function render(){
     const rows=visibleBars();if(!rows.length)return;
     const width=Math.max(320,stage.clientWidth),compact=width<700;
@@ -124,8 +224,18 @@
     const prices=rows.flatMap(row=>[Number(row.low),Number(row.high)]),[pmin,pmax]=extent(prices),pad=(pmax-pmin||pmax*.01)*.09;
     const yPrice=scale(pmin-pad,pmax+pad,priceTop+priceH,priceTop);
     const rowObservations=rows.map(row=>byDate.get(row.date)?.observation).filter(item=>item?.status==='READY');
-    const allSeries=rowObservations.flatMap(item=>item.series||[]),signalValues=allSeries.flatMap(item=>[item.value,...(item.guides||[]).map(guide=>guide.value)]);
-    const [smin0,smax0]=signalValues.length?extent(signalValues):[0,1],spad=(smax0-smin0||1)*.12,ySignal=scale(smin0-spad,smax0+spad,signalTop+signalH,signalTop);
+    const latestUnavailable=rows.map(row=>({date:row.date,observation:byDate.get(row.date)?.observation})).filter(item=>item.observation?.status==='UNAVAILABLE').at(-1);
+    const views=signalViews(rows),lastIdentity=rowObservations.filter(item=>item.signal_panel).at(-1)?.definition_sha256;
+    if(!views.some(view=>view.key===state.signalView))state.signalView=(views.find(view=>view.kind==='group'&&view.identity===lastIdentity)||views.at(-1))?.key||null;
+    const signalView=views.find(view=>view.key===state.signalView),enhanced=signalView&&signalView.kind!=='legacy';
+    signalControls.hidden=!views.length||!state.layers.signal;signalLegend.hidden=!views.length||!state.layers.signal;
+    signalControls.style.left=`${left}px`;signalControls.style.top=`${signalTop}px`;signalControls.style.width=`${innerW}px`;
+    signalLegend.style.left=`${left}px`;signalLegend.style.top=`${signalTop+signalH-14}px`;signalLegend.style.width=`${innerW}px`;
+    signalSelect.replaceChildren(...views.map(view=>{const option=document.createElement('option');option.value=view.key;option.textContent=view.label;option.title=view.item?.description||view.label;return option;}));signalSelect.value=state.signalView||'';
+    signalUnit.textContent=enhanced?(signalView.kind==='group'?`${signalView.item.unit} · ${signalView.item.basis}`:signalView.item.description):'原始数值';signalUnit.title=signalUnit.textContent;
+    const legacyObservations=views.length?rowObservations.filter(item=>!item.signal_panel):rowObservations;
+    const allSeries=legacyObservations.flatMap(item=>item.series||[]),signalValues=allSeries.flatMap(item=>[item.value,...(item.guides||[]).map(guide=>guide.value)]);
+    const [smin0,smax0]=signalValues.length?extent(signalValues):[0,1],spad=(smax0-smin0||1)*.12,ySignal=scale(smin0-spad,smax0+spad,signalTop+signalH-(views.length?17:0),signalTop+(views.length?25:0));
     const quantities=[0,...snapshots.map(item=>Number(item.quantity))];
     const qmax=Math.max(...quantities,1),yPosition=scale(0,qmax*1.08,positionTop+positionH,positionTop);
     const visibleCutoff=rows.findIndex(row=>row.date>cutoff);
@@ -136,9 +246,16 @@
     add(el('text',{x:12,y:signalTop+12,class:'panel-label'},'信号'));if(!compact)add(el('text',{x:12,y:positionTop+12,class:'panel-label'},'持仓'));add(el('text',{x:12,y:explainTop+15,class:'panel-label'},'事件'));
     const candleW=Math.max(3,Math.min(10,innerW/rows.length*.58));rows.forEach((row,index)=>{const rising=Number(row.close)>=Number(row.open),color=css(rising?'--up':'--down'),cx=x(index);add(el('line',{x1:cx,x2:cx,y1:yPrice(row.high),y2:yPrice(row.low),stroke:color,'stroke-width':1}));add(el('rect',{x:cx-candleW/2,y:yPrice(Math.max(row.open,row.close)),width:candleW,height:Math.max(1.5,Math.abs(yPrice(row.open)-yPrice(row.close))),fill:rising?color:css('--surface'),stroke:color,'stroke-width':1}));});
     const seriesKeys=[...new Set(allSeries.map(item=>item.key))];const seriesColors=['--signal','--position','--fill','--up'];
-    if(state.layers.signal)seriesKeys.forEach((key,seriesIndex)=>{const points=[];const guidePoints=new Map();rows.forEach((row,index)=>{const observation=byDate.get(row.date)?.observation;if(observation?.status!=='READY')return;const series=(observation.series||[]).find(item=>item.key===key);if(!series)return;points.push([x(index),ySignal(series.value),`${row.date} ${series.label} ${fmt(series.value)}`]);for(const guide of series.guides||[]){if(!guidePoints.has(guide.key))guidePoints.set(guide.key,{label:guide.label,points:[]});guidePoints.get(guide.key).points.push([x(index),ySignal(guide.value),`${row.date} ${guide.label} ${fmt(guide.value)}`]);}});const color=css(seriesColors[seriesIndex%seriesColors.length]);if(points.length>1)add(el('path',{d:linePath(points),fill:'none',stroke:color,'stroke-width':2}));points.forEach(point=>add(el('circle',{cx:point[0],cy:point[1],r:3,fill:color,'data-series-key':key,'aria-label':point[2]})));guidePoints.forEach((guide,guideKey)=>{if(guide.points.length>1)add(el('path',{d:linePath(guide.points),fill:'none',stroke:css('--fill'),'stroke-width':1,'stroke-dasharray':'4 4',opacity:.72}));guide.points.forEach(point=>add(el('circle',{cx:point[0],cy:point[1],r:2.5,fill:css('--fill'),'data-guide-key':guideKey,'aria-label':point[2]})));});});
-    if(!allSeries.length)add(el('text',{x:left+12,y:signalTop+signalH/2,class:'axis'},'暂无可信策略信号'));
-    else if(state.layers.signal){[smin0,smax0].forEach(value=>add(el('text',{x:left+innerW+8,y:ySignal(value)+4,class:'axis'},fmt(value))));seriesKeys.forEach((key,index)=>{const series=allSeries.find(item=>item.key===key);add(el('text',{x:left+index*150,y:signalTop+12,fill:css(seriesColors[index%seriesColors.length]),class:'axis'},series.label));});}
+    if(state.layers.signal&&!enhanced)seriesKeys.forEach((key,seriesIndex)=>{const points=[];const guidePoints=new Map();rows.forEach((row,index)=>{const observation=byDate.get(row.date)?.observation;if(observation?.status!=='READY'||(views.length&&observation.signal_panel))return;const series=(observation.series||[]).find(item=>item.key===key);if(!series)return;points.push([x(index),ySignal(series.value),`${row.date} ${series.label} ${fmt(series.value)}`]);for(const guide of series.guides||[]){if(!guidePoints.has(guide.key))guidePoints.set(guide.key,{label:guide.label,points:[]});guidePoints.get(guide.key).points.push([x(index),ySignal(guide.value),`${row.date} ${guide.label} ${fmt(guide.value)}`]);}});const color=css(seriesColors[seriesIndex%seriesColors.length]);if(points.length>1)add(el('path',{d:linePath(points),fill:'none',stroke:color,'stroke-width':2}));points.forEach(point=>add(el('circle',{cx:point[0],cy:point[1],r:3,fill:color,'data-series-key':key,'aria-label':point[2]})));guidePoints.forEach((guide,guideKey)=>{if(guide.points.length>1)add(el('path',{d:linePath(guide.points),fill:'none',stroke:css('--fill'),'stroke-width':1,'stroke-dasharray':'4 4',opacity:.72}));guide.points.forEach(point=>add(el('circle',{cx:point[0],cy:point[1],r:2.5,fill:css('--fill'),'data-guide-key':guideKey,'aria-label':point[2]})));});});
+    if(enhanced){if(state.layers.signal)drawSignalPanel(rows,signalView,{left,innerW,top:signalTop,height:signalH,x});}
+    else if(!allSeries.length){
+      const warning=latestUnavailable?`${latestUnavailable.date} 观察不可用：${latestUnavailable.observation.message}`:'暂无可信策略信号';
+      const lines=wrapExplanation(warning,innerW-24,measure),maxLines=Math.max(1,Math.floor((signalH-16)/18));
+      const node=add(el('text',{x:left+12,y:signalTop+20,class:'axis','data-signal-warning':latestUnavailable?'unavailable':'empty'},''));
+      lines.slice(0,maxLines).forEach((line,index)=>node.appendChild(el('tspan',{x:left+12,dy:index?18:0},index===maxLines-1&&lines.length>maxLines?`${line.slice(0,-1)}…`:line)));
+      node.appendChild(el('title',{},warning));
+    }
+    else if(state.layers.signal){[smin0,smax0].forEach(value=>add(el('text',{x:left+innerW+8,y:ySignal(value)+4,class:'axis'},fmt(value))));if(!views.length)seriesKeys.forEach((key,index)=>{const series=allSeries.find(item=>item.key===key);add(el('text',{x:left+index*150,y:signalTop+12,fill:css(seriesColors[index%seriesColors.length]),class:'axis'},series.label));});else signalLegend.replaceChildren(...seriesKeys.map((key,index)=>{const label=document.createElement('span');label.textContent=allSeries.find(item=>item.key===key).label;label.style.color=css(seriesColors[index%seriesColors.length]);return label;}));}
     fills.filter(item=>rows.some(row=>row.date===fillDate(item))).forEach(item=>{if(!state.layers.fill)return;const date=fillDate(item),index=rows.findIndex(row=>row.date===date),row=rows[index],buy=String(item.side).toUpperCase()==='BUY',cy=yPrice(buy?row.low:row.high)+(buy?-25:25),cx=x(index);add(el('path',{d:`M${cx},${cy} l-6,${buy?9:-9} h12 z`,fill:css('--fill'),'data-fill-id':item.fill_id}));});
     if(!compact&&state.layers.position){const positionPoints=[];rows.forEach((row,index)=>{const snapshot=snapshotByDate.get(row.date);const quantity=snapshot?.quantity;if(quantity!=null)positionPoints.push([x(index),yPosition(quantity)]);});if(positionPoints.length){let d=`M${positionPoints[0][0]},${positionPoints[0][1]}`;for(let i=1;i<positionPoints.length;i++)d+=` H${positionPoints[i][0]} V${positionPoints[i][1]}`;add(el('path',{d,fill:'none',stroke:css('--position'),'stroke-width':2}));}[0,qmax].forEach(value=>add(el('text',{x:left+innerW+8,y:yPosition(value)+4,class:'axis'},value?Number(value).toLocaleString('zh-CN'):'0')));}
     [signalTop-10,positionTop-9,explainTop-9].forEach((y,index)=>{if(compact&&index===1)return;add(el('line',{x1:0,x2:width,y1:y,y2:y,class:'panel-rule'}));});add(el('rect',{x:left,y:explainTop,width:innerW,height:explainH,fill:css('--surface2')}));add(el('line',{x1:0,x2:width,y1:axisTop-4,y2:axisTop-4,class:'panel-rule'}));
@@ -157,9 +274,18 @@
       showEvents(row.date);
       cross.style.display='';priceDot.style.display='';
       cross.setAttribute('x1',x(index));cross.setAttribute('x2',x(index));priceDot.setAttribute('cx',x(index));priceDot.setAttribute('cy',yPrice(row.close));
-      const first=observation?.status==='READY'?observation.series?.[0]:null;
+      const first=!enhanced&&state.layers.signal&&observation?.status==='READY'&&(!views.length||!observation.signal_panel)?observation.series?.[0]:null;
       signalDot.style.display=first?'':'none';if(first){signalDot.setAttribute('cx',x(index));signalDot.setAttribute('cy',ySignal(first.value));}
       tooltip.innerHTML=`<div class="head">${safe(row.date)}</div><div class="head">行情（后复权）</div><div class="grid"><span>开 / 高</span><span>${fmt(row.open)} / ${fmt(row.high)}</span><span>低 / 收</span><span>${fmt(row.low)} / ${fmt(row.close)}</span></div>`;
+      if(enhanced&&state.layers.signal){
+        const panel=signalItem(observation,signalView),items=signalView.kind==='group'?(panel?.series||[]).filter(item=>item.group===signalView.item.key):(panel?.states||[]).filter(item=>item.key===signalView.item.key);
+        signalLegend.replaceChildren(...(items.length?items.map((item,index)=>{const label=document.createElement('span');const value=item.status==='AVAILABLE'?(signalView.kind==='group'?signalValue(item.value,signalView.item):item.options.find(option=>option.key===item.value).label):availabilityLabel(item);label.textContent=`${item.label}：${value}${(item.guides||[]).map(guide=>` / ${guide.label} ${signalValue(guide.value,signalView.item)}`).join('')}`;label.title=[item.description,item.reason].filter(Boolean).join('；');label.style.color=css(stateColor(signalView.kind==='state'&&item.status==='AVAILABLE'?item.options.findIndex(option=>option.key===item.value):index));return label;}):[Object.assign(document.createElement('span'),{textContent:observation?.status==='UNAVAILABLE'?`观察不可用：${observation.message}`:'当日没有该声明的信号观察',title:observation?.message||''})]));
+        if(pointer&&pointer[1]>=signalTop&&pointer[1]<=signalTop+signalH)tooltip.innerHTML=`<div class="head">${safe(row.date)}</div>${signalDetails(observation,signalView)}`;
+      }
+      if(!enhanced&&state.layers.signal&&pointer&&pointer[1]>=signalTop&&pointer[1]<=signalTop+signalH){
+        const failure=observation?.status==='UNAVAILABLE'?{date:row.date,observation}:!rowObservations.length?latestUnavailable:null;
+        if(failure)tooltip.innerHTML=`<div class="head">${safe(failure.date)}</div>${signalDetails(failure.observation,null)}`;
+      }
       if(pointer){
         tooltip.hidden=false;
         const tooltipWidth=tooltip.offsetWidth,leftPos=pointer[0]+18;
@@ -174,6 +300,7 @@
     const overlay=add(el('rect',{x:left,y:priceTop,width:innerW,height:explainTop+explainH-priceTop,fill:'transparent'}));overlay.addEventListener('pointermove',event=>{const rect=svg.getBoundingClientRect(),px=(event.clientX-rect.left)*width/rect.width,py=(event.clientY-rect.top)*height/rect.height,index=Math.round((px-left)/innerW*(rows.length-1));select(index,[px,py]);});overlay.addEventListener('pointerleave',()=>{tooltip.hidden=true;});
   }
   eventDate.addEventListener('change',()=>{state.selected=eventDate.value;tooltip.hidden=true;render();});
+  signalSelect.addEventListener('change',()=>{state.signalView=signalSelect.value;tooltip.hidden=true;render();});
   document.querySelectorAll('[data-range]').forEach(button=>button.addEventListener('click',()=>{state.range=button.dataset.range==='all'?'all':Number(button.dataset.range);document.querySelectorAll('[data-range]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));render();}));
   document.querySelectorAll('[data-layer]').forEach(button=>button.addEventListener('click',()=>{const layer=button.dataset.layer;state.layers[layer]=!state.layers[layer];button.setAttribute('aria-pressed',String(state.layers[layer]));render();}));
   const viewportWindow=embedded?window.parent:window;

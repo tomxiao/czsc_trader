@@ -206,6 +206,11 @@ class FrozenMigrationSelectionSubject(Record):
 
 
 @dataclass(frozen=True, slots=True)
+class FrozenObservationUpgradeSelectionSubject(FrozenMigrationSelectionSubject):
+    """Select an observation-only revision with unchanged trading semantics."""
+
+
+@dataclass(frozen=True, slots=True)
 class FreezeSubject(Record):
     candidate: CandidateKey
     content_sha256: str
@@ -224,7 +229,7 @@ class ResearchDecision(Record):
     decision_id: str
     strategy_id: str
     action: DecisionAction
-    subject: StageAdvanceSubject | CandidateSelectionSubject | FrozenMigrationSelectionSubject | FreezeSubject
+    subject: StageAdvanceSubject | CandidateSelectionSubject | FrozenMigrationSelectionSubject | FrozenObservationUpgradeSelectionSubject | FreezeSubject
     confirmation_source: CandidateEvidence | ResearchEvidenceRef
     reason: str
 

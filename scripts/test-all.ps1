@@ -145,7 +145,8 @@ try {
                         Executable = $Node
                         Arguments = @(
                             '--test-isolation=none', '--test', '--test-reporter=tap',
-                            'packages\paper_trading_engine\tests\functional\console_state.test.mjs'
+                            'packages\paper_trading_engine\tests\functional\console_state.test.mjs',
+                            'packages\paper_trading_engine\tests\functional\forward_signal_panel.test.mjs'
                         )
                     })
                 }

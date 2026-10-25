@@ -14,8 +14,10 @@ from .errors import RuntimeContractError
 if TYPE_CHECKING:
     from .contracts import ExecutionPlan, StrategyIdentity
     from .models import RuntimeDefinition
+    from .signal_panel import SignalPanelDefinition, SignalPanelSnapshot
 
 OBSERVATION_CONTRACT_VERSION = "strategy_observation.v2"
+OBSERVATION_PANEL_CONTRACT_VERSION = "strategy_observation.v3"
 
 
 def _require(condition, message):
@@ -154,17 +156,22 @@ class ObservationFact:
 class ObservationDefinition:
     series: tuple[ObservationSeries, ...]
     facts: tuple[ObservationFact, ...]
+    signal_panel: SignalPanelDefinition | None = None
 
     def __post_init__(self):
+        from .signal_panel import SignalPanelDefinition
+
         _tuple(self.series, ObservationSeries)
         _tuple(self.facts, ObservationFact)
+        _require(self.signal_panel is None or isinstance(self.signal_panel, SignalPanelDefinition),
+                 "observation signal panel must be typed")
         _require(
             not {x.key for x in self.series} & {x.key for x in self.facts},
             "series and facts repeat observation keys",
         )
 
     def to_dict(self):
-        return {
+        value = {
             "contract_version": OBSERVATION_CONTRACT_VERSION,
             "series": [
                 {
@@ -181,14 +188,23 @@ class ObservationDefinition:
             ],
             "facts": [asdict(x) for x in self.facts],
         }
+        if self.signal_panel is not None:
+            value.update(contract_version=OBSERVATION_PANEL_CONTRACT_VERSION,
+                         signal_panel=self.signal_panel.to_dict())
+        return value
 
     @classmethod
     def from_dict(cls, value):
-        _fields(value, "contract_version series facts")
+        from .signal_panel import SignalPanelDefinition
+
+        _require(type(value) is dict, "invalid observation fields")
+        version = value.get("contract_version")
         _require(
-            value["contract_version"] == OBSERVATION_CONTRACT_VERSION,
+            version in (OBSERVATION_CONTRACT_VERSION, OBSERVATION_PANEL_CONTRACT_VERSION),
             "unsupported observation contract",
         )
+        _fields(value, "contract_version series facts" + (
+            " signal_panel" if version == OBSERVATION_PANEL_CONTRACT_VERSION else ""))
         _require(
             type(value["series"]) is list and type(value["facts"]) is list,
             "observation collections must be lists",
@@ -222,7 +238,9 @@ class ObservationDefinition:
                     ObservationFormat(raw["format"]),
                 )
             )
-        return cls(tuple(series), tuple(facts))
+        return cls(tuple(series), tuple(facts),
+                   SignalPanelDefinition.from_dict(value["signal_panel"])
+                   if version == OBSERVATION_PANEL_CONTRACT_VERSION else None)
 
     @property
     def sha256(self):
@@ -271,9 +289,11 @@ class StrategyObservation:
     target_position: float
     series: tuple[ObservedSeries, ...]
     facts: tuple[ObservedFact, ...]
+    signal_panel: SignalPanelSnapshot | None = None
 
     def __post_init__(self):
         from .contracts import StrategyIdentity
+        from .signal_panel import SignalPanelSnapshot
 
         _require(
             isinstance(self.strategy, StrategyIdentity),
@@ -294,6 +314,8 @@ class StrategyObservation:
         _number(self.target_position)
         _tuple(self.series, ObservedSeries)
         _tuple(self.facts, ObservedFact)
+        _require(self.signal_panel is None or isinstance(self.signal_panel, SignalPanelSnapshot),
+                 "observed signal panel must be typed")
         _require(
             not {x.key for x in self.series} & {x.key for x in self.facts},
             "duplicate observation keys",
@@ -301,6 +323,7 @@ class StrategyObservation:
 
     def to_dict(self):
         value = asdict(self)
+        value.pop("signal_panel")
         value.update(
             contract_version=OBSERVATION_CONTRACT_VERSION,
             status="READY",
@@ -311,18 +334,25 @@ class StrategyObservation:
             {**asdict(x), "guides": [asdict(g) for g in x.guides]} for x in self.series
         ]
         value["facts"] = [asdict(x) for x in self.facts]
+        if self.signal_panel is not None:
+            value.update(contract_version=OBSERVATION_PANEL_CONTRACT_VERSION,
+                         signal_panel=self.signal_panel.to_dict())
         return value
 
     @classmethod
     def from_dict(cls, value):
         from .contracts import StrategyIdentity
+        from .signal_panel import SignalPanelSnapshot
 
+        _require(type(value) is dict, "invalid observation fields")
+        version = value.get("contract_version")
         _fields(
             value,
-            "contract_version status strategy definition_sha256 signal_identity plan_identity signal_date valid_session action target_position series facts",
+            "contract_version status strategy definition_sha256 signal_identity plan_identity signal_date valid_session action target_position series facts"
+            + (" signal_panel" if version == OBSERVATION_PANEL_CONTRACT_VERSION else ""),
         )
         _require(
-            value["contract_version"] == OBSERVATION_CONTRACT_VERSION
+            version in (OBSERVATION_CONTRACT_VERSION, OBSERVATION_PANEL_CONTRACT_VERSION)
             and value["status"] == "READY",
             "unsupported ready observation contract",
         )
@@ -360,19 +390,24 @@ class StrategyObservation:
             value["target_position"],
             tuple(series),
             tuple(facts),
+            SignalPanelSnapshot.from_dict(value["signal_panel"])
+            if version == OBSERVATION_PANEL_CONTRACT_VERSION else None,
         )
 
 
 @dataclass(frozen=True, slots=True)
 class ObservationUnavailable:
     message: str
+    contract_version: str = OBSERVATION_CONTRACT_VERSION
 
     def __post_init__(self):
         _text(self.message)
+        _require(self.contract_version in (OBSERVATION_CONTRACT_VERSION, OBSERVATION_PANEL_CONTRACT_VERSION),
+                 "unsupported unavailable observation contract")
 
     def to_dict(self):
         return {
-            "contract_version": OBSERVATION_CONTRACT_VERSION,
+            "contract_version": self.contract_version,
             "status": "UNAVAILABLE",
             "message": self.message,
         }
@@ -381,15 +416,15 @@ class ObservationUnavailable:
     def from_dict(cls, value):
         _fields(value, "contract_version status message")
         _require(
-            value["contract_version"] == OBSERVATION_CONTRACT_VERSION
+            value["contract_version"] in (OBSERVATION_CONTRACT_VERSION, OBSERVATION_PANEL_CONTRACT_VERSION)
             and value["status"] == "UNAVAILABLE",
             "unsupported unavailable observation contract",
         )
-        return cls(value["message"])
+        return cls(value["message"], value["contract_version"])
 
 
-def unavailable_observation(message: str) -> ObservationUnavailable:
-    return ObservationUnavailable(message)
+def unavailable_observation(message: str, *, contract_version: str = OBSERVATION_CONTRACT_VERSION) -> ObservationUnavailable:
+    return ObservationUnavailable(message, contract_version)
 
 
 def materialize_observation(
@@ -397,6 +432,7 @@ def materialize_observation(
 ) -> StrategyObservation:
     from .models import RuntimeDefinition
     from .contracts import ExecutionPlan
+    from .signal_panel import materialize_signal_panel
 
     _require(
         isinstance(definition, RuntimeDefinition) and isinstance(plan, ExecutionPlan),
@@ -410,6 +446,10 @@ def materialize_observation(
         and plan.symbol == definition.tradable_symbol,
         "observation plan differs from runtime definition",
     )
+    if definition.observation.signal_panel is not None and "_observation_error" in plan.evidence:
+        error = plan.evidence["_observation_error"]
+        _text(error)
+        raise RuntimeContractError(f"signal panel calculation unavailable: {error}")
 
     def value(field):
         _require(field in plan.evidence, f"observation evidence missing {field}")
@@ -446,4 +486,6 @@ def materialize_observation(
         plan.target_position,
         series,
         facts,
+        materialize_signal_panel(definition.observation.signal_panel, plan.evidence)
+        if definition.observation.signal_panel is not None else None,
     )

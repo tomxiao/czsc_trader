@@ -24,6 +24,7 @@ PUBLIC_API = {
     "get_research_overview", "diagnose_accounts", "validate_experiment",
     "FrozenRuntimeMigrationRequest", "PreparedFrozenRuntimeMigration",
     "prepare_frozen_runtime_migration", "validate_frozen_runtime_migration",
+    "validate_frozen_observation_upgrade",
     "FrozenRuntimeUpgradeRequest", "PreparedFrozenRuntimeUpgrade", "FrozenRuntimeUpgradeReceipt",
     "prepare_frozen_runtime_upgrade", "apply_frozen_runtime_upgrade",
     "CandidateInspectionRequest", "InspectionReplay",

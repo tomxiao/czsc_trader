@@ -256,6 +256,102 @@ def validate_frozen_runtime_migration(
     return after
 
 
+def _trading_source_tree(data, class_name):
+    """Exclude only the reviewed observation extension points from source comparison."""
+    tree = ast.parse(data)
+
+    class Declaration(ast.NodeTransformer):
+        count = 0
+
+        def visit_Call(self, node):
+            if isinstance(node.func, ast.Name) and node.func.id == "StrategyDefinition":
+                for keyword in node.keywords:
+                    if keyword.arg == "observation":
+                        keyword.value = ast.Constant("<observation>")
+                        self.count += 1
+            return self.generic_visit(node)
+
+    declaration = Declaration()
+    for node in tree.body:
+        if isinstance(node, ast.ClassDef) and node.name == class_name:
+            node.body = [item for item in node.body if not (
+                isinstance(item, ast.FunctionDef)
+                and item.name in {"observation_definition", "observation_history"})]
+            for item in node.body:
+                if isinstance(item, ast.FunctionDef) and item.name == "__init__":
+                    declaration.visit(item)
+    if declaration.count != 1:
+        raise ValueError("observation upgrade requires one explicit StrategyDefinition observation declaration")
+    return ast.dump(tree, include_attributes=False)
+
+
+def validate_frozen_observation_upgrade(
+    context: RepositoryContext, original: FrozenVersionReference, candidate: StrategyCandidate,
+) -> RuntimeDefinition:
+    """Authenticate observation-only source/contract changes; numerical proof is separate.
+
+    Existing trading code is retained, apart from the observation declaration
+    expression in __init__. New code belongs to the two observation methods
+    and observation_* sidecar modules, imported locally by those methods.
+    """
+    if (type(context) is not RepositoryContext or type(original) is not FrozenVersionReference
+            or type(candidate) is not StrategyCandidate):
+        raise TypeError("observation upgrade requires typed source and candidate")
+    if candidate.strategy_family_id != original.strategy_id:
+        raise ValueError("observation upgrade candidate family differs")
+    if candidate.source_root is None or not candidate.source_root.is_relative_to(context.root.resolve()):
+        raise ValueError("observation upgrade requires repository-owned source")
+    stored, _, binding, source = _migration_original(context, original)
+    release = prospective_release(stored)
+    old_payload = json.loads(json.dumps(dict(release.payload), default=dict))
+    new_payload = json.loads(json.dumps(dict(candidate.payload), default=dict))
+    for value in (old_payload, new_payload):
+        value["runtime"].pop("source_sha256")
+        value["runtime"].pop("source_files")
+    if new_payload != old_payload or new_payload["runtime"]["contract_version"] != 2:
+        raise ValueError("observation upgrade changes parameters or execution descriptors")
+    old_files = set(release.payload["runtime"]["source_files"])
+    new_files = set(candidate.payload["runtime"]["source_files"])
+    if not old_files <= new_files:
+        raise ValueError("observation upgrade removes trading source files")
+    actual = set()
+    for path in candidate.source_root.rglob("*"):
+        if path.is_symlink() or path.is_junction():
+            raise ValueError("observation upgrade source must not contain links")
+        if path.is_file() and "__pycache__" not in path.parts:
+            actual.add(path.relative_to(candidate.source_root).as_posix())
+    if actual != set(binding["install_files"]) | new_files:
+        raise ValueError("observation upgrade source closure differs")
+    module = release.payload["runtime"]["module"].removeprefix("strategy_runtime.").replace(".", "/") + ".py"
+    class_name = release.payload["runtime"]["qualname"]
+    for name in actual:
+        data = (candidate.source_root / name).read_bytes()
+        if name in binding["install_files"]:
+            old = (source / name).read_bytes()
+            if name == module:
+                if _trading_source_tree(data, class_name) != _trading_source_tree(old, class_name):
+                    raise ValueError("observation upgrade changes trading source")
+            elif data != old:
+                raise ValueError("observation upgrade changes original dependencies")
+        elif not Path(name).name.startswith("observation_") or not name.endswith(".py"):
+            raise ValueError("observation upgrade adds a non-observation source file")
+    if implementation_sha256(tuple(candidate.payload["runtime"]["source_files"]),
+                              source_root=candidate.source_root) != candidate.payload["runtime"]["source_sha256"]:
+        raise ValueError("observation upgrade source hash differs")
+    runtime = StrategyRuntime()
+    before = runtime.describe(release, source_root=source, runtime_binding=RuntimeBinding.from_dict(binding))
+    after = runtime.describe(candidate)
+    for name in ("parameters", "inputs", "decision", "execution", "monitoring", "capabilities",
+                 "tradable_symbol", "state_mode", "history", "decision_feedback"):
+        if getattr(before, name) != getattr(after, name):
+            raise ValueError(f"observation upgrade changes trading contract: {name}")
+    if (after.observation.signal_panel is None or before.observation == after.observation
+            or before.observation.series != after.observation.series
+            or before.observation.facts != after.observation.facts):
+        raise ValueError("observation upgrade must add a panel while preserving legacy observations")
+    return after
+
+
 @dataclass(frozen=True, slots=True)
 class FrozenRuntimeUpgradeRequest:
     original: FrozenVersionReference
@@ -397,7 +493,7 @@ def _upgrade_inputs(context, request):
     if report.status is not f.InspectionStatus.PASS or report.plan is None:
         raise ValueError("runtime upgrade requires a complete passing technical inspection")
     selection = read_decision(context.root, report.selection)
-    if (type(selection.subject) is not f.FrozenMigrationSelectionSubject
+    if (type(selection.subject) not in (f.FrozenMigrationSelectionSubject, f.FrozenObservationUpgradeSelectionSubject)
             or selection.subject.original != request.original
             or selection.subject.candidate != request.candidate
             or report.plan.version != request.original.version
@@ -406,7 +502,10 @@ def _upgrade_inputs(context, request):
         raise ValueError("runtime upgrade inspection/source/confirmation identity differs")
     request.confirmation.resolve(context.root)
     candidate = load_candidate(context, request.candidate)
-    validate_frozen_runtime_migration(context, request.original, candidate)
+    validator = (validate_frozen_observation_upgrade
+                 if type(selection.subject) is f.FrozenObservationUpgradeSelectionSubject
+                 else validate_frozen_runtime_migration)
+    validator(context, request.original, candidate)
     reference = f"{request.original.strategy_id}-{request.original.version}"
     manifest, binding, source = validate_release_package(context, reference)
     if (manifest["strategy_version_hash"], manifest["package_hash"]) != (request.original.release_hash, request.original.package_hash):
@@ -563,10 +662,20 @@ def apply_frozen_runtime_upgrade(
         if (staged_manifest != expected_manifest or staged_manifest["package_hash"] != report.release.package_sha256
                 or expected_version.release_hash != report.release.release_sha256):
             raise ValueError("runtime upgrade differs from the inspected package")
-        if {key: value for key, value in staged_binding.items() if key not in {"release_hash", "implementation_sha256"}} != {
-                key: value for key, value in binding.items() if key not in {"release_hash", "implementation_sha256"}}:
+        from .research_evidence import read_decision
+        observation_upgrade = (hasattr(report, "selection") and
+            type(read_decision(context.root, report.selection).subject) is f.FrozenObservationUpgradeSelectionSubject)
+        changed_binding_fields = {"release_hash", "implementation_sha256"}
+        if observation_upgrade:
+            changed_binding_fields |= {"observation_sha256", "source_files", "install_files"}
+            expected_install = set(binding["install_files"]) | set(candidate.payload["runtime"]["source_files"])
+            if (set(staged_binding["install_files"]) != expected_install
+                    or staged_binding["source_files"] != list(candidate.payload["runtime"]["source_files"])):
+                raise ValueError("observation upgrade binding source closure differs")
+        if {key: value for key, value in staged_binding.items() if key not in changed_binding_fields} != {
+                key: value for key, value in binding.items() if key not in changed_binding_fields}:
             raise ValueError("runtime upgrade changes original binding contracts")
-        for name in binding["install_files"]:
+        for name in staged_binding["install_files"]:
             expected = ((candidate.source_root / name).read_bytes() if name in candidate.payload["runtime"]["source_files"]
                         else (package / old_manifest["runtime_root"] / name).read_bytes())
             if (staged_source / name).read_bytes() != expected:

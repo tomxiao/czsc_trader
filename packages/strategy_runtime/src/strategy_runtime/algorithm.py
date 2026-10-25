@@ -95,3 +95,11 @@ class StrategyImplementationV2(StrategyImplementation):
 
     def calculate_window_history(self, inputs, sessions):
         raise RuntimeContractError("contract 2 requires an explicit HistoryCalculationContext")
+
+    def observation_history(self, inputs, context, history):
+        """Return declared obs_ display columns, without changing trading history.
+
+        Called only for an explicit signal-panel declaration, with isolated
+        input/history copies and the same causal calculation context.
+        """
+        return pd.DataFrame(index=history.index)

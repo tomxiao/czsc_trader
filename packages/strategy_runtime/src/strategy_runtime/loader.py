@@ -45,6 +45,9 @@ class _BoundStrategy:
     def calculate_context_history(self, inputs, context):
         return self.implementation.calculate_context_history(inputs, context)
 
+    def observation_history(self, inputs, context, history):
+        return self.implementation.observation_history(inputs, context, history)
+
 
 class StrategyLoader:
     """Load one strategy without a central release switch or registry patch."""

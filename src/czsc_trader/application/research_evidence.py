@@ -22,7 +22,15 @@ def _read(path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _migration_frame_equal(left, right, identities):
+def _migration_identity_equal(name, left, right, identities):
+    if not isinstance(left, str) or not isinstance(right, str):
+        raise ValueError("migration ledger identity is invalid")
+    forward, reverse = identities.setdefault(name, ({}, {}))
+    if forward.setdefault(left, right) != right or reverse.setdefault(right, left) != left:
+        raise ValueError("migration ledger identity linkage differs")
+
+
+def _migration_frame_equal(left, right, identities, *, observation_upgrade=False):
     if set(left.columns) != set(right.columns) or len(left) != len(right) or not left.index.equals(right.index):
         raise ValueError("migration economic evidence shape/dates differ")
     for column in left:
@@ -30,17 +38,38 @@ def _migration_frame_equal(left, right, identities):
             if pd.isna(a) or pd.isna(b):
                 if bool(pd.isna(a)) != bool(pd.isna(b)):
                     raise ValueError("migration economic evidence missing values differ")
-            elif column in {"decision_id", "order_id", "fill_id", "cycle_id"}:
-                if not isinstance(a, str) or not isinstance(b, str):
-                    raise ValueError("migration ledger identity is invalid")
-                forward, reverse = identities.setdefault(column, ({}, {}))
-                if forward.setdefault(a, b) != b or reverse.setdefault(b, a) != a:
-                    raise ValueError("migration ledger identity linkage differs")
+            elif observation_upgrade and column in {"entry_cycle_before", "entry_cycle_after", "entry_cycle"}:
+                from strategy_runtime import EntryCycleState
+                aa, bb = json.loads(a), json.loads(b)
+                if aa is None or bb is None:
+                    if aa != bb:
+                        raise ValueError("migration entry cycle presence differs")
+                    continue
+                EntryCycleState.from_dict(aa)
+                EntryCycleState.from_dict(bb)
+                for key, alias in (("cycle_id", "cycle_id"), ("opening_signal_identity", "signal_identity")):
+                    _migration_identity_equal(alias, aa.pop(key), bb.pop(key), identities)
+                if aa != bb:
+                    raise ValueError("migration entry cycle economic facts differ")
+            elif column in {"decision_id", "order_id", "fill_id", "cycle_id"} or (
+                    observation_upgrade and column in {"signal_identity", "plan_identity", "entry_cycle_id"}):
+                alias = "cycle_id" if observation_upgrade and column == "entry_cycle_id" else column
+                _migration_identity_equal(alias, a, b, identities)
             elif a != b:
                 raise ValueError("migration economic evidence values differ")
 
 
-def _migration_case(root, case, artifact, before, after):
+def _observation_comparison(left, right, definition):
+    if not left.index.equals(right.index):
+        raise ValueError("observation upgrade evidence dates/rows differ")
+    added = set(right.columns) - set(left.columns)
+    allowed = set(definition.observation.signal_panel.evidence_fields)
+    if any(not col.startswith("obs_") or col not in allowed for col in added):
+        raise ValueError("observation upgrade adds undeclared evidence columns")
+    return right.drop(columns=list(added))
+
+
+def _migration_case(root, case, artifact, before, after, *, observation_upgrade=False):
     from datetime import date
     from strategy_runtime import StrategyInputBinding
 
@@ -80,7 +109,10 @@ def _migration_case(root, case, artifact, before, after):
             raise ValueError("migration signal evidence has invalid dates")
         if not len(signals[1]) or result["signals"]["rows"] != len(signals[1]):
             raise ValueError("migration signal evidence is empty or miscounted")
-        _migration_frame_equal(signals[0].reindex(signals[1].index), signals[1], {})
+        comparison = signals[1]
+        if observation_upgrade:
+            comparison = _observation_comparison(signals[0], comparison, after)
+        _migration_frame_equal(signals[0].reindex(comparison.index), comparison, {})
         checks = result["ledgers"]["checks"]
         names = ("decisions", "orders", "fills", "account_daily", "trades")
         if len(checks) != len(names) or {item["name"] for item in checks} != set(names):
@@ -92,7 +124,9 @@ def _migration_case(root, case, artifact, before, after):
             check = next(item for item in checks if item["name"] == name)
             if check["comparison"] != "EXACT_VALUES_ZERO_TOLERANCE" or check["rows"] != len(frames[1]):
                 raise ValueError("migration ledger comparison is incomplete or miscounted")
-            _migration_frame_equal(*frames, identities)
+            comparison = (_observation_comparison(*frames, after)
+                          if observation_upgrade and name == "decisions" else frames[1])
+            _migration_frame_equal(frames[0], comparison, identities, observation_upgrade=observation_upgrade)
             if name == "fills" and (not len(frames[1]) or result["actual_fills"] != {
                     "old": len(frames[0]), "new": len(frames[1])}):
                 raise ValueError("migration evidence must contain actual matched fills")
@@ -110,6 +144,14 @@ def _migration_case(root, case, artifact, before, after):
                         raise ValueError("migration nonzero plan runtime differs")
                     for field in ("signal_identity", "plan_identity"):
                         value.pop(field)
+                    if observation_upgrade and side == "new":
+                        evidence = dict(value.get("evidence", {}))
+                        allowed = set(after.observation.signal_panel.evidence_fields)
+                        for field in tuple(evidence):
+                            if field.startswith("obs_") and field in allowed:
+                                evidence.pop(field)
+                        if "evidence" in value:
+                            value["evidence"] = evidence
                     values.append(value)
                 if values[0] != values[1]:
                     raise ValueError("migration nonzero plan economic facts differ")
@@ -127,12 +169,14 @@ def validate_migration_selection(context, subject):
     from ..research_tools.evidence import EvidenceRef
     from .candidate_service import load_candidate
     from .runtime_acceptance import prospective_release
-    from .runtime_migration import validate_frozen_runtime_migration, _migration_original
+    from .runtime_migration import validate_frozen_runtime_migration, validate_frozen_observation_upgrade, _migration_original
 
-    if type(subject) is not f.FrozenMigrationSelectionSubject:
+    if type(subject) not in (f.FrozenMigrationSelectionSubject, f.FrozenObservationUpgradeSelectionSubject):
         raise TypeError("migration selection must be typed")
     candidate = load_candidate(context, subject.candidate)
-    after = validate_frozen_runtime_migration(context, subject.original, candidate)
+    observation_upgrade = type(subject) is f.FrozenObservationUpgradeSelectionSubject
+    validator = validate_frozen_observation_upgrade if observation_upgrade else validate_frozen_runtime_migration
+    after = validator(context, subject.original, candidate)
     registration = StrategyRegistry(context.research_registry_root).get_candidate(
         subject.candidate, evidence_root=context.research_root / subject.candidate.strategy_id)
     identity = StrategyRuntime().identify(candidate, dependencies=tuple(
@@ -181,7 +225,7 @@ def validate_migration_selection(context, subject):
             if Path(path).parent != prefix:
                 raise ValueError("migration evidence artifact escapes its case")
             artifact(Path(path).name)
-        _migration_case(context.root, case, artifact, before, after)
+        _migration_case(context.root, case, artifact, before, after, observation_upgrade=observation_upgrade)
     return original
 
 
@@ -315,7 +359,7 @@ def validate_inspection(root, reference):
         raise ValueError("inspection registration origin differs")
     selection = read_decision(root, report.selection)
     if (selection.action is not f.DecisionAction.APPROVE
-            or type(selection.subject) not in (f.CandidateSelectionSubject, f.FrozenMigrationSelectionSubject)
+            or type(selection.subject) not in (f.CandidateSelectionSubject, f.FrozenMigrationSelectionSubject, f.FrozenObservationUpgradeSelectionSubject)
             or selection.subject.candidate != origin.candidate
             or selection.subject.content_sha256 != origin.content_sha256):
         raise ValueError("inspection selection differs")

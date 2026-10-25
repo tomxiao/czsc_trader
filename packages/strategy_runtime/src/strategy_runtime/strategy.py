@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, time
 from decimal import Decimal
+import math
 from pathlib import Path
 from types import MappingProxyType
 from zoneinfo import ZoneInfo
@@ -301,6 +302,41 @@ class StrategyInstance:
                 raise RuntimeContractError("cycle history requires binary target and entry_allocation_fraction")
             for active, fraction in zip(targets, history["entry_allocation_fraction"], strict=True):
                 CycleTarget(bool(active), None if not active and pd.isna(fraction) else fraction)
+        panel = self.definition.observation.signal_panel
+        if panel is not None:
+            if self.definition.implementation.contract_version != 2:
+                raise RuntimeContractError("signal panels require implementation contract 2")
+            try:
+                observation = self._algorithm.observation_history(
+                    {name: frame.copy(deep=True) for name, frame in frames.items()},
+                    context, history.copy(deep=True),
+                )
+                if (not isinstance(observation, pd.DataFrame)
+                        or not observation.index.equals(history.index)
+                        or observation.columns.has_duplicates):
+                    raise RuntimeContractError("observation history must preserve trading sessions")
+                allowed = set(panel.evidence_fields)
+                if any(not isinstance(name, str) or not name.startswith("obs_")
+                       or name not in allowed or name in history for name in observation.columns):
+                    raise RuntimeContractError("observation history may only add declared obs_ columns")
+                for column in observation.columns:
+                    for value in observation[column]:
+                        if not pd.api.types.is_scalar(value):
+                            raise RuntimeContractError("observation history requires scalar values")
+                        if pd.isna(value) or isinstance(value, pd.Timestamp):
+                            continue
+                        if hasattr(value, "item"):
+                            value = value.item()
+                        if type(value) not in (str, bool, int, float):
+                            raise RuntimeContractError("observation history requires JSON scalar values")
+                        if type(value) is float and not math.isfinite(value):
+                            raise RuntimeContractError("observation history requires finite values")
+                history = history.join(observation)
+            except Exception as exc:
+                # Observation-only failures never supply partial display facts or
+                # alter already validated trading history. Materialization emits
+                # an explicit UNAVAILABLE observation for this recorded reason.
+                history["_observation_error"] = f"{type(exc).__name__}: {exc}"
         cached = (history, sessions)
         self._history_cache[cache_key] = cached
         return cached

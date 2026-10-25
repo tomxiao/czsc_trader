@@ -15,6 +15,7 @@ from strategy_runtime import (
     PortfolioSnapshot,
     PriceReference,
     OrderType,
+    ObservationDefinition,
     RuntimeCompatibilityError,
     RuntimeContractError,
     RuntimeExecutionError,
@@ -30,6 +31,7 @@ def _instance(history):
     sessions = pd.DatetimeIndex(["2026-01-02", "2026-01-05"])
     window_sessions = sessions[1:]
     definition = SimpleNamespace(
+        observation=ObservationDefinition((), ()),
         implementation=ImplementationRef("fixture", "History", 1, "a" * 64),
         decision=SimpleNamespace(minimum_target=0, maximum_target=1, output_kind="TARGET_POSITION"),
         capabilities=SimpleNamespace(order_types=("LIMIT",), checkpoints=()),
