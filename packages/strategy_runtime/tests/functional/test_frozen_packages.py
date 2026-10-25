@@ -2,6 +2,7 @@
 from dataclasses import fields, replace
 from pathlib import Path
 from datetime import date
+import shutil
 
 import pytest
 import pandas as pd
@@ -14,7 +15,11 @@ from strategy_runtime import (
     StrategyDefinition,
     StrategyRelease,
     StrategyRuntime,
+    InspectionRuntimePermit,
+    canonical_sha256,
+    load_inspection_deployment,
     load_strategy_deployment,
+    validate_release_package,
     materialize_observation,
     ObservationValueType,
     StrategyInit,
@@ -28,18 +33,41 @@ pytestmark = pytest.mark.release_acceptance
 
 
 @pytest.fixture(scope="module")
-def loaded_release(registered_release):
-    """Load each immutable installed package once, retaining independent checks."""
-    deployment = load_strategy_deployment(ROOT, registered_release.release_id)
-    runtime = StrategyRuntime(strategy_root=ROOT)
+def loaded_release(registered_release, frozen_seed_root):
+    """Check every frozen package without manufacturing deployment approval."""
+    release_id = registered_release.release_id
+    if (ROOT / "deployments" / f"{release_id}.json").exists():
+        deployment = load_strategy_deployment(ROOT, release_id)
+        runtime = StrategyRuntime(strategy_root=ROOT)
+    else:
+        # Freeze and deployment are separate states. Inspect an authenticated,
+        # byte-identical copy of an undeployed package using technical admission.
+        verified = validate_release_package(ROOT, release_id)
+        family, version = release_id.rsplit("-", 1)
+        workspace = frozen_seed_root / ".tmp/strategy-inspection" / release_id
+        repository = workspace / "repository"
+        isolated = repository / "strategies"
+        package = Path(family) / "releases" / version
+        shutil.copytree(ROOT / package, isolated / package)
+        versions = isolated / family / "versions"
+        versions.mkdir(parents=True)
+        shutil.copyfile(ROOT / family / "versions" / f"{version}.json", versions / f"{version}.json")
+        permit = InspectionRuntimePermit(
+            release_id, release_id, registered_release.release_hash, verified.package_sha256,
+            canonical_sha256({"test": "frozen_package_acceptance", "release": release_id}),
+            repository, workspace,
+        )
+        deployment = load_inspection_deployment(isolated, release_id, permit)
+        runtime = StrategyRuntime(strategy_root=isolated, inspection_permit=permit)
+        assert not (isolated / "deployments").exists()
     actual = runtime.describe(StrategyRelease.from_mapping(registered_release.to_dict()))
     return registered_release, deployment, actual, runtime
 
 
 def test_real_package_behavior_is_independent_of_candidate_or_release_identity(loaded_release):
-    record, deployment, release, runtime = loaded_release
+    record, deployment, release, _ = loaded_release
     family, _ = record.release_id.split("-")
-    candidate = runtime.describe(
+    candidate = StrategyRuntime().describe(
         StrategyCandidate(family, "C0001", record.strategy_payload, deployment.source_root)
     )
     for field in fields(StrategyDefinition):
