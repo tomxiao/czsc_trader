@@ -1,0 +1,148 @@
+{
+  "status": "PASS",
+  "inspection_run_id": "inspection-10e43acf8c02426e93da73fe8c15df20",
+  "report_path": "research/S015/experiments/EX081_20261025/others/inspection_report_v2.json",
+  "report_file_sha256": "d7f3946b3af191f8dccc391b138ebc6705780a1c5cb2e19789ee00b6c3b71edd",
+  "design_path": "research/S015/experiments/EX081_20261025/others/pte_design_v2.json",
+  "design_file_sha256": "778e255f39c3203134b313d8b7018a4d1ef1ada3b0d24db27e1dd7bc48586316",
+  "protocol_reference": {
+    "type": "ResearchEvidenceRef",
+    "owner": {
+      "type": "ResearchEvidenceOwner",
+      "strategy_id": "S015",
+      "experiment_id": "EX081_20261025"
+    },
+    "path": "inspection/2c99cad5f890378f024b630a84f5d537da73759f9273dd45e1fa8ee05153899a",
+    "sha256": "2c99cad5f890378f024b630a84f5d537da73759f9273dd45e1fa8ee05153899a"
+  },
+  "official_pte_status": "PASS",
+  "method": "Authenticate public trace/protocol references; check all predeclared Decimal cycle economics, target, phase, health and event completeness; compare full restart/continuous business snapshots.",
+  "results": [
+    {
+      "scenario_id": "c9304_partial_full_cycle",
+      "variant": "restart",
+      "status": "PASS",
+      "official_scenario_status": "PASS",
+      "trace_reference": {
+        "owner": {
+          "experiment_id": "EX081_20261025",
+          "strategy_id": "S015",
+          "type": "ResearchEvidenceOwner"
+        },
+        "path": "inspection/bd0abb4040b0e449e95b0b1356a23529706baa55540d36b8e6f35a0341f44418",
+        "sha256": "bd0abb4040b0e449e95b0b1356a23529706baa55540d36b8e6f35a0341f44418",
+        "type": "ResearchEvidenceRef"
+      },
+      "trace_sha256": "bd0abb4040b0e449e95b0b1356a23529706baa55540d36b8e6f35a0341f44418",
+      "expected_event_count": 19,
+      "observed_event_count": 19,
+      "observed_nonempty_cycle_states": 14,
+      "identity_pair_count": 1,
+      "missing_events": [],
+      "errors": [],
+      "last_observed_event": "exit_repeated"
+    },
+    {
+      "scenario_id": "c9304_partial_full_cycle",
+      "variant": "continuous",
+      "status": "PASS",
+      "official_scenario_status": "PASS",
+      "trace_reference": {
+        "owner": {
+          "experiment_id": "EX081_20261025",
+          "strategy_id": "S015",
+          "type": "ResearchEvidenceOwner"
+        },
+        "path": "inspection/bd0abb4040b0e449e95b0b1356a23529706baa55540d36b8e6f35a0341f44418",
+        "sha256": "bd0abb4040b0e449e95b0b1356a23529706baa55540d36b8e6f35a0341f44418",
+        "type": "ResearchEvidenceRef"
+      },
+      "trace_sha256": "bd0abb4040b0e449e95b0b1356a23529706baa55540d36b8e6f35a0341f44418",
+      "expected_event_count": 19,
+      "observed_event_count": 19,
+      "observed_nonempty_cycle_states": 14,
+      "identity_pair_count": 1,
+      "missing_events": [],
+      "errors": [],
+      "last_observed_event": "exit_repeated"
+    },
+    {
+      "scenario_id": "c9304_partial_cancel_blocked",
+      "variant": "restart",
+      "status": "PASS",
+      "official_scenario_status": "PASS",
+      "trace_reference": {
+        "owner": {
+          "experiment_id": "EX081_20261025",
+          "strategy_id": "S015",
+          "type": "ResearchEvidenceOwner"
+        },
+        "path": "inspection/0bdcbfa36f38b3504e0da3db44956deed8cf95e65099b9a692f9f73ee377eb11",
+        "sha256": "0bdcbfa36f38b3504e0da3db44956deed8cf95e65099b9a692f9f73ee377eb11",
+        "type": "ResearchEvidenceRef"
+      },
+      "trace_sha256": "0bdcbfa36f38b3504e0da3db44956deed8cf95e65099b9a692f9f73ee377eb11",
+      "expected_event_count": 9,
+      "observed_event_count": 9,
+      "observed_nonempty_cycle_states": 8,
+      "identity_pair_count": 1,
+      "missing_events": [],
+      "errors": [],
+      "last_observed_event": "entry_cancelled"
+    },
+    {
+      "scenario_id": "c9304_partial_cancel_blocked",
+      "variant": "continuous",
+      "status": "PASS",
+      "official_scenario_status": "PASS",
+      "trace_reference": {
+        "owner": {
+          "experiment_id": "EX081_20261025",
+          "strategy_id": "S015",
+          "type": "ResearchEvidenceOwner"
+        },
+        "path": "inspection/0bdcbfa36f38b3504e0da3db44956deed8cf95e65099b9a692f9f73ee377eb11",
+        "sha256": "0bdcbfa36f38b3504e0da3db44956deed8cf95e65099b9a692f9f73ee377eb11",
+        "type": "ResearchEvidenceRef"
+      },
+      "trace_sha256": "0bdcbfa36f38b3504e0da3db44956deed8cf95e65099b9a692f9f73ee377eb11",
+      "expected_event_count": 9,
+      "observed_event_count": 9,
+      "observed_nonempty_cycle_states": 8,
+      "identity_pair_count": 1,
+      "missing_events": [],
+      "errors": [],
+      "last_observed_event": "entry_cancelled"
+    }
+  ],
+  "restart_comparisons": [
+    {
+      "scenario_id": "c9304_partial_full_cycle",
+      "restart_after": [
+        "entry_partial"
+      ],
+      "observed_business_state_equality": true,
+      "status": "PASS",
+      "declared_recovery_scope_demonstrated": true
+    },
+    {
+      "scenario_id": "c9304_partial_cancel_blocked",
+      "restart_after": [
+        "entry_partial"
+      ],
+      "observed_business_state_equality": true,
+      "status": "PASS",
+      "declared_recovery_scope_demonstrated": true
+    }
+  ],
+  "supported_if_pass": [
+    "Complete positive opportunity: zero/partial/full fills, hold, EXITING, full exit and restart after partial fill.",
+    "Cancellation path: restart after partial fill, then reconcile cancellation to BLOCKED while retaining actual holdings and entry-cycle budget/target."
+  ],
+  "not_covered": [
+    "Restart after cancellation.",
+    "Operator acknowledgement, subsequent replenishment or automatic recovery from BLOCKED.",
+    "Forward-date operation, independent economic validation, freeze or live deployment approval."
+  ],
+  "preservation": "The original first-run FAIL and entry_cycle_audit_first.json remain unchanged."
+}

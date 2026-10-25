@@ -1,0 +1,162 @@
+{
+  "status": "PARTIAL_SUPPORT",
+  "inspection_run_id": "inspection-cd3fc03bebae4489a9db006a7994c642",
+  "report_path": "research/S015/experiments/EX081_20261025/others/inspection_report.json",
+  "report_file_sha256": "d7f2df7fb1e937638e0a8d190fe16260e2327150a4df67bac351f20d7d73bccf",
+  "design_path": "research/S015/experiments/EX081_20261025/others/pte_design.json",
+  "design_file_sha256": "b07e303f4ab85ec173cafd62903abae3f565d900fbb40a251e9cc7fa3798f252",
+  "method": "Public authenticated trace artifacts; exact Decimal cycle economics and target/phase against predeclared independent expectations; full business-state restart comparison.",
+  "results": [
+    {
+      "scenario_id": "c9304_partial_full_cycle",
+      "variant": "restart",
+      "status": "PASS",
+      "official_scenario_status": "PASS",
+      "trace_reference": {
+        "owner": {
+          "experiment_id": "EX081_20261025",
+          "strategy_id": "S015",
+          "type": "ResearchEvidenceOwner"
+        },
+        "path": "inspection/bd0abb4040b0e449e95b0b1356a23529706baa55540d36b8e6f35a0341f44418",
+        "sha256": "bd0abb4040b0e449e95b0b1356a23529706baa55540d36b8e6f35a0341f44418",
+        "type": "ResearchEvidenceRef"
+      },
+      "trace_sha256": "bd0abb4040b0e449e95b0b1356a23529706baa55540d36b8e6f35a0341f44418",
+      "expected_event_count": 19,
+      "observed_event_count": 19,
+      "observed_nonempty_cycle_states": 14,
+      "observed_fields_match": true,
+      "identity_pair_count": 1,
+      "missing_events": [],
+      "last_observed_event": "exit_repeated",
+      "errors": [],
+      "limit": null
+    },
+    {
+      "scenario_id": "c9304_partial_full_cycle",
+      "variant": "continuous",
+      "status": "PASS",
+      "official_scenario_status": "PASS",
+      "trace_reference": {
+        "owner": {
+          "experiment_id": "EX081_20261025",
+          "strategy_id": "S015",
+          "type": "ResearchEvidenceOwner"
+        },
+        "path": "inspection/bd0abb4040b0e449e95b0b1356a23529706baa55540d36b8e6f35a0341f44418",
+        "sha256": "bd0abb4040b0e449e95b0b1356a23529706baa55540d36b8e6f35a0341f44418",
+        "type": "ResearchEvidenceRef"
+      },
+      "trace_sha256": "bd0abb4040b0e449e95b0b1356a23529706baa55540d36b8e6f35a0341f44418",
+      "expected_event_count": 19,
+      "observed_event_count": 19,
+      "observed_nonempty_cycle_states": 14,
+      "observed_fields_match": true,
+      "identity_pair_count": 1,
+      "missing_events": [],
+      "last_observed_event": "exit_repeated",
+      "errors": [],
+      "limit": null
+    },
+    {
+      "scenario_id": "c9304_partial_cancel_retry",
+      "variant": "restart",
+      "status": "INCOMPLETE",
+      "official_scenario_status": "FAIL",
+      "trace_reference": {
+        "owner": {
+          "experiment_id": "EX081_20261025",
+          "strategy_id": "S015",
+          "type": "ResearchEvidenceOwner"
+        },
+        "path": "inspection/0e266832c8229036e02e8474f504b0f8f4eda841fea8b9de3d715d000715d8cb",
+        "sha256": "0e266832c8229036e02e8474f504b0f8f4eda841fea8b9de3d715d000715d8cb",
+        "type": "ResearchEvidenceRef"
+      },
+      "trace_sha256": "0e266832c8229036e02e8474f504b0f8f4eda841fea8b9de3d715d000715d8cb",
+      "expected_event_count": 21,
+      "observed_event_count": 8,
+      "observed_nonempty_cycle_states": 7,
+      "observed_fields_match": true,
+      "identity_pair_count": 1,
+      "missing_events": [
+        "entry_cancelled",
+        "exit:decision",
+        "exit:repeat",
+        "exit:submit",
+        "exit_accepted",
+        "exit_filled",
+        "exit_repeated",
+        "hold_two:decision",
+        "hold_two:submit",
+        "retry:decision",
+        "retry:submit",
+        "retry_accepted",
+        "retry_filled"
+      ],
+      "last_observed_event": "entry_repeated",
+      "errors": [],
+      "limit": "Only persisted events were checked. Missing events and the failure checkpoint are not accepted as passed."
+    },
+    {
+      "scenario_id": "c9304_partial_cancel_retry",
+      "variant": "continuous",
+      "status": "INCOMPLETE",
+      "official_scenario_status": "FAIL",
+      "trace_reference": {
+        "owner": {
+          "experiment_id": "EX081_20261025",
+          "strategy_id": "S015",
+          "type": "ResearchEvidenceOwner"
+        },
+        "path": "inspection/0e266832c8229036e02e8474f504b0f8f4eda841fea8b9de3d715d000715d8cb",
+        "sha256": "0e266832c8229036e02e8474f504b0f8f4eda841fea8b9de3d715d000715d8cb",
+        "type": "ResearchEvidenceRef"
+      },
+      "trace_sha256": "0e266832c8229036e02e8474f504b0f8f4eda841fea8b9de3d715d000715d8cb",
+      "expected_event_count": 21,
+      "observed_event_count": 8,
+      "observed_nonempty_cycle_states": 7,
+      "observed_fields_match": true,
+      "identity_pair_count": 1,
+      "missing_events": [
+        "entry_cancelled",
+        "exit:decision",
+        "exit:repeat",
+        "exit:submit",
+        "exit_accepted",
+        "exit_filled",
+        "exit_repeated",
+        "hold_two:decision",
+        "hold_two:submit",
+        "retry:decision",
+        "retry:submit",
+        "retry_accepted",
+        "retry_filled"
+      ],
+      "last_observed_event": "entry_repeated",
+      "errors": [],
+      "limit": "Only persisted events were checked. Missing events and the failure checkpoint are not accepted as passed."
+    }
+  ],
+  "restart_comparisons": [
+    {
+      "scenario_id": "c9304_partial_full_cycle",
+      "observed_trace_business_facts_equal": true,
+      "status": "PASS",
+      "full_recovery_demonstrated": true,
+      "limit": null
+    },
+    {
+      "scenario_id": "c9304_partial_cancel_retry",
+      "observed_trace_business_facts_equal": true,
+      "status": "INCOMPLETE",
+      "full_recovery_demonstrated": false,
+      "limit": "Matching prefixes do not demonstrate the planned restart or subsequent retry/exit."
+    }
+  ],
+  "supported": "First scenario: zero fill, partial fill, repeated report/decision, locked budget/target, remaining fill, hold, EXITING, complete market exit and persisted-state recovery.",
+  "not_supported": "Second scenario stops before the failed cancellation checkpoint is persisted. Cancellation state, restart after cancellation, next-day refill, later hold and exit remain unverified.",
+  "interpretation": "This supplementary audit does not override the official PTE FAIL or grant freeze/forward-runtime approval."
+}

@@ -1,0 +1,38 @@
+{
+  "type": "PROTOCOL_DESIGN_CORRECTION",
+  "revision": 2,
+  "candidate_changed": false,
+  "original_protocol_sha256": "16f818cecf31caa4df7de1d0a98b7df3a6b24e5cf7a1f8cef3b9027f6d6fc307",
+  "original_report_sha256": "d7f2df7fb1e937638e0a8d190fe16260e2327150a4df67bac351f20d7d73bccf",
+  "original_prepared_sha256": "4a8dbfde944af639e9e20551abf3a24e2e27a5072400d0a57d68cb9001185dd0",
+  "rule": "Incomplete terminal orders require operator acknowledgement. Budget preservation does not authorize automatic retry.",
+  "basis": {
+    "packages/paper_trading_engine/src/paper_trading_engine/broker.py": "72fe02d00c5b14588f7d4f9b37e41c5ab187fc6d1fea427db0707d564994421a",
+    "packages/paper_trading_engine/src/paper_trading_engine/futu_execution.py": "b72fdf70c46899975b7747b1f46fda58a3f570556d2643e40b100fdc6904a2a4",
+    "packages/paper_trading_engine/src/paper_trading_engine/inspection_contracts.py": "b5a4031d1ee806e137066e1cdffe245086ccd98b464e7cd2ddf8426251caa45e",
+    "packages/paper_trading_engine/tests/functional/test_channel_safety.py": "699ef3d195a94b868f60660fe74261ec80d2ce7896e9f555653f6c30b4f11782"
+  },
+  "scope": {
+    "supersedes_scenario": "c9304_partial_cancel_retry",
+    "scenario": "c9304_partial_cancel_blocked",
+    "reason": "The original scenario omitted required operator acknowledgement and incorrectly assumed automatic retry. Existing execution-gap policy requires BLOCKED after incomplete terminal cancellation.",
+    "basis": [
+      "packages/paper_trading_engine/src/paper_trading_engine/broker.py",
+      "packages/paper_trading_engine/src/paper_trading_engine/futu_execution.py",
+      "packages/paper_trading_engine/src/paper_trading_engine/inspection_contracts.py",
+      "packages/paper_trading_engine/tests/functional/test_channel_safety.py"
+    ],
+    "first_scenario_and_three_faults_unchanged": true,
+    "new_market_data": false,
+    "candidate_changed": false,
+    "cancel_scope": "Channel-originated partial cancellation without a local cancellation action or operator acknowledgement; no automatic retry is permitted.",
+    "recovery_scope": "Restart after partial fill; the subsequent cancellation must reconcile to the same blocked account as uninterrupted execution.",
+    "not_covered": "Operator acknowledgement and subsequent retry are not expressible in the public inspection scenario contract and are not claimed."
+  },
+  "preservation": "Original protocol, expectations, source and FAIL report remain immutable; v2 is not a relabeling of the first outcome.",
+  "limits": [
+    "No platform or candidate change",
+    "No new input preparation or future market access",
+    "No operator acknowledgement or post-acknowledgement retry coverage"
+  ]
+}
