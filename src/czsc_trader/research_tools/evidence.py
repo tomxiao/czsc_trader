@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum, StrEnum
 from hashlib import sha256
+import os
 from pathlib import Path
 import re
 from typing import TYPE_CHECKING
@@ -13,6 +14,20 @@ from ._records import _Record, _hash, _path, _text
 from .context import ExperimentRef
 if TYPE_CHECKING:
     from .evaluation import EvaluationRequest, EvaluationResult
+
+
+def _resolve_for_containment(path: Path) -> Path:
+    resolved = path.resolve()
+    if os.name == "nt":
+        # Concurrent mkdir can make ntpath.realpath retain its extended prefix
+        # for a previously missing child while stripping it from the root.
+        # Normalize only equivalent drive/UNC spellings, after resolving links.
+        value = str(resolved)
+        if value.startswith("\\\\?\\UNC\\"):
+            return Path("\\\\" + value[8:])
+        if value.startswith("\\\\?\\") and re.match(r"[A-Za-z]:\\", value[4:]):
+            return Path(value[4:])
+    return resolved
 
 
 def managed_path(root: Path, relative: str) -> Path:
@@ -24,7 +39,7 @@ def managed_path(root: Path, relative: str) -> Path:
             break
         if parent.is_symlink() or parent.is_junction():
             raise ValueError("managed path contains a filesystem link")
-    if not target.resolve().is_relative_to(root):
+    if not _resolve_for_containment(target).is_relative_to(_resolve_for_containment(root)):
         raise ValueError("managed path escapes repository")
     return target
 

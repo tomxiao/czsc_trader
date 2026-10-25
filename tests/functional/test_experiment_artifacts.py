@@ -4,6 +4,8 @@ from dataclasses import replace
 from datetime import date
 from hashlib import sha256
 import json
+import os
+from pathlib import Path
 
 import pytest
 
@@ -12,6 +14,7 @@ from czsc_trader.application.experiment_artifact_service import validate_experim
 from czsc_trader.research_tools.delivery import ValidationStatus
 from czsc_trader.research_tools.evidence import (
     ExperimentOutcome, ExperimentReportWrite, MaterialEvidenceWrite, PublicationStatus,
+    managed_path,
 )
 from czsc_trader.research_tools.experiment_artifacts import (
     ExperimentArtifactRef, ExperimentReportSnapshot, ExperimentValidationRequest,
@@ -118,6 +121,32 @@ def test_concurrent_report_publish_preserves_one_current_reference(report_case):
         results = tuple(pool.map(publish, requests))
     assert sum(value is not None for value in results) == 1
     assert check(context, experiment).report in results
+
+
+@pytest.mark.parametrize("outside", [False, True])
+def test_managed_path_normalizes_resolved_spelling_without_allowing_escape(tmp_path, monkeypatch, outside):
+    root = tmp_path / "repository"
+    root.mkdir()
+    target = root / ".tmp/report-locks/experiment"
+    destination = tmp_path / "outside/experiment" if outside else target
+    original = Path.resolve
+
+    def resolve(path, *args, **kwargs):
+        result = original(path, *args, **kwargs)
+        if path == target:
+            result = original(destination)
+            # Deterministically reproduce Windows' retained extended prefix
+            # when an absent directory appears during concurrent resolution.
+            if os.name == "nt":
+                result = Path("\\\\?\\" + str(result))
+        return result
+
+    monkeypatch.setattr(Path, "resolve", resolve)
+    if outside:
+        with pytest.raises(ValueError, match="escapes repository"):
+            managed_path(root, ".tmp/report-locks/experiment")
+    else:
+        assert managed_path(root, ".tmp/report-locks/experiment") == target
 
 
 def test_commit_error_after_replace_is_unknown_and_cancellation_preserved(report_case, monkeypatch):
