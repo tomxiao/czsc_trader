@@ -1,0 +1,403 @@
+{
+  "status": "PASS",
+  "scope": "Read-only independent ledger/identity audit of two existing authorized EX083 output accounts; no replay or market-data access.",
+  "window": {
+    "start": "2026-01-05",
+    "end": "2026-10-21"
+  },
+  "sessions": 191,
+  "initial_cash": 100000,
+  "initial_quantity": 0,
+  "fee_per_side": 0.001,
+  "same_execution_fingerprint": "5b174265abc5d1cfdccbbdbab44920381e7791c951bd1f176345f738cc536e8a",
+  "same_execution_data_and_market_rules": true,
+  "same_execution_input_identities": true,
+  "pricing": {
+    "basis": "HFQ_RESEARCH",
+    "quantity_unit": "RESEARCH_UNIT",
+    "anchor_date": "2025-12-31",
+    "anchor_factor": 1.0
+  },
+  "registered_identities_and_source_files_unchanged": true,
+  "rows": [
+    {
+      "strategy": "S011-v1",
+      "output_dir": "outputs/1025_02_S011-v1",
+      "status": "PASS",
+      "identity": {
+        "source_hash": "5da4a999f28aa699ef60641bc26d34f66e124dda8236063aeeea9b18afa9e89e",
+        "runtime_sha256": "07c973bc4bf725ba8e081fb2711c48cce8c6f2f18a2124137d79a60cad82c39f",
+        "content_sha256": null
+      },
+      "sessions": 191,
+      "initial_cash": 100000,
+      "initial_quantity": 0,
+      "initial_entry_cycle": null,
+      "independent_calculations": {
+        "net_return": 0.353216544,
+        "max_drawdown_signed": -0.0724541508493294,
+        "max_drawdown_magnitude": 0.0724541508493294,
+        "final_equity": "135321.65439999999991",
+        "final_cash": "135321.65439999999991",
+        "final_quantity": 0,
+        "total_fees": "5144.54560000000009",
+        "closed_trades": 20,
+        "winning_trades": 13,
+        "win_rate": 0.65
+      },
+      "last_fill_time": "2026-10-16 09:30:00",
+      "no_final_session_fills": true,
+      "no_end_liquidation_contribution": "Both accounts naturally end flat; no final-session fill or terminal-sale contribution.",
+      "ledger_checks": {
+        "all_daily_cash_quantity_equity_rebuilt_from_zero": true,
+        "all_fill_fees_one_way_0_001": true,
+        "all_closed_cycles_rebuilt_and_returns_match": true,
+        "max_cash_csv_decimal_error": "1.25446E-10",
+        "max_equity_csv_decimal_error": "1.2009E-10",
+        "money_tolerance": "1e-7",
+        "ratio_tolerance": "1e-12"
+      },
+      "policy": {
+        "policy_type": "FROZEN_RULE",
+        "settings": {
+          "capital": {
+            "fee_rate": 0.001,
+            "mode": "full_available_cash",
+            "target_scope": "entry_cycle"
+          },
+          "entry": {
+            "order_type": "LIMIT",
+            "limit_parameter": 0.003
+          },
+          "exit": {
+            "order_type": "MARKET",
+            "limit_ratio": 0.1
+          },
+          "instrument": {
+            "lot_size": 100,
+            "maximum_order_quantity": 1000000,
+            "price_limit_ratio": 0.1,
+            "price_tick": 0.001
+          }
+        }
+      },
+      "cycles": [
+        {
+          "cycle_id": "CYC-D84772C527B11F65B9CF",
+          "net_pnl": "4172.04119999999999",
+          "net_return": 0.042532270878727574
+        },
+        {
+          "cycle_id": "CYC-41BA91CDFA74C9456556",
+          "net_pnl": "7643.5632",
+          "net_return": 0.0735009671179884
+        },
+        {
+          "cycle_id": "CYC-42CED0EE075945DC07EC",
+          "net_pnl": "3213.41019999999999",
+          "net_return": 0.028797488226059653
+        },
+        {
+          "cycle_id": "CYC-FA11CB05885300DD85C2",
+          "net_pnl": "10372.78399999999999",
+          "net_return": 0.0919440157938307
+        },
+        {
+          "cycle_id": "CYC-8F577C83158DA470624E",
+          "net_pnl": "-380.2356",
+          "net_return": -0.0030441256856351194
+        },
+        {
+          "cycle_id": "CYC-ABB1DD9D1034317F1D0E",
+          "net_pnl": "4161.942",
+          "net_return": 0.03330997360848107
+        },
+        {
+          "cycle_id": "CYC-3A04AC332059DF4C755C",
+          "net_pnl": "-1533.52289999999999",
+          "net_return": -0.011973271849521254
+        },
+        {
+          "cycle_id": "CYC-AED4A7918D080FC332D5",
+          "net_pnl": "3287.82979999999999",
+          "net_return": 0.025860036144071404
+        },
+        {
+          "cycle_id": "CYC-3F29701DD39016D1BF1F",
+          "net_pnl": "2221.5375",
+          "net_return": 0.01705343115034745
+        },
+        {
+          "cycle_id": "CYC-6D6F215202EBD9FDAD2A",
+          "net_pnl": "1533.81219999999996",
+          "net_return": 0.011573661889349116
+        },
+        {
+          "cycle_id": "CYC-AD64CFB6895C49B3BDF4",
+          "net_pnl": "4699.11859999999998",
+          "net_return": 0.036289808122215994
+        },
+        {
+          "cycle_id": "CYC-D3EA6E29745E511C088A",
+          "net_pnl": "1939.4487",
+          "net_return": 0.014150897646043277
+        },
+        {
+          "cycle_id": "CYC-156D9A154501B16EC76B",
+          "net_pnl": "-346.8825",
+          "net_return": -0.002480128567085089
+        },
+        {
+          "cycle_id": "CYC-FA7F5DBED2BC36F39AB4",
+          "net_pnl": "-1215.48700000000002",
+          "net_return": -0.008741258741258742
+        },
+        {
+          "cycle_id": "CYC-B42F533893825C6B87C3",
+          "net_pnl": "1504.7416",
+          "net_return": 0.010804031439837351
+        },
+        {
+          "cycle_id": "CYC-4926E0663062C47BBC35",
+          "net_pnl": "-2940.9408",
+          "net_return": -0.021136224181909462
+        },
+        {
+          "cycle_id": "CYC-A1DAFE7E4E40ADB01ABC",
+          "net_pnl": "-4989.2112",
+          "net_return": -0.0364968364968365
+        },
+        {
+          "cycle_id": "CYC-D7D84164BFA10738CE2E",
+          "net_pnl": "1771.05600000000002",
+          "net_return": 0.01333772610368355
+        },
+        {
+          "cycle_id": "CYC-49DDA38E707851298EF0",
+          "net_pnl": "-350.91969999999998",
+          "net_return": -0.0025977628141089677
+        },
+        {
+          "cycle_id": "CYC-EEB308804778252F3CAD",
+          "net_pnl": "557.56909999999998",
+          "net_return": 0.004230859293272608
+        }
+      ],
+      "file_sha256": {
+        "manifest.json": "7ac7564c23dd48d90ed6bcc57a1ffdca46f0359814a166a6fef6268a2185767e",
+        "metrics.json": "cac6af2f9b740845d5853b7a2292b3fd329bb1222bb46a981bd14042c6eeea57",
+        "audit.json": "5a596949e67411b7bf2ae9acc788de1954a1b8c4d273813e83cdc92e292ed747",
+        "account_daily.csv": "91bb5414632e060591c8db428da2a17267cbdade82d4e2344e7dbf9f472288b5",
+        "fills.csv": "2026c9a04f4722bb10073f4090fbc56c49b7cd695f2e9b56023c9883e8b981af",
+        "trades.csv": "76fadf1e94b92002673579ceebc755f4e5c40970f3f3baad4813aed3f5e42888",
+        "orders.csv": "cbc323036d6740644eef5c32779595e34c0111bc547332a98f8363c6285526b3",
+        "decisions.csv": "92f556a6fa56c24d0ef4ec81afe860f57a84bdc8a0054f8f38b50a75074d237f"
+      }
+    },
+    {
+      "strategy": "C9700",
+      "output_dir": "outputs/1025_01_S015-C9700",
+      "status": "PASS",
+      "identity": {
+        "source_hash": "1b2f321b62c7c176eaa1dcb974f8f5ef3a4d415c72ba334b8df6457eb80bcac5",
+        "runtime_sha256": "5cce537887701ea841e777bf8f1f8fe58f491a68be28829be78507d9b8ad3975",
+        "content_sha256": "3f92791519e1f9422fef11bb5c9177db4d9d83e628ea5f5cba0ec684b9530d5f"
+      },
+      "sessions": 191,
+      "initial_cash": 100000,
+      "initial_quantity": 0,
+      "initial_entry_cycle": null,
+      "independent_calculations": {
+        "net_return": 0.557533811,
+        "max_drawdown_signed": -0.05401166307817261,
+        "max_drawdown_magnitude": 0.05401166307817261,
+        "final_equity": "155753.38109999999997",
+        "final_cash": "155753.38109999999997",
+        "final_quantity": 0,
+        "total_fees": "6476.91890000000003",
+        "closed_trades": 24,
+        "winning_trades": 20,
+        "win_rate": 0.8333333333333334
+      },
+      "last_fill_time": "2026-09-28 09:30:00",
+      "no_final_session_fills": true,
+      "no_end_liquidation_contribution": "Both accounts naturally end flat; no final-session fill or terminal-sale contribution.",
+      "ledger_checks": {
+        "all_daily_cash_quantity_equity_rebuilt_from_zero": true,
+        "all_fill_fees_one_way_0_001": true,
+        "all_closed_cycles_rebuilt_and_returns_match": true,
+        "max_cash_csv_decimal_error": "7.601E-11",
+        "max_equity_csv_decimal_error": "8.003E-11",
+        "money_tolerance": "1e-7",
+        "ratio_tolerance": "1e-12"
+      },
+      "policy": {
+        "policy_type": "FROZEN_RULE",
+        "settings": {
+          "capital": {
+            "fee_rate": 0.001,
+            "mode": "signal_cash_fraction",
+            "target_scope": "entry_cycle"
+          },
+          "entry": {
+            "limit_parameter": 0.01,
+            "order_type": "LIMIT"
+          },
+          "exit": {
+            "limit_ratio": 0.1,
+            "order_type": "MARKET"
+          },
+          "instrument": {
+            "lot_size": 100,
+            "maximum_order_quantity": 1000000,
+            "price_limit_ratio": 0.1,
+            "price_tick": 0.001
+          }
+        }
+      },
+      "cycles": [
+        {
+          "cycle_id": "ff9cd160956312903e3ae14951b439d189633f91e12d5dbdf111d5d40ff5004d",
+          "net_pnl": "4139.59919999999999",
+          "net_return": 0.042532270878727574
+        },
+        {
+          "cycle_id": "3bf539a39f05c803a42910c784ec5fcaecd09fc5d78e29bf7f97d3a4bab03c8d",
+          "net_pnl": "8423.148",
+          "net_return": 0.08241012718624659
+        },
+        {
+          "cycle_id": "aca32057b0b446ce47eb2aada0f2f7fd20ce825245a1db43a269669fdc462a1f",
+          "net_pnl": "8203.75919999999999",
+          "net_return": 0.0735009671179884
+        },
+        {
+          "cycle_id": "ba59ced083f55845658d9e2f890b988b8991fe13270c244c24680529f4165490",
+          "net_pnl": "1437.08069999999999",
+          "net_return": 0.012026759075662955
+        },
+        {
+          "cycle_id": "72e7087bd2300e8422f64708b6aa4735cdfdcc3a13baf01dbd89b3d8032a5e1c",
+          "net_pnl": "1622.9444",
+          "net_return": 0.013355874894336433
+        },
+        {
+          "cycle_id": "64e67f90fd9d900de73148025ba0c6aefa45a6668fa5d7fdf95b540fdea8bc25",
+          "net_pnl": "3533.364",
+          "net_return": 0.02883215439269251
+        },
+        {
+          "cycle_id": "5ea47624204f149d79cee85ed6acc537b465ce755557b7653c3af717b0abc0a0",
+          "net_pnl": "3990.9948",
+          "net_return": 0.0323144439057995
+        },
+        {
+          "cycle_id": "c72197becdfb0adb9135538e2c3ca092f1bba1f5208be8d8b7b9f1cc7fdd79dc",
+          "net_pnl": "1067.8737",
+          "net_return": 0.008363767380160822
+        },
+        {
+          "cycle_id": "ea0fadf40c7dc820afa731979c4589d1c5c231b318af6789ba77333d7f730f4a",
+          "net_pnl": "1956.47759999999998",
+          "net_return": 0.015098391972053642
+        },
+        {
+          "cycle_id": "b1109a328881ba5dba57d4bd59996b9c4165ff2cc7f2e48db4955a493dd13aaa",
+          "net_pnl": "-4537.2286",
+          "net_return": -0.03429887580292149
+        },
+        {
+          "cycle_id": "a6082d4392a677f98c60c0f78ac5992257eba661998daaae5f38d6b325a41d1c",
+          "net_pnl": "3324.83109999999998",
+          "net_return": 0.025860036144071404
+        },
+        {
+          "cycle_id": "287d931a6b1832e79ebe69a2b7eb3c3ff3fbf460ef20925f0f37f793683a6f39",
+          "net_pnl": "2479.8422",
+          "net_return": 0.018997147666423596
+        },
+        {
+          "cycle_id": "53c305e5e6202253cf05f3ff9e1c427acd8053b6f58907a2b89dae41cd1f4174",
+          "net_pnl": "-3019.8151",
+          "net_return": -0.02265957441691674
+        },
+        {
+          "cycle_id": "3aff325e49446131cea64705792f8a934ee558b417d04c1d1994a2750c754919",
+          "net_pnl": "5036.831",
+          "net_return": 0.037995629428149005
+        },
+        {
+          "cycle_id": "be6af884860fe3de209e3d8e6deb66cdc9edf243449d68a0797ebfcb8cfc3cce",
+          "net_pnl": "2026.75770000000002",
+          "net_return": 0.015073691911417293
+        },
+        {
+          "cycle_id": "162b261a524734f7f3490ae387bff20baa498a3b84768ffbe50c6598b7274e34",
+          "net_pnl": "5324.1528",
+          "net_return": 0.038452997287702795
+        },
+        {
+          "cycle_id": "606c7c7b8e890e8bfdd752ab2df894a49403ef84fb08ad096a1511ebd3ea3789",
+          "net_pnl": "3480.0012",
+          "net_return": 0.024514385045694344
+        },
+        {
+          "cycle_id": "7c6e8443f174a9224ed787b8455f785881a6a0ddeddc3c0471cf28b01c2e2f9f",
+          "net_pnl": "2569.5575",
+          "net_return": 0.01739890203840047
+        },
+        {
+          "cycle_id": "9609940d6db8f6f04a75b6f4741cda4bc4e7620228822dbf5cb0dbdd4139d697",
+          "net_pnl": "2711.33720000000002",
+          "net_return": 0.0181756412434177
+        },
+        {
+          "cycle_id": "875a37d48390346fe03701267f0769efb0e18e71cf1d2b4af2b962a392a02b3a",
+          "net_pnl": "5713.05510000000002",
+          "net_return": 0.03752098964864922
+        },
+        {
+          "cycle_id": "e203f02bbe5edec1c5e48ff0ddc6e058ce63235879774358ab4d1fd542faa951",
+          "net_pnl": "815.356",
+          "net_return": 0.005229532085295513
+        },
+        {
+          "cycle_id": "897f4df891d5c2f9602e36e57802b6ed716b4bc94a34660fe8d7bbc0a31d86a4",
+          "net_pnl": "-415.8185",
+          "net_return": -0.0026010243532902143
+        },
+        {
+          "cycle_id": "3d7272433e7362c3b13ec3886d235646f929dec5306190cddd261e713ee285d6",
+          "net_pnl": "1603.5246",
+          "net_return": 0.010121026514469137
+        },
+        {
+          "cycle_id": "9bd211825a52bc6fc1e75361ed5c01f232cf95c7b76b9bff4d3f3581a63b1adf",
+          "net_pnl": "-5734.24470000000002",
+          "net_return": -0.03591935792293574
+        }
+      ],
+      "file_sha256": {
+        "manifest.json": "7c3900968e56e23752c504ba22e97ab93710e207a2c621d0d81c17af8e25908b",
+        "metrics.json": "22dd239d1ccd609c13e4cde5538ea8106b4bdfe9b553da4df6fbe86f92b3d4b0",
+        "audit.json": "122744ddbb6a703258269cfc68ac26ab1b87bc201edb31ae98afa2bf1e98ae14",
+        "account_daily.csv": "7fd5d784c61e5110d367dd3f3396316585dccdeac181d17572319d942db2b422",
+        "fills.csv": "f03f7e8d66ea39d9d81cd3a9654090cf6c9043bce47d22c5d043841fc403f2e7",
+        "trades.csv": "93fc2164e23609fd39611fb633a768ea41d61dc7a882d88e497e9def39a2b065",
+        "orders.csv": "ab8733bd4bc1fc593d7315a491ff6511336a3862ed8178599538bd3c5eded66c",
+        "decisions.csv": "707b989f00c3685dd626c438ca0c50f277b0f4c20d1fb0cb0d9a655af32226e1"
+      }
+    }
+  ],
+  "difference": {
+    "C9700_minus_S011_net_return_percentage_points": 20.4317267,
+    "C9700_drawdown_reduction_percentage_points": 1.8442487771156784
+  },
+  "limits": [
+    "Fresh cash accounts are independent account constructions, not independent out-of-sample evidence; this window was already observed during strategy research.",
+    "Each strategy retains its own prehistory, inputs and signal-state rules. Canonical signal prehistory does not import an old cash ledger or position.",
+    "S011-v1 retains 0.3% buy premium and full_available_cash; C9700 retains 1% buy premium and signal_cash_fraction entry-cycle budget. This compares original complete strategies, not isolated signal mechanisms.",
+    "Both are historical HFQ_RESEARCH/RESEARCH_UNIT simulations with a common transaction model, not actual trading or evidence of future superiority.",
+    "C9700 remains a candidate; this comparison does not freeze it or change existing qualification gates."
+  ]
+}
