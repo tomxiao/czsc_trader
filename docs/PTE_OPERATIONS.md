@@ -81,6 +81,13 @@ Content-Type: application/json
 `DECISION_SUPERSEDED`或`DECISION_AND_INTENTS_SUPERSEDED`。只有尚未提交渠道且没有
 `channel_order_id`的订单意图可以随旧决策失效；已有渠道订单或结果未知时返回冲突。
 
+“正常未成交”表示限价买单已按执行时窗结束且确认零成交，不需要人工解除阻塞；
+同日再次驱动相同计划返回`DECISION_REUSED`，下一交易日按新的策略决策执行。核验时关联
+`CANCEL_REQUESTED`的`planned_deadline`原因、渠道`CANCELLED_ALL`零成交回报和意图
+`termination_reason=NORMAL_UNFILLED`。仅看到撤单请求或收盘时间不足以认定安全终结。
+无明确到期来源、拒单、部分成交、人工撤单等仍按原执行缺口处理，结果未知继续等待对账。
+升级不会自动解除历史阻塞；完整语义见[PTE正常限价未成交与执行异常](../packages/paper_trading_engine/README.md#正常限价未成交与执行异常)。
+
 冻结策略不会自动进入SRT或PTE；新版本初始资格为`RESEARCH`。获准的DEV通过SM
 `approve_paper_trading(PaperTradingApproval)`绑定发布哈希授予`PAPER_READY`，通过
 `deploy_strategy` API写入SRT部署凭据；创建PTE账户仍是独立授权动作。PTE在进程内调用SRT，

@@ -685,7 +685,7 @@ def test_ft_pte10_intraday_plan_waits_for_fill_and_recovers_after_restart(new_st
     store.close()
 
 
-def test_ft_pte11_intraday_plan_blocks_exit_when_entry_is_not_filled(new_store, tmp_path):
+def test_ft_pte11_intraday_plan_skips_exit_when_entry_normally_unfilled(new_store, tmp_path):
     store = new_store(tmp_path / "runtime.db")
     store.create_virtual_account(
         "s003-v1", "S003-v1模拟账户", "legacy", "a" * 64, 100_000,
@@ -791,9 +791,11 @@ def test_ft_pte11_intraday_plan_blocks_exit_when_entry_is_not_filled(new_store, 
     noon_execution.submit_pending(reconcile=False)
     assert [row.side for row in broker.placed] == ["BUY", "BUY"]
     assert store.account_intent(entry["intent_id"])["status"] == "CANCELLED_ALL"
-    assert store.account_intent(exit_leg["intent_id"])["status"] == "EXPIRED"
-    assert store.virtual_account("s003-v1")["health"] == "BLOCKED"
-    assert len(store.query_audit_events(event_type="EXECUTION_PLAN_BLOCKED")) == 1
+    assert store.account_intent(exit_leg["intent_id"])["status"] == "SKIPPED_DEPENDENCY"
+    assert store.virtual_account("s003-v1")["health"] == "OK"
+    assert store.virtual_account("s003-v1")["quantity"] == 1000
+    assert len(store.query_audit_events(event_type="EXECUTION_PLAN_LEG_SKIPPED")) == 1
+    assert store.query_audit_events(event_type="EXECUTION_PLAN_BLOCKED") == []
     store.close()
 
 

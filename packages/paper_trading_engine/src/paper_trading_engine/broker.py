@@ -1,6 +1,7 @@
 """Broker-neutral values used by the Futu execution adapter."""
 
 from dataclasses import dataclass
+from enum import StrEnum
 
 
 TERMINAL_ORDER_STATUSES = {
@@ -22,14 +23,21 @@ ACTIVE_ORDER_STATUSES = {
 KNOWN_ORDER_STATUSES = TERMINAL_ORDER_STATUSES | ACTIVE_ORDER_STATUSES
 
 # These terminal outcomes leave the strategy decision incompletely executed.  They
-# require an operator acknowledgement before the virtual account may trade again.
+# require acknowledgement unless a persisted, verified normal-unfilled disposition exists.
 ATTENTION_REQUIRED_INTENT_STATUSES = TERMINAL_ORDER_STATUSES - {"FILLED_ALL"} | {
     "REJECTED", "SUBMISSION_FAILED", "EXPIRED",
 }
 
 TERMINAL_INTENT_STATUSES = TERMINAL_ORDER_STATUSES | {
-    "REJECTED", "SUBMISSION_FAILED", "EXPIRED", "SUPERSEDED",
+    "REJECTED", "SUBMISSION_FAILED", "EXPIRED", "SUPERSEDED", "SKIPPED_DEPENDENCY",
 }
+
+
+class IntentTerminationReason(StrEnum):
+    """Local interpretation of confirmed execution facts; never a broker status."""
+
+    NORMAL_UNFILLED = "NORMAL_UNFILLED"
+    DEPENDENCY_NOT_TRIGGERED = "DEPENDENCY_NOT_TRIGGERED"
 
 
 class PaperTradingSafetyError(RuntimeError):

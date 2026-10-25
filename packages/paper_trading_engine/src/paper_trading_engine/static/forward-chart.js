@@ -83,6 +83,7 @@
       NO_ORDER:'计划无需下单',PLAN_GENERATED:'生成待执行计划',PLAN_REPLACED:'由新决策替代',
       ACCOUNT_RETIRED:'账户退出前撤回未执行计划',SUBMISSION_STARTED:'开始提交订单',
       PLAN_FILLED:'计划全部成交',PLAN_ENDED_WITHOUT_COMPLETION:'计划全部结束，未完成原定交易',
+      NORMAL_UNFILLED:'限价买单正常结束，零成交',DEPENDENCY_NOT_TRIGGERED:'前序买入未成交，条件未触发',
       CHANNEL_RESULT_UNCERTAIN:'渠道结果待确认',CHANNEL_EXECUTION:'渠道执行中',AWAITING_EXECUTION:'等待执行',
       AWAITING_FILL_RECONCILIATION:'等待成交事实对账',EXECUTION_WINDOW_PASSED:'执行时窗已结束',
       REPLACED:'由新决策替代',EXPIRED:'超过执行时限',CANCELLED:'执行前撤回',REJECTED:'订单拒绝',

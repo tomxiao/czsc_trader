@@ -2,7 +2,7 @@
 
 from enum import StrEnum
 
-from .broker import TERMINAL_INTENT_STATUSES, UNRESOLVED_INTENT_STATUSES
+from .broker import IntentTerminationReason, TERMINAL_INTENT_STATUSES, UNRESOLVED_INTENT_STATUSES
 
 
 class AccountHealth(StrEnum):
@@ -105,6 +105,12 @@ def execution_state(payload: dict, baseline: DecisionState, intents: list[dict],
     ) for row in intents):
         return DecisionState.EXECUTING, "AWAITING_FILL_RECONCILIATION"
     if intents and all(row["status"] in TERMINAL_INTENT_STATUSES for row in intents):
+        reasons = [row["payload"].get("termination_reason") for row in intents]
+        if (IntentTerminationReason.NORMAL_UNFILLED in reasons and all(
+            row["status"] == "FILLED_ALL" or reason in set(IntentTerminationReason)
+            for row, reason in zip(intents, reasons)
+        )):
+            return DecisionState.INCOMPLETE, IntentTerminationReason.NORMAL_UNFILLED
         return DecisionState.INCOMPLETE, "PLAN_ENDED_WITHOUT_COMPLETION"
     if baseline == DecisionState.EXECUTING or any(
         row.get("channel_order_id") or row["status"] not in {"PENDING_SUBMIT", "WAITING_DEPENDENCY"}

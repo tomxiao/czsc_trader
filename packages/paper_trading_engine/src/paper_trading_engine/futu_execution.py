@@ -13,6 +13,7 @@ from .audit import AuditRecorder
 from .account_retirement import AccountRetirementRequest, AccountRetirementResult
 from .broker import (
     BrokerOrderRejectedError,
+    IntentTerminationReason,
     KNOWN_ORDER_STATUSES,
     OrderIntent,
     PaperTradingSafetyError,
@@ -123,6 +124,7 @@ class FutuExecution:
             "Futu已返回订单，但订单回报与意图不一致",
             "Futu订单状态未知",
             "存在未完成订单",
+            "计划订单到期但撤单结果不确定",
         )
         if (
             account["health"] == AccountHealth.BLOCKED
@@ -196,6 +198,30 @@ class FutuExecution:
         session = local.date().isoformat()
         clock = local.time().replace(tzinfo=None)
         for intent in self.store.waiting_dependency_intents():
+            dependency_id = intent["payload"].get("dependency_intent_id")
+            dependency = self.store.account_intent(str(dependency_id))
+            if dependency is None:
+                self._block_reconciliation(
+                    "plan_dependency_missing",
+                    f"执行计划依赖意图不存在: {dependency_id}", intent=intent,
+                )
+            if dependency["payload"].get("termination_reason") == IntentTerminationReason.NORMAL_UNFILLED:
+                self.store.release_account_intent(
+                    intent["intent_id"], "SKIPPED_DEPENDENCY",
+                    audit_event=self.audit.build(
+                        "EXECUTION_PLAN_LEG_SKIPPED", source="futu_execution", outcome="SKIPPED",
+                        account_id=intent["account_id"], channel=FUTU_SIMULATE_CN_CHANNEL_ID,
+                        decision_id=intent["decision_id"], correlation_id=intent["decision_id"],
+                        details={"intent_id": intent["intent_id"], "dependency_intent_id": dependency_id,
+                                 "reason": IntentTerminationReason.DEPENDENCY_NOT_TRIGGERED},
+                    ),
+                )
+                continue
+            # An accepted/uncertain entry must be reconciled before its dependent
+            # leg can be classified, including when the report arrives next day.
+            if (dependency["status"] not in TERMINAL_INTENT_STATUSES
+                    and dependency["status"] not in {"PENDING_SUBMIT", "WAITING_DEPENDENCY"}):
+                continue
             if intent["valid_session"] < session:
                 self._expire_planned_intent(intent, "依赖订单未在计划交易日完成")
                 continue
@@ -205,14 +231,6 @@ class FutuExecution:
             if deadline is not None and clock > deadline:
                 self._expire_planned_intent(intent, "依赖订单未在计划退出截止前完成")
                 continue
-            dependency_id = intent["payload"].get("dependency_intent_id")
-            dependency = self.store.account_intent(str(dependency_id))
-            if dependency is None:
-                self._block_reconciliation(
-                    "plan_dependency_missing",
-                    f"执行计划依赖意图不存在: {dependency_id}",
-                    intent=intent,
-                )
             required = intent["payload"].get("dependency_required_status")
             if dependency["status"] == required:
                 if self.store.activate_dependency_intent(intent["intent_id"]):
@@ -235,29 +253,51 @@ class FutuExecution:
 
     def _cancel_expired_planned_orders(self, moment: datetime) -> None:
         local = moment.astimezone(SHANGHAI)
-        session = local.date().isoformat()
-        clock = local.time().replace(tzinfo=None)
         cancellable = {
             "UNSUBMITTED", "WAITING_SUBMIT", "SUBMITTED", "FILLED_PART",
         }
         for intent in self.store.account_intents():
             deadline = self._planned_clock(intent, "submit_before")
+            if (deadline is None and intent["side"] == "BUY"
+                    and intent["payload"].get("order_type", "LIMIT") == "LIMIT"
+                    and intent["payload"].get("time_in_force", "DAY") == "DAY"):
+                deadline = time(15, 0)
             if (
                 deadline is None
-                or intent["valid_session"] != session
-                or clock <= deadline
                 or intent["status"] not in cancellable
                 or not intent.get("channel_order_id")
             ):
                 continue
+            deadline_at = datetime.fromisoformat(
+                f"{intent['valid_session']}T{deadline.isoformat()}"
+            ).replace(tzinfo=SHANGHAI)
+            if local <= deadline_at:
+                continue
+            # Do not reinterpret an operator's cancellation as a scheduled expiry.
+            requests = self.store.query_audit_events(
+                event_type="CANCEL_REQUESTED", order_id=intent["channel_order_id"], limit=1,
+            )
+            if requests and requests[0]["actor_type"] == "OPERATOR":
+                continue
             account = self.store.virtual_account(intent["account_id"])
+            # Persist provenance before the network call. This is not confirmation
+            # of cancellation: release still requires a terminal broker report.
+            self.audit.record(
+                "CANCEL_REQUESTED", source="futu_execution", outcome="UNKNOWN",
+                account_id=intent["account_id"], channel=FUTU_SIMULATE_CN_CHANNEL_ID,
+                strategy_id=account["strategy_id"], strategy_version=account["strategy_version"],
+                release_hash=account["release_hash"], decision_id=intent["decision_id"],
+                order_id=intent["channel_order_id"], correlation_id=intent["decision_id"],
+                details={"reason": "planned_deadline", "deadline": deadline_at.isoformat()},
+            )
             try:
                 self.broker.cancel_order(intent["channel_order_id"])
             except Exception as exc:
-                self.store.set_virtual_health(
-                    intent["account_id"], AccountHealth.BLOCKED,
-                    "计划订单到期但撤单结果不确定，等待渠道对账",
-                )
+                if account["health"] == AccountHealth.OK:
+                    self.store.set_virtual_health(
+                        intent["account_id"], AccountHealth.BLOCKED,
+                        "计划订单到期但撤单结果不确定，等待渠道对账",
+                    )
                 self.audit.record(
                     "CANCEL_FAILED", source="futu_execution", outcome="FAILURE",
                     account_id=intent["account_id"], channel=FUTU_SIMULATE_CN_CHANNEL_ID,
@@ -268,16 +308,6 @@ class FutuExecution:
                 )
                 raise
             self.store.update_account_intent_status(intent["intent_id"], IntentControlState.CANCELLING_ALL)
-            self.audit.record(
-                "CANCEL_REQUESTED", source="futu_execution",
-                account_id=intent["account_id"], channel=FUTU_SIMULATE_CN_CHANNEL_ID,
-                strategy_id=account["strategy_id"],
-                strategy_version=account["strategy_version"],
-                release_hash=account["release_hash"],
-                decision_id=intent["decision_id"], order_id=intent["channel_order_id"],
-                correlation_id=intent["decision_id"],
-                details={"reason": "planned_deadline", "deadline": deadline.isoformat()},
-            )
 
     def _reconcile_broker_fees(self) -> None:
         """Reconcile verified aggregate Futu fees without altering strategy PnL."""
@@ -521,10 +551,12 @@ class FutuExecution:
                 and previous_status not in TERMINAL_ORDER_STATUSES
             ):
                 account = self.store.virtual_account(intent["account_id"])
-                self.store.set_virtual_health(
-                    intent["account_id"], AccountHealth.BLOCKED,
-                    f"Futu订单未完整执行（{order.status}），需要人工确认该次前瞻执行缺口",
-                )
+                terminated = self.store.account_intent(intent["intent_id"])
+                if terminated["attention_required"]:
+                    self.store.set_virtual_health(
+                        intent["account_id"], AccountHealth.BLOCKED,
+                        f"Futu订单未完整执行（{order.status}），需要人工确认该次前瞻执行缺口",
+                    )
                 self.audit.record(
                     "ORDER_TERMINATED", source="futu_execution",
                     account_id=intent["account_id"], strategy_id=account["strategy_id"],
@@ -535,9 +567,11 @@ class FutuExecution:
                     details={
                         "status": order.status,
                         "cumulative_quantity": order.cumulative_filled_quantity,
+                        "termination_reason": terminated["payload"].get("termination_reason"),
                     },
                 )
         if expire_orders:
+            self._activate_dependency_intents(self.now())
             self._cancel_expired_planned_orders(self.now())
         missing = [
             row for row in self.store.account_intents()

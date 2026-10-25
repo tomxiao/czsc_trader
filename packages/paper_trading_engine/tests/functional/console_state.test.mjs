@@ -159,6 +159,8 @@ test('FT-PTEJS01 console state preserves scope, stable polling and Chinese prese
   assert.equal(formatQuantity(60500), '60,500 股');
   assert.equal(decisionExecutionLabel({decision_id:'D1',action:'HOLD',status:'COMPLETED',state_reason:'NO_ORDER'}), '本次决策无需下单');
   assert.equal(decisionExecutionLabel({decision_id:'D2',action:'SELL',status:'COMPLETED'}), '已完成');
+  assert.equal(decisionExecutionLabel({decision_id:'N1',status:'INCOMPLETE',state_reason:'NORMAL_UNFILLED'}),'正常未成交');
+  assert.equal(statusLabel('SKIPPED_DEPENDENCY'),'依赖条件未触发');
   assert.equal(decisionExecutionLabel(
     {decision_id:'D2',action:'SELL',status:'INCOMPLETE'},
     [{decision_id:'D2',status:'REJECTED'}, {decision_id:'D2',status:'FILLED_ALL'}],

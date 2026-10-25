@@ -32,6 +32,7 @@ from .account_retirement import (
 )
 from .broker import (
     ATTENTION_REQUIRED_INTENT_STATUSES,
+    IntentTerminationReason,
     TERMINAL_INTENT_STATUSES,
     TERMINAL_ORDER_STATUSES,
     UNRESOLVED_INTENT_STATUSES,
@@ -713,6 +714,10 @@ class PaperStore:
         review_required = 0
         superseded = 0
         for row in rows:
+            if (row["status"] == "CANCELLED_ALL" and json.loads(row["payload"]).get(
+                "termination_reason"
+            ) == IntentTerminationReason.NORMAL_UNFILLED):
+                continue
             retry = self._connection.execute(
                 "SELECT intent_id,updated_at FROM intents WHERE account_id=? AND decision_id=? "
                 "AND order_sequence>? AND status='FILLED_ALL' "
@@ -1723,7 +1728,7 @@ class PaperStore:
                     "WHERE i.account_id=? AND i.side='SELL' AND i.status NOT IN "
                     "('REJECTED','SUBMISSION_FAILED','SUBMIT_FAILED','EXPIRED',"
                     "'CANCELLED_ALL','FAILED','DISABLED',"
-                    "'DELETED','FILL_CANCELLED','FILLED_ALL','SUPERSEDED')",
+                    "'DELETED','FILL_CANCELLED','FILLED_ALL','SUPERSEDED','SKIPPED_DEPENDENCY')",
                     (account_id,),
                 ).fetchall()
                 reserved_quantity = sum(
@@ -1920,7 +1925,7 @@ class PaperStore:
                 "WHERE i.account_id=? AND i.side='SELL' AND i.status NOT IN "
                 "('REJECTED','SUBMISSION_FAILED','SUBMIT_FAILED','EXPIRED',"
                 "'CANCELLED_ALL','FAILED','DISABLED','DELETED','FILL_CANCELLED','FILLED_ALL',"
-                "'SUPERSEDED')",
+                "'SUPERSEDED','SKIPPED_DEPENDENCY')",
                 (account_id,),
             ).fetchall()
             reserved_sell = sum(
@@ -2115,7 +2120,7 @@ class PaperStore:
                 "WHERE i.account_id=? AND i.side='SELL' AND i.status NOT IN "
                 "('REJECTED','SUBMISSION_FAILED','SUBMIT_FAILED','EXPIRED',"
                 "'CANCELLED_ALL','FAILED','DISABLED','DELETED','FILL_CANCELLED','FILLED_ALL',"
-                "'SUPERSEDED')",
+                "'SUPERSEDED','SKIPPED_DEPENDENCY')",
                 (account_id,),
             ).fetchall()
             reserved_sell = sum(
@@ -2771,6 +2776,47 @@ class PaperStore:
                 self._insert_audit_event(audit_event)
         return self.account_order(str(channel_order_id))
 
+    def _intent_termination_reason(self, intent, status, order) -> IntentTerminationReason | None:
+        """Classify from owned ledger/report and durable local cancellation facts."""
+        details = json.loads(intent["payload"])
+        if status == "SKIPPED_DEPENDENCY":
+            dependency = self.account_intent(str(details.get("dependency_intent_id")))
+            if not (
+                intent["status"] == "WAITING_DEPENDENCY" and intent["side"] == "SELL"
+                and order is None and not intent["channel_order_id"]
+                and details.get("dependency_required_status") == "FILLED_ALL"
+                and dependency is not None
+                and dependency["account_id"] == intent["account_id"]
+                and dependency["decision_id"] == intent["decision_id"]
+                and dependency["status"] == "CANCELLED_ALL"
+                and dependency["payload"].get("termination_reason") == IntentTerminationReason.NORMAL_UNFILLED
+            ):
+                raise ValueError("dependency skip requires a confirmed normally unfilled entry")
+            return IntentTerminationReason.DEPENDENCY_NOT_TRIGGERED
+        if (status != "CANCELLED_ALL" or intent["side"] != "BUY"
+                or details.get("order_type", "LIMIT") != "LIMIT" or order is None):
+            return None
+        report = json.loads(order["payload"])
+        if (report.get("status") != status or type(report.get("cumulative_filled_quantity")) is not int
+                or report["cumulative_filled_quantity"] != 0
+                or int(order["cumulative_filled_quantity"]) != 0 or report.get("last_error")
+                or self._connection.execute("SELECT 1 FROM fills WHERE order_id=? LIMIT 1",
+                                            (order["channel_order_id"],)).fetchone()):
+            return None
+        requests = self.query_audit_events(
+            event_type="CANCEL_REQUESTED", account_id=intent["account_id"],
+            decision_id=intent["decision_id"], order_id=order["channel_order_id"], limit=1,
+        )
+        manual = self._connection.execute(
+            "SELECT 1 FROM events WHERE event_type='CANCEL_REQUESTED' AND order_id=? "
+            "AND actor_type='OPERATOR' LIMIT 1", (order["channel_order_id"],),
+        ).fetchone()
+        if (not requests or manual or requests[0]["actor_type"] != "ENGINE"
+                or requests[0]["source"] != "futu_execution"
+                or requests[0]["details"].get("reason") != "planned_deadline"):
+            return None
+        return IntentTerminationReason.NORMAL_UNFILLED
+
     def release_account_intent(
         self, intent_id: str, status: str, *, attention_reason: str | None = None,
         audit_event: AuditEvent | None = None, _in_transaction: bool = False,
@@ -2795,6 +2841,10 @@ class PaperStore:
             order = self._connection.execute(
                 "SELECT * FROM orders WHERE intent_id=?", (intent_id,)
             ).fetchone()
+            termination_reason = self._intent_termination_reason(intent, status, order)
+            details = json.loads(intent["payload"])
+            if termination_reason is not None:
+                details["termination_reason"] = termination_reason
             filled = 0 if order is None else int(order["cumulative_filled_quantity"])
             release = Decimal("0")
             old_cash = Decimal(account["cash"])
@@ -2815,12 +2865,12 @@ class PaperStore:
                         now, intent["account_id"],
                     ),
                 )
-            attention = status in ATTENTION_REQUIRED_INTENT_STATUSES
+            attention = status in ATTENTION_REQUIRED_INTENT_STATUSES and termination_reason is None
             reason = (attention_reason or status) if attention else None
             self._connection.execute(
                 "UPDATE intents SET status=?,attention_required=?,attention_reason=?,"
-                "resolved_at=NULL,resolution_note=NULL,updated_at=? WHERE intent_id=?",
-                (status, int(attention), reason, now, intent_id),
+                "resolved_at=NULL,resolution_note=NULL,payload=?,updated_at=? WHERE intent_id=?",
+                (status, int(attention), reason, json.dumps(details, ensure_ascii=False), now, intent_id),
             )
             if release:
                 generation = int(intent["reservation_generation"])

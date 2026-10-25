@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
+from dataclasses import asdict, dataclass, replace
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from hashlib import sha256
@@ -12,7 +12,7 @@ from threading import RLock
 from strategy_runtime import EntryCycleState
 
 from .audit import AuditRecorder
-from .broker import TERMINAL_INTENT_STATUSES
+from .broker import IntentTerminationReason, TERMINAL_INTENT_STATUSES
 from .channel import FUTU_SIMULATE_CN_CHANNEL_ID
 from .store import PaperStore
 from .lifecycle import AccountHealth
@@ -142,8 +142,26 @@ class AccountEngine:
     def _assign_decision_id(self, account_id: str, previous_payload, decision):
         source_id = decision.source_decision_id or decision.decision_id
         previous = json.loads(previous_payload) if previous_payload else None
+        previous_record = None if previous is None else self.store.account_decision(
+            account_id, str(previous["decision_id"]),
+        )
+        # Adopting an entry cycle changes OPEN -> HOLD and the plan hash even
+        # after zero fills. The same signal/session and executable orders still
+        # represent the ended attempt, not permission to submit it again.
+        normal_repeat = bool(
+            previous_record and previous_record["state_reason"] == IntentTerminationReason.NORMAL_UNFILLED
+            and previous.get("valid_session") == decision.valid_session.isoformat()
+            and previous.get("signal_identity") == decision.signal_identity
+            and previous.get("plan_mode", "NONE") == decision.plan_mode
+            and previous.get("orders", []) == [asdict(order) for order in decision.orders]
+            and previous.get("order") == (None if decision.order is None else asdict(decision.order))
+            and previous.get("plan_legs", []) == json.loads(json.dumps(
+                [asdict(leg) for leg in decision.plan_legs], default=str,
+            ))
+        )
         same_plan = bool(
             previous
+            and previous.get("valid_session") == decision.valid_session.isoformat()
             and (
                 previous.get("plan_identity") == decision.plan_identity
                 or (
@@ -155,8 +173,11 @@ class AccountEngine:
                 )
             )
         )
-        if same_plan and self.store.account_decision(account_id, str(previous["decision_id"]))["status"] in {"CANCELLED", "INCOMPLETE", "SUPERSEDED"}:
-            same_plan = False
+        same_plan = same_plan or normal_repeat
+        if same_plan:
+            if (previous_record["status"] in {"CANCELLED", "INCOMPLETE", "SUPERSEDED"}
+                    and previous_record["state_reason"] != IntentTerminationReason.NORMAL_UNFILLED):
+                same_plan = False
         if same_plan:
             return replace(
                 decision,
@@ -344,6 +365,16 @@ class AccountEngine:
             raise AccountDecisionBlockedError(
                 "账户策略状态在策略计算期间发生变化，决策未提交"
             )
+
+        previous = json.loads(previous_payload) if previous_payload else None
+        if (previous is not None and decision.decision_id == previous.get("decision_id")
+                and self.store.account_decision(account_id, decision.decision_id)["state_reason"] == IntentTerminationReason.NORMAL_UNFILLED):
+            # Ended normally for this plan/session. Reading it again is not an
+            # instruction to rearm the same order; keep the terminal Store gate.
+            status = self.status(account_id)
+            if operator_drive:
+                return AccountDecisionDriveResult(account_status=status, outcome="DECISION_REUSED")
+            return status
 
         payload = decision.to_store_payload()
         payload["prepared_data_identity"] = prepared.data_identity
