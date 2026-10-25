@@ -55,6 +55,45 @@ def registered_release(request):
     )
 
 
+@pytest.fixture(scope="session")
+def loaded_release(registered_release, frozen_seed_root):
+    """Check every frozen package without manufacturing deployment approval."""
+    from strategy_runtime import (
+        InspectionRuntimePermit, StrategyRelease, StrategyRuntime, canonical_sha256,
+        load_inspection_deployment, load_strategy_deployment, validate_release_package,
+    )
+
+    root = _REPOSITORY_ROOT / "strategies"
+    release_id = registered_release.release_id
+    if (root / "deployments" / f"{release_id}.json").exists():
+        deployment = load_strategy_deployment(root, release_id)
+        runtime = StrategyRuntime(strategy_root=root)
+    else:
+        # Freeze and deployment are separate states. Inspect an authenticated,
+        # byte-identical copy of an undeployed package using technical admission.
+        verified = validate_release_package(root, release_id)
+        family, version = release_id.rsplit("-", 1)
+        workspace = frozen_seed_root / ".tmp/strategy-inspection" / release_id
+        repository = workspace / "repository"
+        isolated = repository / "strategies"
+        package = Path(family) / "releases" / version
+        shutil.copytree(root / package, isolated / package)
+        versions = isolated / family / "versions"
+        versions.mkdir(parents=True)
+        shutil.copyfile(root / family / "versions" / f"{version}.json", versions / f"{version}.json")
+        permit = InspectionRuntimePermit(
+            release_id, release_id, registered_release.release_hash, verified.package_sha256,
+            canonical_sha256({"test": "frozen_package_acceptance", "release": release_id}),
+            repository, workspace,
+        )
+        deployment = load_inspection_deployment(isolated, release_id, permit)
+        runtime = StrategyRuntime(strategy_root=isolated, inspection_permit=permit)
+        assert not (isolated / "deployments").exists()
+    actual = runtime.describe(StrategyRelease.from_mapping(registered_release.to_dict()))
+    return registered_release, deployment, actual, runtime
+
+
+
 def _create_directory(path: Path) -> None:
     """Create a private directory while retaining inherited ACLs on Windows."""
 

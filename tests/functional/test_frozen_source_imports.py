@@ -8,7 +8,7 @@ import pytest
 
 from czsc_trader.application import RepositoryContext, validate_release_package
 from strategy_manager import StrategyRegistry
-from strategy_runtime import StrategyRelease, StrategyRuntime, load_strategy_deployment
+from strategy_runtime import StrategyRelease, validate_release_package as authenticate_package
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -17,7 +17,7 @@ pytestmark = pytest.mark.release_acceptance
 
 def test_frozen_relative_imports_resolve_inside_the_package():
     sources = [
-        load_strategy_deployment(ROOT / "strategies", f"{path.parent.parent.name}-{path.stem}").source_root
+        authenticate_package(ROOT / "strategies", f"{path.parent.parent.name}-{path.stem}").source_root
         for path in sorted((ROOT / "strategies").glob("S*/versions/v*.json"))
     ]
     assert sources, "registered frozen packages must be present for release acceptance"
@@ -37,7 +37,7 @@ def test_frozen_relative_imports_resolve_inside_the_package():
 def test_frozen_source_imports_without_closure_aliases(registered_release, monkeypatch):
     monkeypatch.syspath_prepend(str(ROOT))
     monkeypatch.setattr("sys.dont_write_bytecode", True)
-    source = load_strategy_deployment(ROOT / "strategies", registered_release.release_id).source_root
+    source = authenticate_package(ROOT / "strategies", registered_release.release_id).source_root
     prefix = ".".join(source.relative_to(ROOT).parts)
     for path in sorted(source.rglob("*.py")):
         if path.name == "__init__.py":
@@ -47,14 +47,14 @@ def test_frozen_source_imports_without_closure_aliases(registered_release, monke
         assert Path(module.__file__).resolve() == path.resolve()
 
 
-def test_frozen_source_keeps_authenticated_runtime_loading(registered_release):
+def test_frozen_source_keeps_authenticated_runtime_loading(loaded_release):
+    registered_release, deployment, _, runtime = loaded_release
     context = RepositoryContext.discover(ROOT)
     stored = StrategyRegistry(context.strategy_root).get_version(
         registered_release.strategy_id, registered_release.version,
     )
     manifest, binding, source = validate_release_package(context, stored.release_id)
-    deployment = load_strategy_deployment(context.strategy_root, stored.release_id)
-    definition = StrategyRuntime().describe(
+    definition = runtime.describe(
         StrategyRelease.from_mapping(stored.to_dict()),
         source_root=deployment.source_root,
         runtime_binding=deployment.binding,
@@ -62,4 +62,4 @@ def test_frozen_source_keeps_authenticated_runtime_loading(registered_release):
     assert definition.release_hash == stored.release_hash == deployment.release_hash
     assert definition.implementation.source_sha256 == binding["implementation_sha256"]
     assert manifest["package_hash"] == deployment.package_hash
-    assert source == deployment.source_root
+    assert source.relative_to(context.strategy_root) == deployment.source_root.relative_to(deployment.strategy_root)

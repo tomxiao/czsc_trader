@@ -5,7 +5,6 @@ import shutil
 
 import pytest
 from strategy_manager import StrategyRegistry
-from strategy_runtime import StrategyRelease
 from czsc_trader.application import RepositoryContext, freeze_candidate, deploy_strategy
 from czsc_trader.research_tools import delivery as d
 from czsc_trader.research_tools import ResearchBatchRef
@@ -17,18 +16,24 @@ from test_candidate_freeze import (
 
 
 @pytest.mark.release_acceptance
-def test_real_installed_versions_report_execution_contract_fees(registered_release):
+def test_real_frozen_versions_expose_installed_fees_only_after_deployment(loaded_release):
     from czsc_trader.application import strategy_info
-    from strategy_runtime import StrategyRuntime
+    from czsc_trader.application.errors import ValidationError
 
+    registered_release, _, definition, _ = loaded_release
     context = RepositoryContext.discover(Path(__file__).resolve().parents[2])
-    result = strategy_info(context, registered_release.release_id)
-    assert result.status == "PASS"
-    policy = StrategyRuntime(strategy_root=context.strategy_root).describe(
-        StrategyRelease.from_mapping(registered_release.to_dict()),
-    ).execution
+    policy = definition.execution
     expected_fee = (policy.settings["capital"]["fee_rate"]
                     if policy.policy_type == "FROZEN_RULE" else policy.settings["one_way_cost"])
+    assert 0 <= expected_fee < 1
+    if not (context.strategy_root / "deployments" / f"{registered_release.release_id}.json").exists():
+        with pytest.raises(ValidationError, match="cannot read strategy deployment file") as failed:
+            strategy_info(context, registered_release.release_id)
+        assert failed.value.code == "strategy_info_failed"
+        assert failed.value.context["strategy_version_id"] == registered_release.release_id
+        return
+    result = strategy_info(context, registered_release.release_id)
+    assert result.status == "PASS"
     assert result.result["strategy_version_id"] == registered_release.release_id
     assert result.result["fee_rate"] == expected_fee
 
