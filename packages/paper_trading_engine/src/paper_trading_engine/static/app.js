@@ -1,3 +1,5 @@
+import {captureView, restoreView, updateView, reserveViewport} from './view_state.js';
+
 export function parseRoute(pathname) {
   const account = pathname.match(/^\/accounts\/([^/]+)$/);
   if (account) return {page: 'account', accountId: decodeURIComponent(account[1])};
@@ -102,7 +104,7 @@ export function auditSummary(event){
   if(event?.event_type==='EXTERNAL_CALL_FAILED')return `${detail.service||'外部服务'} · ${detail.operation||'调用'}失败`;
   return '详见“审计事件”页面';
 }
-const state = {accounts:[],loader:new ScopedLoader(),lastSuccess:null,renderedScope:null,fingerprint:null,system:null,systemFingerprint:null,chart:null};
+const state = {accounts:[],loader:new ScopedLoader(),lastSuccess:null,renderedScope:null,fingerprint:null,system:null,systemFingerprint:null,chart:null,navigation:null};
 
 async function getJson(url, options={}) {
   const response=await fetch(url,options);let payload={};
@@ -143,7 +145,7 @@ export function recordPage(rows,page=1){
 }
 function accountRecords(kind,title,columns,rows,view){
   const page=recordPage(rows,view.pages?.[kind]);
-  return `<section id="record-panel-${kind}" role="tabpanel" aria-labelledby="record-tab-${kind}" ${(view.records||'intents')===kind?'':'hidden'} class="panel section" data-account-section="${kind}" data-record-panel="${kind}"><div class="section-head"><h2>${title}</h2><span class="subtle">共 ${page.total} 条</span></div>${rowsTable(columns,page.rows)}<div class="record-pagination"><span>第 ${page.page} / ${page.pages} 页 · 每页 10 条</span><button type="button" class="button" data-record-page="${page.page-1}" data-record-kind="${kind}" ${page.page===1?'disabled':''}>上一页</button><button type="button" class="button" data-record-page="${page.page+1}" data-record-kind="${kind}" ${page.page===page.pages?'disabled':''}>下一页</button></div></section>`;
+  return `<section id="record-panel-${kind}" role="tabpanel" aria-labelledby="record-tab-${kind}" ${(view.records||'intents')===kind?'':'hidden'} class="panel section" data-account-section="${kind}" data-record-panel="${kind}"><div class="section-head"><h2>${title}</h2><span class="subtle">共 ${page.total} 条</span></div>${rowsTable(columns,page.rows)}<div class="record-pagination"><span>第 ${page.page} / ${page.pages} 页 · 每页 10 条</span><button type="button" class="button" data-page-direction="previous" data-record-page="${page.page-1}" data-record-kind="${kind}" ${page.page===1?'disabled':''}>上一页</button><button type="button" class="button" data-page-direction="next" data-record-page="${page.page+1}" data-record-kind="${kind}" ${page.page===page.pages?'disabled':''}>下一页</button></div></section>`;
 }
 export function accountMarkup(snapshot,accountList=state.accounts,view={}){
   const a=snapshot.account,m=snapshot.metrics||{},d=snapshot.decision||{},scope=snapshot.scope,intents=snapshot.intents||[],orders=snapshot.orders||[],fills=snapshot.fills||[];
@@ -179,6 +181,7 @@ function replaceAccountSections(markup,accountId){
   if(pairs.some(([existing,fresh])=>!existing||!fresh))return false;
   pairs.forEach(([existing,fresh])=>{
     if(existing.isEqualNode(fresh))return;
+    if(existing.hasAttribute('data-record-panel'))fresh.style.minHeight=`${existing.getBoundingClientRect().height}px`;
     const tableScroll=existing.querySelector('.table-wrap')?.scrollLeft;
     const sidebarScroll=existing.scrollTop;
     existing.replaceWith(fresh);
@@ -188,16 +191,29 @@ function replaceAccountSections(markup,accountId){
   return true;
 }
 function renderAccount(snapshot){
+  const previousHeight=document.querySelector('#accountChartFrameHost')?.getBoundingClientRect().height;
   const scope=snapshot.scope,a=snapshot.account;
   state.accountSnapshot=snapshot;
   const view=accountView(scope.account_id);
   for(const kind of ['intents','orders','fills'])view.pages[kind]=recordPage(snapshot[kind]||[],view.pages[kind]).page;
   const markup=accountMarkup(snapshot,state.accounts,accountView(scope.account_id));
-  if(!replaceAccountSections(markup,scope.account_id))document.querySelector('#app').innerHTML=markup;
+  if(!replaceAccountSections(markup,scope.account_id)){
+    state.chartObserver?.disconnect();
+    const sidebar=document.querySelector('.sidebar');
+    const navigation=sidebar?{view:captureView(sidebar),top:sidebar.scrollTop}:null;
+    document.querySelector('#app').innerHTML=markup;
+    if(navigation){
+      const next=document.querySelector('.sidebar');
+      restoreView(next,navigation.view);next.scrollTop=navigation.top;
+      document.querySelector('#accountPicker').value=scope.account_id;
+    }
+    if(previousHeight)document.querySelector('#accountChartFrameHost').style.height=`${previousHeight}px`;
+  }
   bindAccountEvents(scope.account_id,a.run_state);
   applyAccountView(scope.account_id);
 }
 async function retryAccountChart(accountId){
+  if(state.navigation)return;
   const pending={scope:{account_id:accountId},status:'BUILDING',chart_url:null,fingerprint:null,message:'正在重新生成观察图'};
   applyAccountChart(pending);
   try{
@@ -241,7 +257,7 @@ function applyAccountChart(status){
       doc.addEventListener('click',event=>{const range=event.target.closest('[data-range]');if(range)view.chartRange=range.dataset.range;});
       state.chartObserver=new ResizeObserver(()=>{
         const height=Math.ceil(doc.body.getBoundingClientRect().height);
-        if(height>0&&frame.isConnected)host.style.height=`${height+2}px`;
+        if(height>0&&frame.isConnected)updateView(document.querySelector('#app'),()=>{host.style.height=`${height+2}px`;},{preserve:false});
       });
       state.chartObserver.observe(doc.body);
     };
@@ -265,16 +281,16 @@ function bindAccountEvents(accountId,runState){
   for(const [selector,key,attribute] of [['[data-account-tab]','tab','accountTab'],['[data-record-tab]','records','recordTab']]){
     const buttons=[...document.querySelectorAll(selector)];
     buttons.forEach((el,index)=>{
-      el.onclick=()=>{view[key]=el.dataset[attribute];applyAccountView(accountId);};
+      el.onclick=()=>updateView(document.querySelector('#app'),()=>{view[key]=el.dataset[attribute];applyAccountView(accountId);});
       el.onkeydown=event=>{
         const next={ArrowRight:(index+1)%buttons.length,ArrowLeft:(index+buttons.length-1)%buttons.length,Home:0,End:buttons.length-1}[event.key];
-        if(next==null)return;event.preventDefault();buttons[next].click();buttons[next].focus();
+        if(next==null)return;event.preventDefault();buttons[next].click();buttons[next].focus({preventScroll:true});
       };
     });
   }
-  document.querySelectorAll('[data-record-page]').forEach(el=>el.onclick=()=>{view.pages[el.dataset.recordKind]=Number(el.dataset.recordPage);renderAccount(state.accountSnapshot);});
-  document.querySelector('#accountSwitch').onclick=async()=>{try{await post(`/api/virtual-accounts/${encodeURIComponent(accountId)}/${runState==='PAUSED'?'resume':'pause'}`);toast(runState==='PAUSED'?'账户已恢复':'账户已暂停');await loadRoute({showLoading:false});}catch(e){toast(e.message);}};
-  document.querySelectorAll('[data-ack-intent]').forEach(el=>el.onclick=async()=>{const note=prompt('请填写执行缺口复核结论：');if(!note?.trim())return;try{await post(`/api/virtual-accounts/${encodeURIComponent(accountId)}/intents/${encodeURIComponent(el.dataset.ackIntent)}/acknowledge`,{resolution_note:note.trim()});toast('执行缺口已确认');await loadRoute({showLoading:false});}catch(e){toast(e.message);}});
+  document.querySelectorAll('[data-record-page]').forEach(el=>el.onclick=()=>updateView(document.querySelector('#app'),()=>{view.pages[el.dataset.recordKind]=Number(el.dataset.recordPage);renderAccount(state.accountSnapshot);}));
+  document.querySelector('#accountSwitch').onclick=async()=>{if(state.navigation)return;try{await post(`/api/virtual-accounts/${encodeURIComponent(accountId)}/${runState==='PAUSED'?'resume':'pause'}`);toast(runState==='PAUSED'?'账户已恢复':'账户已暂停');await loadRoute({showLoading:false});}catch(e){toast(e.message);}};
+  document.querySelectorAll('[data-ack-intent]').forEach(el=>el.onclick=async()=>{if(state.navigation)return;const note=prompt('请填写执行缺口复核结论：');if(!note?.trim())return;try{await post(`/api/virtual-accounts/${encodeURIComponent(accountId)}/intents/${encodeURIComponent(el.dataset.ackIntent)}/acknowledge`,{resolution_note:note.trim()});toast('执行缺口已确认');await loadRoute({showLoading:false});}catch(e){toast(e.message);}});
 }
 
 export function channelMarkup(s,detailsOpen=false){
@@ -284,7 +300,7 @@ export function channelMarkup(s,detailsOpen=false){
   const assetState=assetAvailable?(assetOk?'估值一致':'估值口径不同'):'估值数据不可用';
   return `<div class="workspace"><section class="panel hero"><div><div class="eyebrow">执行渠道 · FUTU 模拟盘 CN</div><h1>Futu 模拟盘 CN 渠道</h1><div class="subtle">底层模拟账户 · 对账 ${statusLabel(s.reconciliation_status)} · 最近对账 ${esc(formatBeijingTime(s.last_reconcile_at))}</div></div><button id="channelSwitch" class="switch ${s.paused?'paused':''}" role="switch" aria-checked="${!s.paused}">${s.paused?'渠道已暂停 · 点击恢复':'渠道自动运行 · 点击暂停'}</button></section>${alerts((s.alerts||[]).map(x=>({message:statusLabel(x)})))}<div class="grid channel-core-metrics">${metric('Futu总资产',money(s.account?.total_assets))}${metric('可用现金',money(s.account?.cash))}${metric('已分配额度',money(s.strategy_allocated_capital))}${metric('未分配额度',money(s.unallocated_capital))}</div><section class="panel reconciliation-summary"><details id="channelReconciliationDetails" class="reconciliation-details"${detailsOpen?' open':''}><summary class="reconciliation-bar"><div class="reconciliation-state ${cashOk?'ok':'warning'}"><strong>${cashState}</strong><span>现金差异 ${money(s.cash_difference)}</span></div><div class="reconciliation-state ${assetOk?'ok':'neutral'}"><strong>${assetState}</strong><span>Futu−PTE ${money(s.asset_difference)}</span></div><span class="reconciliation-trigger">查看明细</span></summary><div class="reconciliation-detail-grid"><div><span>Futu持仓市值</span><strong>${money(s.account?.market_value)}</strong></div><div><span>PTE账务现金</span><strong>${money(s.logical_cash)}</strong></div><div><span>PTE日终总资产</span><strong>${money(s.logical_total_assets)}</strong></div><div><span>Futu−PTE估值差异</span><strong>${money(s.asset_difference)}</strong></div><div><span>平账账户余额</span><strong>${money(s.reconciliation_account?.cash)}</strong></div></div><p>Futu按当前行情实时估值；PTE账务总资产按各虚拟账户最近日终数据估值。</p></details></section><section class="panel section"><div class="section-head"><h2>策略承载账户</h2><span class="badge">${(s.accounts||[]).length} 个账户</span></div>${rowsTable([['虚拟账户',r=>r.name],['账户ID',r=>r.account_id],['策略版本',r=>r.release_id],['交易标的',r=>r.symbol],['分配额度',r=>money(r.initial_cash)],['可用现金',r=>money(r.cash)],['冻结资金',r=>money(r.frozen_cash)],['持仓',r=>formatQuantity(r.quantity)],['状态',accountOperatingStatus]],s.accounts)}</section><section id="channelOrders" class="panel section"><div class="section-head"><h2>订单</h2><span class="badge">逐笔归属</span></div>${rowsTable([['时间',r=>formatBeijingTime(r.created_at)],['Futu订单',r=>r.channel_order_id],['虚拟账户',r=>channelOrderAccountLabel(r)],['决策ID',r=>r.decision_id||'历史未记录'],['方向',r=>sideLabel(r.side)],['数量',r=>formatQuantity(r.quantity)],['委托价',r=>orderPriceLabel(r)==='市价'?'市价':formatPrice(orderPriceLabel(r))],['状态',r=>statusLabel(r.status)],['操作',r=>['SUBMITTED','FILLED_PART'].includes(r.status)?'二次确认撤单':'—']],s.orders)}</section><section class="panel section"><div class="section-head"><h2>成交</h2><span class="badge">Futu回报</span></div>${rowsTable([['时间',r=>formatBeijingTime(r.occurred_at)],['虚拟账户',r=>channelOrderAccountLabel(r)],['成交ID',r=>displayFillId(r.fill_id),r=>r.fill_id],['Futu订单',r=>r.order_id],['方向',r=>sideLabel(r.side)],['数量',r=>formatQuantity(r.quantity)],['价格',r=>formatPrice(r.price)],['费用',r=>money(r.fee)]],s.fills)}</section></div>`;
 }
-function renderChannel(s){const detailsOpen=document.querySelector('#channelReconciliationDetails')?.open||false;document.querySelector('#app').innerHTML=channelMarkup(s,detailsOpen);document.querySelector('#channelSwitch').onclick=async()=>{try{await post(`/api/channels/futu-simulate-cn/${s.paused?'resume':'pause'}`);toast(s.paused?'渠道已恢复':'渠道已暂停');await loadRoute({showLoading:false});}catch(e){toast(e.message);}};document.querySelectorAll('#channelOrders tbody tr').forEach((tr,i)=>{const o=s.orders?.[i];if(o&&['SUBMITTED','FILLED_PART'].includes(o.status))tr.onclick=()=>cancelOrder(o);});}
+function renderChannel(s){const detailsOpen=document.querySelector('#channelReconciliationDetails')?.open||false;document.querySelector('#app').innerHTML=channelMarkup(s,detailsOpen);document.querySelector('#channelSwitch').onclick=async()=>{if(state.navigation)return;try{await post(`/api/channels/futu-simulate-cn/${s.paused?'resume':'pause'}`);toast(s.paused?'渠道已恢复':'渠道已暂停');await loadRoute({showLoading:false});}catch(e){toast(e.message);}};document.querySelectorAll('#channelOrders tbody tr').forEach((tr,i)=>{const o=s.orders?.[i];if(o&&['SUBMITTED','FILLED_PART'].includes(o.status))tr.onclick=()=>{if(!state.navigation)cancelOrder(o);};});}
 async function cancelOrder(order){if(!confirm(`确认申请撤销Futu订单？\n订单 ${order.channel_order_id}\n${sideLabel(order.side)} ${formatQuantity(order.quantity)}\n虚拟账户 ${channelOrderAccountLabel(order)}`))return;try{const body={account_id:order.account_id,channel_order_id:order.channel_order_id};const {token}=await post('/api/channels/futu-simulate-cn/cancel-token',body);if(!confirm('撤单令牌已签发，有效期2分钟。再次确认撤单。'))return;await post('/api/channels/futu-simulate-cn/cancel',{...body,token});toast('撤单请求已提交');await loadRoute({showLoading:false});}catch(e){toast(e.message);}}
 
 function renderComparison(s){document.querySelector('#app').innerHTML=`<section class="panel hero"><div><div class="eyebrow">只读评估</div><h1>虚拟账户比较</h1><div class="subtle">各账户按自身前瞻观察窗口统计，指标与账户详情页保持一致</div></div></section><section class="panel section"><div class="section-head"><h2>参与账户</h2><span class="badge">无交易干预</span></div><div class="comparison-select">${state.accounts.map(a=>`<label><input type="checkbox" value="${esc(a.account_id)}" ${s.accounts.some(x=>x.account_id===a.account_id)?'checked':''}> ${esc(a.name)} · ${esc(a.release_id)}</label>`).join('')}</div></section><section class="panel section"><div class="section-head"><h2>核心指标</h2><span class="badge">OPC优先级</span></div>${rowsTable([['账户',r=>r.account_id],['策略发布',r=>r.release_id],['观察窗口',r=>r.metrics.observation_start&&r.metrics.observation_end?`${r.metrics.observation_start} 至 ${r.metrics.observation_end}`:'尚无日终快照'],['交易日',r=>r.metrics.observation_count??0],['闭合交易',r=>r.metrics.closed_trades??0],['累计收益',r=>pct(r.metrics.total_return)],['最大回撤',r=>pct(r.metrics.maximum_drawdown)],['卡玛比率',r=>r.metrics.calmar_ratio==null?'不可用':Number(r.metrics.calmar_ratio).toFixed(3)],['盈亏比',r=>r.metrics.win_loss_ratio==null?'不可用':Number(r.metrics.win_loss_ratio).toFixed(3)]],s.accounts)}</section>`;document.querySelectorAll('.comparison-select input').forEach(el=>el.onchange=()=>{const ids=[...document.querySelectorAll('.comparison-select input:checked')].map(x=>x.value);navigate(`/comparison${ids.length?'?'+comparisonQuery(ids):''}`);});}
@@ -293,16 +309,16 @@ function renderAudit(s){
   const selected=new URLSearchParams(location.search),categories=['STRATEGY','TRADING','SYSTEM','OTHER'];
   const cards=categories.map(category=>`<button class="panel metric audit-category" data-category="${category}"><label>${auditCategoryLabel(category)}</label><strong>${s.category_counts?.[category]||0}</strong></button>`).join('');
   const options=categories.map(category=>`<option value="${category}" ${selected.get('category')===category?'selected':''}>${auditCategoryLabel(category)}</option>`).join('');
-  const events=(s.events||[]).length?(s.events||[]).map(event=>`<article class="event audit-event"><div class="event-title"><div><span class="badge">${esc(auditCategoryLabel(event.category))}</span> <strong>${esc(auditEventLabel(event.event_type))}</strong></div><time>${esc(formatBeijingTime(event.occurred_at))}</time></div><div class="audit-scope"><span>归属</span><strong>${esc(auditScopeLabel(event,state.accounts))}</strong></div><div class="audit-meta"><span>级别 ${esc(auditSeverityLabel(event.severity))}</span><span>结果 ${esc(auditOutcomeLabel(event.outcome))}</span>${event.strategy_id?`<span>策略 ${esc(event.strategy_id)}${event.strategy_version?` · 版本 ${esc(event.strategy_version)}`:''}</span>`:''}${event.channel==='futu_simulate_cn'?'<span>执行渠道 Futu模拟盘CN渠道</span>':''}</div>${event.correlation_id?`<button class="link-button" data-correlation="${esc(event.correlation_id)}">关联 ${esc(event.correlation_id)}</button>`:''}${renderEventDetails(event.details)}</article>`).join(''):'<div class="empty">当前筛选条件下暂无事件</div>';
-  document.querySelector('#app').innerHTML=`<section class="panel hero"><div><div class="eyebrow">PTE · 只读审计账本</div><h1>运行事件</h1><div class="subtle">事件以 UTC 持久化，页面统一显示北京时间 · 最近同步 ${esc(formatBeijingTime(s.as_of))}</div></div></section><div class="grid audit-summary">${cards}</div><section class="panel section"><form id="auditFilters" class="audit-filters"><label>类别<select name="category"><option value="">全部类别</option>${options}</select></label><label>账户<input name="account_id" value="${esc(selected.get('account_id')||'')}" placeholder="账户ID"></label><label>策略<input name="strategy_id" value="${esc(selected.get('strategy_id')||'')}" placeholder="策略ID"></label><label>渠道<input name="channel" value="${esc(selected.get('channel')||'')}" placeholder="如 futu_simulate_cn"></label><label>关联ID<input name="correlation_id" value="${esc(selected.get('correlation_id')||'')}" placeholder="决策或发布链路"></label><button class="button" type="submit">筛选</button><button class="button secondary" id="clearAuditFilters" type="button">清空</button></form></section><section class="panel section"><div class="section-head"><h2>事件明细</h2><span class="badge">${(s.events||[]).length} 条</span></div><div class="audit-list">${events}</div>${s.next_before_id?'<button id="moreAudit" class="button secondary" type="button">查看更早事件</button>':''}</section>`;
+  const events=(s.events||[]).length?(s.events||[]).map(event=>`<article class="event audit-event" data-event-id="${esc(event.event_id)}"><div class="event-title"><div><span class="badge">${esc(auditCategoryLabel(event.category))}</span> <strong>${esc(auditEventLabel(event.event_type))}</strong></div><time>${esc(formatBeijingTime(event.occurred_at))}</time></div><div class="audit-scope"><span>归属</span><strong>${esc(auditScopeLabel(event,state.accounts))}</strong></div><div class="audit-meta"><span>级别 ${esc(auditSeverityLabel(event.severity))}</span><span>结果 ${esc(auditOutcomeLabel(event.outcome))}</span>${event.strategy_id?`<span>策略 ${esc(event.strategy_id)}${event.strategy_version?` · 版本 ${esc(event.strategy_version)}`:''}</span>`:''}${event.channel==='futu_simulate_cn'?'<span>执行渠道 Futu模拟盘CN渠道</span>':''}</div>${event.correlation_id?`<button class="link-button" data-correlation="${esc(event.correlation_id)}">关联 ${esc(event.correlation_id)}</button>`:''}${renderEventDetails(event.details)}</article>`).join(''):'<div class="empty">当前筛选条件下暂无事件</div>';
+  document.querySelector('#app').innerHTML=`<section class="panel hero"><div><div class="eyebrow">PTE · 只读审计账本</div><h1>运行事件</h1><div class="subtle">事件以 UTC 持久化，页面统一显示北京时间 · 最近同步 ${esc(formatBeijingTime(s.as_of))}</div></div></section><div class="grid audit-summary">${cards}</div><section class="panel section"><form id="auditFilters" class="audit-filters"><label>类别<select name="category"><option value="">全部类别</option>${options}</select></label><label>账户<input name="account_id" value="${esc(selected.get('account_id')||'')}" placeholder="账户ID"></label><label>策略<input name="strategy_id" value="${esc(selected.get('strategy_id')||'')}" placeholder="策略ID"></label><label>渠道<input name="channel" value="${esc(selected.get('channel')||'')}" placeholder="如 futu_simulate_cn"></label><label>关联ID<input name="correlation_id" value="${esc(selected.get('correlation_id')||'')}" placeholder="决策或发布链路"></label><button class="button" type="submit">筛选</button><button class="button secondary" id="clearAuditFilters" type="button">清空</button></form></section><section class="panel section"><div class="section-head"><h2>事件明细</h2><span class="badge">${(s.events||[]).length} 条</span></div><div class="audit-list">${events}</div>${s.next_before_id?'<button id="moreAudit" class="button secondary" type="button">下一页 · 更早事件</button>':''}</section>`;
   document.querySelectorAll('[data-category]').forEach(el=>el.onclick=()=>{const params=new URLSearchParams(location.search);params.set('category',el.dataset.category);navigate(`/audit-events?${params}`);});
   document.querySelectorAll('[data-correlation]').forEach(el=>el.onclick=()=>navigate(`/audit-events?${auditQuery({correlation_id:el.dataset.correlation})}`));
   document.querySelector('#auditFilters').onsubmit=event=>{event.preventDefault();const query=auditQuery(Object.fromEntries(new FormData(event.currentTarget)));navigate(`/audit-events${query?'?'+query:''}`);};
   document.querySelector('#clearAuditFilters').onclick=()=>navigate('/audit-events');
-  const more=document.querySelector('#moreAudit');if(more)more.onclick=()=>{const params=new URLSearchParams(location.search);params.set('before_id',s.next_before_id);navigate(`/audit-events?${params}`);};
+  const more=document.querySelector('#moreAudit');if(more)more.onclick=()=>{const params=new URLSearchParams(location.search);params.set('before_id',s.next_before_id);navigate(`/audit-events?${params}`,false,Math.max(0,document.querySelector('.audit-list').getBoundingClientRect().top+window.scrollY-110));};
 }
 
-async function loadAccounts(options={}){const payload=await getJson('/api/virtual-accounts',options);state.accounts=payload.accounts||[];return payload;}
+async function loadAccounts(options={}){return getJson('/api/virtual-accounts',options);}
 async function loadRoute({showLoading=true,forceRender=false}={}){
   const route=parseRoute(location.pathname);setNav(route.page);
   let scope=route.page==='account'?route.accountId:`${route.page}${location.search}`;
@@ -310,6 +326,8 @@ async function loadRoute({showLoading=true,forceRender=false}={}){
   try{
     if(showLoading)document.querySelector('#app').innerHTML='<div class="loading">正在加载当前作用域…</div>';
     const accountIndex=await loadAccounts({signal:request.signal});
+    if(!state.loader.accept(request,scope))return;
+    state.accounts=accountIndex.accounts||[];
     if(route.page==='account'){
       const requested=route.accountId||localStorage.getItem('pte.lastAccountId');
       const id=chooseAccountId(requested,state.accounts,accountIndex.default_account_id);
@@ -319,6 +337,7 @@ async function loadRoute({showLoading=true,forceRender=false}={}){
         localStorage.removeItem('pte.lastAccountId');
         if(route.accountId)history.replaceState({},'','/accounts/');
         state.renderedScope=null;state.fingerprint=null;state.chart=null;
+        finishNavigation();
         return;
       }
       if(route.accountId!==id){navigate(`/accounts/${encodeURIComponent(id)}`,true);return;}
@@ -336,10 +355,15 @@ async function loadRoute({showLoading=true,forceRender=false}={}){
     if(route.page==='account'&&snapshot.scope.account_id!==route.accountId)throw new Error('服务端账户作用域不一致');
     const fingerprint=snapshotFingerprint({accounts:state.accounts,snapshot});
     if(forceRender||scope!==state.renderedScope||fingerprint!==state.fingerprint){
+      const sameScope=scope===state.renderedScope;
+      updateView(document.querySelector('#app'),()=>{
       if(route.page==='account'){localStorage.setItem('pte.lastAccountId',route.accountId);renderAccount(snapshot);}
       else if(route.page==='channel')renderChannel(snapshot);else if(route.page==='comparison')renderComparison(snapshot);else renderAudit(snapshot);
+      },{preserve:sameScope,y:state.navigation?.y??window.scrollY});
       state.renderedScope=scope;state.fingerprint=fingerprint;
     }
+    if(state.navigation)updateView(document.querySelector('#app'),()=>{},{preserve:false,y:state.navigation.y});
+    finishNavigation();
     if(route.page==='account'){
       const chartStatus=await chartPromise;
       if(!state.loader.accept(request,scope)||chartStatus.scope.account_id!==route.accountId)return;
@@ -348,12 +372,56 @@ async function loadRoute({showLoading=true,forceRender=false}={}){
     state.lastSuccess=new Date();
     const warning=document.querySelector('#pollWarning');warning.hidden=true;warning.textContent='';
   }catch(error){
-    if(error.name==='AbortError')return;
+    if(error.name==='AbortError'||!state.loader.accept(request,scope))return;
     const message=`刷新失败：${error.message} · 继续显示最后成功数据`;
     const warning=document.querySelector('#pollWarning');warning.hidden=false;warning.textContent=message;
-    if(showLoading||state.renderedScope!==scope)document.querySelector('#app').innerHTML=`<div class="error"><strong>当前作用域加载失败</strong><div>${esc(error.message)}</div><div class="subtle">最后成功 ${state.lastSuccess?state.lastSuccess.toLocaleString():'无'}</div></div>`;
+    if(showLoading||state.renderedScope!==scope){
+      updateView(document.querySelector('#app'),()=>{document.querySelector('#app').innerHTML=`<div class="error route-error"><strong>当前作用域加载失败</strong><div>${esc(error.message)}</div><button id="retryRoute" class="button">重新加载当前页面</button></div>`;},{preserve:false,y:state.navigation?.y??window.scrollY});
+      document.querySelector('#retryRoute').onclick=()=>navigate(`${location.pathname}${location.search}`,true);
+      state.renderedScope=null;state.fingerprint=null;
+      warning.textContent=`加载失败：${error.message}`;
+    }
+    finishNavigation();
   }
 }
-function navigate(url,replace=false){if(url!==`${location.pathname}${location.search}`)history[replace?'replaceState':'pushState']({},'',url);loadRoute(navigationOptions(state.renderedScope));}
-function boot(){document.querySelectorAll('a[href^="/"]').forEach(a=>a.onclick=e=>{e.preventDefault();navigate(a.getAttribute('href'));});document.querySelector('#systemStatus').onclick=openSystemEvents;document.querySelector('#closeSystemEvents').onclick=()=>document.querySelector('#systemEventsDialog').close();window.addEventListener('popstate',()=>loadRoute(navigationOptions(state.renderedScope)));refreshSystem();loadRoute({showLoading:true,forceRender:true});setInterval(refreshSystem,10000);setInterval(()=>loadRoute({showLoading:false}),5000);}
+function finishNavigation(){
+  state.navigation=null;
+  document.querySelector('#routeLoading').hidden=true;
+  document.querySelector('#app').removeAttribute('aria-busy');
+  document.querySelectorAll('[data-navigation-disabled]').forEach(el=>{el.disabled=false;delete el.dataset.navigationDisabled;});
+}
+function beginNavigation(y,followScroll=false){
+  state.navigation={y,followScroll};
+  reserveViewport(document.querySelector('#app'),y);
+  const notice=document.querySelector('#routeLoading');
+  const route=parseRoute(location.pathname);
+  const account=state.accounts.find(item=>item.account_id===route.accountId);
+  notice.textContent=`正在加载 ${route.page==='account'?(account?.name||route.accountId||'虚拟账户'):'页面'}…`;
+  notice.hidden=false;
+  document.querySelector('#app').setAttribute('aria-busy','true');
+  document.querySelectorAll('#accountSwitch,[data-ack-intent],#retryAccountChart,#channelSwitch').forEach(el=>{if(!el.disabled){el.dataset.navigationDisabled='';el.disabled=true;}});
+}
+function navigate(url,replace=false,targetY=null){
+  const current=`${location.pathname}${location.search}`;
+  const samePage=parseRoute(url.split('?')[0]).page===parseRoute(location.pathname).page;
+  const y=targetY??(samePage?window.scrollY:0);
+  history.replaceState({...history.state,pteScroll:window.scrollY},'',current);
+  if(url!==current)history[replace?'replaceState':'pushState']({pteScroll:y},'',url);
+  beginNavigation(y,samePage&&targetY==null);
+  loadRoute(navigationOptions(state.renderedScope));
+}
+function boot(){
+  history.scrollRestoration='manual';
+  document.querySelectorAll('a[href^="/"]').forEach(a=>a.onclick=e=>{e.preventDefault();navigate(a.getAttribute('href'));});
+  document.querySelector('#systemStatus').onclick=openSystemEvents;
+  document.querySelector('#closeSystemEvents').onclick=()=>document.querySelector('#systemEventsDialog').close();
+  window.addEventListener('popstate',event=>{beginNavigation(event.state?.pteScroll??0);loadRoute(navigationOptions(state.renderedScope));});
+  window.addEventListener('scroll',()=>{
+    if(state.navigation?.followScroll)state.navigation.y=window.scrollY;
+    if(!state.navigation)history.replaceState({...history.state,pteScroll:window.scrollY},'');
+  },{passive:true});
+  refreshSystem();loadRoute({showLoading:true,forceRender:true});
+  setInterval(refreshSystem,10000);
+  setInterval(()=>{if(!state.navigation)loadRoute({showLoading:false});},5000);
+}
 if(typeof document!=='undefined')boot();

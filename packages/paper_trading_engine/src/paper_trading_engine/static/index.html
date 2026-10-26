@@ -11,7 +11,8 @@
     <span id="releaseVersion" class="release-version" aria-label="当前PTE版本">版本加载中</span>
     <button id="systemStatus" class="system-status" type="button" aria-live="polite" aria-haspopup="dialog">系统状态加载中</button>
   </header>
-  <div id="pollWarning" class="alert" style="max-width:1500px;margin:10px auto -10px" hidden></div>
+  <div id="pollWarning" class="alert" role="status" hidden></div>
+  <div id="routeLoading" class="route-loading" role="status" hidden></div>
   <main id="app" aria-live="polite"><div class="loading">正在加载控制台…</div></main>
   <dialog id="systemEventsDialog" class="events-dialog" aria-labelledby="systemEventsTitle">
     <div class="events-head"><div><div class="eyebrow">PTE 运行审计</div><h2 id="systemEventsTitle">系统事件</h2></div><button id="closeSystemEvents" class="button" type="button">关闭</button></div>

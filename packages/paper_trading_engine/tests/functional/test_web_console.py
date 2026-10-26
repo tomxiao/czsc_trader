@@ -241,7 +241,7 @@ def test_ft_pte05_console_resources_interventions_events_and_restart(new_store, 
             html = response.read().decode()
         assert "模拟交易控制台" in html and "审计事件" in html
         assert 'id="releaseVersion"' in html
-        for asset, content_type in (("app.js", "javascript"), ("styles.css", "text/css"),
+        for asset, content_type in (("app.js", "javascript"), ("view_state.js", "javascript"), ("styles.css", "text/css"),
                                     ("strategy-chart.js", "javascript"), ("strategy-chart.css", "text/css")):
             with urlopen(base + f"/static/{asset}", timeout=3) as response:
                 assert response.status == 200
