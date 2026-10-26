@@ -165,7 +165,8 @@ def test_upgrade_compares_original_version_bytes_after_preparation(upgrade):
     assert not (context.strategy_root / "revisions").exists()
 
 
-def test_upgrade_deployment_failure_restores_original_package_version_and_receipt(upgrade, monkeypatch):
+@pytest.mark.parametrize("failure", ["publication-error", "persistent-windows-conflict"])
+def test_upgrade_deployment_failure_restores_original_package_version_and_receipt(upgrade, monkeypatch, failure):
     context, request, _ = upgrade
     prepared = m.prepare_frozen_runtime_upgrade(context, request)
     before = _bytes(context.strategy_root)
@@ -179,10 +180,29 @@ def test_upgrade_deployment_failure_restores_original_package_version_and_receip
             raise OSError("injected deployment publication failure")
         return original_write(path, data, scratch)
 
-    monkeypatch.setattr(m, "_upgrade_write", fail_once)
+    attempts, waits = [], []
+    if failure == "publication-error":
+        monkeypatch.setattr(m, "_upgrade_write", fail_once)
+    else:
+        original_replace = m.os.replace
+        def denied(source, target):
+            nonlocal failed
+            if target.parent.name == "deployments":
+                failed = True
+                attempts.append(source)
+                error = PermissionError("synthetic Windows access conflict")
+                error.winerror = 5
+                raise error
+            return original_replace(source, target)
+        monkeypatch.setattr(m.os, "replace", denied)
+        monkeypatch.setattr(m, "_FILE_REPLACE_DELAYS", (0.025, 0.050, 0.100, 0.200))
+        monkeypatch.setattr(m.clock, "sleep", waits.append)
     with pytest.raises(RuntimeError, match="original content restored"):
         m.apply_frozen_runtime_upgrade(context, prepared)
     assert failed
+    if failure == "persistent-windows-conflict":
+        assert len(attempts) == 5 and len(set(attempts)) == 1
+        assert waits == [0.025, 0.050, 0.100, 0.200]
     assert all((context.strategy_root / name).read_bytes() == data for name, data in before.items())
     manifest, _, _ = validate_release_package(context, "S900-v1")
     assert manifest["package_hash"] == request.original.package_hash

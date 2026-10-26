@@ -11,10 +11,12 @@ from dataclasses import asdict, dataclass, fields, replace
 from datetime import datetime, timezone
 from hashlib import sha256
 import json
+import logging
 import os
 from pathlib import Path
 import re
 import shutil
+import time as clock
 from uuid import uuid4
 
 from strategy_manager import StrategyRegistry, StrategyVersion, CandidateKey, canonical_sha256
@@ -29,6 +31,10 @@ from strategy_runtime import (
 from .context import RepositoryContext
 from .runtime_acceptance import prospective_release
 from .strategy_runtime_service import validate_release_package
+
+
+_LOGGER = logging.getLogger(__name__)
+_FILE_REPLACE_DELAYS = (0.025, 0.050, 0.100, 0.200) if os.name == "nt" else ()
 
 
 _SUPPORTED = {
@@ -427,14 +433,32 @@ def _upgrade_json(value):
             + "\n").encode("utf-8")
 
 
-def _upgrade_write(path, data, scratch):
+def _replace_upgrade_file(source: Path, target: Path) -> None:
+    """Bound Windows access-conflict retries without changing atomic publication."""
+    for attempt in range(len(_FILE_REPLACE_DELAYS) + 1):
+        try:
+            os.replace(source, target)
+        except OSError as error:
+            if getattr(error, "winerror", None) not in (5, 32) or attempt == len(_FILE_REPLACE_DELAYS):
+                if attempt:
+                    _LOGGER.error("File replacement failed after %d attempts: %s -> %s (winerror=%s)",
+                                  attempt + 1, source, target, getattr(error, "winerror", None))
+                raise
+            clock.sleep(_FILE_REPLACE_DELAYS[attempt])
+        else:
+            if attempt:
+                _LOGGER.warning("File replacement recovered after %d retries: %s -> %s", attempt, source, target)
+            return
+
+
+def _upgrade_write(path: Path, data: bytes, scratch: Path) -> None:
     temporary = scratch / ("write-" + uuid4().hex)
     try:
         with temporary.open("xb") as stream:
             stream.write(data)
             stream.flush()
             os.fsync(stream.fileno())
-        os.replace(temporary, path)
+        _replace_upgrade_file(temporary, path)
     finally:
         temporary.unlink(missing_ok=True)
 
