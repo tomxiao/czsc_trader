@@ -146,7 +146,9 @@ try {
                         Arguments = @(
                             '--test-isolation=none', '--test', '--test-reporter=tap',
                             'packages\paper_trading_engine\tests\functional\console_state.test.mjs',
-                            'packages\paper_trading_engine\tests\functional\forward_signal_panel.test.mjs'
+                            'packages\paper_trading_engine\tests\functional\forward_signal_panel.test.mjs',
+                            'packages\paper_trading_engine\tests\functional\view_state.test.mjs',
+                            'packages\paper_trading_engine\tests\functional\navigation_state.test.mjs'
                         )
                     })
                 }
