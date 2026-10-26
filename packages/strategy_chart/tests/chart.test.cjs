@@ -89,3 +89,40 @@ test('invalid context and missing shell fail explicitly',()=>{
  const f=fixture(),data=context();delete data.execution.decisions;assert.throws(()=>f.mount(f.root,data),/typed chart context/);
  assert.throws(()=>f.mount(new Element(),context()),/shared chart shell/);assert.equal(f.root.dataset.strategyChartMounted,undefined);
 });
+
+test('mixed observations select their own view on pointer and keyboard date changes',()=>{
+ const f=fixture(),data=context();data.observations[0].observation.series=[{key:'flow',label:'资金流宽度',value:.2098,guides:[{key:'threshold',label:'门槛',value:.5639}]}];
+ f.mount(f.root,data);f.svg.children.at(-1).fire('pointermove');
+ const picker=f.root.querySelector('.signal-panel-controls').querySelector('select');
+ assert.equal(picker.value,'legacy');assert.equal(picker.options.length,1);
+ assert.ok(f.svg.children.some(e=>e.attrs['data-series-key']==='flow'));
+ assert.doesNotMatch(f.root.querySelector('.signal-panel-legend').textContent,/没有该声明/);
+ const footer=f.root.querySelector('.signal-panel-footer');
+ assert.equal(f.root.querySelector('.signal-legacy-notice').parent,footer);
+ assert.equal(f.root.querySelector('.signal-panel-legend').parent,footer);
+ f.svg.fire('keydown',{key:'ArrowRight'});assert.match(f.root.querySelector('.signal-reading').textContent,/计算错误/);
+ f.svg.fire('keydown',{key:'ArrowRight'});assert.equal(picker.value,'current:state:state');
+ assert.equal(f.root.querySelector('.signal-legacy-notice').hidden,true);
+ assert.match(f.root.querySelector('.signal-reading').textContent,/等待条件满足/);
+ assert.equal(f.svg.children.filter(e=>e.attrs.fill==='transparent').length,1);
+});
+
+test('older structured observations use their recorded definition rather than the latest one',()=>{
+ const f=fixture(),data=context();const panel=JSON.parse(JSON.stringify(data.observations[2].observation.signal_panel));
+ delete panel.explanation;data.observations[0].observation.signal_panel=panel;
+ f.mount(f.root,data);f.svg.fire('keydown',{key:'Home'});
+ assert.equal(f.root.querySelector('.signal-panel-controls').querySelector('select').value,'old:state:state');
+ assert.match(f.root.querySelector('.signal-panel-legend').textContent,/状态：等待/);
+ assert.doesNotMatch(f.root.querySelector('.signal-panel-legend').textContent,/没有该声明/);
+});
+
+test('event height follows the selected date and expands for every event without truncation',()=>{
+ const f=fixture(),data=context();
+ data.execution.fills.push(...Array.from({length:12},(_,i)=>({fill_id:`busy-${i}`,session:'2026-01-05',occurred_at:`2026-01-05T09:${String(i).padStart(2,'0')}:00+08:00`,side:'BUY',quantity:100,price:1,fee:.1})));
+ f.mount(f.root,data);const compactHeight=Number.parseFloat(f.svg.style.height);
+ f.svg.fire('keydown',{key:'Home'});const busyHeight=Number.parseFloat(f.svg.style.height);
+ assert.ok(busyHeight>compactHeight+150);assert.equal((f.svg.textContent.match(/费用 0.10 元/g)||[]).length,12);
+ f.svg.fire('keydown',{key:'ArrowRight'});assert.equal(Number.parseFloat(f.svg.style.height),compactHeight);
+ f.svg.fire('keydown',{key:'End'});assert.match(f.svg.textContent,/非交易日/);assert.match(f.svg.textContent,/费用 0.10 元/);
+ f.svg.fire('keydown',{key:'Home'});assert.equal(Number.parseFloat(f.svg.style.height),busyHeight);
+});

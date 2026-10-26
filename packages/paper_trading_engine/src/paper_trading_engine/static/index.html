@@ -2,6 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="pte-ui-revision" content="__PTE_UI_REVISION__">
   <title>PTE · 模拟交易控制台</title><link rel="stylesheet" href="/static/styles.css"><link rel="stylesheet" href="/static/events.css">
 </head>
 <body>
@@ -13,6 +14,7 @@
   </header>
   <div id="pollWarning" class="alert" role="status" hidden></div>
   <div id="routeLoading" class="route-loading" role="status" hidden></div>
+  <div id="uiUpdateNotice" class="ui-update-notice" role="status" hidden>控制台界面已更新，当前页面仍使用旧版。<button id="reloadConsole" class="button" type="button">刷新页面</button></div>
   <main id="app" aria-live="polite"><div class="loading">正在加载控制台…</div></main>
   <dialog id="systemEventsDialog" class="events-dialog" aria-labelledby="systemEventsTitle">
     <div class="events-head"><div><div class="eyebrow">PTE 运行审计</div><h2 id="systemEventsTitle">系统事件</h2></div><button id="closeSystemEvents" class="button" type="button">关闭</button></div>

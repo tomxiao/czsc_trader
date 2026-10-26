@@ -108,6 +108,12 @@ const state = {accounts:[],loader:new ScopedLoader(),lastSuccess:null,renderedSc
 
 async function getJson(url, options={}) {
   const response=await fetch(url,options);let payload={};
+  if(url==='/api/system/status'&&response.ok){
+    const loaded=document.querySelector('meta[name="pte-ui-revision"]')?.content;
+    const current=response.headers.get('X-PTE-UI-Revision');
+    const notice=document.querySelector('#uiUpdateNotice');
+    if(notice&&loaded)notice.hidden=current===loaded;
+  }
   try{payload=await response.json();}catch{payload={error:`HTTP ${response.status}`};}
   if(!response.ok)throw new Error(payload.error||`HTTP ${response.status}`);return payload;
 }
@@ -412,6 +418,7 @@ function navigate(url,replace=false,targetY=null){
 }
 function boot(){
   history.scrollRestoration='manual';
+  document.querySelector('#reloadConsole').onclick=()=>location.reload();
   document.querySelectorAll('a[href^="/"]').forEach(a=>a.onclick=e=>{e.preventDefault();navigate(a.getAttribute('href'));});
   document.querySelector('#systemStatus').onclick=openSystemEvents;
   document.querySelector('#closeSystemEvents').onclick=()=>document.querySelector('#systemEventsDialog').close();

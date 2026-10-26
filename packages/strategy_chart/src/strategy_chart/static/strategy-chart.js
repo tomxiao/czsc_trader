@@ -27,7 +27,8 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
   const signalSelect=document.createElement('select');signalSelect.setAttribute('aria-label','选择信号分组');
   const signalUnit=document.createElement('span');signalUnit.className='signal-panel-unit';
   const signalLegend=document.createElement('div');signalLegend.className='signal-panel-legend';signalLegend.hidden=true;
-  signalControls.appendChild(signalSelect);signalControls.appendChild(signalUnit);stage.appendChild(signalControls);stage.appendChild(signalLegend);
+  const signalFooter=document.createElement('div');signalFooter.className='signal-panel-footer';
+  signalControls.appendChild(signalSelect);signalControls.appendChild(signalUnit);stage.appendChild(signalControls);stage.appendChild(signalFooter);signalFooter.appendChild(signalLegend);
   const fmt=value=>Number(value).toLocaleString('zh-CN',{minimumFractionDigits:3,maximumFractionDigits:4});
   const shortDate=value=>String(value).slice(5);
   const actionLabel=value=>({BUY:'入场',ENTER:'入场',SELL:'退出',EXIT:'退出',ROTATE:'日内轮换',HOLD:'持有',WAIT:'等待',HOLD_POSITION:'持有',HOLD_CASH:'空仓观察',NO_EVENT:'无新增事件',INTRADAY_LONG_OVERLAY:'日内增强'}[String(value).toUpperCase()]||String(value||'无新增事件'));
@@ -61,7 +62,7 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
 
 
   const reading=document.createElement('section');reading.className='signal-reading';reading.setAttribute('aria-label','策略信号解释');stage.appendChild(reading);
-  const legacyNotice=document.createElement('div');legacyNotice.className='signal-legacy-notice';legacyNotice.textContent='该记录未提供解释；保留原始信号值';stage.appendChild(legacyNotice);
+  const legacyNotice=document.createElement('div');legacyNotice.className='signal-legacy-notice';legacyNotice.textContent='该记录未提供解释；保留原始信号值';signalFooter.appendChild(legacyNotice);
   let expanded=false,readingDate=null;
   const node=(tag,cls,text)=>{const element=document.createElement(tag);element.className=cls;if(text!=null)element.textContent=text;return element;};
   function paintReading(observation,date){
@@ -171,7 +172,7 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
     return observation.signal_panel;
   }
   function drawSignalPanel(rows,view,{left,innerW,top,height,x}){
-    const plotTop=top+25,plotBottom=top+height-17;
+    const plotTop=top+25,plotBottom=top+height-34;
     const definition=view.item;
     const palette=['--signal','--position','--fill','--up','--down'];
     let series=[],y=null;
@@ -242,7 +243,7 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
       return `<span title="${safe(item.description)}">${safe(item.label)}</span><span>${safe(value)}</span>${guides}`;
     }).join('')}</div><div class="signal-panel-description">${safe(view.item.description)}</div>`;
   }
-  function render(){
+  function render(pointer=null){
     if(destroyed)return;
     colors.clear();
     const rows=visibleBars();
@@ -258,36 +259,37 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
       lines.forEach((line,index)=>add(el('text',{x:18,y:top+22+18*index,class:'explain-sub'},line)));
       return;
     }
+    state.selected=state.selected||rows.at(-1).date;
     const width=Math.max(320,stage.clientWidth),compact=width<700;
     const left=compact?52:68,right=compact?56:72,innerW=width-left-right;
     const priceTop=26,priceH=compact?220:Math.max(220,Math.min(280,Math.round(width*.19)));
     const positionTop=priceTop+priceH+18,positionH=48;
     const signalTop=positionTop+positionH+16,signalH=width>=1000?96:230;
     reading.style.top=`${signalTop}px`;reading.style.height=`${signalH}px`;
-    legacyNotice.style.top=`${signalTop+signalH-2}px`;
+    signalFooter.style.left=`${left}px`;signalFooter.style.top=`${signalTop+signalH-30}px`;signalFooter.style.width=`${innerW}px`;
     const measure=document.createElement('canvas').getContext('2d');
     measure.font=`11px ${getComputedStyle(svg).fontFamily}`;
-    const explanations=rows.map(row=>wrapExplanation(eventLines(row.date),innerW-24,measure));
     const selectedExplanation=wrapExplanation(eventLines(state.selected||rows.at(-1).date),innerW-24,measure);
     const explainTop=signalTop+signalH+12;
-    const explainH=Math.max(60,38+18*Math.max(selectedExplanation.length,...explanations.map(lines=>lines.length))),axisTop=explainTop+explainH+8,height=axisTop+30;
+    const explainH=38+18*selectedExplanation.length,axisTop=explainTop+explainH+8,height=axisTop+30;
     svg.setAttribute('viewBox',`0 0 ${width} ${height}`);svg.style.height=`${height}px`;stage.style.minHeight=`${height}px`;svg.replaceChildren();
     const x=index=>left+(rows.length===1?innerW/2:index/(rows.length-1)*innerW);
     const prices=rows.flatMap(row=>[Number(row.low),Number(row.high)]),[pmin,pmax]=extent(prices),pad=(pmax-pmin||pmax*.01)*.09;
     const yPrice=scale(pmin-pad,pmax+pad,priceTop+priceH,priceTop);
     const rowObservations=rows.map(row=>byDate.get(row.date)?.observation).filter(item=>item?.status==='READY');
     const latestUnavailable=rows.map(row=>({date:row.date,observation:byDate.get(row.date)?.observation})).filter(item=>item.observation?.status==='UNAVAILABLE').at(-1);
-    const views=signalViews(rows),lastIdentity=rowObservations.filter(item=>item.signal_panel).at(-1)?.definition_sha256;
-    if(!views.some(view=>view.key===state.signalView))state.signalView=(views.find(view=>view.kind==='group'&&view.identity===lastIdentity)||views.at(-1))?.key||null;
+    const selectedObservation=byDate.get(state.selected||rows.at(-1).date)?.observation;
+    const views=signalViews(rows).filter(view=>selectedObservation?.status!=='READY'||(view.kind==='legacy'?!selectedObservation.signal_panel:view.identity===selectedObservation.definition_sha256));
+    if(selectedObservation?.status!=='READY')state.signalView=null;
+    if(!views.some(view=>view.key===state.signalView))state.signalView=(views.find(view=>view.kind==='group')||views.at(-1))?.key||null;
     const signalView=views.find(view=>view.key===state.signalView),enhanced=signalView&&signalView.kind!=='legacy';
     signalControls.hidden=!views.length||!state.layers.signal;signalLegend.hidden=!views.length||!state.layers.signal;
     signalControls.style.left=`${left}px`;signalControls.style.top=`${signalTop}px`;signalControls.style.width=`${innerW}px`;
-    signalLegend.style.left=`${left}px`;signalLegend.style.top=`${signalTop+signalH-14}px`;signalLegend.style.width=`${innerW}px`;
     signalSelect.replaceChildren(...views.map(view=>{const option=document.createElement('option');option.value=view.key;option.textContent=view.label;option.title=view.item?.description||view.label;return option;}));signalSelect.value=state.signalView||'';
     signalUnit.textContent=enhanced?(signalView.kind==='group'?`${signalView.item.unit} · ${signalView.item.basis}`:signalView.item.description):'原始数值';signalUnit.title=signalUnit.textContent;
     const legacyObservations=views.length?rowObservations.filter(item=>!item.signal_panel):rowObservations;
     const allSeries=legacyObservations.flatMap(item=>item.series||[]),signalValues=allSeries.flatMap(item=>[item.value,...(item.guides||[]).map(guide=>guide.value)]);
-    const [smin0,smax0]=signalValues.length?extent(signalValues):[0,1],spad=(smax0-smin0||1)*.12,ySignal=scale(smin0-spad,smax0+spad,signalTop+signalH-(views.length?17:0),signalTop+(views.length?25:0));
+    const [smin0,smax0]=signalValues.length?extent(signalValues):[0,1],spad=(smax0-smin0||1)*.12,ySignal=scale(smin0-spad,smax0+spad,signalTop+signalH-34,signalTop+25);
     const quantities=[0,...snapshots.map(item=>Number(item.quantity))];
     const qmax=Math.max(...quantities,1),yPosition=scale(0,qmax*1.08,positionTop+positionH,positionTop);
     const visibleCutoff=rows.findIndex(row=>row.date>cutoff);
@@ -321,7 +323,8 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
       sub.replaceChildren(...wrapExplanation(eventLines(date),innerW-24,measure).map((text,line)=>el('tspan',{x:left+12,dy:line?18:0,'xml:space':'preserve'},text)));
     }
     function select(index,pointer){
-      index=Math.max(0,Math.min(rows.length-1,index));state.selected=rows[index].date;
+      index=Math.max(0,Math.min(rows.length-1,index));
+      if(state.selected!==rows[index].date){state.selected=rows[index].date;render(pointer);return;}
       const row=rows[index],decision=byDate.get(row.date),observation=decision?.observation;
       showEvents(row.date);
       cross.style.display='';priceDot.style.display='';
@@ -348,7 +351,7 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
     const selectedIndex=rows.findIndex(row=>row.date===state.selected);
     if(state.selected&&selectedIndex<0){
       showEvents(state.selected);cross.style.display='none';priceDot.style.display='none';signalDot.style.display='none';tooltip.hidden=true;
-    }else select(selectedIndex<0?rows.length-1:selectedIndex,null);
+    }else select(selectedIndex<0?rows.length-1:selectedIndex,pointer);
     const overlay=add(el('rect',{x:left,y:priceTop,width:innerW,height:explainTop+explainH-priceTop,fill:'transparent'}));overlay.addEventListener('pointermove',event=>{const rect=svg.getBoundingClientRect(),px=(event.clientX-rect.left)*width/rect.width,py=(event.clientY-rect.top)*height/rect.height,index=Math.round((px-left)/innerW*(rows.length-1));select(index,[px,py]);});overlay.addEventListener('click',event=>{const rect=svg.getBoundingClientRect(),px=(event.clientX-rect.left)*width/rect.width;select(Math.round((px-left)/innerW*(rows.length-1)),null);tooltip.hidden=true;svg.focus({preventScroll:true});});overlay.addEventListener('pointerleave',()=>{tooltip.hidden=true;});
   }
   listen(svg,'keydown',event=>{
@@ -363,11 +366,11 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
   root.querySelectorAll('[data-range]').forEach(button=>listen(button,'click',()=>{state.range=button.dataset.range==='all'?'all':Number(button.dataset.range);root.querySelectorAll('[data-range]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));render();}));
   root.querySelectorAll('[data-layer]').forEach(button=>listen(button,'click',()=>{const layer=button.dataset.layer;state.layers[layer]=!state.layers[layer];button.setAttribute('aria-pressed',String(state.layers[layer]));render();}));
   const viewportWindow=embedded?window.parent:window;
-  listen(viewportWindow,'resize',render);
+  listen(viewportWindow,'resize',()=>render());
   let lastWidth=0;
   const resizeObserver=new ResizeObserver(()=>{const width=stage.clientWidth;if(width!==lastWidth){lastWidth=width;render();}});
   resizeObserver.observe(stage);
-  const destroy=()=>{if(destroyed)return;destroyed=true;lifecycle.abort();resizeObserver.disconnect();reading.remove();legacyNotice.remove();signalControls.remove();signalLegend.remove();svg.replaceChildren();tooltip.hidden=true;delete root.dataset.strategyChartMounted;};
+  const destroy=()=>{if(destroyed)return;destroyed=true;lifecycle.abort();resizeObserver.disconnect();reading.remove();signalFooter.remove();signalControls.remove();svg.replaceChildren();tooltip.hidden=true;delete root.dataset.strategyChartMounted;};
   listen(window,'pagehide',destroy);render();
   return {destroy};
 };

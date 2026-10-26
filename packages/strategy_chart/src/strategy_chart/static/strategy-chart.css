@@ -15,7 +15,9 @@
 .strategy-chart .reading-body{min-height:0;overflow:auto}
 .strategy-chart .reading-row+.reading-row{margin-top:5px}
 .strategy-chart .reading-detail{white-space:pre-wrap}
-.strategy-chart .signal-legacy-notice{position:absolute;left:68px;font-size:10px;color:var(--muted);z-index:2;background:var(--surface)}
+.strategy-chart .signal-panel-footer{position:absolute;z-index:2;display:flex;flex-direction:column;gap:2px;height:30px;overflow:hidden;background:var(--surface)}
+.strategy-chart .signal-panel-footer .signal-panel-legend{position:static;flex:none}
+.strategy-chart .signal-legacy-notice{font-size:10px;line-height:14px;height:14px;flex:none;white-space:nowrap;overflow:auto;color:var(--muted)}
 @container(min-width:1000px){
  .strategy-chart .signal-reading{grid-template-columns:minmax(210px,.85fr) minmax(300px,1.3fr) minmax(220px,1fr);gap:20px;padding:6px 84px 6px 80px;font-size:13px;line-height:20px}
  .strategy-chart .reading-head{grid-template-rows:15px minmax(0,1fr) 16px;gap:4px 12px;border-right:1px solid var(--line);padding-right:20px}

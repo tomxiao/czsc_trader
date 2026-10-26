@@ -11,7 +11,7 @@ const response=payload=>({ok:true,status:200,json:async()=>payload});
 function setup(fetcher){
   const node=()=>({hidden:true,disabled:false,dataset:{},attributes:{},style:{},innerHTML:'existing page',textContent:'',
     setAttribute(key,value){this.attributes[key]=value;},removeAttribute(key){delete this.attributes[key];}});
-  const nodes=Object.fromEntries(['app','routeLoading','pollWarning','accountSwitch','retryAccountChart','channelSwitch','systemStatus','closeSystemEvents'].map(key=>[key,node()]));
+  const nodes=Object.fromEntries(['app','routeLoading','pollWarning','accountSwitch','retryAccountChart','channelSwitch','systemStatus','closeSystemEvents','reloadConsole','uiUpdateNotice'].map(key=>[key,node()]));
   const ack=node(),actions=[nodes.accountSwitch,ack,nodes.retryAccountChart,nodes.channelSwitch];
   const updates=[],renders=[];
   const location={pathname:'/accounts/alpha',search:''};
@@ -40,7 +40,7 @@ function setup(fetcher){
     renderComparison=snapshot=>recordRender('comparison',snapshot);
     renderAudit=snapshot=>recordRender('audit',snapshot);
     applyAccountChart=()=>{};
-    globalThis.subject={state,loadRoute,beginNavigation,finishNavigation,navigate,snapshotFingerprint,
+    globalThis.subject={state,loadRoute,beginNavigation,finishNavigation,navigate,snapshotFingerprint,getJson,
       installListeners(){
         const originalLoad=loadRoute,originalRefresh=refreshSystem;
         loadRoute=()=>{};refreshSystem=()=>{};boot();
@@ -51,6 +51,22 @@ function setup(fetcher){
   return {...context,...context.subject,nodes,actions,updates,renders,listeners};
 }
 const account=id=>({account_id:id,name:id,run_state:'RUNNING'});
+
+test('UI revision mismatch prompts a manual refresh even on the first successful poll',async()=>{
+  let serverRevision='new-assets';
+  const env=setup(async()=>({...response({release:{release_id:'same-tag'}}),headers:{get:()=>serverRevision}}));
+  const query=env.document.querySelector;
+  env.document.querySelector=selector=>selector==='meta[name="pte-ui-revision"]'?{content:'loaded-assets'}:query(selector);
+  await env.getJson('/api/system/status');
+  assert.equal(env.nodes.uiUpdateNotice.hidden,false);
+  assert.equal(env.window.scrollY,450);
+  serverRevision='loaded-assets';await env.getJson('/api/system/status');
+  assert.equal(env.nodes.uiUpdateNotice.hidden,true);
+  serverRevision=null;await env.getJson('/api/system/status');
+  assert.equal(env.nodes.uiUpdateNotice.hidden,false);
+  let reloads=0;env.location.reload=()=>reloads++;env.installListeners();
+  assert.equal(reloads,0);env.nodes.reloadConsole.onclick();assert.equal(reloads,1);
+});
 
 test('navigation disables old account mutation controls but preserves already-disabled state',()=>{
   const env=setup();env.state.accounts=[account('alpha')];env.actions[2].disabled=true;

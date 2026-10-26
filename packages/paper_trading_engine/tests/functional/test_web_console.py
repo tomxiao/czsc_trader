@@ -14,6 +14,41 @@ from paper_trading_engine.web_api import PteWebApi
 from pte_support import adopt_test_decision
 
 
+def test_console_asset_revision_is_stable_and_includes_shared_chart(tmp_path, monkeypatch):
+    from paper_trading_engine import web
+
+    roots = {}
+    for package in ("paper_trading_engine", "strategy_chart"):
+        root = tmp_path / package
+        (root / "static").mkdir(parents=True)
+        roots[package] = root
+    (roots["paper_trading_engine"] / "static/index.html").write_text(
+        '<meta name="pte-ui-revision" content="__PTE_UI_REVISION__">', encoding="utf-8",
+    )
+    chart_css = roots["strategy_chart"] / "static/strategy-chart.css"
+    chart_css.write_text("old chart style", encoding="utf-8")
+    monkeypatch.setattr(web, "files", lambda package: roots[package])
+
+    def fetch_revision():
+        server = create_server(FakeEngine(), port=0)
+        thread = Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            with urlopen(f"http://127.0.0.1:{server.server_port}/", timeout=3) as response:
+                revision = response.headers["X-PTE-UI-Revision"]
+                assert revision in response.read().decode()
+                return revision
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=3)
+
+    original = fetch_revision()
+    assert fetch_revision() == original
+    chart_css.write_text("new chart style, same release tag", encoding="utf-8")
+    assert fetch_revision() != original
+
+
 def test_account_snapshot_scopes_and_orders_transactions_without_mutating_source():
     collections = (
         ("intents", "intent_id", "created_at", "INT"),
@@ -239,6 +274,11 @@ def test_ft_pte05_console_resources_interventions_events_and_restart(new_store, 
     try:
         with urlopen(base + "/", timeout=3) as response:
             html = response.read().decode()
+            ui_revision = response.headers["X-PTE-UI-Revision"]
+            assert len(ui_revision) == 64
+            assert f'name="pte-ui-revision" content="{ui_revision}"' in html
+            assert "__PTE_UI_REVISION__" not in html
+            assert 'id="uiUpdateNotice"' in html
         assert "模拟交易控制台" in html and "审计事件" in html
         assert 'id="releaseVersion"' in html
         for asset, content_type in (("app.js", "javascript"), ("view_state.js", "javascript"), ("styles.css", "text/css"),
@@ -259,6 +299,8 @@ def test_ft_pte05_console_resources_interventions_events_and_restart(new_store, 
         with urlopen(base + "/audit-events", timeout=3) as response:
             assert response.status == 200
         assert request_json(base + "/api/system/status")[1]["instance_id"] == "old"
+        with urlopen(base + "/api/system/status", timeout=3) as response:
+            assert response.headers["X-PTE-UI-Revision"] == ui_revision
         health = request_json(base + "/api/health")[1]
         assert health["instance_id"] == "old"
         assert set(health) == {

@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import asdict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from importlib.resources import files
+from hashlib import sha256
 import json
 import mimetypes
 import re
@@ -30,6 +31,15 @@ def create_server(
     api = operations if hasattr(operations, "system_status") else PteWebApi(operations)
     static_root = files("paper_trading_engine").joinpath("static")
     runtime_instance_id = instance_id or uuid4().hex
+    # Bind the loaded document to its assets, independently of the release label.
+    chart_root = files("strategy_chart").joinpath("static")
+    digest = sha256()
+    for root in (static_root, chart_root):
+        for resource in sorted(root.iterdir(), key=lambda item: item.name):
+            if resource.is_file():
+                digest.update(resource.name.encode())
+                digest.update(sha256(resource.read_bytes()).digest())
+    ui_revision = digest.hexdigest()
 
     class Handler(BaseHTTPRequestHandler):
         def _send(
@@ -41,6 +51,7 @@ def create_server(
                 self.send_header("Content-Type", content_type)
                 self.send_header("Content-Length", str(len(body)))
                 self.send_header("Cache-Control", cache_control)
+                self.send_header("X-PTE-UI-Revision", ui_revision)
                 if etag is not None:
                     self.send_header("ETag", etag)
                 self.end_headers()
@@ -67,7 +78,10 @@ def create_server(
                 self._json(404, {"error": "not found"})
                 return
             content_type = mimetypes.guess_type(name)[0] or "application/octet-stream"
-            self._send(200, resource.read_bytes(), f"{content_type}; charset=utf-8")
+            body = resource.read_bytes()
+            if name == "index.html":
+                body = body.replace(b"__PTE_UI_REVISION__", ui_revision.encode())
+            self._send(200, body, f"{content_type}; charset=utf-8")
 
         def _body(self) -> dict[str, object]:
             length = int(self.headers.get("Content-Length", "0"))
