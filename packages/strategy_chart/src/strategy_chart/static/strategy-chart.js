@@ -7,8 +7,7 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
   const stage=root.querySelector('#forward-stage');
   const svg=root.querySelector('#forward-svg');
   const tooltip=root.querySelector('#forward-tooltip');
-  const eventDate=root.querySelector('#forward-event-date');
-  if(!stage||!svg||!tooltip||!eventDate){delete root.dataset.strategyChartMounted;throw new TypeError('strategy chart requires the shared chart shell');}
+  if(!stage||!svg||!tooltip){delete root.dataset.strategyChartMounted;throw new TypeError('strategy chart requires the shared chart shell');}
   const embedded=window.parent!==window;
   if(embedded)root.classList.add('embedded');
   const NS='http://www.w3.org/2000/svg';
@@ -52,7 +51,6 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
   const fillSummary=item=>`${fillTime(item)} · 成交：${String(item.side).toUpperCase()==='BUY'?'买入':'卖出'} ${quantity(item.quantity)}，价格 ${fmt(item.price)} 元（不复权），金额 ${money(Number(item.quantity)*Number(item.price))}，费用 ${money(item.fee)}`;
   const eventDates=[...new Set([...bars.map(item=>item.date),...decisions.map(item=>localTime(item.generated_at).slice(0,10)),...fills.map(fillDate)])].sort();
   const tradingDates=new Set(bars.map(item=>item.date));
-  eventDate.replaceChildren(...eventDates.map(date=>{const option=document.createElement('option');option.value=date;option.textContent=`${date}${tradingDates.has(date)?'':'（非交易日）'}`;return option;}));
 
   const write=(selector,text)=>{const node=root.querySelector(selector);if(node)node.textContent=text;};
   const isBacktest=context.mode==='BACKTEST';
@@ -255,24 +253,24 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
       svg.replaceChildren();svg.setAttribute('viewBox',`0 0 ${width} ${height}`);svg.style.height=`${height}px`;stage.style.minHeight=`${height}px`;
       add(el('text',{x:18,y:25,class:'panel-label'},'没有可展示的行情；事件按原始记录展示'));
       reading.style.top='42px';reading.style.height=`${top-55}px`;paintReading(byDate.get(date)?.observation,date||'');
-      state.selected=date;eventDate.value=date||'';
+      state.selected=date;
       add(el('text',{x:18,y:top,class:'explain-main'},`${date||''} · 事件`));
       lines.forEach((line,index)=>add(el('text',{x:18,y:top+22+18*index,class:'explain-sub'},line)));
       return;
     }
     const width=Math.max(320,stage.clientWidth),compact=width<700;
     const left=compact?52:68,right=compact?56:72,innerW=width-left-right;
-    const priceTop=34,priceH=embedded?Math.max(180,Math.min(285,window.parent.innerHeight-540)):(compact?250:285);
-    const positionTop=priceTop+priceH+20,positionH=compact?50:(embedded?50:68);
-    const signalTop=positionTop+positionH+18,signalH=width>=1000?126:230;
+    const priceTop=26,priceH=compact?220:Math.max(220,Math.min(280,Math.round(width*.19)));
+    const positionTop=priceTop+priceH+18,positionH=48;
+    const signalTop=positionTop+positionH+16,signalH=width>=1000?112:230;
     reading.style.top=`${signalTop}px`;reading.style.height=`${signalH}px`;
     legacyNotice.style.top=`${signalTop+signalH-2}px`;
     const measure=document.createElement('canvas').getContext('2d');
     measure.font=`11px ${getComputedStyle(svg).fontFamily}`;
     const explanations=rows.map(row=>wrapExplanation(eventLines(row.date),innerW-24,measure));
     const selectedExplanation=wrapExplanation(eventLines(state.selected||rows.at(-1).date),innerW-24,measure);
-    const explainTop=signalTop+signalH+30;
-    const explainH=Math.max(62,44+18*Math.max(selectedExplanation.length,...explanations.map(lines=>lines.length))),axisTop=explainTop+explainH+8,height=axisTop+30;
+    const explainTop=signalTop+signalH+18;
+    const explainH=Math.max(60,38+18*Math.max(selectedExplanation.length,...explanations.map(lines=>lines.length))),axisTop=explainTop+explainH+8,height=axisTop+30;
     svg.setAttribute('viewBox',`0 0 ${width} ${height}`);svg.style.height=`${height}px`;stage.style.minHeight=`${height}px`;svg.replaceChildren();
     const x=index=>left+(rows.length===1?innerW/2:index/(rows.length-1)*innerW);
     const prices=rows.flatMap(row=>[Number(row.low),Number(row.high)]),[pmin,pmax]=extent(prices),pad=(pmax-pmin||pmax*.01)*.09;
@@ -316,7 +314,7 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
     const tickCount=Math.min(rows.length,compact?4:7);for(let i=0;i<tickCount;i++){const index=tickCount===1?0:Math.round(i*(rows.length-1)/(tickCount-1));add(el('text',{x:x(index),y:axisTop+18,class:'axis','text-anchor':i===0?'start':i===tickCount-1?'end':'middle'},shortDate(rows[index].date)));}
     const cross=add(el('line',{y1:priceTop,y2:explainTop+explainH,class:'crosshair'})),priceDot=add(el('circle',{r:4,fill:css('--text'),stroke:css('--surface'),'stroke-width':2})),signalDot=add(el('circle',{r:4,fill:css('--signal'),stroke:css('--surface'),'stroke-width':2})),main=add(el('text',{x:left+12,y:explainTop+22,class:'explain-main'})),sub=add(el('text',{x:left+12,y:explainTop+42,class:'explain-sub'}));
     function showEvents(date){
-      state.selected=date;eventDate.value=date;paintReading(byDate.get(date)?.observation,date);
+      state.selected=date;paintReading(byDate.get(date)?.observation,date);
       const selectedFills=dayFills(date),selectedDecisions=dayDecisions(date);
       const event=[selectedDecisions.length?`决策 ${selectedDecisions.length} 笔`:'',selectedFills.length?`成交 ${selectedFills.length} 笔`:''].filter(Boolean).join(' · ')||'当日无可展示事件';
       main.textContent=`${date} · ${event}${tradingDates.has(date)?'':' · 非交易日，无行情K线'}`;
@@ -351,9 +349,16 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
     if(state.selected&&selectedIndex<0){
       showEvents(state.selected);cross.style.display='none';priceDot.style.display='none';signalDot.style.display='none';tooltip.hidden=true;
     }else select(selectedIndex<0?rows.length-1:selectedIndex,null);
-    const overlay=add(el('rect',{x:left,y:priceTop,width:innerW,height:explainTop+explainH-priceTop,fill:'transparent'}));overlay.addEventListener('pointermove',event=>{const rect=svg.getBoundingClientRect(),px=(event.clientX-rect.left)*width/rect.width,py=(event.clientY-rect.top)*height/rect.height,index=Math.round((px-left)/innerW*(rows.length-1));select(index,[px,py]);});overlay.addEventListener('pointerleave',()=>{tooltip.hidden=true;});
+    const overlay=add(el('rect',{x:left,y:priceTop,width:innerW,height:explainTop+explainH-priceTop,fill:'transparent'}));overlay.addEventListener('pointermove',event=>{const rect=svg.getBoundingClientRect(),px=(event.clientX-rect.left)*width/rect.width,py=(event.clientY-rect.top)*height/rect.height,index=Math.round((px-left)/innerW*(rows.length-1));select(index,[px,py]);});overlay.addEventListener('click',event=>{const rect=svg.getBoundingClientRect(),px=(event.clientX-rect.left)*width/rect.width;select(Math.round((px-left)/innerW*(rows.length-1)),null);tooltip.hidden=true;svg.focus({preventScroll:true});});overlay.addEventListener('pointerleave',()=>{tooltip.hidden=true;});
   }
-  listen(eventDate,'change',()=>{state.selected=eventDate.value;tooltip.hidden=true;render();});
+  listen(svg,'keydown',event=>{
+    if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)||!eventDates.length)return;
+    event.preventDefault();
+    const current=eventDates.indexOf(state.selected);
+    const index=event.key==='Home'?0:event.key==='End'?eventDates.length-1:
+      Math.max(0,Math.min(eventDates.length-1,(current<0?eventDates.length-1:current)+(event.key==='ArrowLeft'?-1:1)));
+    state.selected=eventDates[index];tooltip.hidden=true;render();
+  });
   listen(signalSelect,'change',()=>{state.signalView=signalSelect.value;tooltip.hidden=true;render();});
   root.querySelectorAll('[data-range]').forEach(button=>listen(button,'click',()=>{state.range=button.dataset.range==='all'?'all':Number(button.dataset.range);root.querySelectorAll('[data-range]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));render();}));
   root.querySelectorAll('[data-layer]').forEach(button=>listen(button,'click',()=>{const layer=button.dataset.layer;state.layers[layer]=!state.layers[layer];button.setAttribute('aria-pressed',String(state.layers[layer]));render();}));

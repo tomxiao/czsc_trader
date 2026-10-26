@@ -29,7 +29,7 @@ function snapshot(index,{segment='first',status='AVAILABLE',release='a',definiti
 }
 
 function render({width=1000,observations}={}){
-  const nodes=Object.fromEntries(['pte-forward-chart','forward-stage','forward-svg','forward-tooltip','forward-context','forward-title','forward-subtitle','forward-asof','forward-event-date'].map(id=>[id,new Element(id)]));
+  const nodes=Object.fromEntries(['pte-forward-chart','forward-stage','forward-svg','forward-tooltip','forward-context','forward-title','forward-subtitle','forward-asof'].map(id=>[id,new Element(id)]));
   nodes['forward-stage'].clientWidth=width;nodes['forward-svg'].clientWidth=width;
   const dates=Array.from({length:10},(_,i)=>`2026-09-${String(i+1).padStart(2,'0')}`);
   const samples=observations||[

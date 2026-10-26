@@ -18,7 +18,7 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
     get textContent(){return (this._text||'')+this.children.map(node=>node.textContent).join('');}
     getBoundingClientRect(){return {left:0,top:0,width:1000,height:800};}
   }
-  const nodes=Object.fromEntries(['pte-forward-chart','forward-stage','forward-svg','forward-tooltip','forward-context','forward-title','forward-subtitle','forward-asof','forward-event-date'].map(id=>[id,new Element(id)]));
+  const nodes=Object.fromEntries(['pte-forward-chart','forward-stage','forward-svg','forward-tooltip','forward-context','forward-title','forward-subtitle','forward-asof'].map(id=>[id,new Element(id)]));
   const observation=value=>({status:'READY',series:[{key:'score',label:'策略得分',value,guides:[{key:'threshold',label:'入场阈值',value:.2}]}],facts:[]});
   const context={
     mode:'PAPER',
@@ -96,10 +96,8 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
   assert.ok(svg.textContent.indexOf('21:00:00 · 决策')<svg.textContent.indexOf('22:00:00 · 决策'));
   assert.match(svg.textContent,/生效 2026-09-04；信号 2026-09-02/);
   assert.doesNotMatch(svg.textContent,/已替代|已失效/);
-  const eventDate=nodes['forward-event-date'];
-  assert.ok(eventDate.children.some(option=>option.value==='2026-09-05'&&option.textContent.includes('非交易日')));
   const candleCount=svg.children.filter(node=>node.name==='rect'&&node.attributes.stroke).length;
-  eventDate.value='2026-09-05';eventDate.listeners.change();
+  let prevented=false;svg.listeners.keydown({key:'End',preventDefault(){prevented=true;}});assert.equal(prevented,true);
   assert.match(svg.textContent,/2026-09-05 · 决策 1 笔 · 非交易日，无行情K线/);
   assert.match(svg.textContent,/状态原因：计划无需下单/);
   assert.equal(svg.children.filter(node=>node.name==='rect'&&node.attributes.stroke).length,candleCount);
