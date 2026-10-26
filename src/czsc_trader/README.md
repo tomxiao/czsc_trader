@@ -226,12 +226,16 @@ SE除普通账户核对外，独立检查开仓预算、数量目标、补买上
 | pandas、NumPy及统计库 | 数据对齐、批量数值计算与统计检验 | 优先使用向量化、批量运算和公共中间结果，减少逐行Python循环与重复转换；按内存容量分批，核验缺失值、索引和数值类型对结果的影响 |
 | 其他加速评价库 | 降低特定计算环节或策略评价的耗时 | 先用代表性样例确认加速收益与适用交易语义；用于正式比较前，必须完成与SRT/TXE的信号及完整经济账本等价性核验 |
 
-可并行接口内部默认采用`max(1, os.cpu_count() * 70 // 100)`个工作进程／线程，向下取整；
-例如16个逻辑核默认11个，实际同时执行数还受独立任务数限制。`ExecutionResources(max_workers=...)`
+可并行接口内部默认采用`max(1, os.cpu_count() * 75 // 100)`个工作进程／线程，向下取整；
+例如16个逻辑核默认12个，实际同时执行数还受独立任务数限制。`ExecutionResources(max_workers=...)`
 显式覆盖，默认`native_threads_per_worker=1`。无法识别逻辑核数时明确报错，调用方可显式指定。
 预算控制工作进程／线程数量，不承诺CPU利用率；同一会话共享总预算，不同顶层会话不受整机调度器协调。
 `evaluate_many`在请求间并行，子请求内部执行使用一个工作线程；`evaluate`可在独立窗口／费用场景间使用上下文预算。
 资源类型不负责Optuna调度；研究员仍须统筹平台以外的trial及第三方库并发。
+`create_research_context(..., resources=...)`设置评价及批量证据发布预算；
+`assemble_delivery/validate_delivery(..., resources=...)`使用独立的调用预算，不自动继承研究上下文。
+`inspect_candidate(..., control=InspectionControl(max_workers=resources.max_workers))`可显式复用同一上限。
+同一个资源值不代表多个顶层调用共用执行额度；调用方须统筹同时运行的任务。
 
 正式批量评价调用`context.evaluation.evaluate_many(tuple_of_requests)`，由TDR使用Windows `spawn`
 进程池执行研究员已确定的请求。主进程持有Study和批次上下文，核对逐项结果并选择必要证据；子进程只计算，
@@ -600,7 +604,7 @@ schema 3计划以`design.space.axes`为RSCH声明的检验范围，不从`parame
 `assemble_delivery(repository, DeliveryDefinition, DeliveryContent, *, resources=None, on_progress=None) -> DeliveryAssemblyResult` 直接接受强类型数据。
 返回值包含 `receipt: DeliveryReceipt` 和 `validation: DeliveryValidation`；后者是包含安装后完整性复核的本次 `FULL PASS`，无需紧接着再调用一次完整校验。
 同内容修订的重复组装也重新执行 FULL。后续独立调用 `validate_delivery(..., resources=None, on_progress=None)` 时重新读取当前文件，绝不以历史 PASS 代替认证。
-两个入口的独立账户认证默认采用 `ExecutionResources` 的本机 70% 逻辑核预算，显式资源可覆盖；单项认证直接执行。
+两个入口的独立账户认证默认采用 `ExecutionResources` 的本机 75% 逻辑核预算，显式资源可覆盖；单项认证直接执行。
 认证缓存只在本次调用内保存按 SHA-256 标识的必要事实，每次消费仍核验文件当前字节和账户引用所属实验；最终复核覆盖前驱及公开副本。
 `DeliveryValidationProgress` 回调报告 `PACKAGE_LOAD`、`AUTHENTICATION`、`RECOMPUTATION`、`FINAL_RECHECK` 阶段、完成数量及累计墙钟耗时。
 `PACKAGE_LOAD` 在读取每个交付包之前立即发出；`package_load_seconds` 累计包封装读取、清单哈希与强类型解析的墙钟时间，包含失败读取，排除递归前驱、账户认证和 SE 复算。
@@ -829,7 +833,7 @@ StrategyVersion和运行发布合同不变，不更改已冻结策略、SM状态
 | `FreezeTarget` | version、parent_version、change_summary、date类型selection_data_cutoff和forward_start |
 | `InspectionReplay` | coordinate、候选StrategyInputBinding、完整BacktestExecutionData、initial_cash、one_way_cost、可选baseline |
 | `InspectionProtocol` | `candidate-inspection-v2`、`ECONOMIC_V1`、float_tolerance、PteInspectionProtocol |
-| `InspectionControl` | 总timeout_seconds、max_workers、cancelled、on_progress；默认预算为本机70%逻辑核，实际并发受独立任务数限制 |
+| `InspectionControl` | 总timeout_seconds、max_workers、cancelled、on_progress；默认预算为本机75%逻辑核，实际并发受独立任务数限制 |
 | `CandidateInspectionReport` | schema 2；run_id、owner、origin、selection、request/protocol/environment引用、plan/release、behavior_equivalence、pte_runtime、measurements、remaining_risks |
 | `InspectedRelease` | 最终version_record、manifest、文件闭包，以及release_sha256和package_sha256 |
 | `CandidateInspectionDelivery` | inspection报告引用、decisions、freeze、pending_decisions；无source_assessment |
@@ -841,6 +845,9 @@ StrategyVersion和运行发布合同不变，不更改已冻结策略、SM状态
 目标A通过正常SRT/TXE路径运行候选及发布实现，比较信号、决策、订单、成交、账户、交易与观察事实。只归一化纯运行身份；离散数量、状态、时点严格一致，明确金融浮点字段才适用容差。目标B使用正常PTE业务组件和独立的离线成交渠道；检查进入／持有／退出、无成交或部分成交、重复决定／回报、重启后与连续运行一致，以及适用故障。多档持仓调整按能力声明验证。测试许可、数据库及部署回执受隔离路径和包身份约束，普通PTE入口拒绝技术检验数据库。
 
 检验提供PREPARE、EQUIVALENCE、PTE、PERSIST、FINALIZE进度；长回放和PTE场景使用可终止子进程。取消或总超时先停止并等待worker退出，再保存已完成事实和未完成原因。回调错误明确失败。发布失败抛`InspectionPublicationError(phase, partial_evidence, report_reference, message)`，不得把未发布结果当作已交付。
+EQUIVALENCE按独立回放并行，PTE按普通场景及故障场景并行，两阶段顺序执行并使用同一`max_workers`上限。
+单个PTE恢复场景内的重启与连续对照顺序执行；每个子进程原生线程为1。结果按协议顺序返回，
+PTE摘要`effective_workers`记录本次运行峰值活动worker数，不能将配置上限或并发数解释为加速倍数。
 
 技术报告独立保存于`research/<策略>/assets/evidence/<实验>/inspection/<sha256>`。临时运行位于`.tmp/strategy-inspection/<run_id>/`，包含候选工作区、隔离repository、私有DFLS输入、场景状态和进度；成功后清理，失败可保留诊断。输入复制通过DFLS公开fetch/prepare完成；`content_mapping.role`是规范DataRequest的SHA256键，用来区分同名角色的不同窗口，源与隔离内容哈希须一致。实际数据来源与元数据随技术证据保存。请求必须显式提供`InspectionDataKind.HISTORICAL/SYNTHETIC`，标记为调用方声明；PTE离线成交渠道始终标为SYNTHETIC，不能作为真实账户收益。
 

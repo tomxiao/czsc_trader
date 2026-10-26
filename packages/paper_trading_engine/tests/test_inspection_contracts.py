@@ -167,7 +167,7 @@ def test_worker_control_retains_completed_artifacts_and_stops_writer(tmp_path, m
     environment = collect_inspection_environment(tmp_path)
     checkpoint = PteCheckpointExpectation("empty", "LOAD", (), 0, Decimal("1000"), Decimal("0"), None, AccountHealth.OK, 0)
     scenarios = tuple(PteInspectionScenario(name, Decimal("1000"), (decision_input(),), (), (checkpoint,))
-                      for name in ("fast", "slow"))
+                      for name in ("fast", "slow", "slow2"))
     coverage = tuple(PteCoverageRequirement(capability, CoverageRequirement.REQUIRED, ("fast",), "controller fixture")
                      for capability in PteInspectionCapability)
     protocol = PteInspectionProtocol(PteEnvironmentRequirement(environment.platform_build_sha256,
@@ -185,7 +185,7 @@ root = pathlib.Path(target)
 root.mkdir(parents=True)
 (root / 'trace.jsonl').write_text('{}\\n', encoding='utf-8')
 print('controller fixture started', flush=True)
-if case == 'slow':
+if case.startswith('slow'):
     time.sleep(30)
 else:
     (root / 'result.json').write_text(json.dumps({'status':'PASS', 'code':'OK',
@@ -199,9 +199,10 @@ else:
         return process
     monkeypatch.setattr(runner.subprocess, "Popen", start_child)
     fired = []
+    completed = [0]
     marker = workspace / "scenarios/slow/restart/trace.jsonl"
     def cancel():
-        if marker.is_file() and not fired:
+        if marker.is_file() and completed[0] >= 1 and not fired:
             fired.append(True)
             if stop == "invalid_cancel":
                 return "yes"
@@ -210,9 +211,11 @@ else:
             return True
         return False
     def progress(value):
+        completed[0] = value.completed
         if stop == "progress" and value.completed == 1 and marker.is_file():
             raise RuntimeError("progress observer failed")
     outcome = runner.inspect_release(request, control=InspectionControl(
+        max_workers=3,
         timeout_seconds=3 if stop == "timeout" else 10,
         cancelled=cancel if stop in {"cancel", "invalid_cancel", "cancel_exception"} else None,
         on_progress=progress))
@@ -220,11 +223,12 @@ else:
     assert outcome.status is (PteInspectionStatus.INCOMPLETE if stop in {"cancel", "timeout"} else PteInspectionStatus.FAIL)
     assert outcome.scenarios[0].case_id == "fast" and outcome.scenarios[0].status is PteInspectionStatus.PASS
     assert outcome.scenarios[-1].code == expected
-    assert len(processes) == 2 and all(process.poll() is not None for process in processes)
+    assert len(processes) == 3 and all(process.poll() is not None for process in processes)
     assert any(item.path == "scenarios/fast/restart/result.json" for item in outcome.artifacts)
     assert any(item.path == "scenarios/slow/restart/trace.jsonl" for item in outcome.artifacts)
     summary = json.loads((workspace / "pte-summary.json").read_text(encoding="utf-8"))
     assert summary["scenarios"][-1]["code"] == expected
+    assert summary["effective_workers"] == 3
 
 
 def test_unstoppable_worker_cannot_publish_or_clean_evidence():
@@ -242,3 +246,114 @@ def test_unstoppable_worker_cannot_publish_or_clean_evidence():
     with pytest.raises(_InspectionWorkerNotQuiescent) as caught:
         _stop_worker(Stuck())
     assert caught.value.quiescent is False
+
+
+@pytest.fixture
+def concurrent_inspection(tmp_path, monkeypatch):
+    """Exercise the public scheduler with real, deterministic fixture subprocesses."""
+    from paper_trading_engine import inspection_runner as runner
+    workspace = tmp_path / ".tmp/strategy-inspection/concurrency-test"
+    workspace.mkdir(parents=True)
+    environment = collect_inspection_environment(tmp_path)
+    checkpoint = PteCheckpointExpectation("empty", "LOAD", (), 0, Decimal("1000"), Decimal("0"), None, AccountHealth.OK, 0)
+    scenarios = tuple(PteInspectionScenario(name, Decimal("1000"), (decision_input(),), (), (checkpoint,),
+        ("LOAD",) if name == "slow" else ()) for name in ("slow", "fast", "third"))
+    coverage = tuple(PteCoverageRequirement(capability, CoverageRequirement.REQUIRED, ("slow",), "controller fixture")
+                     for capability in PteInspectionCapability)
+    protocol = PteInspectionProtocol(PteEnvironmentRequirement(environment.platform_build_sha256,
+        environment.pte_contract_version, environment.srt_contract_version), scenarios, coverage, ())
+    request = PteReleaseInspectionRequest("concurrency-test", workspace / "repository", workspace,
+        "S900-v1", "a" * 64, "b" * 64, (), (), protocol)
+    monkeypatch.setattr(runner, "_inputs", lambda *args: {})
+    original_popen = subprocess.Popen
+    processes, behavior = [], {"failure": "none"}
+    script = """
+import json, pathlib, sys, time
+case, target, mode, capabilities = sys.argv[1:]
+root = pathlib.Path(target)
+root.mkdir(parents=True)
+start = time.monotonic()
+time.sleep(0.8 if case == 'slow' else 0.2)
+(root / 'timing.json').write_text(json.dumps([start, time.monotonic()]))
+(root / 'trace.jsonl').write_text('{}\\n')
+if case == 'fast' and mode == 'exit':
+    sys.exit(7)
+result = '{' if case == 'fast' and mode == 'json' else json.dumps({
+    'status':'PASS', 'code':'OK', 'trace':[], 'capabilities':json.loads(capabilities)})
+(root / 'result.json').write_text(result)
+"""
+    def start_child(command, **kwargs):
+        if "--worker" not in command:
+            return original_popen(command, **kwargs)
+        if command[-3] == "fast" and behavior["failure"] == "spawn":
+            raise OSError("controlled launch failure")
+        process = original_popen([sys.executable, "-c", script, command[-3], command[-2], behavior["failure"],
+            json.dumps([x.value for x in PteInspectionCapability])], **kwargs)
+        processes.append(process)
+        return process
+    monkeypatch.setattr(runner.subprocess, "Popen", start_child)
+    return runner, request, processes, behavior
+
+
+@pytest.mark.parametrize("workers", [1, 2, 8])
+def test_inspection_parallelism_is_bounded_ordered_and_recovery_paths_are_sequential(concurrent_inspection, workers):
+    runner, request, processes, _ = concurrent_inspection
+    progress = []
+    result = runner.inspect_release(request, control=InspectionControl(max_workers=workers, on_progress=progress.append))
+    assert result.status is PteInspectionStatus.PASS
+    assert [x.case_id for x in result.scenarios] == ["slow", "fast", "third"]
+    assert all(x.covered for x in result.coverage)
+    assert len(processes) == 4 and all(p.poll() is not None for p in processes)
+    timings = {p.parent.relative_to(request.workspace).as_posix(): json.loads(p.read_text())
+               for p in request.workspace.rglob("timing.json")}
+    assert timings["scenarios/slow/restart"][1] <= timings["scenarios/slow/continuous"][0]
+    events = sorted((instant, delta) for pair in timings.values() for instant, delta in zip(pair, (1, -1)))
+    active = peak = 0
+    for _, delta in events:
+        active += delta
+        peak = max(peak, active)
+    assert peak == min(workers, 3)
+    summary = json.loads((request.workspace / "pte-summary.json").read_text())
+    assert summary["effective_workers"] == min(workers, 3)
+    assert [x.completed for x in progress] == sorted(x.completed for x in progress)
+    assert [x.case_id for x in result.scenarios] == [x["case_id"] for x in summary["scenarios"]]
+
+
+@pytest.mark.parametrize("failure", ["exit", "json", "spawn"])
+def test_parallel_inspection_failures_stop_owned_workers_and_preserve_other_results(concurrent_inspection, failure):
+    runner, request, processes, behavior = concurrent_inspection
+    behavior["failure"] = failure
+    result = runner.inspect_release(request, control=InspectionControl(max_workers=2))
+    assert result.status is PteInspectionStatus.FAIL
+    assert all(p.poll() is not None for p in processes)
+    if failure == "spawn":
+        assert result.scenarios[-1].case_id == "execution-control"
+        assert result.scenarios[-1].code == "EXECUTION_ERROR"
+    else:
+        assert [x.status for x in result.scenarios] == [PteInspectionStatus.PASS, PteInspectionStatus.FAIL, PteInspectionStatus.PASS]
+        assert result.scenarios[1].code == "EXECUTION_ERROR"
+
+
+def test_cancel_before_dispatch_reports_zero_workers(concurrent_inspection):
+    runner, request, processes, _ = concurrent_inspection
+    result = runner.inspect_release(request, control=InspectionControl(max_workers=8, cancelled=lambda: True))
+    assert result.status is PteInspectionStatus.INCOMPLETE
+    assert processes == []
+    assert json.loads((request.workspace / "pte-summary.json").read_text())["effective_workers"] == 0
+
+
+def test_shutdown_attempts_every_worker_before_reporting_unconfirmed_exit(concurrent_inspection, monkeypatch):
+    runner, request, processes, _ = concurrent_inspection
+    original_stop = runner._stop_worker
+    stopped = []
+    def unconfirmed(process):
+        original_stop(process)
+        stopped.append(process)
+        if len(stopped) == 1:
+            raise runner._InspectionWorkerNotQuiescent("controlled unconfirmed exit")
+    monkeypatch.setattr(runner, "_stop_worker", unconfirmed)
+    with pytest.raises(runner._InspectionWorkerNotQuiescent):
+        runner.inspect_release(request, control=InspectionControl(max_workers=2, cancelled=lambda: len(processes) == 2))
+    assert stopped == processes and len(stopped) == 2
+    assert all(p.poll() is not None for p in processes)
+    assert not (request.workspace / "pte-summary.json").exists()

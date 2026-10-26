@@ -1,6 +1,7 @@
 """Bounded isolated workers exercising normal PTE decision, order and ledger code."""
 from __future__ import annotations
 
+from collections import deque
 from dataclasses import replace
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -487,63 +488,126 @@ def inspect_release(request: PteReleaseInspectionRequest, *, control: Inspection
             except Exception as exc:
                 interrupted, interruption_detail = "EXECUTION_ERROR", f"progress callback failed: {exc}"
 
-    for case_id, needs_control in cases:
-        if control_boundary():
-            break
-        variants = ("restart", "continuous") if needs_control else ("restart",)
-        outputs = []
-        artifact_ids = []
-        for variant in variants:
-            directory = request.workspace / "scenarios" / case_id / variant
-            permit.validate_path(directory)
-            log = directory.parent / f"{variant}-worker.log"
-            log.parent.mkdir(parents=True, exist_ok=True)
-            env = dict(os.environ)
-            env.update({name: "1" for name in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "NUMEXPR_NUM_THREADS")})
-            env["TMP"] = env["TEMP"] = str(request.workspace)
-            env["PYTHONDONTWRITEBYTECODE"] = "1"
-            process = None
-            with log.open("wb") as out:
-                last_progress = 0.0
+    variants = [("restart", "continuous") if control_case else ("restart",) for _, control_case in cases]
+    outputs_by_case = [[] for _ in cases]
+    artifacts_by_case = [[] for _ in cases]
+    pending = deque(range(len(cases)))
+    active = {}
+    peak_workers = 0
+
+    def incomplete_result():
+        return {"status": "FAIL" if interrupted == "EXECUTION_ERROR" else "INCOMPLETE",
+                "code": interrupted, "summary": interruption_detail, "trace": [], "capabilities": []}
+
+    def collect(index, worker):
+        process, out, directory, log, variant = worker
+        # Only collect after the writer is quiescent, including on cancellation.
+        if process.poll() is None:
+            raise _InspectionWorkerNotQuiescent("cannot collect an active PTE worker")
+        out.close()
+        result_path = directory / "result.json"
+        if process.returncode == 0 and result_path.is_file():
+            try:
+                result = json.loads(result_path.read_text(encoding="utf-8"))
+                PteInspectionStatus(result["status"])
+                if not isinstance(result["code"], str) or not isinstance(result.get("trace"), list):
+                    raise ValueError("invalid PTE worker result")
+            except (OSError, ValueError, KeyError, TypeError) as exc:
+                result = {"status": "FAIL", "code": "EXECUTION_ERROR", "summary": str(exc),
+                          "trace": [], "capabilities": []}
+        elif interrupted:
+            result = incomplete_result()
+        else:
+            result = {"status": "FAIL", "code": "EXECUTION_ERROR",
+                      "summary": log.read_text(encoding="utf-8", errors="replace")[-4000:],
+                      "trace": [], "capabilities": []}
+        outputs_by_case[index].append(result)
+        for path in (result_path, log, directory / "trace.jsonl"):
+            if path.is_file():
+                artifact_id = f"{cases[index][0]}:{variant}:{path.name}"
+                schema = {".jsonl": "pte.inspection.trace", ".log": "pte.inspection.log", ".json": "pte.inspection.result"}[path.suffix]
+                artifacts_by_case[index].append(PteArtifact(artifact_id, path.relative_to(request.workspace).as_posix(),
+                    hashlib.sha256(path.read_bytes()).hexdigest(), schema, 1))
+
+    def completed_count():
+        return sum(len(outputs) == len(expected) for outputs, expected in zip(outputs_by_case, variants, strict=True))
+
+    last_progress = 0.0
+    try:
+        while pending or active:
+            # Harvest completed results before observing cancellation, so completed facts survive it.
+            for index, worker in tuple(active.items()):
+                if worker[0].poll() is None:
+                    continue
+                del active[index]
+                collect(index, worker)
+                if len(outputs_by_case[index]) < len(variants[index]):
+                    pending.appendleft(index)
+                else:
+                    report(completed_count(), f"PTE {cases[index][0]} completed")
+                if interrupted:
+                    break
+            if interrupted or control_boundary():
+                break
+            while pending and len(active) < control.max_workers:
+                if control_boundary():
+                    break
+                index = pending.popleft()
+                case_id = cases[index][0]
+                variant = variants[index][len(outputs_by_case[index])]
+                directory = request.workspace / "scenarios" / case_id / variant
+                permit.validate_path(directory)
+                log = directory.parent / f"{variant}-worker.log"
+                log.parent.mkdir(parents=True, exist_ok=True)
+                env = dict(os.environ)
+                env.update({name: "1" for name in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "NUMEXPR_NUM_THREADS")})
+                env["TMP"] = env["TEMP"] = str(request.workspace)
+                env["PYTHONDONTWRITEBYTECODE"] = "1"
+                out = log.open("wb")
                 try:
                     process = subprocess.Popen([sys.executable, "-m", __name__, "--worker", str(input_path), case_id, str(directory), variant],
                         cwd=request.workspace, env=env, stdout=out, stderr=subprocess.STDOUT,
                         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
-                    while process.poll() is None:
-                        elapsed = time.monotonic() - started
-                        if control_boundary():
-                            break
-                        if elapsed - last_progress >= _PROGRESS_INTERVAL_SECONDS:
-                            report(len(results), f"PTE {case_id}/{variant}")
-                            last_progress = elapsed
-                            if interrupted:
-                                break
-                        time.sleep(0.1)
-                except Exception as exc:
-                    interrupted, interruption_detail = "EXECUTION_ERROR", f"worker orchestration failed: {exc}"
-                finally:
-                    if process is not None:
-                        _stop_worker(process)
-            result_path = directory / "result.json"
-            if interrupted:
-                result = {"status": "FAIL" if interrupted == "EXECUTION_ERROR" else "INCOMPLETE",
-                          "code": interrupted, "summary": interruption_detail, "trace": [], "capabilities": []}
-            elif process is None or process.returncode or not result_path.is_file():
-                result = {"status": "FAIL", "code": "EXECUTION_ERROR", "summary": log.read_text(encoding="utf-8", errors="replace")[-4000:], "trace": [], "capabilities": []}
-            else:
-                result = json.loads(result_path.read_text(encoding="utf-8"))
-            outputs.append(result)
-            for path in (result_path, log, directory / "trace.jsonl"):
-                if path.is_file():
-                    artifact_id = f"{case_id}:{variant}:{path.name}"
-                    schema = {".jsonl": "pte.inspection.trace", ".log": "pte.inspection.log", ".json": "pte.inspection.result"}[path.suffix]
-                    artifacts.append(PteArtifact(artifact_id, path.relative_to(request.workspace).as_posix(), hashlib.sha256(path.read_bytes()).hexdigest(),
-                                                 schema, 1))
-                    artifact_ids.append(artifact_id)
+                except BaseException:
+                    out.close()
+                    raise
+                active[index] = process, out, directory, log, variant
+                peak_workers = max(peak_workers, len(active))
             if interrupted:
                 break
-        outcome = outputs[0]
-        if len(outputs) == 2 and outputs[0]["status"] == "PASS":
+            elapsed = time.monotonic() - started
+            if active and elapsed - last_progress >= _PROGRESS_INTERVAL_SECONDS:
+                report(completed_count(), f"PTE active workers: {len(active)}")
+                last_progress = elapsed
+            if not interrupted and active:
+                time.sleep(0.1)
+    except Exception as exc:
+        interrupted, interruption_detail = "EXECUTION_ERROR", f"worker orchestration failed: {exc}"
+    finally:
+        stop_error = None
+        for worker in active.values():
+            try:
+                _stop_worker(worker[0])
+            except _InspectionWorkerNotQuiescent as exc:
+                stop_error = exc
+            finally:
+                worker[1].close()
+        if stop_error is not None:
+            raise stop_error
+    for index, worker in active.items():
+        collect(index, worker)
+
+    # Stable protocol order, independent of process completion order.
+    for index, (case_id, _) in enumerate(cases):
+        outputs = outputs_by_case[index]
+        if not outputs:
+            continue
+        artifacts.extend(artifacts_by_case[index])
+        artifact_ids = tuple(item.artifact_id for item in artifacts_by_case[index])
+        outcome = next((item for item in outputs if item["status"] == "FAIL"), outputs[0])
+        if len(outputs) < len(variants[index]) and outcome["status"] != "FAIL":
+            outcome = incomplete_result()
+        elif len(outputs) == 2 and outputs[0]["status"] == "PASS":
             comparison = [[(row["event_id"], _comparison_snapshot(row["snapshot"])) for row in x["trace"] if "snapshot" in row] for x in outputs]
             if outputs[1]["status"] != "PASS":
                 outcome = {**outputs[1], "summary": "uninterrupted control failed: " + outputs[1].get("summary", outputs[1]["code"])}
@@ -552,10 +616,6 @@ def inspect_release(request: PteReleaseInspectionRequest, *, control: Inspection
         observations[case_id] = outcome
         results.append(PteScenarioResult(case_id, PteInspectionStatus(outcome["status"]), outcome["code"],
                                         outcome.get("summary", "declared scenario and checkpoints completed"), tuple(artifact_ids)))
-        if not interrupted:
-            report(len(results), f"PTE {case_id}: {outcome['status']}")
-        if interrupted:
-            break
     if interrupted:
         results.append(PteScenarioResult("execution-control",
             PteInspectionStatus.FAIL if interrupted == "EXECUTION_ERROR" else PteInspectionStatus.INCOMPLETE,
@@ -580,7 +640,7 @@ def inspect_release(request: PteReleaseInspectionRequest, *, control: Inspection
     if current_environment != environment:
         results.append(PteScenarioResult("environment-final", PteInspectionStatus.FAIL, "ENVIRONMENT_MISMATCH", "execution environment changed during inspection", ()))
     summary = {"status": status, "coverage": coverage, "scenarios": results, "elapsed_seconds": time.monotonic() - started,
-               "channel_model": "RECORDED_FILLS_V1", "effective_workers": 1}
+               "channel_model": "RECORDED_FILLS_V1", "effective_workers": peak_workers}
     summary_path = request.workspace / "pte-summary.json"
     _write(summary_path, summary)
     artifacts.append(PteArtifact("pte-summary", summary_path.relative_to(request.workspace).as_posix(),

@@ -6,8 +6,8 @@ import pytest
 from strategy_runtime import ExecutionResources, InspectionControl, default_worker_count
 
 
-@pytest.mark.parametrize("logical,expected", [(1, 1), (2, 1), (8, 5), (16, 11), (32, 22)])
-def test_default_budget_uses_seventy_percent_of_logical_cpus(monkeypatch, logical, expected):
+@pytest.mark.parametrize("logical,expected", [(1, 1), (2, 1), (3, 2), (8, 6), (16, 12), (32, 24)])
+def test_default_budget_uses_seventy_five_percent_of_logical_cpus(monkeypatch, logical, expected):
     monkeypatch.setattr("strategy_runtime.resources.os.cpu_count", lambda: logical)
     assert default_worker_count() == expected
     assert ExecutionResources().max_workers == expected

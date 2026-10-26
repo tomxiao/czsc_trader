@@ -4,11 +4,11 @@ import os
 
 
 def default_worker_count() -> int:
-    """Use seventy percent of local logical CPUs, rounded down, with a minimum of one."""
+    """Use seventy-five percent of local logical CPUs, rounded down, with a minimum of one."""
     count = os.cpu_count()
     if type(count) is not int or count < 1:
         raise RuntimeError("cannot determine local logical CPU count; specify max_workers explicitly")
-    return max(1, count * 70 // 100)
+    return max(1, count * 75 // 100)
 
 
 @dataclass(frozen=True, slots=True)

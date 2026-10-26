@@ -11,7 +11,7 @@ import pandas as pd
 import pytest
 from strategy_manager import CandidateEvidence, CandidateKey, StrategyRegistry, StrategyVersion, ValidationError
 from strategy_manager import freeze_contracts as f
-from strategy_runtime import StrategyRelease
+from strategy_runtime import InspectionControl, StrategyRelease
 
 from czsc_trader.application import (
     assemble_delivery, CandidateInspectionRequest, FreezeTarget, InspectionProtocol,
@@ -139,9 +139,22 @@ def _delivery(context, report, *, revision=1, decisions=(), freeze=None, pending
     return assemble_delivery(context, definition, content).receipt
 
 
-def test_managed_inspection_freeze_and_idempotent_query(fresh_inspection):
+@pytest.mark.parametrize("workers", [1, 2])
+def test_managed_inspection_freeze_and_idempotent_query(fresh_inspection, monkeypatch, workers):
+    from czsc_trader.application import inspection_service
     context, request, source = fresh_inspection
-    report = inspect_candidate(context, request)
+    actual_inspect = inspection_service.inspect_release
+    observed = []
+    def checked_pte(request, *, control):
+        assert control.max_workers == workers
+        result = actual_inspect(request, control=control)
+        summary = json.loads((request.workspace / "pte-summary.json").read_text())
+        assert 1 <= summary["effective_workers"] <= workers
+        observed.append(result)
+        return result
+    monkeypatch.setattr(inspection_service, "inspect_release", checked_pte)
+    report = inspect_candidate(context, request, control=InspectionControl(max_workers=workers))
+    assert len(observed) == 1
     assert report.status is f.InspectionStatus.PASS, _details(report)
     assert report.behavior_equivalence.status is report.pte_runtime.status is f.InspectionStatus.PASS
     assert not context.strategy_root.exists()
