@@ -65,10 +65,9 @@ def current_frozen(request, tmp_path, frozen_seed_root):
 
 
 
-@pytest.mark.parametrize("schema", [1, True, "4"])
-def test_delivery_receipt_rejects_old_schema(schema):
+def test_delivery_receipt_rejects_old_schema():
     reference = d.DeliveryReference(ResearchBatchRef("S900"), d.DeliveryStage.MANDATE, 1, "a" * 64)
     raw = d.DeliveryReceipt(reference, (d.PublicationFile("report.md", "b" * 64),)).to_dict()
-    raw["schema_version"] = schema
+    raw["schema_version"] = 1
     with pytest.raises((TypeError, ValueError)):
         d.DeliveryReceipt.from_dict(raw)

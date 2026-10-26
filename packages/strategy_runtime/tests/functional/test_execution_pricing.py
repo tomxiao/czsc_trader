@@ -46,21 +46,6 @@ def test_hfq_research_units_preserve_returns_and_ignore_vendor_factor_scale(fact
     assert ExecutionPricing().apply(raw, raw_daily=raw, adjusted_daily=adjusted).equals(raw)
 
 
-@pytest.mark.parametrize("fault", ["missing_session", "different_ohlc_factor", "wrong_anchor"])
-def test_hfq_research_pricing_rejects_inconsistent_admitted_market_data(fault):
-    raw = _daily()
-    adjusted = raw.copy()
-    pricing = ExecutionPricing(ExecutionPriceBasis.HFQ_RESEARCH, date(2025, 12, 31), 1.)
-    if fault == "missing_session":
-        adjusted = adjusted.iloc[:-1]
-    elif fault == "different_ohlc_factor":
-        adjusted.loc[1, "open"] *= 2
-    else:
-        pricing = ExecutionPricing(ExecutionPriceBasis.HFQ_RESEARCH, date(2025, 12, 31), 2.)
-    with pytest.raises(RuntimeContractError):
-        pricing.apply(raw, raw_daily=raw, adjusted_daily=adjusted)
-
-
 @pytest.mark.parametrize("basis", [ExecutionPriceBasis.UNADJUSTED, ExecutionPriceBasis.HFQ_RESEARCH])
 def test_price_conversion_copies_retained_metadata_once_and_isolates_numeric_units(basis):
     raw = _daily()
@@ -82,7 +67,7 @@ def test_price_conversion_copies_retained_metadata_once_and_isolates_numeric_uni
     assert len(raw.attrs["quality"]["sessions"]) == 3
 
 
-@pytest.mark.parametrize("fault", ["nonpositive_quote", "missing_session", "wrong_anchor"])
+@pytest.mark.parametrize("fault", ["nonpositive_quote", "missing_session", "different_ohlc_factor", "wrong_anchor"])
 def test_failed_price_conversion_validates_numeric_inputs_before_copying_metadata(fault):
     raw = _daily()
     adjusted = pd.DataFrame(raw, copy=True)
@@ -90,6 +75,8 @@ def test_failed_price_conversion_validates_numeric_inputs_before_copying_metadat
         raw.iat[0, 4] = 0.
     elif fault == "missing_session":
         adjusted = adjusted.iloc[:-1]
+    elif fault == "different_ohlc_factor":
+        adjusted.loc[1, "open"] *= 2
     raw.attrs = {"quality": MetadataProbe({"source": "raw"})}
     adjusted.attrs = {"quality": MetadataProbe({"source": "adjusted"})}
     pricing = ExecutionPricing(ExecutionPriceBasis.HFQ_RESEARCH, date(2025, 12, 31),

@@ -42,6 +42,11 @@ def test_real_package_behavior_is_independent_of_candidate_or_release_identity(l
     assert candidate.release_id == f"{family}-C0001"
     assert release.identity_kind == "RELEASE"
     assert release.release_id == record.release_id
+    assert record.schema_version == 5
+    assert not {"origin", "governance", "governance_hash"} & record.to_dict().keys()
+    assert not any(name.startswith("charts/") for name in deployment.install_files)
+    assert release.schema_version == 3
+    assert release.observation.sha256 == deployment.binding.spec.observation_sha256
 
 
 @pytest.mark.parametrize("release_id", ("S001-v1", "S001-v2", "S002-v1"))
@@ -85,16 +90,6 @@ def test_s007_declares_segmented_requests_for_the_full_2026_backtest_window(tmp_
     assert plan.requests['incremental_etf_share_size'].coverage.observations_through == '2026-09-02'
     assert plan.requests['feature_seed'].end == '2026-09-02'
     assert plan.requests['feature_seed'].coverage is None
-
-
-def test_current_packages_have_no_research_governance_or_chart_dependency(loaded_release):
-    model, deployed, actual, _ = loaded_release
-    assert model.schema_version == 5
-    assert not {"origin", "governance", "governance_hash"} & model.to_dict().keys()
-    assert not any(name.startswith("charts/") for name in deployed.install_files)
-    assert actual.schema_version == 3
-    assert actual.observation.sha256 == deployed.binding.spec.observation_sha256
-
 
 
 def test_current_observation_uses_declared_fields_and_current_identity(loaded_release):

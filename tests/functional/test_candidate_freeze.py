@@ -9,9 +9,8 @@ import shutil
 
 import pandas as pd
 import pytest
-from strategy_manager import CandidateEvidence, CandidateKey, StrategyRegistry, StrategyVersion, ValidationError
+from strategy_manager import CandidateEvidence, CandidateKey, StrategyRegistry, ValidationError
 from strategy_manager import freeze_contracts as f
-from strategy_runtime import InspectionControl, StrategyRelease
 
 from czsc_trader.application import (
     assemble_delivery, CandidateInspectionRequest, FreezeTarget, InspectionProtocol,
@@ -139,47 +138,6 @@ def _delivery(context, report, *, revision=1, decisions=(), freeze=None, pending
     return assemble_delivery(context, definition, content).receipt
 
 
-@pytest.mark.parametrize("workers", [1, 2])
-def test_managed_inspection_freeze_and_idempotent_query(fresh_inspection, monkeypatch, workers):
-    from czsc_trader.application import inspection_service
-    context, request, source = fresh_inspection
-    actual_inspect = inspection_service.inspect_release
-    observed = []
-    def checked_pte(request, *, control):
-        assert control.max_workers == workers
-        result = actual_inspect(request, control=control)
-        summary = json.loads((request.workspace / "pte-summary.json").read_text())
-        assert 1 <= summary["effective_workers"] <= workers
-        observed.append(result)
-        return result
-    monkeypatch.setattr(inspection_service, "inspect_release", checked_pte)
-    report = inspect_candidate(context, request, control=InspectionControl(max_workers=workers))
-    assert len(observed) == 1
-    assert report.status is f.InspectionStatus.PASS, _details(report)
-    assert report.behavior_equivalence.status is report.pte_runtime.status is f.InspectionStatus.PASS
-    assert not context.strategy_root.exists()
-    assert report.reference.resolve(context.root).is_file()
-    assert f.CandidateInspectionReport.from_dict(report.to_dict()) == report
-    operation = approve(context, report, source)
-    assert get_freeze_result(context, operation.request_id).status is f.FreezeStatus.NOT_FOUND
-    receipt = freeze_candidate(context, operation)
-    assert receipt.status is f.FreezeStatus.COMMITTED, receipt
-    assert freeze_candidate(context, operation) == receipt == get_freeze_result(context, operation.request_id)
-    version = StrategyRegistry(context.strategy_root).get_version("S900", "v1")
-    assert version.schema_version == 5
-    assert StrategyVersion.from_dict(version.to_dict()) == version
-    assert StrategyRelease.from_mapping(version.to_dict()).release_hash == report.release.release_sha256
-    package = context.strategy_root / "S900/releases/v1"
-    assert (package / "release_manifest.json").read_bytes() == report.release.manifest.resolve(context.root).read_bytes()
-    for item in report.release.files:
-        assert (package / item.path).read_bytes() == item.source.resolve(context.root).read_bytes()
-    assert receipt.version.package_hash == report.release.package_sha256
-    assert not (context.strategy_root / "deployments").exists()
-    assert not (context.strategy_root / "freeze_requests").exists()
-    with pytest.raises(ValueError, match="different content"):
-        freeze_candidate(context, replace(operation, inspection=report.plan.payload))
-
-
 def test_no_research_archives_needed_for_inspection_publication_or_freeze(inspection):
     from czsc_trader.application import validate_delivery
 
@@ -245,52 +203,13 @@ def test_damaged_candidate_produces_failed_report_without_freezing(inspection, m
     assert _delivery(context, report).schema_version == 9
 
 
-def test_wrong_pte_expectation_fails_real_runtime_and_blocks_freeze(inspection):
-    context, request, _ = inspection
-    pte = request.protocol.pte
-    scenario = pte.scenarios[0]
-    wrong = replace(scenario.checkpoints[-1], position_quantity=100)
-    scenario = replace(scenario, checkpoints=(*scenario.checkpoints[:-1], wrong))
-    request = replace(request, protocol=replace(request.protocol, pte=replace(pte, scenarios=(scenario,))))
-    report = inspect_candidate(context, request)
-    assert report.behavior_equivalence.status is f.InspectionStatus.PASS
-    assert report.pte_runtime.status is f.InspectionStatus.FAIL
-    assert report.status is f.InspectionStatus.FAIL
-    _assert_not_freezable(context, report)
-
-
-def test_release_signal_divergence_is_detected(candidate_payload, tmp_path, monkeypatch):
-    from strategy_runtime import implementation_sha256
-    from test_research_contract_upgrade import _evaluation_fixture
-
-    payload, package = candidate_payload
-    source = package / payload["runtime"]["source_files"][0]
-    original = source.read_text(encoding="utf-8")
-    # The actual registered implementation branches on its installed location.
-    # Both subprocesses receive these same bytes; no process-local monkeypatch
-    # pretends to inject a fault across the worker boundary.
-    target = '        return pd.DataFrame({"target_position": target'
-    assert target in original
-    source.write_text(original.replace(target,
-        '        if "releases" in __import__("pathlib").Path(__file__).parts:\n            target = 1.0 - target\n' + target),
-        encoding="utf-8", newline="\n")
-    payload["runtime"]["source_sha256"] = implementation_sha256(
-        payload["runtime"]["source_files"], source_root=package)
-    research, evaluation = _evaluation_fixture(candidate_payload, tmp_path, monkeypatch, prepared=True)
-    completed_value = fresh_completed.__wrapped__((research, evaluation))
-    context, request, _ = _build_inspection(completed_value)
-    report = inspect_candidate(context, request)
-    assert report.behavior_equivalence.status is f.InspectionStatus.FAIL
-    assert any(case.reason_code is f.InspectionReason.BEHAVIOR_DIFFERENCE
-               for case in report.behavior_equivalence.cases), _details(report)
-    _assert_not_freezable(context, report)
-
-
 def test_original_evaluation_is_optional_but_invalid_explicit_reference_fails(inspection):
     context, request, _ = inspection
     replay = request.replays[0]
     changed = replace(replay.baseline, evaluation_ids=("f" * 64,))
-    report = inspect_candidate(context, replace(request, replays=(replace(replay, baseline=changed),)))
+    # Account-reference authentication is independent of the PTE fault matrix.
+    protocol = replace(request.protocol, pte=replace(request.protocol.pte, failures=()))
+    report = inspect_candidate(context, replace(request, replays=(replace(replay, baseline=changed),), protocol=protocol))
     assert report.behavior_equivalence.status is f.InspectionStatus.FAIL
     _assert_not_freezable(context, report)
 
@@ -335,14 +254,3 @@ def test_empty_or_duplicate_scenarios_rejected_before_execution(inspection):
         replace(request, replays=())
     with pytest.raises(ValueError, match="nonempty unique"):
         replace(request, replays=(request.replays[0], request.replays[0]))
-
-
-def test_repeated_inspection_has_distinct_run_and_immutable_reports(inspection):
-    context, request, _ = inspection
-    first = inspect_candidate(context, request)
-    retained = first.reference.resolve(context.root).read_bytes()
-    second = inspect_candidate(context, request)
-    assert first.status is second.status is f.InspectionStatus.PASS
-    assert first.run_id != second.run_id and first.reference != second.reference
-    assert first.reference.resolve(context.root).read_bytes() == retained
-    assert first.release.package_sha256 == second.release.package_sha256

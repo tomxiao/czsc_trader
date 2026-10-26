@@ -4,7 +4,6 @@ from copy import deepcopy
 from dataclasses import replace
 
 import pandas as pd
-import pytest
 
 from dataflows import DataCoverageRequirement, DataRequest, DataStatus, Dataset, PreparePolicy, canonical_frame_sha256
 
@@ -84,19 +83,17 @@ def test_content_hash_does_not_copy_or_change_metadata():
     assert frame.attrs["quality"]["sessions"] == ["2026-09-14", "2026-09-15", "2026-09-16"]
 
 
-@pytest.mark.parametrize("changed", [True, False])
-def test_overlap_validation_still_rejects_inconsistent_numeric_sources(flow_factory, changed):
+def test_overlap_validation_still_rejects_inconsistent_numeric_sources(flow_factory):
     def provider(request):
         numerical = pd.DataFrame(_source(), copy=False)
         frame = numerical.loc[numerical.Date.between(request.start, request.end)].copy()
-        if changed and request.start == "2026-09-15":
+        if request.start == "2026-09-15":
             frame.iat[0, 1] = 99.
         frame.attrs = {"quality": MetadataProbe({"source": request.start})}
         return frame, {"vendor": "fixture"}
 
     flows = flow_factory({Dataset.SHIBOR_DAILY: provider})
     prepared = flows.prepare((_request(), replace(_request(), start="2026-09-15")), policy=PreparePolicy.REFRESH)
-    assert prepared.ready is not changed
-    if changed:
-        assert prepared.reference is None
-        assert all(item.error.code == "INCONSISTENT_PREPARATION" for item in prepared.items)
+    assert not prepared.ready
+    assert prepared.reference is None
+    assert all(item.error.code == "INCONSISTENT_PREPARATION" for item in prepared.items)

@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
-    [ValidateRange(1, 8)]
-    [int]$MaxParallel = 8
+    [ValidateRange(1, 12)]
+    [int]$MaxParallel = 12
 )
 
 Set-StrictMode -Version Latest
@@ -21,6 +21,7 @@ if (-not (Test-Path -LiteralPath $Python -PathType Leaf)) {
     throw "Project Python is missing: $Python"
 }
 New-Item -ItemType Directory -Path $RunRoot -Force | Out-Null
+$Total = [System.Diagnostics.Stopwatch]::StartNew()
 
 # Full regression needs spawn-process IPC and local Git transport permissions.
 # Codex callers must request sandbox_permissions=require_escalated for this entrypoint.
@@ -34,12 +35,12 @@ if ($PreflightExit -ne 0) {
 }
 
 $LaneNames = @(
-    'TDR_FREEZE', 'PTE_2', 'PTE_1', 'DFLS',
-    'TDR_2', 'TDR_1', 'TDR_RUNTIME', 'PACKAGES'
+    'TDR_FREEZE', 'TDR_ASSESSMENT', 'PTE_2', 'PTE_1',
+    'TDR_2', 'TDR_1', 'TDR_INTEGRATION', 'PTE_ADVICE',
+    'TDR_RUNTIME', 'TDR_ROUNDTRIP', 'DFLS', 'PACKAGES'
 )
 $Jobs = @()
 $Results = @()
-$Total = [System.Diagnostics.Stopwatch]::StartNew()
 
 try {
     foreach ($LaneName in $LaneNames) {
@@ -79,23 +80,21 @@ try {
                 'tests/functional/test_benchmark_contract.py',
                 'tests/functional/test_benchmark_lot_size.py',
                 'tests/functional/test_hfq_research_evaluation.py',
-                'tests/functional/test_parameter_evaluation.py',
+                'tests/functional/test_research_execution.py',
+                'tests/functional/test_evidence_batch.py',
                 'tests/functional/test_backtest_publication.py',
                 'tests/functional/test_research_contract_upgrade.py'
             )
             $FreezeTests = @(
                 'tests/functional/test_candidate_freeze.py',
                 'tests/functional/test_candidate_contract_admission.py',
-                'tests/functional/test_runtime_migration.py',
-                'tests/functional/test_frozen_migration_governance.py',
                 'tests/functional/test_frozen_runtime_upgrade.py'
             )
             # Co-locate users of the real frozen/evaluation seeds and balance
             # the measured work. TDR_2 discovers all remaining/new files.
             $TdrGroupOne = @(
-                'tests/functional/test_assessment_delivery.py',
+                'tests/functional/test_candidate_inspection_failure.py',
                 'tests/functional/test_backtest.py',
-                'tests/functional/test_git_artifact_integrity.py',
                 'tests/functional/test_independent_backtest.py',
                 'tests/functional/test_current_contracts.py',
                 'tests/functional/test_public_backtest_api.py',
@@ -103,32 +102,61 @@ try {
                 'tests/functional/test_frozen_source_imports.py'
             )
             $PteGroupOne = @(
-                'packages/paper_trading_engine/tests/functional/test_srt_advice_client.py',
+                'packages/paper_trading_engine/tests/functional/test_channel_safety.py',
+                'packages/paper_trading_engine/tests/functional/test_account_health_migration.py',
                 'packages/paper_trading_engine/tests/functional/test_release_runtime.py',
                 'packages/paper_trading_engine/tests/functional/test_account_binding.py',
-                'packages/paper_trading_engine/tests/functional/test_account_retirement.py',
                 'packages/paper_trading_engine/tests/functional/test_account_maintenance.py',
                 'packages/paper_trading_engine/tests/functional/test_watchdog_service.py',
                 'packages/paper_trading_engine/tests/functional/test_web_console.py',
                 'packages/paper_trading_engine/tests/functional/test_scheduler.py',
                 'packages/paper_trading_engine/tests/functional/test_service_host_isolation.py'
             )
-            if ($LaneName -in @('TDR_FREEZE', 'TDR_1', 'TDR_2', 'TDR_RUNTIME', 'DFLS', 'PTE_1', 'PTE_2')) {
+            # Separate fresh serial/parallel inspection from cached freeze cases;
+            # each file remains intact and mutable workspaces remain process-local.
+            $RoundtripTests = @(
+                'tests/functional/test_candidate_inspection_roundtrip.py',
+                'tests/functional/test_runtime_migration.py',
+                'tests/functional/test_prototype_delivery.py'
+            )
+            $PackageIntegrationTests = @(
+                'tests/functional/test_parameter_evaluation.py',
+                'tests/functional/test_account_diagnosis.py',
+                'tests/functional/test_frozen_migration_governance.py'
+            )
+            $AssessmentTests = @('tests/functional/test_assessment_delivery.py')
+            $IntegrationTests = @(
+                'tests/functional/test_market_replay_integration.py',
+                'tests/functional/test_observation_upgrade.py',
+                'tests/functional/test_candidate_registration_evidence.py'
+            )
+            $PteAdviceTests = @(
+                'packages/paper_trading_engine/tests/functional/test_srt_advice_client.py'
+            )
+            $AccountRetirementTests = @('packages/paper_trading_engine/tests/functional/test_account_retirement.py')
+            $RuntimeArtifactTests = @('tests/functional/test_git_artifact_integrity.py')
+            $PteControlTests = @('packages/paper_trading_engine/tests/test_inspection_contracts.py')
+            if ($LaneName -in @('TDR_FREEZE', 'TDR_1', 'TDR_2', 'TDR_RUNTIME', 'DFLS', 'PTE_1', 'PTE_2',
+                                'TDR_ROUNDTRIP', 'TDR_ASSESSMENT', 'TDR_INTEGRATION', 'PTE_ADVICE')) {
                 $TestSelection = switch ($LaneName) {
                     'TDR_FREEZE' { $FreezeTests }
-                    'TDR_1' { $TdrGroupOne }
+                    'TDR_ROUNDTRIP' { $RoundtripTests }
+                    'TDR_ASSESSMENT' { $AssessmentTests }
+                    'TDR_INTEGRATION' { $IntegrationTests }
+                    'TDR_1' { $TdrGroupOne + $AccountRetirementTests }
                     'TDR_2' {
                         @('tests') + @(
-                            ($FreezeTests + $RuntimeTests + $TdrGroupOne) |
+                            ($FreezeTests + $RuntimeTests + $TdrGroupOne + $RoundtripTests + $AssessmentTests + $IntegrationTests + $PackageIntegrationTests + $RuntimeArtifactTests) |
                                 ForEach-Object { "--ignore=$_" }
                         )
                     }
                     'TDR_RUNTIME' { $RuntimeTests }
                     'DFLS' { 'packages/dataflows/tests' }
                     'PTE_1' { $PteGroupOne }
+                    'PTE_ADVICE' { $PteAdviceTests + $RuntimeArtifactTests }
                     'PTE_2' {
                         @('packages/paper_trading_engine/tests') + @(
-                            $PteGroupOne | ForEach-Object { "--ignore=$_" }
+                            ($PteGroupOne + $PteAdviceTests + $PteControlTests + $AccountRetirementTests) | ForEach-Object { "--ignore=$_" }
                         )
                     }
                 }
@@ -152,6 +180,16 @@ try {
                         )
                     })
                 }
+                elseif ($LaneName -eq 'DFLS') {
+                    # A second interpreter keeps DFLS spawn-helper imports
+                    # isolated while using this otherwise shorter queue.
+                    $Steps.Add([pscustomobject]@{
+                        Label = 'PTE_CONTROL'
+                        Executable = $Python
+                        Arguments = @('-m', 'pytest', '-c', 'pyproject.toml', '-q',
+                                      '--durations=5', '--release-acceptance') + $PteControlTests
+                    })
+                }
             }
             elseif ($LaneName -eq 'PACKAGES') {
                 # These independent package directories can share interpreter
@@ -169,7 +207,7 @@ try {
                         'packages\strategy_runtime\tests',
                         'packages\strategy_chart\tests',
                         'packages\trading_execution_engine\tests'
-                    )
+                    ) + $PackageIntegrationTests
                 })
             }
             else {

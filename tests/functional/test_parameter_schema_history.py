@@ -71,6 +71,8 @@ def test_historical_mandate_full_read_preserves_bytes_and_cannot_be_republished(
 
 
 def test_new_mandate_can_retain_legacy_predecessor_without_reinterpreting_it(context):
+    from czsc_trader.application import research_overview_service as overview
+
     _, _, historical, _ = _historical_mandate(context)
     definition = d.DeliveryDefinition(context.batch, d.DeliveryStage.MANDATE, 2,
                                      predecessors=(historical.reference,))
@@ -79,6 +81,10 @@ def test_new_mandate_can_retain_legacy_predecessor_without_reinterpreting_it(con
     assert validate_delivery(context.repository, receipt.reference).status is d.ValidationStatus.PASS
     with pytest.raises(ValueError):
         replace(definition, schema_version=13)
+    limitations = []
+    records = overview._deliveries(overview._ReadSnapshot(context.repository.root), context.batch, limitations)
+    assert {record.reference for record, _ in records} == {historical.reference, receipt.reference}
+    assert limitations == []
 
 
 def test_legacy_envelope_cannot_adopt_new_ratio_target(context):
@@ -169,15 +175,3 @@ def test_diagnosis_authenticates_reference_version_before_ledger(context, monkey
     monkeypatch.setattr(diagnosis, "validate_evaluation_evidence", lambda document: pytest.fail("must reject first"))
     with pytest.raises(ValueError, match="schema differs"):
         diagnosis._load(context.repository, SimpleNamespace(evidence=reference))
-
-
-def test_overview_recognizes_new_and_historical_mandate_schemas(context):
-    from czsc_trader.application import research_overview_service as overview
-    _, _, historical, _ = _historical_mandate(context)
-    definition = d.DeliveryDefinition(context.batch, d.DeliveryStage.MANDATE, 2,
-                                     predecessors=(historical.reference,))
-    current = assemble_delivery(context.repository, definition, content(d.ResearchMandate(()))).receipt
-    limitations = []
-    records = overview._deliveries(overview._ReadSnapshot(context.repository.root), context.batch, limitations)
-    assert {record.reference for record, _ in records} == {historical.reference, current.reference}
-    assert limitations == []
