@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from hashlib import sha256
 from importlib import import_module
-from importlib.machinery import ModuleSpec
+from importlib.abc import MetaPathFinder
+from importlib.machinery import ModuleSpec, PathFinder, SourceFileLoader
 from pathlib import Path, PurePosixPath
 from threading import RLock
 from types import ModuleType
@@ -25,6 +26,30 @@ _PLATFORM_MODULES = (
     "observation",
     "signals",
 )
+
+
+class _ClosureSourceLoader(SourceFileLoader):
+    def set_data(self, path, data, *, _mode=0o666):
+        """A governed source tree must remain immutable, including on lazy imports."""
+        # SourceFileLoader writes compiled bytecode through this hook only.
+        # Keep normal compilation, execution and exception propagation intact.
+
+
+class _ClosureFinder(MetaPathFinder):
+    def __init__(self):
+        self.namespaces: set[str] = set()
+
+    def find_spec(self, fullname, path=None, target=None):
+        namespace = '.'.join(fullname.split('.', 2)[:2])
+        if namespace not in self.namespaces:
+            return None
+        spec = PathFinder.find_spec(fullname, path, target)
+        if spec is not None and isinstance(spec.loader, SourceFileLoader):
+            spec.loader = _ClosureSourceLoader(fullname, spec.origin)
+        return spec
+
+
+_CLOSURE_FINDER = _ClosureFinder()
 
 
 def _package(name: str, root: Path) -> ModuleType:
@@ -86,8 +111,10 @@ def load_closure_module(
                 )
 
         before = set(sys.modules)
-        previous_bytecode = sys.dont_write_bytecode
-        sys.dont_write_bytecode = True
+        new_namespace = namespace not in _CLOSURE_FINDER.namespaces
+        _CLOSURE_FINDER.namespaces.add(namespace)
+        if _CLOSURE_FINDER not in sys.meta_path:
+            sys.meta_path.insert(0, _CLOSURE_FINDER)
         try:
             sys.modules.setdefault(namespace, _package(namespace, root))
             frozen_top_level = {
@@ -107,9 +134,9 @@ def load_closure_module(
             for name in tuple(sys.modules):
                 if name not in before and (name == namespace or name.startswith(namespace + ".")):
                     sys.modules.pop(name, None)
+            if new_namespace:
+                _CLOSURE_FINDER.namespaces.discard(namespace)
             raise
-        finally:
-            sys.dont_write_bytecode = previous_bytecode
 
         module_file = getattr(module, "__file__", None)
         if module_file is None or Path(module_file).resolve() != expected_file:
