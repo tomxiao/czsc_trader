@@ -84,7 +84,7 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
     else body.append(node('div','reading-detail',reason));
     basis.append(body);
     const next=node('div','reading-next');next.append(node('div','reading-label','接下来关注'),node('div','reading-body',narrative?.next_watch||(unavailable?'等待完整观察；交易结果以事件和账户记录为准。':'请选择有观察记录的日期。')));
-    reading.replaceChildren(head,basis,next);
+    reading.replaceChildren(node('span','reading-region-label','信号'),head,basis,next);
   }
 
   function visibleBars(){if(state.range==='all')return bars;return bars.slice(Math.max(0,bars.length-Number(state.range)));}
@@ -262,14 +262,14 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
     const left=compact?52:68,right=compact?56:72,innerW=width-left-right;
     const priceTop=26,priceH=compact?220:Math.max(220,Math.min(280,Math.round(width*.19)));
     const positionTop=priceTop+priceH+18,positionH=48;
-    const signalTop=positionTop+positionH+16,signalH=width>=1000?112:230;
+    const signalTop=positionTop+positionH+16,signalH=width>=1000?96:230;
     reading.style.top=`${signalTop}px`;reading.style.height=`${signalH}px`;
     legacyNotice.style.top=`${signalTop+signalH-2}px`;
     const measure=document.createElement('canvas').getContext('2d');
     measure.font=`11px ${getComputedStyle(svg).fontFamily}`;
     const explanations=rows.map(row=>wrapExplanation(eventLines(row.date),innerW-24,measure));
     const selectedExplanation=wrapExplanation(eventLines(state.selected||rows.at(-1).date),innerW-24,measure);
-    const explainTop=signalTop+signalH+18;
+    const explainTop=signalTop+signalH+12;
     const explainH=Math.max(60,38+18*Math.max(selectedExplanation.length,...explanations.map(lines=>lines.length))),axisTop=explainTop+explainH+8,height=axisTop+30;
     svg.setAttribute('viewBox',`0 0 ${width} ${height}`);svg.style.height=`${height}px`;stage.style.minHeight=`${height}px`;svg.replaceChildren();
     const x=index=>left+(rows.length===1?innerW/2:index/(rows.length-1)*innerW);
@@ -295,7 +295,7 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
     const priceTicks=5;for(let index=0;index<priceTicks;index++){const value=pmin-pad+(pmax-pmin+2*pad)*index/(priceTicks-1),y=yPrice(value);add(el('line',{x1:left,x2:left+innerW,y1:y,y2:y,class:'grid-line'}));add(el('text',{x:left+innerW+8,y:y+4,class:'axis'},fmt(value)));}
     const priceLabel=add(el('text',{x:8,y:priceTop+12,class:'panel-label','aria-label':'价格（后复权）'},'价格'));
     priceLabel.appendChild(el('tspan',{x:8,dy:15},'后复权'));
-    add(el('text',{x:12,y:signalTop+12,class:'panel-label'},'信号'));add(el('text',{x:12,y:positionTop+12,class:'panel-label'},'持仓'));add(el('text',{x:12,y:explainTop+15,class:'panel-label'},'事件'));
+    add(el('text',{x:12,y:signalTop+18,class:'panel-label'},'信号'));add(el('text',{x:12,y:positionTop+12,class:'panel-label'},'持仓'));add(el('text',{x:12,y:explainTop+15,class:'panel-label'},'事件'));
     const candleW=Math.max(3,Math.min(10,innerW/rows.length*.58));rows.forEach((row,index)=>{const rising=Number(row.close)>=Number(row.open),color=css(rising?'--up':'--down'),cx=x(index);add(el('line',{x1:cx,x2:cx,y1:yPrice(row.high),y2:yPrice(row.low),stroke:color,'stroke-width':1}));add(el('rect',{x:cx-candleW/2,y:yPrice(Math.max(row.open,row.close)),width:candleW,height:Math.max(1.5,Math.abs(yPrice(row.open)-yPrice(row.close))),fill:rising?color:css('--surface'),stroke:color,'stroke-width':1}));});
     const seriesKeys=[...new Set(allSeries.map(item=>item.key))];const seriesColors=['--signal','--position','--fill','--up'];
     if(state.layers.signal&&!enhanced)seriesKeys.forEach((key,seriesIndex)=>{const points=[];const guidePoints=new Map();rows.forEach((row,index)=>{const observation=byDate.get(row.date)?.observation;if(observation?.status!=='READY'||(views.length&&observation.signal_panel))return;const series=(observation.series||[]).find(item=>item.key===key);if(!series)return;points.push([x(index),ySignal(series.value),`${row.date} ${series.label} ${fmt(series.value)}`]);for(const guide of series.guides||[]){if(!guidePoints.has(guide.key))guidePoints.set(guide.key,{label:guide.label,points:[]});guidePoints.get(guide.key).points.push([x(index),ySignal(guide.value),`${row.date} ${guide.label} ${fmt(guide.value)}`]);}});const color=css(seriesColors[seriesIndex%seriesColors.length]);if(points.length>1)add(el('path',{d:linePath(points),fill:'none',stroke:color,'stroke-width':2}));points.forEach(point=>add(el('circle',{cx:point[0],cy:point[1],r:3,fill:color,'data-series-key':key,'aria-label':point[2]})));guidePoints.forEach((guide,guideKey)=>{if(guide.points.length>1)add(el('path',{d:linePath(guide.points),fill:'none',stroke:css('--fill'),'stroke-width':1,'stroke-dasharray':'4 4',opacity:.72}));guide.points.forEach(point=>add(el('circle',{cx:point[0],cy:point[1],r:2.5,fill:css('--fill'),'data-guide-key':guideKey,'aria-label':point[2]})));});});
