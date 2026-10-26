@@ -74,8 +74,11 @@ def test_inspection_requires_schema9_and_no_research_predecessors(overview_conte
             d.DeliveryDefinition(research.batch, stage, 1, schema_version=9)
     report = ResearchEvidenceRef(ResearchEvidenceOwner("S900", experiment.experiment_id),
                                  f"inspection/{'2' * 64}", "2" * 64)
-    payload = d.CandidateInspectionDelivery(report, (), None, ("review",))
+    payload = d.CandidateInspectionDelivery(report, (), None, ())
     assert d.CandidateInspectionDelivery.from_dict(payload.to_dict()) == payload
+    for invalid, error in (((" ",), ValueError), ((1,), TypeError)):
+        with pytest.raises(error):
+            replace(payload, pending_decisions=invalid)
     assert set(payload.to_dict()) == {"type", "inspection", "decisions", "freeze", "pending_decisions"}
     foreign = ResearchEvidenceRef(ResearchEvidenceOwner("S901"), "decisions/select.json", "3" * 64)
     with pytest.raises(ValueError, match="research batch"):

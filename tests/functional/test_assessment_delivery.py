@@ -164,6 +164,10 @@ def test_delivery_certifies_each_unique_account_once_per_operation(completed, mo
     from czsc_trader.application import delivery_service
 
     definition, value = prepare(completed)
+    value = replace(value, payload=replace(value.payload, pending_decisions=()))
+    for invalid, error in (((" ",), ValueError), ((1,), TypeError)):
+        with pytest.raises(error):
+            replace(value.payload, pending_decisions=invalid)
     context = completed[0]
     original = evaluation.validate_evaluation_evidence
     calls = []

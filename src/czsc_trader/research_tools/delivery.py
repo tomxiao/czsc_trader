@@ -572,8 +572,6 @@ class CandidateAssessmentDelivery(_Record):
             raise ValueError("comparison must use the supplied assessment panel")
         _unique((x.target_id for x in self.target_bindings), "target binding")
         _text(self.recommendation, "recommendation")
-        if not self.pending_decisions:
-            raise ValueError("assessment delivery must identify pending user decisions")
         for item in self.pending_decisions:
             _text(item, "pending decision")
 
@@ -593,8 +591,6 @@ class CandidateInspectionDelivery(_Record):
         if self.freeze is not None and self.freeze.request_id.strategy_id != self.inspection.owner.strategy_id:
             raise ValueError("inspection freeze must belong to its research batch")
         _unique((x.decision_id for x in self.decisions), "decision ID")
-        if self.freeze is None and not self.pending_decisions:
-            raise ValueError("unfrozen inspection must identify pending user decisions")
         for item in self.pending_decisions:
             _text(item, "pending decision")
 

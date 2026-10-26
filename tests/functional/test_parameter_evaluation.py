@@ -131,14 +131,15 @@ def test_parameter_plan_rejects_missing_publication_and_collapsed_payloads(prepa
         research.evaluation.prepare(children[0])
 
 
-def test_parameter_assessment_delivery_replays_plan_after_source_cleanup(fresh_completed):
+@pytest.mark.parametrize("acceptance_target", [True, False], ids=["acceptance", "diagnostic-only"])
+def test_parameter_assessment_delivery_replays_plan_after_source_cleanup(fresh_completed, acceptance_target):
     context, research, request, center_result, _ = fresh_completed
     group = m.ParameterNeighborhoodTarget("point-economics", 1, 1,
         (m.ResearchTarget("point-return", m.ResearchMetric.NET_ANNUAL_RETURN,
                          lower=m.ConstantBound(-1.0, True)),),
         (m.ResearchTarget("point-dd", m.ResearchMetric.DRAWDOWN_MAGNITUDE,
                          upper=m.ConstantBound(1.0, True)),))
-    definition, content = prepare(fresh_completed, (group,))
+    definition, content = prepare(fresh_completed, (group,) if acceptance_target else None)
     center, plan, reference, children = parameter_plan(research, request)
     center_evidence = build_assessment_evidence(center, center_result)
     accounts, links = [], []
@@ -166,7 +167,14 @@ def test_parameter_assessment_delivery_replays_plan_after_source_cleanup(fresh_c
     payload = replace(content.payload, assessment_request=assessment, assessment=panel,
                       comparison_request=comparison, comparison=compare_candidates(comparison), parameter_plans=(reference,))
     checked = payload.comparison.rows[0].target_checks[0]
-    assert (checked.valid_points, checked.joint_passes) == (2, 2)
+    if acceptance_target:
+        assert (checked.valid_points, checked.joint_passes) == (2, 2)
+    else:
+        assert not any(isinstance(target, m.ParameterNeighborhoodTarget)
+                       for target in comparison.targets.requirements)
+        for metric in (m.ResearchMetric.PARAMETER_RETURN_Q10, m.ResearchMetric.PARAMETER_DRAWDOWN_Q90):
+            diagnostic = next(item for item in panel.rows[0].diagnostics if item.metric is metric)
+            assert diagnostic.value is not None
     assert checked.status is m.TargetCheckStatus.PASSED
     false_center = replace(plan, center_request_sha256="f" * 64)
     false_reference = publish_evidence(research, MaterialEvidenceWrite(ExperimentRef("S900", request.experiment_id),

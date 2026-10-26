@@ -486,12 +486,6 @@ def _validate_parameter_method_schema(definition, payload):
             or payload.comparison_request.policy.formula_version != expected_ranking):
             _fail("PARAMETER_METHOD_SCHEMA", "content.payload",
                   "assessment or ranking version differs from delivery schema")
-    if (definition.stage is d.DeliveryStage.ASSESSMENT and definition.schema_version in (11, 12)
-            and payload.assessment_request.parameter_designs
-            and not any(isinstance(target, m.ParameterNeighborhoodTarget)
-                        for target in payload.comparison_request.targets.requirements)):
-        _fail("PARAMETER_METHOD_SCHEMA", "comparison.targets",
-              "neighborhood assessment requires a confirmed parameter ratio target")
 
 
 def _assessment_recomputation_matches(recomputed: AssessmentPanel, published: AssessmentPanel) -> bool:

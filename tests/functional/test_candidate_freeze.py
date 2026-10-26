@@ -128,9 +128,10 @@ def _assert_not_freezable(context, report):
     assert not context.strategy_root.exists()
 
 
-def _delivery(context, report, *, revision=1, decisions=(), freeze=None):
+def _delivery(context, report, *, revision=1, decisions=(), freeze=None, pending_decisions=None):
     payload = d.CandidateInspectionDelivery(report.reference, decisions, freeze,
-        ("Review the exact technical result before approving freeze.",) if freeze is None else ())
+        pending_decisions if pending_decisions is not None else
+        (("Review the exact technical result before approving freeze.",) if freeze is None else ()))
     definition = d.DeliveryDefinition(ResearchBatchRef("S900"), d.DeliveryStage.INSPECTION,
                                       revision, schema_version=9)
     content = d.DeliveryContent(payload, d.DeliveryStatus.COMPLETE, (), (),
@@ -200,7 +201,7 @@ def test_stage_five_delivery_publishes_report_and_approval(inspected_candidate, 
     monkeypatch.setattr(subprocess, "Popen", forbidden_worker)
 
     context, report, source = inspected_candidate
-    first = _delivery(context, report)
+    first = _delivery(context, report, pending_decisions=())
     assert validate_delivery(context, first.reference).status is d.ValidationStatus.PASS
     path = context.research_root / "S900/deliveries/INSPECTION/1/report.md"
     original = path.read_bytes()
