@@ -58,9 +58,14 @@ instance = instantiate_template(context, context.root / ".tmp/prototype.json")
 
 实例化只验证结构和参数，并返回确定性的 `STI-*` 身份，不代表策略有效、候选通过或获准部署。
 
+模板实例与阶段二策略原型是不同产物。原型须说明收益机制、组件职责、完整交易规则及账户对照，
+通过TDR的`PROTOTYPES / PrototypePanel`交付；它可以使用STC模板，也可以采用模板之外的结构，
+不要求先登记为候选。交付契约见[TDR原型面板](../../src/czsc_trader/README.md#7-五阶段交付)。
+
 现有模板无法表达新机制时，RSCH可提出有实验依据的平台需求，不直接改写已引用的模板定义。
 候选最终使用的具体参数、SRT实现和执行规则通过TDR `register_candidate`登记，进入内容身份
-和冻结治理链，不写回STC。STC不提供搜索预算管理或Optuna运行时适配器。
+和首次冻结链，不写回STC；同版本发布包升级使用独立的[TDR升级入口](../../src/czsc_trader/README.md#同版本发布包升级)，
+不以候选登记为前置要求。STC不提供搜索预算管理或Optuna运行时适配器。
 
 实例化结果只证明结构合同有效；是否有可交易机会、参数是否稳健及账户表现如何，仍须交由
 研究实验和完整执行评价回答。

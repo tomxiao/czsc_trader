@@ -10,7 +10,7 @@ TDR 为研究员提供批次上下文、研究概览、账户评价与诊断、�
 
 | 任务 | 公共入口 | 输出与职责 |
 | --- | --- | --- |
-| 业务操作 | [application](application/__init__.py) | 批次、证据、候选、交付、决定、检验及冻结入口 |
+| 业务操作 | [application](application/__init__.py) | 批次、证据、候选、交付、决定、检验、冻结及发布包升级入口 |
 | 研究类型 | [research_tools](research_tools/__init__.py) | 上下文、评价请求／结果和强类型交付内容 |
 | 立项与意图 | `create_research_batch`、`update_research_intent` | 研究族、立项凭据及 `ResearchBatchRef` |
 | 批次能力与实验分配 | `create_research_context`、`create_experiment` | `ResearchContext`、`ExperimentRef` |
@@ -24,6 +24,7 @@ TDR 为研究员提供批次上下文、研究概览、账户评价与诊断、�
 | 实验检查 | `validate_experiment(repository, ExperimentValidationRequest)` | `ExperimentValidation`，实验结构或报告发布一致性 |
 | 自检与比较 | `build_assessment_evidence`；SE `assess_candidates/compare_candidates` | 数值事实适配、自检和比较 |
 | 技术检验与冻结 | `inspect_candidate`、`record_research_decision`、`freeze_candidate`、`get_freeze_result` | 真实用户决定、技术检验、批准与事务状态 |
+| 同版本发布包升级 | `prepare_frozen_runtime_upgrade`、`apply_frozen_runtime_upgrade` | 精确新旧身份、审计材料、归档及提交；独立于研究检验 |
 | 目录与模板 | `validate_catalog/list_catalog/show_catalog`、`validate_templates/list_templates/show_template/instantiate_template` | FSC/STC 公开内容与绑定校验 |
 | 运行发布 | `list_installed_strategies`、`strategy_info`、`deploy_strategy`、`validate_release_package` | 发布查询和单独获准的部署操作 |
 
@@ -33,7 +34,7 @@ TDR 为研究员提供批次上下文、研究概览、账户评价与诊断、�
 
 | 对象 | 当前版本 |
 | --- | --- |
-| 账户评价证据／请求身份 | 7／6 |
+| 新发布账户评价证据／请求身份 | 8／7；7／6仅按已支持的历史读取契约处理 |
 | 已发布账户评价／回测 manifest | 5／5 |
 | 实验报告快照 | 1 |
 | 阶段一至四交付定义、文档和回执 | 8 |
@@ -42,9 +43,11 @@ TDR 为研究员提供批次上下文、研究概览、账户评价与诊断、�
 | SM 候选登记／候选内容身份 | 3／2 |
 | SM 冻结版本／SRT 发布记录 | 5／5 |
 | SRT 运行定义／运行绑定 | 3／2 |
+| SRT 新解释观察／回测图投影 | `strategy_observation.v4`／`tdr_backtest_chart.v2` |
+| 同版本升级计划／回执 | 2；既有schema 1升级归档只读 |
 | SE 评价标准 | `opc-v3` |
 
-版本按对象独立管理。当前入口只接受当前契约；历史研究原件供人工查阅，不自动解码或改签。
+版本按对象独立管理。新写入使用当前契约；历史只读支持以各入口明确范围为准，不自动迁移或改签原件。
 
 ## 2. 输入、状态与生命周期
 
@@ -795,6 +798,9 @@ StrategyVersion和运行发布合同不变，不更改已冻结策略、SM状态
 
 ## 8. 技术检验、用户决定与冻结
 
+首次冻结使用下面的检验与批准流程。同版本发布包升级使用本节后文的独立审计API；
+研究员仍负责本次变更约定的验证，平台不将研究报告结论转换为升级许可。
+
 阶段五只回答两个问题：同一技术输入下，Candidate和最终格式StrategyVersion是否行为等价；该发布包能否在隔离环境通过真实PTE部署加载、决策、订单、账户与恢复链路。研究判断及阶段推进由RSCH负责。
 
 1. `record_research_decision`保存真实选型：`CandidateSelectionSubject(candidate, content_sha256, registration_sha256)`，schema 2，不绑定阶段四回执。
@@ -869,6 +875,35 @@ TDR负责升级的可追溯、审计和发布事务完整性。是否沿用策�
 旧升级写入流程。首次冻结和独立技术检验沿用各自契约。新发布身份的资格为`RESEARCH`，不自动
 继承旧身份资格；PTE账户改绑、资格授予和生产生效另行授权，升级接口不操作生产账户。
 既有专用迁移、观察源码校验器不参与此升级入口；调用方主动使用时，其结果属于相应诊断材料。
+
+以下示例假定`repository`、`original: FrozenVersionReference`、`candidate: StrategyCandidate`及
+`confirmation: ResearchEvidenceRef`已准备，授权引用对应真实用户决定。研究员先完成本次约定的验证，
+再将所选验证报告作为`evidence`关联；空元组表示未附验证材料，不表示验证通过。
+
+```python
+from pathlib import Path
+from czsc_trader.application import (
+    FrozenRuntimeUpgradeRequest,
+    prepare_frozen_runtime_upgrade,
+    apply_frozen_runtime_upgrade,
+)
+
+prepared = prepare_frozen_runtime_upgrade(repository, FrozenRuntimeUpgradeRequest(
+    original=original,
+    candidate=candidate,
+    confirmation=confirmation,
+    change_summary="升级信号解释；具体修改范围与验证结论见所附材料。",
+    operator="RSCH",
+    evidence=verification_evidence,  # tuple[ResearchEvidenceRef, ...]
+    output_directory=Path(".tmp/frozen-upgrade/reviewed-package"),
+))
+# 准备阶段已快照源码、payload与审计材料；核对prepared.plan_path中的精确升级计划。
+receipt = apply_frozen_runtime_upgrade(repository, prepared)
+assert receipt.status.value == "COMMITTED"
+```
+
+提交使用准备阶段的快照；准备后修改研究工作区不会替换待发布字节。计划或暂存内容被改动、
+原发布身份已变化、证据引用损坏时明确拒绝，不能把准备成功当作提交完成。
 
 ### 回测运行复盘与观察解释
 

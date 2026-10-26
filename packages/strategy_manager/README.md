@@ -9,7 +9,7 @@ SM提供研究登记、冻结发布及生命周期所需的强类型契约和存
 | 工作 | 强类型契约 | 平台存储API |
 | --- | --- | --- |
 | 候选身份与来源 | `CandidateKey`、`CandidateRegistrationOrigin`、`CandidateRegistration`、`CandidateDerivation` | `StrategyRegistry.register_candidate/get_candidate_registration/get_candidate` |
-| 用户决定 | `ResearchDecision`、`DecisionReference`、`DecisionAction`及三类subject | TDR `record_research_decision`核验并写入研究目录 |
+| 用户决定 | `ResearchDecision`、`DecisionReference`、`DecisionAction`及对应subject | TDR `record_research_decision`核验并写入研究目录 |
 | 技术检验记录 | `InspectionCaseResult`、`InspectionGoalResult`、`CandidateInspectionReport`、`FreezePlan`、`InspectedRelease` | TDR `inspect_candidate`执行计算并保存实验内证据 |
 | 冻结提交 | `FreezeCandidateRequest`、`FreezeVersionRequest`、`FreezeReceipt` | `StrategyRegistry.freeze_version/get_freeze_result` |
 | 策略身份查询 | `StrategyFamily`、`StrategyVersion` | `StrategyRegistry.list_families/get_family/get_version/versions` |
@@ -55,6 +55,7 @@ record = registry.get_candidate(record.key, evidence_root=evidence_root)
 
 - `StageAdvanceSubject`：已有交付回执和拟推进阶段。
 - `CandidateSelectionSubject`：schema 2，直接绑定候选键、内容哈希及登记记录哈希，不依赖阶段四交付。
+- `FrozenMigrationSelectionSubject`、`FrozenObservationUpgradeSelectionSubject`：显式迁移或观察修订的选型材料，绑定原发布身份和候选证据；不是同版本升级API的必经步骤。
 - `FreezeSubject`：候选内容、检验报告、冻结计划哈希和明确版本。
 
 决定必须留存`confirmation_source`和原因；同一决定ID内容冲突拒绝写入。宿主负责核验真实用户
@@ -64,7 +65,7 @@ record = registry.get_candidate(record.key, evidence_root=evidence_root)
 `research/<策略ID>/assets/evidence/<实验ID>/`。
 决定留痕不自动驱动研究阶段或参数搜索。
 
-## 原子冻结与查询状态
+## 首次冻结与查询状态
 
 TDR直接消费技术交接材料，保存schema 2的`CandidateInspectionReport`。报告只含两个目标：
 `behavior_equivalence`和`pte_runtime`，每项使用`InspectionGoalResult`保存状态、场景及证据。
@@ -103,6 +104,21 @@ SM底层`get_freeze_result(request_id, *, journal_root)`必须显式提供日志
 版本号和父版本由调用方显式指定；不自动改号、重试、恢复或回滚。仅`COMMITTED`回执可携带
 版本引用。冻结初始资格为`RESEARCH`；晋级、部署、PTE账户操作需要各自的证据及授权。
 
+## 同版本发布包升级
+
+同版本升级使用TDR的`FrozenRuntimeUpgradeRequest`、`prepare_frozen_runtime_upgrade`及
+`apply_frozen_runtime_upgrade`，不调用首次冻结流程。请求直接接收SRT的`StrategyCandidate`，
+不要求先登记候选、记录选型或取得技术检验PASS；准确字段见
+[TDR升级契约](../../src/czsc_trader/README.md#同版本发布包升级)。
+
+TDR核对原发布身份、快照新源码与载荷、记录授权和可选验证材料，再在写锁内归档并替换当前包。
+是否沿用版本号、变更是否合理及验证结论由责任方决定；升级API只负责可追溯、审计和事务完整性。
+原版本号、父版本及历史日期保留，原版本中的来源字段仍记录首次冻结来源；本次实现来源由升级计划
+中的候选身份及内容哈希记录。`COMMITTED`表示该发布事务完成，不表示研究结论通过或获得运行资格。
+
+发布身份随新内容变化，旧包按原发布哈希保存于`strategies/revisions/`。运行资格绑定精确发布哈希，
+新身份为`RESEARCH`，不继承旧身份的`PAPER_READY`；资格授予、PTE账户改绑和生产生效分别处理。
+
 ## 不可变存储与权限
 
 | 路径（相对仓库） | 内容 |
@@ -112,7 +128,8 @@ SM底层`get_freeze_result(request_id, *, journal_root)`必须显式提供日志
 | `research/<策略ID>/assets/evidence/<检验实验ID>/inspection/` | 检验、计划引用的内容寻址证据 |
 | `research/<策略ID>/decisions/` | 用户决定；确认材料由决定中的证据引用定位 |
 | `research/<策略ID>/freeze_requests/<请求ID>/` | 冻结请求及提交／失败事实 |
-| `strategies/<策略ID>/versions/`、`releases/` | 不可变版本和发布文件闭包 |
+| `strategies/<策略ID>/versions/`、`releases/` | 当前版本记录和发布文件闭包；同版本升级通过受管事务替换 |
+| `strategies/revisions/<发布ID>/<旧发布哈希>/` | 旧包、版本及本地部署回执原件，升级计划、审计材料和提交回执 |
 | `strategies/deployments/` | 单独授权产生的SRT部署凭据 |
 
 历史`experiments/`中的研究原件及其原有引用保留原位；新路径规则不修改或重签历史证据。
