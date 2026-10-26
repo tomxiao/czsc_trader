@@ -32,9 +32,8 @@ from strategy_runtime import (
     TradingPoint,
     canonical_sha256,
     load_strategy_deployment,
-    materialize_observation,
-    unavailable_observation,
-    RuntimeDefinition, RuntimeContractError,
+    observe_execution_plan,
+    RuntimeDefinition,
     SignalHistoryMode,
 )
 from dataflows import Dataflows, DataRequest, Dataset, PreparePolicy, EvidenceParameters
@@ -164,12 +163,7 @@ def _decision_from_plan(
         for leg in plan.legs
     ]
     source_decision_id = f"SRT-{plan.signal_date:%Y%m%d}-{plan.signal_identity[:12].upper()}"
-    try:
-        observation = materialize_observation(definition, plan).to_dict()
-    except RuntimeContractError as exc:
-        observation = unavailable_observation(
-            str(exc), contract_version=definition.observation.to_dict()["contract_version"],
-        ).to_dict()
+    observation = observe_execution_plan(definition, plan).to_dict()
     payload = {
         "contract_version": "advice.v6" if plan.capital_mode == "signal_cash_fraction" else (
             "advice.v5" if plan.plan_mode != "NONE" or legs else "advice.v4"

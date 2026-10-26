@@ -60,7 +60,9 @@ def create_server(
             if not name or name in {".", ".."} or any(c in name for c in "/\\:%\0"):
                 self._json(404, {"error": "not found"})
                 return
-            resource = static_root.joinpath(name)
+            resource = (files("strategy_chart").joinpath("static", name)
+                        if name in {"strategy-chart.js", "strategy-chart.css"}
+                        else static_root.joinpath(name))
             if not resource.is_file():
                 self._json(404, {"error": "not found"})
                 return

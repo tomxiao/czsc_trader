@@ -10,7 +10,7 @@ from dataflows import Dataflows, ProviderConfig
 from strategy_runtime import StrategyRuntime, StrategyInit, StrategyInputBinding, ExecutionPolicy
 from strategy_evaluator import compare_ledgers, LedgerComparisonRequest, LedgerComparisonMode, LedgerComparisonStatus
 from trading_execution_engine import HistoricalExecutor
-from ..backtesting.observation import ObservationExecutor
+from ..backtesting.observation import ObservationExecutor, UnavailablePlanObservation
 from ..backtesting.models import StrategyIdentity, StrategySnapshot
 from ..backtesting.result import BacktestResult
 from ..backtesting.signal_replay import SignalReplay
@@ -47,6 +47,15 @@ def _run(runtime, strategy, replay, root, source_root=None, binding=None):
         pricing=data.pricing, market_rules=data.market_rules)
     executor = ObservationExecutor(instance.definition, channel)
     ledger = instance.run_window(executor=executor)
+    # Runtime isolation keeps valid trading plans executable. Technical delivery
+    # acceptance must nevertheless reject display failures, even if both copies
+    # of the implementation would fail identically.
+    for observation in executor.observations:
+        if isinstance(observation, UnavailablePlanObservation):
+            raise ValueError(
+                f"technical inspection observation unavailable at {observation.signal_date}: "
+                f"{observation.unavailable.message}"
+            )
     identity = StrategyIdentity("REGISTERED" if source_root else "CANDIDATE", reference, "technical_inspection")
     result = BacktestResult(identity, ledger.decisions, ledger.orders, ledger.fills,
                             ledger.account_daily, ledger.trades, tuple(executor.observations))

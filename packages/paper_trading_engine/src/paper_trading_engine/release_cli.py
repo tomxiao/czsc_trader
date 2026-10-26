@@ -49,12 +49,14 @@ PTE_LOCAL_PROJECTS = (
     "packages/dataflows",
     "packages/strategy_manager",
     "packages/strategy_runtime",
+    "packages/strategy_chart",
     ".",
     "packages/paper_trading_engine",
 )
 PTE_RESOLUTION_DISTRIBUTIONS = (
     "paper-trading-engine",
     "czsc-strategy-runtime",
+    "czsc-strategy-chart",
     "czsc-dataflows",
     "czsc-strategy-manager",
 )
@@ -429,9 +431,12 @@ def _verify_installed_environment(
         "import importlib.metadata as m,json,sys\n"
         "from pathlib import Path\n"
         "import paper_trading_engine.cli\n"
+        "from strategy_chart import get_chart_assets\n"
+        "chart_assets=get_chart_assets()\n"
+        "assert chart_assets.css and chart_assets.javascript, 'shared chart assets missing'\n"
         "from strategy_runtime import StrategyRelease,StrategyRuntime,deployment_inventory\n"
         "expected=('paper-trading-engine','czsc-trader-research','czsc-strategy-runtime',"
-        "'czsc-strategy-manager','czsc-dataflows')\n"
+        "'czsc-strategy-manager','czsc-dataflows','czsc-strategy-chart')\n"
         "forbidden=('vectorbt','optuna','tsfresh','czsc-strategy-evaluator',"
         "'czsc-factor-signal-catalog','czsc-strategy-template-catalog',"
         "'czsc-trading-execution-engine')\n"

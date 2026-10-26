@@ -1,22 +1,27 @@
-(()=>{
-  const root=document.querySelector('#pte-forward-chart');
-  const stage=document.querySelector('#forward-stage');
-  const svg=document.querySelector('#forward-svg');
-  const tooltip=document.querySelector('#forward-tooltip');
-  const eventDate=document.querySelector('#forward-event-date');
-  const context=JSON.parse(document.querySelector('#forward-context').textContent);
+window.mountStrategyChart=function mountStrategyChart(root,context){
+  if(!(root instanceof HTMLElement)||!context||!['BACKTEST','PAPER'].includes(context.mode)||!context.strategy||!context.window||!context.market_data||!context.execution||![context.market_data.bars,context.observations,context.execution.decisions,context.execution.fills,context.execution.snapshots].every(Array.isArray))throw new TypeError('strategy chart requires a container and typed chart context');
+  if(root.dataset.strategyChartMounted)throw new Error('strategy chart is already mounted');
+  root.dataset.strategyChartMounted='true';root.classList.add('strategy-chart');
+  const lifecycle=new AbortController();let destroyed=false;
+  const listen=(node,type,handler)=>node.addEventListener(type,handler,{signal:lifecycle.signal});
+  const stage=root.querySelector('#forward-stage');
+  const svg=root.querySelector('#forward-svg');
+  const tooltip=root.querySelector('#forward-tooltip');
+  const eventDate=root.querySelector('#forward-event-date');
+  if(!stage||!svg||!tooltip||!eventDate){delete root.dataset.strategyChartMounted;throw new TypeError('strategy chart requires the shared chart shell');}
   const embedded=window.parent!==window;
   if(embedded)root.classList.add('embedded');
   const NS='http://www.w3.org/2000/svg';
-  const css=name=>getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const colors=new Map();
+  const css=name=>{if(!colors.has(name))colors.set(name,getComputedStyle(root).getPropertyValue(name).trim());return colors.get(name);};
   const state={range:'all',layers:{signal:true,fill:true,position:true},selected:null,signalView:null};
-  const bars=context.market_data.bars||[];
-  const observations=context.observations||[];
-  const decisions=[...(context.execution.decisions||[])].sort((a,b)=>Date.parse(a.generated_at)-Date.parse(b.generated_at));
-  const fills=[...(context.execution.fills||[])].sort((a,b)=>Date.parse(a.occurred_at)-Date.parse(b.occurred_at));
-  const snapshots=context.execution.snapshots||[];
+  const bars=context.market_data.bars;
+  const observations=context.observations;
+  const decisions=[...context.execution.decisions].sort((a,b)=>Date.parse(a.generated_at)-Date.parse(b.generated_at));
+  const fills=[...context.execution.fills].sort((a,b)=>Date.parse(a.occurred_at)-Date.parse(b.occurred_at));
+  const snapshots=context.execution.snapshots;
   const cutoff=context.window.selection_data_cutoff;
-  const byDate=new Map([...observations].sort((a,b)=>a.generated_at.localeCompare(b.generated_at)).map(item=>[item.signal_date,item]));
+  const byDate=new Map([...observations].sort((a,b)=>String(a.generated_at||a.signal_date).localeCompare(String(b.generated_at||b.signal_date))).map(item=>[item.signal_date,item]));
   const observationById=new Map(observations.filter(item=>item.observation.status==='READY').map(item=>[item.decision_id,item.observation]));
   const snapshotByDate=new Map(snapshots.map(item=>[item.session,item]));
   const signalControls=document.createElement('div');signalControls.className='signal-panel-controls';signalControls.hidden=true;
@@ -37,21 +42,52 @@
     const time=new Date(value);if(Number.isNaN(time.getTime()))return '时间格式异常';
     return new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).format(time);
   };
-  const fillDate=item=>item.occurred_at?localTime(item.occurred_at).slice(0,10):item.session;
+  const fillDate=item=>item.session||localTime(item.occurred_at).slice(0,10);
+  const fillTime=item=>item.time_precision==='SESSION'||/^\d{4}-\d{2}-\d{2}$/.test(item.occurred_at||'')?`${fillDate(item)}（交易日，未记录时刻）`:localTime(item.occurred_at);
   const statusLabel=value=>({PENDING:'待执行',EXECUTING:'执行中',COMPLETED:'已完成',SUPERSEDED:'已替代',CANCELLED:'已取消',INCOMPLETE:'未完成'}[value]||value);
   const quantity=value=>value==null?'未记录':`${Number(value).toLocaleString('zh-CN')} 股`;
   const money=value=>value==null?'未记录':`${Number(value).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})} 元`;
   const dayDecisions=date=>decisions.filter(item=>localTime(item.generated_at).slice(0,10)===date);
   const dayFills=date=>fills.filter(item=>fillDate(item)===date);
-  const fillSummary=item=>`${localTime(item.occurred_at)} · 成交：${String(item.side).toUpperCase()==='BUY'?'买入':'卖出'} ${quantity(item.quantity)}，价格 ${fmt(item.price)} 元（不复权），金额 ${money(Number(item.quantity)*Number(item.price))}，费用 ${money(item.fee)}`;
+  const fillSummary=item=>`${fillTime(item)} · 成交：${String(item.side).toUpperCase()==='BUY'?'买入':'卖出'} ${quantity(item.quantity)}，价格 ${fmt(item.price)} 元（不复权），金额 ${money(Number(item.quantity)*Number(item.price))}，费用 ${money(item.fee)}`;
   const eventDates=[...new Set([...bars.map(item=>item.date),...decisions.map(item=>localTime(item.generated_at).slice(0,10)),...fills.map(fillDate)])].sort();
   const tradingDates=new Set(bars.map(item=>item.date));
   eventDate.replaceChildren(...eventDates.map(date=>{const option=document.createElement('option');option.value=date;option.textContent=`${date}${tradingDates.has(date)?'':'（非交易日）'}`;return option;}));
 
-  document.querySelector('#forward-title').textContent=`${context.strategy.release_id} · ${context.strategy.name}`;
+  const write=(selector,text)=>{const node=root.querySelector(selector);if(node)node.textContent=text;};
+  const isBacktest=context.mode==='BACKTEST';
+  write('#forward-title',`${context.strategy.release_id||context.strategy.reference_id} · ${context.strategy.name||context.strategy.symbol}`);
   const observationStart=context.window.observation_start;
-  document.querySelector('#forward-subtitle').textContent=`前瞻观察 · ${context.strategy.symbol} · ${context.strategy.account_id} · ${observationStart?`观察事实自 ${observationStart}`:'等待首条观察事实'}`;
-  document.querySelector('#forward-asof').textContent=`运行正常 · 数据截至 ${context.market_data.as_of}`;
+  write('#forward-subtitle',isBacktest?`回测复盘 · ${context.strategy.symbol} · ${context.window.start} — ${context.window.end}`:`前瞻观察 · ${context.strategy.symbol} · ${context.strategy.account_id} · ${observationStart?`观察事实自 ${observationStart}`:'等待首条观察事实'}`);
+  write('#forward-asof',`${isBacktest?'回测完成':'运行正常'} · 数据截至 ${context.market_data.as_of}`);
+
+
+  const reading=document.createElement('section');reading.className='signal-reading';reading.setAttribute('aria-label','策略信号解释');stage.appendChild(reading);
+  const legacyNotice=document.createElement('div');legacyNotice.className='signal-legacy-notice';legacyNotice.textContent='该记录未提供解释；保留原始信号值';stage.appendChild(legacyNotice);
+  let expanded=false,readingDate=null;
+  const node=(tag,cls,text)=>{const element=document.createElement(tag);element.className=cls;if(text!=null)element.textContent=text;return element;};
+  function paintReading(observation,date){
+    if(readingDate!==date)expanded=false;readingDate=date;
+    const narrative=observation?.status==='READY'?observation.signal_panel?.explanation:null;
+    const legacy=observation?.status==='READY'&&!narrative;
+    reading.hidden=legacy||!state.layers.signal;legacyNotice.hidden=!legacy||!state.layers.signal;
+    signalControls.hidden=!legacy||!state.layers.signal||!signalSelect.options.length;
+    signalLegend.hidden=signalControls.hidden;
+    if(reading.hidden)return;
+    const unavailable=observation?.status==='UNAVAILABLE';
+    const judgment=narrative?.judgment||(unavailable?'观察不可用':'当日没有信号观察');
+    const reason=unavailable?observation.message:'该日期没有记录策略观察，不据此推断入场或退出。';
+    const head=node('div','reading-head');head.append(node('div','reading-label','当前判断'),node('strong','',judgment),node('span','reading-date',date));
+    if(narrative){const toggle=node('button','',expanded?'返回':'解释');toggle.type='button';toggle.setAttribute('aria-label',expanded?'返回信号结论':'解释策略判断');toggle.addEventListener('click',()=>{expanded=!expanded;paintReading(observation,date);});head.append(toggle);}
+    const basis=node('div','reading-basis');basis.append(node('div','reading-label',expanded?'怎么看这个判断':'判断依据'));
+    const body=node('div','reading-body');
+    if(expanded)body.append(node('div','reading-detail',narrative.explanation));
+    else if(narrative)narrative.basis.forEach(item=>{const row=node('div','reading-row',item.text);row.dataset.basisKey=item.key;body.append(row);});
+    else body.append(node('div','reading-detail',reason));
+    basis.append(body);
+    const next=node('div','reading-next');next.append(node('div','reading-label','接下来关注'),node('div','reading-body',narrative?.next_watch||(unavailable?'等待完整观察；交易结果以事件和账户记录为准。':'请选择有观察记录的日期。')));
+    reading.replaceChildren(head,basis,next);
+  }
 
   function visibleBars(){if(state.range==='all')return bars;return bars.slice(Math.max(0,bars.length-Number(state.range)));}
   function add(node){svg.appendChild(node);return node;}
@@ -63,6 +99,7 @@
   }
   function explanation(observation){
     if(observation?.status!=='READY')return observation?.message||'当日没有策略观察事实';
+    if(observation.signal_panel?.explanation){const value=observation.signal_panel.explanation;return [value.judgment,...value.basis.map(item=>item.text)].join('；');}
     return [...(observation.series||[]).map(item=>`${item.label} ${Number(item.value).toFixed(4)}${(item.guides||[]).map(guide=>` / ${guide.label} ${Number(guide.value).toFixed(4)}`).join('')}`),
       ...(observation.facts||[]).map(item=>`${item.label} ${factValue(item)}`)].join('；');
   }
@@ -157,7 +194,7 @@
           const sample=panel?.series.find(value=>value.key===item.key&&value.group===definition.key);
           if(!sample||sample.status!=='AVAILABLE'){previous=null;guidePrevious.clear();return;}
           const point=[x(index),y(sample.value)];
-          const identity=`${observation.release_hash}:${sample.segment_id??''}`;
+          const identity=`${observation.strategy?.release_hash||observation.release_hash}:${sample.segment_id??''}`;
           const title=`${rows[index].date} ${sample.label} ${signalValue(sample.value,definition)} ${definition.unit}；${sample.description}`;
           if(item.render==='BAR')add(el('rect',{x:point[0]-Math.max(1,Math.min(5,innerW/rows.length*.3)),y:Math.min(y(0),point[1]),width:Math.max(2,Math.min(10,innerW/rows.length*.6)),height:Math.max(1,Math.abs(y(0)-point[1])),fill:color,'data-signal-series':item.key,'aria-label':title}));
           else if(previous&&previous.index===index-1&&previous.identity===identity){
@@ -208,16 +245,33 @@
     }).join('')}</div><div class="signal-panel-description">${safe(view.item.description)}</div>`;
   }
   function render(){
-    const rows=visibleBars();if(!rows.length)return;
+    if(destroyed)return;
+    colors.clear();
+    const rows=visibleBars();
+    if(!rows.length){
+      const width=Math.max(320,stage.clientWidth),date=state.selected||eventDates.at(-1)||context.window.end;
+      const measure=document.createElement('canvas').getContext('2d');measure.font='11px sans-serif';
+      const lines=wrapExplanation(eventLines(date),width-48,measure),top=width>=1000?190:290,height=top+60+18*lines.length;
+      svg.replaceChildren();svg.setAttribute('viewBox',`0 0 ${width} ${height}`);svg.style.height=`${height}px`;stage.style.minHeight=`${height}px`;
+      add(el('text',{x:18,y:25,class:'panel-label'},'没有可展示的行情；事件按原始记录展示'));
+      reading.style.top='42px';reading.style.height=`${top-55}px`;paintReading(byDate.get(date)?.observation,date||'');
+      state.selected=date;eventDate.value=date||'';
+      add(el('text',{x:18,y:top,class:'explain-main'},`${date||''} · 事件`));
+      lines.forEach((line,index)=>add(el('text',{x:18,y:top+22+18*index,class:'explain-sub'},line)));
+      return;
+    }
     const width=Math.max(320,stage.clientWidth),compact=width<700;
     const left=compact?52:68,right=compact?56:72,innerW=width-left-right;
-    const priceTop=34,priceH=embedded?Math.max(180,Math.min(285,window.parent.innerHeight-540)):(compact?250:285),signalTop=priceTop+priceH+20,signalH=embedded?70:(compact?92:105);
-    const positionTop=signalTop+signalH+18,positionH=compact?0:(embedded?50:68);
+    const priceTop=34,priceH=embedded?Math.max(180,Math.min(285,window.parent.innerHeight-540)):(compact?250:285);
+    const positionTop=priceTop+priceH+20,positionH=compact?50:(embedded?50:68);
+    const signalTop=positionTop+positionH+18,signalH=width>=1000?126:230;
+    reading.style.top=`${signalTop}px`;reading.style.height=`${signalH}px`;
+    legacyNotice.style.top=`${signalTop+signalH-2}px`;
     const measure=document.createElement('canvas').getContext('2d');
     measure.font=`11px ${getComputedStyle(svg).fontFamily}`;
     const explanations=rows.map(row=>wrapExplanation(eventLines(row.date),innerW-24,measure));
     const selectedExplanation=wrapExplanation(eventLines(state.selected||rows.at(-1).date),innerW-24,measure);
-    const explainTop=compact?positionTop+12:positionTop+positionH+18;
+    const explainTop=signalTop+signalH+30;
     const explainH=Math.max(62,44+18*Math.max(selectedExplanation.length,...explanations.map(lines=>lines.length))),axisTop=explainTop+explainH+8,height=axisTop+30;
     svg.setAttribute('viewBox',`0 0 ${width} ${height}`);svg.style.height=`${height}px`;stage.style.minHeight=`${height}px`;svg.replaceChildren();
     const x=index=>left+(rows.length===1?innerW/2:index/(rows.length-1)*innerW);
@@ -243,7 +297,7 @@
     const priceTicks=5;for(let index=0;index<priceTicks;index++){const value=pmin-pad+(pmax-pmin+2*pad)*index/(priceTicks-1),y=yPrice(value);add(el('line',{x1:left,x2:left+innerW,y1:y,y2:y,class:'grid-line'}));add(el('text',{x:left+innerW+8,y:y+4,class:'axis'},fmt(value)));}
     const priceLabel=add(el('text',{x:8,y:priceTop+12,class:'panel-label','aria-label':'价格（后复权）'},'价格'));
     priceLabel.appendChild(el('tspan',{x:8,dy:15},'后复权'));
-    add(el('text',{x:12,y:signalTop+12,class:'panel-label'},'信号'));if(!compact)add(el('text',{x:12,y:positionTop+12,class:'panel-label'},'持仓'));add(el('text',{x:12,y:explainTop+15,class:'panel-label'},'事件'));
+    add(el('text',{x:12,y:signalTop+12,class:'panel-label'},'信号'));add(el('text',{x:12,y:positionTop+12,class:'panel-label'},'持仓'));add(el('text',{x:12,y:explainTop+15,class:'panel-label'},'事件'));
     const candleW=Math.max(3,Math.min(10,innerW/rows.length*.58));rows.forEach((row,index)=>{const rising=Number(row.close)>=Number(row.open),color=css(rising?'--up':'--down'),cx=x(index);add(el('line',{x1:cx,x2:cx,y1:yPrice(row.high),y2:yPrice(row.low),stroke:color,'stroke-width':1}));add(el('rect',{x:cx-candleW/2,y:yPrice(Math.max(row.open,row.close)),width:candleW,height:Math.max(1.5,Math.abs(yPrice(row.open)-yPrice(row.close))),fill:rising?color:css('--surface'),stroke:color,'stroke-width':1}));});
     const seriesKeys=[...new Set(allSeries.map(item=>item.key))];const seriesColors=['--signal','--position','--fill','--up'];
     if(state.layers.signal&&!enhanced)seriesKeys.forEach((key,seriesIndex)=>{const points=[];const guidePoints=new Map();rows.forEach((row,index)=>{const observation=byDate.get(row.date)?.observation;if(observation?.status!=='READY'||(views.length&&observation.signal_panel))return;const series=(observation.series||[]).find(item=>item.key===key);if(!series)return;points.push([x(index),ySignal(series.value),`${row.date} ${series.label} ${fmt(series.value)}`]);for(const guide of series.guides||[]){if(!guidePoints.has(guide.key))guidePoints.set(guide.key,{label:guide.label,points:[]});guidePoints.get(guide.key).points.push([x(index),ySignal(guide.value),`${row.date} ${guide.label} ${fmt(guide.value)}`]);}});const color=css(seriesColors[seriesIndex%seriesColors.length]);if(points.length>1)add(el('path',{d:linePath(points),fill:'none',stroke:color,'stroke-width':2}));points.forEach(point=>add(el('circle',{cx:point[0],cy:point[1],r:3,fill:color,'data-series-key':key,'aria-label':point[2]})));guidePoints.forEach((guide,guideKey)=>{if(guide.points.length>1)add(el('path',{d:linePath(guide.points),fill:'none',stroke:css('--fill'),'stroke-width':1,'stroke-dasharray':'4 4',opacity:.72}));guide.points.forEach(point=>add(el('circle',{cx:point[0],cy:point[1],r:2.5,fill:css('--fill'),'data-guide-key':guideKey,'aria-label':point[2]})));});});
@@ -257,12 +311,12 @@
     }
     else if(state.layers.signal){[smin0,smax0].forEach(value=>add(el('text',{x:left+innerW+8,y:ySignal(value)+4,class:'axis'},fmt(value))));if(!views.length)seriesKeys.forEach((key,index)=>{const series=allSeries.find(item=>item.key===key);add(el('text',{x:left+index*150,y:signalTop+12,fill:css(seriesColors[index%seriesColors.length]),class:'axis'},series.label));});else signalLegend.replaceChildren(...seriesKeys.map((key,index)=>{const label=document.createElement('span');label.textContent=allSeries.find(item=>item.key===key).label;label.style.color=css(seriesColors[index%seriesColors.length]);return label;}));}
     fills.filter(item=>rows.some(row=>row.date===fillDate(item))).forEach(item=>{if(!state.layers.fill)return;const date=fillDate(item),index=rows.findIndex(row=>row.date===date),row=rows[index],buy=String(item.side).toUpperCase()==='BUY',cy=yPrice(buy?row.low:row.high)+(buy?-25:25),cx=x(index);add(el('path',{d:`M${cx},${cy} l-6,${buy?9:-9} h12 z`,fill:css('--fill'),'data-fill-id':item.fill_id}));});
-    if(!compact&&state.layers.position){const positionPoints=[];rows.forEach((row,index)=>{const snapshot=snapshotByDate.get(row.date);const quantity=snapshot?.quantity;if(quantity!=null)positionPoints.push([x(index),yPosition(quantity)]);});if(positionPoints.length){let d=`M${positionPoints[0][0]},${positionPoints[0][1]}`;for(let i=1;i<positionPoints.length;i++)d+=` H${positionPoints[i][0]} V${positionPoints[i][1]}`;add(el('path',{d,fill:'none',stroke:css('--position'),'stroke-width':2}));}[0,qmax].forEach(value=>add(el('text',{x:left+innerW+8,y:yPosition(value)+4,class:'axis'},value?Number(value).toLocaleString('zh-CN'):'0')));}
-    [signalTop-10,positionTop-9,explainTop-9].forEach((y,index)=>{if(compact&&index===1)return;add(el('line',{x1:0,x2:width,y1:y,y2:y,class:'panel-rule'}));});add(el('rect',{x:left,y:explainTop,width:innerW,height:explainH,fill:css('--surface2')}));add(el('line',{x1:0,x2:width,y1:axisTop-4,y2:axisTop-4,class:'panel-rule'}));
-    const tickCount=compact?4:7;for(let i=0;i<tickCount;i++){const index=Math.round(i*(rows.length-1)/(tickCount-1));add(el('text',{x:x(index),y:axisTop+18,class:'axis','text-anchor':i===0?'start':i===tickCount-1?'end':'middle'},shortDate(rows[index].date)));}
+    if(state.layers.position){const positionPoints=[];rows.forEach((row,index)=>{const snapshot=snapshotByDate.get(row.date);const quantity=snapshot?.quantity;if(quantity!=null)positionPoints.push([x(index),yPosition(quantity)]);});if(positionPoints.length){let d=`M${positionPoints[0][0]},${positionPoints[0][1]}`;for(let i=1;i<positionPoints.length;i++)d+=` H${positionPoints[i][0]} V${positionPoints[i][1]}`;add(el('path',{d,fill:'none',stroke:css('--position'),'stroke-width':2}));}[0,qmax].forEach(value=>add(el('text',{x:left+innerW+8,y:yPosition(value)+4,class:'axis'},value?Number(value).toLocaleString('zh-CN'):'0')));}
+    [signalTop-10,positionTop-9,explainTop-9].forEach((y,index)=>{add(el('line',{x1:0,x2:width,y1:y,y2:y,class:'panel-rule'}));});add(el('rect',{x:left,y:explainTop,width:innerW,height:explainH,fill:css('--surface2')}));add(el('line',{x1:0,x2:width,y1:axisTop-4,y2:axisTop-4,class:'panel-rule'}));
+    const tickCount=Math.min(rows.length,compact?4:7);for(let i=0;i<tickCount;i++){const index=tickCount===1?0:Math.round(i*(rows.length-1)/(tickCount-1));add(el('text',{x:x(index),y:axisTop+18,class:'axis','text-anchor':i===0?'start':i===tickCount-1?'end':'middle'},shortDate(rows[index].date)));}
     const cross=add(el('line',{y1:priceTop,y2:explainTop+explainH,class:'crosshair'})),priceDot=add(el('circle',{r:4,fill:css('--text'),stroke:css('--surface'),'stroke-width':2})),signalDot=add(el('circle',{r:4,fill:css('--signal'),stroke:css('--surface'),'stroke-width':2})),main=add(el('text',{x:left+12,y:explainTop+22,class:'explain-main'})),sub=add(el('text',{x:left+12,y:explainTop+42,class:'explain-sub'}));
     function showEvents(date){
-      state.selected=date;eventDate.value=date;
+      state.selected=date;eventDate.value=date;paintReading(byDate.get(date)?.observation,date);
       const selectedFills=dayFills(date),selectedDecisions=dayDecisions(date);
       const event=[selectedDecisions.length?`决策 ${selectedDecisions.length} 笔`:'',selectedFills.length?`成交 ${selectedFills.length} 笔`:''].filter(Boolean).join(' · ')||'当日无可展示事件';
       main.textContent=`${date} · ${event}${tradingDates.has(date)?'':' · 非交易日，无行情K线'}`;
@@ -299,12 +353,16 @@
     }else select(selectedIndex<0?rows.length-1:selectedIndex,null);
     const overlay=add(el('rect',{x:left,y:priceTop,width:innerW,height:explainTop+explainH-priceTop,fill:'transparent'}));overlay.addEventListener('pointermove',event=>{const rect=svg.getBoundingClientRect(),px=(event.clientX-rect.left)*width/rect.width,py=(event.clientY-rect.top)*height/rect.height,index=Math.round((px-left)/innerW*(rows.length-1));select(index,[px,py]);});overlay.addEventListener('pointerleave',()=>{tooltip.hidden=true;});
   }
-  eventDate.addEventListener('change',()=>{state.selected=eventDate.value;tooltip.hidden=true;render();});
-  signalSelect.addEventListener('change',()=>{state.signalView=signalSelect.value;tooltip.hidden=true;render();});
-  document.querySelectorAll('[data-range]').forEach(button=>button.addEventListener('click',()=>{state.range=button.dataset.range==='all'?'all':Number(button.dataset.range);document.querySelectorAll('[data-range]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));render();}));
-  document.querySelectorAll('[data-layer]').forEach(button=>button.addEventListener('click',()=>{const layer=button.dataset.layer;state.layers[layer]=!state.layers[layer];button.setAttribute('aria-pressed',String(state.layers[layer]));render();}));
+  listen(eventDate,'change',()=>{state.selected=eventDate.value;tooltip.hidden=true;render();});
+  listen(signalSelect,'change',()=>{state.signalView=signalSelect.value;tooltip.hidden=true;render();});
+  root.querySelectorAll('[data-range]').forEach(button=>listen(button,'click',()=>{state.range=button.dataset.range==='all'?'all':Number(button.dataset.range);root.querySelectorAll('[data-range]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));render();}));
+  root.querySelectorAll('[data-layer]').forEach(button=>listen(button,'click',()=>{const layer=button.dataset.layer;state.layers[layer]=!state.layers[layer];button.setAttribute('aria-pressed',String(state.layers[layer]));render();}));
   const viewportWindow=embedded?window.parent:window;
-  viewportWindow.addEventListener('resize',render);
-  window.addEventListener('pagehide',()=>viewportWindow.removeEventListener('resize',render),{once:true});
-  new ResizeObserver(render).observe(stage);render();
-})();
+  listen(viewportWindow,'resize',render);
+  let lastWidth=0;
+  const resizeObserver=new ResizeObserver(()=>{const width=stage.clientWidth;if(width!==lastWidth){lastWidth=width;render();}});
+  resizeObserver.observe(stage);
+  const destroy=()=>{if(destroyed)return;destroyed=true;lifecycle.abort();resizeObserver.disconnect();reading.remove();legacyNotice.remove();signalControls.remove();signalLegend.remove();svg.replaceChildren();tooltip.hidden=true;delete root.dataset.strategyChartMounted;};
+  listen(window,'pagehide',destroy);render();
+  return {destroy};
+};

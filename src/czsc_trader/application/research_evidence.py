@@ -59,14 +59,19 @@ def _migration_frame_equal(left, right, identities, *, observation_upgrade=False
                 raise ValueError("migration economic evidence values differ")
 
 
-def _observation_comparison(left, right, definition):
+def _observation_comparison(left, right, before, after):
+    """Compare trading facts, excluding each side's declared observation-only fields."""
     if not left.index.equals(right.index):
         raise ValueError("observation upgrade evidence dates/rows differ")
-    added = set(right.columns) - set(left.columns)
-    allowed = set(definition.observation.signal_panel.evidence_fields)
-    if any(not col.startswith("obs_") or col not in allowed for col in added):
-        raise ValueError("observation upgrade adds undeclared evidence columns")
-    return right.drop(columns=list(added))
+    projected = []
+    for frame, definition in ((left, before), (right, after)):
+        panel = definition.observation.signal_panel
+        allowed = set(panel.evidence_fields) if panel is not None else set()
+        columns = {column for column in frame if column.startswith("obs_")}
+        if columns - allowed:
+            raise ValueError("observation upgrade contains undeclared evidence columns")
+        projected.append(frame.drop(columns=list(columns)))
+    return tuple(projected)
 
 
 def _migration_case(root, case, artifact, before, after, *, observation_upgrade=False):
@@ -109,10 +114,9 @@ def _migration_case(root, case, artifact, before, after, *, observation_upgrade=
             raise ValueError("migration signal evidence has invalid dates")
         if not len(signals[1]) or result["signals"]["rows"] != len(signals[1]):
             raise ValueError("migration signal evidence is empty or miscounted")
-        comparison = signals[1]
-        if observation_upgrade:
-            comparison = _observation_comparison(signals[0], comparison, after)
-        _migration_frame_equal(signals[0].reindex(comparison.index), comparison, {})
+        comparison = (_observation_comparison(*signals, before, after)
+                      if observation_upgrade else (signals[0].reindex(signals[1].index), signals[1]))
+        _migration_frame_equal(*comparison, {})
         checks = result["ledgers"]["checks"]
         names = ("decisions", "orders", "fills", "account_daily", "trades")
         if len(checks) != len(names) or {item["name"] for item in checks} != set(names):
@@ -124,9 +128,9 @@ def _migration_case(root, case, artifact, before, after, *, observation_upgrade=
             check = next(item for item in checks if item["name"] == name)
             if check["comparison"] != "EXACT_VALUES_ZERO_TOLERANCE" or check["rows"] != len(frames[1]):
                 raise ValueError("migration ledger comparison is incomplete or miscounted")
-            comparison = (_observation_comparison(*frames, after)
-                          if observation_upgrade and name == "decisions" else frames[1])
-            _migration_frame_equal(frames[0], comparison, identities, observation_upgrade=observation_upgrade)
+            comparison = (_observation_comparison(*frames, before, after)
+                          if observation_upgrade and name == "decisions" else frames)
+            _migration_frame_equal(*comparison, identities, observation_upgrade=observation_upgrade)
             if name == "fills" and (not len(frames[1]) or result["actual_fills"] != {
                     "old": len(frames[0]), "new": len(frames[1])}):
                 raise ValueError("migration evidence must contain actual matched fills")
@@ -144,11 +148,15 @@ def _migration_case(root, case, artifact, before, after, *, observation_upgrade=
                         raise ValueError("migration nonzero plan runtime differs")
                     for field in ("signal_identity", "plan_identity"):
                         value.pop(field)
-                    if observation_upgrade and side == "new":
+                    if observation_upgrade:
                         evidence = dict(value.get("evidence", {}))
-                        allowed = set(after.observation.signal_panel.evidence_fields)
+                        definition = before if side == "old" else after
+                        panel = definition.observation.signal_panel
+                        allowed = set(panel.evidence_fields) if panel is not None else set()
                         for field in tuple(evidence):
-                            if field.startswith("obs_") and field in allowed:
+                            if field.startswith("obs_"):
+                                if field not in allowed:
+                                    raise ValueError("observation upgrade contains undeclared probe evidence")
                                 evidence.pop(field)
                         if "evidence" in value:
                             value["evidence"] = evidence

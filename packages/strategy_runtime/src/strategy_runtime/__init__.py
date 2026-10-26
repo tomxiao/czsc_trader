@@ -15,10 +15,16 @@ from .binding import RuntimeBinding, RuntimeBindingSpec
 from .observation import (
     OBSERVATION_CONTRACT_VERSION,
     OBSERVATION_PANEL_CONTRACT_VERSION,
+    OBSERVATION_EXPLANATION_CONTRACT_VERSION,
     materialize_observation,
+    observe_execution_plan,
     unavailable_observation,
     ObservationUnavailable, ObservationDefinition, ObservationSeries, ObservationFact, ConstantGuide, EvidenceGuide,
     ObservationValueType, ObservationFormat, StrategyObservation, ObservedSeries, ObservedFact,
+)
+from .signal_explanation import (
+    SeriesValueRef, GuideValueRef, StateValueRef, SignalText, SignalBasisDefinition,
+    SignalExplanationCase, SignalExplanationDefinition, SignalBasisSnapshot, SignalExplanationSnapshot,
 )
 from .signal_panel import (
     SignalAvailability, SignalRender, SignalGroup, SignalSeriesDefinition,
@@ -89,6 +95,7 @@ __all__ = [
     "ExecutionPriceBasis", "ExecutionPricing",
     "StrategyInputPlan", "StrategyInputBinding",
     "RuntimeBinding", "RuntimeBindingSpec",
+    "observe_execution_plan",
     "ObservationUnavailable", "ObservationDefinition", "ObservationSeries", "ObservationFact", "ConstantGuide", "EvidenceGuide",
     "ObservationValueType", "ObservationFormat", "StrategyObservation", "ObservedSeries", "ObservedFact",
     "CandidateContentIdentity",
@@ -125,6 +132,9 @@ __all__ = [
     "SignalStateOption",
     "SignalStateDefinition",
     "SignalPanelDefinition",
+    "OBSERVATION_EXPLANATION_CONTRACT_VERSION",
+    "SeriesValueRef", "GuideValueRef", "StateValueRef", "SignalText", "SignalBasisDefinition",
+    "SignalExplanationCase", "SignalExplanationDefinition", "SignalBasisSnapshot", "SignalExplanationSnapshot",
     "ObservedSignalSeries",
     "ObservedSignalState",
     "SignalPanelSnapshot",

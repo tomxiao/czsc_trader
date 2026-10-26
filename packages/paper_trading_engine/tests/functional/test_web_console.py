@@ -241,11 +241,17 @@ def test_ft_pte05_console_resources_interventions_events_and_restart(new_store, 
             html = response.read().decode()
         assert "模拟交易控制台" in html and "审计事件" in html
         assert 'id="releaseVersion"' in html
-        for asset, content_type in (("app.js", "javascript"), ("styles.css", "text/css")):
+        for asset, content_type in (("app.js", "javascript"), ("styles.css", "text/css"),
+                                    ("strategy-chart.js", "javascript"), ("strategy-chart.css", "text/css")):
             with urlopen(base + f"/static/{asset}", timeout=3) as response:
                 assert response.status == 200
                 assert content_type in response.headers["Content-Type"]
-                assert response.read().strip()
+                content = response.read()
+                assert content.strip()
+                if asset.startswith('strategy-chart.'):
+                    from strategy_chart import get_chart_assets
+                    shared = get_chart_assets()
+                    assert content.decode('utf-8') == (shared.javascript if asset.endswith('.js') else shared.css)
         with pytest.raises(HTTPError) as obsolete_asset:
             urlopen(base + "/static/plotly.min.js", timeout=3)
         assert obsolete_asset.value.code == 404

@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "czsc-strategy-chart"
+version = "0.1.0"
+description = "Shared offline strategy observation and execution chart resources"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+strategy_chart = ["static/*.js", "static/*.css", "static/*.d.ts"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--tb=short -p no:cacheprovider"

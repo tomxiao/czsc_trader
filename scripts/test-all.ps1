@@ -165,6 +165,7 @@ try {
                         'packages\strategy_manager\tests',
                         'packages\strategy_evaluator\tests',
                         'packages\strategy_runtime\tests',
+                        'packages\strategy_chart\tests',
                         'packages\trading_execution_engine\tests'
                     )
                 })
@@ -286,7 +287,7 @@ $RuffTimer = [System.Diagnostics.Stopwatch]::StartNew()
     src tests packages\factor_signal_catalog packages\strategy_template_catalog `
     packages\strategy_manager `
     packages\strategy_evaluator packages\dataflows `
-    packages\strategy_runtime packages\trading_execution_engine `
+    packages\strategy_runtime packages\strategy_chart packages\trading_execution_engine `
     packages\paper_trading_engine\src packages\paper_trading_engine\tests
 $RuffExit = $LASTEXITCODE
 $RuffTimer.Stop()

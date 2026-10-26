@@ -72,8 +72,8 @@ def test_pte_forward_chart_is_self_contained_and_titled_by_release() -> None:
 
     assert html.startswith("<!doctype html>")
     assert "S007-v1 · 多源机会风险门控" in html
-    assert 'href="/static/forward-chart.css"' in html
-    assert 'src="/static/forward-chart.js"' in html
+    assert 'href="/static/strategy-chart.css"' in html
+    assert 'src="/static/strategy-chart.js"' in html
     payload = json.loads(re.search(
         r'<script id="forward-context" type="application/json">(.*?)</script>', html
     ).group(1))
@@ -129,20 +129,27 @@ def _signal_panel():
     }
 
 
-def test_signal_snapshot_survives_account_chart_projection_without_changing_event_facts():
+@pytest.mark.parametrize('version', ['strategy_observation.v3', 'strategy_observation.v4'])
+def test_signal_snapshot_survives_account_chart_projection_without_changing_event_facts(version):
     from paper_trading_engine.account_chart import AccountChartService
     from paper_trading_engine.forward_chart import ChartObservation
 
     context = _context()
     previous = context["observations"][0]["observation"]
     observation = {
-        **previous, "contract_version": "strategy_observation.v3",
+        **previous, "contract_version": version,
         "strategy": {"strategy_id": "S007", "reference_id": "S007-v1", "release_hash": "a" * 64,
                      "runtime_sha256": "b" * 64, "symbol": "588080.SH"},
         "definition_sha256": "c" * 64, "signal_identity": "d" * 64, "plan_identity": "e" * 64,
         "signal_date": "2026-09-03", "valid_session": "2026-09-04", "action": "WAIT",
         "target_position": 0.0, "signal_panel": _signal_panel(),
     }
+    if version == 'strategy_observation.v4':
+        observation['signal_panel']['explanation'] = {
+            'state_key': 'opportunity', 'case_key': 'inactive', 'judgment': '暂不入场',
+            'basis': [{'key': 'state', 'text': '机会未激活'}],
+            'next_watch': '等待机会', 'explanation': '模型状态不代表实际成交。',
+        }
     row = {**context["observations"][0], "payload": {
         "observation": observation, "symbol": "588080.SH", "action": "WAIT", "target_quantity": 0,
     }}
@@ -150,7 +157,7 @@ def test_signal_snapshot_survives_account_chart_projection_without_changing_even
     chart = ChartObservation.from_dict(projected["observation"])
     assert chart.to_dict()["series"] == previous["series"]
     assert chart.to_dict()["facts"] == previous["facts"]
-    assert chart.to_dict()["signal_panel"] == _signal_panel()
+    assert chart.to_dict()["signal_panel"] == observation['signal_panel']
     assert chart.definition_sha256 == "c" * 64 and chart.release_hash == "a" * 64
     context["observations"] = [projected]
     html = render_forward_chart_html(context)
@@ -181,12 +188,13 @@ def test_signal_chart_rejects_malformed_enhanced_snapshots(mutation):
         render_forward_chart_html(context)
 
 
-def test_unavailable_v3_observation_preserves_reason_without_values():
+@pytest.mark.parametrize('version', ['strategy_observation.v3', 'strategy_observation.v4'])
+def test_unavailable_observation_preserves_reason_without_values(version):
     from paper_trading_engine.account_chart import AccountChartService
     from paper_trading_engine.forward_chart import ChartObservation
 
     context = _context()
-    failure = {"contract_version": "strategy_observation.v3", "status": "UNAVAILABLE",
+    failure = {"contract_version": version, "status": "UNAVAILABLE",
                "message": "观察计算失败：缺少历史字段"}
     row = {**context["observations"][0], "payload": {
         "observation": failure, "symbol": "588080.SH", "action": "WAIT", "target_quantity": 0,

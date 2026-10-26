@@ -345,10 +345,12 @@ def validate_frozen_observation_upgrade(
                  "tradable_symbol", "state_mode", "history", "decision_feedback"):
         if getattr(before, name) != getattr(after, name):
             raise ValueError(f"observation upgrade changes trading contract: {name}")
-    if (after.observation.signal_panel is None or before.observation == after.observation
+    if (after.observation.signal_panel is None
             or before.observation.series != after.observation.series
             or before.observation.facts != after.observation.facts):
-        raise ValueError("observation upgrade must add a panel while preserving legacy observations")
+        raise ValueError("observation upgrade must retain a panel while preserving legacy observations")
+    if candidate.payload["runtime"]["source_sha256"] == release.payload["runtime"]["source_sha256"]:
+        raise ValueError("observation upgrade requires a changed observation implementation or declaration")
     return after
 
 

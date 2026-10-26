@@ -9,6 +9,9 @@ import re
 from typing import Mapping
 
 from .errors import RuntimeContractError
+from .signal_explanation import (
+    SignalExplanationDefinition, SignalExplanationSnapshot, materialize_explanation,
+)
 from .observation import ConstantGuide, EvidenceGuide, ObservationFormat
 
 
@@ -184,11 +187,16 @@ class SignalPanelDefinition:
     groups: tuple[SignalGroup, ...]
     series: tuple[SignalSeriesDefinition, ...]
     states: tuple[SignalStateDefinition, ...] = ()
+    explanation: SignalExplanationDefinition | None = None
 
     def __post_init__(self):
         _tuple(self.groups, SignalGroup)
         _tuple(self.series, SignalSeriesDefinition)
         _tuple(self.states, SignalStateDefinition)
+        _require(self.explanation is None or isinstance(self.explanation, SignalExplanationDefinition),
+                 "signal explanation must be typed")
+        if self.explanation is not None:
+            self.explanation.validate_panel(self)
         _require(bool(self.series or self.states), "signal panel must declare content")
         _require(not {x.key for x in self.series} & {x.key for x in self.states},
                  "signal series and states repeat keys")
@@ -214,7 +222,7 @@ class SignalPanelDefinition:
         return tuple(sorted(values))
 
     def to_dict(self):
-        return {
+        value = {
             "groups": [asdict(x) for x in self.groups],
             "series": [{**asdict(x), "guides": [
                 {"kind": "CONSTANT" if isinstance(g, ConstantGuide) else "EVIDENCE", **asdict(g)}
@@ -222,14 +230,19 @@ class SignalPanelDefinition:
             ]} for x in self.series],
             "states": [asdict(x) | {"options": [asdict(o) for o in x.options]} for x in self.states],
         }
+        if self.explanation is not None:
+            value["explanation"] = self.explanation.to_dict()
+        return value
 
     @classmethod
     def from_dict(cls, value):
-        _fields(value, "groups series states")
+        _require(type(value) is dict, "signal panel requires an object")
+        _fields(value, "groups series states" + (" explanation" if "explanation" in value else ""))
         return cls(
             tuple(SignalGroup.from_dict(x) for x in _list(value["groups"])),
             tuple(SignalSeriesDefinition.from_dict(x) for x in _list(value["series"])),
             tuple(SignalStateDefinition.from_dict(x) for x in _list(value["states"])),
+            SignalExplanationDefinition.from_dict(value["explanation"]) if "explanation" in value else None,
         )
 
 
@@ -318,11 +331,19 @@ class SignalPanelSnapshot:
     groups: tuple[SignalGroup, ...]
     series: tuple[ObservedSignalSeries, ...]
     states: tuple[ObservedSignalState, ...] = ()
+    explanation: SignalExplanationSnapshot | None = None
 
     def __post_init__(self):
         _tuple(self.groups, SignalGroup)
         _tuple(self.series, ObservedSignalSeries)
         _tuple(self.states, ObservedSignalState)
+        _require(self.explanation is None or isinstance(self.explanation, SignalExplanationSnapshot),
+                 "observed explanation must be typed")
+        if self.explanation is not None:
+            selector = next((x for x in self.states if x.key == self.explanation.state_key), None)
+            _require(selector is not None and selector.status is SignalAvailability.AVAILABLE
+                     and selector.value == self.explanation.case_key,
+                     "observed explanation differs from recorded state")
         _require(bool(self.series or self.states), "signal panel must declare content")
         _require(not {x.key for x in self.series} & {x.key for x in self.states},
                  "signal series and states repeat keys")
@@ -335,19 +356,24 @@ class SignalPanelSnapshot:
                          "integer signal value is fractional")
 
     def to_dict(self):
-        return {
+        value = {
             "groups": [asdict(x) for x in self.groups],
             "series": [{**asdict(x), "guides": [asdict(g) for g in x.guides]} for x in self.series],
             "states": [{**asdict(x), "options": [asdict(o) for o in x.options]} for x in self.states],
         }
+        if self.explanation is not None:
+            value["explanation"] = self.explanation.to_dict()
+        return value
 
     @classmethod
     def from_dict(cls, value):
-        _fields(value, "groups series states")
+        _require(type(value) is dict, "signal panel requires an object")
+        _fields(value, "groups series states" + (" explanation" if "explanation" in value else ""))
         return cls(
             tuple(SignalGroup.from_dict(x) for x in _list(value["groups"])),
             tuple(ObservedSignalSeries.from_dict(x) for x in _list(value["series"])),
             tuple(ObservedSignalState.from_dict(x) for x in _list(value["states"])),
+            SignalExplanationSnapshot.from_dict(value["explanation"]) if "explanation" in value else None,
         )
 
 
@@ -390,4 +416,8 @@ def materialize_signal_panel(definition: SignalPanelDefinition, evidence: Mappin
             value(item.value_field) if availability is SignalAvailability.AVAILABLE else None,
             availability, reason(item, availability),
         ))
-    return SignalPanelSnapshot(definition.groups, tuple(series), tuple(states))
+    panel = SignalPanelSnapshot(definition.groups, tuple(series), tuple(states))
+    if definition.explanation is not None:
+        return SignalPanelSnapshot(panel.groups, panel.series, panel.states,
+                                   materialize_explanation(definition.explanation, panel))
+    return panel

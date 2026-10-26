@@ -55,9 +55,12 @@ def _restore_dtype(value, request):
 def encode(value):
     """Encode only the closed set of evaluation facts; reject unknown objects."""
     from strategy_runtime import StrategyObservation
+    from ..backtesting.observation import UnavailablePlanObservation
 
     if type(value) is StrategyObservation:
         return {"tag": "strategy_observation", "value": value.to_dict()}
+    if type(value) is UnavailablePlanObservation:
+        return {"tag": "unavailable_plan_observation", "value": value.to_dict()}
     if value is pd.NA:
         return {"tag": "NA"}
     if value is pd.NaT:
@@ -127,6 +130,12 @@ def decode(value, request):
     if type(value) is not dict or "tag" not in value:
         raise ValueError("invalid checkpoint value")
     tag = value["tag"]
+    if tag == "unavailable_plan_observation":
+        from ..backtesting.observation import UnavailablePlanObservation
+
+        if set(value) != {"tag", "value"}:
+            raise ValueError("invalid unavailable plan observation checkpoint")
+        return UnavailablePlanObservation.from_dict(value["value"])
     if tag == "strategy_observation":
         from strategy_runtime import StrategyObservation
         return StrategyObservation.from_dict(value["value"])

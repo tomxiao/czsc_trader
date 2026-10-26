@@ -87,3 +87,30 @@ def test_execution_frame_cannot_disagree_with_admitted_dfls_asset(inspection):
     assert report.behavior_equivalence.cases[0].reason_code is f.InspectionReason.INPUT_MISMATCH
     assert report.pte_runtime.status is f.InspectionStatus.NOT_RUN
     assert validate_inspection(context.root, report.reference) == report
+
+
+@pytest.mark.parametrize("version", ["strategy_observation.v2", "strategy_observation.v4"])
+def test_technical_replay_rejects_identically_unavailable_observations(inspection, monkeypatch, version):
+    from strategy_runtime import ObservationUnavailable
+    from czsc_trader.application.candidate_service import load_candidate
+    from czsc_trader.application.inspection_replay import _run
+    from czsc_trader.backtesting import observation as observation_module
+
+    context, request, _ = inspection
+    candidate = load_candidate(context, request.candidate)
+    original = observation_module.observe_execution_plan
+    calls = []
+
+    def fail_display(definition, plan):
+        # Validate the real runtime plan before injecting a display-only fault.
+        observed = original(definition, plan)
+        assert observed.to_dict()["status"] == "READY"
+        calls.append(plan.plan_identity)
+        return ObservationUnavailable("identical display failure", version)
+
+    monkeypatch.setattr(observation_module, "observe_execution_plan", fail_display)
+    for side in ("candidate", "release"):
+        with pytest.raises(ValueError, match="technical inspection observation unavailable.*identical display failure"):
+            _run(request.research.runtime, candidate, request.replays[0],
+                 context.root / ".tmp" / f"unavailable-inspection-{side}")
+    assert len(calls) >= 2

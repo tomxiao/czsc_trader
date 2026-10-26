@@ -6,9 +6,12 @@ import {recordPage, ACCOUNT_REFRESH_SECTIONS, ScopedLoader, accountMarkup, accou
 
 test('forward chart keeps signal series, only fill markers on candles, and business details without IDs', () => {
   class Element {
-    constructor(name){this.name=name;this.attributes={};this.children=[];this.style={};this.listeners={};this.classList={add(){}};this.clientWidth=1000;}
+    constructor(name){this.name=name;this.attributes={};this.children=[];this.style={};this.listeners={};this.dataset={};this.classList={add(){}};this.clientWidth=1000;}
     setAttribute(key,value){this.attributes[key]=value;}
-    appendChild(node){this.children.push(node);return node;}
+    appendChild(node){node.parent=this;this.children.push(node);return node;}
+    append(...nodes){nodes.forEach(node=>this.appendChild(node));}
+    remove(){if(this.parent)this.parent.children=this.parent.children.filter(node=>node!==this);}
+    get options(){return this.children;}
     replaceChildren(...nodes){this.children=nodes;this._text='';}
     addEventListener(name,handler){this.listeners[name]=handler;}
     set textContent(value){this._text=value;this.children=[];}
@@ -18,6 +21,7 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
   const nodes=Object.fromEntries(['pte-forward-chart','forward-stage','forward-svg','forward-tooltip','forward-context','forward-title','forward-subtitle','forward-asof','forward-event-date'].map(id=>[id,new Element(id)]));
   const observation=value=>({status:'READY',series:[{key:'score',label:'策略得分',value,guides:[{key:'threshold',label:'入场阈值',value:.2}]}],facts:[]});
   const context={
+    mode:'PAPER',
     strategy:{release_id:'S003-v1',name:'测试策略',symbol:'510500.SH',account_id:'s003-v1',release_hash:'current'},
     window:{selection_data_cutoff:'2026-09-02',observation_start:'2026-09-02'},
     market_data:{as_of:'2026-09-04',bars:['2026-09-02','2026-09-03','2026-09-04'].map(date=>({date,open:1,high:1.1,low:.9,close:1}))},
@@ -43,11 +47,14 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
     },
   };
   nodes['forward-context'].textContent=JSON.stringify(context);
+  nodes['pte-forward-chart'].querySelector=selector=>nodes[selector.slice(1)];
+  nodes['pte-forward-chart'].querySelectorAll=()=>[];
   const window={listeners:{},addEventListener(name,fn){this.listeners[name]=fn;},removeEventListener(){}};window.parent=window;
-  runInNewContext(readFileSync(new URL('../../src/paper_trading_engine/static/forward-chart.js',import.meta.url),'utf8'),{
-    window,document:{documentElement:new Element('html'),querySelector:selector=>nodes[selector.slice(1)],querySelectorAll:()=>[],createElement:name=>name==='canvas'?({getContext:()=>({measureText:text=>({width:text.length*7})})}):new Element(name),createElementNS:(_ns,name)=>new Element(name)},
-    getComputedStyle:()=>({fontFamily:'sans-serif',getPropertyValue:()=> '#a78bfa'}),ResizeObserver:class{observe(){}},
+  runInNewContext(readFileSync(new URL('../../../strategy_chart/src/strategy_chart/static/strategy-chart.js',import.meta.url),'utf8'),{
+    window,HTMLElement:Element,AbortController,document:{documentElement:new Element('html'),querySelector:selector=>nodes[selector.slice(1)],querySelectorAll:()=>[],createElement:name=>name==='canvas'?({getContext:()=>({measureText:text=>({width:text.length*7})})}):new Element(name),createElementNS:(_ns,name)=>new Element(name)},
+    getComputedStyle:()=>({fontFamily:'sans-serif',getPropertyValue:()=> '#a78bfa'}),ResizeObserver:class{observe(){}disconnect(){}},
   });
+  window.mountStrategyChart(nodes['pte-forward-chart'],context);
   const svg=nodes['forward-svg'];
   const points=()=>svg.children.filter(node=>node.attributes['data-series-key']==='score');
   assert.equal(points().length,2);

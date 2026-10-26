@@ -7,7 +7,8 @@ from math import isfinite
 from numbers import Real
 
 import pandas as pd
-from strategy_runtime import ObservedSeries, ObservedFact
+from strategy_runtime import ObservedSeries, ObservedFact, StrategyObservation
+from .observation import UnavailablePlanObservation
 
 from .execution_data import BacktestExecutionData
 from .benchmarks import BenchmarkReplay
@@ -39,6 +40,7 @@ class ChartSignal:
     action: str
     series: tuple[ObservedSeries, ...]
     facts: tuple[ObservedFact, ...] = ()
+    observation: StrategyObservation | UnavailablePlanObservation | None = None
 
 
 @dataclass(frozen=True)
@@ -160,6 +162,24 @@ class BacktestChartContext:
                 raise TypeError('chart signal series must be typed')
             if type(signal.facts) is not tuple or not all(isinstance(x, ObservedFact) for x in signal.facts):
                 raise TypeError('chart signal facts must be typed')
+            if signal.observation is not None:
+                recorded = signal.observation
+                if not isinstance(recorded, (StrategyObservation, UnavailablePlanObservation)):
+                    raise TypeError('chart observation must be a recorded typed fact')
+                if (recorded.strategy.reference_id != self.reference
+                        or recorded.strategy.release_hash != self.identity_hash
+                        or recorded.strategy.symbol != self.symbol
+                        or recorded.signal_date != signal.signal_date
+                        or recorded.valid_session != signal.valid_session
+                        or 'DEC-' + recorded.plan_identity[:20].upper() != signal.decision_id
+                        or recorded.action != signal.action
+                        or recorded.target_position != signal.target_position):
+                    raise ValueError('chart observation differs from decision identity')
+                if isinstance(recorded, StrategyObservation):
+                    if signal.series != recorded.series or signal.facts != recorded.facts:
+                        raise ValueError('chart observation values differ from recorded facts')
+                elif signal.series or signal.facts:
+                    raise ValueError('unavailable chart observation cannot contain partial facts')
         if len({x.fill_id for x in self.fills}) != len(self.fills):
             raise ValueError("chart fill IDs must be unique")
         for fill in self.fills:
@@ -237,7 +257,10 @@ def build_backtest_chart_context(
             raise ValueError('chart observation differs from executed decision: ' +
                              ', '.join(k for k,a,b in zip(fields,actual,expected) if a != b))
         signal_rows.append(ChartSignal(str(row['decision_id']), *key, observation.target_position,
-                                       observation.action, observation.series, observation.facts))
+                                       observation.action,
+                                       observation.series if isinstance(observation, StrategyObservation) else (),
+                                       observation.facts if isinstance(observation, StrategyObservation) else (),
+                                       observation))
     signals = tuple(signal_rows)
     fills = tuple(ChartFill(
         str(row["fill_id"]), str(row["decision_id"]),

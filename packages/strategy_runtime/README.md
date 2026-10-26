@@ -144,6 +144,61 @@ SRT加载器将业务定义与候选或发布身份组装为`RuntimeDefinition`�
 返回的`AlignedInput.dataframe`始终携带`decision_time`、`source_time`和`staleness_days`，策略
 必须保留这些审计列，禁止通过重索引后`shift(1)`替代跨市场对齐。
 
+## 策略信号解释
+
+`SignalPanelDefinition.explanation`声明三栏解释，使用`SignalExplanationDefinition(state_key, cases)`。
+`state_key`引用已有`SignalStateDefinition`；`SignalExplanationCase.key`必须完整且唯一覆盖该状态的选项。
+每个分支声明`judgment`、非空`basis`、`next_watch`及`explanation`，分别表示当前判断、依据、接下来关注
+和详细说明。平台不按策略名称或数值重新推断交易原因。
+
+正文使用`SignalText(parts)`，`parts`为纯文字和以下强类型引用的元组：
+
+| 引用 | 来源 |
+| --- | --- |
+| `SeriesValueRef(series_key)` | 本次已声明数值，继承序列分组的单位与精度 |
+| `GuideValueRef(series_key, guide_key)` | 本次参考线数值，继承相同单位与精度 |
+| `StateValueRef(state_key)` | 本次状态选项的标签，可用于明确说明条件是否达标 |
+
+不存在表达式求值、HTML、Markdown或脚本执行接口。文字按纯文本显示；参数阈值应通过引用填充，
+不能在多份模板中手写。数值参考线应由策略当前参数或实际交易计算证据生成。示例：
+
+```python
+from strategy_runtime import (
+    SignalText, SignalBasisDefinition, SignalExplanationCase,
+    SignalExplanationDefinition, SeriesValueRef, GuideValueRef,
+)
+
+# 绑定到声明中的 decision 状态；该示例状态仅有 wait 一个选项。
+explanation = SignalExplanationDefinition("decision", (
+    SignalExplanationCase(
+        "wait",
+        SignalText(("暂不满足入场条件",)),
+        (SignalBasisDefinition("entry", SignalText((
+            "当前得分 ", SeriesValueRef("score"),
+            "；入场门槛 ", GuideValueRef("score", "entry"),
+        ))),),
+        SignalText(("关注得分是否达到 ", GuideValueRef("score", "entry"))),
+        SignalText(("得分描述模型定义的条件，不是上涨概率。",)),
+    ),
+))
+```
+
+`StrategyImplementationV2.observation_history(inputs, context, history)`接口不变。RSCH读取交易计算
+已产生的原因码、条件结果和参数事实，返回声明所需的`obs_`字段，不能复制一套决策规则或修改交易历史。
+解释采用实际命中的分支；模型入场、退出与账户成交分别表达。平台提供字段、引用和状态一致性校验；
+RSCH负责金融含义、阈值边界、规则优先级及完整状态覆盖的审查。
+
+`observe_execution_plan(definition, plan)`是运行消费者的统一入口，返回`StrategyObservation`或
+`ObservationUnavailable`。它在异常隔离区外严格校验运行定义与执行计划身份；身份错误仍抛出异常。
+只有之后的观察计算、解释解析和显示字段校验错误转为明确不可用，不影响已成功计算的交易计划。
+`materialize_observation`保留严格抛错语义，适用于契约校验。所选解释引用`UNAVAILABLE`事实时整项观察
+不可用；`INACTIVE`引用明确显示“不适用”，不替换为零。选择状态不可用、未知或缺失时不能生成解释。
+
+解释快照`SignalExplanationSnapshot`保存`state_key`、`case_key`、已解析的三栏正文及详细说明，
+`basis`为`SignalBasisSnapshot(key, text)`元组。回放消费当时快照，不用当前参数或代码重算历史文案。
+带解释的声明和观察使用`strategy_observation.v4`；v2旧观察、v3旧面板仍按各自明确契约只读，
+不得把新增解释塞入v3或将缺少解释的v3改标为v4。旧记录不自动补造解释，旧声明和哈希保持不变。
+
 ## 数据准备
 
 主调方负责数据空间、取数策略及业务输入清单。SRT公开需求计划，DFLS通过`prepare`将数据写入空间，
@@ -318,7 +373,8 @@ SRT将其校验为公开强类型`CycleTarget(active, entry_fraction)`。比例�
 
 `RuntimeBindingSpec`使用schema 2，绑定`source_files/implementation_sha256/install_files/observation_sha256`；
 `RuntimeBinding`再绑定发布ID和哈希。平台从候选定义生成绑定，加载时核对观察定义哈希。
-SRT物化`strategy_observation.v1`事实；TDR和PTE各自统一渲染回测及前瞻图，冻结包不绑定策略绘图代码。
+SRT物化版本化观察事实；新解释使用`strategy_observation.v4`，旧v2/v3记录按其原合同读取。
+TDR和PTE通过共享图表组件渲染回测及前瞻图，冻结包不绑定策略绘图代码。
 
 冻结版本的可用性以当前治理事实和TDR `strategy_info` API查询为准，不以本说明中的历史版本清单判断。
 

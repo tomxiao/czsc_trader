@@ -136,6 +136,46 @@ def test_codec_retains_frame_precision_missing_values_dtypes_and_index():
         decode({"tag": "record", "type": "os.system", "fields": {}}, None)
 
 
+def test_codec_preserves_unavailable_observation_plan_identity_and_failure():
+    from datetime import date
+    from strategy_runtime import StrategyIdentity, ObservationUnavailable
+    from czsc_trader.backtesting.observation import UnavailablePlanObservation
+    from czsc_trader.backtesting.models import StrategyIdentity as AccountIdentity
+    from czsc_trader.backtesting.result import BacktestResult
+
+    observed = UnavailablePlanObservation(
+        StrategyIdentity("S900", "S900-C0001", "a" * 64, "b" * 64, "159326.SZ"),
+        "c" * 64, "d" * 64, "e" * 64, date(2026, 10, 20), date(2026, 10, 21), "BUY", 1.0,
+        ObservationUnavailable("missing observation condition", "strategy_observation.v4"),
+    )
+    payload = json.loads(json.dumps(encode(observed), allow_nan=False))
+    assert decode(payload, None) == observed
+    assert payload["value"]["contract_version"] == "tdr_plan_observation.v1"
+    assert payload["value"]["observation"]["status"] == "UNAVAILABLE"
+    assert "series" not in payload["value"] and "facts" not in payload["value"]
+    result = BacktestResult(AccountIdentity("CANDIDATE", "S900-C0001", "synthetic"),
+                            *(pd.DataFrame() for _ in range(5)), observations=(observed,))
+    restored = decode(json.loads(json.dumps(encode(result), allow_nan=False)), None)
+    assert restored.observations == (observed,)
+    assert restored.identity == result.identity
+    for field, invalid in (
+        ("contract_version", "strategy_observation.v4"),
+        ("plan_identity", "invalid"), ("signal_date", "2026-10-21"),
+        ("action", ""), ("target_position", True), ("target_position", 1.1),
+        ("target_position", float("nan")),
+        ("observation", {**observed.unavailable.to_dict(), "status": "READY"}),
+    ):
+        changed = {**payload, "value": {**payload["value"], field: invalid}}
+        with pytest.raises((ValueError, TypeError)):
+            decode(changed, None)
+    with pytest.raises(ValueError, match="envelope"):
+        decode({**payload, "value": {**payload["value"], "series": []}}, None)
+    with pytest.raises(ValueError, match="checkpoint"):
+        decode({**payload, "extra": True}, None)
+    with pytest.raises(TypeError, match="typed identity and failure"):
+        replace(observed, unavailable={"status": "UNAVAILABLE"})
+
+
 @pytest.mark.parametrize("run_id", ["../escape", "a/b", "CON", "trailing."])
 def test_checkpoint_paths_are_scoped(tmp_path, run_id):
     with pytest.raises(ValueError):
