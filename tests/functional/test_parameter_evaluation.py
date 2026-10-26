@@ -238,15 +238,15 @@ def test_not_applicable_plan_and_delivery_retain_authenticated_center_without_ch
     bad_payload["parameters"]["threshold"] = .4
     with pytest.raises(ValueError, match="center payload differs"):
         replace(plan, center=replace(plan.center, payload_json=_payload_json(bad_payload)))
-    omitted = json.loads(plan.center.payload_json)
-    omitted["parameters"]["nested"] = {"unreported": 20}
-    with pytest.raises(ValueError, match="every parameter payload leaf"):
-        replace(plan, center=replace(plan.center, payload_json=_payload_json(omitted)))
     empty_design = build_parameter_neighborhood_design(ParameterNeighborhoodRequest(
         plan.design.center, plan.design.protocol, replace(plan.design.space, axes=())),
         feasibility=lambda values: True).design
-    with pytest.raises(ValueError, match="every parameter payload leaf"):
-        replace(plan, design=empty_design)
+    assert not replace(plan, design=empty_design).design.is_applicable
+    malformed = json.loads(plan.center.payload_json)
+    malformed["parameters"] = None
+    with pytest.raises(ValueError, match="explicit parameter object"):
+        replace(plan, design=empty_design,
+                center=replace(plan.center, payload_json=_payload_json(malformed)))
 
     assessment = replace(assessment_request(build_assessment_evidence(center, center_result)),
                          parameter_designs=(plan.design,))
@@ -281,6 +281,35 @@ def test_not_applicable_plan_and_delivery_retain_authenticated_center_without_ch
     assert assembled.validation.stats.accounts_authenticated == 1
     assert validate_delivery(context, assembled.receipt.reference).status is d.ValidationStatus.PASS
     assert d.DeliveryContent.from_dict(replace(content, payload=payload).to_dict()).payload == payload
+
+
+@pytest.mark.parametrize("applicable", [False, True])
+def test_parameter_plan_checks_declared_scope_and_preserves_unmapped_fields(managed_evaluation, applicable):
+    from czsc_trader.research_tools.parameter_evaluation import read_parameter_plan
+
+    research, request = managed_evaluation
+    parameters = {**request.strategy.payload["parameters"],
+                  "config": {"labels": ["a", "b"], "optional": None, "fixed": 20}}
+    request = replace(request, strategy=replace(request.strategy,
+        payload={**request.strategy.payload, "parameters": parameters}))
+    _, plan, reference, _ = parameter_plan(research, request, not_applicable=not applicable)
+    assert plan.design.is_applicable is applicable
+    assert read_parameter_plan(reference, research.repository.root) == plan
+    assert json.loads(plan.center.payload_json)["parameters"] == parameters
+    for child in plan.children:
+        assert json.loads(child.payload_json)["parameters"]["config"] == parameters["config"]
+    axis = plan.design.space.axes[0]
+    bad_space = replace(plan.design.space, axes=(replace(axis, payload_path=("absent",)),))
+    bad_design = build_parameter_neighborhood_design(ParameterNeighborhoodRequest(
+        plan.design.center, plan.design.protocol, bad_space), feasibility=lambda values: True).design
+    with pytest.raises(ValueError, match="path does not exist"):
+        replace(plan, design=bad_design)
+
+
+def test_parameter_plan_rejects_undeclared_configuration_change(managed_evaluation):
+    research, request = managed_evaluation
+    with pytest.raises(ValueError, match="undeclared changes are forbidden"):
+        parameter_plan(research, request, child_parameters=lambda point: {"unmapped": [1, None]})
 
 
 def test_parameter_plan_rejects_parameter_driven_execution_switch(managed_evaluation):

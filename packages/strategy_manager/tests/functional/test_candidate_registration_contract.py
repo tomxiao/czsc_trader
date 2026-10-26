@@ -67,7 +67,10 @@ def test_registration_rejects_embedded_foreign_family_in_legacy_archive(registra
         )
 
 
-@pytest.mark.parametrize("evidence", [(), (CandidateEvidence("same.json", "a" * 64),) * 2])
+@pytest.mark.parametrize("evidence", [
+    (CandidateEvidence("same.json", "a" * 64),) * 2,
+    (CandidateEvidence("same.json", "a" * 64), CandidateEvidence("same.json", "b" * 64)),
+])
 def test_candidate_origin_requires_unique_supporting_evidence(evidence):
     with pytest.raises(ValidationError, match="unique supporting evidence"):
         CandidateRegistrationOrigin("EX001_20261003", evidence)
@@ -106,8 +109,12 @@ def persisted_candidate(tmp_path, registration):
     return registry, root, record
 
 
-def test_registry_uses_explicit_evidence_root_and_preserves_content_identity(persisted_candidate):
+@pytest.mark.parametrize("with_evidence", [True, False])
+def test_registry_uses_explicit_evidence_root_and_preserves_content_identity(persisted_candidate, with_evidence):
     registry, root, record = persisted_candidate
+    if not with_evidence:
+        record = replace(record, origin=replace(record.origin, evidence=()))
+    assert CandidateRegistration.from_dict(record.to_dict()) == record
     assert record.schema_version == 3
     assert record.identity_schema_version == 2
     assert registry.register_candidate(record, evidence_root=root) == record

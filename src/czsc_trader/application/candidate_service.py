@@ -31,8 +31,8 @@ class CandidateRegistrationRequest:
             raise ValueError("candidate experiment family differs")
         if not isinstance(self.evidence, tuple) or not all(isinstance(item, EvidenceRef) for item in self.evidence):
             raise TypeError("candidate evidence requires a tuple of EvidenceRef")
-        if not self.evidence or len(set(self.evidence)) != len(self.evidence):
-            raise ValueError("candidate evidence must be nonempty and unique")
+        if len({item.repository_path for item in self.evidence}) != len(self.evidence):
+            raise ValueError("candidate evidence paths must be unique")
         if any(item.experiment.strategy_id != self.experiment.strategy_id for item in self.evidence):
             raise ValueError("candidate evidence belongs to another research batch")
         if not isinstance(self.dependencies, tuple) or not all(
@@ -54,12 +54,16 @@ def _publish(root: Path, relative: str, data: bytes, repository_root: Path) -> C
     return ref
 
 
-def _evaluation_support(context, ref, candidate, identity):
-    """Registration accepts platform account evidence bound to the actual candidate."""
-    value = json.loads(ref.resolve(context.root).read_text(encoding="utf-8"))
-    if (ref.schema != "account_evaluation" or ref.schema_version not in (7, 8)
-        or value.get("schema_version") != ref.schema_version):
-        raise ValueError("candidate requires platform account evaluation evidence")
+def _validate_support(context, ref, candidate, identity):
+    """Authenticate attachments; declared account facts also bind candidate identity."""
+    _, data = ref._read_verified(context.root)
+    if ref.schema != "account_evaluation":
+        return
+    if ref.schema_version not in (7, 8):
+        raise ValueError("unsupported account evaluation evidence version")
+    value = json.loads(data)
+    if not isinstance(value, dict) or value.get("schema_version") != ref.schema_version:
+        raise ValueError("account evaluation evidence schema differs")
     from ..research_tools.evaluation import validate_evaluation_evidence
     validate_evaluation_evidence(value)
     if value["request_identity"]["experiment_id"] != ref.experiment.experiment_id:
@@ -95,7 +99,7 @@ def register_candidate(context: RepositoryContext, request: CandidateRegistratio
     runtime = StrategyRuntime()
     identity = runtime.identify(candidate, dependencies=request.dependencies)
     for ref in request.evidence:
-        _evaluation_support(context, ref, candidate, identity)
+        _validate_support(context, ref, candidate, identity)
     registry = StrategyRegistry(context.research_registry_root)
     registry.get_family(candidate.strategy_family_id)
     payload_data = json.dumps(dict(candidate.payload), default=dict, sort_keys=True,

@@ -510,7 +510,11 @@ registration = register_candidate(repository, CandidateRegistrationRequest(
 ))
 ```
 
-请求中的证据须为同批次、同候选内容的已发布完整评价，可来自该批次多个实验。
+`evidence`可以显式传入空元组，也可引用同批次已发布的普通材料或账户评价，可来自多个实验。
+所有引用核验路径、存在性、哈希及唯一性；普通材料只作为可追溯附件，不解释其研究结论。
+声明为`account_evaluation`的引用额外核验账户事实、实验及候选内容身份，不接受损坏或错配账户。
+登记成功只表示内容身份和来源已保存，不表示实验完成、策略合格或已取得交付资格。
+`CANDIDATES`交付中每个`CandidateEntry`仍须显式关联真实账户评价，包括未进入`handoff`的条目。
 TDR 保存 `assets/candidates/<候选>/payload/<hash>.json` 和 `assets/candidates/<候选>/source/<hash>/strategy_runtime/` 快照；SM 登记 schema 3，内容身份仍为 schema 2。
 文件引用相对批次根 `research/<策略ID>/`，`source_root` 记录快照源码根。
 同键同登记内容复用，冲突拒绝；`load_candidate(repository, CandidateKey(...))` 认证记录及源码后返回候选。
@@ -566,7 +570,10 @@ if design.is_applicable:
 规定点集、中心请求身份、中心输入准备身份、固定执行契约和映射／约束材料引用。
 各子载荷及有效内容必须互不相同，也必须不同于中心；相同行为不构成拒绝理由。
 每个轴的`payload_path`相对于载荷`parameters`；中心值须匹配声明的精确类型和值，子载荷只允许在这些路径替换为对应具名点值。缺路径、隐藏改参、声明外变更、类型替换及多个点坍缩到同一内容均拒绝。不适用设计允许`children=()`，仍核验中心载荷、真实请求、输入、映射与约束材料，禁止`bind_point`。旧plan schema 1（球面）和2（v1邻域）保留读取与证据认证；`create`、`bind_point`及新评价均拒绝旧版本，不自动转换旧点集。
-schema 3整项不适用计划还要求轴路径覆盖`parameters`的全部标量叶子，包括嵌套参数和显式固定的结构参数；空轴只适用于空参数对象。列表等当前轴契约无法表达的非标量叶子明确拒绝，不能通过遗漏参数取得整项豁免。该检查只核验结构覆盖，不判断参数是否真正参与策略决策。
+schema 3计划以`design.space.axes`为RSCH声明的检验范围，不从`parameters`的全部叶子字段推断研究参数全集。
+未映射的列表、空值或其他配置不参与参数域检查；声明路径仍须存在、互不重叠，中心值及类型须与真实载荷一致。
+子候选只能改变声明参数，其余载荷保持一致。空轴允许表达空的声明范围；`is_applicable=False`仅表示声明空间内没有合法非中心扰动点，
+不证明策略全部生效参数均已检查。参数识别、遗漏说明及结论适用范围由RSCH通过现有`mapping_evidence`和研究报告说明。
 `ParameterEvaluationBinding` 保存已发布计划引用及 SE `ParameterNeighborhoodBinding`，进入请求哈希和账户证据。
 普通评价可以不提供该绑定；带绑定的评价必须核验计划已经发布、文件字节一致、点序号及实际载荷匹配。
 
@@ -750,6 +757,10 @@ if checked.status is not ValidationStatus.PASS:
 前驱为同批次的 `DeliveryReference`；同阶段前驱只能是更早修订。
 
 `PARTIAL/BLOCKED` 须列明未完成项，完整交付不能同时声称有未完成项。
+ASSESSMENT的中心候选ID及内容哈希集合须与前驱`CandidateSet.handoff`完全一致，部分交付也保留完整名单；
+尚未完成的计算可通过缺失证据和`IncompleteEvaluation`如实表达，不要求所有计算先完成才能交付。
+`CandidateAssessmentDelivery.pending_decisions`及`CandidateInspectionDelivery.pending_decisions`均可为空元组，
+不因未冻结而强制新增待决事项；已填写事项仍须为非空文本。
 校验默认 `DeliveryValidationScope.FULL`，核对文件身份和关联事实，并重算阶段四 SE 结果；
 `INTEGRITY` 仍核对文件、引用及保存事实，但不重新执行阶段四 SE 自检和排序计算。两者都不重跑整个研究过程。
 两种范围均核验 `report.md` 与提交的 `report` 字节一致；该检查不判断文字解释或研究结论的正确性。
@@ -786,7 +797,9 @@ if checked.status is not ValidationStatus.PASS:
 `target_checks`，推荐排序还须满足可比性和完整证据政策。研究未达标或证据不足的真实报告可正常留存，
 不能将保存成功当作研究通过。`INTEGRITY`不重算数值，不得替代FULL声称复算成功。
 
-schema 7阶段交付仍不支持；schema 12的MANDATE/ASSESSMENT保留指定旧schema 8、11的读取认证，不改写历史原件。FULL验证按旧封装分别重算v5/v3及v6/v3；不以新公式重解释旧结果。新ASSESSMENT包含邻域设计时须使用v2 `NeighborhoodSelfCheckProtocol.parameter_protocol`与`ParameterNeighborhoodTarget`，无自动协议转换；无设计的缺失诊断可以如实留存，但不会取得不适用待遇。
+schema 7阶段交付仍不支持；schema 12的MANDATE/ASSESSMENT保留指定旧schema 8、11的读取认证，不改写历史原件。FULL验证按旧封装分别重算v5/v3及v6/v3；不以新公式重解释旧结果。新ASSESSMENT包含邻域设计时须使用v2 `NeighborhoodSelfCheckProtocol.parameter_protocol`，无自动协议转换。
+邻域可仅用于诊断，不强制新增`ParameterNeighborhoodTarget`；已有确认目标仍须完整保留并精确绑定原约定。
+无设计的缺失诊断可以如实留存，但不会取得不适用待遇。
 已有schema 7账户证据可经认证显式引用。旧MANDATE中的32点/26点目标不能自动变成新比例目标；新研究需经确认建立新MANDATE和相应交付，历史资格与结论不变。
 StrategyVersion和运行发布合同不变，不更改已冻结策略、SM状态或PTE运行行为。
 
@@ -861,7 +874,7 @@ TDR负责升级的可追溯、审计和发布事务完整性。是否沿用策�
 它核对旧身份和新实现，将payload与源码保存为准备快照，独立构建新发布包，生成包含新旧身份、
 候选标识、源码及内容哈希、文件变化、修改声明及证据引用的schema 2升级计划；不调用技术检验，
 也不修改当前冻结包。已登记候选可由调用方先用`load_candidate`加载；升级本身不要求候选登记，
-避免登记所需的账户评价材料成为间接研究门槛。验证报告为可选审计材料，关联FAIL报告不会仅因
+直接认证新实现及其审计材料。验证报告为可选审计材料，关联FAIL报告不会仅因
 该结论阻止升级；缺失、损坏或内容哈希不符的引用仍明确失败。
 
 `apply_frozen_runtime_upgrade(context, prepared)`返回`FrozenRuntimeUpgradeReceipt`。

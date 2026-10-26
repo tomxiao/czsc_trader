@@ -121,7 +121,7 @@ class CandidateRegistrationOrigin(_Record):
             isinstance(item, CandidateEvidence) for item in self.evidence
         ):
             raise TypeError("origin evidence requires tuple[CandidateEvidence, ...]")
-        if not self.evidence or len({item.path for item in self.evidence}) != len(self.evidence):
+        if len({item.path for item in self.evidence}) != len(self.evidence):
             raise ValidationError("origin requires unique supporting evidence")
 
 

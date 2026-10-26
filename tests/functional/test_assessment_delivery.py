@@ -443,7 +443,7 @@ def test_account_attachment_failures_have_same_codes_in_serial_and_parallel(comp
     if damage != "hash":
         with pytest.raises(d.DeliveryValidationError) as failed:
             assemble_delivery(context, replace(definition, revision=2), claimed, resources=resources)
-        assert failed.value.issues[0].code == code
+        assert failed.value.issues[0].code == code, failed.value.issues
         assert failed.value.issues[0].field_path == bad.path
         assert failed.value.issues[0].message.strip()
         assert not (context.root / "research/S900/assets/deliveries/COMPONENTS/2").exists()

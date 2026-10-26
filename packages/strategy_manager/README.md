@@ -24,7 +24,8 @@ SM提供研究登记、冻结发布及生命周期所需的强类型契约和存
 新实验使用`EXxxx_YYYYMMDD`身份，实验工作区允许修正和重跑；已发布证据和登记候选保持不可变。
 
 `CandidateRegistration`读写只接受schema 3，内容身份继续使用`identity_schema_version=2`。
-`CandidateRegistrationOrigin(experiment_id, evidence)`绑定来源实验和非空、唯一的支撑证据；
+`CandidateRegistrationOrigin(experiment_id, evidence)`绑定来源实验和可选支撑证据，允许`evidence=()`；
+已提供的证据须类型正确且路径唯一，不因无账户评价而阻止内容身份登记。
 不再要求实验定义、执行绑定或预检回执。`source_root`记录登记时保存的源码快照根目录。
 候选载荷、`source_files`、来源及派生证据中的全部`CandidateEvidence.path`，以及`source_root`，
 均相对调用方提供的批次证据根目录。TDR使用`research/<key.strategy_id>/`作为该根目录。
@@ -48,7 +49,9 @@ record = registry.get_candidate(record.key, evidence_root=evidence_root)
 `get_candidate(key, *, evidence_root=...)`继续核验登记引用的全部文件，研究员通过TDR加载候选。
 序列化记录须包含上述两个版本字段，旧schema 1/2登记明确拒绝，不自动迁移。
 研究员通过TDR的`register_candidate/load_candidate`使用上述能力。TDR将载荷和源码快照保存到
-`research/<策略ID>/assets/candidates/<候选ID>/`，登记引用显式发布的账户评价证据。
+`research/<策略ID>/assets/candidates/<候选ID>/`，登记可不附证据，也可引用同批次显式发布的普通材料与账户评价。
+SM核验引用文件完整性；TDR对声明为账户评价的材料额外核验账户事实及候选身份。登记不表示研究结论成立或交付就绪，
+正式`CANDIDATES`交付仍由TDR要求每个条目关联真实账户评价。登记schema与身份算法保持不变，历史记录不改写。
 阶段五运行加载只核对登记元数据、载荷、源码及依赖；来源研究引用作为元数据保留，不要求阶段一至四档案可读。
 
 `ResearchDecision`将`APPROVE/REJECT/DEFER`与以下对象之一绑定：

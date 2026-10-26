@@ -102,11 +102,8 @@ class ParameterEvaluationPlan(_Record):
                 raise ValueError("parameter evaluation plans require local sensitivity; structural controls are separate")
             _validate_parameter_payloads(self.design, self.center, self.children)
         if self.schema_version == 3 and not self.design.is_applicable:
-            parameters = json.loads(self.center.payload_json).get("parameters")
-            if type(parameters) is not dict:
+            if type(json.loads(self.center.payload_json).get("parameters")) is not dict:
                 raise ValueError("not-applicable plan requires an explicit parameter object")
-            if {axis.payload_path for axis in self.design.space.axes} != _parameter_leaf_paths(parameters):
-                raise ValueError("not-applicable plan must cover every parameter payload leaf")
 
     @classmethod
     def create(cls, design: ParameterNeighborhoodDesign, center: EvaluationRequest,
@@ -250,20 +247,6 @@ def _parameter_parent(payload: dict, path: tuple[str, ...]) -> tuple[dict, str]:
     if type(node) is not dict or path[-1] not in node:
         raise ValueError(f"parameter payload path does not exist: {path}")
     return node, path[-1]
-
-
-def _parameter_leaf_paths(parameters: dict, prefix: tuple[str, ...] = ()) -> set[tuple[str, ...]]:
-    """NA requires an exhaustive structural declaration, not inference of active rules."""
-    paths = set()
-    for name, value in parameters.items():
-        path = (*prefix, name)
-        if type(value) is dict:
-            paths.update(_parameter_leaf_paths(value, path))
-        elif type(value) in (float, int, str, bool):
-            paths.add(path)
-        else:
-            raise ValueError("not-applicable plan requires mapped scalar parameter leaves")
-    return paths
 
 
 def _validate_parameter_payloads(design, center, children) -> None:
