@@ -1,10 +1,12 @@
 """Local publication transactions using synthetic releases in isolated repos.
 
-The inspection trust boundary is supplied separately here; full governance and
-market acceptance are exercised by their own public-path tests and evidence.
+Candidate sources, audit references, package construction, CAS, archives and
+rollback run through the real upgrade API without completed-inspection substitutes.
 """
 
+import ast
 from dataclasses import replace
+from hashlib import sha256
 import json
 from pathlib import Path
 import shutil
@@ -16,8 +18,7 @@ from strategy_runtime import RuntimeCompatibilityError, StrategyCandidate, imple
 from czsc_trader.application import RepositoryContext, validate_release_package
 from czsc_trader.application import runtime_migration as m
 from czsc_trader.application import research_evidence as e
-from czsc_trader.application.inspection_service import _EvidenceStore
-from strategy_manager import StrategyRegistry, CandidateKey, canonical_sha256
+from strategy_manager import StrategyRegistry, CandidateKey, ValidationError
 from strategy_manager import freeze_contracts as f
 from test_current_contracts import (
     current_frozen as current_frozen, inspection as inspection,
@@ -25,37 +26,18 @@ from test_current_contracts import (
 )
 
 
-def _inspected_migration_release(context, owner, stored, candidate, manifest, binding, source):
-    """Persist exact reviewed bytes at the mocked completed-inspection boundary."""
-    version = replace(stored, strategy_payload=json.loads(json.dumps(dict(candidate.payload), default=dict)),
-                      release_hash="0" * 64)
-    version = replace(version, release_hash=canonical_sha256(version.release_payload()))
-    migrated_binding = {**binding, "release_hash": version.release_hash,
-                        "implementation_sha256": candidate.payload["runtime"]["source_sha256"]}
-    store = _EvidenceStore(context, owner)
-    package = context.strategy_root / stored.strategy_id / "releases" / stored.version
-    files = []
-    prefix = manifest["runtime_root"] + "/"
-    for path in sorted(manifest["files"]):
-        if path == "runtime_binding.json":
-            ref = store.put_json(migrated_binding)
-        elif path.startswith(prefix):
-            relative = path.removeprefix(prefix)
-            root = candidate.source_root if relative in candidate.payload["runtime"]["source_files"] else source
-            ref = store.put((root / relative).read_bytes())
-        else:
-            ref = store.put((package / path).read_bytes())
-        files.append(f.FreezeFile(path, ref))
-    inspected_manifest = {key: value for key, value in manifest.items() if key != "package_hash"}
-    inspected_manifest.update(strategy_version_hash=version.release_hash, candidate_package_hash="b" * 64,
-                              files={item.path: item.source.sha256 for item in files})
-    inspected_manifest["package_hash"] = canonical_sha256(inspected_manifest)
-    return f.InspectedRelease(store.put_json(version.to_dict()), store.put_json(inspected_manifest),
-                              tuple(files), version.release_hash, inspected_manifest["package_hash"])
+def _audit_ref(context, value):
+    data = json.dumps(value, ensure_ascii=False, sort_keys=True).encode("utf-8")
+    digest = sha256(data).hexdigest()
+    owner = f.ResearchEvidenceOwner("S900", "EX001_20261020")
+    path = context.root / owner.repository_path / (digest + ".json")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(data)
+    return f.ResearchEvidenceRef(owner, path.name, digest)
 
 
 @pytest.fixture
-def upgrade(current_frozen, monkeypatch):
+def upgrade(current_frozen):
     context, stored = current_frozen
     root, strategies = context.root, context.strategy_root
     original_manifest, binding, source = validate_release_package(context, "S900-v1")
@@ -67,8 +49,8 @@ def upgrade(current_frozen, monkeypatch):
         "actor": "synthetic-fixture", "reason": "transaction qualification boundary",
         "occurred_at": "2026-10-20T00:00:00+08:00"}
     (strategies / "S900/lifecycle.jsonl").write_text(json.dumps(lifecycle) + "\n")
-    ref = f.ResearchEvidenceRef(f.ResearchEvidenceOwner("S900", "EX001_20261020"), "a" * 64 + ".json", "a" * 64)
-    candidate_source = root / ".tmp/upgrade-source"
+    ref = _audit_ref(context, {"authorization": "Synthetic explicit same-version upgrade approval"})
+    candidate_source = root / ".tmp/upgrade-source/strategy_runtime"
     shutil.copytree(source, candidate_source)
     payload = json.loads(json.dumps(dict(stored.strategy_payload), default=dict))
     payload["parameters"]["threshold"] = 0.75
@@ -77,14 +59,11 @@ def upgrade(current_frozen, monkeypatch):
     payload["runtime"]["source_sha256"] = implementation_sha256(
         tuple(payload["runtime"]["source_files"]), source_root=candidate_source)
     candidate = StrategyCandidate("S900", "C9876", payload, candidate_source)
-    release = _inspected_migration_release(context, ref.owner, stored, candidate, original_manifest, binding, source)
-    report = SimpleNamespace(plan=SimpleNamespace(sha256="b" * 64), release=release)
-    # Only replace the completed inspection boundary. Package authentication,
-    # exact source publication, CAS, archive, lifecycle and rollback stay real.
-    monkeypatch.setattr(m, "_upgrade_inputs", lambda *args: (
-        report, candidate, stored, original_manifest, binding, source))
-    request = m.FrozenRuntimeUpgradeRequest(original, CandidateKey("S900", candidate.candidate_id),
-                                           ref, ref, root / ".tmp/prepared")
+    request = m.FrozenRuntimeUpgradeRequest(
+        original, candidate, ref,
+        "Synthetic parameter and implementation revision", "synthetic-researcher", (),
+        root / ".tmp/prepared",
+    )
     return context, request, stored
 
 
@@ -99,12 +78,23 @@ def test_upgrade_prepares_then_preserves_history_archives_and_commits_idempotent
     prepared = m.prepare_frozen_runtime_upgrade(context, request)
     assert _bytes(context.strategy_root) == before
     assert prepared.migrated.version == prepared.original.version == "v1"
-    release = m._upgrade_inputs(context, request)[0].release
-    stage = prepared.plan_path.parent / "staged/S900"
-    assert (stage / "versions/v1.json").read_bytes() == release.version_record.resolve(context.root).read_bytes()
-    assert (stage / "releases/v1/release_manifest.json").read_bytes() == release.manifest.resolve(context.root).read_bytes()
-    for item in release.files:
-        assert (stage / "releases/v1" / item.path).read_bytes() == item.source.resolve(context.root).read_bytes()
+    candidate = request.candidate
+    stage_context = replace(context, strategy_root=prepared.plan_path.parent / "staged")
+    manifest, binding, staged_source = validate_release_package(stage_context, "S900-v1")
+    assert manifest["package_hash"] == prepared.migrated.package_hash
+    assert binding["source_files"] == list(candidate.payload["runtime"]["source_files"])
+    for name in binding["source_files"]:
+        assert (staged_source / name).read_bytes() == (candidate.source_root / name).read_bytes()
+    plan = json.loads(prepared.plan_path.read_bytes())
+    assert plan["schema_version"] == 2
+    assert plan["confirmation"] == request.confirmation.to_dict()
+    assert plan["change_summary"] == request.change_summary
+    assert plan["operator"] == request.operator
+    assert plan["evidence"] == []
+    assert "inspection" not in plan
+    # Application publishes the reviewed snapshot, not the mutable research workspace.
+    workspace_source = candidate.source_root / binding["source_files"][0]
+    workspace_source.write_bytes(workspace_source.read_bytes() + b"\n# Later workspace edit.\n")
     receipt = m.apply_frozen_runtime_upgrade(context, prepared)
     assert receipt.status == "COMMITTED"
     current = StrategyRegistry(context.strategy_root).get_version("S900", "v1")
@@ -113,6 +103,7 @@ def test_upgrade_prepares_then_preserves_history_archives_and_commits_idempotent
         old.pop(field)
         new.pop(field)
     assert old == new
+    assert current.strategy_payload["parameters"]["threshold"] == 0.75
     assert current.strategy_payload["decision_feedback"] == "MARKET_INTENT"
     assert current.strategy_payload["runtime"]["contract_version"] == 2
     assert StrategyRegistry(context.strategy_root).current_qualification("S900", "v1").value == "RESEARCH"
@@ -247,3 +238,157 @@ def test_upgrade_preparation_and_receipt_reject_untyped_public_values():
         m.FrozenRuntimeMigrationRequest("S001-v1", "migration", Path(".tmp/new"))
     with pytest.raises(ValueError, match="no reviewed adapter"):
         m.FrozenRuntimeMigrationRequest("S099-v1", "C9899", Path(".tmp/new"))
+
+
+@pytest.mark.parametrize("status", ["FAIL", "INCOMPLETE", "NOT_REQUESTED"])
+def test_upgrade_records_optional_evidence_without_interpreting_research_result(upgrade, status):
+    context, request, _ = upgrade
+    evidence = _audit_ref(context, {"status": status, "summary": "Synthetic research diagnostic"})
+    request = replace(request, evidence=(evidence,))
+    prepared = m.prepare_frozen_runtime_upgrade(context, request)
+    plan = json.loads(prepared.plan_path.read_bytes())
+    assert plan["evidence"] == [evidence.to_dict()]
+    receipt = m.apply_frozen_runtime_upgrade(context, prepared)
+    audit = json.loads(receipt.receipt_path.read_bytes())
+    assert audit["status"] == "COMMITTED"
+    assert audit["confirmation"] == request.confirmation.to_dict()
+    assert audit["evidence"] == [evidence.to_dict()]
+    assert audit["operator"] == request.operator
+    assert audit["change_summary"] == request.change_summary
+    assert json.loads(evidence.resolve(context.root).read_bytes())["status"] == status
+
+
+@pytest.mark.parametrize("reference", ["confirmation", "evidence"])
+def test_upgrade_rejects_corrupted_audit_reference_before_publication(upgrade, reference):
+    context, request, _ = upgrade
+    evidence = _audit_ref(context, {"status": "FAIL"})
+    request = replace(request, evidence=(evidence,))
+    prepared = m.prepare_frozen_runtime_upgrade(context, request)
+    damaged = request.confirmation if reference == "confirmation" else evidence
+    damaged.resolve(context.root).write_bytes(b"changed")
+    before = _bytes(context.strategy_root)
+    with pytest.raises(ValidationError, match="hash|digest"):
+        m.apply_frozen_runtime_upgrade(context, prepared)
+    assert _bytes(context.strategy_root) == before
+
+
+def test_upgrade_accepts_inherited_strategy_declaration_on_both_sides(upgrade):
+    context, request, _ = upgrade
+    candidate = request.candidate
+    payload = json.loads(json.dumps(dict(candidate.payload), default=dict))
+    entry = candidate.source_root / payload["runtime"]["source_files"][0]
+    tree = ast.parse(entry.read_text(encoding="utf-8"))
+    name = payload["runtime"]["qualname"]
+    cls = next(node for node in tree.body if isinstance(node, ast.ClassDef) and node.name == name)
+    cls.name = "InheritedDefinitionBase"
+    tree.body.extend(ast.parse(f"class {name}(InheritedDefinitionBase):\n    pass\n").body)
+    entry.write_text(ast.unparse(ast.fix_missing_locations(tree)) + "\n", encoding="utf-8")
+    payload["runtime"]["source_sha256"] = implementation_sha256(
+        tuple(payload["runtime"]["source_files"]), source_root=candidate.source_root)
+    candidate = StrategyCandidate("S900", "C9876", payload, candidate.source_root)
+    first = m.prepare_frozen_runtime_upgrade(context, replace(request, candidate=candidate))
+    assert m.apply_frozen_runtime_upgrade(context, first).status.value == "COMMITTED"
+
+    # The next upgrade starts from a frozen package whose entry class inherits its declaration.
+    _, _, frozen_source = validate_release_package(context, "S900-v1")
+    next_source = context.root / ".tmp/inherited-second-source/strategy_runtime"
+    shutil.copytree(frozen_source, next_source)
+    entry = next_source / payload["runtime"]["source_files"][0]
+    entry.write_bytes(entry.read_bytes() + b"\n# Further explanation revision.\n")
+    payload["runtime"]["source_sha256"] = implementation_sha256(
+        tuple(payload["runtime"]["source_files"]), source_root=next_source)
+    next_request = replace(request, original=first.migrated,
+        candidate=StrategyCandidate("S900", "C9878", payload, next_source),
+        output_directory=context.root / ".tmp/second-prepared")
+    second = m.prepare_frozen_runtime_upgrade(context, next_request)
+    assert m.apply_frozen_runtime_upgrade(context, second).status.value == "COMMITTED"
+    assert first.migrated != second.migrated
+
+
+def test_upgrade_rejects_stale_original_identity(upgrade):
+    context, request, _ = upgrade
+    before = _bytes(context.strategy_root)
+    stale = replace(request, original=replace(request.original, package_hash="f" * 64))
+    with pytest.raises(ValueError, match="identity"):
+        m.prepare_frozen_runtime_upgrade(context, stale)
+    assert _bytes(context.strategy_root) == before
+
+
+@pytest.mark.parametrize("field,value", [
+    ("change_summary", ""), ("operator", " "), ("evidence", []),
+    ("evidence", ("not-a-reference",)), ("candidate", CandidateKey("S900", "C9876")),
+])
+def test_upgrade_request_rejects_missing_audit_or_untyped_inputs(upgrade, field, value):
+    _, request, _ = upgrade
+    with pytest.raises((TypeError, ValueError)):
+        replace(request, **{field: value})
+
+
+def test_committed_receipt_audit_must_match_archived_plan(upgrade):
+    context, request, _ = upgrade
+    prepared = m.prepare_frozen_runtime_upgrade(context, request)
+    receipt = m.apply_frozen_runtime_upgrade(context, prepared)
+    raw = json.loads(receipt.receipt_path.read_bytes())
+    raw["operator"] = "different-operator"
+    receipt.receipt_path.write_text(json.dumps(raw), encoding="utf-8")
+    with pytest.raises(ValueError, match="archive audit differs"):
+        m.apply_frozen_runtime_upgrade(context, prepared)
+
+
+def test_archived_audit_snapshot_remains_bound_to_original_evidence_hash(upgrade):
+    context, request, _ = upgrade
+    prepared = m.prepare_frozen_runtime_upgrade(context, request)
+    receipt = m.apply_frozen_runtime_upgrade(context, prepared)
+    name = "audit/" + request.confirmation.sha256
+    changed = receipt.archive_path / name
+    changed.write_bytes(b"replacement confirmation")
+    # Recomputing a local file manifest must not change the evidence identity.
+    snapshot_path = receipt.archive_path / "snapshot.json"
+    snapshot = json.loads(snapshot_path.read_bytes())
+    snapshot["files"][name] = sha256(changed.read_bytes()).hexdigest()
+    snapshot_path.write_text(json.dumps(snapshot), encoding="utf-8")
+    with pytest.raises(ValueError, match="archived audit evidence differs"):
+        m.apply_frozen_runtime_upgrade(context, prepared)
+
+
+def test_committed_upgrade_audit_is_self_contained_after_source_evidence_is_unavailable(upgrade):
+    context, request, _ = upgrade
+    prepared = m.prepare_frozen_runtime_upgrade(context, request)
+    receipt = m.apply_frozen_runtime_upgrade(context, prepared)
+    request.confirmation.resolve(context.root).unlink()
+    assert m.apply_frozen_runtime_upgrade(context, prepared) == receipt
+
+
+def test_schema_one_archive_is_read_only_and_preserves_original_bytes(upgrade):
+    context, request, stored = upgrade
+    prepared = m.prepare_frozen_runtime_upgrade(context, request)
+    receipt = m.apply_frozen_runtime_upgrade(context, prepared)
+    archive = receipt.archive_path
+    plan_path = archive / "upgrade_plan.json"
+    plan = json.loads(plan_path.read_bytes())
+    plan["schema_version"] = 1
+    plan["inspection"] = request.confirmation.to_dict()
+    for name in ("change_summary", "operator", "evidence", "candidate_identity", "changes"):
+        plan.pop(name)
+    plan_path.write_text(json.dumps(plan), encoding="utf-8")
+    plan_sha = sha256(plan_path.read_bytes()).hexdigest()
+    raw = json.loads(receipt.receipt_path.read_bytes())
+    for name in ("schema_version", "change_summary", "operator", "evidence", "committed_at"):
+        raw.pop(name)
+    raw.update(plan_sha256=plan_sha, inspection=plan["inspection"])
+    receipt.receipt_path.write_text(json.dumps(raw), encoding="utf-8")
+    snapshot_path = archive / "snapshot.json"
+    snapshot = json.loads(snapshot_path.read_bytes())
+    snapshot["plan_sha256"] = plan_sha
+    snapshot["files"]["upgrade_plan.json"] = plan_sha
+    snapshot_path.write_text(json.dumps(snapshot), encoding="utf-8")
+    before = _bytes(archive)
+    original, _, _, source = m._migration_original(context, request.original)
+    assert original.to_dict() == stored.to_dict()
+    assert source.is_relative_to(archive)
+    assert _bytes(archive) == before
+    prepared.plan_path.write_bytes(plan_path.read_bytes())
+    old_prepared = replace(prepared, plan_sha256=plan_sha)
+    with pytest.raises(ValueError, match="historical plans are read-only"):
+        m.apply_frozen_runtime_upgrade(context, old_prepared)
+    assert _bytes(archive) == before

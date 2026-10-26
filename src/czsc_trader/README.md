@@ -831,22 +831,44 @@ StrategyVersion和运行发布合同不变，不更改已冻结策略、SM状态
 
 更完整字段、API和目录表见[阶段五公共契约](../../docs/superpowers/specs/2026-10-22-stage5-public-contracts.md)。
 
-### 同版本观察升级
+### 同版本发布包升级
 
-`validate_frozen_observation_upgrade(context, original, candidate)`校验显式冻结来源与观察升级候选。
-允许新增或修订信号面板声明，以及`observation_definition`、`observation_history`中的观察实现；
-既有`series/facts`声明、参数、交易实现、执行规则和原依赖字节必须保持。
-既有`observation_*`旁路模块也保持原字节；需要修订时增加新的`observation_*.py`模块，
-仅由观察方法局部导入，不能借观察升级修改原有依赖。未改变任何实现或声明的候选不属于升级。
+TDR负责升级的可追溯、审计和发布事务完整性。是否沿用策略版本号、修改是否合理、需要哪些验证及
+验证结论由责任方决定并留痕；升级入口不裁决策略语义，不要求研究选型、历史等价或技术检验PASS。
+观察声明可以位于父类，源码可以重构，依赖和参数可以变化；新包自身仍须满足SRT类型及运行契约，
+源码、payload、运行绑定和manifest必须一致。研究员负责信号解释与实际交易分支的一致性验证，
+见[SRT使用说明](../../packages/strategy_runtime/README.md)。
 
-来源认证与交易等价证明分别完成。等价证明分别排除两侧面板明确声明的`obs_`观察字段，
-允许观察字段改名或修正值，但未知观察字段明确拒绝；其余信号、日期、决策、订单、成交、账户、
-交易和资金周期经济事实继续严格比较。新旧原始证据均保留，字段排除不表示解释语义通过验收。
-研究员负责代表状态、金融文案及实际交易分支的一致性验证，见[SRT使用说明](../../packages/strategy_runtime/README.md)。
+`FrozenRuntimeUpgradeRequest`字段如下：
 
-通过来源校验不等于已获准升级。完成技术检验及精确用户选择后，继续使用
-`prepare_frozen_runtime_upgrade`和`apply_frozen_runtime_upgrade`执行同版本发布；
-保留原发布归档、生成新内容身份。账户改绑和生产生效另行授权。
+| 字段 | 类型及含义 |
+| --- | --- |
+| `original` | `FrozenVersionReference`；被替换版本的精确发布和包身份 |
+| `candidate` | `StrategyCandidate`；同一策略族的新实现及其payload、源码身份，不要求先登记研究候选 |
+| `confirmation` | `ResearchEvidenceRef`；真实升级授权的材料引用，调用方负责如实提交 |
+| `change_summary` | 非空字符串；修改目的、范围和影响声明，原样保存 |
+| `operator` | 非空字符串；调用方声明的执行者，用于审计，不表示平台完成身份认证 |
+| `evidence` | `tuple[ResearchEvidenceRef, ...]`；可为空；提供时核对引用完整性，不裁决报告结论 |
+| `output_directory` | `Path`；仓库`.tmp/`内尚不存在的准备目录 |
+
+`prepare_frozen_runtime_upgrade(context, request)`返回`PreparedFrozenRuntimeUpgrade`。
+它核对旧身份和新实现，将payload与源码保存为准备快照，独立构建新发布包，生成包含新旧身份、
+候选标识、源码及内容哈希、文件变化、修改声明及证据引用的schema 2升级计划；不调用技术检验，
+也不修改当前冻结包。已登记候选可由调用方先用`load_candidate`加载；升级本身不要求候选登记，
+避免登记所需的账户评价材料成为间接研究门槛。验证报告为可选审计材料，关联FAIL报告不会仅因
+该结论阻止升级；缺失、损坏或内容哈希不符的引用仍明确失败。
+
+`apply_frozen_runtime_upgrade(context, prepared)`返回`FrozenRuntimeUpgradeReceipt`。
+它加锁后再次核对旧状态、计划和准备字节，归档原发布包、版本记录及已有本地部署回执，并在
+归档的`audit/`中保存授权与证据材料副本及哈希，再提交精确准备字节并保存含`committed_at`提交
+时间的审计回执。版本号、父版本和原历史日期保持；新实现来源记录在升级审计链中。
+重复提交核验已有回执，准备后变更或并发冲突拒绝；写入失败执行恢复，非终态须明确调查。
+`COMMITTED`只表示发布事务完成，不表示策略正确、验证通过或生产可运行。
+
+新写入仅使用schema 2升级计划；既有schema 1升级归档只读核对完整性，保留原字节与结论，不恢复
+旧升级写入流程。首次冻结和独立技术检验沿用各自契约。新发布身份的资格为`RESEARCH`，不自动
+继承旧身份资格；PTE账户改绑、资格授予和生产生效另行授权，升级接口不操作生产账户。
+既有专用迁移、观察源码校验器不参与此升级入口；调用方主动使用时，其结果属于相应诊断材料。
 
 ### 回测运行复盘与观察解释
 

@@ -87,24 +87,19 @@ def test_observation_upgrade_rejects_changes_outside_display_scope(observation_c
         validate_frozen_observation_upgrade(context, original, changed)
 
 
-def test_observation_upgrade_stages_new_binding_preserves_history_and_can_be_revised(observation_candidate, monkeypatch):
-    from czsc_trader.application import runtime_migration as m, research_evidence as e
-    from test_frozen_runtime_upgrade import _inspected_migration_release, _bytes
+def test_observation_upgrade_stages_new_binding_preserves_history_and_can_be_revised(observation_candidate):
+    from czsc_trader.application import runtime_migration as m
+    from test_frozen_runtime_upgrade import _audit_ref, _bytes
 
     context, original, candidate = observation_candidate
     after = validate_frozen_observation_upgrade(context, original, candidate)
     manifest, binding, source = validate_release_package(context, "S900-v1")
     stored = StrategyRegistry(context.strategy_root).get_version("S900", "v1")
-    ref = f.ResearchEvidenceRef(f.ResearchEvidenceOwner("S900", "EX001_20261020"), "a.json", "a" * 64)
-    subject = f.FrozenObservationUpgradeSelectionSubject(original, f.CandidateKey("S900", "C9877"), "b" * 64, (ref,))
-    new_binding = {**binding, "observation_sha256": after.observation.sha256}
-    release = _inspected_migration_release(context, ref.owner, stored, candidate, manifest, new_binding, source)
-    report = SimpleNamespace(plan=SimpleNamespace(sha256="b" * 64), release=release, selection=ref)
-    # Only the completed-inspection boundary is supplied; publication, binding
-    # authentication, original CAS, archival and version preservation stay real.
-    monkeypatch.setattr(m, "_upgrade_inputs", lambda *args: (report, candidate, stored, manifest, binding, source))
-    monkeypatch.setattr(e, "read_decision", lambda *args: SimpleNamespace(subject=subject))
-    request = m.FrozenRuntimeUpgradeRequest(original, subject.candidate, ref, ref, context.root / ".tmp/prepared")
+    ref = _audit_ref(context, {"authorization": "Synthetic observation upgrade approval"})
+    request = m.FrozenRuntimeUpgradeRequest(
+        original, candidate, ref, "Revise observation explanation", "synthetic-researcher", (),
+        context.root / ".tmp/prepared",
+    )
     before = _bytes(context.strategy_root)
     prepared = m.prepare_frozen_runtime_upgrade(context, request)
     assert _bytes(context.strategy_root) == before
