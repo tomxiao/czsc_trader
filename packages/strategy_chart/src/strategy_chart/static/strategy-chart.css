@@ -35,3 +35,7 @@
 @container(max-width:699px){.strategy-chart .signal-reading{padding:6px 68px 6px 64px}}
 
 .strategy-chart .reading-region-label{position:absolute;left:12px;top:6px;color:var(--muted);font-size:11px;line-height:15px;font-weight:500}
+.strategy-chart .event-scroll{height:100%;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;scrollbar-gutter:stable;padding:8px 12px;background:var(--surface2);overflow-wrap:anywhere}
+.strategy-chart .event-heading{color:var(--text);font-size:12px;line-height:20px;font-weight:500}
+.strategy-chart .event-details{color:var(--muted);font-size:11px;line-height:18px;white-space:pre-wrap}
+.strategy-chart .event-scroll:focus-visible{outline:1px solid var(--position);outline-offset:-1px}

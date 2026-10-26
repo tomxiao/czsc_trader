@@ -116,13 +116,29 @@ test('older structured observations use their recorded definition rather than th
  assert.doesNotMatch(f.root.querySelector('.signal-panel-legend').textContent,/没有该声明/);
 });
 
-test('event height follows the selected date and expands for every event without truncation',()=>{
+test('event content never changes chart height and every event remains in the scrollable region',()=>{
  const f=fixture(),data=context();
  data.execution.fills.push(...Array.from({length:12},(_,i)=>({fill_id:`busy-${i}`,session:'2026-01-05',occurred_at:`2026-01-05T09:${String(i).padStart(2,'0')}:00+08:00`,side:'BUY',quantity:100,price:1,fee:.1})));
  f.mount(f.root,data);const compactHeight=Number.parseFloat(f.svg.style.height);
  f.svg.fire('keydown',{key:'Home'});const busyHeight=Number.parseFloat(f.svg.style.height);
- assert.ok(busyHeight>compactHeight+150);assert.equal((f.svg.textContent.match(/费用 0.10 元/g)||[]).length,12);
+ assert.equal(busyHeight,compactHeight);assert.equal((f.root.querySelector('.event-details').textContent.match(/费用 0.10 元/g)||[]).length,12);
+ const region=f.root.querySelector('.event-scroll'),frame=f.svg.querySelector('foreignObject'),overlay=f.svg.children.at(-1);
+ assert.equal(frame.attrs.height,'128');assert.equal(region.attrs.tabindex,'0');
+ assert.ok(Number(overlay.attrs.y)+Number(overlay.attrs.height)<=Number(frame.attrs.y));
  f.svg.fire('keydown',{key:'ArrowRight'});assert.equal(Number.parseFloat(f.svg.style.height),compactHeight);
  f.svg.fire('keydown',{key:'End'});assert.match(f.svg.textContent,/非交易日/);assert.match(f.svg.textContent,/费用 0.10 元/);
  f.svg.fire('keydown',{key:'Home'});assert.equal(Number.parseFloat(f.svg.style.height),busyHeight);
+ f.svg.children.at(-1).fire('pointermove',{clientX:500});assert.equal(Number.parseFloat(f.svg.style.height),busyHeight);
+ const css=fs.readFileSync(path.join(__dirname,'../src/strategy_chart/static/strategy-chart.css'),'utf8');
+ assert.match(css,/\.event-scroll\{[^}]*height:100%;[^}]*overflow-y:auto;[^}]*overscroll-behavior-y:contain/);
+});
+
+test('event height stays fixed for narrow charts and charts without market bars',()=>{
+ for(const width of [1440,600])for(const empty of [false,true]){
+  const f=fixture(),data=context();f.stage.clientWidth=width;if(empty)data.market_data.bars=[];
+  data.execution.fills.push(...Array.from({length:20},(_,i)=>({fill_id:`many-${i}`,session:'2026-01-05',occurred_at:'2026-01-05',side:'BUY',quantity:100,price:1,fee:.1})));
+  f.mount(f.root,data);const height=f.svg.style.height;
+  f.svg.fire('keydown',{key:'Home'});assert.equal(f.svg.style.height,height);assert.equal((f.root.querySelector('.event-details').textContent.match(/费用 0.10 元/g)||[]).length,20);
+  f.svg.fire('keydown',{key:'End'});assert.equal(f.svg.style.height,height);assert.equal(f.svg.querySelector('foreignObject').attrs.height,'128');
+ }
 });

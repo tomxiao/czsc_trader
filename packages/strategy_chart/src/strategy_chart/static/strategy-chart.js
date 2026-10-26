@@ -119,6 +119,18 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
     if(!lines.length)lines.push('当日无可展示的决策或成交事件');
     return lines.join('\n');
   }
+  const eventHeight=128;
+  function eventPanel(x,y,width){
+    const frame=add(el('foreignObject',{x,y,width,height:eventHeight}));
+    const content=node('div','event-scroll');content.setAttribute('tabindex','0');content.setAttribute('aria-label','当日事件，可滚动查看');
+    const main=node('div','event-heading'),details=node('div','event-details');content.append(main,details);frame.appendChild(content);
+    return date=>{
+      const selectedFills=dayFills(date),selectedDecisions=dayDecisions(date);
+      const summary=[selectedDecisions.length?`决策 ${selectedDecisions.length} 笔`:'',selectedFills.length?`成交 ${selectedFills.length} 笔`:''].filter(Boolean).join(' · ')||'当日无可展示事件';
+      const title=`${date} · ${summary}${tradingDates.has(date)?'':' · 非交易日，无行情K线'}`;
+      if(main.textContent!==title){main.textContent=title;details.textContent=eventLines(date);content.scrollTop=0;}
+    };
+  }
   function reasonLabel(value){
     return ({
       NO_ORDER:'计划无需下单',PLAN_GENERATED:'生成待执行计划',PLAN_REPLACED:'由新决策替代',
@@ -249,14 +261,13 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
     const rows=visibleBars();
     if(!rows.length){
       const width=Math.max(320,stage.clientWidth),date=state.selected||eventDates.at(-1)||context.window.end;
-      const measure=document.createElement('canvas').getContext('2d');measure.font='11px sans-serif';
-      const lines=wrapExplanation(eventLines(date),width-48,measure),top=width>=1000?190:290,height=top+60+18*lines.length;
+      const top=width>=1000?190:290,height=top+eventHeight+16;
       svg.replaceChildren();svg.setAttribute('viewBox',`0 0 ${width} ${height}`);svg.style.height=`${height}px`;stage.style.minHeight=`${height}px`;
       add(el('text',{x:18,y:25,class:'panel-label'},'没有可展示的行情；事件按原始记录展示'));
       reading.style.top='42px';reading.style.height=`${top-55}px`;paintReading(byDate.get(date)?.observation,date||'');
       state.selected=date;
-      add(el('text',{x:18,y:top,class:'explain-main'},`${date||''} · 事件`));
-      lines.forEach((line,index)=>add(el('text',{x:18,y:top+22+18*index,class:'explain-sub'},line)));
+      add(el('text',{x:12,y:top+15,class:'panel-label'},'事件'));
+      eventPanel(68,top,width-92)(date);
       return;
     }
     state.selected=state.selected||rows.at(-1).date;
@@ -269,9 +280,8 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
     signalFooter.style.left=`${left}px`;signalFooter.style.top=`${signalTop+signalH-30}px`;signalFooter.style.width=`${innerW}px`;
     const measure=document.createElement('canvas').getContext('2d');
     measure.font=`11px ${getComputedStyle(svg).fontFamily}`;
-    const selectedExplanation=wrapExplanation(eventLines(state.selected||rows.at(-1).date),innerW-24,measure);
     const explainTop=signalTop+signalH+12;
-    const explainH=38+18*selectedExplanation.length,axisTop=explainTop+explainH+8,height=axisTop+30;
+    const explainH=eventHeight,axisTop=explainTop+explainH+8,height=axisTop+30;
     svg.setAttribute('viewBox',`0 0 ${width} ${height}`);svg.style.height=`${height}px`;stage.style.minHeight=`${height}px`;svg.replaceChildren();
     const x=index=>left+(rows.length===1?innerW/2:index/(rows.length-1)*innerW);
     const prices=rows.flatMap(row=>[Number(row.low),Number(row.high)]),[pmin,pmax]=extent(prices),pad=(pmax-pmin||pmax*.01)*.09;
@@ -314,13 +324,11 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
     if(state.layers.position){const positionPoints=[];rows.forEach((row,index)=>{const snapshot=snapshotByDate.get(row.date);const quantity=snapshot?.quantity;if(quantity!=null)positionPoints.push([x(index),yPosition(quantity)]);});if(positionPoints.length){let d=`M${positionPoints[0][0]},${positionPoints[0][1]}`;for(let i=1;i<positionPoints.length;i++)d+=` H${positionPoints[i][0]} V${positionPoints[i][1]}`;add(el('path',{d,fill:'none',stroke:css('--position'),'stroke-width':2}));}[0,qmax].forEach(value=>add(el('text',{x:left+innerW+8,y:yPosition(value)+4,class:'axis'},value?Number(value).toLocaleString('zh-CN'):'0')));}
     [signalTop-10,positionTop-9,explainTop-9].forEach((y,index)=>{add(el('line',{x1:0,x2:width,y1:y,y2:y,class:'panel-rule'}));});add(el('rect',{x:left,y:explainTop,width:innerW,height:explainH,fill:css('--surface2')}));add(el('line',{x1:0,x2:width,y1:axisTop-4,y2:axisTop-4,class:'panel-rule'}));
     const tickCount=Math.min(rows.length,compact?4:7);for(let i=0;i<tickCount;i++){const index=tickCount===1?0:Math.round(i*(rows.length-1)/(tickCount-1));add(el('text',{x:x(index),y:axisTop+18,class:'axis','text-anchor':i===0?'start':i===tickCount-1?'end':'middle'},shortDate(rows[index].date)));}
-    const cross=add(el('line',{y1:priceTop,y2:explainTop+explainH,class:'crosshair'})),priceDot=add(el('circle',{r:4,fill:css('--text'),stroke:css('--surface'),'stroke-width':2})),signalDot=add(el('circle',{r:4,fill:css('--signal'),stroke:css('--surface'),'stroke-width':2})),main=add(el('text',{x:left+12,y:explainTop+22,class:'explain-main'})),sub=add(el('text',{x:left+12,y:explainTop+42,class:'explain-sub'}));
+    const cross=add(el('line',{y1:priceTop,y2:explainTop+explainH,class:'crosshair'})),priceDot=add(el('circle',{r:4,fill:css('--text'),stroke:css('--surface'),'stroke-width':2})),signalDot=add(el('circle',{r:4,fill:css('--signal'),stroke:css('--surface'),'stroke-width':2}));
+    const paintEvents=eventPanel(left,explainTop,innerW);
     function showEvents(date){
       state.selected=date;paintReading(byDate.get(date)?.observation,date);
-      const selectedFills=dayFills(date),selectedDecisions=dayDecisions(date);
-      const event=[selectedDecisions.length?`决策 ${selectedDecisions.length} 笔`:'',selectedFills.length?`成交 ${selectedFills.length} 笔`:''].filter(Boolean).join(' · ')||'当日无可展示事件';
-      main.textContent=`${date} · ${event}${tradingDates.has(date)?'':' · 非交易日，无行情K线'}`;
-      sub.replaceChildren(...wrapExplanation(eventLines(date),innerW-24,measure).map((text,line)=>el('tspan',{x:left+12,dy:line?18:0,'xml:space':'preserve'},text)));
+      paintEvents(date);
     }
     function select(index,pointer){
       index=Math.max(0,Math.min(rows.length-1,index));
@@ -352,7 +360,7 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
     if(state.selected&&selectedIndex<0){
       showEvents(state.selected);cross.style.display='none';priceDot.style.display='none';signalDot.style.display='none';tooltip.hidden=true;
     }else select(selectedIndex<0?rows.length-1:selectedIndex,pointer);
-    const overlay=add(el('rect',{x:left,y:priceTop,width:innerW,height:explainTop+explainH-priceTop,fill:'transparent'}));overlay.addEventListener('pointermove',event=>{const rect=svg.getBoundingClientRect(),px=(event.clientX-rect.left)*width/rect.width,py=(event.clientY-rect.top)*height/rect.height,index=Math.round((px-left)/innerW*(rows.length-1));select(index,[px,py]);});overlay.addEventListener('click',event=>{const rect=svg.getBoundingClientRect(),px=(event.clientX-rect.left)*width/rect.width;select(Math.round((px-left)/innerW*(rows.length-1)),null);tooltip.hidden=true;svg.focus({preventScroll:true});});overlay.addEventListener('pointerleave',()=>{tooltip.hidden=true;});
+    const overlay=add(el('rect',{x:left,y:priceTop,width:innerW,height:explainTop-priceTop,fill:'transparent'}));overlay.addEventListener('pointermove',event=>{const rect=svg.getBoundingClientRect(),px=(event.clientX-rect.left)*width/rect.width,py=(event.clientY-rect.top)*height/rect.height,index=Math.round((px-left)/innerW*(rows.length-1));select(index,[px,py]);});overlay.addEventListener('click',event=>{const rect=svg.getBoundingClientRect(),px=(event.clientX-rect.left)*width/rect.width;select(Math.round((px-left)/innerW*(rows.length-1)),null);tooltip.hidden=true;svg.focus({preventScroll:true});});overlay.addEventListener('pointerleave',()=>{tooltip.hidden=true;});
   }
   listen(svg,'keydown',event=>{
     if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)||!eventDates.length)return;
