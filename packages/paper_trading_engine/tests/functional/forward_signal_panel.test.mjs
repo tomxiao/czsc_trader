@@ -62,6 +62,9 @@ test('v3 signal groups preserve gaps, segments and release boundaries while rend
   const {svg,controls,select,choose,nodes}=render();
   assert.equal(controls.hidden,false);
   assert.equal(svg.children.filter(node=>node.attributes['data-signal-series']==='line').length,1,'latest definition selected without merging old units');
+  assert.ok(select.options.every(option=>!option.value.startsWith('b'.repeat(64))),'current date must not offer an unrelated historical definition');
+  svg.listeners.keydown({key:'Home',preventDefault(){}});
+  assert.equal(select.value,`${'b'.repeat(64)}:group:condition`,'historical date selects its recorded definition automatically');
   const beforeHeight=svg.attributes.viewBox;
   const beforeCandles=svg.children.filter(node=>node.name==='rect'&&node.attributes.stroke).map(node=>({...node.attributes}));
   choose(`${'b'.repeat(64)}:group:condition`);
@@ -75,7 +78,9 @@ test('v3 signal groups preserve gaps, segments and release boundaries while rend
   assert.equal(svg.attributes.viewBox,beforeHeight);
   assert.deepEqual(svg.children.filter(node=>node.name==='rect'&&node.attributes.stroke).map(node=>({...node.attributes})),beforeCandles);
   assert.match(controls.textContent,/% · 相对变化/);
-  assert.match(svg.textContent,/旧事件说明 0.4200/,'event explanation remains unchanged');
+  svg.listeners.keydown({key:'End',preventDefault(){}});
+  assert.match(svg.textContent,/旧事件说明 0.4200/,'event explanation remains unchanged on its recorded date');
+  svg.listeners.keydown({key:'Home',preventDefault(){}});
   const overlay=svg.children.at(-1);
   overlay.listeners.pointermove({clientX:68+(1000-68-72)*2/9,clientY:(Number.parseFloat(controls.style.top)+35)*800/Number(svg.attributes.viewBox.split(' ')[3])});
   assert.match(nodes['forward-tooltip'].innerHTML,/当前不适用/);
@@ -87,6 +92,7 @@ test('v3 signal groups preserve gaps, segments and release boundaries while rend
 test('signal states, missing evidence and compact legends fit the same signal region',()=>{
   const samples=[snapshot(0),snapshot(1),snapshot(2,{status:'UNAVAILABLE'})];
   const {svg,controls,choose,nodes}=render({width:360,observations:samples});
+  svg.listeners.keydown({key:'Home',preventDefault(){}});
   const originalHeight=svg.attributes.viewBox;
   choose(`${'b'.repeat(64)}:state:opportunity`);
   assert.equal(svg.children.filter(node=>node.attributes['data-signal-state']==='opportunity').length,2);
@@ -118,7 +124,8 @@ test('current observation failure clears the legend and exposes its reason while
   const samples=Array.from({length:10},(_,i)=>i===8?failure:snapshot(i));
   samples[9]=failure;
   const {svg,nodes,controls}=render({observations:samples});
-  const legend=nodes['forward-stage'].children.find(node=>node.className==='signal-panel-legend');
+  const footer=nodes['forward-stage'].children.find(node=>node.className==='signal-panel-footer');
+  const legend=footer.children.find(node=>node.className==='signal-panel-legend');
   assert.equal(legend.textContent,'观察不可用：观察计算失败：行情缺日');
   assert.equal(svg.children.filter(node=>node.attributes['data-signal-series']==='line').length,8);
   assert.doesNotMatch(svg.textContent,/旧事件说明/,'failure must not introduce stale facts into the event region');
