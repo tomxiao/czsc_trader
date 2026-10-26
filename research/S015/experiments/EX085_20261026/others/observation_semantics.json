@@ -1,0 +1,1355 @@
+{
+  "status": "PASS",
+  "scope": "SYNTHETIC_OBSERVATION_SEMANTICS_AND_PUBLIC_UPGRADE_SOURCE_VALIDATION",
+  "reference": "S015-v1",
+  "observation_sha256": "267c06dcc0ebee600fc7b3d2f62e0afb43c3648bad64da3d91aeb840b5892af9",
+  "covered_states": [
+    "warmup",
+    "inactive",
+    "entered",
+    "active",
+    "exit_target",
+    "exit_center",
+    "exit_both"
+  ],
+  "cases": [
+    {
+      "groups": [
+        {
+          "key": "ratios",
+          "label": "相对比例",
+          "unit": "%",
+          "basis": "价格变化或资金比例",
+          "format": "PERCENT",
+          "precision": 2,
+          "description": ""
+        },
+        {
+          "key": "sessions",
+          "label": "观察期",
+          "unit": "个交易日",
+          "basis": "中心比较跨度",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        },
+        {
+          "key": "prices",
+          "label": "参考价格",
+          "unit": "元",
+          "basis": "后复权参考价格",
+          "format": "NUMBER",
+          "precision": 3,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "repair_space",
+          "label": "修复空间",
+          "group": "ratios",
+          "render": "LINE",
+          "description": "",
+          "value": null,
+          "status": "UNAVAILABLE",
+          "reason": "尚未形成完整中心比较；内部种子值不作为实际价格展示",
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "center_change",
+          "label": "中心上移幅度",
+          "group": "ratios",
+          "render": "LINE",
+          "description": "",
+          "value": null,
+          "status": "UNAVAILABLE",
+          "reason": "尚未形成完整中心比较；内部种子值不作为实际价格展示",
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "allocation",
+          "label": "入场资金比例",
+          "group": "ratios",
+          "render": "LINE",
+          "description": "",
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "lookback",
+          "label": "中心观察期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 3,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "center",
+          "label": "当前价格中心",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": null,
+          "status": "UNAVAILABLE",
+          "reason": "尚未形成完整中心比较；内部种子值不作为实际价格展示",
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "close",
+          "label": "当前收盘价",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": null,
+          "status": "UNAVAILABLE",
+          "reason": "尚未形成完整中心比较；内部种子值不作为实际价格展示",
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "repair_target",
+          "label": "固定修复目标",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": null,
+          "status": "INACTIVE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "invalidation_origin",
+          "label": "中心失效线",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": null,
+          "status": "INACTIVE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        }
+      ],
+      "states": [
+        {
+          "key": "decision",
+          "label": "模型机会判断",
+          "description": "",
+          "options": [
+            {
+              "key": "warmup",
+              "label": "数据不足"
+            },
+            {
+              "key": "inactive",
+              "label": "等待"
+            },
+            {
+              "key": "entered",
+              "label": "当日激活"
+            },
+            {
+              "key": "active",
+              "label": "继续有效"
+            },
+            {
+              "key": "exit_target",
+              "label": "目标达到退出"
+            },
+            {
+              "key": "exit_center",
+              "label": "中心失效退出"
+            },
+            {
+              "key": "exit_both",
+              "label": "两项退出条件均满足"
+            }
+          ],
+          "value": "warmup",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "decision",
+        "case_key": "warmup",
+        "judgment": "观察数据尚未完整",
+        "basis": [
+          {
+            "key": "warmup",
+            "text": "尚未形成完整中心比较，模型未激活修复机会。"
+          }
+        ],
+        "next_watch": "等待完成 3 个交易日 的中心比较。",
+        "explanation": "策略用当日八个半小时收盘价的对数价格中位数构造价格中心，并比较 3 个交易日 前的中心。中心上移、收盘低于中心且修复空间达到门槛时，激活一次修复机会。激活时固定目标与原中心；以后收盘达到目标，或当前中心回落至原中心，就结束机会。观察期用于比较中心，不是固定持有期限；中心失效线比较的是中心，不是成交止损价。展示价格均为后复权参考价格。入场按信号时可用现金的 100.00% 形成资金周期，限价买入不保证成交。模型机会与实际持仓分别查看。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "ratios",
+          "label": "相对比例",
+          "unit": "%",
+          "basis": "价格变化或资金比例",
+          "format": "PERCENT",
+          "precision": 2,
+          "description": ""
+        },
+        {
+          "key": "sessions",
+          "label": "观察期",
+          "unit": "个交易日",
+          "basis": "中心比较跨度",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        },
+        {
+          "key": "prices",
+          "label": "参考价格",
+          "unit": "元",
+          "basis": "后复权参考价格",
+          "format": "NUMBER",
+          "precision": 3,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "repair_space",
+          "label": "修复空间",
+          "group": "ratios",
+          "render": "LINE",
+          "description": "",
+          "value": -0.08333333333333323,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "minimum",
+              "label": "最低修复空间",
+              "value": 0.0017298986606429072
+            }
+          ]
+        },
+        {
+          "key": "center_change",
+          "label": "中心上移幅度",
+          "group": "ratios",
+          "render": "LINE",
+          "description": "",
+          "value": -0.09516258196404043,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "allocation",
+          "label": "入场资金比例",
+          "group": "ratios",
+          "render": "LINE",
+          "description": "",
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "lookback",
+          "label": "中心观察期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 3,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "center",
+          "label": "当前价格中心",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": 1.1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "close",
+          "label": "当前收盘价",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": 1.2,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "repair_target",
+          "label": "固定修复目标",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": null,
+          "status": "INACTIVE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "invalidation_origin",
+          "label": "中心失效线",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": null,
+          "status": "INACTIVE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        }
+      ],
+      "states": [
+        {
+          "key": "decision",
+          "label": "模型机会判断",
+          "description": "",
+          "options": [
+            {
+              "key": "warmup",
+              "label": "数据不足"
+            },
+            {
+              "key": "inactive",
+              "label": "等待"
+            },
+            {
+              "key": "entered",
+              "label": "当日激活"
+            },
+            {
+              "key": "active",
+              "label": "继续有效"
+            },
+            {
+              "key": "exit_target",
+              "label": "目标达到退出"
+            },
+            {
+              "key": "exit_center",
+              "label": "中心失效退出"
+            },
+            {
+              "key": "exit_both",
+              "label": "两项退出条件均满足"
+            }
+          ],
+          "value": "inactive",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "decision",
+        "case_key": "inactive",
+        "judgment": "暂不满足入场条件",
+        "basis": [
+          {
+            "key": "space",
+            "text": "修复空间 -8.33%；最低门槛 0.17%"
+          },
+          {
+            "key": "center",
+            "text": "中心相对观察期之前上移 -9.52%；要求大于零。"
+          }
+        ],
+        "next_watch": "等待中心上移、收盘低于中心，且修复空间达到 0.17%。",
+        "explanation": "策略用当日八个半小时收盘价的对数价格中位数构造价格中心，并比较 3 个交易日 前的中心。中心上移、收盘低于中心且修复空间达到门槛时，激活一次修复机会。激活时固定目标与原中心；以后收盘达到目标，或当前中心回落至原中心，就结束机会。观察期用于比较中心，不是固定持有期限；中心失效线比较的是中心，不是成交止损价。展示价格均为后复权参考价格。入场按信号时可用现金的 100.00% 形成资金周期，限价买入不保证成交。模型机会与实际持仓分别查看。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "ratios",
+          "label": "相对比例",
+          "unit": "%",
+          "basis": "价格变化或资金比例",
+          "format": "PERCENT",
+          "precision": 2,
+          "description": ""
+        },
+        {
+          "key": "sessions",
+          "label": "观察期",
+          "unit": "个交易日",
+          "basis": "中心比较跨度",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        },
+        {
+          "key": "prices",
+          "label": "参考价格",
+          "unit": "元",
+          "basis": "后复权参考价格",
+          "format": "NUMBER",
+          "precision": 3,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "repair_space",
+          "label": "修复空间",
+          "group": "ratios",
+          "render": "LINE",
+          "description": "",
+          "value": 0.10000000000000009,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "minimum",
+              "label": "最低修复空间",
+              "value": 0.0017298986606429072
+            }
+          ]
+        },
+        {
+          "key": "center_change",
+          "label": "中心上移幅度",
+          "group": "ratios",
+          "render": "LINE",
+          "description": "",
+          "value": 0.051271096376024054,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "allocation",
+          "label": "入场资金比例",
+          "group": "ratios",
+          "render": "LINE",
+          "description": "",
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "lookback",
+          "label": "中心观察期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 3,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "center",
+          "label": "当前价格中心",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": 1.1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "close",
+          "label": "当前收盘价",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "repair_target",
+          "label": "固定修复目标",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": 1.1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "invalidation_origin",
+          "label": "中心失效线",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        }
+      ],
+      "states": [
+        {
+          "key": "decision",
+          "label": "模型机会判断",
+          "description": "",
+          "options": [
+            {
+              "key": "warmup",
+              "label": "数据不足"
+            },
+            {
+              "key": "inactive",
+              "label": "等待"
+            },
+            {
+              "key": "entered",
+              "label": "当日激活"
+            },
+            {
+              "key": "active",
+              "label": "继续有效"
+            },
+            {
+              "key": "exit_target",
+              "label": "目标达到退出"
+            },
+            {
+              "key": "exit_center",
+              "label": "中心失效退出"
+            },
+            {
+              "key": "exit_both",
+              "label": "两项退出条件均满足"
+            }
+          ],
+          "value": "entered",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "decision",
+        "case_key": "entered",
+        "judgment": "出现入场信号：修复机会激活",
+        "basis": [
+          {
+            "key": "space",
+            "text": "修复空间 10.00%；最低门槛 0.17%"
+          },
+          {
+            "key": "center",
+            "text": "中心相对观察期之前上移 5.13%；要求大于零。"
+          }
+        ],
+        "next_watch": "关注收盘是否达到固定目标 1.100 元，或当前中心是否降至 1.000 元。",
+        "explanation": "策略用当日八个半小时收盘价的对数价格中位数构造价格中心，并比较 3 个交易日 前的中心。中心上移、收盘低于中心且修复空间达到门槛时，激活一次修复机会。激活时固定目标与原中心；以后收盘达到目标，或当前中心回落至原中心，就结束机会。观察期用于比较中心，不是固定持有期限；中心失效线比较的是中心，不是成交止损价。展示价格均为后复权参考价格。入场按信号时可用现金的 100.00% 形成资金周期，限价买入不保证成交。模型机会与实际持仓分别查看。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "ratios",
+          "label": "相对比例",
+          "unit": "%",
+          "basis": "价格变化或资金比例",
+          "format": "PERCENT",
+          "precision": 2,
+          "description": ""
+        },
+        {
+          "key": "sessions",
+          "label": "观察期",
+          "unit": "个交易日",
+          "basis": "中心比较跨度",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        },
+        {
+          "key": "prices",
+          "label": "参考价格",
+          "unit": "元",
+          "basis": "后复权参考价格",
+          "format": "NUMBER",
+          "precision": 3,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "repair_space",
+          "label": "修复空间",
+          "group": "ratios",
+          "render": "LINE",
+          "description": "",
+          "value": 0.02752293577981653,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "minimum",
+              "label": "最低修复空间",
+              "value": 0.0017298986606429072
+            }
+          ]
+        },
+        {
+          "key": "center_change",
+          "label": "中心上移幅度",
+          "group": "ratios",
+          "render": "LINE",
+          "description": "",
+          "value": 0.051271096376024054,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "allocation",
+          "label": "入场资金比例",
+          "group": "ratios",
+          "render": "LINE",
+          "description": "",
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "lookback",
+          "label": "中心观察期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 3,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "center",
+          "label": "当前价格中心",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": 1.12,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "close",
+          "label": "当前收盘价",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": 1.09,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "repair_target",
+          "label": "固定修复目标",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": 1.1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "invalidation_origin",
+          "label": "中心失效线",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        }
+      ],
+      "states": [
+        {
+          "key": "decision",
+          "label": "模型机会判断",
+          "description": "",
+          "options": [
+            {
+              "key": "warmup",
+              "label": "数据不足"
+            },
+            {
+              "key": "inactive",
+              "label": "等待"
+            },
+            {
+              "key": "entered",
+              "label": "当日激活"
+            },
+            {
+              "key": "active",
+              "label": "继续有效"
+            },
+            {
+              "key": "exit_target",
+              "label": "目标达到退出"
+            },
+            {
+              "key": "exit_center",
+              "label": "中心失效退出"
+            },
+            {
+              "key": "exit_both",
+              "label": "两项退出条件均满足"
+            }
+          ],
+          "value": "active",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "decision",
+        "case_key": "active",
+        "judgment": "本轮修复机会仍有效",
+        "basis": [
+          {
+            "key": "target",
+            "text": "收盘 1.090 元 ＜ 固定目标 1.100 元"
+          },
+          {
+            "key": "origin",
+            "text": "当前中心 1.120 元 ＞ 中心失效线 1.000 元"
+          }
+        ],
+        "next_watch": "关注收盘是否达到固定目标 1.100 元，或当前中心是否降至 1.000 元。",
+        "explanation": "策略用当日八个半小时收盘价的对数价格中位数构造价格中心，并比较 3 个交易日 前的中心。中心上移、收盘低于中心且修复空间达到门槛时，激活一次修复机会。激活时固定目标与原中心；以后收盘达到目标，或当前中心回落至原中心，就结束机会。观察期用于比较中心，不是固定持有期限；中心失效线比较的是中心，不是成交止损价。展示价格均为后复权参考价格。入场按信号时可用现金的 100.00% 形成资金周期，限价买入不保证成交。模型机会与实际持仓分别查看。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "ratios",
+          "label": "相对比例",
+          "unit": "%",
+          "basis": "价格变化或资金比例",
+          "format": "PERCENT",
+          "precision": 2,
+          "description": ""
+        },
+        {
+          "key": "sessions",
+          "label": "观察期",
+          "unit": "个交易日",
+          "basis": "中心比较跨度",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        },
+        {
+          "key": "prices",
+          "label": "参考价格",
+          "unit": "元",
+          "basis": "后复权参考价格",
+          "format": "NUMBER",
+          "precision": 3,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "repair_space",
+          "label": "修复空间",
+          "group": "ratios",
+          "render": "LINE",
+          "description": "",
+          "value": 0.018181818181818202,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "minimum",
+              "label": "最低修复空间",
+              "value": 0.0017298986606429072
+            }
+          ]
+        },
+        {
+          "key": "center_change",
+          "label": "中心上移幅度",
+          "group": "ratios",
+          "render": "LINE",
+          "description": "",
+          "value": 0.051271096376024054,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "allocation",
+          "label": "入场资金比例",
+          "group": "ratios",
+          "render": "LINE",
+          "description": "",
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "lookback",
+          "label": "中心观察期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 3,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "center",
+          "label": "当前价格中心",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": 1.12,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "close",
+          "label": "当前收盘价",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": 1.1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "repair_target",
+          "label": "固定修复目标",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": 1.1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "invalidation_origin",
+          "label": "中心失效线",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        }
+      ],
+      "states": [
+        {
+          "key": "decision",
+          "label": "模型机会判断",
+          "description": "",
+          "options": [
+            {
+              "key": "warmup",
+              "label": "数据不足"
+            },
+            {
+              "key": "inactive",
+              "label": "等待"
+            },
+            {
+              "key": "entered",
+              "label": "当日激活"
+            },
+            {
+              "key": "active",
+              "label": "继续有效"
+            },
+            {
+              "key": "exit_target",
+              "label": "目标达到退出"
+            },
+            {
+              "key": "exit_center",
+              "label": "中心失效退出"
+            },
+            {
+              "key": "exit_both",
+              "label": "两项退出条件均满足"
+            }
+          ],
+          "value": "exit_target",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "decision",
+        "case_key": "exit_target",
+        "judgment": "出现退出信号：修复目标达到",
+        "basis": [
+          {
+            "key": "target",
+            "text": "收盘 1.100 元 ≥ 固定目标 1.100 元"
+          }
+        ],
+        "next_watch": "本轮机会结束，等待新的入场条件；实际卖出以成交记录为准。",
+        "explanation": "策略用当日八个半小时收盘价的对数价格中位数构造价格中心，并比较 3 个交易日 前的中心。中心上移、收盘低于中心且修复空间达到门槛时，激活一次修复机会。激活时固定目标与原中心；以后收盘达到目标，或当前中心回落至原中心，就结束机会。观察期用于比较中心，不是固定持有期限；中心失效线比较的是中心，不是成交止损价。展示价格均为后复权参考价格。入场按信号时可用现金的 100.00% 形成资金周期，限价买入不保证成交。模型机会与实际持仓分别查看。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "ratios",
+          "label": "相对比例",
+          "unit": "%",
+          "basis": "价格变化或资金比例",
+          "format": "PERCENT",
+          "precision": 2,
+          "description": ""
+        },
+        {
+          "key": "sessions",
+          "label": "观察期",
+          "unit": "个交易日",
+          "basis": "中心比较跨度",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        },
+        {
+          "key": "prices",
+          "label": "参考价格",
+          "unit": "元",
+          "basis": "后复权参考价格",
+          "format": "NUMBER",
+          "precision": 3,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "repair_space",
+          "label": "修复空间",
+          "group": "ratios",
+          "render": "LINE",
+          "description": "",
+          "value": -0.04761904761904766,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "minimum",
+              "label": "最低修复空间",
+              "value": 0.0017298986606429072
+            }
+          ]
+        },
+        {
+          "key": "center_change",
+          "label": "中心上移幅度",
+          "group": "ratios",
+          "render": "LINE",
+          "description": "",
+          "value": 0.051271096376024054,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "allocation",
+          "label": "入场资金比例",
+          "group": "ratios",
+          "render": "LINE",
+          "description": "",
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "lookback",
+          "label": "中心观察期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 3,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "center",
+          "label": "当前价格中心",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "close",
+          "label": "当前收盘价",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": 1.05,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "repair_target",
+          "label": "固定修复目标",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": 1.1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "invalidation_origin",
+          "label": "中心失效线",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        }
+      ],
+      "states": [
+        {
+          "key": "decision",
+          "label": "模型机会判断",
+          "description": "",
+          "options": [
+            {
+              "key": "warmup",
+              "label": "数据不足"
+            },
+            {
+              "key": "inactive",
+              "label": "等待"
+            },
+            {
+              "key": "entered",
+              "label": "当日激活"
+            },
+            {
+              "key": "active",
+              "label": "继续有效"
+            },
+            {
+              "key": "exit_target",
+              "label": "目标达到退出"
+            },
+            {
+              "key": "exit_center",
+              "label": "中心失效退出"
+            },
+            {
+              "key": "exit_both",
+              "label": "两项退出条件均满足"
+            }
+          ],
+          "value": "exit_center",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "decision",
+        "case_key": "exit_center",
+        "judgment": "出现退出信号：中心上移失效",
+        "basis": [
+          {
+            "key": "origin",
+            "text": "当前中心 1.000 元 ≤ 中心失效线 1.000 元"
+          }
+        ],
+        "next_watch": "本轮机会结束，等待新的入场条件；实际卖出以成交记录为准。",
+        "explanation": "策略用当日八个半小时收盘价的对数价格中位数构造价格中心，并比较 3 个交易日 前的中心。中心上移、收盘低于中心且修复空间达到门槛时，激活一次修复机会。激活时固定目标与原中心；以后收盘达到目标，或当前中心回落至原中心，就结束机会。观察期用于比较中心，不是固定持有期限；中心失效线比较的是中心，不是成交止损价。展示价格均为后复权参考价格。入场按信号时可用现金的 100.00% 形成资金周期，限价买入不保证成交。模型机会与实际持仓分别查看。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "ratios",
+          "label": "相对比例",
+          "unit": "%",
+          "basis": "价格变化或资金比例",
+          "format": "PERCENT",
+          "precision": 2,
+          "description": ""
+        },
+        {
+          "key": "sessions",
+          "label": "观察期",
+          "unit": "个交易日",
+          "basis": "中心比较跨度",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        },
+        {
+          "key": "prices",
+          "label": "参考价格",
+          "unit": "元",
+          "basis": "后复权参考价格",
+          "format": "NUMBER",
+          "precision": 3,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "repair_space",
+          "label": "修复空间",
+          "group": "ratios",
+          "render": "LINE",
+          "description": "",
+          "value": -0.09090909090909097,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "minimum",
+              "label": "最低修复空间",
+              "value": 0.0017298986606429072
+            }
+          ]
+        },
+        {
+          "key": "center_change",
+          "label": "中心上移幅度",
+          "group": "ratios",
+          "render": "LINE",
+          "description": "",
+          "value": 0.051271096376024054,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "allocation",
+          "label": "入场资金比例",
+          "group": "ratios",
+          "render": "LINE",
+          "description": "",
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "lookback",
+          "label": "中心观察期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 3,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "center",
+          "label": "当前价格中心",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "close",
+          "label": "当前收盘价",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": 1.1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "repair_target",
+          "label": "固定修复目标",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": 1.1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "invalidation_origin",
+          "label": "中心失效线",
+          "group": "prices",
+          "render": "LINE",
+          "description": "",
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        }
+      ],
+      "states": [
+        {
+          "key": "decision",
+          "label": "模型机会判断",
+          "description": "",
+          "options": [
+            {
+              "key": "warmup",
+              "label": "数据不足"
+            },
+            {
+              "key": "inactive",
+              "label": "等待"
+            },
+            {
+              "key": "entered",
+              "label": "当日激活"
+            },
+            {
+              "key": "active",
+              "label": "继续有效"
+            },
+            {
+              "key": "exit_target",
+              "label": "目标达到退出"
+            },
+            {
+              "key": "exit_center",
+              "label": "中心失效退出"
+            },
+            {
+              "key": "exit_both",
+              "label": "两项退出条件均满足"
+            }
+          ],
+          "value": "exit_both",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "decision",
+        "case_key": "exit_both",
+        "judgment": "出现退出信号：两项退出条件均满足",
+        "basis": [
+          {
+            "key": "target",
+            "text": "收盘 1.100 元 ≥ 固定目标 1.100 元"
+          },
+          {
+            "key": "origin",
+            "text": "当前中心 1.000 元 ≤ 中心失效线 1.000 元"
+          }
+        ],
+        "next_watch": "本轮机会结束，等待新的入场条件；实际卖出以成交记录为准。",
+        "explanation": "策略用当日八个半小时收盘价的对数价格中位数构造价格中心，并比较 3 个交易日 前的中心。中心上移、收盘低于中心且修复空间达到门槛时，激活一次修复机会。激活时固定目标与原中心；以后收盘达到目标，或当前中心回落至原中心，就结束机会。观察期用于比较中心，不是固定持有期限；中心失效线比较的是中心，不是成交止损价。展示价格均为后复权参考价格。入场按信号时可用现金的 100.00% 形成资金周期，限价买入不保证成交。模型机会与实际持仓分别查看。"
+      }
+    }
+  ],
+  "checks": [
+    "Trading AST and contracts retained by public validator",
+    "Original series/facts retained",
+    "Source history not mutated",
+    "All explanation branches materialized",
+    "Parameter references change with actual parameters",
+    "Unknown and missing states fail",
+    "Unavailable values never fabricate numeric explanation"
+  ],
+  "limits": [
+    "Synthetic branch projection tests are not historical strategy equivalence or performance evidence; parent workflow performs actual replay."
+  ]
+}

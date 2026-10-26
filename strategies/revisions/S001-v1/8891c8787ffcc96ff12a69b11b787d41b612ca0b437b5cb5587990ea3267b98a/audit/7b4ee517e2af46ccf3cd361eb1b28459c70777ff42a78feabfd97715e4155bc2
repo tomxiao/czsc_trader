@@ -1,0 +1,560 @@
+{
+  "status": "PASS",
+  "reference": "S001-v1",
+  "candidate_id": "C9950",
+  "source_sha256": "33870789842f3064dfae8fb4a80461b592b2798705f10f1ba205b6fbbb4bb1b0",
+  "scope": "Real authenticated original inputs, public SRT/TXE, unchanged trade definition and five ledgers.",
+  "window": {
+    "start": "2026-06-01",
+    "end": "2026-08-28"
+  },
+  "modes": {
+    "CONTINUOUS": {
+      "status": "PASS",
+      "signals": 1404,
+      "ledgers": [
+        {
+          "name": "decisions",
+          "rows": 64,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "name": "orders",
+          "rows": 7,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "name": "fills",
+          "rows": 7,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "name": "account_daily",
+          "rows": 64,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "name": "trades",
+          "rows": 4,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        }
+      ],
+      "fills": 7
+    },
+    "WINDOW": {
+      "status": "PASS",
+      "signals": 64,
+      "ledgers": [
+        {
+          "name": "decisions",
+          "rows": 64,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "name": "orders",
+          "rows": 7,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "name": "fills",
+          "rows": 7,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "name": "account_daily",
+          "rows": 64,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "name": "trades",
+          "rows": 4,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        }
+      ],
+      "fills": 7
+    }
+  },
+  "new_data": false,
+  "search_trials": 0,
+  "semantics": "six branches and unavailable/unknown boundaries PASS",
+  "identity": {
+    "old_identity": {
+      "strategy_id": "S001",
+      "reference_id": "S001-v1",
+      "release_hash": "8891c8787ffcc96ff12a69b11b787d41b612ca0b437b5cb5587990ea3267b98a",
+      "runtime_sha256": "e98da096e116fa1638ea0e22877dadcdfa08aadd7d2fc838538db3f2c1db5abf",
+      "symbol": "588080.SH"
+    },
+    "new_identity": {
+      "strategy_id": "S001",
+      "reference_id": "S001-C9950",
+      "release_hash": "1db1bb10c74530c1897ef58f2543c2b081f9b2b0e476ce4421fbe0e54d1cf2d7",
+      "runtime_sha256": "ab22d853e82e3cdac4227e9ce50bb07e2c239bc1ddc4e6614f4d00c5532392db",
+      "symbol": "588080.SH"
+    }
+  },
+  "published_artifacts": {
+    "candidate_payload.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "e89dd4d0094e9bdf7525d86c179e454618b63fac4ef6eb13ec36ce12da65ede8.json",
+      "sha256": "e89dd4d0094e9bdf7525d86c179e454618b63fac4ef6eb13ec36ce12da65ede8",
+      "media_type": "application/json",
+      "name": "s001_audit_candidate_payload",
+      "schema": null,
+      "schema_version": null
+    },
+    "CONTINUOUS_nonzero_probes.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "f5d9fe82cdf401d42d61783a5f0352a2e51336ddc57b761356baaf7ade56a765.json",
+      "sha256": "f5d9fe82cdf401d42d61783a5f0352a2e51336ddc57b761356baaf7ade56a765",
+      "media_type": "application/json",
+      "name": "s001_audit_CONTINUOUS_nonzero_probes",
+      "schema": null,
+      "schema_version": null
+    },
+    "new_binding.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "9220bb7ef33120cec46c99bae751919bd3c763244166997b9e35d3e1caafb417.json",
+      "sha256": "9220bb7ef33120cec46c99bae751919bd3c763244166997b9e35d3e1caafb417",
+      "media_type": "application/json",
+      "name": "s001_audit_new_binding",
+      "schema": null,
+      "schema_version": null
+    },
+    "new_CONTINUOUS_account_daily.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "89f8d420629e36679c2a1cdb296ff0ec52c2fdaf351f14109f4c07c0d142632d.csv",
+      "sha256": "89f8d420629e36679c2a1cdb296ff0ec52c2fdaf351f14109f4c07c0d142632d",
+      "media_type": "text/csv",
+      "name": "s001_audit_new_CONTINUOUS_account_daily",
+      "schema": null,
+      "schema_version": null
+    },
+    "new_CONTINUOUS_decisions.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "cb4dd4591ec74de45d1c4a8debd70fe60724ad7f0d023efc24b6ab2d7cb4f737.csv",
+      "sha256": "cb4dd4591ec74de45d1c4a8debd70fe60724ad7f0d023efc24b6ab2d7cb4f737",
+      "media_type": "text/csv",
+      "name": "s001_audit_new_CONTINUOUS_decisions",
+      "schema": null,
+      "schema_version": null
+    },
+    "new_CONTINUOUS_fills.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "977ad43fcd32faf5e5f4b6d5e93ee7fe5f30134d4b6ae261379b591e229f7f82.csv",
+      "sha256": "977ad43fcd32faf5e5f4b6d5e93ee7fe5f30134d4b6ae261379b591e229f7f82",
+      "media_type": "text/csv",
+      "name": "s001_audit_new_CONTINUOUS_fills",
+      "schema": null,
+      "schema_version": null
+    },
+    "new_CONTINUOUS_observations.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "763e74f6e6dbc37034c38820cca533c89479742904832e0d26282ef50b7e59e1.json",
+      "sha256": "763e74f6e6dbc37034c38820cca533c89479742904832e0d26282ef50b7e59e1",
+      "media_type": "application/json",
+      "name": "s001_audit_new_CONTINUOUS_observations",
+      "schema": null,
+      "schema_version": null
+    },
+    "new_CONTINUOUS_orders.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "66aa7c238df3b5bb5684b8326d473d31535664d18405936597099b2ba3c8c2d9.csv",
+      "sha256": "66aa7c238df3b5bb5684b8326d473d31535664d18405936597099b2ba3c8c2d9",
+      "media_type": "text/csv",
+      "name": "s001_audit_new_CONTINUOUS_orders",
+      "schema": null,
+      "schema_version": null
+    },
+    "new_CONTINUOUS_signals.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "2fec4036578e3f24b48f828a72697cbf7b4deae961383b96761a26c7042a0b5f.csv",
+      "sha256": "2fec4036578e3f24b48f828a72697cbf7b4deae961383b96761a26c7042a0b5f",
+      "media_type": "text/csv",
+      "name": "s001_audit_new_CONTINUOUS_signals",
+      "schema": null,
+      "schema_version": null
+    },
+    "new_CONTINUOUS_trades.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "8b37b252c7f116c75390317e94c375d821090504b0047f842d5b2b727d1cd902.csv",
+      "sha256": "8b37b252c7f116c75390317e94c375d821090504b0047f842d5b2b727d1cd902",
+      "media_type": "text/csv",
+      "name": "s001_audit_new_CONTINUOUS_trades",
+      "schema": null,
+      "schema_version": null
+    },
+    "new_WINDOW_account_daily.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "706200c6df35c00c7ee9bb179cebd73a6a1bfe1897e082bd03335523e12f7aa2.csv",
+      "sha256": "706200c6df35c00c7ee9bb179cebd73a6a1bfe1897e082bd03335523e12f7aa2",
+      "media_type": "text/csv",
+      "name": "s001_audit_new_WINDOW_account_daily",
+      "schema": null,
+      "schema_version": null
+    },
+    "new_WINDOW_decisions.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "0c75874f79a2a6924ccef3d411a7de16b49ec65794d802bb68cf8f0177cad844.csv",
+      "sha256": "0c75874f79a2a6924ccef3d411a7de16b49ec65794d802bb68cf8f0177cad844",
+      "media_type": "text/csv",
+      "name": "s001_audit_new_WINDOW_decisions",
+      "schema": null,
+      "schema_version": null
+    },
+    "new_WINDOW_fills.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "f35ca5730c7e2d897a58dbd7240c3d3a13b141a56a40fc19a1f43c5d57bb8c63.csv",
+      "sha256": "f35ca5730c7e2d897a58dbd7240c3d3a13b141a56a40fc19a1f43c5d57bb8c63",
+      "media_type": "text/csv",
+      "name": "s001_audit_new_WINDOW_fills",
+      "schema": null,
+      "schema_version": null
+    },
+    "new_WINDOW_observations.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "8c181c633986fb1d4d4527223616ac1d38a3754dac5e10b4be89e27117982b91.json",
+      "sha256": "8c181c633986fb1d4d4527223616ac1d38a3754dac5e10b4be89e27117982b91",
+      "media_type": "application/json",
+      "name": "s001_audit_new_WINDOW_observations",
+      "schema": null,
+      "schema_version": null
+    },
+    "new_WINDOW_orders.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "c6af6aa03b4a0e9b23ea182e3847c62b7b62cc2caf3235f4c992cdb7a3a08cfc.csv",
+      "sha256": "c6af6aa03b4a0e9b23ea182e3847c62b7b62cc2caf3235f4c992cdb7a3a08cfc",
+      "media_type": "text/csv",
+      "name": "s001_audit_new_WINDOW_orders",
+      "schema": null,
+      "schema_version": null
+    },
+    "new_WINDOW_signals.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "4ca823c7ff6e4b34c92f8bf058df4d976bc447e299da1a2d73f05fbaa6a4a596.csv",
+      "sha256": "4ca823c7ff6e4b34c92f8bf058df4d976bc447e299da1a2d73f05fbaa6a4a596",
+      "media_type": "text/csv",
+      "name": "s001_audit_new_WINDOW_signals",
+      "schema": null,
+      "schema_version": null
+    },
+    "new_WINDOW_trades.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "13bc1564c5e8af8b02eda5841355f024130f5c3006c828fc30b989c3cfa24a3d.csv",
+      "sha256": "13bc1564c5e8af8b02eda5841355f024130f5c3006c828fc30b989c3cfa24a3d",
+      "media_type": "text/csv",
+      "name": "s001_audit_new_WINDOW_trades",
+      "schema": null,
+      "schema_version": null
+    },
+    "old_binding.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "b141ae37df44e759769ff411d51eb166003c745e4ca9a8024c1ff819ce5b41f0.json",
+      "sha256": "b141ae37df44e759769ff411d51eb166003c745e4ca9a8024c1ff819ce5b41f0",
+      "media_type": "application/json",
+      "name": "s001_audit_old_binding",
+      "schema": null,
+      "schema_version": null
+    },
+    "old_CONTINUOUS_account_daily.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "89f8d420629e36679c2a1cdb296ff0ec52c2fdaf351f14109f4c07c0d142632d.csv",
+      "sha256": "89f8d420629e36679c2a1cdb296ff0ec52c2fdaf351f14109f4c07c0d142632d",
+      "media_type": "text/csv",
+      "name": "s001_audit_old_CONTINUOUS_account_daily",
+      "schema": null,
+      "schema_version": null
+    },
+    "old_CONTINUOUS_decisions.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "ff769f5c565daf3f1e04dc2de779c1ca0accbf3647991cca8ba4b210448fc3ac.csv",
+      "sha256": "ff769f5c565daf3f1e04dc2de779c1ca0accbf3647991cca8ba4b210448fc3ac",
+      "media_type": "text/csv",
+      "name": "s001_audit_old_CONTINUOUS_decisions",
+      "schema": null,
+      "schema_version": null
+    },
+    "old_CONTINUOUS_fills.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "d42f963ccdbc9336a503b7967286ed95865708fa97321797b54c731e7739a154.csv",
+      "sha256": "d42f963ccdbc9336a503b7967286ed95865708fa97321797b54c731e7739a154",
+      "media_type": "text/csv",
+      "name": "s001_audit_old_CONTINUOUS_fills",
+      "schema": null,
+      "schema_version": null
+    },
+    "old_CONTINUOUS_orders.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "359bc137d3da2743de57f28d72af5188784ae53d78e5191ec622464b116be14a.csv",
+      "sha256": "359bc137d3da2743de57f28d72af5188784ae53d78e5191ec622464b116be14a",
+      "media_type": "text/csv",
+      "name": "s001_audit_old_CONTINUOUS_orders",
+      "schema": null,
+      "schema_version": null
+    },
+    "old_CONTINUOUS_signals.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "3b424f43113b8790f1c413a6706105f870df5693bd8d52f412db5e84fca735ed.csv",
+      "sha256": "3b424f43113b8790f1c413a6706105f870df5693bd8d52f412db5e84fca735ed",
+      "media_type": "text/csv",
+      "name": "s001_audit_old_CONTINUOUS_signals",
+      "schema": null,
+      "schema_version": null
+    },
+    "old_CONTINUOUS_trades.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "76ef44fd2d5939dc3636e8d64593969f3a91eb413afee8ba24d0714fe53148cf.csv",
+      "sha256": "76ef44fd2d5939dc3636e8d64593969f3a91eb413afee8ba24d0714fe53148cf",
+      "media_type": "text/csv",
+      "name": "s001_audit_old_CONTINUOUS_trades",
+      "schema": null,
+      "schema_version": null
+    },
+    "old_WINDOW_account_daily.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "706200c6df35c00c7ee9bb179cebd73a6a1bfe1897e082bd03335523e12f7aa2.csv",
+      "sha256": "706200c6df35c00c7ee9bb179cebd73a6a1bfe1897e082bd03335523e12f7aa2",
+      "media_type": "text/csv",
+      "name": "s001_audit_old_WINDOW_account_daily",
+      "schema": null,
+      "schema_version": null
+    },
+    "old_WINDOW_decisions.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "878b130d4d998d9fb89faee6595903764aaf3bae58ab8c39b001045a8143e636.csv",
+      "sha256": "878b130d4d998d9fb89faee6595903764aaf3bae58ab8c39b001045a8143e636",
+      "media_type": "text/csv",
+      "name": "s001_audit_old_WINDOW_decisions",
+      "schema": null,
+      "schema_version": null
+    },
+    "old_WINDOW_fills.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "1b9e988cd3f98bfbcea328e0378b381d100b7ebf6ddcb2d6e44c83afe65a9ca4.csv",
+      "sha256": "1b9e988cd3f98bfbcea328e0378b381d100b7ebf6ddcb2d6e44c83afe65a9ca4",
+      "media_type": "text/csv",
+      "name": "s001_audit_old_WINDOW_fills",
+      "schema": null,
+      "schema_version": null
+    },
+    "old_WINDOW_orders.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "d47a50d6b657a6475647ab1b497911c4abd6553b6e8d899635723d99c1b04b88.csv",
+      "sha256": "d47a50d6b657a6475647ab1b497911c4abd6553b6e8d899635723d99c1b04b88",
+      "media_type": "text/csv",
+      "name": "s001_audit_old_WINDOW_orders",
+      "schema": null,
+      "schema_version": null
+    },
+    "old_WINDOW_signals.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "bba482d10766c48d6f1e09612f219ebd8c0f322fea25b61b6ae11ffca7cdf65f.csv",
+      "sha256": "bba482d10766c48d6f1e09612f219ebd8c0f322fea25b61b6ae11ffca7cdf65f",
+      "media_type": "text/csv",
+      "name": "s001_audit_old_WINDOW_signals",
+      "schema": null,
+      "schema_version": null
+    },
+    "old_WINDOW_trades.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "fd82542f4a28b18484d67e227cfbe02c45c58eac56947d898d0259ce5367d81d.csv",
+      "sha256": "fd82542f4a28b18484d67e227cfbe02c45c58eac56947d898d0259ce5367d81d",
+      "media_type": "text/csv",
+      "name": "s001_audit_old_WINDOW_trades",
+      "schema": null,
+      "schema_version": null
+    },
+    "result.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "ab37e6c508e7fdd9b7420e85fb1135343331a7ce020a794fd5915e7650536bff.json",
+      "sha256": "ab37e6c508e7fdd9b7420e85fb1135343331a7ce020a794fd5915e7650536bff",
+      "media_type": "application/json",
+      "name": "s001_audit_result",
+      "schema": null,
+      "schema_version": null
+    },
+    "semantics.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "6d5fceac392f51ba18a9e55ed9501e6aa2bfe71913d837624ce1241e4cb8cea2.json",
+      "sha256": "6d5fceac392f51ba18a9e55ed9501e6aa2bfe71913d837624ce1241e4cb8cea2",
+      "media_type": "application/json",
+      "name": "s001_audit_semantics",
+      "schema": null,
+      "schema_version": null
+    },
+    "WINDOW_nonzero_probes.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S001",
+        "experiment_id": "EX002_20261026"
+      },
+      "evidence_id": "64bffc7cb0ba99d413cae50a9eb34e32e37681676b466c55fbc83ca5a28671e0.json",
+      "sha256": "64bffc7cb0ba99d413cae50a9eb34e32e37681676b466c55fbc83ca5a28671e0",
+      "media_type": "application/json",
+      "name": "s001_audit_WINDOW_nonzero_probes",
+      "schema": null,
+      "schema_version": null
+    }
+  }
+}

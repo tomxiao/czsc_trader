@@ -1,0 +1,191 @@
+{
+  "status": "PREPARED_NOT_EVALUATED",
+  "reason": "Technical inspection must not exceed original frozen selection cutoff 2026-09-30",
+  "window": {
+    "start": "2025-02-06",
+    "end": "2026-09-30"
+  },
+  "baseline_pickle_sha256": "4f9427b0d0bac2e15ae3049867c7a0414c16fa0f0d3dd305bad9cb84daf3a05f",
+  "original_415day_evidence": "UNCHANGED",
+  "source_inputs": [
+    {
+      "role": "bars",
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "159326.SZ",
+        "frequency": "30m",
+        "start": "2024-12-26",
+        "end": "2026-10-20"
+      },
+      "content_sha256": "f6c0aeed48828ff8efddc9b80e60c7e9ab4d875f7ae477e60d11b4dbe6e26d07"
+    },
+    {
+      "role": "calendar",
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "frequency": "daily",
+        "start": "2024-12-08",
+        "end": "2026-11-10"
+      },
+      "content_sha256": "2f9767a1a8ae5ebf8737f18fa333cb2c2a47b286bcf18b6c8a9493a955cf4ccb"
+    },
+    {
+      "role": "daily",
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "159326.SZ",
+        "frequency": "daily",
+        "start": "2024-12-26",
+        "end": "2026-10-20"
+      },
+      "content_sha256": "eec5757b729d5d9682806cbde3b23af5db5cdfbc6f739312c5aeb34a68ab4e3c"
+    },
+    {
+      "role": "execution",
+      "request": {
+        "dataset": "etf.unadjusted_daily",
+        "symbol": "159326.SZ",
+        "frequency": "daily",
+        "start": "2024-12-26",
+        "end": "2026-10-20"
+      },
+      "content_sha256": "5f45866889ce4bfe50f6bfe221835f6565bb66d8a0583188a2c26462412c5c59"
+    },
+    {
+      "role": "market",
+      "request": {
+        "dataset": "index.domestic_close_turnover_daily",
+        "symbol": "000300.SH",
+        "frequency": "daily",
+        "start": "2024-12-26",
+        "end": "2026-10-20"
+      },
+      "content_sha256": "f837da45f3685b0414c49a291ee3648ea350a8037df86560f1dad40843006e5f"
+    },
+    {
+      "role": "spx",
+      "request": {
+        "dataset": "index.global_daily",
+        "symbol": "SPX",
+        "frequency": "daily",
+        "start": "2024-12-16",
+        "end": "2026-10-20"
+      },
+      "content_sha256": "fbe9d90df066630054d36f728a40688338591d7405508849f860a02972d7c203"
+    },
+    {
+      "role": "price_limits",
+      "request": {
+        "dataset": "security.price_limits",
+        "symbol": "159326.SZ",
+        "frequency": "daily",
+        "start": "2025-02-06",
+        "end": "2026-10-21"
+      },
+      "content_sha256": "620aefbd9d29aeb2f69b5bcb82859147390019d74ec62ee43ffbd73c6fb78d99"
+    },
+    {
+      "role": "adjusted_daily",
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "159326.SZ",
+        "frequency": "daily",
+        "start": "2025-02-05",
+        "end": "2026-10-21"
+      },
+      "content_sha256": "37b88ae433ce4c12bd850169b68d466711d64788f37f7313164fa1830d228fe1"
+    },
+    {
+      "role": "execution_daily",
+      "request": {
+        "dataset": "etf.unadjusted_daily",
+        "symbol": "159326.SZ",
+        "frequency": "daily",
+        "start": "2025-02-05",
+        "end": "2026-10-21"
+      },
+      "content_sha256": "33719592c4eac1bac5d8e44113ae8ec0d77beb87ec97a0a1d5d993032b0237b6"
+    },
+    {
+      "role": "trading_calendar",
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SZSE",
+        "frequency": "daily",
+        "start": "2025-02-06",
+        "end": "2026-10-21"
+      },
+      "content_sha256": "c8cdc5b2ad2f939ec79e7e9ad7bb2b523751e861764e00133b3253b2aaf62a81"
+    }
+  ],
+  "prepared_slice_checks": [
+    {
+      "role": "bars",
+      "sha256": "35c23f8c6b4afe11b706002e130d803a69fa4159fbe652f9749f87cf08c9de98",
+      "end": "2026-09-29"
+    },
+    {
+      "role": "calendar",
+      "sha256": "4304507a9b18d6f4277fc748681194041e7d03fcd19c392c989971f4400ab5ed",
+      "end": "2026-10-20"
+    },
+    {
+      "role": "daily",
+      "sha256": "6c7bb8d02dd8e6cac600f4407a5663dbfafc6a150780003db1542214ed05f5b3",
+      "end": "2026-09-29"
+    },
+    {
+      "role": "execution",
+      "sha256": "9815100b068db9295f25cd9cbe424de0075371fca2333a9388fa835728ddbf07",
+      "end": "2026-09-29"
+    },
+    {
+      "role": "market",
+      "sha256": "3a5d3117120b53464e04734c480bfc5ed46cc40ba207fe5ccf06452c3120a8d2",
+      "end": "2026-09-29"
+    },
+    {
+      "role": "spx",
+      "sha256": "c1043d0d654170ea6efd31b9b29e518bafe3136ee42716bada5e661b6c65593f",
+      "end": "2026-09-29"
+    },
+    {
+      "role": "price_limits",
+      "sha256": "3c5e3219f81daac2a287ab40a1682f9b7a4fae3a3f55b725ea700dfb94ef32e3",
+      "end": "2026-09-30"
+    },
+    {
+      "role": "adjusted_daily",
+      "sha256": "9491b8bda0d4c0b89a03e689c64a7317063eb36ebffc9167017ca14e1049b530",
+      "end": "2026-09-30"
+    },
+    {
+      "role": "execution_daily",
+      "sha256": "26f9a62382bdd5a59edc5094b0832cf14d396c67efa87e6f04bf2ce93c0a5718",
+      "end": "2026-09-30"
+    },
+    {
+      "role": "trading_calendar",
+      "sha256": "7caaa7af6aad223469537d5e4b95bd4791e8c8439a6b3b486f553355fb6f435b",
+      "end": "2026-09-30"
+    }
+  ],
+  "request_reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S011",
+      "experiment_id": "EX084_20261026"
+    },
+    "evidence_id": "57460df2112876eea96dd5c87eb243f88072da37ad0cdd6ea911a6bd170ab085.pkl",
+    "sha256": "57460df2112876eea96dd5c87eb243f88072da37ad0cdd6ea911a6bd170ab085",
+    "media_type": "application/octet-stream",
+    "name": "inspection_cutoff_window_request",
+    "schema": null,
+    "schema_version": null
+  },
+  "session_count": 405,
+  "network_access": false,
+  "new_evaluations": 0
+}

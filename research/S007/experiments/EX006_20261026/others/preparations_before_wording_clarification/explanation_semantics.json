@@ -1,0 +1,626 @@
+{
+  "reference": "S007-v1",
+  "status": "PASS",
+  "source_files_added": [
+    "strategies/observation_explanation_v4.py"
+  ],
+  "public_observation_upgrade_validation": "PASS",
+  "checks": [
+    "isolated unchanged trading loop: entry equality, confirmation equality, below-entry, below-confirmation, hold above exit, exit equality",
+    "confirmation falling does not trigger exit",
+    "all four actual action states map to matching narratives",
+    "unused confirmation unavailable does not change active-branch explanation",
+    "selected basis unavailable rejects whole explanation",
+    "unknown actual action rejected",
+    "display threshold references effective parameters rather than copied literals"
+  ],
+  "scope": "Synthetic semantic and isolated frozen decision-loop checks; full historical equivalence is performed separately by the parent task.",
+  "snapshots": [
+    {
+      "groups": [
+        {
+          "key": "score",
+          "label": "模型得分",
+          "unit": "分",
+          "basis": "居中历史分位加权分",
+          "format": "NUMBER",
+          "precision": 4,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "base",
+          "label": "基础分",
+          "group": "score",
+          "render": "LINE",
+          "description": "",
+          "value": 0.10449973411727909,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "entry",
+              "label": "入场门槛",
+              "value": 0.10449974411727908
+            },
+            {
+              "key": "exit",
+              "label": "退出门槛",
+              "value": 0.047857421473087296
+            }
+          ]
+        },
+        {
+          "key": "confirmation",
+          "label": "确认分",
+          "group": "score",
+          "render": "LINE",
+          "description": "",
+          "value": -0.012073272333918687,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "entry",
+              "label": "确认门槛",
+              "value": -0.012073272333918687
+            }
+          ]
+        }
+      ],
+      "states": [
+        {
+          "key": "decision",
+          "label": "模型决策",
+          "description": "",
+          "options": [
+            {
+              "key": "enter",
+              "label": "激活入场"
+            },
+            {
+              "key": "hold_position",
+              "label": "继续有效"
+            },
+            {
+              "key": "exit",
+              "label": "结束退出"
+            },
+            {
+              "key": "hold_cash",
+              "label": "空仓等待"
+            }
+          ],
+          "value": "hold_cash",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "decision",
+        "case_key": "hold_cash",
+        "judgment": "暂不满足完整入场条件",
+        "basis": [
+          {
+            "key": "base",
+            "text": "基础分 0.1045 分；入场门槛 0.1045 分；退出门槛 0.0479 分"
+          },
+          {
+            "key": "confirmation",
+            "text": "确认分 -0.0121 分；确认门槛 -0.0121 分"
+          }
+        ],
+        "next_watch": "等待基础分达到 0.1045 分 且确认分达到 -0.0121 分。",
+        "explanation": "基础分将价格相对成交均价的偏离、振幅、创业板换手、此前美股表现及隔夜资金利率变化，按历史分位和固定权重汇总；确认分来自滞后的ETF份额变化与成交量变化。分数不是收益率或上涨概率。空仓模型须基础分和确认分同时达标才激活；激活后仅基础分降至退出门槛或以下才结束，确认分回落本身不触发退出。这里展示模型状态；账户持仓和实际成交另看账户、事件记录。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "score",
+          "label": "模型得分",
+          "unit": "分",
+          "basis": "居中历史分位加权分",
+          "format": "NUMBER",
+          "precision": 4,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "base",
+          "label": "基础分",
+          "group": "score",
+          "render": "LINE",
+          "description": "",
+          "value": 0.10449974411727908,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "entry",
+              "label": "入场门槛",
+              "value": 0.10449974411727908
+            },
+            {
+              "key": "exit",
+              "label": "退出门槛",
+              "value": 0.047857421473087296
+            }
+          ]
+        },
+        {
+          "key": "confirmation",
+          "label": "确认分",
+          "group": "score",
+          "render": "LINE",
+          "description": "",
+          "value": -0.012073272333918687,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "entry",
+              "label": "确认门槛",
+              "value": -0.012073272333918687
+            }
+          ]
+        }
+      ],
+      "states": [
+        {
+          "key": "decision",
+          "label": "模型决策",
+          "description": "",
+          "options": [
+            {
+              "key": "enter",
+              "label": "激活入场"
+            },
+            {
+              "key": "hold_position",
+              "label": "继续有效"
+            },
+            {
+              "key": "exit",
+              "label": "结束退出"
+            },
+            {
+              "key": "hold_cash",
+              "label": "空仓等待"
+            }
+          ],
+          "value": "enter",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "decision",
+        "case_key": "enter",
+        "judgment": "出现入场信号",
+        "basis": [
+          {
+            "key": "base",
+            "text": "基础分 0.1045 分；入场门槛 0.1045 分；退出门槛 0.0479 分"
+          },
+          {
+            "key": "confirmation",
+            "text": "确认分 -0.0121 分；确认门槛 -0.0121 分"
+          }
+        ],
+        "next_watch": "关注基础分是否降至退出门槛 0.0479 分 或以下；实际入场以委托和成交记录为准。",
+        "explanation": "基础分将价格相对成交均价的偏离、振幅、创业板换手、此前美股表现及隔夜资金利率变化，按历史分位和固定权重汇总；确认分来自滞后的ETF份额变化与成交量变化。分数不是收益率或上涨概率。空仓模型须基础分和确认分同时达标才激活；激活后仅基础分降至退出门槛或以下才结束，确认分回落本身不触发退出。这里展示模型状态；账户持仓和实际成交另看账户、事件记录。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "score",
+          "label": "模型得分",
+          "unit": "分",
+          "basis": "居中历史分位加权分",
+          "format": "NUMBER",
+          "precision": 4,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "base",
+          "label": "基础分",
+          "group": "score",
+          "render": "LINE",
+          "description": "",
+          "value": 0.0478574314730873,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "entry",
+              "label": "入场门槛",
+              "value": 0.10449974411727908
+            },
+            {
+              "key": "exit",
+              "label": "退出门槛",
+              "value": 0.047857421473087296
+            }
+          ]
+        },
+        {
+          "key": "confirmation",
+          "label": "确认分",
+          "group": "score",
+          "render": "LINE",
+          "description": "",
+          "value": -1.0120732723339187,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "entry",
+              "label": "确认门槛",
+              "value": -0.012073272333918687
+            }
+          ]
+        }
+      ],
+      "states": [
+        {
+          "key": "decision",
+          "label": "模型决策",
+          "description": "",
+          "options": [
+            {
+              "key": "enter",
+              "label": "激活入场"
+            },
+            {
+              "key": "hold_position",
+              "label": "继续有效"
+            },
+            {
+              "key": "exit",
+              "label": "结束退出"
+            },
+            {
+              "key": "hold_cash",
+              "label": "空仓等待"
+            }
+          ],
+          "value": "hold_position",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "decision",
+        "case_key": "hold_position",
+        "judgment": "本轮信号继续有效",
+        "basis": [
+          {
+            "key": "base",
+            "text": "基础分 0.0479 分；入场门槛 0.1045 分；退出门槛 0.0479 分"
+          },
+          {
+            "key": "exit_rule",
+            "text": "模型保持激活；确认分回落本身不触发退出。"
+          }
+        ],
+        "next_watch": "关注基础分是否降至 0.0479 分 或以下。",
+        "explanation": "基础分将价格相对成交均价的偏离、振幅、创业板换手、此前美股表现及隔夜资金利率变化，按历史分位和固定权重汇总；确认分来自滞后的ETF份额变化与成交量变化。分数不是收益率或上涨概率。空仓模型须基础分和确认分同时达标才激活；激活后仅基础分降至退出门槛或以下才结束，确认分回落本身不触发退出。这里展示模型状态；账户持仓和实际成交另看账户、事件记录。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "score",
+          "label": "模型得分",
+          "unit": "分",
+          "basis": "居中历史分位加权分",
+          "format": "NUMBER",
+          "precision": 4,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "base",
+          "label": "基础分",
+          "group": "score",
+          "render": "LINE",
+          "description": "",
+          "value": 0.047857421473087296,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "entry",
+              "label": "入场门槛",
+              "value": 0.10449974411727908
+            },
+            {
+              "key": "exit",
+              "label": "退出门槛",
+              "value": 0.047857421473087296
+            }
+          ]
+        },
+        {
+          "key": "confirmation",
+          "label": "确认分",
+          "group": "score",
+          "render": "LINE",
+          "description": "",
+          "value": -0.012073272333918687,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "entry",
+              "label": "确认门槛",
+              "value": -0.012073272333918687
+            }
+          ]
+        }
+      ],
+      "states": [
+        {
+          "key": "decision",
+          "label": "模型决策",
+          "description": "",
+          "options": [
+            {
+              "key": "enter",
+              "label": "激活入场"
+            },
+            {
+              "key": "hold_position",
+              "label": "继续有效"
+            },
+            {
+              "key": "exit",
+              "label": "结束退出"
+            },
+            {
+              "key": "hold_cash",
+              "label": "空仓等待"
+            }
+          ],
+          "value": "exit",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "decision",
+        "case_key": "exit",
+        "judgment": "出现退出信号",
+        "basis": [
+          {
+            "key": "base",
+            "text": "基础分 0.0479 分；入场门槛 0.1045 分；退出门槛 0.0479 分"
+          },
+          {
+            "key": "exit_rule",
+            "text": "基础分触及退出条件，本轮模型机会结束。"
+          }
+        ],
+        "next_watch": "等待基础分达到 0.1045 分 且确认分达到 -0.0121 分。",
+        "explanation": "基础分将价格相对成交均价的偏离、振幅、创业板换手、此前美股表现及隔夜资金利率变化，按历史分位和固定权重汇总；确认分来自滞后的ETF份额变化与成交量变化。分数不是收益率或上涨概率。空仓模型须基础分和确认分同时达标才激活；激活后仅基础分降至退出门槛或以下才结束，确认分回落本身不触发退出。这里展示模型状态；账户持仓和实际成交另看账户、事件记录。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "score",
+          "label": "模型得分",
+          "unit": "分",
+          "basis": "居中历史分位加权分",
+          "format": "NUMBER",
+          "precision": 4,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "base",
+          "label": "基础分",
+          "group": "score",
+          "render": "LINE",
+          "description": "",
+          "value": 0.10449974411727908,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "entry",
+              "label": "入场门槛",
+              "value": 0.10449974411727908
+            },
+            {
+              "key": "exit",
+              "label": "退出门槛",
+              "value": 0.047857421473087296
+            }
+          ]
+        },
+        {
+          "key": "confirmation",
+          "label": "确认分",
+          "group": "score",
+          "render": "LINE",
+          "description": "",
+          "value": -0.012073282333918687,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "entry",
+              "label": "确认门槛",
+              "value": -0.012073272333918687
+            }
+          ]
+        }
+      ],
+      "states": [
+        {
+          "key": "decision",
+          "label": "模型决策",
+          "description": "",
+          "options": [
+            {
+              "key": "enter",
+              "label": "激活入场"
+            },
+            {
+              "key": "hold_position",
+              "label": "继续有效"
+            },
+            {
+              "key": "exit",
+              "label": "结束退出"
+            },
+            {
+              "key": "hold_cash",
+              "label": "空仓等待"
+            }
+          ],
+          "value": "hold_cash",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "decision",
+        "case_key": "hold_cash",
+        "judgment": "暂不满足完整入场条件",
+        "basis": [
+          {
+            "key": "base",
+            "text": "基础分 0.1045 分；入场门槛 0.1045 分；退出门槛 0.0479 分"
+          },
+          {
+            "key": "confirmation",
+            "text": "确认分 -0.0121 分；确认门槛 -0.0121 分"
+          }
+        ],
+        "next_watch": "等待基础分达到 0.1045 分 且确认分达到 -0.0121 分。",
+        "explanation": "基础分将价格相对成交均价的偏离、振幅、创业板换手、此前美股表现及隔夜资金利率变化，按历史分位和固定权重汇总；确认分来自滞后的ETF份额变化与成交量变化。分数不是收益率或上涨概率。空仓模型须基础分和确认分同时达标才激活；激活后仅基础分降至退出门槛或以下才结束，确认分回落本身不触发退出。这里展示模型状态；账户持仓和实际成交另看账户、事件记录。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "score",
+          "label": "模型得分",
+          "unit": "分",
+          "basis": "居中历史分位加权分",
+          "format": "NUMBER",
+          "precision": 4,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "base",
+          "label": "基础分",
+          "group": "score",
+          "render": "LINE",
+          "description": "",
+          "value": 0.10449974411727908,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "entry",
+              "label": "入场门槛",
+              "value": 0.10449974411727908
+            },
+            {
+              "key": "exit",
+              "label": "退出门槛",
+              "value": 0.047857421473087296
+            }
+          ]
+        },
+        {
+          "key": "confirmation",
+          "label": "确认分",
+          "group": "score",
+          "render": "LINE",
+          "description": "",
+          "value": -0.012073272333918687,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "entry",
+              "label": "确认门槛",
+              "value": -0.012073272333918687
+            }
+          ]
+        }
+      ],
+      "states": [
+        {
+          "key": "decision",
+          "label": "模型决策",
+          "description": "",
+          "options": [
+            {
+              "key": "enter",
+              "label": "激活入场"
+            },
+            {
+              "key": "hold_position",
+              "label": "继续有效"
+            },
+            {
+              "key": "exit",
+              "label": "结束退出"
+            },
+            {
+              "key": "hold_cash",
+              "label": "空仓等待"
+            }
+          ],
+          "value": "enter",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "decision",
+        "case_key": "enter",
+        "judgment": "出现入场信号",
+        "basis": [
+          {
+            "key": "base",
+            "text": "基础分 0.1045 分；入场门槛 0.1045 分；退出门槛 0.0479 分"
+          },
+          {
+            "key": "confirmation",
+            "text": "确认分 -0.0121 分；确认门槛 -0.0121 分"
+          }
+        ],
+        "next_watch": "关注基础分是否降至退出门槛 0.0479 分 或以下；实际入场以委托和成交记录为准。",
+        "explanation": "基础分将价格相对成交均价的偏离、振幅、创业板换手、此前美股表现及隔夜资金利率变化，按历史分位和固定权重汇总；确认分来自滞后的ETF份额变化与成交量变化。分数不是收益率或上涨概率。空仓模型须基础分和确认分同时达标才激活；激活后仅基础分降至退出门槛或以下才结束，确认分回落本身不触发退出。这里展示模型状态；账户持仓和实际成交另看账户、事件记录。"
+      }
+    }
+  ]
+}

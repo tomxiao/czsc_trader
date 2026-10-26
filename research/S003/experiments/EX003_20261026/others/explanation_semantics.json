@@ -1,0 +1,282 @@
+{
+  "reference": "S003-v1",
+  "status": "PASS",
+  "source_files_added": [
+    "strategies/observation_explanation_v4.py"
+  ],
+  "public_observation_upgrade_validation": "PASS",
+  "checks": [
+    "actual frozen GREATER_THAN_OR_EQUAL boundary: equality active, below inactive, above active",
+    "dynamic threshold and observed coverage quoted from trading evidence",
+    "signal does not imply clearing core inventory or confirmed fill",
+    "warmup threshold unavailable is rejected, not fabricated as inactive",
+    "missing actual signal rejected"
+  ],
+  "scope": "Synthetic semantic and isolated frozen decision-loop checks; full historical equivalence is performed separately by the parent task.",
+  "snapshots": [
+    {
+      "groups": [
+        {
+          "key": "ratio",
+          "label": "成分资金流",
+          "unit": "%",
+          "basis": "权重占比",
+          "format": "PERCENT",
+          "precision": 2,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "breadth",
+          "label": "资金流宽度",
+          "group": "ratio",
+          "render": "LINE",
+          "description": "",
+          "value": 0.5,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "threshold",
+              "label": "动态门槛",
+              "value": 0.5
+            }
+          ]
+        },
+        {
+          "key": "coverage",
+          "label": "已观测权重比例",
+          "group": "ratio",
+          "render": "LINE",
+          "description": "",
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "minimum",
+              "label": "最低覆盖要求",
+              "value": 0.95
+            }
+          ]
+        }
+      ],
+      "states": [
+        {
+          "key": "decision",
+          "label": "增强信号",
+          "description": "",
+          "options": [
+            {
+              "key": "active",
+              "label": "满足"
+            },
+            {
+              "key": "inactive",
+              "label": "未满足"
+            }
+          ],
+          "value": "active",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "decision",
+        "case_key": "active",
+        "judgment": "出现早盘增强信号",
+        "basis": [
+          {
+            "key": "breadth",
+            "text": "资金流宽度 50.00%；动态门槛 50.00%"
+          },
+          {
+            "key": "coverage",
+            "text": "已观测成分权重比例 100.00%；最低覆盖要求 95.00%"
+          }
+        ],
+        "next_watch": "关注下一交易日增强委托及上午退出的实际成交；不是长期加仓信号。",
+        "explanation": "资金流宽度是有资金流记录的中证500成分股中，净流入股票所占的权重比例，不是流入金额或上涨概率。策略将当日宽度与按冻结历史窗口计算的动态分位门槛比较。信号满足时计划在下一交易日做早盘增强，并按既定上午检查点退出增强部分；底仓与可卖份额轮换遵守账户执行规则。无增强信号不代表清空底仓，模型信号不代表已经成交。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "ratio",
+          "label": "成分资金流",
+          "unit": "%",
+          "basis": "权重占比",
+          "format": "PERCENT",
+          "precision": 2,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "breadth",
+          "label": "资金流宽度",
+          "group": "ratio",
+          "render": "LINE",
+          "description": "",
+          "value": 0.4,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "threshold",
+              "label": "动态门槛",
+              "value": 0.5
+            }
+          ]
+        },
+        {
+          "key": "coverage",
+          "label": "已观测权重比例",
+          "group": "ratio",
+          "render": "LINE",
+          "description": "",
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "minimum",
+              "label": "最低覆盖要求",
+              "value": 0.95
+            }
+          ]
+        }
+      ],
+      "states": [
+        {
+          "key": "decision",
+          "label": "增强信号",
+          "description": "",
+          "options": [
+            {
+              "key": "active",
+              "label": "满足"
+            },
+            {
+              "key": "inactive",
+              "label": "未满足"
+            }
+          ],
+          "value": "inactive",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "decision",
+        "case_key": "inactive",
+        "judgment": "暂不触发早盘增强",
+        "basis": [
+          {
+            "key": "breadth",
+            "text": "资金流宽度 40.00%；动态门槛 50.00%"
+          },
+          {
+            "key": "coverage",
+            "text": "已观测成分权重比例 100.00%；最低覆盖要求 95.00%"
+          }
+        ],
+        "next_watch": "等待资金流宽度达到动态门槛 50.00%；底仓按既定规则维护。",
+        "explanation": "资金流宽度是有资金流记录的中证500成分股中，净流入股票所占的权重比例，不是流入金额或上涨概率。策略将当日宽度与按冻结历史窗口计算的动态分位门槛比较。信号满足时计划在下一交易日做早盘增强，并按既定上午检查点退出增强部分；底仓与可卖份额轮换遵守账户执行规则。无增强信号不代表清空底仓，模型信号不代表已经成交。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "ratio",
+          "label": "成分资金流",
+          "unit": "%",
+          "basis": "权重占比",
+          "format": "PERCENT",
+          "precision": 2,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "breadth",
+          "label": "资金流宽度",
+          "group": "ratio",
+          "render": "LINE",
+          "description": "",
+          "value": 0.6,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "threshold",
+              "label": "动态门槛",
+              "value": 0.5
+            }
+          ]
+        },
+        {
+          "key": "coverage",
+          "label": "已观测权重比例",
+          "group": "ratio",
+          "render": "LINE",
+          "description": "",
+          "value": 1.0,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "minimum",
+              "label": "最低覆盖要求",
+              "value": 0.95
+            }
+          ]
+        }
+      ],
+      "states": [
+        {
+          "key": "decision",
+          "label": "增强信号",
+          "description": "",
+          "options": [
+            {
+              "key": "active",
+              "label": "满足"
+            },
+            {
+              "key": "inactive",
+              "label": "未满足"
+            }
+          ],
+          "value": "active",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "decision",
+        "case_key": "active",
+        "judgment": "出现早盘增强信号",
+        "basis": [
+          {
+            "key": "breadth",
+            "text": "资金流宽度 60.00%；动态门槛 50.00%"
+          },
+          {
+            "key": "coverage",
+            "text": "已观测成分权重比例 100.00%；最低覆盖要求 95.00%"
+          }
+        ],
+        "next_watch": "关注下一交易日增强委托及上午退出的实际成交；不是长期加仓信号。",
+        "explanation": "资金流宽度是有资金流记录的中证500成分股中，净流入股票所占的权重比例，不是流入金额或上涨概率。策略将当日宽度与按冻结历史窗口计算的动态分位门槛比较。信号满足时计划在下一交易日做早盘增强，并按既定上午检查点退出增强部分；底仓与可卖份额轮换遵守账户执行规则。无增强信号不代表清空底仓，模型信号不代表已经成交。"
+      }
+    }
+  ]
+}

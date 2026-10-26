@@ -1,0 +1,1293 @@
+{
+  "reference": "S001-v2",
+  "kind": "SYNTHETIC_BRANCH_SEMANTICS",
+  "cases": [
+    "cash",
+    "enter",
+    "exit",
+    "hold",
+    "initial_cash",
+    "initial_long"
+  ],
+  "branch_count": 6,
+  "source_files_added": [
+    "strategies/observation_s001_v4.py"
+  ],
+  "validation": {
+    "status": "BLOCKED_INHERITED_DECLARATION",
+    "reason": "observation upgrade requires one explicit StrategyDefinition observation declaration"
+  },
+  "observations": [
+    {
+      "groups": [
+        {
+          "key": "score",
+          "label": "综合得分",
+          "unit": "分",
+          "basis": "冻结权重合成值",
+          "format": "NUMBER",
+          "precision": 3,
+          "description": ""
+        },
+        {
+          "key": "sessions",
+          "label": "模型规则期限",
+          "unit": "个交易日",
+          "basis": "模型状态机参数",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "score",
+          "label": "综合得分",
+          "group": "score",
+          "render": "LINE",
+          "description": "",
+          "value": 0.0,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "entry",
+              "label": "入场门槛",
+              "value": 0.175
+            },
+            {
+              "key": "exit",
+              "label": "退出门槛",
+              "value": 0.025
+            }
+          ]
+        },
+        {
+          "key": "confirm",
+          "label": "入场确认期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "minimum",
+          "label": "最短持有意图期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 3,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "exit_confirm",
+          "label": "退出确认期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        }
+      ],
+      "states": [
+        {
+          "key": "action",
+          "label": "原模型目标变化",
+          "description": "",
+          "options": [
+            {
+              "key": "enter",
+              "label": "出现入场信号"
+            },
+            {
+              "key": "exit",
+              "label": "出现退出信号"
+            },
+            {
+              "key": "hold",
+              "label": "模型继续维持满仓意图"
+            },
+            {
+              "key": "cash",
+              "label": "模型保持空仓意图"
+            },
+            {
+              "key": "initial_long",
+              "label": "当前模型为满仓意图"
+            },
+            {
+              "key": "initial_cash",
+              "label": "当前模型为空仓意图"
+            }
+          ],
+          "value": "initial_cash",
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        {
+          "key": "regime",
+          "label": "权重场景",
+          "description": "",
+          "options": [
+            {
+              "key": "trend",
+              "label": "趋势场景"
+            },
+            {
+              "key": "range",
+              "label": "震荡场景"
+            },
+            {
+              "key": "warmup",
+              "label": "场景预热：沿用冻结的预热权重"
+            }
+          ],
+          "value": "range",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "action",
+        "case_key": "initial_cash",
+        "judgment": "当前模型为空仓意图",
+        "basis": [
+          {
+            "key": "score",
+            "text": "综合得分 0.000 分；入场门槛 0.175 分，退出门槛 0.025 分。"
+          },
+          {
+            "key": "regime",
+            "text": "当次权重场景：震荡场景。"
+          }
+        ],
+        "next_watch": "当前观察首行缺少前一行目标，不据此宣称当日退出。",
+        "explanation": "策略将30分钟、日线和周线的结构、趋势及量价位置合成为得分，按此前可得的价格路径选择权重。得分不是收益率或上涨概率。空仓时连续 1 个交易日 达到入场门槛后转为满仓意图；满仓意图至少持续 3 个交易日 后，连续 1 个交易日 达到退出门槛才转为空仓。这里展示原策略已算出的目标变化，不等同于账户已经成交。计时与确认均属于模型意图。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "score",
+          "label": "综合得分",
+          "unit": "分",
+          "basis": "冻结权重合成值",
+          "format": "NUMBER",
+          "precision": 3,
+          "description": ""
+        },
+        {
+          "key": "sessions",
+          "label": "模型规则期限",
+          "unit": "个交易日",
+          "basis": "模型状态机参数",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "score",
+          "label": "综合得分",
+          "group": "score",
+          "render": "LINE",
+          "description": "",
+          "value": 0.175,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "entry",
+              "label": "入场门槛",
+              "value": 0.175
+            },
+            {
+              "key": "exit",
+              "label": "退出门槛",
+              "value": 0.025
+            }
+          ]
+        },
+        {
+          "key": "confirm",
+          "label": "入场确认期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "minimum",
+          "label": "最短持有意图期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 3,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "exit_confirm",
+          "label": "退出确认期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        }
+      ],
+      "states": [
+        {
+          "key": "action",
+          "label": "原模型目标变化",
+          "description": "",
+          "options": [
+            {
+              "key": "enter",
+              "label": "出现入场信号"
+            },
+            {
+              "key": "exit",
+              "label": "出现退出信号"
+            },
+            {
+              "key": "hold",
+              "label": "模型继续维持满仓意图"
+            },
+            {
+              "key": "cash",
+              "label": "模型保持空仓意图"
+            },
+            {
+              "key": "initial_long",
+              "label": "当前模型为满仓意图"
+            },
+            {
+              "key": "initial_cash",
+              "label": "当前模型为空仓意图"
+            }
+          ],
+          "value": "enter",
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        {
+          "key": "regime",
+          "label": "权重场景",
+          "description": "",
+          "options": [
+            {
+              "key": "trend",
+              "label": "趋势场景"
+            },
+            {
+              "key": "range",
+              "label": "震荡场景"
+            },
+            {
+              "key": "warmup",
+              "label": "场景预热：沿用冻结的预热权重"
+            }
+          ],
+          "value": "range",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "action",
+        "case_key": "enter",
+        "judgment": "出现入场信号",
+        "basis": [
+          {
+            "key": "score",
+            "text": "综合得分 0.175 分；入场门槛 0.175 分，退出门槛 0.025 分。"
+          },
+          {
+            "key": "regime",
+            "text": "当次权重场景：震荡场景。"
+          }
+        ],
+        "next_watch": "关注得分转弱及最短持有意图期限；实际是否买入查看事件区。",
+        "explanation": "策略将30分钟、日线和周线的结构、趋势及量价位置合成为得分，按此前可得的价格路径选择权重。得分不是收益率或上涨概率。空仓时连续 1 个交易日 达到入场门槛后转为满仓意图；满仓意图至少持续 3 个交易日 后，连续 1 个交易日 达到退出门槛才转为空仓。这里展示原策略已算出的目标变化，不等同于账户已经成交。计时与确认均属于模型意图。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "score",
+          "label": "综合得分",
+          "unit": "分",
+          "basis": "冻结权重合成值",
+          "format": "NUMBER",
+          "precision": 3,
+          "description": ""
+        },
+        {
+          "key": "sessions",
+          "label": "模型规则期限",
+          "unit": "个交易日",
+          "basis": "模型状态机参数",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "score",
+          "label": "综合得分",
+          "group": "score",
+          "render": "LINE",
+          "description": "",
+          "value": 0.5,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "entry",
+              "label": "入场门槛",
+              "value": 0.175
+            },
+            {
+              "key": "exit",
+              "label": "退出门槛",
+              "value": 0.025
+            }
+          ]
+        },
+        {
+          "key": "confirm",
+          "label": "入场确认期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "minimum",
+          "label": "最短持有意图期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 3,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "exit_confirm",
+          "label": "退出确认期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        }
+      ],
+      "states": [
+        {
+          "key": "action",
+          "label": "原模型目标变化",
+          "description": "",
+          "options": [
+            {
+              "key": "enter",
+              "label": "出现入场信号"
+            },
+            {
+              "key": "exit",
+              "label": "出现退出信号"
+            },
+            {
+              "key": "hold",
+              "label": "模型继续维持满仓意图"
+            },
+            {
+              "key": "cash",
+              "label": "模型保持空仓意图"
+            },
+            {
+              "key": "initial_long",
+              "label": "当前模型为满仓意图"
+            },
+            {
+              "key": "initial_cash",
+              "label": "当前模型为空仓意图"
+            }
+          ],
+          "value": "hold",
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        {
+          "key": "regime",
+          "label": "权重场景",
+          "description": "",
+          "options": [
+            {
+              "key": "trend",
+              "label": "趋势场景"
+            },
+            {
+              "key": "range",
+              "label": "震荡场景"
+            },
+            {
+              "key": "warmup",
+              "label": "场景预热：沿用冻结的预热权重"
+            }
+          ],
+          "value": "range",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "action",
+        "case_key": "hold",
+        "judgment": "模型继续维持满仓意图",
+        "basis": [
+          {
+            "key": "score",
+            "text": "综合得分 0.500 分；入场门槛 0.175 分，退出门槛 0.025 分。"
+          },
+          {
+            "key": "regime",
+            "text": "当次权重场景：震荡场景。"
+          }
+        ],
+        "next_watch": "退出需要同时满足最短意图期限和连续得分确认，单日低分不等于应立即卖出。",
+        "explanation": "策略将30分钟、日线和周线的结构、趋势及量价位置合成为得分，按此前可得的价格路径选择权重。得分不是收益率或上涨概率。空仓时连续 1 个交易日 达到入场门槛后转为满仓意图；满仓意图至少持续 3 个交易日 后，连续 1 个交易日 达到退出门槛才转为空仓。这里展示原策略已算出的目标变化，不等同于账户已经成交。计时与确认均属于模型意图。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "score",
+          "label": "综合得分",
+          "unit": "分",
+          "basis": "冻结权重合成值",
+          "format": "NUMBER",
+          "precision": 3,
+          "description": ""
+        },
+        {
+          "key": "sessions",
+          "label": "模型规则期限",
+          "unit": "个交易日",
+          "basis": "模型状态机参数",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "score",
+          "label": "综合得分",
+          "group": "score",
+          "render": "LINE",
+          "description": "",
+          "value": 0.025,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "entry",
+              "label": "入场门槛",
+              "value": 0.175
+            },
+            {
+              "key": "exit",
+              "label": "退出门槛",
+              "value": 0.025
+            }
+          ]
+        },
+        {
+          "key": "confirm",
+          "label": "入场确认期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "minimum",
+          "label": "最短持有意图期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 3,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "exit_confirm",
+          "label": "退出确认期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        }
+      ],
+      "states": [
+        {
+          "key": "action",
+          "label": "原模型目标变化",
+          "description": "",
+          "options": [
+            {
+              "key": "enter",
+              "label": "出现入场信号"
+            },
+            {
+              "key": "exit",
+              "label": "出现退出信号"
+            },
+            {
+              "key": "hold",
+              "label": "模型继续维持满仓意图"
+            },
+            {
+              "key": "cash",
+              "label": "模型保持空仓意图"
+            },
+            {
+              "key": "initial_long",
+              "label": "当前模型为满仓意图"
+            },
+            {
+              "key": "initial_cash",
+              "label": "当前模型为空仓意图"
+            }
+          ],
+          "value": "hold",
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        {
+          "key": "regime",
+          "label": "权重场景",
+          "description": "",
+          "options": [
+            {
+              "key": "trend",
+              "label": "趋势场景"
+            },
+            {
+              "key": "range",
+              "label": "震荡场景"
+            },
+            {
+              "key": "warmup",
+              "label": "场景预热：沿用冻结的预热权重"
+            }
+          ],
+          "value": "range",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "action",
+        "case_key": "hold",
+        "judgment": "模型继续维持满仓意图",
+        "basis": [
+          {
+            "key": "score",
+            "text": "综合得分 0.025 分；入场门槛 0.175 分，退出门槛 0.025 分。"
+          },
+          {
+            "key": "regime",
+            "text": "当次权重场景：震荡场景。"
+          }
+        ],
+        "next_watch": "退出需要同时满足最短意图期限和连续得分确认，单日低分不等于应立即卖出。",
+        "explanation": "策略将30分钟、日线和周线的结构、趋势及量价位置合成为得分，按此前可得的价格路径选择权重。得分不是收益率或上涨概率。空仓时连续 1 个交易日 达到入场门槛后转为满仓意图；满仓意图至少持续 3 个交易日 后，连续 1 个交易日 达到退出门槛才转为空仓。这里展示原策略已算出的目标变化，不等同于账户已经成交。计时与确认均属于模型意图。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "score",
+          "label": "综合得分",
+          "unit": "分",
+          "basis": "冻结权重合成值",
+          "format": "NUMBER",
+          "precision": 3,
+          "description": ""
+        },
+        {
+          "key": "sessions",
+          "label": "模型规则期限",
+          "unit": "个交易日",
+          "basis": "模型状态机参数",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "score",
+          "label": "综合得分",
+          "group": "score",
+          "render": "LINE",
+          "description": "",
+          "value": 0.025,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "entry",
+              "label": "入场门槛",
+              "value": 0.175
+            },
+            {
+              "key": "exit",
+              "label": "退出门槛",
+              "value": 0.025
+            }
+          ]
+        },
+        {
+          "key": "confirm",
+          "label": "入场确认期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "minimum",
+          "label": "最短持有意图期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 3,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "exit_confirm",
+          "label": "退出确认期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        }
+      ],
+      "states": [
+        {
+          "key": "action",
+          "label": "原模型目标变化",
+          "description": "",
+          "options": [
+            {
+              "key": "enter",
+              "label": "出现入场信号"
+            },
+            {
+              "key": "exit",
+              "label": "出现退出信号"
+            },
+            {
+              "key": "hold",
+              "label": "模型继续维持满仓意图"
+            },
+            {
+              "key": "cash",
+              "label": "模型保持空仓意图"
+            },
+            {
+              "key": "initial_long",
+              "label": "当前模型为满仓意图"
+            },
+            {
+              "key": "initial_cash",
+              "label": "当前模型为空仓意图"
+            }
+          ],
+          "value": "exit",
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        {
+          "key": "regime",
+          "label": "权重场景",
+          "description": "",
+          "options": [
+            {
+              "key": "trend",
+              "label": "趋势场景"
+            },
+            {
+              "key": "range",
+              "label": "震荡场景"
+            },
+            {
+              "key": "warmup",
+              "label": "场景预热：沿用冻结的预热权重"
+            }
+          ],
+          "value": "range",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "action",
+        "case_key": "exit",
+        "judgment": "出现退出信号",
+        "basis": [
+          {
+            "key": "score",
+            "text": "综合得分 0.025 分；入场门槛 0.175 分，退出门槛 0.025 分。"
+          },
+          {
+            "key": "regime",
+            "text": "当次权重场景：震荡场景。"
+          }
+        ],
+        "next_watch": "等待新的连续入场确认；实际是否卖出查看事件区。",
+        "explanation": "策略将30分钟、日线和周线的结构、趋势及量价位置合成为得分，按此前可得的价格路径选择权重。得分不是收益率或上涨概率。空仓时连续 1 个交易日 达到入场门槛后转为满仓意图；满仓意图至少持续 3 个交易日 后，连续 1 个交易日 达到退出门槛才转为空仓。这里展示原策略已算出的目标变化，不等同于账户已经成交。计时与确认均属于模型意图。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "score",
+          "label": "综合得分",
+          "unit": "分",
+          "basis": "冻结权重合成值",
+          "format": "NUMBER",
+          "precision": 3,
+          "description": ""
+        },
+        {
+          "key": "sessions",
+          "label": "模型规则期限",
+          "unit": "个交易日",
+          "basis": "模型状态机参数",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "score",
+          "label": "综合得分",
+          "group": "score",
+          "render": "LINE",
+          "description": "",
+          "value": 0.0,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "entry",
+              "label": "入场门槛",
+              "value": 0.175
+            },
+            {
+              "key": "exit",
+              "label": "退出门槛",
+              "value": 0.025
+            }
+          ]
+        },
+        {
+          "key": "confirm",
+          "label": "入场确认期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "minimum",
+          "label": "最短持有意图期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 3,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "exit_confirm",
+          "label": "退出确认期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        }
+      ],
+      "states": [
+        {
+          "key": "action",
+          "label": "原模型目标变化",
+          "description": "",
+          "options": [
+            {
+              "key": "enter",
+              "label": "出现入场信号"
+            },
+            {
+              "key": "exit",
+              "label": "出现退出信号"
+            },
+            {
+              "key": "hold",
+              "label": "模型继续维持满仓意图"
+            },
+            {
+              "key": "cash",
+              "label": "模型保持空仓意图"
+            },
+            {
+              "key": "initial_long",
+              "label": "当前模型为满仓意图"
+            },
+            {
+              "key": "initial_cash",
+              "label": "当前模型为空仓意图"
+            }
+          ],
+          "value": "cash",
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        {
+          "key": "regime",
+          "label": "权重场景",
+          "description": "",
+          "options": [
+            {
+              "key": "trend",
+              "label": "趋势场景"
+            },
+            {
+              "key": "range",
+              "label": "震荡场景"
+            },
+            {
+              "key": "warmup",
+              "label": "场景预热：沿用冻结的预热权重"
+            }
+          ],
+          "value": "range",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "action",
+        "case_key": "cash",
+        "judgment": "模型保持空仓意图",
+        "basis": [
+          {
+            "key": "score",
+            "text": "综合得分 0.000 分；入场门槛 0.175 分，退出门槛 0.025 分。"
+          },
+          {
+            "key": "regime",
+            "text": "当次权重场景：震荡场景。"
+          }
+        ],
+        "next_watch": "关注得分是否连续 1 个交易日 达到入场门槛。",
+        "explanation": "策略将30分钟、日线和周线的结构、趋势及量价位置合成为得分，按此前可得的价格路径选择权重。得分不是收益率或上涨概率。空仓时连续 1 个交易日 达到入场门槛后转为满仓意图；满仓意图至少持续 3 个交易日 后，连续 1 个交易日 达到退出门槛才转为空仓。这里展示原策略已算出的目标变化，不等同于账户已经成交。计时与确认均属于模型意图。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "score",
+          "label": "综合得分",
+          "unit": "分",
+          "basis": "冻结权重合成值",
+          "format": "NUMBER",
+          "precision": 3,
+          "description": ""
+        },
+        {
+          "key": "sessions",
+          "label": "模型规则期限",
+          "unit": "个交易日",
+          "basis": "模型状态机参数",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "score",
+          "label": "综合得分",
+          "group": "score",
+          "render": "LINE",
+          "description": "",
+          "value": 0.175,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "entry",
+              "label": "入场门槛",
+              "value": 0.175
+            },
+            {
+              "key": "exit",
+              "label": "退出门槛",
+              "value": 0.025
+            }
+          ]
+        },
+        {
+          "key": "confirm",
+          "label": "入场确认期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "minimum",
+          "label": "最短持有意图期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 3,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "exit_confirm",
+          "label": "退出确认期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        }
+      ],
+      "states": [
+        {
+          "key": "action",
+          "label": "原模型目标变化",
+          "description": "",
+          "options": [
+            {
+              "key": "enter",
+              "label": "出现入场信号"
+            },
+            {
+              "key": "exit",
+              "label": "出现退出信号"
+            },
+            {
+              "key": "hold",
+              "label": "模型继续维持满仓意图"
+            },
+            {
+              "key": "cash",
+              "label": "模型保持空仓意图"
+            },
+            {
+              "key": "initial_long",
+              "label": "当前模型为满仓意图"
+            },
+            {
+              "key": "initial_cash",
+              "label": "当前模型为空仓意图"
+            }
+          ],
+          "value": "enter",
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        {
+          "key": "regime",
+          "label": "权重场景",
+          "description": "",
+          "options": [
+            {
+              "key": "trend",
+              "label": "趋势场景"
+            },
+            {
+              "key": "range",
+              "label": "震荡场景"
+            },
+            {
+              "key": "warmup",
+              "label": "场景预热：沿用冻结的预热权重"
+            }
+          ],
+          "value": "range",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "action",
+        "case_key": "enter",
+        "judgment": "出现入场信号",
+        "basis": [
+          {
+            "key": "score",
+            "text": "综合得分 0.175 分；入场门槛 0.175 分，退出门槛 0.025 分。"
+          },
+          {
+            "key": "regime",
+            "text": "当次权重场景：震荡场景。"
+          }
+        ],
+        "next_watch": "关注得分转弱及最短持有意图期限；实际是否买入查看事件区。",
+        "explanation": "策略将30分钟、日线和周线的结构、趋势及量价位置合成为得分，按此前可得的价格路径选择权重。得分不是收益率或上涨概率。空仓时连续 1 个交易日 达到入场门槛后转为满仓意图；满仓意图至少持续 3 个交易日 后，连续 1 个交易日 达到退出门槛才转为空仓。这里展示原策略已算出的目标变化，不等同于账户已经成交。计时与确认均属于模型意图。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "score",
+          "label": "综合得分",
+          "unit": "分",
+          "basis": "冻结权重合成值",
+          "format": "NUMBER",
+          "precision": 3,
+          "description": ""
+        },
+        {
+          "key": "sessions",
+          "label": "模型规则期限",
+          "unit": "个交易日",
+          "basis": "模型状态机参数",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "score",
+          "label": "综合得分",
+          "group": "score",
+          "render": "LINE",
+          "description": "",
+          "value": 0.175,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "entry",
+              "label": "入场门槛",
+              "value": 0.175
+            },
+            {
+              "key": "exit",
+              "label": "退出门槛",
+              "value": 0.025
+            }
+          ]
+        },
+        {
+          "key": "confirm",
+          "label": "入场确认期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "minimum",
+          "label": "最短持有意图期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 3,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "exit_confirm",
+          "label": "退出确认期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        }
+      ],
+      "states": [
+        {
+          "key": "action",
+          "label": "原模型目标变化",
+          "description": "",
+          "options": [
+            {
+              "key": "enter",
+              "label": "出现入场信号"
+            },
+            {
+              "key": "exit",
+              "label": "出现退出信号"
+            },
+            {
+              "key": "hold",
+              "label": "模型继续维持满仓意图"
+            },
+            {
+              "key": "cash",
+              "label": "模型保持空仓意图"
+            },
+            {
+              "key": "initial_long",
+              "label": "当前模型为满仓意图"
+            },
+            {
+              "key": "initial_cash",
+              "label": "当前模型为空仓意图"
+            }
+          ],
+          "value": "initial_long",
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        {
+          "key": "regime",
+          "label": "权重场景",
+          "description": "",
+          "options": [
+            {
+              "key": "trend",
+              "label": "趋势场景"
+            },
+            {
+              "key": "range",
+              "label": "震荡场景"
+            },
+            {
+              "key": "warmup",
+              "label": "场景预热：沿用冻结的预热权重"
+            }
+          ],
+          "value": "range",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "action",
+        "case_key": "initial_long",
+        "judgment": "当前模型为满仓意图",
+        "basis": [
+          {
+            "key": "score",
+            "text": "综合得分 0.175 分；入场门槛 0.175 分，退出门槛 0.025 分。"
+          },
+          {
+            "key": "regime",
+            "text": "当次权重场景：震荡场景。"
+          }
+        ],
+        "next_watch": "当前观察首行缺少前一行目标，不据此宣称当日入场；实际持仓查看账户。",
+        "explanation": "策略将30分钟、日线和周线的结构、趋势及量价位置合成为得分，按此前可得的价格路径选择权重。得分不是收益率或上涨概率。空仓时连续 1 个交易日 达到入场门槛后转为满仓意图；满仓意图至少持续 3 个交易日 后，连续 1 个交易日 达到退出门槛才转为空仓。这里展示原策略已算出的目标变化，不等同于账户已经成交。计时与确认均属于模型意图。"
+      }
+    }
+  ],
+  "unavailable_rejected": true,
+  "unknown_branch_rejected": true,
+  "legacy_series_facts_unchanged": true,
+  "limits": [
+    "Synthetic values test branch interpretation only, not economic performance.",
+    "Model targets and timing are not actual fills."
+  ]
+}

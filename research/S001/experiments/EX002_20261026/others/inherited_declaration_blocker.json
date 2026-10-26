@@ -1,0 +1,24 @@
+[
+  {
+    "reference": "S001-v1",
+    "candidate_explicit_declaration": "PASS",
+    "copied_constructor_logic": "EXACT_AST_EXCEPT_LOCAL_IMPORTS_AND_OBSERVATION",
+    "original_common_bytes_unchanged": true,
+    "original_entry_sha256": "fd5f58edd9b24d162bdd33347a9da02077caf293bf9d59fa1664840ed221ea00",
+    "original_entry_source": "\"\"\"Frozen S001-v1 runtime.\"\"\"\n\nfrom .s001_common import S001Base\n\n\nclass S001V1(S001Base):\n    pass\n",
+    "old_source_validation": "FAIL",
+    "reason": "observation upgrade requires one explicit StrategyDefinition observation declaration",
+    "conclusion": "Current observation upgrade always checks the immutable old entry class; changing only the candidate cannot make the before-side explicit declaration exist."
+  },
+  {
+    "reference": "S001-v2",
+    "candidate_explicit_declaration": "PASS",
+    "copied_constructor_logic": "EXACT_AST_EXCEPT_LOCAL_IMPORTS_AND_OBSERVATION",
+    "original_common_bytes_unchanged": true,
+    "original_entry_sha256": "c742183ed93db27c66de28f2a4456c3a17f335d728c5dbcebd4c73980e24e675",
+    "original_entry_source": "\"\"\"Frozen S001-v2 runtime.\"\"\"\n\nfrom .s001_common import S001Base\n\n\nclass S001V2(S001Base):\n    pass\n",
+    "old_source_validation": "FAIL",
+    "reason": "observation upgrade requires one explicit StrategyDefinition observation declaration",
+    "conclusion": "Current observation upgrade always checks the immutable old entry class; changing only the candidate cannot make the before-side explicit declaration exist."
+  }
+]

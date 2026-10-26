@@ -1,0 +1,799 @@
+{
+  "reference": "S002-v1",
+  "kind": "SYNTHETIC_BRANCH_SEMANTICS",
+  "cases": [
+    "enter",
+    "exit_time",
+    "hold_cash",
+    "hold_position",
+    "ignore_entry_while_holding"
+  ],
+  "branch_count": 5,
+  "source_files_added": [
+    "strategies/observation_s002_v4.py"
+  ],
+  "validation": {
+    "status": "PASS"
+  },
+  "observations": [
+    {
+      "groups": [
+        {
+          "key": "sessions",
+          "label": "模型计时",
+          "unit": "个交易日",
+          "basis": "信号激活后的交易日差",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "age",
+          "label": "距意图激活已过",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 0,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "limit",
+              "label": "意图期限",
+              "value": 5
+            }
+          ]
+        }
+      ],
+      "states": [
+        {
+          "key": "action",
+          "label": "实际模型分支",
+          "description": "",
+          "options": [
+            {
+              "key": "enter",
+              "label": "出现入场信号"
+            },
+            {
+              "key": "hold_position",
+              "label": "本轮持有信号仍有效"
+            },
+            {
+              "key": "ignore_entry_while_holding",
+              "label": "继续原持有意图，不重复入场"
+            },
+            {
+              "key": "exit_time",
+              "label": "出现退出信号：模型期限已到"
+            },
+            {
+              "key": "hold_cash",
+              "label": "保持空仓意图，等待新事件"
+            }
+          ],
+          "value": "hold_cash",
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        {
+          "key": "shape",
+          "label": "当日形态",
+          "description": "",
+          "options": [
+            {
+              "key": "active",
+              "label": "三连跌"
+            },
+            {
+              "key": "inactive",
+              "label": "非三连跌"
+            }
+          ],
+          "value": "inactive",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "action",
+        "case_key": "hold_cash",
+        "judgment": "保持空仓意图，等待新事件",
+        "basis": [
+          {
+            "key": "shape",
+            "text": "当日形态：非三连跌。原状态机未激活新一轮意图。"
+          }
+        ],
+        "next_watch": "等待形态由其他状态切换到 三连跌；不是看到该形态就每天重复买入。",
+        "explanation": "策略尝试捕捉连续走弱后的短期修复；只在形态新出现时激活。模型意图自激活日起计时，持续 5 个交易日 后结束；账户成交日和实际持仓可能不同。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "sessions",
+          "label": "模型计时",
+          "unit": "个交易日",
+          "basis": "信号激活后的交易日差",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "age",
+          "label": "距意图激活已过",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 0,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "limit",
+              "label": "意图期限",
+              "value": 5
+            }
+          ]
+        }
+      ],
+      "states": [
+        {
+          "key": "action",
+          "label": "实际模型分支",
+          "description": "",
+          "options": [
+            {
+              "key": "enter",
+              "label": "出现入场信号"
+            },
+            {
+              "key": "hold_position",
+              "label": "本轮持有信号仍有效"
+            },
+            {
+              "key": "ignore_entry_while_holding",
+              "label": "继续原持有意图，不重复入场"
+            },
+            {
+              "key": "exit_time",
+              "label": "出现退出信号：模型期限已到"
+            },
+            {
+              "key": "hold_cash",
+              "label": "保持空仓意图，等待新事件"
+            }
+          ],
+          "value": "enter",
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        {
+          "key": "shape",
+          "label": "当日形态",
+          "description": "",
+          "options": [
+            {
+              "key": "active",
+              "label": "三连跌"
+            },
+            {
+              "key": "inactive",
+              "label": "非三连跌"
+            }
+          ],
+          "value": "active",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "action",
+        "case_key": "enter",
+        "judgment": "出现入场信号",
+        "basis": [
+          {
+            "key": "event",
+            "text": "形态首次切换到 三连跌，原状态机激活一轮持有意图。"
+          }
+        ],
+        "next_watch": "关注模型意图是否达到 5 个交易日 的期限。",
+        "explanation": "模型意图自激活日起计时，持续 5 个交易日 后结束；账户成交日和实际持仓可能不同。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "sessions",
+          "label": "模型计时",
+          "unit": "个交易日",
+          "basis": "信号激活后的交易日差",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "age",
+          "label": "距意图激活已过",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "limit",
+              "label": "意图期限",
+              "value": 5
+            }
+          ]
+        }
+      ],
+      "states": [
+        {
+          "key": "action",
+          "label": "实际模型分支",
+          "description": "",
+          "options": [
+            {
+              "key": "enter",
+              "label": "出现入场信号"
+            },
+            {
+              "key": "hold_position",
+              "label": "本轮持有信号仍有效"
+            },
+            {
+              "key": "ignore_entry_while_holding",
+              "label": "继续原持有意图，不重复入场"
+            },
+            {
+              "key": "exit_time",
+              "label": "出现退出信号：模型期限已到"
+            },
+            {
+              "key": "hold_cash",
+              "label": "保持空仓意图，等待新事件"
+            }
+          ],
+          "value": "hold_position",
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        {
+          "key": "shape",
+          "label": "当日形态",
+          "description": "",
+          "options": [
+            {
+              "key": "active",
+              "label": "三连跌"
+            },
+            {
+              "key": "inactive",
+              "label": "非三连跌"
+            }
+          ],
+          "value": "inactive",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "action",
+        "case_key": "hold_position",
+        "judgment": "本轮持有信号仍有效",
+        "basis": [
+          {
+            "key": "age",
+            "text": "距意图激活已过 1 个交易日；期限 5 个交易日。"
+          }
+        ],
+        "next_watch": "达到期限后模型转为空仓；成交情况查看事件区。",
+        "explanation": "模型意图自激活日起计时，持续 5 个交易日 后结束；账户成交日和实际持仓可能不同。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "sessions",
+          "label": "模型计时",
+          "unit": "个交易日",
+          "basis": "信号激活后的交易日差",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "age",
+          "label": "距意图激活已过",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 2,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "limit",
+              "label": "意图期限",
+              "value": 5
+            }
+          ]
+        }
+      ],
+      "states": [
+        {
+          "key": "action",
+          "label": "实际模型分支",
+          "description": "",
+          "options": [
+            {
+              "key": "enter",
+              "label": "出现入场信号"
+            },
+            {
+              "key": "hold_position",
+              "label": "本轮持有信号仍有效"
+            },
+            {
+              "key": "ignore_entry_while_holding",
+              "label": "继续原持有意图，不重复入场"
+            },
+            {
+              "key": "exit_time",
+              "label": "出现退出信号：模型期限已到"
+            },
+            {
+              "key": "hold_cash",
+              "label": "保持空仓意图，等待新事件"
+            }
+          ],
+          "value": "ignore_entry_while_holding",
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        {
+          "key": "shape",
+          "label": "当日形态",
+          "description": "",
+          "options": [
+            {
+              "key": "active",
+              "label": "三连跌"
+            },
+            {
+              "key": "inactive",
+              "label": "非三连跌"
+            }
+          ],
+          "value": "active",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "action",
+        "case_key": "ignore_entry_while_holding",
+        "judgment": "继续原持有意图，不重复入场",
+        "basis": [
+          {
+            "key": "event",
+            "text": "再次出现新形态事件，但原状态机仍处于持有阶段。"
+          },
+          {
+            "key": "age",
+            "text": "距原意图激活已过 2 个交易日；期限 5 个交易日。"
+          }
+        ],
+        "next_watch": "按原期限退出；新事件不重置计时。",
+        "explanation": "模型意图自激活日起计时，持续 5 个交易日 后结束；账户成交日和实际持仓可能不同。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "sessions",
+          "label": "模型计时",
+          "unit": "个交易日",
+          "basis": "信号激活后的交易日差",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "age",
+          "label": "距意图激活已过",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 3,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "limit",
+              "label": "意图期限",
+              "value": 5
+            }
+          ]
+        }
+      ],
+      "states": [
+        {
+          "key": "action",
+          "label": "实际模型分支",
+          "description": "",
+          "options": [
+            {
+              "key": "enter",
+              "label": "出现入场信号"
+            },
+            {
+              "key": "hold_position",
+              "label": "本轮持有信号仍有效"
+            },
+            {
+              "key": "ignore_entry_while_holding",
+              "label": "继续原持有意图，不重复入场"
+            },
+            {
+              "key": "exit_time",
+              "label": "出现退出信号：模型期限已到"
+            },
+            {
+              "key": "hold_cash",
+              "label": "保持空仓意图，等待新事件"
+            }
+          ],
+          "value": "hold_position",
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        {
+          "key": "shape",
+          "label": "当日形态",
+          "description": "",
+          "options": [
+            {
+              "key": "active",
+              "label": "三连跌"
+            },
+            {
+              "key": "inactive",
+              "label": "非三连跌"
+            }
+          ],
+          "value": "inactive",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "action",
+        "case_key": "hold_position",
+        "judgment": "本轮持有信号仍有效",
+        "basis": [
+          {
+            "key": "age",
+            "text": "距意图激活已过 3 个交易日；期限 5 个交易日。"
+          }
+        ],
+        "next_watch": "达到期限后模型转为空仓；成交情况查看事件区。",
+        "explanation": "模型意图自激活日起计时，持续 5 个交易日 后结束；账户成交日和实际持仓可能不同。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "sessions",
+          "label": "模型计时",
+          "unit": "个交易日",
+          "basis": "信号激活后的交易日差",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "age",
+          "label": "距意图激活已过",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 4,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "limit",
+              "label": "意图期限",
+              "value": 5
+            }
+          ]
+        }
+      ],
+      "states": [
+        {
+          "key": "action",
+          "label": "实际模型分支",
+          "description": "",
+          "options": [
+            {
+              "key": "enter",
+              "label": "出现入场信号"
+            },
+            {
+              "key": "hold_position",
+              "label": "本轮持有信号仍有效"
+            },
+            {
+              "key": "ignore_entry_while_holding",
+              "label": "继续原持有意图，不重复入场"
+            },
+            {
+              "key": "exit_time",
+              "label": "出现退出信号：模型期限已到"
+            },
+            {
+              "key": "hold_cash",
+              "label": "保持空仓意图，等待新事件"
+            }
+          ],
+          "value": "hold_position",
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        {
+          "key": "shape",
+          "label": "当日形态",
+          "description": "",
+          "options": [
+            {
+              "key": "active",
+              "label": "三连跌"
+            },
+            {
+              "key": "inactive",
+              "label": "非三连跌"
+            }
+          ],
+          "value": "inactive",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "action",
+        "case_key": "hold_position",
+        "judgment": "本轮持有信号仍有效",
+        "basis": [
+          {
+            "key": "age",
+            "text": "距意图激活已过 4 个交易日；期限 5 个交易日。"
+          }
+        ],
+        "next_watch": "达到期限后模型转为空仓；成交情况查看事件区。",
+        "explanation": "模型意图自激活日起计时，持续 5 个交易日 后结束；账户成交日和实际持仓可能不同。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "sessions",
+          "label": "模型计时",
+          "unit": "个交易日",
+          "basis": "信号激活后的交易日差",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "age",
+          "label": "距意图激活已过",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 5,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "limit",
+              "label": "意图期限",
+              "value": 5
+            }
+          ]
+        }
+      ],
+      "states": [
+        {
+          "key": "action",
+          "label": "实际模型分支",
+          "description": "",
+          "options": [
+            {
+              "key": "enter",
+              "label": "出现入场信号"
+            },
+            {
+              "key": "hold_position",
+              "label": "本轮持有信号仍有效"
+            },
+            {
+              "key": "ignore_entry_while_holding",
+              "label": "继续原持有意图，不重复入场"
+            },
+            {
+              "key": "exit_time",
+              "label": "出现退出信号：模型期限已到"
+            },
+            {
+              "key": "hold_cash",
+              "label": "保持空仓意图，等待新事件"
+            }
+          ],
+          "value": "exit_time",
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        {
+          "key": "shape",
+          "label": "当日形态",
+          "description": "",
+          "options": [
+            {
+              "key": "active",
+              "label": "三连跌"
+            },
+            {
+              "key": "inactive",
+              "label": "非三连跌"
+            }
+          ],
+          "value": "active",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "action",
+        "case_key": "exit_time",
+        "judgment": "出现退出信号：模型期限已到",
+        "basis": [
+          {
+            "key": "age",
+            "text": "距意图激活已过 5 个交易日，达到期限 5 个交易日。"
+          }
+        ],
+        "next_watch": "等待形态离开后再次切入 三连跌；持续同一形态不会立即重入。",
+        "explanation": "到期退出优先于当日新事件。模型意图自激活日起计时，持续 5 个交易日 后结束；账户成交日和实际持仓可能不同。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "sessions",
+          "label": "模型计时",
+          "unit": "个交易日",
+          "basis": "信号激活后的交易日差",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "age",
+          "label": "距意图激活已过",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 0,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "limit",
+              "label": "意图期限",
+              "value": 5
+            }
+          ]
+        }
+      ],
+      "states": [
+        {
+          "key": "action",
+          "label": "实际模型分支",
+          "description": "",
+          "options": [
+            {
+              "key": "enter",
+              "label": "出现入场信号"
+            },
+            {
+              "key": "hold_position",
+              "label": "本轮持有信号仍有效"
+            },
+            {
+              "key": "ignore_entry_while_holding",
+              "label": "继续原持有意图，不重复入场"
+            },
+            {
+              "key": "exit_time",
+              "label": "出现退出信号：模型期限已到"
+            },
+            {
+              "key": "hold_cash",
+              "label": "保持空仓意图，等待新事件"
+            }
+          ],
+          "value": "hold_cash",
+          "status": "AVAILABLE",
+          "reason": null
+        },
+        {
+          "key": "shape",
+          "label": "当日形态",
+          "description": "",
+          "options": [
+            {
+              "key": "active",
+              "label": "三连跌"
+            },
+            {
+              "key": "inactive",
+              "label": "非三连跌"
+            }
+          ],
+          "value": "active",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "action",
+        "case_key": "hold_cash",
+        "judgment": "保持空仓意图，等待新事件",
+        "basis": [
+          {
+            "key": "shape",
+            "text": "当日形态：三连跌。原状态机未激活新一轮意图。"
+          }
+        ],
+        "next_watch": "等待形态由其他状态切换到 三连跌；不是看到该形态就每天重复买入。",
+        "explanation": "策略尝试捕捉连续走弱后的短期修复；只在形态新出现时激活。模型意图自激活日起计时，持续 5 个交易日 后结束；账户成交日和实际持仓可能不同。"
+      }
+    }
+  ],
+  "unavailable_rejected": true,
+  "unknown_branch_rejected": true,
+  "legacy_series_facts_unchanged": true,
+  "limits": [
+    "Synthetic values test branch interpretation only, not economic performance.",
+    "Model targets and timing are not actual fills."
+  ]
+}

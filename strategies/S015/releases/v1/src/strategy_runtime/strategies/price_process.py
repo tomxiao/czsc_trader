@@ -176,15 +176,7 @@ class PriceProcess(StrategyImplementationV2):
                 tuple(r.dataset for r in inputs.requirements), ("LIMIT", "MARKET")
             ),
             tradable_symbol="159326.SZ",
-            observation=ObservationDefinition(
-                (
-                    ObservationSeries("repair_space", "当前中心相对收盘修复空间", "repair_space"),
-                    ObservationSeries("center_gain", "跨日价格中心变化", "center_gain"),
-                    ObservationSeries("repair_target", "机会激活时固定的修复目标", "repair_target"),
-                    ObservationSeries("invalidation_origin", "机会激活时固定的中心失效起点", "invalidation_origin"),
-                ),
-                (),
-            ),
+            observation=self.observation_definition(parameters.values),
             history=HistoryPolicy("CANONICAL_REPLAY", "2024-12-31", "2024-09-09"),
         )
 
@@ -248,3 +240,11 @@ class PriceProcess(StrategyImplementationV2):
         if out.drop(columns=["entry_allocation_fraction"]).isna().any().any():
             raise ValueError("missing canonical dates")
         return out
+
+    def observation_definition(self, parameters):
+        from .observation_explanation import observation_definition
+        return observation_definition(parameters)
+
+    def observation_history(self, inputs, context, history):
+        from .observation_explanation import observation_history
+        return observation_history(history, self.definition.parameters.values)

@@ -1,0 +1,80 @@
+{
+  "status": "PASS",
+  "reference": "S001-v2",
+  "candidate_id": "C9951",
+  "source_sha256": "8c2283ecafb3433a922244c7c8f33d5c96d56094e5d0f4d1c52a2f0fea55a3ba",
+  "scope": "Real authenticated original inputs, public SRT/TXE, unchanged trade definition and five ledgers.",
+  "window": {
+    "start": "2026-06-01",
+    "end": "2026-09-02"
+  },
+  "modes": {
+    "CONTINUOUS": {
+      "status": "PASS",
+      "signals": 1407,
+      "ledgers": [
+        {
+          "name": "decisions",
+          "rows": 67,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "name": "orders",
+          "rows": 10,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "name": "fills",
+          "rows": 10,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "name": "account_daily",
+          "rows": 67,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "name": "trades",
+          "rows": 5,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        }
+      ],
+      "fills": 10
+    },
+    "WINDOW": {
+      "status": "PASS",
+      "signals": 67,
+      "ledgers": [
+        {
+          "name": "decisions",
+          "rows": 67,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "name": "orders",
+          "rows": 10,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "name": "fills",
+          "rows": 10,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "name": "account_daily",
+          "rows": 67,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "name": "trades",
+          "rows": 5,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        }
+      ],
+      "fills": 10
+    }
+  },
+  "new_data": false,
+  "search_trials": 0,
+  "semantics": "six branches and unavailable/unknown boundaries PASS"
+}

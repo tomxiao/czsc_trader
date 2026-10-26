@@ -1,0 +1,80 @@
+{
+  "status": "PASS",
+  "reference": "S001-v1",
+  "candidate_id": "C9950",
+  "source_sha256": "ba5d7793e5199b9c376d205cb774290498f61a2fae079e7343f1f2e6a564ebf7",
+  "scope": "Real authenticated original inputs, public SRT/TXE, unchanged trade definition and five ledgers.",
+  "window": {
+    "start": "2026-06-01",
+    "end": "2026-08-28"
+  },
+  "modes": {
+    "CONTINUOUS": {
+      "status": "PASS",
+      "signals": 1404,
+      "ledgers": [
+        {
+          "name": "decisions",
+          "rows": 64,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "name": "orders",
+          "rows": 7,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "name": "fills",
+          "rows": 7,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "name": "account_daily",
+          "rows": 64,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "name": "trades",
+          "rows": 4,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        }
+      ],
+      "fills": 7
+    },
+    "WINDOW": {
+      "status": "PASS",
+      "signals": 64,
+      "ledgers": [
+        {
+          "name": "decisions",
+          "rows": 64,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "name": "orders",
+          "rows": 7,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "name": "fills",
+          "rows": 7,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "name": "account_daily",
+          "rows": 64,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "name": "trades",
+          "rows": 4,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        }
+      ],
+      "fills": 7
+    }
+  },
+  "new_data": false,
+  "search_trials": 0,
+  "semantics": "six branches and unavailable/unknown boundaries PASS"
+}

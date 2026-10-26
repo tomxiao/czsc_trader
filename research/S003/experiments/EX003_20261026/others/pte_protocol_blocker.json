@@ -1,0 +1,23 @@
+{
+  "reference": "S003-v1",
+  "status": "BLOCKED_PLATFORM_CAPABILITY",
+  "production_writes": 0,
+  "mandatory_coverage_conflict": {
+    "capability": "ENTER_HOLD_EXIT",
+    "required_fact": "final account quantity == 0",
+    "actual_strategy": "INTRADAY_OVERLAY maintains core_quantity; rotation exits enhancement only, returning to core, not zero.",
+    "inapplicable_declaration_rejected": "mandatory PTE coverage cannot be marked inapplicable"
+  },
+  "checkpoint_limitation": {
+    "strategy": "OPEN entry and 11:30_CLOSE dependent exit are separate execution windows",
+    "protocol": "PteDecisionInput provides one submit_at per decision; no independent submit/checkpoint action is declared.",
+    "status": "Requires explicit platform design review; do not encode separate economic decisions merely to invoke submission twice."
+  },
+  "source_sha256": {
+    "packages/paper_trading_engine/src/paper_trading_engine/inspection_runner.py": "574fa083968f0a5aff9090b797b4a88aed3fd7d35f89b19ad487f8c6015a706a",
+    "packages/paper_trading_engine/src/paper_trading_engine/inspection_contracts.py": "b5a4031d1ee806e137066e1cdffe245086ccd98b464e7cd2ddf8426251caa45e",
+    "packages/strategy_runtime/src/strategy_runtime/execution_rules.py": "7f0e635030ebecc4e2da05e027f3e05a76de62b3e6bca84393a22c106962f5c2"
+  },
+  "completed": "Observation-only source and semantic validation were completed separately.",
+  "next_step": "DEV must define coverage for permanent-core intraday rotation and execution checkpoint scheduling before a valid complete inspection protocol can be emitted."
+}

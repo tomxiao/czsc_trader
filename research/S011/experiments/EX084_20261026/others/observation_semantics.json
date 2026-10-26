@@ -1,0 +1,754 @@
+{
+  "status": "PASS",
+  "scope": "SYNTHETIC_OBSERVATION_SEMANTICS_AND_PUBLIC_UPGRADE_SOURCE_VALIDATION",
+  "reference": "S011-v1",
+  "observation_sha256": "183880fc51c274ca2060c1e444e95f8bfa2f1f0a3b6b84f8353563818035a99d",
+  "covered_states": [
+    "cash",
+    "entered",
+    "hold",
+    "released",
+    "expired"
+  ],
+  "cases": [
+    {
+      "groups": [
+        {
+          "key": "score_group",
+          "label": "压力反转",
+          "unit": "分",
+          "basis": "历史相对排名",
+          "format": "NUMBER",
+          "precision": 3,
+          "description": ""
+        },
+        {
+          "key": "sessions",
+          "label": "交易日计数",
+          "unit": "个交易日",
+          "basis": "模型信号时间",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        },
+        {
+          "key": "price_ratio",
+          "label": "买入限价",
+          "unit": "%",
+          "basis": "参考价上浮比例",
+          "format": "PERCENT",
+          "precision": 2,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "score",
+          "label": "压力反转得分",
+          "group": "score_group",
+          "render": "LINE",
+          "description": "",
+          "value": 0.324999999,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "entry",
+              "label": "入场门槛",
+              "value": 0.325
+            },
+            {
+              "key": "exit",
+              "label": "退出门槛",
+              "value": 0.025
+            }
+          ]
+        },
+        {
+          "key": "age",
+          "label": "信号已持续",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 0,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "expiry",
+              "label": "信号期限",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "lookback",
+          "label": "排名观察期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 130,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "premium",
+          "label": "买入限价上浮",
+          "group": "price_ratio",
+          "render": "LINE",
+          "description": "",
+          "value": 0.003,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        }
+      ],
+      "states": [
+        {
+          "key": "decision",
+          "label": "模型判断",
+          "description": "",
+          "options": [
+            {
+              "key": "cash",
+              "label": "等待"
+            },
+            {
+              "key": "entered",
+              "label": "入场"
+            },
+            {
+              "key": "hold",
+              "label": "继续有效"
+            },
+            {
+              "key": "released",
+              "label": "压力释放退出"
+            },
+            {
+              "key": "expired",
+              "label": "期限退出"
+            }
+          ],
+          "value": "cash",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "decision",
+        "case_key": "cash",
+        "judgment": "暂不满足入场条件",
+        "basis": [
+          {
+            "key": "score",
+            "text": "压力反转得分 0.325 分 ＜ 入场门槛 0.325 分"
+          }
+        ],
+        "next_watch": "等待得分达到 0.325 分 或以上。",
+        "explanation": "得分综合ETF尾盘、沪深300当日表现及此前可得的美股表现的历史相对排名，描述模型定义的短期反弹条件，不是收益率或上涨概率。排名观察期为 130 个交易日。信号期限从模型激活后开始计数，与实际成交日无关；同日达到得分退出与期限时，优先记录压力释放。买入为限价委托，参考价上浮 0.30%，不保证成交；模型判断与账户成交分别查看。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "score_group",
+          "label": "压力反转",
+          "unit": "分",
+          "basis": "历史相对排名",
+          "format": "NUMBER",
+          "precision": 3,
+          "description": ""
+        },
+        {
+          "key": "sessions",
+          "label": "交易日计数",
+          "unit": "个交易日",
+          "basis": "模型信号时间",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        },
+        {
+          "key": "price_ratio",
+          "label": "买入限价",
+          "unit": "%",
+          "basis": "参考价上浮比例",
+          "format": "PERCENT",
+          "precision": 2,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "score",
+          "label": "压力反转得分",
+          "group": "score_group",
+          "render": "LINE",
+          "description": "",
+          "value": 0.325,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "entry",
+              "label": "入场门槛",
+              "value": 0.325
+            },
+            {
+              "key": "exit",
+              "label": "退出门槛",
+              "value": 0.025
+            }
+          ]
+        },
+        {
+          "key": "age",
+          "label": "信号已持续",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 0,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "expiry",
+              "label": "信号期限",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "lookback",
+          "label": "排名观察期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 130,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "premium",
+          "label": "买入限价上浮",
+          "group": "price_ratio",
+          "render": "LINE",
+          "description": "",
+          "value": 0.003,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        }
+      ],
+      "states": [
+        {
+          "key": "decision",
+          "label": "模型判断",
+          "description": "",
+          "options": [
+            {
+              "key": "cash",
+              "label": "等待"
+            },
+            {
+              "key": "entered",
+              "label": "入场"
+            },
+            {
+              "key": "hold",
+              "label": "继续有效"
+            },
+            {
+              "key": "released",
+              "label": "压力释放退出"
+            },
+            {
+              "key": "expired",
+              "label": "期限退出"
+            }
+          ],
+          "value": "entered",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "decision",
+        "case_key": "entered",
+        "judgment": "出现入场信号",
+        "basis": [
+          {
+            "key": "score",
+            "text": "压力反转得分 0.325 分 ≥ 入场门槛 0.325 分"
+          },
+          {
+            "key": "execution",
+            "text": "模型激活本轮信号；实际买入以成交记录为准。"
+          }
+        ],
+        "next_watch": "得分 ≤ 0.025 分，或信号已持续达到 2 个交易日时结束本轮信号。",
+        "explanation": "得分综合ETF尾盘、沪深300当日表现及此前可得的美股表现的历史相对排名，描述模型定义的短期反弹条件，不是收益率或上涨概率。排名观察期为 130 个交易日。信号期限从模型激活后开始计数，与实际成交日无关；同日达到得分退出与期限时，优先记录压力释放。买入为限价委托，参考价上浮 0.30%，不保证成交；模型判断与账户成交分别查看。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "score_group",
+          "label": "压力反转",
+          "unit": "分",
+          "basis": "历史相对排名",
+          "format": "NUMBER",
+          "precision": 3,
+          "description": ""
+        },
+        {
+          "key": "sessions",
+          "label": "交易日计数",
+          "unit": "个交易日",
+          "basis": "模型信号时间",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        },
+        {
+          "key": "price_ratio",
+          "label": "买入限价",
+          "unit": "%",
+          "basis": "参考价上浮比例",
+          "format": "PERCENT",
+          "precision": 2,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "score",
+          "label": "压力反转得分",
+          "group": "score_group",
+          "render": "LINE",
+          "description": "",
+          "value": 0.025000001,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "entry",
+              "label": "入场门槛",
+              "value": 0.325
+            },
+            {
+              "key": "exit",
+              "label": "退出门槛",
+              "value": 0.025
+            }
+          ]
+        },
+        {
+          "key": "age",
+          "label": "信号已持续",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 1,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "expiry",
+              "label": "信号期限",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "lookback",
+          "label": "排名观察期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 130,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "premium",
+          "label": "买入限价上浮",
+          "group": "price_ratio",
+          "render": "LINE",
+          "description": "",
+          "value": 0.003,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        }
+      ],
+      "states": [
+        {
+          "key": "decision",
+          "label": "模型判断",
+          "description": "",
+          "options": [
+            {
+              "key": "cash",
+              "label": "等待"
+            },
+            {
+              "key": "entered",
+              "label": "入场"
+            },
+            {
+              "key": "hold",
+              "label": "继续有效"
+            },
+            {
+              "key": "released",
+              "label": "压力释放退出"
+            },
+            {
+              "key": "expired",
+              "label": "期限退出"
+            }
+          ],
+          "value": "hold",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "decision",
+        "case_key": "hold",
+        "judgment": "本轮信号仍有效",
+        "basis": [
+          {
+            "key": "score",
+            "text": "得分 0.025 分 ＞ 退出门槛 0.025 分"
+          },
+          {
+            "key": "age",
+            "text": "信号已持续 1 个交易日；期限 2 个交易日"
+          }
+        ],
+        "next_watch": "得分 ≤ 0.025 分，或信号已持续达到 2 个交易日时结束本轮信号。",
+        "explanation": "得分综合ETF尾盘、沪深300当日表现及此前可得的美股表现的历史相对排名，描述模型定义的短期反弹条件，不是收益率或上涨概率。排名观察期为 130 个交易日。信号期限从模型激活后开始计数，与实际成交日无关；同日达到得分退出与期限时，优先记录压力释放。买入为限价委托，参考价上浮 0.30%，不保证成交；模型判断与账户成交分别查看。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "score_group",
+          "label": "压力反转",
+          "unit": "分",
+          "basis": "历史相对排名",
+          "format": "NUMBER",
+          "precision": 3,
+          "description": ""
+        },
+        {
+          "key": "sessions",
+          "label": "交易日计数",
+          "unit": "个交易日",
+          "basis": "模型信号时间",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        },
+        {
+          "key": "price_ratio",
+          "label": "买入限价",
+          "unit": "%",
+          "basis": "参考价上浮比例",
+          "format": "PERCENT",
+          "precision": 2,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "score",
+          "label": "压力反转得分",
+          "group": "score_group",
+          "render": "LINE",
+          "description": "",
+          "value": 0.025,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "entry",
+              "label": "入场门槛",
+              "value": 0.325
+            },
+            {
+              "key": "exit",
+              "label": "退出门槛",
+              "value": 0.025
+            }
+          ]
+        },
+        {
+          "key": "age",
+          "label": "信号已持续",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 2,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "expiry",
+              "label": "信号期限",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "lookback",
+          "label": "排名观察期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 130,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "premium",
+          "label": "买入限价上浮",
+          "group": "price_ratio",
+          "render": "LINE",
+          "description": "",
+          "value": 0.003,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        }
+      ],
+      "states": [
+        {
+          "key": "decision",
+          "label": "模型判断",
+          "description": "",
+          "options": [
+            {
+              "key": "cash",
+              "label": "等待"
+            },
+            {
+              "key": "entered",
+              "label": "入场"
+            },
+            {
+              "key": "hold",
+              "label": "继续有效"
+            },
+            {
+              "key": "released",
+              "label": "压力释放退出"
+            },
+            {
+              "key": "expired",
+              "label": "期限退出"
+            }
+          ],
+          "value": "released",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "decision",
+        "case_key": "released",
+        "judgment": "出现退出信号：压力已释放",
+        "basis": [
+          {
+            "key": "score",
+            "text": "得分 0.025 分 ≤ 退出门槛 0.025 分"
+          }
+        ],
+        "next_watch": "等待新的入场信号；实际卖出以成交记录为准。",
+        "explanation": "得分综合ETF尾盘、沪深300当日表现及此前可得的美股表现的历史相对排名，描述模型定义的短期反弹条件，不是收益率或上涨概率。排名观察期为 130 个交易日。信号期限从模型激活后开始计数，与实际成交日无关；同日达到得分退出与期限时，优先记录压力释放。买入为限价委托，参考价上浮 0.30%，不保证成交；模型判断与账户成交分别查看。"
+      }
+    },
+    {
+      "groups": [
+        {
+          "key": "score_group",
+          "label": "压力反转",
+          "unit": "分",
+          "basis": "历史相对排名",
+          "format": "NUMBER",
+          "precision": 3,
+          "description": ""
+        },
+        {
+          "key": "sessions",
+          "label": "交易日计数",
+          "unit": "个交易日",
+          "basis": "模型信号时间",
+          "format": "INTEGER",
+          "precision": 0,
+          "description": ""
+        },
+        {
+          "key": "price_ratio",
+          "label": "买入限价",
+          "unit": "%",
+          "basis": "参考价上浮比例",
+          "format": "PERCENT",
+          "precision": 2,
+          "description": ""
+        }
+      ],
+      "series": [
+        {
+          "key": "score",
+          "label": "压力反转得分",
+          "group": "score_group",
+          "render": "LINE",
+          "description": "",
+          "value": 0.025000001,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "entry",
+              "label": "入场门槛",
+              "value": 0.325
+            },
+            {
+              "key": "exit",
+              "label": "退出门槛",
+              "value": 0.025
+            }
+          ]
+        },
+        {
+          "key": "age",
+          "label": "信号已持续",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 2,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": [
+            {
+              "key": "expiry",
+              "label": "信号期限",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "lookback",
+          "label": "排名观察期",
+          "group": "sessions",
+          "render": "LINE",
+          "description": "",
+          "value": 130,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        },
+        {
+          "key": "premium",
+          "label": "买入限价上浮",
+          "group": "price_ratio",
+          "render": "LINE",
+          "description": "",
+          "value": 0.003,
+          "status": "AVAILABLE",
+          "reason": null,
+          "segment_id": null,
+          "guides": []
+        }
+      ],
+      "states": [
+        {
+          "key": "decision",
+          "label": "模型判断",
+          "description": "",
+          "options": [
+            {
+              "key": "cash",
+              "label": "等待"
+            },
+            {
+              "key": "entered",
+              "label": "入场"
+            },
+            {
+              "key": "hold",
+              "label": "继续有效"
+            },
+            {
+              "key": "released",
+              "label": "压力释放退出"
+            },
+            {
+              "key": "expired",
+              "label": "期限退出"
+            }
+          ],
+          "value": "expired",
+          "status": "AVAILABLE",
+          "reason": null
+        }
+      ],
+      "explanation": {
+        "state_key": "decision",
+        "case_key": "expired",
+        "judgment": "出现退出信号：信号已到期",
+        "basis": [
+          {
+            "key": "age",
+            "text": "信号已持续 2 个交易日，达到期限 2 个交易日"
+          },
+          {
+            "key": "score",
+            "text": "当前得分 0.025 分 仍高于退出门槛 0.025 分"
+          }
+        ],
+        "next_watch": "等待新的入场信号；实际卖出以成交记录为准。",
+        "explanation": "得分综合ETF尾盘、沪深300当日表现及此前可得的美股表现的历史相对排名，描述模型定义的短期反弹条件，不是收益率或上涨概率。排名观察期为 130 个交易日。信号期限从模型激活后开始计数，与实际成交日无关；同日达到得分退出与期限时，优先记录压力释放。买入为限价委托，参考价上浮 0.30%，不保证成交；模型判断与账户成交分别查看。"
+      }
+    }
+  ],
+  "checks": [
+    "Trading AST and contracts retained by public validator",
+    "Original series/facts retained",
+    "Source history not mutated",
+    "All explanation branches materialized",
+    "Parameter references change with actual parameters",
+    "Unknown and missing states fail",
+    "Unavailable values never fabricate numeric explanation"
+  ],
+  "limits": [
+    "Synthetic branch projection tests are not historical strategy equivalence or performance evidence; parent workflow performs actual replay."
+  ]
+}

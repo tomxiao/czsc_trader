@@ -1,0 +1,717 @@
+{
+  "S001-v1": {
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S001",
+      "experiment_id": "EX002_20261026"
+    },
+    "home": "research/S001/experiments/EX002_20261026",
+    "source": "research/S001/experiments/EX002_20261026/src/S001-v1/strategy_runtime",
+    "candidate_id": "C9950",
+    "original": {
+      "change_summary": "Freeze candidate 143 with the single reviewed execution policy",
+      "forward_start": "2026-09-03",
+      "parent_version": null,
+      "release_hash": "8891c8787ffcc96ff12a69b11b787d41b612ca0b437b5cb5587990ea3267b98a",
+      "release_id": "S001-v1",
+      "schema_version": 5,
+      "selection_data_cutoff": "2026-08-28",
+      "source_candidate": "143",
+      "source_experiment": "experiments/0901_EX20",
+      "strategy_id": "S001",
+      "strategy_payload": {
+        "decision_feedback": "MARKET_INTENT",
+        "parameters": {
+          "execution_review": {
+            "artifact_path": "experiments/0903_EX01/artifacts/execution_review.json",
+            "experiment_id": "0903_EX01",
+            "sha256": "5ad2a792d497b90c566a9bacc9611d6f68eb5c5ee955ada92bd542d966e474f7"
+          },
+          "legacy_identity": {
+            "sha256": "a7af8864e469b72a94c59eb2e012af5f9a634203cdf5a0214391dd2909e9e331",
+            "version": "baseline_20260903"
+          },
+          "research_source": {
+            "candidate_id": 143,
+            "experiment_id": "0901_EX20",
+            "manifest_path": "experiments/0901_EX20/experiment_manifest.json"
+          },
+          "rule": {
+            "baseline": {
+              "sha256": "fc22ca5a973f77faf528cdb3efba4900163e18fe0c08cf79234d79ef22f5c822",
+              "version": "baseline_20260826"
+            },
+            "candidate_id": 143,
+            "confirm_days": 1,
+            "entry_threshold": 0.175,
+            "er_lookback": 60,
+            "er_threshold": 0.12654614652711713,
+            "execution": {
+              "capital": {
+                "fee_rate": 0.0005,
+                "mode": "full_available_cash",
+                "target_scope": "entry_cycle"
+              },
+              "entry": {
+                "limit_family": "previous_close_ratio",
+                "limit_parameter": 0.0,
+                "order_type": "LIMIT",
+                "price_rounding": "floor"
+              },
+              "exit": {
+                "limit_ratio": 0.2,
+                "order_type": "LIMIT",
+                "price_rounding": "nearest_half_up"
+              },
+              "instrument": {
+                "asset_type": "etf",
+                "lot_size": 100,
+                "market": "CN",
+                "maximum_order_quantity": 1000000,
+                "price_limit_ratio": 0.2,
+                "price_tick": 0.001,
+                "symbol": "588080.SH"
+              },
+              "virtual_fill": {
+                "buy_intraday": "low_strictly_below_limit",
+                "buy_open": "open_at_or_below_limit",
+                "liquidity_check": "diagnostic_only",
+                "sell": "marketable_limit_at_open",
+                "touch_only": "uncertain_unfilled"
+              }
+            },
+            "exit_confirm_days": 1,
+            "exit_threshold": 0.025,
+            "experiment": "0901_EX20",
+            "factor_names": [
+              "raw__30m__cxt_bi_status_V230101",
+              "raw__30m__cxt_third_buy_V230228__di_1",
+              "raw__daily__cxt_bi_status_V230101",
+              "raw__daily__cxt_five_bi_V230619__di_1",
+              "raw__daily__cxt_seven_bi_V230620__di_1",
+              "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_5",
+              "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_10",
+              "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_20",
+              "raw__daily__tas_macd_base_V221028__di_1__fastperiod_12__signalperiod_9__slowperiod_26",
+              "raw__daily__vol_window_V230731__di_1__m_30__n_10__w_5",
+              "raw__daily__pressure_support_V240406__di_1__w_20",
+              "raw__weekly__cxt_bi_status_V230101"
+            ],
+            "fee_rate": 0.0005,
+            "min_hold_days": 3,
+            "multipliers": {
+              "range": {
+                "trend": 1.25,
+                "volume_position": 1.25
+              },
+              "trend": {
+                "trend": 0.75,
+                "volume_position": 0.5
+              }
+            },
+            "regime_labels": [
+              "trend",
+              "range",
+              "warmup"
+            ],
+            "research_end": "2025-12-31",
+            "schema_version": 2,
+            "weights": {
+              "range": {
+                "raw__30m__cxt_bi_status_V230101": 0.05084653396333711,
+                "raw__30m__cxt_third_buy_V230228__di_1": 0.050973650298245445,
+                "raw__daily__cxt_bi_status_V230101": 0.04067722717066968,
+                "raw__daily__cxt_five_bi_V230619__di_1": 0.051102355587340144,
+                "raw__daily__cxt_seven_bi_V230620__di_1": 0.04067722717066968,
+                "raw__daily__pressure_support_V240406__di_1__w_20": 0.20338613585334847,
+                "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_10": 0.07626980094500566,
+                "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_20": 0.07626980094500566,
+                "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_5": 0.08946410409735421,
+                "raw__daily__tas_macd_base_V221028__di_1__fastperiod_12__signalperiod_9__slowperiod_26": 0.07626980094500566,
+                "raw__daily__vol_window_V230731__di_1__m_30__n_10__w_5": 0.20338613585334847,
+                "raw__weekly__cxt_bi_status_V230101": 0.04067722717066968
+              },
+              "trend": {
+                "raw__30m__cxt_bi_status_V230101": 0.08088503201392443,
+                "raw__30m__cxt_third_buy_V230228__di_1": 0.08108724459395922,
+                "raw__daily__cxt_bi_status_V230101": 0.06470802561113954,
+                "raw__daily__cxt_five_bi_V230619__di_1": 0.08129198483124447,
+                "raw__daily__cxt_seven_bi_V230620__di_1": 0.06470802561113954,
+                "raw__daily__pressure_support_V240406__di_1__w_20": 0.1294160512222791,
+                "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_10": 0.07279652881253199,
+                "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_20": 0.07279652881253199,
+                "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_5": 0.08538997284529917,
+                "raw__daily__tas_macd_base_V221028__di_1__fastperiod_12__signalperiod_9__slowperiod_26": 0.07279652881253199,
+                "raw__daily__vol_window_V230731__di_1__m_30__n_10__w_5": 0.1294160512222791,
+                "raw__weekly__cxt_bi_status_V230101": 0.06470802561113954
+              }
+            }
+          }
+        },
+        "runtime": {
+          "contract_version": 2,
+          "module": "strategy_runtime.strategies.s001_v1",
+          "qualname": "S001V1",
+          "source_files": [
+            "strategies/s001_v1.py",
+            "strategies/s001_common.py",
+            "calculation.py",
+            "execution_rules.py"
+          ],
+          "source_sha256": "dd346f7e847bbc79828acf3bf38bf7e888fc0ef36c5953448bf0f09e8c13dc7e"
+        }
+      },
+      "version": "v1"
+    }
+  },
+  "S001-v2": {
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S001",
+      "experiment_id": "EX002_20261026"
+    },
+    "home": "research/S001/experiments/EX002_20261026",
+    "source": "research/S001/experiments/EX002_20261026/src/S001-v2/strategy_runtime",
+    "candidate_id": "C9951",
+    "original": {
+      "change_summary": "Accept evaluation champion R1102",
+      "forward_start": "2026-09-03",
+      "parent_version": "v1",
+      "release_hash": "c70502e8d6e203004052a6d8d423fb316de854688e80d6aea10ff32ad6aa00b1",
+      "release_id": "S001-v2",
+      "schema_version": 5,
+      "selection_data_cutoff": "2026-09-02",
+      "source_candidate": "R1102",
+      "source_experiment": "experiments/0903_EX06",
+      "strategy_id": "S001",
+      "strategy_payload": {
+        "decision_feedback": "MARKET_INTENT",
+        "parameters": {
+          "execution_review": {
+            "artifact_path": "experiments/0903_EX01/artifacts/execution_review.json",
+            "experiment_id": "0903_EX01",
+            "sha256": "5ad2a792d497b90c566a9bacc9611d6f68eb5c5ee955ada92bd542d966e474f7"
+          },
+          "research_source": {
+            "candidate_id": "R1102",
+            "experiment_id": "0903_EX04",
+            "protocol_path": "experiments/0903_EX04/evaluation_protocol.json"
+          },
+          "rule": {
+            "baseline": {
+              "sha256": "fc22ca5a973f77faf528cdb3efba4900163e18fe0c08cf79234d79ef22f5c822",
+              "version": "baseline_20260826"
+            },
+            "candidate_id": "R1102",
+            "confirm_days": 1,
+            "entry_threshold": 0.175,
+            "er_lookback": 60,
+            "er_threshold": 0.12654614652711713,
+            "execution": {
+              "capital": {
+                "fee_rate": 0.0005,
+                "mode": "full_available_cash",
+                "target_scope": "entry_cycle"
+              },
+              "entry": {
+                "limit_family": "previous_close_ratio",
+                "limit_parameter": 0.0,
+                "order_type": "LIMIT",
+                "price_rounding": "floor"
+              },
+              "exit": {
+                "limit_ratio": 0.2,
+                "order_type": "LIMIT",
+                "price_rounding": "nearest_half_up"
+              },
+              "instrument": {
+                "asset_type": "etf",
+                "lot_size": 100,
+                "market": "CN",
+                "maximum_order_quantity": 1000000,
+                "price_limit_ratio": 0.2,
+                "price_tick": 0.001,
+                "symbol": "588080.SH"
+              },
+              "virtual_fill": {
+                "buy_intraday": "low_strictly_below_limit",
+                "buy_open": "open_at_or_below_limit",
+                "liquidity_check": "diagnostic_only",
+                "sell": "marketable_limit_at_open",
+                "touch_only": "uncertain_unfilled"
+              }
+            },
+            "exit_confirm_days": 1,
+            "exit_threshold": 0.025,
+            "experiment": "0903_EX04",
+            "factor_names": [
+              "raw__30m__cxt_bi_status_V230101",
+              "raw__30m__cxt_third_buy_V230228__di_1",
+              "raw__daily__cxt_bi_status_V230101",
+              "raw__daily__cxt_five_bi_V230619__di_1",
+              "raw__daily__cxt_seven_bi_V230620__di_1",
+              "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_5",
+              "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_10",
+              "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_20",
+              "raw__daily__tas_macd_base_V221028__di_1__fastperiod_12__signalperiod_9__slowperiod_26",
+              "raw__daily__vol_window_V230731__di_1__m_30__n_10__w_5",
+              "raw__daily__pressure_support_V240406__di_1__w_20",
+              "raw__weekly__cxt_bi_status_V230101"
+            ],
+            "fee_rate": 0.0005,
+            "min_hold_days": 3,
+            "multipliers": {
+              "range": {
+                "trend": 1.25,
+                "volume_position": 1.25
+              },
+              "trend": {
+                "trend": 0.75,
+                "volume_position": 0.5
+              }
+            },
+            "regime_labels": [
+              "trend",
+              "range",
+              "warmup"
+            ],
+            "research_end": "2026-09-02",
+            "schema_version": 2,
+            "weights": {
+              "range": {
+                "raw__30m__cxt_bi_status_V230101": 0.1093352024227754,
+                "raw__30m__cxt_third_buy_V230228__di_1": 0.2658319020145573,
+                "raw__daily__cxt_bi_status_V230101": 0.0712059717055788,
+                "raw__daily__cxt_five_bi_V230619__di_1": 0.0954365365549241,
+                "raw__daily__cxt_seven_bi_V230620__di_1": 0.0858856323585978,
+                "raw__daily__pressure_support_V240406__di_1__w_20": 0.0706871683649345,
+                "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_10": 0.073063874588257,
+                "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_20": 0.0204337943772586,
+                "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_5": 0.0141094893079042,
+                "raw__daily__tas_macd_base_V221028__di_1__fastperiod_12__signalperiod_9__slowperiod_26": 0.0160026875626817,
+                "raw__daily__vol_window_V230731__di_1__m_30__n_10__w_5": 0.132149132981035,
+                "raw__weekly__cxt_bi_status_V230101": 0.0458586077614954
+              },
+              "trend": {
+                "raw__30m__cxt_bi_status_V230101": 0.08088503201392443,
+                "raw__30m__cxt_third_buy_V230228__di_1": 0.08108724459395922,
+                "raw__daily__cxt_bi_status_V230101": 0.06470802561113954,
+                "raw__daily__cxt_five_bi_V230619__di_1": 0.08129198483124447,
+                "raw__daily__cxt_seven_bi_V230620__di_1": 0.06470802561113954,
+                "raw__daily__pressure_support_V240406__di_1__w_20": 0.1294160512222791,
+                "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_10": 0.07279652881253199,
+                "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_20": 0.07279652881253199,
+                "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_5": 0.08538997284529917,
+                "raw__daily__tas_macd_base_V221028__di_1__fastperiod_12__signalperiod_9__slowperiod_26": 0.07279652881253199,
+                "raw__daily__vol_window_V230731__di_1__m_30__n_10__w_5": 0.1294160512222791,
+                "raw__weekly__cxt_bi_status_V230101": 0.06470802561113954
+              }
+            }
+          }
+        },
+        "runtime": {
+          "contract_version": 2,
+          "module": "strategy_runtime.strategies.s001_v2",
+          "qualname": "S001V2",
+          "source_files": [
+            "strategies/s001_v2.py",
+            "strategies/s001_common.py",
+            "calculation.py",
+            "execution_rules.py"
+          ],
+          "source_sha256": "b85a2325aad7ee585bf44d2eb5ed818d76395a08e0d3777b1c7a8a5909635b46"
+        }
+      },
+      "version": "v2"
+    }
+  },
+  "S002-v1": {
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S002",
+      "experiment_id": "EX002_20261026"
+    },
+    "home": "research/S002/experiments/EX002_20261026",
+    "source": "research/S002/experiments/EX002_20261026/src/S002-v1/strategy_runtime",
+    "candidate_id": "C9951",
+    "original": {
+      "change_summary": "冻结三连跌五日修复候选及项目唯一正式执行规则",
+      "forward_start": "2026-09-09",
+      "parent_version": null,
+      "release_hash": "34c2297c7d15ae2aab1a0527e25550e6c181a6b7faff18456f85145719e03af7",
+      "release_id": "S002-v1",
+      "schema_version": 5,
+      "selection_data_cutoff": "2026-09-08",
+      "source_candidate": "S002-C001",
+      "source_experiment": "experiments/20260910_S002_EX14",
+      "strategy_id": "S002",
+      "strategy_payload": {
+        "decision_feedback": "MARKET_INTENT",
+        "parameters": {
+          "candidate_source": {
+            "candidate_hash": "8a804a7fafc784c92ddd8b8c2d4c3fbc8dda953ca0fd7f0cfb6ab6fd7650574d",
+            "candidate_id": "S002-C001",
+            "definition": "experiments/20260910_S002_EX12/candidate_payload.json"
+          },
+          "rule": {
+            "execution": {
+              "capital": {
+                "fee_rate": 0.0005,
+                "mode": "full_available_cash",
+                "target_scope": "entry_cycle"
+              },
+              "entry": {
+                "limit_family": "previous_close_ratio",
+                "limit_parameter": 0.0,
+                "order_type": "LIMIT",
+                "price_rounding": "floor"
+              },
+              "exit": {
+                "limit_ratio": 0.1,
+                "order_type": "LIMIT",
+                "price_rounding": "nearest_half_up"
+              },
+              "instrument": {
+                "asset_type": "etf",
+                "lot_size": 100,
+                "market": "CN",
+                "maximum_order_quantity": 1000000,
+                "price_limit_ratio": 0.1,
+                "price_tick": 0.001,
+                "symbol": "510500.SH"
+              },
+              "virtual_fill": {
+                "buy_intraday": "low_strictly_below_limit",
+                "buy_open": "open_at_or_below_limit",
+                "liquidity_check": "diagnostic_only",
+                "sell": "marketable_limit_at_open",
+                "touch_only": "uncertain_unfilled"
+              }
+            },
+            "portfolio_rule": {
+              "flat_position": 0.0,
+              "holding_sessions": 5,
+              "ignore_entries_while_holding": true,
+              "require_fresh_transition_after_exit": true,
+              "target_position": 1.0
+            },
+            "price_adjustment": "hfq",
+            "risk_filters": [],
+            "schema_version": 1,
+            "signal": {
+              "config": {
+                "di": 1,
+                "freq": "日线",
+                "name": "bar_triple_V230506"
+              },
+              "entry_state": "三连跌",
+              "frequency": "日线",
+              "name": "bar_triple_V230506",
+              "output_key": "日线_D1三K加速_裸K形态V230506",
+              "trigger": "fresh_transition",
+              "warmup_bars": 250
+            },
+            "symbol": "510500.SH"
+          },
+          "strategy_kind": "czsc_event_hold"
+        },
+        "runtime": {
+          "contract_version": 2,
+          "module": "strategy_runtime.strategies.s002_v1",
+          "qualname": "S002V1",
+          "source_files": [
+            "strategies/s002_v1.py",
+            "calculation.py",
+            "execution_rules.py"
+          ],
+          "source_sha256": "0bb91abed55c779bbe04b6447eb71d93f4f27bbb3fbc5ec7611fcc76a4015be0"
+        }
+      },
+      "version": "v1"
+    }
+  },
+  "S003-v1": {
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S003",
+      "experiment_id": "EX003_20261026"
+    },
+    "home": "research/S003/experiments/EX003_20261026",
+    "source": "research/S003/experiments/EX003_20261026/src/S003-v1/strategy_runtime",
+    "candidate_id": "C9950",
+    "original": {
+      "change_summary": "冻结S003-C001成分资金流宽度早盘延续机制及唯一正式执行规则",
+      "forward_start": "2026-09-09",
+      "parent_version": null,
+      "release_hash": "9d0cac314590a812cd5a6dcae69a53dd4d4437c959101aec0166faa71da58b7c",
+      "release_id": "S003-v1",
+      "schema_version": 5,
+      "selection_data_cutoff": "2026-09-08",
+      "source_candidate": "S003-C001",
+      "source_experiment": "experiments/S003/20260911_S003_EX60",
+      "strategy_id": "S003",
+      "strategy_payload": {
+        "decision_feedback": "MARKET_INTENT",
+        "parameters": {
+          "candidate_source": {
+            "candidate_hash": "1d6736f816d652c59d43dd22491c567e65100eaddfa3d20575531ca5a124f741",
+            "candidate_id": "S003-C001",
+            "definition": "experiments/S003/20260911_S003_EX53/candidate_payload.json",
+            "runtime_contract": "experiments/S003/20260911_S003_EX56/candidate_payload.json"
+          },
+          "rule": {
+            "data_source": {
+              "format": "S003_CONSTITUENT_MONEYFLOW_SEED_V1",
+              "package": "strategy_runtime",
+              "path": "resources/s003_v1_seed.csv.gz",
+              "sha256": "6a60c143617fcf6597ccd475782849763cb413e4cf47b7c45199f720c988d86c"
+            },
+            "execution": {
+              "core_fraction": 0.5,
+              "entry_checkpoint": "OPEN",
+              "event_fraction": 0.5,
+              "exit_checkpoint": "11:30_CLOSE",
+              "lot_size": 100,
+              "maximum_events_per_day": 1,
+              "one_way_cost": 0.00012,
+              "t_plus_one_inventory_rotation": true
+            },
+            "feature": {
+              "comparison": "GREATER_THAN_OR_EQUAL",
+              "minimum_observed_weight_ratio": 0.95,
+              "threshold_excludes_current_session": true,
+              "threshold_lookback_sessions": 60,
+              "threshold_quantile": 0.8
+            },
+            "symbol": "510500.SH"
+          },
+          "strategy_kind": "constituent_moneyflow_intraday_overlay",
+          "symbol": "510500.SH"
+        },
+        "runtime": {
+          "contract_version": 2,
+          "module": "strategy_runtime.strategies.s003_v1",
+          "qualname": "S003V1",
+          "source_files": [
+            "strategies/s003_v1.py",
+            "calculation.py",
+            "execution_rules.py",
+            "resources/s003_v1_seed.csv.gz"
+          ],
+          "source_sha256": "da3a416c74e004e00a22d6fc2a9b1564d8fadc6ecad6eb877cd5ce817e699ae8"
+        }
+      },
+      "version": "v1"
+    }
+  },
+  "S007-v1": {
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S007",
+      "experiment_id": "EX006_20261026"
+    },
+    "home": "research/S007/experiments/EX006_20261026",
+    "source": "research/S007/experiments/EX006_20261026/src/S007-v1/strategy_runtime",
+    "candidate_id": "C9950",
+    "original": {
+      "change_summary": "冻结S007-C001多源机会风险门控机制及唯一正式执行规则",
+      "forward_start": "2026-09-03",
+      "parent_version": null,
+      "release_hash": "45a25272d5953775c15b078ffcc60498b7b292f796731b5ac9d1b6622373e133",
+      "release_id": "S007-v1",
+      "schema_version": 5,
+      "selection_data_cutoff": "2026-09-02",
+      "source_candidate": "S007-C001",
+      "source_experiment": "experiments/S007/20260916_S007_EX37",
+      "strategy_id": "S007",
+      "strategy_payload": {
+        "decision_feedback": "MARKET_INTENT",
+        "parameters": {
+          "candidate_source": {
+            "candidate_hash": "eef64c7c2e18c4158a4d23f66e63efee9553948defc060f69a79eda0bbd2b5cd",
+            "candidate_id": "S007-C001",
+            "definition": "experiments/S007/20260915_S007_EX31/candidate_payload.json",
+            "machine_evaluation": "experiments/S007/20260916_S007_EX35/artifacts/machine_evaluation_report.json"
+          },
+          "rule": {
+            "data_source": {
+              "format": "S007_SELECTED_FEATURE_SEED_V1",
+              "package": "strategy_runtime",
+              "path": "resources/s007_v1_seed.csv.gz",
+              "sha256": "32282766b0f65be661dfad9bd0f0f5c683ef84eef4ae2817a195730d03b59a39"
+            },
+            "execution": {
+              "capital": {
+                "allocation_fraction": 1.0,
+                "fee_rate": 0.001,
+                "mode": "full_available_cash",
+                "target_scope": "entry_cycle"
+              },
+              "entry": {
+                "limit_family": "previous_close_ratio",
+                "limit_parameter": 0.2,
+                "order_type": "LIMIT",
+                "price_rounding": "floor"
+              },
+              "exit": {
+                "limit_ratio": 0.2,
+                "order_type": "LIMIT",
+                "price_rounding": "nearest_half_up"
+              },
+              "instrument": {
+                "asset_type": "etf",
+                "lot_size": 100,
+                "market": "CN",
+                "maximum_order_quantity": 1000000,
+                "price_limit_ratio": 0.2,
+                "price_tick": 0.001,
+                "symbol": "588080.SH"
+              },
+              "virtual_fill": {
+                "buy_intraday": "low_strictly_below_limit",
+                "buy_open": "open_at_or_below_limit",
+                "liquidity_check": "diagnostic_only",
+                "sell": "marketable_limit_at_open",
+                "touch_only": "uncertain_unfilled"
+              }
+            },
+            "normalization": {
+              "lookback_sessions": 252,
+              "method": "CAUSAL_ROLLING_PERCENTILE_CENTERED",
+              "minimum_observations": 20
+            },
+            "score": {
+              "base_weights": {
+                "price_close_vwap_deviation": 0.28658573721959246,
+                "price_intraday_range": 0.06350436740892215,
+                "risk_chinext_turnover_z20": 0.3057021379837475,
+                "risk_global_spx_return": 0.20014784300885136,
+                "risk_shibor_on_change_5d": 0.14405991437888652
+              },
+              "confirmation_threshold": -0.012073272333918687,
+              "confirmation_weights": {
+                "micro_share_change_5d_lag1": 0.4069229172274985,
+                "tsfresh__log_volume_change__mean__lb20": 0.5930770827725015
+              },
+              "entry_threshold": 0.10449974411727908,
+              "exit_threshold": 0.047857421473087296,
+              "orientations": {
+                "micro_share_change_5d_lag1": -1,
+                "price_close_vwap_deviation": -1,
+                "price_intraday_range": 1,
+                "risk_chinext_turnover_z20": 1,
+                "risk_global_spx_return": 1,
+                "risk_shibor_on_change_5d": -1,
+                "tsfresh__log_volume_change__mean__lb20": 1
+              }
+            },
+            "symbol": "588080.SH"
+          },
+          "strategy_kind": "causal_feature_gate",
+          "symbol": "588080.SH"
+        },
+        "runtime": {
+          "contract_version": 2,
+          "module": "strategy_runtime.strategies.s007_v1",
+          "qualname": "S007V1",
+          "source_files": [
+            "strategies/s007_v1.py",
+            "calculation.py",
+            "execution_rules.py",
+            "resources/s007_v1_seed.csv.gz"
+          ],
+          "source_sha256": "4bea461e3fcaffa15704690fac4ac6b6ff9a30e3cc3fc61623e519b0ab5c305a"
+        }
+      },
+      "version": "v1"
+    }
+  },
+  "S011-v1": {
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S011",
+      "experiment_id": "EX084_20261026"
+    },
+    "home": "research/S011/experiments/EX084_20261026",
+    "source": "research/S011/experiments/EX084_20261026/src/S011-v1/strategy_runtime",
+    "candidate_id": "C9950",
+    "original": {
+      "change_summary": "修复历史输入最低数量：daily/bars为20，market为21；保留原公式、参数、固定起点和交易规则。",
+      "forward_start": "2026-10-22",
+      "parent_version": null,
+      "release_hash": "b81231aba840fef844c10d157142deb7d97e48b69bdf9e080c5f3a22276173c4",
+      "release_id": "S011-v1",
+      "schema_version": 5,
+      "selection_data_cutoff": "2026-09-30",
+      "source_candidate": "C9902",
+      "source_experiment": "EX080_20261022",
+      "strategy_id": "S011",
+      "strategy_payload": {
+        "decision_feedback": "MARKET_INTENT",
+        "parameters": {
+          "entry": 0.325,
+          "exit": 0.025,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.003,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 2,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py",
+            "calculation.py"
+          ],
+          "source_sha256": "f68db302a6debc64a361a59203cdb38916af8e6eab329aeb5a4b668f65532450"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "version": "v1"
+    }
+  },
+  "S015-v1": {
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX085_20261026"
+    },
+    "home": "research/S015/experiments/EX085_20261026",
+    "source": "research/S015/experiments/EX085_20261026/src/S015-v1/strategy_runtime",
+    "candidate_id": "C9950",
+    "original": {
+      "change_summary": "C9700仅解除C9304研究日期上界；新内容身份历史等价与阶段五技术检验计划，尚未冻结或部署。",
+      "forward_start": "2026-10-26",
+      "parent_version": null,
+      "release_hash": "13eba2fcbf0da0df6fa4422e723086a2cd4e087616f09a626a07a9a999ede53b",
+      "release_id": "S015-v1",
+      "schema_version": 5,
+      "selection_data_cutoff": "2026-10-21",
+      "source_candidate": "C9700",
+      "source_experiment": "EX082_20261025",
+      "strategy_id": "S015",
+      "strategy_payload": {
+        "decision_feedback": "MARKET_INTENT",
+        "parameters": {
+          "allocation": 1.0,
+          "center_kind": "median",
+          "lookback": 3,
+          "minimum_repair_space": 0.0017298986606429072
+        },
+        "runtime": {
+          "contract_version": 2,
+          "module": "strategy_runtime.strategies.price_process",
+          "qualname": "PriceProcess",
+          "source_files": [
+            "strategies/price_process.py"
+          ],
+          "source_sha256": "77f92743dd7c1ceb833848fc54573e676679d3284f41081128b5d6cae6228083"
+        }
+      },
+      "version": "v1"
+    }
+  }
+}

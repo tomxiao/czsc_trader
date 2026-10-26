@@ -1,0 +1,200 @@
+{
+  "status": "PASS",
+  "reference": "S002-v1",
+  "scope": "ARCHIVED_OLD_PACKAGE_VS_INSTALLED_NEW_PACKAGE_PUBLIC_SRT_TXE",
+  "old_release_hash": "34c2297c7d15ae2aab1a0527e25550e6c181a6b7faff18456f85145719e03af7",
+  "new_release_hash": "c1ac2df0f3bcef58dfa289a28201bfb2953c84fa00b12f133dba43cbf4daceb8",
+  "old_package_hash": "c1ef3767c71a7cc482fefff2f1eb2f7db08a54a258a2658ae47bbac53a39af7e",
+  "new_package_hash": "dafcef092004ba62351d91dcdc165870afa5b806a1ca9603e9f3a13372946dd3",
+  "source_hashes": {
+    "adjusted_daily": "14add77882f1de50299cb646fed2c96245ba1880c40fcdfae265d530dfd2e3c2",
+    "execution_daily": "f0b089f6edabd6a55a4832434c1813668abc38c3170847b07e4e73c2935f04cf",
+    "trading_calendar": "cfb4bb9e5a16f259690302e5ccfe2b5f472426e4b279615ca9b00d3241a761f0"
+  },
+  "window": {
+    "start": "2026-06-01",
+    "end": "2026-09-02"
+  },
+  "initial_cash": 100000,
+  "new_data": false,
+  "modes": {
+    "CONTINUOUS": {
+      "status": "PASS",
+      "signal_rows": 67,
+      "checks": [
+        {
+          "ledger": "decisions",
+          "rows": 67,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "ledger": "orders",
+          "rows": 3,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "ledger": "fills",
+          "rows": 2,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "ledger": "account_daily",
+          "rows": 67,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "ledger": "trades",
+          "rows": 1,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        }
+      ],
+      "fills": 2
+    },
+    "WINDOW": {
+      "status": "PASS",
+      "signal_rows": 67,
+      "checks": [
+        {
+          "ledger": "decisions",
+          "rows": 67,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "ledger": "orders",
+          "rows": 3,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "ledger": "fills",
+          "rows": 2,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "ledger": "account_daily",
+          "rows": 67,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        },
+        {
+          "ledger": "trades",
+          "rows": 1,
+          "comparison": "EXACT_VALUES_ZERO_TOLERANCE"
+        }
+      ],
+      "fills": 2
+    }
+  },
+  "artifacts": [
+    {
+      "path": "new_binding.json",
+      "sha256": "351cbfea4bcad2c91ef222e0019e67a4bd4b108631bcba729dcba6f491f17e18"
+    },
+    {
+      "path": "new_CONTINUOUS_account_daily.csv",
+      "sha256": "6b76253d9991e23b3fd925f97ea9a15d85ec9541734a16d83fb20eb8cd7e8981"
+    },
+    {
+      "path": "new_CONTINUOUS_decisions.csv",
+      "sha256": "8dda5be2a9d4bc1e18fcb3f65e9fa7ecc13e63245c0566d62a621bf40a4ae757"
+    },
+    {
+      "path": "new_CONTINUOUS_fills.csv",
+      "sha256": "be60047faa906b106cb438f3ae490d7eab87e2d24918011e77d2031e6eef903e"
+    },
+    {
+      "path": "new_CONTINUOUS_observations.json",
+      "sha256": "2c2bab2e9ff941691b865eb13381f92eab5570a1bd2063133ef1b55596ec0f05"
+    },
+    {
+      "path": "new_CONTINUOUS_orders.csv",
+      "sha256": "d7adebd7b69f1cde6b89970c4e9378964493a8d5b84053621c20b76c4172ca2f"
+    },
+    {
+      "path": "new_CONTINUOUS_signals.csv",
+      "sha256": "2dc9931356d6cf65387c2a68d09143e796d6acffefa873cf9cbcf6ef87d681e3"
+    },
+    {
+      "path": "new_CONTINUOUS_trades.csv",
+      "sha256": "55acbf7eb70fc1d9a573b173f77244bb185214b72799ad40ea4e6e4e4e006c1b"
+    },
+    {
+      "path": "new_WINDOW_account_daily.csv",
+      "sha256": "6b76253d9991e23b3fd925f97ea9a15d85ec9541734a16d83fb20eb8cd7e8981"
+    },
+    {
+      "path": "new_WINDOW_decisions.csv",
+      "sha256": "8dda5be2a9d4bc1e18fcb3f65e9fa7ecc13e63245c0566d62a621bf40a4ae757"
+    },
+    {
+      "path": "new_WINDOW_fills.csv",
+      "sha256": "be60047faa906b106cb438f3ae490d7eab87e2d24918011e77d2031e6eef903e"
+    },
+    {
+      "path": "new_WINDOW_observations.json",
+      "sha256": "2c2bab2e9ff941691b865eb13381f92eab5570a1bd2063133ef1b55596ec0f05"
+    },
+    {
+      "path": "new_WINDOW_orders.csv",
+      "sha256": "d7adebd7b69f1cde6b89970c4e9378964493a8d5b84053621c20b76c4172ca2f"
+    },
+    {
+      "path": "new_WINDOW_signals.csv",
+      "sha256": "2dc9931356d6cf65387c2a68d09143e796d6acffefa873cf9cbcf6ef87d681e3"
+    },
+    {
+      "path": "new_WINDOW_trades.csv",
+      "sha256": "55acbf7eb70fc1d9a573b173f77244bb185214b72799ad40ea4e6e4e4e006c1b"
+    },
+    {
+      "path": "old_binding.json",
+      "sha256": "147616af5f90e029766809c12ae8dca62914434cda29e13586037554537e874a"
+    },
+    {
+      "path": "old_CONTINUOUS_account_daily.csv",
+      "sha256": "6b76253d9991e23b3fd925f97ea9a15d85ec9541734a16d83fb20eb8cd7e8981"
+    },
+    {
+      "path": "old_CONTINUOUS_decisions.csv",
+      "sha256": "ae7c52676ec6da8db454846616e57f07075c9ce940c5e177154660dafd823735"
+    },
+    {
+      "path": "old_CONTINUOUS_fills.csv",
+      "sha256": "bf489582880f96c1fc111762852f7ab64f5a54e0a7806102ccf94a4b6bd827cd"
+    },
+    {
+      "path": "old_CONTINUOUS_orders.csv",
+      "sha256": "17099624defcc440b68c23d97eda98e86e15e1a2fae23f0cd779212049fdcf43"
+    },
+    {
+      "path": "old_CONTINUOUS_signals.csv",
+      "sha256": "7a5fe7f162ce3020328814581e64dede5ce2540b2650f00b16b310b536cf0b2f"
+    },
+    {
+      "path": "old_CONTINUOUS_trades.csv",
+      "sha256": "55acbf7eb70fc1d9a573b173f77244bb185214b72799ad40ea4e6e4e4e006c1b"
+    },
+    {
+      "path": "old_WINDOW_account_daily.csv",
+      "sha256": "6b76253d9991e23b3fd925f97ea9a15d85ec9541734a16d83fb20eb8cd7e8981"
+    },
+    {
+      "path": "old_WINDOW_decisions.csv",
+      "sha256": "ae7c52676ec6da8db454846616e57f07075c9ce940c5e177154660dafd823735"
+    },
+    {
+      "path": "old_WINDOW_fills.csv",
+      "sha256": "bf489582880f96c1fc111762852f7ab64f5a54e0a7806102ccf94a4b6bd827cd"
+    },
+    {
+      "path": "old_WINDOW_orders.csv",
+      "sha256": "17099624defcc440b68c23d97eda98e86e15e1a2fae23f0cd779212049fdcf43"
+    },
+    {
+      "path": "old_WINDOW_signals.csv",
+      "sha256": "7a5fe7f162ce3020328814581e64dede5ce2540b2650f00b16b310b536cf0b2f"
+    },
+    {
+      "path": "old_WINDOW_trades.csv",
+      "sha256": "55acbf7eb70fc1d9a573b173f77244bb185214b72799ad40ea4e6e4e4e006c1b"
+    }
+  ]
+}
