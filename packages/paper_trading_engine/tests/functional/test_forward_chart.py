@@ -116,6 +116,35 @@ def test_forward_chart_uses_account_symbol_and_values_without_strategy_package_i
         render_forward_chart_html(context)
 
 
+@pytest.mark.parametrize('version', [None, 'strategy_observation.v1', 'strategy_observation.v2'])
+def test_historical_numeric_observations_remain_readable_without_enhanced_fields(version):
+    from paper_trading_engine.account_chart import AccountChartService
+
+    context = _context()
+    observation = dict(context['observations'][0]['observation'])
+    if version is not None:
+        observation['contract_version'] = version
+    row = {**context['observations'][0], 'payload': {
+        'observation': observation, 'symbol': '588080.SH', 'action': 'BUY',
+        'target_quantity': 1000,
+    }}
+    projected = AccountChartService._decision(row)
+    assert projected['observation'] == context['observations'][0]['observation']
+    assert set(projected['observation']) == {'status', 'series', 'facts'}
+    context['observations'] = [projected]
+    assert '基础分' in render_forward_chart_html(context)
+
+    # A historical version marker cannot bypass enhanced-snapshot identity
+    # validation, and historical numeric values retain their strict contract.
+    observation['signal_panel'] = _signal_panel()
+    with pytest.raises(ValueError, match='unsupported chart observation contract'):
+        AccountChartService._decision(row)
+    del observation['signal_panel']
+    observation['series'][0]['value'] = float('nan')
+    with pytest.raises(ValueError, match='finite'):
+        AccountChartService._decision(row)
+
+
 def _signal_panel():
     return {
         "groups": [{"key": "space", "label": "机会空间", "unit": "%", "basis": "相对变化",

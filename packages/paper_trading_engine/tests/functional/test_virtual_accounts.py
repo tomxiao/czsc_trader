@@ -1173,7 +1173,7 @@ def test_account_chart_preserves_signal_history_across_strategy_packages(new_sto
 
     status = service.status("s001-v2")
 
-    assert status["status"] == "READY"
+    assert status["status"] == "READY", status.get("message")
     assert {row["decision_id"] for row in requests[0]["observations"]} == {
         "DEC-BASE", "DEC-OLD", "DEC-NEW", "DEC-PREVIOUS-CONTENT",
     }

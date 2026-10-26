@@ -289,7 +289,7 @@ class AccountChartService:
                 definition_sha256=authenticated.definition_sha256,
                 release_hash=authenticated.strategy.release_hash,
             )
-        elif not is_panel_unavailable and (version not in (None, "strategy_observation.v2") or "signal_panel" in observation):
+        elif not is_panel_unavailable and (version not in (None, "strategy_observation.v1", "strategy_observation.v2") or "signal_panel" in observation):
             raise ValueError("unsupported chart observation contract")
         fact = ChartObservation.from_dict(display)
         return {
