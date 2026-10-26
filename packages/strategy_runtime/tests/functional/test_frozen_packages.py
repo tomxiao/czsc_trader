@@ -15,7 +15,10 @@ from strategy_runtime import (
     StrategyRelease,
     StrategyRuntime,
     materialize_observation,
+    EvidenceGuide,
+    ObservationFormat,
     ObservationValueType,
+    SignalAvailability,
     StrategyInit,
     TradableWindow,
 )
@@ -113,6 +116,28 @@ def test_current_observation_uses_declared_fields_and_current_identity(loaded_re
         ObservationValueType.BOOLEAN: True, ObservationValueType.TEXT: "synthetic reason",
     }
     evidence.update({fact.value_field: values[fact.value_type] for fact in actual.observation.facts})
+    panel = actual.observation.signal_panel
+    if panel is not None:
+        # This test materializes declared fields; the execution-path tests cover
+        # the strategy's observation hook. Supply v4 panel evidence as well as
+        # the original series/facts, without deriving a business judgment here.
+        formats = {group.key: group.format for group in panel.groups}
+        for series in panel.series:
+            value = 1 if formats[series.group] is ObservationFormat.INTEGER else 0.3
+            evidence[series.value_field] = value
+            if series.segment_field is not None:
+                evidence[series.segment_field] = "synthetic-segment"
+            for guide in series.guides:
+                if isinstance(guide, EvidenceGuide):
+                    evidence[guide.value_field] = value
+        for state in panel.states:
+            evidence[state.value_field] = state.options[0].key
+        for item in (*panel.series, *panel.states):
+            if item.status_field is not None:
+                evidence[item.status_field] = SignalAvailability.AVAILABLE.value
+            if item.reason_field is not None:
+                evidence[item.reason_field] = "synthetic availability reason"
+        assert set(panel.evidence_fields) <= evidence.keys()
     identity = plan_identity_for(signal_identity=signal, actual_quantity=template.actual_quantity,
                                  target_quantity=template.target_quantity,
                                  cycle_target_quantity=template.cycle_target_quantity,
@@ -125,3 +150,27 @@ def test_current_observation_uses_declared_fields_and_current_identity(loaded_re
     assert facts.strategy == strategy
     assert len(facts.series) == len(actual.observation.series)
     assert len(facts.facts) == len(actual.observation.facts)
+    if panel is not None:
+        assert facts.signal_panel.groups == panel.groups
+        assert len(facts.signal_panel.series) == len(panel.series)
+        assert len(facts.signal_panel.states) == len(panel.states)
+        for declared, observed in zip(panel.series, facts.signal_panel.series, strict=True):
+            assert observed.key == declared.key
+            assert observed.value == evidence[declared.value_field]
+            assert observed.status is SignalAvailability.AVAILABLE
+            assert observed.reason is None
+            assert observed.segment_id == (evidence[declared.segment_field] if declared.segment_field else None)
+            for guide, observed_guide in zip(declared.guides, observed.guides, strict=True):
+                assert observed_guide.value == (evidence[guide.value_field] if isinstance(guide, EvidenceGuide) else guide.value)
+        for declared, observed in zip(panel.states, facts.signal_panel.states, strict=True):
+            assert observed.key == declared.key
+            assert observed.value == evidence[declared.value_field]
+            assert observed.status is SignalAvailability.AVAILABLE
+            assert observed.reason is None
+        if panel.explanation is not None:
+            selector = next(state for state in panel.states if state.key == panel.explanation.state_key)
+            explanation = facts.signal_panel.explanation
+            assert explanation.state_key == selector.key
+            assert explanation.case_key == evidence[selector.value_field]
+            case = next(case for case in panel.explanation.cases if case.key == explanation.case_key)
+            assert [basis.key for basis in explanation.basis] == [basis.key for basis in case.basis]
