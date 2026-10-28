@@ -396,4 +396,4 @@ TDR技术检验可以在隔离空间验证拟冻结发布包，检验通过不�
 ## 美股区间决策补充
 
 `ResearchExecutionSpec`、`EquityCandidate` 和 `EquityStrategyInstance` 提供显式市场与时间合同的研究规划。
-原 A 股策略及冻结运行时不变。输入、支持范围及因果时序见[美股研究契约](../../docs/US_EQUITY_RESEARCH.md)。
+原 A 股策略及冻结运行时不变。输入、支持范围及因果时序见[TDR美股研究接口](../../src/czsc_trader/README.md#us-equity-research)。

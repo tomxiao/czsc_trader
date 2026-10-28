@@ -4,7 +4,7 @@ SE按显式协议提供指标、协议校验、比较、帕累托分层、PBO、
 
 `strategy_evaluator.equity.audit_equity_account` 独立审计区间成交、整数股持仓、分红应收款和交收，
 输出交易日指标及区间采样回撤；不导入 SRT/TXE。其研究证据与正式阶段交付的边界见
-[美股研究契约](../../docs/US_EQUITY_RESEARCH.md)。
+[TDR美股研究接口](../../src/czsc_trader/README.md#us-equity-research)。
 
 账户会计分解使用`diagnose_account_replays`纯计算入口，输入为认证后的`ReplayEvidence`、评价身份、诊断起止日期及可选对照；返回`AccountDiagnosisCalculation`。它不读取文件、不执行策略，也不寻找分类或解释金融机制。RSCH使用TDR的`diagnose_accounts`完成正式证据认证及人群覆盖适配；金额、单位、首版支持范围及发布示例见[TDR账户诊断](../../src/czsc_trader/README.md#账户损益与路径诊断)。账本差异等价性仍使用`compare_ledgers`，不被路径诊断替代。
 

@@ -8,7 +8,7 @@ TXE 是统一成交执行器，位于 DFLS 同一基础能力层。它接收SRT�
 
 `trading_execution_engine.equity.EquityHistoricalExecutor` 增加 US 的显式 BAR_RANGE 研究账户，
 复用 `resolve_fill`，支持下一段订单、同日往返、公司行动与交收；原 A 股执行不变。
-支持范围、时间精度及拒绝条件见[美股研究契约](../../docs/US_EQUITY_RESEARCH.md)。
+支持范围、时间精度及拒绝条件见[TDR美股研究接口](../../src/czsc_trader/README.md#us-equity-research)。
 
 ## 能力边界
 

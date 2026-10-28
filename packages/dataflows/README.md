@@ -303,5 +303,5 @@ Q日K尚非主力的记录也保留。该组合及信号计算属于研究层；
 ## 市场限定的权益数据产品
 
 `EquityDataRequest` 通过 `ProviderKey(产品, 市场, SourceRef)` 精确绑定来源修订，继续复用本包的数据空间和准备引用。
-行情、日历、公司行动及逐区间交易约束的字段与失败语义见[美股研究契约](../../docs/US_EQUITY_RESEARCH.md)。
+行情、日历、公司行动及逐区间交易约束的字段与失败语义见[TDR美股研究接口](../../src/czsc_trader/README.md#us-equity-research)。
 原 A 股数据集及供应商绑定保持不变。
