@@ -9,12 +9,13 @@
       "freeze_or_deployment_authorized": false,
       "mechanism_research_authorized": false,
       "parameter_search_authorized": false,
-      "scope": "注册LITE新研究批次，开展阶段一目标、执行假设、基准及样本边界约定",
+      "revision_evidence": "research/S017/experiments/EX001_20261028/protocols/authorization_v2.md",
+      "scope": "S017阶段一修订、开发数据准备和材料发布；不含阶段二、搜索及保留验证",
       "user_statement": "同意，请注册为S017"
     },
     "batch_preparation_reference": {
-      "manifest_sha256": "af1f8f8f7893e9663ad775d593604bb38d21b0c8b1c2bf8849404c99121968e8",
-      "preparation_id": "c386c06a-e3ba-43ab-95d8-9c5856724b4f",
+      "manifest_sha256": "bdba8f6a3e9475ed62a3295bdcccd6bb2286f5e081ec44b79811c1bcb72dce93",
+      "preparation_id": "25d3831d-c882-428f-b33f-dbd9299a679a",
       "space_id": "a50f7929-988e-4650-af5c-5baee1cd84eb"
     },
     "confirmed_direction": {
@@ -24,19 +25,45 @@
       "session": "RTH",
       "timezone": "America/New_York"
     },
+    "confirmed_terms": {
+      "buy_premium_searchable": false,
+      "fixed_buy_premium": 0.01,
+      "one_way_cost": 0.001,
+      "sample_windows": "CONFIRMED"
+    },
     "data_readiness": {
       "bars": 25976,
       "batch_data_prepared": true,
       "batch_prepared_scope": [
         "2018-11-01",
-        "2024-12-31"
+        "2025-12-31"
+      ],
+      "batch_prepared_windows": [
+        {
+          "bars": 508,
+          "known_blocked_bars": 0,
+          "label": "warmup",
+          "sessions": 40,
+          "statuses": {
+            "OBSERVED": 508
+          }
+        },
+        {
+          "bars": 22790,
+          "known_blocked_bars": 5,
+          "label": "development",
+          "sessions": 1760,
+          "statuses": {
+            "OBSERVED": 22790
+          }
+        }
       ],
       "checked_window": [
         "2018-11-01",
         "2026-10-27"
       ],
       "known_interruption_bars": 5,
-      "limits": "旧临时引用仅用于立项前覆盖核验；S017正式准备引用单独记录。无空白不证明无短暂停牌；未评价策略或收益。",
+      "limits": "原checked_window及计数为立项前全范围覆盖核验；当前正式开发准备范围和计数由batch_prepared_scope/windows表示。无空白不证明无短暂停牌；未评价策略或收益。",
       "missing_bars": 0,
       "prior_preparation_reference": {
         "manifest_sha256": "50d7af9bb5fc5a6e70c530c657b45efd6c45784ee02d50a72a8e73d1de0b0a64",
@@ -48,7 +75,7 @@
       "status": "READY_UNDER_EXPLICIT_RESEARCH_ASSUMPTIONS",
       "zero_volume_bars": 0
     },
-    "execution_proposal_confirmation": "PROPOSED",
+    "execution_proposal_confirmation": "PARTIALLY_CONFIRMED",
     "instrument": {
       "asset_class": "STOCK",
       "currency": "USD",
@@ -60,8 +87,8 @@
         "strategy_id": "S017",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "aac6941864710f035420f457c2c88690095cb251abe97097b88c61193121f37c",
-      "revision": 1,
+      "content_sha256": "a12f16c9fa96a902aab91409a3a8c66e8e90de7282a1a0dd4df952b1cda78d87",
+      "revision": 2,
       "stage": "MANDATE",
       "type": "DeliveryReference"
     },
@@ -70,16 +97,17 @@
       "research/S017/materials/registration_20261028.md",
       "research/S017/materials/pre_registration_readiness.json"
     ],
-    "next_action": "请求用户确认阶段一提案并批准阶段二；未获准前不运行机制研究或保留验证。",
+    "next_action": "确认其余阶段一提案，批准阶段二及是否新开研究分支；此前不运行机制研究、搜索或保留验证。",
     "objective": "LITE 美股个股30分钟只做多择时研究",
+    "other_proposals_confirmation": "PROPOSED",
     "policy_reference": "research/RSCH_AGENT.md#research-policy",
     "sample_contract": {
       "development": [
         "2019-01-02",
-        "2024-12-31"
+        "2025-12-31"
       ],
       "reserved": [
-        "2025-01-02",
+        "2026-01-02",
         "2026-10-27"
       ],
       "reserved_access": "NOT_AUTHORIZED",
@@ -96,5 +124,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-10-28T19:49:12+08:00"
+  "updated_at": "2026-10-28T20:12:43+08:00"
 }
