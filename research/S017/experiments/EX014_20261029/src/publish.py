@@ -190,6 +190,41 @@ def inputs():
     return analysis, keys, definitions, references, pre, diagnostic_refs, pairs
 
 
+def entry_difference_inputs(references, diagnostic_refs):
+    """Reproduce only the published-ledger description, with no economic audit."""
+    from describe_entry_difference import describe
+    retained = read(WORK / 'others/entry_difference_description.json')
+    expected_accounts = {key: references[key].to_dict() for key in ('C0013', 'C0043')}
+    if (retained['schema'] != 'S017_C0013_ENTRY_STATE_DIFFERENCE_V1'
+            or retained['status'] != 'PASS'
+            or retained['source_accounts'] != expected_accounts
+            or retained['script_sha256'] != digest(WORK / 'src/describe_entry_difference.py')):
+        raise ValueError('entry difference description source or exact account references changed')
+    ref = diagnostic_refs['C0043_vs_C0013']
+    raw = authenticated_json(ref)
+    diagnosis = retained['existing_public_diagnostic']
+    if (ref.experiment != EXPERIMENT or ref.name != 'diagnosis-C0043_vs_C0013'
+            or ref.sha256 != diagnosis['sha256']
+            or diagnosis['path'] != (WORK / 'others/diagnostics/C0043_vs_C0013.json').relative_to(ROOT).as_posix()
+            or raw != read(ROOT / diagnosis['path'])
+            or raw['status'] != 'COMPUTED' or raw['issues']
+            or raw['sources'] != [asdict(references[key]) for key in ('C0013', 'C0043')]
+            or diagnosis['sources'] != raw['sources']
+            or diagnosis['reconciliation'] != raw['reconciliation']):
+        raise ValueError('entry description public diagnosis differs from the exact original evidence')
+    for item in retained['method_sources']:
+        path = ROOT / item['path']
+        if not path.resolve().is_relative_to((ROOT / 'research/S017').resolve()) or digest(path) != item['sha256']:
+            raise ValueError('entry difference method source changed')
+    # This rebinds account identities, frozen sources, primary products, economic
+    # contracts and BH, then reproduces the actual order/decision/fill partition.
+    # JSON normalization matches the retained serialization, not rounded output.
+    reproduced = json.loads(json.dumps(describe(), allow_nan=False))
+    if reproduced != retained:
+        raise ValueError('entry difference description cannot be reproduced from its exact sources')
+    return retained
+
+
 def percent(value):
     return '无完整窗口' if value is None else f'{value * 100:.2f}%'
 
@@ -202,7 +237,49 @@ def link(path):
     return Path(os.path.relpath(path, WORK)).as_posix()
 
 
-def render_report(analysis, keys, references, diagnostic_refs, pairs):
+def entry_difference_section(description):
+    rows = ['', '## 原始入场分组与2025实际资金路径（事后描述）', '',
+        '下表保留C0013原有68个已闭合周期，按其实际BUY决策时点对应的C0043已记录SPY条件分组。'
+        '净损益和费用均来自原账本；周期收益中位数不是账户收益。', '',
+        '|SPY条件|原闭合周期|净损益USD|双侧费用USD|周期净收益中位数|',
+        '|---|---:|---:|---:|---:|']
+    for key in ('TRUE', 'FALSE', 'UNKNOWN'):
+        value = description['by_entry_market'][key]
+        distribution = value['recorded_cycle_net_return_distribution']
+        median = '无周期' if distribution is None else percent(distribution['median'])
+        rows.append(f"|{key}|{value['cycles']}|{value['net_pnl']:.2f}|{value['fees']:.2f}|{median}|")
+    alignment = description['actual_entry_alignment']
+    states = description['by_c0043_actual_state']
+    delta = description['c0043_minus_c0013_actual_wealth_bridge']
+    rows.extend(['',
+        f"在这些时点，C0043空仓且允许{states['FLAT_ALLOWED']['cycles']}次，"
+        f"其中{alignment['c0013_closed_entry_points_with_c0043_actual_buy_fill']}次实际买入；"
+        f"空仓且大盘阻止{states['FLAT_MARKET_BLOCKS_ENTRY']['cycles']}次；"
+        f"已持仓{states['HELD_ALREADY']['cycles']}次、个股条件不满足{states['FLAT_STOCK_NOT_READY']['cycles']}次、"
+        f"状态未知{states['UNKNOWN']['cycles']}次。C0043另有"
+        f"{alignment['c0043_closed_entries_at_other_decision_times']}个闭合周期在其他时点入场，"
+        '因此阻止一个原始入场时点不等于永久删除整个原周期。', '',
+        '|2025实际权益路径：C0043减C0013|差额USD|', '|---|---:|',
+        f"|年初权益差|{delta['opening_2025_equity']:+.2f}|",
+        f"|本年已闭合周期净损益差|{delta['actual_2025_closed_cycle_net_pnl']:+.2f}|",
+        f"|年末未闭合持仓估值损益差（含已付买入费）|{delta['actual_2025_terminal_open_mark_pnl']:+.2f}|",
+        f"|全年权益增长差|{delta['actual_2025_equity_change']:+.2f}|",
+        f"|年末权益差|{delta['closing_2025_equity']:+.2f}|", '',
+        '两账户2025年初均空仓，故上述已闭合损益与年末持仓估值可与全年实际权益变化核对。'
+        '年末未闭合周期的账本net_pnl保持空值，没有构造卖出成交或未来卖出费用。'
+        '4月趋势中C0043晚一天且更高价入场，周期收益率更低，却因股数更多取得更高美元利润；'
+        '10月23日两者同点同价入场，C0043多持有194股。这是等待后重入、资金与持仓数量路径的共同结果，'
+        '是对“直接过滤坏交易即可解释全期优势”的反证，不是对大盘条件所有用途的否定。', '',
+        '[完整描述](others/entry_difference_description.json)保留全部逐年分组、实际状态交叉表、2025各周期日期、'
+        '净损益及费用；[描述脚本](src/describe_entry_difference.py)提供只读重算。'
+        '时间字段使用纽约交易所时区，并保留原UTC和模型成交时间精度。'
+        '这是看到正式结果后的原已执行交易条件分组，受持仓、资金与机会选择影响；'
+        '不得删去某组推算新过滤策略收益，不得把FALSE组损益当作过滤的因果贡献。'
+        '本节不改变冻结交易规则，不形成新门槛、独立验证或整体原型推荐。'])
+    return rows
+
+
+def render_report(analysis, keys, references, diagnostic_refs, pairs, entry_description):
     summaries = analysis['summaries']
     rows = [(key, summaries[key]['candidate']) for key in (*OLD_CONTROLS, *keys)]
     rows.append(('同条件买入持有', summaries[CONTROL_ID]['benchmark']))
@@ -260,8 +337,10 @@ def render_report(analysis, keys, references, diagnostic_refs, pairs):
         '|---|' + '|'.join('---:' for _ in rows[0][1]['year_returns']) + '|'])
     for name, value in rows:
         text.append('|' + name + '|' + '|'.join(percent(item['net_return']) for item in value['year_returns']) + '|')
-    text.extend(['', '逐年收益继承上年末资金与持仓，第一年使用初始资金；不逐年重置本金或平均年度收益率。', '',
-        '## 原始证据与限制', '', '[可复核分析](others/analysis.json)保留精确账户、公共诊断和方法来源引用。'])
+    text.extend(['', '逐年收益继承上年末资金与持仓，第一年使用初始资金；不逐年重置本金或平均年度收益率。'])
+    text.extend(entry_difference_section(entry_description))
+    text.extend(['', '## 原始证据与限制', '',
+        '[可复核分析](others/analysis.json)保留精确账户、公共诊断和方法来源引用。'])
     for key, ref in references.items():
         text.append(f'- [{key}原始账户]({link(ROOT / ref.repository_path)})')
     text.extend(['', '本实验使用反复观察过的开发池；重叠窗口与30分钟观察点不能视作独立样本。'
@@ -273,7 +352,8 @@ def render_report(analysis, keys, references, diagnostic_refs, pairs):
 def main(action):
     upstream = upstream_evidence()
     analysis, keys, definitions, accounts, pre, diagnostics, pairs = inputs()
-    report = render_report(analysis, keys, accounts, diagnostics, pairs)
+    entry_description = entry_difference_inputs(accounts, diagnostics)
+    report = render_report(analysis, keys, accounts, diagnostics, pairs, entry_description)
     (WORK / 'report.md').write_bytes(report.encode('utf-8'))
     if action == 'render':
         print('REPORT_RENDERED', EXPERIMENT.experiment_id, flush=True)
@@ -286,6 +366,8 @@ def main(action):
         ('precheck-source', 'src/precheck.py'), ('execution-status', 'others/execution_status.json'),
         ('execution-stats', 'others/execution_stats.json'), ('accounts-manifest', 'others/accounts.json'),
         ('comparisons', 'protocols/comparisons.json'), ('publication-source', 'src/publish.py'),
+        ('entry-difference-description', 'others/entry_difference_description.json'),
+        ('entry-difference-source', 'src/describe_entry_difference.py'),
     ):
         ref = material(research, name, WORK / relative)
         materials[name] = ref
@@ -307,6 +389,9 @@ def main(action):
         'accounts': {key: ref.to_dict() for key, ref in accounts.items()},
         'definitions': {key: ref.to_dict() for key, ref in definition_refs.items()},
         'diagnostics': {key: ref.to_dict() for key, ref in diagnostics.items()},
+        'entry_difference_original_evidence': {
+            **{key: accounts[key].to_dict() for key in ('C0013', 'C0043')},
+            'diagnosis-C0043_vs_C0013': diagnostics['C0043_vs_C0013'].to_dict()},
         'materials': {key: ref.to_dict() for key, ref in materials.items()},
         'upstream': {key: ref.to_dict() for key, ref in upstream.items()},
         'evidence': [ref.to_dict() for ref in references]})

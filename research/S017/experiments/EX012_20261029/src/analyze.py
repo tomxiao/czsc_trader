@@ -1,12 +1,18 @@
 """Authenticate retained accounts and report descriptive, continuous-account facts."""
 from datetime import date
+from concurrent.futures import ProcessPoolExecutor
+from contextlib import contextmanager
 from hashlib import sha256
 from pathlib import Path
 import json
+import multiprocessing
+import os
+
+from threadpoolctl import threadpool_limits
 
 from czsc_trader.application import diagnose_accounts
 from czsc_trader.research_tools import EvidenceRef, ExperimentRef
-from czsc_trader.research_tools.account_diagnosis import AccountDiagnosisRequest, AccountRunRef
+from czsc_trader.research_tools.account_diagnosis import (AccountDiagnosisRequest, AccountDiagnosisResult, AccountRunRef)
 from czsc_trader.research_tools.equity_evaluation import EquityEvaluationResult
 from czsc_trader.research_tools.evaluation import EvaluationIdentity, EvaluationWindow
 from strategy_manager import CandidateKey
@@ -149,6 +155,60 @@ def account_ref(reference, payload):
     return AccountRunRef(reference, EvaluationIdentity(**identity))
 
 
+NATIVE_THREAD_ENV = ('OMP_NUM_THREADS', 'OPENBLAS_NUM_THREADS', 'MKL_NUM_THREADS',
+    'BLIS_NUM_THREADS', 'VECLIB_MAXIMUM_THREADS', 'NUMEXPR_NUM_THREADS', 'NUMEXPR_MAX_THREADS')
+
+
+def diagnose_request(request):
+    """Each spawn worker performs the unchanged complete public diagnosis once."""
+    if type(request) is not AccountDiagnosisRequest:
+        raise TypeError('parallel diagnosis requires a typed request')
+    with threadpool_limits(limits=1):
+        result = diagnose_accounts(REPOSITORY, request)
+    if type(result) is not AccountDiagnosisResult:
+        raise TypeError('public diagnosis returned an unexpected result type')
+    return result
+
+
+@contextmanager
+def parallel_diagnoses(requests, *, worker=diagnose_request):
+    """Three independent audits, ordered consumption and parent-only publication.
+
+    The optional worker is a pure-synthetic spawn test seam; main always uses the
+    complete public diagnose_request. Exceptions propagate without retry. Pending
+    work is cancelled on exit and running children are joined before returning.
+    """
+    requests = tuple(requests)
+    if len(requests) != 3 or any(type(item) is not AccountDiagnosisRequest for item in requests):
+        raise ValueError('EX012 requires the exact three typed public diagnosis requests')
+    previous = {name: os.environ.get(name) for name in NATIVE_THREAD_ENV}
+    pool, futures = None, []
+    try:
+        for name in NATIVE_THREAD_ENV:
+            os.environ[name] = '1'
+        pool = ProcessPoolExecutor(max_workers=3, mp_context=multiprocessing.get_context('spawn'))
+        futures = [pool.submit(worker, request) for request in requests]
+
+        def ordered_results():
+            for future in futures:
+                result = future.result()
+                if type(result) is not AccountDiagnosisResult:
+                    raise TypeError('parallel diagnosis returned an unexpected result type')
+                yield result
+
+        yield ordered_results()
+    finally:
+        for future in futures:
+            future.cancel()
+        if pool is not None:
+            pool.shutdown(wait=True, cancel_futures=True)
+        for name, old in previous.items():
+            if old is None:
+                os.environ.pop(name, None)
+            else:
+                os.environ[name] = old
+
+
 def main():
     keys = tuple(configurations())
     if CONTROL_ID in keys:
@@ -165,22 +225,24 @@ def main():
     pairs = tuple(dict.fromkeys(tuple(pair) for pair in [*[[key, CONTROL_ID] for key in keys], *pairs]))
     research, diagnostics = context(), {}
     audit_coverage = {key: [] for key in payloads}
-    for subject, control in pairs:
-        name = subject + '_vs_' + control
-        diagnosis = diagnose_accounts(REPOSITORY, AccountDiagnosisRequest(
-            account_ref(refs[control], payloads[control]), account_ref(refs[subject], payloads[subject]),
-            EvaluationWindow('DEV_2019_2025', date(2019, 1, 2), date(2025, 12, 31))))
-        path = WORK / 'others/diagnostics' / (name + '.json')
-        save(path, diagnosis.to_dict())
-        reference = material(research, 'diagnosis-' + name, path)
-        sources_match = diagnosis.sources == (refs[control], refs[subject])
-        diagnostics[name] = {'status': diagnosis.status.value, 'issues': list(diagnosis.issues),
-            'evidence': reference.to_dict(), 'reconciliation': diagnosis.to_dict()['reconciliation'],
-            'sources_match': sources_match}
-        if diagnosis.status.value == 'COMPUTED' and sources_match:
-            audit_coverage[subject].append(name)
-            audit_coverage[control].append(name)
-        print('DIAGNOSIS', name, diagnosis.status.value, flush=True)
+    requests = tuple(AccountDiagnosisRequest(
+        account_ref(refs[control], payloads[control]), account_ref(refs[subject], payloads[subject]),
+        EvaluationWindow('DEV_2019_2025', date(2019, 1, 2), date(2025, 12, 31)))
+        for subject, control in pairs)
+    with parallel_diagnoses(requests) as outcomes:
+        for (subject, control), diagnosis in zip(pairs, outcomes, strict=True):
+            name = subject + '_vs_' + control
+            path = WORK / 'others/diagnostics' / (name + '.json')
+            save(path, diagnosis.to_dict())
+            reference = material(research, 'diagnosis-' + name, path)
+            sources_match = diagnosis.sources == (refs[control], refs[subject])
+            diagnostics[name] = {'status': diagnosis.status.value, 'issues': list(diagnosis.issues),
+                'evidence': reference.to_dict(), 'reconciliation': diagnosis.to_dict()['reconciliation'],
+                'sources_match': sources_match}
+            if diagnosis.status.value == 'COMPUTED' and sources_match:
+                audit_coverage[subject].append(name)
+                audit_coverage[control].append(name)
+            print('DIAGNOSIS', name, diagnosis.status.value, flush=True)
     summaries = {}
     for key, payload in payloads.items():
         own = summarize_run(payload['runs']['candidate'], payload['request']['initial_cash'])

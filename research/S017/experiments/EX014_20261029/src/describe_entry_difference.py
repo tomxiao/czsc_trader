@@ -165,7 +165,8 @@ def state_groups(rows):
     return {state: aggregate([row for row in rows if row['c0043_state'] == state]) for state in STATES}
 
 
-def main():
+def describe():
+    """Return the authenticated description without writing or evaluating an account."""
     own, own_refs = load_accounts(CONTROL.resolve(ROOT), CONTROL, ('C0013',))
     other, other_refs = load_accounts(WORK, EXPERIMENT, ('C0043',), exact=True)
     payloads, refs = {**own, **other}, {**own_refs, **other_refs}
@@ -274,11 +275,16 @@ def main():
             'OPEN_CYCLE_NET_PNL_NULL_TERMINAL_MARK_SEPARATE_NO_HYPOTHETICAL_EXIT_FEE',
             'CYCLE_RETURNS_NOT_PORTFOLIO_RETURN_YEAR_TABLE_NOT_TRADING_RULE',
             'NO_REPLAY_NO_NEW_PUBLIC_DIAGNOSIS_NO_NEW_THRESHOLD_NO_2026_PRICE']}
+    return report
+
+
+def main():
+    report = describe()
     save(WORK/'others/entry_difference_description.json', report)
-    print('MARKET', grouped, flush=True)
-    print('STATES', states, flush=True)
-    print('ACTUAL_WEALTH_BRIDGE', differences, flush=True)
-    for key, account in accounts.items():
+    print('MARKET', report['by_entry_market'], flush=True)
+    print('STATES', report['by_c0043_actual_state'], flush=True)
+    print('ACTUAL_WEALTH_BRIDGE', report['c0043_minus_c0013_actual_wealth_bridge'], flush=True)
+    for key, account in report['accounts_actual_2025_paths'].items():
         print(key, '2025_CYCLES', [{field: cycle[field] for field in ('status','entry_local','exit_local_interval_start',
             'net_pnl','fees','entry_quantity','entry_price','terminal_mark_pnl_after_paid_entry_fee')}
             for cycle in account['actual_cycles_intersecting_2025']], flush=True)

@@ -102,6 +102,13 @@ def read_account_views(work, experiment, keys, *, exact=False):
 
 
 def inputs():
+    schedule = read(WORK / 'others/analysis_scheduling_check.json')
+    scope = read(WORK / 'others/analysis_scheduling_scope.json')
+    if (schedule['status'] != 'PASS' or schedule['real_diagnoses'] != 0
+            or schedule['real_replays'] != 0 or schedule['workers'] != 3
+            or schedule['candidate_sha256'] != digest(WORK / 'src/analyze.py')
+            or scope['candidate_sha256'] != schedule['candidate_sha256']):
+        raise ValueError('analysis scheduling evidence differs from the applied research script')
     analysis = read(WORK / 'others/analysis.json')
     precheck = read(WORK / 'others/precheck.json')
     accounts = read(WORK / 'others/accounts.json')
@@ -278,6 +285,9 @@ def main(action):
         ('precheck-source', 'src/precheck.py'), ('execution-status', 'others/execution_status.json'),
         ('execution-stats', 'others/execution_stats.json'), ('accounts-manifest', 'others/accounts.json'),
         ('comparisons', 'protocols/comparisons.json'), ('publication-source', 'src/publish.py'),
+        ('analysis-scheduling-scope', 'others/analysis_scheduling_scope.json'),
+        ('analysis-scheduling-check', 'others/analysis_scheduling_check.json'),
+        ('research-notes', 'notes.md'),
     ):
         ref = material(research, name, WORK / relative)
         materials[name] = ref
