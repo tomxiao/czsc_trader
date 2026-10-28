@@ -3,6 +3,7 @@ from hashlib import sha256
 from dataclasses import asdict
 from pathlib import Path
 import argparse
+from collections import defaultdict
 import json
 import math
 import os
@@ -100,6 +101,88 @@ def read_account_views(work, experiment, keys, *, exact=False):
             raise ValueError('report account identity differs from the immutable result or manifest')
         payloads[key], references[key] = payload, reference
     return payloads, references
+
+
+def entry_context_inputs(own, own_ref):
+    """Reproduce the retained descriptive partition, without replay or diagnosis."""
+    from describe_entry_context import (bind_source, verify_market_source, classify_context,
+        aggregate, groups, cross, check_partition, MARKET_FACTS, GROUPS)
+    from describe_exits import at, ZONE, index_unique
+    from analyze import ECONOMIC_FIELDS, PRIMARY, economic
+    retained = read(WORK / 'others/entry_market_context_description.json')
+    origin = ExperimentRef('S017', 'EX014_20261029')
+    other_payloads, other_refs = read_account_views(origin.resolve(ROOT), origin, ('C0043',), exact=True)
+    other = other_payloads['C0043']
+    expected_refs = {'C0036': own_ref.to_dict(), 'C0043': other_refs['C0043'].to_dict()}
+    if (retained['schema'] != 'S017_ORIGINAL_ENTRY_MARKET_CONTEXT_DESCRIPTION_V1'
+            or retained['status'] != 'PASS' or retained['scope'] != 'ORIGINAL_C0036_ACTUAL_555_CYCLES_2019_2025'
+            or retained['script_sha256'] != digest(WORK / 'src/describe_entry_context.py')
+            or retained['source_accounts'] != expected_refs
+            or retained['original_exit_description_sha256'] != digest(WORK / 'others/exit_purpose_description.json')):
+        raise ValueError('entry-market description source or exact original account references changed')
+    checked = []
+    for field in ECONOMIC_FIELDS:
+        if own['request'][field] != other['request'][field]:
+            raise ValueError('entry-market description economic input differs: ' + field)
+        checked.append('request.' + field)
+    for product in PRIMARY:
+        if own['data'][product] != other['data'][product]:
+            raise ValueError('entry-market description primary identity differs: ' + product)
+        checked.append('primary.' + product)
+    for field in ('account_points', 'account_daily', 'fills', 'trades', 'actions', 'metrics'):
+        if economic(own['runs']['buy_hold'][field]) != economic(other['runs']['buy_hold'][field]):
+            raise ValueError('entry-market description embedded BH path differs: ' + field)
+        checked.append('embedded_buy_hold.' + field)
+    if retained['same_primary_and_economic_contract_and_bh'] != {'status': 'PASS', 'checked_fields': checked}:
+        raise ValueError('entry-market description comparison evidence differs')
+    _, own_source = bind_source(WORK, EXPERIMENT, 'C0036', own)
+    definition, other_source = bind_source(origin.resolve(ROOT), origin, 'C0043', other)
+    if (retained['frozen_sources'] != {'C0036': own_source, 'C0043': other_source}
+            or retained['market_source_and_holding_independence'] != verify_market_source(other, definition)):
+        raise ValueError('entry-market facts are not bound to their authenticated frozen calculation')
+    by_time = defaultdict(list)
+    for decision in other['runs']['candidate']['decisions']:
+        by_time[at(decision['decision_at'])].append(decision)
+    run_data = own['runs']['candidate']
+    decisions = index_unique(run_data['decisions'], 'decision_id')
+    orders = index_unique(run_data['orders'], 'order_id')
+    fills = index_unique(run_data['fills'], 'fill_id')
+    trades = index_unique(run_data['trades'], 'cycle_id')
+    exits = read(WORK / 'others/exit_purpose_description.json')['accounts']['C0036']['closed_cycles']
+    reproduced = []
+    for cycle in exits:
+        entry = fills[cycle['entry_fill_id']]
+        order = orders[entry['order_id']]
+        decision = decisions[order['decision_id']]
+        group, facts, basis = classify_context(decision, by_time[at(decision['decision_at'])], 432000)
+        trade = trades[cycle['cycle_id']]
+        if entry['side'] != 'BUY' or entry['cycle_id'] != cycle['cycle_id']:
+            raise ValueError('entry-market description actual BUY join differs')
+        if group != 'UNKNOWN' and any(field not in facts for field in MARKET_FACTS):
+            raise ValueError('known market group lacks explicit original facts')
+        reproduced.append({'cycle_id': cycle['cycle_id'], 'entry_decision_id': decision['decision_id'],
+            'entry_order_id': order['order_id'], 'entry_fill_id': entry['fill_id'],
+            'entry_decision_at': decision['decision_at'], 'entry_at': trade['entry_at'],
+            'entry_session': at(decision['decision_at']).astimezone(ZONE).date().isoformat(),
+            'entry_market': group, 'classification_basis': basis, 'market_facts': facts,
+            'exit_purpose': cycle['category'], 'net_pnl': trade['net_pnl'],
+            'net_return': trade['net_return'], 'fees': cycle['fees']})
+    totals, grouped, crossed = aggregate(reproduced), groups(reproduced), cross(reproduced)
+    if (retained['closed_cycles'] != reproduced or retained['totals'] != totals
+            or retained['by_entry_market'] != grouped or retained['entry_market_by_exit_purpose'] != crossed):
+        raise ValueError('entry-market description differs from the exact original trade partition')
+    check_partition(list(grouped.values()), totals, 'report market groups')
+    for year in range(2019, 2026):
+        rows = [row for row in reproduced if row['entry_session'].startswith(str(year))]
+        expected = {'total': aggregate(rows), 'entry_market': groups(rows), 'entry_market_by_exit_purpose': cross(rows)}
+        if retained['by_entry_year'][str(year)] != expected:
+            raise ValueError('entry-market yearly description changed: ' + str(year))
+    if set(grouped) != set(GROUPS) or totals['cycles'] != len(trades):
+        raise ValueError('entry-market groups must retain every original cycle, including UNKNOWN')
+    # Keep EX014 account/source/definition refs under their original experiment.
+    originals = {'C0043': other_refs['C0043'], **{
+        'C0043-' + name: EvidenceRef.from_dict(value) for name, value in other_source['materials'].items()}}
+    return retained, originals
 
 
 def inputs():
@@ -222,7 +305,8 @@ def inputs():
             or exits['source_accounts'] != {key: references[key].to_dict() for key in keys}
             or exits['accounts'] != {key: describe(payloads[key]) for key in keys}):
         raise ValueError('exit purpose description differs from published actual cycles')
-    return analysis, keys, definitions, references, pre, diagnostic_refs, pairs, description
+    entry_description, entry_originals = entry_context_inputs(payloads['C0036'], references['C0036'])
+    return analysis, keys, definitions, references, pre, diagnostic_refs, pairs, description, entry_description, entry_originals
 
 
 def percent(value):
@@ -272,7 +356,32 @@ def price_description_section(description):
     return text
 
 
-def render_report(analysis, keys, references, diagnostic_refs, pairs, description):
+def entry_context_section(description, originals):
+    text = ['', '## 事后描述：原开盘突破交易的入场大盘背景', '',
+        '本节形成于C0036与C0043正式账户发布之后。将C0036已经实际执行的555个周期，'
+        '按买入决策时刻精确关联'
+        f"[EX014/C0043原始账户]({link(ROOT / originals['C0043'].repository_path)})中的SPY固定20日条件。"
+        '已核对来源、主数据、经济窗口与相同买入持有路径；SPY条件事实不依赖C0043自身是否持仓。', '',
+        '|入场SPY条件|原周期数|原账本净损益USD|实际双侧费用USD|原周期收益中位数|止损退出周期/占比|',
+        '|---|---:|---:|---:|---:|---|']
+    for name in ('TRUE', 'FALSE', 'UNKNOWN'):
+        value = description['by_entry_market'][name]
+        distribution = value['recorded_cycle_net_return_distribution']
+        median = '无样本' if distribution is None else percent(distribution['median'])
+        stop = description['entry_market_by_exit_purpose'][name]['STOP_TRIGGERED']['cycles']
+        stop_rate = percent(stop / value['cycles']) if value['cycles'] else '无样本'
+        text.append(f"|{name}|{value['cycles']}|{value['net_pnl']:.2f}|{value['fees']:.2f}|{median}|{stop} / {stop_rate}|")
+    text.extend(['', '[完整分组描述](others/entry_market_context_description.json)保留全部年份、收益分布、'
+        '退出用途交叉表、未知项及逐项加总核对；[描述脚本](src/describe_entry_context.py)可复核原始关联。'
+        'TRUE表示已完成SPY日Close高于其最近20个完整日Close均值，UNKNOWN不并入FALSE或忽略。',
+        '这些是原策略已选择交易的事后条件分组，受原有持仓、资金路径和交易机会选择影响；'
+        '两组总体净损益与收益中位数均为负，分年差异也不稳定。不得删除FALSE组推算新过滤策略收益，'
+        '不得将费用加回、将周期收益分布视为组合收益，或将差异解释为大盘条件的因果效果。'
+        '它只为后续区分跨日持仓与仅入场过滤提出有限问题，不预判两者组合有效，不新增实验。', ''])
+    return text
+
+
+def render_report(analysis, keys, references, diagnostic_refs, pairs, description, entry_description, entry_originals):
     summaries = analysis['summaries']
     rows = [(key, summaries[key]['candidate']) for key in (CONTROL_ID, *keys)]
     rows.append(('同条件买入持有', summaries[CONTROL_ID]['benchmark']))
@@ -340,6 +449,7 @@ def render_report(analysis, keys, references, diagnostic_refs, pairs, descriptio
     text.extend(['', '[退出用途描述](others/exit_purpose_description.json)按真实订单、决策、成交和闭合周期关联。'
         '日终分支优先于止损计算，分类不证明同一时点不会触发止损；分组具有事后条件化，'
         '不能将某类正收益解释为延长持仓会盈利，也不能将费用加回构造零成本策略。', ''])
+    text.extend(entry_context_section(entry_description, entry_originals))
     text.extend(['## 原始证据与限制', '', '[可复核分析](others/analysis.json)保留精确账户、公共诊断和方法来源引用。'])
     for key, ref in references.items():
         text.append(f'- [{key}原始账户]({link(ROOT / ref.repository_path)})')
@@ -351,14 +461,14 @@ def render_report(analysis, keys, references, diagnostic_refs, pairs, descriptio
 
 def main(action):
     upstream = upstream_evidence()
-    analysis, keys, definitions, accounts, pre, diagnostics, pairs, description = inputs()
-    report = render_report(analysis, keys, accounts, diagnostics, pairs, description)
+    analysis, keys, definitions, accounts, pre, diagnostics, pairs, description, entry_description, entry_originals = inputs()
+    report = render_report(analysis, keys, accounts, diagnostics, pairs, description, entry_description, entry_originals)
     (WORK / 'report.md').write_bytes(report.encode('utf-8'))
     if action == 'render':
         print('REPORT_RENDERED', EXPERIMENT.experiment_id, flush=True)
         return
     research = context()
-    references = [*pre.values(), *accounts.values(), *diagnostics.values(), *upstream.values()]
+    references = [*pre.values(), *accounts.values(), *diagnostics.values(), *upstream.values(), *entry_originals.values()]
     materials = {}
     for name, relative in (
         ('analysis', 'others/analysis.json'), ('analysis-source', 'src/analyze.py'),
@@ -369,6 +479,8 @@ def main(action):
         ('session-price-description-source', 'src/describe_sessions.py'),
         ('exit-purpose-description', 'others/exit_purpose_description.json'),
         ('exit-purpose-source', 'src/describe_exits.py'), ('research-notes', 'notes.md'),
+        ('entry-market-context-description', 'others/entry_market_context_description.json'),
+        ('entry-market-context-source', 'src/describe_entry_context.py'),
         ('price-plot-source', 'src/plot_price.py'),
     ):
         ref = material(research, name, WORK / relative)
@@ -397,6 +509,7 @@ def main(action):
         'diagnostics': {key: ref.to_dict() for key, ref in diagnostics.items()},
         'materials': {key: ref.to_dict() for key, ref in materials.items()},
         'upstream': {key: ref.to_dict() for key, ref in upstream.items()},
+        'entry_context_original_evidence': {key: ref.to_dict() for key, ref in entry_originals.items()},
         'evidence': [ref.to_dict() for ref in references]})
     if validation.status.value != 'PASS':
         raise RuntimeError('report publication validation failed; inspect publication.json')
