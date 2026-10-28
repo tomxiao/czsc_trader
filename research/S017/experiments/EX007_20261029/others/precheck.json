@@ -1,0 +1,60 @@
+{
+  "status": "PASS",
+  "strategy_source_sha256": "12967348d30a43d576573a8b1c8250f5bd2ad355d80515763e55e8d3fc2a75f5",
+  "precheck_source_sha256": "9a475998f189bf819ff6865b41dc62e60f90aa6f9ed654a35615fc4f4a2e33ea",
+  "passed_groups": 5,
+  "total_groups": 5,
+  "cases": {
+    "C0029_equivalence_and_sequential_oracle": {
+      "status": "PASS",
+      "independent_prefix_states": 65,
+      "C0029_held_flat_decisions": 130,
+      "full_sequence_prefix_consistency": true,
+      "fixture": "synthetic half-days and DST in 2020"
+    },
+    "frozen_recovery_boundaries": {
+      "status": "PASS",
+      "first_trigger_stop": 100.0,
+      "delayed_exit_last_stop": 113.35714285714286,
+      "strict_boundary_targets": {
+        "99.999": 0,
+        "100.0": 0,
+        "100.001": 1
+      },
+      "post_exit_perturbation_multiplier": 100.0,
+      "flat_prefixes_checked": 6,
+      "pending_exit_latch": true
+    },
+    "real_cycle_replacement": {
+      "status": "PASS",
+      "new_cycle_entry_target": 1,
+      "replaced_cycle_id": "synthetic-closed-2",
+      "second_recovery_stop": 200.0,
+      "old_recovery_stop": 100.0
+    },
+    "typed_contracts_and_actual_loader": {
+      "status": "PASS",
+      "definition_roundtrip": true,
+      "candidate_and_feedback_pickle": true,
+      "actual_isolated_loader": true,
+      "runtime_plan_without_execution": true,
+      "unsupported_no_trigger_future_rejections": 4,
+      "candidate_content_sha256": "2f78a7891f27e21e40294eec251b586e61a91a9f784f6cac81112b7cf2433d68"
+    },
+    "source_immutability": {
+      "status": "PASS",
+      "source_sha256": {
+        "research\\S017\\experiments\\EX007_20261029\\src\\run.py": "cc053c7aeef7d08d38cc84d4b6953f0a5a09427fba85da9237dfcfa0c77f401f",
+        "research\\S017\\experiments\\EX007_20261029\\src\\strategy.py": "12967348d30a43d576573a8b1c8250f5bd2ad355d80515763e55e8d3fc2a75f5",
+        "research\\S017\\experiments\\EX005_20261028\\src\\strategy.py": "abab05772d4d52b110e55a43d521687b1b7af6ed61d1c9ccb01c11702c076d04",
+        "research\\S017\\experiments\\EX005_20261028\\src\\run.py": "f716a5bf121c8c18e8d98d7a690ae89ce3e7236eda99c69193d374b7fab2391b",
+        "research\\S017\\experiments\\EX005_20261028\\src\\precheck.py": "781a2dd354a1e43b4929e6b7fcd757af9f753b2eb78b935a4c32bb3b9c0fc8b3",
+        "research\\S017\\experiments\\EX004_20261028\\src\\strategy.py": "22aa25d4563975645fc672ebef7221e2c2c27c70d0e0bbd7a2b179b330c96d61",
+        "research\\S017\\experiments\\EX004_20261028\\src\\run.py": "73d422534ab6757550049dc2881fbfe3f958bf9a0918891677fb025ff86713fc",
+        "research\\S017\\experiments\\EX004_20261028\\src\\precheck.py": "667b6cac3316e9a354abbf5706edb04dd7d160b8c161098bc4d797240e528355"
+      }
+    }
+  },
+  "scope": "Synthetic 2020 data and typed fabricated portfolio facts only; no market data reads, fills, account replay or return claims.",
+  "oracle": "EX004 independent chronological daily true-range fold plus EX005 independent sequential stop fold; exact importlib isolation and source hashes retained."
+}

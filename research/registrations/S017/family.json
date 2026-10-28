@@ -194,13 +194,44 @@
       "status": "COMPLETE"
     },
     "resumed_research": {
-      "capability_status": "CLOSED_CYCLE_FEEDBACK_UNAVAILABLE",
-      "dev_implementation_authorized": false,
+      "capability_status": "CONFIRMED_CLOSED_CYCLE_V1_VERIFIED",
+      "delivery": {
+        "batch": {
+          "strategy_id": "S017",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "affbfe3a13202c484abe23fbffc2b8eedb9c8cd12719d7eaf2faae28288afb60",
+        "revision": 5,
+        "stage": "PROTOTYPES",
+        "type": "DeliveryReference"
+      },
+      "dev_commit": "49c12e06",
+      "dev_implementation_authorized": true,
+      "experiment": "EX007_20261029",
+      "formal_evaluation_request_count": 1,
       "guideline_basis": "用户当轮更新的工作区指南，未修改或代为提交",
       "guideline_sha256": "2a1847751f12132405a0a68553dbd1e5779d3e08d43dff5f8e777151fcc0563e",
-      "new_account_replays": 0,
-      "new_configurations": 0,
+      "new_account_replays": 2,
+      "new_configurations": 1,
+      "prototype": "C0030",
+      "public_diagnosis_count": 2,
+      "replay_status": "COMPLETE",
+      "report": {
+        "evidence_id": "902bdc426996ad540fabc29b648f4fb3b39b236eb5ce8c646534a2417120239f.json",
+        "experiment": {
+          "experiment_id": "EX007_20261029",
+          "strategy_id": "S017",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "experiment-report",
+        "schema": "experiment_report",
+        "schema_version": 1,
+        "sha256": "902bdc426996ad540fabc29b648f4fb3b39b236eb5ce8c646534a2417120239f",
+        "type": "EvidenceRef"
+      },
       "requirement": "research/S017/materials/REENTRY_FEEDBACK_REQUIREMENT.md",
+      "result": "SIMPLE_RECOVERY_EXPRESSION_STOP",
       "scope": "以C0029为控制，仅比较退出后的恢复参与；原开发池、费用、1%溢价和全部目标不变",
       "user_authorization": "同意恢复，你自主执行"
     },
@@ -219,20 +250,32 @@
         "2018-12-31"
       ]
     },
-    "stage": "STAGE_2_AUTHORIZED_AWAITING_DEV_CAPABILITY",
+    "stage": "STAGE_2_REENTRY_COMPLETE_NOT_QUALIFIED",
     "stage_two_result": {
-      "account_replay_count": 38,
-      "conclusion": "本轮阶段二趋势启动、移动止损及风险保护研究已完成，策略目标未达成。较小初始风险距离带来主要改善，成本线保护有小幅增益；本轮新表达中净年化最高、回撤最低的C0029仍只有20.86%净年化、42.14%最大回撤及60日闭合中位数1，暂不建议进入阶段三。",
-      "configuration_count": 19,
+      "account_replay_count": 40,
+      "conclusion": "真实闭合周期反馈修复及本轮研究验证已完成，策略目标未达成。C0030增加交易和持仓，但收益低于C0029、回撤明显恶化；停止采用本次简单恢复表达，不进入阶段三。",
+      "configuration_count": 20,
       "diagnostic_only_configuration_ids": [
         "C0026"
       ],
-      "formal_evaluation_request_count": 19,
-      "public_diagnosis_count": 24,
+      "formal_evaluation_request_count": 20,
+      "goals_met": false,
+      "latest_delivery": {
+        "batch": {
+          "strategy_id": "S017",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "affbfe3a13202c484abe23fbffc2b8eedb9c8cd12719d7eaf2faae28288afb60",
+        "revision": 5,
+        "stage": "PROTOTYPES",
+        "type": "DeliveryReference"
+      },
+      "latest_experiment": "EX007_20261029",
+      "public_diagnosis_count": 29,
       "registered_candidate_count": 0,
       "reserved_price_or_performance_used": false,
       "stage_three_authorized": false,
-      "timing_configuration_count": 18,
+      "timing_configuration_count": 19,
       "work_status": "COMPLETE"
     }
   },
@@ -242,5 +285,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-10-28T23:46:28+08:00"
+  "updated_at": "2026-10-29T00:41:06+08:00"
 }
