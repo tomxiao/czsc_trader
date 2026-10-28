@@ -1,0 +1,83 @@
+{
+  "status": "PASS",
+  "passed_groups": 6,
+  "total_groups": 6,
+  "strategy_source_sha256": "dcb7342919efc58b7521f091725845531f6b126c6039e64135c94f3ec7e29f66",
+  "precheck_source_sha256": "fd2ec495109fb88a1ffebbce237731ec3be907c1a0b9ca872d56bb8eaf249f6b",
+  "cases": {
+    "arithmetic_and_strict_boundaries": {
+      "status": "PASS",
+      "strict_equality_cases": 6,
+      "negative_slope_C0031": true,
+      "negative_slope_C0032": false,
+      "positive_slope_C0032": true,
+      "minimum_history": 326,
+      "325_rejected": true,
+      "independent_lagged_mean": 125.0
+    },
+    "prefix_causality_and_C0030_NONE": {
+      "status": "PASS",
+      "independent_mean_prefixes": 260,
+      "NONE_branch_prefix_comparisons": 201,
+      "held_oracle_prefixes": 65,
+      "recovery_prefixes": 6
+    },
+    "breakout_holding_and_nested_gate_wiring": {
+      "status": "PASS",
+      "negative_slope_initial_breakout_target": 1,
+      "recovery_targets": {
+        "C0031": 1,
+        "C0032": 0
+      },
+      "blocked_background_does_not_exit_held": true
+    },
+    "typed_contracts_and_actual_loader": {
+      "status": "PASS",
+      "definitions": 2,
+      "candidate_pickle_roundtrips": 2,
+      "actual_isolated_loads": 2,
+      "runtime_plans_without_execution": 2,
+      "candidate_content_sha256": [
+        "57cfbd5c6b3427de63efe73eea966dc38f5c20b14cefa76512acfbd7d6569e18",
+        "40c9edbec7e92b9e75df57e228d04796614d8bdc8f34e6e8dc83f4fc4aa5c293"
+      ]
+    },
+    "prepared_input_and_actual_warmup": {
+      "status": "PASS",
+      "reference": {
+        "space_id": "a50f7929-988e-4650-af5c-5baee1cd84eb",
+        "preparation_id": "25d3831d-c882-428f-b33f-dbd9299a679a",
+        "manifest_sha256": "bdba8f6a3e9475ed62a3295bdcccd6bb2286f5e081ec44b79811c1bcb72dce93"
+      },
+      "public_fetch_calls": 1,
+      "authorized_range": [
+        "2018-11-01",
+        "2025-12-31"
+      ],
+      "content_sha256": "737f0fc50ab3aa7f9cf527751248cab607d135010a3c8b713cbb24245d2b4925",
+      "bars": 23298,
+      "actual_pre_evaluation_bars": 508,
+      "old_declared_warmup": 261,
+      "new_declared_warmup": 326,
+      "actual_input_history_unchanged": true
+    },
+    "source_immutability": {
+      "status": "PASS",
+      "source_sha256": {
+        "research\\S017\\experiments\\EX008_20261029\\src\\run.py": "79d42ec87d50547a9fe82426ddf1a51507f2fc34e597fd698f4f4c5a75db2e7c",
+        "research\\S017\\experiments\\EX008_20261029\\src\\strategy.py": "dcb7342919efc58b7521f091725845531f6b126c6039e64135c94f3ec7e29f66",
+        "research\\S017\\experiments\\EX007_20261029\\src\\precheck.py": "9a475998f189bf819ff6865b41dc62e60f90aa6f9ed654a35615fc4f4a2e33ea",
+        "research\\S017\\experiments\\EX007_20261029\\src\\run.py": "cc053c7aeef7d08d38cc84d4b6953f0a5a09427fba85da9237dfcfa0c77f401f",
+        "research\\S017\\experiments\\EX007_20261029\\src\\strategy.py": "12967348d30a43d576573a8b1c8250f5bd2ad355d80515763e55e8d3fc2a75f5",
+        "research\\S017\\experiments\\EX005_20261028\\src\\strategy.py": "abab05772d4d52b110e55a43d521687b1b7af6ed61d1c9ccb01c11702c076d04",
+        "research\\S017\\experiments\\EX005_20261028\\src\\run.py": "f716a5bf121c8c18e8d98d7a690ae89ce3e7236eda99c69193d374b7fab2391b",
+        "research\\S017\\experiments\\EX005_20261028\\src\\precheck.py": "781a2dd354a1e43b4929e6b7fcd757af9f753b2eb78b935a4c32bb3b9c0fc8b3",
+        "research\\S017\\experiments\\EX004_20261028\\src\\strategy.py": "22aa25d4563975645fc672ebef7221e2c2c27c70d0e0bbd7a2b179b330c96d61",
+        "research\\S017\\experiments\\EX004_20261028\\src\\run.py": "73d422534ab6757550049dc2881fbfe3f958bf9a0918891677fb025ff86713fc",
+        "research\\S017\\experiments\\EX004_20261028\\src\\precheck.py": "667b6cac3316e9a354abbf5706edb04dd7d160b8c161098bc4d797240e528355"
+      }
+    }
+  },
+  "scope": "Synthetic 2020 decision fixtures and one public fetch of pinned 2018-2025 development bars; no fills, account replay or 2026 market data.",
+  "oracle": "Python fsum over explicit index ranges for means; retained EX005 sequential stop oracle and EX007 cycle fixtures loaded by exact importlib paths with source hashes."
+}
