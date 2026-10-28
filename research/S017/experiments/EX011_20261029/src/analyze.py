@@ -7,10 +7,10 @@ import json
 from czsc_trader.application import diagnose_accounts
 from czsc_trader.research_tools import EvidenceRef, ExperimentRef
 from czsc_trader.research_tools.account_diagnosis import AccountDiagnosisRequest, AccountRunRef
-from czsc_trader.research_tools.equity_assessment import build_equity_assessment_payload
 from czsc_trader.research_tools.equity_evaluation import EquityEvaluationResult
 from czsc_trader.research_tools.evaluation import EvaluationIdentity, EvaluationWindow
 from strategy_manager import CandidateKey
+from strategy_runtime import canonical_sha256
 
 from run import ROOT, WORK, REPOSITORY, EXPERIMENT, configurations, context, read, save, material
 
@@ -23,6 +23,7 @@ ECONOMIC_FIELDS = ('initial_cash', 'fee_rate', 'window', 'history_start', 'speci
 
 
 def load_accounts(work, experiment, keys, *, exact=False):
+    """Bind immutable account bytes; the required public diagnoses audit economics."""
     rows = read(work / 'others/accounts.json')
     if exact and set(rows) != set(keys) or not set(keys) <= set(rows):
         raise ValueError('account manifest differs from the requested fixed candidate set')
@@ -30,7 +31,8 @@ def load_accounts(work, experiment, keys, *, exact=False):
     for key in keys:
         record = rows[key]
         reference = EvidenceRef.from_dict(record['evidence'])
-        if reference.experiment != experiment or (reference.schema, reference.schema_version) != ('equity_research', 2):
+        if (reference.experiment != experiment or reference.media_type != 'application/json'
+                or (reference.schema, reference.schema_version) != ('equity_research', 2)):
             raise ValueError('account reference belongs to a different experiment or schema')
         # resolve is the public authenticated reader in the current platform.
         # Recheck the bytes actually decoded, including any change after resolve.
@@ -38,17 +40,24 @@ def load_accounts(work, experiment, keys, *, exact=False):
         if sha256(content).hexdigest() != reference.sha256:
             raise ValueError('account evidence changed after reference authentication')
         payload = EquityEvaluationResult(record['request_hash'], content).payload
-        if (payload['evaluation_id'] != record['evaluation_id']
+        identity = account_ref(reference, payload).identity
+        if (payload.get('schema') != 'equity-research/v2' or payload.get('schema_version') != 2
+                or set(payload['runs']) != {'candidate', 'buy_hold'}
+                or payload['evaluation_id'] != record['evaluation_id']
+                or identity.evaluation_id != payload['evaluation_id']
+                or identity.candidate != CandidateKey(experiment.strategy_id, key)
+                or identity.content_sha256 != payload['request']['candidate_identity']['content_sha256']
+                or identity.content_sha256 != payload['request']['content_sha256']
+                or identity.input_sha256 != payload['request']['data_manifest']
+                or identity.protocol_sha256 != record['request_hash']
+                or identity.environment_sha256 != canonical_sha256(payload['request']['engine_sources'])
                 or payload['evaluation_identity'] != record['evaluation_identity']
                 or payload['request']['candidate_id'] != key
                 or payload['request']['experiment'] != {
                     'strategy_id': experiment.strategy_id, 'experiment_id': experiment.experiment_id}):
             raise ValueError('account manifest identity differs from published evidence')
-        evidence = build_equity_assessment_payload(payload)
-        if len(evidence) != 1 or evidence[0].evaluation_id != payload['evaluation_id']:
-            raise ValueError('public account authentication selected a different evaluation')
         payloads[key], references[key] = payload, reference
-        print('AUTHENTICATED', experiment.experiment_id, key, flush=True)
+        print('REFERENCE_BOUND', experiment.experiment_id, key, flush=True)
     return payloads, references
 
 
@@ -155,6 +164,7 @@ def main():
         raise ValueError('comparisons must contain distinct subject/control IDs from this experiment')
     pairs = tuple(dict.fromkeys(tuple(pair) for pair in [*[[key, CONTROL_ID] for key in keys], *pairs]))
     research, diagnostics = context(), {}
+    audit_coverage = {key: [] for key in payloads}
     for subject, control in pairs:
         name = subject + '_vs_' + control
         diagnosis = diagnose_accounts(REPOSITORY, AccountDiagnosisRequest(
@@ -163,8 +173,13 @@ def main():
         path = WORK / 'others/diagnostics' / (name + '.json')
         save(path, diagnosis.to_dict())
         reference = material(research, 'diagnosis-' + name, path)
+        sources_match = diagnosis.sources == (refs[control], refs[subject])
         diagnostics[name] = {'status': diagnosis.status.value, 'issues': list(diagnosis.issues),
-            'evidence': reference.to_dict(), 'reconciliation': diagnosis.to_dict()['reconciliation']}
+            'evidence': reference.to_dict(), 'reconciliation': diagnosis.to_dict()['reconciliation'],
+            'sources_match': sources_match}
+        if diagnosis.status.value == 'COMPUTED' and sources_match:
+            audit_coverage[subject].append(name)
+            audit_coverage[control].append(name)
         print('DIAGNOSIS', name, diagnosis.status.value, flush=True)
     summaries = {}
     for key, payload in payloads.items():
@@ -173,12 +188,16 @@ def main():
         checks = goals(own, benchmark)
         summaries[key] = {'candidate': own, 'benchmark': benchmark,
                           'goals': checks, 'all_goals_met': all(checks.values())}
-    okay = all(item['status'] == 'COMPUTED' for item in diagnostics.values())
+    okay = (all(item['status'] == 'COMPUTED' and item['sources_match'] for item in diagnostics.values())
+            and all(audit_coverage.values()))
     output = {'schema': 's017-stage2-context-analysis/v1', 'experiment': EXPERIMENT.experiment_id,
         'status': 'PASS' if okay else 'FAIL', 'analysis_source_sha256': sha256(Path(__file__).read_bytes()).hexdigest(),
         'source_accounts': {key: ref.to_dict() for key, ref in refs.items()},
         'contract_checks': contracts, 'paired_buyhold_check': hold_path,
         'summaries': summaries, 'diagnostics': diagnostics, 'new_configurations': len(keys),
+        'public_audit_coverage': {'status': 'PASS' if all(audit_coverage.values()) else 'FAIL',
+            'required_accounts': sorted(payloads), 'diagnoses_by_account': audit_coverage,
+            'basis': 'Every account must occur in a COMPUTED public diagnose_accounts result with exact ordered EvidenceRef sources; account loading does not repeat the economic audit.'},
         'formal_requests': len(keys), 'account_replays': 2 * len(keys), 'public_diagnoses': len(pairs),
         'method_sources': [{'path': 'research/S017/experiments/EX002_20261028/src/analyze.py',
             'sha256': sha256((ROOT / 'research/S017/experiments/EX002_20261028/src/analyze.py').read_bytes()).hexdigest(),

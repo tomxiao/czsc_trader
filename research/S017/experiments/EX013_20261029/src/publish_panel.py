@@ -146,7 +146,7 @@ def successful_experiment(item):
     report_ref = EvidenceRef.from_dict(publication['report'])
     report = ExperimentReportSnapshot.from_dict(evidence_json(report_ref))
     if (report.experiment != experiment or report.outcome is not ExperimentOutcome.COMPLETED
-            or report.evidence != references or report.report != (work / 'report.md').read_text(encoding='utf-8')):
+            or report.evidence != references or report.report != (work / 'report.md').read_bytes().decode('utf-8')):
         raise ValueError('experiment report differs from its completed immutable publication')
     validation = validate_experiment(REPOSITORY, ExperimentValidationRequest(experiment,
         ExperimentValidationScope.REPORT_PUBLICATION))
@@ -341,7 +341,7 @@ def main(action, workers):
     save(WORK / 'others/panel_build.json', {'definition': definition.to_dict(),
         'candidate_ids': [entry.prototype_id for entry in content.payload.prototypes],
         'judgments': additions[0].to_dict(), 'source': additions[1].to_dict()})
-    (WORK / 'others/panel_report.md').write_text(content.report, encoding='utf-8')
+    (WORK / 'others/panel_report.md').write_bytes(content.report.encode('utf-8'))
     result = assemble_delivery(REPOSITORY, definition, content, resources=resources,
         on_progress=lambda event: print(event, flush=True))
     save(WORK / 'others/panel_publication.json', {'delivery': result.receipt.to_dict(),

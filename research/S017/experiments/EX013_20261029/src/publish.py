@@ -7,10 +7,11 @@ import json
 import os
 
 from czsc_trader.application import publish_evidence, validate_experiment
-from czsc_trader.research_tools import (EvidenceRef, ExperimentOutcome, ExperimentReportWrite,
+from czsc_trader.research_tools import (EvidenceRef, ExperimentRef, ExperimentOutcome, ExperimentReportWrite,
     MaterialEvidenceWrite, ExperimentValidationRequest, ExperimentValidationScope)
 from czsc_trader.research_tools.equity_evaluation import EquityEvaluationResult
 from czsc_trader.research_tools.evaluation import EvaluationIdentity
+from czsc_trader.research_tools.experiment_artifacts import ExperimentReportSnapshot
 from strategy_manager import CandidateKey
 from strategy_runtime import canonical_sha256
 from run import (ROOT, WORK, REPOSITORY, EXPERIMENT, DATA_READINESS, context, read, save,
@@ -28,6 +29,33 @@ def authenticated_json(reference):
     if sha256(content).hexdigest() != reference.sha256:
         raise ValueError('published bytes changed after reference authentication')
     return json.loads(content)
+
+
+def upstream_evidence():
+    """Reuse EX009's immutable published sources; never republish or modify them."""
+    origin = ExperimentRef('S017', 'EX009_20261029')
+    publication = read(origin.resolve(ROOT) / 'others/publication.json')
+    report_ref = EvidenceRef.from_dict(publication['report'])
+    if (publication['validation']['status'] != 'PASS'
+            or publication['validation']['scope'] != 'REPORT_PUBLICATION'
+            or EvidenceRef.from_dict(publication['validation']['report']) != report_ref
+            or report_ref.experiment != origin
+            or (report_ref.schema, report_ref.schema_version) != ('experiment_report', 1)):
+        raise ValueError('EX009 published report identity or validation differs')
+    report = ExperimentReportSnapshot.from_dict(authenticated_json(report_ref))
+    if report.experiment != origin or report.outcome is not ExperimentOutcome.COMPLETED:
+        raise ValueError('EX009 source report is not a completed original publication')
+    retained = tuple(EvidenceRef.from_dict(value) for value in publication['evidence'])
+    result = {'report': report_ref}
+    for name in ('method-sources', 'data-readiness'):
+        matches = [ref for ref in retained if ref.name == name]
+        if len(matches) != 1 or matches[0].experiment != origin or matches[0] not in report.evidence:
+            raise ValueError('EX009 source reference is missing, duplicated or outside its published report: ' + name)
+        matches[0].resolve(ROOT)
+        result[name] = matches[0]
+    if result['data-readiness'].sha256 != digest(DATA_READINESS):
+        raise ValueError('joint prepared data readiness differs from the original EX009 evidence')
+    return result
 
 
 def read_account_views(work, experiment, keys, *, exact=False):
@@ -235,14 +263,15 @@ def render_report(analysis, keys, references, diagnostic_refs, pairs):
 
 
 def main(action):
+    upstream = upstream_evidence()
     analysis, keys, definitions, accounts, pre, diagnostics, pairs = inputs()
     report = render_report(analysis, keys, accounts, diagnostics, pairs)
-    (WORK / 'report.md').write_text(report, encoding='utf-8')
+    (WORK / 'report.md').write_bytes(report.encode('utf-8'))
     if action == 'render':
         print('REPORT_RENDERED', EXPERIMENT.experiment_id, flush=True)
         return
     research = context()
-    references = [*pre.values(), *accounts.values(), *diagnostics.values()]
+    references = [*pre.values(), *accounts.values(), *diagnostics.values(), *upstream.values()]
     materials = {}
     for name, relative in (
         ('analysis', 'others/analysis.json'), ('analysis-source', 'src/analyze.py'),
@@ -271,6 +300,7 @@ def main(action):
         'definitions': {key: ref.to_dict() for key, ref in definition_refs.items()},
         'diagnostics': {key: ref.to_dict() for key, ref in diagnostics.items()},
         'materials': {key: ref.to_dict() for key, ref in materials.items()},
+        'upstream': {key: ref.to_dict() for key, ref in upstream.items()},
         'evidence': [ref.to_dict() for ref in references]})
     if validation.status.value != 'PASS':
         raise RuntimeError('report publication validation failed; inspect publication.json')
