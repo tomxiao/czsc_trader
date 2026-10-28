@@ -1,5 +1,5 @@
 """Portable, explicitly versioned equity strategy source and decision contracts."""
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path, PurePosixPath
 from hashlib import sha256
 from importlib import metadata
@@ -200,7 +200,7 @@ class EquityStrategyDefinition:
             if 'enum' in rule and (type(rule['enum']) is not list or value not in rule['enum']):
                 raise ValueError(f'parameter outside declared choices: {key}')
         object.__setattr__(self, 'parameter_schema_json', json.dumps(schema, sort_keys=True, separators=(',', ':'), allow_nan=False))
-        if self.feedback_mode not in {'MARKET_INTENT', 'CONFIRMED_EXECUTION'} or self.analysis_price != 'RAW':
+        if self.feedback_mode not in {'MARKET_INTENT', 'CONFIRMED_EXECUTION', 'CONFIRMED_CLOSED_CYCLE_V1'} or self.analysis_price != 'RAW':
             raise ValueError('unsupported equity feedback or analysis price contract')
         if tuple(self.explanation_cases) != ('flat', 'long'):
             raise ValueError('equity explanations must declare both target branches')
@@ -325,6 +325,30 @@ class EquityStrategyCandidate:
                         raise ValueError(f'undeclared equity dependency: {top}')
 
     def decide(self, context):
+        if type(context) is not EquityDecisionContext or type(context.point) is not DecisionPoint:
+            raise TypeError('equity decision requires a typed context and decision point')
+        mode = self.definition.feedback_mode
+        if mode == 'MARKET_INTENT':
+            context = replace(context, portfolio=None)
+        else:
+            portfolio = context.portfolio
+            if type(portfolio) is not EquityPortfolio:
+                raise TypeError('confirmed execution requires a typed equity portfolio')
+            if mode == 'CONFIRMED_CLOSED_CYCLE_V1':
+                feedback = portfolio.closed_cycle_feedback
+                if feedback is None:
+                    raise ValueError('CLOSED_CYCLE_FEEDBACK_UNAVAILABLE')
+                closed = feedback.latest
+                if closed is not None:
+                    if (closed.exit_interval.end > context.point.decision_at
+                            or closed.exit_observed_through > context.point.observed_through):
+                        raise ValueError('CAUSAL_TIME_VIOLATION: closed cycle is not yet available')
+                    if (portfolio.quantity > 0 and portfolio.cycle_entry is not None
+                            and closed.exit_interval.end > portfolio.cycle_entry):
+                        raise ValueError('CAUSAL_TIME_VIOLATION: closed cycle overlaps current holding')
+            elif portfolio.closed_cycle_feedback is not None:
+                # Old definitions do not acquire new execution inputs implicitly.
+                context = replace(context, portfolio=replace(portfolio, closed_cycle_feedback=None))
         if equity_source_hash(self.source_root, self.definition.source_files) != self.definition.source_sha256:
             raise ValueError('equity source closure changed during execution')
         namespace = '_equity_' + uuid4().hex

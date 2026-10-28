@@ -136,6 +136,41 @@ class DecisionPoint:
 
 
 @dataclass(frozen=True, slots=True)
+class EquityClosedCycle:
+    """Confirmed one-entry/full-exit facts, in original entry quantity units."""
+
+    cycle_id: str
+    entry_interval: TimeInterval
+    exit_interval: TimeInterval
+    entry_quantity: int
+    entry_cost: float
+    exit_observed_through: datetime
+
+    def __post_init__(self):
+        if type(self.cycle_id) is not str or not self.cycle_id.strip() or self.cycle_id != self.cycle_id.strip():
+            raise ValueError("closed cycle requires a nonblank identity")
+        if type(self.entry_interval) is not TimeInterval or type(self.exit_interval) is not TimeInterval:
+            raise TypeError("closed cycle requires typed entry and exit intervals")
+        if type(self.entry_quantity) is not int or self.entry_quantity <= 0:
+            raise ValueError("closed cycle entry quantity must be a positive integer")
+        _positive(self.entry_cost, "closed cycle entry cost")
+        object.__setattr__(self, "exit_observed_through", utc(self.exit_observed_through))
+        if not self.entry_interval.end <= self.exit_observed_through <= self.exit_interval.start:
+            raise ValueError("CAUSAL_TIME_VIOLATION: closed cycle observation boundary")
+
+
+@dataclass(frozen=True, slots=True)
+class EquityClosedCycleFeedback:
+    """Available closed-cycle feedback; latest=None means no cycle has closed."""
+
+    latest: EquityClosedCycle | None = None
+
+    def __post_init__(self):
+        if self.latest is not None and type(self.latest) is not EquityClosedCycle:
+            raise TypeError("closed cycle feedback requires a typed latest cycle")
+
+
+@dataclass(frozen=True, slots=True)
 class EquityPortfolio:
     cash: float
     quantity: int
@@ -145,6 +180,7 @@ class EquityPortfolio:
     cycle_cost: float = 0.
     feedback_source: str = "BAR_INTERVAL"
     reference_price_scale: float = 1.
+    closed_cycle_feedback: EquityClosedCycleFeedback | None = None
 
     def __post_init__(self):
         if any(type(v) not in (int, float) or not math.isfinite(v) or v < -1e-8 for v in (self.cash, self.receivable)):
@@ -156,6 +192,8 @@ class EquityPortfolio:
         if self.cycle_entry is not None:
             object.__setattr__(self, "cycle_entry", utc(self.cycle_entry))
         _positive(self.reference_price_scale, "reference price scale")
+        if self.closed_cycle_feedback is not None and type(self.closed_cycle_feedback) is not EquityClosedCycleFeedback:
+            raise TypeError("portfolio requires typed closed cycle feedback or unavailable None")
 
 
 def equity_implementation_hash(decide):
@@ -311,7 +349,7 @@ class EquityStrategyInstance:
         explanation = None
         if type(self.candidate) is EquityStrategyCandidate:
             point = DecisionPoint(observed, interval.start, interval)
-            feedback = portfolio if self.candidate.definition.feedback_mode == 'CONFIRMED_EXECUTION' else None
+            feedback = portfolio if self.candidate.definition.feedback_mode != 'MARKET_INTENT' else None
             result = self.candidate.decide(EquityDecisionContext(history.copy(deep=True), feedback, point,
                                                                 self.candidate.definition.parameters))
             target, explanation = result.target, result.explanation.to_dict()

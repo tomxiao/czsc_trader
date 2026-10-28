@@ -415,6 +415,14 @@ TDR技术检验可以在隔离空间验证拟冻结发布包，检验通过不�
 正式美股定义还固定 `parameter_schema_json`（类型、可选上下界或枚举）、`feedback_mode`
 及 `analysis_price=RAW`。未显式提供参数 schema 时以初始参数的实际类型建立不可变类型声明；
 后续参数变更仍须满足同一 schema。MARKET_INTENT 不向策略暴露账户快照。
+`CONFIRMED_EXECUTION` 仅提供原有持仓反馈；需要最近一次真实完成周期的定义须显式声明
+`CONFIRMED_CLOSED_CYCLE_V1`，该声明进入内容身份。新模式要求
+`EquityPortfolio.closed_cycle_feedback: EquityClosedCycleFeedback`：外层 `None` 表示执行器没有该能力，
+运行时明确拒绝；`latest=None` 表示能力可用但尚无完成周期。`latest` 为不可变 `EquityClosedCycle`，
+记录周期标识、真实买入和清仓的成交区间、原始买入数量、含买入费的总成本及退出决策观察截止时间。
+区间统一为 UTC，满足 `entry_interval.end <= exit_observed_through <= exit_interval.start`；
+退出区间完成且退出观察范围不超过当次决策观察范围后，策略才可消费该事实。直接调用 `decide` 同样校验。
+该事实不包含止损原因或止损线；策略用当时可见行情和参数自行重建条件。旧模式不向策略暴露新增周期事实。
 正式 `EquityDecision` 必须包含共享 `SignalExplanationSnapshot`，其 target 状态与 flat/long 分支
 必须匹配；可用 `EquityDecision.from_facts(..., facts={...}, next_watch=...)` 从当次条件／参数
 建立结构化依据。解释进入计划及账户证据；平台核验结构和状态，金融解释由 RSCH 负责。

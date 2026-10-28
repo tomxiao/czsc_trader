@@ -8,8 +8,8 @@ import math
 import pandas as pd
 import numpy as np
 from dataflows import MarketId
-from strategy_runtime.equity import (CashAvailabilityPolicy, EquityPlan, EquityPortfolio,
-                                    ResearchExecutionSpec, equity_hash)
+from strategy_runtime.equity import (CashAvailabilityPolicy, EquityClosedCycle, EquityClosedCycleFeedback,
+                                    EquityPlan, EquityPortfolio, ResearchExecutionSpec, equity_hash)
 
 from .fills import OrderSpec, resolve_fill
 
@@ -55,10 +55,15 @@ class EquityHistoricalExecutor:
         self.cycle = None
         self.cycle_cost = self.cycle_income = 0.
         self.cycle_entry = None
+        self._cycle_entry_interval = None
+        self._cycle_entry_quantity = 0
+        self._cycle_feedback_supported = True
+        self._closed_cycle_feedback = EquityClosedCycleFeedback()
 
     def snapshot(self):
         return EquityPortfolio(self.cash, self.quantity, self.receivable, self.revision,
-                               self.cycle_entry, self.cycle_cost)
+                               self.cycle_entry, self.cycle_cost,
+                               closed_cycle_feedback=self._closed_cycle_feedback)
 
     def snapshot_at(self, observed_through, decision_at):
         """Apply already-effective events before a formal causal decision."""
@@ -95,6 +100,12 @@ class EquityHistoricalExecutor:
             self._pay(stamp, inclusive=False)
             before = self.quantity
             if event.Kind == "SPLIT":
+                # Raw entry facts cannot describe a cycle spanning quantity-unit
+                # changes, nor safely carry a pre-split closed cycle forward.
+                if self.cycle is not None or (self._closed_cycle_feedback is not None
+                                              and self._closed_cycle_feedback.latest is not None):
+                    self._cycle_feedback_supported = False
+                    self._closed_cycle_feedback = None
                 ratio = float(event.Ratio)
                 if self.last_mark_price is not None:
                     self.last_mark_price /= ratio
@@ -255,9 +266,18 @@ class EquityHistoricalExecutor:
                         self.cycle = plan.plan_id
                         self.cycle_entry = interval.start
                         self.cycle_cost = self.cycle_income = 0.
+                        self._cycle_entry_interval = interval
+                        self._cycle_entry_quantity = quantity
+                        self._cycle_feedback_supported = True
+                    else:
+                        self._cycle_feedback_supported = False
+                        self._closed_cycle_feedback = None
                     self.cycle_cost += gross + fees
                 else:
                     self.quantity -= quantity
+                    if self.quantity:
+                        self._cycle_feedback_supported = False
+                        self._closed_cycle_feedback = None
                     proceeds = gross - fees
                     self.cycle_income += proceeds
                     if self.spec.account.cash_availability is CashAvailabilityPolicy.IMMEDIATE_RESEARCH:
@@ -275,6 +295,15 @@ class EquityHistoricalExecutor:
                                            "interval_start": interval.start, "interval_end": interval.end,
                                            "time_precision": precision})
                 if self.quantity == 0 and self.cycle is not None:
+                    # Preserve the old execution path even for manually supplied
+                    # plans whose observation boundary cannot express this contract.
+                    if (self._cycle_feedback_supported
+                        and self._cycle_entry_interval.end <= plan.point.observed_through):
+                        self._closed_cycle_feedback = EquityClosedCycleFeedback(EquityClosedCycle(
+                            self.cycle, self._cycle_entry_interval, interval,
+                            self._cycle_entry_quantity, self.cycle_cost, plan.point.observed_through))
+                    else:
+                        self._closed_cycle_feedback = None
                     self.rows["trades"].append({"cycle_id": self.cycle, "entry_at": self.cycle_entry,
                                                "exit_at": interval.end, "cost": self.cycle_cost,
                                                "income": self.cycle_income, "net_pnl": self.cycle_income - self.cycle_cost,

@@ -1018,6 +1018,13 @@ flowchart TD
 `context` 提供因果行情、确认执行后的账户反馈、决策点及固定参数；输出包含 0/1 目标、原因、
 结构化 `SignalExplanationSnapshot`。可使用 `EquityDecision.from_facts` 构造解释。
 0 表示空仓目标，1 表示持有目标；历史输入为已经完成且已经可得的行情副本，账户快照不可变。
+需要真实平仓历史的策略显式声明 `feedback_mode="CONFIRMED_CLOSED_CYCLE_V1"`，读取
+`context.portfolio.closed_cycle_feedback.latest`。外层 `None` 表示能力不可用并拒绝执行该模式，
+`latest=None` 表示尚无闭合周期。事实包含原买入数量、含买入费总成本、买卖成交区间及退出决策观测边界；
+只支持一次买入、一次全卖且单位未变化的周期，止损线等策略状态由研究实现基于因果行情重建。
+完整边界见 [SRT](../../packages/strategy_runtime/README.md) 和 [TXE](../../packages/trading_execution_engine/README.md)。
+模式随策略定义参与内容身份，执行源码哈希随正式评价合同绑定；串行、多进程与 checkpoint 使用同一合同。
+原 `CONFIRMED_EXECUTION` 不向策略暴露新增事实，历史证据继续按原身份读取，不重签或改写。
 `research.runtime.create(candidate)` 使用同一上下文执行合同创建实例；显式美股运行时拒绝 A 股请求。
 本版不包含分批建仓、多标的组合、卖空、杠杆、碎股或可变价位制度。
 源码清单必须覆盖本地导入闭包，依赖必须精确声明；参数、源码或执行合同改变均形成新内容身份。
