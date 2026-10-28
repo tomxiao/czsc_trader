@@ -151,10 +151,48 @@
     "execution_proposal_confirmation": "CONFIRMED",
     "expanded_stage_two_authorization": {
       "additional_experiment_round_limit": 20,
-      "completed_new_rounds": 0,
+      "auxiliary_data_gate": {
+        "experiment": "EX009_20261029",
+        "prepared": {
+          "manifest_sha256": "e68686001b9286651b40a797c77d54efc4d12e08b27dd097d31dccdc7fd20d2a",
+          "preparation_id": "b137fb0b-30bb-4a71-9531-121a367a13dc",
+          "space_id": "a50f7929-988e-4650-af5c-5baee1cd84eb"
+        },
+        "report": {
+          "evidence_id": "415dfc46ca23617ed970df3ecf9b489cf9640e1b2eb399411bca1f0b44dae1d0.json",
+          "experiment": {
+            "experiment_id": "EX009_20261029",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "415dfc46ca23617ed970df3ecf9b489cf9640e1b2eb399411bca1f0b44dae1d0",
+          "type": "EvidenceRef"
+        },
+        "status": "READY_WITH_EXPLICIT_RAW_PRICE_AND_AVAILABILITY_ASSUMPTIONS"
+      },
+      "completed_new_rounds": 1,
+      "experiments": [
+        "EX009_20261029",
+        "EX010_20261029",
+        "EX011_20261029",
+        "EX012_20261029",
+        "EX013_20261029"
+      ],
+      "failed_new_rounds": 1,
       "guideline_commit": "25c09476",
+      "initiated_new_rounds": 5,
       "new_information_exposure": "公开2024 ORB论文检索返回2016—2023 LITE 15分钟榜单行；仅方法学习，无新行情或账户评价。后续不能声称完全独立设计。",
       "pause_statement": "请暂停，先补齐平台基建能力",
+      "performance_review": {
+        "experimental_status": "EX011, EX012 and EX013 still computing/authenticating; no new accounts published yet.",
+        "finding": "Repeated full-calendar interval construction and auxiliary full-history validation per decision; finite loops, no timing-based failure judgment.",
+        "scope": "Read-only finding; no platform code changed.",
+        "status": "DEV_AUTHORIZATION_REQUESTED_RESEARCH_CONTINUES"
+      },
       "platform_delivery": {
         "a_share_compatibility_test_count": 14,
         "focused_test_count": 116,
@@ -165,10 +203,16 @@
         "status": "IMPLEMENTED_FOCUSED_VERIFIED"
       },
       "platform_scope": "正式辅助市场/行业行情因果输入，以及当前可得交易时段；离线验证和既有能力保护",
-      "remaining_rounds": 20,
-      "research_started": false,
+      "remaining_rounds": 15,
+      "research_started": true,
       "reserved_2026_price_or_performance_used": false,
-      "status": "PAUSED_BY_USER",
+      "resume_user_statement": "同意，切回RSCH，先核验辅助数据可得性，通过后恢复S017研究，在20轮实验额度内自主完成阶段二。",
+      "round_counting": "全部新增实验身份计数，包括数据核验；技术修正和同一实验重跑不另算。",
+      "running_new_rounds": 3,
+      "status": "ACTIVE_STAGE_TWO",
+      "technical_failures": {
+        "EX010_20261029": "Auxiliary 96-hour age limit excludes valid half-day/long-weekend observations; FAILED report preserved, EX013 successor uses 5 days."
+      },
       "user_statement": "提交RSCH指南的更改。授权20轮实验的额度，请你自主完成阶段二。提醒：扩宽数据视野，尝试加入市场、行业的信息辅助决策；拓宽交易认知，尝试学习日内交易的方法和案例。"
     },
     "instrument": {
@@ -214,7 +258,7 @@
       "research/S017/materials/registration_20261028.md",
       "research/S017/materials/pre_registration_readiness.json"
     ],
-    "next_action": "申请DEV补充最近已关闭周期的强类型执行反馈；通过聚焦兼容检查后，RSCH沿用已批准的续研范围运行一个新恢复参与表达及C0029控制对照。",
+    "next_action": "核验SPY/QQQ/XLK开发期实际辅助数据，通过后开展有辨别力的市场/行业与日内机制对照。",
     "objective": "LITE 美股个股30分钟只做多择时研究",
     "other_proposals_confirmation": "CONFIRMED",
     "policy_reference": "research/RSCH_AGENT.md#research-policy",
@@ -315,7 +359,7 @@
         "2018-12-31"
       ]
     },
-    "stage": "STAGE_2_PAUSED_FOR_AUXILIARY_CONTEXT",
+    "stage": "STAGE_2_AUXILIARY_AND_INTRADAY_RESEARCH",
     "stage_two_result": {
       "account_replay_count": 44,
       "conclusion": "EX008两项恢复背景对照已完成，策略目标未达成。均价位置对宽松恢复入口有局部改善，方向条件没有形成值得保留的增量；两个完整原型均停止发展，不进入阶段三。",
@@ -350,5 +394,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-10-29T02:33:25+08:00"
+  "updated_at": "2026-10-29T03:58:34+08:00"
 }

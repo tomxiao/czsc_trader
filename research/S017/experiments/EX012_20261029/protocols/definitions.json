@@ -1,0 +1,126 @@
+{
+  "C0038": {
+    "runtime_kind": "US_EQUITY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "LITE"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 261,
+    "entrypoint": "strategy:decide",
+    "source_files": [
+      "strategy.py"
+    ],
+    "source_sha256": "e1db9ba3658bf9001a18a69fcfe85792ce03cdb08f38f7d8ae94ef5d2df4736d",
+    "parameters_json": "{\"antidip\":false}",
+    "dependencies": [],
+    "contract_version": 2,
+    "parameter_schema_json": "{\"antidip\":{\"type\":\"boolean\"}}",
+    "feedback_mode": "CONFIRMED_CLOSED_CYCLE_V1",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "auxiliary_inputs": [
+      {
+        "name": "market",
+        "instrument": {
+          "market": "US",
+          "asset_class": "ETF",
+          "symbol": "SPY"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s017-auxiliary-rth-raw-v1-20261029"
+        },
+        "frequency": "30m",
+        "warmup_bars": 2,
+        "max_age_seconds": 345600,
+        "analysis_price": "RAW"
+      }
+    ],
+    "session_context": true
+  },
+  "C0039": {
+    "runtime_kind": "US_EQUITY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "LITE"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 261,
+    "entrypoint": "strategy:decide",
+    "source_files": [
+      "strategy.py"
+    ],
+    "source_sha256": "e1db9ba3658bf9001a18a69fcfe85792ce03cdb08f38f7d8ae94ef5d2df4736d",
+    "parameters_json": "{\"antidip\":true}",
+    "dependencies": [],
+    "contract_version": 2,
+    "parameter_schema_json": "{\"antidip\":{\"type\":\"boolean\"}}",
+    "feedback_mode": "CONFIRMED_CLOSED_CYCLE_V1",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "auxiliary_inputs": [
+      {
+        "name": "market",
+        "instrument": {
+          "market": "US",
+          "asset_class": "ETF",
+          "symbol": "SPY"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s017-auxiliary-rth-raw-v1-20261029"
+        },
+        "frequency": "30m",
+        "warmup_bars": 2,
+        "max_age_seconds": 345600,
+        "analysis_price": "RAW"
+      }
+    ],
+    "session_context": true
+  }
+}
