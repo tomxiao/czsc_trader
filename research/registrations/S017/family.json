@@ -12,6 +12,11 @@
       "scope": "注册LITE新研究批次，开展阶段一目标、执行假设、基准及样本边界约定",
       "user_statement": "同意，请注册为S017"
     },
+    "batch_preparation_reference": {
+      "manifest_sha256": "af1f8f8f7893e9663ad775d593604bb38d21b0c8b1c2bf8849404c99121968e8",
+      "preparation_id": "c386c06a-e3ba-43ab-95d8-9c5856724b4f",
+      "space_id": "a50f7929-988e-4650-af5c-5baee1cd84eb"
+    },
     "confirmed_direction": {
       "decision_frequency": "30m",
       "leverage": false,
@@ -21,13 +26,17 @@
     },
     "data_readiness": {
       "bars": 25976,
-      "batch_data_prepared": false,
+      "batch_data_prepared": true,
+      "batch_prepared_scope": [
+        "2018-11-01",
+        "2024-12-31"
+      ],
       "checked_window": [
         "2018-11-01",
         "2026-10-27"
       ],
       "known_interruption_bars": 5,
-      "limits": "立项前核验引用不是S017正式数据资产；无空白不证明无短暂停牌；未评价策略或收益。",
+      "limits": "旧临时引用仅用于立项前覆盖核验；S017正式准备引用单独记录。无空白不证明无短暂停牌；未评价策略或收益。",
       "missing_bars": 0,
       "prior_preparation_reference": {
         "manifest_sha256": "50d7af9bb5fc5a6e70c530c657b45efd6c45784ee02d50a72a8e73d1de0b0a64",
@@ -39,21 +48,47 @@
       "status": "READY_UNDER_EXPLICIT_RESEARCH_ASSUMPTIONS",
       "zero_volume_bars": 0
     },
+    "execution_proposal_confirmation": "PROPOSED",
     "instrument": {
       "asset_class": "STOCK",
       "currency": "USD",
       "market": "US",
       "symbol": "LITE"
     },
+    "mandate_reference": {
+      "batch": {
+        "strategy_id": "S017",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "aac6941864710f035420f457c2c88690095cb251abe97097b88c61193121f37c",
+      "revision": 1,
+      "stage": "MANDATE",
+      "type": "DeliveryReference"
+    },
     "market_guidance": "research/guides/US_RESEARCH.md",
     "materials": [
       "research/S017/materials/registration_20261028.md",
       "research/S017/materials/pre_registration_readiness.json"
     ],
-    "next_action": "完成阶段一研究约定及开发池选择留证，提交用户确认后进入机制研究。",
+    "next_action": "请求用户确认阶段一提案并批准阶段二；未获准前不运行机制研究或保留验证。",
     "objective": "LITE 美股个股30分钟只做多择时研究",
     "policy_reference": "research/RSCH_AGENT.md#research-policy",
-    "stage": "STAGE_1_MANDATE"
+    "sample_contract": {
+      "development": [
+        "2019-01-02",
+        "2024-12-31"
+      ],
+      "reserved": [
+        "2025-01-02",
+        "2026-10-27"
+      ],
+      "reserved_access": "NOT_AUTHORIZED",
+      "warmup": [
+        "2018-11-01",
+        "2018-12-31"
+      ]
+    },
+    "stage": "STAGE_1_DELIVERED_AWAITING_APPROVAL"
   },
   "research_state": "RESEARCHING",
   "schema_version": 2,
@@ -61,5 +96,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-10-28T17:38:39+08:00"
+  "updated_at": "2026-10-28T19:49:12+08:00"
 }
