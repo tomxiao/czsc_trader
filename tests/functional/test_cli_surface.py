@@ -28,6 +28,7 @@ PUBLIC_API = {
     "FrozenRuntimeUpgradeRequest", "PreparedFrozenRuntimeUpgrade", "FrozenRuntimeUpgradeReceipt",
     "prepare_frozen_runtime_upgrade", "apply_frozen_runtime_upgrade",
     "CandidateInspectionRequest", "InspectionReplay",
+    "EquityInspectionReplay", "EquityInspectionProtocol",
     "FreezeTarget", "InspectionProtocol", "InspectionDataKind", "InspectionInputError",
     "InspectionPublicationError", "describe_inspection_environment",
     "inspect_candidate", "record_research_decision", "freeze_candidate", "get_freeze_result",
