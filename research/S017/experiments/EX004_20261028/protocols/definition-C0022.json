@@ -1,0 +1,43 @@
+{
+  "runtime_kind": "US_EQUITY",
+  "instrument": {
+    "market": "US",
+    "asset_class": "STOCK",
+    "symbol": "LITE"
+  },
+  "execution_spec": {
+    "market": {
+      "rule_version": "US_EQUITY_V1"
+    },
+    "decision_clock": "30m",
+    "account": {
+      "currency": "USD",
+      "cash_availability": "IMMEDIATE_RESEARCH",
+      "allow_short": false,
+      "allow_negative_cash": false
+    },
+    "quantity_step": 1,
+    "price_tick": 0.01,
+    "buy_premium": 0.01,
+    "slippage_bp": 0.0,
+    "execution": "BAR_RANGE_V1",
+    "inclusive_touch": false,
+    "data_latency_seconds": 0
+  },
+  "warmup_bars": 261,
+  "entrypoint": "strategy:decide",
+  "source_files": [
+    "strategy.py"
+  ],
+  "source_sha256": "7d3585081dfaa4222bffd60919bb2eae0dea6857dd5afc62edd233f95cbcc0fa",
+  "parameters_json": "{\"atr_days\":14,\"atr_multiple\":3.0,\"entry_bars\":65,\"exit_bars\":26,\"exit_mode\":\"ATR_TRAIL\",\"stop_fraction\":0.1}",
+  "dependencies": [],
+  "contract_version": 2,
+  "parameter_schema_json": "{\"atr_days\":{\"type\":\"integer\"},\"atr_multiple\":{\"type\":\"number\"},\"entry_bars\":{\"type\":\"integer\"},\"exit_bars\":{\"type\":\"integer\"},\"exit_mode\":{\"type\":\"string\"},\"stop_fraction\":{\"type\":\"number\"}}",
+  "feedback_mode": "CONFIRMED_EXECUTION",
+  "analysis_price": "RAW",
+  "explanation_cases": [
+    "flat",
+    "long"
+  ]
+}

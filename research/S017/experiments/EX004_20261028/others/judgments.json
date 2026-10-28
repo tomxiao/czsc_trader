@@ -1,0 +1,313 @@
+{
+  "conclusion": "EX004六项完整对照完成，全部未达到经济及频率目标。移动止损存在有条件的收益保留/风险保护作用，但尚无值得进入阶段三的原型；C0025保留为EX005初始风险与成本线保护的一组有限补证控制。",
+  "components": [
+    {
+      "component_id": "trend-breakout-start",
+      "role": "启动识别",
+      "label": "周/月区间突破",
+      "control": "月/周跨度在相同退出下的完整账户",
+      "status": "SUPPORTED",
+      "judgment": "月跨度在三种相同退出下均减少回撤，但均降低年化与频率；仅支持减少部分风险暴露的用途，不证明启动更早或原型更优。",
+      "accounts": [
+        "C0002",
+        "C0023",
+        "C0021",
+        "C0024",
+        "C0022",
+        "C0025"
+      ]
+    },
+    {
+      "component_id": "trend-percent-trail",
+      "role": "趋势持有与退出",
+      "label": "收盘高水位回撤10%",
+      "control": "C0021/C0002及C0024/C0023",
+      "status": "SUPPORTED",
+      "judgment": "替代短区间退出后年化提高且持有更久，但回撤增大、频率下降；支持收益保留的局部取舍，不支持风险全面改善。",
+      "accounts": [
+        "C0021",
+        "C0002",
+        "C0024",
+        "C0023"
+      ]
+    },
+    {
+      "component_id": "trend-atr-distance",
+      "role": "追踪距离",
+      "label": "14个完整日ATR的3倍",
+      "control": "C0022/C0021及C0025/C0024",
+      "status": "SUPPORTED",
+      "judgment": "两个入场跨度下均提高净年化；回撤方向不一致，月跨度稍增风险。结论限于本次两个距离表达。",
+      "accounts": [
+        "C0022",
+        "C0021",
+        "C0025",
+        "C0024"
+      ]
+    },
+    {
+      "component_id": "trend-ratchet",
+      "role": "持有利润保护",
+      "label": "止损只上移及触发锁存",
+      "control": "C0025/C0026",
+      "status": "SUPPORTED",
+      "judgment": "相同月突破与初始3ATR下，抬线使回撤80.54%降至55.77%，但年化20.49%降至15.64%，仍有大量正浮盈转亏；支持局部保护，需区分初始试错和浮盈保护。",
+      "accounts": [
+        "C0025",
+        "C0026"
+      ]
+    },
+    {
+      "component_id": "trend-initial-stop",
+      "role": "基础风险退出",
+      "label": "入场成本减3倍入场日ATR",
+      "control": "C0026基础控制",
+      "status": "INSUFFICIENT_DATA",
+      "judgment": "作为删项控制的必要退出规则；没有隔离出最佳初始风险距离，不能由该账户证明3ATR适宜。EX005检验1/3ATR的结构取舍。",
+      "accounts": [
+        "C0026"
+      ]
+    }
+  ],
+  "prototypes": {
+    "C0021": {
+      "hypothesis": "周突破/10%移动止损：经营周期启发的价格趋势假设，详事前设计",
+      "disposition": "STOP",
+      "judgment": "相对C0002年化提高但回撤扩大至72.47%，低于买入持有收益且风险更高；不支持该完整表达。",
+      "components": [
+        [
+          "trend-breakout-start",
+          "入场",
+          "周突破"
+        ],
+        [
+          "trend-percent-trail",
+          "持有退出",
+          "固定比例只上移"
+        ]
+      ],
+      "limitations": [
+        "2019—2025已见开发池，2025趋势先验及多轮选择历史保留，不是独立验证",
+        "基本面只启发假设，未验证行业因果；交易函数没有基本面事件",
+        "仅完成Close高水位，下一区间成交；不能保证止损价，单笔阈值不等于账户回撤上限",
+        "RAW无拆股的当前准备范围；压力、正式邻域及2026策略验证未执行"
+      ],
+      "next_step": "停止本次完整表达，保留对照证据"
+    },
+    "C0022": {
+      "hypothesis": "周突破/3倍日ATR移动止损：经营周期启发的价格趋势假设，详事前设计",
+      "disposition": "STOP",
+      "judgment": "相对C0021波动距离提高收益并略降回撤，但最大回撤71.42%且2022亏损55.94%，未形成整体优势。",
+      "components": [
+        [
+          "trend-breakout-start",
+          "入场",
+          "周突破"
+        ],
+        [
+          "trend-atr-distance",
+          "持有退出",
+          "波动距离"
+        ],
+        [
+          "trend-ratchet",
+          "保护",
+          "只上移与触发锁存"
+        ]
+      ],
+      "limitations": [
+        "2019—2025已见开发池，2025趋势先验及多轮选择历史保留，不是独立验证",
+        "基本面只启发假设，未验证行业因果；交易函数没有基本面事件",
+        "仅完成Close高水位，下一区间成交；不能保证止损价，单笔阈值不等于账户回撤上限",
+        "RAW无拆股的当前准备范围；压力、正式邻域及2026策略验证未执行"
+      ],
+      "next_step": "停止本次完整表达，保留对照证据"
+    },
+    "C0023": {
+      "hypothesis": "月突破/两日区间退出：经营周期启发的价格趋势假设，详事前设计",
+      "disposition": "STOP",
+      "judgment": "月跨度减少回撤至43.39%，同时净年化仅1.82%；短区间退出未能保留足够上涨。",
+      "components": [
+        [
+          "trend-breakout-start",
+          "入场",
+          "月突破"
+        ],
+        [
+          "channel",
+          "退出",
+          "沿用既有两日区间退出"
+        ]
+      ],
+      "limitations": [
+        "2019—2025已见开发池，2025趋势先验及多轮选择历史保留，不是独立验证",
+        "基本面只启发假设，未验证行业因果；交易函数没有基本面事件",
+        "仅完成Close高水位，下一区间成交；不能保证止损价，单笔阈值不等于账户回撤上限",
+        "RAW无拆股的当前准备范围；压力、正式邻域及2026策略验证未执行"
+      ],
+      "next_step": "停止本次完整表达，保留对照证据"
+    },
+    "C0024": {
+      "hypothesis": "月突破/10%移动止损：经营周期启发的价格趋势假设，详事前设计",
+      "disposition": "STOP",
+      "judgment": "移动止损较C0023增加收益同时扩大回撤；完整账户年化7.72%、回撤53.15%，不值得继续此表达。",
+      "components": [
+        [
+          "trend-breakout-start",
+          "入场",
+          "月突破"
+        ],
+        [
+          "trend-percent-trail",
+          "持有退出",
+          "固定比例只上移"
+        ]
+      ],
+      "limitations": [
+        "2019—2025已见开发池，2025趋势先验及多轮选择历史保留，不是独立验证",
+        "基本面只启发假设，未验证行业因果；交易函数没有基本面事件",
+        "仅完成Close高水位，下一区间成交；不能保证止损价，单笔阈值不等于账户回撤上限",
+        "RAW无拆股的当前准备范围；压力、正式邻域及2026策略验证未执行"
+      ],
+      "next_step": "停止本次完整表达，保留对照证据"
+    },
+    "C0025": {
+      "hypothesis": "月突破/3倍日ATR移动止损：经营周期启发的价格趋势假设，详事前设计",
+      "disposition": "INVESTIGATE",
+      "judgment": "相对仅初始止损减少回撤并实现更多闭合盈利，但34个闭合中31曾有正峰、16最终不盈利，年化15.64%、回撤55.77%；保留为EX005有限机制补证控制，非阶段三承接对象。",
+      "components": [
+        [
+          "trend-breakout-start",
+          "入场",
+          "月突破"
+        ],
+        [
+          "trend-atr-distance",
+          "追踪距离",
+          "允许正常波动"
+        ],
+        [
+          "trend-ratchet",
+          "保护",
+          "只上移与触发锁存"
+        ],
+        [
+          "trend-initial-stop",
+          "初始风险",
+          "3ATR基础距离"
+        ]
+      ],
+      "limitations": [
+        "2019—2025已见开发池，2025趋势先验及多轮选择历史保留，不是独立验证",
+        "基本面只启发假设，未验证行业因果；交易函数没有基本面事件",
+        "仅完成Close高水位，下一区间成交；不能保证止损价，单笔阈值不等于账户回撤上限",
+        "RAW无拆股的当前准备范围；压力、正式邻域及2026策略验证未执行"
+      ],
+      "next_step": "仅由EX005检验初始风险/成本保护，不进入阶段三"
+    },
+    "C0026": {
+      "hypothesis": "月突破/仅初始3倍日ATR止损：经营周期启发的价格趋势假设，详事前设计",
+      "disposition": "STOP",
+      "judgment": "仅初始止损让长上涨得以持有，但回撤80.54%，4个闭合全亏；用于删项对照，不推荐完整策略。",
+      "components": [
+        [
+          "trend-breakout-start",
+          "入场",
+          "月突破"
+        ],
+        [
+          "trend-initial-stop",
+          "退出",
+          "删去追踪，仅初始风险线"
+        ]
+      ],
+      "limitations": [
+        "2019—2025已见开发池，2025趋势先验及多轮选择历史保留，不是独立验证",
+        "基本面只启发假设，未验证行业因果；交易函数没有基本面事件",
+        "仅完成Close高水位，下一区间成交；不能保证止损价，单笔阈值不等于账户回撤上限",
+        "RAW无拆股的当前准备范围；压力、正式邻域及2026策略验证未执行"
+      ],
+      "next_step": "停止本次完整表达，保留对照证据"
+    }
+  },
+  "control_judgments": {
+    "C0000": {
+      "disposition": "INVESTIGATE",
+      "judgment": "保留原正式账户作为同合同控制；不改变原身份或历史资格。买入持有是强基线，不是达标策略。",
+      "next_step": "作为既有控制，不重跑或重复登记"
+    },
+    "C0001": {
+      "disposition": "STOP",
+      "judgment": "保留原正式账户作为同合同控制；不改变原身份或历史资格。本轮比较没有使其成为可推进原型。",
+      "next_step": "作为既有控制，不重跑或重复登记"
+    },
+    "C0002": {
+      "disposition": "STOP",
+      "judgment": "保留原正式账户作为同合同控制；不改变原身份或历史资格。本轮比较没有使其成为可推进原型。",
+      "next_step": "作为既有控制，不重跑或重复登记"
+    },
+    "C0013": {
+      "disposition": "STOP",
+      "judgment": "保留原正式账户作为同合同控制；不改变原身份或历史资格。本轮比较没有使其成为可推进原型。",
+      "next_step": "作为既有控制，不重跑或重复登记"
+    }
+  },
+  "comparisons": [
+    {
+      "id": "compare-C0021_vs_C0002",
+      "subject": "C0021",
+      "control": "C0002",
+      "question": "Replace short-channel exit with 10-percent ratcheting close stop; same 65-bar entry.",
+      "conclusion": "净年化6.66%→10.71%，最大回撤54.03%→72.47%；完整资金路径也随规则改变，不当作独立市场因果。"
+    },
+    {
+      "id": "compare-C0022_vs_C0002",
+      "subject": "C0022",
+      "control": "C0002",
+      "question": "Replace short-channel exit with daily-ATR ratcheting close stop; same 65-bar entry.",
+      "conclusion": "净年化6.66%→18.95%，最大回撤54.03%→71.42%；完整资金路径也随规则改变，不当作独立市场因果。"
+    },
+    {
+      "id": "compare-C0023_vs_C0002",
+      "subject": "C0023",
+      "control": "C0002",
+      "question": "Change entry lookback from 65 to 260 bars; same 26-bar channel exit.",
+      "conclusion": "净年化6.66%→1.82%，最大回撤54.03%→43.39%；完整资金路径也随规则改变，不当作独立市场因果。"
+    },
+    {
+      "id": "compare-C0024_vs_C0021",
+      "subject": "C0024",
+      "control": "C0021",
+      "question": "Change entry lookback from 65 to 260 bars; same percent stop.",
+      "conclusion": "净年化10.71%→7.72%，最大回撤72.47%→53.15%；完整资金路径也随规则改变，不当作独立市场因果。"
+    },
+    {
+      "id": "compare-C0025_vs_C0022",
+      "subject": "C0025",
+      "control": "C0022",
+      "question": "Change entry lookback from 65 to 260 bars; same daily-ATR stop.",
+      "conclusion": "净年化18.95%→15.64%，最大回撤71.42%→55.77%；完整资金路径也随规则改变，不当作独立市场因果。"
+    },
+    {
+      "id": "compare-C0025_vs_C0024",
+      "subject": "C0025",
+      "control": "C0024",
+      "question": "Compare daily-volatility and price-percentage stop distances; same 260-bar entry.",
+      "conclusion": "净年化7.72%→15.64%，最大回撤53.15%→55.77%；完整资金路径也随规则改变，不当作独立市场因果。"
+    },
+    {
+      "id": "compare-C0025_vs_C0026",
+      "subject": "C0025",
+      "control": "C0026",
+      "question": "Add upward ratchet to the same initial daily-ATR loss stop; same 260-bar entry.",
+      "conclusion": "净年化20.49%→15.64%，最大回撤80.54%→55.77%；完整资金路径也随规则改变，不当作独立市场因果。"
+    },
+    {
+      "id": "compare-C0025_vs_C0023",
+      "subject": "C0025",
+      "control": "C0023",
+      "question": "Replace short-channel exit with daily-ATR ratchet; same 260-bar entry.",
+      "conclusion": "净年化1.82%→15.64%，最大回撤43.39%→55.77%；完整资金路径也随规则改变，不当作独立市场因果。"
+    }
+  ]
+}

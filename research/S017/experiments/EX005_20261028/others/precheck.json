@@ -1,0 +1,82 @@
+{
+  "status": "PASS",
+  "passed_groups": 4,
+  "total_groups": 4,
+  "strategy_source_sha256": "abab05772d4d52b110e55a43d521687b1b7af6ed61d1c9ccb01c11702c076d04",
+  "precheck_source_sha256": "781a2dd354a1e43b4929e6b7fcd757af9f753b2eb78b935a4c32bb3b9c0fc8b3",
+  "scope": "Synthetic and prepared-development causal checks only; no formal account replay or holdout access.",
+  "oracle_source": "EX004 independent daily TR fold reused; EX005 initial distance and protection independently folded bar by bar.",
+  "cases": {
+    "risk_boundaries": {
+      "status": "PASS",
+      "boundary_scenarios": [
+        "one_ATR_initial",
+        "three_ATR_initial",
+        "combined_initial",
+        "exact_entry_ATR",
+        "below_protection_threshold",
+        "equal_protection_threshold",
+        "disabled_protection",
+        "floor_only_up",
+        "trigger_latch",
+        "entry_high_excluded",
+        "new_cycle_reset",
+        "exit_fee_loss",
+        "gap_loss"
+      ],
+      "illustrative_fee_arithmetic": {
+        "cost_per_share": 100.1,
+        "quantity": 10,
+        "exit_fee_rate": 0.001,
+        "sale_at_cost_net_pnl": -1.0009999999999764,
+        "sale_after_gap_at_95_net_pnl": -51.950000000000045,
+        "scope": "Synthetic arithmetic only; not a simulated fill or research return."
+      }
+    },
+    "synthetic_prefixes": {
+      "status": "PASS",
+      "independent_full_sequences": 3,
+      "independent_prefix_states": 195,
+      "old_C0025_prefix_states": 65,
+      "old_C0025_held_flat_decisions": 130
+    },
+    "prepared_causal_samples": {
+      "status": "PASS",
+      "reference": {
+        "space_id": "a50f7929-988e-4650-af5c-5baee1cd84eb",
+        "preparation_id": "25d3831d-c882-428f-b33f-dbd9299a679a",
+        "manifest_sha256": "bdba8f6a3e9475ed62a3295bdcccd6bb2286f5e081ec44b79811c1bcb72dce93"
+      },
+      "fetch_calls": 1,
+      "authorized_range": [
+        "2018-11-01",
+        "2025-12-31"
+      ],
+      "bars": 23298,
+      "content_sha256": "737f0fc50ab3aa7f9cf527751248cab607d135010a3c8b713cbb24245d2b4925",
+      "known_blocked_bars": 5,
+      "sampled_entry_indices": [
+        508,
+        3745,
+        6982,
+        10219,
+        13456,
+        16693,
+        19930,
+        23167
+      ],
+      "independent_prefix_states": 72,
+      "old_C0025_held_flat_decisions": 48,
+      "scope": "Synthetic portfolio snapshots at causal sampled entries; no actual fills, accounts or returns."
+    },
+    "definitions_and_immutable_source": {
+      "status": "PASS",
+      "definitions": 3,
+      "old_source_hashes": {
+        "strategy.py": "22aa25d4563975645fc672ebef7221e2c2c27c70d0e0bbd7a2b179b330c96d61",
+        "run.py": "73d422534ab6757550049dc2881fbfe3f958bf9a0918891677fb025ff86713fc",
+        "precheck.py": "667b6cac3316e9a354abbf5706edb04dd7d160b8c161098bc4d797240e528355"
+      }
+    }
+  }
+}

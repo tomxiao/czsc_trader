@@ -1,0 +1,226 @@
+{
+  "conclusion": "本轮阶段二趋势启动、移动止损及风险保护研究已完成，策略目标未达成。较小初始风险距离带来主要改善，成本线保护有小幅增益；本轮新表达中净年化最高、回撤最低的C0029仍只有20.86%净年化、42.14%最大回撤及60日闭合中位数1，暂不建议进入阶段三。",
+  "recommended_next_action": "建议下一轮阶段二优先检验价格结构对上涨启动的确认能力，例如突破后回踩守住、低点抬高；保留本轮风险管理作为固定控制。先由用户确认续研方向及长持有与原频率目标的取舍，未确认前不新增账户、不访问2026行情或推进阶段三；原目标保持不变。",
+  "components": [
+    {
+      "component_id": "risk-initial-distance",
+      "role": "初始试错",
+      "label": "初始1倍入场日ATR",
+      "control": "C0027/C0025、C0029/C0028",
+      "status": "SUPPORTED",
+      "judgment": "在相同月突破和3ATR追踪下，两组控制均显示更小初始距离提高年化、降低回撤；仅支持本开发池的局部改进，不证明1ATR最优。",
+      "accounts": [
+        "C0027",
+        "C0025",
+        "C0029",
+        "C0028"
+      ]
+    },
+    {
+      "component_id": "risk-cost-floor",
+      "role": "浮盈后保护",
+      "label": "达到2倍入场ATR后至少抬至含买入费的成本线",
+      "control": "C0028/C0025、C0029/C0027",
+      "status": "SUPPORTED",
+      "judgment": "两组均小幅提高年化、降低回撤，但改善远小于初始距离调整；成本线不是扣卖出费后或跳空情况下的保本承诺。",
+      "accounts": [
+        "C0028",
+        "C0025",
+        "C0029",
+        "C0027"
+      ]
+    },
+    {
+      "component_id": "risk-combination",
+      "role": "分阶段风险管理",
+      "label": "小初始距离加成本线及3ATR追踪",
+      "control": "C0029/C0027及C0029/C0028",
+      "status": "SUPPORTED",
+      "judgment": "组合优于两个单独改动的当前账户收益与回撤；支持组合的有限增量，不证明统计协同、稳定性或整套策略成立。",
+      "accounts": [
+        "C0029",
+        "C0027",
+        "C0028"
+      ]
+    }
+  ],
+  "prototypes": {
+    "C0027": {
+      "hypothesis": "初始1ATR/追踪3ATR：将初始试错和趋势持有距离分开",
+      "disposition": "STOP",
+      "judgment": "相对C0025净年化15.64%升至20.41%、回撤55.77%降至43.67%；初始风险收紧有明显条件性收益，但未建立整体达标优势。",
+      "components": [
+        [
+          "trend-breakout-start",
+          "入场",
+          "固定260根先前High突破"
+        ],
+        [
+          "trend-atr-distance",
+          "趋势持有",
+          "3倍完整日ATR"
+        ],
+        [
+          "trend-ratchet",
+          "退出",
+          "止损只上移、触发锁存"
+        ],
+        [
+          "risk-initial-distance",
+          "初始风险",
+          "1ATR"
+        ]
+      ],
+      "limitations": [
+        "开发池2019—2025重复使用；EX005是在看到EX004后追加的有限补证，不是独立验证",
+        "仅比较固定1/3ATR初始距离、3ATR追踪和2ATR成本保护触发；没有证明参数最优",
+        "基本面仅启发价格假设，不输入财报、订单、指引、事件或年份开关",
+        "完成Close确认、下一执行区间成交；成本线和单笔止损不保证保本或账户回撤上限",
+        "当前RAW无拆股范围；压力费率、正式邻域、选择偏差量化及2026策略验证未执行"
+      ],
+      "next_step": "停止当前完整表达，保留其组件和账户作为后续明确授权研究的控制"
+    },
+    "C0028": {
+      "hypothesis": "初始3ATR/追踪3ATR/成本线：将初始试错和趋势持有距离分开",
+      "disposition": "STOP",
+      "judgment": "单独成本线保护只将年化提高至16.09%、回撤降至55.50%，不足以解决主要损失；停止该完整表达。",
+      "components": [
+        [
+          "trend-breakout-start",
+          "入场",
+          "固定260根先前High突破"
+        ],
+        [
+          "trend-atr-distance",
+          "趋势持有",
+          "3倍完整日ATR"
+        ],
+        [
+          "trend-ratchet",
+          "退出",
+          "止损只上移、触发锁存"
+        ],
+        [
+          "trend-initial-stop",
+          "初始风险",
+          "3ATR控制"
+        ],
+        [
+          "risk-cost-floor",
+          "浮盈保护",
+          "2ATR后成本线"
+        ]
+      ],
+      "limitations": [
+        "开发池2019—2025重复使用；EX005是在看到EX004后追加的有限补证，不是独立验证",
+        "仅比较固定1/3ATR初始距离、3ATR追踪和2ATR成本保护触发；没有证明参数最优",
+        "基本面仅启发价格假设，不输入财报、订单、指引、事件或年份开关",
+        "完成Close确认、下一执行区间成交；成本线和单笔止损不保证保本或账户回撤上限",
+        "当前RAW无拆股范围；压力费率、正式邻域、选择偏差量化及2026策略验证未执行"
+      ],
+      "next_step": "停止当前完整表达，保留其组件和账户作为后续明确授权研究的控制"
+    },
+    "C0029": {
+      "hypothesis": "初始1ATR/追踪3ATR/成本线：将初始试错和趋势持有距离分开",
+      "disposition": "STOP",
+      "judgment": "本轮非诊断新表达中净年化最高且回撤最低，但2019—2024累计仅0.80%，2025上涨承担主要收益，频率远低目标；保留组件证据，停止本次完整表达。",
+      "components": [
+        [
+          "trend-breakout-start",
+          "入场",
+          "固定260根先前High突破"
+        ],
+        [
+          "trend-atr-distance",
+          "趋势持有",
+          "3倍完整日ATR"
+        ],
+        [
+          "trend-ratchet",
+          "退出",
+          "止损只上移、触发锁存"
+        ],
+        [
+          "risk-initial-distance",
+          "初始风险",
+          "1ATR"
+        ],
+        [
+          "risk-cost-floor",
+          "浮盈保护",
+          "2ATR后成本线"
+        ],
+        [
+          "risk-combination",
+          "组合",
+          "分开初始试错和后续持有"
+        ]
+      ],
+      "limitations": [
+        "开发池2019—2025重复使用；EX005是在看到EX004后追加的有限补证，不是独立验证",
+        "仅比较固定1/3ATR初始距离、3ATR追踪和2ATR成本保护触发；没有证明参数最优",
+        "基本面仅启发价格假设，不输入财报、订单、指引、事件或年份开关",
+        "完成Close确认、下一执行区间成交；成本线和单笔止损不保证保本或账户回撤上限",
+        "当前RAW无拆股范围；压力费率、正式邻域、选择偏差量化及2026策略验证未执行"
+      ],
+      "next_step": "停止当前完整表达，保留其组件和账户作为后续明确授权研究的控制"
+    }
+  },
+  "control_judgments": {
+    "C0000": {
+      "disposition": "INVESTIGATE",
+      "judgment": "继续作为买入持有基准，不作为合格择时原型。",
+      "next_step": "复用既有证据，不重复登记；等待下一轮方向决定"
+    },
+    "C0013": {
+      "disposition": "STOP",
+      "judgment": "保留原始账户及历史判断；本轮没有形成可推进阶段三的完整证据。",
+      "next_step": "复用既有证据，不重复登记；等待下一轮方向决定"
+    },
+    "C0022": {
+      "disposition": "STOP",
+      "judgment": "保留原始账户及历史判断；本轮没有形成可推进阶段三的完整证据。",
+      "next_step": "复用既有证据，不重复登记；等待下一轮方向决定"
+    },
+    "C0025": {
+      "disposition": "STOP",
+      "judgment": "保留原始账户及历史判断；本轮没有形成可推进阶段三的完整证据。EX005有限补证已完成。",
+      "next_step": "复用既有证据，不重复登记；等待下一轮方向决定"
+    },
+    "C0026": {
+      "disposition": "STOP",
+      "judgment": "保留原始账户及历史判断；本轮没有形成可推进阶段三的完整证据。",
+      "next_step": "复用既有证据，不重复登记；等待下一轮方向决定"
+    }
+  },
+  "comparisons": [
+    {
+      "id": "compare-C0027_vs_C0025",
+      "subject": "C0027",
+      "control": "C0025",
+      "question": "Reduce initial loss distance from 3 to 1 entry-day ATR; preserve the 3-ATR trailing rule.",
+      "conclusion": "净年化15.64%→20.41%，最大回撤55.77%→43.67%；这是规则变化后的完整资金路径比较，不是独立因果或统计显著性结论。"
+    },
+    {
+      "id": "compare-C0028_vs_C0025",
+      "subject": "C0028",
+      "control": "C0025",
+      "question": "Add cost-basis stop floor after a 2-entry-ATR close gain; preserve initial and trailing distances.",
+      "conclusion": "净年化15.64%→16.09%，最大回撤55.77%→55.50%；这是规则变化后的完整资金路径比较，不是独立因果或统计显著性结论。"
+    },
+    {
+      "id": "compare-C0029_vs_C0027",
+      "subject": "C0029",
+      "control": "C0027",
+      "question": "Add the same profit-protection floor to the 1-ATR initial-risk expression.",
+      "conclusion": "净年化20.41%→20.86%，最大回撤43.67%→42.14%；这是规则变化后的完整资金路径比较，不是独立因果或统计显著性结论。"
+    },
+    {
+      "id": "compare-C0029_vs_C0028",
+      "subject": "C0029",
+      "control": "C0028",
+      "question": "Reduce initial loss distance from 3 to 1 ATR while keeping the profit-protection floor.",
+      "conclusion": "净年化16.09%→20.86%，最大回撤55.50%→42.14%；这是规则变化后的完整资金路径比较，不是独立因果或统计显著性结论。"
+    }
+  ]
+}

@@ -5,6 +5,22 @@
   "research_intent": {
     "accepted_gap_assumption": "完整取数后缺失及零量区间不成交、不进入信号历史；沿用最近有效价并标记陈旧；已知中断另外阻断；不称为完整历史停牌事实。",
     "authorization": {
+      "continuation_evidence": {
+        "evidence_id": "fd809a5ab580523fbda0ab0a45bdc7fbfe1f3ddac27ab5107090479086da2f6b.md",
+        "experiment": {
+          "experiment_id": "EX004_20261028",
+          "strategy_id": "S017",
+          "type": "ExperimentRef"
+        },
+        "media_type": "text/plain",
+        "name": "continuation-authorization",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "fd809a5ab580523fbda0ab0a45bdc7fbfe1f3ddac27ab5107090479086da2f6b",
+        "type": "EvidenceRef"
+      },
+      "continuation_scope": "经营背景启发价格行为假设，价格交易条件，趋势启动与移动止损阶段二自主研究",
+      "continuation_user_statement": "同意，请自主执行研究",
       "date": "2026-10-28",
       "freeze_or_deployment_authorized": false,
       "mechanism_research_authorized": true,
@@ -96,6 +112,28 @@
       "market": "US",
       "symbol": "LITE"
     },
+    "known_information_update": "此前基本面检索已返回2026公开经营数据；2026行情与策略绩效未读取，后续不笼统称完全盲验。",
+    "latest_round": {
+      "account_replays": 18,
+      "experiments": [
+        "EX004_20261028",
+        "EX005_20261028"
+      ],
+      "formal_evaluation_requests": 9,
+      "fundamental_events_in_trading_conditions": false,
+      "intermediate_delivery": {
+        "batch": {
+          "strategy_id": "S017",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "1c84858b149e8c0e2c145e5de3b463ec9d7b38de16ad8e2d5775d64bdf3927c2",
+        "revision": 3,
+        "stage": "PROTOTYPES",
+        "type": "DeliveryReference"
+      },
+      "new_configurations": 9,
+      "public_diagnoses": 12
+    },
     "mandate_reference": {
       "batch": {
         "strategy_id": "S017",
@@ -111,7 +149,7 @@
       "research/S017/materials/registration_20261028.md",
       "research/S017/materials/pre_registration_readiness.json"
     ],
-    "next_action": "请用户决定是否在阶段二转向持有风险诊断，或结束本轮研究；不进入阶段三，不读取2026保留样本。",
+    "next_action": "建议下一轮阶段二优先检验价格结构对上涨启动的确认能力，例如突破后回踩守住、低点抬高；保留本轮风险管理作为固定控制。先由用户确认续研方向及长持有与原频率目标的取舍，未确认前不新增账户、不访问2026行情或推进阶段三；原目标保持不变。",
     "objective": "LITE 美股个股30分钟只做多择时研究",
     "other_proposals_confirmation": "CONFIRMED",
     "policy_reference": "research/RSCH_AGENT.md#research-policy",
@@ -120,8 +158,8 @@
         "strategy_id": "S017",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "92694599b79d0877037c0fee12676246bccd726ac23b086ab5d0a74094afb9a2",
-      "revision": 2,
+      "content_sha256": "ec9f16bf61dfcac8d33aaa320e867305da142decb637c14cbbe84470c746a1af",
+      "revision": 4,
       "stage": "PROTOTYPES",
       "type": "DeliveryReference"
     },
@@ -142,15 +180,18 @@
     },
     "stage": "STAGE_2_DELIVERED_AWAITING_DECISION",
     "stage_two_result": {
-      "account_replay_count": 20,
-      "conclusion": "九个择时配置均未达标，未形成值得进入阶段三的完整原型；停止当前表达，保留负面及局部组件证据。",
-      "configuration_count": 10,
-      "formal_evaluation_request_count": 10,
-      "public_diagnosis_count": 12,
+      "account_replay_count": 38,
+      "conclusion": "本轮阶段二趋势启动、移动止损及风险保护研究已完成，策略目标未达成。较小初始风险距离带来主要改善，成本线保护有小幅增益；本轮新表达中净年化最高、回撤最低的C0029仍只有20.86%净年化、42.14%最大回撤及60日闭合中位数1，暂不建议进入阶段三。",
+      "configuration_count": 19,
+      "diagnostic_only_configuration_ids": [
+        "C0026"
+      ],
+      "formal_evaluation_request_count": 19,
+      "public_diagnosis_count": 24,
       "registered_candidate_count": 0,
-      "reserved_sample_used": false,
+      "reserved_price_or_performance_used": false,
       "stage_three_authorized": false,
-      "timing_configuration_count": 9,
+      "timing_configuration_count": 18,
       "work_status": "COMPLETE"
     }
   },
@@ -160,5 +201,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-10-28T21:22:17+08:00"
+  "updated_at": "2026-10-28T23:08:25+08:00"
 }

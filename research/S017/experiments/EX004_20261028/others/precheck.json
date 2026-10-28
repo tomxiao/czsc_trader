@@ -1,0 +1,79 @@
+{
+  "status": "PASS",
+  "scope": "Synthetic and pinned-development causal checks only; no full account replay, returns or holdout access.",
+  "strategy_source_sha256": "22aa25d4563975645fc672ebef7221e2c2c27c70d0e0bbd7a2b179b330c96d61",
+  "precheck_source_sha256": "667b6cac3316e9a354abbf5706edb04dd7d160b8c161098bc4d797240e528355",
+  "passed_groups": 7,
+  "total_groups": 7,
+  "cases": {
+    "entry_and_channel": {
+      "status": "PASS",
+      "branch_comparisons": 10,
+      "explicit_boundaries": 3
+    },
+    "percent_cycle": {
+      "status": "PASS",
+      "checks": 9
+    },
+    "invalid_boundaries": {
+      "status": "PASS",
+      "invalid_inputs_rejected": 7
+    },
+    "daily_atr_boundaries": {
+      "status": "PASS",
+      "checks": 4,
+      "atr_definition": "14 prior complete session TRs; update by completed-close local day"
+    },
+    "full_prefix_causality": {
+      "status": "PASS",
+      "prefix_states_compared": 195,
+      "independent_full_sequences": 3,
+      "half_days": 2,
+      "dst_transition": true
+    },
+    "prepared_causal_samples": {
+      "status": "PASS",
+      "reference": {
+        "space_id": "a50f7929-988e-4650-af5c-5baee1cd84eb",
+        "preparation_id": "25d3831d-c882-428f-b33f-dbd9299a679a",
+        "manifest_sha256": "bdba8f6a3e9475ed62a3295bdcccd6bb2286f5e081ec44b79811c1bcb72dce93"
+      },
+      "fetch_calls": 2,
+      "authorized_range": [
+        "2018-11-01",
+        "2025-12-31"
+      ],
+      "bars": 23298,
+      "status_counts": {
+        "OBSERVED": 23298
+      },
+      "known_blocked_bars": 5,
+      "action_kinds": {
+        "NONE": 1
+      },
+      "content_sha256": {
+        "equity.bars": "737f0fc50ab3aa7f9cf527751248cab607d135010a3c8b713cbb24245d2b4925",
+        "equity.actions": "4108f4831ff924558088bd5c24acc30979d2835f0c2d41dc5b90afc470b9e310"
+      },
+      "sampled_entry_indices": [
+        508,
+        3745,
+        6982,
+        10219,
+        13456,
+        16693,
+        19930,
+        23167
+      ],
+      "cycle_oracle_comparisons": 72,
+      "old_channel_comparisons": 48,
+      "portfolio_scope": "Synthetic held/flat snapshots at causal sampled entries; no account, fill or return claim."
+    },
+    "definitions_and_source": {
+      "status": "PASS",
+      "definitions": 6
+    }
+  },
+  "atr_timing": "Prior local-session ATR at each completed close; no extra open-before-first-close ratchet update.",
+  "stop_semantics": "Close-triggered, fee-inclusive initial basis, next-interval execution requested; no guaranteed stop-price fill."
+}
