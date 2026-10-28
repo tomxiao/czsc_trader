@@ -397,6 +397,11 @@ def _validate_provider_output(
 ) -> dict[str, Any] | None:
     """Apply the final DFLS-owned contract before READY can cross the facade."""
 
+    from .equity_contracts import EquityParameters
+    if isinstance(request.parameters, EquityParameters):
+        from .equity_data import validate_equity_frame
+        validate_equity_frame(dataframe, request, metadata)
+        return None
     # Validation consumes explicit metadata, without propagating attrs through slices.
     dataframe = pd.DataFrame(dataframe, copy=False)
     dataset = str(request.dataset)
@@ -993,6 +998,9 @@ def _date_bounds(
 
 
 def _json_contract(value: Any) -> Any:
+    from datetime import date, datetime
+    if isinstance(value, (date, datetime)):
+        return value.isoformat()
     if is_dataclass(value):
         return {item.name: _json_contract(getattr(value, item.name)) for item in fields(value)}
     if isinstance(value, Mapping):
@@ -1006,6 +1014,14 @@ def _json_contract(value: Any) -> Any:
 
 def _request_record(request: DataRequest) -> dict[str, Any]:
     return _json_contract(request)
+
+
+def _acquisition_request(request: DataRequest) -> DataRequest:
+    # Project onto the publication contract before dataclass replacement; typed
+    # equity constructors deliberately do not expose duplicate identity fields.
+    values = {item.name: getattr(request, item.name) for item in fields(DataRequest)}
+    values.update(required_cutoff=None, coverage=None)
+    return DataRequest(**values)
 
 
 def _selection(record: Mapping[str, Any]) -> dict[str, Any]:
@@ -1085,6 +1101,7 @@ class Dataflows:
         self._store = AssetStore(base_dir, space)
         self._contract_version = DATA_CONTRACT_VERSION
         self._revision = _implementation_revision()
+        self._equity_providers = providers.equity_bindings
         if providers.bindings is None:
             self._providers = {
                 str(dataset): ProviderBinding(str(dataset), self._revision, provider)
@@ -1100,11 +1117,17 @@ class Dataflows:
                                 DataSpace(self._store.root.relative_to(self._store.base_dir)),
                                 self._store.space_id)
 
+    def _provider_for(self, request):
+        from .equity_contracts import EquityParameters
+        if isinstance(request.parameters, EquityParameters):
+            return self._equity_providers.get(request.parameters.provider_key)
+        return self._providers.get(str(request.dataset))
+
     @property
     def datasets(self) -> tuple[str, ...]:
         """Return the registered dataset names in stable lexical order."""
 
-        return tuple(sorted(self._providers))
+        return tuple(sorted(set(self._providers) | {key.product.value for key in self._equity_providers}))
 
     def _require_contract_version(self, version: Any, *, location: str) -> None:
         if version is None:
@@ -1168,13 +1191,14 @@ class Dataflows:
         planned = []
         requirements: dict[str, list[DataRequest]] = {}
         for request in requests:
-            binding = self._providers.get(str(request.dataset))
+            binding = self._provider_for(request)
             record = _request_record(request)
             selector = {key: value for key, value in record.items()
                         if key not in {"coverage", "required_cutoff"}}
             key = hashlib.sha256(json.dumps({
                 "request": selector,
                 "provider": binding.name if binding else None,
+                **({"provider_revision": binding.revision} if binding and request.dataset.value.startswith("equity.") else {}),
             }, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
             planned.append((request, binding, record, key))
             requirements.setdefault(key, []).append(request)
@@ -1219,7 +1243,7 @@ class Dataflows:
                             asset_id = self._store.lookup_asset(connection, key)
                         if key not in acquired and asset_id is None:
                             # Fetch one asset independently of the consumer's acceptance thresholds.
-                            result = self._fetch_source(replace(request, required_cutoff=None, coverage=None))
+                            result = self._fetch_source(_acquisition_request(request))
                             if result.ready and any(check(result, requirement).ready
                                                     for requirement in requirements[key]):
                                 asset_id = self._store.put_asset(
@@ -1235,7 +1259,7 @@ class Dataflows:
                             if any(check(stored_result, requirement).status
                                    is DataStatus.INCOMPLETE for requirement in requirements[key]):
                                 stored_result = self._fetch_source(
-                                    replace(request, required_cutoff=None, coverage=None)
+                                    _acquisition_request(request)
                                 )
                                 if stored_result.ready and any(
                                     check(stored_result, requirement).ready
@@ -1415,7 +1439,7 @@ class Dataflows:
         return _summarize_quality(evidence, request)
 
     def _fetch_source(self, request: DataRequest) -> DataResult:
-        provider = self._providers.get(str(request.dataset))
+        provider = self._provider_for(request)
         if provider is None:
             return self._failure(
                 DataStatus.FAILED,

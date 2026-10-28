@@ -14,6 +14,7 @@ from ._records import _Record, _hash, _path, _text
 from .context import ExperimentRef
 if TYPE_CHECKING:
     from .evaluation import EvaluationRequest, EvaluationResult
+    from .equity_evaluation import EquityEvaluationRequest, EquityEvaluationResult
 
 
 def _resolve_for_containment(path: Path) -> Path:
@@ -119,13 +120,20 @@ class MaterialEvidenceWrite(_Record):
 class EvaluationEvidenceWrite:
     experiment: ExperimentRef
     name: str
-    request: EvaluationRequest
-    result: EvaluationResult
+    request: EvaluationRequest | EquityEvaluationRequest
+    result: EvaluationResult | EquityEvaluationResult
 
     def __post_init__(self):
         from .evaluation import EvaluationRequest, EvaluationResult
+        from .equity_evaluation import EquityEvaluationRequest, EquityEvaluationResult
 
         _name(self.name)
+        if type(self.request) is EquityEvaluationRequest:
+            if type(self.experiment) is not ExperimentRef or type(self.result) is not EquityEvaluationResult:
+                raise TypeError("equity publication requires experiment and equity result")
+            if self.request.experiment != self.experiment:
+                raise ValueError("equity publication belongs to another experiment")
+            return
         for value, expected in (
             (self.experiment, ExperimentRef), (self.request, EvaluationRequest),
             (self.result, EvaluationResult),

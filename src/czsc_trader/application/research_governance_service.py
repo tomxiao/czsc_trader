@@ -29,6 +29,7 @@ from ..research_tools.evaluation_access import EvaluationAccess
 from strategy_runtime.resources import ExecutionResources
 from dataflows import Dataflows, DataSpace, ProviderConfig
 from strategy_runtime import StrategyRuntime
+from strategy_runtime.equity import ResearchExecutionSpec
 from strategy_manager.write_lock import RegistryWriteLock
 from ..temp_workspace import create_temporary_directory
 from .evidence_service import _publish_bytes
@@ -319,6 +320,7 @@ def update_research_intent(
 def create_research_context(
     repository: RepositoryContext, batch: ResearchBatchRef, *,
     resources: ExecutionResources | None = None, providers: ProviderConfig | None = None,
+    execution_spec: ResearchExecutionSpec | None = None,
 ) -> ResearchContext:
     """Bind one registered research batch to its shared DFLS and runtime capabilities."""
     if type(repository) is not RepositoryContext or type(batch) is not ResearchBatchRef:
@@ -328,8 +330,9 @@ def create_research_context(
     data = Dataflows(base_dir=repository.root,
                     space=DataSpace(Path(f"research/{batch.strategy_id}/assets/data")),
                     providers=providers if providers is not None else ProviderConfig(env_file=repository.root / ".env"))
-    return ResearchContext(batch, repository, data, StrategyRuntime(repository.strategy_root, dataflows=data),
-                           EvaluationAccess(dataflows=data, resources=resources, strategy_id=batch.strategy_id))
+    return ResearchContext(batch, repository, data, StrategyRuntime(repository.strategy_root, dataflows=data, execution_spec=execution_spec),
+                           EvaluationAccess(dataflows=data, resources=resources, strategy_id=batch.strategy_id,
+                                            execution_spec=execution_spec), execution_spec)
 
 
 def create_experiment(context: ResearchContext, request: ExperimentRequest) -> ExperimentRef:

@@ -2,6 +2,10 @@
 
 SE按显式协议提供指标、协议校验、比较、帕累托分层、PBO、DSR、Bootstrap、参数邻域、压力及账本审计计算。先阅读[公共导出](src/strategy_evaluator/__init__.py)，再沿导入核对契约与测试。
 
+`strategy_evaluator.equity.audit_equity_account` 独立审计区间成交、整数股持仓、分红应收款和交收，
+输出交易日指标及区间采样回撤；不导入 SRT/TXE。其研究证据与正式阶段交付的边界见
+[美股研究契约](../../docs/US_EQUITY_RESEARCH.md)。
+
 账户会计分解使用`diagnose_account_replays`纯计算入口，输入为认证后的`ReplayEvidence`、评价身份、诊断起止日期及可选对照；返回`AccountDiagnosisCalculation`。它不读取文件、不执行策略，也不寻找分类或解释金融机制。RSCH使用TDR的`diagnose_accounts`完成正式证据认证及人群覆盖适配；金额、单位、首版支持范围及发布示例见[TDR账户诊断](../../src/czsc_trader/README.md#账户损益与路径诊断)。账本差异等价性仍使用`compare_ledgers`，不被路径诊断替代。
 
 研究员通过TDR受管评价API取得SRT/TXE账户事实，再组合SE公共函数。SE不获取行情、不加载策略、不写治理状态。旧资格裁定、冻结健康政策、自动冻结建议及对应报告入口已删除。

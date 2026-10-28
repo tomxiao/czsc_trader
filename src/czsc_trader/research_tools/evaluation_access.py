@@ -15,6 +15,9 @@ from dataflows import Dataflows
 from threadpoolctl import threadpool_limits
 from strategy_runtime import canonical_sha256
 from strategy_runtime.resources import ExecutionResources
+from strategy_runtime.equity import ResearchExecutionSpec
+from .equity_evaluation import (EquityEvaluationRequest, EquityEvaluationOutcome, EquityEvaluationResult,
+                                prepare_equity, evaluate_equity)
 
 from .evaluation import (
     EvaluationRequest, EvaluationResult, _bind_evaluation_inputs,
@@ -70,7 +73,7 @@ class EvaluationAccess:
     """Use one injected DFLS space for preparation and all account calculations."""
 
     def __init__(self, *, dataflows: Dataflows, resources: ExecutionResources | None = None,
-                 strategy_id: str | None = None):
+                 strategy_id: str | None = None, execution_spec: ResearchExecutionSpec | None = None):
         if not isinstance(dataflows, Dataflows):
             raise TypeError("evaluation requires Dataflows")
         self.data = dataflows
@@ -78,6 +81,9 @@ class EvaluationAccess:
         if type(self.resources) is not ExecutionResources:
             raise TypeError("evaluation requires ExecutionResources")
         self.strategy_id = strategy_id
+        if execution_spec is not None and type(execution_spec) is not ResearchExecutionSpec:
+            raise TypeError("execution_spec requires ResearchExecutionSpec")
+        self.execution_spec = execution_spec
         self._session_lock = Lock()
         self._active_execution = None
         self._base_dir = dataflows.binding.base_dir
@@ -85,7 +91,11 @@ class EvaluationAccess:
             self._base_dir, dataflows.binding.space,
         )
 
-    def prepare(self, request: EvaluationRequest) -> EvaluationRequest:
+    def prepare(self, request: EvaluationRequest | EquityEvaluationRequest) -> EvaluationRequest | EquityEvaluationRequest:
+        if type(request) is EquityEvaluationRequest:
+            return prepare_equity(self, request)
+        if self.execution_spec is not None:
+            raise ValueError("explicit equity context requires EquityEvaluationRequest")
         if not isinstance(request, EvaluationRequest):
             raise TypeError("evaluation requires EvaluationRequest")
         if Path(request.repository_root).resolve() != self._base_dir:
@@ -103,11 +113,13 @@ class EvaluationAccess:
         validate_parameter_request(prepared, self.data)
         return prepared
 
-    def evaluate(self, request: EvaluationRequest) -> EvaluationResult:
+    def evaluate(self, request: EvaluationRequest | EquityEvaluationRequest) -> EvaluationResult | EquityEvaluationResult:
         if self._active_execution is not None:
             raise RuntimeError("use evaluate_many with the active execution session")
         prepared = self.prepare(request)
         with threadpool_limits(limits=self.resources.native_threads_per_worker):
+            if type(prepared) is EquityEvaluationRequest:
+                return evaluate_equity(self, prepared)
             return _evaluate_strategy(prepared, dataflows=self.data, workers=self.resources.max_workers)
 
     @staticmethod
@@ -144,10 +156,23 @@ class EvaluationAccess:
                 type(exc).__name__, str(exc) or type(exc).__name__,
             ))
 
-    def evaluate_many(self, requests: tuple[EvaluationRequest, ...], *,
-                      execution: ResearchExecutionSession | None = None) -> tuple[EvaluationOutcome, ...]:
+    def evaluate_many(self, requests: tuple[EvaluationRequest, ...] | tuple[EquityEvaluationRequest, ...], *,
+                      execution: ResearchExecutionSession | None = None) -> tuple[EvaluationOutcome, ...] | tuple[EquityEvaluationOutcome, ...]:
         if not isinstance(requests, tuple) or not requests:
             raise ValueError("evaluate_many requires a nonempty tuple")
+        if any(type(item) is EquityEvaluationRequest for item in requests):
+            if not all(type(item) is EquityEvaluationRequest for item in requests):
+                raise TypeError("one evaluation batch cannot mix execution contracts")
+            if execution is not None or self._active_execution is not None:
+                raise ValueError("BAR_RANGE does not support checkpoint execution sessions")
+            outcomes = []
+            for item in requests:
+                try:
+                    outcomes.append(EquityEvaluationOutcome(EvaluationStatus.SUCCEEDED, self.evaluate(item)))
+                except Exception as exc:
+                    outcomes.append(EquityEvaluationOutcome(EvaluationStatus.FAILED,
+                        error=EvaluationError(type(exc).__name__, str(exc) or type(exc).__name__)))
+            return tuple(outcomes)
         if not all(isinstance(item, EvaluationRequest) for item in requests):
             raise TypeError("evaluate_many requires EvaluationRequest values")
         if execution is None and self._active_execution is not None:

@@ -14,6 +14,7 @@ from .models import ExecutionPolicy, RuntimeDefinition, StrategyCandidate, Strat
 from .identity import CandidateContentIdentity, ImplementationDependency, content_identity
 from .strategy import StrategyInstance
 from .pricing import ExecutionPricing
+from .equity import EquityCandidate, EquityStrategyInstance, ResearchExecutionSpec
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,7 +47,11 @@ class StrategyRuntime:
         *,
         dataflows: Dataflows | None = None,
         inspection_permit: InspectionRuntimePermit | None = None,
+        execution_spec: ResearchExecutionSpec | None = None,
     ) -> None:
+        if execution_spec is not None and type(execution_spec) is not ResearchExecutionSpec:
+            raise TypeError("execution_spec requires ResearchExecutionSpec")
+        self.execution_spec = execution_spec
         self._loader = StrategyLoader(strategy_root, inspection_permit=inspection_permit)
         self._dataflows = dataflows
 
@@ -57,6 +62,8 @@ class StrategyRuntime:
         source_root: Path | None = None,
         runtime_binding: RuntimeBinding | None = None,
     ):
+        if self.execution_spec is not None:
+            raise ValueError("explicit equity runtime cannot load an exchange-bound legacy strategy")
         if isinstance(source, StrategyRelease):
             return (
                 self._loader.load_for_symbol(
@@ -116,7 +123,13 @@ class StrategyRuntime:
             },
         )
 
-    def create(self, request: StrategyInit) -> StrategyInstance:
+    def create(self, request: StrategyInit | EquityCandidate) -> StrategyInstance | EquityStrategyInstance:
+        if type(request) is EquityCandidate:
+            if self.execution_spec is None:
+                raise ValueError("equity candidate requires an explicitly bound runtime")
+            return EquityStrategyInstance(request, self.execution_spec)
+        if self.execution_spec is not None:
+            raise ValueError("explicit equity runtime requires EquityCandidate")
         if self._loader.inspection_permit is not None:
             self._loader.inspection_permit.validate_path(request.data_dir)
         algorithm = self._load(

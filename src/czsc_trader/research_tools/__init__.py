@@ -1,4 +1,6 @@
 """Public result and evidence contracts for independently organized research."""
+from .equity_evaluation import (EquitySources, EquityEvaluationRequest, EquityEvaluationResult,
+                                EquityEvaluationOutcome)
 from strategy_runtime import ExecutionPriceBasis
 
 from ..backtesting.benchmark_contracts import LimitBuyHold, NextOpenBuyHold
@@ -153,6 +155,7 @@ from .delivery import (
 )
 
 __all__ = [
+    "EquitySources", "EquityEvaluationRequest", "EquityEvaluationResult", "EquityEvaluationOutcome",
     'CheckpointMode', 'ExecutionCheckpointRequest', 'ExecutionPhase', 'ExecutionProgress',
     'ExecutionStats', 'ResearchExecutionSession',
     'DeliveryAssemblyResult', 'DeliveryValidationPhase', 'DeliveryValidationProgress',

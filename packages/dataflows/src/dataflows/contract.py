@@ -12,6 +12,7 @@ from typing import Any, Mapping
 from uuid import UUID
 
 import pandas as pd
+from .equity_contracts import EquityParameters, EquityQuery, InstrumentId, ProviderKey, SourceRef
 
 # Change only when the published data contract changes, independently of code revisions.
 DATA_CONTRACT_VERSION = 1
@@ -46,6 +47,10 @@ class Dataset(StrEnum):
     """Datasets currently exposed through the stable DFLS facade."""
 
     ETF_OHLCV = "etf.ohlcv"
+    EQUITY_BARS = "equity.bars"
+    EQUITY_SESSIONS = "equity.sessions"
+    EQUITY_ACTIONS = "equity.actions"
+    EQUITY_CONSTRAINTS = "equity.constraints"
     ETF_UNADJUSTED_DAILY = "etf.unadjusted_daily"
     ETF_UNADJUSTED_INTRADAY = "etf.unadjusted_intraday"
     ETF_CREATION_REDEMPTION_BASKET = "etf.creation_redemption_basket"
@@ -314,7 +319,7 @@ class FinancialDisclosureParameters:
             raise ValueError("expected_periods must be unique and ascending")
 
 
-DataParameters = (NoParameters | PcfParameters | MoneyflowParameters | EvidenceParameters
+DataParameters = (EquityParameters | NoParameters | PcfParameters | MoneyflowParameters | EvidenceParameters
                   | FinancialDisclosureParameters)
 
 
@@ -390,7 +395,11 @@ class DataRequest:
             if len(self.start) != 10 or len(self.end) != 10:
                 raise ValueError("security price limits require ISO date boundaries")
         frequencies = {"daily"}
-        if dataset in {Dataset.ETF_OHLCV, Dataset.STOCK_OHLCV}:
+        if dataset is Dataset.EQUITY_BARS:
+            frequencies = {"daily", "30m"}
+        elif dataset in {Dataset.EQUITY_SESSIONS, Dataset.EQUITY_ACTIONS, Dataset.EQUITY_CONSTRAINTS}:
+            frequencies = {"daily", "30m"}
+        elif dataset in {Dataset.ETF_OHLCV, Dataset.STOCK_OHLCV}:
             frequencies = {"daily", "weekly", *intraday}
         elif dataset in {Dataset.ETF_UNADJUSTED_INTRADAY, Dataset.STOCK_UNADJUSTED_INTRADAY}:
             frequencies = intraday
@@ -408,6 +417,10 @@ class DataRequest:
         if not isinstance(self.frequency, str) or self.frequency not in frequencies:
             raise ValueError(f"{dataset} frequency must be one of {sorted(frequencies)}")
         allowed = {
+            Dataset.EQUITY_BARS: (EquityParameters,),
+            Dataset.EQUITY_SESSIONS: (EquityParameters,),
+            Dataset.EQUITY_ACTIONS: (EquityParameters,),
+            Dataset.EQUITY_CONSTRAINTS: (EquityParameters,),
             Dataset.ETF_CREATION_REDEMPTION_BASKET: (NoParameters, PcfParameters),
             Dataset.STOCK_MONEYFLOW: (NoParameters, MoneyflowParameters),
             Dataset.STRATEGY_FEATURE_EVIDENCE: (EvidenceParameters,),
@@ -415,6 +428,16 @@ class DataRequest:
         }.get(dataset, (NoParameters,))
         if type(self.parameters) not in allowed:
             raise TypeError(f"parameters are not valid for {dataset}")
+        if isinstance(self.parameters, EquityParameters):
+            if (symbol != self.parameters.instrument.symbol
+                    or dataset.value != self.parameters.query.product.value
+                    or self.frequency != self.parameters.query.frequency.value):
+                raise ValueError("equity request identity differs from its typed parameters")
+            expected_start = pd.Timestamp(self.parameters.query.start, tz=self.parameters.instrument.timezone).tz_convert("UTC")
+            expected_end = (pd.Timestamp(self.parameters.query.end, tz=self.parameters.instrument.timezone)
+                            + pd.DateOffset(days=1) - pd.Timedelta(microseconds=1)).tz_convert("UTC")
+            if start != expected_start or end != expected_end or self.required_cutoff is not None or self.coverage is not None:
+                raise ValueError("equity request range must match its typed query exactly")
         if isinstance(self.parameters, FinancialDisclosureParameters):
             if self.parameters.report_period_end > self.end:
                 raise ValueError("report periods must not end after the disclosure cutoff")
@@ -429,6 +452,19 @@ class DataRequest:
                     raise ValueError("trading_dates must fall within the request range")
         object.__setattr__(self, "dataset", dataset)
         object.__setattr__(self, "symbol", symbol)
+
+
+class EquityDataRequest(DataRequest):
+    """Equity request projected onto the shared DFLS publication protocol."""
+
+    def __init__(self, instrument: InstrumentId, source: SourceRef, query: EquityQuery):
+        parameters = EquityParameters(instrument, source, query)
+        start = pd.Timestamp(query.start, tz=instrument.timezone).tz_convert("UTC")
+        end = (pd.Timestamp(query.end, tz=instrument.timezone) + pd.DateOffset(days=1)
+               - pd.Timedelta(microseconds=1)).tz_convert("UTC")
+        super().__init__(dataset=Dataset(query.product.value), symbol=instrument.symbol,
+                         start=start.isoformat(), end=end.isoformat(), required_cutoff=None,
+                         frequency=query.frequency.value, parameters=parameters)
 
 
 @dataclass(frozen=True, slots=True)
@@ -638,8 +674,16 @@ class ProviderConfig:
 
     bindings: Mapping[Dataset, ProviderBinding] | None = None
     env_file: Path | None = None
+    equity_bindings: Mapping[ProviderKey, ProviderBinding] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        if not isinstance(self.equity_bindings, Mapping) or any(
+            type(key) is not ProviderKey or type(value) is not ProviderBinding
+            or value.name != key.source.provider or value.revision != key.source.revision
+            for key, value in self.equity_bindings.items()
+        ):
+            raise TypeError("equity bindings must exactly match typed provider identities")
+        object.__setattr__(self, "equity_bindings", MappingProxyType(dict(self.equity_bindings)))
         if self.env_file is not None and not isinstance(self.env_file, Path):
             raise TypeError("env_file must be Path or None")
         if self.bindings is not None:

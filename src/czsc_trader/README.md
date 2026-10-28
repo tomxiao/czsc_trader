@@ -6,6 +6,10 @@ TDR 为研究员提供批次上下文、研究概览、账户评价与诊断、�
 研究目标、授权、候选选择和冻结批准见 [RSCH 契约](../../research/RSCH_AGENT.md)。
 用户 CLI 提供 `backtest run`；Python API 与 CLI 的结果保存行为分别说明如下。
 
+美股个股 30 分钟只做多研究使用相同 Python 业务入口的显式类型契约，见
+[市场隔离、模块契约及 API](../../docs/US_EQUITY_RESEARCH.md)。原 A 股研究调用保持不变。
+美股 `equity_research/v1` 证据与正式候选登记、五阶段评价及 PTE 的支持范围须按该文核对。
+
 ## 1. 公共契约与能力导航
 
 | 任务 | 公共入口 | 输出与职责 |

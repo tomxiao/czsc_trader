@@ -1,4 +1,7 @@
 """Strategy Runtime (SRT) public contracts."""
+from .equity import (AccountPolicy, CashAvailabilityPolicy, CnEquitySpec, UsEquitySpec,
+                     ResearchExecutionSpec, ExecutionModel, DecisionPoint, EquityPortfolio,
+                     EquityCandidate, EquityPlan, EquityStrategyInstance, equity_implementation_hash)
 
 from .input_binding import StrategyInputPlan, StrategyInputBinding
 from .entry_cycle import CycleTarget, EntryCycleState, EntryCyclePhase, EntryCyclePlanStatus
@@ -86,6 +89,9 @@ from .strategy import StrategyInstance
 __version__ = "0.1.0"
 
 __all__ = [
+    "AccountPolicy", "CashAvailabilityPolicy", "CnEquitySpec", "UsEquitySpec",
+    "ResearchExecutionSpec", "ExecutionModel", "DecisionPoint", "EquityPortfolio",
+    "EquityCandidate", "EquityPlan", "EquityStrategyInstance", "equity_implementation_hash",
     "CycleTarget", "EntryCycleState", "EntryCyclePhase", "EntryCyclePlanStatus",
     "validate_entry_cycle_plan_facts",
     "ExecutionResources", "default_worker_count",

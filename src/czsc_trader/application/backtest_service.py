@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING
 
 from strategy_manager import StrategyRegistry, StrategyVersion, canonical_sha256
 from strategy_runtime import StrategyCandidate
@@ -20,12 +21,16 @@ from .errors import ExecutionError
 from .context import RepositoryContext
 from .runtime_acceptance import _plain
 
+if TYPE_CHECKING:
+    from strategy_runtime.equity import EquityCandidate
+    from ..research_tools.equity_evaluation import EquityEvaluationRequest, EquityEvaluationResult
+
 
 def run_backtest(
     context: ResearchContext,
-    strategy: StrategyCandidate | StrategyVersion,
-    request: BacktestRequest,
-) -> BacktestEvaluation:
+    strategy: StrategyCandidate | StrategyVersion | EquityCandidate,
+    request: BacktestRequest | EquityEvaluationRequest,
+) -> BacktestEvaluation | EquityEvaluationResult:
     """Replay a candidate or an authenticated frozen version through one engine.
 
     Returns audited candidate or frozen-version accounts without storing reports.
@@ -33,6 +38,16 @@ def run_backtest(
     """
     if not isinstance(context, ResearchContext):
         raise TypeError("backtest requires ResearchContext")
+    from strategy_runtime.equity import EquityCandidate
+    from ..research_tools.equity_evaluation import EquityEvaluationRequest
+    if type(strategy) is EquityCandidate or type(request) is EquityEvaluationRequest:
+        if type(strategy) is not EquityCandidate or type(request) is not EquityEvaluationRequest:
+            raise TypeError("BAR_RANGE requires matching EquityCandidate and EquityEvaluationRequest")
+        if request.candidate != strategy:
+            raise ValueError("backtest candidate differs from evaluation request")
+        return context.evaluation.evaluate(request)
+    if context.execution_spec is not None:
+        raise ValueError("explicit equity context cannot execute an exchange-bound legacy request")
     if not isinstance(strategy, (StrategyCandidate, StrategyVersion)):
         raise TypeError("backtest strategy must be StrategyCandidate or StrategyVersion")
     if not isinstance(request, BacktestRequest):

@@ -65,6 +65,13 @@ def _validate_request(context: ResearchContext, request: EvidenceWriteRequest) -
         from .experiment_artifact_service import _validate_report_request
         _validate_report_request(root, request)
     if isinstance(request, EvaluationEvidenceWrite):
+        from ..research_tools.equity_evaluation import EquityEvaluationRequest, validate_equity_result
+        if type(request.request) is EquityEvaluationRequest:
+            if request.request.prepared is None:
+                raise ValueError("equity publication requires the prepared request")
+            context.evaluation.prepare(request.request)
+            validate_equity_result(context.evaluation, request.request, request.result)
+            return
         if request.request.experiment_id != request.experiment.experiment_id:
             raise ValueError("evaluation request belongs to another experiment")
         if request.request.strategy.strategy_family_id != context.strategy_id:
@@ -79,6 +86,9 @@ def _validate_request(context: ResearchContext, request: EvidenceWriteRequest) -
 
 
 def _serialize_account(request: EvaluationEvidenceWrite) -> bytes:
+    from ..research_tools.equity_evaluation import EquityEvaluationResult
+    if type(request.result) is EquityEvaluationResult:
+        return request.result.content
     from ..research_tools.evaluation import serialize_evaluation_evidence
 
     value = serialize_evaluation_evidence(request.request, request.result)
@@ -97,9 +107,13 @@ def _serialize_worker(payload: bytes, native_threads: int) -> bytes:
 
 def _publish_serialized(context: ResearchContext, request: EvidenceWriteRequest, data: bytes) -> EvidenceRef:
     if isinstance(request, EvaluationEvidenceWrite):
-        media_type, suffix, schema, version = "application/json", "json", "account_evaluation", 8
+        from ..research_tools.equity_evaluation import EquityEvaluationResult
+        equity = type(request.result) is EquityEvaluationResult
+        media_type, suffix, schema, version = "application/json", "json", ("equity_research" if equity else "account_evaluation"), (1 if equity else 8)
         document = json.loads(data)
-        if (document.get("schema_version") != version
+        if equity and document.get("schema") != "equity-research/v1":
+            raise ValueError("equity publication requires its own versioned schema")
+        if not equity and (document.get("schema_version") != version
                 or document.get("request_identity", {}).get("schema_version") != 7):
             raise ValueError("new account publication requires schema 8 and request identity 7")
     else:
@@ -165,6 +179,10 @@ def publish_evidence_many(context: ResearchContext,
     # Every ownership/contract error rejects the entire call before any write.
     for request in requests:
         _validate_request(context, request)
+    from ..research_tools.equity_evaluation import EquityEvaluationRequest
+    if execution is not None and any(isinstance(request, EvaluationEvidenceWrite)
+                                    and type(request.request) is EquityEvaluationRequest for request in requests):
+        raise ValueError("BAR_RANGE evidence does not support checkpoint execution sessions")
     if execution is None and context.evaluation._active_execution is not None:
         raise RuntimeError("pass the active execution session explicitly")
     if execution is not None:

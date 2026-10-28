@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 from dataflows import Dataflows
 from strategy_runtime import StrategyRuntime
+from strategy_runtime.equity import ResearchExecutionSpec
 from strategy_manager.validation import require_strategy_id
 
 from ._records import _Record
@@ -55,6 +56,7 @@ class ResearchContext:
     data: Dataflows
     runtime: StrategyRuntime
     evaluation: EvaluationAccess
+    execution_spec: ResearchExecutionSpec | None = None
 
     def __post_init__(self):
         from ..application.context import RepositoryContext
@@ -72,6 +74,12 @@ class ResearchContext:
             raise ValueError("research data must use the batch-owned repository space")
         if self.evaluation.data is not self.data or self.evaluation.strategy_id != self.strategy_id:
             raise ValueError("research evaluation must use the same batch and data capability")
+        if self.execution_spec is not None and type(self.execution_spec) is not ResearchExecutionSpec:
+            raise TypeError("execution_spec requires ResearchExecutionSpec")
+        if self.evaluation.execution_spec != self.execution_spec:
+            raise ValueError("research evaluation must use the context execution specification")
+        if self.runtime.execution_spec != self.execution_spec:
+            raise ValueError("research runtime must use the context execution specification")
 
     @property
     def strategy_id(self):

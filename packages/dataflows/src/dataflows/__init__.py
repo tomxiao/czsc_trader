@@ -1,6 +1,7 @@
 """Reusable financial dataflows with an explicit publication contract."""
 
 from .contract import (
+    EquityDataRequest,
     DataSpace,
     DataSpaceBinding,
     PreparePolicy,
@@ -42,8 +43,17 @@ from .errors import (
 from .facade import Dataflows, canonical_frame_sha256
 from .temporal import TemporalAlignmentResult, align_temporal_frame
 from .trading_status import TradingStatus
+from .equity_contracts import (
+    InstrumentId, MarketId, AssetClass, SourceRef, ProviderKey, EquityProduct,
+    EquityQuery, BarFrequency, PriceAdjustment, EquitySession, TimeInterval, TradingSession,
+)
+from .futu_equity import futu_equity_bindings
 
 __all__ = [
+    "futu_equity_bindings",
+    "EquityDataRequest", "InstrumentId", "MarketId", "AssetClass", "SourceRef",
+    "ProviderKey", "EquityProduct", "EquityQuery", "BarFrequency", "PriceAdjustment",
+    "EquitySession", "TimeInterval", "TradingSession",
     "TradingStatus",
     "DataSpace",
     "DataSpaceBinding",
