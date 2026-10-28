@@ -1,0 +1,78 @@
+{
+  "schema": "s017-entry-only-decision-evidence/v1",
+  "selection_status": "ADAPTIVE_AFTER_SEEN_RESULTS",
+  "recorded_on": "2026-10-29",
+  "experiment": "EX014_20261029",
+  "candidate_id": "C0043",
+  "budget": {
+    "allocated_round": 6,
+    "authorized_rounds": 20,
+    "remaining_after_allocation": 14
+  },
+  "accounts": {
+    "C0013": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S017",
+        "experiment_id": "EX003_20261028"
+      },
+      "evidence_id": "1496c8667bd1f8ad4cc26e7ee4beb0080d02cb42d8380d49c5d2de1fb53048af.json",
+      "sha256": "1496c8667bd1f8ad4cc26e7ee4beb0080d02cb42d8380d49c5d2de1fb53048af",
+      "media_type": "application/json",
+      "name": "account-C0013",
+      "schema": "equity_research",
+      "schema_version": 2
+    },
+    "C0040": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S017",
+        "experiment_id": "EX013_20261029"
+      },
+      "evidence_id": "6b156308b53c7cdffee76a89a3a7daed621ec54e2dfbe053cb83c2f9a744f377.json",
+      "sha256": "6b156308b53c7cdffee76a89a3a7daed621ec54e2dfbe053cb83c2f9a744f377",
+      "media_type": "application/json",
+      "name": "account-C0040",
+      "schema": "equity_research",
+      "schema_version": 2
+    }
+  },
+  "files": {
+    "decision-diagnosis": {
+      "path": "research/S017/experiments/EX013_20261029/others/diagnostics/C0040_vs_C0013.json",
+      "sha256": "0fa6edb7d6513a39237ae56b4710bf845690b4bce8a9564f5d00264b0e9dfa1d"
+    },
+    "decision-gate-usage": {
+      "path": "research/S017/experiments/EX013_20261029/others/market_gate_usage.json",
+      "sha256": "3d9adf794c1dbd947f3ec94ff2a373ba97755a56cf35463c150c04bbc659aa55"
+    },
+    "decision-gate-source": {
+      "path": "research/S017/experiments/EX013_20261029/src/describe_gate.py",
+      "sha256": "9901f31f782ea1a694f0f90fb67a3c30b4df3773ee114f2dc29ccfdbc913728a"
+    }
+  },
+  "observed_facts": {
+    "market_only_actual_exits": 31,
+    "all_actual_exits": 78,
+    "c13_2025_cycle": [
+      "2025-04-24",
+      "2025-10-07"
+    ],
+    "c40_segments_over_c13_cycle": 6
+  },
+  "question": "Does restricting the market gate to entry preserve some risk protection while reducing early exits from LITE trends?",
+  "scope": "Existing 2019-2025 development accounts; adaptive structural contrast, not independent validation. No year-specific trading conditions, parameter search or stage-three advancement.",
+  "comparisons": [
+    [
+      "C0043",
+      "C0013"
+    ],
+    [
+      "C0043",
+      "C0040"
+    ]
+  ],
+  "publication": "Publish this manifest and immutable source-byte snapshots as EX014 material evidence; retain original account EvidenceRefs."
+}

@@ -216,6 +216,12 @@ def inputs():
     if abs(math.fsum(row['component_sum_log'] for row in description['by_year'].values())
            - description['full_period']['component_sum_log']) > 1e-10:
         raise ValueError('yearly price descriptions do not add to the full-period change')
+    from describe_exits import describe
+    exits = read(WORK / 'others/exit_purpose_description.json')
+    if (exits['script_sha256'] != digest(WORK / 'src/describe_exits.py')
+            or exits['source_accounts'] != {key: references[key].to_dict() for key in keys}
+            or exits['accounts'] != {key: describe(payloads[key]) for key in keys}):
+        raise ValueError('exit purpose description differs from published actual cycles')
     return analysis, keys, definitions, references, pre, diagnostic_refs, pairs, description
 
 
@@ -322,6 +328,18 @@ def render_report(analysis, keys, references, diagnostic_refs, pairs, descriptio
         text.append('|' + name + '|' + '|'.join(percent(item['net_return']) for item in value['year_returns']) + '|')
     text.extend(['', '逐年收益继承上年末资金与持仓，第一年使用初始资金；不逐年重置本金或平均年度收益率。'])
     text.extend(price_description_section(description))
+    exits = read(WORK / 'others/exit_purpose_description.json')
+    text.extend(['', '## 实际退出用途', '',
+        '|配置|实际退出类别|闭合周期|账本净损益USD|实际双侧费用USD|',
+        '|---|---|---:|---:|---:|'])
+    labels = {'SESSION_END': '日终强制退出', 'STOP_TRIGGERED': '止损触发',
+              'OVERNIGHT_RESIDUAL': '隔夜残留退出', 'UNKNOWN': '未知'}
+    for key in keys:
+        for category, value in exits['accounts'][key]['by_exit_purpose'].items():
+            text.append(f"|{key}|{labels[category]}|{value['closed_cycles']}|{value['net_pnl']:.2f}|{value['fees']:.2f}|")
+    text.extend(['', '[退出用途描述](others/exit_purpose_description.json)按真实订单、决策、成交和闭合周期关联。'
+        '日终分支优先于止损计算，分类不证明同一时点不会触发止损；分组具有事后条件化，'
+        '不能将某类正收益解释为延长持仓会盈利，也不能将费用加回构造零成本策略。', ''])
     text.extend(['## 原始证据与限制', '', '[可复核分析](others/analysis.json)保留精确账户、公共诊断和方法来源引用。'])
     for key, ref in references.items():
         text.append(f'- [{key}原始账户]({link(ROOT / ref.repository_path)})')
@@ -349,6 +367,8 @@ def main(action):
         ('comparisons', 'protocols/comparisons.json'), ('publication-source', 'src/publish.py'),
         ('session-price-description', 'others/session_price_description.json'),
         ('session-price-description-source', 'src/describe_sessions.py'),
+        ('exit-purpose-description', 'others/exit_purpose_description.json'),
+        ('exit-purpose-source', 'src/describe_exits.py'), ('research-notes', 'notes.md'),
         ('price-plot-source', 'src/plot_price.py'),
     ):
         ref = material(research, name, WORK / relative)

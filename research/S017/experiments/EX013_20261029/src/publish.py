@@ -183,6 +183,9 @@ def inputs():
         path = ROOT / item['path']
         if not path.resolve().is_relative_to((ROOT / 'research/S017').resolve()) or digest(path) != item['sha256']:
             raise ValueError('retained method source differs from its recorded identity')
+    from describe_gate import describe
+    if read(WORK / 'others/market_gate_usage.json') != describe(payloads['C0040'], references['C0040']):
+        raise ValueError('market gate description differs from exact published account decisions and fills')
     return analysis, keys, definitions, references, pre, diagnostic_refs, pairs
 
 
@@ -254,6 +257,11 @@ def render_report(analysis, keys, references, diagnostic_refs, pairs):
         text.append('|' + name + '|' + '|'.join(percent(item['net_return']) for item in value['year_returns']) + '|')
     text.extend(['', '逐年收益继承上年末资金与持仓，第一年使用初始资金；不逐年重置本金或平均年度收益率。', '',
         '## 原始证据与限制', '', '[可复核分析](others/analysis.json)保留精确账户、公共诊断和方法来源引用。'])
+    gate = read(WORK / 'others/market_gate_usage.json')
+    text.extend(['', '### 大盘条件的实际退出用途', '',
+        f"C0040共{sum(gate['actual_sell_fills'].values())}次实际卖出，其中{gate['actual_sell_fills'].get('MARKET_ONLY', 0)}次仅因大盘条件不允许、当时LITE自身仍支持持有。",
+        '[逐项记录及身份关联](others/market_gate_usage.json)与[结果后的研究笔记](notes.md)保留描述和待区分问题。'
+        '这不证明取消上述退出能改善利润，入场过滤与持有门控的用途需要新的完整账户结构对照。', ''])
     for key, ref in references.items():
         text.append(f'- [{key}原始账户]({link(ROOT / ref.repository_path)})')
     text.extend(['', '本实验使用反复观察过的开发池；重叠窗口与30分钟观察点不能视作独立样本。'
@@ -278,6 +286,8 @@ def main(action):
         ('precheck-source', 'src/precheck.py'), ('execution-status', 'others/execution_status.json'),
         ('execution-stats', 'others/execution_stats.json'), ('accounts-manifest', 'others/accounts.json'),
         ('comparisons', 'protocols/comparisons.json'), ('publication-source', 'src/publish.py'),
+        ('market-gate-usage', 'others/market_gate_usage.json'), ('market-gate-description-source', 'src/describe_gate.py'),
+        ('research-notes', 'notes.md'),
     ):
         ref = material(research, name, WORK / relative)
         materials[name] = ref
