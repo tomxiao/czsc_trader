@@ -181,7 +181,10 @@ __all__ = [
 
 from .equity_definition import (
     EquityStrategyCandidate, EquityStrategyDefinition, EquityDecision, EquityDecisionContext,
-    EquityInputBinding, equity_source_hash, execution_spec_from_dict,
+    EquityInputBinding, EquityAuxiliaryInput, EquityAuxiliaryBinding, equity_source_hash, execution_spec_from_dict,
 )
+from .equity_context import build_equity_decision_context
+
 __all__ += ["EquityStrategyCandidate", "EquityStrategyDefinition", "EquityDecision", "EquityDecisionContext",
-            "EquityInputBinding", "equity_source_hash", "execution_spec_from_dict"]
+            "EquityInputBinding", "EquityAuxiliaryInput", "EquityAuxiliaryBinding", "equity_source_hash", "execution_spec_from_dict",
+            "build_equity_decision_context"]

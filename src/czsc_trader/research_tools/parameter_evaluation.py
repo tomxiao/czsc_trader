@@ -370,12 +370,15 @@ def _verify_equity_inputs(request, dataflows):
         raise ValueError("equity parameter plan requires prepared input binding")
     if request.prepared.space_id != dataflows.binding.space_id:
         raise ValueError("equity parameter input belongs to another data context")
-    expected = dict(request.input_binding.content_identities)
-    for query in request.requests(request.candidate.definition.execution_spec):
+    expected = request.input_binding.expected_identities
+    observed = set()
+    for role, query in request.request_items(request.candidate.definition.execution_spec):
         result = dataflows.fetch(query, prepared=request.prepared)
-        role = query.parameters.query.product.name.lower()
-        if not result.ready or result.identity.content_sha256 != expected[role]:
+        if role in observed or not result.ready or result.identity.content_sha256 != expected.get(role):
             raise ValueError("equity parameter input content differs")
+        observed.add(role)
+    if observed != set(expected):
+        raise ValueError("equity parameter input coverage differs")
 
 
 def _create_equity_plan(cls, design, center, children, *, mapping_evidence, feasibility_evidence, dataflows):

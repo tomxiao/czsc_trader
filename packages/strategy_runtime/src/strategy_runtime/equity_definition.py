@@ -1,5 +1,7 @@
 """Portable, explicitly versioned equity strategy source and decision contracts."""
-from dataclasses import asdict, dataclass, replace
+from dataclasses import asdict, dataclass, replace, field
+from datetime import datetime
+import math
 from pathlib import Path, PurePosixPath
 from hashlib import sha256
 from importlib import metadata
@@ -13,8 +15,12 @@ import types
 from types import MappingProxyType
 from uuid import uuid4
 from functools import lru_cache
+from typing import Mapping
+import pandas as pd
 
-from dataflows import InstrumentId, MarketId, AssetClass, BarFrequency, PreparedDataRef
+from dataflows import (InstrumentId, MarketId, AssetClass, BarFrequency, PreparedDataRef,
+                      SourceRef, EquityProduct, EquityQuery, EquityDataRequest, PriceAdjustment,
+                      TradingSession)
 from .identity import CandidateContentIdentity, ImplementationDependency
 from .models import canonical_sha256
 from .signal_explanation import SignalExplanationSnapshot, SignalBasisSnapshot
@@ -95,6 +101,85 @@ class EquityDecisionContext:
     portfolio: EquityPortfolio
     point: DecisionPoint
     parameters: object
+    auxiliary_histories: Mapping[str, pd.DataFrame] = field(default_factory=lambda: MappingProxyType({}))
+    session: TradingSession | None = None
+    session_available_at: datetime | None = None
+
+    def __post_init__(self):
+        if not isinstance(self.auxiliary_histories, Mapping) or any(
+                type(name) is not str or not isinstance(frame, pd.DataFrame)
+                for name, frame in self.auxiliary_histories.items()):
+            raise TypeError('auxiliary histories require named DataFrames')
+        object.__setattr__(self, 'auxiliary_histories', MappingProxyType(
+            {name: frame.copy(deep=True) for name, frame in self.auxiliary_histories.items()}))
+
+
+@dataclass(frozen=True)
+class EquityAuxiliaryInput:
+    name: str
+    instrument: InstrumentId
+    source: SourceRef
+    frequency: BarFrequency
+    warmup_bars: int
+    max_age_seconds: float
+    analysis_price: str = 'RAW'
+
+    def __post_init__(self):
+        import re
+        if type(self.name) is not str or not re.fullmatch(r'[A-Za-z][A-Za-z0-9_]*', self.name):
+            raise ValueError('auxiliary input requires a stable alias')
+        if type(self.instrument) is not InstrumentId or type(self.source) is not SourceRef:
+            raise TypeError('auxiliary input requires typed instrument and source')
+        if self.instrument.market is not MarketId.US or self.instrument.asset_class not in (AssetClass.STOCK, AssetClass.ETF):
+            raise ValueError('auxiliary inputs support US stocks and ETFs')
+        if type(self.frequency) is not BarFrequency or self.frequency not in (BarFrequency.M30, BarFrequency.DAILY):
+            raise ValueError('auxiliary frequency must be M30 or DAILY')
+        if self.analysis_price != 'RAW':
+            raise ValueError('auxiliary inputs require RAW prices')
+        if type(self.warmup_bars) is not int or self.warmup_bars < 1:
+            raise ValueError('auxiliary warmup must be positive')
+        if type(self.max_age_seconds) not in (int, float) or not math.isfinite(self.max_age_seconds) or self.max_age_seconds < 0:
+            raise ValueError('auxiliary maximum age must be finite and nonnegative')
+
+    def data_key(self, product: EquityProduct) -> str:
+        if type(product) is not EquityProduct or product not in (EquityProduct.BARS, EquityProduct.SESSIONS):
+            raise ValueError('auxiliary inputs bind bars and sessions only')
+        return f'auxiliary:{self.name}:{product.name.lower()}'
+
+    def requests(self, start, end):
+        return tuple(EquityDataRequest(self.instrument, self.source,
+                     EquityQuery(product, start, end, self.frequency, PriceAdjustment.NONE))
+                     for product in (EquityProduct.BARS, EquityProduct.SESSIONS))
+
+    @classmethod
+    def from_dict(cls, value):
+        value = dict(value)
+        instrument = dict(value['instrument'])
+        instrument['market'] = MarketId(instrument['market'])
+        instrument['asset_class'] = AssetClass(instrument['asset_class'])
+        value['instrument'] = InstrumentId(**instrument)
+        value['source'] = SourceRef(**value['source'])
+        value['frequency'] = BarFrequency(value['frequency'])
+        return cls(**value)
+
+
+@dataclass(frozen=True)
+class EquityAuxiliaryBinding:
+    input: EquityAuxiliaryInput
+    bars_sha256: str
+    sessions_sha256: str
+
+    def __post_init__(self):
+        import re
+        if type(self.input) is not EquityAuxiliaryInput:
+            raise TypeError('auxiliary binding requires a typed input')
+        if any(type(x) is not str or not re.fullmatch('[a-f0-9]{64}', x)
+               for x in (self.bars_sha256, self.sessions_sha256)):
+            raise ValueError('invalid auxiliary content fingerprint')
+
+    @classmethod
+    def from_dict(cls, value):
+        return cls(EquityAuxiliaryInput.from_dict(value['input']), value['bars_sha256'], value['sessions_sha256'])
 
 
 @dataclass(frozen=True)
@@ -104,12 +189,38 @@ class EquityInputBinding:
     specification_hash: str
     content_identities: tuple[tuple[str, str], ...]
     warmup_bars: int
+    auxiliary_inputs: tuple[EquityAuxiliaryBinding, ...] = ()
 
     def to_dict(self):
         result = asdict(self)
         result['prepared']['space_id'] = str(self.prepared.space_id)
         result['prepared']['preparation_id'] = str(self.prepared.preparation_id)
+        if not self.auxiliary_inputs:
+            result.pop('auxiliary_inputs')
         return result
+
+    @property
+    def expected_identities(self):
+        result = dict(self.content_identities)
+        for binding in self.auxiliary_inputs:
+            result[binding.input.data_key(EquityProduct.BARS)] = binding.bars_sha256
+            result[binding.input.data_key(EquityProduct.SESSIONS)] = binding.sessions_sha256
+        return MappingProxyType(result)
+
+    def request_key(self, request: EquityDataRequest) -> str:
+        if type(request) is not EquityDataRequest:
+            raise TypeError('equity binding requires a typed request')
+        p = request.parameters
+        matches = [b.input for b in self.auxiliary_inputs if
+                   (b.input.instrument, b.input.source, b.input.frequency) ==
+                   (p.instrument, p.source, p.query.frequency)]
+        if matches:
+            if len(matches) != 1 or p.query.adjustment is not PriceAdjustment.NONE:
+                raise ValueError('ambiguous or adjusted auxiliary request')
+            return matches[0].data_key(p.query.product)
+        if p.instrument != self.instrument or p.query.product.name.lower() not in dict(self.content_identities):
+            raise ValueError('request is absent from equity input binding')
+        return p.query.product.name.lower()
 
     @classmethod
     def from_dict(cls, value):
@@ -124,9 +235,17 @@ class EquityInputBinding:
         instrument['asset_class'] = AssetClass(instrument['asset_class'])
         value['instrument'] = InstrumentId(**instrument)
         value['content_identities'] = tuple(tuple(x) for x in value['content_identities'])
+        value['auxiliary_inputs'] = tuple(EquityAuxiliaryBinding.from_dict(x) for x in value.get('auxiliary_inputs', ()))
         return cls(**value)
 
     def __post_init__(self):
+        if type(self.auxiliary_inputs) is not tuple or any(type(x) is not EquityAuxiliaryBinding for x in self.auxiliary_inputs):
+            raise TypeError('typed auxiliary bindings required')
+        if len({x.input.name for x in self.auxiliary_inputs}) != len(self.auxiliary_inputs):
+            raise ValueError('duplicate auxiliary alias')
+        products = [(x.input.instrument, x.input.source, x.input.frequency) for x in self.auxiliary_inputs]
+        if len(set(products)) != len(products):
+            raise ValueError('duplicate auxiliary product request')
         if type(self.prepared) is not PreparedDataRef or type(self.instrument) is not InstrumentId:
             raise TypeError("equity binding requires prepared data and instrument")
         if type(self.warmup_bars) is not int or self.warmup_bars < 1:
@@ -155,12 +274,27 @@ class EquityStrategyDefinition:
     feedback_mode: str = 'CONFIRMED_EXECUTION'
     analysis_price: str = 'RAW'
     explanation_cases: tuple[str, ...] = ('flat', 'long')
+    auxiliary_inputs: tuple[EquityAuxiliaryInput, ...] = ()
+    session_context: bool = False
 
     def __post_init__(self):
         import re
         if self.contract_version != 2 or type(self.execution_spec) is not ResearchExecutionSpec:
             raise ValueError("unsupported equity definition contract")
         self.execution_spec.require_instrument(self.instrument)
+        if type(self.session_context) is not bool:
+            raise TypeError('session_context requires bool')
+        if type(self.auxiliary_inputs) is not tuple or any(type(x) is not EquityAuxiliaryInput for x in self.auxiliary_inputs):
+            raise TypeError('typed auxiliary inputs required')
+        if (self.auxiliary_inputs or self.session_context) and self.instrument.market is not MarketId.US:
+            raise ValueError('auxiliary and session context currently require US market')
+        if len({x.name for x in self.auxiliary_inputs}) != len(self.auxiliary_inputs):
+            raise ValueError('duplicate auxiliary alias')
+        identities = [(x.instrument, x.source, x.frequency) for x in self.auxiliary_inputs]
+        if len(set(identities)) != len(identities):
+            raise ValueError('duplicate auxiliary product request')
+        if any(x.instrument == self.instrument and x.frequency == self.execution_spec.decision_clock for x in self.auxiliary_inputs):
+            raise ValueError('auxiliary request duplicates the primary instrument frequency')
         if type(self.warmup_bars) is not int or self.warmup_bars < 1:
             raise ValueError("positive warmup required")
         if not re.fullmatch(r"[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*:[A-Za-z_]\w*", self.entrypoint):
@@ -222,7 +356,12 @@ class EquityStrategyDefinition:
         return _freeze(json.loads(self.parameters_json))
 
     def to_dict(self):
-        return {"runtime_kind": "US_EQUITY", **asdict(self)}
+        result = {"runtime_kind": "US_EQUITY", **asdict(self)}
+        if not self.auxiliary_inputs:
+            result.pop('auxiliary_inputs')
+        if not self.session_context:
+            result.pop('session_context')
+        return result
 
     @classmethod
     def from_dict(cls, value):
@@ -236,6 +375,7 @@ class EquityStrategyDefinition:
         value['execution_spec'] = execution_spec_from_dict(value['execution_spec'])
         value['source_files'] = tuple(value['source_files'])
         value['dependencies'] = tuple(ImplementationDependency(**x) for x in value['dependencies'])
+        value['auxiliary_inputs'] = tuple(EquityAuxiliaryInput.from_dict(x) for x in value.get('auxiliary_inputs', ()))
         return cls(**value)
 
 
@@ -349,6 +489,12 @@ class EquityStrategyCandidate:
             elif portfolio.closed_cycle_feedback is not None:
                 # Old definitions do not acquire new execution inputs implicitly.
                 context = replace(context, portfolio=replace(portfolio, closed_cycle_feedback=None))
+        if self.definition.auxiliary_inputs or self.definition.session_context:
+            from .equity_context import validate_equity_decision_context
+            context = validate_equity_decision_context(self.definition, context)
+        else:
+            context = replace(context, auxiliary_histories=MappingProxyType({}),
+                              session=None, session_available_at=None)
         if equity_source_hash(self.source_root, self.definition.source_files) != self.definition.source_sha256:
             raise ValueError('equity source closure changed during execution')
         namespace = '_equity_' + uuid4().hex

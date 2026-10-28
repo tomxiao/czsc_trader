@@ -278,7 +278,8 @@ class EquityStrategyInstance:
             raise ValueError("MARKET_CONTRACT_MISMATCH: candidate execution identity")
         self.candidate, self.specification = candidate, specification
 
-    def run_window(self, bars, constraints, executor, *, start, end, fee_rate):
+    def run_window(self, bars, constraints, executor, *, start, end, fee_rate,
+                   auxiliary_histories=None, sessions=None, trading_sessions=()):
         """Plan at bar boundaries with only completed, published observations."""
         from .equity_definition import EquityStrategyCandidate
         if type(self.candidate) is EquityStrategyCandidate:
@@ -323,12 +324,14 @@ class EquityStrategyInstance:
             else:
                 # Execution-only annotations are not features or synthetic prices.
                 plan = self.plan(history.drop(columns=["BarStatus", "ExecutionBlocked"], errors="ignore"),
-                                 interval, portfolio, fee_rate=fee_rate)
+                                 interval, portfolio, fee_rate=fee_rate,
+                                 auxiliary_histories=auxiliary_histories, sessions=sessions,
+                                 trading_sessions=trading_sessions)
             executor.execute(plan, bar, constraint=constraint)
         return executor.finish()
 
     def plan(self, history: pd.DataFrame, interval: TimeInterval, portfolio: EquityPortfolio,
-             *, fee_rate: float) -> EquityPlan:
+             *, fee_rate: float, auxiliary_histories=None, sessions=None, trading_sessions=()) -> EquityPlan:
         if "BarStatus" in history:
             if not history.BarStatus.isin(("OBSERVED", "MISSING", "ZERO_VOLUME")).all():
                 raise ValueError("unknown equity history status")
@@ -350,8 +353,14 @@ class EquityStrategyInstance:
         if type(self.candidate) is EquityStrategyCandidate:
             point = DecisionPoint(observed, interval.start, interval)
             feedback = portfolio if self.candidate.definition.feedback_mode != 'MARKET_INTENT' else None
-            result = self.candidate.decide(EquityDecisionContext(history.copy(deep=True), feedback, point,
-                                                                self.candidate.definition.parameters))
+            if self.candidate.definition.auxiliary_inputs or self.candidate.definition.session_context:
+                from .equity_context import build_equity_decision_context
+                context = build_equity_decision_context(self.candidate.definition, history, feedback, point,
+                    auxiliary_histories=auxiliary_histories, sessions=sessions, trading_sessions=trading_sessions)
+            else:
+                context = EquityDecisionContext(history.copy(deep=True), feedback, point,
+                                                self.candidate.definition.parameters)
+            result = self.candidate.decide(context)
             target, explanation = result.target, result.explanation.to_dict()
         else:
             target = self.candidate.decide(history.copy(deep=True), portfolio)

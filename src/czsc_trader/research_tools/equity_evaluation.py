@@ -15,7 +15,8 @@ from dataflows import (EquityDataRequest, EquityProduct, EquityQuery, MarketId,
 from strategy_runtime.equity import (EquityCandidate, EquityStrategyInstance,
                                     ResearchExecutionSpec, equity_hash, equity_implementation_hash)
 from strategy_runtime.runtime import StrategyRuntime
-from strategy_runtime.equity_definition import EquityStrategyCandidate, EquityInputBinding
+from strategy_runtime.equity_definition import EquityStrategyCandidate, EquityInputBinding, EquityAuxiliaryBinding
+from dataflows.equity_data import sessions_from_metadata
 from trading_execution_engine.equity import EquityHistoricalExecutor
 from trading_execution_engine.fills import resolve_fill
 from strategy_evaluator.equity import audit_equity_account
@@ -103,10 +104,19 @@ class EquityEvaluationRequest:
         return type(self.candidate) is EquityStrategyCandidate
 
     def requests(self, specification):
+        return tuple(query for _, query in self.request_items(specification))
+
+    def request_items(self, specification):
+        """Stable product keys; auxiliary products never replace the traded asset."""
         end = pd.Timestamp(self.window.end).tz_convert(self.candidate.instrument.timezone).date()
-        return tuple(EquityDataRequest(self.candidate.instrument, getattr(self.sources, product.name.lower()),
-                                      EquityQuery(product, self.history_start, end, specification.decision_clock))
-                     for product in EquityProduct)
+        primary = tuple((product.name.lower(), EquityDataRequest(
+            self.candidate.instrument, getattr(self.sources, product.name.lower()),
+            EquityQuery(product, self.history_start, end, specification.decision_clock))) for product in EquityProduct)
+        auxiliary = (() if not self.formal else tuple(
+            (item.data_key(query.parameters.query.product), query)
+            for item in self.candidate.definition.auxiliary_inputs
+            for query in item.requests(self.history_start, end)))
+        return primary + auxiliary
 
     def identity(self, specification):
         candidate = self.candidate
@@ -116,6 +126,10 @@ class EquityEvaluationRequest:
             engine_sources[EquityStrategyCandidate.__module__] = sha256(Path(inspect.getsourcefile(EquityStrategyCandidate)).read_bytes()).hexdigest()
             from strategy_runtime.equity_buy_hold import decide as hold_decision
             engine_sources[hold_decision.__module__] = sha256(Path(inspect.getsourcefile(hold_decision)).read_bytes()).hexdigest()
+            if candidate.definition.auxiliary_inputs or candidate.definition.session_context:
+                from strategy_runtime.equity_context import build_equity_decision_context
+                engine_sources[build_equity_decision_context.__module__] = sha256(
+                    Path(inspect.getsourcefile(build_equity_decision_context)).read_bytes()).hexdigest()
         contract = {"schema": "equity-research/v2" if self.formal else "equity-research/v1", "experiment": asdict(self.experiment),
                 "candidate_id": candidate.candidate_id, "instrument": asdict(candidate.instrument),
                 "implementation_hash": candidate.implementation_hash, "warmup_bars": candidate.warmup_bars,
@@ -189,6 +203,55 @@ class EquityEvaluationOutcome:
             raise ValueError("failed equity outcome requires an error")
 
 
+def _fetch_products(access, request):
+    products, identities, calendars = {}, {}, {}
+    for name, query in request.request_items(access.execution_spec):
+        result = access.data.fetch(query, prepared=request.prepared)
+        if not result.ready:
+            raise ValueError(f"pinned equity product unavailable ({name}): {result.error}")
+        products[name] = result.dataframe
+        identities[name] = {"content_sha256": result.identity.content_sha256,
+                            "metadata": dict(result.identity.metadata)}
+        # Each observation instrument owns its calendar. A daily auxiliary may
+        # have a different set of sessions from the traded instrument.
+        group = name.rsplit(":", 1)[0] if name.startswith("auxiliary:") else "primary"
+        declared = result.identity.metadata["sessions"]
+        if group in calendars and calendars[group] != declared:
+            raise ValueError(f"independent equity products disagree on the trading calendar: {group}")
+        calendars[group] = declared
+    return products, identities
+
+
+def _audit_inputs(request, specification, products):
+    inputs = {"bars": _records(products["bars"]), "action_facts": _records(products["actions"]),
+              "constraints": _records(products["constraints"]), "specification": asdict(specification),
+              "initial_cash": request.initial_cash, "fee_rate": request.fee_rate}
+    if request.formal:
+        definition = request.candidate.definition
+        decision_inputs = {}
+        if definition.session_context:
+            decision_inputs["sessions"] = _records(products["sessions"])
+        if definition.auxiliary_inputs:
+            decision_inputs["auxiliary"] = {item.name: {
+                "bars": _records(products[item.data_key(EquityProduct.BARS)]),
+                "sessions": _records(products[item.data_key(EquityProduct.SESSIONS)])}
+                for item in definition.auxiliary_inputs}
+        if decision_inputs:
+            inputs["decision_inputs"] = decision_inputs
+    return inputs
+
+
+def _runtime_inputs(definition, products, identities):
+    kwargs = {}
+    if definition.auxiliary_inputs:
+        kwargs["auxiliary_histories"] = {item.name: products[item.data_key(EquityProduct.BARS)]
+                                         for item in definition.auxiliary_inputs}
+    if definition.session_context:
+        kwargs["sessions"] = products["sessions"]
+        kwargs["trading_sessions"] = sessions_from_metadata(identities["sessions"]["metadata"])
+    return kwargs
+
+
 def prepare_equity(access, request):
     specification = access.execution_spec
     if type(specification) is not ResearchExecutionSpec:
@@ -207,21 +270,18 @@ def prepare_equity(access, request):
     if request.prepared is not None:
         if request.prepared.space_id != access.data.binding.space_id:
             raise ValueError("prepared data belongs to another research space")
-        identities, products = [], {}
-        for query in request.requests(specification):
-            result = access.data.fetch(query, prepared=request.prepared)
-            if not result.ready:
-                raise ValueError(f"pinned equity data unavailable: {result.error}")
-            identities.append((query.parameters.query.product.name.lower(), result.identity.content_sha256))
-            products[query.parameters.query.product.name.lower()] = result.dataframe
+        products, identities = _fetch_products(access, request)
         if request.formal:
+            auxiliary = tuple(EquityAuxiliaryBinding(item,
+                identities[item.data_key(EquityProduct.BARS)]["content_sha256"],
+                identities[item.data_key(EquityProduct.SESSIONS)]["content_sha256"])
+                for item in request.candidate.definition.auxiliary_inputs)
             binding = EquityInputBinding(request.prepared, request.candidate.instrument, specification.fingerprint,
-                                         tuple(identities), request.candidate.warmup_bars)
+                tuple((product.name.lower(), identities[product.name.lower()]["content_sha256"])
+                      for product in EquityProduct), request.candidate.warmup_bars, auxiliary_inputs=auxiliary)
             if request.input_binding is not None and request.input_binding != binding:
                 raise ValueError("equity input identity differs from prepared assets")
-            facts_hash = equity_hash({"bars": _records(products["bars"]), "action_facts": _records(products["actions"]),
-                                      "constraints": _records(products["constraints"]), "specification": asdict(specification),
-                                      "initial_cash": request.initial_cash, "fee_rate": request.fee_rate})
+            facts_hash = equity_hash(_audit_inputs(request, specification, products))
             if request.audit_inputs_sha256 is not None and request.audit_inputs_sha256 != facts_hash:
                 raise ValueError("equity audit facts differ from prepared request")
             bound = replace(request, input_binding=binding, audit_inputs_sha256=facts_hash)
@@ -288,13 +348,10 @@ def validate_equity_result(access, request, result):
     payload = result.payload
     if expected != payload["request"] or equity_hash(expected) != result.request_hash:
         raise ValueError("published equity request differs from evaluated request")
-    facts = {}
-    for query in request.requests(access.execution_spec):
-        fetched = access.data.fetch(query, prepared=request.prepared)
-        name = query.parameters.query.product.name.lower()
-        if not fetched.ready or fetched.identity.content_sha256 != payload["data"][name]["content_sha256"]:
-            raise ValueError("published equity data identity differs")
-        facts[name] = _records(fetched.dataframe)
+    products, identities = _fetch_products(access, request)
+    if _json_value(identities) != payload["data"]:
+        raise ValueError("published equity data identity differs")
+    facts = {name: _records(frame) for name, frame in products.items()}
     if set(payload["runs"]) != {"candidate", "buy_hold"}:
         raise ValueError("equity evidence requires candidate and benchmark")
     for run in payload["runs"].values():
@@ -317,9 +374,7 @@ def validate_equity_result(access, request, result):
         if run.get("data_quality") != _data_quality(facts["bars"], run):
             raise ValueError("published equity data quality differs from source and execution facts")
     if request.formal:
-        expected_inputs = {"bars": facts["bars"], "action_facts": facts["actions"], "constraints": facts["constraints"],
-                           "specification": asdict(access.execution_spec), "initial_cash": request.initial_cash,
-                           "fee_rate": request.fee_rate}
+        expected_inputs = _audit_inputs(request, access.execution_spec, products)
         if payload.get("audit_inputs") != _json_value(expected_inputs):
             raise ValueError("formal equity audit input differs from authenticated data")
         from .equity_assessment import build_equity_assessment_payload
@@ -328,21 +383,7 @@ def validate_equity_result(access, request, result):
 
 def evaluate_equity(access, prepared):
     specification = access.execution_spec
-    products = {}
-    identities = {}
-    calendar = None
-    for query in prepared.requests(specification):
-        result = access.data.fetch(query, prepared=prepared.prepared)
-        if not result.ready:
-            raise ValueError(f"pinned equity product unavailable: {result.error}")
-        name = query.parameters.query.product.name.lower()
-        products[name] = result.dataframe
-        identities[name] = {"content_sha256": result.identity.content_sha256,
-                            "metadata": dict(result.identity.metadata)}
-        declared = result.identity.metadata["sessions"]
-        if calendar is not None and calendar != declared:
-            raise ValueError("independent equity products disagree on the trading calendar")
-        calendar = declared
+    products, identities = _fetch_products(access, prepared)
     bars = products["bars"]
     eligible = bars.loc[(bars.BarStart >= prepared.window.start) & (bars.Date <= prepared.window.end)]
     if eligible.empty or eligible.BarStart.iloc[0] != prepared.window.start or eligible.Date.iloc[-1] != prepared.window.end:
@@ -366,9 +407,11 @@ def evaluate_equity(access, prepared):
     for name, candidate in (("candidate", prepared.candidate), ("buy_hold", baseline)):
         executor = EquityHistoricalExecutor(specification=specification, initial_cash=prepared.initial_cash,
                                             fee_rate=prepared.fee_rate, actions=products["actions"])
+        context_inputs = (_runtime_inputs(candidate.definition, products, identities)
+                          if prepared.formal and name == "candidate" else {})
         account = StrategyRuntime(execution_spec=specification).create(candidate).run_window(
             bars, products["constraints"], executor, start=prepared.window.start,
-            end=prepared.window.end, fee_rate=prepared.fee_rate)
+            end=prepared.window.end, fee_rate=prepared.fee_rate, **context_inputs)
         evidence = {"decisions": _records(account.decisions), "orders": _records(account.orders),
                     "fills": _records(account.fills), "actions": _records(account.corporate_action_entries),
                     "account_points": _records(account.account_points), "trades": _records(account.trades)}
@@ -403,9 +446,7 @@ def evaluate_equity(access, prepared):
                                       prepared.prepared.manifest_sha256, request_hash,
                                       canonical_sha256(contract["engine_sources"]))
         payload.update(schema_version=2, evaluation_identity=identity.to_dict(), evaluation_id=identity.evaluation_id,
-                       audit_inputs={"bars": _records(bars), "action_facts": _records(products["actions"]),
-                                     "constraints": _records(products["constraints"]), "specification": asdict(specification),
-                                     "initial_cash": prepared.initial_cash, "fee_rate": prepared.fee_rate})
+                       audit_inputs=_audit_inputs(prepared, specification, products))
         prepared.candidate.verify()
     content = json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False, default=encode).encode()
     return EquityEvaluationResult(request_hash, content)

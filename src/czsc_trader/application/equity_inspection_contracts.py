@@ -20,10 +20,13 @@ class EquityInspectionReplay:
     def __post_init__(self):
         if type(self.coordinate) is not f.InspectionCoordinate or type(self.input_binding) is not EquityInputBinding:
             raise TypeError('equity inspection requires typed coordinate and input binding')
-        if type(self.window) is not TimeInterval or type(self.requests) is not tuple or len(self.requests) != 4:
-            raise TypeError('equity inspection requires window and four prepared product requests')
+        if type(self.window) is not TimeInterval or type(self.requests) is not tuple:
+            raise TypeError('equity inspection requires window and prepared product requests')
         if any(type(x) is not EquityDataRequest for x in self.requests):
             raise TypeError('equity inspection requests must be EquityDataRequest')
+        keys = tuple(self.input_binding.request_key(x) for x in self.requests)
+        if len(set(keys)) != len(keys) or set(keys) != set(self.input_binding.expected_identities):
+            raise ValueError('equity inspection requires exact primary and auxiliary product coverage')
         for value in (self.initial_cash, self.one_way_cost):
             if type(value) not in (int, float) or not math.isfinite(value):
                 raise ValueError('finite equity inspection account values required')

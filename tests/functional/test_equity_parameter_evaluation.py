@@ -17,8 +17,12 @@ from czsc_trader.research_tools.parameter_evaluation import validate_parameter_r
 from test_equity_closure import setup_formal_equity
 
 
-def equity_plan(tmp_path, *, applicable=True):
-    context, request, _, _ = setup_formal_equity(tmp_path)
+def equity_plan(tmp_path, *, applicable=True, auxiliary=False):
+    if auxiliary:
+        from test_equity_auxiliary_context import setup_auxiliary
+        context, request, _, _ = setup_auxiliary(tmp_path)
+    else:
+        context, request, _, _ = setup_formal_equity(tmp_path)
     source = request.candidate.source_root
     (source / "strategy.py").write_text(
         'from strategy_runtime.equity_definition import EquityDecision\n'
@@ -58,12 +62,13 @@ def equity_plan(tmp_path, *, applicable=True):
     return context, request, plan, ref, tuple(bound)
 
 
-@pytest.mark.parametrize("applicable", [True, False])
-def test_equity_parameter_plan_preserves_payload_inputs_and_point_mapping(tmp_path, applicable):
-    context, request, plan, reference, children = equity_plan(tmp_path, applicable=applicable)
+@pytest.mark.parametrize("applicable,auxiliary", [(True, False), (False, False), (True, True)])
+def test_equity_parameter_plan_preserves_payload_inputs_and_point_mapping(tmp_path, applicable, auxiliary):
+    context, request, plan, reference, children = equity_plan(tmp_path, applicable=applicable, auxiliary=auxiliary)
     assert plan.schema_version == 4
     assert ParameterEvaluationPlan.from_dict(plan.to_dict()) == plan
     assert bool(children) == applicable
+    assert bool(request.input_binding.auxiliary_inputs) == auxiliary
     center = context.evaluation.evaluate(request)
     assert build_equity_assessment_payload(center.payload)[0].candidate == plan.design.center
     for index, child in enumerate(children):

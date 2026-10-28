@@ -20,14 +20,31 @@ from test_equity_closure import setup_formal_equity
 from test_equity_pte import equity_protocol
 
 
-def test_formal_equity_inspect_freeze_exact_package(tmp_path):
-    research, evaluation, _, _ = setup_formal_equity(tmp_path)
+@pytest.mark.parametrize('auxiliary', [False, True], ids=['primary', 'auxiliary-session'])
+def test_formal_equity_inspect_freeze_exact_package(tmp_path, auxiliary):
+    from test_equity_auxiliary_context import setup_auxiliary
+    research, evaluation, _, _ = (setup_auxiliary(tmp_path, same_source=True) if auxiliary
+                                  else setup_formal_equity(tmp_path))
     evaluation = research.evaluation.prepare(evaluation)
     context = research.repository
     result = research.evaluation.evaluate(evaluation)
     evidence = publish_evidence(research, EvaluationEvidenceWrite(evaluation.experiment, 'inspection-baseline', evaluation, result))
     register_candidate(context, CandidateRegistrationRequest(evaluation.candidate, evaluation.experiment, (evidence,), ()))
     inspect_freeze(research, evaluation, evidence)
+
+
+def test_equity_inspection_requires_complete_auxiliary_identity(tmp_path):
+    from dataclasses import replace
+    from test_equity_auxiliary_context import setup_auxiliary
+    research, evaluation, _, _ = setup_auxiliary(tmp_path)
+    evaluation = research.evaluation.prepare(evaluation)
+    replay = EquityInspectionReplay(f.InspectionCoordinate('main', 'standard'), evaluation.input_binding,
+        evaluation.requests(research.execution_spec), evaluation.window, evaluation.initial_cash, evaluation.fee_rate)
+    assert len(replay.requests) == 6
+    with pytest.raises(ValueError, match='exact primary and auxiliary'):
+        replace(replay, requests=replay.requests[:-1])
+    with pytest.raises(ValueError, match='exact primary and auxiliary'):
+        replace(replay, requests=replay.requests + replay.requests[-1:])
 
 
 def inspect_freeze(research, evaluation, evidence, *, assessment_ref=None):

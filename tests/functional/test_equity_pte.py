@@ -22,8 +22,9 @@ class RecordedChannel:
             intent.limit_price, 'SUBMITTED', 0, 0., intent.intent_id, order_type=intent.order_type)
 
 
-def equity_account(tmp_path, cash_policy=None):
-    context, request, products, _ = setup_formal_equity(tmp_path)
+def equity_account(tmp_path, cash_policy=None, *, auxiliary=False):
+    from test_equity_auxiliary_context import setup_auxiliary
+    context, request, products, _ = (setup_auxiliary if auxiliary else setup_formal_equity)(tmp_path)
     if cash_policy is not None:
         from dataclasses import replace
         from strategy_runtime import StrategyRuntime
@@ -46,6 +47,37 @@ def equity_account(tmp_path, cash_policy=None):
         channel_id=EQUITY_OFFLINE_CHANNEL_ID, equity_rules=EquityAccountRules(request.candidate.instrument, context.execution_spec))
     store.set_virtual_paused('us', False)
     return context, request, store, permit
+
+
+@pytest.mark.parametrize('tamper', ['auxiliary', 'session'])
+def test_equity_auxiliary_pte_authenticates_inputs_and_prepared_snapshot(tmp_path, tamper):
+    from dataclasses import replace
+    context, request, store, _ = equity_account(tmp_path, auxiliary=True)
+    interval = TimeInterval(request.window.start, request.window.start + timedelta(minutes=30))
+    requests = request.requests(context.execution_spec)
+    binding = request.input_binding
+    with pytest.raises(ValueError, match='lacks required products'):
+        prepare_equity_decision(context.data, request.candidate, binding, requests[:-1], interval, fee_rate=request.fee_rate)
+    corrupted = replace(binding, auxiliary_inputs=(replace(binding.auxiliary_inputs[0], bars_sha256='0' * 64),))
+    with pytest.raises(ValueError, match='product identity differs'):
+        prepare_equity_decision(context.data, request.candidate, corrupted, requests, interval, fee_rate=request.fee_rate)
+    prepared = prepare_equity_decision(context.data, request.candidate, binding, requests, interval, fee_rate=request.fee_rate)
+    assert prepared.history.Close.iloc[-1] == 10.
+    assert prepared.auxiliary_histories['market'].Close.iloc[-1] == 100.
+    assert prepared.auxiliary_histories['market'].Date.max() <= interval.start
+    if tamper == 'auxiliary':
+        prepared.auxiliary_histories['market'].loc[:, 'Close'] = 1.
+    else:
+        prepared.sessions.loc[:, 'SessionDate'] = '2026-01-01'
+    engine = AccountEngine(store, EquityAdviceClient(store), now=lambda: interval.start)
+    try:
+        with pytest.raises(ValueError, match='decision inputs changed after authentication'):
+            engine.refresh_account('us', prepared=prepared)
+        clean = prepare_equity_decision(context.data, request.candidate, binding, requests, interval, fee_rate=request.fee_rate)
+        engine.refresh_account('us', prepared=clean)
+        assert store.account_intents('us')[0]['quantity'] == 98
+    finally:
+        store.close()
 
 
 def test_equity_partial_fill_duplicate_restart_and_market_isolation(tmp_path):

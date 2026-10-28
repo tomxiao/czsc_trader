@@ -8,7 +8,8 @@ import time
 from uuid import uuid4
 
 import pandas as pd
-from dataflows import Dataflows, DataSpace, ProviderConfig, ProviderKey, ProviderBinding, PreparePolicy
+from dataflows import Dataflows, DataSpace, ProviderConfig, ProviderKey, ProviderBinding, PreparePolicy, EquityProduct
+from dataflows.equity_data import sessions_from_metadata
 from strategy_runtime import EquityStrategyCandidate, EquityStrategyDefinition, StrategyRuntime, canonical_sha256
 from strategy_runtime.inspection import InspectionRuntimePermit, InspectionStage
 from strategy_runtime.deployment import validate_release_package
@@ -34,15 +35,18 @@ def replay_identity(replay):
 
 
 def _products(flows, replay):
-    expected = dict(replay.input_binding.content_identities)
-    products, identities = {}, {}
+    expected = replay.input_binding.expected_identities
+    products, identities, calendars = {}, {}, {}
     for query in replay.requests:
-        if query.parameters.instrument != replay.input_binding.instrument:
-            raise ValueError('inspection product instrument differs')
-        name = query.parameters.query.product.name.lower()
+        name = replay.input_binding.request_key(query)
         result = flows.fetch(query, prepared=replay.input_binding.prepared)
         if name in products or not result.ready or result.identity.content_sha256 != expected[name]:
             raise ValueError('inspection prepared input identity differs')
+        role = name.rsplit(':', 1)[0] if name.startswith('auxiliary:') else 'primary'
+        calendar = result.identity.metadata['sessions']
+        if role in calendars and calendars[role] != calendar:
+            raise ValueError('inspection input calendars differ')
+        calendars[role] = calendar
         products[name] = result.dataframe
         identities[name] = {'content_sha256': result.identity.content_sha256, 'metadata': dict(result.identity.metadata)}
     if set(products) != set(expected):
@@ -62,12 +66,17 @@ def replay_account(candidate, flows, replay):
         raise ValueError('technical replay market contract differs')
     if candidate.warmup_bars != replay.input_binding.warmup_bars:
         raise ValueError('technical replay warmup differs')
+    if candidate.definition.auxiliary_inputs != tuple(x.input for x in replay.input_binding.auxiliary_inputs):
+        raise ValueError('technical replay auxiliary contract differs')
     specification = candidate.definition.execution_spec
     executor = EquityHistoricalExecutor(specification=specification, initial_cash=replay.initial_cash,
                                         fee_rate=replay.one_way_cost, actions=products['actions'])
     account = StrategyRuntime(execution_spec=specification).create(candidate).run_window(
         products['bars'], products['constraints'], executor, start=replay.window.start,
-        end=replay.window.end, fee_rate=replay.one_way_cost)
+        end=replay.window.end, fee_rate=replay.one_way_cost,
+        auxiliary_histories={x.name: products[x.data_key(EquityProduct.BARS)] for x in candidate.definition.auxiliary_inputs},
+        sessions=products['sessions'] if candidate.definition.session_context else None,
+        trading_sessions=sessions_from_metadata(identities['sessions']['metadata']) if candidate.definition.session_context else ())
     facts = {name: _records(getattr(account, attr)) for name, attr in (
         ('decisions','decisions'), ('orders','orders'), ('fills','fills'), ('actions','corporate_action_entries'),
         ('account_points','account_points'), ('account_daily','account_daily'), ('trades','trades'))}
@@ -143,15 +152,20 @@ def _baseline_matches(payload, replay, account, content_hash, candidate_key):
             or request['window'] != _json(asdict(replay.window))
             or request['initial_cash'] != replay.initial_cash or request['fee_rate'] != replay.one_way_cost
             or request['specification_hash'] != replay.input_binding.specification_hash
-            or any(payload['data'][k]['content_sha256'] != v for k, v in replay.input_binding.content_identities)):
+            or any(payload['data'][k]['content_sha256'] != v for k, v in replay.input_binding.expected_identities.items())):
         raise ValueError('baseline technical identity differs')
     return all(payload['runs']['candidate'][k] == account['facts'][k] for k in account['facts'])
 
 
 def _copy_inputs(flows, replay, workspace):
     products, identities = _products(flows, replay)
+    # DFLS normalizes subclasses to DataRequest before invoking a provider;
+    # EquityParameters retains the complete instrument/source/bounded query.
+    requests = {q.parameters: replay.input_binding.request_key(q) for q in replay.requests}
     def fetch(request):
-        name = request.parameters.query.product.name.lower()
+        if request.parameters not in requests:
+            raise ValueError('isolated equity request differs from authenticated input')
+        name = requests[request.parameters]
         return products[name].copy(deep=True), dict(identities[name]['metadata'])
     bindings = {ProviderKey(q.parameters.query.product, q.parameters.instrument.market, q.parameters.source):
                 ProviderBinding(q.parameters.source.provider, q.parameters.source.revision, fetch) for q in replay.requests}
@@ -159,7 +173,8 @@ def _copy_inputs(flows, replay, workspace):
                       providers=ProviderConfig(equity_bindings=bindings))
     prepared = target.prepare(replay.requests, policy=PreparePolicy.REFRESH)
     if not prepared.ready:
-        raise ValueError('isolated equity preparation failed')
+        raise ValueError('isolated equity preparation failed: ' + '; '.join(
+            item.error.message for item in prepared.items if not item.ready))
     copied = replace(replay, input_binding=replace(replay.input_binding, prepared=prepared.reference))
     _products(target, copied)
     return target, copied

@@ -1,12 +1,21 @@
 """US SRT adapter consumed by the normal AccountEngine and PaperStore."""
+from __future__ import annotations
+
 from dataclasses import dataclass, field
+from collections.abc import Mapping
 from datetime import datetime
 from decimal import Decimal
+from types import MappingProxyType
+from typing import TYPE_CHECKING
 
-from dataflows import TimeInterval
+from dataflows import TimeInterval, EquityProduct, TradingSession
+from dataflows.equity_data import sessions_from_metadata
 from strategy_runtime import EquityPortfolio, StrategyRuntime, TradableWindow
 from strategy_runtime.equity_definition import EquityStrategyCandidate, EquityInputBinding
 from .contracts import AdviceDecision, OrderSpec
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 
 def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *, fee_rate):
@@ -15,19 +24,24 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
     if type(binding) is not EquityInputBinding or type(candidate) is not EquityStrategyCandidate:
         raise TypeError("equity preparation requires typed candidate and binding")
     if (binding.instrument != candidate.instrument or binding.specification_hash != candidate.execution_spec_hash
-            or binding.warmup_bars != candidate.warmup_bars):
+            or binding.warmup_bars != candidate.warmup_bars
+            or tuple(x.input for x in binding.auxiliary_inputs) != candidate.definition.auxiliary_inputs):
         raise ValueError("equity preparation differs from candidate contract")
-    identities = dict(binding.content_identities)
+    identities = binding.expected_identities
     products = {}
-    calendar = None
+    calendars = {}
+    metadata = {}
     for request in requests:
-        name = request.parameters.query.product.name.lower()
+        name = binding.request_key(request)
         fetched = dataflows.fetch(request, prepared=binding.prepared)
         if not fetched.ready or name in products or fetched.identity.content_sha256 != identities.get(name):
             raise ValueError("equity preparation product identity differs")
-        if calendar is not None and calendar != fetched.identity.metadata["sessions"]:
-            raise ValueError("equity preparation calendars differ")
+        role = name.rsplit(':', 1)[0] if name.startswith('auxiliary:') else 'primary'
         calendar = fetched.identity.metadata["sessions"]
+        if role in calendars and calendars[role] != calendar:
+            raise ValueError("equity preparation calendars differ")
+        calendars[role] = calendar
+        metadata[name] = fetched.identity.metadata
         products[name] = fetched.dataframe
     if set(products) != set(identities):
         raise ValueError("equity preparation lacks required products")
@@ -52,7 +66,19 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
             scale /= float(row.Ratio)
     required = tuple((str(row.EventId), identities["actions"]) for row in actions.itertuples()
                      if row.Kind != "NONE" and row.Date <= interval.start and row.AvailableDate <= interval.start)
-    return PreparedEquityDecision(candidate, binding, history, interval, fee_rate, scale, required)
+    auxiliary = {}
+    for item in candidate.definition.auxiliary_inputs:
+        frame = products[item.data_key(EquityProduct.BARS)]
+        auxiliary[item.name] = frame.loc[(frame.Date <= interval.start) & (frame.AvailableDate + delay <= interval.start)].copy(deep=True)
+    sessions, trading_sessions = None, ()
+    if candidate.definition.session_context:
+        frame = products['sessions']
+        sessions = frame.loc[(frame.Date <= interval.start) & (frame.AvailableDate <= interval.start)].copy(deep=True)
+        known_days = set(sessions.SessionDate)
+        trading_sessions = tuple(s for s in sessions_from_metadata(metadata['sessions'])
+                                 if s.session_date.isoformat() in known_days)
+    return PreparedEquityDecision(candidate, binding, history, interval, fee_rate, scale, required,
+                                  auxiliary, sessions, trading_sessions)
 
 
 @dataclass(frozen=True)
@@ -64,7 +90,11 @@ class PreparedEquityDecision:
     fee_rate: float
     reference_price_scale: float = 1.
     required_actions: tuple[tuple[str, str], ...] = ()
+    auxiliary_histories: Mapping[str, pd.DataFrame] = field(default_factory=dict)
+    sessions: pd.DataFrame | None = None
+    trading_sessions: tuple[TradingSession, ...] = ()
     history_sha256: str = field(init=False)
+    decision_inputs_sha256: str = field(init=False)
 
     def __post_init__(self):
         if type(self.candidate) is not EquityStrategyCandidate or type(self.binding) is not EquityInputBinding or type(self.interval) is not TimeInterval:
@@ -77,11 +107,42 @@ class PreparedEquityDecision:
         if ends.dt.tz is None or available.dt.tz is None or ends.max() > self.interval.start or available.max() > self.interval.start:
             raise ValueError("prepared equity decision contains future information")
         self.candidate.verify()
+        if not isinstance(self.auxiliary_histories, Mapping):
+            raise TypeError('prepared auxiliary histories require a mapping')
+        if set(self.auxiliary_histories) != {x.name for x in self.candidate.definition.auxiliary_inputs}:
+            raise ValueError('prepared auxiliary coverage differs')
+        for frame in self.auxiliary_histories.values():
+            if not isinstance(frame, pd.DataFrame) or frame.empty:
+                raise ValueError('prepared auxiliary history is empty')
+            ends, available = pd.to_datetime(frame.Date), pd.to_datetime(frame.AvailableDate)
+            if ends.dt.tz is None or available.dt.tz is None or ends.max() > self.interval.start or available.max() > self.interval.start:
+                raise ValueError('prepared auxiliary history contains future information')
+        object.__setattr__(self, 'auxiliary_histories', MappingProxyType(
+            {key: frame.copy(deep=True) for key, frame in self.auxiliary_histories.items()}))
+        if self.sessions is not None:
+            object.__setattr__(self, 'sessions', self.sessions.copy(deep=True))
+        if type(self.trading_sessions) is not tuple or any(type(x) is not TradingSession for x in self.trading_sessions):
+            raise TypeError('prepared sessions require typed calendar')
+        enabled = self.candidate.definition.session_context
+        if (enabled and (self.sessions is None or not self.trading_sessions)
+                or not enabled and (self.sessions is not None or self.trading_sessions)):
+            raise ValueError('prepared session coverage differs')
         from hashlib import sha256
         object.__setattr__(self, "history_sha256", sha256(self.history.to_json(date_format="iso").encode()).hexdigest())
+        object.__setattr__(self, 'decision_inputs_sha256', self._decision_inputs_hash())
         import math
         if type(self.fee_rate) not in (int, float) or not math.isfinite(self.fee_rate) or not 0 <= self.fee_rate < 1:
             raise ValueError("equity decision requires an explicit finite fee rate")
+
+    def _decision_inputs_hash(self):
+        from strategy_runtime import canonical_sha256
+        return canonical_sha256({
+            'auxiliary': {key: frame.to_json(date_format='iso', date_unit='us') for key, frame in self.auxiliary_histories.items()},
+            'sessions': None if self.sessions is None else self.sessions.to_json(date_format='iso', date_unit='us'),
+            'calendar': [{'session_date': x.session_date.isoformat(), 'timezone': x.timezone,
+                          'segments': [(s.start.isoformat(), s.end.isoformat()) for s in x.segments]}
+                         for x in self.trading_sessions],
+        })
 
     @property
     def available_through(self):
@@ -116,6 +177,8 @@ class EquityAdviceClient:
         from hashlib import sha256
         if sha256(prepared.history.to_json(date_format="iso").encode()).hexdigest() != prepared.history_sha256:
             raise ValueError("prepared equity history changed after authentication")
+        if prepared._decision_inputs_hash() != prepared.decision_inputs_sha256:
+            raise ValueError('prepared equity decision inputs changed after authentication')
         candidate = prepared.candidate
         rules = self.store.equity_account_rules(account_id)
         account = self.store.virtual_account(account_id)
@@ -152,7 +215,9 @@ class EquityAdviceClient:
                                     feedback_source="CONFIRMED_EXECUTION", reference_price_scale=prepared.reference_price_scale)
         runtime = StrategyRuntime(execution_spec=rules.execution)
         instance = runtime.create(candidate)
-        plan = instance.plan(prepared.history, prepared.interval, portfolio, fee_rate=prepared.fee_rate)
+        plan = instance.plan(prepared.history, prepared.interval, portfolio, fee_rate=prepared.fee_rate,
+                             auxiliary_histories=prepared.auxiliary_histories, sessions=prepared.sessions,
+                             trading_sessions=prepared.trading_sessions)
         target = actual_quantity + (plan.quantity if plan.side == "BUY" else -plan.quantity if plan.side == "SELL" else 0)
         price = plan.limit_price if plan.limit_price is not None else plan.reference_price
         orders = (() if not plan.quantity else (OrderSpec(plan.side, plan.quantity,
