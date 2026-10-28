@@ -244,6 +244,35 @@ def _records(frame):
     return json.loads(frame.to_json(orient="records", date_format="iso", date_unit="us"))
 
 
+def _data_quality(bars, run):
+    """Report execution limitations from source facts and audited account entries."""
+    ends = {row["time"] for row in run["account_points"]}
+    selected = [row for row in bars if row["Date"] in ends]
+    def summary(rows):
+        affected = [row for row in rows if row.get("BarStatus", "OBSERVED") != "OBSERVED"
+                    or row.get("ExecutionBlocked", False)]
+        return {
+            "missing_bars": sum(row.get("BarStatus") == "MISSING" for row in rows),
+            "zero_volume_bars": sum(row.get("BarStatus") == "ZERO_VOLUME" for row in rows),
+            "known_blocked_bars": sum(bool(row.get("ExecutionBlocked", False)) for row in rows),
+            "affected_sessions": sorted({pd.Timestamp(row["BarStart"]).tz_convert("America/New_York").date().isoformat()
+                                         for row in affected}),
+            "intervals": [{"start": row["BarStart"], "end": row["Date"],
+                           "bar_status": row.get("BarStatus", "OBSERVED"),
+                           "execution_blocked": row.get("ExecutionBlocked", False)} for row in affected],
+        }
+    return {
+        "basis": "MISSING_OR_ZERO_VOLUME_UNTRADABLE_RESEARCH_ASSUMPTION" if any("BarStatus" in row for row in bars)
+                 else "STRICT_COMPLETE_BARS",
+        "prepared_history": summary(bars), "evaluation_window": summary(selected),
+        "stale_valuations": sum(row.get("valuation_stale", False) for row in run["account_points"]),
+        "suppressed_signals": sum(row.get("signal_status") == "SUPPRESSED_UNOBSERVED_BAR" for row in run["decisions"]),
+        "affected_orders": [{"order_id": row["order_id"], "reason": row["reason"],
+                             "start": row["valid_start"], "end": row["valid_end"]}
+                            for row in run["orders"] if row["reason"] in {"MISSING_BAR", "ZERO_VOLUME", "KNOWN_INTERRUPTION"}],
+    }
+
+
 def _json_value(value):
     def encode(item):
         if hasattr(item, "isoformat"):
@@ -285,6 +314,8 @@ def validate_equity_result(access, request, result):
                                      decision_contract="FORMAL_V2" if request.formal else None)
         if _json_value(asdict(audit)) != run["metrics"]:
             raise ValueError("published equity metrics differ from independent audit")
+        if run.get("data_quality") != _data_quality(facts["bars"], run):
+            raise ValueError("published equity data quality differs from source and execution facts")
     if request.formal:
         expected_inputs = {"bars": facts["bars"], "action_facts": facts["actions"], "constraints": facts["constraints"],
                            "specification": asdict(access.execution_spec), "initial_cash": request.initial_cash,
@@ -346,6 +377,7 @@ def evaluate_equity(access, prepared):
                                      constraints=_records(products["constraints"]), fee_rate=prepared.fee_rate, **evidence,
                                      decision_contract="FORMAL_V2" if prepared.formal else None)
         runs[name] = {**evidence, "account_daily": _records(account.account_daily), "metrics": asdict(audit)}
+        runs[name]["data_quality"] = _data_quality(_records(bars), runs[name])
     contract = prepared.identity(specification)
     # Normalize timestamps before hashing so JSON readback has the same identity.
     def encode(value):
@@ -358,6 +390,12 @@ def evaluate_equity(access, prepared):
                "data": identities, "runs": runs,
                "limitations": ["BAR_RANGE model; no exact intrabar fill time", "bar observations are not independent samples",
                                "research evidence; not frozen release or PTE admission"]}
+    if "BarStatus" in bars:
+        payload["limitations"].extend([
+            "missing/zero-volume bars are modeled as unavailable; this does not establish historical halts",
+            "stale marks use the last observed close adjusted for splits; drawdown during gaps is unobserved",
+            "a nonempty bar does not prove uninterrupted trading; declared interruptions block the overlapping execution interval",
+        ])
     if prepared.formal:
         from .evaluation import EvaluationIdentity
         from strategy_runtime import canonical_sha256

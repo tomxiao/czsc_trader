@@ -385,6 +385,13 @@ TDR的[同版本升级API](../../src/czsc_trader/README.md#同版本发布包升
 
 ## 美股个股研究事实
 
+显式缺口研究口径的行情带 `BarStatus=OBSERVED/MISSING/ZERO_VOLUME` 和 `ExecutionBlocked`。
+独立账户审计分别核对缺失、零量和已声明中断导致的订单过期原因，并拒绝这些区间中的成交。
+信号抑制只能依据执行开始前已完成且可得的行情：当前执行区间最终缺失不能提前影响该区间的决策。
+缺失或零量后的下一次决策记录 `SUPPRESSED_UNOBSERVED_BAR`，保持持仓、不创建订单；有量行情恢复后再评价策略。
+估值沿用最近有效收盘价，拆股同步调整估值价；`valuation_stale` 和 `valuation_price_at` 必须与行情及公司行动一致。
+这些字段表明研究假设与估值盲区，不证明历史停牌，也不代表缺口期间净值没有波动。
+
 美股正式账户仍通过 `assess_candidates`、`compare_candidates` 完成自检与比较。
 TDR 的 `build_assessment_evidence` 将 `equity-research/v2` 档案适配为 `AssessmentEvidence`，
 附加 `EquityAssessmentFacts`，保存候选与 `EquityBuyHold` 基准的原始账户及公司行动账本。

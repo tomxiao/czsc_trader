@@ -210,8 +210,13 @@ class EquityPlan:
     reference_price: float
     specification_hash: str
     explanation: dict | None = None
+    signal_status: str = "EVALUATED"
 
     def __post_init__(self):
+        if self.signal_status not in {"EVALUATED", "SUPPRESSED_UNOBSERVED_BAR"}:
+            raise ValueError("invalid equity signal status")
+        if self.signal_status == "SUPPRESSED_UNOBSERVED_BAR" and (self.side != "WAIT" or self.quantity != 0):
+            raise ValueError("suppressed signal cannot submit an order")
         if type(self.point) is not DecisionPoint or self.target not in (0., 1.):
             raise ValueError("invalid decision point or target")
         if type(self.quantity) is not int or self.quantity < 0 or type(self.portfolio_revision) is not int or self.portfolio_revision < 0:
@@ -252,21 +257,47 @@ class EquityStrategyInstance:
             bar = bars.iloc[index]
             if starts.iloc[index] < start or ends.iloc[index] > end:
                 continue
-            history = bars.loc[(ends <= starts.iloc[index]) & (available <= starts.iloc[index])]
+            completed = bars.loc[(ends <= starts.iloc[index]) & (available <= starts.iloc[index])]
+            explicit_gaps = "BarStatus" in bars
+            history = completed.loc[completed.BarStatus.eq("OBSERVED")] if explicit_gaps else completed
             if len(history) < self.candidate.warmup_bars:
                 raise ValueError("insufficient causal warmup at window start")
             constraint = dated_constraints.get(starts.iloc[index])
             if constraint is None or pd.Timestamp(constraint.AvailableDate) > starts.iloc[index]:
                 raise ValueError("no dated trading constraints available at execution start")
             portfolio = (executor.snapshot_at(history.Date.iloc[-1], starts.iloc[index])
-                         if type(self.candidate) is EquityStrategyCandidate else executor.snapshot())
-            plan = self.plan(history, TimeInterval(starts.iloc[index].to_pydatetime(), ends.iloc[index].to_pydatetime()),
-                             portfolio, fee_rate=fee_rate)
+                         if type(self.candidate) is EquityStrategyCandidate or explicit_gaps else executor.snapshot())
+            interval = TimeInterval(starts.iloc[index].to_pydatetime(), ends.iloc[index].to_pydatetime())
+            if explicit_gaps and completed.BarStatus.iloc[-1] != "OBSERVED":
+                # The missing observation is already complete and available. The
+                # current execution bar is deliberately not inspected here.
+                point = DecisionPoint(history.Date.iloc[-1].to_pydatetime(), interval.start, interval)
+                reference = float(history.Close.iloc[-1]) * portfolio.reference_price_scale
+                target = float(portfolio.quantity > 0)
+                payload = {"candidate": self.candidate.candidate_id,
+                           "implementation": self.candidate.implementation_hash,
+                           "specification": self.specification.fingerprint, "point": asdict(point),
+                           "revision": portfolio.revision, "reference": reference, "target": target,
+                           "signal_status": "SUPPRESSED_UNOBSERVED_BAR"}
+                plan = EquityPlan(equity_hash(payload), point, target, 0, "WAIT", None,
+                                  portfolio.revision, reference, self.specification.fingerprint,
+                                  signal_status="SUPPRESSED_UNOBSERVED_BAR")
+            else:
+                # Execution-only annotations are not features or synthetic prices.
+                plan = self.plan(history.drop(columns=["BarStatus", "ExecutionBlocked"], errors="ignore"),
+                                 interval, portfolio, fee_rate=fee_rate)
             executor.execute(plan, bar, constraint=constraint)
         return executor.finish()
 
     def plan(self, history: pd.DataFrame, interval: TimeInterval, portfolio: EquityPortfolio,
              *, fee_rate: float) -> EquityPlan:
+        if "BarStatus" in history:
+            if not history.BarStatus.isin(("OBSERVED", "MISSING", "ZERO_VOLUME")).all():
+                raise ValueError("unknown equity history status")
+            if history.empty or history.BarStatus.iloc[-1] != "OBSERVED":
+                raise ValueError("latest equity observation is unavailable; no signal may be evaluated")
+            history = history.loc[history.BarStatus.eq("OBSERVED")].drop(
+                columns=["BarStatus", "ExecutionBlocked"], errors="ignore")
         if len(history) < self.candidate.warmup_bars:
             raise ValueError("insufficient candidate warmup")
         available = pd.to_datetime(history.AvailableDate)

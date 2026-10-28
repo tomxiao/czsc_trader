@@ -45,7 +45,7 @@ from .temporal import TemporalAlignmentResult, align_temporal_frame
 from .trading_status import TradingStatus
 from .equity_contracts import (
     InstrumentId, MarketId, AssetClass, SourceRef, ProviderKey, EquityProduct,
-    EquityQuery, BarFrequency, PriceAdjustment, EquitySession, TimeInterval, TradingSession,
+    EquityQuery, BarFrequency, PriceAdjustment, EquitySession, TimeInterval, TradingSession, UsEquityBarPolicy,
 )
 from .futu_equity import futu_equity_bindings
 
@@ -53,7 +53,7 @@ __all__ = [
     "futu_equity_bindings",
     "EquityDataRequest", "InstrumentId", "MarketId", "AssetClass", "SourceRef",
     "ProviderKey", "EquityProduct", "EquityQuery", "BarFrequency", "PriceAdjustment",
-    "EquitySession", "TimeInterval", "TradingSession",
+    "EquitySession", "TimeInterval", "TradingSession", "UsEquityBarPolicy",
     "TradingStatus",
     "DataSpace",
     "DataSpaceBinding",

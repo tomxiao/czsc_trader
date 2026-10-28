@@ -89,7 +89,8 @@ def build_equity_assessment_payload(payload):
     for name, run in payload["runs"].items():
         if [row["time"] for row in run["account_points"]] != expected_times:
             raise ValueError("equity account does not cover requested observation window")
-        if name == "buy_hold" and any(row["target"] != 1.0 for row in run["decisions"]):
+        if name == "buy_hold" and any(row["target"] != 1.0 and row.get("signal_status") != "SUPPRESSED_UNOBSERVED_BAR"
+                                      for row in run["decisions"]):
             raise ValueError("equity benchmark decisions differ from EquityBuyHold")
         ledger = {**inputs, **{field: run[field] for field in (
             "decisions", "orders", "fills", "actions", "account_points", "trades")}}
@@ -98,6 +99,9 @@ def build_equity_assessment_payload(payload):
             raise ValueError("equity metrics differ from independently audited account")
         if list(daily_points(ledger)) != run["account_daily"]:
             raise ValueError("equity daily observations differ from account journal")
+        from .equity_evaluation import _data_quality
+        if run.get("data_quality") != _data_quality(inputs["bars"], run):
+            raise ValueError("equity archived data quality differs from audited facts")
         ledgers[name] = ledger
     facts = EquityAssessmentFacts("US", "America/New_York", "USD", request["drawdown_basis"],
         request["concentration_basis"], canonical_ledger(ledgers["candidate"]), canonical_ledger(ledgers["buy_hold"]))

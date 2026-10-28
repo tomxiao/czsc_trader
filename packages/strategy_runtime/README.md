@@ -418,3 +418,17 @@ TDR技术检验可以在隔离空间验证拟冻结发布包，检验通过不�
 正式 `EquityDecision` 必须包含共享 `SignalExplanationSnapshot`，其 target 状态与 flat/long 分支
 必须匹配；可用 `EquityDecision.from_facts(..., facts={...}, next_watch=...)` 从当次条件／参数
 建立结构化依据。解释进入计划及账户证据；平台核验结构和状态，金融解释由 RSCH 负责。
+
+### 显式行情缺口研究口径
+
+DFLS 的 `UsEquityBarPolicy` 在美股行情上标记 `BarStatus`。运行窗口只向策略传递已完成、已可得的
+`OBSERVED` 行，不传入缺失、零量行或执行阻断标记。预热按有效观察数计算；不足时明确失败。
+如果最新已可得行情为 `MISSING` 或 `ZERO_VOLUME`，平台不调用策略，记录
+`signal_status=SUPPRESSED_UNOBSERVED_BAR`、`side=WAIT` 的零数量计划；该计划没有策略解释，
+不代表策略改变目标，原持仓保持。新的有效行情完成后恢复调用。正常调用标记为 `EVALUATED`。
+
+当前执行区间的行情缺口或已知中断只交给执行器判断成交，不能据此提前撤销区间开始时的决策。
+因此缺口首段可能存在有效下单尝试，但最终未成交；平台保留该尝试及失败原因。
+未显式启用政策的严格数据路径及原 A 股运行路径不变。
+直接调用 `plan` 时也过滤历史缺失、零量行；最新观察无效则明确拒绝生成信号。
+窗口中的自动等待由 `run_window` 负责，调用方不能把缺失行情直接交给策略。

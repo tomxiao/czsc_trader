@@ -5,7 +5,7 @@ import math
 
 import pandas as pd
 
-from .equity_contracts import EquityProduct, TradingSession, TimeInterval
+from .equity_contracts import EquityProduct, TradingSession, TimeInterval, MarketId, UsEquityBarPolicy
 from .errors import DataContractError, IncompleteDataError
 
 
@@ -56,6 +56,17 @@ def _timestamps(frame, column):
 
 def validate_equity_frame(frame, request, metadata):
     p = request.parameters
+    policy = None
+    if "research_bar_policy" in metadata:
+        raw = metadata["research_bar_policy"]
+        try:
+            if p.instrument.market is not MarketId.US or raw["kind"] != "MISSING_UNTRADABLE_RESEARCH_V1":
+                raise ValueError("unsupported market or policy")
+            policy = UsEquityBarPolicy(raw["quantity_step"], raw["price_tick"], tuple(
+                TimeInterval(datetime.fromisoformat(i["start"]), datetime.fromisoformat(i["end"]))
+                for i in raw["unavailable_intervals"]))
+        except (KeyError, TypeError, ValueError) as exc:
+            raise DataContractError("invalid US research bar policy") from exc
     if metadata.get("instrument") != asdict(p.instrument):
         raise DataContractError("MARKET_CONTRACT_MISMATCH: source instrument differs")
     if (metadata.get("vendor"), metadata.get("source_revision")) != (p.source.provider, p.source.revision):
@@ -83,6 +94,31 @@ def validate_equity_frame(frame, request, metadata):
         if not set(columns).issubset(frame):
             raise DataContractError("equity OHLCV fields are incomplete")
         values = frame.loc[:, list(columns)].astype(float)
+        if policy is not None:
+            if not {"BarStatus", "ExecutionBlocked"}.issubset(frame):
+                raise DataContractError("research bars require status and execution blocking facts")
+            if not frame.BarStatus.isin(("OBSERVED", "ZERO_VOLUME", "MISSING")).all():
+                raise DataContractError("unknown research bar status")
+            missing = frame.BarStatus.eq("MISSING")
+            if missing.all() or not values.loc[missing].isna().all().all():
+                raise DataContractError("missing bars require empty OHLCV and at least one source bar")
+            receipts = metadata.get("download_receipts", [])
+            if (metadata.get("download_complete") is not True or not receipts
+                    or any(type(r.get("rows")) is not int or r["rows"] < 0 or r.get("result") != 0
+                           or r.get("page") != i or r.get("more_pages") is not (i < len(receipts) - 1)
+                           for i, r in enumerate(receipts))
+                    or sum(r["rows"] for r in receipts) != int((~missing).sum())):
+                raise IncompleteDataError("research gaps require successful complete pagination evidence")
+            if (frame.BarStatus.eq("ZERO_VOLUME") != values.Volume.eq(0)).any():
+                raise DataContractError("zero-volume status differs from source volume")
+            blocked = [any(bar.start < i.end and i.start < bar.end for i in policy.unavailable_intervals)
+                       for bar in expected]
+            if (any(type(v) is not bool for v in frame.ExecutionBlocked)
+                    or list(frame.ExecutionBlocked) != blocked):
+                raise DataContractError("execution blocking differs from declared unavailable intervals")
+            values = values.loc[~missing]
+        elif {"BarStatus", "ExecutionBlocked"}.intersection(frame):
+            raise DataContractError("research bar status requires an explicit US policy")
         if not values.map(math.isfinite).all().all() or (values.iloc[:, :4] <= 0).any().any() or (values.iloc[:, 4:] < 0).any().any():
             raise DataContractError("invalid equity OHLCV values")
         if ((values.High < values[["Open", "Close", "Low"]].max(axis=1))
@@ -118,3 +154,9 @@ def validate_equity_frame(frame, request, metadata):
             raise IncompleteDataError("trading constraints must cover every execution interval")
         if (available > dates).any():
             raise DataContractError("trading constraints unavailable at their effective interval")
+        if policy is not None:
+            if (metadata.get("available_at") != "SESSION_ELIGIBILITY_RESEARCH_ASSUMPTION"
+                    or metadata.get("tradability_basis") != "RESEARCH_ASSUMPTION_NOT_HISTORICAL_HALT_EVIDENCE"
+                    or not frame.QuantityStep.eq(policy.quantity_step).all()
+                    or not frame.PriceTick.eq(policy.price_tick).all() or not frame.Tradable.all()):
+                raise DataContractError("research constraints differ from declared session eligibility policy")

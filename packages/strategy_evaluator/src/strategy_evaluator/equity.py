@@ -40,6 +40,24 @@ def _drawdown(values, initial):
     return result
 
 
+def _bar_status(bar):
+    status = bar.get("BarStatus", "OBSERVED")
+    if status not in {"OBSERVED", "MISSING", "ZERO_VOLUME"}:
+        raise ValueError("unknown equity bar status")
+    return status
+
+
+def _blocked_reason(bar):
+    status = _bar_status(bar)
+    if status == "MISSING":
+        return "MISSING_BAR"
+    if status == "ZERO_VOLUME":
+        return "ZERO_VOLUME"
+    if bar.get("ExecutionBlocked", False):
+        return "KNOWN_INTERRUPTION"
+    return None
+
+
 def _formal_decision(row, *, cash, quantity, specification, observed_bar, action_facts, fee_rate):
     """Independently reconstruct the formal full-position plan after effective events."""
     target = row["target"]
@@ -55,6 +73,11 @@ def _formal_decision(row, *, cash, quantity, specification, observed_bar, action
         if fact["Kind"] == "SPLIT" and observed <= _time(fact["Date"]) <= start:
             reference /= float(fact["Ratio"])
     _same(row["reference_price"], reference, "decision reference price")
+    if row.get("signal_status") == "SUPPRESSED_UNOBSERVED_BAR":
+        if (type(row["quantity"]) is not int
+                or (row["side"], row["quantity"], row["limit_price"], target) != ("WAIT", 0, None, float(quantity > 0))):
+            raise ValueError("suppressed signal must preserve holdings without an order")
+        return
     side, planned, limit = "HOLD", 0, None
     if target == 1 and quantity == 0:
         tick = Decimal(str(specification["price_tick"]))
@@ -84,7 +107,10 @@ def _formal_order(row, *, cash, specification, bar, constraint, fee_rate):
         raise ValueError("formal order dated execution rules differ")
     quantity, limit = row["quantity"], row["limit_price"]
     price, reason = None, "NOT_TRADABLE"
-    if constraint["Tradable"]:
+    blocked = _blocked_reason(bar)
+    if blocked is not None:
+        reason = blocked
+    elif constraint["Tradable"]:
         if bar["Volume"] <= 0 or quantity > bar["Volume"]:
             reason = "INSUFFICIENT_BAR_VOLUME"
         elif row["side"] == "SELL":
@@ -116,6 +142,21 @@ def audit_equity_account(*, initial_cash, specification, bars, decisions, orders
     if decision_contract not in (None, "FORMAL_V2"):
         raise ValueError("unsupported equity decision audit contract")
     strict = decision_contract == "FORMAL_V2"
+    gap_mode = any("BarStatus" in row for row in bars)
+    if gap_mode:
+        for bar in bars:
+            if "BarStatus" not in bar or type(bar.get("ExecutionBlocked")) is not bool:
+                raise ValueError("explicit bar status and execution block required for gap facts")
+            status = _bar_status(bar)
+            fields = ("Open", "High", "Low", "Close", "Volume", "Amount")
+            if status == "MISSING":
+                if any(bar.get(field) is not None for field in fields):
+                    raise ValueError("missing bar must not contain fabricated OHLCV")
+            elif any(type(bar.get(field)) not in (int, float) or not math.isfinite(bar[field]) for field in fields):
+                raise ValueError("observed bar fields must be finite")
+            elif (min(bar[field] for field in fields[:4]) <= 0 or bar["Volume"] < 0 or bar["Amount"] < 0
+                  or (status == "ZERO_VOLUME") != (bar["Volume"] == 0)):
+                raise ValueError("bar status differs from observed volume or prices")
     if not math.isfinite(initial_cash) or initial_cash <= 0 or not account_points:
         raise ValueError("audit requires initial cash and account observations")
     bar_by_end = {_time(row["Date"]): row for row in bars}
@@ -145,14 +186,14 @@ def audit_equity_account(*, initial_cash, specification, bars, decisions, orders
         raise ValueError("corporate action journal does not cover source events")
     events = []
     observed_by_decision = {}
-    if strict:
+    if strict or gap_mode:
         if len(bar_by_end) != len(bars) or len(constraint_by_start) != len(constraints):
             raise ValueError("formal source intervals must be unique")
         if [_time(row["Date"]) for row in bars] != sorted(bar_by_end):
             raise ValueError("formal source bars must be ordered")
         latency = timedelta(seconds=specification["data_latency_seconds"])
         available_bars = sorted(bars, key=lambda row: max(_time(row["Date"]), _time(row["AvailableDate"]) + latency))
-        cursor, latest = 0, None
+        cursor, latest, latest_valid = 0, None, None
         for decision in sorted(decisions, key=lambda row: _time(row["execution_start"])):
             start = _time(decision["execution_start"])
             while cursor < len(available_bars):
@@ -161,8 +202,17 @@ def audit_equity_account(*, initial_cash, specification, bars, decisions, orders
                     break
                 if latest is None or _time(bar["Date"]) > _time(latest["Date"]):
                     latest = bar
+                if _bar_status(bar) == "OBSERVED" and (latest_valid is None or _time(bar["Date"]) > _time(latest_valid["Date"])):
+                    latest_valid = bar
                 cursor += 1
-            observed_by_decision[decision["decision_id"]] = latest
+            observed_by_decision[decision["decision_id"]] = latest_valid
+            if gap_mode:
+                expected_status = ("SUPPRESSED_UNOBSERVED_BAR" if latest is not None and _bar_status(latest) != "OBSERVED"
+                                   else "EVALUATED")
+                if decision.get("signal_status") != expected_status:
+                    raise ValueError("signal suppression differs from completed available bars")
+                if latest_valid is None or _time(decision["observed_through"]) != _time(latest_valid["Date"]):
+                    raise ValueError("decision history must end at the latest available observed bar")
         orders_by_decision = {}
         for order in orders:
             decision = decision_by_id.get(order["decision_id"])
@@ -213,6 +263,8 @@ def audit_equity_account(*, initial_cash, specification, bars, decisions, orders
         bar = bar_by_end.get(end)
         if bar is None or _time(bar["BarStart"]) != start:
             raise ValueError("fill lacks its execution bar")
+        if _blocked_reason(bar) is not None:
+            raise ValueError("fill occurred in an unavailable execution interval")
         price = row["price"]
         slip = specification["slippage_bp"] / 10000
         if row["side"] == "BUY":
@@ -256,6 +308,7 @@ def audit_equity_account(*, initial_cash, specification, bars, decisions, orders
     cycle, cost, income, closed = None, 0., 0., []
     cycle_entry, cycle_times = None, []
     point_values, daily, prior_point = [], {}, None
+    mark_price, mark_time = None, None
     for _, stamp, _, _, kind, row in events:
         if kind == "action":
             if row["quantity_before"] != quantity:
@@ -271,6 +324,8 @@ def audit_equity_account(*, initial_cash, specification, bars, decisions, orders
                 if row["quantity_after"] < 0 or row["amount"] != 0:
                     raise ValueError("invalid split ledger entry")
                 quantity = row["quantity_after"]
+                if mark_price is not None:
+                    mark_price /= fact["Ratio"]
             elif action == "CASH_DIVIDEND":
                 fact = source_actions.get(row["event_id"])
                 if fact is None or fact["Kind"] != action or _time(fact["Date"]) != stamp:
@@ -292,8 +347,9 @@ def audit_equity_account(*, initial_cash, specification, bars, decisions, orders
             cash += row["cash_delta"]
             receivable += row["receivable_delta"]
         elif kind == "decision":
-            _formal_decision(row, cash=cash, quantity=quantity, specification=specification,
-                             observed_bar=observed_by_decision[row["decision_id"]], action_facts=action_facts, fee_rate=fee_rate)
+            if strict or row.get("signal_status") == "SUPPRESSED_UNOBSERVED_BAR":
+                _formal_decision(row, cash=cash, quantity=quantity, specification=specification,
+                                 observed_bar=observed_by_decision[row["decision_id"]], action_facts=action_facts, fee_rate=fee_rate)
         elif kind == "order":
             _formal_order(row, cash=cash, specification=specification, bar=bar_by_end[_time(row["valid_end"])],
                           constraint=constraint_by_start.get(_time(row["valid_start"])), fee_rate=fee_rate)
@@ -335,9 +391,25 @@ def audit_equity_account(*, initial_cash, specification, bars, decisions, orders
             bar = bar_by_end.get(stamp)
             if bar is None:
                 raise ValueError("account point lacks its market bar")
-            _same(row["close"], bar["Close"], "mark price")
+            stale = _bar_status(bar) != "OBSERVED"
+            if not stale:
+                mark_price, mark_time = bar["Close"], stamp
+            elif mark_price is None:
+                observed = observed_by_decision[decision["decision_id"]]
+                if observed is None:
+                    raise ValueError("missing valid price before first stale valuation")
+                mark_price, mark_time = observed["Close"], _time(observed["Date"])
+                for fact in action_facts:
+                    if fact["Kind"] == "SPLIT" and mark_time <= _time(fact["Date"]) < stamp:
+                        mark_price /= fact["Ratio"]
+            if gap_mode:
+                if (row.get("bar_status") != _bar_status(bar) or row.get("valuation_stale") is not stale
+                        or _time(row.get("valuation_price_at")) != mark_time
+                        or row.get("execution_blocked") is not bar["ExecutionBlocked"]):
+                    raise ValueError("account gap or stale valuation metadata differs from facts")
+            _same(row["close"], mark_price, "mark price")
             for field, expected in (("cash", cash), ("quantity", quantity), ("receivable", receivable),
-                                    ("equity", cash + receivable + quantity * bar["Close"])):
+                                    ("equity", cash + receivable + quantity * mark_price)):
                 _same(row[field], expected, field)
             point_values.append(row["equity"])
             daily[row["session"]] = row["equity"]
