@@ -1,0 +1,119 @@
+{
+  "schema": "s017-overnight-policy-decision-evidence/v1",
+  "selection_status": "ADAPTIVE_AFTER_SEEN_RESULTS",
+  "recorded_on": "2026-10-29",
+  "experiment": "EX015_20261029",
+  "candidate_id": "C0044",
+  "budget": {
+    "allocated_round": 7,
+    "authorized_rounds": 20,
+    "remaining_after_allocation": 13
+  },
+  "accounts": {
+    "C0013": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S017",
+        "experiment_id": "EX003_20261028"
+      },
+      "evidence_id": "1496c8667bd1f8ad4cc26e7ee4beb0080d02cb42d8380d49c5d2de1fb53048af.json",
+      "sha256": "1496c8667bd1f8ad4cc26e7ee4beb0080d02cb42d8380d49c5d2de1fb53048af",
+      "media_type": "application/json",
+      "name": "account-C0013",
+      "schema": "equity_research",
+      "schema_version": 2
+    },
+    "C0036": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S017",
+        "experiment_id": "EX011_20261029"
+      },
+      "evidence_id": "d25c7a3a12237fdc046f223e705311bd0afbea13f7ac9491d8153f6c4fa58145.json",
+      "sha256": "d25c7a3a12237fdc046f223e705311bd0afbea13f7ac9491d8153f6c4fa58145",
+      "media_type": "application/json",
+      "name": "account-C0036",
+      "schema": "equity_research",
+      "schema_version": 2
+    }
+  },
+  "files": {
+    "decision-diagnosis": {
+      "path": "research/S017/experiments/EX011_20261029/others/diagnostics/C0036_vs_C0013.json",
+      "sha256": "b1af69f5230e5bfd334807cc56786818418f162fe44562dc8b8eb69da660e473"
+    },
+    "decision-exit-usage": {
+      "path": "research/S017/experiments/EX011_20261029/others/exit_purpose_description.json",
+      "sha256": "b4fb769ee350674db8db934861deb0e7356bd4241023bd44d95fe73a15f5a5e3"
+    },
+    "decision-exit-source": {
+      "path": "research/S017/experiments/EX011_20261029/src/describe_exits.py",
+      "sha256": "958b51ef821877628ed576a8246cd4cdd383477f16eda48c2d66a11587bb78d3"
+    }
+  },
+  "observed_facts": {
+    "c0036_actual_exit_totals": {
+      "closed_cycles": 555,
+      "net_pnl": -61749.408593,
+      "fees": 60171.852793,
+      "positive_cycles": 227,
+      "negative_cycles": 328,
+      "zero_cycles": 0
+    },
+    "c0036_by_exit_purpose": {
+      "SESSION_END": {
+        "closed_cycles": 455,
+        "net_pnl": 22521.4685433,
+        "fees": 49777.7811567,
+        "positive_cycles": 221,
+        "negative_cycles": 234,
+        "zero_cycles": 0
+      },
+      "STOP_TRIGGERED": {
+        "closed_cycles": 100,
+        "net_pnl": -84270.8771363,
+        "fees": 10394.0716363,
+        "positive_cycles": 6,
+        "negative_cycles": 94,
+        "zero_cycles": 0
+      },
+      "OVERNIGHT_RESIDUAL": {
+        "closed_cycles": 0,
+        "net_pnl": 0.0,
+        "fees": 0.0,
+        "positive_cycles": 0,
+        "negative_cycles": 0,
+        "zero_cycles": 0
+      },
+      "UNKNOWN": {
+        "closed_cycles": 0,
+        "net_pnl": 0.0,
+        "fees": 0.0,
+        "positive_cycles": 0,
+        "negative_cycles": 0,
+        "zero_cycles": 0
+      }
+    }
+  },
+  "question": "Does permitting a valid ORB position to survive session end offer complete-account value while preserving the original entry-day anchors and trailing-stop policy?",
+  "scope": "Adaptive structural contrast after seeing published 2019-2025 development accounts; not independent validation. No year-dependent conditions, threshold/stop-width search or stage-three advancement.",
+  "limitations": [
+    "Exit-purpose groups describe realized ledger branches, not hypothetical overnight accounts.",
+    "Session-end branch has priority: classification does not exclude a simultaneous stop condition.",
+    "C0036 session-end category was negative in 2025; overall group net profit is not proof of entry edge.",
+    "Changing holding policy changes future positions, entries, fees and cycles; paired account differences are not directly attributable overnight returns."
+  ],
+  "comparisons": [
+    [
+      "C0044",
+      "C0013"
+    ],
+    [
+      "C0044",
+      "C0036"
+    ]
+  ],
+  "publication": "Publish this manifest and fixed source-byte snapshots as EX015 materials; preserve original account EvidenceRefs."
+}
