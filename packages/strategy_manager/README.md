@@ -149,3 +149,8 @@ TDR核对原发布身份、快照新源码与载荷、记录授权和可选验�
 PTE导出的观察数和年化状态位于`source.statistics`，随整个`source`参与哈希。
 SM不计算绩效、不执行回测、不操作PTE账户；技术检验通过不代表平台认证研究结论。
 角色分工与工程决策见[RSCH契约](../../research/RSCH_AGENT.md)和[DEV Agent](../../docs/DEV_AGENT.md)。
+
+美股正式候选沿用 `CandidateRegistration` 与 `CandidateKey` 登记空间。payload 的
+`runtime.kind=US_EQUITY` 明确选择美股定义，源码清单和依赖按原不可变登记机制核验。
+TDR `register_candidate/load_candidate` 接收或返回 `EquityStrategyCandidate`；函数式研究候选
+不能直接登记。支持证据须为认证的 `equity_research/v2`，内容身份必须与候选一致。

@@ -176,3 +176,10 @@ __all__ = [
     "implementation_sha256",
     "unavailable_observation",
 ]
+
+from .equity_definition import (
+    EquityStrategyCandidate, EquityStrategyDefinition, EquityDecision, EquityDecisionContext,
+    EquityInputBinding, equity_source_hash, execution_spec_from_dict,
+)
+__all__ += ["EquityStrategyCandidate", "EquityStrategyDefinition", "EquityDecision", "EquityDecisionContext",
+            "EquityInputBinding", "equity_source_hash", "execution_spec_from_dict"]

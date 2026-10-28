@@ -143,7 +143,8 @@ def validate_release_package(strategy_root: Path, release_id: str) -> VerifiedRe
     binding = RuntimeBinding.from_dict(_read_object(binding_path))
     if binding.release_id != release_id or binding.release_hash != release.release_hash:
         raise RuntimeCompatibilityError("strategy runtime binding identity differs")
-    if not (source_root / "strategies").is_dir():
+    equity = release.payload.get("runtime", {}).get("kind") == "US_EQUITY"
+    if not equity and not (source_root / "strategies").is_dir():
         raise RuntimeCompatibilityError("strategy release runtime root is invalid")
     descriptor = release.payload["runtime"]
     if (tuple(descriptor["source_files"]) != binding.spec.source_files
@@ -154,7 +155,17 @@ def validate_release_package(strategy_root: Path, release_id: str) -> VerifiedRe
     if any(not source_root.joinpath(*_safe_relative(name, "install_files").parts).is_file() for name in binding.spec.install_files):
         raise RuntimeCompatibilityError("strategy install files are missing")
     from .implementation_identity import implementation_sha256
-    if implementation_sha256(binding.spec.source_files, source_root=source_root) != binding.spec.implementation_sha256:
+    if equity:
+        from .equity_definition import EquityStrategyCandidate, EquityStrategyDefinition, equity_source_hash
+        definition = EquityStrategyDefinition.from_dict(dict(release.payload["equity_definition"]))
+        candidate = EquityStrategyCandidate(family, str(frozen["source_candidate"]), definition, source_root)
+        candidate.verify()
+        digest = equity_source_hash(source_root, binding.spec.source_files)
+        if canonical_sha256({"contract": "equity-decision-v2", "definition": definition.to_dict()}) != binding.spec.observation_sha256:
+            raise RuntimeCompatibilityError("equity runtime binding differs from decision definition")
+    else:
+        digest = implementation_sha256(binding.spec.source_files, source_root=source_root)
+    if digest != binding.spec.implementation_sha256:
         raise RuntimeCompatibilityError("strategy source closure hash differs")
     return VerifiedReleasePackage(release, str(package_hash), binding, source_root)
 

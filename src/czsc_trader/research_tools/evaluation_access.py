@@ -52,7 +52,7 @@ class EvaluationError:
 class EvaluationOutcome:
     status: EvaluationStatus
     request_hash: str
-    result: EvaluationResult | None = None
+    result: EvaluationResult | EquityEvaluationResult | None = None
     error: EvaluationError | None = None
 
     def __post_init__(self):
@@ -61,7 +61,7 @@ class EvaluationOutcome:
         if not isinstance(self.request_hash, str) or re.fullmatch(r"[0-9a-f]{64}", self.request_hash) is None:
             raise ValueError("outcome requires a request identity")
         if self.status is EvaluationStatus.SUCCEEDED:
-            if not isinstance(self.result, EvaluationResult) or self.error is not None:
+            if not isinstance(self.result, (EvaluationResult, EquityEvaluationResult)) or self.error is not None:
                 raise ValueError("successful outcome requires only a result")
             if self.result.request_hash != self.request_hash:
                 raise ValueError("outcome and result request identities differ")
@@ -163,6 +163,11 @@ class EvaluationAccess:
         if any(type(item) is EquityEvaluationRequest for item in requests):
             if not all(type(item) is EquityEvaluationRequest for item in requests):
                 raise TypeError("one evaluation batch cannot mix execution contracts")
+            if any(item.formal for item in requests):
+                if not all(item.formal for item in requests):
+                    raise TypeError("formal and legacy equity requests cannot share a batch")
+                from ._equity_batch import evaluate_many_equity
+                return evaluate_many_equity(self, requests, execution=execution)
             if execution is not None or self._active_execution is not None:
                 raise ValueError("BAR_RANGE does not support checkpoint execution sessions")
             outcomes = []

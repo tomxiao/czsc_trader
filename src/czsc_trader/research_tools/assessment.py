@@ -36,6 +36,10 @@ def build_assessment_evidence(
     request: EvaluationRequest,
     result: EvaluationResult,
 ) -> tuple[AssessmentEvidence, ...]:
+    from .equity_evaluation import EquityEvaluationRequest, EquityEvaluationResult
+    if isinstance(request, EquityEvaluationRequest) or isinstance(result, EquityEvaluationResult):
+        from .equity_assessment import build_equity_assessment_evidence
+        return build_equity_assessment_evidence(request, result)
     return tuple(evidence for evidence, _ in _assessment_with_replays(request, result))
 
 

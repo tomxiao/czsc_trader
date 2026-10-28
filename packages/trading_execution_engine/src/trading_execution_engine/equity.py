@@ -54,7 +54,27 @@ class EquityHistoricalExecutor:
         self.cycle_entry = None
 
     def snapshot(self):
-        return EquityPortfolio(self.cash, self.quantity, self.receivable, self.revision)
+        return EquityPortfolio(self.cash, self.quantity, self.receivable, self.revision,
+                               self.cycle_entry, self.cycle_cost)
+
+    def snapshot_at(self, observed_through, decision_at):
+        """Apply already-effective events before a formal causal decision."""
+        from dataclasses import replace
+        scale = 1.
+        for event in self.actions.itertuples():
+            if event.Kind == 'SPLIT' and observed_through <= pd.Timestamp(event.Date) <= decision_at:
+                scale /= float(event.Ratio)
+        lengths = {name: len(rows) for name, rows in self.rows.items()}
+        previous = {key: deepcopy(value) for key, value in self.__dict__.items()
+                    if key not in {'rows', 'completed', 'actions', 'spec'}}
+        try:
+            self._events(decision_at, after=decision_at, plan_quantity=0, limit_price=None)
+            return replace(self.snapshot(), reference_price_scale=scale)
+        except Exception:
+            self.__dict__.update(previous)
+            for name, length in lengths.items():
+                del self.rows[name][length:]
+            raise
 
     def _events(self, through, *, after, plan_quantity, limit_price, include_actions=True):
         for event in self.actions.itertuples():
@@ -172,6 +192,8 @@ class EquityHistoricalExecutor:
                     "quantity": plan.quantity, "side": plan.side, "limit_price": plan.limit_price,
                     "portfolio_revision": plan.portfolio_revision}
         self.rows["decisions"].append(decision)
+        if plan.explanation is not None:
+            decision["explanation"] = plan.explanation
         if quantity:
             reason, fill_price, precision = "NOT_TRADABLE", None, None
             if bool(constraint.Tradable) and (float(bar.Volume) <= 0 or quantity > float(bar.Volume)):

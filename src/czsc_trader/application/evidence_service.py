@@ -109,9 +109,10 @@ def _publish_serialized(context: ResearchContext, request: EvidenceWriteRequest,
     if isinstance(request, EvaluationEvidenceWrite):
         from ..research_tools.equity_evaluation import EquityEvaluationResult
         equity = type(request.result) is EquityEvaluationResult
-        media_type, suffix, schema, version = "application/json", "json", ("equity_research" if equity else "account_evaluation"), (1 if equity else 8)
+        version = (2 if request.request.formal else 1) if equity else 8
+        media_type, suffix, schema = "application/json", "json", ("equity_research" if equity else "account_evaluation")
         document = json.loads(data)
-        if equity and document.get("schema") != "equity-research/v1":
+        if equity and document.get("schema") != f"equity-research/v{version}":
             raise ValueError("equity publication requires its own versioned schema")
         if not equity and (document.get("schema_version") != version
                 or document.get("request_identity", {}).get("schema_version") != 7):
@@ -181,7 +182,7 @@ def publish_evidence_many(context: ResearchContext,
         _validate_request(context, request)
     from ..research_tools.equity_evaluation import EquityEvaluationRequest
     if execution is not None and any(isinstance(request, EvaluationEvidenceWrite)
-                                    and type(request.request) is EquityEvaluationRequest for request in requests):
+                                    and type(request.request) is EquityEvaluationRequest and not request.request.formal for request in requests):
         raise ValueError("BAR_RANGE evidence does not support checkpoint execution sessions")
     if execution is None and context.evaluation._active_execution is not None:
         raise RuntimeError("pass the active execution session explicitly")
@@ -199,7 +200,23 @@ def publish_evidence_many(context: ResearchContext,
 
     publication_keys = {}
     for index, request in enumerate(requests):
-        if checkpoint is not None and isinstance(request, EvaluationEvidenceWrite):
+        if (checkpoint is not None and isinstance(request, EvaluationEvidenceWrite)
+                and type(request.request) is EquityEvaluationRequest):
+            key = canonical_sha256({"request_hash": request.result.request_hash,
+                                    "result_hash": request.result.result_hash,
+                                    "experiment": request.experiment.to_dict(), "name": request.name,
+                                    "schema": "equity_research", "version": 2})
+            publication_keys[index] = key
+            reference = checkpoint.load_publication(key)
+            if reference is not None:
+                if (reference.name != request.name or reference.experiment != request.experiment
+                        or (reference.schema, reference.schema_version) != ("equity_research", 2)
+                        or reference.resolve(context.repository.root).read_bytes() != request.result.content):
+                    raise ValueError("equity publication checkpoint differs from authenticated result")
+                outcomes[index] = PublicationOutcome(index, PublicationStatus.PUBLISHED, reference)
+                executor.reused_publications += 1
+                continue
+        elif checkpoint is not None and isinstance(request, EvaluationEvidenceWrite):
             # Names are part of the returned reference even when bytes coincide.
             key = canonical_sha256({"request_hash": request.result.request_hash,
                                     "result_hash": request.result.result_hash,

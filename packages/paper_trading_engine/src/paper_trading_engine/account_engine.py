@@ -693,9 +693,13 @@ class AccountEngine:
 
         def fill_session(row) -> str:
             value = datetime.fromisoformat(str(row["occurred_at"]).replace("Z", "+00:00"))
+            rules = self.store.equity_account_rules(account_id)
+            zone = self._BEIJING if rules is None else rules.timezone
             if value.tzinfo is None:
-                value = value.replace(tzinfo=self._BEIJING)
-            return value.astimezone(self._BEIJING).date().isoformat()
+                if rules is not None:
+                    raise ValueError("US fills require timezone-aware channel timestamps")
+                value = value.replace(tzinfo=zone)
+            return value.astimezone(zone).date().isoformat()
 
         fills = [] if not snapshots else [
             row for row in self.store.account_fills(account_id)

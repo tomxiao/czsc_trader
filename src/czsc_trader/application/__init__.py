@@ -23,6 +23,8 @@ _EXPORTS = {
     "apply_frozen_runtime_upgrade": "runtime_migration",
     "CandidateInspectionRequest": "inspection_contracts",
     "InspectionReplay": "inspection_contracts",
+    "EquityInspectionReplay": "equity_inspection_contracts",
+    "EquityInspectionProtocol": "equity_inspection_contracts",
     "FreezeTarget": "inspection_contracts",
     "InspectionProtocol": "inspection_contracts",
     "InspectionDataKind": "inspection_contracts",

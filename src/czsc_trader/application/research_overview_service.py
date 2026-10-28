@@ -293,6 +293,10 @@ def _deliveries(reader, batch, limitations):
                             del account
                         if ref.schema_version != account_versions[ref.sha256]:
                             raise ValueError("account evidence schema differs from reference")
+                    elif ref.schema == "equity_research":
+                        account = _json(reader.read(f"{path}/{ref.path}"))
+                        if ref.schema_version != 2 or account.get("schema") != "equity-research/v2" or account.get("schema_version") != 2:
+                            raise ValueError("formal equity evidence schema differs from reference")
                 elif isinstance(ref, ResearchEvidenceRef):
                     if ref.owner.strategy_id != batch.strategy_id:
                         raise ValueError("inspection evidence belongs to another batch")
@@ -366,6 +370,21 @@ def _accounts(reader, batch, limitations):
             except (json.JSONDecodeError, UnicodeDecodeError):
                 # Generic material is allowed to carry arbitrary original bytes;
                 # a .json suffix is not an account schema declaration.
+                continue
+            if type(value) is dict and value.get("schema") == "equity-research/v2":
+                from strategy_runtime.equity import equity_hash
+                request, raw = value["request"], value["evaluation_identity"]
+                identity = EvaluationIdentity(CandidateKey(**raw["candidate"]), **{key: raw[key] for key in (
+                    "content_sha256", "input_sha256", "protocol_sha256", "environment_sha256")})
+                if (value.get("schema_version") != 2 or request.get("schema") != "equity-research/v2"
+                        or equity_hash(request) != value["request_hash"] or identity.protocol_sha256 != value["request_hash"]
+                        or identity.evaluation_id != value["evaluation_id"] or identity.candidate.strategy_id != batch.strategy_id
+                        or request["experiment"] != {"strategy_id": batch.strategy_id, "experiment_id": experiment}
+                        or identity.candidate.candidate_id != request["candidate_id"]
+                        or identity.content_sha256 != request["content_sha256"]):
+                    raise ValueError("retained equity evaluation identity differs")
+                identities.add(identity.evaluation_id)
+                sources.append(reader.source(path))
                 continue
             if type(value) is not dict or value.get("source_kind") != "published_result":
                 continue

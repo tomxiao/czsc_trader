@@ -397,3 +397,24 @@ TDR技术检验可以在隔离空间验证拟冻结发布包，检验通过不�
 
 `ResearchExecutionSpec`、`EquityCandidate` 和 `EquityStrategyInstance` 提供显式市场与时间合同的研究规划。
 原 A 股策略及冻结运行时不变。输入、支持范围及因果时序见[TDR美股研究接口](../../src/czsc_trader/README.md#us-equity-research)。
+
+### 美股正式策略定义与加载
+
+`EquityStrategyCandidate` 与研究专用函数式 `EquityCandidate` 明确区分。正式定义使用
+`EquityStrategyDefinition`：标的、执行合同、预热、`module:function` 入口、相对源码清单、
+`equity_source_hash` 源码闭包哈希、有限 JSON 参数及精确 `ImplementationDependency`。
+`definition.to_dict()/from_dict()` 可序列化；`definition.content_identity` 不依赖机器路径和候选名称。
+本地源码采用相对导入并纳入清单，外部导入须有已安装且版本一致的声明依赖。
+
+函数 `decide(context: EquityDecisionContext) -> EquityDecision` 接收因果历史、不可变参数、
+交易点和权威账户快照，返回整数 0/1 目标及非空 `reason`。每次决策使用独立模块命名空间，
+不以模块全局变量保存跨决策状态。账户提供周期进入时间、成本和反馈来源；区间成交时点不解释为逐笔时点。
+`StrategyRuntime.identify/create/describe` 支持正式候选；加载、登记和运行前认证源码与依赖。
+`EquityInputBinding` 绑定四类准备产品的内容身份、执行合同和预热，可序列化供回放复用。
+
+正式美股定义还固定 `parameter_schema_json`（类型、可选上下界或枚举）、`feedback_mode`
+及 `analysis_price=RAW`。未显式提供参数 schema 时以初始参数的实际类型建立不可变类型声明；
+后续参数变更仍须满足同一 schema。MARKET_INTENT 不向策略暴露账户快照。
+正式 `EquityDecision` 必须包含共享 `SignalExplanationSnapshot`，其 target 状态与 flat/long 分支
+必须匹配；可用 `EquityDecision.from_facts(..., facts={...}, next_watch=...)` 从当次条件／参数
+建立结构化依据。解释进入计划及账户证据；平台核验结构和状态，金融解释由 RSCH 负责。

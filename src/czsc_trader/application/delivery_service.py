@@ -89,7 +89,7 @@ class _ValidationSession:
 
     def preload_accounts(self, root, references):
         missing = {ref.sha256: ref for ref in references
-                   if ref.schema == "account_evaluation" and ref.schema_version in (7, 8)
+                   if _is_account_reference(ref)
                    and ref.sha256 not in self.account_cache}
         workers = min(self.resources.max_workers, len(missing))
         if workers < 2:
@@ -236,6 +236,11 @@ def _references(content):
     return tuple(dict.fromkeys(x for x in _walk(content) if isinstance(x, EvidenceRef)))
 
 
+def _is_account_reference(ref):
+    return ((ref.schema == "account_evaluation" and ref.schema_version in (7, 8))
+            or (ref.schema == "equity_research" and ref.schema_version == 2))
+
+
 def _account_evidence(root, ref, account_cache=None):
     return _account_document(root, ref, account_cache)[1]
 
@@ -245,9 +250,17 @@ def _certify_account(data, reference):
 
     try:
         value = _decode_json(data.decode("utf-8"))
-        if (reference.schema != "account_evaluation" or reference.schema_version not in (7, 8)
-                or value.get("schema_version") != reference.schema_version):
+        if not _is_account_reference(reference) or value.get("schema_version") != reference.schema_version:
             raise ValueError("account evidence schema differs from its reference")
+        if reference.schema == "equity_research":
+            from ..research_tools.equity_assessment import build_equity_assessment_payload
+            from ..research_tools.parameter_evaluation import equity_parameter_contract
+            records = build_equity_assessment_payload(value)
+            request = value["request"]
+            projection = {"schema_version": 2, "request_hash": value["request_hash"],
+                          "request_identity": equity_parameter_contract(request),
+                          "execution_policies": ({"policy_type": "US_EQUITY", "settings": request["specification"]},)}
+            return projection, records
         validate_evaluation_evidence(value)
         records = tuple(AssessmentEvidence.from_dict(item) for item in value["assessment_evidence"])
         # Retain only fields needed for later identity/plan checks. Raw JSON and
@@ -282,7 +295,7 @@ def _authenticate_account(root, reference, native_threads):
 
 
 def _account_document(root, ref, account_cache=None):
-    if ref.schema != "account_evaluation" or ref.schema_version not in (7, 8):
+    if not _is_account_reference(ref):
         _fail("EVALUATION_REFERENCE", ref.path, "published account evaluation schema 7 or 8 required")
     # Always authenticate the current file. Only immutable, identical bytes may
     # reuse account decoding/certification within this publication or validation.
@@ -349,12 +362,14 @@ def _validate_content(definition, content, root, context, scope=d.DeliveryValida
             _fail("EVIDENCE_OWNER", reference.path, "evidence belongs to another batch")
         if reference.schema == "account_evaluation" and reference.schema_version not in (7, 8):
             _fail("EVALUATION_REFERENCE", reference.path, "published account evaluation schema 7 or 8 required")
+        if reference.schema == "equity_research" and reference.schema_version != 2:
+            _fail("EVALUATION_REFERENCE", reference.path, "formal equity evidence requires schema 2")
     session = _validation_session.get()
     if session is not None:
         session.preload_accounts(root, references)
     for value in _walk(content):
         if isinstance(value, EvidenceRef):
-            if value.schema == "account_evaluation":
+            if _is_account_reference(value):
                 _account_document(root, value, account_cache)
             else:
                 _read_evidence(root, value)
@@ -559,7 +574,7 @@ def _validate_assessment_delivery(definition, payload, root, context, content, s
     saved_requests = {}
     saved_policies = {}
     for reference in _references(content):
-        if reference.schema == "account_evaluation" and reference.schema_version in (7, 8):
+        if _is_account_reference(reference):
             account, records = _account_document(root, reference, account_cache)
             saved_requests[account["request_hash"]] = account["request_identity"]
             saved_policies[account["request_hash"]] = account["execution_policies"]
@@ -609,7 +624,7 @@ def _validate_parameter_plans(payload, root, saved_requests, saved_policies):
     from strategy_runtime import StrategyCandidate
     from ..research_tools.parameter_evaluation import (
         ParameterEvaluationPlan, ParameterEvaluationBinding, validate_parameter_contract,
-        parameter_execution_policy,
+        parameter_execution_policy, equity_planned_identity,
     )
 
     plans = {}
@@ -619,11 +634,12 @@ def _validate_parameter_plans(payload, root, saved_requests, saved_policies):
         _read_evidence(root, plan.feasibility_evidence)
         if plan.design.sha256 in plans:
             _fail("PARAMETER_PLAN", reference.path, "duplicate parameter design")
-        if plan.schema_version == 3:
+        if plan.schema_version in (3, 4):
             for candidate in (plan.center, *plan.children):
                 family, name = candidate.candidate.candidate_id.split("-", 1)
-                actual_identity = StrategyCandidate(family, name,
-                    json.loads(candidate.payload_json)).runtime_identity_sha256
+                actual_identity = (equity_planned_identity(json.loads(candidate.payload_json))
+                    if plan.schema_version == 4 else StrategyCandidate(family, name,
+                    json.loads(candidate.payload_json)).runtime_identity_sha256)
                 if actual_identity != candidate.runtime_identity_sha256:
                     _fail("PARAMETER_PAYLOAD", reference.path, "planned payload runtime identity differs")
         plans[plan.design.sha256] = (reference, plan)
@@ -636,7 +652,7 @@ def _validate_parameter_plans(payload, root, saved_requests, saved_policies):
             or central["content_sha256"] != plan.design.center.content_sha256
             or central["strategy_reference"] != plan.design.center.candidate_id):
             _fail("PARAMETER_CENTER", reference.path, "planned center differs from saved center account")
-        if plan.schema_version == 3 and central["strategy_identity"] != plan.center.runtime_identity_sha256:
+        if plan.schema_version in (3, 4) and central["strategy_identity"] != plan.center.runtime_identity_sha256:
             _fail("PARAMETER_CENTER", reference.path, "planned center runtime identity differs from saved account")
         center_bindings = {x.window_id: json.loads(x.binding_json) for x in plan.center_inputs}
         if central["input_bindings"] != center_bindings:

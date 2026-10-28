@@ -141,12 +141,21 @@ class EquityPortfolio:
     quantity: int
     receivable: float
     revision: int
+    cycle_entry: datetime | None = None
+    cycle_cost: float = 0.
+    feedback_source: str = "BAR_INTERVAL"
+    reference_price_scale: float = 1.
 
     def __post_init__(self):
         if any(type(v) not in (int, float) or not math.isfinite(v) or v < -1e-8 for v in (self.cash, self.receivable)):
             raise ValueError("invalid cash or receivable")
         if any(type(v) is not int or v < 0 for v in (self.quantity, self.revision)):
             raise ValueError("invalid quantity or portfolio revision")
+        if type(self.cycle_cost) not in (float, int) or not math.isfinite(self.cycle_cost) or self.cycle_cost < 0:
+            raise ValueError("invalid cycle cost")
+        if self.cycle_entry is not None:
+            object.__setattr__(self, "cycle_entry", utc(self.cycle_entry))
+        _positive(self.reference_price_scale, "reference price scale")
 
 
 def equity_implementation_hash(decide):
@@ -200,6 +209,7 @@ class EquityPlan:
     portfolio_revision: int
     reference_price: float
     specification_hash: str
+    explanation: dict | None = None
 
     def __post_init__(self):
         if type(self.point) is not DecisionPoint or self.target not in (0., 1.):
@@ -217,7 +227,8 @@ class EquityPlan:
 
 class EquityStrategyInstance:
     def __init__(self, candidate: EquityCandidate, specification: ResearchExecutionSpec):
-        if type(candidate) is not EquityCandidate or type(specification) is not ResearchExecutionSpec:
+        from .equity_definition import EquityStrategyCandidate
+        if type(candidate) not in (EquityCandidate, EquityStrategyCandidate) or type(specification) is not ResearchExecutionSpec:
             raise TypeError("equity instance requires candidate and specification")
         specification.require_instrument(candidate.instrument)
         if candidate.execution_spec_hash != specification.fingerprint:
@@ -226,7 +237,10 @@ class EquityStrategyInstance:
 
     def run_window(self, bars, constraints, executor, *, start, end, fee_rate):
         """Plan at bar boundaries with only completed, published observations."""
-        if self.candidate.implementation_hash != equity_implementation_hash(self.candidate.decide):
+        from .equity_definition import EquityStrategyCandidate
+        if type(self.candidate) is EquityStrategyCandidate:
+            self.candidate.verify()
+        elif self.candidate.implementation_hash != equity_implementation_hash(self.candidate.decide):
             raise ValueError("candidate source changed since registration")
         starts = pd.to_datetime(bars.BarStart)
         ends = pd.to_datetime(bars.Date)
@@ -244,8 +258,10 @@ class EquityStrategyInstance:
             constraint = dated_constraints.get(starts.iloc[index])
             if constraint is None or pd.Timestamp(constraint.AvailableDate) > starts.iloc[index]:
                 raise ValueError("no dated trading constraints available at execution start")
+            portfolio = (executor.snapshot_at(history.Date.iloc[-1], starts.iloc[index])
+                         if type(self.candidate) is EquityStrategyCandidate else executor.snapshot())
             plan = self.plan(history, TimeInterval(starts.iloc[index].to_pydatetime(), ends.iloc[index].to_pydatetime()),
-                             executor.snapshot(), fee_rate=fee_rate)
+                             portfolio, fee_rate=fee_rate)
             executor.execute(plan, bar, constraint=constraint)
         return executor.finish()
 
@@ -260,10 +276,19 @@ class EquityStrategyInstance:
         point = DecisionPoint(observed, decision, interval)
         if type(fee_rate) not in (int, float) or not math.isfinite(fee_rate) or not 0 <= fee_rate < 1:
             raise ValueError("invalid fee rate")
-        target = self.candidate.decide(history.copy(deep=True), portfolio)
+        from .equity_definition import EquityStrategyCandidate, EquityDecisionContext
+        explanation = None
+        if type(self.candidate) is EquityStrategyCandidate:
+            point = DecisionPoint(observed, interval.start, interval)
+            feedback = portfolio if self.candidate.definition.feedback_mode == 'CONFIRMED_EXECUTION' else None
+            result = self.candidate.decide(EquityDecisionContext(history.copy(deep=True), feedback, point,
+                                                                self.candidate.definition.parameters))
+            target, explanation = result.target, result.explanation.to_dict()
+        else:
+            target = self.candidate.decide(history.copy(deep=True), portfolio)
         if type(target) not in (float, int) or target not in (0, 1):
             raise ValueError("equity candidate must return a finite binary long-only target")
-        reference = float(last.Close)
+        reference = float(last.Close) * portfolio.reference_price_scale
         _positive(reference, "reference")
         side, quantity, limit = "HOLD", 0, None
         if target == 1 and portfolio.quantity == 0:
@@ -282,5 +307,7 @@ class EquityStrategyInstance:
                    "point": asdict(point), "target": target, "quantity": quantity,
                    "side": side, "limit": limit, "revision": portfolio.revision,
                    "reference": reference, "fee_rate": fee_rate}
+        if explanation is not None:
+            payload["explanation"] = explanation
         return EquityPlan(equity_hash(payload), point, float(target), quantity, side, limit,
-                          portfolio.revision, reference, self.specification.fingerprint)
+                          portfolio.revision, reference, self.specification.fingerprint, explanation)

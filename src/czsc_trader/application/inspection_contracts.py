@@ -11,6 +11,7 @@ from strategy_runtime import StrategyInputBinding
 from ..backtesting.execution_data import BacktestExecutionData
 from ..research_tools.context import ResearchContext, ExperimentRef
 from ..research_tools.delivery import EvaluationEvidenceRef
+from .equity_inspection_contracts import EquityInspectionReplay, EquityInspectionProtocol
 
 
 class InspectionDataKind(StrEnum):
@@ -128,14 +129,18 @@ class CandidateInspectionRequest:
         for name, kind in (("candidate", CandidateKey), ("selection", f.DecisionReference),
                            ("research", ResearchContext), ("experiment", ExperimentRef),
                            ("target", FreezeTarget), ("protocol", InspectionProtocol), ("data_kind", InspectionDataKind)):
-            if type(getattr(self, name)) is not kind:
+            allowed = (InspectionProtocol, EquityInspectionProtocol) if name == 'protocol' else (kind,)
+            if type(getattr(self, name)) not in allowed:
                 raise InspectionInputError("INVALID_TYPE", name, f"inspection {name} requires {kind.__name__}")
         for name, kind in (("replays", InspectionReplay), ("additional_files", f.FreezeFile), ("remaining_risks", str)):
             values = getattr(self, name)
-            if type(values) is not tuple or any(type(x) is not kind for x in values):
+            allowed = (InspectionReplay, EquityInspectionReplay) if name == 'replays' else (kind,)
+            if type(values) is not tuple or any(type(x) not in allowed for x in values):
                 raise InspectionInputError("INVALID_TYPE", name, f"{name} requires typed tuple")
         if not self.replays or len({x.coordinate for x in self.replays}) != len(self.replays):
             raise InspectionInputError("INVALID_COORDINATES", "replays", "replays require nonempty unique coordinates")
+        if any((type(x) is EquityInspectionReplay) != (type(self.protocol) is EquityInspectionProtocol) for x in self.replays):
+            raise InspectionInputError('INVALID_TYPE', 'replays', 'inspection cannot mix market contracts')
         if self.research.strategy_id != self.candidate.strategy_id or self.experiment.strategy_id != self.candidate.strategy_id:
             raise InspectionInputError("IDENTITY_MISMATCH", "candidate", "inspection research family differs")
         if any(not x.strip() for x in self.remaining_risks):

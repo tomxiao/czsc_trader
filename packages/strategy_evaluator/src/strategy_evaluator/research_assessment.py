@@ -27,7 +27,17 @@ def _quantile(values, q, method, weights=None):
 
 
 def _performance(evidence):
+    if evidence.equity is not None:
+        from .equity_assessment import equity_performance
+        return equity_performance(evidence)
     return _equity_performance([x.equity for x in evidence.account], evidence.initial_cash)
+
+
+def _benchmark_performance(evidence):
+    if evidence.equity is not None:
+        from .equity_assessment import equity_performance
+        return equity_performance(evidence, benchmark=True)
+    return _equity_performance(evidence.benchmark_equity, evidence.initial_cash)
 
 
 def _equity_performance(equity, initial_cash):
@@ -41,7 +51,7 @@ def _equity_performance(equity, initial_cash):
 
 def _performance_facts(evidence):
     annual, drawdown = _performance(evidence)
-    benchmark = (_equity_performance(evidence.benchmark_equity, evidence.initial_cash)
+    benchmark = (_benchmark_performance(evidence)
                  if evidence.benchmark_equity else (None, None))
     return m.PerformanceFacts(evidence.candidate, evidence.evaluation_id, evidence.scenario_context,
         annual, drawdown, *benchmark,
@@ -54,6 +64,11 @@ def _returns(evidence):
 
 
 def _concentration(evidence, tolerance):
+    if evidence.equity is not None:
+        from .equity_assessment import equity_concentration
+        value = equity_concentration(evidence)
+        return (value, m.DiagnosticStatus.AVAILABLE, None) if value is not None else (
+            None, m.DiagnosticStatus.NOT_APPLICABLE, "NO_PROFITABLE_CLOSED_CYCLES")
     daily = defaultdict(list)
     for fill in evidence.fills:
         daily[fill.session].append(fill)
@@ -479,7 +494,7 @@ def _assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPan
         else:
             gaps.append("MISSING_BASELINE")
         benchmark_values = (
-            _equity_performance(base.benchmark_equity, base.initial_cash)
+            _benchmark_performance(base)
             if base is not None and base.benchmark_equity
             else (None, None)
         )

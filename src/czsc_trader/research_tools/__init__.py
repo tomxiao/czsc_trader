@@ -3,7 +3,7 @@ from .equity_evaluation import (EquitySources, EquityEvaluationRequest, EquityEv
                                 EquityEvaluationOutcome)
 from strategy_runtime import ExecutionPriceBasis
 
-from ..backtesting.benchmark_contracts import LimitBuyHold, NextOpenBuyHold
+from ..backtesting.benchmark_contracts import LimitBuyHold, NextOpenBuyHold, EquityBuyHold
 from ..backtesting.service import BacktestEvaluation
 
 from .delivery import (
@@ -238,7 +238,7 @@ __all__ = [
     'ParameterEvaluationPlan',
     'ParameterEvaluationBinding',
     'ParameterEvaluationInput',
-    'LimitBuyHold',
+    'LimitBuyHold', 'EquityBuyHold',
     'NextOpenBuyHold',
     "ExperimentValidationScope",
     "ExperimentArtifactRef",

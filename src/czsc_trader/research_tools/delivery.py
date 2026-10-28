@@ -332,7 +332,8 @@ class EvaluationEvidenceRef(_Record):
     evaluation_ids: tuple[str, ...] = ()
 
     def _validate(self):
-        if self.evidence.schema != "account_evaluation" or self.evidence.schema_version not in (7, 8):
+        if not ((self.evidence.schema == "account_evaluation" and self.evidence.schema_version in (7, 8))
+                or (self.evidence.schema == "equity_research" and self.evidence.schema_version == 2)):
             raise ValueError("evaluation evidence requires published account schema 7 or 8")
         _unique(self.evaluation_ids, "evaluation ID")
         for value in self.evaluation_ids:

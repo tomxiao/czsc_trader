@@ -115,8 +115,14 @@ def _copy_plan(context, request, registration, store, origin):
     files += tuple(f.FreezeFile(item.path, store.put(item.source.resolve(context.root).read_bytes()))
                    for item in request.additional_files)
     definition = StrategyRuntime().describe(load_candidate(context, registration.key))
-    binding = RuntimeBindingSpec(tuple(x.path.removeprefix(prefix) for x in registration.source_files),
-        definition.implementation.source_sha256, tuple(x.path for x in files), definition.observation.sha256)
+    from strategy_runtime.equity_definition import EquityStrategyDefinition
+    if type(definition) is EquityStrategyDefinition:
+        binding = RuntimeBindingSpec(tuple(x.path.removeprefix(prefix) for x in registration.source_files),
+            definition.source_sha256, tuple(x.path for x in files),
+            canonical_sha256({"contract": "equity-decision-v2", "definition": definition.to_dict()}))
+    else:
+        binding = RuntimeBindingSpec(tuple(x.path.removeprefix(prefix) for x in registration.source_files),
+            definition.implementation.source_sha256, tuple(x.path for x in files), definition.observation.sha256)
     target = request.target
     return f.FreezePlan(origin, target.version, target.parent_version, target.change_summary,
         registration.origin.experiment_id, target.selection_data_cutoff, target.forward_start,
@@ -180,6 +186,10 @@ def inspect_candidate(context: RepositoryContext, request: CandidateInspectionRe
             or (isinstance(subject, f.CandidateSelectionSubject) and subject.registration_sha256 != registration.record_sha256)):
         raise InspectionInputError("IDENTITY_MISMATCH", "selection", "inspection requires matching candidate selection")
     owner = f.ResearchEvidenceOwner(request.candidate.strategy_id, request.experiment.experiment_id)
+    from .equity_inspection_contracts import EquityInspectionProtocol
+    if type(request.protocol) is EquityInspectionProtocol:
+        from .equity_inspection import inspect_equity_candidate
+        return inspect_equity_candidate(context, request, control, registration, selection)
     store = _EvidenceStore(context, owner)
     run_id = "inspection-" + uuid4().hex
     try:
@@ -351,7 +361,8 @@ def freeze_candidate(context: RepositoryContext, request: f.FreezeCandidateReque
     candidate = load_candidate(context, plan.origin.candidate)
     if candidate.payload["runtime"].get("contract_version") != 2:
         raise ValueError("freeze requires implementation contract version 2")
-    if candidate.payload.get("decision_feedback", "UNDECLARED") == "UNDECLARED":
+    if (candidate.payload.get("runtime", {}).get("kind") != "US_EQUITY"
+            and candidate.payload.get("decision_feedback", "UNDECLARED") == "UNDECLARED"):
         raise ValueError("freeze requires explicit decision feedback semantics")
     registered = StrategyRegistry(context.research_registry_root).get_candidate_registration(plan.origin.candidate)
     if registered.record_sha256 != plan.origin.registration_sha256:

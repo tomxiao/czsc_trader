@@ -189,10 +189,15 @@ class AdviceDecision:
     entry_cycle_after: EntryCycleState | None = None
     cycle_status: EntryCyclePlanStatus | None = None
     identity_facts: dict[str, Any] | None = None
+    equity_execution_interval: dict[str, str] | None = None
+    equity_observed_through: str | None = None
 
     def to_store_payload(self) -> dict[str, Any]:
         """Serialize the adopted decision without changing legacy advice schemas."""
         value = asdict(self)
+        if self.contract_version != "advice.equity.v1":
+            value.pop("equity_execution_interval")
+            value.pop("equity_observed_through")
         fields = ("cycle_target", "entry_cycle_before", "entry_cycle_after", "cycle_status", "identity_facts")
         if self.contract_version != "advice.v6":
             for name in fields:

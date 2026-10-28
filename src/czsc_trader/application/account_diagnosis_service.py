@@ -171,6 +171,10 @@ def diagnose_accounts(
     """Diagnose retained account facts without preparing data or replaying a strategy."""
     if type(repository) is not RepositoryContext or type(request) is not AccountDiagnosisRequest:
         raise TypeError("account diagnosis requires RepositoryContext and AccountDiagnosisRequest")
+    if request.baseline.evidence.schema == "equity_research" or (
+            request.alternative is not None and request.alternative.evidence.schema == "equity_research"):
+        from .equity_account_diagnosis import diagnose_equity_evidence
+        return diagnose_equity_evidence(repository, request)
     refs = (request.baseline,) + (() if request.alternative is None else (request.alternative,))
     sources = tuple(r.evidence for r in refs) + tuple(p.evidence for p in request.populations)
 

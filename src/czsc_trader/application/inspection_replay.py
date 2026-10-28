@@ -189,6 +189,13 @@ def compute(connection, payload):
     try:
         from threadpoolctl import threadpool_limits
         base, space, candidate, verified, replay, workspace, tolerance = pickle.loads(payload)
+        from strategy_runtime import EquityStrategyCandidate
+        if type(candidate) is EquityStrategyCandidate:
+            from .equity_inspection import compute_equity
+            with threadpool_limits(limits=1):
+                result = compute_equity(base, space, candidate, verified, replay)
+            connection.send((True, result))
+            return
         flows = Dataflows(base_dir=base, space=space, providers=ProviderConfig(bindings={}))
         runtime = StrategyRuntime(dataflows=flows)
         with threadpool_limits(limits=1):

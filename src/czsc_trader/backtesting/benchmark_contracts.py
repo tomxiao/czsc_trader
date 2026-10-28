@@ -4,6 +4,7 @@ from dataclasses import asdict, dataclass
 import math
 
 from strategy_runtime import canonical_sha256
+from strategy_runtime.equity import ResearchExecutionSpec
 
 
 BENCHMARK_EXECUTION_VERSION = "buyhold-execution-v1"
@@ -49,11 +50,24 @@ class LimitBuyHold:
 
 
 @dataclass(frozen=True)
-class EvaluationBenchmark:
-    execution: NextOpenBuyHold | LimitBuyHold
+class EquityBuyHold:
+    """Buy and hold under the exact US research execution contract."""
+    execution_spec: ResearchExecutionSpec
 
     def __post_init__(self):
-        if type(self.execution) not in (NextOpenBuyHold, LimitBuyHold):
+        from dataflows import MarketId
+        if type(self.execution_spec) is not ResearchExecutionSpec:
+            raise TypeError("equity benchmark requires ResearchExecutionSpec")
+        if self.execution_spec.market_id is not MarketId.US:
+            raise ValueError("equity benchmark requires the US execution contract")
+
+
+@dataclass(frozen=True)
+class EvaluationBenchmark:
+    execution: NextOpenBuyHold | LimitBuyHold | EquityBuyHold
+
+    def __post_init__(self):
+        if type(self.execution) not in (NextOpenBuyHold, LimitBuyHold, EquityBuyHold):
             raise TypeError("benchmark requires a typed BuyHold execution policy")
 
     @property
@@ -86,8 +100,16 @@ class EvaluationBenchmark:
         }:
             raise ValueError("benchmark fields differ from schema")
         raw = value["execution"]
-        if type(raw) is not dict or raw.get("type") not in ("NextOpenBuyHold", "LimitBuyHold"):
+        if type(raw) is not dict or raw.get("type") not in ("NextOpenBuyHold", "LimitBuyHold", "EquityBuyHold"):
             raise ValueError("unknown BuyHold execution policy")
+        if raw["type"] == "EquityBuyHold":
+            from strategy_runtime.equity_definition import execution_spec_from_dict
+            if set(raw) != {"type", "execution_spec"}:
+                raise ValueError("equity benchmark fields differ")
+            result = cls(EquityBuyHold(execution_spec_from_dict(raw["execution_spec"])))
+            if result.to_dict() != value:
+                raise ValueError("benchmark identity or execution version differs")
+            return result
         policy = NextOpenBuyHold if raw["type"] == "NextOpenBuyHold" else LimitBuyHold
         result = cls(policy(**{k: v for k, v in raw.items() if k != "type"}))
         if result.to_dict() != value:

@@ -23,12 +23,13 @@ from .runtime_acceptance import _plain
 
 if TYPE_CHECKING:
     from strategy_runtime.equity import EquityCandidate
+    from strategy_runtime.equity_definition import EquityStrategyCandidate
     from ..research_tools.equity_evaluation import EquityEvaluationRequest, EquityEvaluationResult
 
 
 def run_backtest(
     context: ResearchContext,
-    strategy: StrategyCandidate | StrategyVersion | EquityCandidate,
+    strategy: StrategyCandidate | StrategyVersion | EquityCandidate | EquityStrategyCandidate,
     request: BacktestRequest | EquityEvaluationRequest,
 ) -> BacktestEvaluation | EquityEvaluationResult:
     """Replay a candidate or an authenticated frozen version through one engine.
@@ -39,9 +40,26 @@ def run_backtest(
     if not isinstance(context, ResearchContext):
         raise TypeError("backtest requires ResearchContext")
     from strategy_runtime.equity import EquityCandidate
+    from strategy_runtime.equity_definition import EquityStrategyCandidate
     from ..research_tools.equity_evaluation import EquityEvaluationRequest
-    if type(strategy) is EquityCandidate or type(request) is EquityEvaluationRequest:
-        if type(strategy) is not EquityCandidate or type(request) is not EquityEvaluationRequest:
+    if type(strategy) is StrategyVersion and type(request) is EquityEvaluationRequest:
+        from dataclasses import replace
+        from strategy_runtime.equity_definition import EquityStrategyDefinition
+        from strategy_runtime.deployment import validate_release_package
+        stored = StrategyRegistry(context.repository.strategy_root).get_version(strategy.strategy_id, strategy.version)
+        if stored.to_dict() != strategy.to_dict():
+            raise ValueError("backtest version differs from the frozen registry record")
+        verified = validate_release_package(context.repository.strategy_root, strategy.release_id)
+        if verified.release.payload.get("runtime", {}).get("kind") != "US_EQUITY":
+            raise ValueError("equity backtest requires an explicit US frozen runtime")
+        frozen = EquityStrategyCandidate(strategy.strategy_id, strategy.source_candidate,
+            EquityStrategyDefinition.from_dict(dict(verified.release.payload["equity_definition"])), verified.source_root)
+        if (not request.formal or frozen.key != request.candidate.key
+                or frozen.content_identity != request.candidate.content_identity):
+            raise ValueError("backtest request differs from frozen equity candidate identity")
+        return context.evaluation.evaluate(replace(request, candidate=frozen))
+    if type(strategy) in (EquityCandidate, EquityStrategyCandidate) or type(request) is EquityEvaluationRequest:
+        if type(strategy) not in (EquityCandidate, EquityStrategyCandidate) or type(request) is not EquityEvaluationRequest:
             raise TypeError("BAR_RANGE requires matching EquityCandidate and EquityEvaluationRequest")
         if request.candidate != strategy:
             raise ValueError("backtest candidate differs from evaluation request")

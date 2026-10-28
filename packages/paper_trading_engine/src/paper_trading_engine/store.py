@@ -27,6 +27,7 @@ from .audit import (
 from .lifecycle import (AccountHealth, RunState, DecisionState, IntentControlState, TERMINAL_DECISION_STATES,
                         validate_transition, planned_orders, execution_state)
 from .account_binding import AccountBindingUpdate, AccountStrategyBinding
+from .equity_events import EquityEventStore
 from .account_retirement import (
     AccountRetirementRequest, AccountRetirementResult, AccountRetirementStatus, CapitalPoolBalance,
 )
@@ -47,8 +48,8 @@ from .channel import (
 
 
 DEFAULT_FUTU_CAPITAL_POOL = "1000000.0000"
-RUNTIME_DATABASE_SCHEMA_VERSION = 6
-RUNTIME_DATABASE_COMPATIBLE_VERSIONS = (1, 2, 3, 4, 5, 6)
+RUNTIME_DATABASE_SCHEMA_VERSION = 7
+RUNTIME_DATABASE_COMPATIBLE_VERSIONS = (1, 2, 3, 4, 5, 6, 7)
 
 
 def _utc_now() -> str:
@@ -173,7 +174,7 @@ def backup_runtime_database(path: Path, *, retention: int = 1) -> Path | None:
     return destination_path
 
 
-class PaperStore:
+class PaperStore(EquityEventStore):
     @classmethod
     def open_readonly(cls, path: Path) -> "PaperStore":
         """Read a consistent current-schema snapshot without creating or migrating it."""
@@ -244,7 +245,7 @@ class PaperStore:
         stored_schema = self._connection.execute(
             "SELECT value FROM settings WHERE key='runtime_database_schema_version'"
         ).fetchone()
-        if stored_schema is not None and int(stored_schema[0]) in {3, 4, 5, 6}:
+        if stored_schema is not None and int(stored_schema[0]) in {3, 4, 5, 6, 7}:
             self._initialize_lifecycle()
             return
         self._connection.executescript(
@@ -428,6 +429,11 @@ class PaperStore:
         self._ensure_column("virtual_accounts", "total_assets", "TEXT NOT NULL DEFAULT '0.0000'")
         self._ensure_column("virtual_accounts", "observation_start", "TEXT")
         self._ensure_column("virtual_accounts", "last_settlement_session", "TEXT")
+        self._ensure_column("virtual_accounts", "equity_rules_json", "TEXT")
+        self._ensure_column("virtual_accounts", "receivable", "TEXT NOT NULL DEFAULT '0.0000'")
+        self._connection.execute("CREATE TABLE IF NOT EXISTS equity_account_events ("
+            "account_id TEXT NOT NULL,event_id TEXT NOT NULL,payload TEXT NOT NULL,"
+            "PRIMARY KEY(account_id,event_id))")
         self._ensure_column("virtual_accounts", "last_decision_id", "TEXT")
         self._ensure_column("virtual_accounts", "last_decision_payload", "TEXT")
         self._ensure_column("virtual_accounts", "health", "TEXT NOT NULL DEFAULT 'OK'")
@@ -573,6 +579,11 @@ class PaperStore:
             migrate_lifecycle(self._connection, now)
             migrate_account_health(self._connection, now)
             self._ensure_column("virtual_accounts", "entry_cycle_json", "TEXT")
+            self._ensure_column("virtual_accounts", "equity_rules_json", "TEXT")
+            self._ensure_column("virtual_accounts", "receivable", "TEXT NOT NULL DEFAULT '0.0000'")
+            self._connection.execute("CREATE TABLE IF NOT EXISTS equity_account_events ("
+                "account_id TEXT NOT NULL,event_id TEXT NOT NULL,payload TEXT NOT NULL,"
+                "PRIMARY KEY(account_id,event_id))")
             self._connection.execute(
                 "INSERT INTO settings(key,value) VALUES('runtime_database_schema_version',?) "
                 "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
@@ -773,7 +784,11 @@ class PaperStore:
                     f"SELECT DISTINCT channel_id FROM {table} WHERE channel_id IS NOT NULL"
                 )
             )
-        unsupported = values - {LEGACY_FUTU_CHANNEL_ID, FUTU_SIMULATE_CN_CHANNEL_ID}
+        from .equity_contracts import EQUITY_OFFLINE_CHANNEL_ID
+        supported = {LEGACY_FUTU_CHANNEL_ID, FUTU_SIMULATE_CN_CHANNEL_ID}
+        if self._inspection_permit is not None:
+            supported.add(EQUITY_OFFLINE_CHANNEL_ID)
+        unsupported = values - supported
         if unsupported:
             raise RuntimeError(
                 "unsupported persisted execution channel(s): " + ", ".join(sorted(unsupported))
@@ -997,11 +1012,17 @@ class PaperStore:
         *, symbol="588080.SH", asset_type="etf", strategy_id=None,
         strategy_name_snapshot=None, strategy_version=None, release_hash=None,
         qualification_snapshot=None, selection_data_cutoff=None,
-        channel_id=FUTU_SIMULATE_CN_CHANNEL_ID,
+        channel_id=FUTU_SIMULATE_CN_CHANNEL_ID, equity_rules=None,
     ):
         from decimal import Decimal
         cash = Decimal(initial_cash).quantize(Decimal("0.0001"))
-        require_futu_simulate_cn(channel_id)
+        self._require_account_channel(channel_id)
+        from .equity_contracts import EquityAccountRules, EQUITY_OFFLINE_CHANNEL_ID
+        if channel_id == EQUITY_OFFLINE_CHANNEL_ID:
+            if type(equity_rules) is not EquityAccountRules or symbol.upper() != equity_rules.instrument.symbol or asset_type != "stock":
+                raise ValueError("US account requires matching explicit equity rules")
+        elif equity_rules is not None:
+            raise ValueError("CN account cannot carry US rules")
         if not cash.is_finite() or cash <= 0:
             raise ValueError("initial cash must be positive")
         if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}", str(account_id)) is None:
@@ -1043,6 +1064,8 @@ class PaperStore:
             raise ValueError("selection_data_cutoff must be a nonempty ISO date") from exc
         now = _utc_now()
         with self.atomic_decision_update():
+            if self._connection.execute("SELECT 1 FROM virtual_accounts WHERE channel_id<>? LIMIT 1", (channel_id,)).fetchone():
+                raise ValueError("one account database cannot mix market channels or capital currencies")
             if getattr(self, "_inspection_permit", None) is not None:
                 permit = self._inspection_permit
                 self._connection.execute("INSERT INTO inspection_admissions VALUES(?,?,?,?)",
@@ -1059,9 +1082,12 @@ class PaperStore:
                     strategy_name_snapshot, strategy_version, release_hash,
                     selection_data_cutoff, qualification_snapshot, symbol.upper(), asset_type,
                     str(cash), str(cash), str(cash),
-                    FUTU_SIMULATE_CN_CHANNEL_ID, STRATEGY_ACCOUNT_TYPE, RunState.PAUSED, AccountHealth.OK, now, now,
+                    channel_id, STRATEGY_ACCOUNT_TYPE, RunState.PAUSED, AccountHealth.OK, now, now,
                 ),
             )
+            if equity_rules is not None:
+                self._connection.execute("UPDATE virtual_accounts SET equity_rules_json=? WHERE account_id=?",
+                    (json.dumps(equity_rules.to_dict(), sort_keys=True), account_id))
             scope = {
                 "account_id": account_id, "strategy_id": strategy_id,
                 "strategy_version": strategy_version, "release_hash": release_hash,
@@ -1077,10 +1103,40 @@ class PaperStore:
             ))
             self._insert_audit_event(self._new_audit_event(
                 "ACCOUNT_CHANNEL_BOUND", source="account_registry",
-                correlation_id=f"account:{account_id}", channel=FUTU_SIMULATE_CN_CHANNEL_ID, **scope,
-                details={"channel_id": FUTU_SIMULATE_CN_CHANNEL_ID},
+                correlation_id=f"account:{account_id}", channel=channel_id, **scope,
+                details={"channel_id": channel_id},
             ))
         return self.virtual_account(account_id)
+
+    def _require_account_channel(self, channel_id):
+        from .equity_contracts import EQUITY_OFFLINE_CHANNEL_ID
+        if channel_id == EQUITY_OFFLINE_CHANNEL_ID:
+            if getattr(self, "_inspection_permit", None) is None:
+                raise ValueError("US offline channel requires an isolated inspection permit")
+            return channel_id
+        return require_futu_simulate_cn(channel_id)
+
+    def equity_account_rules(self, account_id):
+        from .equity_contracts import EquityAccountRules, EQUITY_OFFLINE_CHANNEL_ID
+        account = self.virtual_account(account_id)
+        self._require_account_channel(account["channel_id"])
+        raw = account.get("equity_rules_json")
+        if account["channel_id"] == EQUITY_OFFLINE_CHANNEL_ID:
+            if raw is None:
+                raise ValueError("US account has no authenticated market rules")
+            rules = EquityAccountRules.from_dict(json.loads(raw))
+            if rules.instrument.symbol != account["symbol"]:
+                raise ValueError("US account symbol differs from market rules")
+            return rules
+        if raw is not None:
+            raise ValueError("CN account contains foreign market rules")
+        return None
+
+    def _validate_account_order_quantity(self, account_id, quantity):
+        rules = self.equity_account_rules(account_id)
+        step = 100 if rules is None else rules.execution.quantity_step
+        if type(quantity) is not int or quantity <= 0 or quantity % step:
+            raise ValueError(f"intent quantity must use positive {step}-share lots")
 
     def create_channel_reconciliation_account(self, *, account_id: str = "futu-simulate-cn-reconciliation"):
         """Create the zero-balance system ledger for verified channel fee variance."""
@@ -1674,8 +1730,7 @@ class PaperStore:
             ("SELL", "MARKET"),
         }:
             raise ValueError("buy intents must be LIMIT; sell intents must be LIMIT or MARKET")
-        if quantity <= 0 or quantity % 100:
-            raise ValueError("intent quantity must use positive 100-share lots")
+        self._validate_account_order_quantity(account_id, quantity)
         identity = f"{account_id}\0{decision_id}\0{order_sequence}".encode("utf-8")
         intent_id = "PTE-" + hashlib.sha256(identity).hexdigest()[:20].upper()
         now = _utc_now()
@@ -1709,7 +1764,7 @@ class PaperStore:
             ).fetchone()
             if account is None:
                 raise KeyError(account_id)
-            require_futu_simulate_cn(account["channel_id"])
+            self._require_account_channel(account["channel_id"])
             if account["account_type"] != STRATEGY_ACCOUNT_TYPE:
                 raise ValueError("channel reconciliation account cannot create order intents")
             self._require_execution_portfolio(account_id, decision_id, creating=True)
@@ -1862,7 +1917,7 @@ class PaperStore:
             ).fetchone()
             if account is None:
                 raise KeyError(account_id)
-            require_futu_simulate_cn(account["channel_id"])
+            self._require_account_channel(account["channel_id"])
             if account["account_type"] != STRATEGY_ACCOUNT_TYPE:
                 raise ValueError("channel reconciliation account cannot create order intents")
             self._require_execution_portfolio(account_id, decision_id, creating=True)
@@ -1892,8 +1947,7 @@ class PaperStore:
                     raise ValueError(
                         "plan buys must be LIMIT; plan sells must be LIMIT or MARKET"
                     )
-                if quantity <= 0 or quantity % 100:
-                    raise ValueError("plan intent quantity must use positive 100-share lots")
+                self._validate_account_order_quantity(account_id, quantity)
                 if price <= 0:
                     raise ValueError("plan intent price must be positive")
                 if dependency_sequence is not None:
@@ -2041,8 +2095,7 @@ class PaperStore:
                 ("BUY", "LIMIT"), ("SELL", "LIMIT"), ("SELL", "MARKET"),
             }:
                 raise ValueError("buy intents must be LIMIT; sell intents must be LIMIT or MARKET")
-            if quantity <= 0 or quantity % 100:
-                raise ValueError("intent quantity must use positive 100-share lots")
+            self._validate_account_order_quantity(account_id, quantity)
             if price <= 0:
                 raise ValueError("intent price must be positive")
             normalized.append({
@@ -2089,7 +2142,7 @@ class PaperStore:
             ).fetchone()
             if account is None:
                 raise KeyError(account_id)
-            require_futu_simulate_cn(account["channel_id"])
+            self._require_account_channel(account["channel_id"])
             if account["account_type"] != STRATEGY_ACCOUNT_TYPE:
                 raise ValueError("channel reconciliation account cannot create order intents")
             self._require_execution_portfolio(account_id, decision_id, creating=True)
@@ -2246,7 +2299,7 @@ class PaperStore:
     def _require_execution_eligible(self, account_id, decision_id, symbol, valid_session,
                                     *, moment=None, submitting=False):
         account = self.virtual_account(account_id)
-        require_futu_simulate_cn(account["channel_id"])
+        self._require_account_channel(account["channel_id"])
         if account["account_type"] != STRATEGY_ACCOUNT_TYPE or account["run_state"] != RunState.RUNNING:
             raise ValueError("only a running strategy account may execute a decision")
         if AccountHealth(account["health"]) != AccountHealth.OK:
@@ -2275,8 +2328,19 @@ class PaperStore:
             from datetime import timedelta
             if moment is None or moment.tzinfo is None:
                 raise ValueError("submission requires an aware execution clock")
-            if moment.astimezone(timezone(timedelta(hours=8))).date().isoformat() != valid_session or not is_submission_window(moment):
-                raise ValueError("decision is outside its execution session")
+            rules = self.equity_account_rules(account_id)
+            if rules is None:
+                if moment.astimezone(timezone(timedelta(hours=8))).date().isoformat() != valid_session or not is_submission_window(moment):
+                    raise ValueError("decision is outside its execution session")
+            else:
+                from dataflows import TimeInterval
+                from .equity_contracts import require_equity_interval
+                raw = payload.get("equity_execution_interval")
+                if not isinstance(raw, dict) or set(raw) != {"start", "end"}:
+                    raise ValueError("US decision requires its prepared execution interval")
+                interval = TimeInterval(datetime.fromisoformat(raw["start"]), datetime.fromisoformat(raw["end"]))
+                if require_equity_interval(interval, moment, rules) != valid_session:
+                    raise ValueError("US decision session differs from interval")
             if any(self.get_setting(key) != "OK" for key in ("channel_reconciliation_status", "futu_cash_reconciliation_status")):
                 raise ValueError("successful channel and cash reconciliation required before submission")
         return decision
@@ -2399,8 +2463,21 @@ class PaperStore:
         signal_date = str(payload["signal_date"])
         valid_session = str(payload["valid_session"])
         date.fromisoformat(signal_date)
-        if date.fromisoformat(valid_session) <= date.fromisoformat(signal_date):
-            raise ValueError("decision effective session must follow its signal date")
+        rules = self.equity_account_rules(account_id)
+        if rules is None:
+            if date.fromisoformat(valid_session) <= date.fromisoformat(signal_date):
+                raise ValueError("decision effective session must follow its signal date")
+        else:
+            from dataflows import TimeInterval
+            raw = payload.get("equity_execution_interval")
+            if payload.get("contract_version") != "advice.equity.v1" or not isinstance(raw, dict):
+                raise ValueError("US decision requires an equity execution contract")
+            interval = TimeInterval(datetime.fromisoformat(raw["start"]), datetime.fromisoformat(raw["end"]))
+            observed = datetime.fromisoformat(str(payload.get("equity_observed_through")))
+            if (observed.utcoffset() is None or observed > interval.start
+                    or interval.start.astimezone(rules.timezone).date().isoformat() != valid_session
+                    or observed.astimezone(rules.timezone).date().isoformat() != signal_date):
+                raise ValueError("US decision violates causal interval identity")
         encoded = json.dumps(payload, ensure_ascii=False, default=str)
         cycle_target = int(payload.get("cycle_target_quantity") or 0) or None
         if payload.get("plan_mode") == "CORE_SETUP":
@@ -2968,7 +3045,7 @@ class PaperStore:
 
     def apply_fill_increment(
         self, channel_order_id: str, *, cumulative_quantity: int,
-        average_price, occurred_at: str,
+        average_price, occurred_at: str, settlement_at: str | None = None,
     ) -> dict[str, Any] | None:
         """Commit the new cumulative Futu fill, ledger and audit event atomically."""
         from decimal import Decimal
@@ -3023,6 +3100,8 @@ class PaperStore:
             old_frozen = Decimal(account["frozen_cash"])
             old_quantity = int(account["quantity"])
             old_cost = Decimal(account["average_cost"])
+            rules = self.equity_account_rules(str(order["account_id"]))
+            receivable = Decimal(account["receivable"])
             if intent["side"] == "BUY":
                 reserved = (
                     Decimal(intent["limit_price"]) * increment * (Decimal("1") + fee_rate)
@@ -3036,6 +3115,19 @@ class PaperStore:
                 realized = Decimal(account["realized_pnl"])
             else:
                 cash = old_cash + incremental_value - fee
+                if rules is not None and rules.execution.account.cash_availability.value == "SETTLED_ONLY":
+                    paid = datetime.fromisoformat(settlement_at) if settlement_at else None
+                    occurred = datetime.fromisoformat(occurred_at)
+                    if paid is None or paid.utcoffset() is None or occurred.utcoffset() is None or paid < occurred:
+                        raise ValueError("settled-only sale requires a valid settlement timestamp")
+                    if paid > occurred:
+                        amount = incremental_value - fee
+                        cash -= amount
+                        receivable += amount
+                        event_id = f"settlement:{channel_order_id}:{cumulative_quantity}"
+                        self._connection.execute("INSERT INTO equity_account_events VALUES(?,?,?)",
+                            (order["account_id"], event_id, json.dumps({"kind": "RECEIVABLE", "amount": str(amount),
+                             "pay_at": paid.isoformat(), "source": channel_order_id, "paid": False}, sort_keys=True)))
                 frozen = old_frozen
                 quantity = old_quantity - increment
                 if quantity < 0:
@@ -3068,7 +3160,7 @@ class PaperStore:
             cost = cost.quantize(Decimal("0.000000000001"))
             realized = realized.quantize(Decimal("0.0001"))
             total_assets = (
-                cash + frozen + Decimal(quantity) * incremental_price
+                cash + frozen + receivable + Decimal(quantity) * incremental_price
             ).quantize(Decimal("0.0001"))
             cycle_target = account["cycle_target"]
             cycle_json = account["entry_cycle_json"]
@@ -3092,10 +3184,10 @@ class PaperStore:
                     cycle_target = quantity
             self._connection.execute(
                 "UPDATE virtual_accounts SET cash=?,frozen_cash=?,quantity=?,average_cost=?,"
-                "realized_pnl=?,total_assets=?,cycle_target=?,entry_cycle_json=?,updated_at=? WHERE account_id=?",
+                "realized_pnl=?,total_assets=?,cycle_target=?,entry_cycle_json=?,receivable=?,updated_at=? WHERE account_id=?",
                 (
                     str(cash), str(frozen), quantity, str(cost), str(realized),
-                    str(total_assets), cycle_target, cycle_json, _utc_now(), order["account_id"],
+                    str(total_assets), cycle_target, cycle_json, str(receivable), _utc_now(), order["account_id"],
                 ),
             )
             order_payload["cumulative_filled_quantity"] = cumulative_quantity

@@ -200,6 +200,22 @@ class EvaluationScenarioContext(ResearchRecord):
 
 
 @dataclass(frozen=True)
+class EquityAssessmentFacts(ResearchRecord):
+    """Versioned, independently auditable equity journals; never executable state."""
+    market: str
+    timezone: str
+    currency: str
+    drawdown_basis: str
+    concentration_basis: str
+    candidate_ledger: str
+    benchmark_ledger: str
+
+    def validate(self):
+        from .equity_assessment import validate_equity_facts
+        validate_equity_facts(self)
+
+
+@dataclass(frozen=True)
 class AssessmentEvidence(ResearchRecord):
     candidate: AssessmentCandidate
     experiment_id: str
@@ -225,6 +241,15 @@ class AssessmentEvidence(ResearchRecord):
     behavior_sha256: str | None = None
     derivation_kind: AssessmentDerivationKind | None = None
     parameter_point: ParameterPointBinding | ParameterNeighborhoodBinding | None = None
+    equity: EquityAssessmentFacts | None = None
+
+    def _serialized_fields(self):
+        # Existing A-share evidence bytes and identity remain unchanged.
+        return tuple(f.name for f in fields(self) if f.name != "equity" or self.equity is not None)
+
+    @staticmethod
+    def _decode_defaults(value):
+        return {"equity": None} if type(value) is dict and "equity" not in value else {}
 
     def validate(self):
         require(re.fullmatch(r"[0-9a-f]{32}", self.attempt_id) is not None, "invalid attempt_id")
@@ -262,6 +287,9 @@ class AssessmentEvidence(ResearchRecord):
             (self.parent is None) == (self.derivation_kind is None), "incomplete derivation kind"
         )
         require(self.parent != self.candidate, "candidate cannot derive from itself")
+        if self.equity is not None:
+            from .equity_assessment import validate_equity_assessment
+            validate_equity_assessment(self)
 
 
 class DiagnosticStatus(StrEnum):

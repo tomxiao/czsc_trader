@@ -414,6 +414,9 @@ def validate_inspection(root, reference):
 
 def _validate_pass_facts(root, report, normalized, protocol):
     """Recheck saved deterministic results, without executing research or strategy code."""
+    if normalized.get('runtime_kind') == 'US_EQUITY':
+        from .equity_inspection import validate_pass_facts
+        return validate_pass_facts(root, report, normalized, protocol)
     from strategy_evaluator import ReplayEvidence, compare_ledgers, LedgerComparisonRequest, LedgerComparisonMode, LedgerComparisonStatus
     from .inspection_replay import technical_ledger_differences
     from .inspection_inputs import portable_value

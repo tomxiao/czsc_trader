@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from strategy_runtime import StrategyCandidate, StrategyRuntime, ImplementationDependency
+from strategy_runtime import EquityStrategyCandidate, EquityStrategyDefinition
 from strategy_manager import (
     CandidateKey, CandidateEvidence, CandidateRegistrationOrigin,
     CandidateRegistration, CandidateDerivation, StrategyRegistry,
@@ -25,7 +26,7 @@ class CandidateRegistrationRequest:
     derivation: CandidateDerivation | None = None
 
     def __post_init__(self):
-        if not isinstance(self.candidate, StrategyCandidate) or not isinstance(self.experiment, ExperimentRef):
+        if type(self.candidate) not in (StrategyCandidate, EquityStrategyCandidate) or not isinstance(self.experiment, ExperimentRef):
             raise TypeError("candidate and experiment must be typed")
         if self.candidate.strategy_family_id != self.experiment.strategy_id:
             raise ValueError("candidate experiment family differs")
@@ -81,6 +82,8 @@ def register_candidate(context: RepositoryContext, request: CandidateRegistratio
     """Validate and persist a candidate independently from research execution history."""
     if not isinstance(request, CandidateRegistrationRequest):
         raise TypeError("register_candidate requires CandidateRegistrationRequest")
+    if type(request.candidate) is EquityStrategyCandidate:
+        return _register_equity_candidate(context, request)
     candidate = request.candidate
     if candidate.payload["runtime"].get("contract_version") != 2:
         raise ValueError("new candidate registration requires implementation contract version 2")
@@ -154,6 +157,15 @@ def load_candidate(context: RepositoryContext, key: CandidateKey) -> StrategyCan
         ref.resolve(root)
     payload = json.loads(record.payload.resolve(root).read_text(encoding="utf-8"))
     source = root / record.source_root
+    if payload.get("runtime", {}).get("kind") == "US_EQUITY":
+        candidate = EquityStrategyCandidate(key.strategy_id, key.candidate_id,
+                                            EquityStrategyDefinition.from_dict(payload['equity_definition']), source)
+        identity = candidate.content_identity
+        if (identity.content_sha256, identity.source_sha256, identity.dependency_sha256) != (
+            record.content_sha256, record.source_sha256, record.dependency_sha256
+        ):
+            raise ValueError("registered equity identity differs")
+        return candidate
     candidate = StrategyCandidate(key.strategy_id, key.candidate_id, payload, source)
     identity = StrategyRuntime().identify(candidate, dependencies=tuple(
         ImplementationDependency(*item) for item in record.dependencies))
@@ -162,3 +174,51 @@ def load_candidate(context: RepositoryContext, key: CandidateKey) -> StrategyCan
     ):
         raise ValueError("registered candidate content identity differs")
     return candidate
+
+
+def _register_equity_candidate(context, request):
+    candidate = request.candidate
+    if not candidate.source_root.is_relative_to(context.root.resolve()):
+        raise ValueError("registration requires sources inside repository")
+    candidate.verify()
+    identity = StrategyRuntime().identify(candidate, dependencies=request.dependencies)
+    root = context.research_root / candidate.strategy_id
+    experiment = request.experiment.resolve(context.root)
+    if not experiment.is_dir():
+        raise ValueError('candidate experiment does not exist')
+    for path in (experiment, experiment.parent, root, context.research_root):
+        if path.is_symlink() or path.is_junction():
+            raise ValueError('equity candidate root contains a link')
+    for ref in request.evidence:
+        _, data = ref._read_verified(context.root)
+        if ref.schema != 'equity_research' or ref.schema_version != 2:
+            raise ValueError('formal equity registration requires equity_research/v2 support')
+        value = json.loads(data)
+        from ..research_tools.equity_assessment import build_equity_assessment_payload
+        build_equity_assessment_payload(value)
+        declaration = value['request']
+        if declaration.get('candidate_id') != candidate.candidate_id or declaration.get('implementation_hash') != identity.content_sha256:
+            raise ValueError('equity support differs from candidate content')
+        if declaration.get('experiment', {}).get('strategy_id') != candidate.strategy_id:
+            raise ValueError('equity support belongs to another batch')
+    if request.derivation is not None and request.derivation.child_content_sha256 != identity.content_sha256:
+        raise ValueError('equity derivation identity differs')
+    registry = StrategyRegistry(context.research_registry_root)
+    registry.get_family(candidate.strategy_id)
+    prefix = f'assets/candidates/{candidate.candidate_id}'
+    payload_data = json.dumps(candidate.payload, sort_keys=True, separators=(',', ':'), allow_nan=False).encode()
+    payload = _publish(root, f'{prefix}/payload/{sha256(payload_data).hexdigest()}.json', payload_data, context.root)
+    source_prefix = f'{prefix}/source/{identity.source_sha256}/strategy_runtime'
+    sources = tuple(_publish(root, f'{source_prefix}/{name}', (candidate.source_root / name).read_bytes(), context.root)
+                    for name in candidate.definition.source_files)
+    saved = EquityStrategyCandidate(candidate.strategy_id, candidate.candidate_id, candidate.definition, root / source_prefix)
+    candidate.verify()
+    if saved.content_identity != identity:
+        raise ValueError('equity source changed while publishing')
+    origin = CandidateRegistrationOrigin(request.experiment.experiment_id, tuple(
+        CandidateEvidence(Path(ref.repository_path).relative_to(Path(f'research/{candidate.strategy_id}')).as_posix(), ref.sha256)
+        for ref in request.evidence))
+    record = CandidateRegistration(candidate.key, identity.content_sha256, identity.source_sha256,
+        identity.dependency_sha256, payload, sources, source_prefix,
+        tuple((x.name, x.version) for x in candidate.definition.dependencies), origin, request.derivation)
+    return registry.register_candidate(record, evidence_root=root)

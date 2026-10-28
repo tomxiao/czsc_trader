@@ -1,6 +1,7 @@
 """Independent equity account audit over serialized facts (no runtime imports)."""
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
+from decimal import Decimal, ROUND_FLOOR
 import math
 from statistics import median
 
@@ -39,13 +40,82 @@ def _drawdown(values, initial):
     return result
 
 
+def _formal_decision(row, *, cash, quantity, specification, observed_bar, action_facts, fee_rate):
+    """Independently reconstruct the formal full-position plan after effective events."""
+    target = row["target"]
+    if type(target) not in (int, float) or target not in (0, 1):
+        raise ValueError("formal decision target must be binary long-only")
+    start, observed = _time(row["execution_start"]), _time(row["observed_through"])
+    if _time(row["decision_at"]) != start:
+        raise ValueError("formal decision must use the execution-start account snapshot")
+    if observed_bar is None or _time(observed_bar["Date"]) != observed:
+        raise ValueError("formal decision observed history differs from available bars")
+    reference = float(observed_bar["Close"])
+    for fact in action_facts:
+        if fact["Kind"] == "SPLIT" and observed <= _time(fact["Date"]) <= start:
+            reference /= float(fact["Ratio"])
+    _same(row["reference_price"], reference, "decision reference price")
+    side, planned, limit = "HOLD", 0, None
+    if target == 1 and quantity == 0:
+        tick = Decimal(str(specification["price_tick"]))
+        limit = float((Decimal(str(reference)) * (1 + Decimal(str(specification["buy_premium"])))
+                      / tick).to_integral_value(rounding=ROUND_FLOOR) * tick)
+        if limit <= 0:
+            raise ValueError("formal decision limit must be positive")
+        step = specification["quantity_step"]
+        planned = int(Decimal(str(cash)) / (Decimal(str(limit)) * (1 + Decimal(str(fee_rate))) * step)) * step
+        side = "BUY" if planned else "WAIT"
+    elif target == 0 and quantity:
+        side, planned = "SELL", quantity
+    if type(row["quantity"]) is not int or row["quantity"] != planned or row["side"] != side:
+        raise ValueError("formal decision side or quantity differs from account and target")
+    if limit is None:
+        if row["limit_price"] is not None:
+            raise ValueError("formal non-buy decision has an unexpected limit")
+    else:
+        _same(row["limit_price"], limit, "decision buy limit")
+
+
+def _formal_order(row, *, cash, specification, bar, constraint, fee_rate):
+    """An expired order must be justified by the same dated execution facts."""
+    if (constraint is None or _time(constraint["AvailableDate"]) > _time(row["valid_start"])
+            or constraint["QuantityStep"] != specification["quantity_step"]
+            or constraint["PriceTick"] != specification["price_tick"]):
+        raise ValueError("formal order dated execution rules differ")
+    quantity, limit = row["quantity"], row["limit_price"]
+    price, reason = None, "NOT_TRADABLE"
+    if constraint["Tradable"]:
+        if bar["Volume"] <= 0 or quantity > bar["Volume"]:
+            reason = "INSUFFICIENT_BAR_VOLUME"
+        elif row["side"] == "SELL":
+            price, reason = bar["Open"] * (1 - specification["slippage_bp"] / 10000), "FILLED"
+        else:
+            crossed = bar["Low"] <= limit if specification["inclusive_touch"] else bar["Low"] < limit
+            raw = bar["Open"] if bar["Open"] <= limit else limit if crossed else None
+            if raw is None:
+                reason = "LIMIT_NOT_CROSSED"
+            else:
+                price = raw * (1 + specification["slippage_bp"] / 10000)
+                reason = "FILLED"
+                if price > limit:
+                    price, reason = None, "SLIPPAGE_EXCEEDS_LIMIT"
+                elif quantity * price * (1 + fee_rate) > cash + 1e-9:
+                    price, reason = None, "INSUFFICIENT_CASH"
+    if row["status"] != ("FILLED" if price is not None else "EXPIRED") or row["reason"] != reason:
+        raise ValueError("formal order outcome differs from dated execution facts")
+
+
 def audit_equity_account(*, initial_cash, specification, bars, decisions, orders,
-                         fills, actions, account_points, trades, action_facts, constraints, fee_rate):
+                         fills, actions, account_points, trades, action_facts, constraints, fee_rate,
+                         decision_contract=None):
     """Reconstruct balances and closed cycles, then calculate daily/bar diagnostics.
 
     Bar drawdown is sampled at bar closes; it is not tick-level or intrabar risk.
     Observation count never implies independent statistical samples.
     """
+    if decision_contract not in (None, "FORMAL_V2"):
+        raise ValueError("unsupported equity decision audit contract")
+    strict = decision_contract == "FORMAL_V2"
     if not math.isfinite(initial_cash) or initial_cash <= 0 or not account_points:
         raise ValueError("audit requires initial cash and account observations")
     bar_by_end = {_time(row["Date"]): row for row in bars}
@@ -74,7 +144,57 @@ def audit_equity_account(*, initial_cash, specification, bars, decisions, orders
     if len(recorded_actions) != len(set(recorded_actions)) or set(recorded_actions) != expected_actions:
         raise ValueError("corporate action journal does not cover source events")
     events = []
+    observed_by_decision = {}
+    if strict:
+        if len(bar_by_end) != len(bars) or len(constraint_by_start) != len(constraints):
+            raise ValueError("formal source intervals must be unique")
+        if [_time(row["Date"]) for row in bars] != sorted(bar_by_end):
+            raise ValueError("formal source bars must be ordered")
+        latency = timedelta(seconds=specification["data_latency_seconds"])
+        available_bars = sorted(bars, key=lambda row: max(_time(row["Date"]), _time(row["AvailableDate"]) + latency))
+        cursor, latest = 0, None
+        for decision in sorted(decisions, key=lambda row: _time(row["execution_start"])):
+            start = _time(decision["execution_start"])
+            while cursor < len(available_bars):
+                bar = available_bars[cursor]
+                if max(_time(bar["Date"]), _time(bar["AvailableDate"]) + latency) > start:
+                    break
+                if latest is None or _time(bar["Date"]) > _time(latest["Date"]):
+                    latest = bar
+                cursor += 1
+            observed_by_decision[decision["decision_id"]] = latest
+        orders_by_decision = {}
+        for order in orders:
+            decision = decision_by_id.get(order["decision_id"])
+            if decision is None or order["decision_id"] in orders_by_decision:
+                raise ValueError("formal order requires a unique existing decision")
+            if (order["side"] not in {"BUY", "SELL"} or type(order["quantity"]) is not int or order["quantity"] <= 0
+                    or (order["side"], order["quantity"], order["limit_price"]) !=
+                    (decision["side"], decision["quantity"], decision["limit_price"])
+                    or (_time(order["valid_start"]), _time(order["valid_end"])) !=
+                    (_time(decision["execution_start"]), _time(decision["execution_end"]))):
+                raise ValueError("formal order differs from its decision or interval")
+            orders_by_decision[order["decision_id"]] = order
+        for index, decision in enumerate(decisions):
+            point = account_points[index]
+            start, end = _time(decision["execution_start"]), _time(decision["execution_end"])
+            if (decision["portfolio_revision"] != index or point["decision_id"] != decision["decision_id"]
+                    or end not in bar_by_end or _time(bar_by_end[end]["BarStart"]) != start
+                    or bool(decision["quantity"]) != (decision["decision_id"] in orders_by_decision)):
+                raise ValueError("formal decision coverage or order cardinality differs")
+            events.append((index, _time(decision["decision_at"]), 1.5, index, "decision", decision))
+            if decision["decision_id"] in orders_by_decision:
+                events.append((index, start, 1.75, index, "order", orders_by_decision[decision["decision_id"]]))
     for position, row in enumerate(actions):
+        if strict:
+            revision, stamp = row["account_revision"], _time(row["time"])
+            if type(revision) is not int or not 0 <= revision < len(decisions):
+                raise ValueError("formal action revision is invalid")
+            lower = _time(account_points[revision - 1]["time"]) if revision else first_decision
+            upper = (_time(decisions[revision]["decision_at"]) if row["kind"] in {"SPLIT", "CASH_DIVIDEND"}
+                     else _time(account_points[revision]["time"]))
+            if not lower <= stamp <= upper:
+                raise ValueError("formal action time differs from its account revision")
         events.append((row["account_revision"], _time(row["time"]), 0 if row["kind"] in {"SPLIT", "CASH_DIVIDEND"} else 1, position, "action", row))
     for position, row in enumerate(fills):
         order = order_by_id.get(row["order_id"])
@@ -134,6 +254,7 @@ def audit_equity_account(*, initial_cash, specification, bars, decisions, orders
     events.sort(key=lambda item: item[:4])
     cash, quantity, receivable, fees = float(initial_cash), 0, 0., 0.
     cycle, cost, income, closed = None, 0., 0., []
+    cycle_entry, cycle_times = None, []
     point_values, daily, prior_point = [], {}, None
     for _, stamp, _, _, kind, row in events:
         if kind == "action":
@@ -170,12 +291,21 @@ def audit_equity_account(*, initial_cash, specification, bars, decisions, orders
                 raise ValueError("unknown account event")
             cash += row["cash_delta"]
             receivable += row["receivable_delta"]
+        elif kind == "decision":
+            _formal_decision(row, cash=cash, quantity=quantity, specification=specification,
+                             observed_bar=observed_by_decision[row["decision_id"]], action_facts=action_facts, fee_rate=fee_rate)
+        elif kind == "order":
+            _formal_order(row, cash=cash, specification=specification, bar=bar_by_end[_time(row["valid_end"])],
+                          constraint=constraint_by_start.get(_time(row["valid_start"])), fee_rate=fee_rate)
         elif kind == "fill":
+            if strict and (type(row["quantity"]) is not int or (cycle is not None and row["cycle_id"] != cycle)):
+                raise ValueError("formal fill quantity or active cycle differs")
             gross = row["price"] * row["quantity"]
             fees += row["fees"]
             if row["side"] == "BUY":
                 if cycle is None:
                     cycle, cost, income = row["cycle_id"], 0., 0.
+                    cycle_entry = _time(row["interval_start"])
                 cash -= gross + row["fees"]
                 cost += gross + row["fees"]
                 quantity += row["quantity"]
@@ -189,8 +319,11 @@ def audit_equity_account(*, initial_cash, specification, bars, decisions, orders
                     receivable += proceeds
                 if quantity == 0:
                     closed.append((cycle, cost, income))
+                    cycle_times.append((cycle_entry, _time(row["interval_end"])))
                     cycle = None
         else:
+            if strict and type(row["quantity"]) is not int:
+                raise ValueError("formal account quantity must be an integer")
             if prior_point is not None and stamp <= prior_point:
                 raise ValueError("account observations must be strictly ordered")
             prior_point = stamp
@@ -218,6 +351,11 @@ def audit_equity_account(*, initial_cash, specification, bars, decisions, orders
         _same(row["cost"], expected_cost, "cycle cost")
         _same(row["income"], expected_income, "cycle income")
         _same(row["net_pnl"], expected_income - expected_cost, "cycle pnl")
+    if strict:
+        for (entry, exit_at), row in zip(cycle_times, trades, strict=True):
+            if (_time(row["entry_at"]), _time(row["exit_at"])) != (entry, exit_at) or row["status"] != "CLOSED":
+                raise ValueError("formal cycle interval differs from its fills")
+            _same(row["net_return"], row["net_pnl"] / row["cost"], "cycle net return")
     if any(stamp <= last_end for stamp, _, _ in entitlements.values()):
         raise ValueError("due payment missing from account journal")
     session_by_time = {_time(point["time"]): point["session"] for point in account_points}

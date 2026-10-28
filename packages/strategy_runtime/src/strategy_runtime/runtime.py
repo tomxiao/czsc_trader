@@ -15,6 +15,7 @@ from .identity import CandidateContentIdentity, ImplementationDependency, conten
 from .strategy import StrategyInstance
 from .pricing import ExecutionPricing
 from .equity import EquityCandidate, EquityStrategyInstance, ResearchExecutionSpec
+from .equity_definition import EquityStrategyCandidate
 
 
 @dataclass(frozen=True, slots=True)
@@ -94,7 +95,9 @@ class StrategyRuntime:
         runtime_binding: RuntimeBinding | None = None,
     ) -> RuntimeDefinition:
         """Return the validated frozen definition without creating an instance."""
-
+        if type(source) is EquityStrategyCandidate:
+            source.verify()
+            return source.definition
         return self._load(source, symbol, source_root, runtime_binding).definition
 
     def identify(
@@ -104,6 +107,11 @@ class StrategyRuntime:
         dependencies: tuple[ImplementationDependency, ...],
     ) -> CandidateContentIdentity:
         """Validate the implementation and return its effective content identity."""
+        if type(candidate) is EquityStrategyCandidate:
+            candidate.verify()
+            if tuple(sorted(dependencies)) != tuple(sorted(candidate.definition.dependencies)):
+                raise ValueError("equity identity dependency declaration differs")
+            return candidate.content_identity
         if not isinstance(candidate, StrategyCandidate):
             raise TypeError("identify requires a StrategyCandidate")
         if candidate.source_root is None:
@@ -124,7 +132,7 @@ class StrategyRuntime:
         )
 
     def create(self, request: StrategyInit | EquityCandidate) -> StrategyInstance | EquityStrategyInstance:
-        if type(request) is EquityCandidate:
+        if type(request) in (EquityCandidate, EquityStrategyCandidate):
             if self.execution_spec is None:
                 raise ValueError("equity candidate requires an explicitly bound runtime")
             return EquityStrategyInstance(request, self.execution_spec)

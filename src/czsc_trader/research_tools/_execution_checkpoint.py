@@ -168,6 +168,26 @@ class CheckpointStore:
         except (TypeError, KeyError, ValueError, AttributeError) as exc:
             raise CheckpointIntegrityError(f"cannot restore checkpoint result: {exc}") from exc
 
+    def save_equity_result(self, request_hash, result):
+        from ._equity_batch import encode_result
+        _hash(request_hash)
+        if result.request_hash != request_hash:
+            raise CheckpointIntegrityError("equity checkpoint request differs")
+        self._write(f"results/{request_hash}.json", encode_result(result))
+
+    def load_equity_result(self, request, request_hash):
+        from ._equity_batch import decode_result
+        _hash(request_hash)
+        if request.experiment != self.experiment or not request.formal or request.prepared is None:
+            raise CheckpointIntegrityError("equity checkpoint requires the same prepared experiment")
+        payload = self._read(f"results/{request_hash}.json")
+        if payload is None:
+            return None
+        try:
+            return decode_result(payload, request_hash)
+        except (TypeError, KeyError, ValueError) as exc:
+            raise CheckpointIntegrityError(f"cannot restore equity checkpoint: {exc}") from exc
+
     def save_publication(self, publication_key: str, reference: EvidenceRef):
         """Key must bind request, result, experiment and publication name/schema."""
         _hash(publication_key)

@@ -1008,17 +1008,20 @@ flowchart TD
 | `SourceRef` / `ProviderKey` | 来源名、不可变修订；产品 × 市场 × 来源精确寻址，找不到即失败 |
 | `TradingSession` | 交易日、市场时区、显式交易段；UTC 存储，根据当地时区生成 30 分钟网格 |
 | `ResearchExecutionSpec` | 市场规则版本、频率、币种、现金可用规则、数量步长、价位、买入溢价、滑点、触价与延迟假设 |
-| `EquityCandidate` | 批次、候选名、标的、执行合同哈希、实现哈希、预热根数、决策函数 |
+| `EquityStrategyDefinition` / `EquityStrategyCandidate` | 源码闭包、入口、强类型参数模式及参数、精确依赖版本、标的、执行合同、预热及结构化解释；内容身份可登记和重新加载 |
+| `EquityInputBinding` | 准备引用、四类产品内容哈希、标的、执行合同哈希及预热；准备完成后锁定 |
 | `DecisionPoint` | `observed_through <= decision_at <= execution_interval.start`，时间全部带时区 |
-| `EquityEvaluationRequest` | 实验、候选、评价区间、历史起点、四类来源、资金、费率及可选准备引用 |
+| `EquityEvaluationRequest` | 实验、候选、评价区间、历史起点、四类来源、资金、费率、精确基准、场景及统计口径；准备后绑定输入与审计材料哈希 |
 | `EquityEvaluationResult` | 固定请求哈希、不可变 JSON 字节及内容哈希；读取 `payload` 返回独立副本 |
 
-策略函数签名为 `decide(history, portfolio) -> 0 | 1`：0 表示空仓目标，1 表示可用现金范围内买入并持有。
-历史输入为当时已经完成且已经可得的行情副本，账户快照不可变。
+正式策略函数签名为 `decide(context: EquityDecisionContext) -> EquityDecision`。
+`context` 提供因果行情、确认执行后的账户反馈、决策点及固定参数；输出包含 0/1 目标、原因、
+结构化 `SignalExplanationSnapshot`。可使用 `EquityDecision.from_facts` 构造解释。
+0 表示空仓目标，1 表示持有目标；历史输入为已经完成且已经可得的行情副本，账户快照不可变。
 `research.runtime.create(candidate)` 使用同一上下文执行合同创建实例；显式美股运行时拒绝 A 股请求。
 本版不包含分批建仓、多标的组合、卖空、杠杆、碎股或可变价位制度。
-实现身份绑定加载函数及其所在源码文件；外部依赖、全局状态和运行环境仍由研究材料固定，
-该身份不是正式候选登记或冻结包的认证替代品。
+源码清单必须覆盖本地导入闭包，依赖必须精确声明；参数、源码或执行合同改变均形成新内容身份。
+旧 `EquityCandidate` 回调仍仅产生 v1 计算证据，不进入正式登记、交付和冻结。
 
 ### 10.3 数据产品
 
@@ -1069,6 +1072,7 @@ flowchart TD
    任一转换失败回滚现金、持仓、应收款、事件与证据行。
 
 基准为同标的、同初始资金、同起止点、同预热、同买入规则、同费用及公司行动处理的买入并持有账户。
+正式 v2 基准使用同一正式决策运行时，开盘权益事件先应用再计算整数股预算，避免拆股前取整改变买入数量。
 首个买单未成交时，后续区间继续尝试；不强制按理论起始价持仓，也不在窗口末尾虚构平仓。
 
 <a id="us-equity-api"></a>
@@ -1082,9 +1086,11 @@ flowchart TD
 from dataflows import AssetClass, BarFrequency, InstrumentId, MarketId, ProviderConfig, SourceRef
 from dataflows import futu_equity_bindings, TimeInterval
 from strategy_runtime import AccountPolicy, CashAvailabilityPolicy, UsEquitySpec
-from strategy_runtime import ResearchExecutionSpec, EquityCandidate, equity_implementation_hash
+from strategy_runtime import ResearchExecutionSpec
+from strategy_runtime.equity_definition import EquityStrategyDefinition, EquityStrategyCandidate, equity_source_hash
 from czsc_trader.application import create_research_context, run_backtest, publish_evidence
 from czsc_trader.research_tools import EquitySources, EquityEvaluationRequest, EvaluationEvidenceWrite
+from czsc_trader.research_tools import EvaluationBenchmark, EquityBuyHold
 
 spec = ResearchExecutionSpec(
     market=UsEquitySpec(), decision_clock=BarFrequency.M30,
@@ -1097,15 +1103,19 @@ providers = ProviderConfig(equity_bindings={
     **rule_bindings, **action_bindings,
 })
 research = create_research_context(repository, batch, providers=providers, execution_spec=spec)
-candidate = EquityCandidate(
-    batch.strategy_id, "C001", InstrumentId(MarketId.US, AssetClass.STOCK, "LITE"),
-    spec.fingerprint, equity_implementation_hash(decide), warmup_bars=60, decide=decide,
-)
+definition = EquityStrategyDefinition(
+    instrument=InstrumentId(MarketId.US, AssetClass.STOCK, symbol), execution_spec=spec,
+    warmup_bars=60, entrypoint="strategy:decide", source_files=("strategy.py",),
+    source_sha256=equity_source_hash(source_root, ("strategy.py",)), parameters_json='{"lookback":60}',
+)  # source_root 是本实验源码目录；strategy.py 按上述正式签名返回解释
+candidate = EquityStrategyCandidate(batch.strategy_id, "C0001", definition, source_root)
 request = EquityEvaluationRequest(
     experiment=experiment, candidate=candidate,
     window=TimeInterval(start_at, end_at), history_start=history_start,
     sources=EquitySources(quotes, quotes, action_source, rule_source),
     initial_cash=100_000, fee_rate=0.001,
+    benchmark=EvaluationBenchmark(EquityBuyHold(spec)),
+    drawdown_basis=drawdown_basis, concentration_basis=concentration_basis,
 )
 prepared = research.evaluation.prepare(request)
 result = research.evaluation.evaluate(prepared)
@@ -1113,8 +1123,14 @@ same_contract_result = run_backtest(research, candidate, prepared)
 reference = publish_evidence(research, EvaluationEvidenceWrite(experiment, "account", prepared, result))
 ```
 
-`evaluate_many` 接受同一类请求的非空元组，每项返回 `EvaluationStatus.SUCCEEDED/FAILED` 及结果或结构化错误。
-本版 BAR_RANGE 批量计算为顺序执行，不支持并行检查点会话；明确拒绝而非降级。
+`drawdown_basis` 必须显式选择 `SESSION_CLOSE` 或 `BAR_CLOSE`；`concentration_basis` 必须选择
+`TOP_DECILE` 或 `MAX_SINGLE`。平台不替研究约定选择验收口径。`EquityBuyHold` 精确绑定同一执行合同。
+修改已准备请求的资金、费率或输入时，清除 `audit_inputs_sha256` 后重新 `prepare`；改变数据还需重新绑定准备引用。
+
+正式 `evaluate_many` 复用 `ExecutionResources` 和 `ResearchExecutionSession` 的有界进程池、
+进度及检查点。每项报告 `SUCCEEDED/FAILED/CANCELLED/UNKNOWN`；worker 只读取已准备资产。
+使用 `ExecutionCheckpointRequest(run_id)` 创建检查点，用 `CheckpointMode.RESUME` 显式恢复；
+校验损坏或身份漂移时失败，不静默重算或重复发布。v1 回调只允许顺序计算，不支持检查点。
 多个费用场景或窗口通过多份显式请求组织，不能把不同市场请求混装一个批量调用。
 
 <a id="us-equity-evidence"></a>
@@ -1133,18 +1149,32 @@ SE 从序列化事实独立重建现金、持仓、应收款、公司行动及�
 决策、订单、成交、公司行动、区间账户、日末账户、闭合周期及指标。
 请求身份同时绑定本链路的 TDR/SRT/TXE/SE 模块源码哈希及 Python/pandas 版本。
 发布复用 `EvaluationEvidenceWrite` 和原有不可变写入流程，返回
-`EvidenceRef(schema="equity_research", schema_version=1)`；不能冒充 A 股的 `account_evaluation/v8`。
+`EvidenceRef(schema="equity_research", schema_version=2)`；不能冒充 A 股的 `account_evaluation/v8`。
 发布前再次核对准备数据身份和独立审计指标。
 
-当前美股证据可用于研究复核和实验留证；正式候选登记、五阶段数值交付适配、账户诊断、
-冻结版本回放及 PTE 接纳尚未接入该证据类型，会由既有类型/模式校验拒绝。
+v2 保存可独立审计的行情、约束、事件和账户事实，映射到共享 `AssessmentEvidence` 的美股扩展。
+`register_candidate/load_candidate` 校验并归档源码身份；`assemble_delivery/validate_delivery` 支持
+原型、候选和数值评价引用，归档后重算不依赖原实验可变目录。
+`ParameterEvaluationPlan` 对美股使用 schema4，A 股保持 schema3；中心、压力和邻域必须绑定同一参数及输入合同。
+自检与中心验收复用 SE，日频统计只使用每会话末值，同日多个交易周期不合并。
+`diagnose_accounts` 对 v2 独立核验并拆分费用、入场、持有和退出损益，切片继承连续账户期初状态；
+未知交易人群不归零，异市场或异合同对比返回不兼容状态。
+
+技术检验与冻结使用共享的 `inspect_candidate/record_research_decision/freeze_candidate/get_freeze_result`。
+美股使用 `EquityInspectionReplay/EquityInspectionProtocol`，以相同输入逐项精确比较候选与最终发布包，
+并使用正常 PTE 引擎及隔离离线渠道验证；
+技术通过仅生成可审批计划。精确批准和冻结事务 `COMMITTED` 是独立条件，生产通道不由研究接口开放。
+`run_backtest(research, frozen_version, request)` 复核版本登记、发布包及源候选内容身份后重放同一合同，
+不依赖原实验源码，也不产生部署收据。
 采用该研究入口不迁移或改写历史证据、候选资格及冻结包，也不改变生产账户。
 
 <a id="us-equity-verification"></a>
 
 ### 10.7 聚焦验证
 
-新增用例见 [美股公共链路](../../tests/functional/test_equity_research.py)、
+新增用例见 [正式研究闭环](../../tests/functional/test_equity_closure.py)、
+[参数及阶段四交付](../../tests/functional/test_equity_assessment_delivery.py)、
+[美股公共链路](../../tests/functional/test_equity_research.py)、
 [DFLS 隔离契约](../../packages/dataflows/tests/functional/test_equity_products.py) 和
 [Futu 适配器](../../packages/dataflows/tests/functional/test_futu_equity.py)。
 覆盖同日往返、整数股、下一段执行、未来行情不影响此前决策、资金交收、拆股分红、支付日期缺失、
@@ -1152,9 +1182,5 @@ SE 从序列化事实独立重建现金、持仓、应收款、公司行动及�
 同时运行原 A 股股票/ETF 执行、数据准备、批量评价与证据发布的相关测试。
 验证基于隔离夹具，不等同于真实历史公司行动验证、全仓回归或券商验收。
 
-以下为2026-10-28开发验证的历史记录，不代表文档拆分后重新运行测试：
-
-改动前 A 股相关基线 95 项通过；最终运行时/业务入口 115 项、
-数据链路 98 项、补充契约 25 项全部通过（补充契约包含重复执行的用例）。
-变更 Python 文件 Ruff 及 `git diff --check` 通过。两条 pandas 日期解析警告与基线一致。
-当次JUnit文件位于仓库的 `.tmp/us-stock-30m/`，该次验证没有运行仓库级全量回归。
+真实研究启动前仍须由已授权批次固定标的、窗口、资金政策、统计口径，并核验四类来源的实际覆盖。
+软件合成夹具通过不替代真实数据准备，尤其不能证明历史交易约束或分红支付数据已经可用。

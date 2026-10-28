@@ -61,11 +61,25 @@ class ExecutionExecutor:
 
     def __exit__(self, *exc):
         try:
+            if exc and exc[0] is not None:
+                self._abort_pool()
             if self.pool is not None:
                 self.pool.shutdown(wait=True, cancel_futures=True)
         finally:
             self.closed = True
             self.finished = perf_counter()
+
+    def _abort_pool(self):
+        """Python 3.12 has no public terminate_workers; bound cancellation locally."""
+        if self.pool is None:
+            return
+        self.broken = True
+        processes = tuple((self.pool._processes or {}).values())
+        for process in processes:
+            if process.is_alive():
+                process.terminate()
+        for process in processes:
+            process.join()
 
     @contextmanager
     def measure(self, phase):
@@ -178,5 +192,6 @@ class ExecutionExecutor:
                 self.broken = True
                 for future in pending:
                     future.cancel()
+                self._abort_pool()
             self.wall[phase.value] += perf_counter() - started
             self.busy = False
