@@ -149,7 +149,7 @@
       "research/S017/materials/registration_20261028.md",
       "research/S017/materials/pre_registration_readiness.json"
     ],
-    "next_action": "建议下一轮阶段二优先检验价格结构对上涨启动的确认能力，例如突破后回踩守住、低点抬高；保留本轮风险管理作为固定控制。先由用户确认续研方向及长持有与原频率目标的取舍，未确认前不新增账户、不访问2026行情或推进阶段三；原目标保持不变。",
+    "next_action": "诊断已交付；待用户决定是否恢复阶段二，优先以C0029为控制检验仅改变退出后恢复参与条件的最小对照。原目标不变，不推进阶段三，不访问2026行情。",
     "objective": "LITE 美股个股30分钟只做多择时研究",
     "other_proposals_confirmation": "CONFIRMED",
     "policy_reference": "research/RSCH_AGENT.md#research-policy",
@@ -162,6 +162,36 @@
       "revision": 4,
       "stage": "PROTOTYPES",
       "type": "DeliveryReference"
+    },
+    "research_diagnosis": {
+      "authorization": "用户要求先做一轮研究诊断再继续执行；本次仅诊断已有账户，不新增策略配置与回放",
+      "conclusion": "两个代表净对数财富差距主要发生在稳定空仓区间；未证明具体入退场因果。优先研究离场与恢复参与的连接，不直接叠加入场过滤。",
+      "cumulative_account_replays": 38,
+      "cumulative_formal_evaluation_requests": 19,
+      "cumulative_public_diagnoses": 27,
+      "experiment": "EX006_20261028",
+      "holdout_price_or_performance_used": false,
+      "new_account_evaluations": 0,
+      "new_public_diagnoses": 3,
+      "next_expression_run": false,
+      "previous_recommendation_revision": "优先检查空仓及恢复参与，而非直接增加回踩/低点抬高等过滤；频率要求未被证明是低收益原因",
+      "proposed_route": "STAGE_2",
+      "registered_candidates": 0,
+      "report": {
+        "evidence_id": "eac8af8f7fdfffa641f829de4f2565c87ed5848ba92580e673bebb06c354adbe.json",
+        "experiment": {
+          "experiment_id": "EX006_20261028",
+          "strategy_id": "S017",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "experiment-report",
+        "schema": "experiment_report",
+        "schema_version": 1,
+        "sha256": "eac8af8f7fdfffa641f829de4f2565c87ed5848ba92580e673bebb06c354adbe",
+        "type": "EvidenceRef"
+      },
+      "status": "COMPLETE"
     },
     "sample_contract": {
       "development": [
@@ -178,7 +208,7 @@
         "2018-12-31"
       ]
     },
-    "stage": "STAGE_2_DELIVERED_AWAITING_DECISION",
+    "stage": "RESEARCH_DIAGNOSIS_DELIVERED_AWAITING_DECISION",
     "stage_two_result": {
       "account_replay_count": 38,
       "conclusion": "本轮阶段二趋势启动、移动止损及风险保护研究已完成，策略目标未达成。较小初始风险距离带来主要改善，成本线保护有小幅增益；本轮新表达中净年化最高、回撤最低的C0029仍只有20.86%净年化、42.14%最大回撤及60日闭合中位数1，暂不建议进入阶段三。",
@@ -201,5 +231,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-10-28T23:08:25+08:00"
+  "updated_at": "2026-10-28T23:34:37+08:00"
 }

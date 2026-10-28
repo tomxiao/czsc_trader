@@ -79,7 +79,7 @@ research/registrations/               # 研究族、立项凭据和候选登记
 | S013 | [HANDOFF](S013/HANDOFF.md) | S014 | [HANDOFF](S014/HANDOFF.md) |
 | S015 | [HANDOFF](S015/HANDOFF.md) | S017 | [HANDOFF](S017/HANDOFF.md) |
 
-S017为LITE美股个股30分钟只做多择时研究，凭据`SGC-S017-001`。本轮趋势启动、移动止损及初始风险/成本线保护研究已完成，[最新阶段二交付](S017/deliveries/PROTOTYPES/4/report.md)技术校验PASS。原目标、单边0.1%及固定1%买入溢价保持不变，2026行情与策略绩效未使用；结论、已见信息范围与下一步建议见[交接](S017/HANDOFF.md)。
+S017为LITE美股个股30分钟只做多择时研究，凭据`SGC-S017-001`。两轮阶段二后已完成[研究诊断](S017/experiments/EX006_20261028/report.md)：主要差距发生在稳定空仓区间，优先研究退出与恢复参与连接；本轮零新配置与回放。原目标、0.1%单边费用及固定1%买入溢价保持不变，下一步及已见信息边界见[交接](S017/HANDOFF.md)。
 
 S015于2026-10-25经用户批准将C9700冻结为**S015-v1**，冻结事务`COMMITTED`，阶段五[最终交付](S015/deliveries/INSPECTION/5/report.md)完整校验通过。1%买入限价参与历史执行与评价，未参与寻优或敏感性扰动；冻结参数保持原值。当前资格为`RESEARCH`，尚未部署或启用PTE。当前状态、精确版本身份、证据边界及下一步见[交接入口](S015/HANDOFF.md)。
 
