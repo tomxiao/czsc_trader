@@ -7,11 +7,25 @@
     "authorization": {
       "date": "2026-10-28",
       "freeze_or_deployment_authorized": false,
-      "mechanism_research_authorized": false,
+      "mechanism_research_authorized": true,
       "parameter_search_authorized": false,
-      "revision_evidence": "research/S017/experiments/EX001_20261028/protocols/authorization_v2.md",
-      "scope": "S017阶段一修订、开发数据准备和材料发布；不含阶段二、搜索及保留验证",
-      "user_statement": "同意，请注册为S017"
+      "revision_evidence": {
+        "evidence_id": "16e525c435c4321c3e56788a8ef80f29b973c2e64fb84b54d9174f82ff471fd2.md",
+        "experiment": {
+          "experiment_id": "EX002_20261028",
+          "strategy_id": "S017",
+          "type": "ExperimentRef"
+        },
+        "media_type": "text/plain",
+        "name": "stage-two-authorization",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "16e525c435c4321c3e56788a8ef80f29b973c2e64fb84b54d9174f82ff471fd2",
+        "type": "EvidenceRef"
+      },
+      "scope": "确认MANDATE/2其余提案，批准阶段二机制研究与新建研究分支",
+      "stage_two_parameter_comparisons_authorized": true,
+      "user_statement": "同意，请继续"
     },
     "batch_preparation_reference": {
       "manifest_sha256": "bdba8f6a3e9475ed62a3295bdcccd6bb2286f5e081ec44b79811c1bcb72dce93",
@@ -75,7 +89,7 @@
       "status": "READY_UNDER_EXPLICIT_RESEARCH_ASSUMPTIONS",
       "zero_volume_bars": 0
     },
-    "execution_proposal_confirmation": "PARTIALLY_CONFIRMED",
+    "execution_proposal_confirmation": "CONFIRMED",
     "instrument": {
       "asset_class": "STOCK",
       "currency": "USD",
@@ -87,8 +101,8 @@
         "strategy_id": "S017",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "a12f16c9fa96a902aab91409a3a8c66e8e90de7282a1a0dd4df952b1cda78d87",
-      "revision": 2,
+      "content_sha256": "9cf4d820844383d8c845aaf24ee06a58db5885a39269a86fc9decc2474a6d900",
+      "revision": 3,
       "stage": "MANDATE",
       "type": "DeliveryReference"
     },
@@ -97,10 +111,20 @@
       "research/S017/materials/registration_20261028.md",
       "research/S017/materials/pre_registration_readiness.json"
     ],
-    "next_action": "确认其余阶段一提案，批准阶段二及是否新开研究分支；此前不运行机制研究、搜索或保留验证。",
+    "next_action": "请用户决定是否在阶段二转向持有风险诊断，或结束本轮研究；不进入阶段三，不读取2026保留样本。",
     "objective": "LITE 美股个股30分钟只做多择时研究",
-    "other_proposals_confirmation": "PROPOSED",
+    "other_proposals_confirmation": "CONFIRMED",
     "policy_reference": "research/RSCH_AGENT.md#research-policy",
+    "prototype_reference": {
+      "batch": {
+        "strategy_id": "S017",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "92694599b79d0877037c0fee12676246bccd726ac23b086ab5d0a74094afb9a2",
+      "revision": 2,
+      "stage": "PROTOTYPES",
+      "type": "DeliveryReference"
+    },
     "sample_contract": {
       "development": [
         "2019-01-02",
@@ -116,7 +140,19 @@
         "2018-12-31"
       ]
     },
-    "stage": "STAGE_1_DELIVERED_AWAITING_APPROVAL"
+    "stage": "STAGE_2_DELIVERED_AWAITING_DECISION",
+    "stage_two_result": {
+      "account_replay_count": 20,
+      "conclusion": "九个择时配置均未达标，未形成值得进入阶段三的完整原型；停止当前表达，保留负面及局部组件证据。",
+      "configuration_count": 10,
+      "formal_evaluation_request_count": 10,
+      "public_diagnosis_count": 12,
+      "registered_candidate_count": 0,
+      "reserved_sample_used": false,
+      "stage_three_authorized": false,
+      "timing_configuration_count": 9,
+      "work_status": "COMPLETE"
+    }
   },
   "research_state": "RESEARCHING",
   "schema_version": 2,
@@ -124,5 +160,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-10-28T20:12:43+08:00"
+  "updated_at": "2026-10-28T21:22:17+08:00"
 }
