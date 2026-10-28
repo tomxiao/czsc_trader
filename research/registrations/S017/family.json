@@ -149,7 +149,7 @@
       "research/S017/materials/registration_20261028.md",
       "research/S017/materials/pre_registration_readiness.json"
     ],
-    "next_action": "诊断已交付；待用户决定是否恢复阶段二，优先以C0029为控制检验仅改变退出后恢复参与条件的最小对照。原目标不变，不推进阶段三，不访问2026行情。",
+    "next_action": "申请DEV补充最近已关闭周期的强类型执行反馈；通过聚焦兼容检查后，RSCH沿用已批准的续研范围运行一个新恢复参与表达及C0029控制对照。",
     "objective": "LITE 美股个股30分钟只做多择时研究",
     "other_proposals_confirmation": "CONFIRMED",
     "policy_reference": "research/RSCH_AGENT.md#research-policy",
@@ -193,6 +193,17 @@
       },
       "status": "COMPLETE"
     },
+    "resumed_research": {
+      "capability_status": "CLOSED_CYCLE_FEEDBACK_UNAVAILABLE",
+      "dev_implementation_authorized": false,
+      "guideline_basis": "用户当轮更新的工作区指南，未修改或代为提交",
+      "guideline_sha256": "2a1847751f12132405a0a68553dbd1e5779d3e08d43dff5f8e777151fcc0563e",
+      "new_account_replays": 0,
+      "new_configurations": 0,
+      "requirement": "research/S017/materials/REENTRY_FEEDBACK_REQUIREMENT.md",
+      "scope": "以C0029为控制，仅比较退出后的恢复参与；原开发池、费用、1%溢价和全部目标不变",
+      "user_authorization": "同意恢复，你自主执行"
+    },
     "sample_contract": {
       "development": [
         "2019-01-02",
@@ -208,7 +219,7 @@
         "2018-12-31"
       ]
     },
-    "stage": "RESEARCH_DIAGNOSIS_DELIVERED_AWAITING_DECISION",
+    "stage": "STAGE_2_AUTHORIZED_AWAITING_DEV_CAPABILITY",
     "stage_two_result": {
       "account_replay_count": 38,
       "conclusion": "本轮阶段二趋势启动、移动止损及风险保护研究已完成，策略目标未达成。较小初始风险距离带来主要改善，成本线保护有小幅增益；本轮新表达中净年化最高、回撤最低的C0029仍只有20.86%净年化、42.14%最大回撤及60日闭合中位数1，暂不建议进入阶段三。",
@@ -231,5 +242,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-10-28T23:34:37+08:00"
+  "updated_at": "2026-10-28T23:46:28+08:00"
 }

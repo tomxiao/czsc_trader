@@ -1,0 +1,77 @@
+{
+  "status": "CAPABILITY_GAP_CONFIRMED",
+  "scope": "Read-only dataclass and source introspection; no account load, market data, replay or strategy evaluation",
+  "context_fields": [
+    {
+      "name": "history",
+      "type": "<class 'object'>"
+    },
+    {
+      "name": "portfolio",
+      "type": "<class 'strategy_runtime.equity.EquityPortfolio'>"
+    },
+    {
+      "name": "point",
+      "type": "<class 'strategy_runtime.equity.DecisionPoint'>"
+    },
+    {
+      "name": "parameters",
+      "type": "<class 'object'>"
+    }
+  ],
+  "portfolio_fields": [
+    {
+      "name": "cash",
+      "type": "<class 'float'>"
+    },
+    {
+      "name": "quantity",
+      "type": "<class 'int'>"
+    },
+    {
+      "name": "receivable",
+      "type": "<class 'float'>"
+    },
+    {
+      "name": "revision",
+      "type": "<class 'int'>"
+    },
+    {
+      "name": "cycle_entry",
+      "type": "datetime.datetime | None"
+    },
+    {
+      "name": "cycle_cost",
+      "type": "<class 'float'>"
+    },
+    {
+      "name": "feedback_source",
+      "type": "<class 'str'>"
+    },
+    {
+      "name": "reference_price_scale",
+      "type": "<class 'float'>"
+    }
+  ],
+  "executor_class": "EquityHistoricalExecutor",
+  "snapshot_source": "    def snapshot(self):\n        return EquityPortfolio(self.cash, self.quantity, self.receivable, self.revision,\n                               self.cycle_entry, self.cycle_cost)\n",
+  "snapshot_source_path": "packages/trading_execution_engine/src/trading_execution_engine/equity.py",
+  "snapshot_source_sha256": "41fd22597792cb6019d7aeeea01ea47ffb8cb85a291bd62ef7ca29826ed470a7",
+  "executor_file_sha256": "1139095536eeed87b9170c1b1d7e466c01094ec068783b62f12bccc06f7ada4f",
+  "missing_public_facts": [
+    "last closed cycle entry quantity",
+    "last closed cycle exit interval / final held-observation boundary",
+    "last closed cycle typed identity",
+    "prior trigger or execution decision reference"
+  ],
+  "available_but_insufficient": [
+    "cycle_entry",
+    "cycle_cost",
+    "current quantity (zero after full exit)"
+  ],
+  "conclusion": "The exposed portfolio and decision context do not provide enough authoritative closed-cycle facts to reconstruct the previous actual cost-based stop after flattening without replaying execution or introducing hidden state.",
+  "limitations": [
+    "This probe certifies the inspected public field set and TXE snapshot mapping, not every possible strategy interface or economic mechanism.",
+    "A previous trigger stop can be reconstructed by RSCH only after the needed filled-cycle facts and a precise cutoff/trigger semantic are supplied."
+  ]
+}
