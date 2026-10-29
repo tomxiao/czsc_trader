@@ -3,13 +3,11 @@
 from dataclasses import dataclass
 from enum import StrEnum
 
-from strategy_manager import CandidateKey, ResearchState
+from strategy_manager import ResearchState
 
 from ._records import _Record, _digest, _hash, _path, _text, _unique
 from .context import ExperimentRef, ResearchBatchRef
-from .delivery import (
-    ComponentEntry, DeliveryReference, DeliveryStatus, SearchSummary, PrototypePanel,
-)
+from .delivery import DeliveryReference, DeliveryStage
 from .evidence import EvidenceRef, ExperimentOutcome
 
 
@@ -30,37 +28,13 @@ class ResearchSourceRef(_Record):
         _hash(self.sha256)
 
 
-class CountBasis(StrEnum):
-    VERIFIED = "VERIFIED"
-    DECLARED = "DECLARED"
-    UNKNOWN = "UNKNOWN"
+class OverviewScope(StrEnum):
+    METADATA_ONLY = "METADATA_ONLY"
 
 
-class ResearchCountKind(StrEnum):
-    REGISTERED_CANDIDATES = "REGISTERED_CANDIDATES"
-    PUBLISHED_ACCOUNT_EVALUATIONS = "PUBLISHED_ACCOUNT_EVALUATIONS"
-    SEARCH_EVALUATIONS = "SEARCH_EVALUATIONS"
-    DISTINCT_CONFIGURATIONS = "DISTINCT_CONFIGURATIONS"
-    ECONOMIC_PATH_GROUPS = "ECONOMIC_PATH_GROUPS"
-
-
-@dataclass(frozen=True, slots=True)
-class ResearchCount(_Record):
-    kind: ResearchCountKind
-    value: int | None
-    basis: CountBasis
-    sources: tuple[ResearchSourceRef, ...]
-    reason: str | None = None
-
-    def _validate(self):
-        _unique(self.sources, "count source")
-        if self.basis is CountBasis.UNKNOWN:
-            if self.value is not None or not self.reason:
-                raise ValueError("unknown count requires null value and reason")
-        elif self.value is None or self.value < 0 or not self.sources:
-            raise ValueError("known count requires a nonnegative value and sources")
-        if self.reason is not None:
-            _text(self.reason, "count reason")
+class DeliveryMetadataState(StrEnum):
+    READABLE = "READABLE"
+    UNSUPPORTED = "UNSUPPORTED"
 
 
 class ExperimentReportState(StrEnum):
@@ -81,48 +55,21 @@ class ExperimentOverview(_Record):
 
 @dataclass(frozen=True, slots=True)
 class DeliveryOverview(_Record):
-    reference: DeliveryReference
-    status: DeliveryStatus
-    predecessors: tuple[DeliveryReference, ...]
-    source: ResearchSourceRef
-
-
-@dataclass(frozen=True, slots=True)
-class ComponentPanelOverview(_Record):
-    delivery: DeliveryReference
-    components: tuple[ComponentEntry, ...]
-
-
-@dataclass(frozen=True, slots=True)
-class PrototypePanelOverview(_Record):
-    delivery: DeliveryReference
-    panel: PrototypePanel
-
-
-@dataclass(frozen=True, slots=True)
-class CandidateOverview(_Record):
-    key: CandidateKey
-    content_sha256: str
-    record_sha256: str
-    experiment_id: str
+    stage: DeliveryStage
+    revision: int
+    reference: DeliveryReference | None
+    report_path: str
+    metadata_state: DeliveryMetadataState
     source: ResearchSourceRef
 
     def _validate(self):
-        _hash(self.content_sha256)
-        _hash(self.record_sha256)
-        _text(self.experiment_id, "candidate experiment")
-
-
-@dataclass(frozen=True, slots=True)
-class CandidateHandoffOverview(_Record):
-    delivery: DeliveryReference
-    candidates: tuple[CandidateKey, ...]
-
-
-@dataclass(frozen=True, slots=True)
-class SearchOverview(_Record):
-    summary: SearchSummary
-    deliveries: tuple[DeliveryReference, ...]
+        if self.revision < 1:
+            raise ValueError("delivery revision must be positive")
+        _path(self.report_path)
+        if (self.metadata_state is DeliveryMetadataState.READABLE) != (self.reference is not None):
+            raise ValueError("readable delivery metadata requires a reference")
+        if self.reference is not None and (self.reference.stage, self.reference.revision) != (self.stage, self.revision):
+            raise ValueError("delivery navigation identity differs")
 
 
 @dataclass(frozen=True, slots=True)
@@ -142,6 +89,7 @@ class ResearchSnapshot(_Record):
     content_sha256: str
     observed_at: str
     sources: tuple[ResearchSourceRef, ...]
+    scope: OverviewScope = OverviewScope.METADATA_ONLY
 
     def _validate(self):
         _hash(self.content_sha256)
@@ -156,15 +104,22 @@ class ResearchOverview(_Record):
     batch: ResearchBatchRef
     snapshot: ResearchSnapshot
     registered_state: ResearchState
+    task_sources: tuple[ResearchSourceRef, ...]
     deliveries: tuple[DeliveryOverview, ...]
     experiments: tuple[ExperimentOverview, ...]
-    component_tests: tuple[ComponentPanelOverview, ...]
-    prototype_panels: tuple[PrototypePanelOverview, ...]
-    candidates: tuple[CandidateOverview, ...]
-    handoffs: tuple[CandidateHandoffOverview, ...]
-    searches: tuple[SearchOverview, ...]
-    counts: tuple[ResearchCount, ...]
     limitations: tuple[OverviewLimitation, ...]
+    schema_version: int = 2
+
+    def _validate(self):
+        if self.schema_version != 2:
+            raise ValueError("unsupported research overview schema")
+        _unique((x.stage for x in self.deliveries), "latest delivery stage")
+        _unique((x.experiment for x in self.experiments), "experiment")
+        _unique(self.task_sources, "task source")
+        if any(x.experiment.strategy_id != self.batch.strategy_id for x in self.experiments):
+            raise ValueError("overview experiment belongs to another batch")
+        if any(x.reference is not None and x.reference.batch != self.batch for x in self.deliveries):
+            raise ValueError("overview delivery belongs to another batch")
 
 
 class ResearchOverviewError(ValueError):

@@ -15,7 +15,7 @@ from czsc_trader import research_tools as public
 from czsc_trader.research_tools import delivery as d
 from czsc_trader.research_tools.context import ExperimentRef
 from czsc_trader.research_tools.evidence import EvaluationEvidenceWrite
-from czsc_trader.research_tools.overview import ResearchOverview, ResearchCountKind
+from czsc_trader.research_tools.overview import ResearchOverview
 from test_research_contract_upgrade import managed_evaluation as managed_evaluation
 from test_research_delivery import attachment, content, published
 from test_research_overview import overview_context as overview_context
@@ -63,19 +63,22 @@ def test_prototype_revision_and_overview_preserve_research_state(overview_contex
         definition(research, 2, (first.receipt.reference,)), content(panel(changed)))
     overview = get_research_overview(research.repository, research.batch)
     assert overview.registered_state is ResearchState.PAUSED
-    assert not overview.candidates and not overview.handoffs
-    count = next(x for x in overview.counts if x.kind is ResearchCountKind.REGISTERED_CANDIDATES)
-    assert count.value == 0
-    assert {x.delivery for x in overview.prototype_panels} == {first.receipt.reference, second.receipt.reference}
-    assert next(x for x in overview.prototype_panels if x.delivery == second.receipt.reference).panel == panel(changed)
-    assert next(x for x in overview.deliveries if x.reference.stage is d.DeliveryStage.PROTOTYPES).reference == second.receipt.reference
+    assert overview.snapshot.scope == "METADATA_ONLY"
+    assert len(overview.deliveries) == 1
+    latest = overview.deliveries[0]
+    assert latest.stage is d.DeliveryStage.PROTOTYPES
+    assert latest.reference == second.receipt.reference
+    assert latest.metadata_state == "READABLE"
+    assert not hasattr(overview, "prototype_panels")
+    assert not hasattr(overview, "counts")
     assert ResearchOverview.from_dict(json.loads(json.dumps(overview.to_dict()))) == overview
     # New claims and sources do not mutate the original package or reinterpret it.
     item.definition.evidence.resolve(research.repository.root).unlink()
     assert validate_delivery(research.repository, first.receipt.reference).status is d.ValidationStatus.PASS
     assert validate_delivery(research.repository, second.receipt.reference).status is d.ValidationStatus.PASS
     assert public.PrototypePanel is d.PrototypePanel
-    assert public.PrototypePanelOverview is type(overview.prototype_panels[0])
+    assert d.PrototypePanel.from_dict(first_panel.to_dict()) == first_panel
+    assert d.PrototypePanel.from_dict(panel(changed).to_dict()) == panel(changed)
 
 
 def test_unregistered_prototype_authenticates_real_accounts_and_identity(managed_evaluation, monkeypatch):

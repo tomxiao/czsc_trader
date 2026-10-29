@@ -1,30 +1,25 @@
-"""Batch fact snapshots stay explicit, scoped and stable during a read."""
-
+"""Lightweight navigation authenticates only its explicit metadata scope."""
 from dataclasses import FrozenInstanceError, replace
 from datetime import date
 from hashlib import sha256
 import json
+from pathlib import Path
 import shutil
-import tracemalloc
 
 import pytest
 from dataflows import ProviderConfig
 from strategy_manager import ResearchState
-from test_research_contract_upgrade import managed_evaluation as managed_evaluation
-
 from czsc_trader.application import (
     RepositoryContext, ResearchBatchRequest, ResearchIntentUpdate, ExperimentRequest,
     assemble_delivery, create_research_batch, create_research_context, create_experiment,
-    publish_evidence, update_research_intent,
+    publish_evidence, update_research_intent, validate_experiment,
 )
 from czsc_trader.application.research_overview_service import get_research_overview
 from czsc_trader.research_tools import delivery as d
-from czsc_trader.research_tools.evidence import (
-    ExperimentOutcome, ExperimentReportWrite, MaterialEvidenceWrite,
-)
+from czsc_trader.research_tools.evidence import ExperimentOutcome, ExperimentReportWrite, MaterialEvidenceWrite
+from czsc_trader.research_tools.experiment_artifacts import ExperimentValidationRequest, ExperimentValidationScope
 from czsc_trader.research_tools.overview import (
-    CountBasis, ExperimentReportState, ResearchCount, ResearchCountKind, ResearchOverview,
-    ResearchOverviewError,
+    DeliveryMetadataState, ExperimentReportState, OverviewScope, ResearchOverview, ResearchOverviewError,
 )
 
 
@@ -43,32 +38,40 @@ def _content(payload):
     return d.DeliveryContent(payload, d.DeliveryStatus.COMPLETE, (), (), report="Researcher statement")
 
 
-def _count(overview, kind):
-    return next(item for item in overview.counts if item.kind is kind)
-
-
-def test_overview_has_pinned_sources_and_no_inferred_authorization(overview_context):
+def test_overview_metadata_scope_roundtrip_and_no_inferred_authorization(overview_context):
     research, experiment = overview_context
     update_research_intent(research.repository, research.batch,
         ResearchIntentUpdate(research_state=ResearchState.PAUSED), actor="test", reason="waiting")
-    (experiment.resolve(research.repository.root) / "report.md").write_text("This prose says frozen and approved")
+    root = research.repository.root
+    (experiment.resolve(root) / "report.md").write_text("This prose says frozen and approved")
+    handoff = root / "research/S900/HANDOFF.md"
+    handoff.write_text("Current handoff")
     overview = get_research_overview(research.repository, research.batch)
     assert overview.registered_state is ResearchState.PAUSED
     assert overview.experiments[0].report_state is ExperimentReportState.DRAFT
-    assert not overview.deliveries and not overview.candidates
-    assert _count(overview, ResearchCountKind.REGISTERED_CANDIDATES).value == 0
-    assert _count(overview, ResearchCountKind.SEARCH_EVALUATIONS).basis is CountBasis.UNKNOWN
-    assert all(source.repository_path.startswith(("research/S900/", "research/registrations/S900/")) for source in overview.snapshot.sources)
+    assert not overview.deliveries
+    assert overview.schema_version == 2 and overview.snapshot.scope is OverviewScope.METADATA_ONLY
+    assert {x.repository_path for x in overview.task_sources} == {
+        "research/registrations/S900/family.json", "research/S900/HANDOFF.md"}
+    assert all(x.present for x in overview.task_sources)
+    assert all(s.repository_path.startswith(("research/S900/", "research/registrations/S900/")) for s in overview.snapshot.sources)
     assert ResearchOverview.from_dict(json.loads(json.dumps(overview.to_dict()))) == overview
     assert get_research_overview(research.repository, research.batch).snapshot.content_sha256 == overview.snapshot.content_sha256
+    assert not {"counts", "candidates", "handoffs", "searches", "component_tests", "prototype_panels"} & overview.to_dict().keys()
     with pytest.raises(FrozenInstanceError):
         overview.registered_state = ResearchState.RESEARCHING
+    with pytest.raises(ValueError, match="schema"):
+        replace(overview, schema_version=1)
+    legacy = overview.to_dict()
+    legacy.pop("schema_version")
+    with pytest.raises(ValueError, match="fields"):
+        ResearchOverview.from_dict(legacy)
 
 
 def test_overview_reads_report_pointer_and_detects_unpublished_edits(overview_context):
     research, experiment = overview_context
     path = experiment.resolve(research.repository.root) / "report.md"
-    path.write_bytes("Explicit negative finding".encode())
+    path.write_bytes(b"Explicit negative finding")
     ref = publish_evidence(research, ExperimentReportWrite(experiment,
         sha256(path.read_bytes()).hexdigest(), ExperimentOutcome.COMPLETED, ()))
     first = get_research_overview(research.repository, research.batch)
@@ -83,115 +86,89 @@ def test_overview_reads_report_pointer_and_detects_unpublished_edits(overview_co
     assert get_research_overview(research.repository, research.batch).experiments[0].report_state is ExperimentReportState.UNPUBLISHED_CHANGES
 
 
-def test_overview_selects_numeric_revision_and_preserves_component_results(overview_context):
+def test_report_navigation_does_not_authenticate_linked_evidence(overview_context):
     research, experiment = overview_context
-    material = publish_evidence(research, MaterialEvidenceWrite(experiment, "source", b"negative", "text/plain", "txt"))
-    test = d.ComponentTestResult("check", experiment.experiment_id, material,
-        d.ComponentTestStatus.INEFFECTIVE, "Researcher interpretation", (material,))
-    component = d.ComponentEntry("signal", d.ExperimentDefinitionRef(material, "signal"),
-        "entry", "return", "20d", "base", "before decision", "raw", "sample", "negative", (test,))
-    first = assemble_delivery(research.repository,
-        d.DeliveryDefinition(research.batch, d.DeliveryStage.COMPONENTS, 2), _content(d.ComponentPanel((component,), "Negative"))).receipt
-    last = assemble_delivery(research.repository,
-        d.DeliveryDefinition(research.batch, d.DeliveryStage.COMPONENTS, 10, (first.reference,)), _content(d.ComponentPanel((), "New statement"))).receipt
-    # Metadata overview, like delivery validation, relies on retained snapshots.
-    material.resolve(research.repository.root).unlink()
+    path = experiment.resolve(research.repository.root) / "report.md"
+    material = publish_evidence(research, MaterialEvidenceWrite(experiment, "source", b"support", "text/plain", "txt"))
+    publish_evidence(research, ExperimentReportWrite(experiment,
+        sha256(path.read_bytes()).hexdigest(), ExperimentOutcome.COMPLETED, (material,)))
+    material.resolve(research.repository.root).write_bytes(b"damaged support")
     overview = get_research_overview(research.repository, research.batch)
-    assert overview.deliveries[0].reference == last.reference
-    assert len(overview.component_tests) == 2
-    assert any(panel.components == (component,) for panel in overview.component_tests)
+    assert overview.experiments[0].report_state is ExperimentReportState.PUBLISHED
+    assert material.repository_path not in {x.repository_path for x in overview.snapshot.sources}
+    assert validate_experiment(research.repository, ExperimentValidationRequest(
+        experiment, ExperimentValidationScope.REPORT_PUBLICATION)).status is d.ValidationStatus.FAIL
 
 
-def test_overview_deduplicates_search_declarations_but_never_sums_overlap(overview_context):
+def test_latest_receipt_only_never_opens_payloads_or_account_directories(overview_context, monkeypatch):
     research, _ = overview_context
-    search = d.SearchSummary("sweep", "grid", "development", 10, 7, "researcher choice")
-    for revision in (1, 2):
-        assemble_delivery(research.repository,
-            d.DeliveryDefinition(research.batch, d.DeliveryStage.CANDIDATES, revision),
-            _content(d.CandidateSet((), (), (search,), "No handoff"))).receipt
-    first = get_research_overview(research.repository, research.batch)
-    assert len(first.searches) == 1 and len(first.searches[0].deliveries) == 2
-    assert _count(first, ResearchCountKind.SEARCH_EVALUATIONS).value == 10
-    assert _count(first, ResearchCountKind.SEARCH_EVALUATIONS).basis is CountBasis.DECLARED
-    assemble_delivery(research.repository,
-        d.DeliveryDefinition(research.batch, d.DeliveryStage.CANDIDATES, 3),
-        _content(d.CandidateSet((), (), (replace(search, evaluations=20),), "Cumulative declaration"))).receipt
-    second = get_research_overview(research.repository, research.batch)
-    assert _count(second, ResearchCountKind.SEARCH_EVALUATIONS).value is None
-    assert any(item.code == "SEARCH_OVERLAP_UNKNOWN" for item in second.limitations)
+    first = assemble_delivery(research.repository, d.DeliveryDefinition(research.batch, d.DeliveryStage.COMPONENTS, 2),
+        _content(d.ComponentPanel((), "prior"))).receipt
+    latest = assemble_delivery(research.repository, d.DeliveryDefinition(research.batch, d.DeliveryStage.COMPONENTS, 10, (first.reference,)),
+        _content(d.ComponentPanel((), "latest"))).receipt
+    root = research.repository.root
+    def blocked(path):
+        relative = path.relative_to(root).as_posix()
+        return ("/assets/evidence/" in relative or "/candidates/" in relative
+                or relative.endswith("delivery.json") or "/COMPONENTS/2/" in relative
+                or ("/deliveries/" in relative and relative.endswith("report.md")))
+    original_open, original_iterdir = Path.open, Path.iterdir
+    def guarded_open(path, *args, **kwargs):
+        assert not blocked(path), f"unnecessary payload read: {path}"
+        return original_open(path, *args, **kwargs)
+    def guarded_iterdir(path):
+        assert not path.as_posix().endswith(("/assets/evidence", "/candidates"))
+        return original_iterdir(path)
+    monkeypatch.setattr(Path, "open", guarded_open)
+    monkeypatch.setattr(Path, "iterdir", guarded_iterdir)
+    overview = get_research_overview(research.repository, research.batch)
+    item = overview.deliveries[0]
+    assert item.reference == latest.reference and item.revision == 10
+    assert item.metadata_state is DeliveryMetadataState.READABLE
+    assert item.report_path == "research/S900/deliveries/COMPONENTS/10/report.md"
+    assert not any(blocked(root / x.repository_path) for x in overview.snapshot.sources if x.kind == "FILE")
 
 
-def test_overview_memory_does_not_scale_with_repeated_large_evidence_copies(overview_context):
-    research, experiment = overview_context
-    payload = b"retained source data\n" * 210_000
-    evidence = publish_evidence(research, MaterialEvidenceWrite(
-        experiment, "large-source", payload, "text/plain", "txt"))
-    for revision in range(1, 9):
-        assemble_delivery(research.repository,
-            d.DeliveryDefinition(research.batch, d.DeliveryStage.COMPONENTS, revision),
-            replace(_content(d.ComponentPanel((), "Large selected source")), evidence=(evidence,))).receipt
-    # Eight independent retained copies represent the cumulative research graph.
-    # Authentication must not keep their full payloads alive until the read ends.
-    tracemalloc.start()
-    try:
-        overview = get_research_overview(research.repository, research.batch)
-        _, peak = tracemalloc.get_traced_memory()
-    finally:
-        tracemalloc.stop()
-    assert overview.deliveries[0].reference.revision == 8
-    assert peak < len(payload) * 6
-
-
-def test_overview_reports_unsupported_delivery_without_legacy_parser(overview_context):
+def test_unsupported_highest_receipt_never_falls_back(overview_context):
     research, _ = overview_context
-    assemble_delivery(research.repository,
-        d.DeliveryDefinition(research.batch, d.DeliveryStage.COMPONENTS, 2), _content(d.ComponentPanel((), "old readable"))).receipt
-    path = research.repository.root / "research/S900/assets/deliveries/COMPONENTS/10"
-    path.mkdir(parents=True)
-    (path / "delivery.json").write_text(json.dumps({"schema_version": 5, "old": "not interpreted"}))
+    assemble_delivery(research.repository, d.DeliveryDefinition(research.batch, d.DeliveryStage.COMPONENTS, 2),
+        _content(d.ComponentPanel((), "readable")))
+    for parent in ("deliveries", "assets/deliveries"):
+        path = research.repository.root / f"research/S900/{parent}/COMPONENTS/10"
+        path.mkdir(parents=True)
+        (path / "receipt.json").write_text(json.dumps({"schema_version": 999, "unknown": "format"}))
+        (path / "report.md").write_text("Unknown revision")
     overview = get_research_overview(research.repository, research.batch)
-    assert not overview.deliveries
-    assert any(item.code == "UNSUPPORTED_DELIVERY_SCHEMA" for item in overview.limitations)
+    assert len(overview.deliveries) == 1
+    latest = overview.deliveries[0]
+    assert latest.revision == 10 and latest.reference is None
+    assert latest.metadata_state is DeliveryMetadataState.UNSUPPORTED
+    assert any(x.code == "UNSUPPORTED_DELIVERY_SCHEMA" for x in overview.limitations)
 
 
-def test_overview_counts_registered_candidate_and_actual_published_account(fresh_completed):
-    repository, research, request, result, evaluation = fresh_completed
-    # This shared fixture intentionally creates its family directly; establish a
-    # public batch identity before requesting the overview's batch-scoped view.
-    create_research_batch(repository, ResearchBatchRequest("S900", "Freeze fixture", "ETF",
-        {"hypothesis": "synthetic"}, credential_id="SGC-S900-002"), actor="test", reason="explicit batch")
-    overview = get_research_overview(repository, research.batch)
-    assert len(overview.candidates) == 1
-    assert overview.candidates[0].key.candidate_id == request.strategy.candidate_id
-    assert overview.candidates[0].key.strategy_id == request.strategy.strategy_family_id
-    assert _count(overview, ResearchCountKind.REGISTERED_CANDIDATES).value == 1
-    assert _count(overview, ResearchCountKind.PUBLISHED_ACCOUNT_EVALUATIONS).value == len(result.runs)
-    assert _count(overview, ResearchCountKind.PUBLISHED_ACCOUNT_EVALUATIONS).basis is CountBasis.DECLARED
-    assert any(item.repository_path == evaluation.evidence.repository_path for item in overview.snapshot.sources)
-
-
-def test_overview_marks_unsupported_account_total_unknown(overview_context):
+@pytest.mark.parametrize("damage", ["missing", "missing-package", "tampered-receipt", "manifest", "foreign", "unsafe-manifest"])
+def test_overview_rejects_invalid_required_metadata(overview_context, damage):
     research, experiment = overview_context
-    publish_evidence(research, MaterialEvidenceWrite(experiment, "historical-account",
-        json.dumps({"source_kind": "published_result", "schema_version": 5}).encode(), "application/json", "json"))
-    overview = get_research_overview(research.repository, research.batch)
-    assert _count(overview, ResearchCountKind.PUBLISHED_ACCOUNT_EVALUATIONS).basis is CountBasis.UNKNOWN
-    assert _count(overview, ResearchCountKind.PUBLISHED_ACCOUNT_EVALUATIONS).value is None
-
-
-@pytest.mark.parametrize("damage", ["missing", "missing-package", "tampered", "foreign"])
-def test_overview_rejects_invalid_required_identity_or_artifact(overview_context, damage):
-    research, experiment = overview_context
-    receipt = assemble_delivery(research.repository,
-        d.DeliveryDefinition(research.batch, d.DeliveryStage.COMPONENTS, 1), _content(d.ComponentPanel((), "done"))).receipt
+    assemble_delivery(research.repository, d.DeliveryDefinition(research.batch, d.DeliveryStage.COMPONENTS, 1),
+        _content(d.ComponentPanel((), "done")))
+    root = research.repository.root
+    public = root / "research/S900/deliveries/COMPONENTS/1/receipt.json"
+    retained = root / "research/S900/assets/deliveries/COMPONENTS/1/receipt.json"
     if damage == "missing":
-        (research.repository.root / f"research/S900/deliveries/COMPONENTS/{receipt.reference.revision}/receipt.json").unlink()
+        public.unlink()
     elif damage == "missing-package":
-        shutil.rmtree(research.repository.root / "research/S900/assets/deliveries/COMPONENTS/1")
-    elif damage == "tampered":
-        (research.repository.root / "research/S900/assets/deliveries/COMPONENTS/1/report.md").write_bytes(b"changed")
+        shutil.rmtree(retained.parent)
+    elif damage == "tampered-receipt":
+        retained.write_bytes(b"changed")
+    elif damage in ("manifest", "unsafe-manifest"):
+        value = json.loads(public.read_bytes())
+        value["files"][0]["sha256"] = "0" * 64
+        if damage == "unsafe-manifest":
+            value["files"][0]["path"] = "../outside"
+        for path in (public, retained):
+            path.write_text(json.dumps(value))
     else:
-        path = experiment.resolve(research.repository.root) / "experiment.json"
+        path = experiment.resolve(root) / "experiment.json"
         value = json.loads(path.read_text())
         value["strategy_id"] = "S901"
         path.write_text(json.dumps(value))
@@ -202,24 +179,30 @@ def test_overview_rejects_invalid_required_identity_or_artifact(overview_context
 
 def test_overview_does_not_enumerate_or_parse_other_batches(overview_context):
     research, _ = overview_context
+    (research.repository.root / "research/S900/HANDOFF.md").unlink()
     for relative in ("research/S901/batch.json", "research/registrations/S901/family.json"):
         target = research.repository.root / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(b"not-json-and-must-not-be-read")
     overview = get_research_overview(research.repository, research.batch)
     assert all("S901" not in item.repository_path for item in overview.snapshot.sources)
+    assert not next(x for x in overview.task_sources if x.repository_path.endswith("HANDOFF.md")).present
 
 
-@pytest.mark.parametrize("change", ["file", "listing"])
-def test_overview_refuses_concurrent_mutation_without_retry(overview_context, monkeypatch, change):
+@pytest.mark.parametrize("change", ["file", "listing", "handoff"])
+def test_overview_refuses_concurrent_metadata_mutation_without_retry(overview_context, monkeypatch, change):
     from czsc_trader.application import research_overview_service as service
     research, experiment = overview_context
     original = service._ReadSnapshot.finish
+    if change == "handoff":
+        (research.repository.root / "research/S900/HANDOFF.md").unlink()
     def mutate(reader):
         if change == "file":
             (experiment.resolve(research.repository.root) / "report.md").write_bytes(b"concurrent write")
-        else:
+        elif change == "listing":
             (research.repository.root / "research/S900/experiments/EX002_20261007").mkdir()
+        else:
+            (research.repository.root / "research/S900/HANDOFF.md").write_text("New handoff")
         return original(reader)
     monkeypatch.setattr(service._ReadSnapshot, "finish", mutate)
     with pytest.raises(ResearchOverviewError) as exc:
@@ -227,33 +210,48 @@ def test_overview_refuses_concurrent_mutation_without_retry(overview_context, mo
     assert exc.value.code == "CONCURRENT_CHANGE"
 
 
-@pytest.mark.parametrize("value", [True, -1, "3"])
-def test_overview_count_contract_rejects_ambiguous_values(value):
-    with pytest.raises((ValueError, TypeError)):
-        ResearchCount(ResearchCountKind.SEARCH_EVALUATIONS, value, CountBasis.DECLARED, ())
+@pytest.mark.parametrize("link_kind", ["is_symlink", "is_junction"])
+def test_overview_rejects_linked_metadata_paths(overview_context, monkeypatch, link_kind):
+    research, _ = overview_context
+    target = research.repository.root / "research/S900"
+    original = getattr(Path, link_kind)
+    monkeypatch.setattr(Path, link_kind, lambda path: path == target or original(path))
+    with pytest.raises(ResearchOverviewError, match="filesystem link"):
+        get_research_overview(research.repository, research.batch)
 
 
-def test_snapshot_reuses_hash_observation_but_rechecks_content_at_finish(overview_context, monkeypatch):
-    from czsc_trader.application.research_overview_service import _ReadSnapshot
+@pytest.mark.parametrize("damage", ["hash", "foreign-pointer", "bad-schema"])
+def test_report_snapshot_identity_is_still_authenticated(overview_context, damage):
     research, experiment = overview_context
-    relative = f"{experiment.repository_path}/report.md"
-    path = research.repository.root / relative
-    expected = sha256(path.read_bytes()).hexdigest()
-    reader = _ReadSnapshot(research.repository.root)
-    calls = []
-    read = type(path).read_bytes
+    path = experiment.resolve(research.repository.root) / "report.md"
+    ref = publish_evidence(research, ExperimentReportWrite(experiment,
+        sha256(path.read_bytes()).hexdigest(), ExperimentOutcome.COMPLETED, ()))
+    if damage == "hash":
+        ref.resolve(research.repository.root).write_bytes(b"changed")
+    else:
+        pointer = experiment.resolve(research.repository.root) / "report_ref.json"
+        value = json.loads(pointer.read_bytes())
+        if damage == "foreign-pointer":
+            value["report"]["experiment"]["strategy_id"] = "S901"
+        else:
+            value["schema_version"] = True
+        pointer.write_text(json.dumps(value))
+    with pytest.raises(ResearchOverviewError):
+        get_research_overview(research.repository, research.batch)
 
-    def counted(target):
-        calls.append(target)
-        return read(target)
 
-    monkeypatch.setattr(type(path), "read_bytes", counted)
-    for _ in range(5):
-        reader.authenticate(relative, expected)
-    assert calls == [path]
-    with pytest.raises(ValueError, match="hash differs"):
-        reader.authenticate(relative, "0" * 64)
-    path.write_bytes(b"concurrent mutation")
+def test_overview_rechecks_unread_navigation_target_link_at_finish(overview_context, monkeypatch):
+    from czsc_trader.application import research_overview_service as service
+    research, _ = overview_context
+    assemble_delivery(research.repository, d.DeliveryDefinition(research.batch, d.DeliveryStage.COMPONENTS, 1),
+        _content(d.ComponentPanel((), "done")))
+    target = research.repository.root / "research/S900/deliveries/COMPONENTS/1/report.md"
+    original_finish, original_link = service._ReadSnapshot.finish, Path.is_symlink
+    def change_link(reader):
+        monkeypatch.setattr(Path, "is_symlink", lambda path: path == target or original_link(path))
+        return original_finish(reader)
+    monkeypatch.setattr(service._ReadSnapshot, "finish", change_link)
     with pytest.raises(ResearchOverviewError) as exc:
-        reader.finish()
+        get_research_overview(research.repository, research.batch)
     assert exc.value.code == "CONCURRENT_CHANGE"
+    assert exc.value.repository_path.endswith("COMPONENTS/1/report.md")

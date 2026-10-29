@@ -1,23 +1,18 @@
-"""Read retained batch facts without strategy replay or semantic research decisions."""
-
-from dataclasses import fields, is_dataclass
+"""Navigate retained research metadata without expanding evidence payloads."""
 from datetime import datetime, timezone
 from hashlib import sha256
 import json
 
-from strategy_manager import CandidateKey, CandidateRegistration, StrategyFamily, ResearchEvidenceRef
-
+from strategy_manager import StrategyFamily
 from .context import RepositoryContext
 from ..research_tools import delivery as d
 from ..research_tools.context import ExperimentRef, ResearchBatchRef
 from ..research_tools.evidence import EvidenceRef, managed_path
 from ..research_tools.experiment_artifacts import ExperimentReportSnapshot
-from ..research_tools.evaluation import EvaluationIdentity
 from ..research_tools.overview import (
-    CandidateHandoffOverview, CandidateOverview, ComponentPanelOverview, PrototypePanelOverview, CountBasis,
-    DeliveryOverview, ExperimentOverview, ExperimentReportState, OverviewLimitation,
-    ResearchCount, ResearchCountKind, ResearchOverview, ResearchOverviewError,
-    ResearchSnapshot, ResearchSourceKind, ResearchSourceRef, SearchOverview,
+    DeliveryMetadataState, DeliveryOverview, ExperimentOverview, ExperimentReportState,
+    OverviewLimitation, ResearchOverview, ResearchOverviewError,
+    ResearchSnapshot, ResearchSourceKind, ResearchSourceRef,
 )
 
 
@@ -63,18 +58,6 @@ class _ReadSnapshot:
             managed_path(self.root, f"{relative}/{name}")
         return result or ()
 
-    def authenticate(self, relative, expected_sha256):
-        """Reuse a path observation; finish reauthenticates every observed path.
-
-        Repeated references must agree on the expected identity. Keep hashes,
-        rather than large evidence bodies, for the duration of this request.
-        """
-        if relative not in self.files:
-            self.read(relative)
-        observation = self.files[relative]
-        if observation is None or observation[0] != expected_sha256:
-            raise ValueError(f"referenced file hash differs: {relative}")
-
     def source(self, relative):
         if relative in self.files:
             observation = self.files[relative]
@@ -105,24 +88,23 @@ class _ReadSnapshot:
             actual = tuple(sorted((x.name, x.is_dir()) for x in path.iterdir())) if path.is_dir() else None
             if actual != expected:
                 raise ResearchOverviewError("CONCURRENT_CHANGE", relative, "directory changed during overview")
+            for name, _ in actual or ():
+                # Unread navigation targets (e.g. a delivery report) can become
+                # links without changing the observed name/is_dir pair.
+                child = f"{relative}/{name}"
+                try:
+                    managed_path(self.root, child)
+                except ValueError as exc:
+                    raise ResearchOverviewError("CONCURRENT_CHANGE", child, "directory entry became unsafe") from exc
         return tuple(self.source(name) for name in sorted(self.files.keys() | self.directories.keys()))
-
-
-def _walk(value):
-    yield value
-    if is_dataclass(value):
-        for field in fields(value):
-            yield from _walk(getattr(value, field.name))
-    elif isinstance(value, tuple):
-        for item in value:
-            yield from _walk(item)
 
 
 def _evidence(reader, batch, reference):
     if reference.experiment.strategy_id != batch.strategy_id:
         raise ValueError("reference belongs to another batch")
     data = reader.read(reference.repository_path)
-    if sha256(data).hexdigest() != reference.sha256:
+    # read() already hashed these exact bytes; no second hash or payload traversal.
+    if reader.source(reference.repository_path).sha256 != reference.sha256:
         raise ValueError(f"evidence hash differs: {reference.repository_path}")
     return data
 
@@ -152,274 +134,81 @@ def _experiments(reader, batch):
             saved = ExperimentReportSnapshot.from_dict(_json(_evidence(reader, batch, published)))
             if saved.experiment != reference:
                 raise ValueError("report snapshot experiment differs")
-            for source in saved.evidence:
-                _evidence(reader, batch, source)
-            if saved.previous is not None:
-                _evidence(reader, batch, saved.previous)
             outcome = saved.outcome
             state = ExperimentReportState.PUBLISHED if report == saved.report.encode("utf-8") else ExperimentReportState.UNPUBLISHED_CHANGES
         result.append(ExperimentOverview(reference, state, published, outcome, reader.source(metadata)))
     return tuple(result)
 
 
-def _deliveries(reader, batch, limitations):
-    result = []
-    account_versions = {}
-    parent = f"research/{batch.strategy_id}/assets/deliveries"
-    # A retained public receipt cannot silently disappear from the overview
-    # merely because its complete package directory was removed.
-    public_parent = f"research/{batch.strategy_id}/deliveries"
-    for stage_name, directory in reader.listing(public_parent):
-        d.DeliveryStage(stage_name)
+def _delivery_revisions(reader, parent):
+    result = {}
+    for name, directory in reader.listing(parent):
+        stage = d.DeliveryStage(name)
         if not directory:
-            raise ValueError("public delivery stage must be a directory")
-        for revision, revision_dir in reader.listing(f"{public_parent}/{stage_name}"):
-            if not revision_dir or not revision.isdecimal() or str(int(revision)) != revision or int(revision) < 1:
-                raise ValueError("invalid public delivery revision")
-            reader.read(f"{parent}/{stage_name}/{revision}/delivery.json")
-    for stage_name, is_dir in reader.listing(parent):
-        stage = d.DeliveryStage(stage_name)
-        if not is_dir:
             raise ValueError("delivery stage must be a directory")
-        for revision_name, revision_dir in reader.listing(f"{parent}/{stage_name}"):
-            if not revision_dir or not revision_name.isdecimal() or str(int(revision_name)) != revision_name or int(revision_name) < 1:
-                raise ValueError("delivery revision requires a positive canonical integer")
-            path = f"{parent}/{stage_name}/{revision_name}"
-            value = _json(reader.read(f"{path}/delivery.json"))
-            if type(value) is not dict or type(value.get("schema_version")) is not int:
-                raise ValueError("invalid delivery envelope")
-            schema = value["schema_version"]
-            legacy = stage is d.DeliveryStage.INSPECTION and schema == 8
-            if schema not in (8, 9, 10, 11, 12):
-                limitations.append(OverviewLimitation("UNSUPPORTED_DELIVERY_SCHEMA", path, "Retained delivery uses an unsupported schema; no compatibility interpretation was performed."))
-                continue
-            if not legacy and schema not in d._readable_schema_versions(stage):
-                raise ValueError(f"delivery stage/schema differs: {path}")
-            if set(value) != {"schema_version", "definition", "content"}:
-                raise ValueError("delivery envelope fields differ")
-            raw_definition = value["definition"]
-            if (type(raw_definition) is not dict
-                or set(raw_definition) != {"type", "batch", "stage", "revision", "predecessors", "schema_version"}
-                or raw_definition["type"] != "DeliveryDefinition"
-                or type(raw_definition["schema_version"]) is not int
-                or type(raw_definition["revision"]) is not int
-                or raw_definition["schema_version"] != schema):
-                raise ValueError(f"delivery definition schema differs: {path}")
-            if (ResearchBatchRef.from_dict(raw_definition["batch"]), d.DeliveryStage(raw_definition["stage"]),
-                raw_definition["revision"]) != (batch, stage, int(revision_name)):
-                raise ValueError("delivery directory and identity differ")
-            if legacy:
-                # This is an authenticated envelope, not a compatibility parser
-                # for the historical inspection protocol or its PASS result.
-                if type(raw_definition["predecessors"]) is not list:
-                    raise ValueError("invalid legacy predecessor metadata")
-                predecessors = tuple(d.DeliveryReference.from_dict(item) for item in raw_definition["predecessors"])
-                if (len({(item.stage, item.revision) for item in predecessors}) != len(predecessors)
-                    or any(item.batch != batch or (item.stage is stage and item.revision >= int(revision_name))
-                           for item in predecessors)):
-                    raise ValueError("legacy predecessor identity differs")
-                raw_content = value["content"]
-                if type(raw_content) is not dict or type(raw_content.get("report")) is not str:
-                    raise ValueError("invalid legacy report metadata")
-                status = d.DeliveryStatus(raw_content["status"])
-                report_text = raw_content["report"]
-                content = None
-                limitations.append(OverviewLimitation("UNSUPPORTED_LEGACY_INSPECTION", path,
-                    "Historical inspection metadata only; its technical result and coverage are unknown under the current protocol."))
-            else:
-                definition = d.DeliveryDefinition.from_dict(raw_definition)
-                content = d.DeliveryContent.from_dict(value["content"])
-                expected_payload = {
-                    d.DeliveryStage.MANDATE: d.ResearchMandate,
-                    d.DeliveryStage.COMPONENTS: d.ComponentPanel,
-                    d.DeliveryStage.PROTOTYPES: d.PrototypePanel,
-                    d.DeliveryStage.CANDIDATES: d.CandidateSet,
-                    d.DeliveryStage.ASSESSMENT: d.CandidateAssessmentDelivery,
-                    d.DeliveryStage.INSPECTION: d.CandidateInspectionDelivery,
-                }
-                if type(content.payload) is not expected_payload[stage]:
-                    raise ValueError("delivery stage and payload differ")
-                predecessors, status, report_text = definition.predecessors, content.status, content.report
-            receipt_path = f"{path}/receipt.json"
-            raw_receipt = _json(reader.read(receipt_path))
-            if (type(raw_receipt) is not dict or set(raw_receipt) != {"type", "reference", "files", "schema_version"}
-                or raw_receipt["type"] != "DeliveryReceipt"
-                or type(raw_receipt["schema_version"]) is not int or raw_receipt["schema_version"] != schema):
-                raise ValueError(f"delivery receipt schema differs: {path}")
-            if legacy:
-                reference = d.DeliveryReference.from_dict(raw_receipt["reference"])
-                if type(raw_receipt["files"]) is not list:
-                    raise ValueError("invalid legacy file manifest")
-                files = tuple(d.PublicationFile.from_dict(item) for item in raw_receipt["files"])
-                if not files or len({item.path.casefold() for item in files}) != len(files):
-                    raise ValueError("invalid legacy file manifest")
-            else:
-                receipt = d.DeliveryReceipt.from_dict(raw_receipt)
-                reference, files = receipt.reference, receipt.files
-            if (reference.batch, reference.stage, reference.revision) != (batch, stage, int(revision_name)) or d._digest(files) != reference.content_sha256:
-                raise ValueError("delivery receipt identity differs")
-            expected = {entry.path for entry in files} | {"receipt.json"}
-            def scan(relative, prefix=""):
-                paths = set()
-                for name, directory in reader.listing(relative):
-                    paths |= scan(f"{relative}/{name}", f"{prefix}{name}/") if directory else {prefix + name}
-                return paths
-            if scan(path) != expected:
-                raise ValueError("delivery file manifest differs")
-            for entry in files:
-                reader.authenticate(f"{path}/{entry.path}", entry.sha256)
-            if reader.read(f"{path}/report.md") != report_text.encode("utf-8"):
-                raise ValueError("delivery report differs")
-            public = f"research/{batch.strategy_id}/deliveries/{stage_name}/{revision_name}"
-            if {name for name, _ in reader.listing(public)} != {"receipt.json", "report.md"}:
-                raise ValueError("public delivery layout differs")
-            for name in ("receipt.json", "report.md"):
-                if reader.read(f"{public}/{name}") != reader.read(f"{path}/{name}"):
-                    raise ValueError("public delivery copy differs")
-            for ref in _walk(content):
-                if isinstance(ref, EvidenceRef):
-                    if ref.experiment.strategy_id != batch.strategy_id:
-                        raise ValueError("delivery evidence belongs to another batch")
-                    reader.authenticate(f"{path}/{ref.path}", ref.sha256)
-                    if ref.schema == "account_evaluation":
-                        if ref.sha256 not in account_versions:
-                            account = _json(reader.read(f"{path}/{ref.path}"))
-                            version = account.get("schema_version")
-                            request_version = account.get("request_identity", {}).get("schema_version")
-                            if (type(version) is not int or type(request_version) is not int
-                                    or (version, request_version) not in ((7, 6), (8, 7))):
-                                raise ValueError("account declaration and request identity schemas differ")
-                            account_versions[ref.sha256] = version
-                            del account
-                        if ref.schema_version != account_versions[ref.sha256]:
-                            raise ValueError("account evidence schema differs from reference")
-                    elif ref.schema == "equity_research":
-                        account = _json(reader.read(f"{path}/{ref.path}"))
-                        if ref.schema_version != 2 or account.get("schema") != "equity-research/v2" or account.get("schema_version") != 2:
-                            raise ValueError("formal equity evidence schema differs from reference")
-                elif isinstance(ref, ResearchEvidenceRef):
-                    if ref.owner.strategy_id != batch.strategy_id:
-                        raise ValueError("inspection evidence belongs to another batch")
-                    reader.authenticate(f"{path}/support/{ref.sha256}", ref.sha256)
-            for previous in (() if legacy else predecessors):
-                predecessor = f"{parent}/{previous.stage.value}/{previous.revision}/receipt.json"
-                saved = d.DeliveryReceipt.from_dict(_json(reader.read(predecessor)))
-                if saved.reference != previous:
-                    raise ValueError("predecessor reference differs")
-            result.append((DeliveryOverview(reference, status, predecessors, reader.source(receipt_path)), content))
+        revisions = set()
+        for revision, is_dir in reader.listing(f"{parent}/{name}"):
+            if not is_dir or not revision.isdecimal() or str(int(revision)) != revision or int(revision) < 1:
+                raise ValueError("invalid delivery revision")
+            revisions.add(int(revision))
+        result[stage] = revisions
     return result
 
 
-def _candidates(reader, batch, limitations):
-    parent = f"research/registrations/{batch.strategy_id}/candidates"
+def _deliveries(reader, batch, limitations):
+    public_parent = f"research/{batch.strategy_id}/deliveries"
+    retained_parent = f"research/{batch.strategy_id}/assets/deliveries"
+    public = _delivery_revisions(reader, public_parent)
+    retained = _delivery_revisions(reader, retained_parent)
     result = []
-    for name, is_dir in reader.listing(parent):
-        if is_dir or not name.endswith(".json"):
-            raise ValueError("invalid candidate registry entry")
-        path = f"{parent}/{name}"
-        value = _json(reader.read(path))
-        if type(value) is not dict or set(value) != {"record", "record_sha256"}:
-            raise ValueError("invalid candidate registration envelope")
-        raw = value["record"]
-        if type(raw) is not dict or type(raw.get("schema_version")) is not int:
-            raise ValueError("invalid candidate record")
-        if raw["schema_version"] != 3 or raw.get("identity_schema_version") != 2:
-            limitations.append(OverviewLimitation("UNSUPPORTED_CANDIDATE_SCHEMA", path, "Retained registration uses an unsupported schema; not included in authenticated candidate counts."))
+    for stage in sorted(public.keys() | retained.keys()):
+        revisions = public.get(stage, set()) | retained.get(stage, set())
+        if not revisions:
             continue
-        record = CandidateRegistration.from_dict(raw)
-        if record.key.strategy_id != batch.strategy_id or name != f"{record.key.candidate_id}.json" or record.record_sha256 != value["record_sha256"]:
-            raise ValueError("candidate registration identity differs")
-        for ref in (record.payload, *record.source_files, *record.origin.evidence, *((record.derivation.evidence,) if record.derivation else ())):
-            reader.authenticate(f"research/{batch.strategy_id}/{ref.path}", ref.sha256)
-        result.append(CandidateOverview(record.key, record.content_sha256, record.record_sha256, record.origin.experiment_id, reader.source(path)))
+        revision = max(revisions)
+        public_path = f"{public_parent}/{stage.value}/{revision}"
+        retained_path = f"{retained_parent}/{stage.value}/{revision}"
+        public_receipt = f"{public_path}/receipt.json"
+        data = reader.read(public_receipt)
+        if data != reader.read(f"{retained_path}/receipt.json"):
+            raise ValueError("public delivery receipt differs")
+        raw = _json(data)
+        if type(raw) is not dict or type(raw.get("schema_version")) is not int:
+            raise ValueError("delivery receipt requires an explicit schema version")
+        reference = None
+        state = DeliveryMetadataState.UNSUPPORTED
+        if raw["schema_version"] not in d._readable_schema_versions(stage):
+            limitations.append(OverviewLimitation("UNSUPPORTED_DELIVERY_SCHEMA", public_receipt,
+                "Latest receipt schema is unsupported; no older revision is substituted and no payload is inspected."))
+        else:
+            receipt = d.DeliveryReceipt.from_dict(raw)
+            reference = receipt.reference
+            if (reference.batch, reference.stage, reference.revision) != (batch, stage, revision):
+                raise ValueError("delivery receipt directory identity differs")
+            if d._digest(receipt.files) != reference.content_sha256:
+                raise ValueError("delivery receipt manifest identity differs")
+            for entry in receipt.files:
+                d._path(entry.path)
+                d._hash(entry.sha256)
+            required = {"delivery.json", "report.md"}
+            if not required <= {entry.path for entry in receipt.files}:
+                raise ValueError("delivery receipt lacks required file declarations")
+            state = DeliveryMetadataState.READABLE
+        # Observe the report's directory entry, not its content. Integrity belongs
+        # to validate_delivery, including delivery.json and all declared files.
+        if set(reader.listing(public_path)) != {("receipt.json", False), ("report.md", False)}:
+            raise ValueError("public delivery navigation files differ")
+        result.append(DeliveryOverview(stage, revision, reference, f"{public_path}/report.md",
+                                       state, reader.source(public_receipt)))
     return tuple(result)
 
 
-def _accounts(reader, batch, limitations):
-    """Count retained identity declarations; no ledger semantic validation is implied."""
-    parent = f"research/{batch.strategy_id}/assets/evidence"
-    identities = set()
-    sources = []
-    for experiment, is_dir in reader.listing(parent):
-        if not is_dir:
-            raise ValueError("invalid evidence owner directory")
-        ExperimentRef(batch.strategy_id, experiment)
-        for name, directory in reader.listing(f"{parent}/{experiment}"):
-            if directory:
-                path = f"{parent}/{experiment}/{name}"
-                if name != "inspection":
-                    raise ResearchOverviewError("INVALID_EVIDENCE_LAYOUT", path, "unknown evidence namespace")
-                for digest, nested in reader.listing(path):
-                    item = f"{path}/{digest}"
-                    try:
-                        d._hash(digest)
-                        if nested:
-                            raise ValueError("inspection objects cannot contain directories")
-                        reader.authenticate(item, digest)
-                    except (ValueError, OSError) as exc:
-                        raise ResearchOverviewError("INVALID_INSPECTION_EVIDENCE", item, str(exc)) from exc
-                continue
-            if not name.endswith(".json"):
-                continue
-            path = f"{parent}/{experiment}/{name}"
-            data = reader.read(path)
-            if name != f"{sha256(data).hexdigest()}.json":
-                raise ValueError("published evidence filename differs from content hash")
-            try:
-                value = _json(data)
-            except (json.JSONDecodeError, UnicodeDecodeError):
-                # Generic material is allowed to carry arbitrary original bytes;
-                # a .json suffix is not an account schema declaration.
-                continue
-            if type(value) is dict and value.get("schema") == "equity-research/v2":
-                from strategy_runtime.equity import equity_hash
-                request, raw = value["request"], value["evaluation_identity"]
-                identity = EvaluationIdentity(CandidateKey(**raw["candidate"]), **{key: raw[key] for key in (
-                    "content_sha256", "input_sha256", "protocol_sha256", "environment_sha256")})
-                if (value.get("schema_version") != 2 or request.get("schema") != "equity-research/v2"
-                        or equity_hash(request) != value["request_hash"] or identity.protocol_sha256 != value["request_hash"]
-                        or identity.evaluation_id != value["evaluation_id"] or identity.candidate.strategy_id != batch.strategy_id
-                        or request["experiment"] != {"strategy_id": batch.strategy_id, "experiment_id": experiment}
-                        or identity.candidate.candidate_id != request["candidate_id"]
-                        or identity.content_sha256 != request["content_sha256"]):
-                    raise ValueError("retained equity evaluation identity differs")
-                identities.add(identity.evaluation_id)
-                sources.append(reader.source(path))
-                continue
-            if type(value) is not dict or value.get("source_kind") != "published_result":
-                continue
-            if type(value.get("schema_version")) is not int or value["schema_version"] not in (7, 8):
-                limitations.append(OverviewLimitation("UNSUPPORTED_ACCOUNT_SCHEMA", path, "Published account declaration is not schema 7 or 8; excluded from retained identity counts."))
-                continue
-            request = value["request_identity"]
-            if (type(request.get("schema_version")) is not int
-                    or (value["schema_version"], request["schema_version"]) not in ((7, 6), (8, 7))):
-                raise ValueError("account declaration and request identity schemas differ")
-            if request["experiment_id"] != experiment or not request["strategy_reference"].startswith(batch.strategy_id + "-"):
-                raise ValueError("account declaration belongs to another experiment or batch")
-            projected = value["assessment_evidence"]
-            runs = value["runs"]
-            if type(projected) is not list or not projected or type(runs) is not list or len(runs) != len(projected):
-                raise ValueError("account identity declarations are missing")
-            for item, run in zip(projected, runs, strict=True):
-                identifier = item["evaluation_id"]
-                d._hash(identifier)
-                raw = run["identity"]
-                identity = EvaluationIdentity(CandidateKey(**raw["candidate"]), **{key: raw[key] for key in (
-                    "content_sha256", "input_sha256", "protocol_sha256", "environment_sha256")})
-                if identity.to_dict() != raw or identifier != identity.evaluation_id or identity.candidate.strategy_id != batch.strategy_id or item["experiment_id"] != experiment:
-                    raise ValueError("retained account evaluation identity differs")
-                identities.add(identifier)
-            sources.append(reader.source(path))
-    return len(identities), tuple(sources) or (reader.source(parent),)
-
-
 def get_research_overview(repository: RepositoryContext, batch: ResearchBatchRef) -> ResearchOverview:
-    """Authenticate retained metadata and file hashes, never judge research quality.
+    """Read current task sources, report metadata and latest delivery receipts.
 
-    The returned counts cover retained records only. Account ledger semantics,
-    candidate runtime identity, SE assessment recomputation and authorization are
-    deliberately outside this metadata snapshot's authentication scope.
+    Only the returned metadata source set is authenticated. Evidence payloads,
+    historical delivery contents, accounts and candidate registries are not read.
+    This is not report/phase acceptance, authorization or runtime certification.
     """
     if type(repository) is not RepositoryContext or type(batch) is not ResearchBatchRef:
         raise TypeError("overview requires RepositoryContext and ResearchBatchRef")
@@ -432,69 +221,17 @@ def get_research_overview(repository: RepositoryContext, batch: ResearchBatchRef
         family = StrategyFamily.from_dict(_json(reader.read(family_path)))
         if family.strategy_id != batch.strategy_id:
             raise ValueError("family identity differs")
-        limitations = [OverviewLimitation("METADATA_AUTHENTICATION_ONLY", path,
-            "Retained metadata and referenced file hashes are checked; ledger semantics, runtime identities, assessment recomputation, authorization and unrecorded searches are not certified.")]
+        handoff_path = f"research/{batch.strategy_id}/HANDOFF.md"
+        reader.read(handoff_path, optional=True)
+        task_sources = (reader.source(family_path), reader.source(handoff_path))
+        limitations = [OverviewLimitation("METADATA_ONLY", path,
+            "Only listed metadata is checked. Report status describes its own publication snapshot; linked evidence, delivery contents, accounts, candidates and authorization are not certified.")]
         experiments = _experiments(reader, batch)
-        retained = _deliveries(reader, batch, limitations)
-        candidates = _candidates(reader, batch, limitations)
-        account_count, account_sources = _accounts(reader, batch, limitations)
-        latest = {}
-        search_records = {}
-        components = []
-        prototypes = []
-        handoffs = []
-        for item, content in retained:
-            stage = item.reference.stage
-            if stage not in latest or latest[stage].reference.revision < item.reference.revision:
-                latest[stage] = item
-            if content is None:
-                continue
-            if isinstance(content.payload, d.ComponentPanel):
-                components.append(ComponentPanelOverview(item.reference, content.payload.components))
-            if isinstance(content.payload, d.PrototypePanel):
-                prototypes.append(PrototypePanelOverview(item.reference, content.payload))
-            if isinstance(content.payload, d.CandidateSet):
-                handoffs.append(CandidateHandoffOverview(item.reference, content.payload.handoff))
-                for search in content.payload.searches:
-                    # Identity includes the complete declaration; repeated revisions
-                    # do not add trials. Different declarations are never summed.
-                    key = d._digest(search)
-                    entry = search_records.setdefault(key, [search, []])
-                    entry[1].append(item.reference)
-        searches = tuple(SearchOverview(value[0], tuple(value[1])) for _, value in sorted(search_records.items()))
-        # Never present an older readable revision as the current latest when a
-        # higher retained revision exists in an unsupported format.
-        for limitation in limitations:
-            if limitation.code == "UNSUPPORTED_DELIVERY_SCHEMA":
-                parts = limitation.repository_path.split("/")
-                stage, revision = d.DeliveryStage(parts[-2]), int(parts[-1])
-                if stage in latest and latest[stage].reference.revision < revision:
-                    del latest[stage]
-        search_sources = tuple(dict.fromkeys(item.source for item, content in retained
-                                             if content is not None and isinstance(content.payload, d.CandidateSet)))
-        candidate_sources = tuple(item.source for item in candidates) or (reader.source(f"research/registrations/{batch.strategy_id}/candidates"),)
-        unsupported_candidates = any(x.code == "UNSUPPORTED_CANDIDATE_SCHEMA" for x in limitations)
-        counts = [ResearchCount(ResearchCountKind.REGISTERED_CANDIDATES,
-            None if unsupported_candidates else len(candidates), CountBasis.UNKNOWN if unsupported_candidates else CountBasis.VERIFIED,
-            candidate_sources, "Unsupported retained registrations prevent a complete count." if unsupported_candidates else "Authenticated retained registration identities only."),
-            ResearchCount(ResearchCountKind.PUBLISHED_ACCOUNT_EVALUATIONS,
-                None if any(x.code == "UNSUPPORTED_ACCOUNT_SCHEMA" for x in limitations) else account_count,
-                CountBasis.UNKNOWN if any(x.code == "UNSUPPORTED_ACCOUNT_SCHEMA" for x in limitations) else CountBasis.DECLARED,
-                account_sources, "Distinct supported retained evaluation ID declarations; not ledger certification or a complete exploration count. Unsupported schemas prevent a complete total.")]
-        for kind, field in ((ResearchCountKind.SEARCH_EVALUATIONS, "evaluations"), (ResearchCountKind.DISTINCT_CONFIGURATIONS, "unique_configurations")):
-            known = len(searches) == 1
-            counts.append(ResearchCount(kind, getattr(searches[0].summary, field) if known else None,
-                CountBasis.DECLARED if known else CountBasis.UNKNOWN, search_sources,
-                "Single retained search declaration; does not certify complete history." if known else "No unique nonoverlapping total can be established from retained search declarations."))
-        counts.append(ResearchCount(ResearchCountKind.ECONOMIC_PATH_GROUPS, None, CountBasis.UNKNOWN, (),
-                                   "No typed retained economic-path grouping declaration is available; no grouping is inferred."))
-        if len(searches) > 1:
-            limitations.append(OverviewLimitation("SEARCH_OVERLAP_UNKNOWN", path, "Multiple search declarations may overlap; their counts were not added."))
+        deliveries = _deliveries(reader, batch, limitations)
         sources = reader.finish()
         snapshot = ResearchSnapshot(d._digest(sources), datetime.now(timezone.utc).isoformat(), sources)
-        return ResearchOverview(batch, snapshot, family.research_state,
-            tuple(latest[stage] for stage in sorted(latest)), experiments, tuple(components), tuple(prototypes), candidates,
-            tuple(handoffs), searches, tuple(counts), tuple(limitations))
+        return ResearchOverview(batch, snapshot, family.research_state, task_sources,
+                                deliveries, experiments, tuple(limitations))
     except ResearchOverviewError:
         raise
     except (OSError, ValueError, TypeError, KeyError) as exc:

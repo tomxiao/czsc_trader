@@ -9,11 +9,11 @@ from strategy_manager import (
     ResearchEvidenceOwner, ResearchEvidenceRef, DecisionReference,
     FreezeReceipt, FreezeRequestId, FreezeStatus,
 )
+from strategy_manager.errors import ValidationError as StrategyValidationError
 
 from czsc_trader.application.delivery_service import validate_delivery
 from czsc_trader.application.research_overview_service import get_research_overview
 from czsc_trader.research_tools import delivery as d
-from czsc_trader.research_tools.overview import ResearchCountKind, ResearchOverviewError
 from test_research_overview import overview_context as overview_context
 
 
@@ -41,7 +41,7 @@ def _retained_inspection(research, experiment, revision, schema, *, definition_s
     }
     if schema == 8:
         # Deliberately not a current or historical executable report schema:
-        # overview must authenticate its envelope without decoding its payload.
+        # Overview reports the unsupported receipt without decoding this payload.
         document["content"]["payload"] = {"historical_payload_is_opaque": True}
     (folder / "delivery.json").write_bytes(d._canonical(document))
     (folder / "report.md").write_bytes(content.report.encode())
@@ -88,12 +88,15 @@ def test_inspection_requires_schema9_and_no_research_predecessors(overview_conte
 
 
 @pytest.mark.parametrize("definition_schema,receipt_schema", [(8, 9), (9, 8)])
-def test_overview_rejects_crossed_inspection_schemas(overview_context, definition_schema, receipt_schema):
+def test_delivery_validation_rejects_crossed_schemas_beyond_overview_scope(overview_context, definition_schema, receipt_schema):
     research, experiment = overview_context
-    _retained_inspection(research, experiment, 1, 9,
-                         definition_schema=definition_schema, receipt_schema=receipt_schema)
-    with pytest.raises(ResearchOverviewError, match="schema differs"):
-        get_research_overview(research.repository, research.batch)
+    reference, _ = _retained_inspection(research, experiment, 1, 9,
+                                       definition_schema=definition_schema, receipt_schema=receipt_schema)
+    overview = get_research_overview(research.repository, research.batch)
+    assert overview.deliveries[0].metadata_state == ("READABLE" if receipt_schema == 9 else "UNSUPPORTED")
+    validation = validate_delivery(research.repository, reference, scope=d.DeliveryValidationScope.INTEGRITY)
+    assert validation.status is d.ValidationStatus.FAIL
+    assert any("schema" in issue.message for issue in validation.issues)
 
 
 def test_legacy_inspection_is_metadata_only_and_does_not_hide_new_revision(overview_context):
@@ -101,53 +104,76 @@ def test_legacy_inspection_is_metadata_only_and_does_not_hide_new_revision(overv
     old, old_folder = _retained_inspection(research, experiment, 1, 8)
     original = (old_folder / "delivery.json").read_bytes()
     first = get_research_overview(research.repository, research.batch)
-    assert first.deliveries[0].reference == old
-    assert any(item.code == "UNSUPPORTED_LEGACY_INSPECTION" and "unknown" in item.message
-               for item in first.limitations)
+    assert first.deliveries[0].revision == 1
+    assert first.deliveries[0].reference is None
+    assert first.deliveries[0].metadata_state == "UNSUPPORTED"
     validation = validate_delivery(research.repository, old)
     assert validation.status is d.ValidationStatus.FAIL
     assert validation.issues[0].code == "UNSUPPORTED_LEGACY_INSPECTION"
     new, _ = _retained_inspection(research, experiment, 2, 9)
     second = get_research_overview(research.repository, research.batch)
     assert second.deliveries[0].reference == new
-    assert any(item.code == "UNSUPPORTED_LEGACY_INSPECTION" for item in second.limitations)
+    assert second.deliveries[0].metadata_state == "READABLE"
     assert (old_folder / "delivery.json").read_bytes() == original
+    _retained_inspection(research, experiment, 3, 8)
+    third = get_research_overview(research.repository, research.batch)
+    assert third.deliveries[0].revision == 3
+    assert third.deliveries[0].reference is None
+    assert third.deliveries[0].metadata_state == "UNSUPPORTED"
 
 
-def test_legacy_metadata_still_rejects_corrupted_files(overview_context):
+def test_delivery_validation_rejects_corrupted_payload_outside_overview_scope(overview_context):
     research, experiment = overview_context
-    _, folder = _retained_inspection(research, experiment, 1, 8)
+    reference, folder = _retained_inspection(research, experiment, 1, 9)
     (folder / "report.md").write_bytes(b"tampered")
-    with pytest.raises(ResearchOverviewError, match="hash differs"):
-        get_research_overview(research.repository, research.batch)
+    overview = get_research_overview(research.repository, research.batch)
+    assert overview.deliveries[0].metadata_state == "READABLE"
+    validation = validate_delivery(research.repository, reference, scope=d.DeliveryValidationScope.INTEGRITY)
+    assert validation.status is d.ValidationStatus.FAIL
+    assert any(issue.code == "DELIVERY_FILES" for issue in validation.issues)
 
 
-def test_inspection_objects_are_authenticated_but_never_counted_as_accounts(overview_context):
+def test_inspection_objects_are_validated_on_use_not_by_overview(overview_context, monkeypatch):
     research, experiment = overview_context
     content = json.dumps({"source_kind": "published_result", "schema_version": 7}).encode()
     digest = sha256(content).hexdigest()
     path = research.repository.root / f"research/S900/assets/evidence/{experiment.experiment_id}/inspection/{digest}"
     path.parent.mkdir(parents=True)
     path.write_bytes(content)
-    overview = get_research_overview(research.repository, research.batch)
-    count = next(item for item in overview.counts if item.kind is ResearchCountKind.PUBLISHED_ACCOUNT_EVALUATIONS)
-    assert count.value == 0
-    assert any(item.repository_path.endswith(f"inspection/{digest}") for item in overview.snapshot.sources)
+    reference = ResearchEvidenceRef(ResearchEvidenceOwner("S900", experiment.experiment_id),
+                                    f"inspection/{digest}", digest)
+    assert reference.resolve(research.repository.root) == path
+    read = type(path).read_bytes
+    def reject_inspection_read(target):
+        if target == path:
+            pytest.fail("overview must not authenticate inspection payloads")
+        return read(target)
+    with monkeypatch.context() as scoped:
+        scoped.setattr(type(path), "read_bytes", reject_inspection_read)
+        overview = get_research_overview(research.repository, research.batch)
+    assert overview.snapshot.scope == "METADATA_ONLY"
+    assert not any(item.repository_path.endswith(f"inspection/{digest}") for item in overview.snapshot.sources)
     path.write_bytes(b"changed bytes")
-    with pytest.raises(ResearchOverviewError) as exc:
-        get_research_overview(research.repository, research.batch)
-    assert exc.value.code == "INVALID_INSPECTION_EVIDENCE"
-    assert exc.value.repository_path.endswith(digest)
+    assert get_research_overview(research.repository, research.batch).snapshot.content_sha256 == overview.snapshot.content_sha256
+    with pytest.raises(StrategyValidationError, match="hash differs"):
+        reference.resolve(research.repository.root)
 
 
 @pytest.mark.parametrize("relative", ["unexpected", "inspection/not-a-hash", f"inspection/{'a' * 64}/nested"])
-def test_unknown_or_nested_inspection_layout_is_not_silently_ignored(overview_context, relative):
+def test_unreferenced_evidence_layout_is_not_enumerated_by_overview(overview_context, relative, monkeypatch):
     research, experiment = overview_context
     path = research.repository.root / f"research/S900/assets/evidence/{experiment.experiment_id}/{relative}"
     path.mkdir(parents=True)
-    with pytest.raises(ResearchOverviewError) as exc:
-        get_research_overview(research.repository, research.batch)
-    assert exc.value.code in {"INVALID_EVIDENCE_LAYOUT", "INVALID_INSPECTION_EVIDENCE"}
+    evidence_root = research.repository.root / "research/S900/assets/evidence"
+    listing = type(path).iterdir
+    def reject_evidence_listing(target):
+        if target == evidence_root or evidence_root in target.parents:
+            pytest.fail("overview must not enumerate unreferenced evidence")
+        return listing(target)
+    monkeypatch.setattr(type(path), "iterdir", reject_evidence_listing)
+    overview = get_research_overview(research.repository, research.batch)
+    assert overview.snapshot.scope == "METADATA_ONLY"
+    assert not any("assets/evidence" in source.repository_path for source in overview.snapshot.sources)
 
 
 def test_inspection_receipt_schema_must_match_its_stage(overview_context):

@@ -65,8 +65,12 @@ def test_formal_equity_prepare_assess_register_and_prototype_delivery(tmp_path):
     assert validate_delivery(context.repository, output.receipt.reference).status == "PASS"
     from czsc_trader.application import get_research_overview
     overview = get_research_overview(context.repository, context.batch)
-    assert len(overview.candidates) == 1
-    assert len(overview.prototype_panels) == 1
+    assert overview.snapshot.scope == "METADATA_ONLY"
+    assert len(overview.deliveries) == 1
+    assert overview.deliveries[0].reference == output.receipt.reference
+    assert overview.deliveries[0].metadata_state == "READABLE"
+    assert not hasattr(overview, "candidates")
+    assert not hasattr(overview, "prototype_panels")
 
 
 def test_formal_equity_parallel_checkpoint_and_publication_reuse(tmp_path):

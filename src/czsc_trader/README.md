@@ -25,7 +25,7 @@ TDR 为研究员提供批次上下文、研究概览、账户评价与诊断、�
 | 结果留证 | `publish_evidence`、`publish_evidence_many` | 单项 `EvidenceRef`；批量逐项 `PublicationOutcome` |
 | 候选登记与读取 | `register_candidate`、`load_candidate` | 保存候选载荷、源码快照及支撑证据，读取已登记实体 |
 | 五阶段交付 | `assemble_delivery`、`validate_delivery` | 结论、选定证据快照和不可变修订 |
-| 研究概览 | `get_research_overview(repository, batch)` | `ResearchOverview`，读取保留事实、来源及限制 |
+| 研究概览 | `get_research_overview(repository, batch)` | `ResearchOverview`，提供研究导航、轻量元数据状态及核验范围 |
 | 账户诊断 | `diagnose_accounts(repository, AccountDiagnosisRequest)` | `AccountDiagnosisResult`，正式账户损益、路径差异及覆盖 |
 | 实验检查 | `validate_experiment(repository, ExperimentValidationRequest)` | `ExperimentValidation`，实验结构或报告发布一致性 |
 | 自检与比较 | `build_assessment_evidence`；SE `assess_candidates/compare_candidates` | 数值事实适配、自检和比较 |
@@ -135,15 +135,26 @@ from czsc_trader.research_tools import ResearchBatchRef
 overview = get_research_overview(repository, ResearchBatchRef("S900"))
 ```
 
-返回登记状态、各阶段最高已支持修订、实验报告状态、组件测试声明、原型面板、候选、交接集合、搜索声明、计数、限制及来源快照。来源包含文件/目录位置、存在状态和哈希；调用结束前复核读取清单，检测并发变化即报错，不自动重试。
+`ResearchOverview`使用`schema_version=2`，返回以下轻量元数据：
 
-`ResearchOverview.prototype_panels`包含`PrototypePanelOverview(delivery, panel)`，提供精确交付引用和完整原型面板，包括实现身份、组件职责、账户引用、对照和研究建议。原型不进入候选登记计数，不跨修订累加为独立原型数量；`DEVELOP`等研究建议不代表阶段获批。缺少历史原型交付时返回空元组，不从组件或候选报告自动推断原型。
+| 字段 | 范围与含义 |
+| --- | --- |
+| `batch`、`registered_state` | 批次身份与登记状态；不代表用户批准或运行资格 |
+| `task_sources` | `research/registrations/<批次>/family.json`与`research/<批次>/HANDOFF.md`来源引用；交接文件不存在时标记`present=False`，不解析授权、推算预算或解释交接内容 |
+| `deliveries` | 每阶段最高修订的`stage`、`revision`、`reference`、`report_path`、`metadata_state`及`source`；元数据可读状态为`READABLE`或`UNSUPPORTED` |
+| `experiments` | 实验编号、报告发布状态、发布引用、声明结果及元数据来源 |
+| `snapshot` | `METADATA_ONLY`范围内实际读取的文件、目录及其哈希和查询时间；不覆盖关联证据正文 |
+| `limitations` | 本次范围的限制及不支持的回执格式；不代表全批次没有其他问题 |
 
-计数的`basis`为`VERIFIED`（已认证登记事实）、`DECLARED`（已保存的声明）或`UNKNOWN`（`value=None`及原因）。重复交付中的相同搜索声明只展示一次；多个可能重叠的搜索声明不相加。账户评价数只覆盖保留的评价身份声明，不等于账户账本已认证，也不是完整尝试次数。没有受管的经济路径分组声明时，该计数保持未知，不在概览中重算。
+概览读取批次登记和实验的`experiment.json`、`report.md`、`report_ref.json`以及指针指向的报告快照。报告状态为`MISSING`、`DRAFT`、`PUBLISHED`、`UNPUBLISHED_CHANGES`：`PUBLISHED`表示当前报告与本次读取并认证的报告快照一致，不表示关联证据已全部核验，也不等同于研究结论通过。历史实验缺少根报告如实显示，不自动搬迁或补写。概览不递归读取报告快照的`evidence`或`previous`引用。
 
-概览认证保留记录及关联文件哈希，不重算SE、验证运行资格或判断研究是否充分。最高交付修订不等于阶段获批；登记状态不代替当前用户指令。旧格式明确列为不支持，不按新格式解读。缺失或损坏的必要引用报错，不补零或静默改用旧版本。
+阶段交付在公开目录与资产目录中按数字修订号选最高修订，仅读取该修订的两份`receipt.json`并检查字节、引用身份及文件清单的声明哈希，不展开文件清单、不读取`delivery.json`或关联证据，也不读取交付业务状态和前驱内容。最高修订回执格式不支持时返回`UNSUPPORTED`、`reference=None`及限制，不能静默用旧修订冒充最新交付。`READABLE`只说明本次回执元数据检查通过；交付完整性、业务声明和数值结果须在选定具体交付后检查。
 
-报告状态为`MISSING`、`DRAFT`、`PUBLISHED`、`UNPUBLISHED_CHANGES`。历史实验缺少根报告如实显示，不自动搬迁或补写。
+对实际读取范围保留类型、身份、路径安全及结束前一致性复核；发现读取范围内文件或目录发生变化时报`CONCURRENT_CHANGE`，不自动重试。必要元数据缺失、损坏或身份不一致明确失败。未读取的账户正文、交付正文及关联证据不纳入本次认证；使用具体成果时调用`validate_experiment`或`validate_delivery`进行对应范围核验。概览不扫描账户目录，不重算SE，不验证运行资格，也不判断研究是否充分。
+
+这是返回契约变更：`component_tests`、`prototype_panels`、`candidates`、`handoffs`、`searches`和`counts`已移除，无轻量/完整双模式或旧返回结构兼容分支。完整组件、原型、候选及搜索材料通过具体交付引用按需读取。历史概览JSON、实验源码和证据保留原样；旧概览不能按新的`ResearchOverview`结构反序列化，读取旧字段的历史实验脚本不能直接重跑，维护中的调用方须使用新契约。
+
+研究接手、重大转向或阶段收尾可使用概览定位成果；单个实验收尾使用报告发布与`validate_experiment`结果，无须每次刷新整个批次。登记状态、最高修订和历史PASS都不能代替当前用户授权。
 
 ### 实验结构与报告检查
 
@@ -732,7 +743,7 @@ def publish_prototype_without_account(
     )
 ```
 
-定义和关联材料随交付浅快照保存；后续验证不依赖可变实验工作目录。通过原有`validate_delivery`和`get_research_overview`读取验证结果与面板，无须新增原型查询服务。既有`COMPONENTS`、`CANDIDATES`保持原格式与语义，新交付显式引用既有证据即可，不自动迁移或改变历史研究资格。
+定义和关联材料随交付浅快照保存；后续验证不依赖可变实验工作目录。通过`get_research_overview`定位最新原型交付，再按精确交付引用读取面板，使用`validate_delivery`核验具体交付；概览不返回完整原型面板。既有`COMPONENTS`、`CANDIDATES`保持原格式与语义，新交付显式引用既有证据即可，不自动迁移或改变历史研究资格。
 
 ### 候选交付与公共存储规则
 
@@ -768,7 +779,7 @@ if checked.status is not ValidationStatus.PASS:
 公开目录 `research/<批次>/deliveries/<阶段>/<修订>/` 保存对应的 `report.md` 和 `receipt.json`。
 发布与校验核对两处报告及回执的字节一致性；完整包只包含已选定材料。
 新`MANDATE`和`ASSESSMENT`的`DeliveryDefinition`、`DeliveryReceipt`与`delivery.json`使用schema 12；旧schema 8、11仅只读认证，不允许新写。`COMPONENTS`、`CANDIDATES`保持schema 8，`INSPECTION`保持schema 9且`predecessors=()`，`PROTOTYPES`保持schema 10；构造时省略版本按阶段选取当前版本，序列化记录必须保存明确整数版本。
-旧阶段五schema 8仅在概览展示有限元数据并列出限制，显式交付校验拒绝，不解释为新版通过，不自动迁移历史原件。新账户评价证据使用schema 8，请求身份使用schema 7；历史7/6只读，`StrategyVersion`继续使用schema 5。
+旧阶段五schema 8回执在概览中标记为不支持，仍显示该最高修订的位置；显式交付校验拒绝，不解释为新版通过，不自动迁移历史原件。新账户评价证据使用schema 8，请求身份使用schema 7；历史7/6只读，`StrategyVersion`继续使用schema 5。
 修订号在“批次＋阶段”内唯一，同内容重复发布复用，冲突拒绝覆盖，失败不留下可见的半成品修订。
 前驱为同批次的 `DeliveryReference`；同阶段前驱只能是更早修订。
 
@@ -863,7 +874,7 @@ PTE摘要`effective_workers`记录本次运行峰值活动worker数，不能将�
 
 技术报告独立保存于`research/<策略>/assets/evidence/<实验>/inspection/<sha256>`。临时运行位于`.tmp/strategy-inspection/<run_id>/`，包含候选工作区、隔离repository、私有DFLS输入、场景状态和进度；成功后清理，失败可保留诊断。输入复制通过DFLS公开fetch/prepare完成；`content_mapping.role`是规范DataRequest的SHA256键，用来区分同名角色的不同窗口，源与隔离内容哈希须一致。实际数据来源与元数据随技术证据保存。请求必须显式提供`InspectionDataKind.HISTORICAL/SYNTHETIC`，标记为调用方声明；PTE离线成交渠道始终标为SYNTHETIC，不能作为真实账户收益。
 
-报告只有两目标均PASS且plan/release/environment完整才PASS。技术故障保存FAIL，未启动目标为NOT_RUN，取消／超时或覆盖不足为INCOMPLETE；无计划、缺证或未通过均不能冻结。`INSPECTION`交付不递归研究前驱；概览识别合法`inspection/<hash>`证据但不把它计入账户数量。旧八项检验报告、旧选型与旧InspectionReplay执行接口已经移除，历史原件保持不变。
+报告只有两目标均PASS且plan/release/environment完整才PASS。技术故障保存FAIL，未启动目标为NOT_RUN，取消／超时或覆盖不足为INCOMPLETE；无计划、缺证或未通过均不能冻结。`INSPECTION`交付不递归研究前驱；概览仅定位其最新交付回执，不扫描`inspection/<hash>`证据，具体证据由技术检验及显式交付校验核验。旧八项检验报告、旧选型与旧InspectionReplay执行接口已经移除，历史原件保持不变。
 
 冻结返回`NOT_FOUND/IN_PROGRESS/COMMITTED/FAILED/UNKNOWN`。同请求同内容复用既有状态，同请求不同内容或版本冲突拒绝；不自动换号或重试。冻结初始资格仍是`RESEARCH`。
 
