@@ -1,0 +1,75 @@
+{
+  "schema": "s017-relative-exception-decision-evidence/v1",
+  "selection_status": "ADAPTIVE_AFTER_SEEN_RESULTS",
+  "recorded_on": "2026-10-29",
+  "experiment": "EX016_20261029",
+  "candidate_id": "C0045",
+  "budget": {
+    "allocated_round": 8,
+    "authorized_rounds": 20,
+    "remaining_after_allocation": 12
+  },
+  "accounts": {
+    "C0013": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S017",
+        "experiment_id": "EX003_20261028"
+      },
+      "evidence_id": "1496c8667bd1f8ad4cc26e7ee4beb0080d02cb42d8380d49c5d2de1fb53048af.json",
+      "sha256": "1496c8667bd1f8ad4cc26e7ee4beb0080d02cb42d8380d49c5d2de1fb53048af",
+      "media_type": "application/json",
+      "name": "account-C0013",
+      "schema": "equity_research",
+      "schema_version": 2
+    },
+    "C0043": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S017",
+        "experiment_id": "EX014_20261029"
+      },
+      "evidence_id": "684227dd886347c972c1b2993bbf3d1a075f82e27a35ffa098b504648e26b0e8.json",
+      "sha256": "684227dd886347c972c1b2993bbf3d1a075f82e27a35ffa098b504648e26b0e8",
+      "media_type": "application/json",
+      "name": "account-C0043",
+      "schema": "equity_research",
+      "schema_version": 2
+    }
+  },
+  "files": {
+    "decision-diagnosis": {
+      "path": "research/S017/experiments/EX014_20261029/others/diagnostics/C0043_vs_C0013.json",
+      "sha256": "b594eee58921e4b04ddf5210a5673c9990f73f8747790fab93a99ae88ed375be"
+    },
+    "decision-entry-description": {
+      "path": "research/S017/experiments/EX014_20261029/others/entry_difference_description.json",
+      "sha256": "db6b2a97a2ce94e308f25f87f4b38805d531271b077ca380c399f1e44c296e73"
+    },
+    "decision-entry-source": {
+      "path": "research/S017/experiments/EX014_20261029/src/describe_entry_difference.py",
+      "sha256": "5859f9f297d3ccd43a4a20c2394fd2f0b998a06d2c9e21f6ba9f0131ebe996d9"
+    }
+  },
+  "observed_facts": {
+    "c13_closed_entry_market_true": 38,
+    "c13_closed_entry_market_false": 30,
+    "c43_closed_entries_at_other_times": 20,
+    "interpretation": "Blocked original entries are not permanently deleted cycles; false group is not generally poor."
+  },
+  "question": "Does relative LITE strength justify a fixed exception to an otherwise weak-SPY entry restriction?",
+  "scope": "Seen 2019-2025 development only, no independent validation, new sources, parameter search or stage advance.",
+  "comparisons": [
+    [
+      "C0045",
+      "C0013"
+    ],
+    [
+      "C0045",
+      "C0043"
+    ]
+  ],
+  "publication": "Freeze original source-byte snapshots and preserve original account EvidenceRefs."
+}

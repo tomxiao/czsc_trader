@@ -1,0 +1,177 @@
+{
+  "status": "PASS",
+  "scope": "synthetic public SRT/TXE; public EX009 2018-2025 read restricted to 2018 Nov/Dec warmup and full-range timestamp-only completeness; zero real research account evaluations",
+  "strategy_source_sha256": "d11d8bc91414472f9a572a62c588d11ebb7bc47bb47190b2db656bb56eb15a55",
+  "mechanism_source_sha256": "fbe47731caf342f5ec6e0163404081827a8c9cba4c4a9c912e2c34f3f50b81c8",
+  "public_serial_equals_spawn": true,
+  "future_price_invariance": true,
+  "candidate_pickle": true,
+  "public_input_boundaries": {
+    "C0045": {
+      "causal_daily_slice": true,
+      "explicit_rejections": [
+        "missing",
+        "latest_zero_volume",
+        "stale",
+        "all_future_available",
+        "direct_future_context",
+        "latest_missing"
+      ]
+    }
+  },
+  "branch_coverage": {
+    "C0045": {
+      "weak_market_exception": {
+        "close": "105.15",
+        "mean": "99.46024543859085",
+        "atr": "0.46694216675718264",
+        "entry_threshold": "100.39412977210522",
+        "exit_threshold": "98.52636110507648",
+        "held": "False",
+        "market_last": "180.8",
+        "market_mean": "188.4",
+        "market_allowed": "False",
+        "market_observed": "2018-12-07T05:00:00+08:00",
+        "relative_lite_ratio": "1.1206707337191666",
+        "relative_market_ratio": "0.9224489795918368",
+        "relative_allowed": "True",
+        "relative_first_observed": "2018-11-09T05:00:00+08:00",
+        "relative_last_observed": "2018-12-07T05:00:00+08:00",
+        "relative_matched_closes": "20",
+        "relative_close_intervals": "19",
+        "weak_market_exception": "True",
+        "relative_basis": "RAW_PRICE_SAME_COMPLETED_DATES_NOT_INDUSTRY_CAUSALITY",
+        "base_target": "True",
+        "entry_context_allowed": "True",
+        "gate_role": "ENTRY_ONLY",
+        "context_mode": "MARKET",
+        "context_sessions": "20",
+        "trend_bars": "260",
+        "vol_bars": "13",
+        "entry_atr": "2.0",
+        "exit_atr": "2.0"
+      },
+      "positive_market_only": {
+        "close": "105.15",
+        "mean": "99.46024543859085",
+        "atr": "0.46694216675718264",
+        "entry_threshold": "100.39412977210522",
+        "exit_threshold": "98.52636110507648",
+        "held": "False",
+        "market_last": "340.0",
+        "market_mean": "245.0",
+        "market_allowed": "True",
+        "market_observed": "2018-12-07T05:00:00+08:00",
+        "relative_lite_ratio": "1.1206707337191666",
+        "relative_market_ratio": "2.2666666666666666",
+        "relative_allowed": "False",
+        "relative_first_observed": "2018-11-09T05:00:00+08:00",
+        "relative_last_observed": "2018-12-07T05:00:00+08:00",
+        "relative_matched_closes": "20",
+        "relative_close_intervals": "19",
+        "weak_market_exception": "False",
+        "relative_basis": "RAW_PRICE_SAME_COMPLETED_DATES_NOT_INDUSTRY_CAUSALITY",
+        "base_target": "True",
+        "entry_context_allowed": "True",
+        "gate_role": "ENTRY_ONLY",
+        "context_mode": "MARKET",
+        "context_sessions": "20",
+        "trend_bars": "260",
+        "vol_bars": "13",
+        "entry_atr": "2.0",
+        "exit_atr": "2.0"
+      },
+      "both_context_conditions_false_with_base_true": {
+        "close": "150.0",
+        "mean": "137.21436538461538",
+        "atr": "1.5207692307692098",
+        "entry_threshold": "140.25590384615379",
+        "exit_threshold": "134.17282692307697",
+        "held": "False",
+        "market_last": "198.8",
+        "market_mean": "199.275",
+        "market_allowed": "False",
+        "market_observed": "2018-12-07T05:00:00+08:00",
+        "relative_lite_ratio": "0.9739637725521264",
+        "relative_market_ratio": "0.9952440550688361",
+        "relative_allowed": "False",
+        "relative_first_observed": "2018-11-09T05:00:00+08:00",
+        "relative_last_observed": "2018-12-07T05:00:00+08:00",
+        "relative_matched_closes": "20",
+        "relative_close_intervals": "19",
+        "weak_market_exception": "False",
+        "relative_basis": "RAW_PRICE_SAME_COMPLETED_DATES_NOT_INDUSTRY_CAUSALITY",
+        "base_target": "True",
+        "entry_context_allowed": "False",
+        "gate_role": "ENTRY_ONLY",
+        "context_mode": "MARKET",
+        "context_sessions": "20",
+        "trend_bars": "260",
+        "vol_bars": "13",
+        "entry_atr": "2.0",
+        "exit_atr": "2.0"
+      },
+      "held_ignores_entry_gate": true,
+      "held_c13_exit": true,
+      "halfday_exact_endpoint": "2018-11-24T02:00:00+08:00",
+      "dst_utc_open_shift_verified": true,
+      "alignment_rejections": [
+        "missing_daily_endpoint",
+        "duplicate_daily_endpoint",
+        "malformed_m30_endpoint"
+      ]
+    }
+  },
+  "prepared_data": {
+    "status": "PASS",
+    "authorized_read_range": [
+      "2018-11-01",
+      "2025-12-31"
+    ],
+    "warmup_inspection_range": [
+      "2018-11-01",
+      "2018-12-31"
+    ],
+    "public_fetch_calls": 2,
+    "actual_pre_evaluation_bars": 508,
+    "declared_warmup": 273,
+    "warmup_observations": 508,
+    "twenty_daily_endpoints_aligned": true,
+    "relative_close_intervals": 19,
+    "first_daily_endpoint": "2018-12-01T05:00:00+08:00",
+    "last_daily_endpoint": "2019-01-01T05:00:00+08:00",
+    "prepared_product_content_sha256": {
+      "LITE_M30": "737f0fc50ab3aa7f9cf527751248cab607d135010a3c8b713cbb24245d2b4925",
+      "SPY_DAILY": "9b8c6986aeed003373c3dd12d9b5cde5d3d162835308ae410cd6656c29dd4c75"
+    },
+    "full_development_timestamp_only_scan": {
+      "scope": [
+        "2018-11-01",
+        "2025-12-31"
+      ],
+      "spy_daily_endpoints": 1800,
+      "matched_lite_m30_endpoints": 1800,
+      "unmatched_endpoints": 0,
+      "duplicate_timestamps": 0,
+      "computed_price_features_or_returns": false
+    },
+    "actual_input_history_unchanged": true,
+    "real_account_evaluations": 0,
+    "reserved_2026_data_read": false
+  },
+  "candidates": {
+    "C0045": {
+      "decisions": 39,
+      "fills": 2,
+      "economic_hashes": {
+        "decisions": "731697b5c467754065975a4e556ca67a9c6a82e48da75954e6340f8ab2b8f49e",
+        "orders": "93c65679f7dafc332f479a8de684ad786e9b3870e84decd580a75543604505c4",
+        "fills": "7ca63bdec676a69b3c25ba9f2154943e41eeee61312dfe95d6aa7377a6300b20",
+        "corporate_action_entries": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "account_points": "e937786ba09c9af04d304bfc6fcbfd81e02fb18dfadf124b11143335a38d66ab",
+        "account_daily": "7f9b57fd7eba6778f6238ff83564cda59a86c5b35b96fa1a8e2a498a9f2ed68b",
+        "trades": "264f05b52ced4e095f264f64549503b351215f6474bbb0cced23edb060fbfd74"
+      }
+    }
+  }
+}

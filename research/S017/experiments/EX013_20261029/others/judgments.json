@@ -35,6 +35,12 @@
       "candidate_ids": [
         "C0044"
       ]
+    },
+    {
+      "experiment_id": "EX016_20261029",
+      "candidate_ids": [
+        "C0045"
+      ]
     }
   ],
   "prototypes": {
@@ -279,6 +285,27 @@
         "仅适用现有整笔BAR_RANGE_V1研究执行、真实闭合周期反馈和独立会话网格；无MOC、部分成交或RAW拆股重标支持，止损线不保证成交价。"
       ],
       "next_step": "TODO:待完整账户及两项诊断后判断跨日表达是否有继续价值，或停止这一固定开盘突破表达"
+    },
+    "C0045": {
+      "hypothesis": "若LITE的趋势机会不完全与大盘同步，大盘原条件不成立时，保留同20个完整收盘跨度内比SPY更强且自身突破成立的入场，可能减少一概等待造成的机会损失；仍须检验风险、资金路径与重复原趋势信息的解释。",
+      "inherit_components_from": "C0013",
+      "components": [
+        {
+          "component_id": "weak-market-relative-entry-exception",
+          "role": "仅空仓入场的弱市相对强势例外",
+          "rationale": "在保持C13持有退出时，直接辨别C43统一市场门控与有限相对强势例外，不把原FALSE周期标签直接反转成交易信号。"
+        }
+      ],
+      "disposition": "TODO:DEVELOP|INVESTIGATE|STOP",
+      "judgment": "TODO:待完整账户及两项公共诊断后判断",
+      "limitations": [
+        "在EX014正式结果和原交易分组之后自适应提出，不是独立验证；仍只用2019—2025开发池，保留已见经营信息及既有选择历史。",
+        "20个完整日首末Close比值对应19个间隔；严格大于不含相等，比市场强也可能仍然下跌，必须同时满足C13自身入场。",
+        "主预热273而原控制261，实际2018-11历史及2019起点不变；按SPY日Date精确匹配20根LITE日末主柱，不填缺失，不借用未完成当前日。",
+        "RAW价格不是含分红总收益；SPY供应商日线与LITE RTH分钟末柱存在价格口径差异，时间对齐不消除该局限。",
+        "保留每侧0.1%、固定1%买入溢价及全部五目标；不把相对价格强势称行业因果，不将重叠窗口视为独立机会。"
+      ],
+      "next_step": "TODO:待结果决定有限机制继续或停止，不密集搜参"
     }
   },
   "components": [
@@ -470,6 +497,31 @@
           "judgment": "TODO:跨日ORB相对原慢趋势的整体机制比较；不独立宣称开盘入场优势"
         }
       ]
+    },
+    {
+      "component_id": "weak-market-relative-entry-exception",
+      "experiment_id": "EX016_20261029",
+      "role": "仅空仓入场的弱市相对强势例外",
+      "label": "原SPY条件为真或LITE同20完整收盘首末比值严格高于SPY；原LITE入场仍必须成立",
+      "horizon": "20个已完成日Close、19个close-to-close间隔，仅空仓时约束30分钟入场；跨日持有与退出完全C13。",
+      "availability": "SPY辅助20日RAW、最大秒龄432000，LITE精确匹配所有20个Date；主最低273，不截断全历史；缺失/重复/非法明确失败。",
+      "price_basis": "RAW",
+      "applicability": "C45对C43隔离弱市例外、对C13检验整个入场政策；同价格合同和既有数据，主预热声明差异显式核验。",
+      "judgment": "TODO:完整账户和精确公共诊断完成后填写用途与代价",
+      "tests": [
+        {
+          "subject": "C0045",
+          "control": "C0013",
+          "status": "TODO:SUPPORTED|INEFFECTIVE|NOT_APPLICABLE|INSUFFICIENT_DATA|TECHNICAL_FAILURE|REDUNDANT",
+          "judgment": "TODO:固定对照的机制判断，不替代整体原型依据"
+        },
+        {
+          "subject": "C0045",
+          "control": "C0043",
+          "status": "TODO:SUPPORTED|INEFFECTIVE|NOT_APPLICABLE|INSUFFICIENT_DATA|TECHNICAL_FAILURE|REDUNDANT",
+          "judgment": "TODO:固定对照的机制判断，不替代整体原型依据"
+        }
+      ]
     }
   ],
   "comparisons": [
@@ -562,6 +614,18 @@
       "control": "C0036",
       "question": "固定入场、entry日锚点、止损及执行合同，仅允许合法持仓跨日后，趋势参与、隔夜风险、费用、周期与后续入场如何共同改变？",
       "conclusion": "TODO:待C0044/C0036公共诊断后填写持有政策对照结论，不将账户差值直接归为隔夜收益"
+    },
+    {
+      "subject": "C0045",
+      "control": "C0013",
+      "question": "保留原持有退出、加入SPY或同期相对强势的入场资格，完整账户相对原趋势是否有用途或只是恢复原交易？",
+      "conclusion": "TODO:待两项公共诊断完成后填写"
+    },
+    {
+      "subject": "C0045",
+      "control": "C0043",
+      "question": "原SPY仅入场门控不变时，增加弱市LITE相对强势例外能否保留有用机会，同时带来什么风险及频率代价？",
+      "conclusion": "TODO:待两项公共诊断完成后填写"
     }
   ],
   "conclusion": "TODO:阶段二统一结论；保留旧判断，说明新原型、剩余问题及阶段边界"
