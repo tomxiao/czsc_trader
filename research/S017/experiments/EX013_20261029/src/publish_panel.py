@@ -669,7 +669,8 @@ def main(action, workers):
         'panel-plot-source': WORK / 'src/plot_panel.py'}
     if any(path.read_bytes() != visual_bytes[name][0] for name, path in visual_paths.items()):
         raise ValueError('visual bytes changed while constructing the panel; recheck before publishing')
-    research = context(workers)
+    # Material writes are serial; the separate final audit owns the worker budget.
+    research = context(1)
     additions = (
         publish_evidence(research, MaterialEvidenceWrite(EXPERIMENT, 'panel-judgments',
             judgment_bytes, 'application/json', 'json')),

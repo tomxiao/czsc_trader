@@ -174,7 +174,8 @@
         },
         "status": "READY_WITH_EXPLICIT_RAW_PRICE_AND_AVAILABILITY_ASSUMPTIONS"
       },
-      "completed_new_rounds": 7,
+      "completed_new_account_paths": 22,
+      "completed_new_rounds": 8,
       "experiments": [
         "EX009_20261029",
         "EX010_20261029",
@@ -187,20 +188,55 @@
         "EX017_20261029"
       ],
       "failed_new_rounds": 1,
+      "final_validation": {
+        "issues": [],
+        "scope": "FULL",
+        "stats": {
+          "account_reuses": 576,
+          "accounts_authenticated": 33,
+          "authentication_seconds": 926.2534215000924,
+          "bytes_hashed": 94884004181,
+          "elapsed_seconds": 1151.0786081000697,
+          "file_hash_task_seconds": 167.3576417088043,
+          "file_read_task_seconds": 33.0030537894927,
+          "files_hashed": 7214,
+          "final_recheck_seconds": 49.6509817999322,
+          "package_load_seconds": 37.76793500036001,
+          "recomputation_seconds": 0.0,
+          "recursive_expansions": 10,
+          "reference_visits": 14,
+          "semantic_reuses": 4,
+          "type": "DeliveryValidationStats",
+          "unique_deliveries": 10
+        },
+        "status": "PASS",
+        "type": "DeliveryValidation"
+      },
       "guideline_commit": "25c09476",
       "initiated_new_rounds": 9,
+      "latest_delivery": {
+        "batch": {
+          "strategy_id": "S017",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "b4bbd8b632f6808ce26422630d2f0070ff11f22e4133c83c8f5291228fd8b247",
+        "revision": 7,
+        "stage": "PROTOTYPES",
+        "type": "DeliveryReference"
+      },
       "new_information_exposure": "公开2024 ORB论文检索返回2016—2023 LITE 15分钟榜单行；仅方法学习，无新行情或账户评价。后续不能声称完全独立设计。",
+      "new_public_diagnoses": 20,
       "pause_statement": "请暂停，先补齐平台基建能力",
       "performance_review": {
         "evidence": "research/S017/experiments/EX017_20261029/others/platform_performance/manifest.json",
         "evidence_sha256": "3259f1f42cd9ce9f11ea734f5fa7f4b611f787d16a48a0a60ca482d57f4350eb",
-        "experimental_status": "EX017 original unfinished computation deliberately stopped before any result; original checkpoint preserved. Same fixed C0046 restarted under new platform identity; no extra research round. Subsequent public diagnoses will authenticate original evidence with the optimized implementation.",
+        "experimental_status": "EX017 same fixed C0046 completed under new source identity; all three original-control diagnoses and experiment report PASS; PROTOTYPES/7 FULL PASS. Prior published evidence preserved.",
         "finding": "Repeated full-calendar interval construction and auxiliary full-history validation per decision; finite loops, no timing-based failure judgment.",
         "implementation_commit": "4db65abe",
         "implementation_sha256": "684ef1209ca9da29a3285896033b9b3b7eddfd8d131fa7171e1ec1a704076f5d",
         "performance_limit": "Synthetic build+validate: session-only 5.21x, combined daily/M30 auxiliary 3.36x. Not an end-to-end research speedup claim.",
         "scope": "当前分支优化美股辅助与会话上下文；保持决策、经济账本、因果与身份认证、A股能力；聚焦验证后恢复RSCH。",
-        "status": "DEV_REPAIR_VERIFIED_RSCH_RESUMED",
+        "status": "DEV_REPAIR_VERIFIED_RSCH_STAGE_TWO_COMPLETE",
         "user_authorization": "授权 DEV 聚焦修复后恢复研究（推荐）",
         "verification": "51 focused public-contract tests PASS including 4 legacy A-share runtime nodes; three synthetic US routes seven tables exact; source identity and failures preserved; full repository regression not run"
       },
@@ -214,12 +250,113 @@
         "status": "IMPLEMENTED_FOCUSED_VERIFIED"
       },
       "platform_scope": "正式辅助市场/行业行情因果输入，以及当前可得交易时段；离线验证和既有能力保护",
+      "recovery_exit_description": "research/S017/experiments/EX013_20261029/others/recovery_exit_description.json",
       "remaining_rounds": 11,
+      "reports": {
+        "EX011_20261029": {
+          "evidence_id": "4601d3cefa82067e8f43a9da516739ada4f822b04f6ff53b06e493c9601bb64e.json",
+          "experiment": {
+            "experiment_id": "EX011_20261029",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "4601d3cefa82067e8f43a9da516739ada4f822b04f6ff53b06e493c9601bb64e",
+          "type": "EvidenceRef"
+        },
+        "EX012_20261029": {
+          "evidence_id": "f5fe4488a6fe12c2d53033c1837c5aa337f60019440b586ca2f73f54db24d881.json",
+          "experiment": {
+            "experiment_id": "EX012_20261029",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "f5fe4488a6fe12c2d53033c1837c5aa337f60019440b586ca2f73f54db24d881",
+          "type": "EvidenceRef"
+        },
+        "EX013_20261029": {
+          "evidence_id": "e57c43f6cfffb75bb98626e0ddf9e4730fec845097a5965177b73934112a15cc.json",
+          "experiment": {
+            "experiment_id": "EX013_20261029",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "e57c43f6cfffb75bb98626e0ddf9e4730fec845097a5965177b73934112a15cc",
+          "type": "EvidenceRef"
+        },
+        "EX014_20261029": {
+          "evidence_id": "ac3c1392ade2e4b8d69be4cafbea5be97465f5b92bfce5e22b043b57af376e9f.json",
+          "experiment": {
+            "experiment_id": "EX014_20261029",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "ac3c1392ade2e4b8d69be4cafbea5be97465f5b92bfce5e22b043b57af376e9f",
+          "type": "EvidenceRef"
+        },
+        "EX015_20261029": {
+          "evidence_id": "f606e1aea404569b7c5c55fddebe1be4a9a73f4f3905364f16ac57b5f4407ae1.json",
+          "experiment": {
+            "experiment_id": "EX015_20261029",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "f606e1aea404569b7c5c55fddebe1be4a9a73f4f3905364f16ac57b5f4407ae1",
+          "type": "EvidenceRef"
+        },
+        "EX016_20261029": {
+          "evidence_id": "5deb07c2a64e78f93ad6ee1728359831500467eb2998f4ee8b9a144320be56b4.json",
+          "experiment": {
+            "experiment_id": "EX016_20261029",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "5deb07c2a64e78f93ad6ee1728359831500467eb2998f4ee8b9a144320be56b4",
+          "type": "EvidenceRef"
+        },
+        "EX017_20261029": {
+          "evidence_id": "9422b2ed4089ec0267673d1c337034ba2df6647cf1279f781010f6bc374f41ef.json",
+          "experiment": {
+            "experiment_id": "EX017_20261029",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "9422b2ed4089ec0267673d1c337034ba2df6647cf1279f781010f6bc374f41ef",
+          "type": "EvidenceRef"
+        }
+      },
       "research_started": true,
       "reserved_2026_price_or_performance_used": false,
       "resume_user_statement": "同意，切回RSCH，先核验辅助数据可得性，通过后恢复S017研究，在20轮实验额度内自主完成阶段二。",
       "round_counting": "全部新增实验身份计数，包括数据核验；技术修正和同一实验重跑不另算。",
-      "running_new_rounds": 1,
+      "running_new_rounds": 0,
       "runtime_snapshot": {
         "EX009_20261029": "COMPLETED_DATA_READINESS",
         "EX010_20261029": "FAILED_TECHNICAL_REPORT_PRESERVED",
@@ -229,13 +366,16 @@
         "EX014_20261029": "COMPLETED_REPORT_PUBLICATION_PASS",
         "EX015_20261029": "COMPLETED_REPORT_PUBLICATION_PASS",
         "EX016_20261029": "COMPLETED_REPORT_PUBLICATION_PASS",
-        "EX017_20261029": "SAME_CONFIGURATION_RESTARTED_AFTER_AUTHORIZED_PERFORMANCE_REPAIR",
+        "EX017_20261029": "COMPLETED_REPORT_PUBLICATION_PASS",
         "scope": "Operational progress only; completed rounds require published completed reports."
       },
-      "status": "ACTIVE_STAGE_TWO",
+      "status": "COMPLETED_STAGE_TWO_NO_PROMOTION",
+      "stop_rationale": "明确结构及交互对照和原交易反证尚未指向可继续发展的完整路线；保留C43/C44有限用途，未把目标未达作为唯一停止条件。余11轮未分配。",
+      "successful_new_configurations": 11,
       "technical_failures": {
         "EX010_20261029": "Auxiliary 96-hour age limit excludes valid half-day/long-weekend observations; FAILED report preserved, EX013 successor uses 5 days."
       },
+      "technical_interrupted_account_attempts": 1,
       "user_statement": "提交RSCH指南的更改。授权20轮实验的额度，请你自主完成阶段二。提醒：扩宽数据视野，尝试加入市场、行业的信息辅助决策；拓宽交易认知，尝试学习日内交易的方法和案例。"
     },
     "instrument": {
@@ -382,17 +522,29 @@
         "2018-12-31"
       ]
     },
-    "stage": "STAGE_2_AUXILIARY_AND_INTRADAY_RESEARCH",
+    "stage": "STAGE_2_COMPLETE_AWAITING_NEXT_DIRECTION",
     "stage_two_result": {
-      "account_replay_count": 44,
-      "conclusion": "EX008两项恢复背景对照已完成，策略目标未达成。均价位置对宽松恢复入口有局部改善，方向条件没有形成值得保留的增量；两个完整原型均停止发展，不进入阶段三。",
-      "configuration_count": 22,
+      "account_replay_count": 66,
+      "conclusion": "本轮阶段二在9/20额度内收口：11个新增完整配置、22条账户路径、20项新公共诊断完成，PROTOTYPES/7 FULL通过。未找到推荐直接进入阶段三的新原型；C43和C44的有限完整用途保留，C46组合未形成有用互补。原C31/C32恢复退出描述更支持启动后延续不足，未发现足以指定新持有规则的普遍冲突。全部目标未同时达成，保留11轮额度，不继续无依据拼接或搜索。",
+      "configuration_count": 33,
+      "count_scope": "Completed formal configurations and candidate/paired-benchmark account paths; EX010 three technically failed configurations and EX017 one unfinished technical attempt are recorded separately, not successful accounts.",
       "diagnostic_only_configuration_ids": [
         "C0026"
       ],
-      "formal_evaluation_request_count": 22,
+      "formal_evaluation_request_count": 33,
       "goals_met": false,
       "latest_delivery": {
+        "batch": {
+          "strategy_id": "S017",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "b4bbd8b632f6808ce26422630d2f0070ff11f22e4133c83c8f5291228fd8b247",
+        "revision": 7,
+        "stage": "PROTOTYPES",
+        "type": "DeliveryReference"
+      },
+      "latest_experiment": "EX017_20261029",
+      "predecessor_delivery": {
         "batch": {
           "strategy_id": "S017",
           "type": "ResearchBatchRef"
@@ -402,12 +554,11 @@
         "stage": "PROTOTYPES",
         "type": "DeliveryReference"
       },
-      "latest_experiment": "EX008_20261029",
-      "public_diagnosis_count": 33,
+      "public_diagnosis_count": 53,
       "registered_candidate_count": 0,
       "reserved_price_or_performance_used": false,
       "stage_three_authorized": false,
-      "timing_configuration_count": 21,
+      "timing_configuration_count": 32,
       "work_status": "COMPLETE"
     }
   },
@@ -417,5 +568,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-10-29T10:22:53+08:00"
+  "updated_at": "2026-10-29T11:34:49+08:00"
 }
