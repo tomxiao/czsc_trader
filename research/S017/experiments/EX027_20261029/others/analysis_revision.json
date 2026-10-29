@@ -1,0 +1,31 @@
+{
+  "schema": "s017-analysis-format-revision/v1",
+  "status": "APPROVED_FORMAT_FIX",
+  "original_source_path": "src/analyze.py",
+  "original_source_sha256": "8493f72a20b64d6da901e42acca19eb536e0fd36f040e654fd00f273d44eb4ea",
+  "revised_source_path": "src/analyze_v2.py",
+  "revised_source_sha256": "ac87cdb3c5b8ea5ec1f6e606f8accc1306b61ab042163708d54d39ea754b8ca2",
+  "failure": "Frozen analyze.py line435 rejected equal signal timestamps represented as ISO Z fractional seconds versus +00:00. Public diagnostics were not started; analysis.json was not produced.",
+  "failure_exit_code": 1,
+  "scope": "Normalize only the reference signal-map and actual signal-map timestamp keys using datetime.fromisoformat, then compare aware instants and unchanged boolean signal values. Add exact revised analysis source path metadata.",
+  "checks": {
+    "AST": "PASS",
+    "aware_equivalent_iso_timestamps": "PASS",
+    "changed_signal_rejected": "PASS",
+    "different_instant_rejected": "PASS"
+  },
+  "prior_readonly_diagnosis": {
+    "account": "C0048",
+    "normalized_keys": 22790,
+    "normalized_missing_keys": 0,
+    "normalized_extra_keys": 0,
+    "signal_differences": 0
+  },
+  "account_manifest_sha256": "df4298e277da2dc6ef8376cdc68eeaece3ef9970fbd3c88a0a69c69c2c6813eb",
+  "original_source_preserved": true,
+  "pre_run_reference_unchanged": true,
+  "account_replays_added": 0,
+  "experiment_rounds_added": 0,
+  "rules_parameters_signals_accounts_unchanged": true,
+  "note": "Authorized correction to analysis timestamp representation only; not a signal, strategy, result selection or account simulation change. Original frozen source and evidence remain preserved."
+}

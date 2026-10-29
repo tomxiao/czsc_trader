@@ -176,8 +176,8 @@
         },
         "status": "READY_WITH_EXPLICIT_RAW_PRICE_AND_AVAILABILITY_ASSUMPTIONS"
       },
-      "completed_new_account_paths": 24,
-      "completed_new_rounds": 17,
+      "completed_new_account_paths": 30,
+      "completed_new_rounds": 18,
       "downside_failure_authorization": {
         "protocol": "research/S017/experiments/EX022_20261029/protocols/design.md",
         "scope": "3个竞争形态、1个近期超跌背景、旧C参考，固定5期限普查，1轮、0账户",
@@ -206,7 +206,8 @@
         "EX023_20261029",
         "EX024_20261029",
         "EX025_20261029",
-        "EX026_20261029"
+        "EX026_20261029",
+        "EX027_20261029"
       ],
       "failed_new_rounds": 1,
       "final_disjoint_ablation_authorization": {
@@ -239,7 +240,36 @@
         "type": "DeliveryValidation"
       },
       "guideline_commit": "25c09476",
-      "initiated_new_rounds": 18,
+      "initiated_new_rounds": 19,
+      "integrated_prototype_account_counts": {
+        "basis": "Three published formal candidate evaluations, each containing one candidate and one identical-contract buy-hold path; not six independent research configurations.",
+        "completed_new_account_paths": 6,
+        "experiment": "EX027_20261029",
+        "report": {
+          "evidence_id": "4ca80cef9c675bcec18fa813dcab5e8163c3929d3a83547f07f0f073ec7f4322.json",
+          "experiment": {
+            "experiment_id": "EX027_20261029",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "4ca80cef9c675bcec18fa813dcab5e8163c3929d3a83547f07f0f073ec7f4322",
+          "type": "EvidenceRef"
+        },
+        "successful_new_configurations": 3
+      },
+      "integrated_prototype_authorization": {
+        "engineering_separate_rounds": 0,
+        "new_entry_expressions": 0,
+        "new_exit_mechanisms": 3,
+        "protocol": "research/S017/experiments/EX027_20261029/protocols/design.md",
+        "research_rounds": 1,
+        "scope": "M005入场不变；接线、一致性检查、65柱基线及三退出完整账户比较合并1轮；无参数搜索",
+        "user_statement": "纯工程化任务不占单独研究额度；同意，请继续"
+      },
       "latest_delivery": {
         "batch": {
           "strategy_id": "S017",
@@ -338,7 +368,7 @@
       },
       "platform_scope": "正式辅助市场/行业行情因果输入，以及当前可得交易时段；离线验证和既有能力保护",
       "recovery_exit_description": "research/S017/experiments/EX013_20261029/others/recovery_exit_description.json",
-      "remaining_rounds": 2,
+      "remaining_rounds": 1,
       "reports": {
         "EX011_20261029": {
           "evidence_id": "4601d3cefa82067e8f43a9da516739ada4f822b04f6ff53b06e493c9601bb64e.json",
@@ -563,6 +593,20 @@
           "schema_version": 1,
           "sha256": "596b43de7731acc94c1e2e4d0ccc9606cde6ab0cdf1340189ca366fd792c6eeb",
           "type": "EvidenceRef"
+        },
+        "EX027_20261029": {
+          "evidence_id": "4ca80cef9c675bcec18fa813dcab5e8163c3929d3a83547f07f0f073ec7f4322.json",
+          "experiment": {
+            "experiment_id": "EX027_20261029",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "4ca80cef9c675bcec18fa813dcab5e8163c3929d3a83547f07f0f073ec7f4322",
+          "type": "EvidenceRef"
         }
       },
       "research_started": true,
@@ -594,6 +638,7 @@
         "EX024_20261029": "COMPLETED_NUMBERED_ENTRY_COMPETITION_REPORT_PUBLICATION_PASS",
         "EX025_20261029": "COMPLETED_VOLUME_RANGE_ABLATION_REPORT_PUBLICATION_PASS",
         "EX026_20261029": "COMPLETED_FINAL_DISJOINT_ABLATION_REPORT_PUBLICATION_PASS",
+        "EX027_20261029": "COMPLETED_INTEGRATED_M005_EXIT_PROTOTYPES_REPORT_PASS",
         "scope": "Operational progress only; completed rounds require published completed reports."
       },
       "signal_diagnosis_authorization": {
@@ -602,9 +647,9 @@
         "scope": "单一诊断实验；不运行新完整账户、不改信号、不自动追加后续实验",
         "user_statement": "ok"
       },
-      "status": "ABLATION_CLOSED_RETURN_TO_MAINLINE",
-      "stop_rationale": "完成用户允许的最后一轮拆解；本支线关闭，回归完整组合的原型验证。",
-      "successful_new_configurations": 12,
+      "status": "INTEGRATED_M005_EXIT_PROTOTYPES_COMPLETE",
+      "stop_rationale": "条件拆解支线保持关闭；集成三退出账户比较完成，剩余一轮按本轮研究结论安排。",
+      "successful_new_configurations": 15,
       "technical_failures": {
         "EX010_20261029": "Auxiliary 96-hour age limit excludes valid half-day/long-weekend observations; FAILED report preserved, EX013 successor uses 5 days."
       },
@@ -659,7 +704,7 @@
       "research/S017/materials/registration_20261028.md",
       "research/S017/materials/pre_registration_readiness.json"
     ],
-    "next_action": "拆解支线已关闭，后续0轮拆解。回归S017阶段二主线：保持S017-M005原入场及1%买入限价溢价、每侧0.1%费用，在下一轮事前冻结的最小完整账户原型中，以固定65柱退出检验实际持仓、重复信号、资金占用、账户收益回撤与闭合频率；可用S017-M008作简化对照，买入并持有仍为策略业绩基准。先不搜索退出参数，不要求先证明每个条件必要性，不用2026封存样本。本轮未运行账户，剩余两轮额度优先用于这条主线。",
+    "next_action": "建议把最后1轮用于完整账户的再入场节奏竞争：保留S017-M005入场、S017-M009固定65基线及本轮两种价格退出的原阈值，比较止损后立即接受新信号，与等待原65柱持有窗口结束后再接受信号。将两种退出各配一个等待版本，同轮完成接线、核验和账户比较，不另计工程轮次。要分清新增的反复试错是否拖累了风控，而不是继续盲调止损线；等待规则不得使用未来价格，精确重新入场时点在运行前冻结。频率可能进一步下降，必须完整报告，不能用降低交易次数换取回撤后宣称达标。若等待后仍无足够整体改善，停止围绕这两种退出补丁式调整，以已获得的账户依据和未解决目标收口阶段二，不自动进入阶段三。原放量/窄幅拆解支线保持关闭。",
     "objective": "LITE 美股个股30分钟只做多择时研究",
     "other_proposals_confirmation": "CONFIRMED",
     "policy_reference": "research/RSCH_AGENT.md#research-policy",
@@ -760,10 +805,10 @@
         "2018-12-31"
       ]
     },
-    "stage": "STAGE_2_MAINLINE_PROTOTYPE_PENDING",
+    "stage": "STAGE_2_INTEGRATED_M005_EXIT_PROTOTYPES_COMPLETE",
     "stage_two_result": {
       "account_replay_count": 68,
-      "conclusion": "最后一轮互斥对照仍未得到足够明确的条件贡献结论。按用户要求关闭条件拆解支线，不再追加拆解实验；保留S017-M005原组合，回到完整账户原型主线。这个结果既不证明放量或窄幅无用，也不推翻此前完整组合的事件收益线索。",
+      "conclusion": "本轮完整研究已完成，三组均未同时达到已确认的五项经济及频率目标。S017-M005配合S017-M009固定65柱，把此前事件收益线索兑现为正的完整账户收益：净年化38.31%，略高于同合同买持36.32%，30分钟最大回撤44.47%，低于买持67.34%。这给原入场及数天修复持有提供了继续研究的账户依据，但不是达标或稳健性验收。S017-M010结构失效和S017-M011移动止损在本轮完整账户中都降低收益并扩大回撤，不能作为已有效的风控组件采用。",
       "configuration_count": 34,
       "count_scope": "Completed formal configurations and candidate/paired-benchmark account paths; EX010 three technically failed configurations and EX017 one unfinished technical attempt are recorded separately, not successful accounts.",
       "diagnostic_only_configuration_ids": [
@@ -781,12 +826,12 @@
         "stage": "PROTOTYPES",
         "type": "DeliveryReference"
       },
-      "latest_experiment": "EX026_20261029",
-      "latest_experiment_conclusion": "最后一轮互斥对照仍未得到足够明确的条件贡献结论。按用户要求关闭条件拆解支线，不再追加拆解实验；保留S017-M005原组合，回到完整账户原型主线。这个结果既不证明放量或窄幅无用，也不推翻此前完整组合的事件收益线索。",
+      "latest_experiment": "EX027_20261029",
+      "latest_experiment_conclusion": "本轮完整研究已完成，三组均未同时达到已确认的五项经济及频率目标。S017-M005配合S017-M009固定65柱，把此前事件收益线索兑现为正的完整账户收益：净年化38.31%，略高于同合同买持36.32%，30分钟最大回撤44.47%，低于买持67.34%。这给原入场及数天修复持有提供了继续研究的账户依据，但不是达标或稳健性验收。S017-M010结构失效和S017-M011移动止损在本轮完整账户中都降低收益并扩大回撤，不能作为已有效的风控组件采用。",
       "latest_experiment_report": {
-        "evidence_id": "596b43de7731acc94c1e2e4d0ccc9606cde6ab0cdf1340189ca366fd792c6eeb.json",
+        "evidence_id": "4ca80cef9c675bcec18fa813dcab5e8163c3929d3a83547f07f0f073ec7f4322.json",
         "experiment": {
-          "experiment_id": "EX026_20261029",
+          "experiment_id": "EX027_20261029",
           "strategy_id": "S017",
           "type": "ExperimentRef"
         },
@@ -794,10 +839,10 @@
         "name": "experiment-report",
         "schema": "experiment_report",
         "schema_version": 1,
-        "sha256": "596b43de7731acc94c1e2e4d0ccc9606cde6ab0cdf1340189ca366fd792c6eeb",
+        "sha256": "4ca80cef9c675bcec18fa813dcab5e8163c3929d3a83547f07f0f073ec7f4322",
         "type": "EvidenceRef"
       },
-      "latest_experiment_scope": "FINAL_DISJOINT_ABLATION_DIAGNOSTIC_ONLY",
+      "latest_experiment_scope": "INTEGRATED_M005_THREE_EXIT_ACCOUNT_PROTOTYPES",
       "predecessor_delivery": {
         "batch": {
           "strategy_id": "S017",
@@ -981,5 +1026,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-10-29T23:32:59+08:00"
+  "updated_at": "2026-10-30T00:46:44+08:00"
 }

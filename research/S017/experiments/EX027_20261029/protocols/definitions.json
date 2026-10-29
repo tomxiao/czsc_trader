@@ -1,0 +1,131 @@
+{
+  "C0048": {
+    "runtime_kind": "US_EQUITY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "LITE"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 261,
+    "entrypoint": "strategy:decide",
+    "source_files": [
+      "strategy.py"
+    ],
+    "source_sha256": "1ed717573d378d7d9767189730d6075c541a7363f9e686de3ce774fb5959bdad",
+    "parameters_json": "{\"exit_mechanism\":\"S017-M009\",\"max_holding_bars\":65}",
+    "dependencies": [],
+    "contract_version": 2,
+    "parameter_schema_json": "{\"exit_mechanism\":{\"type\":\"string\"},\"max_holding_bars\":{\"type\":\"integer\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ]
+  },
+  "C0049": {
+    "runtime_kind": "US_EQUITY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "LITE"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 261,
+    "entrypoint": "strategy:decide",
+    "source_files": [
+      "strategy.py"
+    ],
+    "source_sha256": "1ed717573d378d7d9767189730d6075c541a7363f9e686de3ce774fb5959bdad",
+    "parameters_json": "{\"exit_mechanism\":\"S017-M010\",\"max_holding_bars\":65}",
+    "dependencies": [],
+    "contract_version": 2,
+    "parameter_schema_json": "{\"exit_mechanism\":{\"type\":\"string\"},\"max_holding_bars\":{\"type\":\"integer\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ]
+  },
+  "C0050": {
+    "runtime_kind": "US_EQUITY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "LITE"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 261,
+    "entrypoint": "strategy:decide",
+    "source_files": [
+      "strategy.py"
+    ],
+    "source_sha256": "1ed717573d378d7d9767189730d6075c541a7363f9e686de3ce774fb5959bdad",
+    "parameters_json": "{\"exit_mechanism\":\"S017-M011\",\"max_holding_bars\":65,\"trailing_atr_multiple\":3.0}",
+    "dependencies": [],
+    "contract_version": 2,
+    "parameter_schema_json": "{\"exit_mechanism\":{\"type\":\"string\"},\"max_holding_bars\":{\"type\":\"integer\"},\"trailing_atr_multiple\":{\"type\":\"number\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ]
+  }
+}
