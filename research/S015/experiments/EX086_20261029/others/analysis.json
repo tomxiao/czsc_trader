@@ -1,0 +1,5376 @@
+{
+  "schema": "s015-entry-census/v1",
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S015",
+    "experiment_id": "EX086_20261029"
+  },
+  "release": "42213c1d07a712f712bcaef5a2fad21dc03b7660e6b24247209af51ece605cfc",
+  "primary_horizon": 1,
+  "eligible": 430,
+  "signals": {
+    "permission": 64,
+    "entry_signal": 55
+  },
+  "horizons": {
+    "1": {
+      "all": {
+        "events": 430,
+        "signal_days": 430,
+        "status": {
+          "COMPLETE": 422,
+          "NO_ENTRY": 7,
+          "RIGHT_CENSORED_EXIT": 1
+        },
+        "entry_status": {
+          "FILLED": 423,
+          "DAILY_RANGE_NOT_REACHED": 7
+        },
+        "exit_status": {
+          "FILLED": 422,
+          "NOT_OBSERVED": 8
+        },
+        "information": {
+          "count": 430,
+          "mean": 0.0009336046967240062,
+          "median": 0.0009201882703506747,
+          "win_rate": 0.5162790697674419,
+          "flat_rate": 0.023255813953488372,
+          "average_win": 0.01432879583756867,
+          "average_loss_magnitude": 0.014038094223984457,
+          "payoff_ratio": 1.020708054023996,
+          "q10": -0.020939426285045356,
+          "q90": 0.023078872166348956
+        },
+        "price": {
+          "count": 422,
+          "mean": -0.0008592541743130534,
+          "median": -0.001053810855643933,
+          "win_rate": 0.4786729857819905,
+          "flat_rate": 0.0,
+          "average_win": 0.014281523709495867,
+          "average_loss_magnitude": 0.014761241140355793,
+          "payoff_ratio": 0.9675015517801938,
+          "q10": -0.0247895455261818,
+          "q90": 0.021846134263048267
+        },
+        "close_path_min": {
+          "count": 422,
+          "mean": -0.005466405706305997,
+          "median": 0.0,
+          "win_rate": 0.0,
+          "flat_rate": 0.5592417061611374,
+          "average_win": null,
+          "average_loss_magnitude": 0.012402275312156616,
+          "payoff_ratio": null,
+          "q10": -0.01763049533344756,
+          "q90": 0.0
+        },
+        "close_path_max": {
+          "count": 422,
+          "mean": 0.007227354036224321,
+          "median": 0.0018616698719615687,
+          "win_rate": 0.5402843601895735,
+          "flat_rate": 0.4597156398104265,
+          "average_win": 0.013376944751257296,
+          "average_loss_magnitude": null,
+          "payoff_ratio": null,
+          "q10": 0.0,
+          "q90": 0.022061935178433044
+        }
+      },
+      "signals": {
+        "permission": {
+          "raw": {
+            "events": 64,
+            "signal_days": 64,
+            "status": {
+              "COMPLETE": 63,
+              "NO_ENTRY": 1
+            },
+            "entry_status": {
+              "FILLED": 63,
+              "DAILY_RANGE_NOT_REACHED": 1
+            },
+            "exit_status": {
+              "FILLED": 63,
+              "NOT_OBSERVED": 1
+            },
+            "information": {
+              "count": 64,
+              "mean": 0.008661630808860706,
+              "median": 0.007204368012865392,
+              "win_rate": 0.640625,
+              "flat_rate": 0.0,
+              "average_win": 0.01986977220160868,
+              "average_loss_magnitude": 0.011318099499950898,
+              "payoff_ratio": 1.7555749710183128,
+              "q10": -0.015274013324706659,
+              "q90": 0.03608954166387413
+            },
+            "price": {
+              "count": 63,
+              "mean": 0.00947715553436113,
+              "median": 0.0065076968486057485,
+              "win_rate": 0.6507936507936508,
+              "flat_rate": 0.0,
+              "average_win": 0.021250768033157095,
+              "average_loss_magnitude": 0.012464576849758628,
+              "payoff_ratio": 1.7048928567172827,
+              "q10": -0.01451789056746504,
+              "q90": 0.0370517448529333
+            },
+            "close_path_min": {
+              "count": 63,
+              "mean": -0.0033263548828154606,
+              "median": 0.0,
+              "win_rate": 0.0,
+              "flat_rate": 0.6984126984126984,
+              "average_win": null,
+              "average_loss_magnitude": 0.01102949250617758,
+              "payoff_ratio": null,
+              "q10": -0.011857297609265016,
+              "q90": 0.0
+            },
+            "close_path_max": {
+              "count": 63,
+              "mean": 0.014092772029147677,
+              "median": 0.00784550392275185,
+              "win_rate": 0.6984126984126984,
+              "flat_rate": 0.30158730158730157,
+              "average_win": 0.020178287223552357,
+              "average_loss_magnitude": null,
+              "payoff_ratio": null,
+              "q10": 0.0,
+              "q90": 0.037006974128233915
+            }
+          },
+          "nonoverlap": {
+            "events": 48,
+            "signal_days": 48,
+            "status": {
+              "COMPLETE": 48
+            },
+            "entry_status": {
+              "FILLED": 48
+            },
+            "exit_status": {
+              "FILLED": 48
+            },
+            "information": {
+              "count": 48,
+              "mean": 0.008433147448150371,
+              "median": 0.0076347691764326875,
+              "win_rate": 0.6666666666666666,
+              "flat_rate": 0.0,
+              "average_win": 0.01881414630860824,
+              "average_loss_magnitude": 0.012328850272765368,
+              "payoff_ratio": 1.5260260196499422,
+              "q10": -0.013490671845570611,
+              "q90": 0.035391234134089074
+            },
+            "price": {
+              "count": 48,
+              "mean": 0.0108537629581526,
+              "median": 0.007681238256572298,
+              "win_rate": 0.7083333333333334,
+              "flat_rate": 0.0,
+              "average_win": 0.021052061244345253,
+              "average_loss_magnitude": 0.013913532879743848,
+              "payoff_ratio": 1.5130636788154719,
+              "q10": -0.011495028934892992,
+              "q90": 0.03813283978601547
+            },
+            "close_path_min": {
+              "count": 48,
+              "mean": -0.0031490421408985614,
+              "median": 0.0,
+              "win_rate": 0.0,
+              "flat_rate": 0.7291666666666666,
+              "average_win": null,
+              "average_loss_magnitude": 0.011627232520240841,
+              "payoff_ratio": null,
+              "q10": -0.009984336966533346,
+              "q90": 0.0
+            },
+            "close_path_max": {
+              "count": 48,
+              "mean": 0.014442809064212317,
+              "median": 0.008804523656555374,
+              "win_rate": 0.7291666666666666,
+              "flat_rate": 0.2708333333333333,
+              "average_win": 0.01980728100234832,
+              "average_loss_magnitude": null,
+              "payoff_ratio": null,
+              "q10": 0.0,
+              "q90": 0.03602047244094483
+            }
+          },
+          "matched_raw": {
+            "count": 63,
+            "control_mean": -0.00019881426979466755,
+            "difference": {
+              "count": 63,
+              "mean": 0.0096759698041558,
+              "median": 0.006779550648407883,
+              "win_rate": 0.6666666666666666,
+              "flat_rate": 0.0,
+              "average_win": 0.02098151958054538,
+              "average_loss_magnitude": 0.012935129748623366,
+              "payoff_ratio": 1.6220571411568838,
+              "q10": -0.014156430566726528,
+              "q90": 0.03772951322902699
+            },
+            "control_support": {
+              "unique_cells": 21,
+              "singleton_target_events": 0,
+              "all_target_cell_events": 0,
+              "median_control_events_per_target": 20.0,
+              "minimum_control_events": 13
+            }
+          },
+          "matched_nonoverlap": {
+            "count": 48,
+            "control_mean": 0.00014448395190189516,
+            "difference": {
+              "count": 48,
+              "mean": 0.010709279006250703,
+              "median": 0.007303937592948337,
+              "win_rate": 0.7291666666666666,
+              "flat_rate": 0.0,
+              "average_win": 0.020380113414391995,
+              "average_loss_magnitude": 0.015327582861821988,
+              "payoff_ratio": 1.3296364859429253,
+              "q10": -0.01118032818588174,
+              "q90": 0.03743115316679355
+            },
+            "control_support": {
+              "unique_cells": 21,
+              "singleton_target_events": 0,
+              "all_target_cell_events": 0,
+              "median_control_events_per_target": 20.0,
+              "minimum_control_events": 13
+            }
+          },
+          "concentration_raw": {
+            "positive_return_sum": 0.8712814893594409,
+            "positive_events": 41,
+            "largest_event_share": 0.09903746117125888,
+            "largest_year_share": 0.6128805435572567,
+            "positive_sum_by_year": {
+              "2025": 0.33729001656945057,
+              "2026": 0.5339914727899904
+            },
+            "scope": "Sum of independent event returns, not account PnL contribution."
+          },
+          "concentration_nonoverlap": {
+            "positive_return_sum": 0.7157700823077386,
+            "positive_events": 34,
+            "largest_event_share": 0.12055478261044845,
+            "largest_year_share": 0.556556470029767,
+            "positive_sum_by_year": {
+              "2025": 0.31740361194562783,
+              "2026": 0.3983664703621108
+            },
+            "scope": "Sum of independent event returns, not account PnL contribution."
+          },
+          "years": {
+            "2025": {
+              "raw": {
+                "events": 34,
+                "signal_days": 34,
+                "status": {
+                  "COMPLETE": 34
+                },
+                "entry_status": {
+                  "FILLED": 34
+                },
+                "exit_status": {
+                  "FILLED": 34
+                },
+                "information": {
+                  "count": 34,
+                  "mean": 0.0073575598864526375,
+                  "median": 0.006359348141831145,
+                  "win_rate": 0.6176470588235294,
+                  "flat_rate": 0.0,
+                  "average_win": 0.015733634766911413,
+                  "average_loss_magnitude": 0.0061730226127499985,
+                  "payoff_ratio": 2.548773227302709,
+                  "q10": -0.006325038164885609,
+                  "q90": 0.02583726949856532
+                },
+                "price": {
+                  "count": 34,
+                  "mean": 0.006447972481466992,
+                  "median": 0.0031276505265022125,
+                  "win_rate": 0.6176470588235294,
+                  "flat_rate": 0.0,
+                  "average_win": 0.016061429360450026,
+                  "average_loss_magnitude": 0.009081457861505604,
+                  "payoff_ratio": 1.7685959242877796,
+                  "q10": -0.01028959272169836,
+                  "q90": 0.026729243430956697
+                },
+                "close_path_min": {
+                  "count": 34,
+                  "mean": -0.0025168816472957694,
+                  "median": 0.0,
+                  "win_rate": 0.0,
+                  "flat_rate": 0.6764705882352942,
+                  "average_win": null,
+                  "average_loss_magnitude": 0.007779452364368742,
+                  "payoff_ratio": null,
+                  "q10": -0.009224560886216059,
+                  "q90": 0.0
+                },
+                "close_path_max": {
+                  "count": 34,
+                  "mean": 0.010556518918103157,
+                  "median": 0.004959905972423129,
+                  "win_rate": 0.6764705882352942,
+                  "flat_rate": 0.3235294117647059,
+                  "average_win": 0.015605288835456841,
+                  "average_loss_magnitude": null,
+                  "payoff_ratio": null,
+                  "q10": 0.0,
+                  "q90": 0.026070509521358715
+                }
+              },
+              "matched": {
+                "count": 34,
+                "control_mean": -0.00026389252257030897,
+                "difference": {
+                  "count": 34,
+                  "mean": 0.0067118650040373,
+                  "median": 0.004567244436957657,
+                  "win_rate": 0.6176470588235294,
+                  "flat_rate": 0.0,
+                  "average_win": 0.016303971360858507,
+                  "average_loss_magnitude": 0.008783076033904645,
+                  "payoff_ratio": 1.856294002001294,
+                  "q10": -0.009230712915476624,
+                  "q90": 0.026818603001538027
+                },
+                "control_support": {
+                  "unique_cells": 12,
+                  "singleton_target_events": 0,
+                  "all_target_cell_events": 0,
+                  "median_control_events_per_target": 20.0,
+                  "minimum_control_events": 14
+                }
+              }
+            },
+            "2026": {
+              "raw": {
+                "events": 30,
+                "signal_days": 30,
+                "status": {
+                  "COMPLETE": 29,
+                  "NO_ENTRY": 1
+                },
+                "entry_status": {
+                  "FILLED": 29,
+                  "DAILY_RANGE_NOT_REACHED": 1
+                },
+                "exit_status": {
+                  "FILLED": 29,
+                  "NOT_OBSERVED": 1
+                },
+                "information": {
+                  "count": 30,
+                  "mean": 0.010139577854256517,
+                  "median": 0.009488359893316978,
+                  "win_rate": 0.6666666666666666,
+                  "flat_rate": 0.0,
+                  "average_win": 0.02421271650804081,
+                  "average_loss_magnitude": 0.01800669945331207,
+                  "payoff_ratio": 1.3446504491741953,
+                  "q10": -0.021249130616219147,
+                  "q90": 0.04436751810903531
+                },
+                "price": {
+                  "count": 29,
+                  "mean": 0.01302861152740943,
+                  "median": 0.013355874894336539,
+                  "win_rate": 0.6896551724137931,
+                  "flat_rate": 0.0,
+                  "average_win": 0.02669957363949952,
+                  "average_loss_magnitude": 0.017351304277235215,
+                  "payoff_ratio": 1.5387646492102134,
+                  "q10": -0.017051084924057134,
+                  "q90": 0.03926885200590795
+                },
+                "close_path_min": {
+                  "count": 29,
+                  "mean": -0.004275392469286822,
+                  "median": 0.0,
+                  "win_rate": 0.0,
+                  "flat_rate": 0.7241379310344828,
+                  "average_win": null,
+                  "average_loss_magnitude": 0.015498297701164732,
+                  "payoff_ratio": null,
+                  "q10": -0.012795254048814852,
+                  "q90": 0.0
+                },
+                "close_path_max": {
+                  "count": 29,
+                  "mean": 0.018238723952441253,
+                  "median": 0.013002364066193817,
+                  "win_rate": 0.7241379310344828,
+                  "flat_rate": 0.27586206896551724,
+                  "average_win": 0.025186809267656967,
+                  "average_loss_magnitude": null,
+                  "payoff_ratio": null,
+                  "q10": 0.0,
+                  "q90": 0.04053460732891243
+                }
+              },
+              "matched": {
+                "count": 29,
+                "control_mean": -0.0001225156286094328,
+                "difference": {
+                  "count": 29,
+                  "mean": 0.013151127156018863,
+                  "median": 0.014183218605486304,
+                  "win_rate": 0.7241379310344828,
+                  "flat_rate": 0.0,
+                  "average_win": 0.025659067800232256,
+                  "average_loss_magnitude": 0.01968221703504129,
+                  "payoff_ratio": 1.3036675570922758,
+                  "q10": -0.018043067138000118,
+                  "q90": 0.04078369191926685
+                },
+                "control_support": {
+                  "unique_cells": 9,
+                  "singleton_target_events": 0,
+                  "all_target_cell_events": 0,
+                  "median_control_events_per_target": 21.0,
+                  "minimum_control_events": 13
+                }
+              }
+            }
+          },
+          "months": {
+            "2025-01": {
+              "events": 4,
+              "signal_days": 4,
+              "status": {
+                "COMPLETE": 4
+              },
+              "entry_status": {
+                "FILLED": 4
+              },
+              "exit_status": {
+                "FILLED": 4
+              },
+              "information": {
+                "count": 4,
+                "mean": 0.005332396152785607,
+                "median": 0.0098844550411602,
+                "win_rate": 0.75,
+                "flat_rate": 0.0,
+                "average_win": 0.012481109562323919,
+                "average_loss_magnitude": 0.016113744075829328,
+                "payoff_ratio": 0.7745629757795165,
+                "q10": -0.009049137581705058,
+                "q90": 0.0160722827765766
+              },
+              "price": {
+                "count": 4,
+                "mean": 0.0007497269333439083,
+                "median": 0.0055427731661128465,
+                "win_rate": 0.75,
+                "flat_rate": 0.0,
+                "average_win": 0.009856309540526112,
+                "average_loss_magnitude": 0.026570020888202706,
+                "payoff_ratio": 0.3709560328160069,
+                "q10": -0.01836674688947415,
+                "q90": 0.01603176376994682
+              },
+              "close_path_min": {
+                "count": 4,
+                "mean": -0.0042613636363636465,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 0.75,
+                "average_win": null,
+                "average_loss_magnitude": 0.017045454545454586,
+                "payoff_ratio": null,
+                "q10": -0.01193181818181821,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 4,
+                "mean": 0.009140014401951835,
+                "median": 0.008018834774052963,
+                "win_rate": 0.75,
+                "flat_rate": 0.25,
+                "average_win": 0.012186685869269112,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0011111111111111295,
+                "q90": 0.01806586139511164
+              }
+            },
+            "2025-02": {
+              "events": 4,
+              "signal_days": 4,
+              "status": {
+                "COMPLETE": 4
+              },
+              "entry_status": {
+                "FILLED": 4
+              },
+              "exit_status": {
+                "FILLED": 4
+              },
+              "information": {
+                "count": 4,
+                "mean": 0.0034313418263590134,
+                "median": 0.008710663555775433,
+                "win_rate": 0.75,
+                "flat_rate": 0.0,
+                "average_win": 0.00982689877125901,
+                "average_loss_magnitude": 0.01575532900834098,
+                "payoff_ratio": 0.6237190455405014,
+                "q10": -0.008818785554457476,
+                "q90": 0.011458011823642367
+              },
+              "price": {
+                "count": 4,
+                "mean": 0.0005047268962842522,
+                "median": 0.0030195013899283474,
+                "win_rate": 0.75,
+                "flat_rate": 0.0,
+                "average_win": 0.005667355230323838,
+                "average_loss_magnitude": 0.014983158105834504,
+                "payoff_ratio": 0.3782483766300875,
+                "q10": -0.009711689401239376,
+                "q90": 0.008709323598892605
+              },
+              "close_path_min": {
+                "count": 4,
+                "mean": -0.003252788104089216,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 0.75,
+                "average_win": null,
+                "average_loss_magnitude": 0.013011152416356864,
+                "payoff_ratio": null,
+                "q10": -0.009107806691449803,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 4,
+                "mean": 0.005758395932200289,
+                "median": 0.005487107263287494,
+                "win_rate": 0.75,
+                "flat_rate": 0.25,
+                "average_win": 0.0076778612429337185,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0016378525932665869,
+                "q90": 0.010095970206264227
+              }
+            },
+            "2025-03": {
+              "events": 2,
+              "signal_days": 2,
+              "status": {
+                "COMPLETE": 2
+              },
+              "entry_status": {
+                "FILLED": 2
+              },
+              "exit_status": {
+                "FILLED": 2
+              },
+              "information": {
+                "count": 2,
+                "mean": -0.0040364572886495975,
+                "median": -0.0040364572886495975,
+                "win_rate": 0.0,
+                "flat_rate": 0.0,
+                "average_win": null,
+                "average_loss_magnitude": 0.0040364572886495975,
+                "payoff_ratio": null,
+                "q10": -0.004433764712489607,
+                "q90": -0.0036391498648095876
+              },
+              "price": {
+                "count": 2,
+                "mean": -0.002491307704352519,
+                "median": -0.002491307704352519,
+                "win_rate": 0.5,
+                "flat_rate": 0.0,
+                "average_win": 0.006014502892290441,
+                "average_loss_magnitude": 0.010997118300995479,
+                "payoff_ratio": 0.5469162673048628,
+                "q10": -0.009295956181666887,
+                "q90": 0.00431334077296185
+              },
+              "close_path_min": {
+                "count": 2,
+                "mean": -0.0049594229035166415,
+                "median": -0.0049594229035166415,
+                "win_rate": 0.0,
+                "flat_rate": 0.5,
+                "average_win": null,
+                "average_loss_magnitude": 0.009918845807033283,
+                "payoff_ratio": null,
+                "q10": -0.008926961226329955,
+                "q90": -0.000991884580703328
+              },
+              "close_path_max": {
+                "count": 2,
+                "mean": 0.002230151650312151,
+                "median": 0.002230151650312151,
+                "win_rate": 0.5,
+                "flat_rate": 0.5,
+                "average_win": 0.004460303300624302,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0004460303300624302,
+                "q90": 0.0040142729705618715
+              }
+            },
+            "2025-04": {
+              "events": 3,
+              "signal_days": 3,
+              "status": {
+                "COMPLETE": 3
+              },
+              "entry_status": {
+                "FILLED": 3
+              },
+              "exit_status": {
+                "FILLED": 3
+              },
+              "information": {
+                "count": 3,
+                "mean": -0.00031227897913732594,
+                "median": 0.0009615384615384581,
+                "win_rate": 0.6666666666666666,
+                "flat_rate": 0.0,
+                "average_win": 0.0019148036475952201,
+                "average_loss_magnitude": 0.004766444232602418,
+                "payoff_ratio": 0.4017258052654823,
+                "q10": -0.003620847693774243,
+                "q90": 0.0024867627592292775
+              },
+              "price": {
+                "count": 3,
+                "mean": -0.001340943751357145,
+                "median": 0.001811165933303327,
+                "win_rate": 0.6666666666666666,
+                "flat_rate": 0.0,
+                "average_win": 0.00230793422463349,
+                "average_loss_magnitude": 0.008638699703338415,
+                "payoff_ratio": 0.26716222393302913,
+                "q10": -0.006548726576010066,
+                "q90": 0.002605995199431588
+              },
+              "close_path_min": {
+                "count": 3,
+                "mean": -0.0025348542458808465,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 0.6666666666666666,
+                "average_win": null,
+                "average_loss_magnitude": 0.0076045627376425395,
+                "payoff_ratio": null,
+                "q10": -0.006083650190114032,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 3,
+                "mean": 0.0009597087628297659,
+                "median": 0.000954198473282375,
+                "win_rate": 0.6666666666666666,
+                "flat_rate": 0.3333333333333333,
+                "average_win": 0.0014395631442446488,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.000190839694656475,
+                "q90": 0.0017307819468220132
+              }
+            },
+            "2025-05": {
+              "events": 2,
+              "signal_days": 2,
+              "status": {
+                "COMPLETE": 2
+              },
+              "entry_status": {
+                "FILLED": 2
+              },
+              "exit_status": {
+                "FILLED": 2
+              },
+              "information": {
+                "count": 2,
+                "mean": -0.008486572356626865,
+                "median": -0.008486572356626865,
+                "win_rate": 0.0,
+                "flat_rate": 0.0,
+                "average_win": null,
+                "average_loss_magnitude": 0.008486572356626865,
+                "payoff_ratio": null,
+                "q10": -0.013018069188306636,
+                "q90": -0.003955075524947093
+              },
+              "price": {
+                "count": 2,
+                "mean": -0.011419820809641823,
+                "median": -0.011419820809641823,
+                "win_rate": 0.0,
+                "flat_rate": 0.0,
+                "average_win": null,
+                "average_loss_magnitude": 0.011419820809641823,
+                "payoff_ratio": null,
+                "q10": -0.015201859121411088,
+                "q90": -0.007637782497872558
+              },
+              "close_path_min": {
+                "count": 2,
+                "mean": -0.0075547679553000235,
+                "median": -0.0075547679553000235,
+                "win_rate": 0.0,
+                "flat_rate": 0.0,
+                "average_win": null,
+                "average_loss_magnitude": 0.0075547679553000235,
+                "payoff_ratio": null,
+                "q10": -0.011340821265918321,
+                "q90": -0.0037687146446817254
+              },
+              "close_path_max": {
+                "count": 2,
+                "mean": 0.0,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 1.0,
+                "average_win": null,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0,
+                "q90": 0.0
+              }
+            },
+            "2025-06": {
+              "events": 3,
+              "signal_days": 3,
+              "status": {
+                "COMPLETE": 3
+              },
+              "entry_status": {
+                "FILLED": 3
+              },
+              "exit_status": {
+                "FILLED": 3
+              },
+              "information": {
+                "count": 3,
+                "mean": 0.007563245357666097,
+                "median": 0.00849056603773568,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.007563245357666097,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.006239267417575567,
+                "q90": 0.008516295025728792
+              },
+              "price": {
+                "count": 3,
+                "mean": 0.004299237251095045,
+                "median": 0.0065076968486057485,
+                "win_rate": 0.6666666666666666,
+                "flat_rate": 0.0,
+                "average_win": 0.007447856875643533,
+                "average_loss_magnitude": 0.0019980019980019303,
+                "payoff_ratio": 3.727652366259714,
+                "q10": -0.00029686222868039445,
+                "q90": 0.008011952891866203
+              },
+              "close_path_min": {
+                "count": 3,
+                "mean": 0.0,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 1.0,
+                "average_win": null,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 3,
+                "mean": 0.007568600492347792,
+                "median": 0.008522727272727071,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.007568600492347792,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.003968696397941595,
+                "q90": 0.010786853874602275
+              }
+            },
+            "2025-07": {
+              "events": 3,
+              "signal_days": 3,
+              "status": {
+                "COMPLETE": 3
+              },
+              "entry_status": {
+                "FILLED": 3
+              },
+              "exit_status": {
+                "FILLED": 3
+              },
+              "information": {
+                "count": 3,
+                "mean": 0.0028349365738732,
+                "median": -0.0017406440382942145,
+                "win_rate": 0.3333333333333333,
+                "flat_rate": 0.0,
+                "average_win": 0.013901760889712733,
+                "average_loss_magnitude": 0.002698475584046567,
+                "payoff_ratio": 5.151708976690461,
+                "q10": -0.0032731745114979783,
+                "q90": 0.010773279904111345
+              },
+              "price": {
+                "count": 3,
+                "mean": 0.0015973194901214665,
+                "median": 0.0041300804458701545,
+                "win_rate": 0.6666666666666666,
+                "flat_rate": 0.0,
+                "average_win": 0.00566936947302088,
+                "average_loss_magnitude": 0.006546780475677361,
+                "payoff_ratio": 0.8659782459613173,
+                "q10": -0.004411408291367857,
+                "q90": 0.006592942889311315
+              },
+              "close_path_min": {
+                "count": 3,
+                "mean": -0.002127013065937359,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 0.6666666666666666,
+                "average_win": null,
+                "average_loss_magnitude": 0.006381039197812077,
+                "payoff_ratio": null,
+                "q10": -0.0051048313582496615,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 3,
+                "mean": 0.005121814376038536,
+                "median": 0.006140350877193113,
+                "win_rate": 0.6666666666666666,
+                "flat_rate": 0.3333333333333333,
+                "average_win": 0.007682721564057804,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0012280701754386226,
+                "q90": 0.008608143976176619
+              }
+            },
+            "2025-08": {
+              "events": 2,
+              "signal_days": 2,
+              "status": {
+                "COMPLETE": 2
+              },
+              "entry_status": {
+                "FILLED": 2
+              },
+              "exit_status": {
+                "FILLED": 2
+              },
+              "information": {
+                "count": 2,
+                "mean": 0.022519056753114386,
+                "median": 0.022519056753114386,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.022519056753114386,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.01706579482169741,
+                "q90": 0.02797231868453136
+              },
+              "price": {
+                "count": 2,
+                "mean": 0.021388908026839237,
+                "median": 0.021388908026839237,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.021388908026839237,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.011879069206655535,
+                "q90": 0.03089874684702294
+              },
+              "close_path_min": {
+                "count": 2,
+                "mean": 0.0,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 1.0,
+                "average_win": null,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 2,
+                "mean": 0.019985454803462477,
+                "median": 0.019985454803462477,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.019985454803462477,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.013215197956577263,
+                "q90": 0.02675571165034769
+              }
+            },
+            "2025-09": {
+              "events": 4,
+              "signal_days": 4,
+              "status": {
+                "COMPLETE": 4
+              },
+              "entry_status": {
+                "FILLED": 4
+              },
+              "exit_status": {
+                "FILLED": 4
+              },
+              "information": {
+                "count": 4,
+                "mean": 0.0038014269368771836,
+                "median": 0.0027211267605633527,
+                "win_rate": 0.5,
+                "flat_rate": 0.0,
+                "average_win": 0.009604776950677407,
+                "average_loss_magnitude": 0.00200192307692304,
+                "payoff_ratio": 4.797775229925402,
+                "q10": -0.002162692307692238,
+                "q90": 0.01062978632249767
+              },
+              "price": {
+                "count": 4,
+                "mean": 0.0031449232709707398,
+                "median": 0.001880305609883226,
+                "win_rate": 0.5,
+                "flat_rate": 0.0,
+                "average_win": 0.011077160663226726,
+                "average_loss_magnitude": 0.004787314121285247,
+                "payoff_ratio": 2.3138570778081404,
+                "q10": -0.0049449570525167295,
+                "q90": 0.01224649772332822
+              },
+              "close_path_min": {
+                "count": 4,
+                "mean": -0.002196172248803807,
+                "median": -0.0019999999999999463,
+                "win_rate": 0.0,
+                "flat_rate": 0.5,
+                "average_win": null,
+                "average_loss_magnitude": 0.004392344497607614,
+                "payoff_ratio": null,
+                "q10": -0.004549282296650703,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 4,
+                "mean": 0.005768196968067907,
+                "median": 0.0035211267605633756,
+                "win_rate": 0.5,
+                "flat_rate": 0.5,
+                "average_win": 0.011536393936135814,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0,
+                "q90": 0.01333405010213944
+              }
+            },
+            "2025-10": {
+              "events": 2,
+              "signal_days": 2,
+              "status": {
+                "COMPLETE": 2
+              },
+              "entry_status": {
+                "FILLED": 2
+              },
+              "exit_status": {
+                "FILLED": 2
+              },
+              "information": {
+                "count": 2,
+                "mean": 0.02394031960818971,
+                "median": 0.02394031960818971,
+                "win_rate": 0.5,
+                "flat_rate": 0.0,
+                "average_win": 0.054873646209386395,
+                "average_loss_magnitude": 0.006993006993006978,
+                "payoff_ratio": 7.846931407942271,
+                "q10": -0.0008063416727676406,
+                "q90": 0.04868698088914706
+              },
+              "price": {
+                "count": 2,
+                "mean": 0.02262377109127206,
+                "median": 0.02262377109127206,
+                "win_rate": 0.5,
+                "flat_rate": 0.0,
+                "average_win": 0.053526675636502485,
+                "average_loss_magnitude": 0.008279133453958365,
+                "payoff_ratio": 6.465250975138064,
+                "q10": -0.0020985525449122794,
+                "q90": 0.0473460947274564
+              },
+              "close_path_min": {
+                "count": 2,
+                "mean": -0.003496503496503489,
+                "median": -0.003496503496503489,
+                "win_rate": 0.0,
+                "flat_rate": 0.5,
+                "average_win": null,
+                "average_loss_magnitude": 0.006993006993006978,
+                "payoff_ratio": null,
+                "q10": -0.00629370629370628,
+                "q90": -0.0006993006993006977
+              },
+              "close_path_max": {
+                "count": 2,
+                "mean": 0.027817919075144526,
+                "median": 0.027817919075144526,
+                "win_rate": 0.5,
+                "flat_rate": 0.5,
+                "average_win": 0.05563583815028905,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.005563583815028906,
+                "q90": 0.05007225433526015
+              }
+            },
+            "2025-11": {
+              "events": 3,
+              "signal_days": 3,
+              "status": {
+                "COMPLETE": 3
+              },
+              "entry_status": {
+                "FILLED": 3
+              },
+              "exit_status": {
+                "FILLED": 3
+              },
+              "information": {
+                "count": 3,
+                "mean": 0.022060026631564405,
+                "median": 0.01525054466230924,
+                "win_rate": 0.6666666666666666,
+                "flat_rate": 0.0,
+                "average_win": 0.034176996469085674,
+                "average_loss_magnitude": 0.0021739130434781373,
+                "payoff_ratio": 15.721418375780305,
+                "q10": 0.0013109784976793382,
+                "q90": 0.045532867553151536
+              },
+              "price": {
+                "count": 3,
+                "mean": 0.03277800239696382,
+                "median": 0.019112178849596928,
+                "win_rate": 0.6666666666666666,
+                "flat_rate": 0.0,
+                "average_win": 0.05270084276063458,
+                "average_loss_magnitude": 0.007067678330377691,
+                "payoff_ratio": 7.4565989419920715,
+                "q10": -0.0018317068943827673,
+                "q90": 0.07285404110725717
+              },
+              "close_path_min": {
+                "count": 3,
+                "mean": -0.0002418964683115199,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 0.6666666666666666,
+                "average_win": null,
+                "average_loss_magnitude": 0.0007256894049345597,
+                "payoff_ratio": null,
+                "q10": -0.0005805515239476478,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 3,
+                "mean": 0.03345768659570939,
+                "median": 0.01969365426695835,
+                "win_rate": 0.6666666666666666,
+                "flat_rate": 0.3333333333333333,
+                "average_win": 0.05018652989356409,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.00393873085339167,
+                "q90": 0.06848225526952754
+              }
+            },
+            "2025-12": {
+              "events": 2,
+              "signal_days": 2,
+              "status": {
+                "COMPLETE": 2
+              },
+              "entry_status": {
+                "FILLED": 2
+              },
+              "exit_status": {
+                "FILLED": 2
+              },
+              "information": {
+                "count": 2,
+                "mean": 0.017792947145674032,
+                "median": 0.017792947145674032,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.017792947145674032,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.004133302072813039,
+                "q90": 0.031452592218535025
+              },
+              "price": {
+                "count": 2,
+                "mean": 0.014714804299389317,
+                "median": 0.014714804299389317,
+                "win_rate": 0.5,
+                "flat_rate": 0.0,
+                "average_win": 0.029993699680110897,
+                "average_loss_magnitude": 0.000564091081332263,
+                "payoff_ratio": 53.17173178712942,
+                "q10": 0.0024916879948120533,
+                "q90": 0.026937920603966582
+              },
+              "close_path_min": {
+                "count": 2,
+                "mean": 0.0,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 1.0,
+                "average_win": null,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 2,
+                "mean": 0.017432366134006227,
+                "median": 0.017432366134006227,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.017432366134006227,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.004061185870479479,
+                "q90": 0.030803546397532976
+              }
+            },
+            "2026-01": {
+              "events": 5,
+              "signal_days": 5,
+              "status": {
+                "COMPLETE": 5
+              },
+              "entry_status": {
+                "FILLED": 5
+              },
+              "exit_status": {
+                "FILLED": 5
+              },
+              "information": {
+                "count": 5,
+                "mean": 0.019229445538299507,
+                "median": 0.020658489347966436,
+                "win_rate": 0.6,
+                "flat_rate": 0.0,
+                "average_win": 0.0397312943719644,
+                "average_loss_magnitude": 0.011523327712197828,
+                "payoff_ratio": 3.447901106718287,
+                "q10": -0.011691961776278782,
+                "q90": 0.05492629486655494
+              },
+              "price": {
+                "count": 5,
+                "mean": 0.036307397443985236,
+                "median": 0.042532270878727685,
+                "win_rate": 0.6,
+                "flat_rate": 0.0,
+                "average_win": 0.06614778839432105,
+                "average_loss_magnitude": 0.008453188981518478,
+                "payoff_ratio": 7.825187457531403,
+                "q10": -0.00929391526801222,
+                "q90": 0.07884646315894353
+              },
+              "close_path_min": {
+                "count": 5,
+                "mean": -0.003939740666870195,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 0.6,
+                "average_win": null,
+                "average_loss_magnitude": 0.009849351667175488,
+                "payoff_ratio": null,
+                "q10": -0.010352780940260908,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 5,
+                "mean": 0.028456109745570446,
+                "median": 0.029228855721392888,
+                "win_rate": 0.6,
+                "flat_rate": 0.4,
+                "average_win": 0.047426849575950746,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0,
+                "q90": 0.0603507008432457
+              }
+            },
+            "2026-02": {
+              "events": 3,
+              "signal_days": 3,
+              "status": {
+                "COMPLETE": 2,
+                "NO_ENTRY": 1
+              },
+              "entry_status": {
+                "FILLED": 2,
+                "DAILY_RANGE_NOT_REACHED": 1
+              },
+              "exit_status": {
+                "FILLED": 2,
+                "NOT_OBSERVED": 1
+              },
+              "information": {
+                "count": 3,
+                "mean": 0.03764193479620707,
+                "median": 0.03661327231121292,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.03764193479620707,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.03340000252854094,
+                "q90": 0.04229533205787086
+              },
+              "price": {
+                "count": 2,
+                "mean": 0.02107668156019815,
+                "median": 0.02107668156019815,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.02107668156019815,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.014900036227508861,
+                "q90": 0.027253326892887442
+              },
+              "close_path_min": {
+                "count": 2,
+                "mean": 0.0,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 1.0,
+                "average_win": null,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 2,
+                "mean": 0.031175824175824096,
+                "median": 0.031175824175824096,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.031175824175824096,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.027773626373626282,
+                "q90": 0.034578021978021914
+              }
+            },
+            "2026-03": {
+              "events": 3,
+              "signal_days": 3,
+              "status": {
+                "COMPLETE": 3
+              },
+              "entry_status": {
+                "FILLED": 3
+              },
+              "exit_status": {
+                "FILLED": 3
+              },
+              "information": {
+                "count": 3,
+                "mean": -0.00793270290090379,
+                "median": 0.00698174006444674,
+                "win_rate": 0.6666666666666666,
+                "flat_rate": 0.0,
+                "average_win": 0.009027702001409676,
+                "average_loss_magnitude": 0.04185351270553073,
+                "payoff_ratio": 0.21569759424796647,
+                "q10": -0.03208646215153523,
+                "q90": 0.010255279163587438
+              },
+              "price": {
+                "count": 3,
+                "mean": -0.006334006265952412,
+                "median": 0.00836376738016087,
+                "win_rate": 0.6666666666666666,
+                "flat_rate": 0.0,
+                "average_win": 0.020339105642980138,
+                "average_loss_magnitude": 0.05968023008381751,
+                "payoff_ratio": 0.34080139460613695,
+                "q10": -0.04607143059102183,
+                "q90": 0.0275243086006717
+              },
+              "close_path_min": {
+                "count": 3,
+                "mean": -0.013951170901843576,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 0.6666666666666666,
+                "average_win": null,
+                "average_loss_magnitude": 0.04185351270553073,
+                "payoff_ratio": null,
+                "q10": -0.03348281016442458,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 3,
+                "mean": 0.01867478287008706,
+                "median": 0.024590163934426146,
+                "win_rate": 0.6666666666666666,
+                "flat_rate": 0.3333333333333333,
+                "average_win": 0.028012174305130588,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.00491803278688523,
+                "q90": 0.030065380527553254
+              }
+            },
+            "2026-04": {
+              "events": 2,
+              "signal_days": 2,
+              "status": {
+                "COMPLETE": 2
+              },
+              "entry_status": {
+                "FILLED": 2
+              },
+              "exit_status": {
+                "FILLED": 2
+              },
+              "information": {
+                "count": 2,
+                "mean": -0.00636593239332961,
+                "median": -0.00636593239332961,
+                "win_rate": 0.5,
+                "flat_rate": 0.0,
+                "average_win": 0.007903055848261342,
+                "average_loss_magnitude": 0.02063492063492056,
+                "payoff_ratio": 0.38299424495420487,
+                "q10": -0.017781122986602373,
+                "q90": 0.005049258199943152
+              },
+              "price": {
+                "count": 2,
+                "mean": 0.0008909511541092541,
+                "median": 0.0008909511541092541,
+                "win_rate": 0.5,
+                "flat_rate": 0.0,
+                "average_win": 0.0037799043062203275,
+                "average_loss_magnitude": 0.0019980019980018193,
+                "payoff_ratio": 1.891842105263443,
+                "q10": -0.0014202113675796046,
+                "q90": 0.003202113675798113
+              },
+              "close_path_min": {
+                "count": 2,
+                "mean": -0.004550321199143503,
+                "median": -0.004550321199143503,
+                "win_rate": 0.0,
+                "flat_rate": 0.5,
+                "average_win": null,
+                "average_loss_magnitude": 0.009100642398287007,
+                "payoff_ratio": null,
+                "q10": -0.008190578158458306,
+                "q90": -0.0009100642398287004
+              },
+              "close_path_max": {
+                "count": 2,
+                "mean": 0.0034210526315789913,
+                "median": 0.0034210526315789913,
+                "win_rate": 0.5,
+                "flat_rate": 0.5,
+                "average_win": 0.006842105263157983,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0006842105263157983,
+                "q90": 0.006157894736842184
+              }
+            },
+            "2026-05": {
+              "events": 2,
+              "signal_days": 2,
+              "status": {
+                "COMPLETE": 2
+              },
+              "entry_status": {
+                "FILLED": 2
+              },
+              "exit_status": {
+                "FILLED": 2
+              },
+              "information": {
+                "count": 2,
+                "mean": -0.006303788142053401,
+                "median": -0.006303788142053401,
+                "win_rate": 0.5,
+                "flat_rate": 0.0,
+                "average_win": 0.02007835455435858,
+                "average_loss_magnitude": 0.03268593083846538,
+                "payoff_ratio": 0.6142812531050826,
+                "q10": -0.027409502299182986,
+                "q90": 0.014801926015076183
+              },
+              "price": {
+                "count": 2,
+                "mean": -0.004219419829424809,
+                "median": -0.004219419829424809,
+                "win_rate": 0.5,
+                "flat_rate": 0.0,
+                "average_win": 0.02586003614407173,
+                "average_loss_magnitude": 0.03429887580292135,
+                "payoff_ratio": 0.7539616252340593,
+                "q10": -0.02828298460822204,
+                "q90": 0.019844144949372422
+              },
+              "close_path_min": {
+                "count": 2,
+                "mean": -0.014040932889100466,
+                "median": -0.014040932889100466,
+                "win_rate": 0.0,
+                "flat_rate": 0.5,
+                "average_win": null,
+                "average_loss_magnitude": 0.028081865778200932,
+                "payoff_ratio": null,
+                "q10": -0.025273679200380837,
+                "q90": -0.0028081865778200924
+              },
+              "close_path_max": {
+                "count": 2,
+                "mean": 0.01003917727717929,
+                "median": 0.01003917727717929,
+                "win_rate": 0.5,
+                "flat_rate": 0.5,
+                "average_win": 0.02007835455435858,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.002007835455435858,
+                "q90": 0.01807051909892272
+              }
+            },
+            "2026-06": {
+              "events": 5,
+              "signal_days": 5,
+              "status": {
+                "COMPLETE": 5
+              },
+              "entry_status": {
+                "FILLED": 5
+              },
+              "exit_status": {
+                "FILLED": 5
+              },
+              "information": {
+                "count": 5,
+                "mean": 0.005671070109213661,
+                "median": 0.00047801147227533036,
+                "win_rate": 0.6,
+                "flat_rate": 0.0,
+                "average_win": 0.018681732062650003,
+                "average_loss_magnitude": 0.013844922820940853,
+                "payoff_ratio": 1.3493561722419525,
+                "q10": -0.016431342346333963,
+                "q90": 0.03227338551417685
+              },
+              "price": {
+                "count": 5,
+                "mean": 0.018673575749910243,
+                "median": 0.018997147666423908,
+                "win_rate": 0.8,
+                "flat_rate": 0.0,
+                "average_win": 0.023961595607928488,
+                "average_loss_magnitude": 0.002478503682162736,
+                "payoff_ratio": 9.667766798320695,
+                "q10": 0.004173256849119711,
+                "q90": 0.03267846073332854
+              },
+              "close_path_min": {
+                "count": 5,
+                "mean": 0.0,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 1.0,
+                "average_win": null,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 5,
+                "mean": 0.01661432924673023,
+                "median": 0.012020342117429639,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.01661432924673023,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.008256579051300283,
+                "q90": 0.029719366024837292
+              }
+            },
+            "2026-07": {
+              "events": 2,
+              "signal_days": 2,
+              "status": {
+                "COMPLETE": 2
+              },
+              "entry_status": {
+                "FILLED": 2
+              },
+              "exit_status": {
+                "FILLED": 2
+              },
+              "information": {
+                "count": 2,
+                "mean": 0.041320808066868,
+                "median": 0.041320808066868,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.041320808066868,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.03277948368967121,
+                "q90": 0.04986213244406479
+              },
+              "price": {
+                "count": 2,
+                "mean": 0.0314836911666988,
+                "median": 0.0314836911666988,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.0314836911666988,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.02590824626989543,
+                "q90": 0.037059136063502175
+              },
+              "close_path_min": {
+                "count": 2,
+                "mean": 0.0,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 1.0,
+                "average_win": null,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 2,
+                "mean": 0.046521609726650204,
+                "median": 0.046521609726650204,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.046521609726650204,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.04320691524071261,
+                "q90": 0.0498363042125878
+              }
+            },
+            "2026-08": {
+              "events": 4,
+              "signal_days": 4,
+              "status": {
+                "COMPLETE": 4
+              },
+              "entry_status": {
+                "FILLED": 4
+              },
+              "exit_status": {
+                "FILLED": 4
+              },
+              "information": {
+                "count": 4,
+                "mean": 0.00927584516997787,
+                "median": 0.012428864309326881,
+                "win_rate": 0.75,
+                "flat_rate": 0.0,
+                "average_win": 0.013956987044277206,
+                "average_loss_magnitude": 0.004767580452920139,
+                "payoff_ratio": 2.927478032537146,
+                "q10": 0.00021930304869388715,
+                "q90": 0.015809971979782646
+              },
+              "price": {
+                "count": 4,
+                "mean": 0.013535450367699431,
+                "median": 0.01536831407104211,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.013535450367699431,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.007661990290812094,
+                "q90": 0.017942619481912624
+              },
+              "close_path_min": {
+                "count": 4,
+                "mean": 0.0,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 1.0,
+                "average_win": null,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 4,
+                "mean": 0.011905837930108576,
+                "median": 0.012457294885761527,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.011905837930108576,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.009065520457525067,
+                "q90": 0.014304989838169723
+              }
+            },
+            "2026-09": {
+              "events": 4,
+              "signal_days": 4,
+              "status": {
+                "COMPLETE": 4
+              },
+              "entry_status": {
+                "FILLED": 4
+              },
+              "exit_status": {
+                "FILLED": 4
+              },
+              "information": {
+                "count": 4,
+                "mean": -0.0009621235096654024,
+                "median": -0.0023105948422332823,
+                "win_rate": 0.5,
+                "flat_rate": 0.0,
+                "average_win": 0.012770027398172457,
+                "average_loss_magnitude": 0.014694274417503261,
+                "payoff_ratio": 0.8690478369562287,
+                "q10": -0.01604548031315256,
+                "q90": 0.015200010359876061
+              },
+              "price": {
+                "count": 4,
+                "mean": -0.00766968061267681,
+                "median": -0.009143295511378269,
+                "win_rate": 0.25,
+                "flat_rate": 0.0,
+                "average_win": 0.010121026514469333,
+                "average_loss_magnitude": 0.013599916321725525,
+                "payoff_ratio": 0.7441977049742025,
+                "q10": -0.02046488056053395,
+                "q90": 0.006304411254141497
+              },
+              "close_path_min": {
+                "count": 4,
+                "mean": -0.006312914348237053,
+                "median": -0.005370689639642157,
+                "win_rate": 0.0,
+                "flat_rate": 0.25,
+                "average_win": null,
+                "average_loss_magnitude": 0.008417219130982737,
+                "payoff_ratio": null,
+                "q10": -0.013198339581174778,
+                "q90": -0.00018126888217524496
+              },
+              "close_path_max": {
+                "count": 4,
+                "mean": 0.0044019429265330645,
+                "median": 0.0,
+                "win_rate": 0.25,
+                "flat_rate": 0.75,
+                "average_win": 0.017607771706132258,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0,
+                "q90": 0.012325440194292584
+              }
+            },
+            "2026-10": {
+              "events": 0,
+              "signal_days": 0,
+              "status": {},
+              "entry_status": {},
+              "exit_status": {},
+              "information": {
+                "count": 0
+              },
+              "price": {
+                "count": 0
+              },
+              "close_path_min": {
+                "count": 0
+              },
+              "close_path_max": {
+                "count": 0
+              }
+            }
+          },
+          "bootstrap_raw": {
+            "price_mean": {
+              "valid_replicates": 1000,
+              "empty_replicates": 0,
+              "interval_95": [
+                0.0038243178233575087,
+                0.016972496875516323
+              ]
+            },
+            "matched_difference": {
+              "valid_replicates": 1000,
+              "empty_replicates": 0,
+              "interval_95": [
+                0.00430189473451802,
+                0.016212404111091296
+              ]
+            }
+          },
+          "bootstrap_nonoverlap": {
+            "price_mean": {
+              "valid_replicates": 1000,
+              "empty_replicates": 0,
+              "interval_95": [
+                0.0050757993059708665,
+                0.018969251787652425
+              ]
+            },
+            "matched_difference": {
+              "valid_replicates": 1000,
+              "empty_replicates": 0,
+              "interval_95": [
+                0.005209237360669971,
+                0.01814392493541094
+              ]
+            }
+          }
+        },
+        "entry_signal": {
+          "raw": {
+            "events": 55,
+            "signal_days": 55,
+            "status": {
+              "COMPLETE": 54,
+              "NO_ENTRY": 1
+            },
+            "entry_status": {
+              "FILLED": 54,
+              "DAILY_RANGE_NOT_REACHED": 1
+            },
+            "exit_status": {
+              "FILLED": 54,
+              "NOT_OBSERVED": 1
+            },
+            "information": {
+              "count": 55,
+              "mean": 0.010389603631350958,
+              "median": 0.0074349442379182396,
+              "win_rate": 0.6909090909090909,
+              "flat_rate": 0.0,
+              "average_win": 0.019865625985372958,
+              "average_loss_magnitude": 0.01079209339528645,
+              "payoff_ratio": 1.8407574191351477,
+              "q10": -0.011946402690913559,
+              "q90": 0.04017650959142133
+            },
+            "price": {
+              "count": 54,
+              "mean": 0.01067797241257676,
+              "median": 0.007681238256572298,
+              "win_rate": 0.6851851851851852,
+              "flat_rate": 0.0,
+              "average_win": 0.021483492169904504,
+              "average_loss_magnitude": 0.012839923529842449,
+              "payoff_ratio": 1.6731791369296507,
+              "q10": -0.012158909780089676,
+              "q90": 0.03831578692983693
+            },
+            "close_path_min": {
+              "count": 54,
+              "mean": -0.0030338143864953038,
+              "median": 0.0,
+              "win_rate": 0.0,
+              "flat_rate": 0.7407407407407407,
+              "average_win": null,
+              "average_loss_magnitude": 0.0117018554907676,
+              "payoff_ratio": null,
+              "q10": -0.010071658512533433,
+              "q90": 0.0
+            },
+            "close_path_max": {
+              "count": 54,
+              "mean": 0.015125814571059857,
+              "median": 0.008873909761824783,
+              "win_rate": 0.7407407407407407,
+              "flat_rate": 0.25925925925925924,
+              "average_win": 0.020419849670930808,
+              "average_loss_magnitude": null,
+              "payoff_ratio": null,
+              "q10": 0.0,
+              "q90": 0.03927206157037831
+            }
+          },
+          "nonoverlap": {
+            "events": 44,
+            "signal_days": 44,
+            "status": {
+              "COMPLETE": 44
+            },
+            "entry_status": {
+              "FILLED": 44
+            },
+            "exit_status": {
+              "FILLED": 44
+            },
+            "information": {
+              "count": 44,
+              "mean": 0.009039361981623705,
+              "median": 0.007928524271169857,
+              "win_rate": 0.6818181818181818,
+              "flat_rate": 0.0,
+              "average_win": 0.018584545123866314,
+              "average_loss_magnitude": 0.011414601894610457,
+              "payoff_ratio": 1.6281378269216058,
+              "q10": -0.012051426526335817,
+              "q90": 0.03418625796558708
+            },
+            "price": {
+              "count": 44,
+              "mean": 0.0106352290753863,
+              "median": 0.007681238256572298,
+              "win_rate": 0.7045454545454546,
+              "flat_rate": 0.0,
+              "average_win": 0.021241612325301976,
+              "average_loss_magnitude": 0.014656915597489547,
+              "payoff_ratio": 1.4492552804861798,
+              "q10": -0.012158909780089678,
+              "q90": 0.03831578692983693
+            },
+            "close_path_min": {
+              "count": 44,
+              "mean": -0.0032686776695768764,
+              "median": 0.0,
+              "win_rate": 0.0,
+              "flat_rate": 0.7272727272727273,
+              "average_win": null,
+              "average_loss_magnitude": 0.011985151455115214,
+              "payoff_ratio": null,
+              "q10": -0.010071658512533433,
+              "q90": 0.0
+            },
+            "close_path_max": {
+              "count": 44,
+              "mean": 0.01458858723522905,
+              "median": 0.008873909761824783,
+              "win_rate": 0.7272727272727273,
+              "flat_rate": 0.2727272727272727,
+              "average_win": 0.020059307448439943,
+              "average_loss_magnitude": null,
+              "payoff_ratio": null,
+              "q10": 0.0,
+              "q90": 0.03642500480122909
+            }
+          },
+          "matched_raw": {
+            "count": 54,
+            "control_mean": -0.0003227789720398295,
+            "difference": {
+              "count": 54,
+              "mean": 0.011000751384616593,
+              "median": 0.007303937592948337,
+              "win_rate": 0.7037037037037037,
+              "flat_rate": 0.0,
+              "average_win": 0.02125419740932093,
+              "average_loss_magnitude": 0.01335118292405621,
+              "payoff_ratio": 1.591933653386251,
+              "q10": -0.010009062430515739,
+              "q90": 0.03797997901250161
+            },
+            "control_support": {
+              "unique_cells": 21,
+              "singleton_target_events": 0,
+              "all_target_cell_events": 0,
+              "median_control_events_per_target": 20.5,
+              "minimum_control_events": 13
+            }
+          },
+          "matched_nonoverlap": {
+            "count": 44,
+            "control_mean": -0.00016142615110548598,
+            "difference": {
+              "count": 44,
+              "mean": 0.010796655226491786,
+              "median": 0.007303937592948337,
+              "win_rate": 0.7272727272727273,
+              "flat_rate": 0.0,
+              "average_win": 0.02066142414090058,
+              "average_loss_magnitude": 0.01550939521193167,
+              "payoff_ratio": 1.3321876100626642,
+              "q10": -0.010009062430515739,
+              "q90": 0.037772180150107124
+            },
+            "control_support": {
+              "unique_cells": 21,
+              "singleton_target_events": 0,
+              "all_target_cell_events": 0,
+              "median_control_events_per_target": 20.5,
+              "minimum_control_events": 13
+            }
+          },
+          "concentration_raw": {
+            "positive_return_sum": 0.7948892102864666,
+            "positive_events": 37,
+            "largest_event_share": 0.10855538804027134,
+            "largest_year_share": 0.5997205225553547,
+            "positive_sum_by_year": {
+              "2025": 0.31817783771985364,
+              "2026": 0.476711372566613
+            },
+            "scope": "Sum of independent event returns, not account PnL contribution."
+          },
+          "concentration_nonoverlap": {
+            "positive_return_sum": 0.6584899820843613,
+            "positive_events": 31,
+            "largest_event_share": 0.1310414873716597,
+            "largest_year_share": 0.5179826260364213,
+            "positive_sum_by_year": {
+              "2025": 0.31740361194562783,
+              "2026": 0.34108637013873344
+            },
+            "scope": "Sum of independent event returns, not account PnL contribution."
+          },
+          "years": {
+            "2025": {
+              "raw": {
+                "events": 30,
+                "signal_days": 30,
+                "status": {
+                  "COMPLETE": 30
+                },
+                "entry_status": {
+                  "FILLED": 30
+                },
+                "exit_status": {
+                  "FILLED": 30
+                },
+                "information": {
+                  "count": 30,
+                  "mean": 0.008540924175325182,
+                  "median": 0.007204368012865392,
+                  "win_rate": 0.6666666666666666,
+                  "flat_rate": 0.0,
+                  "average_win": 0.01575778927214152,
+                  "average_loss_magnitude": 0.005892806018307495,
+                  "payoff_ratio": 2.674072288004383,
+                  "q10": -0.004779083110905346,
+                  "q90": 0.029888821099322078
+                },
+                "price": {
+                  "count": 30,
+                  "mean": 0.007643272023872638,
+                  "median": 0.0037903394914554633,
+                  "win_rate": 0.6666666666666666,
+                  "flat_rate": 0.0,
+                  "average_win": 0.015908891885992683,
+                  "average_loss_magnitude": 0.00888796770036745,
+                  "payoff_ratio": 1.7899358348630106,
+                  "q10": -0.008550931938662075,
+                  "q90": 0.0303219503673067
+                },
+                "close_path_min": {
+                  "count": 30,
+                  "mean": -0.002056069289228028,
+                  "median": 0.0,
+                  "win_rate": 0.0,
+                  "flat_rate": 0.7333333333333333,
+                  "average_win": null,
+                  "average_loss_magnitude": 0.007710259834605104,
+                  "payoff_ratio": null,
+                  "q10": -0.007285590874409608,
+                  "q90": 0.0
+                },
+                "close_path_max": {
+                  "count": 30,
+                  "mean": 0.011307599631618299,
+                  "median": 0.005487107263287494,
+                  "win_rate": 0.7333333333333333,
+                  "flat_rate": 0.26666666666666666,
+                  "average_win": 0.015419454043115864,
+                  "average_loss_magnitude": null,
+                  "payoff_ratio": null,
+                  "q10": 0.0,
+                  "q90": 0.02901808242220357
+                }
+              },
+              "matched": {
+                "count": 30,
+                "control_mean": -0.000172890977394186,
+                "difference": {
+                  "count": 30,
+                  "mean": 0.007816163001266823,
+                  "median": 0.005413439476639189,
+                  "win_rate": 0.6666666666666666,
+                  "flat_rate": 0.0,
+                  "average_win": 0.016047873737210946,
+                  "average_loss_magnitude": 0.008647258470621415,
+                  "payoff_ratio": 1.8558337063397277,
+                  "q10": -0.00920890779452497,
+                  "q90": 0.029274388559727835
+                },
+                "control_support": {
+                  "unique_cells": 12,
+                  "singleton_target_events": 0,
+                  "all_target_cell_events": 0,
+                  "median_control_events_per_target": 20.0,
+                  "minimum_control_events": 14
+                }
+              }
+            },
+            "2026": {
+              "raw": {
+                "events": 25,
+                "signal_days": 25,
+                "status": {
+                  "COMPLETE": 24,
+                  "NO_ENTRY": 1
+                },
+                "entry_status": {
+                  "FILLED": 24,
+                  "DAILY_RANGE_NOT_REACHED": 1
+                },
+                "exit_status": {
+                  "FILLED": 24,
+                  "NOT_OBSERVED": 1
+                },
+                "information": {
+                  "count": 25,
+                  "mean": 0.01260801897858189,
+                  "median": 0.011855364552459946,
+                  "win_rate": 0.72,
+                  "flat_rate": 0.0,
+                  "average_win": 0.02442988900007455,
+                  "average_loss_magnitude": 0.017791075362399243,
+                  "payoff_ratio": 1.3731541518679746,
+                  "q10": -0.017327551593993372,
+                  "q90": 0.04762587368153507
+                },
+                "price": {
+                  "count": 24,
+                  "mean": 0.01447134789845691,
+                  "median": 0.01375338627018996,
+                  "win_rate": 0.7083333333333334,
+                  "flat_rate": 0.0,
+                  "average_win": 0.028041845445094884,
+                  "average_loss_magnitude": 0.018485574714806736,
+                  "payoff_ratio": 1.5169582703119142,
+                  "q10": -0.014776942792822644,
+                  "q90": 0.04130848880142028
+                },
+                "close_path_min": {
+                  "count": 24,
+                  "mean": -0.004255995758079399,
+                  "median": 0.0,
+                  "win_rate": 0.0,
+                  "flat_rate": 0.75,
+                  "average_win": null,
+                  "average_loss_magnitude": 0.017023983032317596,
+                  "payoff_ratio": null,
+                  "q10": -0.011697693524431861,
+                  "q90": 0.0
+                },
+                "close_path_max": {
+                  "count": 24,
+                  "mean": 0.0198985832453618,
+                  "median": 0.014525562476876197,
+                  "win_rate": 0.75,
+                  "flat_rate": 0.25,
+                  "average_win": 0.02653144432714907,
+                  "average_loss_magnitude": null,
+                  "payoff_ratio": null,
+                  "q10": 0.0,
+                  "q90": 0.04168687876035979
+                }
+              },
+              "matched": {
+                "count": 24,
+                "control_mean": -0.000510138965346884,
+                "difference": {
+                  "count": 24,
+                  "mean": 0.014981486863803795,
+                  "median": 0.014825921760618165,
+                  "win_rate": 0.75,
+                  "flat_rate": 0.0,
+                  "average_win": 0.027039001489443125,
+                  "average_loss_magnitude": 0.021191057013114203,
+                  "payoff_ratio": 1.2759628494562536,
+                  "q10": -0.018188558748265964,
+                  "q90": 0.04767304574845323
+                },
+                "control_support": {
+                  "unique_cells": 9,
+                  "singleton_target_events": 0,
+                  "all_target_cell_events": 0,
+                  "median_control_events_per_target": 21.0,
+                  "minimum_control_events": 13
+                }
+              }
+            }
+          },
+          "months": {
+            "2025-01": {
+              "events": 4,
+              "signal_days": 4,
+              "status": {
+                "COMPLETE": 4
+              },
+              "entry_status": {
+                "FILLED": 4
+              },
+              "exit_status": {
+                "FILLED": 4
+              },
+              "information": {
+                "count": 4,
+                "mean": 0.005332396152785607,
+                "median": 0.0098844550411602,
+                "win_rate": 0.75,
+                "flat_rate": 0.0,
+                "average_win": 0.012481109562323919,
+                "average_loss_magnitude": 0.016113744075829328,
+                "payoff_ratio": 0.7745629757795165,
+                "q10": -0.009049137581705058,
+                "q90": 0.0160722827765766
+              },
+              "price": {
+                "count": 4,
+                "mean": 0.0007497269333439083,
+                "median": 0.0055427731661128465,
+                "win_rate": 0.75,
+                "flat_rate": 0.0,
+                "average_win": 0.009856309540526112,
+                "average_loss_magnitude": 0.026570020888202706,
+                "payoff_ratio": 0.3709560328160069,
+                "q10": -0.01836674688947415,
+                "q90": 0.01603176376994682
+              },
+              "close_path_min": {
+                "count": 4,
+                "mean": -0.0042613636363636465,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 0.75,
+                "average_win": null,
+                "average_loss_magnitude": 0.017045454545454586,
+                "payoff_ratio": null,
+                "q10": -0.01193181818181821,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 4,
+                "mean": 0.009140014401951835,
+                "median": 0.008018834774052963,
+                "win_rate": 0.75,
+                "flat_rate": 0.25,
+                "average_win": 0.012186685869269112,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0011111111111111295,
+                "q90": 0.01806586139511164
+              }
+            },
+            "2025-02": {
+              "events": 4,
+              "signal_days": 4,
+              "status": {
+                "COMPLETE": 4
+              },
+              "entry_status": {
+                "FILLED": 4
+              },
+              "exit_status": {
+                "FILLED": 4
+              },
+              "information": {
+                "count": 4,
+                "mean": 0.0034313418263590134,
+                "median": 0.008710663555775433,
+                "win_rate": 0.75,
+                "flat_rate": 0.0,
+                "average_win": 0.00982689877125901,
+                "average_loss_magnitude": 0.01575532900834098,
+                "payoff_ratio": 0.6237190455405014,
+                "q10": -0.008818785554457476,
+                "q90": 0.011458011823642367
+              },
+              "price": {
+                "count": 4,
+                "mean": 0.0005047268962842522,
+                "median": 0.0030195013899283474,
+                "win_rate": 0.75,
+                "flat_rate": 0.0,
+                "average_win": 0.005667355230323838,
+                "average_loss_magnitude": 0.014983158105834504,
+                "payoff_ratio": 0.3782483766300875,
+                "q10": -0.009711689401239376,
+                "q90": 0.008709323598892605
+              },
+              "close_path_min": {
+                "count": 4,
+                "mean": -0.003252788104089216,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 0.75,
+                "average_win": null,
+                "average_loss_magnitude": 0.013011152416356864,
+                "payoff_ratio": null,
+                "q10": -0.009107806691449803,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 4,
+                "mean": 0.005758395932200289,
+                "median": 0.005487107263287494,
+                "win_rate": 0.75,
+                "flat_rate": 0.25,
+                "average_win": 0.0076778612429337185,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0016378525932665869,
+                "q90": 0.010095970206264227
+              }
+            },
+            "2025-03": {
+              "events": 2,
+              "signal_days": 2,
+              "status": {
+                "COMPLETE": 2
+              },
+              "entry_status": {
+                "FILLED": 2
+              },
+              "exit_status": {
+                "FILLED": 2
+              },
+              "information": {
+                "count": 2,
+                "mean": -0.0040364572886495975,
+                "median": -0.0040364572886495975,
+                "win_rate": 0.0,
+                "flat_rate": 0.0,
+                "average_win": null,
+                "average_loss_magnitude": 0.0040364572886495975,
+                "payoff_ratio": null,
+                "q10": -0.004433764712489607,
+                "q90": -0.0036391498648095876
+              },
+              "price": {
+                "count": 2,
+                "mean": -0.002491307704352519,
+                "median": -0.002491307704352519,
+                "win_rate": 0.5,
+                "flat_rate": 0.0,
+                "average_win": 0.006014502892290441,
+                "average_loss_magnitude": 0.010997118300995479,
+                "payoff_ratio": 0.5469162673048628,
+                "q10": -0.009295956181666887,
+                "q90": 0.00431334077296185
+              },
+              "close_path_min": {
+                "count": 2,
+                "mean": -0.0049594229035166415,
+                "median": -0.0049594229035166415,
+                "win_rate": 0.0,
+                "flat_rate": 0.5,
+                "average_win": null,
+                "average_loss_magnitude": 0.009918845807033283,
+                "payoff_ratio": null,
+                "q10": -0.008926961226329955,
+                "q90": -0.000991884580703328
+              },
+              "close_path_max": {
+                "count": 2,
+                "mean": 0.002230151650312151,
+                "median": 0.002230151650312151,
+                "win_rate": 0.5,
+                "flat_rate": 0.5,
+                "average_win": 0.004460303300624302,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0004460303300624302,
+                "q90": 0.0040142729705618715
+              }
+            },
+            "2025-04": {
+              "events": 2,
+              "signal_days": 2,
+              "status": {
+                "COMPLETE": 2
+              },
+              "entry_status": {
+                "FILLED": 2
+              },
+              "exit_status": {
+                "FILLED": 2
+              },
+              "information": {
+                "count": 2,
+                "mean": 0.0019148036475952201,
+                "median": 0.0019148036475952201,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.0019148036475952201,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0011521914987498104,
+                "q90": 0.00267741579644063
+              },
+              "price": {
+                "count": 2,
+                "mean": 0.00230793422463349,
+                "median": 0.00230793422463349,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.00230793422463349,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0019105195915693595,
+                "q90": 0.00270534885769762
+              },
+              "close_path_min": {
+                "count": 2,
+                "mean": 0.0,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 1.0,
+                "average_win": null,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 2,
+                "mean": 0.0014395631442446488,
+                "median": 0.0014395631442446488,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.0014395631442446488,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0010512714074748298,
+                "q90": 0.0018278548810144678
+              }
+            },
+            "2025-05": {
+              "events": 1,
+              "signal_days": 1,
+              "status": {
+                "COMPLETE": 1
+              },
+              "entry_status": {
+                "FILLED": 1
+              },
+              "exit_status": {
+                "FILLED": 1
+              },
+              "information": {
+                "count": 1,
+                "mean": -0.002822201317027151,
+                "median": -0.002822201317027151,
+                "win_rate": 0.0,
+                "flat_rate": 0.0,
+                "average_win": null,
+                "average_loss_magnitude": 0.002822201317027151,
+                "payoff_ratio": null,
+                "q10": -0.002822201317027151,
+                "q90": -0.002822201317027151
+              },
+              "price": {
+                "count": 1,
+                "mean": -0.006692272919930242,
+                "median": -0.006692272919930242,
+                "win_rate": 0.0,
+                "flat_rate": 0.0,
+                "average_win": null,
+                "average_loss_magnitude": 0.006692272919930242,
+                "payoff_ratio": null,
+                "q10": -0.006692272919930242,
+                "q90": -0.006692272919930242
+              },
+              "close_path_min": {
+                "count": 1,
+                "mean": -0.002822201317027151,
+                "median": -0.002822201317027151,
+                "win_rate": 0.0,
+                "flat_rate": 0.0,
+                "average_win": null,
+                "average_loss_magnitude": 0.002822201317027151,
+                "payoff_ratio": null,
+                "q10": -0.002822201317027151,
+                "q90": -0.002822201317027151
+              },
+              "close_path_max": {
+                "count": 1,
+                "mean": 0.0,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 1.0,
+                "average_win": null,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0,
+                "q90": 0.0
+              }
+            },
+            "2025-06": {
+              "events": 3,
+              "signal_days": 3,
+              "status": {
+                "COMPLETE": 3
+              },
+              "entry_status": {
+                "FILLED": 3
+              },
+              "exit_status": {
+                "FILLED": 3
+              },
+              "information": {
+                "count": 3,
+                "mean": 0.007563245357666097,
+                "median": 0.00849056603773568,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.007563245357666097,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.006239267417575567,
+                "q90": 0.008516295025728792
+              },
+              "price": {
+                "count": 3,
+                "mean": 0.004299237251095045,
+                "median": 0.0065076968486057485,
+                "win_rate": 0.6666666666666666,
+                "flat_rate": 0.0,
+                "average_win": 0.007447856875643533,
+                "average_loss_magnitude": 0.0019980019980019303,
+                "payoff_ratio": 3.727652366259714,
+                "q10": -0.00029686222868039445,
+                "q90": 0.008011952891866203
+              },
+              "close_path_min": {
+                "count": 3,
+                "mean": 0.0,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 1.0,
+                "average_win": null,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 3,
+                "mean": 0.007568600492347792,
+                "median": 0.008522727272727071,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.007568600492347792,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.003968696397941595,
+                "q90": 0.010786853874602275
+              }
+            },
+            "2025-07": {
+              "events": 3,
+              "signal_days": 3,
+              "status": {
+                "COMPLETE": 3
+              },
+              "entry_status": {
+                "FILLED": 3
+              },
+              "exit_status": {
+                "FILLED": 3
+              },
+              "information": {
+                "count": 3,
+                "mean": 0.0028349365738732,
+                "median": -0.0017406440382942145,
+                "win_rate": 0.3333333333333333,
+                "flat_rate": 0.0,
+                "average_win": 0.013901760889712733,
+                "average_loss_magnitude": 0.002698475584046567,
+                "payoff_ratio": 5.151708976690461,
+                "q10": -0.0032731745114979783,
+                "q90": 0.010773279904111345
+              },
+              "price": {
+                "count": 3,
+                "mean": 0.0015973194901214665,
+                "median": 0.0041300804458701545,
+                "win_rate": 0.6666666666666666,
+                "flat_rate": 0.0,
+                "average_win": 0.00566936947302088,
+                "average_loss_magnitude": 0.006546780475677361,
+                "payoff_ratio": 0.8659782459613173,
+                "q10": -0.004411408291367857,
+                "q90": 0.006592942889311315
+              },
+              "close_path_min": {
+                "count": 3,
+                "mean": -0.002127013065937359,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 0.6666666666666666,
+                "average_win": null,
+                "average_loss_magnitude": 0.006381039197812077,
+                "payoff_ratio": null,
+                "q10": -0.0051048313582496615,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 3,
+                "mean": 0.005121814376038536,
+                "median": 0.006140350877193113,
+                "win_rate": 0.6666666666666666,
+                "flat_rate": 0.3333333333333333,
+                "average_win": 0.007682721564057804,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0012280701754386226,
+                "q90": 0.008608143976176619
+              }
+            },
+            "2025-08": {
+              "events": 2,
+              "signal_days": 2,
+              "status": {
+                "COMPLETE": 2
+              },
+              "entry_status": {
+                "FILLED": 2
+              },
+              "exit_status": {
+                "FILLED": 2
+              },
+              "information": {
+                "count": 2,
+                "mean": 0.022519056753114386,
+                "median": 0.022519056753114386,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.022519056753114386,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.01706579482169741,
+                "q90": 0.02797231868453136
+              },
+              "price": {
+                "count": 2,
+                "mean": 0.021388908026839237,
+                "median": 0.021388908026839237,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.021388908026839237,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.011879069206655535,
+                "q90": 0.03089874684702294
+              },
+              "close_path_min": {
+                "count": 2,
+                "mean": 0.0,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 1.0,
+                "average_win": null,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 2,
+                "mean": 0.019985454803462477,
+                "median": 0.019985454803462477,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.019985454803462477,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.013215197956577263,
+                "q90": 0.02675571165034769
+              }
+            },
+            "2025-09": {
+              "events": 3,
+              "signal_days": 3,
+              "status": {
+                "COMPLETE": 3
+              },
+              "entry_status": {
+                "FILLED": 3
+              },
+              "exit_status": {
+                "FILLED": 3
+              },
+              "information": {
+                "count": 3,
+                "mean": 0.0058698513004515895,
+                "median": 0.007042253521126751,
+                "win_rate": 0.6666666666666666,
+                "flat_rate": 0.0,
+                "average_win": 0.009604776950677407,
+                "average_loss_magnitude": 0.0016000000000000458,
+                "payoff_ratio": 6.002985594173207,
+                "q10": 0.0001284507042253137,
+                "q90": 0.0111422910084078
+              },
+              "price": {
+                "count": 3,
+                "mean": 0.005657633292363166,
+                "median": 0.008153818012972991,
+                "win_rate": 0.6666666666666666,
+                "flat_rate": 0.0,
+                "average_win": 0.011077160663226726,
+                "average_loss_magnitude": 0.005181421449363954,
+                "payoff_ratio": 2.1378613516540916,
+                "q10": -0.002514373556896565,
+                "q90": 0.012831166253378967
+              },
+              "close_path_min": {
+                "count": 3,
+                "mean": -0.0015948963317384453,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 0.6666666666666666,
+                "average_win": null,
+                "average_loss_magnitude": 0.004784688995215336,
+                "payoff_ratio": null,
+                "q10": -0.003827751196172269,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 3,
+                "mean": 0.007690929290757209,
+                "median": 0.007042253521126751,
+                "win_rate": 0.6666666666666666,
+                "flat_rate": 0.3333333333333333,
+                "average_win": 0.011536393936135814,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0014084507042253502,
+                "q90": 0.014232878185141252
+              }
+            },
+            "2025-10": {
+              "events": 2,
+              "signal_days": 2,
+              "status": {
+                "COMPLETE": 2
+              },
+              "entry_status": {
+                "FILLED": 2
+              },
+              "exit_status": {
+                "FILLED": 2
+              },
+              "information": {
+                "count": 2,
+                "mean": 0.02394031960818971,
+                "median": 0.02394031960818971,
+                "win_rate": 0.5,
+                "flat_rate": 0.0,
+                "average_win": 0.054873646209386395,
+                "average_loss_magnitude": 0.006993006993006978,
+                "payoff_ratio": 7.846931407942271,
+                "q10": -0.0008063416727676406,
+                "q90": 0.04868698088914706
+              },
+              "price": {
+                "count": 2,
+                "mean": 0.02262377109127206,
+                "median": 0.02262377109127206,
+                "win_rate": 0.5,
+                "flat_rate": 0.0,
+                "average_win": 0.053526675636502485,
+                "average_loss_magnitude": 0.008279133453958365,
+                "payoff_ratio": 6.465250975138064,
+                "q10": -0.0020985525449122794,
+                "q90": 0.0473460947274564
+              },
+              "close_path_min": {
+                "count": 2,
+                "mean": -0.003496503496503489,
+                "median": -0.003496503496503489,
+                "win_rate": 0.0,
+                "flat_rate": 0.5,
+                "average_win": null,
+                "average_loss_magnitude": 0.006993006993006978,
+                "payoff_ratio": null,
+                "q10": -0.00629370629370628,
+                "q90": -0.0006993006993006977
+              },
+              "close_path_max": {
+                "count": 2,
+                "mean": 0.027817919075144526,
+                "median": 0.027817919075144526,
+                "win_rate": 0.5,
+                "flat_rate": 0.5,
+                "average_win": 0.05563583815028905,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.005563583815028906,
+                "q90": 0.05007225433526015
+              }
+            },
+            "2025-11": {
+              "events": 2,
+              "signal_days": 2,
+              "status": {
+                "COMPLETE": 2
+              },
+              "entry_status": {
+                "FILLED": 2
+              },
+              "exit_status": {
+                "FILLED": 2
+              },
+              "information": {
+                "count": 2,
+                "mean": 0.025464767616191986,
+                "median": 0.025464767616191986,
+                "win_rate": 0.5,
+                "flat_rate": 0.0,
+                "average_win": 0.05310344827586211,
+                "average_loss_magnitude": 0.0021739130434781373,
+                "payoff_ratio": 24.42758620689796,
+                "q10": 0.0033538230884558873,
+                "q90": 0.047575712143928084
+              },
+              "price": {
+                "count": 2,
+                "mean": 0.03961091417064727,
+                "median": 0.03961091417064727,
+                "win_rate": 0.5,
+                "flat_rate": 0.0,
+                "average_win": 0.08628950667167223,
+                "average_loss_magnitude": 0.007067678330377691,
+                "payoff_ratio": 12.209031401555167,
+                "q10": 0.002268040169827302,
+                "q90": 0.07695378817146724
+              },
+              "close_path_min": {
+                "count": 2,
+                "mean": -0.00036284470246727984,
+                "median": -0.00036284470246727984,
+                "win_rate": 0.0,
+                "flat_rate": 0.5,
+                "average_win": null,
+                "average_loss_magnitude": 0.0007256894049345597,
+                "payoff_ratio": null,
+                "q10": -0.0006531204644411037,
+                "q90": -7.256894049345596e-05
+              },
+              "close_path_max": {
+                "count": 2,
+                "mean": 0.04033970276008492,
+                "median": 0.04033970276008492,
+                "win_rate": 0.5,
+                "flat_rate": 0.5,
+                "average_win": 0.08067940552016983,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.008067940552016983,
+                "q90": 0.07261146496815285
+              }
+            },
+            "2025-12": {
+              "events": 2,
+              "signal_days": 2,
+              "status": {
+                "COMPLETE": 2
+              },
+              "entry_status": {
+                "FILLED": 2
+              },
+              "exit_status": {
+                "FILLED": 2
+              },
+              "information": {
+                "count": 2,
+                "mean": 0.017792947145674032,
+                "median": 0.017792947145674032,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.017792947145674032,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.004133302072813039,
+                "q90": 0.031452592218535025
+              },
+              "price": {
+                "count": 2,
+                "mean": 0.014714804299389317,
+                "median": 0.014714804299389317,
+                "win_rate": 0.5,
+                "flat_rate": 0.0,
+                "average_win": 0.029993699680110897,
+                "average_loss_magnitude": 0.000564091081332263,
+                "payoff_ratio": 53.17173178712942,
+                "q10": 0.0024916879948120533,
+                "q90": 0.026937920603966582
+              },
+              "close_path_min": {
+                "count": 2,
+                "mean": 0.0,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 1.0,
+                "average_win": null,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 2,
+                "mean": 0.017432366134006227,
+                "median": 0.017432366134006227,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.017432366134006227,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.004061185870479479,
+                "q90": 0.030803546397532976
+              }
+            },
+            "2026-01": {
+              "events": 4,
+              "signal_days": 4,
+              "status": {
+                "COMPLETE": 4
+              },
+              "entry_status": {
+                "FILLED": 4
+              },
+              "exit_status": {
+                "FILLED": 4
+              },
+              "information": {
+                "count": 4,
+                "mean": 0.02670684627082265,
+                "median": 0.020816598159486,
+                "win_rate": 0.75,
+                "flat_rate": 0.0,
+                "average_win": 0.0397312943719644,
+                "average_loss_magnitude": 0.01236649803260259,
+                "payoff_ratio": 3.2128169403511198,
+                "q10": -0.002459001818431882,
+                "q90": 0.060584892849146504
+              },
+              "price": {
+                "count": 4,
+                "mean": 0.046446636192243984,
+                "median": 0.058016618998358194,
+                "win_rate": 0.75,
+                "flat_rate": 0.0,
+                "average_win": 0.06614778839432105,
+                "average_loss_magnitude": 0.012656820413987191,
+                "payoff_ratio": 5.2262563764609,
+                "q10": 0.003899906973827274,
+                "q90": 0.07973737916576933
+              },
+              "close_path_min": {
+                "count": 4,
+                "mean": -0.0030916245081506477,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 0.75,
+                "average_win": null,
+                "average_loss_magnitude": 0.01236649803260259,
+                "payoff_ratio": null,
+                "q10": -0.008656548622821813,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 4,
+                "mean": 0.03557013718196306,
+                "median": 0.033315215262271214,
+                "win_rate": 0.75,
+                "flat_rate": 0.25,
+                "average_win": 0.047426849575950746,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.008768656716417867,
+                "q90": 0.06417555518326173
+              }
+            },
+            "2026-02": {
+              "events": 2,
+              "signal_days": 2,
+              "status": {
+                "COMPLETE": 1,
+                "NO_ENTRY": 1
+              },
+              "entry_status": {
+                "FILLED": 1,
+                "DAILY_RANGE_NOT_REACHED": 1
+              },
+              "exit_status": {
+                "FILLED": 1,
+                "NOT_OBSERVED": 1
+              },
+              "information": {
+                "count": 2,
+                "mean": 0.038156266038704145,
+                "median": 0.038156266038704145,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.038156266038704145,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.033708601274039185,
+                "q90": 0.042603930803369106
+              },
+              "price": {
+                "count": 1,
+                "mean": 0.013355874894336539,
+                "median": 0.013355874894336539,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.013355874894336539,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.013355874894336539,
+                "q90": 0.013355874894336539
+              },
+              "close_path_min": {
+                "count": 1,
+                "mean": 0.0,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 1.0,
+                "average_win": null,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 1,
+                "mean": 0.026923076923076827,
+                "median": 0.026923076923076827,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.026923076923076827,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.026923076923076827,
+                "q90": 0.026923076923076827
+              }
+            },
+            "2026-03": {
+              "events": 3,
+              "signal_days": 3,
+              "status": {
+                "COMPLETE": 3
+              },
+              "entry_status": {
+                "FILLED": 3
+              },
+              "exit_status": {
+                "FILLED": 3
+              },
+              "information": {
+                "count": 3,
+                "mean": -0.00793270290090379,
+                "median": 0.00698174006444674,
+                "win_rate": 0.6666666666666666,
+                "flat_rate": 0.0,
+                "average_win": 0.009027702001409676,
+                "average_loss_magnitude": 0.04185351270553073,
+                "payoff_ratio": 0.21569759424796647,
+                "q10": -0.03208646215153523,
+                "q90": 0.010255279163587438
+              },
+              "price": {
+                "count": 3,
+                "mean": -0.006334006265952412,
+                "median": 0.00836376738016087,
+                "win_rate": 0.6666666666666666,
+                "flat_rate": 0.0,
+                "average_win": 0.020339105642980138,
+                "average_loss_magnitude": 0.05968023008381751,
+                "payoff_ratio": 0.34080139460613695,
+                "q10": -0.04607143059102183,
+                "q90": 0.0275243086006717
+              },
+              "close_path_min": {
+                "count": 3,
+                "mean": -0.013951170901843576,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 0.6666666666666666,
+                "average_win": null,
+                "average_loss_magnitude": 0.04185351270553073,
+                "payoff_ratio": null,
+                "q10": -0.03348281016442458,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 3,
+                "mean": 0.01867478287008706,
+                "median": 0.024590163934426146,
+                "win_rate": 0.6666666666666666,
+                "flat_rate": 0.3333333333333333,
+                "average_win": 0.028012174305130588,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.00491803278688523,
+                "q90": 0.030065380527553254
+              }
+            },
+            "2026-04": {
+              "events": 1,
+              "signal_days": 1,
+              "status": {
+                "COMPLETE": 1
+              },
+              "entry_status": {
+                "FILLED": 1
+              },
+              "exit_status": {
+                "FILLED": 1
+              },
+              "information": {
+                "count": 1,
+                "mean": -0.02063492063492056,
+                "median": -0.02063492063492056,
+                "win_rate": 0.0,
+                "flat_rate": 0.0,
+                "average_win": null,
+                "average_loss_magnitude": 0.02063492063492056,
+                "payoff_ratio": null,
+                "q10": -0.02063492063492056,
+                "q90": -0.02063492063492056
+              },
+              "price": {
+                "count": 1,
+                "mean": -0.0019980019980018193,
+                "median": -0.0019980019980018193,
+                "win_rate": 0.0,
+                "flat_rate": 0.0,
+                "average_win": null,
+                "average_loss_magnitude": 0.0019980019980018193,
+                "payoff_ratio": null,
+                "q10": -0.0019980019980018193,
+                "q90": -0.0019980019980018193
+              },
+              "close_path_min": {
+                "count": 1,
+                "mean": -0.009100642398287007,
+                "median": -0.009100642398287007,
+                "win_rate": 0.0,
+                "flat_rate": 0.0,
+                "average_win": null,
+                "average_loss_magnitude": 0.009100642398287007,
+                "payoff_ratio": null,
+                "q10": -0.009100642398287007,
+                "q90": -0.009100642398287007
+              },
+              "close_path_max": {
+                "count": 1,
+                "mean": 0.0,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 1.0,
+                "average_win": null,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0,
+                "q90": 0.0
+              }
+            },
+            "2026-05": {
+              "events": 2,
+              "signal_days": 2,
+              "status": {
+                "COMPLETE": 2
+              },
+              "entry_status": {
+                "FILLED": 2
+              },
+              "exit_status": {
+                "FILLED": 2
+              },
+              "information": {
+                "count": 2,
+                "mean": -0.006303788142053401,
+                "median": -0.006303788142053401,
+                "win_rate": 0.5,
+                "flat_rate": 0.0,
+                "average_win": 0.02007835455435858,
+                "average_loss_magnitude": 0.03268593083846538,
+                "payoff_ratio": 0.6142812531050826,
+                "q10": -0.027409502299182986,
+                "q90": 0.014801926015076183
+              },
+              "price": {
+                "count": 2,
+                "mean": -0.004219419829424809,
+                "median": -0.004219419829424809,
+                "win_rate": 0.5,
+                "flat_rate": 0.0,
+                "average_win": 0.02586003614407173,
+                "average_loss_magnitude": 0.03429887580292135,
+                "payoff_ratio": 0.7539616252340593,
+                "q10": -0.02828298460822204,
+                "q90": 0.019844144949372422
+              },
+              "close_path_min": {
+                "count": 2,
+                "mean": -0.014040932889100466,
+                "median": -0.014040932889100466,
+                "win_rate": 0.0,
+                "flat_rate": 0.5,
+                "average_win": null,
+                "average_loss_magnitude": 0.028081865778200932,
+                "payoff_ratio": null,
+                "q10": -0.025273679200380837,
+                "q90": -0.0028081865778200924
+              },
+              "close_path_max": {
+                "count": 2,
+                "mean": 0.01003917727717929,
+                "median": 0.01003917727717929,
+                "win_rate": 0.5,
+                "flat_rate": 0.5,
+                "average_win": 0.02007835455435858,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.002007835455435858,
+                "q90": 0.01807051909892272
+              }
+            },
+            "2026-06": {
+              "events": 4,
+              "signal_days": 4,
+              "status": {
+                "COMPLETE": 4
+              },
+              "entry_status": {
+                "FILLED": 4
+              },
+              "exit_status": {
+                "FILLED": 4
+              },
+              "information": {
+                "count": 4,
+                "mean": 0.01378309274849368,
+                "median": 0.002906319024207571,
+                "win_rate": 0.75,
+                "flat_rate": 0.0,
+                "average_win": 0.018681732062650003,
+                "average_loss_magnitude": 0.0009128251939752863,
+                "payoff_ratio": 20.46583747463459,
+                "q10": -0.0004955741941001012,
+                "q90": 0.03676317867051636
+              },
+              "price": {
+                "count": 4,
+                "mean": 0.017166292764613483,
+                "median": 0.016574022656233645,
+                "win_rate": 0.75,
+                "flat_rate": 0.0,
+                "average_win": 0.023714558246872224,
+                "average_loss_magnitude": 0.002478503682162736,
+                "payoff_ratio": 9.56809482170265,
+                "q10": 0.0025103167162991,
+                "q90": 0.03229608489963174
+              },
+              "close_path_min": {
+                "count": 4,
+                "mean": 0.0,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 1.0,
+                "average_win": null,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 4,
+                "mean": 0.01849633154831687,
+                "median": 0.013104104522511317,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.01849633154831687,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.008998495509566839,
+                "q90": 0.032307949207711344
+              }
+            },
+            "2026-07": {
+              "events": 2,
+              "signal_days": 2,
+              "status": {
+                "COMPLETE": 2
+              },
+              "entry_status": {
+                "FILLED": 2
+              },
+              "exit_status": {
+                "FILLED": 2
+              },
+              "information": {
+                "count": 2,
+                "mean": 0.041320808066868,
+                "median": 0.041320808066868,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.041320808066868,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.03277948368967121,
+                "q90": 0.04986213244406479
+              },
+              "price": {
+                "count": 2,
+                "mean": 0.0314836911666988,
+                "median": 0.0314836911666988,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.0314836911666988,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.02590824626989543,
+                "q90": 0.037059136063502175
+              },
+              "close_path_min": {
+                "count": 2,
+                "mean": 0.0,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 1.0,
+                "average_win": null,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 2,
+                "mean": 0.046521609726650204,
+                "median": 0.046521609726650204,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.046521609726650204,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.04320691524071261,
+                "q90": 0.0498363042125878
+              }
+            },
+            "2026-08": {
+              "events": 4,
+              "signal_days": 4,
+              "status": {
+                "COMPLETE": 4
+              },
+              "entry_status": {
+                "FILLED": 4
+              },
+              "exit_status": {
+                "FILLED": 4
+              },
+              "information": {
+                "count": 4,
+                "mean": 0.00927584516997787,
+                "median": 0.012428864309326881,
+                "win_rate": 0.75,
+                "flat_rate": 0.0,
+                "average_win": 0.013956987044277206,
+                "average_loss_magnitude": 0.004767580452920139,
+                "payoff_ratio": 2.927478032537146,
+                "q10": 0.00021930304869388715,
+                "q90": 0.015809971979782646
+              },
+              "price": {
+                "count": 4,
+                "mean": 0.013535450367699431,
+                "median": 0.01536831407104211,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.013535450367699431,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.007661990290812094,
+                "q90": 0.017942619481912624
+              },
+              "close_path_min": {
+                "count": 4,
+                "mean": 0.0,
+                "median": 0.0,
+                "win_rate": 0.0,
+                "flat_rate": 1.0,
+                "average_win": null,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0,
+                "q90": 0.0
+              },
+              "close_path_max": {
+                "count": 4,
+                "mean": 0.011905837930108576,
+                "median": 0.012457294885761527,
+                "win_rate": 1.0,
+                "flat_rate": 0.0,
+                "average_win": 0.011905837930108576,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.009065520457525067,
+                "q90": 0.014304989838169723
+              }
+            },
+            "2026-09": {
+              "events": 3,
+              "signal_days": 3,
+              "status": {
+                "COMPLETE": 3
+              },
+              "entry_status": {
+                "FILLED": 3
+              },
+              "exit_status": {
+                "FILLED": 3
+              },
+              "information": {
+                "count": 3,
+                "mean": 0.004741265039321633,
+                "median": 0.0066950699939134495,
+                "win_rate": 0.6666666666666666,
+                "flat_rate": 0.0,
+                "average_win": 0.012770027398172457,
+                "average_loss_magnitude": 0.011316259678380014,
+                "payoff_ratio": 1.1284671579753425,
+                "q10": -0.007713993743921321,
+                "q90": 0.01641500184072786
+              },
+              "price": {
+                "count": 3,
+                "mean": -0.002721854836095735,
+                "median": -0.0026010243532901267,
+                "win_rate": 0.3333333333333333,
+                "flat_rate": 0.0,
+                "average_win": 0.010121026514469333,
+                "average_loss_magnitude": 0.009143295511378269,
+                "payoff_ratio": 1.1069342013363057,
+                "q10": -0.013068658206231154,
+                "q90": 0.007576616340917441
+              },
+              "close_path_min": {
+                "count": 3,
+                "mean": -0.0035804597597614376,
+                "median": -0.0006042296072508169,
+                "win_rate": 0.0,
+                "flat_rate": 0.3333333333333333,
+                "average_win": null,
+                "average_loss_magnitude": 0.005370689639642157,
+                "payoff_ratio": null,
+                "q10": -0.00823056565907696,
+                "q90": -0.00012084592145016335
+              },
+              "close_path_max": {
+                "count": 3,
+                "mean": 0.005869257235377419,
+                "median": 0.0,
+                "win_rate": 0.3333333333333333,
+                "flat_rate": 0.6666666666666666,
+                "average_win": 0.017607771706132258,
+                "average_loss_magnitude": null,
+                "payoff_ratio": null,
+                "q10": 0.0,
+                "q90": 0.014086217364905807
+              }
+            },
+            "2026-10": {
+              "events": 0,
+              "signal_days": 0,
+              "status": {},
+              "entry_status": {},
+              "exit_status": {},
+              "information": {
+                "count": 0
+              },
+              "price": {
+                "count": 0
+              },
+              "close_path_min": {
+                "count": 0
+              },
+              "close_path_max": {
+                "count": 0
+              }
+            }
+          },
+          "bootstrap_raw": {
+            "price_mean": {
+              "valid_replicates": 1000,
+              "empty_replicates": 0,
+              "interval_95": [
+                0.004534108177456436,
+                0.01898243835775347
+              ]
+            },
+            "matched_difference": {
+              "valid_replicates": 1000,
+              "empty_replicates": 0,
+              "interval_95": [
+                0.00515152409914567,
+                0.01816490033260728
+              ]
+            }
+          },
+          "bootstrap_nonoverlap": {
+            "price_mean": {
+              "valid_replicates": 1000,
+              "empty_replicates": 0,
+              "interval_95": [
+                0.004219430036931146,
+                0.01951058436838561
+              ]
+            },
+            "matched_difference": {
+              "valid_replicates": 1000,
+              "empty_replicates": 0,
+              "interval_95": [
+                0.0045951241101929476,
+                0.018708775430862593
+              ]
+            }
+          }
+        }
+      }
+    },
+    "3": {
+      "all": {
+        "events": 430,
+        "signal_days": 430,
+        "status": {
+          "COMPLETE": 420,
+          "NO_ENTRY": 7,
+          "RIGHT_CENSORED_EXIT": 3
+        },
+        "entry_status": {
+          "FILLED": 423,
+          "DAILY_RANGE_NOT_REACHED": 7
+        },
+        "exit_status": {
+          "FILLED": 420,
+          "NOT_OBSERVED": 10
+        },
+        "information": {
+          "count": 428,
+          "mean": 0.0028169425927110805,
+          "median": 0.00262176821923199,
+          "win_rate": 0.5373831775700935,
+          "flat_rate": 0.009345794392523364,
+          "average_win": 0.02491846812177678,
+          "average_loss_magnitude": 0.023327815661486163,
+          "payoff_ratio": 1.0681869440059386,
+          "q10": -0.03697442467112741,
+          "q90": 0.03894962116523444
+        },
+        "price": {
+          "count": 420,
+          "mean": 0.000852912796524302,
+          "median": 0.0015513419928520067,
+          "win_rate": 0.5214285714285715,
+          "flat_rate": 0.0,
+          "average_win": 0.02340170892575786,
+          "average_loss_magnitude": 0.023715178508461516,
+          "payoff_ratio": 0.9867819007733039,
+          "q10": -0.0400421034115385,
+          "q90": 0.03549863750124329
+        },
+        "close_path_min": {
+          "count": 420,
+          "mean": -0.013283620848572089,
+          "median": -0.0057740392035808275,
+          "win_rate": 0.0,
+          "flat_rate": 0.3476190476190476,
+          "average_win": null,
+          "average_loss_magnitude": 0.020361754585402472,
+          "payoff_ratio": null,
+          "q10": -0.03900113590808338,
+          "q90": 0.0
+        },
+        "close_path_max": {
+          "count": 420,
+          "mean": 0.017137333741394582,
+          "median": 0.011442498692313396,
+          "win_rate": 0.7333333333333333,
+          "flat_rate": 0.26666666666666666,
+          "average_win": 0.023369091465538068,
+          "average_loss_magnitude": null,
+          "payoff_ratio": null,
+          "q10": 0.0,
+          "q90": 0.040163318847255346
+        }
+      },
+      "signals": {
+        "permission": {
+          "raw": {
+            "events": 64,
+            "signal_days": 64,
+            "status": {
+              "COMPLETE": 63,
+              "NO_ENTRY": 1
+            },
+            "entry_status": {
+              "FILLED": 63,
+              "DAILY_RANGE_NOT_REACHED": 1
+            },
+            "exit_status": {
+              "FILLED": 63,
+              "NOT_OBSERVED": 1
+            },
+            "information": {
+              "count": 64,
+              "mean": 0.01278104026341436,
+              "median": 0.013123719951029122,
+              "win_rate": 0.640625,
+              "flat_rate": 0.03125,
+              "average_win": 0.02987060651998323,
+              "average_loss_magnitude": 0.019367061450513975,
+              "payoff_ratio": 1.542340669301202,
+              "q10": -0.01713784424317025,
+              "q90": 0.05465982355769688
+            },
+            "price": {
+              "count": 63,
+              "mean": 0.010667120100269628,
+              "median": 0.008927293553662174,
+              "win_rate": 0.6666666666666666,
+              "flat_rate": 0.0,
+              "average_win": 0.026197123852317115,
+              "average_loss_magnitude": 0.020392887403825347,
+              "payoff_ratio": 1.2846206294162639,
+              "q10": -0.015834612102051126,
+              "q90": 0.043528408895180115
+            },
+            "close_path_min": {
+              "count": 63,
+              "mean": -0.008359296807178132,
+              "median": -0.0007256894049345597,
+              "win_rate": 0.0,
+              "flat_rate": 0.47619047619047616,
+              "average_win": null,
+              "average_loss_magnitude": 0.01595865754097643,
+              "payoff_ratio": null,
+              "q10": -0.029079430121235105,
+              "q90": 0.0
+            },
+            "close_path_max": {
+              "count": 63,
+              "mean": 0.02655568611155168,
+              "median": 0.01930147058823528,
+              "win_rate": 0.8888888888888888,
+              "flat_rate": 0.1111111111111111,
+              "average_win": 0.02987514687549564,
+              "average_loss_magnitude": null,
+              "payoff_ratio": null,
+              "q10": 0.00019083969465647516,
+              "q90": 0.0546416660870457
+            }
+          },
+          "nonoverlap": {
+            "events": 41,
+            "signal_days": 41,
+            "status": {
+              "COMPLETE": 41
+            },
+            "entry_status": {
+              "FILLED": 41
+            },
+            "exit_status": {
+              "FILLED": 41
+            },
+            "information": {
+              "count": 41,
+              "mean": 0.015189159714057404,
+              "median": 0.0150339476236665,
+              "win_rate": 0.6829268292682927,
+              "flat_rate": 0.024390243902439025,
+              "average_win": 0.029154505291261228,
+              "average_loss_magnitude": 0.01613088332324673,
+              "payoff_ratio": 1.8073719031397208,
+              "q10": -0.01209302325581385,
+              "q90": 0.055248618784530246
+            },
+            "price": {
+              "count": 41,
+              "mean": 0.013724104087001827,
+              "median": 0.01041381465149338,
+              "win_rate": 0.7317073170731707,
+              "flat_rate": 0.0,
+              "average_win": 0.02589772902689053,
+              "average_loss_magnitude": 0.019476691203603725,
+              "payoff_ratio": 1.3296780626731266,
+              "q10": -0.011307722128617526,
+              "q90": 0.04516033417132337
+            },
+            "close_path_min": {
+              "count": 41,
+              "mean": -0.007284419517256016,
+              "median": 0.0,
+              "win_rate": 0.0,
+              "flat_rate": 0.5609756097560976,
+              "average_win": null,
+              "average_loss_magnitude": 0.01659228890041648,
+              "payoff_ratio": null,
+              "q10": -0.028081865778200932,
+              "q90": 0.0
+            },
+            "close_path_max": {
+              "count": 41,
+              "mean": 0.027965450691814584,
+              "median": 0.020576131687242816,
+              "win_rate": 0.926829268292683,
+              "flat_rate": 0.07317073170731707,
+              "average_win": 0.030173249430642052,
+              "average_loss_magnitude": null,
+              "payoff_ratio": null,
+              "q10": 0.005459508644221955,
+              "q90": 0.056426332288401326
+            }
+          },
+          "matched_raw": {
+            "count": 63,
+            "control_mean": 0.0021012053866186773,
+            "difference": {
+              "count": 63,
+              "mean": 0.008565914713650955,
+              "median": 0.0062928214374250386,
+              "win_rate": 0.6190476190476191,
+              "flat_rate": 0.0,
+              "average_win": 0.02576918545531262,
+              "average_loss_magnitude": 0.01938940024154926,
+              "payoff_ratio": 1.3290346856676987,
+              "q10": -0.018097588357962786,
+              "q90": 0.03697338184350327
+            },
+            "control_support": {
+              "unique_cells": 21,
+              "singleton_target_events": 0,
+              "all_target_cell_events": 0,
+              "median_control_events_per_target": 20.0,
+              "minimum_control_events": 13
+            }
+          },
+          "matched_nonoverlap": {
+            "count": 41,
+            "control_mean": 0.0028015502185845245,
+            "difference": {
+              "count": 41,
+              "mean": 0.010922553868417303,
+              "median": 0.0068670326390804,
+              "win_rate": 0.6829268292682927,
+              "flat_rate": 0.0,
+              "average_win": 0.02517323758192962,
+              "average_loss_magnitude": 0.01977122643760922,
+              "payoff_ratio": 1.273225900343976,
+              "q10": -0.013126917899661009,
+              "q90": 0.04367902879857261
+            },
+            "control_support": {
+              "unique_cells": 21,
+              "singleton_target_events": 0,
+              "all_target_cell_events": 0,
+              "median_control_events_per_target": 20.0,
+              "minimum_control_events": 13
+            }
+          },
+          "concentration_raw": {
+            "positive_return_sum": 1.1002792017973189,
+            "positive_events": 42,
+            "largest_event_share": 0.11776954034608958,
+            "largest_year_share": 0.536211340017241,
+            "positive_sum_by_year": {
+              "2025": 0.5102970166084781,
+              "2026": 0.5899821851888407
+            },
+            "scope": "Sum of independent event returns, not account PnL contribution."
+          },
+          "concentration_nonoverlap": {
+            "positive_return_sum": 0.7769318708067159,
+            "positive_events": 30,
+            "largest_event_share": 0.148337085715971,
+            "largest_year_share": 0.5175954222966432,
+            "positive_sum_by_year": {
+              "2025": 0.4021363797659232,
+              "2026": 0.3747954910407927
+            },
+            "scope": "Sum of independent event returns, not account PnL contribution."
+          }
+        },
+        "entry_signal": {
+          "raw": {
+            "events": 55,
+            "signal_days": 55,
+            "status": {
+              "COMPLETE": 54,
+              "NO_ENTRY": 1
+            },
+            "entry_status": {
+              "FILLED": 54,
+              "DAILY_RANGE_NOT_REACHED": 1
+            },
+            "exit_status": {
+              "FILLED": 54,
+              "NOT_OBSERVED": 1
+            },
+            "information": {
+              "count": 55,
+              "mean": 0.016134080195032992,
+              "median": 0.013986013986013957,
+              "win_rate": 0.6909090909090909,
+              "flat_rate": 0.03636363636363636,
+              "average_win": 0.030106674053111633,
+              "average_loss_magnitude": 0.017111946886095165,
+              "payoff_ratio": 1.7593950152788127,
+              "q10": -0.011981914920190784,
+              "q90": 0.05579860826268233
+            },
+            "price": {
+              "count": 54,
+              "mean": 0.013793562784481508,
+              "median": 0.01019223565055849,
+              "win_rate": 0.7037037037037037,
+              "flat_rate": 0.0,
+              "average_win": 0.02682192302024494,
+              "average_loss_magnitude": 0.01714879277545664,
+              "payoff_ratio": 1.5640706241801747,
+              "q10": -0.013446596706726498,
+              "q90": 0.045091231411463026
+            },
+            "close_path_min": {
+              "count": 54,
+              "mean": -0.00731835415145651,
+              "median": -0.00034843205574919267,
+              "win_rate": 0.0,
+              "flat_rate": 0.5,
+              "average_win": null,
+              "average_loss_magnitude": 0.01463670830291302,
+              "payoff_ratio": null,
+              "q10": -0.02473726841538975,
+              "q90": 0.0
+            },
+            "close_path_max": {
+              "count": 54,
+              "mean": 0.027629011498175156,
+              "median": 0.019163220430859607,
+              "win_rate": 0.9444444444444444,
+              "flat_rate": 0.05555555555555555,
+              "average_win": 0.029254247468656045,
+              "average_loss_magnitude": null,
+              "payoff_ratio": null,
+              "q10": 0.00548832271762203,
+              "q90": 0.05618918404696765
+            }
+          },
+          "nonoverlap": {
+            "events": 39,
+            "signal_days": 39,
+            "status": {
+              "COMPLETE": 39
+            },
+            "entry_status": {
+              "FILLED": 39
+            },
+            "exit_status": {
+              "FILLED": 39
+            },
+            "information": {
+              "count": 39,
+              "mean": 0.017053423960418854,
+              "median": 0.015412511332729029,
+              "win_rate": 0.717948717948718,
+              "flat_rate": 0.02564102564102564,
+              "average_win": 0.029154505291261228,
+              "average_loss_magnitude": 0.015124261369897907,
+              "payoff_ratio": 1.9276647353693563,
+              "q10": -0.011870806584567717,
+              "q90": 0.05543194861058094
+            },
+            "price": {
+              "count": 39,
+              "mean": 0.0160395597057592,
+              "median": 0.0123273855331274,
+              "win_rate": 0.7692307692307693,
+              "flat_rate": 0.0,
+              "average_win": 0.02589772902689053,
+              "average_loss_magnitude": 0.016821004698011906,
+              "payoff_ratio": 1.5396065509660914,
+              "q10": -0.010670704452699242,
+              "q90": 0.045991808051663266
+            },
+            "close_path_min": {
+              "count": 39,
+              "mean": -0.006627570157522056,
+              "median": 0.0,
+              "win_rate": 0.0,
+              "flat_rate": 0.5897435897435898,
+              "average_win": null,
+              "average_loss_magnitude": 0.016154702258960013,
+              "payoff_ratio": null,
+              "q10": -0.01916293947737113,
+              "q90": 0.0
+            },
+            "close_path_max": {
+              "count": 39,
+              "mean": 0.028403239371980898,
+              "median": 0.020576131687242816,
+              "win_rate": 0.9487179487179487,
+              "flat_rate": 0.05128205128205128,
+              "average_win": 0.02993854960830419,
+              "average_loss_magnitude": null,
+              "payoff_ratio": null,
+              "q10": 0.0060041824305988815,
+              "q90": 0.05983922856037989
+            }
+          },
+          "matched_raw": {
+            "count": 54,
+            "control_mean": 0.001750638902530898,
+            "difference": {
+              "count": 54,
+              "mean": 0.012042923881950615,
+              "median": 0.006757684244295891,
+              "win_rate": 0.6481481481481481,
+              "flat_rate": 0.0,
+              "average_win": 0.02693438294863885,
+              "average_loss_magnitude": 0.015388711240896136,
+              "payoff_ratio": 1.7502689164157954,
+              "q10": -0.01686993743139859,
+              "q90": 0.041974717901264356
+            },
+            "control_support": {
+              "unique_cells": 21,
+              "singleton_target_events": 0,
+              "all_target_cell_events": 0,
+              "median_control_events_per_target": 20.5,
+              "minimum_control_events": 13
+            }
+          },
+          "matched_nonoverlap": {
+            "count": 39,
+            "control_mean": 0.0018707672062824498,
+            "difference": {
+              "count": 39,
+              "mean": 0.014168792499476753,
+              "median": 0.009901293749707718,
+              "win_rate": 0.717948717948718,
+              "flat_rate": 0.0,
+              "average_win": 0.02517323758192962,
+              "average_loss_magnitude": 0.013842522255857824,
+              "payoff_ratio": 1.8185441292158233,
+              "q10": -0.011383464828438076,
+              "q90": 0.04548967175917876
+            },
+            "control_support": {
+              "unique_cells": 21,
+              "singleton_target_events": 0,
+              "all_target_cell_events": 0,
+              "median_control_events_per_target": 21.0,
+              "minimum_control_events": 13
+            }
+          },
+          "concentration_raw": {
+            "positive_return_sum": 1.0192330747693077,
+            "positive_events": 38,
+            "largest_event_share": 0.12713419438175264,
+            "largest_year_share": 0.5352001855009549,
+            "positive_sum_by_year": {
+              "2025": 0.4737393440840656,
+              "2026": 0.5454937306852421
+            },
+            "scope": "Sum of independent event returns, not account PnL contribution."
+          },
+          "concentration_nonoverlap": {
+            "positive_return_sum": 0.7769318708067159,
+            "positive_events": 30,
+            "largest_event_share": 0.148337085715971,
+            "largest_year_share": 0.5175954222966432,
+            "positive_sum_by_year": {
+              "2025": 0.4021363797659232,
+              "2026": 0.3747954910407927
+            },
+            "scope": "Sum of independent event returns, not account PnL contribution."
+          }
+        }
+      }
+    },
+    "5": {
+      "all": {
+        "events": 430,
+        "signal_days": 430,
+        "status": {
+          "COMPLETE": 418,
+          "NO_ENTRY": 7,
+          "RIGHT_CENSORED_EXIT": 5
+        },
+        "entry_status": {
+          "FILLED": 423,
+          "DAILY_RANGE_NOT_REACHED": 7
+        },
+        "exit_status": {
+          "FILLED": 418,
+          "NOT_OBSERVED": 12
+        },
+        "information": {
+          "count": 426,
+          "mean": 0.004766556843999685,
+          "median": 0.006708146082691879,
+          "win_rate": 0.57981220657277,
+          "flat_rate": 0.007042253521126761,
+          "average_win": 0.031114591380201402,
+          "average_loss_magnitude": 0.032129266223669774,
+          "payoff_ratio": 0.968418984846879,
+          "q10": -0.052882960923686606,
+          "q90": 0.05470232986365797
+        },
+        "price": {
+          "count": 418,
+          "mean": 0.0027150859076601106,
+          "median": 0.004043393006211149,
+          "win_rate": 0.5717703349282297,
+          "flat_rate": 0.0,
+          "average_win": 0.029345267107528328,
+          "average_loss_magnitude": 0.032841413012834324,
+          "payoff_ratio": 0.8935445955404016,
+          "q10": -0.05364729758430536,
+          "q90": 0.049265554157381125
+        },
+        "close_path_min": {
+          "count": 418,
+          "mean": -0.018841481391510588,
+          "median": -0.008924930766747663,
+          "win_rate": 0.0,
+          "flat_rate": 0.28708133971291866,
+          "average_win": null,
+          "average_loss_magnitude": 0.026428655106212836,
+          "payoff_ratio": null,
+          "q10": -0.0550541881367208,
+          "q90": 0.0
+        },
+        "close_path_max": {
+          "count": 418,
+          "mean": 0.02465164905410431,
+          "median": 0.017567723491442422,
+          "win_rate": 0.8014354066985646,
+          "flat_rate": 0.19856459330143542,
+          "average_win": 0.030759371058554034,
+          "average_loss_magnitude": null,
+          "payoff_ratio": null,
+          "q10": 0.0,
+          "q90": 0.06095910494657444
+        }
+      },
+      "signals": {
+        "permission": {
+          "raw": {
+            "events": 64,
+            "signal_days": 64,
+            "status": {
+              "COMPLETE": 63,
+              "NO_ENTRY": 1
+            },
+            "entry_status": {
+              "FILLED": 63,
+              "DAILY_RANGE_NOT_REACHED": 1
+            },
+            "exit_status": {
+              "FILLED": 63,
+              "NOT_OBSERVED": 1
+            },
+            "information": {
+              "count": 64,
+              "mean": 0.011350038631206696,
+              "median": 0.006929994499055181,
+              "win_rate": 0.5625,
+              "flat_rate": 0.03125,
+              "average_win": 0.035291720714931585,
+              "average_loss_magnitude": 0.020926902820781097,
+              "payoff_ratio": 1.6864282792906056,
+              "q10": -0.03015039142002015,
+              "q90": 0.062266124050724826
+            },
+            "price": {
+              "count": 63,
+              "mean": 0.011042731631988293,
+              "median": 0.004482530456556333,
+              "win_rate": 0.6031746031746031,
+              "flat_rate": 0.0,
+              "average_win": 0.031820241722420275,
+              "average_loss_magnitude": 0.02053908370546832,
+              "payoff_ratio": 1.5492532275891384,
+              "q10": -0.021191799333749792,
+              "q90": 0.06256538961239658
+            },
+            "close_path_min": {
+              "count": 63,
+              "mean": -0.011097471277909145,
+              "median": -0.006993006993006978,
+              "win_rate": 0.0,
+              "flat_rate": 0.3333333333333333,
+              "average_win": null,
+              "average_loss_magnitude": 0.016646206916863717,
+              "payoff_ratio": null,
+              "q10": -0.02935061272624735,
+              "q90": 0.0
+            },
+            "close_path_max": {
+              "count": 63,
+              "mean": 0.031171965379955667,
+              "median": 0.024597918637653704,
+              "win_rate": 0.9047619047619048,
+              "flat_rate": 0.09523809523809523,
+              "average_win": 0.03445322489363521,
+              "average_loss_magnitude": null,
+              "payoff_ratio": null,
+              "q10": 0.003214721285601474,
+              "q90": 0.0734354550642153
+            }
+          },
+          "nonoverlap": {
+            "events": 36,
+            "signal_days": 36,
+            "status": {
+              "COMPLETE": 36
+            },
+            "entry_status": {
+              "FILLED": 36
+            },
+            "exit_status": {
+              "FILLED": 36
+            },
+            "information": {
+              "count": 36,
+              "mean": 0.009292809964616698,
+              "median": 0.004593320783183641,
+              "win_rate": 0.5555555555555556,
+              "flat_rate": 0.0,
+              "average_win": 0.031273194281143224,
+              "average_loss_magnitude": 0.018182670431041457,
+              "payoff_ratio": 1.7199450652613504,
+              "q10": -0.025705512890617233,
+              "q90": 0.0512223579635146
+            },
+            "price": {
+              "count": 36,
+              "mean": 0.009493971822179877,
+              "median": 0.0020150666798637307,
+              "win_rate": 0.5555555555555556,
+              "flat_rate": 0.0,
+              "average_win": 0.031033303716344364,
+              "average_loss_magnitude": 0.017430193045525733,
+              "payoff_ratio": 1.780433735604007,
+              "q10": -0.020339290892781414,
+              "q90": 0.052708823713171093
+            },
+            "close_path_min": {
+              "count": 36,
+              "mean": -0.010902871913217756,
+              "median": -0.006902910685805397,
+              "win_rate": 0.0,
+              "flat_rate": 0.3055555555555556,
+              "average_win": null,
+              "average_loss_magnitude": 0.015700135555033568,
+              "payoff_ratio": null,
+              "q10": -0.028718963192130853,
+              "q90": 0.0
+            },
+            "close_path_max": {
+              "count": 36,
+              "mean": 0.027853993916665862,
+              "median": 0.022921043196653224,
+              "win_rate": 0.9166666666666666,
+              "flat_rate": 0.08333333333333333,
+              "average_win": 0.030386175181817306,
+              "average_loss_magnitude": null,
+              "payoff_ratio": null,
+              "q10": 0.005799929760707534,
+              "q90": 0.060106320329063045
+            }
+          },
+          "matched_raw": {
+            "count": 63,
+            "control_mean": 0.004586246095640445,
+            "difference": {
+              "count": 63,
+              "mean": 0.00645648553634785,
+              "median": 0.0024454089810894974,
+              "win_rate": 0.5873015873015873,
+              "flat_rate": 0.0,
+              "average_win": 0.025867794989123935,
+              "average_loss_magnitude": 0.02116730099260273,
+              "payoff_ratio": 1.2220639276667287,
+              "q10": -0.02979395467445359,
+              "q90": 0.049831059339099294
+            },
+            "control_support": {
+              "unique_cells": 21,
+              "singleton_target_events": 0,
+              "all_target_cell_events": 0,
+              "median_control_events_per_target": 20.0,
+              "minimum_control_events": 13
+            }
+          },
+          "matched_nonoverlap": {
+            "count": 36,
+            "control_mean": 0.005040517958356585,
+            "difference": {
+              "count": 36,
+              "mean": 0.00445345386382329,
+              "median": 0.0012838513062557958,
+              "win_rate": 0.5277777777777778,
+              "flat_rate": 0.0,
+              "average_win": 0.026526545545729384,
+              "average_loss_magnitude": 0.020216472133601174,
+              "payoff_ratio": 1.3121253485983062,
+              "q10": -0.030122794434202425,
+              "q90": 0.03988438565574142
+            },
+            "control_support": {
+              "unique_cells": 21,
+              "singleton_target_events": 0,
+              "all_target_cell_events": 0,
+              "median_control_events_per_target": 21.0,
+              "minimum_control_events": 13
+            }
+          },
+          "concentration_raw": {
+            "positive_return_sum": 1.2091691854519704,
+            "positive_events": 38,
+            "largest_event_share": 0.1174943338009359,
+            "largest_year_share": 0.5491482858627893,
+            "positive_sum_by_year": {
+              "2025": 0.5451559999429156,
+              "2026": 0.6640131855090547
+            },
+            "scope": "Sum of independent event returns, not account PnL contribution."
+          },
+          "concentration_nonoverlap": {
+            "positive_return_sum": 0.6206660743268873,
+            "positive_events": 20,
+            "largest_event_share": 0.22890010228346241,
+            "largest_year_share": 0.6636862259142157,
+            "positive_sum_by_year": {
+              "2025": 0.2087385499038834,
+              "2026": 0.41192752442300384
+            },
+            "scope": "Sum of independent event returns, not account PnL contribution."
+          }
+        },
+        "entry_signal": {
+          "raw": {
+            "events": 55,
+            "signal_days": 55,
+            "status": {
+              "COMPLETE": 54,
+              "NO_ENTRY": 1
+            },
+            "entry_status": {
+              "FILLED": 54,
+              "DAILY_RANGE_NOT_REACHED": 1
+            },
+            "exit_status": {
+              "FILLED": 54,
+              "NOT_OBSERVED": 1
+            },
+            "information": {
+              "count": 55,
+              "mean": 0.012869912136104939,
+              "median": 0.006493506493506329,
+              "win_rate": 0.5636363636363636,
+              "flat_rate": 0.03636363636363636,
+              "average_win": 0.03649399149261804,
+              "average_loss_magnitude": 0.019248571308426707,
+              "payoff_ratio": 1.895932477681685,
+              "q10": -0.029501673448096864,
+              "q90": 0.06616219585494534
+            },
+            "price": {
+              "count": 54,
+              "mean": 0.011948516531909585,
+              "median": 0.004086475116553467,
+              "win_rate": 0.5925925925925926,
+              "flat_rate": 0.0,
+              "average_win": 0.033137723757326334,
+              "average_loss_magnitude": 0.01887214852324205,
+              "payoff_ratio": 1.7559062613626357,
+              "q10": -0.020930729065573993,
+              "q90": 0.0667252477411022
+            },
+            "close_path_min": {
+              "count": 54,
+              "mean": -0.010399510966974902,
+              "median": -0.006810897435897467,
+              "win_rate": 0.0,
+              "flat_rate": 0.3333333333333333,
+              "average_win": null,
+              "average_loss_magnitude": 0.015599266450462354,
+              "payoff_ratio": null,
+              "q10": -0.02897380215770282,
+              "q90": 0.0
+            },
+            "close_path_max": {
+              "count": 54,
+              "mean": 0.03243698625623565,
+              "median": 0.0245504618615916,
+              "win_rate": 0.9444444444444444,
+              "flat_rate": 0.05555555555555555,
+              "average_win": 0.03434504427130834,
+              "average_loss_magnitude": null,
+              "payoff_ratio": null,
+              "q10": 0.006608158992283487,
+              "q90": 0.07773320339992425
+            }
+          },
+          "nonoverlap": {
+            "events": 35,
+            "signal_days": 35,
+            "status": {
+              "COMPLETE": 35
+            },
+            "entry_status": {
+              "FILLED": 35
+            },
+            "exit_status": {
+              "FILLED": 35
+            },
+            "information": {
+              "count": 35,
+              "mean": 0.008839129543206923,
+              "median": 0.0027881040892192566,
+              "win_rate": 0.5428571428571428,
+              "flat_rate": 0.0,
+              "average_win": 0.03159432952152135,
+              "average_loss_magnitude": 0.018182670431041457,
+              "payoff_ratio": 1.7376066756169934,
+              "q10": -0.026674982572435564,
+              "q90": 0.052080547967769876
+            },
+            "price": {
+              "count": 35,
+              "mean": 0.00913796970412656,
+              "median": 0.0014793568800537393,
+              "win_rate": 0.5428571428571428,
+              "flat_rate": 0.0,
+              "average_win": 0.03151115938804428,
+              "average_loss_magnitude": 0.017430193045525733,
+              "payoff_ratio": 1.8078491331530653,
+              "q10": -0.020614220688245408,
+              "q90": 0.05380442923386137
+            },
+            "close_path_min": {
+              "count": 35,
+              "mean": -0.01090417845767704,
+              "median": -0.006628787878787956,
+              "win_rate": 0.0,
+              "flat_rate": 0.3142857142857143,
+              "average_win": null,
+              "average_loss_magnitude": 0.015901926917445686,
+              "payoff_ratio": null,
+              "q10": -0.028846382674916838,
+              "q90": 0.0
+            },
+            "close_path_max": {
+              "count": 35,
+              "mean": 0.027539618232652233,
+              "median": 0.021894336030461536,
+              "win_rate": 0.9142857142857143,
+              "flat_rate": 0.08571428571428572,
+              "average_win": 0.03012145744196338,
+              "average_loss_magnitude": null,
+              "payoff_ratio": null,
+              "q10": 0.005731845537410418,
+              "q90": 0.06100041676481786
+            }
+          },
+          "matched_raw": {
+            "count": 54,
+            "control_mean": 0.0038590961059564006,
+            "difference": {
+              "count": 54,
+              "mean": 0.008089420425953184,
+              "median": 0.0024676932482204563,
+              "win_rate": 0.5925925925925926,
+              "flat_rate": 0.0,
+              "average_win": 0.026779824562821155,
+              "average_loss_magnitude": 0.019096621954945683,
+              "payoff_ratio": 1.4023330736714752,
+              "q10": -0.02804799535320952,
+              "q90": 0.05968896069068708
+            },
+            "control_support": {
+              "unique_cells": 21,
+              "singleton_target_events": 0,
+              "all_target_cell_events": 0,
+              "median_control_events_per_target": 20.5,
+              "minimum_control_events": 13
+            }
+          },
+          "matched_nonoverlap": {
+            "count": 35,
+            "control_mean": 0.004037306803763867,
+            "difference": {
+              "count": 35,
+              "mean": 0.005100662900362693,
+              "median": 0.0017603726564118516,
+              "win_rate": 0.5428571428571428,
+              "flat_rate": 0.0,
+              "average_win": 0.026526545545729384,
+              "average_loss_magnitude": 0.020342572741010256,
+              "payoff_ratio": 1.303991677131986,
+              "q10": -0.03046949807635912,
+              "q90": 0.0413698739006776
+            },
+            "control_support": {
+              "unique_cells": 21,
+              "singleton_target_events": 0,
+              "all_target_cell_events": 0,
+              "median_control_events_per_target": 21.0,
+              "minimum_control_events": 13
+            }
+          },
+          "concentration_raw": {
+            "positive_return_sum": 1.0604071602344427,
+            "positive_events": 32,
+            "largest_event_share": 0.13397733740867004,
+            "largest_year_share": 0.5321313881296346,
+            "positive_sum_by_year": {
+              "2025": 0.4961312260762849,
+              "2026": 0.5642759341581578
+            },
+            "scope": "Sum of independent event returns, not account PnL contribution."
+          },
+          "concentration_nonoverlap": {
+            "positive_return_sum": 0.5987120283728413,
+            "positive_events": 19,
+            "largest_event_share": 0.23729359218556859,
+            "largest_year_share": 0.6513540065811175,
+            "positive_sum_by_year": {
+              "2025": 0.2087385499038834,
+              "2026": 0.3899734784689579
+            },
+            "scope": "Sum of independent event returns, not account PnL contribution."
+          }
+        }
+      }
+    },
+    "10": {
+      "all": {
+        "events": 430,
+        "signal_days": 430,
+        "status": {
+          "COMPLETE": 413,
+          "NO_ENTRY": 7,
+          "RIGHT_CENSORED_EXIT": 10
+        },
+        "entry_status": {
+          "FILLED": 423,
+          "DAILY_RANGE_NOT_REACHED": 7
+        },
+        "exit_status": {
+          "FILLED": 413,
+          "NOT_OBSERVED": 17
+        },
+        "information": {
+          "count": 421,
+          "mean": 0.010139452596870975,
+          "median": 0.016620498614958512,
+          "win_rate": 0.6365795724465558,
+          "flat_rate": 0.0023752969121140144,
+          "average_win": 0.044901341165574114,
+          "average_loss_magnitude": 0.05108453874402094,
+          "payoff_ratio": 0.8789614679809451,
+          "q10": -0.06702898550724645,
+          "q90": 0.07568807339449535
+        },
+        "price": {
+          "count": 413,
+          "mean": 0.008323396494063613,
+          "median": 0.014573986898710256,
+          "win_rate": 0.6416464891041163,
+          "flat_rate": 0.0,
+          "average_win": 0.04266518343358215,
+          "average_loss_magnitude": 0.05316696525574998,
+          "payoff_ratio": 0.8024754324108792,
+          "q10": -0.07639929648663123,
+          "q90": 0.0745022633978454
+        },
+        "close_path_min": {
+          "count": 413,
+          "mean": -0.028354793683029747,
+          "median": -0.013282732447817858,
+          "win_rate": 0.0,
+          "flat_rate": 0.22276029055690072,
+          "average_win": null,
+          "average_loss_magnitude": 0.036481401218352916,
+          "payoff_ratio": null,
+          "q10": -0.09126377690692715,
+          "q90": 0.0
+        },
+        "close_path_max": {
+          "count": 413,
+          "mean": 0.04126655075221535,
+          "median": 0.03002832861189808,
+          "win_rate": 0.864406779661017,
+          "flat_rate": 0.13559322033898305,
+          "average_win": 0.0477397351839354,
+          "average_loss_magnitude": null,
+          "payoff_ratio": null,
+          "q10": 0.0,
+          "q90": 0.09670021159749605
+        }
+      },
+      "signals": {
+        "permission": {
+          "raw": {
+            "events": 64,
+            "signal_days": 64,
+            "status": {
+              "COMPLETE": 63,
+              "NO_ENTRY": 1
+            },
+            "entry_status": {
+              "FILLED": 63,
+              "DAILY_RANGE_NOT_REACHED": 1
+            },
+            "exit_status": {
+              "FILLED": 63,
+              "NOT_OBSERVED": 1
+            },
+            "information": {
+              "count": 64,
+              "mean": 0.02174521971198392,
+              "median": 0.021083304213118104,
+              "win_rate": 0.765625,
+              "flat_rate": 0.0,
+              "average_win": 0.0437026512759236,
+              "average_loss_magnitude": 0.04998239006355236,
+              "payoff_ratio": 0.8743609743422812,
+              "q10": -0.02195118647740811,
+              "q90": 0.09244971251184045
+            },
+            "price": {
+              "count": 63,
+              "mean": 0.018985611847384707,
+              "median": 0.018537018537018612,
+              "win_rate": 0.746031746031746,
+              "flat_rate": 0.0,
+              "average_win": 0.04238179164578268,
+              "average_loss_magnitude": 0.04974066631040934,
+              "payoff_ratio": 0.8520551651097071,
+              "q10": -0.026661049489819975,
+              "q90": 0.08125344201726611
+            },
+            "close_path_min": {
+              "count": 63,
+              "mean": -0.019349539485433952,
+              "median": -0.009328358208955279,
+              "win_rate": 0.0,
+              "flat_rate": 0.2857142857142857,
+              "average_win": null,
+              "average_loss_magnitude": 0.027089355279607534,
+              "payoff_ratio": null,
+              "q10": -0.04000332730888773,
+              "q90": 0.0
+            },
+            "close_path_max": {
+              "count": 63,
+              "mean": 0.047993028181064434,
+              "median": 0.037950664136622514,
+              "win_rate": 0.9365079365079365,
+              "flat_rate": 0.06349206349206349,
+              "average_win": 0.05124679280350948,
+              "average_loss_magnitude": null,
+              "payoff_ratio": null,
+              "q10": 0.008780715270456386,
+              "q90": 0.1047867625332415
+            }
+          },
+          "nonoverlap": {
+            "events": 25,
+            "signal_days": 25,
+            "status": {
+              "COMPLETE": 25
+            },
+            "entry_status": {
+              "FILLED": 25
+            },
+            "exit_status": {
+              "FILLED": 25
+            },
+            "information": {
+              "count": 25,
+              "mean": 0.017265796921417637,
+              "median": 0.007307476110174349,
+              "win_rate": 0.68,
+              "flat_rate": 0.0,
+              "average_win": 0.0434176576834842,
+              "average_loss_magnitude": 0.038306907197973805,
+              "payoff_ratio": 1.1334158996208579,
+              "q10": -0.0273498792283269,
+              "q90": 0.09497501310581502
+            },
+            "price": {
+              "count": 25,
+              "mean": 0.014405168656617184,
+              "median": 0.009132131808711863,
+              "win_rate": 0.68,
+              "flat_rate": 0.0,
+              "average_win": 0.042152746486192785,
+              "average_loss_magnitude": 0.04455843423123097,
+              "payoff_ratio": 0.9460104964067152,
+              "q10": -0.051717977693416683,
+              "q90": 0.08231993838332319
+            },
+            "close_path_min": {
+              "count": 25,
+              "mean": -0.020447478239380586,
+              "median": -0.01266624445851805,
+              "win_rate": 0.0,
+              "flat_rate": 0.24,
+              "average_win": null,
+              "average_loss_magnitude": 0.02690457663076393,
+              "payoff_ratio": null,
+              "q10": -0.029345164846433923,
+              "q90": 0.0
+            },
+            "close_path_max": {
+              "count": 25,
+              "mean": 0.04426172428714978,
+              "median": 0.02840909090909083,
+              "win_rate": 0.92,
+              "flat_rate": 0.08,
+              "average_win": 0.04811056987733671,
+              "average_loss_magnitude": null,
+              "payoff_ratio": null,
+              "q10": 0.004154253558424382,
+              "q90": 0.10967411898446394
+            }
+          },
+          "matched_raw": {
+            "count": 63,
+            "control_mean": 0.008772209054728372,
+            "difference": {
+              "count": 63,
+              "mean": 0.010213402792656335,
+              "median": 0.0022326824612402983,
+              "win_rate": 0.5714285714285714,
+              "flat_rate": 0.0,
+              "average_win": 0.041078804554791674,
+              "average_loss_magnitude": 0.03094046622352412,
+              "payoff_ratio": 1.3276724486963078,
+              "q10": -0.055781534712243105,
+              "q90": 0.07115156095443302
+            },
+            "control_support": {
+              "unique_cells": 21,
+              "singleton_target_events": 0,
+              "all_target_cell_events": 0,
+              "median_control_events_per_target": 20.0,
+              "minimum_control_events": 13
+            }
+          },
+          "matched_nonoverlap": {
+            "count": 25,
+            "control_mean": 0.008795044944983647,
+            "difference": {
+              "count": 25,
+              "mean": 0.0056101237116335375,
+              "median": -0.001101992877144983,
+              "win_rate": 0.48,
+              "flat_rate": 0.0,
+              "average_win": 0.0414582718956464,
+              "average_loss_magnitude": 0.027480474612070645,
+              "payoff_ratio": 1.5086446824843442,
+              "q10": -0.05396466099996458,
+              "q90": 0.0669093037056461
+            },
+            "control_support": {
+              "unique_cells": 20,
+              "singleton_target_events": 0,
+              "all_target_cell_events": 0,
+              "median_control_events_per_target": 20.0,
+              "minimum_control_events": 13
+            }
+          },
+          "concentration_raw": {
+            "positive_return_sum": 1.991944207351786,
+            "positive_events": 47,
+            "largest_event_share": 0.07658258629905078,
+            "largest_year_share": 0.5281196788378697,
+            "positive_sum_by_year": {
+              "2025": 0.9399592723022059,
+              "2026": 1.05198493504958
+            },
+            "scope": "Sum of independent event returns, not account PnL contribution."
+          },
+          "concentration_nonoverlap": {
+            "positive_return_sum": 0.7165966902652774,
+            "positive_events": 17,
+            "largest_event_share": 0.21287879393629422,
+            "largest_year_share": 0.5747935421415941,
+            "positive_sum_by_year": {
+              "2025": 0.3047015403807558,
+              "2026": 0.4118951498845216
+            },
+            "scope": "Sum of independent event returns, not account PnL contribution."
+          }
+        },
+        "entry_signal": {
+          "raw": {
+            "events": 55,
+            "signal_days": 55,
+            "status": {
+              "COMPLETE": 54,
+              "NO_ENTRY": 1
+            },
+            "entry_status": {
+              "FILLED": 54,
+              "DAILY_RANGE_NOT_REACHED": 1
+            },
+            "exit_status": {
+              "FILLED": 54,
+              "NOT_OBSERVED": 1
+            },
+            "information": {
+              "count": 55,
+              "mean": 0.021278067120575127,
+              "median": 0.020852221214868516,
+              "win_rate": 0.7636363636363637,
+              "flat_rate": 0.0,
+              "average_win": 0.04235491809735466,
+              "average_loss_magnitude": 0.04681637449671258,
+              "payoff_ratio": 0.9047030777731153,
+              "q10": -0.021520930400548942,
+              "q90": 0.08716122318638446
+            },
+            "price": {
+              "count": 54,
+              "mean": 0.01736505495649142,
+              "median": 0.017718580387651728,
+              "win_rate": 0.7407407407407407,
+              "flat_rate": 0.0,
+              "average_win": 0.040129837341681684,
+              "average_loss_magnitude": 0.04767718042976648,
+              "payoff_ratio": 0.8416990472160403,
+              "q10": -0.025761486141005513,
+              "q90": 0.07739412647046541
+            },
+            "close_path_min": {
+              "count": 54,
+              "mean": -0.018709243044811925,
+              "median": -0.009214500303621143,
+              "win_rate": 0.0,
+              "flat_rate": 0.2777777777777778,
+              "average_win": null,
+              "average_loss_magnitude": 0.025905105754354976,
+              "payoff_ratio": null,
+              "q10": -0.03907823461056623,
+              "q90": 0.0
+            },
+            "close_path_max": {
+              "count": 54,
+              "mean": 0.04763250208086673,
+              "median": 0.036136742086864126,
+              "win_rate": 0.9629629629629629,
+              "flat_rate": 0.037037037037037035,
+              "average_win": 0.0494645213916693,
+              "average_loss_magnitude": null,
+              "payoff_ratio": null,
+              "q10": 0.010308818802937393,
+              "q90": 0.1043632423914115
+            }
+          },
+          "nonoverlap": {
+            "events": 23,
+            "signal_days": 23,
+            "status": {
+              "COMPLETE": 23
+            },
+            "entry_status": {
+              "FILLED": 23
+            },
+            "exit_status": {
+              "FILLED": 23
+            },
+            "information": {
+              "count": 23,
+              "mean": 0.016914657861001412,
+              "median": 0.006487488415199305,
+              "win_rate": 0.6521739130434783,
+              "flat_rate": 0.0,
+              "average_win": 0.0463661592257882,
+              "average_loss_magnitude": 0.038306907197973805,
+              "payoff_ratio": 1.2103863928811427,
+              "q10": -0.028719187401773993,
+              "q90": 0.10380519608359345
+            },
+            "price": {
+              "count": 23,
+              "mean": 0.013882093822960765,
+              "median": 0.009132131808711863,
+              "win_rate": 0.6521739130434783,
+              "flat_rate": 0.0,
+              "average_win": 0.04505037545186303,
+              "average_loss_magnitude": 0.04455843423123097,
+              "payoff_ratio": 1.0110403614740855,
+              "q10": -0.06246912269145416,
+              "q90": 0.09063794786039175
+            },
+            "close_path_min": {
+              "count": 23,
+              "mean": -0.020950353685979174,
+              "median": -0.01266624445851805,
+              "win_rate": 0.0,
+              "flat_rate": 0.21739130434782608,
+              "average_win": null,
+              "average_loss_magnitude": 0.02676989637652895,
+              "payoff_ratio": null,
+              "q10": -0.02929160717118846,
+              "q90": 0.0
+            },
+            "close_path_max": {
+              "count": 23,
+              "mean": 0.04432971518045325,
+              "median": 0.02840909090909083,
+              "win_rate": 0.9130434782608695,
+              "flat_rate": 0.08695652173913043,
+              "average_win": 0.048551592816686896,
+              "average_loss_magnitude": null,
+              "payoff_ratio": null,
+              "q10": 0.0034922211188348046,
+              "q90": 0.12324365289882536
+            }
+          },
+          "matched_raw": {
+            "count": 54,
+            "control_mean": 0.007399830447036199,
+            "difference": {
+              "count": 54,
+              "mean": 0.009965224509455218,
+              "median": 0.002646774742211252,
+              "win_rate": 0.5740740740740741,
+              "flat_rate": 0.0,
+              "average_win": 0.03906425927736336,
+              "average_loss_magnitude": 0.02925521365598619,
+              "payoff_ratio": 1.335292223010993,
+              "q10": -0.04713082393963241,
+              "q90": 0.06294326342312015
+            },
+            "control_support": {
+              "unique_cells": 21,
+              "singleton_target_events": 0,
+              "all_target_cell_events": 0,
+              "median_control_events_per_target": 20.5,
+              "minimum_control_events": 13
+            }
+          },
+          "matched_nonoverlap": {
+            "count": 23,
+            "control_mean": 0.00438413419221742,
+            "difference": {
+              "count": 23,
+              "mean": 0.009497959630743348,
+              "median": 0.0011075014718093922,
+              "win_rate": 0.5217391304347826,
+              "flat_rate": 0.0,
+              "average_win": 0.0414582718956464,
+              "average_loss_magnitude": 0.025367835567332717,
+              "payoff_ratio": 1.6342849505471428,
+              "q10": -0.04300946533182335,
+              "q90": 0.06989182921692061
+            },
+            "control_support": {
+              "unique_cells": 19,
+              "singleton_target_events": 0,
+              "all_target_cell_events": 0,
+              "median_control_events_per_target": 20.0,
+              "minimum_control_events": 13
+            }
+          },
+          "concentration_raw": {
+            "positive_return_sum": 1.6051934936672674,
+            "positive_events": 40,
+            "largest_event_share": 0.09503417486068717,
+            "largest_year_share": 0.509949335094651,
+            "positive_sum_by_year": {
+              "2025": 0.818567354793883,
+              "2026": 0.7866261388733844
+            },
+            "scope": "Sum of independent event returns, not account PnL contribution."
+          },
+          "concentration_nonoverlap": {
+            "positive_return_sum": 0.6757556317779454,
+            "positive_events": 15,
+            "largest_event_share": 0.22574468045652943,
+            "largest_year_share": 0.5490950780845563,
+            "positive_sum_by_year": {
+              "2025": 0.3047015403807558,
+              "2026": 0.3710540913971896
+            },
+            "scope": "Sum of independent event returns, not account PnL contribution."
+          }
+        }
+      }
+    },
+    "20": {
+      "all": {
+        "events": 430,
+        "signal_days": 430,
+        "status": {
+          "COMPLETE": 403,
+          "NO_ENTRY": 7,
+          "RIGHT_CENSORED_EXIT": 20
+        },
+        "entry_status": {
+          "FILLED": 423,
+          "DAILY_RANGE_NOT_REACHED": 7
+        },
+        "exit_status": {
+          "FILLED": 403,
+          "NOT_OBSERVED": 27
+        },
+        "information": {
+          "count": 411,
+          "mean": 0.02239452976541964,
+          "median": 0.034123222748815296,
+          "win_rate": 0.656934306569343,
+          "flat_rate": 0.0024330900243309003,
+          "average_win": 0.07073122490748371,
+          "average_loss_magnitude": 0.07066627851023664,
+          "payoff_ratio": 1.0009190578394143,
+          "q10": -0.0832095096582467,
+          "q90": 0.12452830188679243
+        },
+        "price": {
+          "count": 403,
+          "mean": 0.020492826533206512,
+          "median": 0.03111542835045178,
+          "win_rate": 0.6476426799007444,
+          "flat_rate": 0.0,
+          "average_win": 0.06956577155181916,
+          "average_loss_magnitude": 0.06970462874748296,
+          "payoff_ratio": 0.9980079200168065,
+          "q10": -0.08893648982908174,
+          "q90": 0.11951103267435963
+        },
+        "close_path_min": {
+          "count": 403,
+          "mean": -0.040193948425919786,
+          "median": -0.017921146953405076,
+          "win_rate": 0.0,
+          "flat_rate": 0.19106699751861042,
+          "average_win": null,
+          "average_loss_magnitude": 0.049687611090937646,
+          "payoff_ratio": null,
+          "q10": -0.12024167446794229,
+          "q90": 0.0
+        },
+        "close_path_max": {
+          "count": 403,
+          "mean": 0.0713097392047286,
+          "median": 0.062286689419795316,
+          "win_rate": 0.9106699751861043,
+          "flat_rate": 0.08933002481389578,
+          "average_win": 0.07830469999865293,
+          "average_loss_magnitude": null,
+          "payoff_ratio": null,
+          "q10": 0.0035848788548725535,
+          "q90": 0.1452597402597403
+        }
+      },
+      "signals": {
+        "permission": {
+          "raw": {
+            "events": 64,
+            "signal_days": 64,
+            "status": {
+              "COMPLETE": 61,
+              "NO_ENTRY": 1,
+              "RIGHT_CENSORED_EXIT": 2
+            },
+            "entry_status": {
+              "FILLED": 63,
+              "DAILY_RANGE_NOT_REACHED": 1
+            },
+            "exit_status": {
+              "FILLED": 61,
+              "NOT_OBSERVED": 3
+            },
+            "information": {
+              "count": 62,
+              "mean": 0.019856639790717043,
+              "median": 0.0392711077399317,
+              "win_rate": 0.6612903225806451,
+              "flat_rate": 0.0,
+              "average_win": 0.0680448978225463,
+              "average_loss_magnitude": 0.07422519731904485,
+              "payoff_ratio": 0.9167358293446692,
+              "q10": -0.07689801861039393,
+              "q90": 0.10892045955217675
+            },
+            "price": {
+              "count": 61,
+              "mean": 0.020477174496970438,
+              "median": 0.03419327924822424,
+              "win_rate": 0.6721311475409836,
+              "flat_rate": 0.0,
+              "average_win": 0.06811153886269139,
+              "average_loss_magnitude": 0.07717327245275751,
+              "payoff_ratio": 0.8825793788177978,
+              "q10": -0.07551475967460564,
+              "q90": 0.10719106677294832
+            },
+            "close_path_min": {
+              "count": 61,
+              "mean": -0.03273613284897041,
+              "median": -0.013011152416356864,
+              "win_rate": 0.0,
+              "flat_rate": 0.2459016393442623,
+              "average_win": null,
+              "average_loss_magnitude": 0.043410958777982504,
+              "payoff_ratio": null,
+              "q10": -0.1011459890383658,
+              "q90": 0.0
+            },
+            "close_path_max": {
+              "count": 61,
+              "mean": 0.07793793775534012,
+              "median": 0.07748404740200554,
+              "win_rate": 1.0,
+              "flat_rate": 0.0,
+              "average_win": 0.07793793775534012,
+              "average_loss_magnitude": null,
+              "payoff_ratio": null,
+              "q10": 0.021894336030461536,
+              "q90": 0.13800578034682087
+            }
+          },
+          "nonoverlap": {
+            "events": 17,
+            "signal_days": 17,
+            "status": {
+              "COMPLETE": 17
+            },
+            "entry_status": {
+              "FILLED": 17
+            },
+            "exit_status": {
+              "FILLED": 17
+            },
+            "information": {
+              "count": 17,
+              "mean": 0.013977353866446307,
+              "median": 0.04143646408839774,
+              "win_rate": 0.7058823529411765,
+              "flat_rate": 0.0,
+              "average_win": 0.06083744608423991,
+              "average_loss_magnitude": 0.09848686745625834,
+              "payoff_ratio": 0.6177214044426793,
+              "q10": -0.07760924826225912,
+              "q90": 0.10686065024300313
+            },
+            "price": {
+              "count": 17,
+              "mean": 0.015845992666762603,
+              "median": 0.03419327924822424,
+              "win_rate": 0.7058823529411765,
+              "flat_rate": 0.0,
+              "average_win": 0.06128850050533472,
+              "average_loss_magnitude": 0.09321602614581048,
+              "payoff_ratio": 0.6574888786769987,
+              "q10": -0.07492571213546265,
+              "q90": 0.10669257099197509
+            },
+            "close_path_min": {
+              "count": 17,
+              "mean": -0.03700793402416286,
+              "median": -0.008587786259542152,
+              "win_rate": 0.0,
+              "flat_rate": 0.23529411764705882,
+              "average_win": null,
+              "average_loss_magnitude": 0.0483949906469822,
+              "payoff_ratio": null,
+              "q10": -0.08510549411385326,
+              "q90": 0.0
+            },
+            "close_path_max": {
+              "count": 17,
+              "mean": 0.07839074407964443,
+              "median": 0.07748404740200554,
+              "win_rate": 1.0,
+              "flat_rate": 0.0,
+              "average_win": 0.07839074407964443,
+              "average_loss_magnitude": null,
+              "payoff_ratio": null,
+              "q10": 0.02110280560137894,
+              "q90": 0.14763863304325742
+            }
+          },
+          "matched_raw": {
+            "count": 61,
+            "control_mean": 0.017264932001861244,
+            "difference": {
+              "count": 61,
+              "mean": 0.003212242495109202,
+              "median": -0.006309886232074978,
+              "win_rate": 0.4098360655737705,
+              "flat_rate": 0.0,
+              "average_win": 0.05601909973518351,
+              "average_loss_magnitude": 0.033459186143831296,
+              "payoff_ratio": 1.6742517135465793,
+              "q10": -0.0594638190591609,
+              "q90": 0.09595892353252702
+            },
+            "control_support": {
+              "unique_cells": 21,
+              "singleton_target_events": 0,
+              "all_target_cell_events": 0,
+              "median_control_events_per_target": 20.0,
+              "minimum_control_events": 11
+            }
+          },
+          "matched_nonoverlap": {
+            "count": 17,
+            "control_mean": 0.017139047366766243,
+            "difference": {
+              "count": 17,
+              "mean": -0.0012930547000036406,
+              "median": -0.006309886232074978,
+              "win_rate": 0.4117647058823529,
+              "flat_rate": 0.0,
+              "average_win": 0.05257223617696873,
+              "average_loss_magnitude": 0.038998758313884295,
+              "payoff_ratio": 1.3480489751452427,
+              "q10": -0.05358133666199329,
+              "q90": 0.09258760363524463
+            },
+            "control_support": {
+              "unique_cells": 17,
+              "singleton_target_events": 0,
+              "all_target_cell_events": 0,
+              "median_control_events_per_target": 20.0,
+              "minimum_control_events": 13
+            }
+          },
+          "concentration_raw": {
+            "positive_return_sum": 2.792573093370347,
+            "positive_events": 41,
+            "largest_event_share": 0.07402742216101416,
+            "largest_year_share": 0.5245646119111245,
+            "positive_sum_by_year": {
+              "2025": 1.4648850209572644,
+              "2026": 1.3276880724130826
+            },
+            "scope": "Sum of independent event returns, not account PnL contribution."
+          },
+          "concentration_nonoverlap": {
+            "positive_return_sum": 0.7354620060640167,
+            "positive_events": 12,
+            "largest_event_share": 0.1602269316771057,
+            "largest_year_share": 0.6153325940162896,
+            "positive_sum_by_year": {
+              "2025": 0.4525537439917955,
+              "2026": 0.2829082620722212
+            },
+            "scope": "Sum of independent event returns, not account PnL contribution."
+          }
+        },
+        "entry_signal": {
+          "raw": {
+            "events": 55,
+            "signal_days": 55,
+            "status": {
+              "COMPLETE": 53,
+              "NO_ENTRY": 1,
+              "RIGHT_CENSORED_EXIT": 1
+            },
+            "entry_status": {
+              "FILLED": 54,
+              "DAILY_RANGE_NOT_REACHED": 1
+            },
+            "exit_status": {
+              "FILLED": 53,
+              "NOT_OBSERVED": 2
+            },
+            "information": {
+              "count": 54,
+              "mean": 0.013360390695312894,
+              "median": 0.03561448707014048,
+              "win_rate": 0.6666666666666666,
+              "flat_rate": 0.0,
+              "average_win": 0.060685095587314414,
+              "average_loss_magnitude": 0.08128901908869011,
+              "payoff_ratio": 0.7465349719757861,
+              "q10": -0.08203884541013363,
+              "q90": 0.10065630682757493
+            },
+            "price": {
+              "count": 53,
+              "mean": 0.014356864931516259,
+              "median": 0.03202479338842967,
+              "win_rate": 0.6792452830188679,
+              "flat_rate": 0.0,
+              "average_win": 0.06181485421534881,
+              "average_loss_magnitude": 0.08614240649307035,
+              "payoff_ratio": 0.717589126330264,
+              "q10": -0.09195854347329188,
+              "q90": 0.10517173241170581
+            },
+            "close_path_min": {
+              "count": 53,
+              "mean": -0.03561820102419594,
+              "median": -0.013915243516761544,
+              "win_rate": 0.0,
+              "flat_rate": 0.24528301886792453,
+              "average_win": null,
+              "average_loss_magnitude": 0.047194116357059626,
+              "payoff_ratio": null,
+              "q10": -0.10620369689692633,
+              "q90": 0.0
+            },
+            "close_path_max": {
+              "count": 53,
+              "mean": 0.07279193503857255,
+              "median": 0.0552631578947369,
+              "win_rate": 1.0,
+              "flat_rate": 0.0,
+              "average_win": 0.07279193503857255,
+              "average_loss_magnitude": null,
+              "payoff_ratio": null,
+              "q10": 0.02245785292550284,
+              "q90": 0.1250872515424625
+            }
+          },
+          "nonoverlap": {
+            "events": 17,
+            "signal_days": 17,
+            "status": {
+              "COMPLETE": 17
+            },
+            "entry_status": {
+              "FILLED": 17
+            },
+            "exit_status": {
+              "FILLED": 17
+            },
+            "information": {
+              "count": 17,
+              "mean": 0.009630903067524076,
+              "median": 0.04143646408839774,
+              "win_rate": 0.7058823529411765,
+              "flat_rate": 0.0,
+              "average_win": 0.05467997411910008,
+              "average_loss_magnitude": 0.09848686745625834,
+              "payoff_ratio": 0.5552006631075507,
+              "q10": -0.07760924826225912,
+              "q90": 0.08052190045652106
+            },
+            "price": {
+              "count": 17,
+              "mean": 0.01318399859915221,
+              "median": 0.03419327924822424,
+              "win_rate": 0.7058823529411765,
+              "flat_rate": 0.0,
+              "average_win": 0.05751734224288666,
+              "average_loss_magnitude": 0.09321602614581048,
+              "payoff_ratio": 0.6170327637966118,
+              "q10": -0.07492571213546265,
+              "q90": 0.09640302388238293
+            },
+            "close_path_min": {
+              "count": 17,
+              "mean": -0.03677263990651581,
+              "median": -0.008587786259542152,
+              "win_rate": 0.0,
+              "flat_rate": 0.29411764705882354,
+              "average_win": null,
+              "average_loss_magnitude": 0.052094573200897394,
+              "payoff_ratio": null,
+              "q10": -0.08510549411385326,
+              "q90": 0.0
+            },
+            "close_path_max": {
+              "count": 17,
+              "mean": 0.07599229824673229,
+              "median": 0.07748404740200554,
+              "win_rate": 1.0,
+              "flat_rate": 0.0,
+              "average_win": 0.07599229824673229,
+              "average_loss_magnitude": null,
+              "payoff_ratio": null,
+              "q10": 0.02110280560137894,
+              "q90": 0.14763863304325742
+            }
+          },
+          "matched_raw": {
+            "count": 53,
+            "control_mean": 0.015644523474341074,
+            "difference": {
+              "count": 53,
+              "mean": -0.0012876585428248139,
+              "median": -0.008328074929014662,
+              "win_rate": 0.37735849056603776,
+              "flat_rate": 0.0,
+              "average_win": 0.051572715870048934,
+              "average_loss_magnitude": 0.033324249096081636,
+              "payoff_ratio": 1.5476032399515645,
+              "q10": -0.059989104451859725,
+              "q90": 0.0851888725812439
+            },
+            "control_support": {
+              "unique_cells": 21,
+              "singleton_target_events": 0,
+              "all_target_cell_events": 0,
+              "median_control_events_per_target": 20.0,
+              "minimum_control_events": 11
+            }
+          },
+          "matched_nonoverlap": {
+            "count": 17,
+            "control_mean": 0.025345208379554757,
+            "difference": {
+              "count": 17,
+              "mean": -0.012161209780402549,
+              "median": -0.013567392091746115,
+              "win_rate": 0.29411764705882354,
+              "flat_rate": 0.0,
+              "average_win": 0.05076405348342165,
+              "average_loss_magnitude": 0.03838006947366263,
+              "payoff_ratio": 1.3226670555731335,
+              "q10": -0.0569153203603526,
+              "q90": 0.06146598778266417
+            },
+            "control_support": {
+              "unique_cells": 17,
+              "singleton_target_events": 0,
+              "all_target_cell_events": 0,
+              "median_control_events_per_target": 21.0,
+              "minimum_control_events": 13
+            }
+          },
+          "concentration_raw": {
+            "positive_return_sum": 2.2253347517525572,
+            "positive_events": 36,
+            "largest_event_share": 0.07880930511834565,
+            "largest_year_share": 0.5668118507158905,
+            "positive_sum_by_year": {
+              "2025": 1.2613461091032536,
+              "2026": 0.9639886426493038
+            },
+            "scope": "Sum of independent event returns, not account PnL contribution."
+          },
+          "concentration_nonoverlap": {
+            "positive_return_sum": 0.69020810691464,
+            "positive_events": 12,
+            "largest_event_share": 0.17073230438207532,
+            "largest_year_share": 0.590111650040052,
+            "positive_sum_by_year": {
+              "2025": 0.40729984484241877,
+              "2026": 0.2829082620722212
+            },
+            "scope": "Sum of independent event returns, not account PnL contribution."
+          }
+        }
+      }
+    }
+  },
+  "bootstrap": {
+    "replicates": 1000,
+    "block_sessions": 20,
+    "seed": 17,
+    "sessions": 434,
+    "starts_sha256": "b435a8f39216f940c5df1c1772a12ab41bffb61096f15523dd16d800929c1804"
+  },
+  "sources": {
+    "check.py": "e21f1ab48a6c1ba30d32be196315ec877bc8b453123f5adf44a61c401efda39a",
+    "stats.py": "c74fc8c4a840d25e15605a27dafe24ee6e3460df5a18d19f94beac11a00f18ca",
+    "stats_checks.py": "4e8d5cb61da1f855433e5b495a332d3d04be5e73d61530fd9ace140a96e3c2e4",
+    "study.py": "c5e487f6dfea27fec96b1615c31b8c6c6453a6e3226d0d98560df6bf53cef885",
+    "verify.py": "c4ff68dc4c495b69fe193610560c70f7ed29f701a33be0979ac019257f7cac7d"
+  },
+  "protocol_sha256": "23cb59204c0551e608bd1fe44ed60b2d28be58d6a4454a7e70cfadb4ccd85da7",
+  "artifacts": {
+    "events": "19ea1ee9dc5e7a8be37b0d6c2d8e2af14b1a309d8b14b7abbeb4397c354b43a8",
+    "signal_facts": "95e216f6b2d51d5ce7d02a8fd12e75ccf066d2cd5bee715f1be564f3b8d2c7f1",
+    "bootstrap_draws": "e63d503f46520f8708c62716fa5926b05a6c3cb8065649f6a6763d86148c5ba0"
+  },
+  "input_identity_sha256": "93bf3f0f055cfa3a6191d79e5be1b4ac9d2129839749a85fe8c5b1f1a1e77488",
+  "order_reproduction_sha256": "aac375162a55577a5500da4e277f651129bd17abaa93cb111dc866a39bec9992",
+  "new_accounts": 0,
+  "new_parameters": 0,
+  "new_data": false,
+  "seconds": 100.4825166000519
+}

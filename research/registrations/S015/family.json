@@ -173,6 +173,29 @@
     "objective": "在固定共同窗口同时严格优于修复后S011-v1的累计净收益和最大回撤，并满足原开发池默认标准",
     "pending_freeze_candidate_count": 0,
     "pending_selection_candidate_count": 0,
+    "post_freeze_entry_census": {
+      "S017_budget_consumed": 0,
+      "authorization": "用户要求普查S015-v1，并选择沿用当前分支。",
+      "conclusion": "S015-v1在原已研究样本内具有清楚的近端入场优势：全部入场许可在1交易日主期限的扣费均值、匹配增量均正，减少重叠后未消失；冻结入场脉冲结果同向。它不同于LITE原PAT缺乏清楚入场增量的诊断表现，但不是跨市场收益排名，也不是新增独立验证。",
+      "experiment": "EX086_20261029",
+      "next_step": "建议保留S015-v1作为已有入场优势的研究参照，当前不调整冻结策略或退出参数。对S017继续先补证超跌修复的入场质量；若进一步研究S015，应单独约定未见样本或明确原退出如何利用近端机会的问题。本轮不自动开启后续实验或改变前瞻/生产安排。",
+      "report": {
+        "evidence_id": "f7650eace4f0b51490a2bb91dde1915ccc9846a0e8a1eecc437a49bbc07c0802.json",
+        "experiment": {
+          "experiment_id": "EX086_20261029",
+          "strategy_id": "S015",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "experiment-report",
+        "schema": "experiment_report",
+        "schema_version": 1,
+        "sha256": "f7650eace4f0b51490a2bb91dde1915ccc9846a0e8a1eecc437a49bbc07c0802",
+        "type": "EvidenceRef"
+      },
+      "scope": "One fixed entry census; no parameter search, new continuous account or frozen qualification change.",
+      "status": "COMPLETED"
+    },
     "previous_experiment_budget": {
       "authorized": 10,
       "completed": 10,
@@ -272,5 +295,5 @@
     "159326.SZ"
   ],
   "strategy_id": "S015",
-  "updated_at": "2026-10-24T10:24:28+08:00"
+  "updated_at": "2026-10-29T16:53:32+08:00"
 }

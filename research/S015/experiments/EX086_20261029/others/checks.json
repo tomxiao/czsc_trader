@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "checks": [
+    "stats_null_flat_and_one_sided_payoff_boundaries",
+    "planned_entry_denominators_stratum_matching_and_self_support",
+    "greedy_strict_boundary_excludes_held_and_exit_indices",
+    "concentration_uses_observed_years_and_positive_returns_only",
+    "moving_blocks_reproducible_count_conserving_and_short_sample_rejected",
+    "bootstrap_reestimates_control_from_repeated_days_and_retains_empty_draws",
+    "bootstrap_preserves_distinct_matched_strata",
+    "public_limit_floor_before_signal_day_price_scaling",
+    "daily_equality_no_touch_and_down_limit_open_plus_tick",
+    "T_plus_one_entry_fixed_horizon_fees_censor_and_future_path_independence"
+  ],
+  "sources": {
+    "check.py": "e21f1ab48a6c1ba30d32be196315ec877bc8b453123f5adf44a61c401efda39a",
+    "stats.py": "c74fc8c4a840d25e15605a27dafe24ee6e3460df5a18d19f94beac11a00f18ca",
+    "stats_checks.py": "4e8d5cb61da1f855433e5b495a332d3d04be5e73d61530fd9ace140a96e3c2e4",
+    "study.py": "c5e487f6dfea27fec96b1615c31b8c6c6453a6e3226d0d98560df6bf53cef885",
+    "verify.py": "c4ff68dc4c495b69fe193610560c70f7ed29f701a33be0979ac019257f7cac7d"
+  },
+  "scope": "Synthetic only; no historical opportunity returns."
+}
