@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "sources": {
+    "check.py": "4192f171bc07d6504b41b31205ac73fd7b3d631353b85a196d023d469063c764",
+    "check_entries.py": "10b367794c25a604732463e52732a1fd6b0a6129e7f1bfef093317068c267b44",
+    "lifecycle.py": "ef7a954b57f37782ea78eb05f0d4ef8a3f73960aabaf304bd4b89fe5d7e3bffa",
+    "numbered_entries.py": "1c7963dbdbbfbf005f170201eadeb94d5754dba9785e7f3153a9f03b9eba8736",
+    "study.py": "561d65d1e1ec5475cf27f51a5738315ae69192c30b628bafc747aaca8c7da491",
+    "verify.py": "753320fda9c654cb6452df584d3a6d3082abaacb78938c8ad84b69fe9595da6c"
+  },
+  "checks": [
+    "S017-M003_drop_inclusive_recovery_strict",
+    "S017-M004_decline_count_and_strict_range_recovery",
+    "S017-M005_inclusive_volume_range_strict_candle_recovery",
+    "S017-M005_ATR_excludes_prior_TR",
+    "S017-M005_same_local_slot_DST_half_day_excludes_prior_day",
+    "common_history_readiness_independent_of_shape",
+    "independent_scalar_all_synthetic_bars",
+    "prepared_raw_readonly_scalar_matches_unprepared",
+    "future_suffix_prefix_and_mutation_causality",
+    "two_spawn_workers_identical_to_serial",
+    "import_path_restoration",
+    "nonfill_no_replacement",
+    "state_adjusted_control_scalar",
+    "background_slice_partition",
+    "reference_roles_preserved",
+    "two_spawn_full_task_equivalence"
+  ],
+  "workers": 2,
+  "native_threads": 1
+}

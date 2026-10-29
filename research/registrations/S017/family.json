@@ -175,7 +175,7 @@
         "status": "READY_WITH_EXPLICIT_RAW_PRICE_AND_AVAILABILITY_ASSUMPTIONS"
       },
       "completed_new_account_paths": 24,
-      "completed_new_rounds": 14,
+      "completed_new_rounds": 15,
       "downside_failure_authorization": {
         "protocol": "research/S017/experiments/EX022_20261029/protocols/design.md",
         "scope": "3个竞争形态、1个近期超跌背景、旧C参考，固定5期限普查，1轮、0账户",
@@ -201,7 +201,8 @@
         "EX020_20261029",
         "EX021_20261029",
         "EX022_20261029",
-        "EX023_20261029"
+        "EX023_20261029",
+        "EX024_20261029"
       ],
       "failed_new_rounds": 1,
       "final_validation": {
@@ -229,7 +230,7 @@
         "type": "DeliveryValidation"
       },
       "guideline_commit": "25c09476",
-      "initiated_new_rounds": 15,
+      "initiated_new_rounds": 16,
       "latest_delivery": {
         "batch": {
           "strategy_id": "S017",
@@ -240,9 +241,14 @@
         "stage": "PROTOTYPES",
         "type": "DeliveryReference"
       },
-      "new_entry_diagnostic_expressions": 12,
+      "new_entry_diagnostic_expressions": 15,
       "new_information_exposure": "公开2024 ORB论文检索返回2016—2023 LITE 15分钟榜单行；仅方法学习，无新行情或账户评价。后续不能声称完全独立设计。",
       "new_public_diagnoses": 21,
+      "numbered_entry_authorization": {
+        "protocol": "research/S017/experiments/EX024_20261029/protocols/design.md",
+        "scope": "S017-M001/S017-M002原参照；S017-M003至S017-M005三个新入场表达；1轮、0账户、0退出优化",
+        "user_statement": "你继续主导下一轮实验；机制使用带数字的编号，沟通反馈使用编号。"
+      },
       "oversold_decomposition_authorization": {
         "protocol": "research/S017/experiments/EX021_20261029/protocols/design.md",
         "scope": "固定D/R/C/D_NR拆解、episode及同队列持续性诊断，1轮，0新账户",
@@ -323,7 +329,7 @@
       },
       "platform_scope": "正式辅助市场/行业行情因果输入，以及当前可得交易时段；离线验证和既有能力保护",
       "recovery_exit_description": "research/S017/experiments/EX013_20261029/others/recovery_exit_description.json",
-      "remaining_rounds": 5,
+      "remaining_rounds": 4,
       "reports": {
         "EX011_20261029": {
           "evidence_id": "4601d3cefa82067e8f43a9da516739ada4f822b04f6ff53b06e493c9601bb64e.json",
@@ -506,6 +512,20 @@
           "schema_version": 1,
           "sha256": "8171051f239b3d91ee759d96c6ef490317e4e1330c66b7aedaabab2e9431c580",
           "type": "EvidenceRef"
+        },
+        "EX024_20261029": {
+          "evidence_id": "427f5330f6e33124629fb5f02b2b4f0d7c4b566db41e12d140b45b6d27e6dc94.json",
+          "experiment": {
+            "experiment_id": "EX024_20261029",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "427f5330f6e33124629fb5f02b2b4f0d7c4b566db41e12d140b45b6d27e6dc94",
+          "type": "EvidenceRef"
         }
       },
       "research_started": true,
@@ -534,6 +554,7 @@
         "EX021_20261029": "COMPLETED_OVERSOLD_DECOMPOSITION_REPORT_PUBLICATION_PASS",
         "EX022_20261029": "COMPLETED_DOWNSIDE_FAILURE_CENSUS_REPORT_PUBLICATION_PASS",
         "EX023_20261029": "COMPLETED_RETEST_DELAYED_REPAIR_REPORT_PUBLICATION_PASS",
+        "EX024_20261029": "COMPLETED_NUMBERED_ENTRY_COMPETITION_REPORT_PUBLICATION_PASS",
         "scope": "Operational progress only; completed rounds require published completed reports."
       },
       "signal_diagnosis_authorization": {
@@ -542,8 +563,8 @@
         "scope": "单一诊断实验；不运行新完整账户、不改信号、不自动追加后续实验",
         "user_statement": "ok"
       },
-      "status": "RETEST_DELAYED_REPAIR_COMPLETE_AWAITING_DIRECTION",
-      "stop_rationale": "完成批准的固定T数天修复补证；未改入场或优化退出。",
+      "status": "NUMBERED_ENTRY_COMPETITION_COMPLETE_AWAITING_DIRECTION",
+      "stop_rationale": "完成批准的一轮三项数字编号入场竞争普查，未优化退出或创建账户。",
       "successful_new_configurations": 12,
       "technical_failures": {
         "EX010_20261029": "Auxiliary 96-hour age limit excludes valid half-day/long-weekend observations; FAILED report preserved, EX013 successor uses 5 days."
@@ -594,7 +615,7 @@
       "research/S017/materials/registration_20261028.md",
       "research/S017/materials/pre_registration_readiness.json"
     ],
-    "next_action": "建议将固定T保留为研究参照，暂不投入退出优化，也不再用同一批小样本反复证明同一件事。下一轮若继续，应先寻找更常见、机制不同的数天修复入口，固定观察窗口，明确检查相对近期超跌背景B的额外价值；T作为不变对照，不能仅靠放宽T阈值增加事件数。机会密度是研究优先级因素，不能替代正式账户频率验收。本轮保持T不变，未实施上述新方向，剩5轮。",
+    "next_action": "下一轮优先拆解S017-M005，保留原入场定义和S017-M001/S017-M002参照不变。固定共同底座为前柱收阴（Close<Open）且当前Close>前柱High，只变化放量与窄幅两个条件：原S017-M005、去掉放量、去掉窄幅、两者都去掉四组比较；三项新对照另分配数字编号。沿用相同普查、主65柱与背景分层，辨别组合是否真有新增信息。先不优化退出、不因本轮切片结果把超跌写入S017-M005、不选最优持有期。上述为建议，本轮未执行。",
     "objective": "LITE 美股个股30分钟只做多择时研究",
     "other_proposals_confirmation": "CONFIRMED",
     "policy_reference": "research/RSCH_AGENT.md#research-policy",
@@ -695,10 +716,10 @@
         "2018-12-31"
       ]
     },
-    "stage": "STAGE_2_RETEST_DELAYED_REPAIR_COMPLETE_AWAITING_DIRECTION",
+    "stage": "STAGE_2_NUMBERED_ENTRY_COMPETITION_COMPLETE_AWAITING_DIRECTION",
     "stage_two_result": {
       "account_replay_count": 68,
-      "conclusion": "固定T数天修复补证完成，入场规则未变。26到65柱的修复差额在主45队列为+1.5982个百分点，20/60日块描述区间均为正，7年中6年方向为正；逐一删除任一年、或删去贡献最大的3个事件后，平均差额仍正。这增加了对‘过几天继续修复’线索的支持。但65柱整体净收益仍有较大不确定性，T相对近期超跌B和旧恢复C的额外价值没有确立，机会又较稀少；暂不进入退出优化，不将T继续列为唯一优先入场路线。",
+      "conclusion": "本轮三项新表达中，S017-M005（放量窄幅下跌后收复入场）获得了值得继续研究的正面支持；S017-M003（短跌半程收复入场）和S017-M004（短跌波幅收窄后转强入场）未显示清晰的普通机会之外的优势，降低后续优先级。S017-M001与S017-M002继续承担原参照角色。完成的是一轮入场普查，尚未证明完整策略达标。",
       "configuration_count": 34,
       "count_scope": "Completed formal configurations and candidate/paired-benchmark account paths; EX010 three technically failed configurations and EX017 one unfinished technical attempt are recorded separately, not successful accounts.",
       "diagnostic_only_configuration_ids": [
@@ -716,12 +737,12 @@
         "stage": "PROTOTYPES",
         "type": "DeliveryReference"
       },
-      "latest_experiment": "EX023_20261029",
-      "latest_experiment_conclusion": "固定T数天修复补证完成，入场规则未变。26到65柱的修复差额在主45队列为+1.5982个百分点，20/60日块描述区间均为正，7年中6年方向为正；逐一删除任一年、或删去贡献最大的3个事件后，平均差额仍正。这增加了对‘过几天继续修复’线索的支持。但65柱整体净收益仍有较大不确定性，T相对近期超跌B和旧恢复C的额外价值没有确立，机会又较稀少；暂不进入退出优化，不将T继续列为唯一优先入场路线。",
+      "latest_experiment": "EX024_20261029",
+      "latest_experiment_conclusion": "本轮三项新表达中，S017-M005（放量窄幅下跌后收复入场）获得了值得继续研究的正面支持；S017-M003（短跌半程收复入场）和S017-M004（短跌波幅收窄后转强入场）未显示清晰的普通机会之外的优势，降低后续优先级。S017-M001与S017-M002继续承担原参照角色。完成的是一轮入场普查，尚未证明完整策略达标。",
       "latest_experiment_report": {
-        "evidence_id": "8171051f239b3d91ee759d96c6ef490317e4e1330c66b7aedaabab2e9431c580.json",
+        "evidence_id": "427f5330f6e33124629fb5f02b2b4f0d7c4b566db41e12d140b45b6d27e6dc94.json",
         "experiment": {
-          "experiment_id": "EX023_20261029",
+          "experiment_id": "EX024_20261029",
           "strategy_id": "S017",
           "type": "ExperimentRef"
         },
@@ -729,10 +750,10 @@
         "name": "experiment-report",
         "schema": "experiment_report",
         "schema_version": 1,
-        "sha256": "8171051f239b3d91ee759d96c6ef490317e4e1330c66b7aedaabab2e9431c580",
+        "sha256": "427f5330f6e33124629fb5f02b2b4f0d7c4b566db41e12d140b45b6d27e6dc94",
         "type": "EvidenceRef"
       },
-      "latest_experiment_scope": "UNCHANGED_RETEST_ENTRY_DELAYED_REPAIR_EVIDENCE_ONLY",
+      "latest_experiment_scope": "NUMBERED_ENTRY_COMPETITION_DIAGNOSTIC_ONLY",
       "predecessor_delivery": {
         "batch": {
           "strategy_id": "S017",
@@ -826,6 +847,25 @@
           "type": "EvidenceRef"
         }
       },
+      "prior_retest_delayed_repair_result": {
+        "latest_experiment": "EX023_20261029",
+        "latest_experiment_conclusion": "固定T数天修复补证完成，入场规则未变。26到65柱的修复差额在主45队列为+1.5982个百分点，20/60日块描述区间均为正，7年中6年方向为正；逐一删除任一年、或删去贡献最大的3个事件后，平均差额仍正。这增加了对‘过几天继续修复’线索的支持。但65柱整体净收益仍有较大不确定性，T相对近期超跌B和旧恢复C的额外价值没有确立，机会又较稀少；暂不进入退出优化，不将T继续列为唯一优先入场路线。",
+        "latest_experiment_report": {
+          "evidence_id": "8171051f239b3d91ee759d96c6ef490317e4e1330c66b7aedaabab2e9431c580.json",
+          "experiment": {
+            "experiment_id": "EX023_20261029",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "8171051f239b3d91ee759d96c6ef490317e4e1330c66b7aedaabab2e9431c580",
+          "type": "EvidenceRef"
+        },
+        "latest_experiment_scope": "UNCHANGED_RETEST_ENTRY_DELAYED_REPAIR_EVIDENCE_ONLY"
+      },
       "prior_signal_diagnosis_result": {
         "latest_experiment": "EX019_20261029",
         "latest_experiment_conclusion": "本轮信号诊断完成。当前30m PAT单柱恢复表达，在3/13/26柱固定期限内未显示清晰的增量机会，暂不足以优先投入新退出规则或完整原型。主期限全部触发净价格均值为负且低于匹配基线；减少重叠后出现小幅正收益，但匹配增量接近零、区间跨正负。属于当前表达缺乏明确支持，不是所有PAT无效，也不证明任何退出规则都无法改善。",
@@ -859,5 +899,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-10-29T20:30:29+08:00"
+  "updated_at": "2026-10-29T22:01:03+08:00"
 }
