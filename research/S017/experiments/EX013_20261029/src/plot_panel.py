@@ -252,7 +252,7 @@ def render(points, targets, destination):
                  fontsize=14, fontweight='bold', y=.96)
     fig.text(.09, .895, 'Economic dimensions only. Frequency goals are reviewed separately; no positional score.',
              fontsize=10, color='#424B52')
-    fig.text(.09, .07, 'Ten new prototypes, retained C0013 and the same-contract benchmark.\n'
+    fig.text(.09, .07, 'Eleven new prototypes, retained C0013 and the same-contract benchmark.\n'
              'Repeatedly seen development data; adaptive designs; not independent validation.',
              fontsize=9, color='#545E66', linespacing=1.5)
     fig.savefig(destination, dpi=180, facecolor='white')

@@ -1,0 +1,43 @@
+"""Fault injection into in-memory copies; original evidence never changes."""
+import importlib.util
+import json
+from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+SOURCE = ROOT/'research/S017/experiments/EX013_20261029/src'
+sys.path.insert(0, str(SOURCE))
+spec = importlib.util.spec_from_file_location('recovery_description', SOURCE/'describe_recovery_exit.py')
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+payloads, _ = module.load_accounts(module.OLD, module.ORIGINAL, ('C0031',))
+payload = payloads['C0031']
+definition, _ = module.bind_source(module.OLD, module.ORIGINAL, 'C0031', payload)
+decisions = payload['runs']['candidate']['decisions']
+first_held = next(row for row in decisions if module.facts(row).get('held') == 'True')
+first_recovery = next(row for row in decisions if module.facts(row).get('closed_cycle_id'))
+stop_fact = next(item for item in first_held['explanation']['basis'] if item['key'] == 'stop')
+freeze_fact = next(item for item in first_recovery['explanation']['basis'] if item['key'] == 'recovery_stop')
+checks = []
+cases = [
+    ('wrong_actual_quantity', payload['runs']['candidate']['fills'][0], 'quantity', 1, 'fill/order/decision linkage'),
+    ('wrong_recorded_stop', stop_fact, 'text', '0.01', 'frozen actual state differs'),
+    ('wrong_frozen_reentry_line', freeze_fact, 'text', '0.01', 'post-sale frozen recovery line/time differs'),
+    ('future_timestamp', payload['audit_inputs']['bars'][-1], 'Date', '2027-01-01T00:00:00.000Z', 'unexpected source time'),
+]
+for name, row, key, changed, expected in cases:
+    previous = row[key]
+    row[key] = changed
+    try:
+        module.describe_account('C0031', payload, definition)
+    except ValueError as error:
+        assert expected in str(error), (name, str(error))
+        checks.append({'case': name, 'rejection': str(error)})
+    else:
+        raise AssertionError('invalid input accepted: '+name)
+    finally:
+        row[key] = previous
+result = {'status': 'PASS', 'source_sha256': module.digest(SOURCE/'describe_recovery_exit.py'),
+          'checks': checks, 'original_files_written': False, 'new_account_evaluations': 0}
+(ROOT/'.tmp/s017-recovery-exit-check.json').write_text(json.dumps(result, indent=2), encoding='utf-8')
+print(json.dumps(result, indent=2))

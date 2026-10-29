@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "source_sha256": "bb90fe79b6a19764d2276c3ae19f446a5ec8efd953f3d9b348481cb05ab40429",
+  "checks": [
+    {
+      "case": "wrong_actual_quantity",
+      "rejection": "fill/order/decision linkage differs"
+    },
+    {
+      "case": "wrong_recorded_stop",
+      "rejection": "frozen actual state differs: C0031/55ba9f23accf56dd90ea35a3c9a8ed2899c2d524bb54df72561c1701837f555e/stop"
+    },
+    {
+      "case": "wrong_frozen_reentry_line",
+      "rejection": "post-sale frozen recovery line/time differs from first trigger"
+    },
+    {
+      "case": "future_timestamp",
+      "rejection": "unexpected source time scope/order/availability"
+    }
+  ],
+  "original_files_written": false,
+  "new_account_evaluations": 0
+}

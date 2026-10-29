@@ -8,6 +8,7 @@ not a new performance, qualification or selection condition.
 Commands: template prints the input template; check authenticates and constructs the
 typed panel without publishing; publish adds owner material evidence and calls the
 public assemble_delivery API. Run only after experiment report publications finish.
+Explicit final-audit resources allow 1..8 workers, with one native thread each.
 
 Historical PROTOTYPES/6 entries, comparisons, components, facts and explanations
 are retained verbatim. New experiments must be explicitly listed: no directory
@@ -21,6 +22,7 @@ from hashlib import sha256
 from pathlib import Path
 import argparse
 import json
+import math
 import os
 
 from czsc_trader.application import assemble_delivery, publish_evidence, validate_delivery, validate_experiment
@@ -125,6 +127,189 @@ def evidence_bytes(reference):
 
 def evidence_json(reference):
     return json.loads(evidence_bytes(reference))
+
+
+def recovery_rollups(value):
+    """Check retained cycle summaries only; never reconstruct held decisions."""
+    entries = ('RECOVERY_ONLY', 'BREAKOUT_ONLY', 'BOTH', 'UNKNOWN')
+    exits = ('INITIAL', 'TRAILING', 'COST_PROTECTION', 'TIED', 'UNKNOWN')
+
+    def check(rows, total):
+        if total['cycles'] != len(rows):
+            raise ValueError('recovery cycle count differs from retained rows')
+        for field in ('net_pnl', 'fees'):
+            if not math.isclose(math.fsum(row[field] for row in rows), total[field], rel_tol=1e-10, abs_tol=1e-7):
+                raise ValueError('recovery cycle sum differs: ' + field)
+        if 'peak_below_original_one_atr_risk_distance' in total and (
+                total['peak_below_original_one_atr_risk_distance'] != sum(
+                    row['completed_close_peak_in_entry_atr'] < 1. for row in rows)):
+            raise ValueError('recovery completed-close peak count differs')
+
+    if set(value['accounts']) != {'C0031', 'C0032'}:
+        raise ValueError('recovery description must retain the two original accounts')
+    for account in value['accounts'].values():
+        rows = account['closed_cycles']
+        opened = account['unclosed_cycles']
+        ids = [row['cycle_id'] for row in rows + opened]
+        if (len(ids) != len(set(ids)) or any(row['status'] != 'CLOSED' for row in rows)
+                or any(row['status'] == 'CLOSED' for row in opened)
+                or any(row['entry_group'] not in entries or row['exit_purpose'] not in exits for row in rows)):
+            raise ValueError('recovery original cycle membership is missing or duplicated')
+        check(rows, account['total_closed'])
+        if set(account['entry_by_exit']) != set(entries):
+            raise ValueError('recovery entry partition differs')
+        for entry, groups in account['entry_by_exit'].items():
+            if set(groups) != set(exits):
+                raise ValueError('recovery exit partition differs')
+            for purpose, total in groups.items():
+                check([row for row in rows if row['entry_group'] == entry and row['exit_purpose'] == purpose], total)
+        if set(account['entry_year_groups']) != {str(year) for year in range(2019, 2026)}:
+            raise ValueError('recovery description year scope differs')
+        for year, groups in account['entry_year_groups'].items():
+            if set(groups) != set(entries):
+                raise ValueError('recovery year partition differs')
+            for entry, total in groups.items():
+                check([row for row in rows if row['entry_group'] == entry and row['entry_session'].startswith(year)], total)
+        residuals = (*account['ledger_reconciliation'].values(), *account['partition_residuals'].values())
+        if any(not math.isfinite(number) or abs(number) > 1e-6 for number in residuals):
+            raise ValueError('recovery retained reconciliation did not pass')
+
+
+def recovery_materials():
+    """Authenticate existing description and source refs without new economics."""
+    from publish import read_account_views
+    owner = ExperimentRef('S017', 'EX008_20261029')
+    old = owner.resolve(ROOT)
+    source = (WORK / 'src/describe_recovery_exit.py').read_bytes()
+    content = (WORK / 'others/recovery_exit_description.json').read_bytes()
+    value = json.loads(content)
+    if (value['schema'] != 'S017_ORIGINAL_RECOVERY_EXIT_DESCRIPTION_V1' or value['status'] != 'PASS'
+            or value['scope'] != 'EX008_C31_C32_PUBLIC_ORIGINAL_CYCLES_2019_2025_NO_NEW_ACCOUNT'
+            or value['script_sha256'] != sha256(source).hexdigest()
+            or value['economic_primary_and_embedded_bh_equal'] is not True
+            or any(value[field] != 0 for field in ('new_evaluations', 'new_public_diagnoses', 'new_configurations'))):
+        raise ValueError('recovery description scope or source identity differs')
+    recovery_rollups(value)
+    materials = {'recovery-exit-description': (content, 'application/json', 'json'),
+                'recovery-exit-source': (source, 'text/plain', 'py')}
+    expected_methods = (
+        'research/S017/experiments/EX013_20261029/src/analyze.py',
+        'research/S017/experiments/EX014_20261029/src/describe_entry_difference.py',
+        'research/S017/experiments/EX011_20261029/src/describe_entry_context.py',
+        'research/S017/experiments/EX011_20261029/src/describe_exits.py',
+        'research/S017/experiments/EX008_20261029/others/analysis.json')
+    if [item['path'] for item in value['method_sources']] != list(expected_methods):
+        raise ValueError('recovery description method sources differ')
+    for index, item in enumerate(value['method_sources']):
+        path = ROOT / item['path']
+        raw = path.read_bytes()
+        if sha256(raw).hexdigest() != item['sha256']:
+            raise ValueError('recovery method source changed: ' + item['path'])
+        materials['recovery-exit-method-' + str(index)] = (
+            raw, 'application/json' if path.suffix == '.json' else 'text/plain', path.suffix[1:])
+    original = json.loads(materials['recovery-exit-method-4'][0])
+    pre = read(old / 'others/pre_run_evidence.json')
+    refs, identities = {}, {}
+    if (original['status'] != 'PASS' or set(value['source_accounts']) != {'C0031', 'C0032'}
+            or set(value['frozen_sources']) != {'C0031', 'C0032'}):
+        raise ValueError('recovery original account source set differs')
+    for key in ('C0031', 'C0032'):
+        payloads, bound = read_account_views(old, owner, (key,))
+        payload, ref = payloads[key], bound[key]
+        if ref.to_dict() != value['source_accounts'][key] or ref.to_dict() != original['source_accounts'][key]:
+            raise ValueError('recovery original account reference differs')
+        refs[key], identities[key] = ref, payload['evaluation_id']
+        frozen = value['frozen_sources'][key]
+        if set(frozen['materials']) != {'source', 'definitions'}:
+            raise ValueError('recovery frozen materials differ')
+        frozen_bytes = {}
+        for name, relative in (('source', 'src/strategy.py'), ('definitions', 'protocols/definitions.json')):
+            material_ref = EvidenceRef.from_dict(frozen['materials'][name])
+            if material_ref != EvidenceRef.from_dict(pre[name]) or material_ref.experiment != owner:
+                raise ValueError('recovery original frozen reference differs')
+            raw = evidence_bytes(material_ref)
+            if raw != (old / relative).read_bytes():
+                raise ValueError('recovery original frozen source changed')
+            frozen_bytes[name] = raw
+            refs['frozen-' + name] = material_ref
+        definition = EquityStrategyDefinition.from_dict(json.loads(frozen_bytes['definitions'])[key])
+        if (json.loads(json.dumps(definition.to_dict())) != payload['request']['candidate_definition']
+                or definition.content_identity.content_sha256 != payload['request']['content_sha256']
+                or frozen['definition_content_sha256'] != definition.content_identity.content_sha256
+                or frozen['source_file_sha256'] != sha256(frozen_bytes['source']).hexdigest()
+                or equity_source_hash(old / 'src', definition.source_files) != definition.source_sha256):
+            raise ValueError('recovery frozen definition does not identify its original account')
+        for entry, previous in original['new_entry_groups'][key].items():
+            account = value['accounts'][key]
+            rows = [row for row in account['closed_cycles'] if row['entry_group'] == entry]
+            opened = [row for row in account['unclosed_cycles'] if row['entry_group'] == entry]
+            if (len(rows) != previous['closed'] or len(rows) + len(opened) != previous['entries']
+                    or not math.isclose(math.fsum(row['net_pnl'] for row in rows), previous['closed_net_pnl'], abs_tol=1e-7)):
+                raise ValueError('recovery description changed original entry groups')
+        del payload, payloads
+    pairs = ('C0031_vs_C0030', 'C0032_vs_C0031', 'C0031_vs_C0029', 'C0032_vs_C0029')
+    if set(value['original_public_diagnostics']) != set(pairs) or set(original['diagnostics']) != set(pairs):
+        raise ValueError('recovery description requires all four original public diagnoses')
+    for name in pairs:
+        item = value['original_public_diagnostics'][name]
+        ref = EvidenceRef.from_dict(item['reference'])
+        if ref.experiment != owner or ref != EvidenceRef.from_dict(original['diagnostics'][name]['evidence']):
+            raise ValueError('recovery original diagnosis reference differs')
+        raw = evidence_json(ref)
+        subject, control = name.split('_vs_')
+        expected = []
+        for key in (control, subject):
+            account_ref = EvidenceRef.from_dict(original['source_accounts'][key])
+            record = read(account_ref.experiment.resolve(ROOT) / 'others/accounts.json')[key]
+            if EvidenceRef.from_dict(record['evidence']) != account_ref:
+                raise ValueError('original diagnostic account identity differs')
+            expected.append(asdict(account_ref))
+            identities[key] = record['evaluation_id']
+            refs[key] = account_ref
+        if (raw['status'] != item['status'] or raw['status'] != 'COMPUTED' or raw['issues']
+                or raw['sources'] != item['sources'] or raw['sources'] != expected
+                or raw['reconciliation'] != item['reconciliation']
+                or [row['evaluation_id'] for row in raw['reconciliation']] != [identities[control], identities[subject]]
+                or any(abs(row['residual']) > 1e-6 for row in raw['reconciliation'])):
+            raise ValueError('recovery original public diagnosis identity or reconciliation differs')
+        refs[name] = ref
+    checks_bytes = (WORK / 'others/recovery_exit_checks.json').read_bytes()
+    checks = json.loads(checks_bytes)
+    if (checks['status'] != 'PASS' or checks['source_sha256'] != value['script_sha256']
+            or checks['original_files_written'] is not False or checks['new_account_evaluations'] != 0
+            or [item['case'] for item in checks['checks']] != ['wrong_actual_quantity', 'wrong_recorded_stop',
+                'wrong_frozen_reentry_line', 'future_timestamp']
+            or any(not item['rejection'] for item in checks['checks'])):
+        raise ValueError('recovery original fault-check coverage differs')
+    materials['recovery-exit-checks'] = (checks_bytes, 'application/json', 'json')
+    materials['recovery-exit-check-source'] = (
+        (WORK / 'others/recovery_exit_check_source.py.txt').read_bytes(), 'text/plain', 'txt')
+    for ref in dict.fromkeys(refs.values()):
+        ref.resolve(ROOT)
+    return materials, tuple(dict.fromkeys(refs.values())), recovery_report(value)
+
+
+def recovery_report(value):
+    report = ('\n## 原恢复入场周期的退出描述\n\n'
+        '[描述与精确来源](recovery_exit_description.json) · [描述源码](../src/describe_recovery_exit.py) · '
+        '[已完成故障检查](recovery_exit_checks.json)\n\n'
+        '以下只描述EX008原C31/C32中实际恢复入场且已闭合的周期，按首次触发退出的约束分类；'
+        '不新增原型、账户或公共对照，也不改变PROTOTYPES/6历史判断。\n\n'
+        '|原账户|初始止损周期|初始组净损益USD|移动止损周期|移动组净损益USD|初始组峰值不足1入场ATR|成本保护主导退出|\n'
+        '|---|---:|---:|---:|---:|---:|---:|\n')
+    for key in ('C0031', 'C0032'):
+        groups = value['accounts'][key]['entry_by_exit']['RECOVERY_ONLY']
+        initial, trailing = groups['INITIAL'], groups['TRAILING']
+        report += (f"|{key}|{initial['cycles']}|{initial['net_pnl']:.2f}|{trailing['cycles']}|"
+            f"{trailing['net_pnl']:.2f}|{initial['peak_below_original_one_atr_risk_distance']}/{initial['cycles']}|"
+            f"{groups['COST_PROTECTION']['cycles']}|\n")
+    return report + ('\n完成Close峰值只是已完成收盘观察，不是盘中最大浮盈或可成交收益；ATR为入场时的既定波动尺度。'
+        '成本保护可以曾经启用而未成为首次退出的主导约束，主导退出为零不代表它从未启动。'
+        '未闭合持仓单列，不能补造卖出或卖出费用；入场年份分组不等于年度账户收益。'
+        '改变stop还会改变后续恢复入场的冻结参考线、资金及机会，不能假设这是单纯退出贡献，'
+        '也不能从原周期删除损失推算新策略。四项既有故障检查覆盖成交数量、记录stop、恢复冻结线和未来时间异常；'
+        '本次发布只认证这些完成的检查及原引用，并复核周期汇总，没有再次执行持仓决策重算。'
+        '开发池反复使用，不构成独立验证；研究决定由本面板统一结论承担。\n')
 
 
 def check_visual_scope(judgment):
@@ -462,20 +647,23 @@ def main(action, workers):
     if action == 'template':
         print(json.dumps(template(), ensure_ascii=False, indent=2))
         return
-    if not 1 <= workers <= 4:
-        raise ValueError('workers must fit the explicitly coordinated 1..4 budget')
+    if not 1 <= workers <= 8:
+        raise ValueError('workers must fit the explicitly coordinated 1..8 budget')
     resources = ExecutionResources(max_workers=workers, native_threads_per_worker=1, random_seed=17)
     judgment_bytes = OWNER_JUDGMENTS.read_bytes()
     source_bytes = Path(__file__).read_bytes()
     judgment = json.loads(judgment_bytes)
+    recovery_bytes, recovery_accounts, recovery_text = recovery_materials()
     visual_bytes, visual_accounts = visual_materials(judgment)
     definition, content = build(judgment, resources)
+    from dataclasses import replace
+    content = replace(content, report=content.report + recovery_text,
+        evidence=tuple(dict.fromkeys((*content.evidence, *recovery_accounts))))
     if not set(visual_accounts.values()) <= set(content.evidence):
         raise ValueError('panel evidence graph omitted an original account used by the visual')
     if action == 'check':
         print('PANEL_INPUTS_CHECKED', len(content.payload.prototypes), 'prototypes', flush=True)
         return
-    from dataclasses import replace
     visual_paths = {'panel-return-drawdown': WORK / 'others/return_drawdown_panel.png',
         'panel-return-drawdown-sources': WORK / 'others/return_drawdown_panel_sources.json',
         'panel-plot-source': WORK / 'src/plot_panel.py'}
@@ -489,6 +677,8 @@ def main(action, workers):
             source_bytes, 'text/plain', 'py')))
     visual_refs = {name: publish_evidence(research, MaterialEvidenceWrite(EXPERIMENT, name, *item))
                    for name, item in visual_bytes.items()}
+    recovery_refs = {name: publish_evidence(research, MaterialEvidenceWrite(EXPERIMENT, name, *item))
+                     for name, item in recovery_bytes.items()}
     report = content.report
     for name, local_target in (('panel-return-drawdown', 'return_drawdown_panel.png'),
             ('panel-return-drawdown-sources', 'return_drawdown_panel_sources.json'),
@@ -497,19 +687,26 @@ def main(action, workers):
         # Both the experiment's others/ and public deliveries/PROTOTYPES/7 sit
         # three levels below S017; these immutable-evidence links work in both.
         report = report.replace('(' + local_target + ')', '(' + relative + ')')
+    for name, local_target in (('recovery-exit-description', 'recovery_exit_description.json'),
+            ('recovery-exit-source', '../src/describe_recovery_exit.py'),
+            ('recovery-exit-checks', 'recovery_exit_checks.json')):
+        relative = Path(os.path.relpath(ROOT / recovery_refs[name].repository_path, WORK / 'others')).as_posix()
+        report = report.replace('(' + local_target + ')', '(' + relative + ')')
     content = replace(content, report=report,
-        evidence=tuple(dict.fromkeys((*content.evidence, *additions, *visual_refs.values()))))
+        evidence=tuple(dict.fromkeys((*content.evidence, *additions, *visual_refs.values(), *recovery_refs.values()))))
     save(WORK / 'others/panel_build.json', {'definition': definition.to_dict(),
         'candidate_ids': [entry.prototype_id for entry in content.payload.prototypes],
         'judgments': additions[0].to_dict(), 'source': additions[1].to_dict(),
-        'visuals': {name: ref.to_dict() for name, ref in visual_refs.items()}})
+        'visuals': {name: ref.to_dict() for name, ref in visual_refs.items()},
+        'recovery_description': {name: ref.to_dict() for name, ref in recovery_refs.items()}})
     (WORK / 'others/panel_report.md').write_bytes(content.report.encode('utf-8'))
     result = assemble_delivery(REPOSITORY, definition, content, resources=resources,
         on_progress=lambda event: print(event, flush=True))
     save(WORK / 'others/panel_publication.json', {'delivery': result.receipt.to_dict(),
         'validation': result.validation.to_dict(), 'judgments': additions[0].to_dict(),
         'source': additions[1].to_dict(), 'evidence': [ref.to_dict() for ref in content.evidence],
-        'visuals': {name: ref.to_dict() for name, ref in visual_refs.items()}})
+        'visuals': {name: ref.to_dict() for name, ref in visual_refs.items()},
+        'recovery_description': {name: ref.to_dict() for name, ref in recovery_refs.items()}})
     if result.validation.status is not d.ValidationStatus.PASS:
         raise RuntimeError('unified prototype panel did not pass full public validation')
     print('PROTOTYPES/7 FULL PASS', flush=True)
