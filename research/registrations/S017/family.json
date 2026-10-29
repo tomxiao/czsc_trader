@@ -175,7 +175,7 @@
         "status": "READY_WITH_EXPLICIT_RAW_PRICE_AND_AVAILABILITY_ASSUMPTIONS"
       },
       "completed_new_account_paths": 24,
-      "completed_new_rounds": 9,
+      "completed_new_rounds": 10,
       "experiments": [
         "EX009_20261029",
         "EX010_20261029",
@@ -186,7 +186,8 @@
         "EX015_20261029",
         "EX016_20261029",
         "EX017_20261029",
-        "EX018_20261029"
+        "EX018_20261029",
+        "EX019_20261029"
       ],
       "failed_new_rounds": 1,
       "final_validation": {
@@ -214,7 +215,7 @@
         "type": "DeliveryValidation"
       },
       "guideline_commit": "25c09476",
-      "initiated_new_rounds": 10,
+      "initiated_new_rounds": 11,
       "latest_delivery": {
         "batch": {
           "strategy_id": "S017",
@@ -302,7 +303,7 @@
       },
       "platform_scope": "正式辅助市场/行业行情因果输入，以及当前可得交易时段；离线验证和既有能力保护",
       "recovery_exit_description": "research/S017/experiments/EX013_20261029/others/recovery_exit_description.json",
-      "remaining_rounds": 10,
+      "remaining_rounds": 9,
       "reports": {
         "EX011_20261029": {
           "evidence_id": "4601d3cefa82067e8f43a9da516739ada4f822b04f6ff53b06e493c9601bb64e.json",
@@ -415,6 +416,20 @@
           "schema_version": 1,
           "sha256": "e5eb992aaedb9bee1607b6af31cfc70bc9fab96921fa2cebbcde6b4de4e19b2b",
           "type": "EvidenceRef"
+        },
+        "EX019_20261029": {
+          "evidence_id": "bb0adc4d0516a807b062dac9826965c358e5c5b3f7b4b5ef50608f06e4e98d93.json",
+          "experiment": {
+            "experiment_id": "EX019_20261029",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "bb0adc4d0516a807b062dac9826965c358e5c5b3f7b4b5ef50608f06e4e98d93",
+          "type": "EvidenceRef"
         }
       },
       "research_started": true,
@@ -433,10 +448,17 @@
         "EX016_20261029": "COMPLETED_REPORT_PUBLICATION_PASS",
         "EX017_20261029": "COMPLETED_REPORT_PUBLICATION_PASS",
         "EX018_20261029": "COMPLETED_REPORT_PUBLICATION_PASS",
+        "EX019_20261029": "COMPLETED_SIGNAL_DIAGNOSIS_REPORT_PUBLICATION_PASS",
         "scope": "Operational progress only; completed rounds require published completed reports."
       },
-      "status": "PAT_M30_SINGLE_EXPERIMENT_COMPLETE_AWAITING_DIRECTION",
-      "stop_rationale": "前9轮结论保留于PROTOTYPES/7；当前追加PAT首个实验已完成。后续依据该实验报告另行决定，不自动消耗剩余10轮。",
+      "signal_diagnosis_authorization": {
+        "context": "同意先对现有30m PAT入场做信号诊断，再决定退出研究",
+        "evidence": "research/S017/experiments/EX019_20261029/protocols/authorization.md",
+        "scope": "单一诊断实验；不运行新完整账户、不改信号、不自动追加后续实验",
+        "user_statement": "ok"
+      },
+      "status": "PAT_SIGNAL_DIAGNOSIS_COMPLETE_AWAITING_DIRECTION",
+      "stop_rationale": "完成用户确认的单轮信号诊断，完整账户与指南保持；下一项研究依据报告建议决定。",
       "successful_new_configurations": 12,
       "technical_failures": {
         "EX010_20261029": "Auxiliary 96-hour age limit excludes valid half-day/long-weekend observations; FAILED report preserved, EX013 successor uses 5 days."
@@ -487,7 +509,7 @@
       "research/S017/materials/registration_20261028.md",
       "research/S017/materials/pre_registration_readiness.json"
     ],
-    "next_action": "核验SPY/QQQ/XLK开发期实际辅助数据，通过后开展有辨别力的市场/行业与日内机制对照。",
+    "next_action": "建议保持阶段二，下一轮只比较恢复确认的含义：以当前PAT为对照，保留全部原条件并增加Close超过已确认结构高点H2，再先做相同3/13/26柱诊断。它可能减少短暂反弹，也可能确认太迟或错过机会；本轮未证明弱确认是原因，这只是结果后待证假设。尚未执行，需用户决定后消耗下一轮。若仍缺乏增量，不继续为该表达拼接退出；更慢趋势问题另行明确观察跨度。",
     "objective": "LITE 美股个股30分钟只做多择时研究",
     "other_proposals_confirmation": "CONFIRMED",
     "policy_reference": "research/RSCH_AGENT.md#research-policy",
@@ -588,10 +610,10 @@
         "2018-12-31"
       ]
     },
-    "stage": "STAGE_2_PAT_M30_EXPERIMENT_COMPLETE_AWAITING_NEXT_DIRECTION",
+    "stage": "STAGE_2_PAT_SIGNAL_DIAGNOSIS_COMPLETE_AWAITING_DIRECTION",
     "stage_two_result": {
       "account_replay_count": 68,
-      "conclusion": "既有PROTOTYPES/7完整结论保留。本次追加EX018仅30m PAT入场实验已完成，仍无阶段三推荐；首次持仓立即退出的明确冲突支持下一项相容性对照，尚未执行。",
+      "conclusion": "本轮信号诊断完成。当前30m PAT单柱恢复表达，在3/13/26柱固定期限内未显示清晰的增量机会，暂不足以优先投入新退出规则或完整原型。主期限全部触发净价格均值为负且低于匹配基线；减少重叠后出现小幅正收益，但匹配增量接近零、区间跨正负。属于当前表达缺乏明确支持，不是所有PAT无效，也不证明任何退出规则都无法改善。",
       "configuration_count": 34,
       "count_scope": "Completed formal configurations and candidate/paired-benchmark account paths; EX010 three technically failed configurations and EX017 one unfinished technical attempt are recorded separately, not successful accounts.",
       "diagnostic_only_configuration_ids": [
@@ -609,19 +631,12 @@
         "stage": "PROTOTYPES",
         "type": "DeliveryReference"
       },
-      "latest_experiment": "EX018_20261029",
-      "latest_experiment_conclusion": "首个单一30m PAT实验完成，当前整套原型不推荐进入阶段三。C0047净年化19.41%、BAR_CLOSE回撤72.28%，相对C0013的26.22%/58.77%分别退化6.80/13.51个百分点；费用从18193.61增至72478.68美元。331个闭合周期、60日中位数11、至少3笔覆盖94.94%满足两项频率目标，但三项经济目标均失败。当前证据没有证明PAT入场带来有用的完整收益风险增量，也不能把高频率全部解释为新增优质机会。",
-      "latest_experiment_goals": {
-        "absolute_drawdown": false,
-        "annualized_return": false,
-        "frequency_coverage": true,
-        "frequency_median": true,
-        "relative_drawdown": false
-      },
+      "latest_experiment": "EX019_20261029",
+      "latest_experiment_conclusion": "本轮信号诊断完成。当前30m PAT单柱恢复表达，在3/13/26柱固定期限内未显示清晰的增量机会，暂不足以优先投入新退出规则或完整原型。主期限全部触发净价格均值为负且低于匹配基线；减少重叠后出现小幅正收益，但匹配增量接近零、区间跨正负。属于当前表达缺乏明确支持，不是所有PAT无效，也不证明任何退出规则都无法改善。",
       "latest_experiment_report": {
-        "evidence_id": "e5eb992aaedb9bee1607b6af31cfc70bc9fab96921fa2cebbcde6b4de4e19b2b.json",
+        "evidence_id": "bb0adc4d0516a807b062dac9826965c358e5c5b3f7b4b5ef50608f06e4e98d93.json",
         "experiment": {
-          "experiment_id": "EX018_20261029",
+          "experiment_id": "EX019_20261029",
           "strategy_id": "S017",
           "type": "ExperimentRef"
         },
@@ -629,9 +644,10 @@
         "name": "experiment-report",
         "schema": "experiment_report",
         "schema_version": 1,
-        "sha256": "e5eb992aaedb9bee1607b6af31cfc70bc9fab96921fa2cebbcde6b4de4e19b2b",
+        "sha256": "bb0adc4d0516a807b062dac9826965c358e5c5b3f7b4b5ef50608f06e4e98d93",
         "type": "EvidenceRef"
       },
+      "latest_experiment_scope": "SIGNAL_INFORMATION_AND_PRICE_LABELS_ONLY",
       "predecessor_delivery": {
         "batch": {
           "strategy_id": "S017",
@@ -643,6 +659,31 @@
         "type": "DeliveryReference"
       },
       "prior_panel_conclusion": "本轮阶段二在9/20额度内收口：11个新增完整配置、22条账户路径、20项新公共诊断完成，PROTOTYPES/7 FULL通过。未找到推荐直接进入阶段三的新原型；C43和C44的有限完整用途保留，C46组合未形成有用互补。原C31/C32恢复退出描述更支持启动后延续不足，未发现足以指定新持有规则的普遍冲突。全部目标未同时达成，保留11轮额度，不继续无依据拼接或搜索。",
+      "prior_pat_account_result": {
+        "latest_experiment": "EX018_20261029",
+        "latest_experiment_conclusion": "首个单一30m PAT实验完成，当前整套原型不推荐进入阶段三。C0047净年化19.41%、BAR_CLOSE回撤72.28%，相对C0013的26.22%/58.77%分别退化6.80/13.51个百分点；费用从18193.61增至72478.68美元。331个闭合周期、60日中位数11、至少3笔覆盖94.94%满足两项频率目标，但三项经济目标均失败。当前证据没有证明PAT入场带来有用的完整收益风险增量，也不能把高频率全部解释为新增优质机会。",
+        "latest_experiment_goals": {
+          "absolute_drawdown": false,
+          "annualized_return": false,
+          "frequency_coverage": true,
+          "frequency_median": true,
+          "relative_drawdown": false
+        },
+        "latest_experiment_report": {
+          "evidence_id": "e5eb992aaedb9bee1607b6af31cfc70bc9fab96921fa2cebbcde6b4de4e19b2b.json",
+          "experiment": {
+            "experiment_id": "EX018_20261029",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "e5eb992aaedb9bee1607b6af31cfc70bc9fab96921fa2cebbcde6b4de4e19b2b",
+          "type": "EvidenceRef"
+        }
+      },
       "public_diagnosis_count": 54,
       "registered_candidate_count": 0,
       "reserved_price_or_performance_used": false,
@@ -657,5 +698,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-10-29T12:57:41+08:00"
+  "updated_at": "2026-10-29T14:28:42+08:00"
 }
