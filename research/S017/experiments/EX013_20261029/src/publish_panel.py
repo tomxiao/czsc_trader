@@ -34,6 +34,13 @@ from run import ROOT, WORK, BATCH, REPOSITORY, EXPERIMENT, context, read, save
 
 PREDECESSOR_EXPERIMENT = ExperimentRef('S017', 'EX008_20261029')
 OWNER_JUDGMENTS = WORK / 'others/judgments.json'
+PROTOTYPE_LABELS = {
+    'C0036': '日内开盘突破', 'C0037': '日内开盘突破加量能条件',
+    'C0038': '市场反转中的个股恢复', 'C0039': '市场反转加此前抗跌',
+    'C0040': '大盘约束入场与持有', 'C0041': '科技板块白天参与条件',
+    'C0042': '大盘与科技板块双条件', 'C0043': '大盘仅约束入场',
+    'C0044': '允许跨日的开盘突破', 'C0045': '弱市相对强势入场例外',
+}
 
 
 def template():
@@ -126,7 +133,7 @@ def check_visual_scope(judgment):
     candidates = set().union(*expected.values())
     if (len(selections) != len(expected) or actual != expected
             or any(len(item['candidate_ids']) != len(set(item['candidate_ids'])) for item in selections)
-            or set(judgment['prototypes']) != candidates):
+            or set(judgment['prototypes']) != candidates or set(PROTOTYPE_LABELS) != candidates):
         raise ValueError('visual contract covers exactly six experiments and ten new prototypes; update it explicitly before changing panel scope')
     return expected, candidates
 
@@ -424,7 +431,8 @@ def build(judgment, resources):
                          '是' if control_summary['all_goals_met'] else '否')
     for key in judgment['prototypes']:
         summary = candidates[key]['analysis']['summaries'][key]
-        report += result_row(key, summary['candidate'], '是' if summary['all_goals_met'] else '否')
+        report += result_row(key + ' ' + PROTOTYPE_LABELS[key], summary['candidate'],
+                             '是' if summary['all_goals_met'] else '否')
     report += ('\n显示数值取整，判断使用原完整精度；重叠60会话窗口不是独立样本。'
         '未平仓持仓计入实际净值，不能冒充已闭合交易。\n\n')
     for key, item in judgment['prototypes'].items():
