@@ -175,7 +175,7 @@
         "status": "READY_WITH_EXPLICIT_RAW_PRICE_AND_AVAILABILITY_ASSUMPTIONS"
       },
       "completed_new_account_paths": 24,
-      "completed_new_rounds": 13,
+      "completed_new_rounds": 14,
       "downside_failure_authorization": {
         "protocol": "research/S017/experiments/EX022_20261029/protocols/design.md",
         "scope": "3个竞争形态、1个近期超跌背景、旧C参考，固定5期限普查，1轮、0账户",
@@ -200,7 +200,8 @@
         "EX019_20261029",
         "EX020_20261029",
         "EX021_20261029",
-        "EX022_20261029"
+        "EX022_20261029",
+        "EX023_20261029"
       ],
       "failed_new_rounds": 1,
       "final_validation": {
@@ -228,7 +229,7 @@
         "type": "DeliveryValidation"
       },
       "guideline_commit": "25c09476",
-      "initiated_new_rounds": 14,
+      "initiated_new_rounds": 15,
       "latest_delivery": {
         "batch": {
           "strategy_id": "S017",
@@ -322,7 +323,7 @@
       },
       "platform_scope": "正式辅助市场/行业行情因果输入，以及当前可得交易时段；离线验证和既有能力保护",
       "recovery_exit_description": "research/S017/experiments/EX013_20261029/others/recovery_exit_description.json",
-      "remaining_rounds": 6,
+      "remaining_rounds": 5,
       "reports": {
         "EX011_20261029": {
           "evidence_id": "4601d3cefa82067e8f43a9da516739ada4f822b04f6ff53b06e493c9601bb64e.json",
@@ -491,11 +492,30 @@
           "schema_version": 1,
           "sha256": "0b00ff5a35b24b2939f7def601f6f84649e4c8113ea11255ecabcfcee02d93f2",
           "type": "EvidenceRef"
+        },
+        "EX023_20261029": {
+          "evidence_id": "8171051f239b3d91ee759d96c6ef490317e4e1330c66b7aedaabab2e9431c580.json",
+          "experiment": {
+            "experiment_id": "EX023_20261029",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "8171051f239b3d91ee759d96c6ef490317e4e1330c66b7aedaabab2e9431c580",
+          "type": "EvidenceRef"
         }
       },
       "research_started": true,
       "reserved_2026_price_or_performance_used": false,
       "resume_user_statement": "同意，切回RSCH，先核验辅助数据可得性，通过后恢复S017研究，在20轮实验额度内自主完成阶段二。",
+      "retest_delayed_repair_authorization": {
+        "protocol": "research/S017/experiments/EX023_20261029/protocols/design.md",
+        "scope": "原T固定入场、数天修复补证、1轮、0账户、0退出优化",
+        "user_statement": "同意，请围绕“回试前低不破后的数天修复”继续验证，保持入场规则不变，先不优化退出，自主完成下一轮实验。"
+      },
       "round_counting": "全部新增实验身份计数，包括数据核验；技术修正和同一实验重跑不另算。",
       "running_new_rounds": 0,
       "runtime_snapshot": {
@@ -513,6 +533,7 @@
         "EX020_20261029": "COMPLETED_ENTRY_COMPETITION_REPORT_PUBLICATION_PASS",
         "EX021_20261029": "COMPLETED_OVERSOLD_DECOMPOSITION_REPORT_PUBLICATION_PASS",
         "EX022_20261029": "COMPLETED_DOWNSIDE_FAILURE_CENSUS_REPORT_PUBLICATION_PASS",
+        "EX023_20261029": "COMPLETED_RETEST_DELAYED_REPAIR_REPORT_PUBLICATION_PASS",
         "scope": "Operational progress only; completed rounds require published completed reports."
       },
       "signal_diagnosis_authorization": {
@@ -521,8 +542,8 @@
         "scope": "单一诊断实验；不运行新完整账户、不改信号、不自动追加后续实验",
         "user_statement": "ok"
       },
-      "status": "DOWNSIDE_FAILURE_CENSUS_COMPLETE_AWAITING_DIRECTION",
-      "stop_rationale": "完成本轮批准的固定竞争普查；下一项依据报告结论选择。",
+      "status": "RETEST_DELAYED_REPAIR_COMPLETE_AWAITING_DIRECTION",
+      "stop_rationale": "完成批准的固定T数天修复补证；未改入场或优化退出。",
       "successful_new_configurations": 12,
       "technical_failures": {
         "EX010_20261029": "Auxiliary 96-hour age limit excludes valid half-day/long-weekend observations; FAILED report preserved, EX013 successor uses 5 days."
@@ -573,7 +594,7 @@
       "research/S017/materials/registration_20261028.md",
       "research/S017/materials/pre_registration_readiness.json"
     ],
-    "next_action": "建议下一轮优先补证T的较慢修复线索，保持现有回试不破定义、费用和执行不变，围绕预先明确的数天修复问题核对年际/集中性、可交易频率及相对B和旧C的增量，先判断是否值得投入完整退出研究。明确这是看过本轮辅助结果后的后续选择，不能称独立验证；若机会仍由少数事件或背景解释，则停止该表达，不靠放宽阈值扩大样本或选择最优持有期。本轮没有执行这项后续研究，剩6轮。",
+    "next_action": "建议将固定T保留为研究参照，暂不投入退出优化，也不再用同一批小样本反复证明同一件事。下一轮若继续，应先寻找更常见、机制不同的数天修复入口，固定观察窗口，明确检查相对近期超跌背景B的额外价值；T作为不变对照，不能仅靠放宽T阈值增加事件数。机会密度是研究优先级因素，不能替代正式账户频率验收。本轮保持T不变，未实施上述新方向，剩5轮。",
     "objective": "LITE 美股个股30分钟只做多择时研究",
     "other_proposals_confirmation": "CONFIRMED",
     "policy_reference": "research/RSCH_AGENT.md#research-policy",
@@ -674,10 +695,10 @@
         "2018-12-31"
       ]
     },
-    "stage": "STAGE_2_DOWNSIDE_FAILURE_CENSUS_COMPLETE_AWAITING_DIRECTION",
+    "stage": "STAGE_2_RETEST_DELAYED_REPAIR_COMPLETE_AWAITING_DIRECTION",
     "stage_two_result": {
       "account_replay_count": 68,
-      "conclusion": "三类‘跌不下去’入场竞争普查完成。统一13柱主期限，减少重叠后F跌破收回320个完整样本净均值-0.0380%，T回试不破58个为+0.0920%，H低点抬高381个为+0.0441%；自身净收益和相对近期超跌背景B的增量区间均跨零。当前三种表达均未建立足以直接开展退出优化的入场依据。F/H降低优先级；T仅保留为较慢修复的待补证线索，不宣布有效，不改写主期限。",
+      "conclusion": "固定T数天修复补证完成，入场规则未变。26到65柱的修复差额在主45队列为+1.5982个百分点，20/60日块描述区间均为正，7年中6年方向为正；逐一删除任一年、或删去贡献最大的3个事件后，平均差额仍正。这增加了对‘过几天继续修复’线索的支持。但65柱整体净收益仍有较大不确定性，T相对近期超跌B和旧恢复C的额外价值没有确立，机会又较稀少；暂不进入退出优化，不将T继续列为唯一优先入场路线。",
       "configuration_count": 34,
       "count_scope": "Completed formal configurations and candidate/paired-benchmark account paths; EX010 three technically failed configurations and EX017 one unfinished technical attempt are recorded separately, not successful accounts.",
       "diagnostic_only_configuration_ids": [
@@ -695,12 +716,12 @@
         "stage": "PROTOTYPES",
         "type": "DeliveryReference"
       },
-      "latest_experiment": "EX022_20261029",
-      "latest_experiment_conclusion": "三类‘跌不下去’入场竞争普查完成。统一13柱主期限，减少重叠后F跌破收回320个完整样本净均值-0.0380%，T回试不破58个为+0.0920%，H低点抬高381个为+0.0441%；自身净收益和相对近期超跌背景B的增量区间均跨零。当前三种表达均未建立足以直接开展退出优化的入场依据。F/H降低优先级；T仅保留为较慢修复的待补证线索，不宣布有效，不改写主期限。",
+      "latest_experiment": "EX023_20261029",
+      "latest_experiment_conclusion": "固定T数天修复补证完成，入场规则未变。26到65柱的修复差额在主45队列为+1.5982个百分点，20/60日块描述区间均为正，7年中6年方向为正；逐一删除任一年、或删去贡献最大的3个事件后，平均差额仍正。这增加了对‘过几天继续修复’线索的支持。但65柱整体净收益仍有较大不确定性，T相对近期超跌B和旧恢复C的额外价值没有确立，机会又较稀少；暂不进入退出优化，不将T继续列为唯一优先入场路线。",
       "latest_experiment_report": {
-        "evidence_id": "0b00ff5a35b24b2939f7def601f6f84649e4c8113ea11255ecabcfcee02d93f2.json",
+        "evidence_id": "8171051f239b3d91ee759d96c6ef490317e4e1330c66b7aedaabab2e9431c580.json",
         "experiment": {
-          "experiment_id": "EX022_20261029",
+          "experiment_id": "EX023_20261029",
           "strategy_id": "S017",
           "type": "ExperimentRef"
         },
@@ -708,10 +729,10 @@
         "name": "experiment-report",
         "schema": "experiment_report",
         "schema_version": 1,
-        "sha256": "0b00ff5a35b24b2939f7def601f6f84649e4c8113ea11255ecabcfcee02d93f2",
+        "sha256": "8171051f239b3d91ee759d96c6ef490317e4e1330c66b7aedaabab2e9431c580",
         "type": "EvidenceRef"
       },
-      "latest_experiment_scope": "THREE_DOWNSIDE_FAILURE_ENTRIES_AND_RECENT_OVERSOLD_BACKGROUND",
+      "latest_experiment_scope": "UNCHANGED_RETEST_ENTRY_DELAYED_REPAIR_EVIDENCE_ONLY",
       "predecessor_delivery": {
         "batch": {
           "strategy_id": "S017",
@@ -721,6 +742,25 @@
         "revision": 6,
         "stage": "PROTOTYPES",
         "type": "DeliveryReference"
+      },
+      "prior_downside_failure_result": {
+        "latest_experiment": "EX022_20261029",
+        "latest_experiment_conclusion": "三类‘跌不下去’入场竞争普查完成。统一13柱主期限，减少重叠后F跌破收回320个完整样本净均值-0.0380%，T回试不破58个为+0.0920%，H低点抬高381个为+0.0441%；自身净收益和相对近期超跌背景B的增量区间均跨零。当前三种表达均未建立足以直接开展退出优化的入场依据。F/H降低优先级；T仅保留为较慢修复的待补证线索，不宣布有效，不改写主期限。",
+        "latest_experiment_report": {
+          "evidence_id": "0b00ff5a35b24b2939f7def601f6f84649e4c8113ea11255ecabcfcee02d93f2.json",
+          "experiment": {
+            "experiment_id": "EX022_20261029",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "0b00ff5a35b24b2939f7def601f6f84649e4c8113ea11255ecabcfcee02d93f2",
+          "type": "EvidenceRef"
+        },
+        "latest_experiment_scope": "THREE_DOWNSIDE_FAILURE_ENTRIES_AND_RECENT_OVERSOLD_BACKGROUND"
       },
       "prior_entry_competition_result": {
         "latest_experiment": "EX020_20261029",
@@ -819,5 +859,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-10-29T19:12:14+08:00"
+  "updated_at": "2026-10-29T20:30:29+08:00"
 }
