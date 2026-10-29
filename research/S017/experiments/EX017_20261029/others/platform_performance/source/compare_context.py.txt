@@ -1,0 +1,268 @@
+"""Independent-process DEV equivalence/performance check; synthetic 2019 only.
+
+Run once per module with --module and --label; then --compare. Does not change
+the installed package or perform research account evaluation/publication.
+All seven public SRT/TXE tables are retained, not only aggregate statistics.
+CN bar execution is publicly unsupported; CN preservation checks plan and that
+explicit refusal, not an invented CN ledger. Timing is same-workload wall time.
+"""
+from dataclasses import replace
+from datetime import datetime, time, timedelta
+from hashlib import sha256
+import argparse
+import importlib.util
+import json
+from pathlib import Path
+import pickle
+import statistics
+import sys
+from time import perf_counter
+from zoneinfo import ZoneInfo
+
+import pandas as pd
+import strategy_runtime as srt
+from dataflows import AssetClass, BarFrequency, InstrumentId, MarketId, SourceRef, TimeInterval, TradingSession
+from trading_execution_engine.equity import EquityHistoricalExecutor
+
+WORK = Path(__file__).resolve().parent
+TABLES = ('decisions', 'orders', 'fills', 'corporate_action_entries', 'account_points', 'account_daily', 'trades')
+
+
+def digest(path):
+    return sha256(path.read_bytes()).hexdigest()
+
+
+def inject(path):
+    name = 'strategy_runtime.equity_context'
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    setattr(srt, 'equity_context', module)
+    counters = {}
+    for name in ('build_equity_decision_context', 'validate_equity_decision_context', '_auxiliary_history'):
+        original = getattr(module, name)
+        def wrapped(*args, _fn=original, _name=name, **kwargs):
+            counters[_name] = counters.get(_name, 0) + 1
+            return _fn(*args, **kwargs)
+        setattr(module, name, wrapped)
+    srt.build_equity_decision_context = module.build_equity_decision_context
+    return module, counters
+
+
+def fixture(cn=False, count=45):
+    zone = ZoneInfo('Asia/Shanghai' if cn else 'America/New_York')
+    days = list(pd.bdate_range('2019-10-01', periods=count).date)
+    calendars = []
+    rows = []
+    for number, day in enumerate(days):
+        def at(h, m=0):
+            return datetime.combine(day, time(h, m), zone)
+        segments = ((TimeInterval(at(9, 30), at(11, 30)), TimeInterval(at(13), at(15))) if cn
+                    else (TimeInterval(at(9, 30), at(13 if number == 32 else 16)),))
+        session = TradingSession(day, str(zone), segments)
+        calendars.append(session)
+        for index, bar in enumerate(session.bars(BarFrequency.M30)):
+            close = 100. + (index % 5) * .3
+            rows.append(dict(BarStart=bar.start, Date=bar.end, AvailableDate=bar.end,
+                Open=close, High=close+2., Low=close-2., Close=close, Volume=1000.+number, Amount=close*(1000.+number)))
+    bars = pd.DataFrame(rows)
+    for key in ('BarStart', 'Date', 'AvailableDate'):
+        bars[key] = pd.to_datetime(bars[key], utc=True)
+    sessions = pd.DataFrame(dict(Date=[s.segments[0].start for s in calendars],
+        AvailableDate=[s.segments[0].start for s in calendars], SessionDate=[s.session_date.isoformat() for s in calendars]))
+    for key in ('Date', 'AvailableDate'):
+        sessions[key] = pd.to_datetime(sessions[key], utc=True)
+    constraints = pd.DataFrame(dict(Date=bars.BarStart, AvailableDate=bars.BarStart,
+        QuantityStep=100 if cn else 1, PriceTick=.01, Tradable=True))
+    daily = bars.groupby(bars.Date.dt.tz_convert(zone).dt.date, sort=True).agg(
+        BarStart=('BarStart', 'first'), Date=('Date', 'last'), AvailableDate=('AvailableDate', 'last'),
+        Open=('Open', 'first'), High=('High', 'max'), Low=('Low', 'min'), Close=('Close', 'last'),
+        Volume=('Volume', 'sum'), Amount=('Amount', 'sum')).reset_index(drop=True)
+    return bars, constraints, sessions, tuple(calendars), {'daily': daily, 'm30': bars.copy(deep=True)}
+
+
+def candidate(mode):
+    cn = mode == 'cn_plain'
+    spec = srt.ResearchExecutionSpec(srt.CnEquitySpec() if cn else srt.UsEquitySpec(), BarFrequency.M30,
+        srt.AccountPolicy('CNY' if cn else 'USD', srt.CashAvailabilityPolicy.IMMEDIATE_RESEARCH),
+        100 if cn else 1, .01, .01, 0.)
+    auxiliary = tuple(srt.EquityAuxiliaryInput(name, InstrumentId(MarketId.US, AssetClass.ETF, symbol),
+        SourceRef('synthetic', 'v1'), frequency, 2, 7*86400) for name, symbol, frequency in
+        (('daily', 'SPY', BarFrequency.DAILY), ('m30', 'QQQ', BarFrequency.M30))) if mode == 'aux_session' else ()
+    definition = srt.EquityStrategyDefinition(InstrumentId(MarketId.CN if cn else MarketId.US,
+        AssetClass.STOCK, '600000.SH' if cn else 'LITE'), spec, 2, 'probe_strategy:decide',
+        ('probe_strategy.py',), srt.equity_source_hash(WORK, ('probe_strategy.py',)),
+        auxiliary_inputs=auxiliary, session_context=mode in ('aux_session', 'session'))
+    return srt.EquityStrategyCandidate('S999', 'C0001', definition, WORK)
+
+
+def capture(function):
+    try:
+        function()
+    except Exception as error:
+        return {'type': type(error).__name__, 'message': str(error)}
+    raise AssertionError('expected explicit invalid-input refusal')
+
+
+def replay(value, data, future=False):
+    bars, constraints, sessions, calendars, auxiliary = data
+    bars, constraints, sessions = bars.copy(deep=True), constraints.copy(deep=True), sessions.copy(deep=True)
+    auxiliary = {key: frame.copy(deep=True) for key, frame in auxiliary.items()}
+    start, end = calendars[30].segments[0].start, calendars[34].segments[-1].end
+    if future:
+        for frame in (bars, *auxiliary.values()):
+            mask = frame.Date > end
+            frame.loc[mask, ['Open', 'High', 'Low', 'Close']] *= 20
+            frame.loc[mask, ['Volume', 'Amount']] *= 7
+    original = [frame.copy(deep=True) for frame in (bars, constraints, sessions, *auxiliary.values())]
+    stamp = bars.BarStart.iloc[0]
+    actions = pd.DataFrame([dict(Date=stamp, AvailableDate=stamp, EventId='none', Kind='NONE',
+        Ratio=1., CashPerShare=0., PayAt=None)])
+    executor = EquityHistoricalExecutor(specification=value.definition.execution_spec, initial_cash=100000., fee_rate=.001, actions=actions)
+    result = srt.StrategyRuntime(execution_spec=value.definition.execution_spec).create(value).run_window(
+        bars, constraints, executor, start=start, end=end, fee_rate=.001,
+        auxiliary_histories=auxiliary, sessions=sessions, trading_sessions=calendars)
+    for before, after in zip(original, (bars, constraints, sessions, *auxiliary.values()), strict=True):
+        pd.testing.assert_frame_equal(before, after, check_exact=True)
+    return {name: getattr(result, name) for name in TABLES}
+
+
+def direct_checks(module, value, data):
+    bars, _, sessions, calendars, auxiliary = data
+    interval = calendars[31].bars(BarFrequency.M30)[3]
+    point = srt.DecisionPoint(interval.start, interval.start, interval)
+    history = bars.loc[bars.Date <= interval.start].copy(deep=True)
+    portfolio = srt.EquityPortfolio(100000., 0, 0., 0)
+    def build(**changes):
+        args = dict(auxiliary_histories=auxiliary, sessions=sessions, trading_sessions=calendars)
+        args.update(changes)
+        return srt.build_equity_decision_context(value.definition, history, portfolio, point, **args)
+    context = build()
+    first = value.decide(context)
+    assert value.decide(context) == first
+    isolated = module.validate_equity_decision_context(value.definition, context)
+    isolated.history.iloc[0, isolated.history.columns.get_loc('Close')] = 9999
+    isolated.auxiliary_histories['daily'].iloc[0, isolated.auxiliary_histories['daily'].columns.get_loc('Close')] = 8888
+    assert context.history.Close.iloc[0] != 9999 and context.auxiliary_histories['daily'].Close.iloc[0] != 8888
+    errors = {}
+    for label, field, bad in [('nan', 'Close', float('nan')), ('infinity', 'Volume', float('inf')),
+                              ('negative', 'Low', -1.), ('zero_volume', 'Volume', 0.)]:
+        altered = {key: frame.copy(deep=True) for key, frame in auxiliary.items()}
+        altered['daily'].loc[0, field] = bad
+        errors[label] = capture(lambda: build(auxiliary_histories=altered))
+    for label, make in [('naive', lambda frame: frame.assign(Date=frame.Date.dt.tz_localize(None))),
+                        ('nat', lambda frame: frame.assign(Date=pd.NaT))]:
+        altered = dict(auxiliary, daily=make(auxiliary['daily'].copy(deep=True)))
+        errors[label] = capture(lambda: build(auxiliary_histories=altered))
+    errors['future_direct_aux'] = capture(lambda: value.decide(replace(context, auxiliary_histories=auxiliary)))
+    future_history = pd.concat([history, bars.loc[bars.Date > interval.start].iloc[:1]])
+    errors['future_primary'] = capture(lambda: value.decide(replace(context, history=future_history)))
+    errors['missing_aux'] = capture(lambda: build(auxiliary_histories={}))
+    malformed = replace(calendars[0], segments=(TimeInterval(calendars[0].segments[0].start,
+        calendars[0].segments[0].end-timedelta(minutes=1)),))
+    errors['noncurrent_offgrid_session'] = capture(lambda: build(trading_sessions=(malformed, *calendars[1:])))
+    altered = sessions.copy(deep=True)
+    altered.loc[31, 'AvailableDate'] = pd.Timestamp(interval.end)
+    errors['future_session'] = capture(lambda: build(sessions=altered))
+    return errors, {'repeated_decision_equal': True, 'isolated_history_and_auxiliary': True,
+                    'session_date': str(context.session.session_date), 'auxiliary_rows': {k: len(v) for k,v in context.auxiliary_histories.items()}}
+
+
+def benchmark(value):
+    # Fixed long public calendar, entirely synthetic and ending before 2026.
+    data = fixture(count=1600)
+    bars, _, sessions, calendars, auxiliary = data
+    interval = calendars[-2].bars(BarFrequency.M30)[4]
+    point = srt.DecisionPoint(interval.start, interval.start, interval)
+    history = bars.loc[bars.Date <= interval.start].iloc[-273:].copy(deep=True)
+    portfolio = srt.EquityPortfolio(100000., 0, 0., 0)
+    def operation():
+        context = srt.build_equity_decision_context(value.definition, history, portfolio, point,
+            auxiliary_histories=auxiliary, sessions=sessions, trading_sessions=calendars)
+        return srt.equity_context.validate_equity_decision_context(value.definition, context)
+    operation()
+    times = []
+    for _ in range(3):
+        started = perf_counter()
+        for _ in range(6):
+            operation()
+        times.append(perf_counter()-started)
+    return {'calendar_sessions': len(calendars), 'last_date': str(calendars[-1].session_date),
+        'auxiliary_rows': {k: len(v) for k,v in auxiliary.items()}, 'operations_per_repeat': 6,
+        'repeat_seconds': times, 'median_seconds': statistics.median(times)}
+
+
+def run(module_path, label):
+    output = WORK/label
+    output.mkdir(exist_ok=False)
+    module, counters = inject(module_path)
+    results = {}
+    for mode in ('plain', 'session', 'aux_session'):
+        value, data = candidate(mode), fixture()
+        assert pickle.loads(pickle.dumps(value)) == value
+        started = perf_counter()
+        frames = replay(value, data)
+        duration = perf_counter()-started
+        changed = replay(value, data, future=True)
+        metadata = {}
+        for name in TABLES:
+            pd.testing.assert_frame_equal(frames[name], changed[name], check_exact=True)
+            path = output/f'{mode}_{name}.json'
+            path.write_text(frames[name].to_json(date_format='iso', double_precision=15), encoding='utf-8')
+            metadata[name] = {'rows': len(frames[name]), 'sha256': digest(path)}
+        assert metadata['fills']['rows'] > 0 and metadata['trades']['rows'] > 0
+        results[mode] = {'seconds': duration, 'tables': metadata, 'future_equal': True, 'inputs_unchanged': True}
+    value, data = candidate('aux_session'), fixture()
+    errors, isolation = direct_checks(module, value, data)
+    cn = candidate('cn_plain')
+    cndata = fixture(cn=True)
+    bars, _, _, calendar, _ = cndata
+    interval = calendar[31].bars(BarFrequency.M30)[3]
+    plan = srt.StrategyRuntime(execution_spec=cn.definition.execution_spec).create(cn).plan(
+        bars.loc[bars.Date <= interval.start], interval, srt.EquityPortfolio(100000., 0, 0., 0), fee_rate=.001)
+    errors['cn_executor_unsupported'] = capture(lambda: replay(cn, cndata))
+    results['cn_plain'] = {'plan': str(plan), 'pickle_equal': pickle.loads(pickle.dumps(cn)) == cn}
+    timing = benchmark(value)
+    assert counters['build_equity_decision_context'] > 0 and counters['validate_equity_decision_context'] > 0 and counters['_auxiliary_history'] > 0
+    payload = {'scope': 'DEV_SYNTHETIC_EQUIVALENCE_NO_RESEARCH_ACCOUNT', 'module_sha256': digest(module_path),
+        'harness_sha256': digest(Path(__file__)), 'strategy_sha256': digest(WORK/'probe_strategy.py'),
+        'results': results, 'errors': errors, 'isolation': isolation, 'timing': timing, 'calls': counters}
+    (output/'result.json').write_text(json.dumps(payload, indent=2), encoding='utf-8')
+    print(json.dumps(payload, indent=2))
+
+
+def compare(labels):
+    before, after = [json.loads((WORK/label/'result.json').read_text()) for label in labels]
+    assert before['harness_sha256'] == after['harness_sha256'] == digest(Path(__file__))
+    assert before['strategy_sha256'] == after['strategy_sha256']
+    assert before['errors'] == after['errors'] and before['isolation'] == after['isolation']
+    assert before['calls'] == after['calls']
+    for mode in ('plain', 'session', 'aux_session'):
+        assert before['results'][mode]['tables'] == after['results'][mode]['tables'], mode
+        for name in TABLES:
+            assert (WORK/labels[0]/f'{mode}_{name}.json').read_bytes() == (WORK/labels[1]/f'{mode}_{name}.json').read_bytes()
+    assert before['results']['cn_plain'] == after['results']['cn_plain']
+    report = {'status': 'PASS', 'scope': before['scope'], 'before_module_sha256': before['module_sha256'],
+        'after_module_sha256': after['module_sha256'], 'harness_sha256': digest(Path(__file__)),
+        'seven_tables_exact': ['plain', 'session', 'aux_session'], 'cn_plan_and_rejection_exact': True,
+        'error_cases_exact': before['errors'], 'calls': after['calls'], 'isolation': after['isolation'],
+        'timing_before': before['timing'], 'timing_after': after['timing'],
+        'context_workload_speedup': before['timing']['median_seconds']/after['timing']['median_seconds'],
+        'replay_seconds': {mode: [before['results'][mode]['seconds'], after['results'][mode]['seconds']] for mode in ('plain','session','aux_session')},
+        'limitations': ['Synthetic data only; no whole-repository regression', 'CN bar execution unsupported in both versions',
+                        'Wall timings subject to other local workload; no claim of real-account speedup']}
+    (WORK/'comparison.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
+    print(json.dumps(report, indent=2))
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--module', type=Path)
+    parser.add_argument('--label')
+    parser.add_argument('--compare', nargs=2)
+    args = parser.parse_args()
+    if args.compare:
+        compare(args.compare)
+    else:
+        run(args.module, args.label)

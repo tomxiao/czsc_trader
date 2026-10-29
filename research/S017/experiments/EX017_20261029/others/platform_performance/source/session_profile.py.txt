@@ -1,0 +1,29 @@
+"""Isolated same-workload session-only context benchmark, synthetic 2019--2025.
+
+This supplements the immutable seven-table comparison; never estimates an
+end-to-end research account runtime from the context speedup.
+"""
+import argparse
+import json
+from pathlib import Path
+
+from compare_context import WORK, benchmark, candidate, digest, inject
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--module', type=Path, required=True)
+    parser.add_argument('--label', required=True)
+    args = parser.parse_args()
+    _, calls = inject(args.module)
+    payload = {'scope': 'SYNTHETIC_SESSION_ONLY_CONTEXT', 'module_sha256': digest(args.module),
+        'script_sha256': digest(Path(__file__)), 'harness_sha256': digest(WORK/'compare_context.py'),
+        'timing': benchmark(candidate('session')), 'calls': calls}
+    assert calls['build_equity_decision_context'] == 19
+    assert calls['validate_equity_decision_context'] == 19
+    assert '_auxiliary_history' not in calls
+    destination = WORK/f'{args.label}_session_profile.json'
+    if destination.exists():
+        raise FileExistsError(destination)
+    destination.write_text(json.dumps(payload, indent=2), encoding='utf-8')
+    print(json.dumps(payload, indent=2))

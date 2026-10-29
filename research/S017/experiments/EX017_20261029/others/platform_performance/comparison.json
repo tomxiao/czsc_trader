@@ -1,0 +1,127 @@
+{
+  "status": "PASS",
+  "scope": "DEV_SYNTHETIC_EQUIVALENCE_NO_RESEARCH_ACCOUNT",
+  "before_module_sha256": "8ca601aa7202e747ffe184316281f3c29df7a6556915d5ea0c97388f8f4304a1",
+  "after_module_sha256": "684ef1209ca9da29a3285896033b9b3b7eddfd8d131fa7171e1ec1a704076f5d",
+  "harness_sha256": "64dae2d5f64b59d1401c69e6056ddf3d13c3f958c25ca5db6fac2b5f8573b774",
+  "seven_tables_exact": [
+    "plain",
+    "session",
+    "aux_session"
+  ],
+  "cn_plan_and_rejection_exact": true,
+  "error_cases_exact": {
+    "nan": {
+      "type": "ValueError",
+      "message": "AUXILIARY_INPUT_UNAVAILABLE: invalid or zero-volume observation"
+    },
+    "infinity": {
+      "type": "ValueError",
+      "message": "AUXILIARY_INPUT_UNAVAILABLE: invalid or zero-volume observation"
+    },
+    "negative": {
+      "type": "ValueError",
+      "message": "AUXILIARY_INPUT_UNAVAILABLE: invalid or zero-volume observation"
+    },
+    "zero_volume": {
+      "type": "ValueError",
+      "message": "AUXILIARY_INPUT_UNAVAILABLE: invalid or zero-volume observation"
+    },
+    "naive": {
+      "type": "ValueError",
+      "message": "Date requires aware finite timestamps"
+    },
+    "nat": {
+      "type": "ValueError",
+      "message": "Date requires aware finite timestamps"
+    },
+    "future_direct_aux": {
+      "type": "ValueError",
+      "message": "CAUSAL_TIME_VIOLATION: future auxiliary observation"
+    },
+    "future_primary": {
+      "type": "ValueError",
+      "message": "CAUSAL_TIME_VIOLATION: future primary observation"
+    },
+    "missing_aux": {
+      "type": "ValueError",
+      "message": "AUXILIARY_INPUT_UNAVAILABLE: daily"
+    },
+    "noncurrent_offgrid_session": {
+      "type": "ValueError",
+      "message": "session contains an incomplete 30-minute interval"
+    },
+    "future_session": {
+      "type": "ValueError",
+      "message": "CAUSAL_TIME_VIOLATION: session is not yet available"
+    },
+    "cn_executor_unsupported": {
+      "type": "ValueError",
+      "message": "UNSUPPORTED_EXECUTION_COMBINATION: CN bar execution is not admitted"
+    }
+  },
+  "calls": {
+    "build_equity_decision_context": 265,
+    "validate_equity_decision_context": 260,
+    "_auxiliary_history": 567
+  },
+  "isolation": {
+    "repeated_decision_equal": true,
+    "isolated_history_and_auxiliary": true,
+    "session_date": "2019-11-13",
+    "auxiliary_rows": {
+      "daily": 31,
+      "m30": 406
+    }
+  },
+  "timing_before": {
+    "calendar_sessions": 1600,
+    "last_date": "2025-11-17",
+    "auxiliary_rows": {
+      "daily": 1600,
+      "m30": 20794
+    },
+    "operations_per_repeat": 6,
+    "repeat_seconds": [
+      1.0852377999108285,
+      1.1287165000103414,
+      1.0000446999911219
+    ],
+    "median_seconds": 1.0852377999108285
+  },
+  "timing_after": {
+    "calendar_sessions": 1600,
+    "last_date": "2025-11-17",
+    "auxiliary_rows": {
+      "daily": 1600,
+      "m30": 20794
+    },
+    "operations_per_repeat": 6,
+    "repeat_seconds": [
+      0.3234313998837024,
+      0.3276680000126362,
+      0.3150001000612974
+    ],
+    "median_seconds": 0.3234313998837024
+  },
+  "context_workload_speedup": 3.3553878822558727,
+  "replay_seconds": {
+    "plain": [
+      0.5264107999391854,
+      0.5352050999645144
+    ],
+    "session": [
+      0.8114221999421716,
+      0.6735076999757439
+    ],
+    "aux_session": [
+      2.607209599809721,
+      2.2706766000483185
+    ]
+  },
+  "limitations": [
+    "Synthetic data only; no whole-repository regression",
+    "CN bar execution unsupported in both versions",
+    "Wall timings subject to other local workload; no claim of real-account speedup"
+  ]
+}

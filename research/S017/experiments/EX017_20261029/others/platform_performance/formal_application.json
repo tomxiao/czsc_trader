@@ -1,0 +1,33 @@
+{
+  "schema": "s017-dev-context-performance-application/v1",
+  "status": "PASS",
+  "implementation_commit": "4db65abe",
+  "before_module_sha256": "8ca601aa7202e747ffe184316281f3c29df7a6556915d5ea0c97388f8f4304a1",
+  "after_module_sha256": "684ef1209ca9da29a3285896033b9b3b7eddfd8d131fa7171e1ec1a704076f5d",
+  "scope": "FOCUSED_PUBLIC_CONTRACTS_NOT_FULL_REPOSITORY_REGRESSION",
+  "us_context_and_tdr_tests": {
+    "passed": 47,
+    "seconds": 44.77,
+    "files": [
+      "packages/strategy_runtime/tests/functional/test_equity_context.py",
+      "packages/strategy_runtime/tests/functional/test_equity_context_boundaries.py",
+      "tests/functional/test_equity_auxiliary_context.py",
+      "tests/functional/test_equity_auxiliary_diagnosis.py"
+    ]
+  },
+  "legacy_cn_public_runtime_tests": {
+    "passed": 4,
+    "seconds": 5.09,
+    "pytest_config": "pyproject.toml",
+    "nodes": [
+      "packages/strategy_runtime/tests/functional/test_public_runtime.py::test_public_runtime_prepares_and_plans_without_an_execution_channel",
+      "packages/strategy_runtime/tests/functional/test_runtime_v2.py::test_modes_share_kernel_with_isolated_initial_state_and_full_feature_warmup",
+      "packages/strategy_runtime/tests/functional/test_runtime_v2.py::test_mutating_kernel_cannot_contaminate_other_modes_or_instances"
+    ]
+  },
+  "ruff": "PASS",
+  "new_research_rounds": 0,
+  "recovery": "EX017 original unfinished attempt stopped before result; original checkpoint preserved; identical configuration CREATE under new implementation identity",
+  "production_changed": false,
+  "historical_published_evidence_changed": false
+}

@@ -1,0 +1,12 @@
+"""Synthetic deterministic economic path; no research hypothesis or market data."""
+from strategy_runtime import EquityDecision
+
+
+def decide(ctx):
+    close = float(ctx.history.Close.iloc[-1])
+    values = {name: float(frame.Close.iloc[-1]) for name, frame in ctx.auxiliary_histories.items()}
+    target = int(close > 100.5)
+    return EquityDecision.from_facts(target, 'synthetic context equivalence',
+        facts={'close': close, 'auxiliary': str(values), 'held': ctx.portfolio.quantity > 0,
+               'session': str(ctx.session), 'available': str(ctx.session_available_at)},
+        next_watch='next completed observation')

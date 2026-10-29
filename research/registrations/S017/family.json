@@ -192,11 +192,17 @@
       "new_information_exposure": "公开2024 ORB论文检索返回2016—2023 LITE 15分钟榜单行；仅方法学习，无新行情或账户评价。后续不能声称完全独立设计。",
       "pause_statement": "请暂停，先补齐平台基建能力",
       "performance_review": {
-        "experimental_status": "EX012报告发布PASS。EX017旧实现账户继续计算；其后续诊断等待器已暂停，待账户发布完成及新实现等价验证通过后恢复。DEV验证不占用新策略实验轮次。",
+        "evidence": "research/S017/experiments/EX017_20261029/others/platform_performance/manifest.json",
+        "evidence_sha256": "3259f1f42cd9ce9f11ea734f5fa7f4b611f787d16a48a0a60ca482d57f4350eb",
+        "experimental_status": "EX017 original unfinished computation deliberately stopped before any result; original checkpoint preserved. Same fixed C0046 restarted under new platform identity; no extra research round. Subsequent public diagnoses will authenticate original evidence with the optimized implementation.",
         "finding": "Repeated full-calendar interval construction and auxiliary full-history validation per decision; finite loops, no timing-based failure judgment.",
+        "implementation_commit": "4db65abe",
+        "implementation_sha256": "684ef1209ca9da29a3285896033b9b3b7eddfd8d131fa7171e1ec1a704076f5d",
+        "performance_limit": "Synthetic build+validate: session-only 5.21x, combined daily/M30 auxiliary 3.36x. Not an end-to-end research speedup claim.",
         "scope": "当前分支优化美股辅助与会话上下文；保持决策、经济账本、因果与身份认证、A股能力；聚焦验证后恢复RSCH。",
-        "status": "DEV_AUTHORIZED_FOCUSED_REPAIR",
-        "user_authorization": "授权 DEV 聚焦修复后恢复研究（推荐）"
+        "status": "DEV_REPAIR_VERIFIED_RSCH_RESUMED",
+        "user_authorization": "授权 DEV 聚焦修复后恢复研究（推荐）",
+        "verification": "51 focused public-contract tests PASS including 4 legacy A-share runtime nodes; three synthetic US routes seven tables exact; source identity and failures preserved; full repository regression not run"
       },
       "platform_delivery": {
         "a_share_compatibility_test_count": 14,
@@ -223,7 +229,7 @@
         "EX014_20261029": "COMPLETED_REPORT_PUBLICATION_PASS",
         "EX015_20261029": "COMPLETED_REPORT_PUBLICATION_PASS",
         "EX016_20261029": "COMPLETED_REPORT_PUBLICATION_PASS",
-        "EX017_20261029": "PRECHECK_PASS_FORMAL_COMPUTATION_RUNNING",
+        "EX017_20261029": "SAME_CONFIGURATION_RESTARTED_AFTER_AUTHORIZED_PERFORMANCE_REPAIR",
         "scope": "Operational progress only; completed rounds require published completed reports."
       },
       "status": "ACTIVE_STAGE_TWO",
@@ -411,5 +417,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-10-29T10:12:05+08:00"
+  "updated_at": "2026-10-29T10:22:53+08:00"
 }
