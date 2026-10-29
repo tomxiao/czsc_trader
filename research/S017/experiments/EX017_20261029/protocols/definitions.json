@@ -1,0 +1,46 @@
+{
+  "C0046": {
+    "runtime_kind": "US_EQUITY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "LITE"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 261,
+    "entrypoint": "strategy:decide",
+    "source_files": [
+      "strategy.py"
+    ],
+    "source_sha256": "f8d0187224fa0bac4891c65a6ad454a9fc733db9748ac00d8ca1df9c3a396728",
+    "parameters_json": "{\"allow_overnight\":true,\"volume_gate\":true}",
+    "dependencies": [],
+    "contract_version": 2,
+    "parameter_schema_json": "{\"allow_overnight\":{\"type\":\"boolean\"},\"volume_gate\":{\"type\":\"boolean\"}}",
+    "feedback_mode": "CONFIRMED_CLOSED_CYCLE_V1",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "session_context": true
+  }
+}

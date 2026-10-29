@@ -1,0 +1,73 @@
+{
+  "status": "PASS",
+  "scope": "synthetic public SRT/TXE only; zero real research account evaluations",
+  "strategy_source_sha256": "85a4aded4980ea22d4df1289e90c63d70edf8e32081ee45ee820e555efab8f92",
+  "precheck_source_sha256": "cd6b1bdc1f6165183ba24223ced895ec66b4ed93d76f63960bd90c6a5954a15e",
+  "mechanism_evidence_sha256": "2787690e02df8a64ced72fdf73677055bea97921d02fef0b2f84a40be6041496",
+  "mechanism_source_sha256": "8e839568a9e37773e65c2ee068e3635c881186fbeb8d41a99a9d773aa84430d3",
+  "public_serial_equals_spawn": true,
+  "future_price_and_volume_invariance": true,
+  "candidate_pickle": true,
+  "max_spawn_workers": 2,
+  "compared_result_tables": [
+    "decisions",
+    "orders",
+    "fills",
+    "corporate_action_entries",
+    "account_points",
+    "account_daily",
+    "trades"
+  ],
+  "mechanism_tests": 18,
+  "mechanism_cases": {
+    "c36": 144,
+    "c37": 144,
+    "c44": 144,
+    "combined_held": 36,
+    "combined_flat": 108,
+    "blocked_by_volume": 24,
+    "prefix_comparisons": 4
+  },
+  "candidates": {
+    "C0046": {
+      "decisions": 111,
+      "fills": 13,
+      "economic_hashes": {
+        "decisions": "724fa159892815e8087c9374533bc0441c08b8f09e564b8d24a547f7c90c4c8b",
+        "orders": "c06a8f52d33bdb5fabe8a413b4ffd3584ddc13ee9fdc97944b001356819883ee",
+        "fills": "888ca9303695a0f02a17870f16346c13bc2d5d3b566fdbeb3e831ebf20bbc1ff",
+        "corporate_action_entries": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "account_points": "094be5c3a825b51de57d6d78274029b0ba647508b3dbdc05d955b7d826ebf6c9",
+        "account_daily": "69e0930fec2bede7db2ad0ddde4c1ed138b1d7ef918cad919381ea6b98c7ba5e",
+        "trades": "f0f09aaee9dea00fbb0cdcd7b8195471620c5dcc4fc7a8c5822fdf594edc0961"
+      },
+      "lifecycle_volume_and_session": {
+        "closed_cycles": 6,
+        "actual_entries": 7,
+        "all_actual_buys_strictly_high_volume": true,
+        "volume_rejection": {
+          "EQUAL": {
+            "session": "2018-11-27",
+            "opening_volume": 230000.0,
+            "prior14_mean": 230000.0,
+            "target": 0,
+            "actual_buys": 0
+          },
+          "LOW": {
+            "session": "2018-11-28",
+            "opening_volume": 118214.28571428571,
+            "prior14_mean": 236428.57142857142,
+            "target": 0,
+            "actual_buys": 0
+          }
+        },
+        "unique_actual_entry_per_day": true,
+        "previous_day_exit_allows_current_entry": true,
+        "same_day_actual_closed_cycle_blocks_reentry": true,
+        "halfday_weekend_hold": true,
+        "next_session_first_point": true,
+        "all_decisions_on_session_grid": true
+      }
+    }
+  }
+}

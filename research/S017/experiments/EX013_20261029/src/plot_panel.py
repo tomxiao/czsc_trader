@@ -1,6 +1,6 @@
 """Render the completed, authenticated S017 economic panel without new evaluations.
 
-Requires all six explicit experiment analyses to be PASS. Rebind original public
+Requires all seven explicit experiment analyses to be PASS. Rebind original public
 account bytes and identities, compare every analysis summary to its account,
 and retain identical primary contracts and buy-and-hold paths. This presentation
 check reuses the public diagnoses recorded by analysis; it does not repeat their
@@ -34,6 +34,7 @@ EXPERIMENTS = {
     'EX014_20261029': (('C0043',), ('C0013', 'C0040')),
     'EX015_20261029': (('C0044',), ('C0013', 'C0036')),
     'EX016_20261029': (('C0045',), ('C0013', 'C0043')),
+    'EX017_20261029': (('C0046',), ('C0013', 'C0037', 'C0044')),
 }
 GROUPS = {
     'Intraday ORB': (('C0036', 'C0037'), '#2878B5'),
@@ -41,6 +42,7 @@ GROUPS = {
     'Trend with context gates': (('C0040', 'C0041', 'C0042'), '#D5781B'),
     'Trend with entry context': (('C0043', 'C0045'), '#38965B'),
     'Overnight ORB': (('C0044',), '#148D95'),
+    'Volume-gated overnight ORB': (('C0046',), '#C44E52'),
 }
 
 
@@ -59,12 +61,12 @@ def analysis_inputs():
              for name in EXPERIMENTS}
     missing = [name for name, path in paths.items() if not path.is_file()]
     if missing:
-        raise FileNotFoundError('all six completed analyses are required: ' + ', '.join(missing))
+        raise FileNotFoundError('all seven completed analyses are required: ' + ', '.join(missing))
     decoded = {name: local_json(path) for name, path in paths.items()}
     incomplete = [name for name, (value, _) in decoded.items()
                   if value.get('status') != 'PASS' or value.get('experiment') != name]
     if incomplete:
-        raise ValueError('all six analyses must be PASS before account reads: ' + ', '.join(incomplete))
+        raise ValueError('all seven analyses must be PASS before account reads: ' + ', '.join(incomplete))
     analyses, source_files, references = {}, {}, {}
     origins = {CONTROL_ID: CONTROL}
     for name, (keys, _) in EXPERIMENTS.items():
@@ -190,6 +192,12 @@ def authenticated_points():
 
 
 def render(points, targets, destination):
+    grouped = [key for keys, _ in GROUPS.values() for key in keys]
+    declared = [key for keys, _ in EXPERIMENTS.values() for key in keys]
+    if (len(grouped) != len(set(grouped)) or len(declared) != len(set(declared))
+            or set(grouped) != set(declared)
+            or set(points) != set(declared) | {'C0013', 'BUY_HOLD'}):
+        raise ValueError('plot groups and points must cover every explicit prototype exactly once')
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
@@ -201,6 +209,7 @@ def render(points, targets, destination):
     offsets = {'C0036': (-10, -22), 'C0037': (10, 12), 'C0038': (-12, 14),
         'C0039': (12, -22), 'C0040': (-12, 12), 'C0041': (12, 16),
         'C0042': (-12, -24), 'C0043': (12, 12), 'C0044': (12, -22), 'C0045': (12, -24),
+        'C0046': (-12, 24),
         'C0013': (-12, 14), 'BUY_HOLD': (12, 14)}
     for label, (keys, color) in GROUPS.items():
         ax.scatter([points[key]['bar_max_drawdown'] for key in keys],

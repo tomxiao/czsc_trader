@@ -1,0 +1,112 @@
+{
+  "schema": "s017-volume-overnight-interaction-decision-evidence/v1",
+  "selection_status": "ADAPTIVE_AFTER_SEEN_RESULTS",
+  "accounts": {
+    "C0013": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S017",
+        "experiment_id": "EX003_20261028"
+      },
+      "evidence_id": "1496c8667bd1f8ad4cc26e7ee4beb0080d02cb42d8380d49c5d2de1fb53048af.json",
+      "sha256": "1496c8667bd1f8ad4cc26e7ee4beb0080d02cb42d8380d49c5d2de1fb53048af",
+      "media_type": "application/json",
+      "name": "account-C0013",
+      "schema": "equity_research",
+      "schema_version": 2
+    },
+    "C0036": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S017",
+        "experiment_id": "EX011_20261029"
+      },
+      "evidence_id": "d25c7a3a12237fdc046f223e705311bd0afbea13f7ac9491d8153f6c4fa58145.json",
+      "sha256": "d25c7a3a12237fdc046f223e705311bd0afbea13f7ac9491d8153f6c4fa58145",
+      "media_type": "application/json",
+      "name": "account-C0036",
+      "schema": "equity_research",
+      "schema_version": 2
+    },
+    "C0037": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S017",
+        "experiment_id": "EX011_20261029"
+      },
+      "evidence_id": "8ac829abf8eefa8083adf2fdd0f3b91fc1f80ee4ff9cfd4fcb13aacbd08c2846.json",
+      "sha256": "8ac829abf8eefa8083adf2fdd0f3b91fc1f80ee4ff9cfd4fcb13aacbd08c2846",
+      "media_type": "application/json",
+      "name": "account-C0037",
+      "schema": "equity_research",
+      "schema_version": 2
+    },
+    "C0044": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S017",
+        "experiment_id": "EX015_20261029"
+      },
+      "evidence_id": "bdbcb0a1a2e40845fbf553f323a2bdc0cb63522b999cfe1e13309a1dc2514103.json",
+      "sha256": "bdbcb0a1a2e40845fbf553f323a2bdc0cb63522b999cfe1e13309a1dc2514103",
+      "media_type": "application/json",
+      "name": "account-C0044",
+      "schema": "equity_research",
+      "schema_version": 2
+    }
+  },
+  "diagnoses": {
+    "C0037_vs_C0036": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S017",
+        "experiment_id": "EX011_20261029"
+      },
+      "evidence_id": "751395b29a06d9842427c4746efa008b43f47c1371876d05ad74fb819be27585.json",
+      "sha256": "751395b29a06d9842427c4746efa008b43f47c1371876d05ad74fb819be27585",
+      "media_type": "application/json",
+      "name": "diagnosis-C0037_vs_C0036",
+      "schema": null,
+      "schema_version": null
+    },
+    "C0044_vs_C0036": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S017",
+        "experiment_id": "EX015_20261029"
+      },
+      "evidence_id": "fde1759af0d0b8a9d28e302cff9953767445eb778318e412889ca8293e0726a0.json",
+      "sha256": "fde1759af0d0b8a9d28e302cff9953767445eb778318e412889ca8293e0726a0",
+      "media_type": "application/json",
+      "name": "diagnosis-C0044_vs_C0036",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "files": {
+    "decision-volume-diagnosis": {
+      "path": "research/S017/experiments/EX011_20261029/others/diagnostics/C0037_vs_C0036.json",
+      "sha256": "751395b29a06d9842427c4746efa008b43f47c1371876d05ad74fb819be27585"
+    },
+    "decision-holding-diagnosis": {
+      "path": "research/S017/experiments/EX015_20261029/others/diagnostics/C0044_vs_C0036.json",
+      "sha256": "fde1759af0d0b8a9d28e302cff9953767445eb778318e412889ca8293e0726a0"
+    },
+    "decision-volume-description": {
+      "path": "research/S017/experiments/EX015_20261029/others/entry_volume_description.json",
+      "sha256": "7a108d7b3d4dc74831c4f33f46564b7c370ee936a603f1b3a56b5dc13b9566cd"
+    },
+    "decision-volume-source": {
+      "path": "research/S017/experiments/EX015_20261029/src/describe_entry_volume.py",
+      "sha256": "e8b3a2fd04707de6a2af78a9d74c755ca6b06e6da5e2d6e935fced7e5b85a3db"
+    }
+  },
+  "reason": "One fixed missing factorial corner; preserve both local benefits and adverse high-volume partition. No return, risk or frequency benefit assumed.",
+  "no_new_control_replays": true
+}
