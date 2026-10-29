@@ -192,6 +192,121 @@ def inputs():
     return analysis, keys, definitions, references, pre, diagnostic_refs, pairs
 
 
+def entry_market_inputs(own_ref):
+    """Authenticate and reproduce the retained description without a new audit."""
+    from describe_entry_market import describe
+    retained = read(WORK / 'others/entry_market_description.json')
+    origin = ExperimentRef('S017', 'EX014_20261029')
+    context_ref = EvidenceRef.from_dict(read(origin.resolve(ROOT) / 'others/accounts.json')['C0043']['evidence'])
+    if (own_ref.experiment != EXPERIMENT or own_ref.name != 'account-C0044'
+            or context_ref.experiment != origin or context_ref.name != 'account-C0043'
+            or context_ref.media_type != 'application/json'
+            or (context_ref.schema, context_ref.schema_version) != ('equity_research', 2)
+            or retained['schema'] != 'S017_C0044_ORIGINAL_ENTRY_MARKET_DESCRIPTION_V1'
+            or retained['status'] != 'PASS' or retained['scope'] != 'ORIGINAL_C0044_ACTUAL_CYCLES_2019_2025'
+            or retained['source_accounts'] != {'C0044': own_ref.to_dict(), 'C0043': context_ref.to_dict()}
+            or retained['script_sha256'] != digest(WORK / 'src/describe_entry_market.py')):
+        raise ValueError('entry market description source or original account references changed')
+    expected_methods = {
+        (WORK / 'src/analyze.py').relative_to(ROOT).as_posix(),
+        'research/S017/experiments/EX014_20261029/src/describe_entry_difference.py',
+        'research/S017/experiments/EX011_20261029/src/describe_entry_context.py',
+        'research/S017/experiments/EX011_20261029/src/describe_exits.py',
+    }
+    methods = retained['method_sources']
+    if len(methods) != len(expected_methods) or {item['path'] for item in methods} != expected_methods:
+        raise ValueError('entry market description must identify every reused method source')
+    for item in methods:
+        if digest(ROOT / item['path']) != item['sha256']:
+            raise ValueError('entry market description method source changed')
+    originals = {'C0044': own_ref, 'C0043': context_ref}
+    context_pre = read(origin.resolve(ROOT) / 'others/pre_run_evidence.json')
+    for name in ('source', 'definitions'):
+        ref = EvidenceRef.from_dict(retained['frozen_sources']['C0043']['materials'][name])
+        if ref.experiment != origin or ref != EvidenceRef.from_dict(context_pre[name]):
+            raise ValueError('context source/definition must retain its original published reference')
+        if digest(ref.resolve(ROOT)) != ref.sha256:
+            raise ValueError('context source/definition bytes changed')
+        originals['C0043-'+name] = ref
+    # describe() rebinds full account identities, frozen source/definitions,
+    # economic/primary/BH inputs and the exact actual BUY order/decision/fill join.
+    # It performs descriptive arithmetic only and never invokes public diagnosis.
+    reproduced = json.loads(json.dumps(describe(), allow_nan=False))
+    if reproduced != retained:
+        raise ValueError('entry market description cannot be reproduced from its original sources')
+    return retained, originals
+
+
+def entry_volume_inputs(account_refs):
+    """Reproduce stable volume facts; preserve the description-time audit status."""
+    from describe_entry_volume import describe
+    from describe_entry_market import bind_source
+    from analyze import ECONOMIC_FIELDS, economic
+    retained = read(WORK / 'others/entry_volume_description.json')
+    if (retained['schema'] != 'S017_C0044_ACTUAL_ENTRY_VOLUME_DESCRIPTION_V1'
+            or retained['status'] != 'PASS'
+            or retained['scope'] != 'PUBLISHED_S017_C0044_ACTUAL_BUY_FACTS_AND_C0036_C0037_ORIGINAL_ACCOUNTS_ONLY'
+            or retained['script_sha256'] != digest(WORK / 'src/describe_entry_volume.py')):
+        raise ValueError('entry volume description source identity changed')
+    expected_helpers = {
+        'research/S017/experiments/EX011_20261029/src/describe_exits.py',
+        (WORK / 'src/analyze.py').relative_to(ROOT).as_posix(),
+        (WORK / 'src/run.py').relative_to(ROOT).as_posix(),
+    }
+    if set(retained['helper_sources']) != expected_helpers or any(
+            digest(ROOT / path) != value for path, value in retained['helper_sources'].items()):
+        raise ValueError('entry volume helper source identity changed')
+    earlier = ExperimentRef('S017', 'EX011_20261029')
+    payloads, refs = read_account_views(WORK, EXPERIMENT, ('C0044',), exact=True)
+    old, old_refs = read_account_views(earlier.resolve(ROOT), earlier, ('C0036', 'C0037'))
+    payloads.update(old)
+    refs.update(old_refs)
+    if (retained['source_accounts'] != {key: ref.to_dict() for key, ref in refs.items()}
+            or any(refs[key] != account_refs[key] for key in ('C0044', 'C0036'))):
+        raise ValueError('entry volume description differs from the original account references')
+    originals = dict(refs)
+    primary = payloads['C0044']
+    for key, payload in payloads.items():
+        if (any(payload['request'][field] != primary['request'][field] for field in ECONOMIC_FIELDS)
+                or payload['data'] != primary['data']):
+            raise ValueError('entry volume account economic or data identity differs: '+key)
+        for field in ('account_points', 'account_daily', 'fills', 'trades', 'actions', 'metrics'):
+            if economic(payload['runs']['buy_hold'][field]) != economic(primary['runs']['buy_hold'][field]):
+                raise ValueError('entry volume original BH path differs: '+key+'/'+field)
+        if retained['original_account_summaries'][key] != summarize_run(
+                payload['runs']['candidate'], payload['request']['initial_cash']):
+            raise ValueError('entry volume original account summary changed: '+key)
+        origin = EXPERIMENT if key == 'C0044' else earlier
+        _, source = bind_source(origin.resolve(ROOT), origin, key, payload)
+        for name, value in source['materials'].items():
+            originals[key+'-'+name] = EvidenceRef.from_dict(value)
+    if json.loads(json.dumps(describe(primary), allow_nan=False)) != retained['description']:
+        raise ValueError('entry volume actual-trade description cannot be reproduced')
+    diagnosis = retained['retained_public_diagnoses']['C0037_vs_C0036']
+    ref = EvidenceRef.from_dict(diagnosis['evidence'])
+    raw = authenticated_json(ref)
+    analysis_path = earlier.resolve(ROOT) / 'others/analysis.json'
+    analysis = read(analysis_path)
+    if (diagnosis['status'] != 'COMPUTED' or ref.experiment != earlier
+            or diagnosis['analysis_path'] != analysis_path.relative_to(ROOT).as_posix()
+            or diagnosis['analysis_sha256'] != digest(analysis_path)
+            or ref != EvidenceRef.from_dict(analysis['diagnostics']['C0037_vs_C0036']['evidence'])
+            or raw['status'] != 'COMPUTED'
+            or raw['sources'] != [asdict(refs['C0036']), asdict(refs['C0037'])]
+            or any(diagnosis[field] != raw[field]
+                   for field in ('issues', 'protocol', 'sources', 'reconciliation'))):
+        raise ValueError('entry volume original public C0037/C0036 diagnosis differs')
+    originals['diagnosis-C0037_vs_C0036'] = ref
+    # The raw description was generated before the C44/C36 analysis existed.
+    # Do not call its main()/retained_diagnosis(), rewrite that historical fact,
+    # or compare it to a later analysis. inputs() authenticates current diagnoses.
+    if retained['retained_public_diagnoses']['C0044_vs_C0036'] != {
+            'status': 'NOT_AVAILABLE_AT_DESCRIPTION', 'experiment': EXPERIMENT.to_dict(),
+            'name': 'C0044_vs_C0036', 'new_diagnosis_requested': False}:
+        raise ValueError('entry volume description-time diagnosis record changed')
+    return retained, originals
+
+
 def percent(value):
     return '无完整窗口' if value is None else f'{value * 100:.2f}%'
 
@@ -204,7 +319,91 @@ def link(path):
     return Path(os.path.relpath(path, WORK)).as_posix()
 
 
-def render_report(analysis, keys, references, diagnostic_refs, pairs):
+def entry_market_section(description, originals):
+    total = description['closed_cycle_totals']
+    rows = ['', '## 实际入场时的大盘条件（事后描述）', '',
+        f"保留C0044全部{total['cycles']}个原已闭合周期，将实际BUY订单和成交对应的决策时点与"
+        f"[C0043原账户]({link(ROOT / originals['C0043'].repository_path)})的结构化SPY20条件精确关联。"
+        '两个账户的身份、冻结源码、经济条件、主四项数据和完整买入持有路径均已核验。', '',
+        '|入场时SPY条件|原闭合周期|原净损益USD|实际双侧费用USD|周期净收益中位数|周期净收益均值|',
+        '|---|---:|---:|---:|---:|---:|']
+    for key in ('TRUE', 'FALSE', 'UNKNOWN'):
+        value = description['by_entry_market'][key]
+        distribution = value['recorded_cycle_net_return_distribution']
+        median = '无周期' if distribution is None else percent(distribution['median'])
+        mean = '无周期' if distribution is None else percent(distribution['mean'])
+        rows.append(f"|{key}|{value['cycles']}|{value['net_pnl']:.2f}|{value['fees']:.2f}|{median}|{mean}|")
+    rows.extend(['',
+        f"原闭合周期净损益合计{total['net_pnl']:.2f}美元、双侧费用{total['fees']:.2f}美元；"
+        f"未闭合周期{len(description['unclosed_cycles_separate'])}个，单独保留，不伪造退出或未来卖出费用。"
+        'UNKNOWN显式保留，不作为FALSE或排除。周期收益分布不是分组账户收益。', '',
+        '|原周期入场年|TRUE周期数 / 净损益USD|FALSE周期数 / 净损益USD|UNKNOWN周期数 / 净损益USD|',
+        '|---|---:|---:|---:|'])
+    for year, value in description['by_entry_year'].items():
+        parts = [value['market_groups'][key] for key in ('TRUE', 'FALSE', 'UNKNOWN')]
+        rows.append('|' + year + '|' + '|'.join(f"{part['cycles']} / {part['net_pnl']:.2f}" for part in parts) + '|')
+    rows.extend(['', '上表按原周期入场年归属完整周期损益，不是逐年账户收益，也不能成为按年份交易的规则。'
+        '本样本FALSE组在七年中六年净正，TRUE组仅2025年净正；FALSE组中位数更低而均值更高，'
+        '说明不能简单把大盘条件为假的原入场都称为失败启动。', '',
+        '这是看到C0044正式账户后的条件分组，受其自身持仓、资金和机会选择影响。'
+        '不能删除某组推算过滤账户、把组内损益归因于大盘条件，或反向推出只做FALSE有效；'
+        '不能据此承诺跨日持有与SPY门控组合有效。描述只作逐项算术核对，不替代本报告的公共经济诊断。', '',
+        '[完整描述](others/entry_market_description.json)保留精确原引用、所有周期、分位数、逐年分组和加总核对；'
+        '[描述脚本](src/describe_entry_market.py)提供只读重算。复用的EX014账本关联及EX011市场事实/成交解释方法'
+        '继续使用原文件，完整路径和SHA保存在描述的method_sources中；原C0043账户、策略及定义引用原样纳入证据，'
+        '不在本实验重新托管。'])
+    return rows
+
+
+def entry_volume_section(retained, originals):
+    description = retained['description']
+    rows = ['', '## 实际入场时的开盘量能（事后描述）', '',
+        '按C0044实际BUY决策已记录的首根开盘柱成交量，是否严格大于此前14个完整会话首柱成交量均值分组。'
+        '相等归FALSE，缺失或不一致归UNKNOWN；没有使用已关闭过滤器的volume_allowed字段代替量能事实。', '',
+        '|量能条件|原闭合周期|原净损益USD|实际双侧费用USD|盈利周期比例|周期净收益中位数|周期净收益均值|',
+        '|---|---:|---:|---:|---:|---:|---:|']
+    for key in ('TRUE', 'FALSE', 'UNKNOWN'):
+        value = description['groups'][key]
+        distribution = value['recorded_net_return_distribution']
+        shown = ['无周期' if item is None else percent(item) for item in (
+            value['positive_cycle_fraction'], distribution['median'], distribution['mean'])]
+        rows.append(f"|{key}|{value['closed_cycles']}|{value['net_pnl']:.2f}|{value['fees']:.2f}|"
+            + '|'.join(shown) + '|')
+    rows.extend(['', '|原周期分布|最小净收益|净收益25%分位|净收益95%分位|持有自然日中位数|前三大盈利占正损益比例|',
+        '|---|---:|---:|---:|---:|---:|'])
+    for key in ('TRUE', 'FALSE'):
+        value = description['groups'][key]
+        distribution = value['recorded_net_return_distribution']
+        rows.append(f"|{key}|{percent(distribution['min'])}|{percent(distribution['q25'])}|"
+            f"{percent(distribution['q95'])}|{value['holding_calendar_days_distribution']['median']:.2f}|"
+            f"{percent(value['top_3_share_of_positive_pnl'])}|")
+    rows.extend(['', '高量组的盈利周期比例、中位数及下侧收益分布较弱，但均值和95%分位较高，'
+        '不能只选其中一个统计量断言筛选有利。美元损益使用各原周期实际资金，不是等额投入收益。', '',
+        '|原周期入场年|TRUE周期数 / 净损益USD|FALSE周期数 / 净损益USD|UNKNOWN周期数 / 净损益USD|',
+        '|---|---:|---:|---:|---:|'])
+    for year, values in description['by_entry_year'].items():
+        rows.append('|' + year + '|' + '|'.join(
+            f"{values[key]['closed_cycles']} / {values[key]['net_pnl']:.2f}" for key in ('TRUE', 'FALSE', 'UNKNOWN')) + '|')
+    old = retained['original_account_summaries']
+    rows.extend(['',
+        f"原日内量能对照C0036→C0037的闭合周期为{old['C0036']['closed_cycles']}→{old['C0037']['closed_cycles']}，"
+        f"60会话周期中位数为{old['C0036']['rolling_60_closed_cycle_median']:g}→"
+        f"{old['C0037']['rolling_60_closed_cycle_median']:g}。"
+        f"[原C0037/C0036公共诊断]({link(ROOT / originals['diagnosis-C0037_vs_C0036'].repository_path)})"
+        '只检验原日内持有政策下的量能过滤；这里高量组仅121个原周期，提示关注机会数量，'
+        '不能据此推算新过滤账户的闭合数、滚动频率或收益。跨日持有与量能条件的交互尚未被本分组检验。', '',
+        '原描述生成时记录C0044/C0036诊断为NOT_AVAILABLE_AT_DESCRIPTION，该字段保留当时事实。'
+        '它不代替本报告发布前另行认证的已完成公共诊断，也不表示报告发布时诊断仍缺失。', '',
+        '[完整量能描述](others/entry_volume_description.json)及[源码](src/describe_entry_volume.py)保留全部原交易、'
+        '分布、逐年分组、费用与账本核对；复用helper的原路径和SHA随描述保存。'
+        'C0044/C0037/C0036账户、冻结源码/定义及C0037/C0036诊断沿用原正式引用，不重新托管。'
+        '这仍是反复观察过开发池的事后条件描述，不能删组构造新账户或宣称因果贡献，'
+        '不直接决定新实验、组件采用或阶段推进。'])
+    return rows
+
+
+def render_report(analysis, keys, references, diagnostic_refs, pairs, entry_description, entry_originals,
+                  volume_description, volume_originals):
     summaries = analysis['summaries']
     rows = [(key, summaries[key]['candidate']) for key in (*OLD_CONTROLS, *keys)]
     rows.append(('同条件买入持有', summaries[CONTROL_ID]['benchmark']))
@@ -264,8 +463,11 @@ def render_report(analysis, keys, references, diagnostic_refs, pairs):
         '|---|' + '|'.join('---:' for _ in rows[0][1]['year_returns']) + '|'])
     for name, value in rows:
         text.append('|' + name + '|' + '|'.join(percent(item['net_return']) for item in value['year_returns']) + '|')
-    text.extend(['', '逐年收益继承上年末资金与持仓，第一年使用初始资金；不逐年重置本金或平均年度收益率。', '',
-        '## 原始证据与限制', '', '[可复核分析](others/analysis.json)保留精确账户、公共诊断和方法来源引用。'])
+    text.extend(['', '逐年收益继承上年末资金与持仓，第一年使用初始资金；不逐年重置本金或平均年度收益率。'])
+    text.extend(entry_market_section(entry_description, entry_originals))
+    text.extend(entry_volume_section(volume_description, volume_originals))
+    text.extend(['', '## 原始证据与限制', '',
+        '[可复核分析](others/analysis.json)保留精确账户、公共诊断和方法来源引用。'])
     for key, ref in references.items():
         text.append(f'- [{key}原始账户]({link(ROOT / ref.repository_path)})')
     text.extend(['', '本实验使用反复观察过的开发池；重叠窗口与30分钟观察点不能视作独立样本。'
@@ -277,19 +479,27 @@ def render_report(analysis, keys, references, diagnostic_refs, pairs):
 def main(action):
     upstream = upstream_evidence()
     analysis, keys, definitions, accounts, pre, diagnostics, pairs = inputs()
-    report = render_report(analysis, keys, accounts, diagnostics, pairs)
+    entry_description, entry_originals = entry_market_inputs(accounts['C0044'])
+    volume_description, volume_originals = entry_volume_inputs(accounts)
+    report = render_report(analysis, keys, accounts, diagnostics, pairs, entry_description, entry_originals,
+                           volume_description, volume_originals)
     (WORK / 'report.md').write_bytes(report.encode('utf-8'))
     if action == 'render':
         print('REPORT_RENDERED', EXPERIMENT.experiment_id, flush=True)
         return
     research = context()
-    references = [*pre.values(), *accounts.values(), *diagnostics.values(), *upstream.values()]
+    references = [*pre.values(), *accounts.values(), *diagnostics.values(), *upstream.values(),
+                  *entry_originals.values(), *volume_originals.values()]
     materials = {}
     for name, relative in (
         ('analysis', 'others/analysis.json'), ('analysis-source', 'src/analyze.py'),
         ('precheck-source', 'src/precheck.py'), ('execution-status', 'others/execution_status.json'),
         ('execution-stats', 'others/execution_stats.json'), ('accounts-manifest', 'others/accounts.json'),
         ('comparisons', 'protocols/comparisons.json'), ('publication-source', 'src/publish.py'),
+        ('entry-market-description', 'others/entry_market_description.json'),
+        ('entry-market-description-source', 'src/describe_entry_market.py'),
+        ('entry-volume-description', 'others/entry_volume_description.json'),
+        ('entry-volume-description-source', 'src/describe_entry_volume.py'),
     ):
         ref = material(research, name, WORK / relative)
         materials[name] = ref
@@ -311,6 +521,8 @@ def main(action):
         'accounts': {key: ref.to_dict() for key, ref in accounts.items()},
         'definitions': {key: ref.to_dict() for key, ref in definition_refs.items()},
         'diagnostics': {key: ref.to_dict() for key, ref in diagnostics.items()},
+        'entry_market_original_evidence': {key: ref.to_dict() for key, ref in entry_originals.items()},
+        'entry_volume_original_evidence': {key: ref.to_dict() for key, ref in volume_originals.items()},
         'materials': {key: ref.to_dict() for key, ref in materials.items()},
         'upstream': {key: ref.to_dict() for key, ref in upstream.items()},
         'evidence': [ref.to_dict() for ref in references]})
