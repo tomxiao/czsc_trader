@@ -150,6 +150,8 @@
     },
     "execution_proposal_confirmation": "CONFIRMED",
     "expanded_stage_two_authorization": {
+      "ablation_branch_closed": true,
+      "ablation_followup_rounds_allowed": 0,
       "additional_experiment_round_limit": 20,
       "auxiliary_data_gate": {
         "experiment": "EX009_20261029",
@@ -175,7 +177,7 @@
         "status": "READY_WITH_EXPLICIT_RAW_PRICE_AND_AVAILABILITY_ASSUMPTIONS"
       },
       "completed_new_account_paths": 24,
-      "completed_new_rounds": 16,
+      "completed_new_rounds": 17,
       "downside_failure_authorization": {
         "protocol": "research/S017/experiments/EX022_20261029/protocols/design.md",
         "scope": "3个竞争形态、1个近期超跌背景、旧C参考，固定5期限普查，1轮、0账户",
@@ -203,9 +205,15 @@
         "EX022_20261029",
         "EX023_20261029",
         "EX024_20261029",
-        "EX025_20261029"
+        "EX025_20261029",
+        "EX026_20261029"
       ],
       "failed_new_rounds": 1,
+      "final_disjoint_ablation_authorization": {
+        "protocol": "research/S017/experiments/EX026_20261029/protocols/design.md",
+        "scope": "最后一轮互斥对照拆解；0新表达、0账户、0退出优化；不明确则结束拆解回归M005原型主线",
+        "user_statement": "允许你再用一轮实验来拆解，如果仍然没有明确结论，就回归主线。"
+      },
       "final_validation": {
         "issues": [],
         "scope": "FULL",
@@ -231,7 +239,7 @@
         "type": "DeliveryValidation"
       },
       "guideline_commit": "25c09476",
-      "initiated_new_rounds": 17,
+      "initiated_new_rounds": 18,
       "latest_delivery": {
         "batch": {
           "strategy_id": "S017",
@@ -330,7 +338,7 @@
       },
       "platform_scope": "正式辅助市场/行业行情因果输入，以及当前可得交易时段；离线验证和既有能力保护",
       "recovery_exit_description": "research/S017/experiments/EX013_20261029/others/recovery_exit_description.json",
-      "remaining_rounds": 3,
+      "remaining_rounds": 2,
       "reports": {
         "EX011_20261029": {
           "evidence_id": "4601d3cefa82067e8f43a9da516739ada4f822b04f6ff53b06e493c9601bb64e.json",
@@ -541,6 +549,20 @@
           "schema_version": 1,
           "sha256": "feff7ff6b46122717f4bebe6e9b1744c6b6d157b8725f92573e1d6b89e505104",
           "type": "EvidenceRef"
+        },
+        "EX026_20261029": {
+          "evidence_id": "596b43de7731acc94c1e2e4d0ccc9606cde6ab0cdf1340189ca366fd792c6eeb.json",
+          "experiment": {
+            "experiment_id": "EX026_20261029",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "596b43de7731acc94c1e2e4d0ccc9606cde6ab0cdf1340189ca366fd792c6eeb",
+          "type": "EvidenceRef"
         }
       },
       "research_started": true,
@@ -571,6 +593,7 @@
         "EX023_20261029": "COMPLETED_RETEST_DELAYED_REPAIR_REPORT_PUBLICATION_PASS",
         "EX024_20261029": "COMPLETED_NUMBERED_ENTRY_COMPETITION_REPORT_PUBLICATION_PASS",
         "EX025_20261029": "COMPLETED_VOLUME_RANGE_ABLATION_REPORT_PUBLICATION_PASS",
+        "EX026_20261029": "COMPLETED_FINAL_DISJOINT_ABLATION_REPORT_PUBLICATION_PASS",
         "scope": "Operational progress only; completed rounds require published completed reports."
       },
       "signal_diagnosis_authorization": {
@@ -579,8 +602,8 @@
         "scope": "单一诊断实验；不运行新完整账户、不改信号、不自动追加后续实验",
         "user_statement": "ok"
       },
-      "status": "VOLUME_RANGE_ABLATION_COMPLETE_AWAITING_DIRECTION",
-      "stop_rationale": "完成批准的S017-M005放量与窄幅条件拆解，未优化退出或创建账户。",
+      "status": "ABLATION_CLOSED_RETURN_TO_MAINLINE",
+      "stop_rationale": "完成用户允许的最后一轮拆解；本支线关闭，回归完整组合的原型验证。",
       "successful_new_configurations": 12,
       "technical_failures": {
         "EX010_20261029": "Auxiliary 96-hour age limit excludes valid half-day/long-weekend observations; FAILED report preserved, EX013 successor uses 5 days."
@@ -636,7 +659,7 @@
       "research/S017/materials/registration_20261028.md",
       "research/S017/materials/pre_registration_readiness.json"
     ],
-    "next_action": "保留S017-M005原组合及S017-M008竞争表达，先做对照可得性诊断：在S017-M008内划分互斥的S017-M005与不满足窄幅的剩余机会，固定已有规则和65柱观察期，先只审查同背景下匹配支持及时期、时段覆盖。简单删除目标自身还不够，因为其他控制也可能满足同一窄幅条件。若覆盖仍不足，明确当前开发样本无法清楚拆分，不为凑样本自动放宽匹配或新增复杂模型；放宽比较范围须事前说明代价。逐条件证明必要性不作为继续研究完整S017-M005组合的硬门，不因本轮自比较差额小而删除窄幅，也不继续叠加过滤条件。本轮未执行新对照或退出优化。",
+    "next_action": "拆解支线已关闭，后续0轮拆解。回归S017阶段二主线：保持S017-M005原入场及1%买入限价溢价、每侧0.1%费用，在下一轮事前冻结的最小完整账户原型中，以固定65柱退出检验实际持仓、重复信号、资金占用、账户收益回撤与闭合频率；可用S017-M008作简化对照，买入并持有仍为策略业绩基准。先不搜索退出参数，不要求先证明每个条件必要性，不用2026封存样本。本轮未运行账户，剩余两轮额度优先用于这条主线。",
     "objective": "LITE 美股个股30分钟只做多择时研究",
     "other_proposals_confirmation": "CONFIRMED",
     "policy_reference": "research/RSCH_AGENT.md#research-policy",
@@ -737,10 +760,10 @@
         "2018-12-31"
       ]
     },
-    "stage": "STAGE_2_VOLUME_RANGE_ABLATION_COMPLETE_AWAITING_DIRECTION",
+    "stage": "STAGE_2_MAINLINE_PROTOTYPE_PENDING",
     "stage_two_result": {
       "account_replay_count": 68,
-      "conclusion": "S017-M005（放量窄幅下跌后收复入场）的既有正向线索完整复现，但本轮尚未确认放量、窄幅两个条件分别提供稳定增量。S017-M006（阴线后收复入场）不是已经证明等价的替代方案；S017-M008（放量阴线后收复入场）值得作为更简单的竞争表达保留。主要限制是条件对照过于稀疏，尤其窄幅贡献大量只能自己与自己比较，不能据差额接近零删除条件。",
+      "conclusion": "最后一轮互斥对照仍未得到足够明确的条件贡献结论。按用户要求关闭条件拆解支线，不再追加拆解实验；保留S017-M005原组合，回到完整账户原型主线。这个结果既不证明放量或窄幅无用，也不推翻此前完整组合的事件收益线索。",
       "configuration_count": 34,
       "count_scope": "Completed formal configurations and candidate/paired-benchmark account paths; EX010 three technically failed configurations and EX017 one unfinished technical attempt are recorded separately, not successful accounts.",
       "diagnostic_only_configuration_ids": [
@@ -758,12 +781,12 @@
         "stage": "PROTOTYPES",
         "type": "DeliveryReference"
       },
-      "latest_experiment": "EX025_20261029",
-      "latest_experiment_conclusion": "S017-M005（放量窄幅下跌后收复入场）的既有正向线索完整复现，但本轮尚未确认放量、窄幅两个条件分别提供稳定增量。S017-M006（阴线后收复入场）不是已经证明等价的替代方案；S017-M008（放量阴线后收复入场）值得作为更简单的竞争表达保留。主要限制是条件对照过于稀疏，尤其窄幅贡献大量只能自己与自己比较，不能据差额接近零删除条件。",
+      "latest_experiment": "EX026_20261029",
+      "latest_experiment_conclusion": "最后一轮互斥对照仍未得到足够明确的条件贡献结论。按用户要求关闭条件拆解支线，不再追加拆解实验；保留S017-M005原组合，回到完整账户原型主线。这个结果既不证明放量或窄幅无用，也不推翻此前完整组合的事件收益线索。",
       "latest_experiment_report": {
-        "evidence_id": "feff7ff6b46122717f4bebe6e9b1744c6b6d157b8725f92573e1d6b89e505104.json",
+        "evidence_id": "596b43de7731acc94c1e2e4d0ccc9606cde6ab0cdf1340189ca366fd792c6eeb.json",
         "experiment": {
-          "experiment_id": "EX025_20261029",
+          "experiment_id": "EX026_20261029",
           "strategy_id": "S017",
           "type": "ExperimentRef"
         },
@@ -771,10 +794,10 @@
         "name": "experiment-report",
         "schema": "experiment_report",
         "schema_version": 1,
-        "sha256": "feff7ff6b46122717f4bebe6e9b1744c6b6d157b8725f92573e1d6b89e505104",
+        "sha256": "596b43de7731acc94c1e2e4d0ccc9606cde6ab0cdf1340189ca366fd792c6eeb",
         "type": "EvidenceRef"
       },
-      "latest_experiment_scope": "VOLUME_RANGE_ABLATION_DIAGNOSTIC_ONLY",
+      "latest_experiment_scope": "FINAL_DISJOINT_ABLATION_DIAGNOSTIC_ONLY",
       "predecessor_delivery": {
         "batch": {
           "strategy_id": "S017",
@@ -925,6 +948,25 @@
         },
         "latest_experiment_scope": "SIGNAL_INFORMATION_AND_PRICE_LABELS_ONLY"
       },
+      "prior_volume_range_ablation_result": {
+        "latest_experiment": "EX025_20261029",
+        "latest_experiment_conclusion": "S017-M005（放量窄幅下跌后收复入场）的既有正向线索完整复现，但本轮尚未确认放量、窄幅两个条件分别提供稳定增量。S017-M006（阴线后收复入场）不是已经证明等价的替代方案；S017-M008（放量阴线后收复入场）值得作为更简单的竞争表达保留。主要限制是条件对照过于稀疏，尤其窄幅贡献大量只能自己与自己比较，不能据差额接近零删除条件。",
+        "latest_experiment_report": {
+          "evidence_id": "feff7ff6b46122717f4bebe6e9b1744c6b6d157b8725f92573e1d6b89e505104.json",
+          "experiment": {
+            "experiment_id": "EX025_20261029",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "feff7ff6b46122717f4bebe6e9b1744c6b6d157b8725f92573e1d6b89e505104",
+          "type": "EvidenceRef"
+        },
+        "latest_experiment_scope": "VOLUME_RANGE_ABLATION_DIAGNOSTIC_ONLY"
+      },
       "public_diagnosis_count": 54,
       "registered_candidate_count": 0,
       "reserved_price_or_performance_used": false,
@@ -939,5 +981,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-10-29T23:04:49+08:00"
+  "updated_at": "2026-10-29T23:32:59+08:00"
 }
