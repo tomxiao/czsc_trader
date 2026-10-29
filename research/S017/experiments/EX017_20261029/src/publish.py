@@ -1,7 +1,7 @@
 """Render and publish one experiment report; shared stage panels are separate."""
 from hashlib import sha256
 from dataclasses import asdict
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import argparse
 import json
 import os
@@ -131,6 +131,82 @@ def scheduling_evidence():
     return checked
 
 
+def platform_performance_evidence():
+    """Pin every explicitly listed DEV material; never execute archived sources."""
+    directory = (WORK / 'others/platform_performance').resolve()
+    manifest_bytes = (directory / 'manifest.json').read_bytes()
+
+    def unique_object(pairs):
+        value = {}
+        for key, item in pairs:
+            if key in value:
+                raise ValueError('duplicate platform performance manifest key')
+            value[key] = item
+        return value
+
+    manifest = json.loads(manifest_bytes, object_pairs_hook=unique_object)
+    if (set(manifest) != {'schema', 'status', 'files'}
+            or manifest['schema'] != 'S017_DEV_PLATFORM_PERFORMANCE_EVIDENCE_V1'
+            or manifest['status'] != 'PASS' or type(manifest['files']) is not dict
+            or not manifest['files']):
+        raise ValueError('platform performance manifest requires explicit PASS files')
+    retained, resolved = {'manifest.json': manifest_bytes}, set()
+    for relative, expected in manifest['files'].items():
+        path = PurePosixPath(relative)
+        suffix = path.suffix.lstrip('.').lower()
+        if (not relative or path.is_absolute() or str(path) != relative
+                or any(part in ('', '.', '..') for part in relative.split('/'))
+                or '\\' in relative or ':' in relative or relative == 'manifest.json'
+                or type(expected) is not str or len(expected) != 64
+                or not 1 <= len(suffix) <= 12
+                or any(char not in 'abcdefghijklmnopqrstuvwxyz0123456789' for char in suffix)
+                or any(char not in '0123456789abcdef' for char in expected)):
+            raise ValueError('invalid relative performance material path or SHA: ' + relative)
+        source = (directory / relative).resolve()
+        if not source.is_relative_to(directory) or source in resolved or not source.is_file():
+            raise ValueError('performance material is missing, aliased or outside its archive: ' + relative)
+        content = source.read_bytes()
+        if not content or sha256(content).hexdigest() != expected:
+            raise ValueError('platform performance material bytes differ: ' + relative)
+        resolved.add(source)
+        retained[relative] = content
+    comparison = json.loads(retained['comparison.json'])
+    before_hash = sha256(retained['source/before_equity_context.py.txt']).hexdigest()
+    after_hash = sha256(retained['source/after_equity_context.py.txt']).hexdigest()
+    if (comparison['status'] != 'PASS'
+            or comparison['scope'] != 'DEV_SYNTHETIC_EQUIVALENCE_NO_RESEARCH_ACCOUNT'
+            or comparison['before_module_sha256'] != before_hash
+            or comparison['after_module_sha256'] != after_hash or before_hash == after_hash
+            or comparison['seven_tables_exact'] != ['plain', 'session', 'aux_session']):
+        raise ValueError('platform comparison does not bind both original source snapshots')
+    tables = ('decisions', 'orders', 'fills', 'corporate_action_entries',
+              'account_points', 'account_daily', 'trades')
+    for route in comparison['seven_tables_exact']:
+        for table in tables:
+            before = retained[f'before_validation/{route}_{table}.json']
+            after = retained[f'after_validation/{route}_{table}.json']
+            if before != after or (table == 'corporate_action_entries' and json.loads(after) != {}):
+                raise ValueError('reported seven-table equivalence or empty CA scope differs')
+    interruption = json.loads(retained['EX017-interruption.json'])
+    if (interruption['status'] != 'CONTROLLED_TECHNICAL_INTERRUPTION_BEFORE_RESULT'
+            or interruption['account_result_published'] is not False
+            or interruption['new_experiment_round'] is not False):
+        raise ValueError('technical interruption must not represent a completed research account')
+    profiles = [json.loads(retained[name + '_session_profile.json']) for name in ('before', 'after')]
+    if (profiles[0]['module_sha256'] != before_hash or profiles[1]['module_sha256'] != after_hash
+            or any(item['scope'] != 'SYNTHETIC_SESSION_ONLY_CONTEXT' for item in profiles)
+            or f"{comparison['context_workload_speedup']:.2f}" != '3.36'
+            or f"{profiles[0]['timing']['median_seconds'] / profiles[1]['timing']['median_seconds']:.2f}" != '5.21'):
+        raise ValueError('reported local timing scope or rounded ratios differ from original measurements')
+    return retained, after_hash
+
+
+def verify_platform_identity(payload, after_hash):
+    if (payload['request']['candidate_id'] != 'C0046'
+            or payload['request']['engine_sources'].get('strategy_runtime.equity_context') != after_hash):
+        raise ValueError('C0046 must retain its new archived platform implementation identity')
+
+
 def inputs():
     scheduling_evidence()
     analysis = read(WORK / 'others/analysis.json')
@@ -153,6 +229,10 @@ def inputs():
             or any(row['publication_status'] != 'PUBLISHED' for row in accounts.values())):
         raise ValueError('failed or unpublished evaluations cannot become a completed report')
     payloads, references = read_account_views(WORK, EXPERIMENT, keys, exact=True)
+    _, after_hash = platform_performance_evidence()
+    if keys != ('C0046',):
+        raise ValueError('platform restart evidence belongs to the sole fixed C0046')
+    verify_platform_identity(payloads['C0046'], after_hash)
     for key, experiment in OLD_CONTROLS.items():
         old, old_refs = read_account_views(experiment.resolve(ROOT), experiment, (key,))
         payloads.update(old)
@@ -268,6 +348,15 @@ def render_report(analysis, keys, references, diagnostic_refs, pairs):
         '[当前调度合成检查](others/analysis_scheduling_check.json)及[源码](src/check_analysis_scheduling.py)'
         '核验类型传输、乱序完成后的有序返回、异常传播、非COMPUTED状态保留与进程回收，'
         '绑定实际分析源码和类型依赖SHA。检查未调用真实诊断或账户，不代替下述正式经济诊断。', '',
+        '## 平台性能修复与同配置技术重跑', '',
+        '用户授权DEV修复上下文性能后，原EX017运行在未产生账户结果前受控技术中止，检查点另行归档；'
+        '仍以同一固定C0046配置在新平台源码身份下重跑，正式request中的上下文源码SHA必须等于归档after源码，'
+        '不伪装沿用旧执行身份。研究假设和配置未增加，仍为第9/20轮、剩余11轮。'
+        '[材料清单](others/platform_performance/manifest.json)逐项绑定相对路径及SHA，'
+        '[验证说明](others/platform_performance/README.md)区分合成等价、局部计时及后续聚焦测试。'
+        '三个US合成路径（无辅助、仅session、辅助加session）的决策等七表逐字节一致；公司行动表为空，'
+        '不能据此宣称非空公司行动等价。局部上下文微基准约3.36倍、仅session约5.21倍，'
+        '均非正式账户或完整诊断全链路加速比例，也不代替全仓回归。', '',
         '## 完整账户结果', '',
         '|配置|净年化|30分钟回撤|日末回撤|闭合周期|60日闭合数中位数|≥3笔窗口占比|完整窗口数|费用USD|持仓柱占比|持仓日末占比|',
         '|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|']
@@ -318,6 +407,7 @@ def render_report(analysis, keys, references, diagnostic_refs, pairs):
 def main(action):
     upstream = upstream_evidence()
     analysis, keys, definitions, accounts, pre, diagnostics, pairs = inputs()
+    performance_bytes, _ = platform_performance_evidence()
     report = render_report(analysis, keys, accounts, diagnostics, pairs)
     (WORK / 'report.md').write_bytes(report.encode('utf-8'))
     if action == 'render':
@@ -326,6 +416,17 @@ def main(action):
     research = context()
     references = [*pre.values(), *accounts.values(), *diagnostics.values(), *upstream.values()]
     materials = {}
+    performance_refs = {}
+    for relative, content in performance_bytes.items():
+        name = ('platform-performance-manifest' if relative == 'manifest.json'
+                else 'platform-performance-' + sha256(relative.encode('utf-8')).hexdigest())
+        suffix = PurePosixPath(relative).suffix.lstrip('.').lower()
+        media = ('application/json' if suffix == 'json' else 'text/plain'
+                 if suffix in ('md', 'txt', 'log', 'py') else 'application/octet-stream')
+        ref = publish_evidence(research, MaterialEvidenceWrite(EXPERIMENT, name, content, media, suffix))
+        materials[name] = ref
+        performance_refs[relative] = ref
+        references.append(ref)
     for name, relative in (
         ('analysis', 'others/analysis.json'), ('analysis-source', 'src/analyze.py'),
         ('precheck-source', 'src/precheck.py'), ('execution-status', 'others/execution_status.json'),
@@ -356,6 +457,7 @@ def main(action):
         'definitions': {key: ref.to_dict() for key, ref in definition_refs.items()},
         'diagnostics': {key: ref.to_dict() for key, ref in diagnostics.items()},
         'materials': {key: ref.to_dict() for key, ref in materials.items()},
+        'platform_performance': {key: ref.to_dict() for key, ref in performance_refs.items()},
         'upstream': {key: ref.to_dict() for key, ref in upstream.items()},
         'evidence': [ref.to_dict() for ref in references]})
     if validation.status.value != 'PASS':
