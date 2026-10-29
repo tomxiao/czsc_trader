@@ -1,6 +1,7 @@
 """Render and publish one experiment report; shared stage panels are separate."""
 from hashlib import sha256
 from dataclasses import asdict
+from math import fsum
 import argparse
 import json
 
@@ -193,6 +194,11 @@ def inputs():
     if (analysis['entry_exit_description_source_sha256'] != digest(WORK / 'src/describe_entries.py')
             or analysis['entry_exit_description'] != {key: describe(payload) for key, payload in payloads.items()}):
         raise ValueError('entry/exit description changed')
+    description_check = read(WORK / 'others/entry_description_check.json')
+    if (description_check['status'] != 'PASS'
+            or description_check['source_sha256'] != digest(WORK / 'src/describe_entries.py')
+            or description_check['check_source_sha256'] != digest(WORK / 'src/check_entry_description.py')):
+        raise ValueError('entry description checks no longer bind the exact source')
     return analysis, keys, definitions, references, pre, diagnostic_refs, pairs
 
 
@@ -205,6 +211,18 @@ def render_report(analysis):
     if judgment['analysis_sha256'] != digest(WORK / 'others/analysis.json') or not judgment['conclusion']:
         raise ValueError('research judgment must bind the completed exact analysis')
     summaries = analysis['summaries']
+    pat_cycles = analysis['entry_exit_description']['C0047']['cycles']
+    reproduced = []
+    for below in (False, True):
+        for early in (False, True):
+            selected = [row for row in pat_cycles if row['status'] == 'CLOSED'
+                        and row['entry_at_or_below_existing_exit'] == below
+                        and row['exit_requested_at_first_held_decision'] == early]
+            reproduced.append({'signal_at_or_below_exit': below, 'first_held_requests_exit': early,
+                'closed_cycles': len(selected), 'net_pnl': fsum(row['net_pnl'] for row in selected),
+                'fees': fsum(row['fees'] for row in selected)})
+    if reproduced != judgment['post_result_description']['cross_groups']:
+        raise ValueError('post-result cross description must match exact actual-cycle groups')
     rows = [('同合同买入持有', summaries['C0013']['benchmark']),
             ('C0013原入场', summaries['C0013']['candidate']), ('C0047仅30m PAT入场', summaries['C0047']['candidate'])]
     text = ['# EX018：30m PAT回调恢复入场对照', '', judgment['conclusion'], '',
@@ -238,6 +256,21 @@ def render_report(analysis):
         value = analysis['entry_exit_description'][key]
         text.append(f"|{key}|{value['closed_cycles']}|{value['groups']['entry_at_or_below_existing_exit']['True']['closed_cycles']}|"
             f"{value['groups']['exit_requested_at_first_held_decision']['True']['closed_cycles']}|")
+    text += ['', '结果后交叉描述如下，不构造替代账户。分母为331个已闭合周期，1个未闭合周期不混入。', '',
+             '|信号收盘≤原退出线|首次持仓要求退出|闭合数|净损益USD|费用USD|', '|---|---|---:|---:|---:|']
+    for row in judgment['post_result_description']['cross_groups']:
+        text.append(f"|{'是' if row['signal_at_or_below_exit'] else '否'}|"
+            f"{'是' if row['first_held_requests_exit'] else '否'}|{row['closed_cycles']}|"
+            f"{row['net_pnl']:.2f}|{row['fees']:.2f}|")
+    text += ['', '闭合与期末未平仓的损益分别如下，二者合计等于全期账户净增；'
+             '期末未平仓贡献包含已付买费，没有虚构卖费或平仓。这是收益来源描述，不新增集中度硬门。', '',
+             '|账户|闭合净损益USD|未平仓数量（周期）|期末未平仓浮动贡献USD|', '|---|---:|---:|---:|']
+    for key in ('C0013', 'C0047'):
+        cycles = analysis['entry_exit_description'][key]['cycles']
+        closed_pnl = fsum(row['net_pnl'] for row in cycles if row['status'] == 'CLOSED')
+        opened = [row for row in cycles if row['status'] == 'OPEN']
+        mark = fsum(row['terminal_mark_after_paid_buy_fee'] for row in opened)
+        text.append(f'|{key}|{closed_pnl:.2f}|{len(opened)}|{mark:.2f}|')
     text += ['', '这里只描述真实成交和原决策；不能删去某组亏损后推算新策略，亦不能据此认定改退出一定有效。'
         '信号收盘与实际成交价分开留存，前者低于当时退出线不等于成交时已经触发退出。'
         '未闭合周期另列于分析，没有后续持仓决策的记为UNOBSERVED，不算未触发；'
@@ -269,6 +302,8 @@ def main(action):
     for name, relative in (
         ('analysis', 'others/analysis.json'), ('analysis-source', 'src/analyze.py'),
         ('description-source', 'src/describe_entries.py'), ('judgment', 'others/judgment.json'),
+        ('description-check', 'others/entry_description_check.json'),
+        ('description-check-source', 'src/check_entry_description.py'),
         ('execution-status', 'others/execution_status.json'), ('execution-stats', 'others/execution_stats.json'),
         ('accounts-manifest', 'others/accounts.json'), ('comparisons', 'protocols/comparisons.json'),
         ('publication-source', 'src/publish.py')):

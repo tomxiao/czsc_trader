@@ -1,0 +1,46 @@
+{
+  "analysis_sha256": "ef06c448f1f28c82a32744bd3e63ac1eb1dd82a6dc8d4f59b69035ea5ad69398",
+  "status": "FIRST_PAT_EXPERIMENT_COMPLETE_NEEDS_ENTRY_EXIT_COMPATIBILITY_TEST",
+  "conclusion": "首个单一30m PAT实验完成，当前整套原型不推荐进入阶段三。C0047净年化19.41%、BAR_CLOSE回撤72.28%，相对C0013的26.22%/58.77%分别退化6.80/13.51个百分点；费用从18193.61增至72478.68美元。331个闭合周期、60日中位数11、至少3笔覆盖94.94%满足两项频率目标，但三项经济目标均失败。当前证据没有证明PAT入场带来有用的完整收益风险增量，也不能把高频率全部解释为新增优质机会。",
+  "interaction": "331个闭合周期中，213个（64.35%）的入场信号收盘已经低于或等于原C13退出线；218个（65.86%）在首次实际持仓决策就要求退出，原C13的68个闭合周期中两类均为0。两组交集204个，不是同一分组。首次持仓即退出组累计净损49588.56美元、费用46295.90美元；其余113个闭合周期净赚108739.43美元，另有1个未闭合周期单列。该分组说明局部PAT入场与长期均价持有规则有明确的相容性问题，不证明去掉这组交易就能改善新账户，也不证明其余交易的独立优势。2019收益较原策略高，2020至2023均更差，2022亏损46.83%（原策略28.22%）；2025上涨263.35%，期末资金仍未追上原策略。 最强反证也须保留：信号收盘在退出线下方、但首次持仓未要求退出的9笔，合计净赚25476.66美元；信号已在线上、首次持仓仍要求退出的14笔，合计净亏10913.13美元。建议的相容性门会排除前一组，且不能按信号时点排除后一组，因此不能把218笔早退组亏损视为该门可节省的亏损。信号在线下的全部213笔本身合计净亏13198.76美元；这是旧资金路径分组，不是新策略收益预测。",
+  "next_step": "保留当前负面完整账户和机械冲突证据，不将其推广为PAT无效，也不继续搜索三柱拐点或恢复门槛。建议下一项仍在阶段二，仅增加一个无需新参数的相容性条件：只有PAT信号收盘严格高于当时原退出线才允许买入；其余PAT规则、原退出、仓位和执行全部保持。用C0047作直接对照、C0013作原策略对照，检验减少信号时点不相容的入场，是否能降低无效往返，以及是否会因排除有价值的早期恢复而得不偿失；同时核对剩余延续及频率。这个条件使用已有30m退出线，不引入日线、大盘或新指标；不假定它能消除所有下一次决策退出。当前只提出下一步，未分配新配置或消耗剩余10轮。",
+  "post_result_description": {
+    "closed_both_conditions": 204,
+    "basis": "Intersection computed from the prespecified actual-cycle descriptions after results; descriptive only, no new account or rule.",
+    "cross_groups": [
+      {
+        "signal_at_or_below_exit": false,
+        "first_held_requests_exit": false,
+        "closed_cycles": 104,
+        "net_pnl": 83262.7712306,
+        "fees": 24292.4537694
+      },
+      {
+        "signal_at_or_below_exit": false,
+        "first_held_requests_exit": true,
+        "closed_cycles": 14,
+        "net_pnl": -10913.1308445,
+        "fees": 3184.9485445
+      },
+      {
+        "signal_at_or_below_exit": true,
+        "first_held_requests_exit": false,
+        "closed_cycles": 9,
+        "net_pnl": 25476.660067300003,
+        "fees": 1733.0572327
+      },
+      {
+        "signal_at_or_below_exit": true,
+        "first_held_requests_exit": true,
+        "closed_cycles": 204,
+        "net_pnl": -38675.4243446,
+        "fees": 43110.9471446
+      }
+    ]
+  },
+  "limits": [
+    "Repeated development pool; not independent validation.",
+    "The fixed legacy exit remains part of this result; alternate PAT exits are untested.",
+    "No phase three, held-out 2026 prices, registration, freeze, merge or push."
+  ]
+}
