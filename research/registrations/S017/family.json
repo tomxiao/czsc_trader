@@ -175,7 +175,7 @@
         "status": "READY_WITH_EXPLICIT_RAW_PRICE_AND_AVAILABILITY_ASSUMPTIONS"
       },
       "completed_new_account_paths": 24,
-      "completed_new_rounds": 15,
+      "completed_new_rounds": 16,
       "downside_failure_authorization": {
         "protocol": "research/S017/experiments/EX022_20261029/protocols/design.md",
         "scope": "3个竞争形态、1个近期超跌背景、旧C参考，固定5期限普查，1轮、0账户",
@@ -202,7 +202,8 @@
         "EX021_20261029",
         "EX022_20261029",
         "EX023_20261029",
-        "EX024_20261029"
+        "EX024_20261029",
+        "EX025_20261029"
       ],
       "failed_new_rounds": 1,
       "final_validation": {
@@ -230,7 +231,7 @@
         "type": "DeliveryValidation"
       },
       "guideline_commit": "25c09476",
-      "initiated_new_rounds": 16,
+      "initiated_new_rounds": 17,
       "latest_delivery": {
         "batch": {
           "strategy_id": "S017",
@@ -241,7 +242,7 @@
         "stage": "PROTOTYPES",
         "type": "DeliveryReference"
       },
-      "new_entry_diagnostic_expressions": 15,
+      "new_entry_diagnostic_expressions": 18,
       "new_information_exposure": "公开2024 ORB论文检索返回2016—2023 LITE 15分钟榜单行；仅方法学习，无新行情或账户评价。后续不能声称完全独立设计。",
       "new_public_diagnoses": 21,
       "numbered_entry_authorization": {
@@ -329,7 +330,7 @@
       },
       "platform_scope": "正式辅助市场/行业行情因果输入，以及当前可得交易时段；离线验证和既有能力保护",
       "recovery_exit_description": "research/S017/experiments/EX013_20261029/others/recovery_exit_description.json",
-      "remaining_rounds": 4,
+      "remaining_rounds": 3,
       "reports": {
         "EX011_20261029": {
           "evidence_id": "4601d3cefa82067e8f43a9da516739ada4f822b04f6ff53b06e493c9601bb64e.json",
@@ -526,6 +527,20 @@
           "schema_version": 1,
           "sha256": "427f5330f6e33124629fb5f02b2b4f0d7c4b566db41e12d140b45b6d27e6dc94",
           "type": "EvidenceRef"
+        },
+        "EX025_20261029": {
+          "evidence_id": "feff7ff6b46122717f4bebe6e9b1744c6b6d157b8725f92573e1d6b89e505104.json",
+          "experiment": {
+            "experiment_id": "EX025_20261029",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "feff7ff6b46122717f4bebe6e9b1744c6b6d157b8725f92573e1d6b89e505104",
+          "type": "EvidenceRef"
         }
       },
       "research_started": true,
@@ -555,6 +570,7 @@
         "EX022_20261029": "COMPLETED_DOWNSIDE_FAILURE_CENSUS_REPORT_PUBLICATION_PASS",
         "EX023_20261029": "COMPLETED_RETEST_DELAYED_REPAIR_REPORT_PUBLICATION_PASS",
         "EX024_20261029": "COMPLETED_NUMBERED_ENTRY_COMPETITION_REPORT_PUBLICATION_PASS",
+        "EX025_20261029": "COMPLETED_VOLUME_RANGE_ABLATION_REPORT_PUBLICATION_PASS",
         "scope": "Operational progress only; completed rounds require published completed reports."
       },
       "signal_diagnosis_authorization": {
@@ -563,14 +579,19 @@
         "scope": "单一诊断实验；不运行新完整账户、不改信号、不自动追加后续实验",
         "user_statement": "ok"
       },
-      "status": "NUMBERED_ENTRY_COMPETITION_COMPLETE_AWAITING_DIRECTION",
-      "stop_rationale": "完成批准的一轮三项数字编号入场竞争普查，未优化退出或创建账户。",
+      "status": "VOLUME_RANGE_ABLATION_COMPLETE_AWAITING_DIRECTION",
+      "stop_rationale": "完成批准的S017-M005放量与窄幅条件拆解，未优化退出或创建账户。",
       "successful_new_configurations": 12,
       "technical_failures": {
         "EX010_20261029": "Auxiliary 96-hour age limit excludes valid half-day/long-weekend observations; FAILED report preserved, EX013 successor uses 5 days."
       },
       "technical_interrupted_account_attempts": 1,
-      "user_statement": "提交RSCH指南的更改。授权20轮实验的额度，请你自主完成阶段二。提醒：扩宽数据视野，尝试加入市场、行业的信息辅助决策；拓宽交易认知，尝试学习日内交易的方法和案例。"
+      "user_statement": "提交RSCH指南的更改。授权20轮实验的额度，请你自主完成阶段二。提醒：扩宽数据视野，尝试加入市场、行业的信息辅助决策；拓宽交易认知，尝试学习日内交易的方法和案例。",
+      "volume_range_ablation_authorization": {
+        "protocol": "research/S017/experiments/EX025_20261029/protocols/design.md",
+        "scope": "保留S017-M001/S017-M002/S017-M005；新增S017-M006至S017-M008三项条件删减对照；1轮、0账户、0退出优化",
+        "user_statement": "这个发现有意义，请继续；同意按S017-M005原规则拆解放量与窄幅。"
+      }
     },
     "instrument": {
       "asset_class": "STOCK",
@@ -615,7 +636,7 @@
       "research/S017/materials/registration_20261028.md",
       "research/S017/materials/pre_registration_readiness.json"
     ],
-    "next_action": "下一轮优先拆解S017-M005，保留原入场定义和S017-M001/S017-M002参照不变。固定共同底座为前柱收阴（Close<Open）且当前Close>前柱High，只变化放量与窄幅两个条件：原S017-M005、去掉放量、去掉窄幅、两者都去掉四组比较；三项新对照另分配数字编号。沿用相同普查、主65柱与背景分层，辨别组合是否真有新增信息。先不优化退出、不因本轮切片结果把超跌写入S017-M005、不选最优持有期。上述为建议，本轮未执行。",
+    "next_action": "保留S017-M005原组合及S017-M008竞争表达，先做对照可得性诊断：在S017-M008内划分互斥的S017-M005与不满足窄幅的剩余机会，固定已有规则和65柱观察期，先只审查同背景下匹配支持及时期、时段覆盖。简单删除目标自身还不够，因为其他控制也可能满足同一窄幅条件。若覆盖仍不足，明确当前开发样本无法清楚拆分，不为凑样本自动放宽匹配或新增复杂模型；放宽比较范围须事前说明代价。逐条件证明必要性不作为继续研究完整S017-M005组合的硬门，不因本轮自比较差额小而删除窄幅，也不继续叠加过滤条件。本轮未执行新对照或退出优化。",
     "objective": "LITE 美股个股30分钟只做多择时研究",
     "other_proposals_confirmation": "CONFIRMED",
     "policy_reference": "research/RSCH_AGENT.md#research-policy",
@@ -716,10 +737,10 @@
         "2018-12-31"
       ]
     },
-    "stage": "STAGE_2_NUMBERED_ENTRY_COMPETITION_COMPLETE_AWAITING_DIRECTION",
+    "stage": "STAGE_2_VOLUME_RANGE_ABLATION_COMPLETE_AWAITING_DIRECTION",
     "stage_two_result": {
       "account_replay_count": 68,
-      "conclusion": "本轮三项新表达中，S017-M005（放量窄幅下跌后收复入场）获得了值得继续研究的正面支持；S017-M003（短跌半程收复入场）和S017-M004（短跌波幅收窄后转强入场）未显示清晰的普通机会之外的优势，降低后续优先级。S017-M001与S017-M002继续承担原参照角色。完成的是一轮入场普查，尚未证明完整策略达标。",
+      "conclusion": "S017-M005（放量窄幅下跌后收复入场）的既有正向线索完整复现，但本轮尚未确认放量、窄幅两个条件分别提供稳定增量。S017-M006（阴线后收复入场）不是已经证明等价的替代方案；S017-M008（放量阴线后收复入场）值得作为更简单的竞争表达保留。主要限制是条件对照过于稀疏，尤其窄幅贡献大量只能自己与自己比较，不能据差额接近零删除条件。",
       "configuration_count": 34,
       "count_scope": "Completed formal configurations and candidate/paired-benchmark account paths; EX010 three technically failed configurations and EX017 one unfinished technical attempt are recorded separately, not successful accounts.",
       "diagnostic_only_configuration_ids": [
@@ -737,12 +758,12 @@
         "stage": "PROTOTYPES",
         "type": "DeliveryReference"
       },
-      "latest_experiment": "EX024_20261029",
-      "latest_experiment_conclusion": "本轮三项新表达中，S017-M005（放量窄幅下跌后收复入场）获得了值得继续研究的正面支持；S017-M003（短跌半程收复入场）和S017-M004（短跌波幅收窄后转强入场）未显示清晰的普通机会之外的优势，降低后续优先级。S017-M001与S017-M002继续承担原参照角色。完成的是一轮入场普查，尚未证明完整策略达标。",
+      "latest_experiment": "EX025_20261029",
+      "latest_experiment_conclusion": "S017-M005（放量窄幅下跌后收复入场）的既有正向线索完整复现，但本轮尚未确认放量、窄幅两个条件分别提供稳定增量。S017-M006（阴线后收复入场）不是已经证明等价的替代方案；S017-M008（放量阴线后收复入场）值得作为更简单的竞争表达保留。主要限制是条件对照过于稀疏，尤其窄幅贡献大量只能自己与自己比较，不能据差额接近零删除条件。",
       "latest_experiment_report": {
-        "evidence_id": "427f5330f6e33124629fb5f02b2b4f0d7c4b566db41e12d140b45b6d27e6dc94.json",
+        "evidence_id": "feff7ff6b46122717f4bebe6e9b1744c6b6d157b8725f92573e1d6b89e505104.json",
         "experiment": {
-          "experiment_id": "EX024_20261029",
+          "experiment_id": "EX025_20261029",
           "strategy_id": "S017",
           "type": "ExperimentRef"
         },
@@ -750,10 +771,10 @@
         "name": "experiment-report",
         "schema": "experiment_report",
         "schema_version": 1,
-        "sha256": "427f5330f6e33124629fb5f02b2b4f0d7c4b566db41e12d140b45b6d27e6dc94",
+        "sha256": "feff7ff6b46122717f4bebe6e9b1744c6b6d157b8725f92573e1d6b89e505104",
         "type": "EvidenceRef"
       },
-      "latest_experiment_scope": "NUMBERED_ENTRY_COMPETITION_DIAGNOSTIC_ONLY",
+      "latest_experiment_scope": "VOLUME_RANGE_ABLATION_DIAGNOSTIC_ONLY",
       "predecessor_delivery": {
         "batch": {
           "strategy_id": "S017",
@@ -801,6 +822,25 @@
           "type": "EvidenceRef"
         },
         "latest_experiment_scope": "FIVE_ENTRY_EXPRESSIONS_INFORMATION_AND_PRICE_LABELS_ONLY"
+      },
+      "prior_numbered_entry_competition_result": {
+        "latest_experiment": "EX024_20261029",
+        "latest_experiment_conclusion": "本轮三项新表达中，S017-M005（放量窄幅下跌后收复入场）获得了值得继续研究的正面支持；S017-M003（短跌半程收复入场）和S017-M004（短跌波幅收窄后转强入场）未显示清晰的普通机会之外的优势，降低后续优先级。S017-M001与S017-M002继续承担原参照角色。完成的是一轮入场普查，尚未证明完整策略达标。",
+        "latest_experiment_report": {
+          "evidence_id": "427f5330f6e33124629fb5f02b2b4f0d7c4b566db41e12d140b45b6d27e6dc94.json",
+          "experiment": {
+            "experiment_id": "EX024_20261029",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "427f5330f6e33124629fb5f02b2b4f0d7c4b566db41e12d140b45b6d27e6dc94",
+          "type": "EvidenceRef"
+        },
+        "latest_experiment_scope": "NUMBERED_ENTRY_COMPETITION_DIAGNOSTIC_ONLY"
       },
       "prior_oversold_decomposition_result": {
         "latest_experiment": "EX021_20261029",
@@ -899,5 +939,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-10-29T22:01:03+08:00"
+  "updated_at": "2026-10-29T23:04:49+08:00"
 }
