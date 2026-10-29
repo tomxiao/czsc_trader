@@ -412,6 +412,13 @@ TDR技术检验可以在隔离空间验证拟冻结发布包，检验通过不�
 `StrategyRuntime.identify/create/describe` 支持正式候选；加载、登记和运行前认证源码与依赖。
 `EquityInputBinding` 绑定四类准备产品的内容身份、执行合同和预热，可序列化供回放复用。
 
+声明 `auxiliary_inputs` 或 `session_context` 时，`build_equity_decision_context` 按决策时点
+构造辅助行情与当前交易会话；直接调用候选 `decide` 也重新检查这些输入。辅助行情按完成时间和
+可得时间共同截取，检查预热、最大年龄、OHLCV、金额和最新观察状态；传入策略的是独立副本。
+日历仍须整体满足类型、顺序、唯一性及表与会话一致性，30分钟日历还要求所有时段完整整除。
+当前执行区间必须精确属于唯一会话；半日市、时区变化及分段休市不能通过推测补齐。
+上下文计算的性能优化不改变上述拒绝条件，不缓存调用方的可变行情，也不改变历史证据身份。
+
 正式美股定义还固定 `parameter_schema_json`（类型、可选上下界或枚举）、`feedback_mode`
 及 `analysis_price=RAW`。未显式提供参数 schema 时以初始参数的实际类型建立不可变类型声明；
 后续参数变更仍须满足同一 schema。MARKET_INTENT 不向策略暴露账户快照。
