@@ -1,0 +1,480 @@
+{
+  "C0059": {
+    "runtime_kind": "US_EQUITY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "LITE"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 261,
+    "entrypoint": "strategy_v3:step",
+    "source_files": [
+      "strategy_v3.py"
+    ],
+    "source_sha256": "21d7e12e2bc94129d49094d5feca081b55e9cfc4bead754e03b6ddaed78b7139",
+    "parameters_json": "{\"entry_mechanism\":\"S017-M019\",\"max_holding_bars\":6}",
+    "dependencies": [],
+    "contract_version": 3,
+    "parameter_schema_json": "{\"entry_mechanism\":{\"type\":\"string\"},\"max_holding_bars\":{\"type\":\"integer\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "feature_graph": {
+      "nodes": [
+        {
+          "kind": "RawField",
+          "key": "close",
+          "field": "Close"
+        },
+        {
+          "kind": "RawField",
+          "key": "high",
+          "field": "High"
+        },
+        {
+          "kind": "RawField",
+          "key": "low",
+          "field": "Low"
+        },
+        {
+          "kind": "Mean",
+          "key": "mean65",
+          "source": "close",
+          "window": 65
+        },
+        {
+          "kind": "Lag",
+          "key": "prior_sma65",
+          "source": "mean65",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "older_sma65",
+          "source": "mean65",
+          "bars": 14
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_close",
+          "source": "close",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "high_lag1",
+          "source": "high",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "high_lag2",
+          "source": "high",
+          "bars": 2
+        },
+        {
+          "kind": "Lag",
+          "key": "high_lag3",
+          "source": "high",
+          "bars": 3
+        },
+        {
+          "kind": "Lag",
+          "key": "high_lag4",
+          "source": "high",
+          "bars": 4
+        },
+        {
+          "kind": "Lag",
+          "key": "high_lag5",
+          "source": "high",
+          "bars": 5
+        },
+        {
+          "kind": "Lag",
+          "key": "high_lag6",
+          "source": "high",
+          "bars": 6
+        },
+        {
+          "kind": "Lag",
+          "key": "low_lag1",
+          "source": "low",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "low_lag2",
+          "source": "low",
+          "bars": 2
+        },
+        {
+          "kind": "Lag",
+          "key": "low_lag3",
+          "source": "low",
+          "bars": 3
+        },
+        {
+          "kind": "Lag",
+          "key": "low_lag4",
+          "source": "low",
+          "bars": 4
+        },
+        {
+          "kind": "Lag",
+          "key": "low_lag5",
+          "source": "low",
+          "bars": 5
+        },
+        {
+          "kind": "Lag",
+          "key": "low_lag6",
+          "source": "low",
+          "bars": 6
+        },
+        {
+          "kind": "Lag",
+          "key": "low_lag7",
+          "source": "low",
+          "bars": 7
+        },
+        {
+          "kind": "Lag",
+          "key": "low_lag8",
+          "source": "low",
+          "bars": 8
+        },
+        {
+          "kind": "Lag",
+          "key": "low_lag9",
+          "source": "low",
+          "bars": 9
+        },
+        {
+          "kind": "Lag",
+          "key": "low_lag10",
+          "source": "low",
+          "bars": 10
+        },
+        {
+          "kind": "Lag",
+          "key": "low_lag11",
+          "source": "low",
+          "bars": 11
+        },
+        {
+          "kind": "Lag",
+          "key": "low_lag12",
+          "source": "low",
+          "bars": 12
+        }
+      ],
+      "outputs": [
+        "close",
+        "previous_close",
+        "prior_sma65",
+        "older_sma65",
+        "high_lag1",
+        "high_lag2",
+        "high_lag3",
+        "high_lag4",
+        "high_lag5",
+        "high_lag6",
+        "low_lag1",
+        "low_lag2",
+        "low_lag3",
+        "low_lag4",
+        "low_lag5",
+        "low_lag6",
+        "low_lag7",
+        "low_lag8",
+        "low_lag9",
+        "low_lag10",
+        "low_lag11",
+        "low_lag12"
+      ],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [],
+      "cycle_fields": [
+        {
+          "key": "holding_bars",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "last_completed_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "exit_due",
+          "value_type": "bool",
+          "nullable": false
+        }
+      ]
+    }
+  },
+  "C0060": {
+    "runtime_kind": "US_EQUITY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "LITE"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 261,
+    "entrypoint": "strategy_v3:step",
+    "source_files": [
+      "strategy_v3.py"
+    ],
+    "source_sha256": "21d7e12e2bc94129d49094d5feca081b55e9cfc4bead754e03b6ddaed78b7139",
+    "parameters_json": "{\"entry_mechanism\":\"S017-M020\",\"max_holding_bars\":6}",
+    "dependencies": [],
+    "contract_version": 3,
+    "parameter_schema_json": "{\"entry_mechanism\":{\"type\":\"string\"},\"max_holding_bars\":{\"type\":\"integer\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "feature_graph": {
+      "nodes": [
+        {
+          "kind": "RawField",
+          "key": "close",
+          "field": "Close"
+        },
+        {
+          "kind": "RawField",
+          "key": "high",
+          "field": "High"
+        },
+        {
+          "kind": "RawField",
+          "key": "low",
+          "field": "Low"
+        },
+        {
+          "kind": "Mean",
+          "key": "mean65",
+          "source": "close",
+          "window": 65
+        },
+        {
+          "kind": "Lag",
+          "key": "prior_sma65",
+          "source": "mean65",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "older_sma65",
+          "source": "mean65",
+          "bars": 14
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_close",
+          "source": "close",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "high_lag1",
+          "source": "high",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "high_lag2",
+          "source": "high",
+          "bars": 2
+        },
+        {
+          "kind": "Lag",
+          "key": "high_lag3",
+          "source": "high",
+          "bars": 3
+        },
+        {
+          "kind": "Lag",
+          "key": "high_lag4",
+          "source": "high",
+          "bars": 4
+        },
+        {
+          "kind": "Lag",
+          "key": "high_lag5",
+          "source": "high",
+          "bars": 5
+        },
+        {
+          "kind": "Lag",
+          "key": "high_lag6",
+          "source": "high",
+          "bars": 6
+        },
+        {
+          "kind": "Lag",
+          "key": "low_lag1",
+          "source": "low",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "low_lag2",
+          "source": "low",
+          "bars": 2
+        },
+        {
+          "kind": "Lag",
+          "key": "low_lag3",
+          "source": "low",
+          "bars": 3
+        },
+        {
+          "kind": "Lag",
+          "key": "low_lag4",
+          "source": "low",
+          "bars": 4
+        },
+        {
+          "kind": "Lag",
+          "key": "low_lag5",
+          "source": "low",
+          "bars": 5
+        },
+        {
+          "kind": "Lag",
+          "key": "low_lag6",
+          "source": "low",
+          "bars": 6
+        },
+        {
+          "kind": "Lag",
+          "key": "low_lag7",
+          "source": "low",
+          "bars": 7
+        },
+        {
+          "kind": "Lag",
+          "key": "low_lag8",
+          "source": "low",
+          "bars": 8
+        },
+        {
+          "kind": "Lag",
+          "key": "low_lag9",
+          "source": "low",
+          "bars": 9
+        },
+        {
+          "kind": "Lag",
+          "key": "low_lag10",
+          "source": "low",
+          "bars": 10
+        },
+        {
+          "kind": "Lag",
+          "key": "low_lag11",
+          "source": "low",
+          "bars": 11
+        },
+        {
+          "kind": "Lag",
+          "key": "low_lag12",
+          "source": "low",
+          "bars": 12
+        }
+      ],
+      "outputs": [
+        "close",
+        "previous_close",
+        "prior_sma65",
+        "older_sma65",
+        "high_lag1",
+        "high_lag2",
+        "high_lag3",
+        "high_lag4",
+        "high_lag5",
+        "high_lag6",
+        "low_lag1",
+        "low_lag2",
+        "low_lag3",
+        "low_lag4",
+        "low_lag5",
+        "low_lag6",
+        "low_lag7",
+        "low_lag8",
+        "low_lag9",
+        "low_lag10",
+        "low_lag11",
+        "low_lag12"
+      ],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [],
+      "cycle_fields": [
+        {
+          "key": "holding_bars",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "last_completed_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "exit_due",
+          "value_type": "bool",
+          "nullable": false
+        }
+      ]
+    }
+  }
+}

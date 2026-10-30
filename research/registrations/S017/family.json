@@ -727,7 +727,7 @@
       "research/S017/materials/registration_20261028.md",
       "research/S017/materials/pre_registration_readiness.json"
     ],
-    "next_action": "额度已用完；请用户决定是否另行批准M012低均价修复条件的研究方案，不追加实验。",
+    "next_action": "按事前停止约定，收口低均价突破继续加过滤的路线，保留M017正收益入场线索和M019风险对照，不再以日期、阈值或止损小改动追加实验；不推进阶段三。下一步建议先重新评审收益来源与持有职责：短暂修复能否承担当前高收益及频率目标，或者需要有独立依据的持续持有机制。新方案须区别此前已停止的趋势表达，不能因额度不限重复旧路线；现目标和授权边界保持不变。",
     "objective": "LITE 美股个股30分钟只做多择时研究",
     "other_proposals_confirmation": "CONFIRMED",
     "policy_reference": "research/RSCH_AGENT.md#research-policy",
@@ -828,10 +828,57 @@
         "2018-12-31"
       ]
     },
-    "stage": "STAGE_2_SHORT_ENTRY_TEMPORAL_COMPLETE_AWAITING_USER",
+    "stage": "STAGE_2_REPAIR_CONTEXT_COMPETITION_COMPLETE",
+    "stage_two_continuation_authorization": {
+      "completed_experiments": [
+        "EX029_20261030",
+        "EX030_20261030"
+      ],
+      "date": "2026-10-30",
+      "experiments": [
+        "EX029_20261030",
+        "EX030_20261030"
+      ],
+      "original_twenty_rounds": "保留原expanded_stage_two_authorization历史，不重置或改写",
+      "reports": {
+        "EX029_20261030": {
+          "evidence_id": "bb719474712278160d8e9fef689a94f3809d6ea5dad123ea87bab5bc4e56f01f.json",
+          "experiment": {
+            "experiment_id": "EX029_20261030",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "bb719474712278160d8e9fef689a94f3809d6ea5dad123ea87bab5bc4e56f01f",
+          "type": "EvidenceRef"
+        },
+        "EX030_20261030": {
+          "evidence_id": "121d958b71e8bec97272ab6a151d3e6d536cae498b8e4265532887b9862c7817.json",
+          "experiment": {
+            "experiment_id": "EX030_20261030",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "121d958b71e8bec97272ab6a151d3e6d536cae498b8e4265532887b9862c7817",
+          "type": "EvidenceRef"
+        }
+      },
+      "round_limit": null,
+      "running_experiments": [],
+      "scope": "阶段二证据驱动自主续研；原样本、目标和交易合同保持，不自动进入阶段三",
+      "status": "COMPLETED_REVIEWED_NEXT_STEP",
+      "user_statement": "不用受额度约束，可以继续开展实验"
+    },
     "stage_two_result": {
       "account_replay_count": 68,
-      "conclusion": "三项短周期入场主期限及过去训练后的事件净收益均为负；近期差异存在，但不足以证明缩短开发池即可获得可交易优势。0新账户，不推荐阶段三。",
+      "conclusion": "两种背景没有形成同时改善既定目标的新完整原型。M019有清晰风险选择与单笔质量用途，年化6.20%、回撤23.10%，但七年仅110笔、60日闭合中位4且覆盖75.54%；M020年化5.58%、回撤45.09%，只有局部风险改善。保留M019为风险研究对照，不推荐进入阶段三或用更稀疏的交易替代30分钟研究目标。",
       "configuration_count": 34,
       "count_scope": "Completed formal configurations and candidate/paired-benchmark account paths; EX010 three technically failed configurations and EX017 one unfinished technical attempt are recorded separately, not successful accounts.",
       "diagnostic_only_configuration_ids": [
@@ -849,12 +896,12 @@
         "stage": "PROTOTYPES",
         "type": "DeliveryReference"
       },
-      "latest_experiment": "EX028_20261030",
-      "latest_experiment_conclusion": "三项短周期入场主期限及过去训练后的事件净收益均为负；近期差异存在，但不足以证明缩短开发池即可获得可交易优势。0新账户，不推荐阶段三。",
+      "latest_experiment": "EX030_20261030",
+      "latest_experiment_conclusion": "两种背景没有形成同时改善既定目标的新完整原型。M019有清晰风险选择与单笔质量用途，年化6.20%、回撤23.10%，但七年仅110笔、60日闭合中位4且覆盖75.54%；M020年化5.58%、回撤45.09%，只有局部风险改善。保留M019为风险研究对照，不推荐进入阶段三或用更稀疏的交易替代30分钟研究目标。",
       "latest_experiment_report": {
-        "evidence_id": "554e51eafbf4ee34d39c2462c1d0e394ef23559ebdc0df73453cfec3cfa2944c.json",
+        "evidence_id": "121d958b71e8bec97272ab6a151d3e6d536cae498b8e4265532887b9862c7817.json",
         "experiment": {
-          "experiment_id": "EX028_20261030",
+          "experiment_id": "EX030_20261030",
           "strategy_id": "S017",
           "type": "ExperimentRef"
         },
@@ -862,10 +909,10 @@
         "name": "experiment-report",
         "schema": "experiment_report",
         "schema_version": 1,
-        "sha256": "554e51eafbf4ee34d39c2462c1d0e394ef23559ebdc0df73453cfec3cfa2944c",
+        "sha256": "121d958b71e8bec97272ab6a151d3e6d536cae498b8e4265532887b9862c7817",
         "type": "EvidenceRef"
       },
-      "latest_experiment_scope": "SHORT_ENTRY_AND_TEMPORAL_COMPETITION",
+      "latest_experiment_scope": "REPAIR_CONTEXT_COMPETITION",
       "predecessor_delivery": {
         "batch": {
           "strategy_id": "S017",
@@ -1049,5 +1096,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-10-30T17:10:23+08:00"
+  "updated_at": "2026-10-30T19:00:07+08:00"
 }

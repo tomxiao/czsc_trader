@@ -1,0 +1,139 @@
+{
+  "schema": "s017-mechanism-index/v1",
+  "batch": "S017",
+  "numbering_agreed_on": "2026-10-29",
+  "policy": "编号只表示身份，不表示质量排名；沟通使用编号和中文说明。相同规则保持编号，实质规则变更另号，旧号不回收。已发布历史材料不重写。",
+  "scope": "EX024至EX029入场与退出机制；编号只标身份，不代表质量排名。",
+  "next_sequence": 19,
+  "definitions": [
+    {
+      "id": "S017-M001",
+      "name": "近期超跌入场",
+      "role": "简单背景参照，未认定优质",
+      "origin": "EX022_20261029",
+      "legacy_alias_for_trace_only": "B",
+      "definition": "完成柱t及前12柱内至少一次：前柱Close<=前柱SMA65-2*前柱简单ATR13。"
+    },
+    {
+      "id": "S017-M002",
+      "name": "回试前低不破入场",
+      "role": "旧研究方案参照，未认定优质",
+      "origin": "EX022_20261029",
+      "legacy_alias_for_trace_only": "T",
+      "definition": "满足S017-M001；S=min Low[t-13..t-1]，p为S最后出现处；p<=t-3；max High[p+1..t-1]>=S+ATR13[t-1]；S<=Low[t]<=S+0.5*ATR13[t-1]；Close[t]>High[t-1]。"
+    },
+    {
+      "id": "S017-M003",
+      "name": "短跌半程收复入场",
+      "role": "EX024新竞争表达，不要求S017-M001",
+      "origin": "EX024_20261029",
+      "definition": "Close[t-4]-Close[t-1]>=ATR13[t-1]；Close[t]>(Close[t-4]+Close[t-1])/2。"
+    },
+    {
+      "id": "S017-M004",
+      "name": "短跌波幅收窄后转强入场",
+      "role": "EX024新竞争表达，不要求S017-M001",
+      "origin": "EX024_20261029",
+      "definition": "t-3..t-1三柱至少2柱Close低于前Close，且Close[t-1]<Close[t-4]；TR[t-3]>TR[t-2]>TR[t-1]；Close[t]>High[t-1]。"
+    },
+    {
+      "id": "S017-M005",
+      "name": "放量窄幅下跌后收复入场",
+      "role": "EX024新竞争表达，不要求S017-M001",
+      "origin": "EX024_20261029",
+      "definition": "前柱Close<Open；前柱Volume>=1.5*其过去20个不同实际交易日同美东RTH起始时刻成交量中位数（排除前柱当天）；TR[t-1]<=ATR13[t-2]；Close[t]>High[t-1]。"
+    },
+    {
+      "id": "S017-M006",
+      "name": "阴线后收复入场",
+      "role": "EX025条件删减对照，不要求S017-M001",
+      "origin": "EX025_20261029",
+      "definition": "前柱Close<Open；当前Close>前柱High。"
+    },
+    {
+      "id": "S017-M007",
+      "name": "窄幅阴线后收复入场",
+      "role": "EX025条件删减对照，不要求S017-M001",
+      "origin": "EX025_20261029",
+      "definition": "前柱Close<Open；当前Close>前柱High；TR[t-1]<=ATR13[t-2]。"
+    },
+    {
+      "id": "S017-M008",
+      "name": "放量阴线后收复入场",
+      "role": "EX025条件删减对照，不要求S017-M001",
+      "origin": "EX025_20261029",
+      "definition": "前柱Close<Open；当前Close>前柱High；前柱Volume>=1.5*其过去20个不同实际交易日同美东RTH起始时刻成交量中位数（排除前柱当天）。"
+    },
+    {
+      "id": "S017-M009",
+      "name": "固定65柱退出",
+      "role": "EX027退出竞争机制，配合不变S017-M005入场；尚未确认绩效",
+      "origin": "EX027_20261029",
+      "definition": "实际买入后完成65根30分钟柱发出退出，下一可执行区间市价卖出，受阻继续退出。"
+    },
+    {
+      "id": "S017-M010",
+      "name": "结构失效退出",
+      "role": "EX027退出竞争机制，配合不变S017-M005入场；尚未确认绩效",
+      "origin": "EX027_20261029",
+      "definition": "收盘严格低于入场信号柱及前柱最低价的较小值时退出；低点信号时冻结，最长65根完成持仓柱，触发锁存至实际卖出。"
+    },
+    {
+      "id": "S017-M011",
+      "name": "移动止损退出",
+      "role": "EX027退出竞争机制，配合不变S017-M005入场；尚未确认绩效",
+      "origin": "EX027_20261029",
+      "definition": "最高已完成持仓收盘价减3倍信号柱ATR13为止损线；峰值从信号收盘起只升不降，ATR冻结；收盘严格跌破触发，最长65根完成持仓柱，触发锁存至实际卖出。"
+    },
+    {
+      "id": "S017-M012",
+      "name": "六柱区间向上突破入场",
+      "role": "EX028短周期竞争表达；未认定有效",
+      "origin": "EX028_20261030",
+      "definition": "Close[t]>max High[t-6..t-1]；父参照为Close[t]>Close[t-1]。"
+    },
+    {
+      "id": "S017-M013",
+      "name": "上涨回调两柱后收复入场",
+      "role": "EX028短周期竞争表达；未认定有效",
+      "origin": "EX028_20261030",
+      "definition": "Close[t-3]-Close[t-9]>=ATR13[t-4]；Close[t-2]<Close[t-3]；Close[t-1]<=Close[t-2]；Close[t]>High[t-1]；父参照去掉最后收复条件。"
+    },
+    {
+      "id": "S017-M014",
+      "name": "跌破六柱低点后收回入场",
+      "role": "EX028短周期竞争表达；未认定有效",
+      "origin": "EX028_20261030",
+      "definition": "S=min Low[t-6..t-1]；Low[t]<S；Close[t]>S；Close[t]>Open[t]；父参照只保留下破条件。"
+    },
+    {
+      "id": "S017-M015",
+      "name": "固定六柱退出",
+      "role": "EX028预定账户退出；是否运行取决于入场证据",
+      "origin": "EX028_20261030",
+      "definition": "实际买入后完成6根30分钟柱发出退出，下一可执行区间市价卖出，受阻继续退出。"
+    },
+    {
+      "id": "S017-M016",
+      "name": "固定十三柱退出",
+      "role": "EX028预定账户退出；是否运行取决于入场证据",
+      "origin": "EX028_20261030",
+      "definition": "实际买入后完成13根30分钟柱发出退出，下一可执行区间市价卖出，受阻继续退出。"
+    },
+    {
+      "id": "S017-M017",
+      "name": "低于近期均价的六柱突破入场",
+      "role": "EX029定向验证；尚未认定有效",
+      "origin": "EX029_20261030",
+      "definition": "Close[t-1]<mean Close[t-65..t-1] 且 Close[t]>max High[t-6..t-1]；背景不包含当前柱，严格小于。"
+    },
+    {
+      "id": "S017-M018",
+      "name": "仅低于近期均价入场",
+      "role": "EX029简单背景控制；尚未认定有效",
+      "origin": "EX029_20261030",
+      "definition": "Close[t-1]<mean Close[t-65..t-1]，每个满足背景的可用完成柱均触发；不是仅第一次下穿。"
+    }
+  ],
+  "shared_price_notation": "t为已完成且可用的30m柱。TR=max(High-Low,abs(High-前Close),abs(Low-前Close))，首TR未知；ATR13为13个TR简单均值。全部条件只用当时已知数据；满足后下一段尝试按既定合同买入。"
+}

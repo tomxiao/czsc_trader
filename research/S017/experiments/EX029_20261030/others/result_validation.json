@@ -1,0 +1,35 @@
+{
+  "status": "PASS",
+  "scope": "CENSUS_AND_EVENT_TEMPORAL_ONLY_NO_ACCOUNT_CERTIFICATION",
+  "analysis_sha256": "69f44b0fb932842b039218072bf8fa8ca59f1bf028d1a20d8850ce5e1639d362",
+  "events_sha256": "682adfa332fd8ada253db94e07ee257f19a9fe8c6a97bfaddae644d79b47fa0c",
+  "verification_source_sha256": "df21d22cd0e8e217f12ca3c919a4168b349ca42255a4e118d11c94473f936877",
+  "strategy_source_sha256": "d8bb3022ba9bbf32593d786602a36bea04da011b70970489b43f23c85c9e04ca",
+  "legacy_3_6_13_label_comparisons": 68370,
+  "scalar_vector_event_comparisons": 68370,
+  "rows": 68370,
+  "sessions": 1760,
+  "sequential": {
+    "folds": 24,
+    "future_outcome_perturbations": [
+      "2020-01-02"
+    ],
+    "cross_fold_nonoverlap": "PASS",
+    "mature_training_only": "PASS"
+  },
+  "checks": [
+    "complete_fee_formula",
+    "legacy_label_exact_reproduction",
+    "authorized_window",
+    "prepared_data_identity",
+    "signal_parent_regime_identity",
+    "prefix_causality",
+    "independent_all_horizon_counts_means_matches",
+    "bootstrap_defined_denominator",
+    "independent_training_scores_and_selection",
+    "training_label_maturity",
+    "cross_fold_deoverlap",
+    "future_outcome_perturbation"
+  ],
+  "seconds": 142.27967730001546
+}
