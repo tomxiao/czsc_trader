@@ -1,0 +1,2480 @@
+{
+  "schema": "s017-ten-round-program-closeout/v1",
+  "branch": "codex/s017-ten-rounds",
+  "baseline": "647503bc4",
+  "maximum_rounds": 10,
+  "actual_started": 9,
+  "cancelled": 1,
+  "economic_completed": 8,
+  "unused_not_started": 1,
+  "new_formal_economic_policies": 15,
+  "technical_controls": 1,
+  "candidate_identities_including_cancelled": 18,
+  "formal_statistics": {
+    "candidate_runs": 16,
+    "benchmark_runs": 8,
+    "authenticated_accounts": 24
+  },
+  "goal_achieved": false,
+  "rounds": [
+    {
+      "round": 1,
+      "experiment": "EX033_20261031",
+      "status": "CANCELLED",
+      "report": "experiments/EX033_20261031/report.md",
+      "publication": "experiments/EX033_20261031/others/publication.json",
+      "validation_status": "PASS",
+      "pre_run": "experiments/EX033_20261031/others/pre_run.json",
+      "strategy_sha256": "7eab3af9598be67a99fda623ef7f928a668a38bfae463469c9ff5dc596988136",
+      "question": "上行回撤收复首次实现",
+      "conclusion": "解释负荷工程事故取消，无正式经济结论；同经济重试EX034另计第2轮。",
+      "candidate_ids": [
+        "C0063",
+        "C0064"
+      ]
+    },
+    {
+      "round": 2,
+      "experiment": "EX034_20261031",
+      "status": "COMPLETED",
+      "report": "experiments/EX034_20261031/report.md",
+      "publication": "experiments/EX034_20261031/others/publication.json",
+      "validation_status": "PASS",
+      "pre_run": "experiments/EX034_20261031/others/pre_run.json",
+      "strategy_sha256": "d4c0cb42933297cdc48a850e0b09d9b39c0e6c280050674f124a12db2fc7f48c",
+      "question": "上行回撤收复",
+      "conclusion": "两完整退出均亏或接近零收益且高回撤，停止该入口。",
+      "candidate_ids": [
+        "C0065",
+        "C0066"
+      ],
+      "results": {
+        "C0065": {
+          "parameters": {
+            "mechanism": "UP_PULLBACK",
+            "exit": "TARGET",
+            "maximum": 130
+          },
+          "candidate": {
+            "annualized_return": -0.004521216247321491,
+            "bar_max_drawdown": 0.7060236375737321,
+            "closed_cycles": 543,
+            "fees": 77655.82694257,
+            "rolling_60_closed_cycle_median": 18,
+            "total_return": -0.031152779725700963,
+            "ending_equity": 96884.7220274299,
+            "ending_quantity": 259,
+            "coverage_at_least_three": 1,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 0.3013602457218078,
+            "mean_invested_equity_fraction": 0.29818823951051404,
+            "year_returns": {
+              "2019": -0.126638869456001,
+              "2020": 0.11560279549779384,
+              "2021": -0.22733785293579378,
+              "2022": -0.3700908866971919,
+              "2023": -0.08595988372071073,
+              "2024": 0.13135843049348983,
+              "2025": 0.9756901823546185
+            },
+            "max_drawdown_path": {
+              "peak": "2019-04-17T14:30:00.000000Z",
+              "trough": "2024-06-11T19:30:00.000000Z",
+              "recovery": "2025-11-25T20:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": -1090.9262025700025,
+              "positive_pnl": 452116.97051023,
+              "negative_pnl": -453207.8967128,
+              "nonclosed_equity_change": -2024.3517700000941,
+              "win_rate": 0.5395948434622467,
+              "mean_cycle_net_return": 0.0005093353966850829,
+              "median_cycle_net_return": 0.0018557599,
+              "top_five_positive_pnl_share": 0.13481057646700498
+            },
+            "decision_counts": {
+              "entry_signals": 1752,
+              "held_signals_ignored": 1207,
+              "flat_signals": 545,
+              "buy_fills": 544,
+              "unfilled_orders": {
+                "LIMIT_NOT_CROSSED": 1
+              }
+            }
+          },
+          "benchmark": {
+            "annualized_return": 0.36316988841721076,
+            "bar_max_drawdown": 0.673361639120395,
+            "closed_cycles": 0,
+            "fees": 97.17312,
+            "rolling_60_closed_cycle_median": 0,
+            "total_return": 7.703905668799999,
+            "ending_equity": 870390.5668799999,
+            "ending_quantity": 2354,
+            "coverage_at_least_three": 0,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 1,
+            "mean_invested_equity_fraction": 0.9831458819302703,
+            "year_returns": {
+              "2019": 0.8940190688,
+              "2020": 0.19264325582063546,
+              "2021": 0.1143189382633929,
+              "2022": -0.5012643664079526,
+              "2023": 0.00468782783131072,
+              "2024": 0.5884701991076333,
+              "2025": 3.344393440366628
+            },
+            "max_drawdown_path": {
+              "peak": "2021-01-12T16:30:00.000000Z",
+              "trough": "2023-10-27T14:00:00.000000Z",
+              "recovery": "2025-07-31T14:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 0.0,
+              "positive_pnl": 0.0,
+              "negative_pnl": 0.0,
+              "nonclosed_equity_change": 770390.5668799999,
+              "win_rate": null,
+              "mean_cycle_net_return": null,
+              "median_cycle_net_return": null,
+              "top_five_positive_pnl_share": null
+            },
+            "decision_counts": {
+              "entry_signals": 0,
+              "held_signals_ignored": 0,
+              "flat_signals": 0,
+              "buy_fills": 1,
+              "unfilled_orders": {}
+            }
+          },
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": false,
+            "absolute_drawdown": false,
+            "frequency_median": true,
+            "frequency_coverage": true
+          },
+          "all_goals_met": false
+        },
+        "C0066": {
+          "parameters": {
+            "mechanism": "UP_PULLBACK",
+            "exit": "STRUCTURE",
+            "maximum": 130
+          },
+          "candidate": {
+            "annualized_return": -0.07355738813918511,
+            "bar_max_drawdown": 0.8138871095960242,
+            "closed_cycles": 656,
+            "fees": 77300.7409229,
+            "rolling_60_closed_cycle_median": 22,
+            "total_return": -0.41351576022899894,
+            "ending_equity": 58648.4239771001,
+            "ending_quantity": 0,
+            "coverage_at_least_three": 1,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 0.32290478279947343,
+            "mean_invested_equity_fraction": 0.31952044265448326,
+            "year_returns": {
+              "2019": 0.02704720428000007,
+              "2020": -0.23541110292929035,
+              "2021": -0.1561855298956205,
+              "2022": -0.4395125380638465,
+              "2023": -0.24224365236841938,
+              "2024": -0.11495652136803947,
+              "2025": 1.3546745739095396
+            },
+            "max_drawdown_path": {
+              "peak": "2019-02-25T15:00:00.000000Z",
+              "trough": "2024-06-13T15:00:00.000000Z",
+              "recovery": null
+            },
+            "trade_pnl": {
+              "closed_net_pnl": -41351.5760229,
+              "positive_pnl": 307063.2929208,
+              "negative_pnl": -348414.8689437,
+              "nonclosed_equity_change": 1.0186340659856796e-10,
+              "win_rate": 0.3048780487804878,
+              "mean_cycle_net_return": -0.0004166719426829268,
+              "median_cycle_net_return": -0.007195907749999999,
+              "top_five_positive_pnl_share": 0.16154504437231568
+            },
+            "decision_counts": {
+              "entry_signals": 1752,
+              "held_signals_ignored": 1095,
+              "flat_signals": 657,
+              "buy_fills": 656,
+              "unfilled_orders": {
+                "LIMIT_NOT_CROSSED": 1
+              }
+            }
+          },
+          "benchmark": {
+            "annualized_return": 0.36316988841721076,
+            "bar_max_drawdown": 0.673361639120395,
+            "closed_cycles": 0,
+            "fees": 97.17312,
+            "rolling_60_closed_cycle_median": 0,
+            "total_return": 7.703905668799999,
+            "ending_equity": 870390.5668799999,
+            "ending_quantity": 2354,
+            "coverage_at_least_three": 0,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 1,
+            "mean_invested_equity_fraction": 0.9831458819302703,
+            "year_returns": {
+              "2019": 0.8940190688,
+              "2020": 0.19264325582063546,
+              "2021": 0.1143189382633929,
+              "2022": -0.5012643664079526,
+              "2023": 0.00468782783131072,
+              "2024": 0.5884701991076333,
+              "2025": 3.344393440366628
+            },
+            "max_drawdown_path": {
+              "peak": "2021-01-12T16:30:00.000000Z",
+              "trough": "2023-10-27T14:00:00.000000Z",
+              "recovery": "2025-07-31T14:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 0.0,
+              "positive_pnl": 0.0,
+              "negative_pnl": 0.0,
+              "nonclosed_equity_change": 770390.5668799999,
+              "win_rate": null,
+              "mean_cycle_net_return": null,
+              "median_cycle_net_return": null,
+              "top_five_positive_pnl_share": null
+            },
+            "decision_counts": {
+              "entry_signals": 0,
+              "held_signals_ignored": 0,
+              "flat_signals": 0,
+              "buy_fills": 1,
+              "unfilled_orders": {}
+            }
+          },
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": false,
+            "absolute_drawdown": false,
+            "frequency_median": true,
+            "frequency_coverage": true
+          },
+          "all_goals_met": false
+        }
+      },
+      "execution_stats": {
+        "session": {
+          "elapsed_seconds": 134.10321950004436,
+          "pool_starts": 1,
+          "submitted": 3,
+          "completed": 3,
+          "failed": 0,
+          "unknown": 0,
+          "reused_results": 0,
+          "reused_publications": 0,
+          "phase_wall_seconds": [
+            [
+              "AUTHENTICATE",
+              60.88610800006427
+            ],
+            [
+              "COMPUTE",
+              40.46404580003582
+            ],
+            [
+              "PREPARE",
+              7.6299527999944985
+            ],
+            [
+              "PUBLISH",
+              2.0902879999484867
+            ],
+            [
+              "SERIALIZE",
+              1.4399876818060875e-05
+            ]
+          ],
+          "worker_seconds": [
+            [
+              "COMPUTE",
+              54.72529260022566
+            ]
+          ]
+        },
+        "equity": {
+          "input_snapshots": 1,
+          "candidate_runs": 2,
+          "benchmark_runs": 1,
+          "authenticated_accounts": 3,
+          "reused_authentications": 8,
+          "account_timings": [
+            {
+              "kind": "BENCHMARK",
+              "owner": "benchmark:b03b507ce3f6fe4dd63713f9bb55d62503ad01a6af14c0f639e833741df81b38",
+              "feature_seconds": 0.2560827985871583,
+              "replay_seconds": 11.028813400072977,
+              "rows": 22790,
+              "decisions": 22790
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S017:C0065:d9a221a41f234dbe1de968290c7acb186c76a05d43081cee2cb6fd97612a33ff",
+              "feature_seconds": 3.5329371974803507,
+              "replay_seconds": 18.737272300058976,
+              "rows": 22790,
+              "decisions": 22790
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S017:C0066:08dffbf71f5cca216266d5b1a121914d6cde6774e6c2ad4f7eac3d5b5e678cf6",
+              "feature_seconds": 3.3284106045030057,
+              "replay_seconds": 18.327734200051054,
+              "rows": 22790,
+              "decisions": 22790
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 3,
+      "experiment": "EX035_20261031",
+      "status": "COMPLETED",
+      "report": "experiments/EX035_20261031/report.md",
+      "publication": "experiments/EX035_20261031/others/publication.json",
+      "validation_status": "PASS",
+      "pre_run": "experiments/EX035_20261031/others/pre_run.json",
+      "strategy_sha256": "c858d63901f2960e73de3c67604e874faf6c2a552504d5114545d4b4f3beed4d",
+      "question": "深偏离旧C目标空间后继",
+      "conclusion": "冻结目标优于动态均价但仍远离收益/风险；不普遍否定均值修复，也不扫初始止损。",
+      "candidate_ids": [
+        "C0067",
+        "C0068"
+      ],
+      "results": {
+        "C0067": {
+          "parameters": {
+            "mechanism": "DEEP_REPAIR",
+            "exit": "MEAN",
+            "maximum": 130
+          },
+          "candidate": {
+            "annualized_return": 0.005245427577773798,
+            "bar_max_drawdown": 0.6329633219053765,
+            "closed_cycles": 401,
+            "fees": 56868.618900959,
+            "rolling_60_closed_cycle_median": 13,
+            "total_return": 0.037214738580409135,
+            "ending_equity": 103721.4738580409,
+            "ending_quantity": 278,
+            "coverage_at_least_three": 1,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 0.22974989030276438,
+            "mean_invested_equity_fraction": 0.22733128201999417,
+            "year_returns": {
+              "2019": -0.17270685480600112,
+              "2020": 0.0812230696402576,
+              "2021": -0.04668278638340406,
+              "2022": -0.35797533721604125,
+              "2023": 0.01912055125111012,
+              "2024": -0.05592628591121451,
+              "2025": 0.9691252376164592
+            },
+            "max_drawdown_path": {
+              "peak": "2019-05-07T15:30:00.000000Z",
+              "trough": "2024-09-10T16:30:00.000000Z",
+              "recovery": null
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 6374.359748041002,
+              "positive_pnl": 413092.123104,
+              "negative_pnl": -406717.763355959,
+              "nonclosed_equity_change": -2652.8858900000987,
+              "win_rate": 0.47381546134663344,
+              "mean_cycle_net_return": 0.0008515645957605985,
+              "median_cycle_net_return": -0.008483563,
+              "top_five_positive_pnl_share": 0.11722324906884943
+            },
+            "decision_counts": {
+              "entry_signals": 1198,
+              "held_signals_ignored": 793,
+              "flat_signals": 405,
+              "buy_fills": 402,
+              "unfilled_orders": {
+                "KNOWN_INTERRUPTION": 2,
+                "LIMIT_NOT_CROSSED": 2
+              }
+            }
+          },
+          "benchmark": {
+            "annualized_return": 0.36316988841721076,
+            "bar_max_drawdown": 0.673361639120395,
+            "closed_cycles": 0,
+            "fees": 97.17312,
+            "rolling_60_closed_cycle_median": 0,
+            "total_return": 7.703905668799999,
+            "ending_equity": 870390.5668799999,
+            "ending_quantity": 2354,
+            "coverage_at_least_three": 0,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 1,
+            "mean_invested_equity_fraction": 0.9831458819302703,
+            "year_returns": {
+              "2019": 0.8940190688,
+              "2020": 0.19264325582063546,
+              "2021": 0.1143189382633929,
+              "2022": -0.5012643664079526,
+              "2023": 0.00468782783131072,
+              "2024": 0.5884701991076333,
+              "2025": 3.344393440366628
+            },
+            "max_drawdown_path": {
+              "peak": "2021-01-12T16:30:00.000000Z",
+              "trough": "2023-10-27T14:00:00.000000Z",
+              "recovery": "2025-07-31T14:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 0.0,
+              "positive_pnl": 0.0,
+              "negative_pnl": 0.0,
+              "nonclosed_equity_change": 770390.5668799999,
+              "win_rate": null,
+              "mean_cycle_net_return": null,
+              "median_cycle_net_return": null,
+              "top_five_positive_pnl_share": null
+            },
+            "decision_counts": {
+              "entry_signals": 0,
+              "held_signals_ignored": 0,
+              "flat_signals": 0,
+              "buy_fills": 1,
+              "unfilled_orders": {}
+            }
+          },
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": false,
+            "absolute_drawdown": false,
+            "frequency_median": true,
+            "frequency_coverage": true
+          },
+          "all_goals_met": false
+        },
+        "C0068": {
+          "parameters": {
+            "mechanism": "DEEP_REPAIR",
+            "exit": "TARGET",
+            "maximum": 130
+          },
+          "candidate": {
+            "annualized_return": 0.09539122185172011,
+            "bar_max_drawdown": 0.5950549740911386,
+            "closed_cycles": 386,
+            "fees": 63021.659016845,
+            "rolling_60_closed_cycle_median": 13,
+            "total_return": 0.8895427002815488,
+            "ending_equity": 188954.2700281549,
+            "ending_quantity": 506,
+            "coverage_at_least_three": 1,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 0.31272487933304083,
+            "mean_invested_equity_fraction": 0.3094876125647958,
+            "year_returns": {
+              "2019": -0.15328214279199992,
+              "2020": 0.0636744304139032,
+              "2021": -0.006973740168151554,
+              "2022": -0.24623884213076885,
+              "2023": 0.09268130143188658,
+              "2024": -0.08527641739433978,
+              "2025": 1.80434472131892
+            },
+            "max_drawdown_path": {
+              "peak": "2022-08-25T14:30:00.000000Z",
+              "trough": "2024-08-07T20:00:00.000000Z",
+              "recovery": "2025-08-18T15:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 93782.904058155,
+              "positive_pnl": 587781.9727762,
+              "negative_pnl": -493999.068718045,
+              "nonclosed_equity_change": -4828.6340300001175,
+              "win_rate": 0.41450777202072536,
+              "mean_cycle_net_return": 0.0027858959621761656,
+              "median_cycle_net_return": -0.0125153037,
+              "top_five_positive_pnl_share": 0.16900494603604202
+            },
+            "decision_counts": {
+              "entry_signals": 1198,
+              "held_signals_ignored": 808,
+              "flat_signals": 390,
+              "buy_fills": 387,
+              "unfilled_orders": {
+                "KNOWN_INTERRUPTION": 1,
+                "LIMIT_NOT_CROSSED": 2
+              }
+            }
+          },
+          "benchmark": {
+            "annualized_return": 0.36316988841721076,
+            "bar_max_drawdown": 0.673361639120395,
+            "closed_cycles": 0,
+            "fees": 97.17312,
+            "rolling_60_closed_cycle_median": 0,
+            "total_return": 7.703905668799999,
+            "ending_equity": 870390.5668799999,
+            "ending_quantity": 2354,
+            "coverage_at_least_three": 0,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 1,
+            "mean_invested_equity_fraction": 0.9831458819302703,
+            "year_returns": {
+              "2019": 0.8940190688,
+              "2020": 0.19264325582063546,
+              "2021": 0.1143189382633929,
+              "2022": -0.5012643664079526,
+              "2023": 0.00468782783131072,
+              "2024": 0.5884701991076333,
+              "2025": 3.344393440366628
+            },
+            "max_drawdown_path": {
+              "peak": "2021-01-12T16:30:00.000000Z",
+              "trough": "2023-10-27T14:00:00.000000Z",
+              "recovery": "2025-07-31T14:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 0.0,
+              "positive_pnl": 0.0,
+              "negative_pnl": 0.0,
+              "nonclosed_equity_change": 770390.5668799999,
+              "win_rate": null,
+              "mean_cycle_net_return": null,
+              "median_cycle_net_return": null,
+              "top_five_positive_pnl_share": null
+            },
+            "decision_counts": {
+              "entry_signals": 0,
+              "held_signals_ignored": 0,
+              "flat_signals": 0,
+              "buy_fills": 1,
+              "unfilled_orders": {}
+            }
+          },
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": false,
+            "absolute_drawdown": false,
+            "frequency_median": true,
+            "frequency_coverage": true
+          },
+          "all_goals_met": false
+        }
+      },
+      "execution_stats": {
+        "session": {
+          "elapsed_seconds": 133.4535095000174,
+          "pool_starts": 1,
+          "submitted": 3,
+          "completed": 3,
+          "failed": 0,
+          "unknown": 0,
+          "reused_results": 0,
+          "reused_publications": 0,
+          "phase_wall_seconds": [
+            [
+              "AUTHENTICATE",
+              61.23392500006594
+            ],
+            [
+              "COMPUTE",
+              37.7273273000028
+            ],
+            [
+              "PREPARE",
+              8.946361899841577
+            ],
+            [
+              "PUBLISH",
+              2.2120089000090957
+            ],
+            [
+              "SERIALIZE",
+              2.7700094506144524e-05
+            ]
+          ],
+          "worker_seconds": [
+            [
+              "COMPUTE",
+              48.739458199590445
+            ]
+          ]
+        },
+        "equity": {
+          "input_snapshots": 1,
+          "candidate_runs": 2,
+          "benchmark_runs": 1,
+          "authenticated_accounts": 3,
+          "reused_authentications": 8,
+          "account_timings": [
+            {
+              "kind": "BENCHMARK",
+              "owner": "benchmark:b03b507ce3f6fe4dd63713f9bb55d62503ad01a6af14c0f639e833741df81b38",
+              "feature_seconds": 0.2462890089955181,
+              "replay_seconds": 10.806793099967763,
+              "rows": 22790,
+              "decisions": 22790
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S017:C0067:4478de96295cfab86d98afaff721f960d2cf42e276e997a92baff6b10ab82a2c",
+              "feature_seconds": 1.8954932771157473,
+              "replay_seconds": 15.510945199988782,
+              "rows": 22790,
+              "decisions": 22790
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S017:C0068:bcd5fe204a0aad587d82a88990e62f0faee2f6ac410d891d0e682638b4e84012",
+              "feature_seconds": 1.7849686960689723,
+              "replay_seconds": 15.541448200121522,
+              "rows": 22790,
+              "decisions": 22790
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 4,
+      "experiment": "EX036_20261031",
+      "status": "COMPLETED",
+      "report": "experiments/EX036_20261031/report.md",
+      "publication": "experiments/EX036_20261031/others/publication.json",
+      "validation_status": "PASS",
+      "pre_run": "experiments/EX036_20261031/others/pre_run.json",
+      "strategy_sha256": "c1331e309902e31ddf357fb56fe150da5948cfe45b70c9285556b276fa10c4bc",
+      "question": "26柱窄区间新高",
+      "conclusion": "13低点优于三ATR移动仍只有11.20%年化/43.38%回撤，停止当前入口。",
+      "candidate_ids": [
+        "C0069",
+        "C0070"
+      ],
+      "results": {
+        "C0069": {
+          "parameters": {
+            "mechanism": "RANGE_EXPANSION",
+            "exit": "CHANNEL",
+            "maximum": 130
+          },
+          "candidate": {
+            "annualized_return": 0.11202000410918767,
+            "bar_max_drawdown": 0.43376955398297823,
+            "closed_cycles": 234,
+            "fees": 49797.2201688,
+            "rolling_60_closed_cycle_median": 8,
+            "total_return": 1.0992117703120008,
+            "ending_equity": 209921.1770312001,
+            "ending_quantity": 0,
+            "coverage_at_least_three": 1,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 0.3635805177709522,
+            "mean_invested_equity_fraction": 0.36002930338778505,
+            "year_returns": {
+              "2019": 0.10881094800799995,
+              "2020": -0.07465325126768396,
+              "2021": 0.14089415828002783,
+              "2022": -0.2868516122329007,
+              "2023": 0.17690828738515219,
+              "2024": 0.43522086407435867,
+              "2025": 0.48870148895443544
+            },
+            "max_drawdown_path": {
+              "peak": "2020-03-05T17:00:00.000000Z",
+              "trough": "2024-06-17T14:30:00.000000Z",
+              "recovery": "2024-11-08T15:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 109921.1770312,
+              "positive_pnl": 511869.2830716,
+              "negative_pnl": -401948.1060404,
+              "nonclosed_equity_change": 8.731149137020111e-11,
+              "win_rate": 0.4358974358974359,
+              "mean_cycle_net_return": 0.0045588919982905984,
+              "median_cycle_net_return": -0.0061917829,
+              "top_five_positive_pnl_share": 0.2350447821981746
+            },
+            "decision_counts": {
+              "entry_signals": 1012,
+              "held_signals_ignored": 778,
+              "flat_signals": 234,
+              "buy_fills": 234,
+              "unfilled_orders": {}
+            }
+          },
+          "benchmark": {
+            "annualized_return": 0.36316988841721076,
+            "bar_max_drawdown": 0.673361639120395,
+            "closed_cycles": 0,
+            "fees": 97.17312,
+            "rolling_60_closed_cycle_median": 0,
+            "total_return": 7.703905668799999,
+            "ending_equity": 870390.5668799999,
+            "ending_quantity": 2354,
+            "coverage_at_least_three": 0,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 1,
+            "mean_invested_equity_fraction": 0.9831458819302703,
+            "year_returns": {
+              "2019": 0.8940190688,
+              "2020": 0.19264325582063546,
+              "2021": 0.1143189382633929,
+              "2022": -0.5012643664079526,
+              "2023": 0.00468782783131072,
+              "2024": 0.5884701991076333,
+              "2025": 3.344393440366628
+            },
+            "max_drawdown_path": {
+              "peak": "2021-01-12T16:30:00.000000Z",
+              "trough": "2023-10-27T14:00:00.000000Z",
+              "recovery": "2025-07-31T14:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 0.0,
+              "positive_pnl": 0.0,
+              "negative_pnl": 0.0,
+              "nonclosed_equity_change": 770390.5668799999,
+              "win_rate": null,
+              "mean_cycle_net_return": null,
+              "median_cycle_net_return": null,
+              "top_five_positive_pnl_share": null
+            },
+            "decision_counts": {
+              "entry_signals": 0,
+              "held_signals_ignored": 0,
+              "flat_signals": 0,
+              "buy_fills": 1,
+              "unfilled_orders": {}
+            }
+          },
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": true,
+            "absolute_drawdown": false,
+            "frequency_median": true,
+            "frequency_coverage": true
+          },
+          "all_goals_met": false
+        },
+        "C0070": {
+          "parameters": {
+            "mechanism": "RANGE_EXPANSION",
+            "exit": "TRAIL",
+            "maximum": 130
+          },
+          "candidate": {
+            "annualized_return": 0.03650618935068639,
+            "bar_max_drawdown": 0.5204069170357126,
+            "closed_cycles": 236,
+            "fees": 44129.0899065,
+            "rolling_60_closed_cycle_median": 8,
+            "total_return": 0.284565119935001,
+            "ending_equity": 128456.5119935001,
+            "ending_quantity": 0,
+            "coverage_at_least_three": 1,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 0.35699868363317244,
+            "mean_invested_equity_fraction": 0.3534444398621185,
+            "year_returns": {
+              "2019": 0.1492823124310001,
+              "2020": -0.25003757951530514,
+              "2021": 0.1533471587815165,
+              "2022": -0.20328711540198108,
+              "2023": 0.09634990174014413,
+              "2024": 0.3449639208215396,
+              "2025": 0.09993796730885518
+            },
+            "max_drawdown_path": {
+              "peak": "2020-03-05T17:00:00.000000Z",
+              "trough": "2024-06-17T14:30:00.000000Z",
+              "recovery": "2025-01-21T15:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 28456.5119935,
+              "positive_pnl": 411261.2120337,
+              "negative_pnl": -382804.7000402,
+              "nonclosed_equity_change": 9.822542779147625e-11,
+              "win_rate": 0.3983050847457627,
+              "mean_cycle_net_return": 0.0023141874194915254,
+              "median_cycle_net_return": -0.0110061656,
+              "top_five_positive_pnl_share": 0.22712367112278492
+            },
+            "decision_counts": {
+              "entry_signals": 1012,
+              "held_signals_ignored": 776,
+              "flat_signals": 236,
+              "buy_fills": 236,
+              "unfilled_orders": {}
+            }
+          },
+          "benchmark": {
+            "annualized_return": 0.36316988841721076,
+            "bar_max_drawdown": 0.673361639120395,
+            "closed_cycles": 0,
+            "fees": 97.17312,
+            "rolling_60_closed_cycle_median": 0,
+            "total_return": 7.703905668799999,
+            "ending_equity": 870390.5668799999,
+            "ending_quantity": 2354,
+            "coverage_at_least_three": 0,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 1,
+            "mean_invested_equity_fraction": 0.9831458819302703,
+            "year_returns": {
+              "2019": 0.8940190688,
+              "2020": 0.19264325582063546,
+              "2021": 0.1143189382633929,
+              "2022": -0.5012643664079526,
+              "2023": 0.00468782783131072,
+              "2024": 0.5884701991076333,
+              "2025": 3.344393440366628
+            },
+            "max_drawdown_path": {
+              "peak": "2021-01-12T16:30:00.000000Z",
+              "trough": "2023-10-27T14:00:00.000000Z",
+              "recovery": "2025-07-31T14:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 0.0,
+              "positive_pnl": 0.0,
+              "negative_pnl": 0.0,
+              "nonclosed_equity_change": 770390.5668799999,
+              "win_rate": null,
+              "mean_cycle_net_return": null,
+              "median_cycle_net_return": null,
+              "top_five_positive_pnl_share": null
+            },
+            "decision_counts": {
+              "entry_signals": 0,
+              "held_signals_ignored": 0,
+              "flat_signals": 0,
+              "buy_fills": 1,
+              "unfilled_orders": {}
+            }
+          },
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": true,
+            "absolute_drawdown": false,
+            "frequency_median": true,
+            "frequency_coverage": true
+          },
+          "all_goals_met": false
+        }
+      },
+      "execution_stats": {
+        "session": {
+          "elapsed_seconds": 127.08045290014707,
+          "pool_starts": 1,
+          "submitted": 3,
+          "completed": 3,
+          "failed": 0,
+          "unknown": 0,
+          "reused_results": 0,
+          "reused_publications": 0,
+          "phase_wall_seconds": [
+            [
+              "AUTHENTICATE",
+              57.72737809992395
+            ],
+            [
+              "COMPUTE",
+              36.68531069997698
+            ],
+            [
+              "PREPARE",
+              8.614454800030217
+            ],
+            [
+              "PUBLISH",
+              2.327595500042662
+            ],
+            [
+              "SERIALIZE",
+              1.3999873772263527e-05
+            ]
+          ],
+          "worker_seconds": [
+            [
+              "COMPUTE",
+              46.82193690026179
+            ]
+          ]
+        },
+        "equity": {
+          "input_snapshots": 1,
+          "candidate_runs": 2,
+          "benchmark_runs": 1,
+          "authenticated_accounts": 3,
+          "reused_authentications": 8,
+          "account_timings": [
+            {
+              "kind": "BENCHMARK",
+              "owner": "benchmark:b03b507ce3f6fe4dd63713f9bb55d62503ad01a6af14c0f639e833741df81b38",
+              "feature_seconds": 0.2529323666822165,
+              "replay_seconds": 10.920351200038567,
+              "rows": 22790,
+              "decisions": 22790
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S017:C0069:169d6479e324891fae00e2f76b35d601b7cd40ecc8b5631f0c5f32bb5987c128",
+              "feature_seconds": 1.753545398823917,
+              "replay_seconds": 15.129585500108078,
+              "rows": 22790,
+              "decisions": 22790
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S017:C0070:6b9715cdd4dc96331520c1e96685dd123b03d0310ddb7daa4330f2c1164a5566",
+              "feature_seconds": 1.7158461888320744,
+              "replay_seconds": 14.59840239980258,
+              "rows": 22790,
+              "decisions": 22790
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 5,
+      "experiment": "EX037_20261031",
+      "status": "COMPLETED",
+      "report": "experiments/EX037_20261031/report.md",
+      "publication": "experiments/EX037_20261031/others/publication.json",
+      "validation_status": "PASS",
+      "pre_run": "experiments/EX037_20261031/others/pre_run.json",
+      "strategy_sha256": "21a04b5c57d3cdb6e73d900cfe11c06b2243bea23867ea8ff30b26d1f5051b75",
+      "question": "隔夜缺口首柱",
+      "conclusion": "下缺口低风险伴随极少参与，上缺口亏损高风险，两者均停。",
+      "candidate_ids": [
+        "C0071",
+        "C0072"
+      ],
+      "results": {
+        "C0071": {
+          "parameters": {
+            "mechanism": "GAP_RECLAIM",
+            "exit": "TRAIL",
+            "maximum": 65
+          },
+          "candidate": {
+            "annualized_return": 0.02473549707045941,
+            "bar_max_drawdown": 0.20926791820594715,
+            "closed_cycles": 45,
+            "fees": 8687.20909,
+            "rolling_60_closed_cycle_median": 1,
+            "total_return": 0.18608010909999995,
+            "ending_equity": 118608.01091,
+            "ending_quantity": 0,
+            "coverage_at_least_three": 0.2257495590828924,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 0.053268977621763934,
+            "mean_invested_equity_fraction": 0.052726439199868136,
+            "year_returns": {
+              "2019": -0.054861416399999974,
+              "2020": -0.0262087805448048,
+              "2021": 0.12819425275634444,
+              "2022": -0.07487824265541454,
+              "2023": -0.07667510212946949,
+              "2024": 0.27915478646958936,
+              "2025": 0.045423481693612544
+            },
+            "max_drawdown_path": {
+              "peak": "2019-09-05T15:00:00.000000Z",
+              "trough": "2021-05-17T14:30:00.000000Z",
+              "recovery": "2021-11-02T14:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 18608.01091,
+              "positive_pnl": 90911.8676672,
+              "negative_pnl": -72303.8567572,
+              "nonclosed_equity_change": -3.637978807091713e-12,
+              "win_rate": 0.4444444444444444,
+              "mean_cycle_net_return": 0.005786101682222222,
+              "median_cycle_net_return": -0.0141694786,
+              "top_five_positive_pnl_share": 0.7228378762139223
+            },
+            "decision_counts": {
+              "entry_signals": 46,
+              "held_signals_ignored": 1,
+              "flat_signals": 45,
+              "buy_fills": 45,
+              "unfilled_orders": {}
+            }
+          },
+          "benchmark": {
+            "annualized_return": 0.36316988841721076,
+            "bar_max_drawdown": 0.673361639120395,
+            "closed_cycles": 0,
+            "fees": 97.17312,
+            "rolling_60_closed_cycle_median": 0,
+            "total_return": 7.703905668799999,
+            "ending_equity": 870390.5668799999,
+            "ending_quantity": 2354,
+            "coverage_at_least_three": 0,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 1,
+            "mean_invested_equity_fraction": 0.9831458819302703,
+            "year_returns": {
+              "2019": 0.8940190688,
+              "2020": 0.19264325582063546,
+              "2021": 0.1143189382633929,
+              "2022": -0.5012643664079526,
+              "2023": 0.00468782783131072,
+              "2024": 0.5884701991076333,
+              "2025": 3.344393440366628
+            },
+            "max_drawdown_path": {
+              "peak": "2021-01-12T16:30:00.000000Z",
+              "trough": "2023-10-27T14:00:00.000000Z",
+              "recovery": "2025-07-31T14:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 0.0,
+              "positive_pnl": 0.0,
+              "negative_pnl": 0.0,
+              "nonclosed_equity_change": 770390.5668799999,
+              "win_rate": null,
+              "mean_cycle_net_return": null,
+              "median_cycle_net_return": null,
+              "top_five_positive_pnl_share": null
+            },
+            "decision_counts": {
+              "entry_signals": 0,
+              "held_signals_ignored": 0,
+              "flat_signals": 0,
+              "buy_fills": 1,
+              "unfilled_orders": {}
+            }
+          },
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": true,
+            "absolute_drawdown": true,
+            "frequency_median": false,
+            "frequency_coverage": false
+          },
+          "all_goals_met": false
+        },
+        "C0072": {
+          "parameters": {
+            "mechanism": "GAP_DRIVE",
+            "exit": "TRAIL",
+            "maximum": 65
+          },
+          "candidate": {
+            "annualized_return": -0.024485381343541612,
+            "bar_max_drawdown": 0.5977187832121587,
+            "closed_cycles": 176,
+            "fees": 31055.8885802,
+            "rolling_60_closed_cycle_median": 6,
+            "total_return": -0.15897798180199996,
+            "ending_equity": 84102.2018198,
+            "ending_quantity": 0,
+            "coverage_at_least_three": 1,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 0.23475208424747696,
+            "mean_invested_equity_fraction": 0.2323898882886519,
+            "year_returns": {
+              "2019": 0.2675822806740009,
+              "2020": -0.17516536618115186,
+              "2021": -0.061183724087431446,
+              "2022": -0.14697453574044483,
+              "2023": -0.3096437564628771,
+              "2024": 0.18230681433114126,
+              "2025": 0.23060383026727993
+            },
+            "max_drawdown_path": {
+              "peak": "2020-03-26T14:00:00.000000Z",
+              "trough": "2024-08-12T20:00:00.000000Z",
+              "recovery": null
+            },
+            "trade_pnl": {
+              "closed_net_pnl": -15897.7981802,
+              "positive_pnl": 273306.9835698,
+              "negative_pnl": -289204.78175,
+              "nonclosed_equity_change": 0.0,
+              "win_rate": 0.3352272727272727,
+              "mean_cycle_net_return": 0.00028983305852272733,
+              "median_cycle_net_return": -0.0140535626,
+              "top_five_positive_pnl_share": 0.24501040011990138
+            },
+            "decision_counts": {
+              "entry_signals": 216,
+              "held_signals_ignored": 40,
+              "flat_signals": 176,
+              "buy_fills": 176,
+              "unfilled_orders": {}
+            }
+          },
+          "benchmark": {
+            "annualized_return": 0.36316988841721076,
+            "bar_max_drawdown": 0.673361639120395,
+            "closed_cycles": 0,
+            "fees": 97.17312,
+            "rolling_60_closed_cycle_median": 0,
+            "total_return": 7.703905668799999,
+            "ending_equity": 870390.5668799999,
+            "ending_quantity": 2354,
+            "coverage_at_least_three": 0,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 1,
+            "mean_invested_equity_fraction": 0.9831458819302703,
+            "year_returns": {
+              "2019": 0.8940190688,
+              "2020": 0.19264325582063546,
+              "2021": 0.1143189382633929,
+              "2022": -0.5012643664079526,
+              "2023": 0.00468782783131072,
+              "2024": 0.5884701991076333,
+              "2025": 3.344393440366628
+            },
+            "max_drawdown_path": {
+              "peak": "2021-01-12T16:30:00.000000Z",
+              "trough": "2023-10-27T14:00:00.000000Z",
+              "recovery": "2025-07-31T14:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 0.0,
+              "positive_pnl": 0.0,
+              "negative_pnl": 0.0,
+              "nonclosed_equity_change": 770390.5668799999,
+              "win_rate": null,
+              "mean_cycle_net_return": null,
+              "median_cycle_net_return": null,
+              "top_five_positive_pnl_share": null
+            },
+            "decision_counts": {
+              "entry_signals": 0,
+              "held_signals_ignored": 0,
+              "flat_signals": 0,
+              "buy_fills": 1,
+              "unfilled_orders": {}
+            }
+          },
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": false,
+            "absolute_drawdown": false,
+            "frequency_median": true,
+            "frequency_coverage": true
+          },
+          "all_goals_met": false
+        }
+      },
+      "execution_stats": {
+        "session": {
+          "elapsed_seconds": 128.68706090003252,
+          "pool_starts": 1,
+          "submitted": 3,
+          "completed": 3,
+          "failed": 0,
+          "unknown": 0,
+          "reused_results": 0,
+          "reused_publications": 0,
+          "phase_wall_seconds": [
+            [
+              "AUTHENTICATE",
+              57.947516600135714
+            ],
+            [
+              "COMPUTE",
+              36.89388390001841
+            ],
+            [
+              "PREPARE",
+              9.46917249984108
+            ],
+            [
+              "PUBLISH",
+              1.9227322000078857
+            ],
+            [
+              "SERIALIZE",
+              1.390022225677967e-05
+            ]
+          ],
+          "worker_seconds": [
+            [
+              "COMPUTE",
+              45.4238249999471
+            ]
+          ]
+        },
+        "equity": {
+          "input_snapshots": 1,
+          "candidate_runs": 2,
+          "benchmark_runs": 1,
+          "authenticated_accounts": 3,
+          "reused_authentications": 8,
+          "account_timings": [
+            {
+              "kind": "BENCHMARK",
+              "owner": "benchmark:b03b507ce3f6fe4dd63713f9bb55d62503ad01a6af14c0f639e833741df81b38",
+              "feature_seconds": 0.24689959711395204,
+              "replay_seconds": 10.679365599993616,
+              "rows": 22790,
+              "decisions": 22790
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S017:C0071:c7cf190118c7069382ea1540d1fa4643bf4103c2b150cd702f6a2d4b2cb2ed78",
+              "feature_seconds": 1.2782240801025182,
+              "replay_seconds": 13.892064900137484,
+              "rows": 22790,
+              "decisions": 22790
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S017:C0072:7a37a8396073fa97b7ccac45b11197c2d3697f923cea6ddb9c8287c5c29e9ace",
+              "feature_seconds": 1.5299568094778806,
+              "replay_seconds": 14.53517679986544,
+              "rows": 22790,
+              "decisions": 22790
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 6,
+      "experiment": "EX038_20261031",
+      "status": "COMPLETED",
+      "report": "experiments/EX038_20261031/report.md",
+      "publication": "experiments/EX038_20261031/others/publication.json",
+      "validation_status": "PASS",
+      "pre_run": "experiments/EX038_20261031/others/pre_run.json",
+      "strategy_sha256": "abcee69b174ab28255831278428633ee2699058ec23426a9d204ee5bd36c76bb",
+      "question": "13柱方向推进强度",
+      "conclusion": "方向退出亏损，固定65仅6.62%且70.26%回撤，不手动搜索阈值。",
+      "candidate_ids": [
+        "C0073",
+        "C0074"
+      ],
+      "results": {
+        "C0073": {
+          "parameters": {
+            "mechanism": "EFFICIENCY",
+            "exit": "EFFICIENCY",
+            "maximum": 130
+          },
+          "candidate": {
+            "annualized_return": -0.02858587727154671,
+            "bar_max_drawdown": 0.5550650727127832,
+            "closed_cycles": 316,
+            "fees": 62597.5974234,
+            "rolling_60_closed_cycle_median": 11,
+            "total_return": -0.18335967423400001,
+            "ending_equity": 81664.0325766,
+            "ending_quantity": 0,
+            "coverage_at_least_three": 1,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 0.21961386573058359,
+            "mean_invested_equity_fraction": 0.21736702524621807,
+            "year_returns": {
+              "2019": 0.35262743319299994,
+              "2020": -0.17686784667324174,
+              "2021": 0.00984639922175079,
+              "2022": -0.16965314661286157,
+              "2023": -0.14259508291855416,
+              "2024": 0.05024967528088897,
+              "2025": -0.02861884772028589
+            },
+            "max_drawdown_path": {
+              "peak": "2020-03-03T15:30:00.000000Z",
+              "trough": "2025-04-23T20:00:00.000000Z",
+              "recovery": null
+            },
+            "trade_pnl": {
+              "closed_net_pnl": -18335.967423400198,
+              "positive_pnl": 348982.1564212998,
+              "negative_pnl": -367318.1238447,
+              "nonclosed_equity_change": 2.000888343900442e-10,
+              "win_rate": 0.34177215189873417,
+              "mean_cycle_net_return": -1.9891309493670814e-05,
+              "median_cycle_net_return": -0.0074833977999999995,
+              "top_five_positive_pnl_share": 0.19510806038690703
+            },
+            "decision_counts": {
+              "entry_signals": 2031,
+              "held_signals_ignored": 1714,
+              "flat_signals": 317,
+              "buy_fills": 316,
+              "unfilled_orders": {
+                "LIMIT_NOT_CROSSED": 1
+              }
+            }
+          },
+          "benchmark": {
+            "annualized_return": 0.36316988841721076,
+            "bar_max_drawdown": 0.673361639120395,
+            "closed_cycles": 0,
+            "fees": 97.17312,
+            "rolling_60_closed_cycle_median": 0,
+            "total_return": 7.703905668799999,
+            "ending_equity": 870390.5668799999,
+            "ending_quantity": 2354,
+            "coverage_at_least_three": 0,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 1,
+            "mean_invested_equity_fraction": 0.9831458819302703,
+            "year_returns": {
+              "2019": 0.8940190688,
+              "2020": 0.19264325582063546,
+              "2021": 0.1143189382633929,
+              "2022": -0.5012643664079526,
+              "2023": 0.00468782783131072,
+              "2024": 0.5884701991076333,
+              "2025": 3.344393440366628
+            },
+            "max_drawdown_path": {
+              "peak": "2021-01-12T16:30:00.000000Z",
+              "trough": "2023-10-27T14:00:00.000000Z",
+              "recovery": "2025-07-31T14:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 0.0,
+              "positive_pnl": 0.0,
+              "negative_pnl": 0.0,
+              "nonclosed_equity_change": 770390.5668799999,
+              "win_rate": null,
+              "mean_cycle_net_return": null,
+              "median_cycle_net_return": null,
+              "top_five_positive_pnl_share": null
+            },
+            "decision_counts": {
+              "entry_signals": 0,
+              "held_signals_ignored": 0,
+              "flat_signals": 0,
+              "buy_fills": 1,
+              "unfilled_orders": {}
+            }
+          },
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": false,
+            "absolute_drawdown": false,
+            "frequency_median": true,
+            "frequency_coverage": true
+          },
+          "all_goals_met": false
+        },
+        "C0074": {
+          "parameters": {
+            "mechanism": "EFFICIENCY",
+            "exit": "TIME",
+            "maximum": 65
+          },
+          "candidate": {
+            "annualized_return": 0.06617955715841184,
+            "bar_max_drawdown": 0.7026321072599055,
+            "closed_cycles": 244,
+            "fees": 44654.8536501,
+            "rolling_60_closed_cycle_median": 8,
+            "total_return": 0.5644824884990021,
+            "ending_equity": 156448.2488499002,
+            "ending_quantity": 0,
+            "coverage_at_least_three": 1,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 0.45449758666081613,
+            "mean_invested_equity_fraction": 0.44992113399448924,
+            "year_returns": {
+              "2019": 0.411006613396,
+              "2020": -0.14750973558519043,
+              "2021": -0.042469963135536526,
+              "2022": -0.37709580433844514,
+              "2023": -0.08732081003351022,
+              "2024": -0.025778538302596465,
+              "2025": 1.4524644782820486
+            },
+            "max_drawdown_path": {
+              "peak": "2020-08-03T16:00:00.000000Z",
+              "trough": "2024-06-05T17:00:00.000000Z",
+              "recovery": "2025-12-09T16:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 56448.2488499,
+              "positive_pnl": 527563.0886364,
+              "negative_pnl": -471114.8397865,
+              "nonclosed_equity_change": 2.0372681319713593e-10,
+              "win_rate": 0.4139344262295082,
+              "mean_cycle_net_return": 0.0036614713475409837,
+              "median_cycle_net_return": -0.02175766865,
+              "top_five_positive_pnl_share": 0.1576412808275872
+            },
+            "decision_counts": {
+              "entry_signals": 2031,
+              "held_signals_ignored": 1786,
+              "flat_signals": 245,
+              "buy_fills": 244,
+              "unfilled_orders": {
+                "LIMIT_NOT_CROSSED": 1
+              }
+            }
+          },
+          "benchmark": {
+            "annualized_return": 0.36316988841721076,
+            "bar_max_drawdown": 0.673361639120395,
+            "closed_cycles": 0,
+            "fees": 97.17312,
+            "rolling_60_closed_cycle_median": 0,
+            "total_return": 7.703905668799999,
+            "ending_equity": 870390.5668799999,
+            "ending_quantity": 2354,
+            "coverage_at_least_three": 0,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 1,
+            "mean_invested_equity_fraction": 0.9831458819302703,
+            "year_returns": {
+              "2019": 0.8940190688,
+              "2020": 0.19264325582063546,
+              "2021": 0.1143189382633929,
+              "2022": -0.5012643664079526,
+              "2023": 0.00468782783131072,
+              "2024": 0.5884701991076333,
+              "2025": 3.344393440366628
+            },
+            "max_drawdown_path": {
+              "peak": "2021-01-12T16:30:00.000000Z",
+              "trough": "2023-10-27T14:00:00.000000Z",
+              "recovery": "2025-07-31T14:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 0.0,
+              "positive_pnl": 0.0,
+              "negative_pnl": 0.0,
+              "nonclosed_equity_change": 770390.5668799999,
+              "win_rate": null,
+              "mean_cycle_net_return": null,
+              "median_cycle_net_return": null,
+              "top_five_positive_pnl_share": null
+            },
+            "decision_counts": {
+              "entry_signals": 0,
+              "held_signals_ignored": 0,
+              "flat_signals": 0,
+              "buy_fills": 1,
+              "unfilled_orders": {}
+            }
+          },
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": false,
+            "absolute_drawdown": false,
+            "frequency_median": true,
+            "frequency_coverage": true
+          },
+          "all_goals_met": false
+        }
+      },
+      "execution_stats": {
+        "session": {
+          "elapsed_seconds": 128.22996329981834,
+          "pool_starts": 1,
+          "submitted": 3,
+          "completed": 3,
+          "failed": 0,
+          "unknown": 0,
+          "reused_results": 0,
+          "reused_publications": 0,
+          "phase_wall_seconds": [
+            [
+              "AUTHENTICATE",
+              58.792121400125325
+            ],
+            [
+              "COMPUTE",
+              36.49487769999541
+            ],
+            [
+              "PREPARE",
+              8.784229600336403
+            ],
+            [
+              "PUBLISH",
+              2.276258100057021
+            ],
+            [
+              "SERIALIZE",
+              1.5300000086426735e-05
+            ]
+          ],
+          "worker_seconds": [
+            [
+              "COMPUTE",
+              46.96104990015738
+            ]
+          ]
+        },
+        "equity": {
+          "input_snapshots": 1,
+          "candidate_runs": 2,
+          "benchmark_runs": 1,
+          "authenticated_accounts": 3,
+          "reused_authentications": 8,
+          "account_timings": [
+            {
+              "kind": "BENCHMARK",
+              "owner": "benchmark:b03b507ce3f6fe4dd63713f9bb55d62503ad01a6af14c0f639e833741df81b38",
+              "feature_seconds": 0.2591280166525394,
+              "replay_seconds": 11.242360700154677,
+              "rows": 22790,
+              "decisions": 22790
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S017:C0073:42531e146b08d62420676031c709eac201906e5a9c3b55bb35c6a31e605661ed",
+              "feature_seconds": 0.7866464974358678,
+              "replay_seconds": 14.915396600030363,
+              "rows": 22790,
+              "decisions": 22790
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S017:C0074:8ab194ee802001c02cf04447405c7db2e037640eeca499750b387b2b755962a3",
+              "feature_seconds": 0.9034710903652012,
+              "replay_seconds": 14.248557500075549,
+              "rows": 22790,
+              "decisions": 22790
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 7,
+      "experiment": "EX039_20261031",
+      "status": "COMPLETED",
+      "report": "experiments/EX039_20261031/report.md",
+      "publication": "experiments/EX039_20261031/others/publication.json",
+      "validation_status": "PASS",
+      "pre_run": "experiments/EX039_20261031/others/pre_run.json",
+      "strategy_sha256": "95c9392cdc8f7875e7d9bd93604f51cf979c7b1a1ed1bc60e840603d304a8e0a",
+      "question": "正向冲击量确认",
+      "conclusion": "量确认降低参与和风险但收益未提高，仍57.40%回撤，停止当前冲击表达。",
+      "candidate_ids": [
+        "C0075",
+        "C0076"
+      ],
+      "results": {
+        "C0075": {
+          "parameters": {
+            "mechanism": "POSITIVE_IMPULSE",
+            "exit": "TIME",
+            "maximum": 65
+          },
+          "candidate": {
+            "annualized_return": 0.15205148078584818,
+            "bar_max_drawdown": 0.5740463593699282,
+            "closed_cycles": 243,
+            "fees": 80734.0917788,
+            "rolling_60_closed_cycle_median": 8,
+            "total_return": 1.6873699782119984,
+            "ending_equity": 268736.9978211998,
+            "ending_quantity": 0,
+            "coverage_at_least_three": 1,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 0.3776656428258008,
+            "mean_invested_equity_fraction": 0.3739336677693906,
+            "year_returns": {
+              "2019": 0.346900664419,
+              "2020": 0.4380265788520441,
+              "2021": 0.34844626011305735,
+              "2022": -0.40124246269802266,
+              "2023": 0.08031718889261619,
+              "2024": -0.11970213436542487,
+              "2025": 0.8070052287999401
+            },
+            "max_drawdown_path": {
+              "peak": "2021-12-16T15:30:00.000000Z",
+              "trough": "2025-04-23T20:00:00.000000Z",
+              "recovery": "2025-11-19T15:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 168736.9978212,
+              "positive_pnl": 917342.9007437001,
+              "negative_pnl": -748605.9029225002,
+              "nonclosed_equity_change": -1.7462298274040222e-10,
+              "win_rate": 0.345679012345679,
+              "mean_cycle_net_return": 0.005795458704115226,
+              "median_cycle_net_return": -0.0160112609,
+              "top_five_positive_pnl_share": 0.19158334342863445
+            },
+            "decision_counts": {
+              "entry_signals": 470,
+              "held_signals_ignored": 227,
+              "flat_signals": 243,
+              "buy_fills": 243,
+              "unfilled_orders": {}
+            }
+          },
+          "benchmark": {
+            "annualized_return": 0.36316988841721076,
+            "bar_max_drawdown": 0.673361639120395,
+            "closed_cycles": 0,
+            "fees": 97.17312,
+            "rolling_60_closed_cycle_median": 0,
+            "total_return": 7.703905668799999,
+            "ending_equity": 870390.5668799999,
+            "ending_quantity": 2354,
+            "coverage_at_least_three": 0,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 1,
+            "mean_invested_equity_fraction": 0.9831458819302703,
+            "year_returns": {
+              "2019": 0.8940190688,
+              "2020": 0.19264325582063546,
+              "2021": 0.1143189382633929,
+              "2022": -0.5012643664079526,
+              "2023": 0.00468782783131072,
+              "2024": 0.5884701991076333,
+              "2025": 3.344393440366628
+            },
+            "max_drawdown_path": {
+              "peak": "2021-01-12T16:30:00.000000Z",
+              "trough": "2023-10-27T14:00:00.000000Z",
+              "recovery": "2025-07-31T14:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 0.0,
+              "positive_pnl": 0.0,
+              "negative_pnl": 0.0,
+              "nonclosed_equity_change": 770390.5668799999,
+              "win_rate": null,
+              "mean_cycle_net_return": null,
+              "median_cycle_net_return": null,
+              "top_five_positive_pnl_share": null
+            },
+            "decision_counts": {
+              "entry_signals": 0,
+              "held_signals_ignored": 0,
+              "flat_signals": 0,
+              "buy_fills": 1,
+              "unfilled_orders": {}
+            }
+          },
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": false,
+            "absolute_drawdown": false,
+            "frequency_median": true,
+            "frequency_coverage": true
+          },
+          "all_goals_met": false
+        },
+        "C0076": {
+          "parameters": {
+            "mechanism": "POSITIVE_BODY",
+            "exit": "TIME",
+            "maximum": 65
+          },
+          "candidate": {
+            "annualized_return": 0.1689434050411769,
+            "bar_max_drawdown": 0.7570018881221652,
+            "closed_cycles": 412,
+            "fees": 105316.697014,
+            "rolling_60_closed_cycle_median": 14,
+            "total_return": 1.9749406678599968,
+            "ending_equity": 297494.0667859997,
+            "ending_quantity": 797,
+            "coverage_at_least_three": 1,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 0.6302764370337868,
+            "mean_invested_equity_fraction": 0.6239885436727731,
+            "year_returns": {
+              "2019": 0.5033545550319989,
+              "2020": 0.3421557009883496,
+              "2021": -0.05073221572537423,
+              "2022": -0.5785961951376404,
+              "2023": 0.09705501308251763,
+              "2024": 0.16096015795907959,
+              "2025": 1.89388369859629
+            },
+            "max_drawdown_path": {
+              "peak": "2021-01-12T16:30:00.000000Z",
+              "trough": "2024-08-12T20:00:00.000000Z",
+              "recovery": "2025-11-05T16:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 205099.64252099989,
+              "positive_pnl": 1123748.5574258,
+              "negative_pnl": -918648.9149048,
+              "nonclosed_equity_change": -7605.575735000195,
+              "win_rate": 0.3276699029126214,
+              "mean_cycle_net_return": 0.004236580359708738,
+              "median_cycle_net_return": -0.01580679025,
+              "top_five_positive_pnl_share": 0.16114940119650145
+            },
+            "decision_counts": {
+              "entry_signals": 1118,
+              "held_signals_ignored": 703,
+              "flat_signals": 415,
+              "buy_fills": 413,
+              "unfilled_orders": {
+                "KNOWN_INTERRUPTION": 2,
+                "LIMIT_NOT_CROSSED": 1
+              }
+            }
+          },
+          "benchmark": {
+            "annualized_return": 0.36316988841721076,
+            "bar_max_drawdown": 0.673361639120395,
+            "closed_cycles": 0,
+            "fees": 97.17312,
+            "rolling_60_closed_cycle_median": 0,
+            "total_return": 7.703905668799999,
+            "ending_equity": 870390.5668799999,
+            "ending_quantity": 2354,
+            "coverage_at_least_three": 0,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 1,
+            "mean_invested_equity_fraction": 0.9831458819302703,
+            "year_returns": {
+              "2019": 0.8940190688,
+              "2020": 0.19264325582063546,
+              "2021": 0.1143189382633929,
+              "2022": -0.5012643664079526,
+              "2023": 0.00468782783131072,
+              "2024": 0.5884701991076333,
+              "2025": 3.344393440366628
+            },
+            "max_drawdown_path": {
+              "peak": "2021-01-12T16:30:00.000000Z",
+              "trough": "2023-10-27T14:00:00.000000Z",
+              "recovery": "2025-07-31T14:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 0.0,
+              "positive_pnl": 0.0,
+              "negative_pnl": 0.0,
+              "nonclosed_equity_change": 770390.5668799999,
+              "win_rate": null,
+              "mean_cycle_net_return": null,
+              "median_cycle_net_return": null,
+              "top_five_positive_pnl_share": null
+            },
+            "decision_counts": {
+              "entry_signals": 0,
+              "held_signals_ignored": 0,
+              "flat_signals": 0,
+              "buy_fills": 1,
+              "unfilled_orders": {}
+            }
+          },
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": false,
+            "absolute_drawdown": false,
+            "frequency_median": true,
+            "frequency_coverage": true
+          },
+          "all_goals_met": false
+        }
+      },
+      "execution_stats": {
+        "session": {
+          "elapsed_seconds": 129.0546938998159,
+          "pool_starts": 1,
+          "submitted": 3,
+          "completed": 3,
+          "failed": 0,
+          "unknown": 0,
+          "reused_results": 0,
+          "reused_publications": 0,
+          "phase_wall_seconds": [
+            [
+              "AUTHENTICATE",
+              59.08560670027509
+            ],
+            [
+              "COMPUTE",
+              37.29819489992224
+            ],
+            [
+              "PREPARE",
+              8.383233100175858
+            ],
+            [
+              "PUBLISH",
+              2.0382980001159012
+            ],
+            [
+              "SERIALIZE",
+              2.9900111258029938e-05
+            ]
+          ],
+          "worker_seconds": [
+            [
+              "COMPUTE",
+              47.67460529995151
+            ]
+          ]
+        },
+        "equity": {
+          "input_snapshots": 1,
+          "candidate_runs": 2,
+          "benchmark_runs": 1,
+          "authenticated_accounts": 3,
+          "reused_authentications": 8,
+          "account_timings": [
+            {
+              "kind": "BENCHMARK",
+              "owner": "benchmark:b03b507ce3f6fe4dd63713f9bb55d62503ad01a6af14c0f639e833741df81b38",
+              "feature_seconds": 0.2778479924891144,
+              "replay_seconds": 11.7525931999553,
+              "rows": 22790,
+              "decisions": 22790
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S017:C0075:d5ad073a2020c114e4d73512d74d77e677aadb4a2c371b8c876ab8d0b57b0c83",
+              "feature_seconds": 0.9544300062116235,
+              "replay_seconds": 15.104466000106186,
+              "rows": 22790,
+              "decisions": 22790
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S017:C0076:3a51d437b51db335ae1d400c610f76b3a75a403913fd339e47a645b029ed45de",
+              "feature_seconds": 0.9455106924287975,
+              "replay_seconds": 14.182237500092015,
+              "rows": 22790,
+              "decisions": 22790
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 8,
+      "experiment": "EX040_20261031",
+      "status": "COMPLETED",
+      "report": "experiments/EX040_20261031/report.md",
+      "publication": "experiments/EX040_20261031/others/publication.json",
+      "validation_status": "PASS",
+      "pre_run": "experiments/EX040_20261031/others/pre_run.json",
+      "strategy_sha256": "0342a433684398bea74be36c964050f88cb0758e8f9a6fd6d8313b85c09cc378",
+      "question": "M005到期延续",
+      "conclusion": "延续收益33.34%低于控制38.31%，风险/中位频率仍失败，停止延续。",
+      "candidate_ids": [
+        "C0077",
+        "C0078"
+      ],
+      "results": {
+        "C0077": {
+          "parameters": {
+            "entry_mechanism": "S017-M005",
+            "max_holding_bars": 65
+          },
+          "candidate": {
+            "annualized_return": 0.3831218512020276,
+            "bar_max_drawdown": 0.4447072058889251,
+            "closed_cycles": 145,
+            "fees": 84960.6930716,
+            "rolling_60_closed_cycle_median": 5,
+            "total_return": 8.633569123284001,
+            "ending_equity": 963356.9123284002,
+            "ending_quantity": 0,
+            "coverage_at_least_three": 0.9512051734273956,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 0.4136024572180781,
+            "mean_invested_equity_fraction": 0.40939154967901803,
+            "year_returns": {
+              "2019": 0.5308657264599999,
+              "2020": 0.5121081546347392,
+              "2021": 0.2369343479063617,
+              "2022": -0.3445666278704447,
+              "2023": 0.7843008264261004,
+              "2024": 0.23329160453139974,
+              "2025": 1.3326963563229173
+            },
+            "max_drawdown_path": {
+              "peak": "2022-01-11T19:00:00.000000Z",
+              "trough": "2023-05-12T19:00:00.000000Z",
+              "recovery": "2023-11-15T20:30:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 863356.9123284005,
+              "positive_pnl": 1621249.6769124002,
+              "negative_pnl": -757892.7645839996,
+              "nonclosed_equity_change": -3.4924596548080444e-10,
+              "win_rate": 0.5379310344827586,
+              "mean_cycle_net_return": 0.018372214389655174,
+              "median_cycle_net_return": 0.0045199714,
+              "top_five_positive_pnl_share": 0.28212361414380344
+            },
+            "decision_counts": {
+              "entry_signals": 324,
+              "held_signals_ignored": 178,
+              "flat_signals": 146,
+              "buy_fills": 145,
+              "unfilled_orders": {
+                "KNOWN_INTERRUPTION": 1,
+                "LIMIT_NOT_CROSSED": 1
+              }
+            }
+          },
+          "benchmark": {
+            "annualized_return": 0.36316988841721076,
+            "bar_max_drawdown": 0.673361639120395,
+            "closed_cycles": 0,
+            "fees": 97.17312,
+            "rolling_60_closed_cycle_median": 0,
+            "total_return": 7.703905668799999,
+            "ending_equity": 870390.5668799999,
+            "ending_quantity": 2354,
+            "coverage_at_least_three": 0,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 1,
+            "mean_invested_equity_fraction": 0.9831458819302703,
+            "year_returns": {
+              "2019": 0.8940190688,
+              "2020": 0.19264325582063546,
+              "2021": 0.1143189382633929,
+              "2022": -0.5012643664079526,
+              "2023": 0.00468782783131072,
+              "2024": 0.5884701991076333,
+              "2025": 3.344393440366628
+            },
+            "max_drawdown_path": {
+              "peak": "2021-01-12T16:30:00.000000Z",
+              "trough": "2023-10-27T14:00:00.000000Z",
+              "recovery": "2025-07-31T14:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 0.0,
+              "positive_pnl": 0.0,
+              "negative_pnl": 0.0,
+              "nonclosed_equity_change": 770390.5668799999,
+              "win_rate": null,
+              "mean_cycle_net_return": null,
+              "median_cycle_net_return": null,
+              "top_five_positive_pnl_share": null
+            },
+            "decision_counts": {
+              "entry_signals": 0,
+              "held_signals_ignored": 0,
+              "flat_signals": 0,
+              "buy_fills": 1,
+              "unfilled_orders": {}
+            }
+          },
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": true,
+            "absolute_drawdown": false,
+            "frequency_median": false,
+            "frequency_coverage": true
+          },
+          "all_goals_met": false
+        },
+        "C0078": {
+          "parameters": {
+            "entry_mechanism": "S017-M005",
+            "max_holding_bars": 130
+          },
+          "candidate": {
+            "annualized_return": 0.3333597281284837,
+            "bar_max_drawdown": 0.42826607747844536,
+            "closed_cycles": 143,
+            "fees": 77320.1962298,
+            "rolling_60_closed_cycle_median": 5,
+            "total_return": 6.458440783701999,
+            "ending_equity": 745844.0783701999,
+            "ending_quantity": 0,
+            "coverage_at_least_three": 0.9417989417989417,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 0.4200526546731022,
+            "mean_invested_equity_fraction": 0.41574591132127503,
+            "year_returns": {
+              "2019": 0.45236501589799905,
+              "2020": 0.4910965668847336,
+              "2021": 0.23046660940578767,
+              "2022": -0.3216289085410944,
+              "2023": 0.7678040954089189,
+              "2024": 0.18207826663155613,
+              "2025": 0.9744628324489892
+            },
+            "max_drawdown_path": {
+              "peak": "2021-07-26T14:00:00.000000Z",
+              "trough": "2023-05-12T19:00:00.000000Z",
+              "recovery": "2023-11-15T15:30:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 645844.0783702,
+              "positive_pnl": 1353933.7203882998,
+              "negative_pnl": -708089.6420180997,
+              "nonclosed_equity_change": -1.1641532182693481e-10,
+              "win_rate": 0.5244755244755245,
+              "mean_cycle_net_return": 0.01662391742237762,
+              "median_cycle_net_return": 0.0024277275,
+              "top_five_positive_pnl_share": 0.25596057362070174
+            },
+            "decision_counts": {
+              "entry_signals": 324,
+              "held_signals_ignored": 180,
+              "flat_signals": 144,
+              "buy_fills": 143,
+              "unfilled_orders": {
+                "KNOWN_INTERRUPTION": 1,
+                "LIMIT_NOT_CROSSED": 1
+              }
+            }
+          },
+          "benchmark": {
+            "annualized_return": 0.36316988841721076,
+            "bar_max_drawdown": 0.673361639120395,
+            "closed_cycles": 0,
+            "fees": 97.17312,
+            "rolling_60_closed_cycle_median": 0,
+            "total_return": 7.703905668799999,
+            "ending_equity": 870390.5668799999,
+            "ending_quantity": 2354,
+            "coverage_at_least_three": 0,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 1,
+            "mean_invested_equity_fraction": 0.9831458819302703,
+            "year_returns": {
+              "2019": 0.8940190688,
+              "2020": 0.19264325582063546,
+              "2021": 0.1143189382633929,
+              "2022": -0.5012643664079526,
+              "2023": 0.00468782783131072,
+              "2024": 0.5884701991076333,
+              "2025": 3.344393440366628
+            },
+            "max_drawdown_path": {
+              "peak": "2021-01-12T16:30:00.000000Z",
+              "trough": "2023-10-27T14:00:00.000000Z",
+              "recovery": "2025-07-31T14:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 0.0,
+              "positive_pnl": 0.0,
+              "negative_pnl": 0.0,
+              "nonclosed_equity_change": 770390.5668799999,
+              "win_rate": null,
+              "mean_cycle_net_return": null,
+              "median_cycle_net_return": null,
+              "top_five_positive_pnl_share": null
+            },
+            "decision_counts": {
+              "entry_signals": 0,
+              "held_signals_ignored": 0,
+              "flat_signals": 0,
+              "buy_fills": 1,
+              "unfilled_orders": {}
+            }
+          },
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": true,
+            "absolute_drawdown": false,
+            "frequency_median": false,
+            "frequency_coverage": true
+          },
+          "all_goals_met": false
+        }
+      },
+      "execution_stats": {
+        "session": {
+          "elapsed_seconds": 142.66537120006979,
+          "pool_starts": 1,
+          "submitted": 3,
+          "completed": 3,
+          "failed": 0,
+          "unknown": 0,
+          "reused_results": 0,
+          "reused_publications": 0,
+          "phase_wall_seconds": [
+            [
+              "AUTHENTICATE",
+              67.95362109993584
+            ],
+            [
+              "COMPUTE",
+              38.94283839990385
+            ],
+            [
+              "PREPARE",
+              8.10214089998044
+            ],
+            [
+              "PUBLISH",
+              2.0938659999519587
+            ],
+            [
+              "SERIALIZE",
+              1.3399869203567505e-05
+            ]
+          ],
+          "worker_seconds": [
+            [
+              "COMPUTE",
+              49.065585299860686
+            ]
+          ]
+        },
+        "equity": {
+          "input_snapshots": 1,
+          "candidate_runs": 2,
+          "benchmark_runs": 1,
+          "authenticated_accounts": 3,
+          "reused_authentications": 8,
+          "account_timings": [
+            {
+              "kind": "BENCHMARK",
+              "owner": "benchmark:b03b507ce3f6fe4dd63713f9bb55d62503ad01a6af14c0f639e833741df81b38",
+              "feature_seconds": 0.24779537552967668,
+              "replay_seconds": 10.60124640003778,
+              "rows": 22790,
+              "decisions": 22790
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S017:C0077:9db4e266471a1bfb5c378ceabe6d890bfb988eb9f63237284d57ae7e133a7475",
+              "feature_seconds": 0.5729597839526832,
+              "replay_seconds": 15.596593100111932,
+              "rows": 22790,
+              "decisions": 22790
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S017:C0078:d1fd4e29aadc4d8bbc95751069135998de6b096c0198dc6d12f4d5ebd14613f8",
+              "feature_seconds": 0.5975479825865477,
+              "replay_seconds": 16.109501299913973,
+              "rows": 22790,
+              "decisions": 22790
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 9,
+      "experiment": "EX041_20261031",
+      "status": "COMPLETED",
+      "report": "experiments/EX041_20261031/report.md",
+      "publication": "experiments/EX041_20261031/others/publication.json",
+      "validation_status": "PASS",
+      "pre_run": "experiments/EX041_20261031/others/pre_run.json",
+      "strategy_sha256": "397ecf098ae6cdb55e31be21079b658563f84c598986f172023004295fbe2939",
+      "question": "M005与缺口机会组合",
+      "conclusion": "补上双频率却降低收益、仍42.82%至45.51%回撤，否定当前组合原型。",
+      "candidate_ids": [
+        "C0079",
+        "C0080"
+      ],
+      "results": {
+        "C0079": {
+          "parameters": {
+            "mechanism": "M005_GAP_UNION",
+            "exit": "SOURCE",
+            "maximum": 65
+          },
+          "candidate": {
+            "annualized_return": 0.36856200013659035,
+            "bar_max_drawdown": 0.4551266655323044,
+            "closed_cycles": 173,
+            "fees": 101092.1796717,
+            "rolling_60_closed_cycle_median": 6,
+            "total_return": 7.9472260822830005,
+            "ending_equity": 894722.6082283,
+            "ending_quantity": 0,
+            "coverage_at_least_three": 0.9970605526161082,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 0.44611671785871,
+            "mean_invested_equity_fraction": 0.4415684914915158,
+            "year_returns": {
+              "2019": 0.5122901777199991,
+              "2020": 0.5133598699096638,
+              "2021": 0.31245039458712265,
+              "2022": -0.3568755233320128,
+              "2023": 0.7218577787674878,
+              "2024": 0.3028387874308016,
+              "2025": 1.0646439759770057
+            },
+            "max_drawdown_path": {
+              "peak": "2022-01-11T19:00:00.000000Z",
+              "trough": "2023-05-12T19:00:00.000000Z",
+              "recovery": "2023-12-14T15:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 794722.6082283,
+              "positive_pnl": 1724604.2321159,
+              "negative_pnl": -929881.6238876,
+              "nonclosed_equity_change": 0.0,
+              "win_rate": 0.5202312138728323,
+              "mean_cycle_net_return": 0.015229227752601156,
+              "median_cycle_net_return": 0.0024277275,
+              "top_five_positive_pnl_share": 0.288589895224467
+            },
+            "decision_counts": {
+              "entry_signals": 369,
+              "held_signals_ignored": 195,
+              "flat_signals": 174,
+              "buy_fills": 173,
+              "unfilled_orders": {
+                "KNOWN_INTERRUPTION": 1,
+                "LIMIT_NOT_CROSSED": 1
+              }
+            }
+          },
+          "benchmark": {
+            "annualized_return": 0.36316988841721076,
+            "bar_max_drawdown": 0.673361639120395,
+            "closed_cycles": 0,
+            "fees": 97.17312,
+            "rolling_60_closed_cycle_median": 0,
+            "total_return": 7.703905668799999,
+            "ending_equity": 870390.5668799999,
+            "ending_quantity": 2354,
+            "coverage_at_least_three": 0,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 1,
+            "mean_invested_equity_fraction": 0.9831458819302703,
+            "year_returns": {
+              "2019": 0.8940190688,
+              "2020": 0.19264325582063546,
+              "2021": 0.1143189382633929,
+              "2022": -0.5012643664079526,
+              "2023": 0.00468782783131072,
+              "2024": 0.5884701991076333,
+              "2025": 3.344393440366628
+            },
+            "max_drawdown_path": {
+              "peak": "2021-01-12T16:30:00.000000Z",
+              "trough": "2023-10-27T14:00:00.000000Z",
+              "recovery": "2025-07-31T14:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 0.0,
+              "positive_pnl": 0.0,
+              "negative_pnl": 0.0,
+              "nonclosed_equity_change": 770390.5668799999,
+              "win_rate": null,
+              "mean_cycle_net_return": null,
+              "median_cycle_net_return": null,
+              "top_five_positive_pnl_share": null
+            },
+            "decision_counts": {
+              "entry_signals": 0,
+              "held_signals_ignored": 0,
+              "flat_signals": 0,
+              "buy_fills": 1,
+              "unfilled_orders": {}
+            }
+          },
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": true,
+            "absolute_drawdown": false,
+            "frequency_median": true,
+            "frequency_coverage": true
+          },
+          "all_goals_met": false
+        },
+        "C0080": {
+          "parameters": {
+            "mechanism": "M005_GAP_UNION",
+            "exit": "TIME",
+            "maximum": 65
+          },
+          "candidate": {
+            "annualized_return": 0.3116225861436692,
+            "bar_max_drawdown": 0.4282482111132859,
+            "closed_cycles": 161,
+            "fees": 92720.7918839,
+            "rolling_60_closed_cycle_median": 6,
+            "total_return": 5.6495495101610045,
+            "ending_equity": 664954.9510161005,
+            "ending_quantity": 0,
+            "coverage_at_least_three": 0.9911816578483245,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 0.4592365072400176,
+            "mean_invested_equity_fraction": 0.45460228058847857,
+            "year_returns": {
+              "2019": 0.5478471073960001,
+              "2020": 0.4730219642550795,
+              "2021": 0.40543036219406026,
+              "2022": -0.32515247474266096,
+              "2023": 0.48590137109281817,
+              "2024": 0.41937576234340335,
+              "2025": 0.45798340883629596
+            },
+            "max_drawdown_path": {
+              "peak": "2022-01-11T19:00:00.000000Z",
+              "trough": "2023-05-12T19:00:00.000000Z",
+              "recovery": "2023-12-22T15:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 564954.9510161005,
+              "positive_pnl": 1627405.3658024,
+              "negative_pnl": -1062450.4147862995,
+              "nonclosed_equity_change": 0.0,
+              "win_rate": 0.5279503105590062,
+              "mean_cycle_net_return": 0.014722173754658384,
+              "median_cycle_net_return": 0.0046070372,
+              "top_five_positive_pnl_share": 0.2768366286649586
+            },
+            "decision_counts": {
+              "entry_signals": 369,
+              "held_signals_ignored": 207,
+              "flat_signals": 162,
+              "buy_fills": 161,
+              "unfilled_orders": {
+                "KNOWN_INTERRUPTION": 1,
+                "LIMIT_NOT_CROSSED": 1
+              }
+            }
+          },
+          "benchmark": {
+            "annualized_return": 0.36316988841721076,
+            "bar_max_drawdown": 0.673361639120395,
+            "closed_cycles": 0,
+            "fees": 97.17312,
+            "rolling_60_closed_cycle_median": 0,
+            "total_return": 7.703905668799999,
+            "ending_equity": 870390.5668799999,
+            "ending_quantity": 2354,
+            "coverage_at_least_three": 0,
+            "frequency_windows": 1701,
+            "holding_bar_fraction": 1,
+            "mean_invested_equity_fraction": 0.9831458819302703,
+            "year_returns": {
+              "2019": 0.8940190688,
+              "2020": 0.19264325582063546,
+              "2021": 0.1143189382633929,
+              "2022": -0.5012643664079526,
+              "2023": 0.00468782783131072,
+              "2024": 0.5884701991076333,
+              "2025": 3.344393440366628
+            },
+            "max_drawdown_path": {
+              "peak": "2021-01-12T16:30:00.000000Z",
+              "trough": "2023-10-27T14:00:00.000000Z",
+              "recovery": "2025-07-31T14:00:00.000000Z"
+            },
+            "trade_pnl": {
+              "closed_net_pnl": 0.0,
+              "positive_pnl": 0.0,
+              "negative_pnl": 0.0,
+              "nonclosed_equity_change": 770390.5668799999,
+              "win_rate": null,
+              "mean_cycle_net_return": null,
+              "median_cycle_net_return": null,
+              "top_five_positive_pnl_share": null
+            },
+            "decision_counts": {
+              "entry_signals": 0,
+              "held_signals_ignored": 0,
+              "flat_signals": 0,
+              "buy_fills": 1,
+              "unfilled_orders": {}
+            }
+          },
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": true,
+            "absolute_drawdown": false,
+            "frequency_median": true,
+            "frequency_coverage": true
+          },
+          "all_goals_met": false
+        }
+      },
+      "execution_stats": {
+        "session": {
+          "elapsed_seconds": 126.5972066000104,
+          "pool_starts": 1,
+          "submitted": 3,
+          "completed": 3,
+          "failed": 0,
+          "unknown": 0,
+          "reused_results": 0,
+          "reused_publications": 0,
+          "phase_wall_seconds": [
+            [
+              "AUTHENTICATE",
+              57.714024499990046
+            ],
+            [
+              "COMPUTE",
+              34.94315229984932
+            ],
+            [
+              "PREPARE",
+              7.994640700286254
+            ],
+            [
+              "PUBLISH",
+              2.5418300998862833
+            ],
+            [
+              "SERIALIZE",
+              3.269989974796772e-05
+            ]
+          ],
+          "worker_seconds": [
+            [
+              "COMPUTE",
+              43.463900400092825
+            ]
+          ]
+        },
+        "equity": {
+          "input_snapshots": 1,
+          "candidate_runs": 2,
+          "benchmark_runs": 1,
+          "authenticated_accounts": 3,
+          "reused_authentications": 8,
+          "account_timings": [
+            {
+              "kind": "BENCHMARK",
+              "owner": "benchmark:b03b507ce3f6fe4dd63713f9bb55d62503ad01a6af14c0f639e833741df81b38",
+              "feature_seconds": 0.24793998943641782,
+              "replay_seconds": 10.740137699991465,
+              "rows": 22790,
+              "decisions": 22790
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S017:C0079:e75bc2cd74291d9897e72ba4658af64a0861abd490916a1ef513ec56150a972c",
+              "feature_seconds": 0.6731825987808406,
+              "replay_seconds": 13.065262199845165,
+              "rows": 22790,
+              "decisions": 22790
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S017:C0080:cb67b15e7ec7bbf3e368599fa9550bdf401d46d788165c4417ec1ef6250a5831",
+              "feature_seconds": 0.8584938049316406,
+              "replay_seconds": 13.215554800117388,
+              "rows": 22790,
+              "decisions": 22790
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "sample": "Same repeatedly inspected 2019-2025 development; no independent validation",
+  "closed_directions_not_general_theorem": true,
+  "independent_audit": {
+    "status": "PASS",
+    "publication_record": "TEN_ROUND_INDEPENDENT_AUDIT_20261031.json",
+    "result_sha256": "5bdda906c7c45d08110e3a2a94156d0f3596e78aca4f25891728e938c2e9c804",
+    "script_sha256": "3262ce9401436394c9a874cf2a12b8122b2745395749a8611ae428a858f7c1a3"
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "schema": "s017-execution-diagnostics/v1",
+  "not_a_new_account_or_acceptance_gate": true,
+  "accounts": {
+    "C0065": {
+      "reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S017",
+          "experiment_id": "EX034_20261031"
+        },
+        "evidence_id": "061d2134df33ab39ba36037ec70aad3b1d306f8797ae76fde749793b3d8f2009.json",
+        "sha256": "061d2134df33ab39ba36037ec70aad3b1d306f8797ae76fde749793b3d8f2009",
+        "media_type": "application/json",
+        "name": "formal-C0065",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "buy_fills": 544,
+      "fill_price_at_or_above_frozen_goal": 11,
+      "frozen_goal_net_of_sell_fee_not_covering_actual_cost": 45,
+      "first_held_decision_economic_exit": 40,
+      "first_exit_reasons": {
+        "risk": 232,
+        "economic": 311,
+        "time": 0
+      },
+      "limitations": "Threshold tests are diagnostics, never assumed execution prices; no trades removed."
+    },
+    "C0068": {
+      "reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S017",
+          "experiment_id": "EX035_20261031"
+        },
+        "evidence_id": "ff5b9b314ddd9b8dc3e1b88b3f20b38a6f1411e5c35ce00d767fb6f2d677a095.json",
+        "sha256": "ff5b9b314ddd9b8dc3e1b88b3f20b38a6f1411e5c35ce00d767fb6f2d677a095",
+        "media_type": "application/json",
+        "name": "formal-C0068",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "buy_fills": 387,
+      "fill_price_at_or_above_frozen_goal": 0,
+      "frozen_goal_net_of_sell_fee_not_covering_actual_cost": 0,
+      "first_held_decision_economic_exit": 4,
+      "first_exit_reasons": {
+        "risk": 228,
+        "economic": 153,
+        "time": 5
+      },
+      "limitations": "Threshold tests are diagnostics, never assumed execution prices; no trades removed."
+    },
+    "C0069": {
+      "reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S017",
+          "experiment_id": "EX036_20261031"
+        },
+        "evidence_id": "cb83c423bf16d40f9994385d75ad142eeaebc4aacf9433bed708f76be0896f26.json",
+        "sha256": "cb83c423bf16d40f9994385d75ad142eeaebc4aacf9433bed708f76be0896f26",
+        "media_type": "application/json",
+        "name": "formal-C0069",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "buy_fills": 234,
+      "first_held_decision_economic_exit": 1,
+      "first_exit_reasons": {
+        "risk": 53,
+        "economic": 207,
+        "time": 6
+      },
+      "limitations": "Threshold tests are diagnostics, never assumed execution prices; no trades removed.",
+      "frozen_goal_diagnostics": "NOT_APPLICABLE: CHANNEL policy"
+    }
+  }
+}

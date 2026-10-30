@@ -1,0 +1,764 @@
+{
+  "C0067": {
+    "runtime_kind": "ACCOUNT_REPLAY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "LITE"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 261,
+    "entrypoint": "strategy:step",
+    "source_files": [
+      "strategy.py"
+    ],
+    "source_sha256": "d285baadd81a6051cbb806f97a4d7fc84e2deb0c483fcfe4a9ec995964926219",
+    "parameters_json": "{\"exit\":\"MEAN\",\"maximum\":130,\"mechanism\":\"DEEP_REPAIR\"}",
+    "dependencies": [],
+    "contract_version": 4,
+    "parameter_schema_json": "{\"exit\":{\"type\":\"string\"},\"maximum\":{\"type\":\"integer\"},\"mechanism\":{\"type\":\"string\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "feature_graph": {
+      "nodes": [
+        {
+          "kind": "RawField",
+          "key": "close",
+          "field": "Close"
+        },
+        {
+          "kind": "RawField",
+          "key": "open",
+          "field": "Open"
+        },
+        {
+          "kind": "RawField",
+          "key": "high",
+          "field": "High"
+        },
+        {
+          "kind": "RawField",
+          "key": "low",
+          "field": "Low"
+        },
+        {
+          "kind": "Mean",
+          "key": "ma13",
+          "source": "close",
+          "window": 13
+        },
+        {
+          "kind": "Mean",
+          "key": "ma65",
+          "source": "close",
+          "window": 65
+        },
+        {
+          "kind": "Mean",
+          "key": "ma130",
+          "source": "close",
+          "window": 130
+        },
+        {
+          "kind": "Mean",
+          "key": "ma260",
+          "source": "close",
+          "window": 260
+        },
+        {
+          "kind": "Lag",
+          "key": "ma13_old",
+          "source": "ma13",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "ma65_old",
+          "source": "ma65",
+          "bars": 13
+        },
+        {
+          "kind": "Lag",
+          "key": "ma65_prior",
+          "source": "ma65",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "ma130_old",
+          "source": "ma130",
+          "bars": 13
+        },
+        {
+          "kind": "TrueRange",
+          "key": "tr",
+          "high": "high",
+          "low": "low",
+          "close": "close"
+        },
+        {
+          "kind": "Mean",
+          "key": "atr",
+          "source": "tr",
+          "window": 13
+        },
+        {
+          "kind": "Lag",
+          "key": "atr_old",
+          "source": "atr",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_close",
+          "source": "close",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "high1",
+          "source": "high",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "high2",
+          "source": "high",
+          "bars": 2
+        },
+        {
+          "kind": "Lag",
+          "key": "high3",
+          "source": "high",
+          "bars": 3
+        },
+        {
+          "kind": "Lag",
+          "key": "high4",
+          "source": "high",
+          "bars": 4
+        },
+        {
+          "kind": "Lag",
+          "key": "high5",
+          "source": "high",
+          "bars": 5
+        },
+        {
+          "kind": "Lag",
+          "key": "high6",
+          "source": "high",
+          "bars": 6
+        },
+        {
+          "kind": "Lag",
+          "key": "high7",
+          "source": "high",
+          "bars": 7
+        },
+        {
+          "kind": "Lag",
+          "key": "high8",
+          "source": "high",
+          "bars": 8
+        },
+        {
+          "kind": "Lag",
+          "key": "high9",
+          "source": "high",
+          "bars": 9
+        },
+        {
+          "kind": "Lag",
+          "key": "high10",
+          "source": "high",
+          "bars": 10
+        },
+        {
+          "kind": "Lag",
+          "key": "high11",
+          "source": "high",
+          "bars": 11
+        },
+        {
+          "kind": "Lag",
+          "key": "high12",
+          "source": "high",
+          "bars": 12
+        },
+        {
+          "kind": "Lag",
+          "key": "high13",
+          "source": "high",
+          "bars": 13
+        },
+        {
+          "kind": "Lag",
+          "key": "low1",
+          "source": "low",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "low2",
+          "source": "low",
+          "bars": 2
+        },
+        {
+          "kind": "Lag",
+          "key": "low3",
+          "source": "low",
+          "bars": 3
+        },
+        {
+          "kind": "Lag",
+          "key": "low4",
+          "source": "low",
+          "bars": 4
+        },
+        {
+          "kind": "Lag",
+          "key": "low5",
+          "source": "low",
+          "bars": 5
+        },
+        {
+          "kind": "Lag",
+          "key": "low6",
+          "source": "low",
+          "bars": 6
+        },
+        {
+          "kind": "Lag",
+          "key": "low7",
+          "source": "low",
+          "bars": 7
+        },
+        {
+          "kind": "Lag",
+          "key": "low8",
+          "source": "low",
+          "bars": 8
+        },
+        {
+          "kind": "Lag",
+          "key": "low9",
+          "source": "low",
+          "bars": 9
+        },
+        {
+          "kind": "Lag",
+          "key": "low10",
+          "source": "low",
+          "bars": 10
+        },
+        {
+          "kind": "Lag",
+          "key": "low11",
+          "source": "low",
+          "bars": 11
+        },
+        {
+          "kind": "Lag",
+          "key": "low12",
+          "source": "low",
+          "bars": 12
+        },
+        {
+          "kind": "Lag",
+          "key": "low13",
+          "source": "low",
+          "bars": 13
+        }
+      ],
+      "outputs": [
+        "close",
+        "open",
+        "high",
+        "low",
+        "ma13",
+        "ma65",
+        "ma130",
+        "ma260",
+        "ma13_old",
+        "ma65_old",
+        "ma65_prior",
+        "ma130_old",
+        "atr",
+        "atr_old",
+        "previous_close",
+        "high1",
+        "high2",
+        "high3",
+        "high4",
+        "high5",
+        "high6",
+        "high7",
+        "high8",
+        "high9",
+        "high10",
+        "high11",
+        "high12",
+        "high13",
+        "low1",
+        "low2",
+        "low3",
+        "low4",
+        "low5",
+        "low6",
+        "low7",
+        "low8",
+        "low9",
+        "low10",
+        "low11",
+        "low12",
+        "low13"
+      ],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [],
+      "cycle_fields": [
+        {
+          "key": "bars",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "last",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "floor",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "goal",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "peak",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "atr",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "due",
+          "value_type": "bool",
+          "nullable": false
+        }
+      ]
+    },
+    "computation": "STATEFUL_STEP"
+  },
+  "C0068": {
+    "runtime_kind": "ACCOUNT_REPLAY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "LITE"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 261,
+    "entrypoint": "strategy:step",
+    "source_files": [
+      "strategy.py"
+    ],
+    "source_sha256": "d285baadd81a6051cbb806f97a4d7fc84e2deb0c483fcfe4a9ec995964926219",
+    "parameters_json": "{\"exit\":\"TARGET\",\"maximum\":130,\"mechanism\":\"DEEP_REPAIR\"}",
+    "dependencies": [],
+    "contract_version": 4,
+    "parameter_schema_json": "{\"exit\":{\"type\":\"string\"},\"maximum\":{\"type\":\"integer\"},\"mechanism\":{\"type\":\"string\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "feature_graph": {
+      "nodes": [
+        {
+          "kind": "RawField",
+          "key": "close",
+          "field": "Close"
+        },
+        {
+          "kind": "RawField",
+          "key": "open",
+          "field": "Open"
+        },
+        {
+          "kind": "RawField",
+          "key": "high",
+          "field": "High"
+        },
+        {
+          "kind": "RawField",
+          "key": "low",
+          "field": "Low"
+        },
+        {
+          "kind": "Mean",
+          "key": "ma13",
+          "source": "close",
+          "window": 13
+        },
+        {
+          "kind": "Mean",
+          "key": "ma65",
+          "source": "close",
+          "window": 65
+        },
+        {
+          "kind": "Mean",
+          "key": "ma130",
+          "source": "close",
+          "window": 130
+        },
+        {
+          "kind": "Mean",
+          "key": "ma260",
+          "source": "close",
+          "window": 260
+        },
+        {
+          "kind": "Lag",
+          "key": "ma13_old",
+          "source": "ma13",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "ma65_old",
+          "source": "ma65",
+          "bars": 13
+        },
+        {
+          "kind": "Lag",
+          "key": "ma65_prior",
+          "source": "ma65",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "ma130_old",
+          "source": "ma130",
+          "bars": 13
+        },
+        {
+          "kind": "TrueRange",
+          "key": "tr",
+          "high": "high",
+          "low": "low",
+          "close": "close"
+        },
+        {
+          "kind": "Mean",
+          "key": "atr",
+          "source": "tr",
+          "window": 13
+        },
+        {
+          "kind": "Lag",
+          "key": "atr_old",
+          "source": "atr",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_close",
+          "source": "close",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "high1",
+          "source": "high",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "high2",
+          "source": "high",
+          "bars": 2
+        },
+        {
+          "kind": "Lag",
+          "key": "high3",
+          "source": "high",
+          "bars": 3
+        },
+        {
+          "kind": "Lag",
+          "key": "high4",
+          "source": "high",
+          "bars": 4
+        },
+        {
+          "kind": "Lag",
+          "key": "high5",
+          "source": "high",
+          "bars": 5
+        },
+        {
+          "kind": "Lag",
+          "key": "high6",
+          "source": "high",
+          "bars": 6
+        },
+        {
+          "kind": "Lag",
+          "key": "high7",
+          "source": "high",
+          "bars": 7
+        },
+        {
+          "kind": "Lag",
+          "key": "high8",
+          "source": "high",
+          "bars": 8
+        },
+        {
+          "kind": "Lag",
+          "key": "high9",
+          "source": "high",
+          "bars": 9
+        },
+        {
+          "kind": "Lag",
+          "key": "high10",
+          "source": "high",
+          "bars": 10
+        },
+        {
+          "kind": "Lag",
+          "key": "high11",
+          "source": "high",
+          "bars": 11
+        },
+        {
+          "kind": "Lag",
+          "key": "high12",
+          "source": "high",
+          "bars": 12
+        },
+        {
+          "kind": "Lag",
+          "key": "high13",
+          "source": "high",
+          "bars": 13
+        },
+        {
+          "kind": "Lag",
+          "key": "low1",
+          "source": "low",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "low2",
+          "source": "low",
+          "bars": 2
+        },
+        {
+          "kind": "Lag",
+          "key": "low3",
+          "source": "low",
+          "bars": 3
+        },
+        {
+          "kind": "Lag",
+          "key": "low4",
+          "source": "low",
+          "bars": 4
+        },
+        {
+          "kind": "Lag",
+          "key": "low5",
+          "source": "low",
+          "bars": 5
+        },
+        {
+          "kind": "Lag",
+          "key": "low6",
+          "source": "low",
+          "bars": 6
+        },
+        {
+          "kind": "Lag",
+          "key": "low7",
+          "source": "low",
+          "bars": 7
+        },
+        {
+          "kind": "Lag",
+          "key": "low8",
+          "source": "low",
+          "bars": 8
+        },
+        {
+          "kind": "Lag",
+          "key": "low9",
+          "source": "low",
+          "bars": 9
+        },
+        {
+          "kind": "Lag",
+          "key": "low10",
+          "source": "low",
+          "bars": 10
+        },
+        {
+          "kind": "Lag",
+          "key": "low11",
+          "source": "low",
+          "bars": 11
+        },
+        {
+          "kind": "Lag",
+          "key": "low12",
+          "source": "low",
+          "bars": 12
+        },
+        {
+          "kind": "Lag",
+          "key": "low13",
+          "source": "low",
+          "bars": 13
+        }
+      ],
+      "outputs": [
+        "close",
+        "open",
+        "high",
+        "low",
+        "ma13",
+        "ma65",
+        "ma130",
+        "ma260",
+        "ma13_old",
+        "ma65_old",
+        "ma65_prior",
+        "ma130_old",
+        "atr",
+        "atr_old",
+        "previous_close",
+        "high1",
+        "high2",
+        "high3",
+        "high4",
+        "high5",
+        "high6",
+        "high7",
+        "high8",
+        "high9",
+        "high10",
+        "high11",
+        "high12",
+        "high13",
+        "low1",
+        "low2",
+        "low3",
+        "low4",
+        "low5",
+        "low6",
+        "low7",
+        "low8",
+        "low9",
+        "low10",
+        "low11",
+        "low12",
+        "low13"
+      ],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [],
+      "cycle_fields": [
+        {
+          "key": "bars",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "last",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "floor",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "goal",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "peak",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "atr",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "due",
+          "value_type": "bool",
+          "nullable": false
+        }
+      ]
+    },
+    "computation": "STATEFUL_STEP"
+  }
+}

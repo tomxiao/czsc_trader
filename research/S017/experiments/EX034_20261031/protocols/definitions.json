@@ -1,0 +1,2192 @@
+{
+  "C0065": {
+    "runtime_kind": "ACCOUNT_REPLAY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "LITE"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 261,
+    "entrypoint": "strategy:step",
+    "source_files": [
+      "strategy.py"
+    ],
+    "source_sha256": "e783e59b6cdf57e3e38c6d7138d93a2902f268b5a0765fbdcaae14d8579723a6",
+    "parameters_json": "{\"exit\":\"TARGET\",\"maximum\":130,\"mechanism\":\"UP_PULLBACK\"}",
+    "dependencies": [],
+    "contract_version": 4,
+    "parameter_schema_json": "{\"exit\":{\"type\":\"string\"},\"maximum\":{\"type\":\"integer\"},\"mechanism\":{\"type\":\"string\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "feature_graph": {
+      "nodes": [
+        {
+          "kind": "RawField",
+          "key": "close",
+          "field": "Close"
+        },
+        {
+          "kind": "RawField",
+          "key": "open",
+          "field": "Open"
+        },
+        {
+          "kind": "RawField",
+          "key": "high",
+          "field": "High"
+        },
+        {
+          "kind": "RawField",
+          "key": "low",
+          "field": "Low"
+        },
+        {
+          "kind": "Mean",
+          "key": "ma13",
+          "source": "close",
+          "window": 13
+        },
+        {
+          "kind": "Mean",
+          "key": "ma65",
+          "source": "close",
+          "window": 65
+        },
+        {
+          "kind": "Mean",
+          "key": "ma130",
+          "source": "close",
+          "window": 130
+        },
+        {
+          "kind": "Mean",
+          "key": "ma260",
+          "source": "close",
+          "window": 260
+        },
+        {
+          "kind": "Lag",
+          "key": "ma13_old",
+          "source": "ma13",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "ma65_old",
+          "source": "ma65",
+          "bars": 13
+        },
+        {
+          "kind": "Lag",
+          "key": "ma130_old",
+          "source": "ma130",
+          "bars": 13
+        },
+        {
+          "kind": "TrueRange",
+          "key": "tr",
+          "high": "high",
+          "low": "low",
+          "close": "close"
+        },
+        {
+          "kind": "Mean",
+          "key": "atr",
+          "source": "tr",
+          "window": 13
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_close",
+          "source": "close",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "high1",
+          "source": "high",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "high2",
+          "source": "high",
+          "bars": 2
+        },
+        {
+          "kind": "Lag",
+          "key": "high3",
+          "source": "high",
+          "bars": 3
+        },
+        {
+          "kind": "Lag",
+          "key": "high4",
+          "source": "high",
+          "bars": 4
+        },
+        {
+          "kind": "Lag",
+          "key": "high5",
+          "source": "high",
+          "bars": 5
+        },
+        {
+          "kind": "Lag",
+          "key": "high6",
+          "source": "high",
+          "bars": 6
+        },
+        {
+          "kind": "Lag",
+          "key": "high7",
+          "source": "high",
+          "bars": 7
+        },
+        {
+          "kind": "Lag",
+          "key": "high8",
+          "source": "high",
+          "bars": 8
+        },
+        {
+          "kind": "Lag",
+          "key": "high9",
+          "source": "high",
+          "bars": 9
+        },
+        {
+          "kind": "Lag",
+          "key": "high10",
+          "source": "high",
+          "bars": 10
+        },
+        {
+          "kind": "Lag",
+          "key": "high11",
+          "source": "high",
+          "bars": 11
+        },
+        {
+          "kind": "Lag",
+          "key": "high12",
+          "source": "high",
+          "bars": 12
+        },
+        {
+          "kind": "Lag",
+          "key": "high13",
+          "source": "high",
+          "bars": 13
+        },
+        {
+          "kind": "Lag",
+          "key": "high14",
+          "source": "high",
+          "bars": 14
+        },
+        {
+          "kind": "Lag",
+          "key": "high15",
+          "source": "high",
+          "bars": 15
+        },
+        {
+          "kind": "Lag",
+          "key": "high16",
+          "source": "high",
+          "bars": 16
+        },
+        {
+          "kind": "Lag",
+          "key": "high17",
+          "source": "high",
+          "bars": 17
+        },
+        {
+          "kind": "Lag",
+          "key": "high18",
+          "source": "high",
+          "bars": 18
+        },
+        {
+          "kind": "Lag",
+          "key": "high19",
+          "source": "high",
+          "bars": 19
+        },
+        {
+          "kind": "Lag",
+          "key": "high20",
+          "source": "high",
+          "bars": 20
+        },
+        {
+          "kind": "Lag",
+          "key": "high21",
+          "source": "high",
+          "bars": 21
+        },
+        {
+          "kind": "Lag",
+          "key": "high22",
+          "source": "high",
+          "bars": 22
+        },
+        {
+          "kind": "Lag",
+          "key": "high23",
+          "source": "high",
+          "bars": 23
+        },
+        {
+          "kind": "Lag",
+          "key": "high24",
+          "source": "high",
+          "bars": 24
+        },
+        {
+          "kind": "Lag",
+          "key": "high25",
+          "source": "high",
+          "bars": 25
+        },
+        {
+          "kind": "Lag",
+          "key": "high26",
+          "source": "high",
+          "bars": 26
+        },
+        {
+          "kind": "Lag",
+          "key": "high27",
+          "source": "high",
+          "bars": 27
+        },
+        {
+          "kind": "Lag",
+          "key": "high28",
+          "source": "high",
+          "bars": 28
+        },
+        {
+          "kind": "Lag",
+          "key": "high29",
+          "source": "high",
+          "bars": 29
+        },
+        {
+          "kind": "Lag",
+          "key": "high30",
+          "source": "high",
+          "bars": 30
+        },
+        {
+          "kind": "Lag",
+          "key": "high31",
+          "source": "high",
+          "bars": 31
+        },
+        {
+          "kind": "Lag",
+          "key": "high32",
+          "source": "high",
+          "bars": 32
+        },
+        {
+          "kind": "Lag",
+          "key": "high33",
+          "source": "high",
+          "bars": 33
+        },
+        {
+          "kind": "Lag",
+          "key": "high34",
+          "source": "high",
+          "bars": 34
+        },
+        {
+          "kind": "Lag",
+          "key": "high35",
+          "source": "high",
+          "bars": 35
+        },
+        {
+          "kind": "Lag",
+          "key": "high36",
+          "source": "high",
+          "bars": 36
+        },
+        {
+          "kind": "Lag",
+          "key": "high37",
+          "source": "high",
+          "bars": 37
+        },
+        {
+          "kind": "Lag",
+          "key": "high38",
+          "source": "high",
+          "bars": 38
+        },
+        {
+          "kind": "Lag",
+          "key": "high39",
+          "source": "high",
+          "bars": 39
+        },
+        {
+          "kind": "Lag",
+          "key": "high40",
+          "source": "high",
+          "bars": 40
+        },
+        {
+          "kind": "Lag",
+          "key": "high41",
+          "source": "high",
+          "bars": 41
+        },
+        {
+          "kind": "Lag",
+          "key": "high42",
+          "source": "high",
+          "bars": 42
+        },
+        {
+          "kind": "Lag",
+          "key": "high43",
+          "source": "high",
+          "bars": 43
+        },
+        {
+          "kind": "Lag",
+          "key": "high44",
+          "source": "high",
+          "bars": 44
+        },
+        {
+          "kind": "Lag",
+          "key": "high45",
+          "source": "high",
+          "bars": 45
+        },
+        {
+          "kind": "Lag",
+          "key": "high46",
+          "source": "high",
+          "bars": 46
+        },
+        {
+          "kind": "Lag",
+          "key": "high47",
+          "source": "high",
+          "bars": 47
+        },
+        {
+          "kind": "Lag",
+          "key": "high48",
+          "source": "high",
+          "bars": 48
+        },
+        {
+          "kind": "Lag",
+          "key": "high49",
+          "source": "high",
+          "bars": 49
+        },
+        {
+          "kind": "Lag",
+          "key": "high50",
+          "source": "high",
+          "bars": 50
+        },
+        {
+          "kind": "Lag",
+          "key": "high51",
+          "source": "high",
+          "bars": 51
+        },
+        {
+          "kind": "Lag",
+          "key": "high52",
+          "source": "high",
+          "bars": 52
+        },
+        {
+          "kind": "Lag",
+          "key": "high53",
+          "source": "high",
+          "bars": 53
+        },
+        {
+          "kind": "Lag",
+          "key": "high54",
+          "source": "high",
+          "bars": 54
+        },
+        {
+          "kind": "Lag",
+          "key": "high55",
+          "source": "high",
+          "bars": 55
+        },
+        {
+          "kind": "Lag",
+          "key": "high56",
+          "source": "high",
+          "bars": 56
+        },
+        {
+          "kind": "Lag",
+          "key": "high57",
+          "source": "high",
+          "bars": 57
+        },
+        {
+          "kind": "Lag",
+          "key": "high58",
+          "source": "high",
+          "bars": 58
+        },
+        {
+          "kind": "Lag",
+          "key": "high59",
+          "source": "high",
+          "bars": 59
+        },
+        {
+          "kind": "Lag",
+          "key": "high60",
+          "source": "high",
+          "bars": 60
+        },
+        {
+          "kind": "Lag",
+          "key": "high61",
+          "source": "high",
+          "bars": 61
+        },
+        {
+          "kind": "Lag",
+          "key": "high62",
+          "source": "high",
+          "bars": 62
+        },
+        {
+          "kind": "Lag",
+          "key": "high63",
+          "source": "high",
+          "bars": 63
+        },
+        {
+          "kind": "Lag",
+          "key": "high64",
+          "source": "high",
+          "bars": 64
+        },
+        {
+          "kind": "Lag",
+          "key": "high65",
+          "source": "high",
+          "bars": 65
+        },
+        {
+          "kind": "Lag",
+          "key": "low1",
+          "source": "low",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "low2",
+          "source": "low",
+          "bars": 2
+        },
+        {
+          "kind": "Lag",
+          "key": "low3",
+          "source": "low",
+          "bars": 3
+        },
+        {
+          "kind": "Lag",
+          "key": "low4",
+          "source": "low",
+          "bars": 4
+        },
+        {
+          "kind": "Lag",
+          "key": "low5",
+          "source": "low",
+          "bars": 5
+        },
+        {
+          "kind": "Lag",
+          "key": "low6",
+          "source": "low",
+          "bars": 6
+        },
+        {
+          "kind": "Lag",
+          "key": "low7",
+          "source": "low",
+          "bars": 7
+        },
+        {
+          "kind": "Lag",
+          "key": "low8",
+          "source": "low",
+          "bars": 8
+        },
+        {
+          "kind": "Lag",
+          "key": "low9",
+          "source": "low",
+          "bars": 9
+        },
+        {
+          "kind": "Lag",
+          "key": "low10",
+          "source": "low",
+          "bars": 10
+        },
+        {
+          "kind": "Lag",
+          "key": "low11",
+          "source": "low",
+          "bars": 11
+        },
+        {
+          "kind": "Lag",
+          "key": "low12",
+          "source": "low",
+          "bars": 12
+        },
+        {
+          "kind": "Lag",
+          "key": "low13",
+          "source": "low",
+          "bars": 13
+        },
+        {
+          "kind": "Lag",
+          "key": "low14",
+          "source": "low",
+          "bars": 14
+        },
+        {
+          "kind": "Lag",
+          "key": "low15",
+          "source": "low",
+          "bars": 15
+        },
+        {
+          "kind": "Lag",
+          "key": "low16",
+          "source": "low",
+          "bars": 16
+        },
+        {
+          "kind": "Lag",
+          "key": "low17",
+          "source": "low",
+          "bars": 17
+        },
+        {
+          "kind": "Lag",
+          "key": "low18",
+          "source": "low",
+          "bars": 18
+        },
+        {
+          "kind": "Lag",
+          "key": "low19",
+          "source": "low",
+          "bars": 19
+        },
+        {
+          "kind": "Lag",
+          "key": "low20",
+          "source": "low",
+          "bars": 20
+        },
+        {
+          "kind": "Lag",
+          "key": "low21",
+          "source": "low",
+          "bars": 21
+        },
+        {
+          "kind": "Lag",
+          "key": "low22",
+          "source": "low",
+          "bars": 22
+        },
+        {
+          "kind": "Lag",
+          "key": "low23",
+          "source": "low",
+          "bars": 23
+        },
+        {
+          "kind": "Lag",
+          "key": "low24",
+          "source": "low",
+          "bars": 24
+        },
+        {
+          "kind": "Lag",
+          "key": "low25",
+          "source": "low",
+          "bars": 25
+        },
+        {
+          "kind": "Lag",
+          "key": "low26",
+          "source": "low",
+          "bars": 26
+        },
+        {
+          "kind": "Lag",
+          "key": "low27",
+          "source": "low",
+          "bars": 27
+        },
+        {
+          "kind": "Lag",
+          "key": "low28",
+          "source": "low",
+          "bars": 28
+        },
+        {
+          "kind": "Lag",
+          "key": "low29",
+          "source": "low",
+          "bars": 29
+        },
+        {
+          "kind": "Lag",
+          "key": "low30",
+          "source": "low",
+          "bars": 30
+        },
+        {
+          "kind": "Lag",
+          "key": "low31",
+          "source": "low",
+          "bars": 31
+        },
+        {
+          "kind": "Lag",
+          "key": "low32",
+          "source": "low",
+          "bars": 32
+        },
+        {
+          "kind": "Lag",
+          "key": "low33",
+          "source": "low",
+          "bars": 33
+        },
+        {
+          "kind": "Lag",
+          "key": "low34",
+          "source": "low",
+          "bars": 34
+        },
+        {
+          "kind": "Lag",
+          "key": "low35",
+          "source": "low",
+          "bars": 35
+        },
+        {
+          "kind": "Lag",
+          "key": "low36",
+          "source": "low",
+          "bars": 36
+        },
+        {
+          "kind": "Lag",
+          "key": "low37",
+          "source": "low",
+          "bars": 37
+        },
+        {
+          "kind": "Lag",
+          "key": "low38",
+          "source": "low",
+          "bars": 38
+        },
+        {
+          "kind": "Lag",
+          "key": "low39",
+          "source": "low",
+          "bars": 39
+        },
+        {
+          "kind": "Lag",
+          "key": "low40",
+          "source": "low",
+          "bars": 40
+        },
+        {
+          "kind": "Lag",
+          "key": "low41",
+          "source": "low",
+          "bars": 41
+        },
+        {
+          "kind": "Lag",
+          "key": "low42",
+          "source": "low",
+          "bars": 42
+        },
+        {
+          "kind": "Lag",
+          "key": "low43",
+          "source": "low",
+          "bars": 43
+        },
+        {
+          "kind": "Lag",
+          "key": "low44",
+          "source": "low",
+          "bars": 44
+        },
+        {
+          "kind": "Lag",
+          "key": "low45",
+          "source": "low",
+          "bars": 45
+        },
+        {
+          "kind": "Lag",
+          "key": "low46",
+          "source": "low",
+          "bars": 46
+        },
+        {
+          "kind": "Lag",
+          "key": "low47",
+          "source": "low",
+          "bars": 47
+        },
+        {
+          "kind": "Lag",
+          "key": "low48",
+          "source": "low",
+          "bars": 48
+        },
+        {
+          "kind": "Lag",
+          "key": "low49",
+          "source": "low",
+          "bars": 49
+        },
+        {
+          "kind": "Lag",
+          "key": "low50",
+          "source": "low",
+          "bars": 50
+        },
+        {
+          "kind": "Lag",
+          "key": "low51",
+          "source": "low",
+          "bars": 51
+        },
+        {
+          "kind": "Lag",
+          "key": "low52",
+          "source": "low",
+          "bars": 52
+        },
+        {
+          "kind": "Lag",
+          "key": "low53",
+          "source": "low",
+          "bars": 53
+        },
+        {
+          "kind": "Lag",
+          "key": "low54",
+          "source": "low",
+          "bars": 54
+        },
+        {
+          "kind": "Lag",
+          "key": "low55",
+          "source": "low",
+          "bars": 55
+        },
+        {
+          "kind": "Lag",
+          "key": "low56",
+          "source": "low",
+          "bars": 56
+        },
+        {
+          "kind": "Lag",
+          "key": "low57",
+          "source": "low",
+          "bars": 57
+        },
+        {
+          "kind": "Lag",
+          "key": "low58",
+          "source": "low",
+          "bars": 58
+        },
+        {
+          "kind": "Lag",
+          "key": "low59",
+          "source": "low",
+          "bars": 59
+        },
+        {
+          "kind": "Lag",
+          "key": "low60",
+          "source": "low",
+          "bars": 60
+        },
+        {
+          "kind": "Lag",
+          "key": "low61",
+          "source": "low",
+          "bars": 61
+        },
+        {
+          "kind": "Lag",
+          "key": "low62",
+          "source": "low",
+          "bars": 62
+        },
+        {
+          "kind": "Lag",
+          "key": "low63",
+          "source": "low",
+          "bars": 63
+        },
+        {
+          "kind": "Lag",
+          "key": "low64",
+          "source": "low",
+          "bars": 64
+        },
+        {
+          "kind": "Lag",
+          "key": "low65",
+          "source": "low",
+          "bars": 65
+        }
+      ],
+      "outputs": [
+        "close",
+        "open",
+        "high",
+        "low",
+        "ma13",
+        "ma65",
+        "ma130",
+        "ma260",
+        "ma13_old",
+        "ma65_old",
+        "ma130_old",
+        "atr",
+        "previous_close",
+        "high1",
+        "high2",
+        "high3",
+        "high4",
+        "high5",
+        "high6",
+        "high7",
+        "high8",
+        "high9",
+        "high10",
+        "high11",
+        "high12",
+        "high13",
+        "high14",
+        "high15",
+        "high16",
+        "high17",
+        "high18",
+        "high19",
+        "high20",
+        "high21",
+        "high22",
+        "high23",
+        "high24",
+        "high25",
+        "high26",
+        "high27",
+        "high28",
+        "high29",
+        "high30",
+        "high31",
+        "high32",
+        "high33",
+        "high34",
+        "high35",
+        "high36",
+        "high37",
+        "high38",
+        "high39",
+        "high40",
+        "high41",
+        "high42",
+        "high43",
+        "high44",
+        "high45",
+        "high46",
+        "high47",
+        "high48",
+        "high49",
+        "high50",
+        "high51",
+        "high52",
+        "high53",
+        "high54",
+        "high55",
+        "high56",
+        "high57",
+        "high58",
+        "high59",
+        "high60",
+        "high61",
+        "high62",
+        "high63",
+        "high64",
+        "high65",
+        "low1",
+        "low2",
+        "low3",
+        "low4",
+        "low5",
+        "low6",
+        "low7",
+        "low8",
+        "low9",
+        "low10",
+        "low11",
+        "low12",
+        "low13",
+        "low14",
+        "low15",
+        "low16",
+        "low17",
+        "low18",
+        "low19",
+        "low20",
+        "low21",
+        "low22",
+        "low23",
+        "low24",
+        "low25",
+        "low26",
+        "low27",
+        "low28",
+        "low29",
+        "low30",
+        "low31",
+        "low32",
+        "low33",
+        "low34",
+        "low35",
+        "low36",
+        "low37",
+        "low38",
+        "low39",
+        "low40",
+        "low41",
+        "low42",
+        "low43",
+        "low44",
+        "low45",
+        "low46",
+        "low47",
+        "low48",
+        "low49",
+        "low50",
+        "low51",
+        "low52",
+        "low53",
+        "low54",
+        "low55",
+        "low56",
+        "low57",
+        "low58",
+        "low59",
+        "low60",
+        "low61",
+        "low62",
+        "low63",
+        "low64",
+        "low65"
+      ],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [],
+      "cycle_fields": [
+        {
+          "key": "bars",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "last",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "floor",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "goal",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "peak",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "atr",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "due",
+          "value_type": "bool",
+          "nullable": false
+        }
+      ]
+    },
+    "computation": "STATEFUL_STEP"
+  },
+  "C0066": {
+    "runtime_kind": "ACCOUNT_REPLAY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "LITE"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 261,
+    "entrypoint": "strategy:step",
+    "source_files": [
+      "strategy.py"
+    ],
+    "source_sha256": "e783e59b6cdf57e3e38c6d7138d93a2902f268b5a0765fbdcaae14d8579723a6",
+    "parameters_json": "{\"exit\":\"STRUCTURE\",\"maximum\":130,\"mechanism\":\"UP_PULLBACK\"}",
+    "dependencies": [],
+    "contract_version": 4,
+    "parameter_schema_json": "{\"exit\":{\"type\":\"string\"},\"maximum\":{\"type\":\"integer\"},\"mechanism\":{\"type\":\"string\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "feature_graph": {
+      "nodes": [
+        {
+          "kind": "RawField",
+          "key": "close",
+          "field": "Close"
+        },
+        {
+          "kind": "RawField",
+          "key": "open",
+          "field": "Open"
+        },
+        {
+          "kind": "RawField",
+          "key": "high",
+          "field": "High"
+        },
+        {
+          "kind": "RawField",
+          "key": "low",
+          "field": "Low"
+        },
+        {
+          "kind": "Mean",
+          "key": "ma13",
+          "source": "close",
+          "window": 13
+        },
+        {
+          "kind": "Mean",
+          "key": "ma65",
+          "source": "close",
+          "window": 65
+        },
+        {
+          "kind": "Mean",
+          "key": "ma130",
+          "source": "close",
+          "window": 130
+        },
+        {
+          "kind": "Mean",
+          "key": "ma260",
+          "source": "close",
+          "window": 260
+        },
+        {
+          "kind": "Lag",
+          "key": "ma13_old",
+          "source": "ma13",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "ma65_old",
+          "source": "ma65",
+          "bars": 13
+        },
+        {
+          "kind": "Lag",
+          "key": "ma130_old",
+          "source": "ma130",
+          "bars": 13
+        },
+        {
+          "kind": "TrueRange",
+          "key": "tr",
+          "high": "high",
+          "low": "low",
+          "close": "close"
+        },
+        {
+          "kind": "Mean",
+          "key": "atr",
+          "source": "tr",
+          "window": 13
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_close",
+          "source": "close",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "high1",
+          "source": "high",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "high2",
+          "source": "high",
+          "bars": 2
+        },
+        {
+          "kind": "Lag",
+          "key": "high3",
+          "source": "high",
+          "bars": 3
+        },
+        {
+          "kind": "Lag",
+          "key": "high4",
+          "source": "high",
+          "bars": 4
+        },
+        {
+          "kind": "Lag",
+          "key": "high5",
+          "source": "high",
+          "bars": 5
+        },
+        {
+          "kind": "Lag",
+          "key": "high6",
+          "source": "high",
+          "bars": 6
+        },
+        {
+          "kind": "Lag",
+          "key": "high7",
+          "source": "high",
+          "bars": 7
+        },
+        {
+          "kind": "Lag",
+          "key": "high8",
+          "source": "high",
+          "bars": 8
+        },
+        {
+          "kind": "Lag",
+          "key": "high9",
+          "source": "high",
+          "bars": 9
+        },
+        {
+          "kind": "Lag",
+          "key": "high10",
+          "source": "high",
+          "bars": 10
+        },
+        {
+          "kind": "Lag",
+          "key": "high11",
+          "source": "high",
+          "bars": 11
+        },
+        {
+          "kind": "Lag",
+          "key": "high12",
+          "source": "high",
+          "bars": 12
+        },
+        {
+          "kind": "Lag",
+          "key": "high13",
+          "source": "high",
+          "bars": 13
+        },
+        {
+          "kind": "Lag",
+          "key": "high14",
+          "source": "high",
+          "bars": 14
+        },
+        {
+          "kind": "Lag",
+          "key": "high15",
+          "source": "high",
+          "bars": 15
+        },
+        {
+          "kind": "Lag",
+          "key": "high16",
+          "source": "high",
+          "bars": 16
+        },
+        {
+          "kind": "Lag",
+          "key": "high17",
+          "source": "high",
+          "bars": 17
+        },
+        {
+          "kind": "Lag",
+          "key": "high18",
+          "source": "high",
+          "bars": 18
+        },
+        {
+          "kind": "Lag",
+          "key": "high19",
+          "source": "high",
+          "bars": 19
+        },
+        {
+          "kind": "Lag",
+          "key": "high20",
+          "source": "high",
+          "bars": 20
+        },
+        {
+          "kind": "Lag",
+          "key": "high21",
+          "source": "high",
+          "bars": 21
+        },
+        {
+          "kind": "Lag",
+          "key": "high22",
+          "source": "high",
+          "bars": 22
+        },
+        {
+          "kind": "Lag",
+          "key": "high23",
+          "source": "high",
+          "bars": 23
+        },
+        {
+          "kind": "Lag",
+          "key": "high24",
+          "source": "high",
+          "bars": 24
+        },
+        {
+          "kind": "Lag",
+          "key": "high25",
+          "source": "high",
+          "bars": 25
+        },
+        {
+          "kind": "Lag",
+          "key": "high26",
+          "source": "high",
+          "bars": 26
+        },
+        {
+          "kind": "Lag",
+          "key": "high27",
+          "source": "high",
+          "bars": 27
+        },
+        {
+          "kind": "Lag",
+          "key": "high28",
+          "source": "high",
+          "bars": 28
+        },
+        {
+          "kind": "Lag",
+          "key": "high29",
+          "source": "high",
+          "bars": 29
+        },
+        {
+          "kind": "Lag",
+          "key": "high30",
+          "source": "high",
+          "bars": 30
+        },
+        {
+          "kind": "Lag",
+          "key": "high31",
+          "source": "high",
+          "bars": 31
+        },
+        {
+          "kind": "Lag",
+          "key": "high32",
+          "source": "high",
+          "bars": 32
+        },
+        {
+          "kind": "Lag",
+          "key": "high33",
+          "source": "high",
+          "bars": 33
+        },
+        {
+          "kind": "Lag",
+          "key": "high34",
+          "source": "high",
+          "bars": 34
+        },
+        {
+          "kind": "Lag",
+          "key": "high35",
+          "source": "high",
+          "bars": 35
+        },
+        {
+          "kind": "Lag",
+          "key": "high36",
+          "source": "high",
+          "bars": 36
+        },
+        {
+          "kind": "Lag",
+          "key": "high37",
+          "source": "high",
+          "bars": 37
+        },
+        {
+          "kind": "Lag",
+          "key": "high38",
+          "source": "high",
+          "bars": 38
+        },
+        {
+          "kind": "Lag",
+          "key": "high39",
+          "source": "high",
+          "bars": 39
+        },
+        {
+          "kind": "Lag",
+          "key": "high40",
+          "source": "high",
+          "bars": 40
+        },
+        {
+          "kind": "Lag",
+          "key": "high41",
+          "source": "high",
+          "bars": 41
+        },
+        {
+          "kind": "Lag",
+          "key": "high42",
+          "source": "high",
+          "bars": 42
+        },
+        {
+          "kind": "Lag",
+          "key": "high43",
+          "source": "high",
+          "bars": 43
+        },
+        {
+          "kind": "Lag",
+          "key": "high44",
+          "source": "high",
+          "bars": 44
+        },
+        {
+          "kind": "Lag",
+          "key": "high45",
+          "source": "high",
+          "bars": 45
+        },
+        {
+          "kind": "Lag",
+          "key": "high46",
+          "source": "high",
+          "bars": 46
+        },
+        {
+          "kind": "Lag",
+          "key": "high47",
+          "source": "high",
+          "bars": 47
+        },
+        {
+          "kind": "Lag",
+          "key": "high48",
+          "source": "high",
+          "bars": 48
+        },
+        {
+          "kind": "Lag",
+          "key": "high49",
+          "source": "high",
+          "bars": 49
+        },
+        {
+          "kind": "Lag",
+          "key": "high50",
+          "source": "high",
+          "bars": 50
+        },
+        {
+          "kind": "Lag",
+          "key": "high51",
+          "source": "high",
+          "bars": 51
+        },
+        {
+          "kind": "Lag",
+          "key": "high52",
+          "source": "high",
+          "bars": 52
+        },
+        {
+          "kind": "Lag",
+          "key": "high53",
+          "source": "high",
+          "bars": 53
+        },
+        {
+          "kind": "Lag",
+          "key": "high54",
+          "source": "high",
+          "bars": 54
+        },
+        {
+          "kind": "Lag",
+          "key": "high55",
+          "source": "high",
+          "bars": 55
+        },
+        {
+          "kind": "Lag",
+          "key": "high56",
+          "source": "high",
+          "bars": 56
+        },
+        {
+          "kind": "Lag",
+          "key": "high57",
+          "source": "high",
+          "bars": 57
+        },
+        {
+          "kind": "Lag",
+          "key": "high58",
+          "source": "high",
+          "bars": 58
+        },
+        {
+          "kind": "Lag",
+          "key": "high59",
+          "source": "high",
+          "bars": 59
+        },
+        {
+          "kind": "Lag",
+          "key": "high60",
+          "source": "high",
+          "bars": 60
+        },
+        {
+          "kind": "Lag",
+          "key": "high61",
+          "source": "high",
+          "bars": 61
+        },
+        {
+          "kind": "Lag",
+          "key": "high62",
+          "source": "high",
+          "bars": 62
+        },
+        {
+          "kind": "Lag",
+          "key": "high63",
+          "source": "high",
+          "bars": 63
+        },
+        {
+          "kind": "Lag",
+          "key": "high64",
+          "source": "high",
+          "bars": 64
+        },
+        {
+          "kind": "Lag",
+          "key": "high65",
+          "source": "high",
+          "bars": 65
+        },
+        {
+          "kind": "Lag",
+          "key": "low1",
+          "source": "low",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "low2",
+          "source": "low",
+          "bars": 2
+        },
+        {
+          "kind": "Lag",
+          "key": "low3",
+          "source": "low",
+          "bars": 3
+        },
+        {
+          "kind": "Lag",
+          "key": "low4",
+          "source": "low",
+          "bars": 4
+        },
+        {
+          "kind": "Lag",
+          "key": "low5",
+          "source": "low",
+          "bars": 5
+        },
+        {
+          "kind": "Lag",
+          "key": "low6",
+          "source": "low",
+          "bars": 6
+        },
+        {
+          "kind": "Lag",
+          "key": "low7",
+          "source": "low",
+          "bars": 7
+        },
+        {
+          "kind": "Lag",
+          "key": "low8",
+          "source": "low",
+          "bars": 8
+        },
+        {
+          "kind": "Lag",
+          "key": "low9",
+          "source": "low",
+          "bars": 9
+        },
+        {
+          "kind": "Lag",
+          "key": "low10",
+          "source": "low",
+          "bars": 10
+        },
+        {
+          "kind": "Lag",
+          "key": "low11",
+          "source": "low",
+          "bars": 11
+        },
+        {
+          "kind": "Lag",
+          "key": "low12",
+          "source": "low",
+          "bars": 12
+        },
+        {
+          "kind": "Lag",
+          "key": "low13",
+          "source": "low",
+          "bars": 13
+        },
+        {
+          "kind": "Lag",
+          "key": "low14",
+          "source": "low",
+          "bars": 14
+        },
+        {
+          "kind": "Lag",
+          "key": "low15",
+          "source": "low",
+          "bars": 15
+        },
+        {
+          "kind": "Lag",
+          "key": "low16",
+          "source": "low",
+          "bars": 16
+        },
+        {
+          "kind": "Lag",
+          "key": "low17",
+          "source": "low",
+          "bars": 17
+        },
+        {
+          "kind": "Lag",
+          "key": "low18",
+          "source": "low",
+          "bars": 18
+        },
+        {
+          "kind": "Lag",
+          "key": "low19",
+          "source": "low",
+          "bars": 19
+        },
+        {
+          "kind": "Lag",
+          "key": "low20",
+          "source": "low",
+          "bars": 20
+        },
+        {
+          "kind": "Lag",
+          "key": "low21",
+          "source": "low",
+          "bars": 21
+        },
+        {
+          "kind": "Lag",
+          "key": "low22",
+          "source": "low",
+          "bars": 22
+        },
+        {
+          "kind": "Lag",
+          "key": "low23",
+          "source": "low",
+          "bars": 23
+        },
+        {
+          "kind": "Lag",
+          "key": "low24",
+          "source": "low",
+          "bars": 24
+        },
+        {
+          "kind": "Lag",
+          "key": "low25",
+          "source": "low",
+          "bars": 25
+        },
+        {
+          "kind": "Lag",
+          "key": "low26",
+          "source": "low",
+          "bars": 26
+        },
+        {
+          "kind": "Lag",
+          "key": "low27",
+          "source": "low",
+          "bars": 27
+        },
+        {
+          "kind": "Lag",
+          "key": "low28",
+          "source": "low",
+          "bars": 28
+        },
+        {
+          "kind": "Lag",
+          "key": "low29",
+          "source": "low",
+          "bars": 29
+        },
+        {
+          "kind": "Lag",
+          "key": "low30",
+          "source": "low",
+          "bars": 30
+        },
+        {
+          "kind": "Lag",
+          "key": "low31",
+          "source": "low",
+          "bars": 31
+        },
+        {
+          "kind": "Lag",
+          "key": "low32",
+          "source": "low",
+          "bars": 32
+        },
+        {
+          "kind": "Lag",
+          "key": "low33",
+          "source": "low",
+          "bars": 33
+        },
+        {
+          "kind": "Lag",
+          "key": "low34",
+          "source": "low",
+          "bars": 34
+        },
+        {
+          "kind": "Lag",
+          "key": "low35",
+          "source": "low",
+          "bars": 35
+        },
+        {
+          "kind": "Lag",
+          "key": "low36",
+          "source": "low",
+          "bars": 36
+        },
+        {
+          "kind": "Lag",
+          "key": "low37",
+          "source": "low",
+          "bars": 37
+        },
+        {
+          "kind": "Lag",
+          "key": "low38",
+          "source": "low",
+          "bars": 38
+        },
+        {
+          "kind": "Lag",
+          "key": "low39",
+          "source": "low",
+          "bars": 39
+        },
+        {
+          "kind": "Lag",
+          "key": "low40",
+          "source": "low",
+          "bars": 40
+        },
+        {
+          "kind": "Lag",
+          "key": "low41",
+          "source": "low",
+          "bars": 41
+        },
+        {
+          "kind": "Lag",
+          "key": "low42",
+          "source": "low",
+          "bars": 42
+        },
+        {
+          "kind": "Lag",
+          "key": "low43",
+          "source": "low",
+          "bars": 43
+        },
+        {
+          "kind": "Lag",
+          "key": "low44",
+          "source": "low",
+          "bars": 44
+        },
+        {
+          "kind": "Lag",
+          "key": "low45",
+          "source": "low",
+          "bars": 45
+        },
+        {
+          "kind": "Lag",
+          "key": "low46",
+          "source": "low",
+          "bars": 46
+        },
+        {
+          "kind": "Lag",
+          "key": "low47",
+          "source": "low",
+          "bars": 47
+        },
+        {
+          "kind": "Lag",
+          "key": "low48",
+          "source": "low",
+          "bars": 48
+        },
+        {
+          "kind": "Lag",
+          "key": "low49",
+          "source": "low",
+          "bars": 49
+        },
+        {
+          "kind": "Lag",
+          "key": "low50",
+          "source": "low",
+          "bars": 50
+        },
+        {
+          "kind": "Lag",
+          "key": "low51",
+          "source": "low",
+          "bars": 51
+        },
+        {
+          "kind": "Lag",
+          "key": "low52",
+          "source": "low",
+          "bars": 52
+        },
+        {
+          "kind": "Lag",
+          "key": "low53",
+          "source": "low",
+          "bars": 53
+        },
+        {
+          "kind": "Lag",
+          "key": "low54",
+          "source": "low",
+          "bars": 54
+        },
+        {
+          "kind": "Lag",
+          "key": "low55",
+          "source": "low",
+          "bars": 55
+        },
+        {
+          "kind": "Lag",
+          "key": "low56",
+          "source": "low",
+          "bars": 56
+        },
+        {
+          "kind": "Lag",
+          "key": "low57",
+          "source": "low",
+          "bars": 57
+        },
+        {
+          "kind": "Lag",
+          "key": "low58",
+          "source": "low",
+          "bars": 58
+        },
+        {
+          "kind": "Lag",
+          "key": "low59",
+          "source": "low",
+          "bars": 59
+        },
+        {
+          "kind": "Lag",
+          "key": "low60",
+          "source": "low",
+          "bars": 60
+        },
+        {
+          "kind": "Lag",
+          "key": "low61",
+          "source": "low",
+          "bars": 61
+        },
+        {
+          "kind": "Lag",
+          "key": "low62",
+          "source": "low",
+          "bars": 62
+        },
+        {
+          "kind": "Lag",
+          "key": "low63",
+          "source": "low",
+          "bars": 63
+        },
+        {
+          "kind": "Lag",
+          "key": "low64",
+          "source": "low",
+          "bars": 64
+        },
+        {
+          "kind": "Lag",
+          "key": "low65",
+          "source": "low",
+          "bars": 65
+        }
+      ],
+      "outputs": [
+        "close",
+        "open",
+        "high",
+        "low",
+        "ma13",
+        "ma65",
+        "ma130",
+        "ma260",
+        "ma13_old",
+        "ma65_old",
+        "ma130_old",
+        "atr",
+        "previous_close",
+        "high1",
+        "high2",
+        "high3",
+        "high4",
+        "high5",
+        "high6",
+        "high7",
+        "high8",
+        "high9",
+        "high10",
+        "high11",
+        "high12",
+        "high13",
+        "high14",
+        "high15",
+        "high16",
+        "high17",
+        "high18",
+        "high19",
+        "high20",
+        "high21",
+        "high22",
+        "high23",
+        "high24",
+        "high25",
+        "high26",
+        "high27",
+        "high28",
+        "high29",
+        "high30",
+        "high31",
+        "high32",
+        "high33",
+        "high34",
+        "high35",
+        "high36",
+        "high37",
+        "high38",
+        "high39",
+        "high40",
+        "high41",
+        "high42",
+        "high43",
+        "high44",
+        "high45",
+        "high46",
+        "high47",
+        "high48",
+        "high49",
+        "high50",
+        "high51",
+        "high52",
+        "high53",
+        "high54",
+        "high55",
+        "high56",
+        "high57",
+        "high58",
+        "high59",
+        "high60",
+        "high61",
+        "high62",
+        "high63",
+        "high64",
+        "high65",
+        "low1",
+        "low2",
+        "low3",
+        "low4",
+        "low5",
+        "low6",
+        "low7",
+        "low8",
+        "low9",
+        "low10",
+        "low11",
+        "low12",
+        "low13",
+        "low14",
+        "low15",
+        "low16",
+        "low17",
+        "low18",
+        "low19",
+        "low20",
+        "low21",
+        "low22",
+        "low23",
+        "low24",
+        "low25",
+        "low26",
+        "low27",
+        "low28",
+        "low29",
+        "low30",
+        "low31",
+        "low32",
+        "low33",
+        "low34",
+        "low35",
+        "low36",
+        "low37",
+        "low38",
+        "low39",
+        "low40",
+        "low41",
+        "low42",
+        "low43",
+        "low44",
+        "low45",
+        "low46",
+        "low47",
+        "low48",
+        "low49",
+        "low50",
+        "low51",
+        "low52",
+        "low53",
+        "low54",
+        "low55",
+        "low56",
+        "low57",
+        "low58",
+        "low59",
+        "low60",
+        "low61",
+        "low62",
+        "low63",
+        "low64",
+        "low65"
+      ],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [],
+      "cycle_fields": [
+        {
+          "key": "bars",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "last",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "floor",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "goal",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "peak",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "atr",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "due",
+          "value_type": "bool",
+          "nullable": false
+        }
+      ]
+    },
+    "computation": "STATEFUL_STEP"
+  }
+}
