@@ -157,7 +157,7 @@ def load_candidate(context: RepositoryContext, key: CandidateKey) -> StrategyCan
         ref.resolve(root)
     payload = json.loads(record.payload.resolve(root).read_text(encoding="utf-8"))
     source = root / record.source_root
-    if payload.get("runtime", {}).get("kind") == "US_EQUITY":
+    if payload.get("runtime", {}).get("kind") in {"US_EQUITY", "ACCOUNT_REPLAY"}:
         candidate = EquityStrategyCandidate(key.strategy_id, key.candidate_id,
                                             EquityStrategyDefinition.from_dict(payload['equity_definition']), source)
         identity = candidate.content_identity
@@ -191,11 +191,11 @@ def _register_equity_candidate(context, request):
             raise ValueError('equity candidate root contains a link')
     for ref in request.evidence:
         _, data = ref._read_verified(context.root)
-        if ref.schema != 'equity_research' or ref.schema_version not in (2, 3):
-            raise ValueError('formal equity registration requires equity_research/v2 or v3 support')
+        if ref.schema != 'equity_research' or ref.schema_version not in (2, 3, 4):
+            raise ValueError('formal equity registration requires a supported versioned equity_research contract')
         value = json.loads(data)
         from ..research_tools.equity_assessment import build_equity_assessment_payload
-        if ref.schema_version == 3:
+        if ref.schema_version in (3, 4):
             from .equity_evidence_io import materialize_equity_document
             from ..research_tools.equity_replay_v3 import build_v3_assessment
             view = materialize_equity_document(context.root, ref.repository_path, value)

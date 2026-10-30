@@ -133,12 +133,24 @@ def _formal_order(row, *, cash, specification, bar, constraint, fee_rate):
 
 def audit_equity_account(*, initial_cash, specification, bars, decisions, orders,
                          fills, actions, account_points, trades, action_facts, constraints, fee_rate,
-                         decision_contract=None):
+                         decision_contract=None, account_contract=None, execution_bars=None):
     """Reconstruct balances and closed cycles, then calculate daily/bar diagnostics.
 
     Bar drawdown is sampled at bar closes; it is not tick-level or intrabar risk.
     Observation count never implies independent statistical samples.
     """
+    if account_contract is not None and (type(account_contract) is not int or account_contract != 4):
+        raise ValueError('unknown account audit contract')
+    if account_contract == 4 or decision_contract == 'FORMAL_V4':
+        if account_contract != 4 or decision_contract not in (None, 'FORMAL_V4'):
+            raise ValueError('account audit contract marker differs')
+        from .equity_v4 import audit_account_v4
+        return audit_account_v4(initial_cash=initial_cash, specification=specification, bars=bars,
+            decisions=decisions, orders=orders, fills=fills, actions=actions,
+            account_points=account_points, trades=trades, action_facts=action_facts,
+            constraints=constraints, fee_rate=fee_rate, execution_bars=execution_bars)
+    if account_contract is not None:
+        raise ValueError('unknown account audit contract')
     if decision_contract not in (None, "FORMAL_V2"):
         raise ValueError("unsupported equity decision audit contract")
     strict = decision_contract == "FORMAL_V2"

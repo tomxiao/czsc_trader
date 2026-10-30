@@ -1,7 +1,7 @@
 """Market-neutral account facts. Market rules validate legal quantities/prices."""
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, UTC
 from decimal import Decimal
 from enum import StrEnum
@@ -177,8 +177,17 @@ class AccountExecutionPlan:
     capital_mode: str = "full_available_cash"
     cycle_before: CycleBudget | None = None
     cycle_after: CycleBudget | None = None
+    evidence: object = field(default_factory=dict)
 
     def __post_init__(self):
+        from .equity_definition import _freeze
+        from collections.abc import Mapping
+        import json
+        if not isinstance(self.evidence, Mapping):
+            raise TypeError('plan evidence requires mapping')
+        # Evidence is immutable JSON facts, never arbitrary model objects.
+        json.dumps(dict(self.evidence), allow_nan=False)
+        object.__setattr__(self, 'evidence', _freeze(dict(self.evidence)))
         import re
         if type(self.plan_identity) is not str or re.fullmatch(r"[0-9a-f]{64}", self.plan_identity) is None:
             raise ValueError("plan requires content identity")

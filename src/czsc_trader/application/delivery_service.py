@@ -238,7 +238,7 @@ def _references(content):
 
 def _is_account_reference(ref):
     return ((ref.schema == "account_evaluation" and ref.schema_version in (7, 8))
-            or (ref.schema == "equity_research" and ref.schema_version in (2, 3)))
+            or (ref.schema == "equity_research" and ref.schema_version in (2, 3, 4)))
 
 
 def _account_evidence(root, ref, account_cache=None):
@@ -255,7 +255,7 @@ def _certify_account(data, reference, root=None):
         if reference.schema == "equity_research":
             from ..research_tools.equity_assessment import build_equity_assessment_payload
             from ..research_tools.parameter_evaluation import equity_parameter_contract
-            if reference.schema_version == 3:
+            if reference.schema_version in (3, 4):
                 from .equity_evidence_io import materialize_equity_document
                 from ..research_tools.equity_replay_v3 import build_v3_assessment
                 if root is None:
@@ -268,7 +268,7 @@ def _certify_account(data, reference, root=None):
             request = value["request"]
             projection = {"schema_version": reference.schema_version, "request_hash": value["request_hash"],
                           "request_identity": equity_parameter_contract(request),
-                          "execution_policies": ({"policy_type": "US_EQUITY", "settings": request["specification"]},)}
+                          "execution_policies": ({"policy_type": "ACCOUNT_REPLAY" if request["candidate_definition"].get("contract_version") == 4 else "US_EQUITY", "settings": request["specification"]},)}
             return projection, records
         validate_evaluation_evidence(value)
         records = tuple(AssessmentEvidence.from_dict(item) for item in value["assessment_evidence"])
@@ -328,7 +328,7 @@ def _account_document(root, ref, account_cache=None):
         value, records = cached
         if value["schema_version"] != ref.schema_version:
             _fail("ACCOUNT_AUTHENTICATION", ref.path, "account evidence schema differs from its reference")
-        if ref.schema == "equity_research" and ref.schema_version == 3:
+        if ref.schema == "equity_research" and ref.schema_version in (3, 4):
             # The top-level digest authenticates references, not this package's
             # dependency bytes. Reuse numeric certification only after checking
             # the complete local closure, including across predecessor packages.
@@ -377,7 +377,7 @@ def _validate_content(definition, content, root, context, scope=d.DeliveryValida
             _fail("EVIDENCE_OWNER", reference.path, "evidence belongs to another batch")
         if reference.schema == "account_evaluation" and reference.schema_version not in (7, 8):
             _fail("EVALUATION_REFERENCE", reference.path, "published account evaluation schema 7 or 8 required")
-        if reference.schema == "equity_research" and reference.schema_version not in (2, 3):
+        if reference.schema == "equity_research" and reference.schema_version not in (2, 3, 4):
             _fail("EVALUATION_REFERENCE", reference.path, "formal equity evidence requires schema 2 or 3")
     session = _validation_session.get()
     if session is not None:
@@ -896,7 +896,7 @@ def _assemble_delivery(context, definition, content):
                 _fail("EVIDENCE_OWNER", reference.path, "evidence belongs to another batch")
             source = reference._read_verified(context.root)[1]
             copy(source, reference.path, reference.sha256)
-            if reference.schema == 'equity_research' and reference.schema_version == 3:
+            if reference.schema == 'equity_research' and reference.schema_version in (3, 4):
                 from .equity_evidence_io import materialize_equity_document
                 view = materialize_equity_document(context.root, reference.repository_path, source)
                 for artifact in view.artifacts:

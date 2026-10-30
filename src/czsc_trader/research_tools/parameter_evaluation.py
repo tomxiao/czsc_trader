@@ -52,7 +52,7 @@ class ParameterEvaluationInput(_Record):
 
     def _validate(self):
         value = json.loads(self.binding_json)
-        if value.get("kind") == "US_EQUITY":
+        if value.get("kind") in {"US_EQUITY", "ACCOUNT_REPLAY"}:
             from strategy_runtime.equity_definition import EquityInputBinding
             if set(value) != {"kind", "binding"}:
                 raise ValueError("equity parameter input fields differ")
@@ -77,7 +77,7 @@ class ParameterEvaluationPlan(_Record):
     schema_version: int = 3
 
     def _validate(self):
-        equity = json.loads(self.center.payload_json).get("runtime", {}).get("kind") == "US_EQUITY"
+        equity = json.loads(self.center.payload_json).get("runtime", {}).get("kind") in {"US_EQUITY", "ACCOUNT_REPLAY"}
         if self.design.protocol.version == "parameter-cartesian-neighborhood-v2":
             expected = 4 if equity else 3
         else:
@@ -351,7 +351,7 @@ def parameter_execution_policy(policy: dict) -> dict:
 
 def _parameter_payload(payload):
     """Expose declared equity parameters without weakening whole-payload comparison."""
-    if payload.get("runtime", {}).get("kind") != "US_EQUITY":
+    if payload.get("runtime", {}).get("kind") not in {"US_EQUITY", "ACCOUNT_REPLAY"}:
         return payload
     payload = json.loads(_payload_json(payload))
     if "parameters" in payload:
@@ -363,7 +363,7 @@ def _parameter_payload(payload):
 def equity_planned_identity(payload):
     from strategy_runtime.equity_definition import EquityStrategyDefinition
     definition = EquityStrategyDefinition.from_dict(payload["equity_definition"])
-    expected = {"kind": "US_EQUITY", "contract_version": definition.contract_version,
+    expected = {"kind": "ACCOUNT_REPLAY" if definition.contract_version == 4 else "US_EQUITY", "contract_version": definition.contract_version,
                 "source_files": list(definition.source_files), "source_sha256": definition.source_sha256}
     if set(payload) != {"runtime", "equity_definition"} or _payload_json(payload["runtime"]) != _payload_json(expected):
         raise ValueError("equity planned runtime descriptor differs from definition")
@@ -372,7 +372,7 @@ def equity_planned_identity(payload):
 
 def equity_parameter_contract(request):
     """Project authenticated equity request facts onto parameter-plan identity."""
-    if request.get("schema") not in ('equity-research/v2', 'equity-research/v3'):
+    if request.get("schema") not in ('equity-research/v2', 'equity-research/v3', 'equity-research/v4'):
         raise ValueError("equity parameter contract requires formal v2 or v3 request")
     definition = json.loads(_payload_json(request["candidate_definition"]))
     definition.pop("parameters_json")
@@ -389,7 +389,7 @@ def equity_parameter_contract(request):
         "nonparameter_context_sha256": canonical_sha256(nonparameter),
         "lineage": None if lineage is None else lineage["derivation"],
         "parameter_binding": None if lineage is None else lineage["parameter_binding"],
-        "input_bindings": {request["window_id"]: {"kind": "US_EQUITY", "binding": request["input_binding"]}},
+        "input_bindings": {request["window_id"]: {"kind": "ACCOUNT_REPLAY" if request["schema"] == "equity-research/v4" else "US_EQUITY", "binding": request["input_binding"]}},
     }
 
 
@@ -399,7 +399,7 @@ def _equity_contract(request):
 
 
 def _equity_policy(request):
-    return _payload_json({"policy": {"policy_type": "US_EQUITY", "settings":
+    return _payload_json({"policy": {"policy_type": "ACCOUNT_REPLAY" if request.candidate.definition.contract_version == 4 else "US_EQUITY", "settings":
         _equity_contract(request)["specification"]}})
 
 
@@ -458,7 +458,7 @@ def _create_equity_plan(cls, design, center, children, *, mapping_evidence, feas
             raise ValueError("equity parameter child nonparameter context differs")
     return cls(design, center_value, equity_hash(central), context,
         tuple(_equity_candidate(x) for x in children), mapping_evidence, feasibility_evidence,
-        (ParameterEvaluationInput(originals[0].window_id, _payload_json({"kind": "US_EQUITY", "binding": originals[0].input_binding.to_dict()})),),
+        (ParameterEvaluationInput(originals[0].window_id, _payload_json({"kind": "ACCOUNT_REPLAY" if originals[0].candidate.definition.contract_version == 4 else "US_EQUITY", "binding": originals[0].input_binding.to_dict()})),),
         _equity_policy(center), schema_version=4)
 
 

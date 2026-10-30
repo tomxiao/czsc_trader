@@ -28,7 +28,9 @@ class EquityCertificationScope:
     """
 
     def __init__(self):
-        self.audit_version = sha256(Path(inspect.getsourcefile(audit_equity_account)).read_bytes()).hexdigest()
+        from . import equity_v4
+        self.audit_version = sha256(Path(inspect.getsourcefile(audit_equity_account)).read_bytes()
+            + Path(equity_v4.__file__).read_bytes()).hexdigest()
         self.__audits = {}
         self.__tokens = []
         self.audit_count = 0
@@ -44,7 +46,8 @@ class EquityCertificationScope:
     def __reduce__(self):
         raise TypeError("certification scopes cannot cross process or persistence boundaries")
 
-    def certify(self, ledger, *, decision_contract="FORMAL_V2"):
+    def certify(self, ledger, *, decision_contract=None):
+        decision_contract = decision_contract or ("FORMAL_V4" if ledger.get("account_contract") == 4 else "FORMAL_V2")
         content = canonical_ledger(ledger).encode()
         key = (self.audit_version, decision_contract, sha256(content).hexdigest())
         stored = self.__audits.get(key)
@@ -60,7 +63,8 @@ class EquityCertificationScope:
         return result
 
 
-def certify_equity_ledger(ledger, *, decision_contract="FORMAL_V2"):
+def certify_equity_ledger(ledger, *, decision_contract=None):
+    decision_contract = decision_contract or ("FORMAL_V4" if ledger.get("account_contract") == 4 else "FORMAL_V2")
     """Independently audit, or reuse the current owner's exact prior audit."""
     scope = _active_certification.get()
     if scope is None:
@@ -82,9 +86,21 @@ def read_ledger(value):
         return result
     ledger = json.loads(value, object_pairs_hook=pairs,
                         parse_constant=lambda _: (_ for _ in ()).throw(ValidationError("nonfinite equity fact")))
-    if type(ledger) is not dict or set(ledger) != LEDGER_FIELDS or canonical_ledger(ledger) != value:
+    if type(ledger) is not dict or set(ledger) not in (LEDGER_FIELDS, LEDGER_FIELDS | {"account_contract"}, LEDGER_FIELDS | {"account_contract", "execution_bars"}) or canonical_ledger(ledger) != value:
         raise ValidationError("equity ledger schema or canonical encoding differs")
+    if "account_contract" in ledger and (type(ledger["account_contract"]) is not int or ledger["account_contract"] != 4):
+        raise ValidationError("unknown account ledger contract")
     return ledger
+
+
+def _assessment_ledgers(facts):
+    candidate, benchmark = (read_ledger(value) for value in (facts.candidate_ledger, facts.benchmark_ledger))
+    contract = candidate.get('account_contract')
+    if contract != benchmark.get('account_contract'):
+        raise ValidationError('equity candidate and benchmark account contracts differ')
+    if facts.market == 'CN' and contract != 4:
+        raise ValidationError('CN equity assessment requires V4 account contracts')
+    return candidate, benchmark
 
 
 def session(stamp, timezone):
@@ -102,19 +118,19 @@ def daily_points(ledger):
 
 
 def validate_equity_facts(facts):
-    if (facts.market, facts.timezone, facts.currency) != ("US", "America/New_York", "USD"):
+    if (facts.market, facts.timezone, facts.currency) not in {("US", "America/New_York", "USD"), ("CN", "Asia/Shanghai", "CNY")}:
         raise ValidationError("unsupported equity assessment market identity")
     if facts.drawdown_basis not in {"SESSION_CLOSE", "BAR_CLOSE"}:
         raise ValidationError("equity assessment requires explicit drawdown basis")
     if facts.concentration_basis not in {"TOP_DECILE", "MAX_SINGLE"}:
         raise ValidationError("equity assessment requires explicit concentration basis")
-    candidate, benchmark = (read_ledger(value) for value in (facts.candidate_ledger, facts.benchmark_ledger))
+    candidate, benchmark = _assessment_ledgers(facts)
     for ledger in (candidate, benchmark):
-        if ledger["specification"]["market"] != {"rule_version": "US_EQUITY_V1"}:
+        if ledger["specification"]["market"] != {"rule_version": facts.market + "_EQUITY_V1"}:
             raise ValidationError("equity ledger market differs")
         if ledger["specification"]["account"]["currency"] != facts.currency:
             raise ValidationError("equity ledger currency differs")
-        certify_equity_ledger(ledger, decision_contract="FORMAL_V2")
+        certify_equity_ledger(ledger)
         for point in ledger["account_points"]:
             if point["session"] != session(point["time"], facts.timezone):
                 raise ValidationError("equity account session differs from market timezone")
@@ -127,7 +143,7 @@ def validate_equity_facts(facts):
 
 def validate_equity_assessment(evidence):
     facts = evidence.equity
-    candidate, benchmark = read_ledger(facts.candidate_ledger), read_ledger(facts.benchmark_ledger)
+    candidate, benchmark = _assessment_ledgers(facts)
     if evidence.initial_cash != candidate["initial_cash"] or evidence.opening_cash != evidence.initial_cash or evidence.opening_quantity:
         raise ValidationError("equity assessment opening identity differs")
     expected = tuple((r["session"], float(r["cash"]), int(r["quantity"]), float(r["close"]), float(r["equity"]))
@@ -147,7 +163,8 @@ def validate_equity_assessment(evidence):
         raise ValidationError("equity assessment benchmark differs from audited journal")
     if evidence.scenario_context.one_way_cost != candidate["fee_rate"]:
         raise ValidationError("equity assessment fee differs from audited journal")
-    expected_version = f"equity-assessment-v2:{facts.drawdown_basis}:{facts.concentration_basis}"
+    version = 4 if candidate.get("account_contract") == 4 else 2
+    expected_version = f"equity-assessment-v{version}:{facts.drawdown_basis}:{facts.concentration_basis}"
     if evidence.metric_version != expected_version:
         raise ValidationError("equity metric semantics differ")
 

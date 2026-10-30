@@ -25,7 +25,7 @@ def test_v3_shared_snapshot_benchmark_and_certification(tmp_path, monkeypatch):
     owners = []
     compute = equity_replay_v3._compute_account
     def record_owner(*args):
-        owners.append(args[-1])
+        owners.append(args[4])
         return compute(*args)
     monkeypatch.setattr(equity_replay_v3, "_compute_account", record_owner)
     fetched = []
@@ -323,5 +323,5 @@ def test_retired_equity_replay_rejects_before_acquiring_data(tmp_path, formal):
 
 def test_checkpoint_rejects_retired_account_schema():
     from czsc_trader.research_tools._equity_checkpoint import decode_result
-    with pytest.raises(ValueError, match="V3 artifact closure"):
+    with pytest.raises(ValueError, match="V3 or V4 artifact closure"):
         decode_result({"kind": "equity-research/v2"}, "0" * 64)

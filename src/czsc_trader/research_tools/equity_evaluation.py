@@ -114,7 +114,12 @@ class EquityEvaluationRequest:
             (item.data_key(query.parameters.query.product), query)
             for item in self.candidate.definition.auxiliary_inputs
             for query in item.requests(self.history_start, end)))
-        return primary + auxiliary
+        execution = ()
+        if self.formal and self.candidate.definition.contract_version == 4 and self.candidate.definition.execution_input is not None:
+            item = self.candidate.definition.execution_input
+            execution = tuple((item.data_key(query.parameters.query.product), query)
+                for query in item.requests(pd.Timestamp(self.window.start).tz_convert(self.candidate.instrument.timezone).date(), end))
+        return primary + auxiliary + execution
 
     def identity(self, specification):
         candidate = self.candidate
@@ -128,17 +133,23 @@ class EquityEvaluationRequest:
                 from strategy_runtime.equity_context import build_equity_decision_context
                 engine_sources[build_equity_decision_context.__module__] = sha256(
                     Path(inspect.getsourcefile(build_equity_decision_context)).read_bytes()).hexdigest()
-            if candidate.definition.contract_version == 3:
+            if candidate.definition.contract_version in (3, 4):
                 from strategy_runtime import (equity_features, equity_replay, equity_buy_hold_v3,
-                                              equity_context, equity_source_runtime, replay_kernel, replay_contracts, replay_adapters)
+                                              equity_context, equity_source_runtime, replay_kernel, replay_contracts, replay_adapters,
+                                              account_strategy, account_replay)
                 from strategy_evaluator import equity_assessment as se_equity_assessment
                 from . import equity_replay_v3, equity_assessment, parameter_evaluation, account_preparation
-                from trading_execution_engine import accounting, replay as execution_replay
+                from trading_execution_engine import accounting, replay as execution_replay, portfolio
                 for module in (equity_features, equity_replay, equity_buy_hold_v3, equity_replay_v3,
                                equity_context, equity_source_runtime, equity_assessment, se_equity_assessment,
-                               parameter_evaluation, account_preparation, replay_kernel, replay_contracts, replay_adapters, accounting, execution_replay):
+                               parameter_evaluation, account_preparation, replay_kernel, replay_contracts, replay_adapters, accounting, execution_replay, account_strategy, account_replay, portfolio):
                     engine_sources[module.__name__] = sha256(Path(module.__file__).read_bytes()).hexdigest()
-        version = 3 if self.formal and candidate.definition.contract_version == 3 else 2 if self.formal else 1
+                if candidate.definition.contract_version == 4:
+                    from strategy_runtime import equity_buy_hold_v4
+                    from strategy_evaluator import equity_v4
+                    for module in (equity_buy_hold_v4, equity_v4):
+                        engine_sources[module.__name__] = sha256(Path(module.__file__).read_bytes()).hexdigest()
+        version = candidate.definition.contract_version if self.formal else 1
         contract = {"schema": f"equity-research/v{version}", "experiment": asdict(self.experiment),
                 "candidate_id": candidate.candidate_id, "instrument": asdict(candidate.instrument),
                 "implementation_hash": candidate.implementation_hash, "warmup_bars": candidate.warmup_bars,
@@ -201,7 +212,7 @@ class EquityEvaluationResult:
             raise TypeError("equity result artifacts require an immutable typed tuple")
         if len({item.sha256 for item in self.artifacts}) != len(self.artifacts):
             raise ValueError("duplicate equity artifact")
-        if payload.get("schema") == "equity-research/v3":
+        if payload.get("schema") in {"equity-research/v3", "equity-research/v4"}:
             from .equity_replay_v3 import validate_result_structure
             validate_result_structure(payload, self.artifacts)
         elif self.artifacts:
@@ -237,7 +248,7 @@ def _fetch_products(access, request):
                             "metadata": dict(result.identity.metadata)}
         # Each observation instrument owns its calendar. A daily auxiliary may
         # have a different set of sessions from the traded instrument.
-        group = name.rsplit(":", 1)[0] if name.startswith("auxiliary:") else "primary"
+        group = name.rsplit(":", 1)[0] if name.startswith(("auxiliary:", "execution:")) else "primary"
         declared = result.identity.metadata["sessions"]
         if group in calendars and calendars[group] != declared:
             raise ValueError(f"independent equity products disagree on the trading calendar: {group}")
@@ -252,13 +263,17 @@ def _audit_inputs(request, specification, products):
     if request.formal:
         definition = request.candidate.definition
         decision_inputs = {}
-        if definition.session_context:
+        if definition.session_context or definition.contract_version == 4:
             decision_inputs["sessions"] = _records(products["sessions"])
         if definition.auxiliary_inputs:
             decision_inputs["auxiliary"] = {item.name: {
                 "bars": _records(products[item.data_key(EquityProduct.BARS)]),
                 "sessions": _records(products[item.data_key(EquityProduct.SESSIONS)])}
                 for item in definition.auxiliary_inputs}
+        if definition.contract_version == 4 and definition.execution_input is not None:
+            item = definition.execution_input
+            decision_inputs['execution'] = {'bars': _records(products[item.data_key(EquityProduct.BARS)]),
+                'sessions': _records(products[item.data_key(EquityProduct.SESSIONS)])}
         if decision_inputs:
             inputs["decision_inputs"] = decision_inputs
     return inputs
@@ -269,7 +284,7 @@ def _runtime_inputs(definition, products, identities):
     if definition.auxiliary_inputs:
         kwargs["auxiliary_histories"] = {item.name: products[item.data_key(EquityProduct.BARS)]
                                          for item in definition.auxiliary_inputs}
-    if definition.session_context:
+    if definition.session_context or definition.contract_version == 4:
         kwargs["sessions"] = products["sessions"]
         kwargs["trading_sessions"] = sessions_from_metadata(identities["sessions"]["metadata"])
     return kwargs
@@ -279,7 +294,7 @@ def _records(frame):
     return json.loads(frame.to_json(orient="records", date_format="iso", date_unit="us"))
 
 
-def _data_quality(bars, run):
+def _data_quality(bars, run, *, timezone="America/New_York", execution_bars=None):
     """Report execution limitations from source facts and audited account entries."""
     ends = {row["time"] for row in run["account_points"]}
     selected = [row for row in bars if row["Date"] in ends]
@@ -290,13 +305,13 @@ def _data_quality(bars, run):
             "missing_bars": sum(row.get("BarStatus") == "MISSING" for row in rows),
             "zero_volume_bars": sum(row.get("BarStatus") == "ZERO_VOLUME" for row in rows),
             "known_blocked_bars": sum(bool(row.get("ExecutionBlocked", False)) for row in rows),
-            "affected_sessions": sorted({pd.Timestamp(row["BarStart"]).tz_convert("America/New_York").date().isoformat()
+            "affected_sessions": sorted({pd.Timestamp(row["BarStart"]).tz_convert(timezone).date().isoformat()
                                          for row in affected}),
             "intervals": [{"start": row["BarStart"], "end": row["Date"],
                            "bar_status": row.get("BarStatus", "OBSERVED"),
                            "execution_blocked": row.get("ExecutionBlocked", False)} for row in affected],
         }
-    return {
+    result = {
         "basis": "MISSING_OR_ZERO_VOLUME_UNTRADABLE_RESEARCH_ASSUMPTION" if any("BarStatus" in row for row in bars)
                  else "STRICT_COMPLETE_BARS",
         "prepared_history": summary(bars), "evaluation_window": summary(selected),
@@ -304,8 +319,11 @@ def _data_quality(bars, run):
         "suppressed_signals": sum(row.get("signal_status") == "SUPPRESSED_UNOBSERVED_BAR" for row in run["decisions"]),
         "affected_orders": [{"order_id": row["order_id"], "reason": row["reason"],
                              "start": row["valid_start"], "end": row["valid_end"]}
-                            for row in run["orders"] if row["reason"] in {"MISSING_BAR", "ZERO_VOLUME", "KNOWN_INTERRUPTION"}],
+                            for row in run["orders"] if row["reason"] in {"MISSING_BAR", "MISSING_EXECUTION_BAR", "ZERO_VOLUME", "KNOWN_INTERRUPTION"}],
     }
+    if execution_bars is not None:
+        result["execution_input"] = summary(execution_bars)
+    return result
 
 
 def _json_value(value):

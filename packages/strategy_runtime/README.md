@@ -27,6 +27,44 @@
 不会因为后腿失败而撤回。共同内核不改变这两类失败语义。循环内不进行数据获取、文件发布或源码装载。
 
 
+## 跨市场账户研究 V4
+
+新账户定义使用 `EquityStrategyDefinition(contract_version=4)`，运行身份为 `ACCOUNT_REPLAY`。
+CN/US共用策略计算、回放内核与计划契约；市场差异由 `ResearchExecutionSpec`、独立交易日历和
+逐执行区间约束表达。既有A股 `StrategyCandidate` 与美股V2/V3不自动转换，原有价格单位和身份保持原契约。
+
+| 声明 | V4契约 |
+| --- | --- |
+| `computation` | 必须显式选择 `StrategyComputation.BATCH_HISTORY` 或 `STATEFUL_STEP` |
+| 决策时钟 | `BarFrequency.DAILY` 或 `M30`；两者都要求真实交易段、可用时间及完整网格 |
+| 输入 | RAW行情、公司行动、日历、逐区间交易规则；辅助行情可声明CN/US来源 |
+| 决策 | `AccountDecision`，目标比例为有限的0至1；支持显式订单、依赖腿和周期预算 |
+| 状态 | `StrategyStateSchema`及匹配的 `initial_account: StateRecord`；字段非空时必须声明初值 |
+| 成交反馈 | `AccountSnapshot`、`PositionFeedback`和已确认的 `RecognizedAccountEvent` |
+
+状态策略入口为 `step(ctx: AccountStepContext, state: AccountStrategyState) -> AccountStepResult`。
+`AccountStepResult`返回决策、账户记录及周期记录；仅真实成交改变持仓，全部卖出才关闭周期。
+`ctx.position`保留多次加减仓的数量、累计买入成本、卖出收入、费用和成交次数。
+框架通过 `ctx.events`提供截至决策时点已确认的拆股、分红应收、支付和交收事实；`event_cursor`
+在状态提交时推进，缺失行情导致的抑制不会吞掉事件。策略据此显式调整止损价等自己的字段，
+框架不会猜测任意状态字段的价格单位或自动缩放。未来事件和执行区间结束时才到账的资金不会提前进入决策上下文。
+
+批量入口为 `calculate(ctx: BatchAccountContext) -> tuple[AccountDecision, ...]`，按
+`ctx.observations`逐项返回决策。每项行情、特征、辅助历史均按该观察时点截断，不提供未来账户和执行报价。
+批量计算只适用于不依赖实际成交反馈的信号，不能声明账户或周期状态字段。任意Python实现仍须通过
+研究侧前缀／未来扰动检验；拿到全部观察项不等于平台已证明策略不存在跨项前视。
+
+`capital_mode`支持 `target_equity_fraction`、`full_available_cash`及 `signal_cash_fraction`。
+比例模式允许加减仓；全现金模式持仓后目标1表示继续持有，不因股息或剩余现金自动追加投资。
+显式 `ReplayOrder`数量与目标比例分别留证；`ReplayLeg`声明真实检查点、提交区间及前腿所需结果。
+周期预算以Decimal保留，不能中途重写已锁定预算；可卖数量、整手、余股清仓及价格限制由TXE逐步执行。
+
+日线策略若需开盘、11:30等盘中检查点，声明
+`execution_input=ExecutionInput(instrument, source, BarFrequency.M30)`。
+该产品只供执行器读取，独立绑定行情和会话哈希，不进入特征或辅助历史；不从日线OHLC推测盘中成交。
+同一精确产品不能同时声明为执行与辅助角色。普通订单仍按主决策柱的价格区间执行。
+V4研究回放沿用一次装载、不可变可见历史、内存复用和完整证据闭包；生产加载与PTE准入仍需另行支持。
+
 ## 美股研究 V3：可见特征与显式状态
 
 V3 面向美股 30 分钟研究账户，声明行情特征依赖与状态字段，由公共运行器按真实成交推进状态。

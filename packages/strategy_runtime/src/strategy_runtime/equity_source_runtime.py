@@ -95,10 +95,10 @@ class BoundEquityInvocation:
         self.function = function
         self.loads = 1
 
-    def invoke(self, context, state):
+    def invoke(self, context, state=None):
         if self.function is None:
             raise RuntimeError('strategy module scope is not active')
-        return self.function(context, state)
+        return self.function(context) if state is None else self.function(context, state)
 
     def _cleanup(self):
         self.function = None

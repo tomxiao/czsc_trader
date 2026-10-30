@@ -95,7 +95,7 @@ class EvaluationAccess:
     def prepare(self, request: EvaluationRequest | EquityEvaluationRequest, *,
                 execution: ResearchExecutionSession | None = None) -> PreparedAccountEvaluation:
         if type(request) is EquityEvaluationRequest:
-            if request.formal and request.candidate.definition.contract_version == 3:
+            if request.formal and request.candidate.definition.contract_version in (3, 4):
                 from .equity_replay_v3 import prepare_equity_v3
                 return prepare_equity_v3(self, request, execution=execution)
             raise TypeError("new equity replay requires contract_version=3 and an explicit ResearchExecutionSession")

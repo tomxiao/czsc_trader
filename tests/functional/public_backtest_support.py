@@ -32,8 +32,11 @@ def request_for_prices(candidate_payload, root, monkeypatch, prices, *, start_in
     context = ResearchContext(ResearchBatchRef("S900"), repository, flows, StrategyRuntime(dataflows=flows),
                               EvaluationAccess(dataflows=flows, strategy_id="S900"))
     candidate = StrategyCandidate("S900", "C0001", payload, source)
+    from czsc_trader.application import create_experiment, ExperimentRequest
+    experiment = create_experiment(context, ExperimentRequest('Synthetic account',
+        'Public replay fixture', prices['dt'].iloc[-1].date()))
     request = EvaluationRequest(
-        root, "synthetic", candidate,
+        root, experiment.experiment_id, candidate,
         {"candidate_id": candidate.reference_id,
          "source_files": payload["runtime"]["source_files"],
          "implementation_sha256": payload["runtime"]["source_sha256"]},

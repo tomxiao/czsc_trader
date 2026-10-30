@@ -107,7 +107,7 @@ def _publish_serialized(context: ResearchContext, request: EvidenceWriteRequest,
     if isinstance(request, EvaluationEvidenceWrite):
         from ..research_tools.equity_evaluation import EquityEvaluationResult
         equity = type(request.result) is EquityEvaluationResult
-        version = 3 if equity else 8
+        version = request.result.payload["schema_version"] if equity else 8
         media_type, suffix, schema = "application/json", "json", ("equity_research" if equity else "account_evaluation")
         document = json.loads(data)
         if equity and document.get("schema") != f"equity-research/v{version}":
@@ -115,7 +115,7 @@ def _publish_serialized(context: ResearchContext, request: EvidenceWriteRequest,
         if not equity and (document.get("schema_version") != version
                 or document.get("request_identity", {}).get("schema_version") != 7):
             raise ValueError("new account publication requires schema 8 and request identity 7")
-        if equity and version == 3:
+        if equity and version in (3, 4):
             # Dependencies are immutable, content-addressed and installed before
             # the final evaluation document becomes visible.
             for artifact in request.result.artifacts:
@@ -224,12 +224,12 @@ def publish_evidence_many(context: ResearchContext,
                 and type(request.request) is PreparedAccountEvaluation):
             key = canonical_sha256({'request_hash': request.result.request_hash,
                 'result_hash': request.result.result_hash, 'experiment': request.experiment.to_dict(),
-                'name': request.name, 'schema': 'equity_research', 'version': 3})
+                'name': request.name, 'schema': 'equity_research', 'version': request.result.payload['schema_version']})
             publication_keys[index] = key
             reference = checkpoint.load_publication(key)
             if reference is not None:
                 if (reference.name != request.name or reference.experiment != request.experiment
-                        or (reference.schema, reference.schema_version) != ('equity_research', 3)
+                        or (reference.schema, reference.schema_version) != ('equity_research', request.result.payload['schema_version'])
                         or reference.resolve(context.repository.root).read_bytes() != request.result.content):
                     raise ValueError('equity V3 publication checkpoint differs from authenticated result')
                 for artifact in request.result.artifacts:

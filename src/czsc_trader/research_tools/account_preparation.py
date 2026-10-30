@@ -86,7 +86,7 @@ class PreparedAccountEvaluation:
                     or self.request.execution_data is None):
                 raise TypeError('prepared evaluation requires pinned account inputs')
         elif type(self.request) is EquityEvaluationRequest:
-            if (not self.request.formal or self.request.candidate.definition.contract_version != 3
+            if (not self.request.formal or self.request.candidate.definition.contract_version not in (3, 4)
                     or self.request.prepared is None or self.request.input_binding is None
                     or type(self.snapshot) is not EquityInputSnapshot):
                 raise TypeError('prepared v3 evaluation requires a bound v3 request')

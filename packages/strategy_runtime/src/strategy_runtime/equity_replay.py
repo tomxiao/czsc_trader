@@ -67,6 +67,26 @@ class StateRecord:
             if type(value) is datetime and (value.tzinfo is None or value.utcoffset() is None):
                 raise ValueError('state datetimes must be timezone aware')
 
+    def to_dict(self):
+        return {'values': [[key, {'datetime': value.isoformat()} if type(value) is datetime else value]
+                           for key,value in self.values]}
+
+    @classmethod
+    def from_dict(cls,value):
+        if type(value) is not dict or set(value)!={'values'} or type(value['values']) is not list:
+            raise ValueError('state record requires values')
+        pairs=[]
+        for entry in value['values']:
+            if type(entry) is not list or len(entry)!=2:
+                raise ValueError('state values require pairs')
+            key,item=entry
+            if type(item) is dict:
+                if set(item)!={'datetime'} or type(item['datetime']) is not str:
+                    raise ValueError('state datetime encoding invalid')
+                item=datetime.fromisoformat(item['datetime'])
+            pairs.append((key,item))
+        return cls(tuple(pairs))
+
     def get(self, key: str) -> StateScalar:
         for name, value in self.values:
             if name == key:
@@ -270,10 +290,12 @@ class PreparedReplay:
     _sessions: tuple = ()
     _calendar_intervals: tuple = ()
     identity: str = ''
+    frequency: BarFrequency = BarFrequency.M30
 
     @classmethod
     def from_frames(cls, bars, constraints, graph, *, latency_seconds=0,
-                    auxiliary_histories=None, sessions=None, trading_sessions=()):
+                    auxiliary_histories=None, sessions=None, trading_sessions=(),
+                    frequency=BarFrequency.M30, timezone="America/New_York"):
         if type(graph) is not FeatureGraph or type(latency_seconds) is not int or latency_seconds < 0:
             raise TypeError('replay requires a typed graph and nonnegative integer latency')
         required = {'BarStart', 'Date', 'AvailableDate', 'Open', 'High', 'Low', 'Close', 'Volume', 'Amount'}
@@ -323,7 +345,7 @@ class PreparedReplay:
             if record['Date'] in constraint_map:
                 raise ValueError('duplicate trading constraint')
             constraint_map[record['Date']] = _Row(record)
-        local = bars.BarStart.dt.tz_convert('America/New_York')
+        local = bars.BarStart.dt.tz_convert(timezone)
         starts, ends = tuple(row['BarStart'] for row in rows), tuple(row['Date'] for row in rows)
         ready = tuple(max(row['Date'], row['AvailableDate'] + timedelta(seconds=latency_seconds)) for row in rows)
         dated = tuple(constraint_map.get(stamp) for stamp in starts)
@@ -367,11 +389,17 @@ class PreparedReplay:
                 stamp, available = pd.Timestamp(row.Date), pd.Timestamp(row.AvailableDate)
                 if (stamp.tzinfo is None or available.tzinfo is None or pd.isna(stamp) or pd.isna(available)
                         or str(row.SessionDate) != session.session_date.isoformat()
-                        or stamp != session.segments[0].start or session.timezone != 'America/New_York'):
-                    raise ValueError('session evidence differs from US calendar')
+                        or stamp != session.segments[0].start or session.timezone != timezone):
+                    raise ValueError('session evidence differs from declared calendar')
                 calendar_index = len(calendars)
                 calendars.append((session, available.to_pydatetime()))
-                for interval in session.bars(BarFrequency.M30):
+                if frequency is BarFrequency.DAILY:
+                    periods = (TimeInterval(session.segments[0].start, session.segments[-1].end),)
+                elif frequency is BarFrequency.M30:
+                    periods = session.bars(frequency)
+                else:
+                    raise ValueError('unsupported replay calendar frequency')
+                for interval in periods:
                     key = interval.start, interval.end
                     if key in known:
                         raise ValueError('execution interval has ambiguous sessions')
@@ -382,13 +410,13 @@ class PreparedReplay:
             'sessions': [{'day': item.session_date.isoformat(), 'timezone': item.timezone,
                           'segments': [(part.start, part.end) for part in item.segments],
                           'available': available} for item, available in calendars]})
-        return cls(data, graph, tuple(auxiliary), tuple(calendars), tuple(intervals), prepared_identity)
+        return cls(data, graph, tuple(auxiliary), tuple(calendars), tuple(intervals), prepared_identity, frequency)
 
     def with_graph(self, graph):
         if type(graph) is not FeatureGraph:
             raise TypeError('replay requires FeatureGraph')
         return PreparedReplay(self._data, graph, self._auxiliary, self._sessions,
-                              self._calendar_intervals, self.identity)
+                              self._calendar_intervals, self.identity, self.frequency)
 
 
 class _Visibility:
@@ -678,6 +706,10 @@ def run_replay(prepared, candidate, executor, *, start, end, fee_rate, initial_s
 def _run_replay(prepared, candidate, executor, *, start, end, fee_rate, initial_state=None, owner=None):
     """Replay one independent account; features/state never hold future prices."""
     started = perf_counter()
+    if candidate.definition.contract_version == 4:
+        from .account_replay import run_account_v4
+        return run_account_v4(prepared, candidate, executor, start=start, end=end,
+                              fee_rate=fee_rate, initial_state=initial_state, owner=owner)
     if type(prepared) is not PreparedReplay:
         raise TypeError('V3 replay requires PreparedReplay')
     definition = candidate.definition

@@ -13,7 +13,7 @@ def diagnose_equity_evidence(repository, request, *, execution=None):
     sources = tuple(x.evidence for x in refs) + tuple(x.evidence for x in request.populations)
     def fail(status, message):
         return AccountDiagnosisResult(status, PROTOCOL, (message,), sources)
-    if any(r.evidence.schema != 'equity_research' or r.evidence.schema_version not in (2, 3) for r in refs):
+    if any(r.evidence.schema != 'equity_research' or r.evidence.schema_version not in (2, 3, 4) for r in refs):
         return fail(AccountDiagnosisStatus.INCOMPARABLE, "diagnosis requires the same explicit equity evidence contract")
     try:
         loaded = []
@@ -33,7 +33,7 @@ def diagnose_equity_evidence(repository, request, *, execution=None):
                     "strategy_id": ref.evidence.experiment.strategy_id, "experiment_id": ref.evidence.experiment.experiment_id}
                     or value["evaluation_identity"] != ref.identity.to_dict()):
                 raise ValueError("equity account identity or origin differs")
-            if ref.evidence.schema_version == 3:
+            if ref.evidence.schema_version in (3, 4):
                 view = materialize_equity_document(repository.root, ref.evidence.repository_path, value)
                 facts = build_v3_assessment(view, scope=certification)[0]
                 value = view.payload
@@ -44,7 +44,8 @@ def diagnose_equity_evidence(repository, request, *, execution=None):
             r = value["request"]
             return {k: r[k] for k in ("instrument", "specification", "initial_cash", "fee_rate", "window", "benchmark",
                                        "drawdown_basis", "concentration_basis")} | {
-                "data": {key: value["data"][key] for key in ("bars", "sessions", "actions", "constraints")}}
+                "data": {key: value["data"][key] for key in ("bars", "sessions", "actions", "constraints")},
+                "execution_data": {k: v for k, v in value["data"].items() if k.startswith("execution:")}}
         if len(loaded) == 2 and comparable(loaded[0][0]) != comparable(loaded[1][0]):
             return fail(AccountDiagnosisStatus.INCOMPARABLE, "equity market, data, execution, cost or window differs")
         for _, ledger in loaded:
@@ -81,11 +82,14 @@ def diagnose_equity_evidence(repository, request, *, execution=None):
             buy_decisions = set(buys.values())
             filled = {buys[r["order_id"]] for r in ledger["fills"] if r["side"] == "BUY"}
             for decision in ledger["decisions"]:
-                day = session(decision["execution_start"], "America/New_York")
+                zone = "Asia/Shanghai" if ledger["specification"]["market"]["rule_version"] == "CN_EQUITY_V1" else "America/New_York"
+                day = session(decision["execution_start"], zone)
                 if request.window.start.isoformat() <= day <= request.window.end.isoformat():
                     key = decision["decision_id"]
                     coverage.append(DecisionCoverage(identity, ref.population_id, key, day, members.get(key),
-                        key in buy_decisions, key in filled, decision["side"] == "HOLD" and decision["target"] == 1))
+                        key in buy_decisions, key in filled,
+                        (decision['target_quantity'] > 0 and not decision['plan']['orders'] and not decision['plan']['legs'])
+                        if ledger.get('account_contract') == 4 else decision["side"] == "HOLD" and decision["target"] == 1))
     except (OSError, ValueError, TypeError, KeyError, IndexError, OverflowError) as exc:
         return fail(AccountDiagnosisStatus.INVALID_EVIDENCE, str(exc))
     reconciliation = tuple(DiagnosisReconciliation(p.evaluation_id, p.daily[0].opening_equity,

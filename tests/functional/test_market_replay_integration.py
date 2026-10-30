@@ -15,7 +15,7 @@ from strategy_runtime import (
 )
 from trading_execution_engine import MarketExecutionRules, SuspensionInformation
 
-from czsc_trader.application import BacktestRequest, RepositoryContext, run_backtest
+from czsc_trader.application import BacktestRequest, RepositoryContext, run_backtest, create_experiment, ExperimentRequest
 from czsc_trader.application.errors import ExecutionError
 from czsc_trader.backtesting.execution_data import _prepare_backtest_execution_data
 from czsc_trader.backtesting.srt_bridge import _validate_execution_binding
@@ -215,8 +215,10 @@ def test_public_daily_replay_retains_suspended_accounts_and_replans_on_resumptio
         rows[halt_indices[0] - 20][field] = value
         assert audit_replay(replace(evidence, account_daily=tuple(rows))).status is AuditStatus.FAIL
 
+    experiment = create_experiment(context, ExperimentRequest('Suspension replay',
+        'Public stock account fixture', dates[-1].date()))
     request = EvaluationRequest(
-        tmp_path, "synthetic", candidate,
+        tmp_path, experiment.experiment_id, candidate,
         {"candidate_id": candidate.reference_id, "source_files": candidate.payload["runtime"]["source_files"],
          "implementation_sha256": candidate.payload["runtime"]["source_sha256"]},
         symbol, "stock", (EvaluationWindow("full", dates[20].date(), dates[-1].date()),),
@@ -276,8 +278,10 @@ def test_public_evaluation_records_daily_attempts_and_rejects_tampered_evidence(
         candidate_payload, tmp_path, monkeypatch,
         hfq_factors=np.r_[np.full(21, 2.0), np.full(4, 4.0)],
     )
+    experiment = create_experiment(context, ExperimentRequest('Price-basis replay',
+        'Public ETF account fixture', dates[-1].date()))
     request = EvaluationRequest(
-        tmp_path, "synthetic", candidate,
+        tmp_path, experiment.experiment_id, candidate,
         {"candidate_id": candidate.reference_id,
          "source_files": candidate.payload["runtime"]["source_files"],
          "implementation_sha256": candidate.payload["runtime"]["source_sha256"]},

@@ -181,7 +181,12 @@ class EquityHistoricalExecutor:
                                    closed_cycle_feedback=self._closed_cycle_feedback)
 
     def _events(self, through, *, after, plan_quantity, limit_price, include_actions=True):
-        for event in self._action_events:
+        return self._apply_events(self._action_events, through, after=after,
+            plan_quantity=plan_quantity, limit_price=limit_price, include_actions=include_actions)
+
+    def _apply_events(self, events, through, *, after, plan_quantity, limit_price, include_actions=True):
+        """Post an ordered event range through the shared economic journal."""
+        for event in events:
             if event.Kind == "NONE" or event.EventId in self.applied:
                 continue
             stamp = _timestamp(event.Date)

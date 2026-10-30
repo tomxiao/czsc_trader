@@ -10,17 +10,27 @@ from .account_diagnosis import (AccountDiagnosisCalculation, AccountDiagnosisSta
 PROTOCOL = "equity-continuous-account-v1"
 
 
-def _session(stamp):
-    return pd.Timestamp(stamp).tz_convert("America/New_York").date().isoformat()
+def _timezone(ledger):
+    rule = ledger['specification']['market']['rule_version']
+    if rule == 'US_EQUITY_V1':
+        return 'America/New_York'
+    if rule == 'CN_EQUITY_V1':
+        return 'Asia/Shanghai'
+    raise ValueError('unknown market calendar in retained ledger')
+
+
+def _session(stamp, timezone='America/New_York'):
+    return pd.Timestamp(stamp).tz_convert(timezone).date().isoformat()
 
 
 def _decompose(ledger, identity, start, end):
     rows = ledger["account_points"]
     if start < rows[0]["session"] or end > rows[-1]["session"]:
         raise ValueError("diagnostic window exceeds retained account coverage")
-    fills = {pd.Timestamp(x["interval_end"]): x for x in ledger["fills"]}
-    if len(fills) != len(ledger["fills"]):
-        raise ValueError("duplicate equity execution intervals")
+    timezone = _timezone(ledger)
+    fills = defaultdict(list)
+    for row in ledger['fills']:
+        fills[pd.Timestamp(row['interval_end'])].append(row)
     events = sorted(ledger["actions"], key=lambda x: (x["account_revision"], pd.Timestamp(x["time"])))
     splits = {x["EventId"]: float(x["Ratio"]) for x in ledger["action_facts"] if x["Kind"] == "SPLIT"}
     previous_equity, previous_close, quantity, cursor = ledger["initial_cash"], None, 0, 0
@@ -41,26 +51,45 @@ def _decompose(ledger, identity, start, end):
                 holding += float(event["amount"])
             # Payment and sale settlement transfer accounts; they are not new income.
             cursor += 1
-        fill = fills.get(stamp)
-        if fill is not None:
-            traded, price = int(fill["quantity"]), float(fill["price"])
-            fees = -float(fill["fees"])
-            if fill["side"] == "BUY":
-                entry = traded * (close - price)
-                if quantity:
-                    holding += quantity * (close - previous_close)
+        # FIFO within an observation partitions exact PnL for scale-in/out and
+        # same-observation closed/reopened cycles; it is not a price prediction.
+        from collections import deque
+        inventory = deque()
+        if quantity:
+            inventory.append([quantity, previous_close, 'holding'])
+        executed = fills.get(stamp, ())
+        for fill in executed:
+            traded, price = int(fill['quantity']), float(fill['price'])
+            fees -= float(fill['fees'])
+            if fill['side'] == 'BUY':
+                inventory.append([traded, price, 'entry'])
             else:
-                exit_pnl = traded * (price - previous_close)
-                holding += (quantity - traded) * (close - previous_close)
-        elif quantity:
-            holding += quantity * (close - previous_close)
+                remaining = traded
+                while remaining:
+                    if not inventory:
+                        raise ValueError('diagnostic fill sells unheld units')
+                    lot = inventory[0]
+                    used = min(remaining, lot[0])
+                    exit_pnl += used * (price - lot[1])
+                    lot[0] -= used
+                    remaining -= used
+                    if not lot[0]:
+                        inventory.popleft()
+        for units, basis, origin in inventory:
+            if origin == 'entry':
+                entry += units * (close - basis)
+            else:
+                holding += units * (close - basis)
         change = float(row["equity"]) - previous_equity
         residual = change - math.fsum((entry, holding, exit_pnl, fees))
         if not math.isclose(residual, 0., rel_tol=1e-10, abs_tol=1e-7):
             raise ValueError("equity diagnosis does not reconcile")
-        per_session[row["session"]].append((previous_equity, float(row["equity"]), entry, holding, exit_pnl, fees,
-                                            row.get("cycle_id") or (None if fill is None else fill["cycle_id"]),
-                                            row["decision_id"], None if fill is None else fill["fill_id"]))
+        cycles = {fill['cycle_id'] for fill in executed}
+        if row.get('cycle_id') is not None:
+            cycles.add(row['cycle_id'])
+        per_session[row['session']].append((previous_equity, float(row['equity']), entry, holding, exit_pnl, fees,
+            next(iter(cycles)) if len(cycles) == 1 else None, row['decision_id'],
+            tuple(fill['fill_id'] for fill in executed)))
         previous_equity, previous_close, quantity = float(row["equity"]), close, int(row["quantity"])
     daily = []
     for session, parts in sorted(per_session.items()):
@@ -69,8 +98,8 @@ def _decompose(ledger, identity, start, end):
         totals = [math.fsum(r[i] for r in parts) for i in range(2, 6)]
         cycles = {r[6] for r in parts if r[6] is not None}
         decisions = tuple(r[7] for r in parts)
-        filled = tuple(r[8] for r in parts if r[8] is not None)
-        order_ids = tuple(x["order_id"] for x in ledger["orders"] if _session(x["valid_end"]) == session)
+        filled = tuple(identity for r in parts for identity in r[8])
+        order_ids = tuple(x["order_id"] for x in ledger["orders"] if _session(x["valid_end"], timezone) == session)
         delta = parts[-1][1] - parts[0][0]
         daily.append(DailyPnl(session, parts[0][0], parts[-1][1], *totals, delta, delta - math.fsum(totals),
                               next(iter(cycles)) if len(cycles) == 1 else None, decisions, order_ids, filled))
@@ -100,17 +129,27 @@ def diagnose_equity_accounts(baseline, baseline_id, start: date, end: date, *, s
     if tuple(x.session for x in left.daily) != tuple(x.session for x in right.daily):
         return AccountDiagnosisCalculation(AccountDiagnosisStatus.INCOMPARABLE, PROTOCOL, ("session coverage differs",))
     paths = []
+    timezone = _timezone(baseline)
     def entries(ledger):
-        exits = {r["cycle_id"]: _session(r["exit_at"]) for r in ledger["trades"]}
-        return {pd.Timestamp(r["interval_start"]): (r["cycle_id"], exits.get(r["cycle_id"]))
-                for r in ledger["fills"] if r["side"] == "BUY"
-                and _session(r["interval_start"]) <= end.isoformat()
-                and exits.get(r["cycle_id"], end.isoformat()) >= start.isoformat()}
+        exits = {r['cycle_id']: _session(r['exit_at'], timezone) for r in ledger['trades']}
+        initial = {}
+        for row in ledger['fills']:
+            if row['side'] == 'BUY':
+                initial.setdefault(row['cycle_id'], row)
+        values, ordinal = {}, defaultdict(int)
+        for row in initial.values():
+            stamp, cycle = pd.Timestamp(row['interval_start']), row['cycle_id']
+            if _session(stamp, timezone) <= end.isoformat() and exits.get(cycle, end.isoformat()) >= start.isoformat():
+                key = (stamp, ordinal[stamp])
+                ordinal[stamp] += 1
+                values[key] = (cycle, exits.get(cycle))
+        return values
     le, re = entries(baseline), entries(alternative)
-    for timestamp in sorted(le.keys() | re.keys()):
-        lc, lx = le.get(timestamp, (None, None))
-        rc, rx = re.get(timestamp, (None, None))
-        paths.append(CyclePathComparison(symbol, _session(timestamp), lc, rc,
+    for key in sorted(le.keys() | re.keys()):
+        timestamp = key[0]
+        lc, lx = le.get(key, (None, None))
+        rc, rx = re.get(key, (None, None))
+        paths.append(CyclePathComparison(symbol, _session(timestamp, timezone), lc, rc,
             lx if lx and lx <= end.isoformat() else None, rx if rx and rx <= end.isoformat() else None))
     def daily(ledger):
         result = {}

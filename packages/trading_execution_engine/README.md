@@ -8,7 +8,7 @@ TXE 是统一成交执行器，位于 DFLS 同一基础能力层。它接收SRT�
 
 TXE以共用账户记账核心承接日范围／检查点及BAR区间两种成交模型。
 `HistoricalExecutor`与`EquityHistoricalExecutor`保留各自已验证的模型事实，不按市场复制费用、现金、
-持仓和应收的经济计算。BAR模型目前仅接纳US合同，不因内核复用自动开放CN BAR交易能力。
+持仓和应收的经济计算。旧BAR模型保留US合同；V4的 `PortfolioHistoricalExecutor`显式接纳CN/US的RAW账户合同。
 支持范围、时间精度及拒绝条件见[TDR美股研究接口](../../src/czsc_trader/README.md#us-equity-research)。
 
 ## 能力边界
@@ -29,6 +29,39 @@ TXE 不负责：
 
 PTE仍以渠道成交回报作为模拟账户事实来源。TXE用于研究与回测的统一执行口径，
 不能替代Futu订单与成交对账。
+
+## 跨市场RAW账户 V4
+
+`PortfolioHistoricalExecutor(specification=..., initial_cash=..., fee_rate=..., actions=...,
+price_basis="RAW", execution_bars=None)`消费 `AccountExecutionPlan`，通过
+`execute_account_plan(plan, bar, constraint=...)`返回真实更新后的账户。SRT共用内核负责时间推进，
+本模型复用既有成交与经济记账运算，不另建市场专用账户循环。旧执行器和冻结策略不隐式改用本模型。
+
+逐区间约束必须明确 `QuantityStep`、`PriceTick`、`Tradable`、`BuySellableAt`、
+`PriceLimitPolicy`、`PriceLimitLower/Upper`及 `SellRemainderPolicy`。
+涨跌停使用 `DATED_LIMITS`与真实上下限，或明确声明 `EXPLICIT_UNBOUNDED`；不从当前制度反推历史。
+余股规则使用 `STRICT_STEP`或 `FULL_LIQUIDATION`，后者只允许已全部可卖的持仓一次清仓，买单仍遵守数量步长。
+延迟现金交收必须提供有效 `SettlementAt`，并以真实成交检查点核对时序。
+
+支持比例目标、显式多个订单、分批建减仓、锁定周期预算和依赖腿。每个订单全额成交或不成交，
+同区间累计成交量限制继续有效；不模拟排队和部分成交。未成交如实记录原因，不启动持仓周期。
+已确认前腿不会因后腿失败而撤销；该账户随后标记失败，不能继续回放或产生成功结果。
+尚无成交的失败步骤撤回事务内事件、幂等键和状态，不能留下伪执行记录。
+
+日线决策的盘中检查点只能消费显式细报价。`PreparedExecutionQuotes.from_frame(frame, market)`
+一次构建只读起止时间及本地槽位索引，可在独立账户间共享并跨工作进程传递；TDR按来源哈希复用。
+日线与细报价必须为同一RAW价格单位，开收盘边界及价格范围相符；缺少精确边界不推测价格。
+显式缺失、零量或阻断报价产生对应未成交原因。普通订单使用主柱区间，细报价仅用于检查点腿。
+订单／成交记录 `quote_source`、源区间及 `executed_at`，主决策区间另行保留。
+
+拆股调整整数持仓、价格尺度、可卖锁及周期目标数量；碎股权益明确拒绝。
+现金股息先计应收，支付和卖出交收按时点转为现金；检查点前真实到账资金可用于后腿。
+执行区间内部发生公司行动时拒绝该模型，需更细执行区间，不能用日线价格跨越单位变化。
+`recognized_events_since(cursor, through)`只返回已确认且当时可见的机械事件，供策略自行调整状态。
+
+行情、约束和细报价在准备阶段索引；事件按有序时间范围和事务游标推进，不逐柱扫描全部行动史。
+热循环不读写磁盘、不重复构造全历史DataFrame；账表在结束时物化。性能随柱数、订单数、事件及
+账本体积增长，需分别测量执行、策略、准备和独立审计，不把纯执行耗时等同于整个研究API耗时。
 
 ## 使用入口与结果
 

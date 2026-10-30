@@ -16,7 +16,7 @@ from pathlib import Path
 
 from dataflows import EquityProduct, MarketId, PreparePolicy, TimeInterval
 from strategy_runtime.equity import ResearchExecutionSpec, equity_hash
-from strategy_runtime.equity_definition import EquityAuxiliaryBinding, EquityInputBinding, EquityStrategyCandidate
+from strategy_runtime.equity_definition import EquityAuxiliaryBinding, EquityInputBinding, EquityStrategyCandidate, ExecutionInputBinding
 from strategy_evaluator.equity_assessment import EquityCertificationScope, certify_equity_ledger
 
 from .equity_evaluation import (EquityArtifact, EquityEvaluationRequest, EquityEvaluationResult,
@@ -61,6 +61,7 @@ class _SessionState:
         self.snapshots = {}
         self.products = {}
         self.replays = {}
+        self.execution_quotes = {}
         self.prepared = {}
         self.benchmarks = {}
         self.results = {}
@@ -85,13 +86,19 @@ def _benchmark_candidate(request):
     from strategy_runtime.equity_definition import EquityStrategyDefinition, equity_source_hash
     from strategy_runtime.equity_features import FeatureGraph
     from strategy_runtime.equity_replay import StrategyStateSchema
-    from strategy_runtime.equity_buy_hold_v3 import step
+    from strategy_runtime.replay_contracts import StrategyComputation
+    if request.candidate.definition.contract_version == 4:
+        from strategy_runtime.equity_buy_hold_v4 import step
+    else:
+        from strategy_runtime.equity_buy_hold_v3 import step
     root = Path(inspect.getsourcefile(step)).parent
-    files = ("equity_buy_hold_v3.py",)
+    module = "equity_buy_hold_v4" if request.candidate.definition.contract_version == 4 else "equity_buy_hold_v3"
+    files = (module + ".py",)
     definition = EquityStrategyDefinition(request.candidate.instrument,
         request.candidate.definition.execution_spec, request.candidate.warmup_bars,
-        "equity_buy_hold_v3:step", files, equity_source_hash(root, files),
-        contract_version=3, feature_graph=FeatureGraph((), ()), state_schema=StrategyStateSchema())
+        module + ":step", files, equity_source_hash(root, files),
+        contract_version=request.candidate.definition.contract_version, feature_graph=FeatureGraph((), ()), state_schema=StrategyStateSchema(),
+        **({"computation": StrategyComputation.STATEFUL_STEP} if request.candidate.definition.contract_version == 4 else {}))
     # Internal implementation adapter only; the external account owner is BENCHMARK.
     return EquityStrategyCandidate("S000", "C0000", definition, root)
 
@@ -112,11 +119,11 @@ def _primary_input_sha256(snapshot):
 
 def prepare_equity_v3(access, request, *, execution):
     """Fetch/authenticate each exact input selection once in the owning session."""
-    if type(request) is not EquityEvaluationRequest or not request.formal or request.candidate.definition.contract_version != 3:
+    if type(request) is not EquityEvaluationRequest or not request.formal or request.candidate.definition.contract_version not in (3, 4):
         raise TypeError("v3 preparation requires an explicit v3 strategy request")
     state = _state(access, execution, request.experiment.experiment_id)
     spec = access.execution_spec
-    if type(spec) is not ResearchExecutionSpec or spec.market_id is not MarketId.US:
+    if type(spec) is not ResearchExecutionSpec or (request.candidate.definition.contract_version == 3 and spec.market_id is not MarketId.US):
         raise ValueError("v3 replay requires the US equity execution contract")
     spec.require_instrument(request.candidate.instrument)
     if request.candidate.execution_spec_hash != spec.fingerprint or request.experiment.strategy_id != access.strategy_id:
@@ -149,7 +156,9 @@ def prepare_equity_v3(access, request, *, execution):
             request.candidate.warmup_bars, auxiliary_inputs=tuple(EquityAuxiliaryBinding(item,
                 identities[item.data_key(EquityProduct.BARS)]["content_sha256"],
                 identities[item.data_key(EquityProduct.SESSIONS)]["content_sha256"])
-                for item in definition.auxiliary_inputs))
+                for item in definition.auxiliary_inputs), **({'execution_input': ExecutionInputBinding(definition.execution_input,
+                    identities['execution:bars']['content_sha256'], identities['execution:sessions']['content_sha256'])}
+                    if definition.contract_version == 4 and definition.execution_input is not None else {}))
         if request.input_binding is not None and request.input_binding != binding:
             raise ValueError("equity input identity differs from prepared assets")
         facts_hash = equity_hash(_audit_inputs(request, spec, state.products[snapshot.sha256]))
@@ -188,7 +197,8 @@ def _replay(state, prepared, *, benchmark=False):
     candidate = _benchmark_candidate(prepared.request) if benchmark else prepared.candidate
     graph = candidate.definition.feature_graph
     context_key = equity_hash({"auxiliary": [asdict(x) for x in candidate.definition.auxiliary_inputs],
-                              "session": candidate.definition.session_context})
+                              "session": candidate.definition.session_context,
+                              "contract_version": candidate.definition.contract_version})
     key = (prepared.snapshot.sha256, equity_hash(graph.to_dict()), candidate.definition.execution_spec.data_latency_seconds, context_key)
     if key not in state.replays:
         products = state.products[prepared.snapshot.sha256]
@@ -196,6 +206,7 @@ def _replay(state, prepared, *, benchmark=False):
         identities = _read(prepared.snapshot.artifact.content)["data"]
         state.replays[key] = (base.with_graph(graph) if base is not None else PreparedReplay.from_frames(
             products["bars"], products["constraints"], graph, latency_seconds=key[2],
+            **({"frequency": candidate.definition.execution_spec.decision_clock, "timezone": candidate.instrument.timezone} if candidate.definition.contract_version == 4 else {}),
             **_runtime_inputs(candidate.definition, products, identities)))
     return candidate, state.replays[key]
 
@@ -208,12 +219,17 @@ class _ReplayAccountRequest:
     fee_rate: float
 
 
-def _compute_account(replay, candidate, request, actions, owner):
+def _compute_account(replay, candidate, request, actions, owner, execution_bars=None):
     """Worker computation only: it cannot certify or publish its own output."""
     from strategy_runtime.equity_replay import run_replay
     from trading_execution_engine.equity import EquityHistoricalExecutor
-    executor = EquityHistoricalExecutor(specification=candidate.definition.execution_spec,
-        initial_cash=request.initial_cash, fee_rate=request.fee_rate, actions=actions)
+    if candidate.definition.contract_version == 4:
+        from trading_execution_engine.portfolio import PortfolioHistoricalExecutor
+        executor_type = PortfolioHistoricalExecutor
+    else:
+        executor_type = EquityHistoricalExecutor
+    executor = executor_type(specification=candidate.definition.execution_spec,
+        initial_cash=request.initial_cash, fee_rate=request.fee_rate, actions=actions, **({"price_basis": "RAW", "execution_bars": execution_bars} if candidate.definition.contract_version == 4 else {}))
     outcome = run_replay(replay, candidate, executor, start=request.window.start,
         end=request.window.end, fee_rate=request.fee_rate, owner=owner)
     account = outcome.execution_result
@@ -255,9 +271,14 @@ def _certify_run(state, prepared, run, *, benchmark):
     inputs = _inputs(prepared.snapshot, prepared.request)
     ledger = {**inputs, **{name: run[name] for name in
         ("decisions", "orders", "fills", "actions", "account_points", "trades")}}
+    if prepared.candidate.definition.contract_version == 4:
+        ledger["account_contract"] = 4
+        if not benchmark and prepared.candidate.definition.execution_input is not None:
+            ledger['execution_bars'] = _read(prepared.snapshot.artifact.content)['products']['execution:bars']
     with state.certification:
-        audit = certify_equity_ledger(ledger)
-    run = {**run, "metrics": _json_value(asdict(audit)), "data_quality": _data_quality(inputs["bars"], run)}
+        audit = certify_equity_ledger(ledger, decision_contract="FORMAL_V4" if prepared.candidate.definition.contract_version == 4 else "FORMAL_V2")
+    run = {**run, "metrics": _json_value(asdict(audit)), "data_quality": _data_quality(inputs["bars"], run,
+        timezone=prepared.candidate.instrument.timezone, execution_bars=ledger.get("execution_bars"))}
     owner = ({"kind": "BENCHMARK", "run_identity": prepared.benchmark_identity.to_dict(),
               "run_sha256": prepared.benchmark_identity.sha256} if benchmark else
              {"kind": "CANDIDATE", "candidate": asdict(prepared.candidate.key),
@@ -274,7 +295,8 @@ def _result(prepared, candidate, benchmark):
     request_hash = equity_hash(contract)
     identity = EvaluationIdentity(request.candidate.key, request.candidate.content_identity.content_sha256,
         request.prepared.manifest_sha256, request_hash, canonical_sha256(contract["engine_sources"]))
-    payload = {"schema": "equity-research/v3", "schema_version": 3, "request": contract,
+    version = request.candidate.definition.contract_version
+    payload = {"schema": f"equity-research/v{version}", "schema_version": version, "request": contract,
         "request_hash": request_hash, "evaluation_identity": identity.to_dict(), "evaluation_id": identity.evaluation_id,
         "data": _read(prepared.snapshot.artifact.content)["data"], "input_ref": prepared.snapshot.artifact.reference(),
         "candidate_ref": candidate.reference(), "benchmark_ref": benchmark.reference(),
@@ -319,7 +341,16 @@ def evaluate_many_equity_v3(access, requests, *, execution):
                     candidate, replay = _replay(state, prepared, benchmark=benchmark)
                 owner = _account_owner(prepared, benchmark=benchmark)
                 contract = _ReplayAccountRequest(prepared.request.window, prepared.request.initial_cash, prepared.request.fee_rate)
-                tasks.append((key, (replay, candidate, contract, state.products[prepared.snapshot.sha256]["actions"], owner)))
+                quotes = None
+                if candidate.definition.contract_version == 4 and candidate.definition.execution_input is not None:
+                    from trading_execution_engine import PreparedExecutionQuotes
+                    key_quote = (prepared.request.input_binding.execution_input.bars_sha256, candidate.instrument.market)
+                    if key_quote not in state.execution_quotes:
+                        with execution.executor.measure(ExecutionPhase.PREPARE):
+                            state.execution_quotes[key_quote] = PreparedExecutionQuotes.from_frame(
+                                state.products[prepared.snapshot.sha256]['execution:bars'], candidate.instrument.market)
+                    quotes = state.execution_quotes[key_quote]
+                tasks.append((key, (replay, candidate, contract, state.products[prepared.snapshot.sha256]["actions"], owner, quotes)))
             except Exception as exc:
                 failures[key] = exc
     completed = {}
@@ -395,8 +426,10 @@ def validate_certified_result(access, prepared, result, *, execution):
 
 
 def validate_result_structure(payload, artifacts=()):
-    if payload.get("schema_version") != 3 or payload["request"].get("schema") != "equity-research/v3":
+    if payload.get("schema_version") not in (3, 4) or payload["request"].get("schema") != f"equity-research/v{payload["schema_version"]}":
         raise ValueError("v3 result schema differs")
+    if payload["request"].get("candidate_definition", {}).get("contract_version") != payload["schema_version"]:
+        raise ValueError("account evidence version differs from strategy contract")
     expected = []
     for name, kind in (("input_ref", "equity_input"), ("candidate_ref", "equity_account"), ("benchmark_ref", "equity_account")):
         ref = payload[name]
@@ -468,13 +501,15 @@ class MaterializedEquityV3:
             "initial_cash": request["initial_cash"], "fee_rate": request["fee_rate"]})
         definition = request["candidate_definition"]
         decision_inputs = {}
-        if definition.get("session_context"):
+        if definition.get("session_context") or definition.get("contract_version") == 4:
             decision_inputs["sessions"] = products["sessions"]
         if definition.get("auxiliary_inputs"):
             decision_inputs["auxiliary"] = {item["name"]: {
                 "bars": products[f"auxiliary:{item['name']}:bars"],
                 "sessions": products[f"auxiliary:{item['name']}:sessions"]}
                 for item in definition["auxiliary_inputs"]}
+        if definition.get('execution_input') is not None:
+            decision_inputs['execution'] = {'bars': products['execution:bars'], 'sessions': products['execution:sessions']}
         if decision_inputs:
             payload["audit_inputs"]["decision_inputs"] = decision_inputs
         return payload

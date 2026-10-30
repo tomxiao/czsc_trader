@@ -306,6 +306,29 @@ Q日K尚非主力的记录也保留。该组合及信号计算属于研究层；
 行情、日历、公司行动及逐区间交易约束的字段与失败语义见[TDR美股研究接口](../../src/czsc_trader/README.md#us-equity-research)。
 原 A 股数据集及供应商绑定保持不变。
 
+### CN/US版本化RAW事实源
+
+`versioned_equity_bindings(instrument=..., source=..., coverage=..., sessions=...,
+frequencies=..., actions=...)`为两市场的V4账户提供精确来源绑定。调用方提交：
+
+- `EquitySourceCoverage(start, end, evidence, actions_complete, no_actions_verified=False)`：覆盖及来源核验凭据；必须明确行动历史完整。
+- 独立 `TradingSession`序列，以及每个已提供频率的 `EquityFrequencyFacts(frequency, bars, constraints)`。
+- RAW行情、真实生效及可用时间的公司行动；现金股息须有支付时间，核实无行动须有显式NONE及相应凭据。
+
+只接纳已声明频率，不用日线重采样补30分钟，也不从复权因子推测拆股或分红。
+逐区间规则还须提供价格限制、可卖时间及余股清仓政策，字段见[TXE V4](../trading_execution_engine/README.md#跨市场raw账户-v4)。
+完整事实在安装绑定时校验并复制；请求按本地交易日索引切片，返回独立数值容器，不在每次请求重扫全历史。
+已认证完整行动源的无事件子窗口可以生成带明确凭据的NONE；未经核验的空接口响应不能据此声明历史无事件。
+
+显式观察状态使用 `observation_contract=EXPLICIT_SOURCE_OBSERVATIONS_V1`，CN/US均可保留
+`MISSING`、`ZERO_VOLUME`和执行阻断事实；所有频率必须一致提供状态字段及完整网格。
+缺失柱的OHLC与量额全空，不补价格，不将缺口解释为历史停牌。缺行、伪造价格或未完成来源核验仍失败。
+原A股后复权数据集及现有Futu研究政策各自保留原契约，不因新增事实源自动采用上述约定。
+
+此入口接纳调用方已核验的事实，不提供自动拼装完整A股历史权益事件的Tushare适配器。
+供应商日线、分钟、涨跌停及分红接口可用性须与全历史覆盖、准确到账时点、送股可卖时间分别核验。
+供应商的分红日期不自动等于盘中到账时点；软件验收和单日样本取数不能证明某标的多年RAW研究数据已经就绪。
+
 正式美股研究准备须一次明确行情、会话、公司行动、交易约束四个 `SourceRef`，并由
 `ProviderConfig(equity_bindings=...)` 提供精确 `ProviderKey` 映射。各来源声明同一独立交易日历；
 准备结果冻结来源修订、完整覆盖及内容身份，TDR 将其保存为 `EquityInputBinding`。

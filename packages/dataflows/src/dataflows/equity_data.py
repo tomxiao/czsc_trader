@@ -1,6 +1,7 @@
 """Validation of explicit equity products before managed publication."""
 from dataclasses import asdict
 from datetime import date, datetime
+from hashlib import sha256
 import math
 
 import pandas as pd
@@ -94,27 +95,33 @@ def validate_equity_frame(frame, request, metadata):
         if not set(columns).issubset(frame):
             raise DataContractError("equity OHLCV fields are incomplete")
         values = frame.loc[:, list(columns)].astype(float)
-        if policy is not None:
+        explicit_observations = metadata.get('observation_contract') == 'EXPLICIT_SOURCE_OBSERVATIONS_V1'
+        if explicit_observations:
+            evidence = metadata.get('coverage_evidence')
+            if (type(evidence) is not str or not evidence.strip()
+                    or metadata.get('coverage_evidence_sha256') != sha256(evidence.encode()).hexdigest()):
+                raise DataContractError('explicit observations require complete versioned source provenance')
+        if policy is not None or explicit_observations:
             if not {"BarStatus", "ExecutionBlocked"}.issubset(frame):
                 raise DataContractError("research bars require status and execution blocking facts")
             if not frame.BarStatus.isin(("OBSERVED", "ZERO_VOLUME", "MISSING")).all():
                 raise DataContractError("unknown research bar status")
             missing = frame.BarStatus.eq("MISSING")
-            if missing.all() or not values.loc[missing].isna().all().all():
+            if (missing.all() and policy is not None) or not values.loc[missing].isna().all().all():
                 raise DataContractError("missing bars require empty OHLCV and at least one source bar")
-            receipts = metadata.get("download_receipts", [])
-            if (metadata.get("download_complete") is not True or not receipts
-                    or any(type(r.get("rows")) is not int or r["rows"] < 0 or r.get("result") != 0
-                           or r.get("page") != i or r.get("more_pages") is not (i < len(receipts) - 1)
-                           for i, r in enumerate(receipts))
-                    or sum(r["rows"] for r in receipts) != int((~missing).sum())):
-                raise IncompleteDataError("research gaps require successful complete pagination evidence")
+            if policy is not None:
+                receipts = metadata.get("download_receipts", [])
+                if (metadata.get("download_complete") is not True or not receipts
+                        or any(type(r.get("rows")) is not int or r["rows"] < 0 or r.get("result") != 0
+                               or r.get("page") != i or r.get("more_pages") is not (i < len(receipts) - 1)
+                               for i, r in enumerate(receipts))
+                        or sum(r["rows"] for r in receipts) != int((~missing).sum())):
+                    raise IncompleteDataError("research gaps require successful complete pagination evidence")
             if (frame.BarStatus.eq("ZERO_VOLUME") != values.Volume.eq(0)).any():
                 raise DataContractError("zero-volume status differs from source volume")
-            blocked = [any(bar.start < i.end and i.start < bar.end for i in policy.unavailable_intervals)
-                       for bar in expected]
-            if (any(type(v) is not bool for v in frame.ExecutionBlocked)
-                    or list(frame.ExecutionBlocked) != blocked):
+            blocked = ([any(bar.start < i.end and i.start < bar.end for i in policy.unavailable_intervals)
+                       for bar in expected] if policy is not None else list(frame.ExecutionBlocked))
+            if any(type(v) is not bool for v in frame.ExecutionBlocked) or list(frame.ExecutionBlocked) != blocked:
                 raise DataContractError("execution blocking differs from declared unavailable intervals")
             values = values.loc[~missing]
         elif {"BarStatus", "ExecutionBlocked"}.intersection(frame):
@@ -154,6 +161,27 @@ def validate_equity_frame(frame, request, metadata):
             raise IncompleteDataError("trading constraints must cover every execution interval")
         if (available > dates).any():
             raise DataContractError("trading constraints unavailable at their effective interval")
+        dated_rules = {'PriceLimitPolicy', 'PriceLimitLower', 'PriceLimitUpper', 'BuySellableAt', 'SellRemainderPolicy'}
+        if metadata.get('constraint_contract') == 'DATED_EQUITY_RULES_V1' or dated_rules.intersection(frame.columns):
+            if not (dated_rules | {'SettlementAt'}).issubset(frame):
+                raise DataContractError('dated equity rules require price limits, buy sellability and settlement facts')
+            for row in frame.itertuples():
+                if row.SellRemainderPolicy not in {'STRICT_STEP', 'FULL_LIQUIDATION'}:
+                    raise DataContractError('unsupported explicit sell remainder policy')
+                if row.PriceLimitPolicy == 'DATED_LIMITS':
+                    limits = (row.PriceLimitLower, row.PriceLimitUpper)
+                    if (any(type(value) not in (int, float) or not math.isfinite(value) or value <= 0 for value in limits)
+                            or limits[0] >= limits[1]):
+                        raise DataContractError('dated price limits require finite positive lower < upper')
+                elif row.PriceLimitPolicy == 'EXPLICIT_UNBOUNDED':
+                    if not pd.isna(row.PriceLimitLower) or not pd.isna(row.PriceLimitUpper):
+                        raise DataContractError('unbounded price policy cannot declare price limits')
+                else:
+                    raise DataContractError('unsupported dated price-limit policy')
+            for column in ('BuySellableAt', 'SettlementAt'):
+                times = _timestamps(frame, column)
+                if (times < dates).any():
+                    raise DataContractError(f'{column} cannot precede its execution interval')
         if policy is not None:
             if (metadata.get("available_at") != "SESSION_ELIGIBILITY_RESEARCH_ASSUMPTION"
                     or metadata.get("tradability_basis") != "RESEARCH_ASSUMPTION_NOT_HISTORICAL_HALT_EVIDENCE"

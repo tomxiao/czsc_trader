@@ -51,15 +51,12 @@ class LimitBuyHold:
 
 @dataclass(frozen=True)
 class EquityBuyHold:
-    """Buy and hold under the exact US research execution contract."""
+    """Buy and hold under the exact declared equity execution contract."""
     execution_spec: ResearchExecutionSpec
 
     def __post_init__(self):
-        from dataflows import MarketId
         if type(self.execution_spec) is not ResearchExecutionSpec:
             raise TypeError("equity benchmark requires ResearchExecutionSpec")
-        if self.execution_spec.market_id is not MarketId.US:
-            raise ValueError("equity benchmark requires the US execution contract")
 
 
 @dataclass(frozen=True)

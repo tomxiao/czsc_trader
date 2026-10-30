@@ -295,11 +295,11 @@ class EquityStrategyInstance:
                    auxiliary_histories=None, sessions=None, trading_sessions=()):
         """Plan at bar boundaries with only completed, published observations."""
         from .equity_definition import EquityStrategyCandidate
-        if type(self.candidate) is EquityStrategyCandidate and self.candidate.definition.contract_version == 3:
+        if type(self.candidate) is EquityStrategyCandidate and self.candidate.definition.contract_version in (3, 4):
             from .equity_replay import PreparedReplay, run_replay
             prepared = PreparedReplay.from_frames(bars, constraints, self.candidate.definition.feature_graph,
                 latency_seconds=self.specification.data_latency_seconds,
-                auxiliary_histories=auxiliary_histories, sessions=sessions, trading_sessions=trading_sessions)
+                auxiliary_histories=auxiliary_histories, sessions=sessions, trading_sessions=trading_sessions, frequency=self.specification.decision_clock, timezone=self.candidate.instrument.timezone)
             return run_replay(prepared, self.candidate, executor, start=start, end=end, fee_rate=fee_rate).execution_result
         if type(self.candidate) is EquityStrategyCandidate:
             self.candidate.verify()
@@ -352,7 +352,7 @@ class EquityStrategyInstance:
     def plan(self, history: pd.DataFrame, interval: TimeInterval, portfolio: EquityPortfolio,
              *, fee_rate: float, auxiliary_histories=None, sessions=None, trading_sessions=()) -> EquityPlan:
         from .equity_definition import EquityStrategyCandidate
-        if type(self.candidate) is EquityStrategyCandidate and self.candidate.definition.contract_version == 3:
+        if type(self.candidate) is EquityStrategyCandidate and self.candidate.definition.contract_version in (3, 4):
             raise ValueError('equity V3 is historical research only; use its complete run_window state transaction')
         if "BarStatus" in history:
             if not history.BarStatus.isin(("OBSERVED", "MISSING", "ZERO_VOLUME")).all():
