@@ -1,7 +1,8 @@
 """Sequential equity bar execution, sharing canonical order fill resolution."""
 from dataclasses import asdict, dataclass
 from datetime import datetime
-from copy import deepcopy
+from collections.abc import Iterator, Mapping
+from contextlib import contextmanager
 from decimal import Decimal, ROUND_FLOOR
 import math
 
@@ -12,6 +13,36 @@ from strategy_runtime.equity import (CashAvailabilityPolicy, EquityClosedCycle, 
                                     EquityPlan, EquityPortfolio, ResearchExecutionSpec, equity_hash)
 
 from .fills import OrderSpec, resolve_fill
+
+
+EquityRow = pd.Series | Mapping[str, object]
+
+
+@dataclass(frozen=True)
+class _CorporateAction:
+    Date: datetime
+    EventId: str
+    Kind: str
+    Ratio: float | None
+    CashPerShare: float | None
+    PayAt: datetime | None
+
+
+@dataclass
+class _TransitionCheckpoint:
+    state: dict[str, object]
+    pending: list
+    lengths: dict[str, int]
+    completed_added: list[str]
+    applied_added: list[str]
+
+
+_ACCOUNT_STATE = (
+    "cash", "quantity", "receivable", "revision", "last_end", "last_mark_price",
+    "last_mark_time", "cycle", "cycle_cost", "cycle_income", "cycle_entry",
+    "_cycle_entry_interval", "_cycle_entry_quantity", "_cycle_feedback_supported",
+    "_closed_cycle_feedback",
+)
 
 
 @dataclass(frozen=True)
@@ -45,6 +76,13 @@ class EquityHistoricalExecutor:
         self.actions = actions.copy(deep=True)
         self.actions["_priority"] = self.actions.Kind.map({"SPLIT": 0, "CASH_DIVIDEND": 1, "NONE": 2})
         self.actions = self.actions.sort_values(["Date", "_priority", "EventId"])
+        # Retain the independent public frame, but never construct pandas rows on
+        # the per-decision path. Optional fields remain unused for NONE events.
+        self._action_events = tuple(_CorporateAction(
+            event.Date, event.EventId, event.Kind, getattr(event, "Ratio", None),
+            getattr(event, "CashPerShare", None), getattr(event, "PayAt", None),
+        ) for event in self.actions.itertuples(index=False))
+        self._transactions: list[_TransitionCheckpoint] = []
         self.pending = []
         self.applied = set()
         self.completed = {}
@@ -60,6 +98,41 @@ class EquityHistoricalExecutor:
         self._cycle_feedback_supported = True
         self._closed_cycle_feedback = EquityClosedCycleFeedback()
 
+    @contextmanager
+    def transaction(self) -> Iterator["EquityHistoricalExecutor"]:
+        """Atomically apply one decision, execution and caller-side validation.
+
+        Nesting provides savepoints. Failure restores this account's state and
+        removes only journal entries and idempotency keys added in this scope.
+        The caller owns strategy state and commits it only after success. Existing
+        journal rows must not be mutated by callers inside the scope.
+        """
+        checkpoint = _TransitionCheckpoint(
+            {key: getattr(self, key) for key in _ACCOUNT_STATE}, list(self.pending),
+            {name: len(rows) for name, rows in self.rows.items()}, [], [],
+        )
+        self._transactions.append(checkpoint)
+        try:
+            yield self
+        except BaseException:
+            self.__dict__.update(checkpoint.state)
+            self.pending = checkpoint.pending
+            for key in checkpoint.completed_added:
+                self.completed.pop(key, None)
+            for key in checkpoint.applied_added:
+                self.applied.discard(key)
+            for name, length in checkpoint.lengths.items():
+                del self.rows[name][length:]
+            raise
+        finally:
+            self._transactions.pop()
+
+    def _mark_applied(self, identity):
+        if identity not in self.applied:
+            for checkpoint in self._transactions:
+                checkpoint.applied_added.append(identity)
+            self.applied.add(identity)
+
     def snapshot(self):
         return EquityPortfolio(self.cash, self.quantity, self.receivable, self.revision,
                                self.cycle_entry, self.cycle_cost,
@@ -69,23 +142,15 @@ class EquityHistoricalExecutor:
         """Apply already-effective events before a formal causal decision."""
         from dataclasses import replace
         scale = 1.
-        for event in self.actions.itertuples():
+        for event in self._action_events:
             if event.Kind == 'SPLIT' and observed_through <= pd.Timestamp(event.Date) <= decision_at:
                 scale /= float(event.Ratio)
-        lengths = {name: len(rows) for name, rows in self.rows.items()}
-        previous = {key: deepcopy(value) for key, value in self.__dict__.items()
-                    if key not in {'rows', 'completed', 'actions', 'spec'}}
-        try:
+        with self.transaction():
             self._events(decision_at, after=decision_at, plan_quantity=0, limit_price=None)
             return replace(self.snapshot(), reference_price_scale=scale)
-        except Exception:
-            self.__dict__.update(previous)
-            for name, length in lengths.items():
-                del self.rows[name][length:]
-            raise
 
     def _events(self, through, *, after, plan_quantity, limit_price, include_actions=True):
-        for event in self.actions.itertuples():
+        for event in self._action_events:
             if event.Kind == "NONE" or event.EventId in self.applied:
                 continue
             stamp = pd.Timestamp(event.Date)
@@ -95,7 +160,7 @@ class EquityHistoricalExecutor:
                 continue
             # Events preceding this independent account cannot create entitlements.
             if self.last_end is None and stamp < after:
-                self.applied.add(event.EventId)
+                self._mark_applied(event.EventId)
                 continue
             self._pay(stamp, inclusive=False)
             before = self.quantity
@@ -131,7 +196,7 @@ class EquityHistoricalExecutor:
                 self.pending.append((pay, amount, event.EventId, "DIVIDEND_PAYMENT"))
             else:
                 raise ValueError("CORPORATE_ACTION_UNSUPPORTED")
-            self.applied.add(event.EventId)
+            self._mark_applied(event.EventId)
             self.rows["actions"].append({"event_id": event.EventId, "time": stamp,
                                          "account_revision": self.revision,
                                          "kind": event.Kind, "quantity_before": before,
@@ -154,20 +219,14 @@ class EquityHistoricalExecutor:
                 remaining.append((stamp, amount, identity, kind))
         self.pending = remaining
 
-    def execute(self, plan: EquityPlan, bar: pd.Series, *, constraint: pd.Series):
-        # Roll back one transition without copying the growing evidence journal.
-        journal_lengths = {name: len(rows) for name, rows in self.rows.items()}
-        previous = {key: deepcopy(value) for key, value in self.__dict__.items()
-                    if key not in {"rows", "completed", "actions", "spec"}}
-        try:
+    def execute(self, plan: EquityPlan, bar: EquityRow, *, constraint: EquityRow):
+        """Execute a Series or immutable mapping row through the same fill kernel."""
+        if not isinstance(bar, (pd.Series, Mapping)) or not isinstance(constraint, (pd.Series, Mapping)):
+            raise TypeError("execution bar and constraint must be Series or Mapping rows")
+        with self.transaction():
             return self._execute(plan, bar, constraint=constraint)
-        except Exception:
-            self.__dict__.update(previous)
-            for name, length in journal_lengths.items():
-                del self.rows[name][length:]
-            raise
 
-    def _execute(self, plan: EquityPlan, bar: pd.Series, *, constraint: pd.Series):
+    def _execute(self, plan: EquityPlan, bar: EquityRow, *, constraint: EquityRow):
         if type(plan) is not EquityPlan or plan.specification_hash != self.spec.fingerprint:
             raise ValueError("MARKET_CONTRACT_MISMATCH: execution plan")
         interval = plan.point.execution_interval
@@ -184,11 +243,11 @@ class EquityHistoricalExecutor:
         else:
             prices = [float(bar[name]) for name in ("Open", "High", "Low", "Close")]
             if (any(not math.isfinite(value) or value <= 0 for value in prices)
-                or not float(bar.Low) <= min(float(bar.Open), float(bar.Close))
-                or not float(bar.High) >= max(float(bar.Open), float(bar.Close))
-                or not math.isfinite(float(bar.Volume)) or float(bar.Volume) < 0):
+                or not float(bar["Low"]) <= min(float(bar["Open"]), float(bar["Close"]))
+                or not float(bar["High"]) >= max(float(bar["Open"]), float(bar["Close"]))
+                or not math.isfinite(float(bar["Volume"])) or float(bar["Volume"]) < 0):
                 raise ValueError("invalid execution OHLCV")
-            if "BarStatus" in bar and ((status == "ZERO_VOLUME") != (float(bar.Volume) == 0)):
+            if "BarStatus" in bar and ((status == "ZERO_VOLUME") != (float(bar["Volume"]) == 0)):
                 raise ValueError("bar status differs from observed volume")
         bar_hash = equity_hash({"bar": {k: (None if pd.isna(v) else v.isoformat() if isinstance(v, (datetime, pd.Timestamp)) else v)
                                        for k, v in bar.items()},
@@ -200,17 +259,17 @@ class EquityHistoricalExecutor:
             return self.snapshot()
         if plan.portfolio_revision != self.revision or (self.last_end is not None and interval.start < self.last_end):
             raise ValueError("stale portfolio revision or unordered execution")
-        if pd.Timestamp(bar.BarStart) != interval.start or pd.Timestamp(bar.Date) != interval.end:
+        if pd.Timestamp(bar["BarStart"]) != interval.start or pd.Timestamp(bar["Date"]) != interval.end:
             raise ValueError("execution bar does not match plan interval")
-        if (int(constraint.QuantityStep), float(constraint.PriceTick)) != (self.spec.quantity_step, self.spec.price_tick):
+        if (int(constraint["QuantityStep"]), float(constraint["PriceTick"])) != (self.spec.quantity_step, self.spec.price_tick):
             raise ValueError("dated quantity/price rules differ from declared execution specification")
-        if pd.Timestamp(constraint.Date) != interval.start or pd.Timestamp(constraint.AvailableDate) > interval.start:
+        if pd.Timestamp(constraint["Date"]) != interval.start or pd.Timestamp(constraint["AvailableDate"]) > interval.start:
             raise ValueError("CAUSAL_TIME_VIOLATION: constraints must belong to this execution interval")
         if self.spec.market_id is MarketId.CN:
             # Existing CN engine owns exchange-bound execution. Do not execute CN
             # bars without its price limits and sellability semantics.
             raise ValueError("UNSUPPORTED_EXECUTION_COMBINATION: CN bar execution is not admitted")
-        for event in self.actions.itertuples():
+        for event in self._action_events:
             if event.Kind != "NONE" and interval.start < pd.Timestamp(event.Date) < interval.end:
                 raise ValueError("CORPORATE_ACTION_UNSUPPORTED: event inside execution bar")
         quantity, limit = self._events(interval.start, after=plan.point.decision_at,
@@ -231,13 +290,13 @@ class EquityHistoricalExecutor:
                 reason = "ZERO_VOLUME"
             elif blocked:
                 reason = "KNOWN_INTERRUPTION"
-            elif bool(constraint.Tradable) and (float(bar.Volume) <= 0 or quantity > float(bar.Volume)):
+            elif bool(constraint["Tradable"]) and (float(bar["Volume"]) <= 0 or quantity > float(bar["Volume"])):
                 reason = "INSUFFICIENT_BAR_VOLUME"
-            elif bool(constraint.Tradable):
+            elif bool(constraint["Tradable"]):
                 fill = resolve_fill(OrderSpec(plan.side, "LIMIT" if plan.side == "BUY" else "MARKET",
                                                quantity, limit),
-                                    session_open=float(bar.Open), session_time=interval.start,
-                                    intraday_touches=((interval.end, float(bar.Low if plan.side == "BUY" else bar.High)),),
+                                    session_open=float(bar["Open"]), session_time=interval.start,
+                                    intraday_touches=((interval.end, float(bar["Low"] if plan.side == "BUY" else bar["High"])),),
                                     slippage_bp=self.spec.slippage_bp, inclusive_touch=self.spec.inclusive_touch)
                 reason = fill.reason or "FILLED"
                 if fill.filled:
@@ -316,7 +375,7 @@ class EquityHistoricalExecutor:
         self.revision += 1
         self.last_end = interval.end
         if not stale:
-            self.last_mark_price, self.last_mark_time = float(bar.Close), interval.end
+            self.last_mark_price, self.last_mark_time = float(bar["Close"]), interval.end
         elif self.last_mark_price is None:
             self.last_mark_price, self.last_mark_time = plan.reference_price, plan.point.observed_through
         zone = "America/New_York" if self.spec.market_id is MarketId.US else "Asia/Shanghai"
@@ -329,6 +388,8 @@ class EquityHistoricalExecutor:
                                     "bar_status": status, "valuation_stale": stale,
                                     "valuation_price_at": self.last_mark_time, "execution_blocked": bool(blocked),
                                     "cycle_id": self.cycle, "decision_id": plan.plan_id})
+        for checkpoint in self._transactions:
+            checkpoint.completed_added.append(plan.plan_id)
         self.completed[plan.plan_id] = bar_hash
         return self.snapshot()
 

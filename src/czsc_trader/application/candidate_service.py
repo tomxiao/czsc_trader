@@ -191,11 +191,17 @@ def _register_equity_candidate(context, request):
             raise ValueError('equity candidate root contains a link')
     for ref in request.evidence:
         _, data = ref._read_verified(context.root)
-        if ref.schema != 'equity_research' or ref.schema_version != 2:
-            raise ValueError('formal equity registration requires equity_research/v2 support')
+        if ref.schema != 'equity_research' or ref.schema_version not in (2, 3):
+            raise ValueError('formal equity registration requires equity_research/v2 or v3 support')
         value = json.loads(data)
         from ..research_tools.equity_assessment import build_equity_assessment_payload
-        build_equity_assessment_payload(value)
+        if ref.schema_version == 3:
+            from .equity_evidence_io import materialize_equity_document
+            from ..research_tools.equity_replay_v3 import build_v3_assessment
+            view = materialize_equity_document(context.root, ref.repository_path, value)
+            build_v3_assessment(view)
+        else:
+            build_equity_assessment_payload(value)
         declaration = value['request']
         if declaration.get('candidate_id') != candidate.candidate_id or declaration.get('implementation_hash') != identity.content_sha256:
             raise ValueError('equity support differs from candidate content')

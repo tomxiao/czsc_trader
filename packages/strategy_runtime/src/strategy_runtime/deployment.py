@@ -158,6 +158,8 @@ def validate_release_package(strategy_root: Path, release_id: str) -> VerifiedRe
     if equity:
         from .equity_definition import EquityStrategyCandidate, EquityStrategyDefinition, equity_source_hash
         definition = EquityStrategyDefinition.from_dict(dict(release.payload["equity_definition"]))
+        if definition.contract_version != 2:
+            raise RuntimeCompatibilityError('equity V3 is historical research only; production state migration is not supported')
         candidate = EquityStrategyCandidate(family, str(frozen["source_candidate"]), definition, source_root)
         candidate.verify()
         digest = equity_source_hash(source_root, binding.spec.source_files)

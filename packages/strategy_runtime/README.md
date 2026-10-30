@@ -1,5 +1,114 @@
 # 策略运行时（Strategy Runtime，SRT）
 
+## 美股研究 V3：可见特征与显式状态
+
+V3 面向美股 30 分钟研究账户，声明行情特征依赖与状态字段，由公共运行器按真实成交推进状态。
+V2 历史源码和生产调用保持原版本；V3 不自动回退到 V2，也不因研究可运行而取得 PTE 部署资格。
+当前生产发布加载器和独立 `plan(...)` 调用明确拒绝 V3；V3 通过完整研究回放事务运行。
+生产状态持久化、券商成交回报归并及账户迁移需另行实现和授权，不能使用研究状态直接替代。
+
+特征类型位于 `strategy_runtime.equity_features`，回放与状态类型位于
+`strategy_runtime.equity_replay`。`EquityStrategyDefinition` 的 V3 定义必须提供
+`feature_graph: FeatureGraph` 和 `state_schema: StrategyStateSchema`，入口形如 `strategy:step`。
+
+```python
+graph = FeatureGraph(
+    nodes=(
+        RawField("close", BarField.CLOSE),
+        RawField("high", BarField.HIGH),
+        RawField("low", BarField.LOW),
+        TrueRange("tr", "high", "low", "close"),
+        Mean("atr13", "tr", 13),
+        Lag("atr_before_prior", "atr13", 2),
+    ),
+    outputs=("close", "atr13", "atr_before_prior"),
+)
+```
+
+支持的有限窗口节点为 `RawField(key, field)`、`Lag(key, source, bars)`、
+`TrueRange(key, high, low, close)`、`Mean(key, source, window)`、
+`SameLocalSlotMedian(key, source, sessions=20, anchor_lag=1, timezone="America/New_York")`。
+同槽中位数的 source 必须为原始 Volume 节点；取锚点当天之前、相同美东 RTH 起始时刻的不同实际交易日，
+缺槽不补零，DST 通过当地时区处理。图拒绝未知节点、缺失依赖、循环和非法窗口，不接受任意 Python 算子。
+
+数值版本 `FLOAT64_CHRONOLOGICAL_V1` 固定均值为在绑定的 Python 运行环境中，
+将窗口转换成按时间顺序的 Python float 后执行 `sum(values) / window`；
+保留 Python 3.12 的补偿求和行为，不用 NumPy 归约、前缀和或增减滚动和替代。
+首根 TR 缺少前收盘时为未就绪。
+`ctx.features.get(key)` 返回 `ReadyValue(value)` 或 `NotReady`，未就绪不是信号为假。
+
+可见时间取 `max(Date, AvailableDate + latency)`。运行器按可见事件推进有序索引，所有 Lag 和窗口
+均针对当前决策可见、按 Date 排序的 OBSERVED 序列。较早柱晚到时，只影响此后决策的当前特征；
+已经返回的 FeatureView 不被改写。不能把按全历史预计算的特征列遮住不可见行来替代这个语义。
+当准备数据的有效可见时间经认证为非递减时，每次可见历史都必然是观察序列的一个前缀，
+相同特征图可在回放初始化时生成因果特征列。Raw/Lag/TR 和同槽中位数按列计算，Mean 仍对每个固定窗口
+使用上述 Python float 规则。非单调到达保持逐时点求值；这是同一算子的内部计算选择，不提供用户切换模式。
+
+`ctx.history` 保留完整可见历史。`last(0)`、`last(1)` 返回最近两根观察柱的只读 Mapping；
+`to_frame(tail=None)` 显式生成独立 DataFrame 副本，`tail=N` 仅返回末尾 N 根。
+DataFrame 物化本身包含遍历和复制成本，频繁导出完整历史仍可能产生二次增长，不能承诺任意策略秒级。
+持有旧视图不会看到后续到达数据，也不能通过改动导出副本污染准备数据。
+内部使用只包含当时已可见行的持久化有序树；策略视图不持有完整未来数组的引用，
+也不提供 BarStatus、ExecutionBlocked 等执行专用注释。
+
+### 状态与成交事务
+
+`StateField(key, StateValueType, nullable=False)` 声明严格字段类型；BOOL、INT、FLOAT、STR、DATETIME
+不相互隐式转换，浮点必须有限、时间必须带时区。`StrategyStateSchema(account_fields=(), cycle_fields=())`
+覆盖全部字段；`StateRecord(values=((key, value), ...))` 是不可变标量记录，不接受任意对象或隐式附加字段。
+账户字段非空时，调用方必须明确提供符合 schema 的初始账户记录。
+
+```python
+def step(ctx: StepContext, state: StrategyState) -> StepResult:
+    # decision 必须是带结构化事实的 EquityDecision。
+    # cycle_values 是本次观察后的提议，不代表买单已成交。
+    return StepResult(decision, account=StateRecord(), cycle_values=proposed_cycle_values)
+```
+
+`StrategyState` 包含 revision、account、cycle 和 binding。`CycleState` 包含平台真实 cycle_id、
+entry_at 与策略 values。首次真实买入后才激活 cycle；买单未成交不会启动周期。
+已有持仓的卖单未成交时，仍保留提议中的止损锁存等观察状态；实际全部卖出后才清除 cycle。
+空仓准备买入和已有持仓均要求显式 `cycle_values`，即使 schema 为空也传入 `StateRecord()`。
+
+每个执行区间以 TXE `transaction()` 包含决策前事件应用、step、执行、实际成交归并及状态提交。
+失败时撤回本区间账户、账本、幂等键与状态；成功的前序区间保持已提交。
+`ReplayFailure` 通过 `committed_state`、`next_execution_start` 和 `cause` 显式交接失败位置，
+不自动重试、不返回伪成功；KeyboardInterrupt/SystemExit 保持取消语义。
+同一 executor 的显式重试必须使用同一候选、账户 owner、交易合同、费用和准备数据身份。
+binding 覆盖上述身份，替换输入后不能承接旧状态。
+受管检查点当前按完成账户恢复；需要中途交接时，调用方保存异常给出的状态及匹配执行事实。
+
+### 准备、辅助上下文与执行
+
+```python
+prepared = PreparedReplay.from_frames(
+    bars, constraints, graph, latency_seconds=0,
+    auxiliary_histories=auxiliary_frames, sessions=session_frame,
+    trading_sessions=certified_calendar,
+)
+outcome = run_replay(
+    prepared, candidate, executor, start=start, end=end, fee_rate=0.001,
+    initial_state=None, owner=None,
+)
+```
+
+准备阶段认证时间和 OHLCV、构建可见性及本地槽位索引，并固定原始数据、交易约束和延迟的摘要。
+`prepared.with_graph(graph)` 共享这些不可变输入，不能改变候选声明的特征图。
+辅助行情仍需显式声明；`ctx.auxiliary_histories[name]` 提供完整可见 HistoryView，保留最新柱状态、
+warmup 和 max_age 检查。首版主特征图不隐式读取辅助别名，辅助指标由策略显式访问视图计算并承担相应成本。
+session 上下文通过认证日历的精确执行区间索引选择，并核验日历可见时间。
+
+`ReplayOutcome` 返回原 TXE `execution_result`、最终 `state` 和 `statistics`。
+统计包含 `feature_seconds`（特征图初始化/因果列生成、主特征及辅助/session上下文）、`replay_seconds`（含源码核验、策略、TXE及结果表构造）、
+执行区间 `rows` 和实际调用 step 的 `decisions`；准备耗时应由调用方另行计时。
+`source_checks` 和 `source_bytes_read` 记录本回放逐步来源核验次数及实际读取字节数，
+不含启动认证，也不表示物理磁盘 I/O 次数或磁盘吞吐。
+缺失/零量完成柱引起的抑制区间不调用 step，仍由公共 TXE 执行 WAIT 并记录账户状态。
+
+owner 默认候选编号；共享基准必须传独立基准身份，不能把研究候选编号加入其计划与账本身份。
+来源字节每次决策仍认证；编译代码可以复用，每次策略执行的模块命名空间独立，策略全局变量不跨步保留。
+复杂度由可见事件索引、声明窗口、显式历史导出和状态大小共同决定；有限窗口不会自动使任意 Python 策略达到固定耗时。
+
 本文面向策略研究员（RSCH）。安装、源码维护及包级验证见
 [DEV Agent](../../docs/DEV_AGENT.md)。
 

@@ -166,7 +166,7 @@ def _summarize(coverage):
 
 
 def diagnose_accounts(
-    repository: RepositoryContext, request: AccountDiagnosisRequest
+    repository: RepositoryContext, request: AccountDiagnosisRequest, *, execution=None
 ) -> AccountDiagnosisResult:
     """Diagnose retained account facts without preparing data or replaying a strategy."""
     if type(repository) is not RepositoryContext or type(request) is not AccountDiagnosisRequest:
@@ -174,7 +174,9 @@ def diagnose_accounts(
     if request.baseline.evidence.schema == "equity_research" or (
             request.alternative is not None and request.alternative.evidence.schema == "equity_research"):
         from .equity_account_diagnosis import diagnose_equity_evidence
-        return diagnose_equity_evidence(repository, request)
+        return diagnose_equity_evidence(repository, request, execution=execution)
+    if execution is not None:
+        raise ValueError('explicit certification sessions apply to equity evidence only')
     refs = (request.baseline,) + (() if request.alternative is None else (request.alternative,))
     sources = tuple(r.evidence for r in refs) + tuple(p.evidence for p in request.populations)
 

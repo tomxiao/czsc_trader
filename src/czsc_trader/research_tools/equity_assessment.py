@@ -1,7 +1,7 @@
 """Adapt archived equity/v2 facts to the shared, market-aware SE contracts."""
 
 from dataclasses import asdict
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from hashlib import sha256
 import json
 
@@ -15,7 +15,7 @@ from strategy_evaluator import (
     AssessmentFill, ClosedCycle, EquityAssessmentFacts, EvaluationScenarioContext, FillSide,
 )
 from strategy_evaluator.equity import audit_equity_account
-from strategy_evaluator.equity_assessment import canonical_ledger, daily_points, session
+from strategy_evaluator.equity_assessment import canonical_ledger, daily_points, session, certify_equity_ledger
 from strategy_manager import CandidateDerivation, CandidateKey
 from strategy_runtime import canonical_sha256
 from strategy_runtime.equity import equity_hash
@@ -86,6 +86,9 @@ def _decision_inputs(payload, definition, binding):
         if metadata["sessions"] != data["bars"]["metadata"]["sessions"]:
             raise ValueError("equity main session calendar differs from bars")
         kwargs.update(sessions=rows, trading_sessions=sessions_from_metadata(metadata))
+    if definition.contract_version == 3:
+        _decision_availability_v3(payload, definition, kwargs)
+        return
     history = frame(payload["audit_inputs"]["bars"])
     for row in payload["runs"]["candidate"]["decisions"]:
         if row.get("signal_status") == "SUPPRESSED_UNOBSERVED_BAR":
@@ -101,13 +104,75 @@ def _decision_inputs(payload, definition, binding):
             EquityPortfolio(float(request["initial_cash"]), 0, 0., 0), point, **kwargs)
 
 
+def _decision_availability_v3(payload, definition, inputs):
+    """Independent linear availability audit; never reconstruct full histories per bar."""
+    latency = timedelta(seconds=definition.execution_spec.data_latency_seconds)
+    frontiers = {}
+    for declaration in definition.auxiliary_inputs:
+        rows = inputs["auxiliary_histories"][declaration.name].to_dict("records")
+        events = sorted(((max(row["Date"], row["AvailableDate"] + latency), index)
+                         for index, row in enumerate(rows)))
+        frontiers[declaration.name] = [rows, events, 0, -1, 0, False]
+    intervals = {}
+    if definition.session_context:
+        rows = inputs["sessions"]
+        calendar = inputs["trading_sessions"]
+        if (tuple(rows.SessionDate) != tuple(item.session_date.isoformat() for item in calendar)
+                or tuple(rows.Date) != tuple(item.segments[0].start for item in calendar)):
+            raise ValueError("session table differs from calendar evidence")
+        for session, available in zip(calendar, rows.AvailableDate, strict=True):
+            if session.timezone != definition.instrument.timezone:
+                raise ValueError("session timezone differs from instrument")
+            for interval in session.bars(definition.execution_spec.decision_clock):
+                key = interval.start, interval.end
+                if key in intervals:
+                    raise ValueError("current execution interval has no unique session")
+                intervals[key] = available
+    for row in sorted(payload["runs"]["candidate"]["decisions"], key=lambda item: item["decision_at"]):
+        if row.get("signal_status") == "SUPPRESSED_UNOBSERVED_BAR":
+            continue
+        at = datetime.fromisoformat(row["decision_at"])
+        for declaration in definition.auxiliary_inputs:
+            state = frontiers[declaration.name]
+            rows, events, cursor, latest, count, invalid = state
+            while cursor < len(events) and events[cursor][0] <= at:
+                index = events[cursor][1]
+                latest = max(latest, index)
+                source = rows[index]
+                if source.get("BarStatus", "OBSERVED") == "OBSERVED":
+                    count += 1
+                    invalid |= float(source["Volume"]) <= 0
+                cursor += 1
+            state[2:] = cursor, latest, count, invalid
+            if latest < 0 or rows[latest].get("BarStatus", "OBSERVED") != "OBSERVED" or invalid:
+                raise ValueError("AUXILIARY_INPUT_UNAVAILABLE: " + declaration.name)
+            if count < declaration.warmup_bars:
+                raise ValueError("AUXILIARY_WARMUP_INSUFFICIENT: " + declaration.name)
+            if (at - rows[latest]["Date"]).total_seconds() > declaration.max_age_seconds:
+                raise ValueError("AUXILIARY_INPUT_STALE: " + declaration.name)
+        if definition.session_context:
+            key = datetime.fromisoformat(row["execution_start"]), datetime.fromisoformat(row["execution_end"])
+            if key not in intervals:
+                raise ValueError("current execution interval has no unique session")
+            if intervals[key] > at:
+                raise ValueError("CAUSAL_TIME_VIOLATION: session is not yet available")
+
+
 def build_equity_assessment_payload(payload):
     """Authenticate serialized facts without reading mutable candidate sources."""
-    if (type(payload) is not dict or payload.get("schema") != "equity-research/v2"
-            or type(payload.get("schema_version")) is not int or payload["schema_version"] != 2):
+    from .equity_replay_v3 import MaterializedEquityV3
+    source_sha256 = None
+    version = 2
+    if type(payload) is MaterializedEquityV3:
+        source_sha256 = payload.source_sha256
+        payload = payload.payload
+        version = 3
+    schema = f"equity-research/v{version}"
+    if (type(payload) is not dict or payload.get("schema") != schema
+            or type(payload.get("schema_version")) is not int or payload["schema_version"] != version):
         raise ValueError("formal equity assessment requires equity-research/v2")
     request = payload["request"]
-    if request.get("schema") != "equity-research/v2" or equity_hash(request) != payload["request_hash"]:
+    if request.get("schema") != schema or equity_hash(request) != payload["request_hash"]:
         raise ValueError("equity assessment request hash differs")
     if set(payload["runs"]) != {"candidate", "buy_hold"}:
         raise ValueError("equity assessment requires candidate and benchmark")
@@ -175,7 +240,8 @@ def build_equity_assessment_payload(payload):
             raise ValueError("equity benchmark decisions differ from EquityBuyHold")
         ledger = {**{field: inputs[field] for field in economic_fields}, **{field: run[field] for field in (
             "decisions", "orders", "fills", "actions", "account_points", "trades")}}
-        audit = audit_equity_account(**ledger, decision_contract="FORMAL_V2")
+        audit = (certify_equity_ledger(ledger, decision_contract="FORMAL_V2") if version == 3 else
+                 audit_equity_account(**ledger, decision_contract="FORMAL_V2"))
         if _canonical(asdict(audit)) != _canonical(run["metrics"]):
             raise ValueError("equity metrics differ from independently audited account")
         if list(daily_points(ledger)) != run["account_daily"]:
@@ -213,7 +279,7 @@ def build_equity_assessment_payload(payload):
         "initial_cash": request["initial_cash"], "benchmark": benchmark.fingerprint,
         "frequency_window_days": request["frequency_window_days"], "metric_version": version,
     })
-    result_hash = sha256(_canonical(payload).encode()).hexdigest()
+    result_hash = source_sha256 or sha256(_canonical(payload).encode()).hexdigest()
     behavior = canonical_sha256({name: run[name] for name in (
         "fills", "actions", "account_points", "trades")})
     return (AssessmentEvidence(

@@ -1,8 +1,12 @@
 """Equity facts for shared SE assessment; no runtime or execution imports."""
 
 from datetime import datetime
+from contextvars import ContextVar
+from hashlib import sha256
+import inspect
 import json
 import math
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from .equity import audit_equity_account
@@ -11,6 +15,57 @@ from .models import ValidationError
 
 LEDGER_FIELDS = frozenset({"initial_cash", "specification", "bars", "decisions", "orders",
     "fills", "actions", "account_points", "trades", "action_facts", "constraints", "fee_rate"})
+
+
+_active_certification = ContextVar("equity_account_certification", default=None)
+
+
+class EquityCertificationScope:
+    """Own numerical audits for exact immutable ledgers, never caller PASS claims.
+
+    The cache is process-local and cannot be serialized as certification authority.
+    Entering a scope again reuses its audits; different scopes independently audit.
+    """
+
+    def __init__(self):
+        self.audit_version = sha256(Path(inspect.getsourcefile(audit_equity_account)).read_bytes()).hexdigest()
+        self.__audits = {}
+        self.__tokens = []
+        self.audit_count = 0
+        self.reused_count = 0
+
+    def __enter__(self):
+        self.__tokens.append(_active_certification.set(self))
+        return self
+
+    def __exit__(self, *exc):
+        _active_certification.reset(self.__tokens.pop())
+
+    def __reduce__(self):
+        raise TypeError("certification scopes cannot cross process or persistence boundaries")
+
+    def certify(self, ledger, *, decision_contract="FORMAL_V2"):
+        content = canonical_ledger(ledger).encode()
+        key = (self.audit_version, decision_contract, sha256(content).hexdigest())
+        stored = self.__audits.get(key)
+        if stored is not None:
+            if stored[0] != content:
+                raise ValidationError("equity certification content collision")
+            self.reused_count += 1
+            return stored[1]
+        # Audit the serialized snapshot, not a caller's mutable dictionary.
+        result = audit_equity_account(**json.loads(content), decision_contract=decision_contract)
+        self.__audits[key] = (content, result)
+        self.audit_count += 1
+        return result
+
+
+def certify_equity_ledger(ledger, *, decision_contract="FORMAL_V2"):
+    """Independently audit, or reuse the current owner's exact prior audit."""
+    scope = _active_certification.get()
+    if scope is None:
+        return audit_equity_account(**ledger, decision_contract=decision_contract)
+    return scope.certify(ledger, decision_contract=decision_contract)
 
 
 def canonical_ledger(value):
@@ -59,7 +114,7 @@ def validate_equity_facts(facts):
             raise ValidationError("equity ledger market differs")
         if ledger["specification"]["account"]["currency"] != facts.currency:
             raise ValidationError("equity ledger currency differs")
-        audit_equity_account(**ledger, decision_contract="FORMAL_V2")
+        certify_equity_ledger(ledger, decision_contract="FORMAL_V2")
         for point in ledger["account_points"]:
             if point["session"] != session(point["time"], facts.timezone):
                 raise ValidationError("equity account session differs from market timezone")

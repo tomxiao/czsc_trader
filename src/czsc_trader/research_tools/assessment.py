@@ -35,7 +35,18 @@ from ..backtesting.metrics import calculate_metrics
 def build_assessment_evidence(
     request: EvaluationRequest,
     result: EvaluationResult,
+    *, execution=None,
 ) -> tuple[AssessmentEvidence, ...]:
+    from .equity_replay_v3 import PreparedEquityEvaluation, build_v3_assessment, _state
+    if type(request) is PreparedEquityEvaluation:
+        if execution is None:
+            raise TypeError('V3 assessment requires its explicit execution session')
+        from .equity_evaluation import validate_equity_result
+        validate_equity_result(execution.context.evaluation, request, result, execution=execution)
+        state = _state(execution.context.evaluation, execution)
+        return build_v3_assessment(result, scope=state.certification)
+    if execution is not None:
+        raise ValueError('explicit prepared assessment ownership applies to equity V3')
     from .equity_evaluation import EquityEvaluationRequest, EquityEvaluationResult
     if isinstance(request, EquityEvaluationRequest) or isinstance(result, EquityEvaluationResult):
         from .equity_assessment import build_equity_assessment_evidence

@@ -982,6 +982,83 @@ assert receipt.status.value == "COMMITTED"
 研究目标、决策频率的研究含义与证据判断见[美股研究补充](../../research/guides/US_RESEARCH.md)。
 接口计算通过不代表真实成交、研究达标或获准上线；以下限制按当前实现理解，不作为市场永久属性。
 
+### V3：一次准备、共享基准与显式认证
+
+美股研究新契约使用 `EquityStrategyDefinition(contract_version=3)`，声明
+`FeatureGraph`、`StrategyStateSchema` 和 `strategy:step` 入口，细节见
+[SRT V3](../../packages/strategy_runtime/README.md#美股研究-v3可见特征与显式状态)。
+V1/V2 的既有调用和历史原件保留原身份；V3 不会自动回退旧回放器，A股请求和执行分派不变。
+
+V3 必须先创建执行会话，再显式准备。`prepare` 返回会话拥有的
+`PreparedEquityEvaluation`，不能通过复制对象或转移到另一个会话取得执行资格。
+`evaluate_many` 只接受该会话签发的准备对象，不隐式重复准备。
+
+```python
+with ResearchExecutionSession(context, experiment=experiment,
+        checkpoint=ExecutionCheckpointRequest("equity-v3")) as execution:
+    prepared = tuple(context.evaluation.prepare(request, execution=execution)
+                     for request in requests)
+    outcomes = context.evaluation.evaluate_many(prepared, execution=execution)
+    # 逐项检查 SUCCEEDED；失败项不能发布成成功结果。
+    writes = tuple(EvaluationEvidenceWrite(experiment, f"account-{i}", request, outcome.result)
+                   for i, (request, outcome) in enumerate(zip(prepared, outcomes)))
+    publications = publish_evidence_many(context, writes, execution=execution)
+    # 再逐项检查 PUBLISHED。
+```
+
+同一会话按完整请求选择复用已认证的 `EquityInputSnapshot`。每个策略拥有独立的执行器、
+状态和可见历史视图，不共享可变 DataFrame。相同主输入、窗口、预热、费用、资金、执行合同、
+引擎与买持实现生成相同的 `BenchmarkRunIdentity`，只回放一次；候选辅助数据不污染基准身份。
+候选 owner 包含策略、候选和内容身份，基准使用独立 owner；不会把基准当成另一份研究候选登记。
+
+V3 参数计划沿用美股 schema4。`ParameterEvaluationPlan.create` 的中心及全部子项必须先在
+同一会话显式准备，并传入 `execution`；计划创建只核对已认证快照，不重新 fetch 产品。
+计划显式发布后，以 `plan.bind_point(...)` 构造每个子项的 `EvaluationLineage`，再从
+`child_prepared.request` 建立新请求并显式准备。不要用 `replace(child_prepared, ...)` 伪造会话句柄。
+
+```python
+plan = ParameterEvaluationPlan.create(
+    design, center_prepared, children_prepared,
+    mapping_evidence=mapping_ref, feasibility_evidence=feasibility_ref,
+    dataflows=context.data, execution=execution,
+)
+# 显式发布 plan.to_dict()，得到 plan_ref；derivation 绑定实际中心及子候选身份。
+point = plan.bind_point(plan_ref, index, repository_root=context.repository.root)
+child_request = replace(child_prepared.request, lineage=EvaluationLineage(derivation, point))
+child_bound = context.evaluation.prepare(child_request, execution=execution)
+outcome, = context.evaluation.evaluate_many((child_bound,), execution=execution)
+```
+
+参数校验拒绝未准备的 V3 请求、复制或跨会话句柄、变化的非参数合同及不一致的点绑定；
+加入 lineage 后仍复用同一输入快照。工作进程只接收回放所需的窗口、资金和费用，
+计划及 lineage 留在父进程认证。A股和 V2 参数入口的调用方式不变。
+
+`EquityEvaluationResult` 的 V3 内容为 `equity-research/v3`，包含
+`input_ref`、`candidate_ref`、`benchmark_ref` 三项内容引用，完整字节位于不可变 `artifacts`。
+发布先安装依赖，再发布最终评价记录；输入和共享基准不重复写入各候选的账本。
+依赖丢失、内容变化或归属不匹配均拒绝。检查点保存完整引用闭包；恢复时重新核验引擎、输入、
+请求及源码身份，并在新的认证作用域独立认证，不能把磁盘中的 PASS 当作认证凭据。
+
+SE 认证由会话内部拥有者管理：相同的精确不可变账本、输入、执行合同和审计版本在同一作用域
+只做一次数值审计；未知句柄、外部构造的同名对象及变化内容不能绕过认证。
+`build_assessment_evidence(prepared, result, execution=execution)` 和
+`diagnose_accounts(repository, request, execution=execution)` 可复用该会话的认证结果。
+无执行会话的已发布证据读取会创建独立认证作用域。
+
+登记、诊断和阶段交付支持 V3 结果；交付浅快照同时保存选定评价的依赖闭包，不能只复制主JSON。
+底层读取使用 `materialize_v3` 和 `build_v3_assessment`；不把 V3 改标为 V2。
+原 V2 只读认证继续支持历史复核。V3 显式状态尚不具备PTE持久化准入，不能直接用于部署或实时建议；
+既有 V2 冻结包和生产路径不自动迁移。
+
+性能统计区分准备、回放、认证、序列化、检查点和发布。COMPUTE 的工作队列完成后才在父进程认证，
+避免把数值审计算入工作进程的账户计算时间。`execution.equity_statistics` 返回不可变的
+`EquityExecutionStatistics`，包括唯一输入快照数、候选/基准回放次数、实际审计/复用次数及各账户计时。
+`account_timings` 的回放时间包含特征计算、逐步源码核验、决策、撮合和账表生成；
+特征耗时是其中的子项，不能再次相加。它不包含DFLS加载、SE认证和证据落盘，总耗时仍单独报告。
+
+核验方法及可重复基准见[回放基准说明](../../scripts/benchmarks/README.md)。
+秒级是特定工作量的性能目标，必须实测，不由接口成功状态推导。
+
 ### 10.1 隔离层与复用层
 
 ```mermaid

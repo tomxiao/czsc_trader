@@ -1,6 +1,8 @@
 """Public result and evidence contracts for independently organized research."""
 from .equity_evaluation import (EquitySources, EquityEvaluationRequest, EquityEvaluationResult,
                                 EquityEvaluationOutcome)
+from .equity_replay_v3 import (EquityInputSnapshot, BenchmarkRunIdentity,
+    PreparedEquityEvaluation, MaterializedEquityV3)
 from strategy_runtime import ExecutionPriceBasis
 
 from ..backtesting.benchmark_contracts import LimitBuyHold, NextOpenBuyHold, EquityBuyHold
@@ -100,7 +102,7 @@ from .evaluation_access import (
 from .assessment import build_assessment_evidence
 from .execution import (
     CheckpointMode, ExecutionCheckpointRequest, ExecutionPhase, ExecutionProgress,
-    ExecutionStats, ResearchExecutionSession,
+    ExecutionStats, EquityAccountTiming, EquityExecutionStatistics, ResearchExecutionSession,
 )
 from .parameter_evaluation import (
     ParameterEvaluationCandidate, ParameterEvaluationPlan, ParameterEvaluationBinding, ParameterEvaluationInput,
@@ -150,8 +152,9 @@ from .delivery import (
 
 __all__ = [
     "EquitySources", "EquityEvaluationRequest", "EquityEvaluationResult", "EquityEvaluationOutcome",
+    'EquityInputSnapshot', 'BenchmarkRunIdentity', 'PreparedEquityEvaluation', 'MaterializedEquityV3',
     'CheckpointMode', 'ExecutionCheckpointRequest', 'ExecutionPhase', 'ExecutionProgress',
-    'ExecutionStats', 'ResearchExecutionSession',
+    'ExecutionStats', 'EquityAccountTiming', 'EquityExecutionStatistics', 'ResearchExecutionSession',
     'DeliveryAssemblyResult', 'DeliveryValidationPhase', 'DeliveryValidationProgress',
     "ExecutionPriceBasis",
     "BacktestEvaluation",

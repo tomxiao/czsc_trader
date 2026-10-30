@@ -130,7 +130,17 @@ class EquityEvaluationRequest:
                 from strategy_runtime.equity_context import build_equity_decision_context
                 engine_sources[build_equity_decision_context.__module__] = sha256(
                     Path(inspect.getsourcefile(build_equity_decision_context)).read_bytes()).hexdigest()
-        contract = {"schema": "equity-research/v2" if self.formal else "equity-research/v1", "experiment": asdict(self.experiment),
+            if candidate.definition.contract_version == 3:
+                from strategy_runtime import (equity_features, equity_replay, equity_buy_hold_v3,
+                                              equity_context, equity_source_runtime)
+                from strategy_evaluator import equity_assessment as se_equity_assessment
+                from . import equity_replay_v3, equity_assessment, parameter_evaluation
+                for module in (equity_features, equity_replay, equity_buy_hold_v3, equity_replay_v3,
+                               equity_context, equity_source_runtime, equity_assessment, se_equity_assessment,
+                               parameter_evaluation):
+                    engine_sources[module.__name__] = sha256(Path(module.__file__).read_bytes()).hexdigest()
+        version = 3 if self.formal and candidate.definition.contract_version == 3 else 2 if self.formal else 1
+        contract = {"schema": f"equity-research/v{version}", "experiment": asdict(self.experiment),
                 "candidate_id": candidate.candidate_id, "instrument": asdict(candidate.instrument),
                 "implementation_hash": candidate.implementation_hash, "warmup_bars": candidate.warmup_bars,
                 "specification": asdict(specification), "specification_hash": specification.fingerprint,
@@ -156,10 +166,31 @@ class EquityEvaluationRequest:
 
 
 @dataclass(frozen=True, slots=True)
+class EquityArtifact:
+    """An immutable, content addressed member of a v3 evidence closure."""
+    kind: str
+    content: bytes
+
+    def __post_init__(self):
+        if self.kind not in {"equity_input", "equity_account"}:
+            raise ValueError("unknown equity artifact kind")
+        if type(self.content) is not bytes or not self.content:
+            raise TypeError("equity artifact requires immutable bytes")
+
+    @property
+    def sha256(self):
+        return sha256(self.content).hexdigest()
+
+    def reference(self):
+        return {"kind": self.kind, "sha256": self.sha256}
+
+
+@dataclass(frozen=True, slots=True)
 class EquityEvaluationResult:
     """Canonical immutable evidence bytes; views returned by payload are detached."""
     request_hash: str
     content: bytes
+    artifacts: tuple[EquityArtifact, ...] = ()
 
     def __post_init__(self):
         if type(self.content) is not bytes or not self.content:
@@ -167,6 +198,15 @@ class EquityEvaluationResult:
         payload = self.payload
         if payload["request_hash"] != self.request_hash or equity_hash(payload["request"]) != self.request_hash:
             raise ValueError("equity result request identity differs")
+        if type(self.artifacts) is not tuple or any(type(item) is not EquityArtifact for item in self.artifacts):
+            raise TypeError("equity result artifacts require an immutable typed tuple")
+        if len({item.sha256 for item in self.artifacts}) != len(self.artifacts):
+            raise ValueError("duplicate equity artifact")
+        if payload.get("schema") == "equity-research/v3":
+            from .equity_replay_v3 import validate_result_structure
+            validate_result_structure(payload, self.artifacts)
+        elif self.artifacts:
+            raise ValueError("only v3 results carry detached artifacts")
 
     @property
     def payload(self):
@@ -341,7 +381,10 @@ def _json_value(value):
     return json.loads(json.dumps(value, default=encode, allow_nan=False))
 
 
-def validate_equity_result(access, request, result):
+def validate_equity_result(access, request, result, *, execution=None):
+    from .equity_replay_v3 import PreparedEquityEvaluation, validate_certified_result
+    if type(request) is PreparedEquityEvaluation:
+        return validate_certified_result(access, request, result, execution=execution)
     if type(result) is not EquityEvaluationResult or request.prepared is None:
         raise TypeError("equity publication requires a prepared request and immutable result")
     expected = _json_value(request.identity(access.execution_spec))

@@ -184,7 +184,17 @@ from .equity_definition import (
     EquityInputBinding, EquityAuxiliaryInput, EquityAuxiliaryBinding, equity_source_hash, execution_spec_from_dict,
 )
 from .equity_context import build_equity_decision_context
+from .equity_features import (BarField, RawField, Lag, TrueRange, Mean, SameLocalSlotMedian,
+    FeatureGraph, ReadyValue, NotReady, FeatureView, HistoryView)
+from .equity_replay import (StateValueType, StateField, StateRecord, StrategyStateSchema,
+    CycleState, StrategyState, StepContext, StepResult, PreparedReplay, ReplayOutcome,
+    ReplayStatistics, ReplayFailure, run_replay)
 
 __all__ += ["EquityStrategyCandidate", "EquityStrategyDefinition", "EquityDecision", "EquityDecisionContext",
             "EquityInputBinding", "EquityAuxiliaryInput", "EquityAuxiliaryBinding", "equity_source_hash", "execution_spec_from_dict",
             "build_equity_decision_context"]
+__all__ += ['BarField', 'RawField', 'Lag', 'TrueRange', 'Mean', 'SameLocalSlotMedian',
+    'FeatureGraph', 'ReadyValue', 'NotReady', 'FeatureView', 'HistoryView',
+    'StateValueType', 'StateField', 'StateRecord', 'StrategyStateSchema', 'CycleState',
+    'StrategyState', 'StepContext', 'StepResult', 'PreparedReplay', 'ReplayOutcome',
+    'ReplayStatistics', 'ReplayFailure', 'run_replay']

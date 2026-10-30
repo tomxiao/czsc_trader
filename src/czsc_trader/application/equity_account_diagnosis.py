@@ -7,23 +7,38 @@ from ..research_tools.account_diagnosis import AccountDiagnosisResult, Diagnosis
 from ..research_tools.equity_assessment import build_equity_assessment_payload
 
 
-def diagnose_equity_evidence(repository, request):
+def diagnose_equity_evidence(repository, request, *, execution=None):
     from .account_diagnosis_service import _json, _summarize
     refs = (request.baseline,) + (() if request.alternative is None else (request.alternative,))
     sources = tuple(x.evidence for x in refs) + tuple(x.evidence for x in request.populations)
     def fail(status, message):
         return AccountDiagnosisResult(status, PROTOCOL, (message,), sources)
-    if any((r.evidence.schema, r.evidence.schema_version) != ("equity_research", 2) for r in refs):
+    if any(r.evidence.schema != 'equity_research' or r.evidence.schema_version not in (2, 3) for r in refs):
         return fail(AccountDiagnosisStatus.INCOMPARABLE, "diagnosis requires the same explicit equity evidence contract")
     try:
         loaded = []
+        from strategy_evaluator.equity_assessment import EquityCertificationScope
+        from ..research_tools.equity_replay_v3 import build_v3_assessment
+        from .equity_evidence_io import materialize_equity_document
+        if execution is None:
+            certification = EquityCertificationScope()
+        else:
+            from ..research_tools.equity_replay_v3 import _state
+            if execution.context.repository.root != repository.root:
+                raise ValueError('diagnosis session belongs to another repository')
+            certification = _state(execution.context.evaluation, execution).certification
         for ref in refs:
             value = _json(ref.evidence._read_verified(repository.root)[1])
-            if (value.get("schema_version") != 2 or value["request"]["experiment"] != {
+            if (value.get("schema_version") != ref.evidence.schema_version or value["request"]["experiment"] != {
                     "strategy_id": ref.evidence.experiment.strategy_id, "experiment_id": ref.evidence.experiment.experiment_id}
                     or value["evaluation_identity"] != ref.identity.to_dict()):
                 raise ValueError("equity account identity or origin differs")
-            facts = build_equity_assessment_payload(value)[0]
+            if ref.evidence.schema_version == 3:
+                view = materialize_equity_document(repository.root, ref.evidence.repository_path, value)
+                facts = build_v3_assessment(view, scope=certification)[0]
+                value = view.payload
+            else:
+                facts = build_equity_assessment_payload(value)[0]
             loaded.append((value, read_ledger(facts.equity.candidate_ledger)))
         def comparable(value):
             r = value["request"]

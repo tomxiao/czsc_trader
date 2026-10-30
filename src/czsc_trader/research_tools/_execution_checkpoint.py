@@ -177,6 +177,9 @@ class CheckpointStore:
 
     def load_equity_result(self, request, request_hash):
         from ._equity_batch import decode_result
+        from .equity_replay_v3 import PreparedEquityEvaluation
+        if type(request) is PreparedEquityEvaluation:
+            request = request.request
         _hash(request_hash)
         if request.experiment != self.experiment or not request.formal or request.prepared is None:
             raise CheckpointIntegrityError("equity checkpoint requires the same prepared experiment")

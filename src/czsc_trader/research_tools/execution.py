@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from math import isfinite
 import re
-from typing import Callable
+from typing import Callable, Literal
 from .context import ResearchContext, ExperimentRef
 
 
@@ -91,6 +91,66 @@ class ExecutionStats:
                 if type(seconds) not in (float, int) or not isfinite(seconds) or seconds < 0:
                     raise ValueError("phase seconds must be finite and nonnegative")
                 seen.add(name)
+
+
+@dataclass(frozen=True, slots=True)
+class EquityAccountTiming:
+    """Cumulative successful replay work for one full account owner identity.
+
+    replay_seconds includes feature_seconds. Both are worker elapsed seconds,
+    not end-to-end wall time, and exclude subsequent independent certification.
+    Repeated executions of the same owner are added rather than overwritten.
+    """
+    kind: Literal["CANDIDATE", "BENCHMARK"]
+    owner: str
+    feature_seconds: float
+    replay_seconds: float
+    rows: int
+    decisions: int
+
+    def __post_init__(self):
+        if type(self.kind) is not str or self.kind not in {"CANDIDATE", "BENCHMARK"}:
+            raise ValueError("equity account timing requires a candidate or benchmark kind")
+        if type(self.owner) is not str or not self.owner.startswith(self.kind.lower() + ":") or not self.owner.split(":", 1)[1]:
+            raise ValueError("equity account timing owner differs from its kind")
+        if any(type(value) not in (int, float) or not isfinite(value) or value < 0
+               for value in (self.feature_seconds, self.replay_seconds)):
+            raise ValueError("equity replay timings must be finite nonnegative seconds")
+        if self.feature_seconds > self.replay_seconds:
+            raise ValueError("feature time cannot exceed the inclusive replay time")
+        if any(type(value) is not int or value < 0 for value in (self.rows, self.decisions)) or self.decisions > self.rows:
+            raise ValueError("equity replay counters must be nonnegative and consistent")
+
+
+@dataclass(frozen=True, slots=True)
+class EquityExecutionStatistics:
+    """Detached V3 session statistics, including completed but rejected accounts.
+
+    Run counts include only replays that returned successfully, even when their
+    subsequent certification failed. Restored results do not count as replays.
+    Authentication counters describe exact ledger audits and their reuse within
+    this session; they are not a serialized certification authority.
+    """
+    input_snapshots: int
+    candidate_runs: int
+    benchmark_runs: int
+    authenticated_accounts: int
+    reused_authentications: int
+    account_timings: tuple[EquityAccountTiming, ...]
+
+    def __post_init__(self):
+        counts = (self.input_snapshots, self.candidate_runs, self.benchmark_runs,
+                  self.authenticated_accounts, self.reused_authentications)
+        if any(type(value) is not int or value < 0 for value in counts):
+            raise ValueError("equity execution counters must be nonnegative integers")
+        if type(self.account_timings) is not tuple or any(type(item) is not EquityAccountTiming for item in self.account_timings):
+            raise TypeError("equity execution timings require an immutable typed tuple")
+        owners = [(item.kind, item.owner) for item in self.account_timings]
+        if len(set(owners)) != len(owners):
+            raise ValueError("equity execution timing owners must be unique")
+        for kind, count in (("CANDIDATE", self.candidate_runs), ("BENCHMARK", self.benchmark_runs)):
+            if sum(item.kind == kind for item in self.account_timings) > count:
+                raise ValueError("equity timing owners exceed completed replay count")
 
 
 class ResearchExecutionSession:
@@ -180,6 +240,18 @@ class ResearchExecutionSession:
     @property
     def stats(self) -> ExecutionStats:
         return self.executor.stats
+
+    @property
+    def equity_statistics(self) -> EquityExecutionStatistics | None:
+        """A frozen statistics snapshot; None means this session has no V3 work."""
+        state = getattr(self, "_equity_v3", None)
+        if state is None:
+            return None
+        timings = tuple(EquityAccountTiming(kind, owner, item.feature_seconds, item.replay_seconds,
+                                           item.rows, item.decisions)
+                        for (kind, owner), item in sorted(state.replay_statistics.items()))
+        return EquityExecutionStatistics(len(state.products), state.candidate_runs, state.benchmark_runs,
+            state.certification.audit_count, state.certification.reused_count, timings)
 
 
 ProgressCallback = Callable[[ExecutionProgress], None]

@@ -3,6 +3,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from decimal import Decimal, ROUND_FLOOR
 from enum import StrEnum
+from functools import lru_cache
 from hashlib import sha256
 import json
 import math
@@ -111,13 +112,23 @@ class ResearchExecutionSpec:
 
     @property
     def fingerprint(self):
-        return equity_hash(asdict(self))
+        # Dataclass equality merges 0 with 0.0 and 0.0 with -0.0, while the
+        # established canonical JSON identity deliberately distinguishes them.
+        representation = tuple(repr(getattr(self, name))
+                               for name in ('price_tick', 'buy_premium', 'slippage_bp'))
+        return _execution_spec_fingerprint(self, representation)
 
     def require_instrument(self, instrument: InstrumentId):
         if type(instrument) is not InstrumentId or instrument.market is not self.market_id:
             raise ValueError("MARKET_CONTRACT_MISMATCH: candidate instrument")
         if instrument.asset_class not in (AssetClass.STOCK, AssetClass.ETF):
             raise ValueError("unsupported asset class")
+
+
+@lru_cache(maxsize=256)
+def _execution_spec_fingerprint(specification, numeric_representation):
+    """Cache frozen spec values without collapsing their JSON number spelling."""
+    return equity_hash(asdict(specification))
 
 
 @dataclass(frozen=True, slots=True)
@@ -282,6 +293,12 @@ class EquityStrategyInstance:
                    auxiliary_histories=None, sessions=None, trading_sessions=()):
         """Plan at bar boundaries with only completed, published observations."""
         from .equity_definition import EquityStrategyCandidate
+        if type(self.candidate) is EquityStrategyCandidate and self.candidate.definition.contract_version == 3:
+            from .equity_replay import PreparedReplay, run_replay
+            prepared = PreparedReplay.from_frames(bars, constraints, self.candidate.definition.feature_graph,
+                latency_seconds=self.specification.data_latency_seconds,
+                auxiliary_histories=auxiliary_histories, sessions=sessions, trading_sessions=trading_sessions)
+            return run_replay(prepared, self.candidate, executor, start=start, end=end, fee_rate=fee_rate).execution_result
         if type(self.candidate) is EquityStrategyCandidate:
             self.candidate.verify()
         elif self.candidate.implementation_hash != equity_implementation_hash(self.candidate.decide):
@@ -332,6 +349,9 @@ class EquityStrategyInstance:
 
     def plan(self, history: pd.DataFrame, interval: TimeInterval, portfolio: EquityPortfolio,
              *, fee_rate: float, auxiliary_histories=None, sessions=None, trading_sessions=()) -> EquityPlan:
+        from .equity_definition import EquityStrategyCandidate
+        if type(self.candidate) is EquityStrategyCandidate and self.candidate.definition.contract_version == 3:
+            raise ValueError('equity V3 is historical research only; use its complete run_window state transaction')
         if "BarStatus" in history:
             if not history.BarStatus.isin(("OBSERVED", "MISSING", "ZERO_VOLUME")).all():
                 raise ValueError("unknown equity history status")

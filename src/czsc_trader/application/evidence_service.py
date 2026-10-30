@@ -45,7 +45,7 @@ def _publish_bytes(repository_root: Path, target: Path, data: bytes) -> None:
         temporary.unlink(missing_ok=True)
 
 
-def _validate_request(context: ResearchContext, request: EvidenceWriteRequest) -> None:
+def _validate_request(context: ResearchContext, request: EvidenceWriteRequest, *, execution=None) -> None:
     if type(context) is not ResearchContext or type(request) not in (
         MaterialEvidenceWrite, EvaluationEvidenceWrite, ExperimentReportWrite,
     ):
@@ -66,6 +66,10 @@ def _validate_request(context: ResearchContext, request: EvidenceWriteRequest) -
         _validate_report_request(root, request)
     if isinstance(request, EvaluationEvidenceWrite):
         from ..research_tools.equity_evaluation import EquityEvaluationRequest, validate_equity_result
+        from ..research_tools.equity_replay_v3 import PreparedEquityEvaluation
+        if type(request.request) is PreparedEquityEvaluation:
+            validate_equity_result(context.evaluation, request.request, request.result, execution=execution)
+            return
         if type(request.request) is EquityEvaluationRequest:
             if request.request.prepared is None:
                 raise ValueError("equity publication requires the prepared request")
@@ -109,7 +113,9 @@ def _publish_serialized(context: ResearchContext, request: EvidenceWriteRequest,
     if isinstance(request, EvaluationEvidenceWrite):
         from ..research_tools.equity_evaluation import EquityEvaluationResult
         equity = type(request.result) is EquityEvaluationResult
-        version = (2 if request.request.formal else 1) if equity else 8
+        from ..research_tools.equity_replay_v3 import PreparedEquityEvaluation
+        version = (3 if type(request.request) is PreparedEquityEvaluation else
+                   2 if request.request.formal else 1) if equity else 8
         media_type, suffix, schema = "application/json", "json", ("equity_research" if equity else "account_evaluation")
         document = json.loads(data)
         if equity and document.get("schema") != f"equity-research/v{version}":
@@ -117,6 +123,18 @@ def _publish_serialized(context: ResearchContext, request: EvidenceWriteRequest,
         if not equity and (document.get("schema_version") != version
                 or document.get("request_identity", {}).get("schema_version") != 7):
             raise ValueError("new account publication requires schema 8 and request identity 7")
+        if equity and version == 3:
+            # Dependencies are immutable, content-addressed and installed before
+            # the final evaluation document becomes visible.
+            for artifact in request.result.artifacts:
+                digest = sha256(artifact.content).hexdigest()
+                target = managed_path(context.repository.root,
+                    f'{request.experiment.repository_path.replace("/experiments/", "/assets/evidence/")}/{digest}.json')
+                if target.exists():
+                    if target.read_bytes() != artifact.content:
+                        raise ValueError('published equity dependency differs from its content identity')
+                else:
+                    _publish_bytes(context.repository.root, target, artifact.content)
     else:
         media_type, suffix = request.media_type, request.suffix
         schema, version = None, None
@@ -128,8 +146,8 @@ def _publish_serialized(context: ResearchContext, request: EvidenceWriteRequest,
     return reference
 
 
-def publish_evidence(context: ResearchContext, request: EvidenceWriteRequest) -> EvidenceRef:
-    _validate_request(context, request)
+def publish_evidence(context: ResearchContext, request: EvidenceWriteRequest, *, execution=None) -> EvidenceRef:
+    _validate_request(context, request, execution=execution)
     if isinstance(request, ExperimentReportWrite):
         from .experiment_artifact_service import _publish_report
         return _publish_report(context, request)
@@ -179,7 +197,7 @@ def publish_evidence_many(context: ResearchContext,
         raise ValueError("publish_evidence_many requires a nonempty tuple")
     # Every ownership/contract error rejects the entire call before any write.
     for request in requests:
-        _validate_request(context, request)
+        _validate_request(context, request, execution=execution)
     from ..research_tools.equity_evaluation import EquityEvaluationRequest
     if execution is not None and any(isinstance(request, EvaluationEvidenceWrite)
                                     and type(request.request) is EquityEvaluationRequest and not request.request.formal for request in requests):
@@ -200,7 +218,28 @@ def publish_evidence_many(context: ResearchContext,
 
     publication_keys = {}
     for index, request in enumerate(requests):
+        from ..research_tools.equity_replay_v3 import PreparedEquityEvaluation
         if (checkpoint is not None and isinstance(request, EvaluationEvidenceWrite)
+                and type(request.request) is PreparedEquityEvaluation):
+            key = canonical_sha256({'request_hash': request.result.request_hash,
+                'result_hash': request.result.result_hash, 'experiment': request.experiment.to_dict(),
+                'name': request.name, 'schema': 'equity_research', 'version': 3})
+            publication_keys[index] = key
+            reference = checkpoint.load_publication(key)
+            if reference is not None:
+                if (reference.name != request.name or reference.experiment != request.experiment
+                        or (reference.schema, reference.schema_version) != ('equity_research', 3)
+                        or reference.resolve(context.repository.root).read_bytes() != request.result.content):
+                    raise ValueError('equity V3 publication checkpoint differs from authenticated result')
+                for artifact in request.result.artifacts:
+                    target = managed_path(context.repository.root,
+                        f'{request.experiment.repository_path.replace("/experiments/", "/assets/evidence/")}/{sha256(artifact.content).hexdigest()}.json')
+                    if target.read_bytes() != artifact.content:
+                        raise ValueError('equity V3 checkpoint dependency changed')
+                outcomes[index] = PublicationOutcome(index, PublicationStatus.PUBLISHED, reference)
+                executor.reused_publications += 1
+                continue
+        elif (checkpoint is not None and isinstance(request, EvaluationEvidenceWrite)
                 and type(request.request) is EquityEvaluationRequest):
             key = canonical_sha256({"request_hash": request.result.request_hash,
                                     "result_hash": request.result.result_hash,
@@ -267,7 +306,14 @@ def publish_evidence_many(context: ResearchContext,
             with executor.measure(ExecutionPhase.PUBLISH):
                 outcomes[index] = _publish_outcome(context, index, request, request.content)
         else:
-            accounts.append((index, request))
+            from ..research_tools.equity_replay_v3 import PreparedEquityEvaluation
+            if type(request.request) is PreparedEquityEvaluation:
+                with executor.measure(ExecutionPhase.PUBLISH):
+                    outcomes[index] = _publish_outcome(context, index, request, request.result.content)
+                if checkpoint is not None and outcomes[index].status is PublicationStatus.PUBLISHED:
+                    checkpoint.save_publication(publication_keys[index], outcomes[index].reference)
+            else:
+                accounts.append((index, request))
 
     def tasks():
         for index, request in accounts:

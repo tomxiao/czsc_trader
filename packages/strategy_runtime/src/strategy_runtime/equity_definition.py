@@ -14,7 +14,7 @@ import sys
 import types
 from types import MappingProxyType
 from uuid import uuid4
-from functools import lru_cache
+from functools import lru_cache, cached_property
 from typing import Mapping
 import pandas as pd
 
@@ -42,18 +42,31 @@ def execution_spec_from_dict(value):
     return ResearchExecutionSpec(**value)
 
 
-def equity_source_hash(root, files):
+def _read_equity_sources(root, files):
     root = Path(root).resolve()
     digest = sha256()
+    sources = {}
     for name in sorted(files):
         path = root / name
         if path.is_symlink() or not path.resolve().is_relative_to(root) or not path.is_file():
             raise ValueError("equity source is absent or escapes source root")
         digest.update(name.encode())
         digest.update(b"\0")
-        digest.update(path.read_bytes())
+        content = path.read_bytes()
+        sources[name] = content
+        digest.update(content)
         digest.update(b"\0")
-    return digest.hexdigest()
+    return digest.hexdigest(), sources
+
+
+def equity_source_hash(root, files):
+    return _read_equity_sources(root, files)[0]
+
+
+@lru_cache(maxsize=128)
+def _compiled_equity_source(content: bytes, filename: str):
+    """Cache code, never a module or its mutable globals."""
+    return compile(content, filename, 'exec')
 
 
 def _freeze(value):
@@ -276,11 +289,24 @@ class EquityStrategyDefinition:
     explanation_cases: tuple[str, ...] = ('flat', 'long')
     auxiliary_inputs: tuple[EquityAuxiliaryInput, ...] = ()
     session_context: bool = False
+    feature_graph: object | None = None
+    state_schema: object | None = None
 
     def __post_init__(self):
         import re
-        if self.contract_version != 2 or type(self.execution_spec) is not ResearchExecutionSpec:
+        if self.contract_version not in (2, 3) or type(self.execution_spec) is not ResearchExecutionSpec:
             raise ValueError("unsupported equity definition contract")
+        if self.contract_version == 3:
+            from .equity_features import FeatureGraph
+            from .equity_replay import StrategyStateSchema
+            if self.instrument.market is not MarketId.US:
+                raise ValueError('equity V3 is restricted to US historical research')
+            if type(self.feature_graph) is not FeatureGraph or type(self.state_schema) is not StrategyStateSchema:
+                raise TypeError('equity V3 requires a typed feature graph and state schema')
+            if self.feedback_mode == 'MARKET_INTENT':
+                raise ValueError('equity V3 requires confirmed account feedback')
+        elif self.feature_graph is not None or self.state_schema is not None:
+            raise ValueError('equity V2 cannot declare V3 features or state')
         self.execution_spec.require_instrument(self.instrument)
         if type(self.session_context) is not bool:
             raise TypeError('session_context requires bool')
@@ -346,7 +372,7 @@ class EquityStrategyDefinition:
         object.__setattr__(self, 'dependencies', tuple(sorted(self.dependencies)))
         object.__setattr__(self, 'source_files', tuple(sorted(self.source_files)))
 
-    @property
+    @cached_property
     def content_identity(self):
         return CandidateContentIdentity(canonical_sha256(self.to_dict()), self.source_sha256,
                                         canonical_sha256([asdict(x) for x in self.dependencies]))
@@ -361,6 +387,12 @@ class EquityStrategyDefinition:
             result.pop('auxiliary_inputs')
         if not self.session_context:
             result.pop('session_context')
+        if self.contract_version == 2:
+            result.pop('feature_graph')
+            result.pop('state_schema')
+        else:
+            result['feature_graph'] = self.feature_graph.to_dict()
+            result['state_schema'] = self.state_schema.to_dict()
         return result
 
     @classmethod
@@ -376,6 +408,11 @@ class EquityStrategyDefinition:
         value['source_files'] = tuple(value['source_files'])
         value['dependencies'] = tuple(ImplementationDependency(**x) for x in value['dependencies'])
         value['auxiliary_inputs'] = tuple(EquityAuxiliaryInput.from_dict(x) for x in value.get('auxiliary_inputs', ()))
+        if value.get('contract_version', 2) == 3:
+            from .equity_features import FeatureGraph
+            from .equity_replay import StrategyStateSchema
+            value['feature_graph'] = FeatureGraph.from_dict(value['feature_graph'])
+            value['state_schema'] = StrategyStateSchema.from_dict(value['state_schema'])
         return cls(**value)
 
 
@@ -425,7 +462,7 @@ class EquityStrategyCandidate:
 
     @property
     def payload(self):
-        return {'runtime': {'kind': 'US_EQUITY', 'contract_version': 2,
+        return {'runtime': {'kind': 'US_EQUITY', 'contract_version': self.definition.contract_version,
                             'source_files': self.definition.source_files, 'source_sha256': self.definition.source_sha256},
                 'equity_definition': self.definition.to_dict()}
 
@@ -465,6 +502,8 @@ class EquityStrategyCandidate:
                         raise ValueError(f'undeclared equity dependency: {top}')
 
     def decide(self, context):
+        if self.definition.contract_version != 2:
+            raise ValueError('equity V3 requires the historical step contract')
         if type(context) is not EquityDecisionContext or type(context.point) is not DecisionPoint:
             raise TypeError('equity decision requires a typed context and decision point')
         mode = self.definition.feedback_mode
@@ -495,7 +534,35 @@ class EquityStrategyCandidate:
         else:
             context = replace(context, auxiliary_histories=MappingProxyType({}),
                               session=None, session_available_at=None)
-        if equity_source_hash(self.source_root, self.definition.source_files) != self.definition.source_sha256:
+        return self._invoke(context)
+
+    def step(self, context, state):
+        from .equity_replay import StepContext, StrategyState, StepResult
+        if self.definition.contract_version != 3 or type(context) is not StepContext or type(state) is not StrategyState:
+            raise TypeError('equity V3 requires typed step context and strategy state')
+        if type(context.point) is not DecisionPoint:
+            raise TypeError('equity step requires a typed causal decision point')
+        if state.revision:
+            self.definition.state_schema.validate_record(state.account, scope='account')
+        if state.cycle is not None:
+            self.definition.state_schema.validate_record(state.cycle.values, scope='cycle')
+        from .equity_source_runtime import active_invocation
+        bound = active_invocation(self)
+        result = self._invoke(context, state) if bound is None else bound.invoke(context, state)
+        if type(result) is not StepResult:
+            raise TypeError('equity V3 implementation must return StepResult')
+        self.definition.state_schema.validate_result(result)
+        return result
+
+    def bind_replay(self):
+        from .equity_source_runtime import BoundEquityInvocation
+        if self.definition.contract_version != 3:
+            raise TypeError('bound replay readers require equity V3')
+        return BoundEquityInvocation(self)
+
+    def _invoke(self, context, state=None):
+        actual, sources = _read_equity_sources(self.source_root, self.definition.source_files)
+        if actual != self.definition.source_sha256:
             raise ValueError('equity source closure changed during execution')
         namespace = '_equity_' + uuid4().hex
         package = types.ModuleType(namespace)
@@ -506,7 +573,8 @@ class EquityStrategyCandidate:
 
         class SourceLoader(importlib.machinery.SourceFileLoader):
             def get_code(self, fullname):
-                return compile(Path(self.path).read_bytes(), self.path, 'exec')
+                name = Path(self.path).relative_to(root).as_posix()
+                return _compiled_equity_source(sources[name], self.path)
 
         class SourceFinder(importlib.abc.MetaPathFinder):
             def find_spec(self, fullname, path=None, target=None):
@@ -525,7 +593,10 @@ class EquityStrategyCandidate:
         sys.meta_path.insert(0, finder)
         try:
             module = importlib.import_module(namespace + '.' + module_name)
-            decision = getattr(module, function)(context)
+            decision = (getattr(module, function)(context) if state is None
+                        else getattr(module, function)(context, state))
+            if self.definition.contract_version == 3:
+                return decision
             if type(decision) is not EquityDecision:
                 raise TypeError('equity implementation must return EquityDecision')
             if decision.explanation is None:
