@@ -304,6 +304,8 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(managed_evaluatio
 
     previous, request = managed_evaluation
     root = request.repository_root / "retry-ledger"
+    experiment_path = Path("research/S900/experiments") / request.experiment_id
+    shutil.copytree(previous.repository.root / experiment_path, root / experiment_path)
     package = root / "runtime/strategy_runtime"
     shutil.copytree(request.strategy.source_root, package)
     candidate = replace(request.strategy, source_root=package)
