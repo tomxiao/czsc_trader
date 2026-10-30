@@ -1,0 +1,58 @@
+{
+  "status": "PASS",
+  "strategy_source_sha256": "977325a88db3206c1702e54d80371c1089ea6ee68427e8feb5ad7ca2c56462d3",
+  "precheck_source_sha256": "e21ffbdc95c50de3d2a3a95518126c7e0af3876a0a6f4b3336e0f630ccdb3ef7",
+  "common_source_sha256": "3a6084c5cfe2cd3d858ae8a738130b05ec0a2e8127f9498bd9a80d16b6aba8dc",
+  "contract": "PUBLIC_SRT_TXE_V4",
+  "direct_checks": {
+    "S017-M005_strict_reclaim_bearish_and_volume_equality": "PASS",
+    "S017-M008_strict_reclaim_bearish_and_volume_equality": "PASS",
+    "narrow_equality_and_only_declared_entry_difference": "PASS",
+    "confirmed_cycle_64_65_and_exit_due_latch": "PASS",
+    "repeated_observation_rejected": "PASS"
+  },
+  "integration": {
+    "C0061": {
+      "status": "PASS",
+      "mechanism": "S017-M008",
+      "buy_fills": 3,
+      "sell_fills": 3,
+      "failed_buy_cycle_unstarted": true,
+      "first_held_completed_bars": 1,
+      "first_exit_due_completed_bars": 65,
+      "blocked_exit_completed_bars": 66,
+      "first_buy_interval": "2019-03-04 16:30:00+00:00",
+      "first_sell_interval": "2019-03-11 16:00:00+00:00",
+      "prefix_cutoff": "2019-03-15T18:30:00+00:00",
+      "prefix_seven_tables_sha256": "2780359a195ab8199ef33ab039f8e031b2cc9416ee1681cd008039ffc504e52d",
+      "future_suffix_rows_modified": 120,
+      "module_loads": 1
+    },
+    "C0062": {
+      "status": "PASS",
+      "mechanism": "S017-M005",
+      "buy_fills": 2,
+      "sell_fills": 2,
+      "failed_buy_cycle_unstarted": true,
+      "first_held_completed_bars": 1,
+      "first_exit_due_completed_bars": 65,
+      "blocked_exit_completed_bars": 66,
+      "first_buy_interval": "2019-03-04 16:30:00+00:00",
+      "first_sell_interval": "2019-03-11 16:00:00+00:00",
+      "prefix_cutoff": "2019-03-15T18:30:00+00:00",
+      "prefix_seven_tables_sha256": "4624e679dbec18316b724798a9dc85ff559b4cb54c1a7d8061d1d879c7a37c70",
+      "future_suffix_rows_modified": 120,
+      "module_loads": 1
+    }
+  },
+  "synthetic_only": true,
+  "historical_accounts_run": 0,
+  "formal_account_publications": 0,
+  "market_data_downloads": 0,
+  "limitations": [
+    "Synthetic weekday sessions are declared test clocks, not verified market history.",
+    "Checks do not establish historical performance or full repository regression.",
+    "Prefix comparison excludes bookkeeping ids and only includes trades closed by cutoff; open exposure remains in account points.",
+    "Raw synthetic bars have no economic events; no nonempty corporate-action claim."
+  ]
+}

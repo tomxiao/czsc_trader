@@ -1,0 +1,336 @@
+{
+  "parameters": {
+    "C0061": {
+      "entry_mechanism": "S017-M008",
+      "max_holding_bars": 65
+    },
+    "C0062": {
+      "entry_mechanism": "S017-M005",
+      "max_holding_bars": 65
+    }
+  },
+  "definitions": {
+    "C0061": {
+      "runtime_kind": "ACCOUNT_REPLAY",
+      "instrument": {
+        "market": "US",
+        "asset_class": "STOCK",
+        "symbol": "LITE"
+      },
+      "execution_spec": {
+        "market": {
+          "rule_version": "US_EQUITY_V1"
+        },
+        "decision_clock": "30m",
+        "account": {
+          "currency": "USD",
+          "cash_availability": "IMMEDIATE_RESEARCH",
+          "allow_short": false,
+          "allow_negative_cash": false
+        },
+        "quantity_step": 1,
+        "price_tick": 0.01,
+        "buy_premium": 0.01,
+        "slippage_bp": 0.0,
+        "execution": "BAR_RANGE_V1",
+        "inclusive_touch": false,
+        "data_latency_seconds": 0
+      },
+      "warmup_bars": 261,
+      "entrypoint": "strategy:step",
+      "source_files": [
+        "strategy.py"
+      ],
+      "source_sha256": "f5a1cf8d351ef9e04c61dfb3001f7b6efdd44a0aff48144ac34b8c6fff4b7893",
+      "parameters_json": "{\"entry_mechanism\":\"S017-M008\",\"max_holding_bars\":65}",
+      "dependencies": [],
+      "contract_version": 4,
+      "parameter_schema_json": "{\"entry_mechanism\":{\"type\":\"string\"},\"max_holding_bars\":{\"type\":\"integer\"}}",
+      "feedback_mode": "CONFIRMED_EXECUTION",
+      "analysis_price": "RAW",
+      "explanation_cases": [
+        "flat",
+        "long"
+      ],
+      "feature_graph": {
+        "nodes": [
+          {
+            "kind": "RawField",
+            "key": "close",
+            "field": "Close"
+          },
+          {
+            "kind": "RawField",
+            "key": "opening",
+            "field": "Open"
+          },
+          {
+            "kind": "RawField",
+            "key": "high",
+            "field": "High"
+          },
+          {
+            "kind": "RawField",
+            "key": "low",
+            "field": "Low"
+          },
+          {
+            "kind": "RawField",
+            "key": "volume",
+            "field": "Volume"
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_close",
+            "source": "close",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_open",
+            "source": "opening",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_high",
+            "source": "high",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_volume",
+            "source": "volume",
+            "bars": 1
+          },
+          {
+            "kind": "TrueRange",
+            "key": "tr",
+            "high": "high",
+            "low": "low",
+            "close": "close"
+          },
+          {
+            "kind": "Mean",
+            "key": "atr13",
+            "source": "tr",
+            "window": 13
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_tr",
+            "source": "tr",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "atr_before_prior",
+            "source": "atr13",
+            "bars": 2
+          },
+          {
+            "kind": "SameLocalSlotMedian",
+            "key": "same_slot_median20",
+            "source": "volume",
+            "sessions": 20,
+            "anchor_lag": 1,
+            "timezone": "America/New_York"
+          }
+        ],
+        "outputs": [
+          "close",
+          "previous_close",
+          "previous_open",
+          "previous_high",
+          "previous_volume",
+          "previous_tr",
+          "atr_before_prior",
+          "same_slot_median20"
+        ],
+        "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+      },
+      "state_schema": {
+        "account_fields": [],
+        "cycle_fields": [
+          {
+            "key": "holding_bars",
+            "value_type": "int",
+            "nullable": false
+          },
+          {
+            "key": "last_completed_at",
+            "value_type": "datetime",
+            "nullable": false
+          },
+          {
+            "key": "exit_due",
+            "value_type": "bool",
+            "nullable": false
+          }
+        ]
+      },
+      "computation": "STATEFUL_STEP"
+    },
+    "C0062": {
+      "runtime_kind": "ACCOUNT_REPLAY",
+      "instrument": {
+        "market": "US",
+        "asset_class": "STOCK",
+        "symbol": "LITE"
+      },
+      "execution_spec": {
+        "market": {
+          "rule_version": "US_EQUITY_V1"
+        },
+        "decision_clock": "30m",
+        "account": {
+          "currency": "USD",
+          "cash_availability": "IMMEDIATE_RESEARCH",
+          "allow_short": false,
+          "allow_negative_cash": false
+        },
+        "quantity_step": 1,
+        "price_tick": 0.01,
+        "buy_premium": 0.01,
+        "slippage_bp": 0.0,
+        "execution": "BAR_RANGE_V1",
+        "inclusive_touch": false,
+        "data_latency_seconds": 0
+      },
+      "warmup_bars": 261,
+      "entrypoint": "strategy:step",
+      "source_files": [
+        "strategy.py"
+      ],
+      "source_sha256": "f5a1cf8d351ef9e04c61dfb3001f7b6efdd44a0aff48144ac34b8c6fff4b7893",
+      "parameters_json": "{\"entry_mechanism\":\"S017-M005\",\"max_holding_bars\":65}",
+      "dependencies": [],
+      "contract_version": 4,
+      "parameter_schema_json": "{\"entry_mechanism\":{\"type\":\"string\"},\"max_holding_bars\":{\"type\":\"integer\"}}",
+      "feedback_mode": "CONFIRMED_EXECUTION",
+      "analysis_price": "RAW",
+      "explanation_cases": [
+        "flat",
+        "long"
+      ],
+      "feature_graph": {
+        "nodes": [
+          {
+            "kind": "RawField",
+            "key": "close",
+            "field": "Close"
+          },
+          {
+            "kind": "RawField",
+            "key": "opening",
+            "field": "Open"
+          },
+          {
+            "kind": "RawField",
+            "key": "high",
+            "field": "High"
+          },
+          {
+            "kind": "RawField",
+            "key": "low",
+            "field": "Low"
+          },
+          {
+            "kind": "RawField",
+            "key": "volume",
+            "field": "Volume"
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_close",
+            "source": "close",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_open",
+            "source": "opening",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_high",
+            "source": "high",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_volume",
+            "source": "volume",
+            "bars": 1
+          },
+          {
+            "kind": "TrueRange",
+            "key": "tr",
+            "high": "high",
+            "low": "low",
+            "close": "close"
+          },
+          {
+            "kind": "Mean",
+            "key": "atr13",
+            "source": "tr",
+            "window": 13
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_tr",
+            "source": "tr",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "atr_before_prior",
+            "source": "atr13",
+            "bars": 2
+          },
+          {
+            "kind": "SameLocalSlotMedian",
+            "key": "same_slot_median20",
+            "source": "volume",
+            "sessions": 20,
+            "anchor_lag": 1,
+            "timezone": "America/New_York"
+          }
+        ],
+        "outputs": [
+          "close",
+          "previous_close",
+          "previous_open",
+          "previous_high",
+          "previous_volume",
+          "previous_tr",
+          "atr_before_prior",
+          "same_slot_median20"
+        ],
+        "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+      },
+      "state_schema": {
+        "account_fields": [],
+        "cycle_fields": [
+          {
+            "key": "holding_bars",
+            "value_type": "int",
+            "nullable": false
+          },
+          {
+            "key": "last_completed_at",
+            "value_type": "datetime",
+            "nullable": false
+          },
+          {
+            "key": "exit_due",
+            "value_type": "bool",
+            "nullable": false
+          }
+        ]
+      },
+      "computation": "STATEFUL_STEP"
+    }
+  }
+}
