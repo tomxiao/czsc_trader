@@ -6,13 +6,12 @@ from types import SimpleNamespace
 
 import pytest
 from strategy_evaluator import research_models as m
-from strategy_manager import CandidateKey
 from czsc_trader.application import RepositoryContext, assemble_delivery, validate_delivery
 from czsc_trader.application import delivery_service as service
 from czsc_trader.research_tools import delivery as d
 from czsc_trader.research_tools.context import ExperimentRef, ResearchBatchRef
 from czsc_trader.research_tools.evidence import EvidenceRef
-from czsc_trader.research_tools.evaluation import EvaluationIdentity
+from czsc_trader.research_tools.evaluation import validate_evaluation_evidence
 from test_research_delivery import content
 
 
@@ -71,20 +70,27 @@ def test_historical_mandate_full_read_preserves_bytes_and_cannot_be_republished(
 
 
 def test_new_mandate_can_retain_legacy_predecessor_without_reinterpreting_it(context):
-    from czsc_trader.application import research_overview_service as overview
+    from czsc_trader.application import create_research_batch, ResearchBatchRequest, get_research_overview
 
-    _, _, historical, _ = _historical_mandate(context)
+    batch = create_research_batch(context.repository,
+        ResearchBatchRequest("S900", "Historical predecessor", ("588080.SH",), {"question": "synthetic"}),
+        actor="test", reason="latest delivery navigation")
+    assert batch == context.batch
+    _, _, historical, root = _historical_mandate(context)
+    before = {path.name: path.read_bytes() for path in root.iterdir()}
     definition = d.DeliveryDefinition(context.batch, d.DeliveryStage.MANDATE, 2,
                                      predecessors=(historical.reference,))
     receipt = assemble_delivery(context.repository, definition, content(d.ResearchMandate(()))).receipt
     assert receipt.schema_version == 12
     assert validate_delivery(context.repository, receipt.reference).status is d.ValidationStatus.PASS
+    assert validate_delivery(context.repository, historical.reference).status is d.ValidationStatus.PASS
     with pytest.raises(ValueError):
         replace(definition, schema_version=13)
-    limitations = []
-    records = overview._deliveries(overview._ReadSnapshot(context.repository.root), context.batch, limitations)
-    assert {record.reference for record, _ in records} == {historical.reference, receipt.reference}
-    assert limitations == []
+    overview = get_research_overview(context.repository, context.batch)
+    assert len(overview.deliveries) == 1
+    latest = overview.deliveries[0]
+    assert (latest.stage, latest.revision, latest.reference) == (d.DeliveryStage.MANDATE, 2, receipt.reference)
+    assert before == {path.name: path.read_bytes() for path in root.iterdir()}
 
 
 def test_legacy_envelope_cannot_adopt_new_ratio_target(context):
@@ -141,26 +147,52 @@ def test_account_reference_schema_remains_bound_on_cache_reuse(monkeypatch, vers
     assert failed.value.issues[0].code == "ACCOUNT_AUTHENTICATION"
 
 
+@pytest.fixture
+def account_schema_bytes(request, frozen_seed_root):
+    """Synthetic legacy encoding, never a legacy publication or historical edit."""
+    from copy import deepcopy
+    from strategy_runtime import canonical_sha256
+    from czsc_trader.research_tools.evaluation import serialize_evaluation_evidence, _evaluation_result_hash
+
+    seed = frozen_seed_root / "historical-account-schemas.json"
+    if not seed.exists():
+        context, evaluation = request.getfixturevalue("fresh_managed_evaluation")
+        prepared = context.evaluation.prepare(evaluation)
+        result = context.evaluation.evaluate(prepared)
+        current = serialize_evaluation_evidence(prepared, result)
+        assert (current["schema_version"], current["request_identity"]["schema_version"]) == (8, 7)
+        validate_evaluation_evidence(current)
+        legacy = deepcopy(current)
+        # Without parameter lineage, these readable schemas share the exact
+        # economic account. Rebind only format-dependent authenticated digests.
+        assert legacy["request_identity"]["parameter_binding"] is None
+        assert legacy["request_identity"]["lineage"] is None
+        legacy["schema_version"] = 7
+        legacy["request_identity"]["schema_version"] = 6
+        legacy["request_hash"] = canonical_sha256(legacy["request_identity"])
+        legacy["result_hash"] = _evaluation_result_hash(legacy["request_hash"], result.runs)
+        for assessment in legacy["assessment_evidence"]:
+            assessment["request_sha256"] = legacy["request_hash"]
+            assessment["result_sha256"] = legacy["result_hash"]
+            assessment["attempt_id"] = legacy["result_hash"][:32]
+        assert legacy["runs"] == current["runs"]
+        validate_evaluation_evidence(legacy)
+        seed.write_bytes(json.dumps({"7": legacy, "8": current}).encode())
+    return seed.read_bytes()
+
+
 @pytest.mark.parametrize("version,request_version", [(7, 6), (8, 7), (7, 7), (8, 6)])
-def test_overview_account_versions_are_paired(context, version, request_version):
-    from czsc_trader.application import research_overview_service as overview
-    identity = EvaluationIdentity(CandidateKey("S900", "C0001"), *("a" * 64 for _ in range(4)))
-    experiment = "EX001_20261007"
-    document = {"schema_version": version, "source_kind": "published_result",
-        "request_identity": {"schema_version": request_version, "experiment_id": experiment,
-                             "strategy_reference": "S900-C0001"},
-        "assessment_evidence": [{"evaluation_id": identity.evaluation_id, "experiment_id": experiment}],
-        "runs": [{"identity": identity.to_dict()}]}
-    data = json.dumps(document).encode()
-    root = context.repository.root / f"research/S900/assets/evidence/{experiment}"
-    root.mkdir(parents=True)
-    (root / f"{sha256(data).hexdigest()}.json").write_bytes(data)
-    reader = overview._ReadSnapshot(context.repository.root)
-    if (version, request_version) in ((7, 6), (8, 7)):
-        assert overview._accounts(reader, context.batch, [])[0] == 1
+def test_published_account_versions_are_paired(account_schema_bytes, version, request_version):
+    document = json.loads(account_schema_bytes)[str(version)]
+    original = json.dumps(document).encode()
+    validate_evaluation_evidence(document)  # Complete legitimate baseline, including numeric audit.
+    assert json.dumps(document).encode() == original
+    document["request_identity"]["schema_version"] = request_version
+    if request_version == version - 1:
+        validate_evaluation_evidence(document)
     else:
-        with pytest.raises(ValueError, match="schemas differ"):
-            overview._accounts(reader, context.batch, [])
+        with pytest.raises(ValueError, match="^evaluation request and evidence schema versions differ$"):
+            validate_evaluation_evidence(document)
 
 
 @pytest.mark.parametrize("version", [7, 8])

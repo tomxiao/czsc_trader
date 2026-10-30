@@ -116,6 +116,7 @@ try {
             # each file remains intact and mutable workspaces remain process-local.
             $RoundtripTests = @(
                 'tests/functional/test_candidate_inspection_roundtrip.py',
+                'tests/functional/test_equity_inspection_roundtrip.py',
                 'tests/functional/test_runtime_migration.py',
                 'tests/functional/test_prototype_delivery.py'
             )
@@ -124,7 +125,10 @@ try {
                 'tests/functional/test_account_diagnosis.py',
                 'tests/functional/test_frozen_migration_governance.py'
             )
-            $AssessmentTests = @('tests/functional/test_assessment_delivery.py')
+            $AssessmentTests = @(
+                'tests/functional/test_assessment_delivery.py',
+                'tests/functional/test_equity_assessment_delivery.py'
+            )
             $IntegrationTests = @(
                 'tests/functional/test_market_replay_integration.py',
                 'tests/functional/test_observation_upgrade.py',
