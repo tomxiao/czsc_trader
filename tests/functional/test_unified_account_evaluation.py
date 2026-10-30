@@ -13,8 +13,8 @@ def test_account_preparation_ownership_and_input_isolation(request, tmp_path, co
         context, proposal = request.getfixturevalue('managed_evaluation')
         experiment = ExperimentRef(context.strategy_id, proposal.experiment_id)
     else:
-        from equity_test_support import setup_v3
-        context, proposal, _, _ = setup_v3(tmp_path)
+        from equity_test_support import setup_account_research
+        context, proposal, _, _ = setup_account_research(tmp_path)
         experiment = proposal.experiment
     access = context.evaluation
     with pytest.raises(TypeError, match='explicit ResearchExecutionSession'):

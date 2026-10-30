@@ -7,7 +7,7 @@ from .replay_kernel import ReplayDriver, run_account_replay
 from .equity import (AccountPolicy, CashAvailabilityPolicy, CnEquitySpec, UsEquitySpec,
                      ResearchExecutionSpec, ExecutionModel, DecisionPoint, EquityPortfolio,
                      EquityClosedCycle, EquityClosedCycleFeedback,
-                     EquityCandidate, EquityPlan, EquityStrategyInstance, equity_implementation_hash)
+                     EquityPlan, EquityStrategyInstance)
 
 from .input_binding import StrategyInputPlan, StrategyInputBinding
 from .entry_cycle import CycleTarget, EntryCycleState, EntryCyclePhase, EntryCyclePlanStatus
@@ -104,7 +104,7 @@ __all__ = [
     "AccountPolicy", "CashAvailabilityPolicy", "CnEquitySpec", "UsEquitySpec",
     "ResearchExecutionSpec", "ExecutionModel", "DecisionPoint", "EquityPortfolio",
     "EquityClosedCycle", "EquityClosedCycleFeedback",
-    "EquityCandidate", "EquityPlan", "EquityStrategyInstance", "equity_implementation_hash",
+    "EquityPlan", "EquityStrategyInstance",
     "CycleTarget", "EntryCycleState", "EntryCyclePhase", "EntryCyclePlanStatus",
     "validate_entry_cycle_plan_facts",
     "ExecutionResources", "default_worker_count",
@@ -198,7 +198,7 @@ from .equity_context import build_equity_decision_context
 from .equity_features import (BarField, RawField, Lag, TrueRange, Mean, SameLocalSlotMedian,
     FeatureGraph, ReadyValue, NotReady, FeatureView, HistoryView)
 from .equity_replay import (StateValueType, StateField, StateRecord, StrategyStateSchema,
-    CycleState, StrategyState, StepContext, StepResult, PreparedReplay, ReplayOutcome,
+    CycleState, StrategyState, PreparedReplay, ReplayOutcome,
     ReplayStatistics, ReplayFailure, run_replay)
 
 __all__ += ["EquityStrategyCandidate", "EquityStrategyDefinition", "EquityDecision", "EquityDecisionContext",
@@ -207,7 +207,7 @@ __all__ += ["EquityStrategyCandidate", "EquityStrategyDefinition", "EquityDecisi
 __all__ += ['BarField', 'RawField', 'Lag', 'TrueRange', 'Mean', 'SameLocalSlotMedian',
     'FeatureGraph', 'ReadyValue', 'NotReady', 'FeatureView', 'HistoryView',
     'StateValueType', 'StateField', 'StateRecord', 'StrategyStateSchema', 'CycleState',
-    'StrategyState', 'StepContext', 'StepResult', 'PreparedReplay', 'ReplayOutcome',
+    'StrategyState', 'PreparedReplay', 'ReplayOutcome',
     'ReplayStatistics', 'ReplayFailure', 'run_replay']
 __all__ += ['ReplayPoint', 'AccountSnapshot', 'ReplayOrder', 'ReplayLeg', 'CycleBudget',
     'AccountExecutionPlan', 'AccountPlanExecutor', 'StrategyComputation', 'ExecutionPrecision',

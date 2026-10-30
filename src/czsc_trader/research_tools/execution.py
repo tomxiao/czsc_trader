@@ -125,7 +125,7 @@ class EquityAccountTiming:
 
 @dataclass(frozen=True, slots=True)
 class EquityExecutionStatistics:
-    """Detached V3 session statistics, including completed but rejected accounts.
+    """Detached V4 session statistics, including completed but rejected accounts.
 
     Run counts include only replays that returned successfully, even when their
     subsequent certification failed. Restored results do not count as replays.
@@ -244,8 +244,8 @@ class ResearchExecutionSession:
 
     @property
     def equity_statistics(self) -> EquityExecutionStatistics | None:
-        """A frozen statistics snapshot; None means this session has no V3 work."""
-        state = getattr(self, "_equity_v3", None)
+        """A frozen statistics snapshot; None means this session has no V4 work."""
+        state = getattr(self, "_equity_account", None)
         if state is None:
             return None
         timings = tuple(EquityAccountTiming(kind, owner, item.feature_seconds, item.replay_seconds,

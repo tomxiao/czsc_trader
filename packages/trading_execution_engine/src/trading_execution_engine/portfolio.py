@@ -19,7 +19,7 @@ from strategy_runtime.equity import CashAvailabilityPolicy, EquityPortfolio, equ
 from strategy_runtime.replay_contracts import AccountExecutionPlan, AccountSnapshot, ReplayPoint
 
 from .accounting import _post_confirmed_fill
-from .equity import (EquityHistoricalExecutor, _timestamp, _bar_identity_value, _SESSION_ZONES,
+from .equity import (_EquityAccount, _timestamp, _bar_identity_value, _SESSION_ZONES,
                      _TransitionCheckpoint, _ACCOUNT_STATE)
 from .fills import OrderSpec, resolve_fill
 from .market import SessionPriceLimits
@@ -128,7 +128,7 @@ def _restore_execution_quotes(market, by_start, by_end, by_slot, identity):
     return value
 
 
-class PortfolioHistoricalExecutor(EquityHistoricalExecutor):
+class PortfolioHistoricalExecutor(_EquityAccount):
     """One long-only raw-price account with sizes, dependencies and dated rules."""
 
     def __init__(self, *, specification, initial_cash, fee_rate, actions, price_basis, execution_bars=None):
@@ -198,7 +198,6 @@ class PortfolioHistoricalExecutor(EquityHistoricalExecutor):
                 self.pending = checkpoint.pending
                 for key in checkpoint.completed_added:
                     self.completed.pop(key, None)
-                    self._neutral_targets.pop(key, None)
                 for key in checkpoint.applied_added:
                     self.applied.discard(key)
                 for name, length in checkpoint.lengths.items():

@@ -379,19 +379,17 @@ class EquityStrategyDefinition:
 
     def __post_init__(self):
         import re
-        if type(self.contract_version) is not int or self.contract_version not in (2, 3, 4) or type(self.execution_spec) is not ResearchExecutionSpec:
+        if type(self.contract_version) is not int or self.contract_version not in (2, 4) or type(self.execution_spec) is not ResearchExecutionSpec:
             raise ValueError("unsupported equity definition contract")
-        if self.contract_version in (3, 4):
+        if self.contract_version == 4:
             from .equity_features import FeatureGraph
             from .equity_replay import StrategyStateSchema
-            if self.contract_version == 3 and self.instrument.market is not MarketId.US:
-                raise ValueError('equity V3 is restricted to US historical research')
             if type(self.feature_graph) is not FeatureGraph or type(self.state_schema) is not StrategyStateSchema:
-                raise TypeError('equity V3 requires a typed feature graph and state schema')
-            if self.feedback_mode == 'MARKET_INTENT':
-                raise ValueError('equity V3 requires confirmed account feedback')
+                raise TypeError('account replay requires a typed feature graph and state schema')
+            if self.feedback_mode != 'CONFIRMED_EXECUTION':
+                raise ValueError('account replay requires CONFIRMED_EXECUTION feedback')
         elif self.feature_graph is not None or self.state_schema is not None:
-            raise ValueError('equity V2 cannot declare V3 features or state')
+            raise ValueError('equity V2 cannot declare account replay features or state')
         from .replay_contracts import StrategyComputation
         from dataflows import BarFrequency
         if self.contract_version == 4:
@@ -529,7 +527,7 @@ class EquityStrategyDefinition:
         value['source_files'] = tuple(value['source_files'])
         value['dependencies'] = tuple(ImplementationDependency(**x) for x in value['dependencies'])
         value['auxiliary_inputs'] = tuple(EquityAuxiliaryInput.from_dict(x) for x in value.get('auxiliary_inputs', ()))
-        if value.get('contract_version', 2) in (3, 4):
+        if value.get('contract_version', 2) == 4:
             from .equity_features import FeatureGraph
             from .equity_replay import StrategyStateSchema
             value['feature_graph'] = FeatureGraph.from_dict(value['feature_graph'])
@@ -632,7 +630,7 @@ class EquityStrategyCandidate:
 
     def decide(self, context):
         if self.definition.contract_version != 2:
-            raise ValueError('equity V3 requires the historical step contract')
+            raise ValueError('account replay requires the historical account step contract')
         if type(context) is not EquityDecisionContext or type(context.point) is not DecisionPoint:
             raise TypeError('equity decision requires a typed context and decision point')
         mode = self.definition.feedback_mode
@@ -664,24 +662,6 @@ class EquityStrategyCandidate:
             context = replace(context, auxiliary_histories=MappingProxyType({}),
                               session=None, session_available_at=None)
         return self._invoke(context)
-
-    def step(self, context, state):
-        from .equity_replay import StepContext, StrategyState, StepResult
-        if self.definition.contract_version != 3 or type(context) is not StepContext or type(state) is not StrategyState:
-            raise TypeError('equity V3 requires typed step context and strategy state')
-        if type(context.point) is not DecisionPoint:
-            raise TypeError('equity step requires a typed causal decision point')
-        if state.revision:
-            self.definition.state_schema.validate_record(state.account, scope='account')
-        if state.cycle is not None:
-            self.definition.state_schema.validate_record(state.cycle.values, scope='cycle')
-        from .equity_source_runtime import active_invocation
-        bound = active_invocation(self)
-        result = self._invoke(context, state) if bound is None else bound.invoke(context, state)
-        if type(result) is not StepResult:
-            raise TypeError('equity V3 implementation must return StepResult')
-        self.definition.state_schema.validate_result(result)
-        return result
 
     def account_step(self, context, state):
         from .account_strategy import AccountStepContext, AccountStepResult, AccountStrategyState
@@ -719,11 +699,11 @@ class EquityStrategyCandidate:
 
     def bind_replay(self):
         from .equity_source_runtime import BoundEquityInvocation
-        if self.definition.contract_version not in (3, 4):
+        if self.definition.contract_version != 4:
             raise TypeError('bound strategy module scopes require explicit replay definitions')
         return BoundEquityInvocation(self)
 
-    def _invoke(self, context, state=None):
+    def _invoke(self, context):
         actual, sources = _read_equity_sources(self.source_root, self.definition.source_files)
         if actual != self.definition.source_sha256:
             raise ValueError('equity source closure changed during execution')
@@ -756,10 +736,7 @@ class EquityStrategyCandidate:
         sys.meta_path.insert(0, finder)
         try:
             module = importlib.import_module(namespace + '.' + module_name)
-            decision = (getattr(module, function)(context) if state is None
-                        else getattr(module, function)(context, state))
-            if self.definition.contract_version in (3, 4):
-                return decision
+            decision = getattr(module, function)(context)
             if type(decision) is not EquityDecision:
                 raise TypeError('equity implementation must return EquityDecision')
             if decision.explanation is None:

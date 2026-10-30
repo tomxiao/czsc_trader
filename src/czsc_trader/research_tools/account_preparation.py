@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .evaluation import EvaluationRequest
     from .equity_evaluation import EquityEvaluationRequest
-    from .equity_replay_v3 import EquityInputSnapshot
+    from .equity_replay import EquityInputSnapshot
 
 
 def _read(content):
@@ -80,16 +80,16 @@ class PreparedAccountEvaluation:
     def __post_init__(self):
         from .evaluation import EvaluationRequest
         from .equity_evaluation import EquityEvaluationRequest
-        from .equity_replay_v3 import EquityInputSnapshot, _bytes, _read
+        from .equity_replay import EquityInputSnapshot, _bytes, _read
         if type(self.request) is EvaluationRequest:
             if (type(self.snapshot) is not AccountInputSnapshot or not self.request.input_bindings
                     or self.request.execution_data is None):
                 raise TypeError('prepared evaluation requires pinned account inputs')
         elif type(self.request) is EquityEvaluationRequest:
-            if (not self.request.formal or self.request.candidate.definition.contract_version not in (3, 4)
+            if (self.request.candidate.definition.contract_version != 4
                     or self.request.prepared is None or self.request.input_binding is None
                     or type(self.snapshot) is not EquityInputSnapshot):
-                raise TypeError('prepared v3 evaluation requires a bound v3 request')
+                raise TypeError('prepared equity evaluation requires a bound V4 request')
         else:
             raise TypeError('prepared account requires an explicit evaluation request')
         if type(self.benchmark_identity) is not BenchmarkRunIdentity:
@@ -216,7 +216,7 @@ def require_account(access, value, execution):
         raise TypeError('account evaluation requires an explicit ResearchExecutionSession')
     execution.require(access, value.experiment.experiment_id)
     if type(value.request) is not EvaluationRequest:
-        from .equity_replay_v3 import _require_prepared, _state
+        from .equity_replay import _require_prepared, _state
         _require_prepared(_state(access, execution), value)
         return value.request
     handles, _, token = getattr(execution, '_accounts', ({}, {}, None))

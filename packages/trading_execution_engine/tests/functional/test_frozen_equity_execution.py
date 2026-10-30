@@ -1,4 +1,4 @@
-"""One row kernel and atomic decision boundaries preserve equity evidence."""
+"""Frozen V2 execution retains row, economic and transaction boundaries."""
 from copy import deepcopy
 from dataclasses import asdict, replace
 from datetime import datetime, timedelta, timezone
@@ -13,7 +13,7 @@ from strategy_runtime import (AccountPolicy, CashAvailabilityPolicy, DecisionPoi
                               CnEquitySpec, EquityPlan, ResearchExecutionSpec, UsEquitySpec)
 import strategy_runtime.equity as equity_contracts
 import trading_execution_engine.equity as equity_execution
-from trading_execution_engine.equity import EquityHistoricalExecutor
+from trading_execution_engine.frozen_equity import _FrozenEquityExecutor
 
 
 START = datetime(2026, 10, 1, 14, tzinfo=timezone.utc)
@@ -27,7 +27,7 @@ def account(actions=None, *, deferred=False):
                                 AccountPolicy('USD', policy), 1, .01, .01, 0.)
     if actions is None:
         actions = pd.DataFrame(columns=['Date', 'EventId', 'Kind'])
-    return EquityHistoricalExecutor(specification=spec, initial_cash=1000., fee_rate=.001, actions=actions)
+    return _FrozenEquityExecutor(specification=spec, initial_cash=1000., fee_rate=.001, actions=actions)
 
 
 def transition(executor, side='BUY', quantity=10, **updates):

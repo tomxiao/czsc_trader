@@ -1,4 +1,4 @@
-"""Session-owned US equity preparation, event replay and immutable evidence.
+"""Session-owned V4 equity preparation, event replay and immutable evidence.
 
 Only the owning session can reuse certification. Persisted artifacts contain
 facts, not authority: a reader authenticates the closure and audits it afresh.
@@ -14,7 +14,7 @@ import inspect
 import json
 from pathlib import Path
 
-from dataflows import EquityProduct, MarketId, PreparePolicy, TimeInterval
+from dataflows import EquityProduct, PreparePolicy, TimeInterval
 from strategy_runtime.equity import ResearchExecutionSpec, equity_hash
 from strategy_runtime.equity_definition import EquityAuxiliaryBinding, EquityInputBinding, EquityStrategyCandidate, ExecutionInputBinding
 from strategy_evaluator.equity_assessment import EquityCertificationScope, certify_equity_ledger
@@ -34,11 +34,11 @@ def _read(content):
         result = {}
         for key, value in pairs:
             if key in result:
-                raise ValueError("duplicate v3 evidence field")
+                raise ValueError("duplicate equity evidence field")
             result[key] = value
         return result
     return json.loads(content, object_pairs_hook=unique,
-        parse_constant=lambda _: (_ for _ in ()).throw(ValueError("nonfinite v3 evidence")))
+        parse_constant=lambda _: (_ for _ in ()).throw(ValueError("nonfinite equity evidence")))
 
 
 @dataclass(frozen=True, slots=True)
@@ -73,12 +73,12 @@ class _SessionState:
 
 def _state(access, execution, experiment_id=None):
     if type(execution) is not ResearchExecutionSession:
-        raise TypeError("v3 equity operations require their explicit ResearchExecutionSession")
+        raise TypeError("equity operations require their explicit ResearchExecutionSession")
     execution.require(access, experiment_id)
-    state = getattr(execution, "_equity_v3", None)
+    state = getattr(execution, "_equity_account", None)
     if state is None:
         state = _SessionState()
-        execution._equity_v3 = state
+        execution._equity_account = state
     return state
 
 
@@ -87,18 +87,15 @@ def _benchmark_candidate(request):
     from strategy_runtime.equity_features import FeatureGraph
     from strategy_runtime.equity_replay import StrategyStateSchema
     from strategy_runtime.replay_contracts import StrategyComputation
-    if request.candidate.definition.contract_version == 4:
-        from strategy_runtime.equity_buy_hold_v4 import step
-    else:
-        from strategy_runtime.equity_buy_hold_v3 import step
+    from strategy_runtime.equity_buy_hold_v4 import step
     root = Path(inspect.getsourcefile(step)).parent
-    module = "equity_buy_hold_v4" if request.candidate.definition.contract_version == 4 else "equity_buy_hold_v3"
+    module = "equity_buy_hold_v4"
     files = (module + ".py",)
     definition = EquityStrategyDefinition(request.candidate.instrument,
         request.candidate.definition.execution_spec, request.candidate.warmup_bars,
         module + ":step", files, equity_source_hash(root, files),
         contract_version=request.candidate.definition.contract_version, feature_graph=FeatureGraph((), ()), state_schema=StrategyStateSchema(),
-        **({"computation": StrategyComputation.STATEFUL_STEP} if request.candidate.definition.contract_version == 4 else {}))
+        computation=StrategyComputation.STATEFUL_STEP)
     # Internal implementation adapter only; the external account owner is BENCHMARK.
     return EquityStrategyCandidate("S000", "C0000", definition, root)
 
@@ -117,17 +114,17 @@ def _primary_input_sha256(snapshot):
         "data": {key: value["data"][key] for key in ("bars", "sessions", "actions", "constraints")}})).hexdigest()
 
 
-def prepare_equity_v3(access, request, *, execution):
+def prepare_equity(access, request, *, execution):
     """Fetch/authenticate each exact input selection once in the owning session."""
-    if type(request) is not EquityEvaluationRequest or not request.formal or request.candidate.definition.contract_version not in (3, 4):
-        raise TypeError("v3 preparation requires an explicit v3 strategy request")
+    if type(request) is not EquityEvaluationRequest or request.candidate.definition.contract_version != 4:
+        raise TypeError("equity preparation requires an explicit equity strategy request")
     state = _state(access, execution, request.experiment.experiment_id)
     spec = access.execution_spec
-    if type(spec) is not ResearchExecutionSpec or (request.candidate.definition.contract_version == 3 and spec.market_id is not MarketId.US):
-        raise ValueError("v3 replay requires the US equity execution contract")
+    if type(spec) is not ResearchExecutionSpec:
+        raise ValueError("equity replay requires an explicit execution contract")
     spec.require_instrument(request.candidate.instrument)
     if request.candidate.execution_spec_hash != spec.fingerprint or request.experiment.strategy_id != access.strategy_id:
-        raise ValueError("v3 request differs from its research context")
+        raise ValueError("equity request differs from its research context")
     request.candidate.verify()
     definition = request.candidate.definition
     if request.prepared is not None and request.prepared.space_id != access.data.binding.space_id:
@@ -158,7 +155,7 @@ def prepare_equity_v3(access, request, *, execution):
                 identities[item.data_key(EquityProduct.SESSIONS)]["content_sha256"])
                 for item in definition.auxiliary_inputs), **({'execution_input': ExecutionInputBinding(definition.execution_input,
                     identities['execution:bars']['content_sha256'], identities['execution:sessions']['content_sha256'])}
-                    if definition.contract_version == 4 and definition.execution_input is not None else {}))
+                    if definition.execution_input is not None else {}))
         if request.input_binding is not None and request.input_binding != binding:
             raise ValueError("equity input identity differs from prepared assets")
         facts_hash = equity_hash(_audit_inputs(request, spec, state.products[snapshot.sha256]))
@@ -206,7 +203,7 @@ def _replay(state, prepared, *, benchmark=False):
         identities = _read(prepared.snapshot.artifact.content)["data"]
         state.replays[key] = (base.with_graph(graph) if base is not None else PreparedReplay.from_frames(
             products["bars"], products["constraints"], graph, latency_seconds=key[2],
-            **({"frequency": candidate.definition.execution_spec.decision_clock, "timezone": candidate.instrument.timezone} if candidate.definition.contract_version == 4 else {}),
+            frequency=candidate.definition.execution_spec.decision_clock, timezone=candidate.instrument.timezone,
             **_runtime_inputs(candidate.definition, products, identities)))
     return candidate, state.replays[key]
 
@@ -222,14 +219,10 @@ class _ReplayAccountRequest:
 def _compute_account(replay, candidate, request, actions, owner, execution_bars=None):
     """Worker computation only: it cannot certify or publish its own output."""
     from strategy_runtime.equity_replay import run_replay
-    from trading_execution_engine.equity import EquityHistoricalExecutor
-    if candidate.definition.contract_version == 4:
-        from trading_execution_engine.portfolio import PortfolioHistoricalExecutor
-        executor_type = PortfolioHistoricalExecutor
-    else:
-        executor_type = EquityHistoricalExecutor
-    executor = executor_type(specification=candidate.definition.execution_spec,
-        initial_cash=request.initial_cash, fee_rate=request.fee_rate, actions=actions, **({"price_basis": "RAW", "execution_bars": execution_bars} if candidate.definition.contract_version == 4 else {}))
+    from trading_execution_engine.portfolio import PortfolioHistoricalExecutor
+    executor = PortfolioHistoricalExecutor(specification=candidate.definition.execution_spec,
+        initial_cash=request.initial_cash, fee_rate=request.fee_rate, actions=actions,
+        price_basis="RAW", execution_bars=execution_bars)
     outcome = run_replay(replay, candidate, executor, start=request.window.start,
         end=request.window.end, fee_rate=request.fee_rate, owner=owner)
     account = outcome.execution_result
@@ -271,12 +264,11 @@ def _certify_run(state, prepared, run, *, benchmark):
     inputs = _inputs(prepared.snapshot, prepared.request)
     ledger = {**inputs, **{name: run[name] for name in
         ("decisions", "orders", "fills", "actions", "account_points", "trades")}}
-    if prepared.candidate.definition.contract_version == 4:
-        ledger["account_contract"] = 4
-        if not benchmark and prepared.candidate.definition.execution_input is not None:
-            ledger['execution_bars'] = _read(prepared.snapshot.artifact.content)['products']['execution:bars']
+    ledger["account_contract"] = 4
+    if not benchmark and prepared.candidate.definition.execution_input is not None:
+        ledger['execution_bars'] = _read(prepared.snapshot.artifact.content)['products']['execution:bars']
     with state.certification:
-        audit = certify_equity_ledger(ledger, decision_contract="FORMAL_V4" if prepared.candidate.definition.contract_version == 4 else "FORMAL_V2")
+        audit = certify_equity_ledger(ledger, decision_contract="FORMAL_V4")
     run = {**run, "metrics": _json_value(asdict(audit)), "data_quality": _data_quality(inputs["bars"], run,
         timezone=prepared.candidate.instrument.timezone, execution_bars=ledger.get("execution_bars"))}
     owner = ({"kind": "BENCHMARK", "run_identity": prepared.benchmark_identity.to_dict(),
@@ -306,16 +298,16 @@ def _result(prepared, candidate, benchmark):
     return EquityEvaluationResult(request_hash, _bytes(payload), (prepared.snapshot.artifact, candidate, benchmark))
 
 
-def evaluate_many_equity_v3(access, requests, *, execution):
+def evaluate_many_equity(access, requests, *, execution):
     """Replay unique accounts, then independently certify in the owning process."""
     from .evaluation_access import EvaluationOutcome, EvaluationStatus, EvaluationError
     state = _state(access, execution)
     if type(requests) is not tuple or not requests:
-        raise TypeError("v3 evaluation requires a nonempty tuple of prepared handles")
+        raise TypeError("equity evaluation requires a nonempty tuple of prepared handles")
     for prepared in requests:
         _require_prepared(state, prepared)
         if prepared.experiment.experiment_id != execution.experiment.experiment_id:
-            raise ValueError("v3 evaluation belongs to another experiment")
+            raise ValueError("equity evaluation belongs to another experiment")
     restored = {}
     if execution.checkpoint is not None:
         for i, prepared in enumerate(requests):
@@ -342,7 +334,7 @@ def evaluate_many_equity_v3(access, requests, *, execution):
                 owner = _account_owner(prepared, benchmark=benchmark)
                 contract = _ReplayAccountRequest(prepared.request.window, prepared.request.initial_cash, prepared.request.fee_rate)
                 quotes = None
-                if candidate.definition.contract_version == 4 and candidate.definition.execution_input is not None:
+                if candidate.definition.execution_input is not None:
                     from trading_execution_engine import PreparedExecutionQuotes
                     key_quote = (prepared.request.input_binding.execution_input.bars_sha256, candidate.instrument.market)
                     if key_quote not in state.execution_quotes:
@@ -392,7 +384,7 @@ def evaluate_many_equity_v3(access, requests, *, execution):
             _require_prepared(state, prepared)
             result = _result(prepared, accounts[("candidate", i)], state.benchmarks[prepared.benchmark_identity.sha256])
             with execution.executor.measure(ExecutionPhase.AUTHENTICATE), state.certification:
-                build_v3_assessment(result, scope=state.certification)
+                build_equity_assessment(result, scope=state.certification)
             state.results[id(result)] = (result, result.result_hash, prepared)
             if execution.checkpoint is not None:
                 execution.checkpoint.save_equity_result(request_hash, result)
@@ -408,8 +400,8 @@ def _authenticate_restore(state, prepared, result):
     payload = result.payload
     if (payload["request"] != expected or payload["input_ref"] != prepared.snapshot.artifact.reference()
             or payload["benchmark_identity"] != prepared.benchmark_identity.to_dict()):
-        raise ValueError("restored v3 result differs from authenticated prepared inputs")
-    build_v3_assessment(result, scope=state.certification)
+        raise ValueError("restored equity result differs from authenticated prepared inputs")
+    build_equity_assessment(result, scope=state.certification)
     state.benchmarks[prepared.benchmark_identity.sha256] = next(item for item in result.artifacts
         if item.sha256 == payload["benchmark_ref"]["sha256"])
     state.results[id(result)] = (result, result.result_hash, prepared)
@@ -426,27 +418,27 @@ def validate_certified_result(access, prepared, result, *, execution):
 
 
 def validate_result_structure(payload, artifacts=()):
-    if payload.get("schema_version") not in (3, 4) or payload["request"].get("schema") != f"equity-research/v{payload["schema_version"]}":
-        raise ValueError("v3 result schema differs")
+    if payload.get("schema_version") != 4 or payload["request"].get("schema") != f"equity-research/v{payload["schema_version"]}":
+        raise ValueError("equity result schema differs")
     if payload["request"].get("candidate_definition", {}).get("contract_version") != payload["schema_version"]:
         raise ValueError("account evidence version differs from strategy contract")
     expected = []
     for name, kind in (("input_ref", "equity_input"), ("candidate_ref", "equity_account"), ("benchmark_ref", "equity_account")):
         ref = payload[name]
         if type(ref) is not dict or set(ref) != {"kind", "sha256"} or ref["kind"] != kind:
-            raise ValueError("v3 artifact reference schema differs")
+            raise ValueError("equity artifact reference schema differs")
         import re
         if type(ref["sha256"]) is not str or re.fullmatch("[a-f0-9]{64}", ref["sha256"]) is None:
-            raise ValueError("invalid v3 artifact digest")
+            raise ValueError("invalid equity artifact digest")
         expected.append((ref["kind"], ref["sha256"]))
     if len(set(expected)) != 3:
-        raise ValueError("v3 input, candidate and benchmark must be distinct artifacts")
+        raise ValueError("equity input, candidate and benchmark must be distinct artifacts")
     if artifacts and set(expected) != {(item.kind, item.sha256) for item in artifacts}:
-        raise ValueError("v3 result artifact closure differs from references")
+        raise ValueError("equity result artifact closure differs from references")
 
 
 @dataclass(frozen=True, slots=True)
-class MaterializedEquityV3:
+class MaterializedEquity:
     source_content: bytes
     artifacts: tuple[EquityArtifact, ...]
 
@@ -456,7 +448,7 @@ class MaterializedEquityV3:
             raise TypeError("materialized evidence requires immutable source bytes and typed artifacts")
         validate_result_structure(_read(self.source_content), self.artifacts)
         if len(self.artifacts) != 3:
-            raise ValueError("materialization requires the complete v3 closure")
+            raise ValueError("materialization requires the complete equity closure")
 
     @property
     def source_sha256(self):
@@ -468,14 +460,14 @@ class MaterializedEquityV3:
         documents = {item.sha256: _read(item.content) for item in self.artifacts}
         inputs = documents[payload["input_ref"]["sha256"]]
         if inputs.get("schema") != "equity-input/v1" or inputs["data"] != payload["data"]:
-            raise ValueError("v3 input identity differs")
+            raise ValueError("equity input identity differs")
         runs = {}
         for name, key in (("candidate", "candidate_ref"), ("buy_hold", "benchmark_ref")):
             account = documents[payload[key]["sha256"]]
             expected_input = (payload["input_ref"]["sha256"] if name == "candidate" else
                               payload["benchmark_identity"]["input_snapshot_sha256"])
             if account.get("schema") != "equity-account/v1" or account["input_sha256"] != expected_input:
-                raise ValueError("v3 account input identity differs")
+                raise ValueError("equity account input identity differs")
             if name == "candidate":
                 expected_owner = {"kind": "CANDIDATE", "candidate": payload["evaluation_identity"]["candidate"],
                     "content_sha256": payload["request"]["content_sha256"]}
@@ -490,9 +482,9 @@ class MaterializedEquityV3:
                             ("instrument", "window", "history_start", "initial_cash", "fee_rate", "engine_sources", "python_version", "pandas_version"))
                         or contract["definition"]["warmup_bars"] != request["warmup_bars"]
                         or contract["definition"]["execution_spec"] != request["specification"]):
-                    raise ValueError("v3 benchmark economic identity differs from evaluation")
+                    raise ValueError("equity benchmark economic identity differs from evaluation")
             if account["owner"] != expected_owner:
-                raise ValueError("v3 account owner differs")
+                raise ValueError("equity account owner differs")
             runs[name] = account["run"]
         request = payload["request"]
         products = inputs["products"]
@@ -501,8 +493,7 @@ class MaterializedEquityV3:
             "initial_cash": request["initial_cash"], "fee_rate": request["fee_rate"]})
         definition = request["candidate_definition"]
         decision_inputs = {}
-        if definition.get("session_context") or definition.get("contract_version") == 4:
-            decision_inputs["sessions"] = products["sessions"]
+        decision_inputs["sessions"] = products["sessions"]
         if definition.get("auxiliary_inputs"):
             decision_inputs["auxiliary"] = {item["name"]: {
                 "bars": products[f"auxiliary:{item['name']}:bars"],
@@ -515,7 +506,7 @@ class MaterializedEquityV3:
         return payload
 
 
-def materialize_v3(value, resolver=None):
+def materialize_equity(value, resolver=None):
     """Resolve an immutable closure; resolver receives a {kind, sha256} reference."""
     if type(value) is EquityEvaluationResult:
         content, artifacts = value.content, value.artifacts
@@ -524,31 +515,31 @@ def materialize_v3(value, resolver=None):
     elif type(value) is bytes:
         content, artifacts = value, ()
     else:
-        raise TypeError("v3 materialization requires result, payload or immutable bytes")
+        raise TypeError("equity materialization requires result, payload or immutable bytes")
     payload = _read(content)
     validate_result_structure(payload, artifacts)
     if not artifacts:
         if not callable(resolver):
-            raise TypeError("detached v3 evidence requires an explicit artifact resolver")
+            raise TypeError("detached equity evidence requires an explicit artifact resolver")
         values = []
         for name in ("input_ref", "candidate_ref", "benchmark_ref"):
             ref = payload[name]
             item = EquityArtifact(ref["kind"], resolver(dict(ref)))
             if item.sha256 != ref["sha256"]:
-                raise ValueError("v3 artifact content digest differs")
+                raise ValueError("equity artifact content digest differs")
             values.append(item)
         artifacts = tuple(values)
-    view = MaterializedEquityV3(content, artifacts)
+    view = MaterializedEquity(content, artifacts)
     view.payload  # Authenticate all owner/input links at the resolver boundary.
     return view
 
 
-def build_v3_assessment(value, resolver=None, *, scope=None):
+def build_equity_assessment(value, resolver=None, *, scope=None):
     from .equity_assessment import build_equity_assessment_payload
     if scope is None:
         scope = EquityCertificationScope()
     if type(scope) is not EquityCertificationScope:
-        raise TypeError("v3 assessment requires an owned certification scope")
-    view = value if type(value) is MaterializedEquityV3 else materialize_v3(value, resolver)
+        raise TypeError("equity assessment requires an owned certification scope")
+    view = value if type(value) is MaterializedEquity else materialize_equity(value, resolver)
     with scope:
         return build_equity_assessment_payload(view)

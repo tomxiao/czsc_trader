@@ -1,7 +1,7 @@
 """Public result and evidence contracts for independently organized research."""
 from .equity_evaluation import (EquitySources, EquityEvaluationRequest, EquityEvaluationResult)
-from .equity_replay_v3 import (EquityInputSnapshot, BenchmarkRunIdentity,
-    PreparedAccountEvaluation, MaterializedEquityV3)
+from .equity_replay import (EquityInputSnapshot, BenchmarkRunIdentity,
+    PreparedAccountEvaluation, MaterializedEquity)
 from strategy_runtime import ExecutionPriceBasis
 
 from ..backtesting.benchmark_contracts import LimitBuyHold, NextOpenBuyHold, EquityBuyHold
@@ -151,7 +151,7 @@ from .delivery import (
 
 __all__ = [
     "EquitySources", "EquityEvaluationRequest", "EquityEvaluationResult",
-    'EquityInputSnapshot', 'BenchmarkRunIdentity', 'PreparedAccountEvaluation', 'MaterializedEquityV3',
+    'EquityInputSnapshot', 'BenchmarkRunIdentity', 'PreparedAccountEvaluation', 'MaterializedEquity',
     'CheckpointMode', 'ExecutionCheckpointRequest', 'ExecutionPhase', 'ExecutionProgress',
     'ExecutionStats', 'EquityAccountTiming', 'EquityExecutionStatistics', 'ResearchExecutionSession',
     'DeliveryAssemblyResult', 'DeliveryValidationPhase', 'DeliveryValidationProgress',

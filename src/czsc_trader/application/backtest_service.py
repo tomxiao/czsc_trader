@@ -32,11 +32,10 @@ def run_backtest(
     """
     if not isinstance(context, ResearchContext):
         raise TypeError("backtest requires ResearchContext")
-    from strategy_runtime.equity import EquityCandidate
     from strategy_runtime.equity_definition import EquityStrategyCandidate
     from ..research_tools.equity_evaluation import EquityEvaluationRequest
-    if type(strategy) in (EquityCandidate, EquityStrategyCandidate) or type(request) is EquityEvaluationRequest:
-        raise TypeError("US equity replay requires ResearchExecutionSession, prepare and evaluate_many with session-owned V3 requests")
+    if type(strategy) in (EquityStrategyCandidate,) or type(request) is EquityEvaluationRequest:
+        raise TypeError("US equity replay requires ResearchExecutionSession, prepare and evaluate_many with session-owned V4 requests")
     if context.execution_spec is not None:
         raise ValueError("explicit equity context cannot execute an exchange-bound legacy request")
     if not isinstance(strategy, (StrategyCandidate, StrategyVersion)):

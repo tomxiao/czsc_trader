@@ -10,7 +10,7 @@ from czsc_trader.application import diagnose_accounts, publish_evidence
 from czsc_trader.research_tools import EvaluationEvidenceWrite
 from czsc_trader.research_tools.account_diagnosis import AccountDiagnosisRequest, AccountRunRef
 from czsc_trader.research_tools.evaluation import EvaluationIdentity, EvaluationWindow
-from equity_test_support import setup_auxiliary, v3_account
+from equity_test_support import setup_auxiliary, account_research
 
 
 @pytest.mark.parametrize("different_cost", [False, True])
@@ -32,7 +32,7 @@ def test_diagnosis_compares_optional_signal_inputs_but_keeps_execution_contract(
         baseline = replace(baseline, fee_rate=.002)
     accounts = []
     for name, request in (("auxiliary", auxiliary), ("baseline", baseline)):
-        with v3_account(context, request) as (prepared, result, payload, execution):
+        with account_research(context, request) as (prepared, result, payload, execution):
             evidence = publish_evidence(context, EvaluationEvidenceWrite(request.experiment, name, prepared, result), execution=execution)
             identity = dict(payload["evaluation_identity"])
             identity["candidate"] = CandidateKey(**identity["candidate"])

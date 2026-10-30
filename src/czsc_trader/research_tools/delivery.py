@@ -333,7 +333,7 @@ class EvaluationEvidenceRef(_Record):
 
     def _validate(self):
         if not ((self.evidence.schema == "account_evaluation" and self.evidence.schema_version in (7, 8))
-                or (self.evidence.schema == "equity_research" and self.evidence.schema_version in (2, 3, 4))):
+                or (self.evidence.schema == "equity_research" and self.evidence.schema_version == 4)):
             raise ValueError("evaluation evidence requires published account schema 7 or 8")
         _unique(self.evaluation_ids, "evaluation ID")
         for value in self.evaluation_ids:

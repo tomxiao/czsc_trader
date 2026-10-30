@@ -1,4 +1,4 @@
-"""One typed plan boundary for session and interval execution models.
+"""Typed adapter for the existing dated-session execution model.
 
 Model adapters retain existing sizing/budget and fill precision semantics. They
 share monetary postings; they never own a second account replay loop.
@@ -7,18 +7,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, time, timedelta
-from typing import Mapping, TYPE_CHECKING
+from typing import TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
-import pandas as pd
-from strategy_runtime.contracts import ExecutionPlan, OrderSide, OrderType
-from strategy_runtime.equity import EquityPlan
+from strategy_runtime.contracts import ExecutionPlan, OrderType
 from strategy_runtime.replay_contracts import AccountExecutionPlan, ExecutionPrecision
 
 
 if TYPE_CHECKING:
     from .historical import HistoricalExecutor
-    from .equity import EquityHistoricalExecutor
 
 
 _SESSION_ZONE = ZoneInfo("Asia/Shanghai")
@@ -28,14 +25,6 @@ _SESSION_ZONE = ZoneInfo("Asia/Shanghai")
 class SessionExecution:
     executor: HistoricalExecutor
     source: ExecutionPlan
-
-
-@dataclass(frozen=True, slots=True)
-class BarExecution:
-    executor: EquityHistoricalExecutor
-    source: EquityPlan
-    bar: Mapping | pd.Series
-    constraint: Mapping | pd.Series
 
 
 def _orders(actual, expected):
@@ -53,7 +42,7 @@ def _cycle(actual, expected):
         'buy_cost_including_fees', 'phase'))
 
 
-def execute_plan(plan: AccountExecutionPlan, model: SessionExecution | BarExecution):
+def execute_plan(plan: AccountExecutionPlan, model: SessionExecution):
     """Reject changed projections before executing authenticated model facts."""
     if type(plan) is not AccountExecutionPlan:
         raise TypeError('execution requires AccountExecutionPlan')
@@ -88,42 +77,4 @@ def execute_plan(plan: AccountExecutionPlan, model: SessionExecution | BarExecut
         elif plan.legs or not _orders(plan.orders, source.orders):
             raise ValueError('session orders differ from model facts')
         return model.executor.execute(source)
-    if type(model) is BarExecution:
-        from .equity import EquityHistoricalExecutor, _SESSION_ZONES
-        if not isinstance(model.executor, EquityHistoricalExecutor) or type(model.source) is not EquityPlan:
-            raise TypeError('bar execution requires its typed executor and source plan')
-        source, point, executor = model.source, plan.point, model.executor
-        native = source.point
-        if (plan.plan_identity != source.plan_id or plan.expected_revision != source.portfolio_revision
-                or plan.legs or plan.capital_mode != 'full_available_cash'
-                or plan.cycle_before is not None or plan.cycle_after is not None
-                or point.precision is not ExecutionPrecision.BAR_INTERVAL
-                or (point.observed_through, point.decision_at, point.execution_start, point.execution_end) != (
-                    native.observed_through, native.decision_at, native.execution_interval.start, native.execution_interval.end)
-                or point.session_id != point.execution_start.astimezone(_SESSION_ZONES[executor.spec.market_id]).date().isoformat()):
-            raise ValueError('bar neutral plan differs from model facts')
-        if source.side in ('BUY', 'SELL'):
-            if len(plan.orders) != 1:
-                raise ValueError('bar order differs from model facts')
-            order = plan.orders[0]
-            if (order.side, order.quantity, order.order_type, order.limit_price) != (
-                    OrderSide(source.side), source.quantity,
-                    OrderType.LIMIT if source.side == 'BUY' else OrderType.MARKET, source.limit_price):
-                raise ValueError('bar order differs from model facts')
-        elif plan.orders:
-            raise ValueError('waiting bar cannot submit orders')
-        prior = executor._neutral_targets.get(source.plan_id)
-        target = (executor.quantity + source.quantity if source.side == 'BUY' else
-                  executor.quantity - source.quantity if source.side == 'SELL' else executor.quantity)
-        if prior is None:
-            if source.portfolio_revision != executor.revision or plan.target_quantity != target:
-                raise ValueError('bar neutral target differs from confirmed holdings')
-        elif prior != plan.target_quantity:
-            raise ValueError('bar neutral target changed on retry')
-        if executor._neutral_owner is not None and executor._neutral_owner != plan.owner:
-            raise ValueError('bar neutral owner differs from account owner')
-        result = executor.execute(source, model.bar, constraint=model.constraint)
-        executor._neutral_targets[source.plan_id] = plan.target_quantity
-        executor._neutral_owner = plan.owner
-        return result
-    raise TypeError('execution requires SessionExecution or BarExecution')
+    raise TypeError('execution requires SessionExecution')

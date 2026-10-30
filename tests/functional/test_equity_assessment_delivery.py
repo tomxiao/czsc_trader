@@ -10,7 +10,7 @@ from czsc_trader.application import (assemble_delivery, validate_delivery, publi
                                     register_candidate, CandidateRegistrationRequest)
 from czsc_trader.research_tools import EvaluationEvidenceWrite, MaterialEvidenceWrite, build_assessment_evidence
 from czsc_trader.research_tools import delivery as d
-from test_equity_parameter_evaluation import equity_plan
+from equity_parameter_support import equity_plan
 from test_assessment_delivery import assessment_request, comparison_request
 from test_research_delivery import content, published
 

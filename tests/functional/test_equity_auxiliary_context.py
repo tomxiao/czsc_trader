@@ -1,45 +1,29 @@
 """Synthetic formal auxiliary data and session context integration contracts."""
 
-from equity_test_support import setup_auxiliary, v3_account, v3_request, replay_payload
+from equity_test_support import setup_auxiliary, account_research, current_account_request, replay_payload
 from dataclasses import replace
-import json
 
 import pytest
 
 from dataflows import (EquityProduct, TimeInterval)
 from strategy_runtime.equity_definition import (equity_source_hash)
-from equity_test_support import archived_auxiliary_account_bytes as archived_auxiliary_account_bytes
 
 
 def test_auxiliary_preparation_evaluation_and_publication(tmp_path):
     from czsc_trader.research_tools import EvaluationEvidenceWrite
     context, request, _, calls = setup_auxiliary(tmp_path)
-    assert len(request.request_items(context.execution_spec)) == 6
-    with v3_account(context, request) as (prepared, result, payload, execution):
+    assert len(current_account_request(context,request).request_items(context.execution_spec)) == 6
+    with account_research(context, request) as (prepared, result, payload, execution):
         assert len(prepared.request.input_binding.expected_identities) == 6
         from czsc_trader.application import publish_evidence_many
         published, = publish_evidence_many(context, (EvaluationEvidenceWrite(request.experiment, "auxiliary", prepared, result),), execution=execution)
-        assert published.reference.schema_version == 3
+        assert published.reference.schema_version == 4
     assert len(calls) == 6
-    assert "strategy_runtime.equity_context" in payload["request"]["engine_sources"]
-    from czsc_trader.research_tools.equity_replay_v3 import build_v3_assessment
-    assert build_v3_assessment(result)
+    assert "strategy_runtime.account_replay" in payload["request"]["engine_sources"]
+    from czsc_trader.research_tools.equity_replay import build_equity_assessment
+    assert build_equity_assessment(result)
 
 
-@pytest.mark.parametrize("field", ["instrument", "source_revision", "sessions"])
-def test_auxiliary_archived_metadata_is_authenticated(archived_auxiliary_account_bytes, field):
-    from czsc_trader.research_tools.equity_assessment import build_equity_assessment_payload
-    content, key = archived_auxiliary_account_bytes
-    payload = json.loads(content)
-    metadata = payload["data"][key]["metadata"]
-    if field == "instrument":
-        metadata[field]["symbol"] = "QQQ"
-    elif field == "source_revision":
-        metadata[field] = "v2"
-    else:
-        metadata[field][0]["segments"][0]["end"] = metadata[field][0]["segments"][0]["start"]
-    with pytest.raises((ValueError, TypeError)):
-        build_equity_assessment_payload(payload)
 
 
 def test_auxiliary_inputs_do_not_change_buy_hold(tmp_path):
@@ -74,32 +58,9 @@ def test_auxiliary_independent_calendar_is_allowed(tmp_path):
     start = bars.loc[bars.Date.dt.day.eq(2), "BarStart"].iloc[0].to_pydatetime()
     request = replace(request, window=TimeInterval(start, request.window.end))
     result = replay_payload(context, request)
-    assert result["schema"] == "equity-research/v3"
+    assert result["schema"] == "equity-research/v4"
 
 
-@pytest.mark.parametrize("mutation,match", [("future", "AUXILIARY_INPUT_UNAVAILABLE"),
-    ("stale", "AUXILIARY_INPUT_STALE"), ("missing", "independent session grid"),
-    ("session", "session is not yet available")])
-def test_archived_context_validation_survives_rehashed_envelope(archived_auxiliary_account_bytes, mutation, match):
-    from strategy_runtime.equity import equity_hash
-    from czsc_trader.research_tools.equity_assessment import build_equity_assessment_payload
-    payload = json.loads(archived_auxiliary_account_bytes[0])
-    records = payload["audit_inputs"]["decision_inputs"]
-    bars = records["auxiliary"]["market"]["bars"]
-    if mutation in {"future", "stale"}:
-        for row in bars[0 if mutation == "future" else 1:]:
-            row["AvailableDate"] = "2026-10-20T20:00:00.000000Z"
-    elif mutation == "missing":
-        bars.pop(0)
-    else:
-        records["sessions"][0]["AvailableDate"] = "2026-10-20T20:00:00.000000Z"
-    payload["request"]["audit_inputs_sha256"] = equity_hash(payload["audit_inputs"])
-    payload["request_hash"] = equity_hash(payload["request"])
-    payload["evaluation_identity"]["protocol_sha256"] = payload["request_hash"]
-    from strategy_runtime import canonical_sha256
-    payload["evaluation_id"] = canonical_sha256(payload["evaluation_identity"])
-    with pytest.raises(ValueError, match=match):
-        build_equity_assessment_payload(payload)
 
 
 def test_auxiliary_workers_and_checkpoint_use_all_pinned_inputs(tmp_path):
@@ -107,7 +68,7 @@ def test_auxiliary_workers_and_checkpoint_use_all_pinned_inputs(tmp_path):
     from czsc_trader.research_tools import ResearchExecutionSession, ExecutionCheckpointRequest, CheckpointMode
     context, request, _, calls = setup_auxiliary(tmp_path)
     context.evaluation.resources = ExecutionResources(max_workers=2, native_threads_per_worker=1)
-    requests = tuple(v3_request(context, item) for item in (request, replace(request, scenario_id="PRESSURE", measurement_tier="STRESS", fee_rate=.002)))
+    requests = tuple(current_account_request(context, item) for item in (request, replace(request, scenario_id="PRESSURE", measurement_tier="STRESS", fee_rate=.002)))
     with ResearchExecutionSession(context, experiment=request.experiment,
             checkpoint=ExecutionCheckpointRequest("auxiliary-run")) as execution:
         prepared = tuple(context.evaluation.prepare(item, execution=execution) for item in requests)
@@ -134,7 +95,7 @@ def test_archived_primary_history_applies_declared_latency(tmp_path):
     result = replay_payload(context, request)
     first = result["runs"]["candidate"]["decisions"][0]
     assert pd.Timestamp(first["observed_through"]) == bars.Date.iloc[1]
-    assert result["schema"] == "equity-research/v3"
+    assert result["schema"] == "equity-research/v4"
 
 
 @pytest.mark.parametrize("half_day,exit_hour", [(False, 15), (True, 12)])
@@ -160,4 +121,4 @@ def test_session_only_exit_executes_at_last_interval_open(tmp_path, half_day, ex
     assert (last.hour, last.minute) == (exit_hour, 30)
     assert sells[-1]["price"] == 10.0
     assert run["account_points"][-1]["quantity"] == 0
-    assert result["schema"] == "equity-research/v3"
+    assert result["schema"] == "equity-research/v4"

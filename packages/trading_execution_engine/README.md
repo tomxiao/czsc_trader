@@ -7,8 +7,8 @@ TXE 是统一成交执行器，位于 DFLS 同一基础能力层。它接收SRT�
 订单、成交、费用、现金、持仓和净值事实，供研究复算及候选／版本回测共同使用。
 
 TXE以共用账户记账核心承接日范围／检查点及BAR区间两种成交模型。
-`HistoricalExecutor`与`EquityHistoricalExecutor`保留各自已验证的模型事实，不按市场复制费用、现金、
-持仓和应收的经济计算。旧BAR模型保留US合同；V4的 `PortfolioHistoricalExecutor`显式接纳CN/US的RAW账户合同。
+`HistoricalExecutor`服务既有日期模型，`PortfolioHistoricalExecutor`显式接纳CN/US的V4 RAW账户；
+二者复用记账核心。旧公开权益执行器和BAR投影模型已删除，V2技术复验使用内部冻结适配。
 支持范围、时间精度及拒绝条件见[TDR美股研究接口](../../src/czsc_trader/README.md#us-equity-research)。
 
 ## 能力边界
@@ -110,7 +110,8 @@ TXE不生成信号解释或渲染图表。SRT物化观察快照，TDR将快照�
 
 ## 共用计划边界与账户记账
 
-`execute_plan(plan: AccountExecutionPlan, model: SessionExecution | BarExecution)`是共用强类型执行入口。
+日期模型通过 `execute_plan(plan: AccountExecutionPlan, model: SessionExecution)`进入执行；
+V4区间及真实检查点通过 `PortfolioHistoricalExecutor.execute_account_plan(...)`消费中立计划。
 SRT生成中立计划，模型适配器携带不可变的原计划事实；TXE逐项核验身份、账户修订、时点、数量、
 委托类型／限价、周期预算和依赖腿后，执行该单步模型。`executor.execute_plan(...)`调用同一入口。
 适配不重新计算仓位、预算或委托价，也不静默修复不匹配的投影。
@@ -118,10 +119,9 @@ SRT生成中立计划，模型适配器携带不可变的原计划事实；TXE�
 - `SessionExecution`承接现有日范围及检查点模型，保留多档位、周期预算及依赖腿。
   中立计划的本地交易日零点至次日零点只是SESSION精度的执行容器，观察截止为信号日15:00、
   决策时点保留原计划事实；容器不宣称实际成交发生在零点。MARKET源计划中的参考价格不作为限价。
-- `BarExecution`承接有时区的BAR区间模型，保留单区间订单、公司行动和交收。
-  同一计划重提必须保持模型行情／约束、目标数量和账户owner一致。
-- 两种模型都调用`accounting`中的同一成交记账运算核，费用、现金、数量和应收不再分别实现。
-  确认的股息应收、支付／结算及拆股使用同一事件记账函数；权益事件顺序和重复事件防护由模型承担。
+- V4直接核对当前中立计划的账户修订、市场规则和执行事实，不再保留旧BAR投影及其重复核验链。
+- 各模型调用同一 `accounting`运算核，费用、现金、数量和应收不按市场复制；
+  确认的股息应收、支付／结算及拆股使用同一事件记账函数。
 
 `AccountBalances`、`FillPosting`、`CashDisposition`及`post_fill`提供纯计算强类型边界；
 `accrue_receivable`、`settle_receivable`和`post_split`表达明确的经济事件。它们不判断行情是否可成交、
@@ -213,33 +213,12 @@ SRT在首次账户快照前检查策略要求，并逐计划复核，避免运�
 周期闭合；不会伪装成“尚无历史”。上述反馈从真实执行事实派生，不增加原订单、成交、交易周期账本字段。
 旧反馈模式的策略输入由 SRT 隔离；新模式的能力检查见 [SRT 说明](../strategy_runtime/README.md)。
 
-### 美股行输入与原子决策
+### 冻结V2技术复验边界
 
-`EquityHistoricalExecutor.execute(plan, bar, constraint=constraint)` 接受原有 `pd.Series`
-或标准 `Mapping[str, object]` 行。准备后的不可变行直接按字段名读取，调用方无需逐柱构造
-DataFrame 或 Series；两种输入共用同一成交、费用、公司行动、缺口估值及幂等计算。
-输入字段和值参与原执行事实哈希，重复计划换了行情或约束仍明确拒绝。
-常见 Python 标量复用等价的缺失值分类，已是 UTC datetime/Timestamp 的时间直接参与比较，
-OHLCV 数值在单次执行内复用；账户日期使用预备好的同一时区规则。
-这些准备仅减少逐柱转换，不改变 JSON 哈希内容、严格触价、费用或七张账表。
-本地时区 datetime（包括夏令时回拨）、字符串时间、NaT、NumPy 标量及其他兼容输入
-仍沿用原转换和错误边界。
-`snapshot_at` 在应用到时事件后一次构造完整、已校验的账户快照，包含价格尺度和闭合周期反馈；
-不缓存可变账户状态，也不先构造再复制第二份快照。
-
-公司行动在构造账户时从独立输入副本一次性物化为不可变事件元组，逐柱执行不再调用
-DataFrame 的 `itertuples()`。`actions` 保留独立的检查用表；账户创建后不能通过修改它更换
-已准备的事件，事件变更须创建新执行器。事件先后顺序、拆股和到账时点保持原合同。
-
-状态型 SRT 通过 `with executor.transaction():` 将 `snapshot_at(...)` 的决策前事件应用、
-策略计算、`execute(...)` 及策略状态校验放在同一事务内。任一步异常都会撤回本次现金、持仓、
-应收、周期反馈、追加账本行及新增幂等键；策略状态由 SRT 持有，只在成功后提交。
-`snapshot_at` 和 `execute` 单独调用仍各自原子化，嵌套事务提供保存点。调用方不得在事务内
-改写已有账本行或账户配置，也不得将同一账户交给并发线程执行。
-
-回滚仅记录各账本长度、新增 `completed`/已应用事件键及账户状态，不复制或扫描已增长的
-完整账本和 `completed` 字典；未到账义务仅保存当前待处理列表。外层事务中已成功的成交
-若被后续状态校验撤销，其幂等键同时移除，同一原计划可以安全重试，不重复扣费或到账。
+旧研究专用执行入口及其BAR计划适配已删除；现有V2冻结包的技术复验仍需其原有成交和事务口径，
+这部分保留为内部 `_FrozenEquityExecutor`，不从包公共门面导出，也不被V4继承。
+冻结适配与V4均复用私有账本及记账核；该内部实现不能作为新研究入口使用。
+原A股日期模型仍服务现有研究、回测、检验与冻结流程。
 
 ### 美股行情缺口与陈旧估值
 

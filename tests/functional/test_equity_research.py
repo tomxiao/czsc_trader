@@ -1,6 +1,6 @@
 """Public US equity path, identity isolation and independent account evidence."""
 
-from equity_test_support import hold, setup_equity, replay_payload, v3_account, v3_request
+from equity_test_support import hold, setup_equity, replay_payload, account_research, current_account_request
 from dataclasses import asdict, replace
 import json
 
@@ -14,9 +14,9 @@ from czsc_trader.application.backtest_service import run_backtest
 from czsc_trader.research_tools import EvaluationEvidenceWrite
 
 
-def test_us_public_prepare_evaluate_publish_uses_v3(tmp_path):
+def test_us_public_prepare_evaluate_publish_uses_current_contract(tmp_path):
     context, request, _, calls = setup_equity(tmp_path)
-    with v3_account(context, request) as (prepared, result, payload, execution):
+    with account_research(context, request) as (prepared, result, payload, execution):
         run = payload["runs"]["candidate"]
         assert run["metrics"]["closed_cycles"] == 12
         assert run["metrics"]["observations"] == 25
@@ -24,26 +24,22 @@ def test_us_public_prepare_evaluate_publish_uses_v3(tmp_path):
         assert run["fills"][0]["interval_start"][:10] == run["fills"][1]["interval_start"][:10]
         from czsc_trader.application import publish_evidence_many
         outcome, = publish_evidence_many(context, (EvaluationEvidenceWrite(request.experiment, "account", prepared, result),), execution=execution)
-        assert outcome.reference.schema_version == 3
+        assert outcome.reference.schema_version == 4
         assert outcome.reference.resolve(context.repository.root).read_bytes() == result.content
     assert len(calls) == 4
     with pytest.raises(TypeError, match="prepare.*evaluate_many"):
-        context.evaluation.evaluate(v3_request(context, request))
-    with pytest.raises(TypeError, match="V3|session|prepare"):
-        run_backtest(context, request.candidate, request)
+        context.evaluation.evaluate(current_account_request(context, request))
+    current = current_account_request(context,request)
+    with pytest.raises(TypeError, match="session|Session|prepare"):
+        run_backtest(context, current.candidate, current)
 
 
 def test_equity_cross_market_and_source_revision_fail_before_calculation(tmp_path):
-    context, request, _, calls = setup_equity(tmp_path)
-    cn = replace(request.candidate, instrument=InstrumentId(MarketId.CN, AssetClass.STOCK, "600722.SH"))
-    with pytest.raises(TypeError, match="contract_version=3"):
-        context.evaluation.prepare(request)
-    assert not calls
+    from equity_test_support import setup_account_research
+    context, request, _, calls = setup_account_research(tmp_path)
     with pytest.raises(ValueError, match="MARKET_CONTRACT_MISMATCH"):
-        context.runtime.create(cn)
-    with pytest.raises(ValueError, match="requires EquityCandidate"):
-        context.runtime.create(object())
-    assert context.runtime.create(request.candidate).specification == context.execution_spec
+        replace(request.candidate.definition,instrument=InstrumentId(MarketId.CN,AssetClass.STOCK,"600722.SH"))
+    assert not calls
     bad = replace(request, sources=replace(request.sources, bars=SourceRef("fixture", "v2")))
     with pytest.raises(ValueError, match="preparation failed"):
         replay_payload(context, bad)
@@ -65,11 +61,11 @@ def test_audit_rejects_tampered_account(tmp_path):
     run = replay_payload(context, request)["runs"]["candidate"]
     run["account_points"][3]["cash"] += 1
     facts = json.loads(products[EquityProduct.BARS].to_json(orient="records", date_format="iso"))
-    with pytest.raises(ValueError, match="audit mismatch: cash"):
+    with pytest.raises(ValueError, match="cash"):
         audit_equity_account(initial_cash=request.initial_cash, specification=asdict(context.execution_spec), bars=facts,
                              action_facts=json.loads(products[EquityProduct.ACTIONS].to_json(orient="records", date_format="iso")),
                              constraints=json.loads(products[EquityProduct.CONSTRAINTS].to_json(orient="records", date_format="iso")),
-                             fee_rate=request.fee_rate,
+                             fee_rate=request.fee_rate,account_contract=4,decision_contract="FORMAL_V4",
                              **{key: run[key] for key in ("decisions", "orders", "fills", "actions", "account_points", "trades")})
 
 
@@ -109,25 +105,6 @@ def test_future_bar_changes_do_not_change_prior_decisions(tmp_path):
     assert original["account_points"][:19] == changed["account_points"][:19]
 
 
-def test_failed_transition_rolls_back_and_resubmitted_plan_is_idempotent(tmp_path):
-    from strategy_runtime import EquityStrategyInstance
-    from trading_execution_engine.equity import EquityHistoricalExecutor
-    context, request, products, _ = setup_equity(tmp_path, cash_policy=CashAvailabilityPolicy.SETTLED_ONLY)
-    instance = EquityStrategyInstance(request.candidate, context.execution_spec)
-    executor = EquityHistoricalExecutor(specification=context.execution_spec, initial_cash=1000., fee_rate=.001,
-                                        actions=products[EquityProduct.ACTIONS])
-    bars, rules = products[EquityProduct.BARS], products[EquityProduct.CONSTRAINTS]
-    plan = instance.plan(bars.iloc[:1], TimeInterval(bars.BarStart.iloc[1], bars.Date.iloc[1]), executor.snapshot(), fee_rate=.001)
-    first = executor.execute(plan, bars.iloc[1], constraint=rules.iloc[1])
-    assert executor.execute(plan, bars.iloc[1], constraint=rules.iloc[1]) == first
-    assert len(executor.rows["fills"]) == 1
-    sell = instance.plan(bars.iloc[:2], TimeInterval(bars.BarStart.iloc[2], bars.Date.iloc[2]), first, fee_rate=.001)
-    broken = rules.iloc[2].copy()
-    broken["SettlementAt"] = None
-    with pytest.raises(ValueError, match="settlement"):
-        executor.execute(sell, bars.iloc[2], constraint=broken)
-    assert executor.snapshot() == first and len(executor.rows["fills"]) == 1
-    assert executor.execute(sell, bars.iloc[2], constraint=rules.iloc[2]).quantity == 0
 
 
 def test_positive_latency_delays_which_bar_is_observable(tmp_path):
@@ -139,7 +116,7 @@ def test_positive_latency_delays_which_bar_is_observable(tmp_path):
                               resources=context.evaluation.resources)
     context = replace(context, runtime=StrategyRuntime(execution_spec=spec), evaluation=access, execution_spec=spec)
     candidate = replace(request.candidate, execution_spec_hash=spec.fingerprint)
-    with pytest.raises(ValueError, match="warmup"):
+    with pytest.raises(ValueError, match="WARMUP_INSUFFICIENT"):
         replay_payload(replace(context, evaluation=access, execution_spec=spec), replace(request, candidate=candidate))
     bars = products[EquityProduct.BARS]
     delayed = replace(request, candidate=candidate, window=TimeInterval(
@@ -187,7 +164,7 @@ def test_publication_rejects_truncated_account_even_with_intact_request_hash(tmp
     from czsc_trader.research_tools.equity_evaluation import EquityEvaluationResult, EquityArtifact
     from czsc_trader.application import publish_evidence_many
     context, request, _, _ = setup_equity(tmp_path)
-    with v3_account(context, request) as (prepared, result, payload, execution):
+    with account_research(context, request) as (prepared, result, payload, execution):
         artifacts = list(result.artifacts)
         index = next(i for i, item in enumerate(artifacts) if item.sha256 == result.payload["candidate_ref"]["sha256"])
         value = json.loads(artifacts[index].content)

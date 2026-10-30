@@ -1,10 +1,10 @@
-"""Resolve content-addressed V3 dependencies beside their evaluation document."""
+"""Resolve content-addressed account dependencies beside their evaluation document."""
 from hashlib import sha256
 from pathlib import PurePosixPath
 import re
 
 from ..research_tools.evidence import managed_path
-from ..research_tools.equity_replay_v3 import materialize_v3
+from ..research_tools.equity_replay import materialize_equity
 
 
 def materialize_equity_document(root, evaluation_path, value):
@@ -27,4 +27,4 @@ def materialize_equity_document(root, evaluation_path, value):
             raise ValueError('published equity dependency checksum differs')
         return content
 
-    return materialize_v3(value, resolve)
+    return materialize_equity(value, resolve)

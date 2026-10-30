@@ -13,7 +13,7 @@ from threading import Lock
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .equity_replay_v3 import PreparedAccountEvaluation
+    from .equity_replay import PreparedAccountEvaluation
 
 from dataflows import Dataflows
 from strategy_runtime import canonical_sha256
@@ -95,10 +95,10 @@ class EvaluationAccess:
     def prepare(self, request: EvaluationRequest | EquityEvaluationRequest, *,
                 execution: ResearchExecutionSession | None = None) -> PreparedAccountEvaluation:
         if type(request) is EquityEvaluationRequest:
-            if request.formal and request.candidate.definition.contract_version in (3, 4):
-                from .equity_replay_v3 import prepare_equity_v3
-                return prepare_equity_v3(self, request, execution=execution)
-            raise TypeError("new equity replay requires contract_version=3 and an explicit ResearchExecutionSession")
+            if request.candidate.definition.contract_version == 4:
+                from .equity_replay import prepare_equity
+                return prepare_equity(self, request, execution=execution)
+            raise TypeError("new equity replay requires contract_version=4 and an explicit ResearchExecutionSession")
         from .account_preparation import prepare_account
         return prepare_account(self, request, execution)
 
@@ -123,7 +123,7 @@ class EvaluationAccess:
 
     def evaluate(self, request: EvaluationRequest) -> EvaluationResult:
         if type(request) is EquityEvaluationRequest:
-            raise TypeError("equity replay requires prepare(..., execution=session) and evaluate_many with session-owned V3 handles")
+            raise TypeError("equity replay requires prepare(..., execution=session) and evaluate_many with session-owned V4 handles")
         from .context import ExperimentRef
         from .execution import ResearchExecutionSession
         if self._active_execution is not None:
@@ -179,14 +179,14 @@ class EvaluationAccess:
                       execution: ResearchExecutionSession | None = None) -> tuple[EvaluationOutcome, ...]:
         if not isinstance(requests, tuple) or not requests:
             raise ValueError("evaluate_many requires a nonempty tuple")
-        from .equity_replay_v3 import PreparedAccountEvaluation, evaluate_many_equity_v3
+        from .equity_replay import PreparedAccountEvaluation, evaluate_many_equity
         from .account_preparation import require_account
         if not all(type(item) is PreparedAccountEvaluation for item in requests):
             raise TypeError('evaluate_many requires explicitly prepared session-owned account handles')
         originals = tuple(require_account(self, item, execution) for item in requests)
         account_handles = requests
         if all(type(item) is EquityEvaluationRequest for item in originals):
-            return evaluate_many_equity_v3(self, requests, execution=execution)
+            return evaluate_many_equity(self, requests, execution=execution)
         if not all(type(item) is EvaluationRequest for item in originals):
             raise TypeError('one account batch cannot mix execution contracts')
         contracts = tuple(item.identity(self.execution_spec) for item in account_handles)

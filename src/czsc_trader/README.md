@@ -21,7 +21,7 @@ CN/US的V4个股账户研究通过相同业务入口接收显式类型，模块�
 | 立项与意图 | `create_research_batch`、`update_research_intent` | 研究族、立项凭据及 `ResearchBatchRef` |
 | 批次能力与实验分配 | `create_research_context`、`create_experiment` | `ResearchContext`、`ExperimentRef` |
 | 账户评价 | `research.evaluation.prepare/evaluate/evaluate_many` | 绑定输入、计算各窗口／成本场景及逐项结果 |
-| 完整回测 | `run_backtest` | 既有契约返回`BacktestEvaluation`；V3/V4权益研究使用显式会话的`prepare/evaluate_many`，见第10节 |
+| 完整回测 | `run_backtest` | 既有契约返回`BacktestEvaluation`；V4权益研究使用显式会话的`prepare/evaluate_many`，见第10节 |
 | 结果留证 | `publish_evidence`、`publish_evidence_many` | 单项 `EvidenceRef`；批量逐项 `PublicationOutcome` |
 | 候选登记与读取 | `register_candidate`、`load_candidate` | 保存候选载荷、源码快照及支撑证据，读取已登记实体 |
 | 五阶段交付 | `assemble_delivery`、`validate_delivery` | 结论、选定证据快照和不可变修订 |
@@ -41,7 +41,7 @@ CN/US的V4个股账户研究通过相同业务入口接收显式类型，模块�
 | 对象 | 当前版本 |
 | --- | --- |
 | 新发布`account_evaluation`证据／请求身份 | 8／7；7／6仅按已支持的历史读取契约处理 |
-| `equity_research`证据 | 新账户V3／V4分别为3／4；不替代`account_evaluation`，见[权益证据边界](#us-equity-evidence) |
+| `equity_research`证据 | 当前新账户为4；不替代`account_evaluation`，见[权益证据边界](#us-equity-evidence) |
 | 已发布账户评价／回测 manifest | 5／5 |
 | 实验报告快照 | 1 |
 | 阶段一至四交付定义、文档和回执 | 8 |
@@ -245,7 +245,7 @@ SE除普通账户核对外，独立检查开仓预算、数量目标、补买上
 
 ### 共用回放核心与性能边界
 
-A股批量历史策略与美股V3显式状态策略分别使用`BatchHistory`、`StatefulStep`计算方式，
+A股批量历史策略与跨市场V4显式状态策略分别使用`BatchHistory`、`StatefulStep`计算方式，
 共同由SRT时间推进内核组织，并通过中立`AccountExecutionPlan`调用TXE。
 订单列表、数量单位、执行区间、执行腿依赖及原子边界显式表达；市场不再决定账户记账内核。
 TXE复用成交入账、费用、现金和持仓等记账原语；日范围、K线区间及具名检查点仍按各自模型执行。
@@ -261,7 +261,7 @@ A股基准在评价阶段由拥有会话的主进程按`BenchmarkWindow`预计�
 `BenchmarkReplaySeed`只作为内部进程传输，worker消费已准备结果，缺失基准明确失败，不隐式重算。
 `BenchmarkReplayScope`不使用磁盘或进程全局缓存；相同身份在同一作用域仅计算一次。
 返回每个账户的结果表保持独立，修改某个结果不能污染其他账户或基准缓存。
-美股V3同时按其完整输入和执行合同复用独立买持账户；辅助信号数据不污染基准身份。
+跨市场V4同时按其完整输入和执行合同复用独立买持账户；辅助信号数据不污染基准身份。
 
 统一保持现行费用、现金精度、舍入顺序、部分执行及失败规则。原子模拟单元失败可以回滚，
 已确认执行腿的事实不能抹去。两市场结果仍分别投影至原有证据schema，历史原件及冻结身份不改写。
@@ -271,7 +271,7 @@ A股基准在评价阶段由拥有会话的主进程按`BenchmarkWindow`预计�
 ### 研究库与并行执行
 
 以下配置承接[RSCH研究工具使用原则](../../research/RSCH_AGENT.md#62-研究工具使用原则)，由研究员组织，平台按显式资源请求执行。
-本节账户并行及恢复说明适用于既有`EvaluationRequest`链路。美股仅支持显式会话内准备的 V3 账户，
+本节账户并行及恢复说明适用于既有`EvaluationRequest`链路。权益研究只支持显式会话内准备的V4账户，
 同样使用有界进程池与检查点；其共享输入、基准及认证边界见[美股API](#us-equity-api)。
 原始 `EquityEvaluationRequest` 不能直接计算，旧 V1/V2 计算入口已删除。
 
@@ -1058,105 +1058,42 @@ V4要求显式逐区间价格限制、可卖时点及余股清仓规则，延迟
 
 V4结果为 `equity-research/v4`，发布引用为 `EvidenceRef(schema="equity_research", schema_version=4)`，
 沿用输入、候选、基准三项不可变依赖闭包及参数计划schema4。检查点严格匹配版本、请求、引擎和输入，
-恢复时重新认证；V3/V4即使共用数据快照也分别准备各自时钟上下文。诊断、缺口日期和交易日聚合使用实际市场时区，
+恢复时重新认证；准备对象固定当前V4时钟上下文。诊断、缺口日期和交易日聚合使用实际市场时区，
 缺失细报价单独留证。PTE部署、生产状态持久化、技术检验及冻结准入仍按原已支持版本处理，V4研究通过不自动取得这些能力。
 
 三阶段公共验收见[账户能力](../../tests/functional/test_account_parity_acceptance.py)及
 [独立交付闭包](../../tests/functional/test_account_v4_delivery.py)。合成验收证明软件契约，不替代真实标的研究复验。
 
-### V3：一次准备、共享基准与显式认证
+### 一次准备、共享基准与显式认证
 
-美股研究新契约使用 `EquityStrategyDefinition(contract_version=3)`，声明
-`FeatureGraph`、`StrategyStateSchema` 和 `strategy:step` 入口，细节见
-[SRT V3](../../packages/strategy_runtime/README.md#美股研究-v3可见特征与显式状态)。
-V3美股账户继续支持。V1 回调、V2 定义的 `prepare`、单次 `evaluate` 及旧批量计算已删除，
-原始美股请求不能直接传给 `evaluate_many`，也不能经 `run_backtest` 绕行。旧请求在数据获取前明确拒绝，
-不会自动转换或回退。历史 V1/V2 证据及冻结包保留原身份，V2只读认证、诊断与既有生产路径保留；A股和美股共享新的回放生命周期及账户记账核心。
+`prepare`签发当前会话拥有的 `PreparedAccountEvaluation`；`evaluate_many`只接纳这些句柄，
+不隐式准备、转换旧定义或恢复旧计算检查点。账户启动时装载策略一次，随后全程使用内存模块；
+回放、收尾及发布不重新读取策略源码。修改源码后开始的新账户独立装载当时的声明文件。
 
-V3 必须先创建执行会话，再显式准备。`prepare` 返回会话拥有的
-`PreparedAccountEvaluation`，不能通过复制对象或转移到另一个会话取得执行资格。
-`evaluate_many` 只接受该会话签发的准备对象，不隐式重复准备。
+会话按完整来源选择复用不可变输入，同经济合同的买持基准只回放一次；候选辅助数据和执行专用报价
+不污染基准。独立账户不共享可变状态。工作进程只计算，父进程执行SE独立认证；相同精确账本在
+同一认证作用域内复用结果，冷读证据或恢复检查点重新认证，不相信持久化PASS。
 
-```python
-with ResearchExecutionSession(context, experiment=experiment,
-        checkpoint=ExecutionCheckpointRequest("equity-v3")) as execution:
-    prepared = tuple(context.evaluation.prepare(request, execution=execution)
-                     for request in requests)
-    outcomes = context.evaluation.evaluate_many(prepared, execution=execution)
-    # 逐项检查 SUCCEEDED；失败项不能发布成成功结果。
-    writes = tuple(EvaluationEvidenceWrite(experiment, f"account-{i}", request, outcome.result)
-                   for i, (request, outcome) in enumerate(zip(prepared, outcomes)))
-    publications = publish_evidence_many(context, writes, execution=execution)
-    # 再逐项检查 PUBLISHED。
-```
+参数计划沿用权益schema4。中心和子项先显式准备，再以
+`ParameterEvaluationPlan.create(..., execution=execution)`创建计划；发布计划后用
+`plan.bind_point(...)`构造 `EvaluationLineage`并重新准备子请求，不复制句柄伪造所有权。
+计划及lineage留在父进程，参数变化不能更换市场、输入、执行或非参数合同。
 
-同一会话按完整请求选择复用已认证的 `EquityInputSnapshot`。每个策略拥有独立的执行器、
-状态和可见历史视图，不共享可变 DataFrame。相同主输入、窗口、预热、费用、资金、执行合同、
-引擎与买持实现生成相同的 `BenchmarkRunIdentity`，只回放一次；候选辅助数据不污染基准身份。
-候选 owner 包含策略、候选和内容身份，基准使用独立 owner；不会把基准当成另一份研究候选登记。
+`execution.equity_statistics`区分准备、账户回放、独立认证和发布。
+`account_timings`包括启动装载、特征、策略、执行及账表；特征是其子项，不重复相加。
+数据获取、认证、检查点与发布的端到端时间须另报。合成基准见
+[回放基准](../../scripts/benchmarks/README.md)，不能由接口成功推导任意策略秒级。
 
-准备阶段保留候选源码与依赖身份校验。每个 V3 账户开始回放时独立装载一次策略模块，
-全程使用该模块；模块级变量会在本账户的各步之间保留，不与其他账户共享。
-回放期间、结束时及账户证据发布前不再读取或核验策略源码，也不做结束补查。
-运行开始后的源文件修改或删除不改变已装载账户；新准备或新账户的装载仍使用其开始时的来源。
-请求、平台引擎、输入和账户内容的身份与数值认证继续保留。
-
-V3 参数计划沿用美股 schema4。`ParameterEvaluationPlan.create` 的中心及全部子项必须先在
-同一会话显式准备，并传入 `execution`；计划创建只核对已认证快照，不重新 fetch 产品。
-计划显式发布后，以 `plan.bind_point(...)` 构造每个子项的 `EvaluationLineage`，再从
-`child_prepared.request` 建立新请求并显式准备。不要用 `replace(child_prepared, ...)` 伪造会话句柄。
-
-```python
-plan = ParameterEvaluationPlan.create(
-    design, center_prepared, children_prepared,
-    mapping_evidence=mapping_ref, feasibility_evidence=feasibility_ref,
-    dataflows=context.data, execution=execution,
-)
-# 显式发布 plan.to_dict()，得到 plan_ref；derivation 绑定实际中心及子候选身份。
-point = plan.bind_point(plan_ref, index, repository_root=context.repository.root)
-child_request = replace(child_prepared.request, lineage=EvaluationLineage(derivation, point))
-child_bound = context.evaluation.prepare(child_request, execution=execution)
-outcome, = context.evaluation.evaluate_many((child_bound,), execution=execution)
-```
-
-参数校验拒绝未准备的 V3 请求、复制或跨会话句柄、变化的非参数合同及不一致的点绑定；
-加入 lineage 后仍复用同一输入快照。工作进程只接收回放所需的窗口、资金和费用，
-计划及lineage留在父进程认证。A股参数计划和参数校验仅接受当前会话拥有的准备句柄，读取已认证合同及输入快照，
-不重新装载源码或fetch数据；准备阶段保存来源、时点、schema及逐行数值身份，支持真实lookback扩展的公共区间比较。
-计算仍须使用当前会话拥有的句柄。V2参数计划仅支持历史读取，新美股计划必须使用会话拥有的V3准备句柄。
-
-`EquityEvaluationResult` 的 V3 内容为 `equity-research/v3`，包含
-`input_ref`、`candidate_ref`、`benchmark_ref` 三项内容引用，完整字节位于不可变 `artifacts`。
-发布先安装依赖，再发布最终评价记录；输入和共享基准不重复写入各候选的账本。
-依赖丢失、内容变化或归属不匹配均拒绝。检查点保存完整引用闭包；恢复时重新核验引擎、输入、
-请求及源码身份，并在新的认证作用域独立认证，不能把磁盘中的 PASS 当作认证凭据。
-
-SE 认证由会话内部拥有者管理：相同的精确不可变账本、输入、执行合同和审计版本在同一作用域
-只做一次数值审计；未知句柄、外部构造的同名对象及变化内容不能绕过认证。
-`build_assessment_evidence(prepared, result, execution=execution)` 和
-`diagnose_accounts(repository, request, execution=execution)` 可复用该会话的认证结果。
-无执行会话的已发布证据读取会创建独立认证作用域。
-
-登记、诊断和阶段交付支持 V3 结果；交付浅快照同时保存选定评价的依赖闭包，不能只复制主JSON。
-底层读取使用 `materialize_v3` 和 `build_v3_assessment`；不把 V3 改标为 V2。
-原 V2 只读认证继续支持历史复核。V3 显式状态尚不具备PTE持久化准入，不能直接用于部署或实时建议；
-既有 V2 冻结包和生产路径不自动迁移。
-
-性能统计区分准备、回放、认证、序列化、检查点和发布。COMPUTE 的工作队列完成后才在父进程认证，
-避免把数值审计算入工作进程的账户计算时间。`execution.equity_statistics` 返回不可变的
-`EquityExecutionStatistics`，包括唯一输入快照数、候选/基准回放次数、实际审计/复用次数及各账户计时。
-`account_timings` 的回放时间包含账户开始时的模块装载、特征计算、决策、撮合和账表生成；
-特征耗时是其中的子项，不能再次相加。它不包含DFLS加载、SE认证和证据落盘，总耗时仍单独报告。
-
-核验方法及可重复基准见[回放基准说明](../../scripts/benchmarks/README.md)。
-秒级是特定工作量的性能目标，必须实测，不由接口成功状态推导。
+V1回调、V2/V3研究计算及证据读取认证链已删除，不提供别名、转换或失败兜底。
+历史研究原件保留供查阅；保留原件不等于平台继续支持旧schema机器复算。
+已有V2冻结／PTE运行及其技术复验使用明确的冻结适配，不能作为研究入口重用。
 
 ### 10.1 隔离层与复用层
 
 ```mermaid
 flowchart TD
     TDR[TDR 批次上下文与统一业务入口] --> A[既有日期模型请求]
-    TDR --> U[显式权益研究请求 V3/V4]
+    TDR --> U[显式权益研究请求 V4]
     U --> D[DFLS 市场日历与来源精确绑定]
     A --> S[SRT 策略计算与共用回放生命周期]
     U --> S
@@ -1178,7 +1115,7 @@ flowchart TD
 保留原 A 股股票及 ETF 的 `StrategyCandidate`、`EvaluationRequest` 和回测类型。
 未指定 `execution_spec` 的既有上下文继续使用这些契约；美股请求必须显式绑定执行合同。
 这是按业务能力选择确定的实现，不进行出错降级，也不会把美股请求转成 A 股请求。
-V3的BAR_RANGE执行仍仅接纳US；CN日线／30分钟账户采用上文V4契约，原A股执行能力保持原接口。
+CN/US个股权益研究统一采用V4；既有A股日期模型继续服务其明确支持的研究、回测和冻结能力。
 
 ### 10.2 强类型契约
 
@@ -1194,11 +1131,9 @@ V3的BAR_RANGE执行仍仅接纳US；CN日线／30分钟账户采用上文V4契�
 | `EquityEvaluationRequest` | 实验、候选、评价区间、历史起点、四类来源、资金、费率、精确基准、场景及统计口径；准备后绑定输入与审计材料哈希 |
 | `EquityEvaluationResult` | 固定请求哈希、不可变 JSON 字节及内容哈希；读取 `payload` 返回独立副本 |
 
-V3策略函数签名为 `step(context, state) -> StepResult`，返回 `EquityDecision` 与显式状态。
-特征、因果可见历史、账户反馈与状态边界见上文 V3 及 [SRT](../../packages/strategy_runtime/README.md)。
-V3的0表示空仓目标，1表示持有目标；分批建减仓使用V4。V4仍不包含多标的组合、卖空、杠杆、碎股或可变价位制度。
-源码清单必须覆盖本地导入闭包，依赖必须精确声明；参数、源码或执行合同改变均形成新内容身份。
-旧 `decide(EquityDecisionContext)` 定义只服务历史证据及既有冻结/PTE路径，TDR 不再为其生成新研究账户。
+状态入口为 `step(context, state) -> AccountStepResult`，返回 `AccountDecision`与显式状态；
+批量入口返回逐观察决策元组。目标为0至1比例，详细契约见[SRT](../../packages/strategy_runtime/README.md)。
+多标的组合、卖空、杠杆、碎股及可变价位制度不在当前账户范围内。源码、参数或执行合同变化形成新内容身份。
 
 ### 10.3 数据产品
 
@@ -1267,107 +1202,58 @@ V3的0表示空仓目标，1表示持有目标；分批建减仓使用V4。V4仍
 这些诊断在证据发布时依据认证行情和独立审计账户重新计算；不参与新增研究硬门槛。
 
 基准为同标的、同初始资金、同起止点、同预热、同买入规则、同费用及公司行动处理的买入并持有账户。
-V3 基准使用同一显式状态回放运行时，开盘权益事件先应用再计算整数股预算，避免拆股前取整改变买入数量。
+V4基准使用同一显式状态回放运行时，开盘权益事件先应用再计算整数股预算，避免拆股前取整改变买入数量。
 首个买单未成交时，后续区间继续尝试；不强制按理论起始价持仓，也不在窗口末尾虚构平仓。
 
 <a id="us-equity-api"></a>
 
 ### 10.5 API 调用流程
 
-以下为集成片段；`repository/batch/experiment/quote_context/rule_bindings/action_bindings` 由宿主按已授权范围提供。
-真实研究前必须准备交易约束来源；不能直接把测试夹具用于研究。
+调用方先准备市场明确的数据绑定和研究上下文。策略以当前强类型定义创建，不从旧研究请求自动转换：
 
 ```python
-from dataflows import AssetClass, BarFrequency, InstrumentId, MarketId, ProviderConfig, SourceRef
-from dataflows import futu_equity_bindings, TimeInterval
-from strategy_runtime import AccountPolicy, CashAvailabilityPolicy, UsEquitySpec
-from strategy_runtime import ResearchExecutionSpec
-from strategy_runtime.equity_definition import EquityStrategyDefinition, EquityStrategyCandidate, equity_source_hash
-from czsc_trader.application import create_research_context, publish_evidence
-from czsc_trader.research_tools import EquitySources, EquityEvaluationRequest, EvaluationEvidenceWrite
-from czsc_trader.research_tools import EvaluationBenchmark, EquityBuyHold, ResearchExecutionSession
-from strategy_runtime.equity_features import FeatureGraph
-from strategy_runtime.equity_replay import StrategyStateSchema
-
-spec = ResearchExecutionSpec(
-    market=UsEquitySpec(), decision_clock=BarFrequency.M30,
-    account=AccountPolicy("USD", CashAvailabilityPolicy.IMMEDIATE_RESEARCH),
-    quantity_step=1, price_tick=0.01, buy_premium=0.01, slippage_bp=0,
-)
-quotes = SourceRef("futu", "host-validated-revision")
-providers = ProviderConfig(equity_bindings={
-    **futu_equity_bindings(source=quotes, quote_context=quote_context),
-    **rule_bindings, **action_bindings,
-})
-research = create_research_context(repository, batch, providers=providers, execution_spec=spec)
 definition = EquityStrategyDefinition(
-    instrument=InstrumentId(MarketId.US, AssetClass.STOCK, symbol), execution_spec=spec,
-    warmup_bars=60, entrypoint="strategy:step", source_files=("strategy.py",),
-    contract_version=3, feature_graph=FeatureGraph((), ()), state_schema=StrategyStateSchema(),
-    source_sha256=equity_source_hash(source_root, ("strategy.py",)), parameters_json='{"lookback":60}',
-)  # source_root 是本实验源码目录；strategy.py 按 V3 step 签名返回决策及状态
+    instrument=instrument, execution_spec=spec, warmup_bars=warmup,
+    entrypoint="strategy:step", source_files=("strategy.py",),
+    source_sha256=equity_source_hash(source_root, ("strategy.py",)),
+    contract_version=4, computation=StrategyComputation.STATEFUL_STEP,
+    feature_graph=FeatureGraph((), ()), state_schema=StrategyStateSchema(),
+)
 candidate = EquityStrategyCandidate(batch.strategy_id, "C0001", definition, source_root)
 request = EquityEvaluationRequest(
-    experiment=experiment, candidate=candidate,
-    window=TimeInterval(start_at, end_at), history_start=history_start,
-    sources=EquitySources(quotes, quotes, action_source, rule_source),
-    initial_cash=100_000, fee_rate=0.001,
+    experiment, candidate, window, history_start, sources, 100000., .001,
     benchmark=EvaluationBenchmark(EquityBuyHold(spec)),
-    drawdown_basis=drawdown_basis, concentration_basis=concentration_basis,
+    drawdown_basis="BAR_CLOSE", concentration_basis="MAX_SINGLE",
 )
-with ResearchExecutionSession(research, experiment=experiment) as execution:
-    prepared = research.evaluation.prepare(request, execution=execution)
-    outcome, = research.evaluation.evaluate_many((prepared,), execution=execution)
-    if outcome.status.value != "SUCCEEDED":
+with ResearchExecutionSession(context, experiment=experiment,
+        checkpoint=ExecutionCheckpointRequest("equity-v4")) as execution:
+    prepared = context.evaluation.prepare(request, execution=execution)
+    outcome, = context.evaluation.evaluate_many((prepared,), execution=execution)
+    if outcome.result is None:
         raise RuntimeError(outcome.error)
-    reference = publish_evidence(research,
-        EvaluationEvidenceWrite(experiment, "account", prepared, outcome.result), execution=execution)
+    facts, = build_assessment_evidence(prepared, outcome.result, execution=execution)
+    reference = publish_evidence(context, EvaluationEvidenceWrite(
+        experiment, "account", prepared, outcome.result), execution=execution)
 ```
 
-`drawdown_basis` 必须显式选择 `SESSION_CLOSE` 或 `BAR_CLOSE`；`concentration_basis` 必须选择
-`TOP_DECILE` 或 `MAX_SINGLE`。平台不替研究约定选择验收口径。`EquityBuyHold` 精确绑定同一执行合同。
-修改已准备请求的资金、费率或输入时，清除 `audit_inputs_sha256` 后重新 `prepare`；改变数据还需重新绑定准备引用。
-
-正式 `evaluate_many` 复用 `ExecutionResources` 和 `ResearchExecutionSession` 的有界进程池、
-进度及检查点。每项报告 `SUCCEEDED/FAILED/CANCELLED/UNKNOWN`；worker 只读取已准备资产。
-使用 `ExecutionCheckpointRequest(run_id)` 创建检查点，用 `CheckpointMode.RESUME` 显式恢复；
-校验损坏或身份漂移时失败，不静默重算或重复发布。检查点接受对应V3/V4完整依赖闭包；旧计算检查点不再恢复执行。
-多个费用场景或窗口通过多份显式请求组织，不能把不同市场请求混装一个批量调用。
+逐项检查批量计算和发布状态。主结果通过 `input_ref/candidate_ref/benchmark_ref`绑定三个内容寻址依赖；
+发布、检查点与交付必须保存完整闭包。冷读由 `materialize_equity`解析，再以
+`build_equity_assessment`独立认证；缺少依赖或身份不同即失败，不静默重算。
 
 <a id="us-equity-evidence"></a>
 
 ### 10.6 审计、指标及证据
 
-SE 从序列化事实独立重建现金、持仓、应收款、公司行动及闭合交易，
-检查时序、成交价、限价、费率、成交量、交易约束、权益及交收，核对各期账户恒等式。
-收益与复合年化使用连续扣费账户，年化按观测交易日数及 252 日惯例计算。
-同时报告日末净值回撤与 30 分钟收盘采样回撤；后者不是逐笔或段内最大回撤。
-闭合交易按完整入场—退出周期计数，同日多次独立周期分别记录，未平仓不计闭合交易。
-完整滚动 60 交易日闭合次数及其中位数单独输出；不足 60 日返回空窗口和 `None`，不当成零频率。
-这些是事实与诊断，是否满足研究目标由用户确认的研究合同决定。
+仅接纳 `equity-research/v4`与 `EvidenceRef(schema="equity_research", schema_version=4)`。
+请求绑定TDR/SRT/TXE/SE实现身份和运行环境，数值审计消费序列化原始事实，不装载策略。
+`register_candidate/load_candidate`、`assemble_delivery/validate_delivery`及 `diagnose_accounts`
+沿当前V4契约处理候选、原型、评估和损益事实；交付复核不依赖原实验可变目录。
+权益参数计划schema4与既有A股日期模型参数计划各按自身合同处理，不自动互转。
 
-结果保存请求、执行合同及哈希、来源/修订、准备清单哈希、各产品内容身份、交易日历元数据、
-决策、订单、成交、公司行动、区间账户、日末账户、闭合周期及指标。
-请求身份同时绑定本链路的 TDR/SRT/TXE/SE 模块源码哈希及 Python/pandas 版本。
-发布复用 `EvaluationEvidenceWrite` 和原有不可变写入流程，返回
-`EvidenceRef(schema="equity_research", schema_version=3)`；不能冒充 A 股的 `account_evaluation/v8`。
-发布核对会话拥有的已认证请求、结果及依赖闭包。
-
-v2 保存可独立审计的行情、约束、事件和账户事实，映射到共享 `AssessmentEvidence` 的美股扩展。
-`register_candidate/load_candidate` 校验并归档源码身份；`assemble_delivery/validate_delivery` 支持
-原型、候选和数值评价引用，归档后重算不依赖原实验可变目录。
-`ParameterEvaluationPlan` 对美股使用 schema4，A 股保持 schema3；中心、压力和邻域必须绑定同一参数及输入合同。
-自检与中心验收复用 SE，日频统计只使用每会话末值，同日多个交易周期不合并。
-`diagnose_accounts` 对 v2 独立核验并拆分费用、入场、持有和退出损益，切片继承连续账户期初状态；
-未知交易人群不归零，异市场或异合同对比返回不兼容状态。
-
-技术检验与冻结使用共享的 `inspect_candidate/record_research_decision/freeze_candidate/get_freeze_result`。
-美股使用 `EquityInspectionReplay/EquityInspectionProtocol`，以相同输入逐项精确比较候选与最终发布包，
-并使用正常 PTE 引擎及隔离离线渠道验证；
-技术通过仅生成可审批计划。精确批准和冻结事务 `COMMITTED` 是独立条件，生产通道不由研究接口开放。
-`run_backtest` 不再提供美股研究账户回放；V2 冻结包的技术检验及既有 PTE执行入口保持原契约，
-不作为新研究计算入口。
-采用该研究入口不迁移或改写历史证据、候选资格及冻结包，也不改变生产账户。
+原V1/V2/V3研究计算、读取、认证与转换分支已退役，旧原件不改写、不改签。
+原A股日期模型及现有V2冻结／PTE能力保留。V2技术复验的执行及数值审计为内部冻结适配，
+不再公开为研究账户执行入口；`run_backtest`也不能绕过当前权益研究准备合同。
+V4研究可运行不代表具备生产状态持久化、PTE部署或新的冻结准入。
 
 <a id="us-equity-verification"></a>
 

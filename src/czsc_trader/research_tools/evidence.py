@@ -15,7 +15,7 @@ from .context import ExperimentRef
 if TYPE_CHECKING:
     from .evaluation import EvaluationRequest, EvaluationResult
     from .equity_evaluation import EquityEvaluationResult
-    from .equity_replay_v3 import PreparedAccountEvaluation
+    from .equity_replay import PreparedAccountEvaluation
 
 
 def _resolve_for_containment(path: Path) -> Path:
@@ -127,7 +127,7 @@ class EvaluationEvidenceWrite:
     def __post_init__(self):
         from .evaluation import EvaluationRequest, EvaluationResult
         from .equity_evaluation import EquityEvaluationResult
-        from .equity_replay_v3 import PreparedAccountEvaluation
+        from .equity_replay import PreparedAccountEvaluation
 
         _name(self.name)
         if type(self.request) is PreparedAccountEvaluation:

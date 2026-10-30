@@ -64,6 +64,11 @@ def test_scaling_and_repeated_execution_close_one_real_position(market, monkeypa
         return original(value)
     monkeypatch.setattr(implementation,'_serial',counted)
     executor, stamp, instrument = setup(market)
+    import trading_execution_engine as public
+    import trading_execution_engine.equity as ledger
+    assert not hasattr(public, 'BarExecution')
+    assert not hasattr(ledger, 'EquityHistoricalExecutor')
+    assert not hasattr(executor, 'execute') and not hasattr(executor, 'execute_plan')
     for index, orders in enumerate(((order(OrderSide.BUY,100,10.1),),
             (order(OrderSide.BUY,100,10.1),order(OrderSide.BUY,100,10.1)),
             (order(OrderSide.SELL,100),),(order(OrderSide.SELL,200),))):

@@ -393,12 +393,10 @@ TDR的[同版本升级API](../../src/czsc_trader/README.md#同版本发布包升
 这些字段表明研究假设与估值盲区，不证明历史停牌，也不代表缺口期间净值没有波动。
 
 美股正式账户仍通过 `assess_candidates`、`compare_candidates` 完成自检与比较。
-TDR 的 `build_assessment_evidence` 将 `equity-research/v2` 档案适配为 `AssessmentEvidence`，
-附加 `EquityAssessmentFacts`，保存候选与 `EquityBuyHold` 基准的原始账户及公司行动账本。
-SE 独立核对成交、拆并股、股息应收与到账、周期损益，以及现金、持仓、应收款共同构成的净值。
-已平仓周期中的股息只计入一次；未平仓头寸不作为完整周期。
-正式 v2 两账户显式启用 `decision_contract="FORMAL_V2"`，独立重建因果行情和事件生效后的账户、目标仓位到交易计划，
-并校验所有订单（包括 `EXPIRED` 未成交订单）的关联、数量、区间及执行结果；既有默认和 legacy 审计入口不变。
+TDR的 `build_assessment_evidence`只将当前V4账户闭包适配为 `AssessmentEvidence`，
+附加 `EquityAssessmentFacts`。旧研究ledger读取、认证、转换和默认审计分支已删除。
+现有冻结V2技术复验所需数值审计位于内部冻结适配，不作为公开研究API或V4失败兜底。
+SE独立核对成交、权益事件、应收与到账、周期损益和现金／持仓／应收共同组成的净值。
 
 | 口径 | 显式选择与计算 |
 | --- | --- |
@@ -432,15 +430,15 @@ V4 `EquityAssessmentFacts`按实际市场时区、币种及交易日聚合，指
 入场、持有、退出和费用，并核对逐日剩余差额。FIFO是账户归因规则，不是策略退出规则。
 股息只计一次收益，支付和交收仅为资产内部转移；一次持仓周期中的多次加仓不会被重复计作新周期。
 
-### V3/V4的会话内认证复用
+### V4的会话内认证复用
 
 `strategy_evaluator.equity_assessment.EquityCertificationScope` 是显式拥有者作用域。
 `certify_equity_ledger` 对规范化的精确账本、`decision_contract` 和审计实现身份执行独立数值审计；
 同一作用域中相同内容可以复用结果，不接受调用方提供 `validated=True` 或持久化 PASS。
 类型构造和结构校验不能签发数值认证。作用域不能被 pickle、跨进程传递或当作永久证书保存。
 
-TDR V3/V4 将工作进程的回放结果交回父进程认证；后续评估事实构造、发布和诊断共享明确拥有的作用域。
-冷读证据和恢复检查点在新的作用域重新认证。V1/V2 默认审计入口不变，不因加入复用而省略独立数值检查。
+TDR V4 将工作进程的回放结果交回父进程认证；后续评估事实构造、发布和诊断共享明确拥有的作用域。
+冷读证据和恢复检查点在新的作用域重新认证。公开审计只接纳V4；冻结内部适配继续独立审计，不读取旧研究声明作为认证。
 共享买持由独立账户身份绑定，不以候选ID替换或拼接既有账本取得复用。
 
 `audit_count` 和 `reused_count` 是作用域实际调用计数，不表示独立验证方法的种类数。

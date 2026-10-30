@@ -3,19 +3,17 @@
 Archived seeds expose immutable bytes only. Consumers decode a fresh mutable
 payload for each corruption case; no live session or certified handle is shared.
 """
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from datetime import date, datetime
-from pathlib import Path
 from contextlib import contextmanager
 from zoneinfo import ZoneInfo
 
 import pandas as pd
-import pytest
-from dataflows import (AssetClass, BarFrequency, EquityProduct, InstrumentId, MarketId,
+from dataflows import (AssetClass, BarFrequency, EquityProduct, EquityDataRequest, EquityQuery, InstrumentId, MarketId,
     ProviderBinding, ProviderConfig, ProviderKey, SourceRef, TimeInterval, TradingSession)
 from dataflows.equity_data import equity_metadata
-from strategy_runtime import (AccountPolicy, CashAvailabilityPolicy, EquityCandidate,
-    ExecutionResources, ResearchExecutionSpec, UsEquitySpec, equity_implementation_hash)
+from strategy_runtime import (AccountPolicy, CashAvailabilityPolicy,
+    ExecutionResources, ResearchExecutionSpec, UsEquitySpec, StrategyComputation)
 from strategy_runtime.equity_definition import (EquityAuxiliaryInput, EquityStrategyCandidate,
     EquityStrategyDefinition, equity_source_hash)
 from strategy_runtime.equity_features import FeatureGraph
@@ -34,6 +32,56 @@ def hold(history, portfolio):
     return 1
 
 
+@dataclass
+class _FixtureCandidate:
+    strategy_id: str
+    candidate_id: str
+    instrument: InstrumentId
+    execution_spec_hash: str
+    warmup_bars: int
+    decide: object
+
+
+@dataclass
+class _FixtureRequest:
+    """Input values for isolated frozen-V2 tests, never a TDR research request."""
+    experiment: object
+    candidate: object
+    window: object
+    history_start: object
+    sources: object
+    initial_cash: float
+    fee_rate: float
+    prepared: object = None
+    input_binding: object = None
+    audit_inputs_sha256: str | None = None
+    benchmark: object = None
+    window_id: str = 'FULL'
+    scenario_id: str = 'STANDARD'
+    measurement_tier: str = 'FORMAL'
+    drawdown_basis: str | None = None
+    concentration_basis: str | None = None
+    frequency_window_days: int = 60
+    lineage: object = None
+
+    @property
+    def formal(self):
+        return isinstance(self.candidate, EquityStrategyCandidate)
+
+    def request_items(self, specification):
+        end = self.window.end.astimezone(ZoneInfo(self.candidate.instrument.timezone)).date()
+        values = tuple((product.name.lower(),EquityDataRequest(self.candidate.instrument,
+            getattr(self.sources,product.name.lower()),EquityQuery(product,self.history_start,end,specification.decision_clock)))
+            for product in EquityProduct)
+        if self.formal:
+            values += tuple((item.data_key(product), query) for item in self.candidate.definition.auxiliary_inputs
+                for product,query in zip((EquityProduct.BARS,EquityProduct.SESSIONS),item.requests(self.history_start,end),strict=True))
+        return values
+
+    def requests(self, specification):
+        return tuple(query for _,query in self.request_items(specification))
+
+
 def setup_equity(tmp_path, decide=alternate, *, cash_policy=CashAvailabilityPolicy.IMMEDIATE_RESEARCH):
     repository = RepositoryContext(tmp_path, tmp_path / "research", tmp_path / "research/registrations", tmp_path / "strategies")
     batch = create_research_batch(repository, ResearchBatchRequest("S999", "Equity fixture", "US:LITE",
@@ -50,6 +98,10 @@ def setup_equity(tmp_path, decide=alternate, *, cash_policy=CashAvailabilityPoli
                          "Low": 9.8, "Close": 10., "Volume": 100., "Amount": 1000.})
     constraints = pd.DataFrame({"Date": [b.start for b in grid], "AvailableDate": [b.start for b in grid],
                                 "QuantityStep": 1, "PriceTick": .01, "Tradable": True,
+                                "PriceLimitPolicy": 'EXPLICIT_UNBOUNDED',
+                                "PriceLimitLower": None, "PriceLimitUpper": None,
+                                "BuySellableAt": [b.start for b in grid],
+                                "SellRemainderPolicy": 'FULL_LIQUIDATION',
                                 "SettlementAt": [grid[-1].end for _ in grid]})
     actions = pd.DataFrame([{"Date": grid[0].start, "AvailableDate": grid[0].start, "EventId": "none",
                              "Kind": "NONE", "Ratio": 1., "CashPerShare": 0., "PayAt": None}])
@@ -70,8 +122,9 @@ def setup_equity(tmp_path, decide=alternate, *, cash_policy=CashAvailabilityPoli
     context = create_research_context(repository, batch, providers=config, execution_spec=spec)
     context.evaluation.resources = ExecutionResources(max_workers=1, native_threads_per_worker=1)
     experiment = create_experiment(context, ExperimentRequest("Fixture", "Does isolated US execution work?", date(2026, 10, 28)))
-    candidate = EquityCandidate("S999", "C001", instrument, spec.fingerprint, equity_implementation_hash(decide), 1, decide)
-    request = EquityEvaluationRequest(experiment, candidate, TimeInterval(grid[1].start, grid[-1].end),
+    candidate = _FixtureCandidate(strategy_id='S999', candidate_id='C0001', instrument=instrument,
+        execution_spec_hash=spec.fingerprint, warmup_bars=1, decide=decide)
+    request = _FixtureRequest(experiment, candidate, TimeInterval(grid[1].start, grid[-1].end),
                                       date(2026, 10, 1), EquitySources(source, source, source, source), 1000., .001)
     return context, request, products, calls
 
@@ -147,44 +200,32 @@ def setup_auxiliary(tmp_path, *, auxiliary_days=(1, 2), max_age_seconds=86400, s
     return context, replace(old, candidate=candidate, benchmark=EvaluationBenchmark(EquityBuyHold(specification))), products, calls
 
 
-def setup_v3(tmp_path):
+def setup_account_research(tmp_path):
     context, legacy, products, calls = setup_equity(tmp_path)
     root = tmp_path / "fixture-source"
     root.mkdir()
     (root / "strategy.py").write_text(
-        "from strategy_runtime.equity_definition import EquityDecision\n"
-        "from strategy_runtime.equity_replay import StepResult, StateRecord\n"
+        "from strategy_runtime import AccountDecision, AccountStepResult, StateRecord\n"
         "def step(ctx, state):\n"
         "    target = 0 if ctx.portfolio.quantity else 1\n"
-        "    return StepResult(EquityDecision.from_facts(target, 'alternate', "
+        "    return AccountStepResult(AccountDecision.from_facts(target, 'alternate', "
         "facts={'quantity': ctx.portfolio.quantity}, next_watch='next bar'), cycle_values=StateRecord())\n", encoding="utf-8")
     definition = EquityStrategyDefinition(legacy.candidate.instrument, context.execution_spec, 1,
         "strategy:step", ("strategy.py",), equity_source_hash(root, ("strategy.py",)),
-        contract_version=3, feature_graph=FeatureGraph((), ()), state_schema=StrategyStateSchema())
+        contract_version=4, computation=StrategyComputation.STATEFUL_STEP,
+        feature_graph=FeatureGraph((), ()), state_schema=StrategyStateSchema())
     candidate = EquityStrategyCandidate("S999", "C0001", definition, root)
-    request = replace(legacy, candidate=candidate,
+    request = EquityEvaluationRequest(legacy.experiment,candidate,legacy.window,legacy.history_start,
+        legacy.sources,legacy.initial_cash,legacy.fee_rate,
         benchmark=EvaluationBenchmark(EquityBuyHold(context.execution_spec)),
         drawdown_basis="BAR_CLOSE", concentration_basis="TOP_DECILE")
     return context, request, products, calls
 
 
-@pytest.fixture(scope="module")
-def archived_formal_account_bytes():
-    return (Path(__file__).parents[1] / "fixtures/equity_v2/formal.json").read_bytes()
-
-
-@pytest.fixture(scope="module")
-def archived_auxiliary_account_bytes():
-    import json
-    content = (Path(__file__).parents[1] / "fixtures/equity_v2/auxiliary.json").read_bytes()
-    key = next(key for key in json.loads(content)["data"] if key.startswith("auxiliary:") and key.endswith(":bars"))
-    return content, key
-
-
-def v3_request(context, request):
-    """Express the fixture decision in the current explicit V3 step contract."""
+def current_account_request(context, request):
+    """Express a frozen fixture decision in the current account contract."""
     from hashlib import sha256
-    if request.formal and request.candidate.definition.contract_version == 3:
+    if isinstance(request, EquityEvaluationRequest):
         return request
     if request.formal:
         definition = request.candidate.definition
@@ -197,34 +238,39 @@ def v3_request(context, request):
                    f'    return EquityDecision.from_facts({target}, "fixture", facts={{"quantity":ctx.portfolio.quantity}}, next_watch="next bar")\n')
         definition = EquityStrategyDefinition(request.candidate.instrument, context.execution_spec,
             request.candidate.warmup_bars, "strategy:decide", ("strategy.py",), "0" * 64)
-    content += ('\nfrom strategy_runtime.equity_replay import StepResult, StateRecord\n'
+    content += ('\nfrom strategy_runtime import AccountDecision, AccountStepResult, StateRecord\n'
                 'def step(ctx, state):\n'
-                '    return StepResult(decide(ctx), cycle_values=StateRecord())\n')
+                '    result=decide(ctx)\n'
+                '    return AccountStepResult(AccountDecision(result.target,result.explanation,capital_mode="full_available_cash"), cycle_values=StateRecord())\n')
     root = request.experiment.resolve(context.repository.root) / ".tmp" / sha256(content.encode()).hexdigest()
     root.mkdir(parents=True, exist_ok=True)
     (root / "strategy.py").write_text(content, encoding="utf-8")
     definition = replace(definition, entrypoint="strategy:step", source_sha256=equity_source_hash(root, ("strategy.py",)),
-        contract_version=3, feature_graph=FeatureGraph((), ()), state_schema=StrategyStateSchema())
+        contract_version=4, computation=StrategyComputation.STATEFUL_STEP,feedback_mode='CONFIRMED_EXECUTION',
+        feature_graph=FeatureGraph((), ()), state_schema=StrategyStateSchema())
     candidate_id = request.candidate.candidate_id if request.formal else "C0001"
     candidate = EquityStrategyCandidate(request.candidate.strategy_id, candidate_id, definition, root)
-    return replace(request, candidate=candidate, benchmark=EvaluationBenchmark(EquityBuyHold(context.execution_spec)),
+    return EquityEvaluationRequest(request.experiment,candidate,request.window,request.history_start,
+        request.sources,request.initial_cash,request.fee_rate,
+        benchmark=EvaluationBenchmark(EquityBuyHold(context.execution_spec)),
         drawdown_basis=request.drawdown_basis or "BAR_CLOSE", concentration_basis=request.concentration_basis or "MAX_SINGLE",
-        prepared=None, input_binding=None, audit_inputs_sha256=None)
+        window_id=request.window_id,scenario_id=request.scenario_id,measurement_tier=request.measurement_tier,
+        frequency_window_days=request.frequency_window_days,lineage=request.lineage)
 
 
 @contextmanager
-def v3_account(context, request):
+def account_research(context, request):
     from czsc_trader.research_tools import ResearchExecutionSession
-    from czsc_trader.research_tools.equity_replay_v3 import materialize_v3
-    request = v3_request(context, request)
+    from czsc_trader.research_tools.equity_replay import materialize_equity
+    request = current_account_request(context, request)
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:
         prepared = context.evaluation.prepare(request, execution=execution)
         outcome, = context.evaluation.evaluate_many((prepared,), execution=execution)
         if outcome.result is None:
             raise ValueError(outcome.error.message)
-        yield prepared, outcome.result, materialize_v3(outcome.result).payload, execution
+        yield prepared, outcome.result, materialize_equity(outcome.result).payload, execution
 
 
 def replay_payload(context, request):
-    with v3_account(context, request) as (_, _, payload, _):
+    with account_research(context, request) as (_, _, payload, _):
         return payload

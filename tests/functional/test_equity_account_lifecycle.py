@@ -1,4 +1,4 @@
-"""V3 immutable dependency publication, resume, registration and diagnosis."""
+"""V4 immutable dependency publication, resume, registration and diagnosis."""
 from dataclasses import replace
 from datetime import date
 import json
@@ -13,7 +13,7 @@ from czsc_trader.research_tools import (ResearchExecutionSession, ExecutionCheck
     EvaluationIdentity, EvaluationWindow)
 from czsc_trader.research_tools.assessment import build_assessment_evidence
 from czsc_trader.research_tools import delivery as d
-from equity_test_support import setup_v3
+from equity_test_support import setup_account_research
 
 
 def run_accounts(context, request, *, paired=True, checkpoint=None):
@@ -32,12 +32,12 @@ def run_accounts(context, request, *, paired=True, checkpoint=None):
         yield execution, prepared, results, publications, facts
 
 
-def test_v3_public_publish_register_diagnose_and_delivery(tmp_path):
-    context, request, _, _ = setup_v3(tmp_path)
+def test_v4_public_publish_register_diagnose_and_delivery(tmp_path):
+    context, request, _, _ = setup_account_research(tmp_path)
     for execution, prepared, results, publications, facts in run_accounts(context, request):
         detached = EvaluationEvidenceWrite(request.experiment, 'detached', prepared[0], results[0].result)
         refs = tuple(value.reference for value in publications)
-        assert all((ref.schema, ref.schema_version) == ('equity_research', 3) for ref in refs)
+        assert all((ref.schema, ref.schema_version) == ('equity_research', 4) for ref in refs)
         assert results[0].result.payload['benchmark_ref'] == results[1].result.payload['benchmark_ref']
         source = request.experiment.resolve(context.repository.root)
         asset_dir = refs[0].resolve(context.repository.root).parent
@@ -58,12 +58,12 @@ def test_v3_public_publish_register_diagnose_and_delivery(tmp_path):
         material = publish_evidence(context, MaterialEvidenceWrite(request.experiment, 'definition',
             json.dumps(request.candidate.payload).encode(), 'application/json', 'json'))
         entry = d.PrototypeEntry('P1', d.CandidateIdentityRef(request.candidate.key, record.content_sha256),
-            d.ExperimentDefinitionRef(material, 'strategy:step'), 'Synthetic v3 timing', (),
+            d.ExperimentDefinitionRef(material, 'strategy:step'), 'Synthetic v4 timing', (),
             (d.EvaluationEvidenceRef(refs[0], (facts[0].evaluation_id,)),), d.PrototypeDisposition.INVESTIGATE,
             'Contract exercise', ('Synthetic data',), 'Review', (material,))
         panel = d.PrototypePanel((entry,), (), (), 'Complete source closure')
         delivery = assemble_delivery(context.repository, d.DeliveryDefinition(context.batch, d.DeliveryStage.PROTOTYPES, 1, ()),
-            d.DeliveryContent(panel, d.DeliveryStatus.COMPLETE, (), (), report='# V3 fixture\n'))
+            d.DeliveryContent(panel, d.DeliveryStatus.COMPLETE, (), (), report='# V4 fixture\n'))
         assert validate_delivery(context.repository, delivery.receipt.reference).status == 'PASS'
         assert source.is_dir()
         # A cached accounting certification cannot hide later dependency damage.
@@ -80,25 +80,25 @@ def test_v3_public_publish_register_diagnose_and_delivery(tmp_path):
         publish_evidence(context, detached)
 
 
-def test_v3_checkpoint_restores_results_and_publication_closure(tmp_path):
-    context, request, _, _ = setup_v3(tmp_path)
+def test_v4_checkpoint_restores_results_and_publication_closure(tmp_path):
+    context, request, _, _ = setup_account_research(tmp_path)
     context.evaluation.resources = ExecutionResources(max_workers=2, native_threads_per_worker=1)
     for _, _, results, publications, _ in run_accounts(context, request,
-            checkpoint=ExecutionCheckpointRequest('v3-checkpoint')):
+            checkpoint=ExecutionCheckpointRequest('v4-checkpoint')):
         contents = tuple(value.result.content for value in results)
         refs = tuple(value.reference for value in publications)
     for execution, _, results, publications, _ in run_accounts(context, request,
-            checkpoint=ExecutionCheckpointRequest('v3-checkpoint', CheckpointMode.RESUME)):
+            checkpoint=ExecutionCheckpointRequest('v4-checkpoint', CheckpointMode.RESUME)):
         assert tuple(value.result.content for value in results) == contents
         assert tuple(value.reference for value in publications) == refs
         assert execution.stats.reused_results == 2 and execution.stats.reused_publications == 2
 
 
 @pytest.mark.parametrize('damage', ('missing', 'changed'))
-def test_v3_delivery_cache_rechecks_each_packages_dependency_closure(tmp_path, monkeypatch, damage):
+def test_v4_delivery_cache_rechecks_each_packages_dependency_closure(tmp_path, monkeypatch, damage):
     from czsc_trader.application import delivery_service as service
 
-    context, request, _, _ = setup_v3(tmp_path)
+    context, request, _, _ = setup_account_research(tmp_path)
     for _, _, results, publications, facts in run_accounts(context, request, paired=False):
         ref = publications[0].reference
         record = register_candidate(context.repository,
@@ -106,11 +106,11 @@ def test_v3_delivery_cache_rechecks_each_packages_dependency_closure(tmp_path, m
         material = publish_evidence(context, MaterialEvidenceWrite(request.experiment, 'definition',
             json.dumps(request.candidate.payload).encode(), 'application/json', 'json'))
         entry = d.PrototypeEntry('P1', d.CandidateIdentityRef(request.candidate.key, record.content_sha256),
-            d.ExperimentDefinitionRef(material, 'strategy:step'), 'Synthetic v3 timing', (),
+            d.ExperimentDefinitionRef(material, 'strategy:step'), 'Synthetic v4 timing', (),
             (d.EvaluationEvidenceRef(ref, (facts[0].evaluation_id,)),), d.PrototypeDisposition.INVESTIGATE,
             'Contract exercise', ('Synthetic data',), 'Review', (material,))
         content = d.DeliveryContent(d.PrototypePanel((entry,), (), (), 'Complete source closure'),
-            d.DeliveryStatus.COMPLETE, (), (), report='# V3 closure fixture\n')
+            d.DeliveryStatus.COMPLETE, (), (), report='# V4 closure fixture\n')
         first = assemble_delivery(context.repository,
             d.DeliveryDefinition(context.batch, d.DeliveryStage.PROTOTYPES, 1, ()), content)
         second = assemble_delivery(context.repository,

@@ -1,10 +1,9 @@
-"""Authenticate US retained evidence before pure continuous-account diagnosis."""
+"""Authenticate V4 retained evidence before pure continuous-account diagnosis."""
 import math
 from strategy_evaluator.account_diagnosis import AccountDiagnosisStatus, DecisionCoverage
 from strategy_evaluator.equity_assessment import read_ledger, session
 from strategy_evaluator.equity_diagnosis import diagnose_equity_accounts, PROTOCOL
 from ..research_tools.account_diagnosis import AccountDiagnosisResult, DiagnosisReconciliation
-from ..research_tools.equity_assessment import build_equity_assessment_payload
 
 
 def diagnose_equity_evidence(repository, request, *, execution=None):
@@ -13,17 +12,17 @@ def diagnose_equity_evidence(repository, request, *, execution=None):
     sources = tuple(x.evidence for x in refs) + tuple(x.evidence for x in request.populations)
     def fail(status, message):
         return AccountDiagnosisResult(status, PROTOCOL, (message,), sources)
-    if any(r.evidence.schema != 'equity_research' or r.evidence.schema_version not in (2, 3, 4) for r in refs):
+    if any(r.evidence.schema != 'equity_research' or r.evidence.schema_version != 4 for r in refs):
         return fail(AccountDiagnosisStatus.INCOMPARABLE, "diagnosis requires the same explicit equity evidence contract")
     try:
         loaded = []
         from strategy_evaluator.equity_assessment import EquityCertificationScope
-        from ..research_tools.equity_replay_v3 import build_v3_assessment
+        from ..research_tools.equity_replay import build_equity_assessment
         from .equity_evidence_io import materialize_equity_document
         if execution is None:
             certification = EquityCertificationScope()
         else:
-            from ..research_tools.equity_replay_v3 import _state
+            from ..research_tools.equity_replay import _state
             if execution.context.repository.root != repository.root:
                 raise ValueError('diagnosis session belongs to another repository')
             certification = _state(execution.context.evaluation, execution).certification
@@ -33,12 +32,9 @@ def diagnose_equity_evidence(repository, request, *, execution=None):
                     "strategy_id": ref.evidence.experiment.strategy_id, "experiment_id": ref.evidence.experiment.experiment_id}
                     or value["evaluation_identity"] != ref.identity.to_dict()):
                 raise ValueError("equity account identity or origin differs")
-            if ref.evidence.schema_version in (3, 4):
-                view = materialize_equity_document(repository.root, ref.evidence.repository_path, value)
-                facts = build_v3_assessment(view, scope=certification)[0]
-                value = view.payload
-            else:
-                facts = build_equity_assessment_payload(value)[0]
+            view = materialize_equity_document(repository.root, ref.evidence.repository_path, value)
+            facts = build_equity_assessment(view, scope=certification)[0]
+            value = view.payload
             loaded.append((value, read_ledger(facts.equity.candidate_ledger)))
         def comparable(value):
             r = value["request"]
@@ -88,8 +84,7 @@ def diagnose_equity_evidence(repository, request, *, execution=None):
                     key = decision["decision_id"]
                     coverage.append(DecisionCoverage(identity, ref.population_id, key, day, members.get(key),
                         key in buy_decisions, key in filled,
-                        (decision['target_quantity'] > 0 and not decision['plan']['orders'] and not decision['plan']['legs'])
-                        if ledger.get('account_contract') == 4 else decision["side"] == "HOLD" and decision["target"] == 1))
+                        decision['target_quantity'] > 0 and not decision['plan']['orders'] and not decision['plan']['legs']))
     except (OSError, ValueError, TypeError, KeyError, IndexError, OverflowError) as exc:
         return fail(AccountDiagnosisStatus.INVALID_EVIDENCE, str(exc))
     reconciliation = tuple(DiagnosisReconciliation(p.evaluation_id, p.daily[0].opening_equity,

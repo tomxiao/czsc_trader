@@ -1,6 +1,6 @@
-"""V3 public preparation, shared benchmark and independent certification."""
+"""V4 public preparation, shared benchmark and independent certification."""
 
-from equity_test_support import setup_v3
+from equity_test_support import setup_account_research
 from dataclasses import FrozenInstanceError, replace
 import json
 
@@ -11,23 +11,23 @@ from strategy_runtime.equity_replay import StrategyStateSchema
 from strategy_evaluator.equity_assessment import EquityCertificationScope
 from czsc_trader.research_tools.execution import ResearchExecutionSession
 from czsc_trader.research_tools.equity_evaluation import EquityArtifact, EquityEvaluationResult, validate_equity_result
-from czsc_trader.research_tools.equity_replay_v3 import (
-    prepare_equity_v3, evaluate_many_equity_v3, materialize_v3, build_v3_assessment,
+from czsc_trader.research_tools.equity_replay import (
+    prepare_equity, evaluate_many_equity, materialize_equity, build_equity_assessment,
 )
 
 
-def test_v3_shared_snapshot_benchmark_and_certification(tmp_path, monkeypatch):
+def test_account_shared_snapshot_benchmark_and_certification(tmp_path, monkeypatch):
     from strategy_runtime.resources import ExecutionResources
-    from czsc_trader.research_tools import equity_replay_v3
-    context, request, _, calls = setup_v3(tmp_path)
+    from czsc_trader.research_tools import equity_replay
+    context, request, _, calls = setup_account_research(tmp_path)
     access = context.evaluation
     access.resources = ExecutionResources(max_workers=1, native_threads_per_worker=1)
     owners = []
-    compute = equity_replay_v3._compute_account
+    compute = equity_replay._compute_account
     def record_owner(*args):
         owners.append(args[4])
         return compute(*args)
-    monkeypatch.setattr(equity_replay_v3, "_compute_account", record_owner)
+    monkeypatch.setattr(equity_replay, "_compute_account", record_owner)
     fetched = []
     original = access.data.fetch
     def fetch(*args, **kwargs):
@@ -69,7 +69,7 @@ def test_v3_shared_snapshot_benchmark_and_certification(tmp_path, monkeypatch):
         with pytest.raises(ValueError, match="exact certified"):
             validate_equity_result(access, left, EquityEvaluationResult(a.request_hash, a.content, a.artifacts), execution=execution)
         with pytest.raises(ValueError, match="not issued"):
-            evaluate_many_equity_v3(access, (replace(left),), execution=execution)
+            evaluate_many_equity(access, (replace(left),), execution=execution)
         repeated, = access.evaluate_many((left,), execution=execution)
         assert repeated.result is not None, repeated.error
         accumulated = execution.equity_statistics
@@ -83,25 +83,25 @@ def test_v3_shared_snapshot_benchmark_and_certification(tmp_path, monkeypatch):
             statistics.candidate_runs = 99
         assert len(fetched) == 4
     scope = EquityCertificationScope()
-    first = build_v3_assessment(a, scope=scope)
-    second = build_v3_assessment(b, scope=scope)
+    first = build_equity_assessment(a, scope=scope)
+    second = build_equity_assessment(b, scope=scope)
     assert scope.audit_count == 3
     assert first[0].result_sha256 == a.result_hash and second[0].result_sha256 == b.result_hash
-    assert materialize_v3(a).payload["runs"]["candidate"]["metrics"]["closed_cycles"] == 12
+    assert materialize_equity(a).payload["runs"]["candidate"]["metrics"]["closed_cycles"] == 12
 
 
-def test_v3_refs_and_certification_reject_mutation(tmp_path):
-    context, request, _, _ = setup_v3(tmp_path)
+def test_account_refs_and_certification_reject_mutation(tmp_path):
+    context, request, _, _ = setup_account_research(tmp_path)
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:
-        prepared = prepare_equity_v3(context.evaluation, request, execution=execution)
-        outcome, = evaluate_many_equity_v3(context.evaluation, (prepared,), execution=execution)
+        prepared = prepare_equity(context.evaluation, request, execution=execution)
+        outcome, = evaluate_many_equity(context.evaluation, (prepared,), execution=execution)
         assert outcome.result is not None, outcome.error
         result = outcome.result
     saved = {item.sha256: item.content for item in result.artifacts}
-    view = materialize_v3(result.content, lambda ref: saved[ref["sha256"]])
+    view = materialize_equity(result.content, lambda ref: saved[ref["sha256"]])
     assert view.source_sha256 == result.result_hash
     with pytest.raises(ValueError, match="digest differs"):
-        materialize_v3(result.content, lambda ref: b"{}")
+        materialize_equity(result.content, lambda ref: b"{}")
     payload = result.payload
     payload["candidate_ref"]["sha256"] = "a" * 64
     with pytest.raises(ValueError, match="closure differs"):
@@ -117,54 +117,55 @@ def test_v3_refs_and_certification_reject_mutation(tmp_path):
     altered = EquityEvaluationResult(result.request_hash, json.dumps(payload).encode(),
         tuple(changed if item is candidate else item for item in result.artifacts))
     with pytest.raises(ValueError, match="audit mismatch"):
-        build_v3_assessment(altered)
+        build_equity_assessment(altered)
 
 
-def test_v3_requires_explicit_owned_session(tmp_path):
-    context, request, _, _ = setup_v3(tmp_path)
+def test_account_requires_explicit_owned_session(tmp_path):
+    context, request, _, _ = setup_account_research(tmp_path)
     with pytest.raises(TypeError, match="explicit ResearchExecutionSession"):
         context.evaluation.prepare(request)
     with pytest.raises(TypeError, match="explicit ResearchExecutionSession"):
-        prepare_equity_v3(context.evaluation, request, execution=None)
+        prepare_equity(context.evaluation, request, execution=None)
     with pytest.raises(TypeError, match="evaluate_many"):
         context.evaluation.evaluate(request)
     with pytest.raises(TypeError, match="session-owned"):
         context.evaluation.evaluate_many((request,))
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:
         with pytest.raises(ValueError, match="not issued"):
-            evaluate_many_equity_v3(context.evaluation, (request,), execution=execution)
+            evaluate_many_equity(context.evaluation, (request,), execution=execution)
 
 
-def test_v3_auxiliary_and_sessions_use_indexed_availability(tmp_path, monkeypatch):
-    from equity_test_support import setup_auxiliary
+def test_account_auxiliary_and_sessions_use_indexed_availability(tmp_path, monkeypatch):
+    from equity_test_support import setup_auxiliary, current_account_request
     from strategy_runtime import equity_context
     context, request, _, _ = setup_auxiliary(tmp_path)
+    request = current_account_request(context, request)
     root = request.candidate.source_root
     (root / "strategy.py").write_text(
-        "from strategy_runtime.equity_definition import EquityDecision\n"
-        "from strategy_runtime.equity_replay import StepResult, StateRecord\n"
+        "from strategy_runtime import AccountDecision\n"
+        "from strategy_runtime import AccountStepResult, StateRecord\n"
         "def step(ctx, state):\n"
         "    target = 0 if ctx.portfolio.quantity else 1\n"
-        "    return StepResult(EquityDecision.from_facts(target, 'auxiliary', "
+        "    return AccountStepResult(AccountDecision.from_facts(target, 'auxiliary', "
         "facts={'market_close': ctx.auxiliary_histories['market'].last()['Close'], "
         "'end': ctx.session.segments[-1].end.isoformat()}, next_watch='next bar'), cycle_values=StateRecord())\n",
         encoding="utf-8")
-    definition = replace(request.candidate.definition, contract_version=3, entrypoint="strategy:step",
+    definition = replace(request.candidate.definition, contract_version=4, entrypoint="strategy:step",
         source_sha256=equity_source_hash(root, ("strategy.py",)), feature_graph=FeatureGraph((), ()),
         state_schema=StrategyStateSchema())
     request = replace(request, candidate=replace(request.candidate, definition=definition))
     def forbidden(*args, **kwargs):
-        raise AssertionError("v3 must not rebuild full-history v2 contexts")
+        raise AssertionError("account must not rebuild full-history v2 contexts")
     monkeypatch.setattr(equity_context, "build_equity_decision_context", forbidden)
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:
         prepared = context.evaluation.prepare(request, execution=execution)
         outcome, = context.evaluation.evaluate_many((prepared,), execution=execution)
         assert outcome.result is not None, outcome.error
         assert execution.equity_statistics.authenticated_accounts == 2
-    assert build_v3_assessment(outcome.result)
+    assert build_equity_assessment(outcome.result)
 
 
-def test_v3_public_timing_rejects_invalid_units_and_owner():
+def test_account_public_timing_rejects_invalid_units_and_owner():
     from czsc_trader.research_tools import EquityAccountTiming, EquityExecutionStatistics
     with pytest.raises(ValueError, match="owner differs"):
         EquityAccountTiming("BENCHMARK", "candidate:S999:C0001:hash", 0., 1., 1, 1)
@@ -177,7 +178,7 @@ def test_v3_public_timing_rejects_invalid_units_and_owner():
         EquityExecutionStatistics(1, 0, 2, 1, 0, (valid, valid))
 
 
-def test_v3_parameter_plan_uses_owned_preparation_without_refetch(tmp_path, monkeypatch):
+def test_account_parameter_plan_uses_owned_preparation_without_refetch(tmp_path, monkeypatch):
     from strategy_runtime import ExecutionResources
     from strategy_evaluator import (AssessmentCandidate, ParameterAxis, RealDomain, BoundedLocalStep,
         RelativeChangeLimit, ParameterNeighborhoodProtocol, ParameterNeighborhoodRequest,
@@ -187,16 +188,16 @@ def test_v3_parameter_plan_uses_owned_preparation_without_refetch(tmp_path, monk
     from czsc_trader.research_tools import MaterialEvidenceWrite, ParameterEvaluationPlan, EvaluationLineage
     from czsc_trader.research_tools.parameter_evaluation import validate_parameter_request
 
-    context, request, _, _ = setup_v3(tmp_path)
+    context, request, _, _ = setup_account_research(tmp_path)
     context.evaluation.resources = ExecutionResources(max_workers=2, native_threads_per_worker=1)
     root = request.candidate.source_root
     (root / "strategy.py").write_text(
-        "from strategy_runtime.equity_definition import EquityDecision\n"
-        "from strategy_runtime.equity_replay import StepResult, StateRecord\n"
+        "from strategy_runtime import AccountDecision\n"
+        "from strategy_runtime import AccountStepResult, StateRecord\n"
         "def step(ctx, state):\n"
         "    active = int(ctx.history.last()['Close'] >= ctx.parameters['threshold'])\n"
         "    target = 0 if ctx.portfolio.quantity else active\n"
-        "    return StepResult(EquityDecision.from_facts(target, 'threshold', "
+        "    return AccountStepResult(AccountDecision.from_facts(target, 'threshold', "
         "facts={'threshold': ctx.parameters['threshold']}, next_watch='next bar'), cycle_values=StateRecord())\n",
         encoding="utf-8")
     definition = replace(request.candidate.definition, source_sha256=equity_source_hash(root, ("strategy.py",)),
@@ -250,10 +251,10 @@ def test_v3_parameter_plan_uses_owned_preparation_without_refetch(tmp_path, monk
         outcomes = context.evaluation.evaluate_many(tuple(bound), execution=execution)
         assert all(item.result is not None for item in outcomes), [item.error for item in outcomes]
         assert execution.stats.pool_starts == 1
-        assert sorted(materialize_v3(item.result).payload["runs"]["candidate"]["metrics"]["closed_cycles"]
+        assert sorted(materialize_equity(item.result).payload["runs"]["candidate"]["metrics"]["closed_cycles"]
                       for item in outcomes) == [0, 12]
         for index, item in enumerate(outcomes):
-            facts, = build_v3_assessment(item.result)
+            facts, = build_equity_assessment(item.result)
             assert facts.parameter_point == design.bind_point(index) and facts.parent == design.center
         with pytest.raises(ValueError, match="nonparameter context"):
             context.evaluation.prepare(replace(bound[0].request, initial_cash=1001., audit_inputs_sha256=None), execution=execution)
@@ -264,16 +265,16 @@ def test_v3_parameter_plan_uses_owned_preparation_without_refetch(tmp_path, monk
 
 
 @pytest.mark.parametrize("mutation", ["delete", "replace"])
-def test_v3_loaded_account_finishes_and_publishes_after_source_change(tmp_path, monkeypatch, mutation):
+def test_account_loaded_account_finishes_and_publishes_after_source_change(tmp_path, monkeypatch, mutation):
     from strategy_runtime.resources import ExecutionResources
-    from trading_execution_engine.equity import EquityHistoricalExecutor
+    from trading_execution_engine.portfolio import PortfolioHistoricalExecutor
     from czsc_trader.application import publish_evidence
     from czsc_trader.research_tools import EvaluationEvidenceWrite, build_assessment_evidence
 
-    context, request, _, _ = setup_v3(tmp_path)
+    context, request, _, _ = setup_account_research(tmp_path)
     context.evaluation.resources = ExecutionResources(max_workers=1, native_threads_per_worker=1)
     source = request.candidate.source_root / "strategy.py"
-    execute = EquityHistoricalExecutor.execute
+    execute = PortfolioHistoricalExecutor.execute_account_plan
     changed = False
     def change_after_first_execution(executor, plan, bar, *, constraint):
         nonlocal changed
@@ -287,7 +288,7 @@ def test_v3_loaded_account_finishes_and_publishes_after_source_change(tmp_path, 
                 source.write_text("raise RuntimeError('replacement must not be loaded')\n", encoding="utf-8")
             changed = True
         return result
-    monkeypatch.setattr(EquityHistoricalExecutor, "execute", change_after_first_execution)
+    monkeypatch.setattr(PortfolioHistoricalExecutor, "execute_account_plan", change_after_first_execution)
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:
         prepared = context.evaluation.prepare(request, execution=execution)
         outcome, = context.evaluation.evaluate_many((prepared,), execution=execution)
@@ -295,10 +296,10 @@ def test_v3_loaded_account_finishes_and_publishes_after_source_change(tmp_path, 
         facts, = build_assessment_evidence(prepared, outcome.result, execution=execution)
         reference = publish_evidence(context, EvaluationEvidenceWrite(request.experiment, "loaded-module",
             prepared, outcome.result), execution=execution)
-        assert reference.schema_version == 3
+        assert reference.schema_version == 4
         assert reference.resolve(context.repository.root).read_bytes() == outcome.result.content
         assert facts.result_sha256 == outcome.result.result_hash
-        runs = materialize_v3(outcome.result).payload["runs"]
+        runs = materialize_equity(outcome.result).payload["runs"]
         assert runs["candidate"]["metrics"]["closed_cycles"] == 12
         assert runs["buy_hold"]["metrics"]["closed_cycles"] == 0
         assert execution.equity_statistics.authenticated_accounts == 2
@@ -308,20 +309,7 @@ def test_v3_loaded_account_finishes_and_publishes_after_source_change(tmp_path, 
         assert subsequent.status.value == "FAILED" and subsequent.result is None
 
 
-@pytest.mark.parametrize("formal", [False, True])
-def test_retired_equity_replay_rejects_before_acquiring_data(tmp_path, formal):
-    from equity_test_support import setup_equity, setup_formal_equity
-    context, request, _, calls = (setup_formal_equity if formal else setup_equity)(tmp_path)
-    with pytest.raises(TypeError, match="contract_version=3"):
-        context.evaluation.prepare(request)
-    with pytest.raises(TypeError, match="evaluate_many"):
-        context.evaluation.evaluate(request)
-    with pytest.raises(TypeError, match="session-owned"):
-        context.evaluation.evaluate_many((request,))
-    assert not calls
-
-
 def test_checkpoint_rejects_retired_account_schema():
     from czsc_trader.research_tools._equity_checkpoint import decode_result
-    with pytest.raises(ValueError, match="V3 or V4 artifact closure"):
+    with pytest.raises(ValueError, match="V4 artifact closure"):
         decode_result({"kind": "equity-research/v2"}, "0" * 64)

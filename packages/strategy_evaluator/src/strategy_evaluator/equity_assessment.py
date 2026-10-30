@@ -14,7 +14,7 @@ from .models import ValidationError
 
 
 LEDGER_FIELDS = frozenset({"initial_cash", "specification", "bars", "decisions", "orders",
-    "fills", "actions", "account_points", "trades", "action_facts", "constraints", "fee_rate"})
+    "fills", "actions", "account_points", "trades", "action_facts", "constraints", "fee_rate", "account_contract"})
 
 
 _active_certification = ContextVar("equity_account_certification", default=None)
@@ -46,8 +46,7 @@ class EquityCertificationScope:
     def __reduce__(self):
         raise TypeError("certification scopes cannot cross process or persistence boundaries")
 
-    def certify(self, ledger, *, decision_contract=None):
-        decision_contract = decision_contract or ("FORMAL_V4" if ledger.get("account_contract") == 4 else "FORMAL_V2")
+    def certify(self, ledger, *, decision_contract="FORMAL_V4"):
         content = canonical_ledger(ledger).encode()
         key = (self.audit_version, decision_contract, sha256(content).hexdigest())
         stored = self.__audits.get(key)
@@ -63,8 +62,7 @@ class EquityCertificationScope:
         return result
 
 
-def certify_equity_ledger(ledger, *, decision_contract=None):
-    decision_contract = decision_contract or ("FORMAL_V4" if ledger.get("account_contract") == 4 else "FORMAL_V2")
+def certify_equity_ledger(ledger, *, decision_contract="FORMAL_V4"):
     """Independently audit, or reuse the current owner's exact prior audit."""
     scope = _active_certification.get()
     if scope is None:
@@ -86,20 +84,15 @@ def read_ledger(value):
         return result
     ledger = json.loads(value, object_pairs_hook=pairs,
                         parse_constant=lambda _: (_ for _ in ()).throw(ValidationError("nonfinite equity fact")))
-    if type(ledger) is not dict or set(ledger) not in (LEDGER_FIELDS, LEDGER_FIELDS | {"account_contract"}, LEDGER_FIELDS | {"account_contract", "execution_bars"}) or canonical_ledger(ledger) != value:
-        raise ValidationError("equity ledger schema or canonical encoding differs")
-    if "account_contract" in ledger and (type(ledger["account_contract"]) is not int or ledger["account_contract"] != 4):
+    if type(ledger) is not dict or set(ledger) not in (LEDGER_FIELDS, LEDGER_FIELDS | {"execution_bars"}) or canonical_ledger(ledger) != value:
+        raise ValidationError("equity ledger contracts require V4 schema and canonical encoding")
+    if type(ledger["account_contract"]) is not int or ledger["account_contract"] != 4:
         raise ValidationError("unknown account ledger contract")
     return ledger
 
 
 def _assessment_ledgers(facts):
     candidate, benchmark = (read_ledger(value) for value in (facts.candidate_ledger, facts.benchmark_ledger))
-    contract = candidate.get('account_contract')
-    if contract != benchmark.get('account_contract'):
-        raise ValidationError('equity candidate and benchmark account contracts differ')
-    if facts.market == 'CN' and contract != 4:
-        raise ValidationError('CN equity assessment requires V4 account contracts')
     return candidate, benchmark
 
 
@@ -163,8 +156,7 @@ def validate_equity_assessment(evidence):
         raise ValidationError("equity assessment benchmark differs from audited journal")
     if evidence.scenario_context.one_way_cost != candidate["fee_rate"]:
         raise ValidationError("equity assessment fee differs from audited journal")
-    version = 4 if candidate.get("account_contract") == 4 else 2
-    expected_version = f"equity-assessment-v{version}:{facts.drawdown_basis}:{facts.concentration_basis}"
+    expected_version = f"equity-assessment-v4:{facts.drawdown_basis}:{facts.concentration_basis}"
     if evidence.metric_version != expected_version:
         raise ValidationError("equity metric semantics differ")
 

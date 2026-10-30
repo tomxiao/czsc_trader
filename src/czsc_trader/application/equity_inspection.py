@@ -59,8 +59,8 @@ def _records(frame):
 
 
 def replay_account(candidate, flows, replay):
-    from trading_execution_engine.equity import EquityHistoricalExecutor
-    from strategy_evaluator.equity import audit_equity_account
+    from trading_execution_engine.frozen_equity import _FrozenEquityExecutor
+    from strategy_evaluator.frozen_equity import _audit_frozen_equity_account
     products, identities = _products(flows, replay)
     if candidate.execution_spec_hash != replay.input_binding.specification_hash or candidate.instrument != replay.input_binding.instrument:
         raise ValueError('technical replay market contract differs')
@@ -69,7 +69,7 @@ def replay_account(candidate, flows, replay):
     if candidate.definition.auxiliary_inputs != tuple(x.input for x in replay.input_binding.auxiliary_inputs):
         raise ValueError('technical replay auxiliary contract differs')
     specification = candidate.definition.execution_spec
-    executor = EquityHistoricalExecutor(specification=specification, initial_cash=replay.initial_cash,
+    executor = _FrozenEquityExecutor(specification=specification, initial_cash=replay.initial_cash,
                                         fee_rate=replay.one_way_cost, actions=products['actions'])
     account = StrategyRuntime(execution_spec=specification).create(candidate).run_window(
         products['bars'], products['constraints'], executor, start=replay.window.start,
@@ -81,7 +81,7 @@ def replay_account(candidate, flows, replay):
         ('decisions','decisions'), ('orders','orders'), ('fills','fills'), ('actions','corporate_action_entries'),
         ('account_points','account_points'), ('account_daily','account_daily'), ('trades','trades'))}
     source = {name: _records(frame) for name, frame in products.items()}
-    audit = audit_equity_account(initial_cash=replay.initial_cash, specification=asdict(specification),
+    audit = _audit_frozen_equity_account(initial_cash=replay.initial_cash, specification=asdict(specification),
         bars=source['bars'], action_facts=source['actions'], constraints=source['constraints'],
         fee_rate=replay.one_way_cost, decision_contract="FORMAL_V2",
         **{k: facts[k] for k in ('decisions','orders','fills','actions','account_points','trades')})
@@ -281,7 +281,7 @@ def inspect_equity_candidate(context, request, control, registration, selection)
 
 def validate_pass_facts(root, report, normalized, protocol):
     from .research_evidence import _read
-    from strategy_evaluator.equity import audit_equity_account
+    from strategy_evaluator.frozen_equity import _audit_frozen_equity_account
     from paper_trading_engine.equity_inspection import verify_equity_inspection_facts
     if len(report.behavior_equivalence.cases) != len(normalized['replays']):
         raise ValueError('equity replay coverage differs')
@@ -298,7 +298,7 @@ def validate_pass_facts(root, report, normalized, protocol):
         if definition.content_identity.content_sha256 != report.origin.content_sha256 or left['content_sha256'] != report.origin.content_sha256:
             raise ValueError('equity replay content differs')
         ledger, source = left['facts'], left['source']
-        audit = audit_equity_account(initial_cash=replay['initial_cash'], specification=asdict(definition.execution_spec),
+        audit = _audit_frozen_equity_account(initial_cash=replay['initial_cash'], specification=asdict(definition.execution_spec),
             bars=source['bars'], action_facts=source['actions'], constraints=source['constraints'],
             fee_rate=replay['one_way_cost'], decision_contract="FORMAL_V2",
             **{k: ledger[k] for k in ('decisions','orders','fills','actions','account_points','trades')})

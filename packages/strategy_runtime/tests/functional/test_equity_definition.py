@@ -67,7 +67,7 @@ def test_formal_equity_rejects_undeclared_import_and_future_history(tmp_path):
 
 
 def test_formal_decision_observes_split_before_planning(tmp_path):
-    from trading_execution_engine.equity import EquityHistoricalExecutor
+    from trading_execution_engine.frozen_equity import _FrozenEquityExecutor
     value = candidate(tmp_path)
     value = replace(value, definition=replace(value.definition, parameters_json='{"threshold":1}'))
     start = datetime(2026, 10, 1, 14, tzinfo=timezone.utc)
@@ -80,7 +80,7 @@ def test_formal_decision_observes_split_before_planning(tmp_path):
                                 'PriceTick': .01, 'Tradable': True})
     actions = pd.DataFrame([{'Date': starts[2], 'AvailableDate': starts[2], 'EventId': 'split',
                              'Kind': 'SPLIT', 'Ratio': 2., 'CashPerShare': 0., 'PayAt': None}])
-    executor = EquityHistoricalExecutor(specification=value.definition.execution_spec,
+    executor = _FrozenEquityExecutor(specification=value.definition.execution_spec,
                                          initial_cash=1000., fee_rate=.001, actions=actions)
     result = StrategyRuntime(execution_spec=value.definition.execution_spec).create(value).run_window(
         bars, constraints, executor, start=starts[1], end=ends[-1], fee_rate=.001)

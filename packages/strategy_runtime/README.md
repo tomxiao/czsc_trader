@@ -4,8 +4,9 @@
 
 `replay_kernel.run_account_replay(points, driver)` 是批量历史策略和显式状态策略共用的逐步运行器。
 每步依次执行事务边界、账户快照、决策、执行和状态提交；只有全部步骤成功才调用账户收尾。
-驱动器表达计算及成交模型差异，不拥有另一套完整账户循环。执行器通过
-`AccountPlanExecutor.execute_plan(neutral, model_plan)` 接收共用计划与明确的模型事实；SRT不导入TXE。
+驱动器表达计算及成交模型差异，不拥有另一套完整账户循环。日期模型通过
+`AccountPlanExecutor.execute_plan(neutral, model_plan)`接收计划及模型事实，V4权益账户直接消费
+`AccountExecutionPlan`；SRT不导入TXE。
 
 `replay_contracts` 的 `ReplayPoint`、`AccountSnapshot`、`ReplayOrder`、`ReplayLeg`、
 `CycleBudget` 和 `AccountExecutionPlan` 使用有时区的因果时间、整数数量、显式可用资金和执行腿依赖。
@@ -31,7 +32,7 @@
 
 新账户定义使用 `EquityStrategyDefinition(contract_version=4)`，运行身份为 `ACCOUNT_REPLAY`。
 CN/US共用策略计算、回放内核与计划契约；市场差异由 `ResearchExecutionSpec`、独立交易日历和
-逐执行区间约束表达。既有A股 `StrategyCandidate` 与美股V2/V3不自动转换，原有价格单位和身份保持原契约。
+逐执行区间约束表达。既有A股 `StrategyCandidate` 与已有美股V2冻结包不自动转换，原有价格单位和身份保持原契约。V1回调与V3研究定义不再接纳。
 
 | 声明 | V4契约 |
 | --- | --- |
@@ -43,6 +44,7 @@ CN/US共用策略计算、回放内核与计划契约；市场差异由 `Researc
 | 成交反馈 | `AccountSnapshot`、`PositionFeedback`和已确认的 `RecognizedAccountEvent` |
 
 状态策略入口为 `step(ctx: AccountStepContext, state: AccountStrategyState) -> AccountStepResult`。
+V4的 `feedback_mode`固定为 `CONFIRMED_EXECUTION`；旧V2闭合周期模式仅供原冻结合同使用。
 `AccountStepResult`返回决策、账户记录及周期记录；仅真实成交改变持仓，全部卖出才关闭周期。
 `ctx.position`保留多次加减仓的数量、累计买入成本、卖出收入、费用和成交次数。
 框架通过 `ctx.events`提供截至决策时点已确认的拆股、分红应收、支付和交收事实；`event_cursor`
@@ -65,16 +67,12 @@ CN/US共用策略计算、回放内核与计划契约；市场差异由 `Researc
 同一精确产品不能同时声明为执行与辅助角色。普通订单仍按主决策柱的价格区间执行。
 V4研究回放沿用一次装载、不可变可见历史、内存复用和完整证据闭包；生产加载与PTE准入仍需另行支持。
 
-## 美股研究 V3：可见特征与显式状态
+## 可见特征与显式状态
 
-V3 面向美股 30 分钟研究账户，声明行情特征依赖与状态字段，由公共运行器按真实成交推进状态。
-V2 历史源码和生产调用保持原版本；V3 不自动回退到 V2，也不因研究可运行而取得 PTE 部署资格。
-当前生产发布加载器和独立 `plan(...)` 调用明确拒绝 V3；V3 通过完整研究回放事务运行。
-生产状态持久化、券商成交回报归并及账户迁移需另行实现和授权，不能使用研究状态直接替代。
-
-特征类型位于 `strategy_runtime.equity_features`，回放与状态类型位于
-`strategy_runtime.equity_replay`。`EquityStrategyDefinition` 的 V3 定义必须提供
-`feature_graph: FeatureGraph` 和 `state_schema: StrategyStateSchema`，入口形如 `strategy:step`。
+V4通过完整研究回放事务执行；生产加载和独立 `plan(...)`不接纳研究定义。
+特征类型位于 `equity_features`，准备及可见性基础位于 `equity_replay`，
+决策／状态上下文位于 `account_strategy`，共用生命周期驱动位于 `account_replay`。
+旧V1回调与V3回放循环、类型及计划投影已删除；已有V2冻结运行独立按其合同加载。
 
 ```python
 graph = FeatureGraph(
@@ -128,13 +126,13 @@ DataFrame 物化本身包含遍历和复制成本，频繁导出完整历史仍�
 账户字段非空时，调用方必须明确提供符合 schema 的初始账户记录。
 
 ```python
-def step(ctx: StepContext, state: StrategyState) -> StepResult:
-    # decision 必须是带结构化事实的 EquityDecision。
+def step(ctx: AccountStepContext, state: AccountStrategyState) -> AccountStepResult:
+    # decision 必须是带结构化事实的 AccountDecision。
     # cycle_values 是本次观察后的提议，不代表买单已成交。
-    return StepResult(decision, account=StateRecord(), cycle_values=proposed_cycle_values)
+    return AccountStepResult(decision, account=StateRecord(), cycle_values=proposed_cycle_values)
 ```
 
-`StrategyState` 包含 revision、account、cycle 和 binding。`CycleState` 包含平台真实 cycle_id、
+`AccountStrategyState`包含revision、account、cycle、binding和event_cursor。`CycleState` 包含平台真实 cycle_id、
 entry_at 与策略 values。首次真实买入后才激活 cycle；买单未成交不会启动周期。
 已有持仓的卖单未成交时，仍保留提议中的止损锁存等观察状态；实际全部卖出后才清除 cycle。
 空仓准备买入和已有持仓均要求显式 `cycle_values`，即使 schema 为空也传入 `StateRecord()`。
@@ -152,6 +150,7 @@ binding 覆盖上述身份，替换输入后不能承接旧状态。
 ```python
 prepared = PreparedReplay.from_frames(
     bars, constraints, graph, latency_seconds=0,
+    frequency=definition.execution_spec.decision_clock, timezone=definition.instrument.timezone,
     auxiliary_histories=auxiliary_frames, sessions=session_frame,
     trading_sessions=certified_calendar,
 )
@@ -581,12 +580,14 @@ TDR和PTE通过共享图表组件渲染回测及前瞻图，冻结包不绑定�
 TDR技术检验可以在隔离空间验证拟冻结发布包，检验通过不等于已冻结或已部署。
 历史发布原件保留供人工查阅，平台不承诺机器复验或在当前运行时执行；升级须单独授权。
 
-## 美股区间决策补充
+## 既有V2冻结／PTE区间决策
 
 `ResearchExecutionSpec`、`EquityCandidate` 和 `EquityStrategyInstance` 提供显式市场与时间合同的研究规划。
 原 A 股策略及冻结运行时不变。输入、支持范围及因果时序见[TDR美股研究接口](../../src/czsc_trader/README.md#us-equity-research)。
 
-### 美股正式策略定义与加载
+以下仅说明既有V2冻结／PTE的运行合同；新研究统一使用上文V4，不能据此重建旧研究入口。
+
+### 冻结V2定义与加载
 
 `EquityStrategyCandidate` 与研究专用函数式 `EquityCandidate` 明确区分。正式定义使用
 `EquityStrategyDefinition`：标的、执行合同、预热、`module:function` 入口、相对源码清单、

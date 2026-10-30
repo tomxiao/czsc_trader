@@ -7,15 +7,15 @@ from functools import lru_cache
 from hashlib import sha256
 import json
 import math
-import inspect
-import marshal
-from pathlib import Path
-from typing import Callable
+from typing import TYPE_CHECKING
 
 import pandas as pd
 import numpy as np
 from dataflows import AssetClass, BarFrequency, InstrumentId, MarketId, TimeInterval
 from dataflows.equity_contracts import utc
+
+if TYPE_CHECKING:
+    from .equity_definition import EquityStrategyCandidate
 
 
 class CashAvailabilityPolicy(StrEnum):
@@ -209,46 +209,6 @@ class EquityPortfolio:
             raise TypeError("portfolio requires typed closed cycle feedback or unavailable None")
 
 
-def equity_implementation_hash(decide):
-    """Bind the loaded function and its containing source file for research replay.
-
-    Dependencies remain the research environment's responsibility; this identity
-    is not a frozen release or an attestation of third-party libraries.
-    """
-    if not inspect.isfunction(decide) or decide.__closure__:
-        raise TypeError("equity decisions require a module-level function without closure state")
-    source = inspect.getsourcefile(decide)
-    if source is None or not Path(source).is_file():
-        raise ValueError("decision implementation requires a source file")
-    return equity_hash({"source": sha256(Path(source).read_bytes()).hexdigest(),
-                        "loaded_code": sha256(marshal.dumps(decide.__code__)).hexdigest(),
-                        "defaults": decide.__defaults__, "keyword_defaults": decide.__kwdefaults__})
-
-
-@dataclass(frozen=True, slots=True)
-class EquityCandidate:
-    """Content-bound research implementation. It is not a frozen/PTE release."""
-    strategy_id: str
-    candidate_id: str
-    instrument: InstrumentId
-    execution_spec_hash: str
-    implementation_hash: str
-    warmup_bars: int
-    decide: Callable[[pd.DataFrame, EquityPortfolio], float]
-
-    def __post_init__(self):
-        import re
-        if not re.fullmatch(r"S\d{3}", self.strategy_id) or not self.candidate_id.strip():
-            raise ValueError("candidate identity is invalid")
-        for value in (self.execution_spec_hash, self.implementation_hash):
-            if type(value) is not str or re.fullmatch(r"[0-9a-f]{64}", value) is None:
-                raise ValueError("candidate requires content and execution SHA-256 identities")
-        if type(self.instrument) is not InstrumentId or type(self.warmup_bars) is not int or self.warmup_bars < 1 or not callable(self.decide):
-            raise TypeError("candidate requires typed instrument, positive warmup and decision implementation")
-        if self.implementation_hash != equity_implementation_hash(self.decide):
-            raise ValueError("candidate implementation identity differs from loaded source")
-
-
 @dataclass(frozen=True, slots=True)
 class EquityPlan:
     plan_id: str
@@ -282,9 +242,9 @@ class EquityPlan:
 
 
 class EquityStrategyInstance:
-    def __init__(self, candidate: EquityCandidate, specification: ResearchExecutionSpec):
+    def __init__(self, candidate: "EquityStrategyCandidate", specification: ResearchExecutionSpec):
         from .equity_definition import EquityStrategyCandidate
-        if type(candidate) not in (EquityCandidate, EquityStrategyCandidate) or type(specification) is not ResearchExecutionSpec:
+        if type(candidate) is not EquityStrategyCandidate or type(specification) is not ResearchExecutionSpec:
             raise TypeError("equity instance requires candidate and specification")
         specification.require_instrument(candidate.instrument)
         if candidate.execution_spec_hash != specification.fingerprint:
@@ -294,17 +254,13 @@ class EquityStrategyInstance:
     def run_window(self, bars, constraints, executor, *, start, end, fee_rate,
                    auxiliary_histories=None, sessions=None, trading_sessions=()):
         """Plan at bar boundaries with only completed, published observations."""
-        from .equity_definition import EquityStrategyCandidate
-        if type(self.candidate) is EquityStrategyCandidate and self.candidate.definition.contract_version in (3, 4):
+        if self.candidate.definition.contract_version == 4:
             from .equity_replay import PreparedReplay, run_replay
             prepared = PreparedReplay.from_frames(bars, constraints, self.candidate.definition.feature_graph,
                 latency_seconds=self.specification.data_latency_seconds,
                 auxiliary_histories=auxiliary_histories, sessions=sessions, trading_sessions=trading_sessions, frequency=self.specification.decision_clock, timezone=self.candidate.instrument.timezone)
             return run_replay(prepared, self.candidate, executor, start=start, end=end, fee_rate=fee_rate).execution_result
-        if type(self.candidate) is EquityStrategyCandidate:
-            self.candidate.verify()
-        elif self.candidate.implementation_hash != equity_implementation_hash(self.candidate.decide):
-            raise ValueError("candidate source changed since registration")
+        self.candidate.verify()
         starts = pd.to_datetime(bars.BarStart)
         ends = pd.to_datetime(bars.Date)
         available = pd.to_datetime(bars.AvailableDate) + pd.Timedelta(seconds=self.specification.data_latency_seconds)
@@ -323,8 +279,7 @@ class EquityStrategyInstance:
             constraint = dated_constraints.get(starts.iloc[index])
             if constraint is None or pd.Timestamp(constraint.AvailableDate) > starts.iloc[index]:
                 raise ValueError("no dated trading constraints available at execution start")
-            portfolio = (executor.snapshot_at(history.Date.iloc[-1], starts.iloc[index])
-                         if type(self.candidate) is EquityStrategyCandidate or explicit_gaps else executor.snapshot())
+            portfolio = executor.snapshot_at(history.Date.iloc[-1], starts.iloc[index])
             interval = TimeInterval(starts.iloc[index].to_pydatetime(), ends.iloc[index].to_pydatetime())
             if explicit_gaps and completed.BarStatus.iloc[-1] != "OBSERVED":
                 # The missing observation is already complete and available. The
@@ -351,9 +306,8 @@ class EquityStrategyInstance:
 
     def plan(self, history: pd.DataFrame, interval: TimeInterval, portfolio: EquityPortfolio,
              *, fee_rate: float, auxiliary_histories=None, sessions=None, trading_sessions=()) -> EquityPlan:
-        from .equity_definition import EquityStrategyCandidate
-        if type(self.candidate) is EquityStrategyCandidate and self.candidate.definition.contract_version in (3, 4):
-            raise ValueError('equity V3 is historical research only; use its complete run_window state transaction')
+        if self.candidate.definition.contract_version == 4:
+            raise ValueError('account replay is historical research only; use its complete run_window state transaction')
         if "BarStatus" in history:
             if not history.BarStatus.isin(("OBSERVED", "MISSING", "ZERO_VOLUME")).all():
                 raise ValueError("unknown equity history status")
@@ -370,22 +324,18 @@ class EquityStrategyInstance:
         point = DecisionPoint(observed, decision, interval)
         if type(fee_rate) not in (int, float) or not math.isfinite(fee_rate) or not 0 <= fee_rate < 1:
             raise ValueError("invalid fee rate")
-        from .equity_definition import EquityStrategyCandidate, EquityDecisionContext
-        explanation = None
-        if type(self.candidate) is EquityStrategyCandidate:
-            point = DecisionPoint(observed, interval.start, interval)
-            feedback = portfolio if self.candidate.definition.feedback_mode != 'MARKET_INTENT' else None
-            if self.candidate.definition.auxiliary_inputs or self.candidate.definition.session_context:
-                from .equity_context import build_equity_decision_context
-                context = build_equity_decision_context(self.candidate.definition, history, feedback, point,
-                    auxiliary_histories=auxiliary_histories, sessions=sessions, trading_sessions=trading_sessions)
-            else:
-                context = EquityDecisionContext(history.copy(deep=True), feedback, point,
-                                                self.candidate.definition.parameters)
-            result = self.candidate.decide(context)
-            target, explanation = result.target, result.explanation.to_dict()
+        from .equity_definition import EquityDecisionContext
+        point = DecisionPoint(observed, interval.start, interval)
+        feedback = portfolio if self.candidate.definition.feedback_mode != 'MARKET_INTENT' else None
+        if self.candidate.definition.auxiliary_inputs or self.candidate.definition.session_context:
+            from .equity_context import build_equity_decision_context
+            context = build_equity_decision_context(self.candidate.definition, history, feedback, point,
+                auxiliary_histories=auxiliary_histories, sessions=sessions, trading_sessions=trading_sessions)
         else:
-            target = self.candidate.decide(history.copy(deep=True), portfolio)
+            context = EquityDecisionContext(history.copy(deep=True), feedback, point,
+                                            self.candidate.definition.parameters)
+        result = self.candidate.decide(context)
+        target, explanation = result.target, result.explanation.to_dict()
         if type(target) not in (float, int) or target not in (0, 1):
             raise ValueError("equity candidate must return a finite binary long-only target")
         reference = float(last.Close) * portfolio.reference_price_scale

@@ -1,5 +1,6 @@
 """Explicit missing-market observations through prepare, execution and evidence."""
 import json
+from dataclasses import replace
 
 import pandas as pd
 import pytest
@@ -8,7 +9,7 @@ from dataflows import (EquityProduct, ProviderConfig, TimeInterval, UsEquityBarP
 from czsc_trader.application.research_governance_service import create_research_context
 from czsc_trader.research_tools import EvaluationEvidenceWrite
 from equity_test_support import setup_equity
-from equity_test_support import setup_formal_equity, v3_account, replay_payload
+from equity_test_support import setup_formal_equity, account_research, replay_payload
 
 
 def gap_context(tmp_path, *, formal=True, missing=(2, 3, 25), zero=(4,), blocked=(7,), split=False):
@@ -40,9 +41,21 @@ def gap_context(tmp_path, *, formal=True, missing=(2, 3, 25), zero=(4,), blocked
             raw['time_key'] = raw.Date.dt.tz_convert('America/New_York').dt.strftime('%Y-%m-%d %H:%M:%S')
             return 0, raw, None
 
+    bindings = futu_equity_bindings(source=request.sources.bars, quote_context=Quotes(), research_policy=policy)
+    from dataflows import ProviderKey
+    key = ProviderKey(EquityProduct.CONSTRAINTS,request.candidate.instrument.market,request.sources.constraints)
+    original = bindings[key]
+    def explicit_rules(query):
+        frame, metadata = original.fetch(query)
+        frame['PriceLimitPolicy']='EXPLICIT_UNBOUNDED'
+        frame['PriceLimitLower']=frame['PriceLimitUpper']=None
+        frame['BuySellableAt']=frame.Date
+        frame['SettlementAt']=frame.Date+pd.Timedelta(minutes=30)
+        frame['SellRemainderPolicy']='FULL_LIQUIDATION'
+        return frame,metadata
+    bindings[key]=replace(original,fetch=explicit_rules)
     context = create_research_context(context.repository, context.batch,
-        providers=ProviderConfig(bindings={}, equity_bindings=futu_equity_bindings(
-            source=request.sources.bars, quote_context=Quotes(), research_policy=policy)),
+        providers=ProviderConfig(bindings={}, equity_bindings=bindings),
         execution_spec=context.execution_spec)
     from strategy_runtime import ExecutionResources
     context.evaluation.resources = ExecutionResources(max_workers=1, native_threads_per_worker=1)
@@ -52,10 +65,10 @@ def gap_context(tmp_path, *, formal=True, missing=(2, 3, 25), zero=(4,), blocked
 @pytest.mark.parametrize('formal', [True])
 def test_gap_account_preserves_causality_stale_marks_and_publication(tmp_path, formal):
     context, request, bars = gap_context(tmp_path, formal=formal)
-    with v3_account(context, request) as (prepared, result, payload, execution):
+    with account_research(context, request) as (prepared, result, payload, execution):
         from czsc_trader.application import publish_evidence_many
         published, = publish_evidence_many(context, (EvaluationEvidenceWrite(request.experiment, "gap-account", prepared, result),), execution=execution)
-        assert published.reference.schema_version == 3
+        assert published.reference.schema_version == 4
     run = payload['runs']['candidate']
     points, decisions = run['account_points'], run['decisions']
     assert len(points) == 25
@@ -63,7 +76,7 @@ def test_gap_account_preserves_causality_stale_marks_and_publication(tmp_path, f
     assert decisions[1]['side'] == 'SELL'
     assert next(o for o in run['orders'] if o['decision_id'] == decisions[1]['decision_id'])['reason'] == 'MISSING_BAR'
     assert [d['signal_status'] for d in decisions[2:5]] == ['SUPPRESSED_UNOBSERVED_BAR'] * 3
-    assert all(d['side'] == 'WAIT' and d['quantity'] == 0 for d in decisions[2:5])
+    assert all(d['side'] == 'HOLD' and d['quantity'] == 0 for d in decisions[2:5])
     assert decisions[5]['side'] == 'SELL'  # Fresh observation resumes strategy evaluation.
     assert next(o for o in run['orders'] if o['decision_id'] == decisions[6]['decision_id'])['reason'] == 'KNOWN_INTERRUPTION'
     assert [p['valuation_stale'] for p in points[:6]] == [False, True, True, True, False, False]
@@ -92,7 +105,7 @@ def test_current_gap_cannot_rewrite_earlier_plan_and_empty_warmup_is_rejected(tm
     assert [{k: d[k] for k in fields} for d in complete['decisions'][:2]] == [
         {k: d[k] for k in fields} for d in gap['decisions'][:2]]
     context, request, _ = gap_context(tmp_path / 'leading', missing=(0,), zero=(), blocked=())
-    with pytest.raises(ValueError, match='warmup'):
+    with pytest.raises(ValueError, match='WARMUP_INSUFFICIENT'):
         replay_payload(context, request)
 
 
@@ -100,7 +113,7 @@ def test_current_gap_cannot_rewrite_earlier_plan_and_empty_warmup_is_rejected(tm
 def test_gap_evidence_rejects_fabricated_marks_and_diagnostics(tmp_path, tamper):
     from czsc_trader.research_tools.equity_evaluation import EquityEvaluationResult, EquityArtifact
     context, request, _ = gap_context(tmp_path)
-    with v3_account(context, request) as (prepared, result, payload, execution):
+    with account_research(context, request) as (prepared, result, payload, execution):
         artifacts = list(result.artifacts)
         index = next(i for i, item in enumerate(artifacts) if item.sha256 == result.payload['candidate_ref']['sha256'])
         value = json.loads(artifacts[index].content)
@@ -118,10 +131,10 @@ def test_gap_evidence_rejects_fabricated_marks_and_diagnostics(tmp_path, tamper)
 
 def test_held_position_across_split_and_consecutive_gaps_has_no_phantom_gain(tmp_path):
     context, request, bars = gap_context(tmp_path, missing=(13, 14), zero=(), blocked=(), split=True)
-    with v3_account(context, request) as (prepared, result, payload, execution):
+    with account_research(context, request) as (prepared, result, payload, execution):
         from czsc_trader.application import publish_evidence_many
         published, = publish_evidence_many(context, (EvaluationEvidenceWrite(request.experiment, "gap-account", prepared, result),), execution=execution)
-        assert published.reference.schema_version == 3
+        assert published.reference.schema_version == 4
     run = payload['runs']['buy_hold']
     before, first, second, restored = run['account_points'][11:15]
     assert before['quantity'] == 98 and first['quantity'] == second['quantity'] == 196
@@ -151,14 +164,14 @@ def test_direct_planning_rejects_latest_gap_and_filters_old_gaps(tmp_path):
 
 
 def test_first_execution_gap_flat_benchmark_passes_assessment(tmp_path):
-    from czsc_trader.research_tools.equity_replay_v3 import build_v3_assessment
+    from czsc_trader.research_tools.equity_replay import build_equity_assessment
     context, request, _ = gap_context(tmp_path, missing=(1,), zero=(), blocked=())
-    with v3_account(context, request) as (prepared, result, payload, execution):
+    with account_research(context, request) as (prepared, result, payload, execution):
         run = payload['runs']['buy_hold']
         assert run['orders'][0]['reason'] == 'MISSING_BAR'
         assert run['account_points'][0]['quantity'] == 0
         suppressed = run['decisions'][1]
         assert suppressed['signal_status'] == 'SUPPRESSED_UNOBSERVED_BAR'
-        assert suppressed['target'] == 0 and suppressed['side'] == 'WAIT'
+        assert suppressed['target'] == 0 and suppressed['side'] == 'HOLD'
         assert suppressed['explanation'] is None
-        assert build_v3_assessment(result)
+        assert build_equity_assessment(result)

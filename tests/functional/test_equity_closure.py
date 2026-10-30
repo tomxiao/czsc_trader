@@ -1,5 +1,5 @@
-"""Distinct equity semantics; shared V3 lifecycle lives in test_equity_v3_lifecycle."""
-from equity_test_support import setup_formal_equity, v3_request, v3_account, replay_payload
+"""Distinct equity semantics alongside the common account lifecycle."""
+from equity_test_support import setup_formal_equity, current_account_request, account_research, replay_payload
 from dataclasses import replace
 import json
 
@@ -24,14 +24,23 @@ def terminate_equity_worker(*args):
 
 def test_equity_formal_requires_explicit_semantics_and_rejects_tampered_results(tmp_path):
     context, request, _, _ = setup_formal_equity(tmp_path)
+    request = current_account_request(context,request)
     with pytest.raises(ValueError, match="explicit drawdown"):
         replace(request, drawdown_basis=None)
-    with v3_account(context, request) as (_, result, payload, _):
-        value = payload
-    value["runs"]["candidate"]["account_points"][2]["receivable"] += 1
-    from czsc_trader.research_tools.equity_assessment import build_equity_assessment_payload
-    with pytest.raises(ValueError):
-        build_equity_assessment_payload(value)
+    with account_research(context, request) as (_, result, _, _):
+        pass
+    from czsc_trader.research_tools.equity_evaluation import EquityArtifact, EquityEvaluationResult
+    from czsc_trader.research_tools.equity_replay import build_equity_assessment
+    envelope=result.payload
+    artifacts=list(result.artifacts)
+    index=next(i for i,item in enumerate(artifacts) if item.sha256==envelope['candidate_ref']['sha256'])
+    value=json.loads(artifacts[index].content)
+    value['run']['account_points'][2]['receivable']+=1
+    artifacts[index]=EquityArtifact(artifacts[index].kind,json.dumps(value,sort_keys=True,separators=(',',':')).encode())
+    envelope['candidate_ref']['sha256']=artifacts[index].sha256
+    altered=EquityEvaluationResult(result.request_hash,json.dumps(envelope,sort_keys=True,separators=(',',':')).encode(),tuple(artifacts))
+    with pytest.raises(ValueError,match='receivable'):
+        build_equity_assessment(altered)
     assert EvaluationBenchmark.from_dict(json.loads(json.dumps(request.benchmark.to_dict()))) == request.benchmark
     from czsc_trader.research_tools.equity_evaluation import EquityEvaluationResult
     for content in (b'{"x":1,"x":2}', b'{"x":NaN}'):
@@ -46,7 +55,7 @@ def test_formal_equity_diagnosis_retains_intraday_cycles_and_continuous_slice(tm
     from czsc_trader.research_tools.evaluation import EvaluationIdentity, EvaluationWindow
     from strategy_manager import CandidateKey
     context, request, _, _ = setup_formal_equity(tmp_path)
-    with v3_account(context, request) as (prepared, result, payload, execution):
+    with account_research(context, request) as (prepared, result, payload, execution):
         reference = publish_account(context, prepared, result, execution, "diagnosis")
         raw = dict(payload["evaluation_identity"])
         raw["candidate"] = CandidateKey(**raw["candidate"])
@@ -83,7 +92,7 @@ def test_equity_diagnosis_reconciles_split_dividend_and_payment(tmp_path):
         {"Date":stamp,"AvailableDate":stamp,"EventId":"split","Kind":"SPLIT","Ratio":2.,"CashPerShare":0.,"PayAt":None},
         {"Date":stamp,"AvailableDate":stamp,"EventId":"dividend","Kind":"CASH_DIVIDEND","Ratio":1.,"CashPerShare":.1,"PayAt":pay},
     ])
-    with v3_account(context, request) as (prepared, result, payload, execution):
+    with account_research(context, request) as (prepared, result, payload, execution):
         ref = publish_account(context, prepared, result, execution, "events")
         identity = dict(payload["evaluation_identity"])
         identity["candidate"] = CandidateKey(**identity["candidate"])
@@ -118,7 +127,7 @@ def test_formal_benchmark_applies_opening_split_before_integer_share_budget(tmp_
 def test_equity_checkpoint_corruption_and_source_drift_fail_explicitly(tmp_path):
     from czsc_trader.research_tools._execution_checkpoint import CheckpointIntegrityError
     context, request, _, _ = setup_formal_equity(tmp_path)
-    request = v3_request(context, request)
+    request = current_account_request(context, request)
     with ResearchExecutionSession(context, experiment=request.experiment,
             checkpoint=ExecutionCheckpointRequest("integrity")) as execution:
         prepared = context.evaluation.prepare(request, execution=execution)
@@ -141,11 +150,11 @@ def test_equity_checkpoint_corruption_and_source_drift_fail_explicitly(tmp_path)
 
 def test_equity_worker_death_is_unknown_and_does_not_restart_pool(tmp_path, monkeypatch):
     from concurrent.futures.process import BrokenProcessPool
-    from czsc_trader.research_tools import equity_replay_v3
+    from czsc_trader.research_tools import equity_replay
     context, request, _, _ = setup_formal_equity(tmp_path)
-    request = v3_request(context, request)
+    request = current_account_request(context, request)
     context.evaluation.resources = ExecutionResources(2)
-    monkeypatch.setattr(equity_replay_v3, "_compute_account", terminate_equity_worker)
+    monkeypatch.setattr(equity_replay, "_compute_account", terminate_equity_worker)
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:
         prepared = context.evaluation.prepare(request, execution=execution)
         outcomes = context.evaluation.evaluate_many((prepared, prepared), execution=execution)
@@ -162,7 +171,7 @@ def test_equity_worker_death_is_unknown_and_does_not_restart_pool(tmp_path, monk
 def test_equity_cancelled_progress_terminates_workers_and_requires_new_session(tmp_path):
     from concurrent.futures.process import BrokenProcessPool
     context, request, _, _ = setup_formal_equity(tmp_path)
-    request = v3_request(context, request)
+    request = current_account_request(context, request)
     context.evaluation.resources = ExecutionResources(2)
     def cancel(_):
         raise KeyboardInterrupt("explicit cancellation")

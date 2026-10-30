@@ -1,4 +1,4 @@
-"""Closed-cycle feedback follows confirmed fills without changing journal facts."""
+"""Frozen V2 feedback follows confirmed fills without changing journal facts."""
 from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 import pickle
@@ -8,7 +8,7 @@ import pytest
 from dataflows import BarFrequency, TimeInterval
 from strategy_runtime import (AccountPolicy, CashAvailabilityPolicy, DecisionPoint, EquityPlan,
                               ResearchExecutionSpec, UsEquitySpec)
-from trading_execution_engine.equity import EquityHistoricalExecutor
+from trading_execution_engine.frozen_equity import _FrozenEquityExecutor
 
 
 START = datetime(2026, 10, 1, 14, tzinfo=timezone.utc)
@@ -19,7 +19,7 @@ def executor(actions=None):
         AccountPolicy('USD', CashAvailabilityPolicy.IMMEDIATE_RESEARCH), 1, .01, .01, 0.)
     if actions is None:
         actions = pd.DataFrame(columns=['Date', 'EventId', 'Kind'])
-    return EquityHistoricalExecutor(specification=spec, initial_cash=1000., fee_rate=.001, actions=actions)
+    return _FrozenEquityExecutor(specification=spec, initial_cash=1000., fee_rate=.001, actions=actions)
 
 
 def transition(account, side, quantity, *, limit=10.1, blocked=False, price=10.):

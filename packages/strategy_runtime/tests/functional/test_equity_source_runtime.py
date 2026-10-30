@@ -8,12 +8,12 @@ import sys
 
 import pandas as pd
 import pytest
-from strategy_runtime import PreparedReplay, ReplayFailure, equity_source_hash, run_replay
-from test_equity_v3_kernel import SOURCE, candidate, inputs
+from strategy_runtime import ReplayFailure, equity_source_hash, run_replay
+from test_account_state import SOURCE, candidate, inputs, prepare
 
 
 def replay(value, bars, constraints, executor):
-    prepared = PreparedReplay.from_frames(bars, constraints, value.definition.feature_graph)
+    prepared = prepare(value, bars, constraints)
     return run_replay(prepared, value, executor,
         start=bars.BarStart.iloc[1].to_pydatetime(), end=bars.Date.iloc[-1].to_pydatetime(), fee_rate=.001)
 
@@ -85,7 +85,7 @@ def test_startup_snapshot_survives_source_changes_and_late_import_without_source
     original = replay(value, bars, constraints, reference_executor)
     _, _, executor = inputs(value)
     expected_bytes = sum(len((value.source_root / name).read_bytes()) for name in value.definition.source_files)
-    execute = executor.execute
+    execute = executor.execute_account_plan
     existing = namespace_state()
     root = os.path.normcase(os.path.abspath(value.source_root))
 
@@ -115,7 +115,7 @@ def test_startup_snapshot_survives_source_changes_and_late_import_without_source
             monkeypatch.setattr(Path, 'read_bytes', guarded(Path.read_bytes))
         return result
 
-    monkeypatch.setattr(executor, 'execute', change_after_first)
+    monkeypatch.setattr(executor, 'execute_account_plan', change_after_first)
     outcome = replay(value, bars, constraints, executor)
     assert_counts(outcome, expected_bytes, len(bars) - 1)
     for name in ('decisions', 'orders', 'fills', 'corporate_action_entries', 'account_points', 'account_daily', 'trades'):

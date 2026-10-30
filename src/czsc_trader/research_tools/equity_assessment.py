@@ -1,4 +1,4 @@
-"""Adapt archived equity/v2 facts to the shared, market-aware SE contracts."""
+"""Adapt immutable V4 equity facts to the shared, market-aware SE contracts."""
 
 from dataclasses import asdict
 from datetime import date, datetime, timedelta
@@ -6,7 +6,7 @@ from hashlib import sha256
 import json
 
 import pandas as pd
-from dataflows import EquityDataRequest, EquityProduct, EquityQuery, SourceRef, TimeInterval
+from dataflows import EquityDataRequest, EquityProduct, EquityQuery, SourceRef
 from dataflows.equity_data import sessions_from_metadata, validate_equity_frame
 from dataflows.errors import DataflowError
 
@@ -14,7 +14,6 @@ from strategy_evaluator import (
     AccountPoint, AssessmentCandidate, AssessmentDerivationKind, AssessmentEvidence,
     AssessmentFill, ClosedCycle, EquityAssessmentFacts, EvaluationScenarioContext, FillSide,
 )
-from strategy_evaluator.equity import audit_equity_account
 from strategy_evaluator.equity_assessment import canonical_ledger, daily_points, session, certify_equity_ledger
 from strategy_manager import CandidateDerivation, CandidateKey
 from strategy_runtime import canonical_sha256
@@ -37,10 +36,9 @@ def _decision_inputs(payload, definition, binding):
         raise ValueError("equity input binding differs from archived data")
     if tuple(item.input for item in binding.auxiliary_inputs) != definition.auxiliary_inputs:
         raise ValueError("equity auxiliary binding differs from definition")
-    enabled = definition.auxiliary_inputs or definition.session_context or definition.contract_version == 4
     records = payload["audit_inputs"].get("decision_inputs", {})
-    expected = ({"sessions"} if definition.session_context or definition.contract_version == 4 else set()) | ({"auxiliary"} if definition.auxiliary_inputs else set())
-    if definition.contract_version == 4 and definition.execution_input is not None:
+    expected = {"sessions"} | ({"auxiliary"} if definition.auxiliary_inputs else set())
+    if definition.execution_input is not None:
         expected |= {'execution'}
         declared = definition.execution_input
         bound_execution = binding.execution_input
@@ -58,11 +56,6 @@ def _decision_inputs(payload, definition, binding):
         raise ValueError('undeclared execution quote input')
     if type(records) is not dict or set(records) != expected:
         raise ValueError("equity decision input fields differ from declarations")
-    if not enabled:
-        return
-    from strategy_runtime.equity import DecisionPoint, EquityPortfolio
-    from strategy_runtime.equity_context import build_equity_decision_context
-
     def frame(rows):
         result = pd.DataFrame(rows)
         for column in ("Date", "BarStart", "AvailableDate"):
@@ -93,34 +86,18 @@ def _decision_inputs(payload, definition, binding):
             if calendars[0] != calendars[1]:
                 raise ValueError("equity auxiliary calendars differ within instrument")
         kwargs["auxiliary_histories"] = histories
-    if definition.session_context or definition.contract_version == 4:
-        rows = frame(records["sessions"])
-        query = EquityDataRequest(definition.instrument, SourceRef(**request["sources"]["sessions"]),
-            EquityQuery(EquityProduct.SESSIONS, start, end, definition.execution_spec.decision_clock))
-        metadata = data["sessions"]["metadata"]
-        validate_equity_frame(rows, query, metadata)
-        if metadata["sessions"] != data["bars"]["metadata"]["sessions"]:
-            raise ValueError("equity main session calendar differs from bars")
-        kwargs.update(sessions=rows, trading_sessions=sessions_from_metadata(metadata))
-    if definition.contract_version in (3, 4):
-        _decision_availability_v3(payload, definition, kwargs)
-        return
-    history = frame(payload["audit_inputs"]["bars"])
-    for row in payload["runs"]["candidate"]["decisions"]:
-        if row.get("signal_status") == "SUPPRESSED_UNOBSERVED_BAR":
-            continue
-        point = DecisionPoint(datetime.fromisoformat(row["observed_through"]),
-            datetime.fromisoformat(row["decision_at"]), TimeInterval(
-                datetime.fromisoformat(row["execution_start"]), datetime.fromisoformat(row["execution_end"])))
-        observed = history[(history.Date <= point.observed_through) & (history.AvailableDate + pd.Timedelta(
-            seconds=definition.execution_spec.data_latency_seconds) <= point.decision_at)]
-        if "BarStatus" in observed:
-            observed = observed.loc[observed.BarStatus.eq("OBSERVED")].drop(columns=["BarStatus", "ExecutionBlocked"], errors="ignore")
-        build_equity_decision_context(definition, observed,
-            EquityPortfolio(float(request["initial_cash"]), 0, 0., 0), point, **kwargs)
+    rows = frame(records["sessions"])
+    query = EquityDataRequest(definition.instrument, SourceRef(**request["sources"]["sessions"]),
+        EquityQuery(EquityProduct.SESSIONS, start, end, definition.execution_spec.decision_clock))
+    metadata = data["sessions"]["metadata"]
+    validate_equity_frame(rows, query, metadata)
+    if metadata["sessions"] != data["bars"]["metadata"]["sessions"]:
+        raise ValueError("equity main session calendar differs from bars")
+    kwargs.update(sessions=rows, trading_sessions=sessions_from_metadata(metadata))
+    _decision_availability(payload, definition, kwargs)
 
 
-def _decision_availability_v3(payload, definition, inputs):
+def _decision_availability(payload, definition, inputs):
     """Independent linear availability audit; never reconstruct full histories per bar."""
     latency = timedelta(seconds=definition.execution_spec.data_latency_seconds)
     frontiers = {}
@@ -130,20 +107,19 @@ def _decision_availability_v3(payload, definition, inputs):
                          for index, row in enumerate(rows)))
         frontiers[declaration.name] = [rows, events, 0, -1, 0, False]
     intervals = {}
-    if definition.session_context or definition.contract_version == 4:
-        rows = inputs["sessions"]
-        calendar = inputs["trading_sessions"]
-        if (tuple(rows.SessionDate) != tuple(item.session_date.isoformat() for item in calendar)
-                or tuple(rows.Date) != tuple(item.segments[0].start for item in calendar)):
-            raise ValueError("session table differs from calendar evidence")
-        for session, available in zip(calendar, rows.AvailableDate, strict=True):
-            if session.timezone != definition.instrument.timezone:
-                raise ValueError("session timezone differs from instrument")
-            for interval in session.bars(definition.execution_spec.decision_clock):
-                key = interval.start, interval.end
-                if key in intervals:
-                    raise ValueError("current execution interval has no unique session")
-                intervals[key] = available
+    rows = inputs["sessions"]
+    calendar = inputs["trading_sessions"]
+    if (tuple(rows.SessionDate) != tuple(item.session_date.isoformat() for item in calendar)
+            or tuple(rows.Date) != tuple(item.segments[0].start for item in calendar)):
+        raise ValueError("session table differs from calendar evidence")
+    for trading_session, available in zip(calendar, rows.AvailableDate, strict=True):
+        if trading_session.timezone != definition.instrument.timezone:
+            raise ValueError("session timezone differs from instrument")
+        for interval in trading_session.bars(definition.execution_spec.decision_clock):
+            key = interval.start, interval.end
+            if key in intervals:
+                raise ValueError("current execution interval has no unique session")
+            intervals[key] = available
     for row in sorted(payload["runs"]["candidate"]["decisions"], key=lambda item: item["decision_at"]):
         if row.get("signal_status") == "SUPPRESSED_UNOBSERVED_BAR":
             continue
@@ -166,27 +142,25 @@ def _decision_availability_v3(payload, definition, inputs):
                 raise ValueError("AUXILIARY_WARMUP_INSUFFICIENT: " + declaration.name)
             if (at - rows[latest]["Date"]).total_seconds() > declaration.max_age_seconds:
                 raise ValueError("AUXILIARY_INPUT_STALE: " + declaration.name)
-        if definition.session_context or definition.contract_version == 4:
-            key = datetime.fromisoformat(row["execution_start"]), datetime.fromisoformat(row["execution_end"])
-            if key not in intervals:
-                raise ValueError("current execution interval has no unique session")
-            if intervals[key] > at:
-                raise ValueError("CAUSAL_TIME_VIOLATION: session is not yet available")
+        key = datetime.fromisoformat(row["execution_start"]), datetime.fromisoformat(row["execution_end"])
+        if key not in intervals:
+            raise ValueError("current execution interval has no unique session")
+        if intervals[key] > at:
+            raise ValueError("CAUSAL_TIME_VIOLATION: session is not yet available")
 
 
 def build_equity_assessment_payload(payload):
     """Authenticate serialized facts without reading mutable candidate sources."""
-    from .equity_replay_v3 import MaterializedEquityV3
-    source_sha256 = None
-    version = 2
-    if type(payload) is MaterializedEquityV3:
-        source_sha256 = payload.source_sha256
-        payload = payload.payload
-        version = payload["schema_version"]
-    schema = f"equity-research/v{version}"
+    from .equity_replay import MaterializedEquity
+    if type(payload) is not MaterializedEquity:
+        raise TypeError("equity assessment requires the resolved immutable V4 closure")
+    source_sha256 = payload.source_sha256
+    payload = payload.payload
+    version = 4
+    schema = "equity-research/v4"
     if (type(payload) is not dict or payload.get("schema") != schema
-            or type(payload.get("schema_version")) is not int or payload["schema_version"] != version):
-        raise ValueError("formal equity assessment requires equity-research/v2")
+            or type(payload.get("schema_version")) is not int or payload["schema_version"] != 4):
+        raise ValueError("equity assessment requires equity-research/v4")
     request = payload["request"]
     if request.get("candidate_definition", {}).get("contract_version") != version:
         raise ValueError("account evidence version differs from strategy contract")
@@ -219,11 +193,11 @@ def build_equity_assessment_payload(payload):
             or benchmark.execution.execution_spec != definition.execution_spec):
         raise ValueError("equity benchmark fingerprint differs")
     instrument = request["instrument"]
-    if instrument["market"] not in ({"US", "CN"} if version == 4 else {"US"}):
-        raise ValueError("equity assessment requires US market")
+    if instrument["market"] not in {"US", "CN"}:
+        raise ValueError("equity assessment requires a supported market")
     inputs = payload["audit_inputs"]
     economic_fields = {"bars", "action_facts", "constraints", "specification", "initial_cash", "fee_rate"}
-    input_fields = economic_fields | ({"decision_inputs"} if definition.auxiliary_inputs or definition.session_context or definition.contract_version == 4 else set())
+    input_fields = economic_fields | {"decision_inputs"}
     if type(inputs) is not dict or set(inputs) != input_fields:
         raise ValueError("equity audit input fields differ")
     if (inputs["specification"] != request["specification"]
@@ -258,12 +232,10 @@ def build_equity_assessment_payload(payload):
             raise ValueError("equity benchmark decisions differ from EquityBuyHold")
         ledger = {**{field: inputs[field] for field in economic_fields}, **{field: run[field] for field in (
             "decisions", "orders", "fills", "actions", "account_points", "trades")}}
-        if version == 4:
-            ledger["account_contract"] = 4
-            if name == 'candidate' and definition.execution_input is not None:
-                ledger['execution_bars'] = inputs['decision_inputs']['execution']['bars']
-        audit = (certify_equity_ledger(ledger) if version in (3, 4) else
-                 audit_equity_account(**ledger, decision_contract="FORMAL_V2"))
+        ledger["account_contract"] = 4
+        if name == 'candidate' and definition.execution_input is not None:
+            ledger['execution_bars'] = inputs['decision_inputs']['execution']['bars']
+        audit = certify_equity_ledger(ledger)
         if _canonical(asdict(audit)) != _canonical(run["metrics"]):
             raise ValueError("equity metrics differ from independently audited account")
         if list(daily_points(ledger)) != run["account_daily"]:
@@ -294,7 +266,7 @@ def build_equity_assessment_payload(payload):
         if lineage.get("parameter_binding") is not None:
             binding = ParameterEvaluationBinding.from_dict(lineage["parameter_binding"])
             point = binding.point
-    version = f"equity-assessment-v{4 if version == 4 else 2}:{facts.drawdown_basis}:{facts.concentration_basis}"
+    version = f"equity-assessment-v4:{facts.drawdown_basis}:{facts.concentration_basis}"
     context = canonical_sha256({
         "instrument": instrument, "specification": inputs["specification"],
         "data": payload["data"], "sessions": [row.session for row in account],
@@ -315,19 +287,3 @@ def build_equity_assessment_payload(payload):
         request["frequency_window_days"], account, fills, closed,
         tuple(float(r["equity"]) for r in payload["runs"]["buy_hold"]["account_daily"]),
         parent, derivation_hash, behavior, derivation_kind, point, facts),)
-
-
-def build_equity_assessment_evidence(request, result):
-    from .equity_evaluation import EquityEvaluationRequest, EquityEvaluationResult, _json_value
-    if type(request) is not EquityEvaluationRequest or type(result) is not EquityEvaluationResult:
-        raise TypeError("equity assessment requires typed request and result")
-    payload = result.payload
-    if request.prepared is None:
-        raise ValueError("equity assessment requires the prepared request")
-    expected = request.identity(request.candidate.definition.execution_spec)
-    if _json_value(expected) != payload["request"]:
-        raise ValueError("equity assessment request differs from result")
-    evidence = build_equity_assessment_payload(payload)
-    if any(item.result_sha256 != result.result_hash for item in evidence):
-        raise ValueError("equity result bytes differ from canonical evidence")
-    return evidence

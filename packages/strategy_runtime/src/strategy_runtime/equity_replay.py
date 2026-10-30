@@ -3,7 +3,6 @@ from bisect import bisect_left
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from decimal import Decimal, ROUND_FLOOR
 from enum import StrEnum
 import math
 from statistics import median
@@ -14,8 +13,8 @@ from typing import Generic, TypeVar
 import pandas as pd
 import numpy as np
 
-from dataflows import BarFrequency, MarketId, TimeInterval, TradingSession
-from .equity import DecisionPoint, EquityPlan, EquityPortfolio, equity_hash
+from dataflows import BarFrequency, TimeInterval, TradingSession
+from .equity import equity_hash
 from .equity_features import (FeatureGraph, FeatureView, HistoryView, Lag, Mean,
                               NotReady, RawField, ReadyValue, SameLocalSlotMedian, TrueRange,
                               _HistoryAppend, _history_insert)
@@ -122,13 +121,6 @@ class StrategyStateSchema:
             if type(value) is not types[item.value_type]:
                 raise TypeError('state field type differs: ' + item.key)
 
-    def validate_result(self, result):
-        if type(result) is not StepResult:
-            raise TypeError('V3 step requires StepResult')
-        self.validate_record(result.account, scope='account')
-        if result.cycle_values is not None:
-            self.validate_record(result.cycle_values, scope='cycle')
-
     def to_dict(self):
         return {scope: [{'key': item.key, 'value_type': item.value_type.value,
                          'nullable': item.nullable} for item in fields]
@@ -170,53 +162,6 @@ class StrategyState:
             raise TypeError('strategy cycle must be CycleState or None')
         if self.binding is not None and (type(self.binding) is not str or not self.binding):
             raise TypeError('state ownership binding must be a nonempty string or None')
-
-
-@dataclass(frozen=True, slots=True)
-class StepResult:
-    decision: object
-    account: StateRecord = field(default_factory=StateRecord)
-    cycle_values: StateRecord | None = None
-
-    def __post_init__(self):
-        from .equity_definition import EquityDecision
-        if type(self.decision) is not EquityDecision or self.decision.explanation is None:
-            raise TypeError('V3 decision requires EquityDecision with structured facts')
-        if type(self.account) is not StateRecord or (self.cycle_values is not None
-                                                   and type(self.cycle_values) is not StateRecord):
-            raise TypeError('V3 proposed state must use immutable StateRecord')
-
-
-@dataclass(frozen=True, slots=True)
-class StepContext:
-    point: DecisionPoint
-    portfolio: EquityPortfolio
-    parameters: Mapping
-    features: FeatureView
-    history: HistoryView
-    auxiliary_histories: Mapping = field(default_factory=dict)
-    session: TradingSession | None = None
-    session_available_at: datetime | None = None
-
-    def __post_init__(self):
-        if type(self.point) is not DecisionPoint or type(self.portfolio) is not EquityPortfolio:
-            raise TypeError('step context requires a typed point and confirmed portfolio')
-        if type(self.features) is not FeatureView or type(self.history) is not HistoryView:
-            raise TypeError('step context requires immutable feature/history views')
-        from .equity_definition import _freeze
-        object.__setattr__(self, 'parameters', _freeze(dict(self.parameters)))
-        if any(type(view) is not HistoryView for view in self.auxiliary_histories.values()):
-            raise TypeError('auxiliary observations require HistoryView')
-        object.__setattr__(self, 'auxiliary_histories', MappingProxyType(dict(self.auxiliary_histories)))
-        if self.features.as_of != self.point.decision_at or self.history.as_of != self.point.decision_at:
-            raise ValueError('feature/history views must belong to this exact decision')
-        if any(view.as_of != self.point.decision_at for view in self.auxiliary_histories.values()):
-            raise ValueError('auxiliary views must belong to this exact decision')
-        if self.session is not None:
-            if (type(self.session) is not TradingSession or type(self.session_available_at) is not datetime
-                    or self.session_available_at.tzinfo is None
-                    or self.session_available_at > self.point.decision_at):
-                raise ValueError('session context requires an already available typed calendar')
 
 
 class _Row(Mapping):
@@ -369,7 +314,7 @@ class PreparedReplay:
                     ('Date', 'AvailableDate', 'BarStart', 'Open', 'High', 'Low', 'Close', 'Volume', 'Amount')
                     if column in frame)
                 if 'BarStart' not in frame:
-                    raise ValueError('V3 auxiliary preparation requires explicit BarStart')
+                    raise ValueError('account auxiliary preparation requires explicit BarStart')
                 frame = frame if 'Amount' in frame else frame.assign(Amount=0.)
                 empty = pd.DataFrame(columns=('Date', 'AvailableDate', 'QuantityStep', 'PriceTick', 'Tradable'))
                 auxiliary_data = cls.from_frames(frame, empty, FeatureGraph(), latency_seconds=latency_seconds)._data
@@ -666,233 +611,16 @@ class ReplayFailure(RuntimeError):
         super().__init__(f'replay failed at {next_execution_start.isoformat()}: {cause}')
 
 
-def _plan(decision, point, portfolio, reference, spec, spec_hash, implementation, owner, fee_rate):
-    target = decision.target
-    side, quantity, limit = 'HOLD', 0, None
-    if target == 1 and portfolio.quantity == 0:
-        tick = Decimal(str(spec.price_tick))
-        limit = float((Decimal(str(reference)) * (1 + Decimal(str(spec.buy_premium))) / tick)
-                      .to_integral_value(rounding=ROUND_FLOOR) * tick)
-        if limit <= 0:
-            raise ValueError('buy limit must remain positive')
-        quantity = int(Decimal(str(portfolio.cash)) /
-                       (Decimal(str(limit)) * (1 + Decimal(str(fee_rate))) * spec.quantity_step)) * spec.quantity_step
-        side = 'BUY' if quantity else 'WAIT'
-    elif target == 0 and portfolio.quantity:
-        side, quantity = 'SELL', portfolio.quantity
-    explanation = decision.explanation.to_dict()
-    payload = {'candidate': owner, 'implementation': implementation, 'specification': spec_hash,
-               'point': {'observed_through': point.observed_through, 'decision_at': point.decision_at,
-                         'execution_interval': {'start': point.execution_interval.start, 'end': point.execution_interval.end}},
-               'target': target, 'quantity': quantity, 'side': side, 'limit': limit,
-               'revision': portfolio.revision, 'reference': reference, 'fee_rate': fee_rate,
-               'explanation': explanation}
-    return EquityPlan(equity_hash(payload), point, float(target), quantity, side, limit,
-                      portfolio.revision, reference, spec_hash, explanation)
-
-
 def run_replay(prepared, candidate, executor, *, start, end, fee_rate, initial_state=None, owner=None):
     """Load the strategy once and execute one independent account in memory."""
     from dataclasses import replace
+    from .account_replay import run_account_v4
+    if candidate.definition.contract_version != 4:
+        raise ValueError('account replay requires contract_version=4')
     started = perf_counter()
     with candidate.bind_replay() as source_scope:
-        outcome = _run_replay(prepared, candidate, executor, start=start, end=end,
+        outcome = run_account_v4(prepared, candidate, executor, start=start, end=end,
                               fee_rate=fee_rate, initial_state=initial_state, owner=owner)
     return replace(outcome, statistics=replace(outcome.statistics, replay_seconds=perf_counter() - started,
         source_checks=source_scope.checks, source_bytes_read=source_scope.bytes_read,
         module_loads=source_scope.loads))
-
-
-def _run_replay(prepared, candidate, executor, *, start, end, fee_rate, initial_state=None, owner=None):
-    """Replay one independent account; features/state never hold future prices."""
-    started = perf_counter()
-    if candidate.definition.contract_version == 4:
-        from .account_replay import run_account_v4
-        return run_account_v4(prepared, candidate, executor, start=start, end=end,
-                              fee_rate=fee_rate, initial_state=initial_state, owner=owner)
-    if type(prepared) is not PreparedReplay:
-        raise TypeError('V3 replay requires PreparedReplay')
-    definition = candidate.definition
-    spec, schema = definition.execution_spec, definition.state_schema
-    if (definition.contract_version != 3 or spec.market_id is not MarketId.US
-            or spec.decision_clock is not BarFrequency.M30):
-        raise ValueError('V3 replay supports explicit US M30 research definitions only')
-    if definition.feedback_mode not in ('CONFIRMED_EXECUTION', 'CONFIRMED_CLOSED_CYCLE_V1'):
-        raise ValueError('V3 state requires confirmed execution feedback')
-    if definition.feature_graph != prepared.graph or spec.data_latency_seconds != prepared._data.latency_seconds:
-        raise ValueError('prepared feature/visibility contract differs from candidate')
-    if type(schema) is not StrategyStateSchema:
-        raise TypeError('V3 replay requires StrategyStateSchema')
-    if type(fee_rate) not in (int, float) or not math.isfinite(fee_rate) or not 0 <= fee_rate < 1:
-        raise ValueError('fee rate must be finite in [0,1)')
-    if any(type(stamp) is not datetime or stamp.tzinfo is None for stamp in (start, end)) or start >= end:
-        raise ValueError('replay requires an aware positive window')
-    owner = candidate.candidate_id if owner is None else owner
-    if type(owner) is not str or not owner:
-        raise TypeError('replay owner requires a nonempty identity')
-    spec_hash, implementation = spec.fingerprint, candidate.implementation_hash
-    binding = equity_hash({'owner': owner, 'implementation': implementation,
-                           'specification': spec_hash, 'fee_rate': fee_rate,
-                           'prepared': prepared.identity})
-    if executor.spec.fingerprint != spec_hash or executor.fee_rate != fee_rate:
-        raise ValueError('executor contract differs from replay')
-    state = StrategyState() if initial_state is None else initial_state
-    if type(state) is not StrategyState:
-        raise TypeError('V3 replay requires typed initial state')
-    if state.binding not in (None, binding) or (state.revision > 0 and state.binding is None):
-        raise ValueError('strategy state belongs to a different replay owner or candidate')
-    schema.validate_record(state.account, scope='account')
-    if state.cycle is not None:
-        schema.validate_record(state.cycle.values, scope='cycle')
-    data = prepared._data
-    visibility = _Visibility(data)
-    feature_started = perf_counter()
-    evaluator = _FeatureEvaluator(data, prepared.graph, visibility)
-    feature_seconds = perf_counter() - feature_started
-    auxiliary_data = dict(prepared._auxiliary)
-    auxiliary = {}
-    for declaration in definition.auxiliary_inputs:
-        if declaration.name not in auxiliary_data:
-            raise ValueError('AUXILIARY_INPUT_UNAVAILABLE: ' + declaration.name)
-        item = auxiliary_data[declaration.name]
-        invalid_at = min((ready for row, ready, observed in zip(item.rows, item.ready_at, item.observed)
-                          if observed and float(row['Volume']) <= 0), default=None)
-        auxiliary[declaration.name] = (item, _Visibility(item), invalid_at)
-    session_intervals = dict(prepared._calendar_intervals)
-    if definition.session_context and not session_intervals:
-        raise ValueError('session context requires certified calendar evidence')
-    parameters = definition.parameters
-    decisions = rows = 0
-    from .replay_kernel import run_account_replay
-    from .replay_contracts import ReplayPoint, ExecutionPrecision
-    from .replay_adapters import project_bar_plan
-    from zoneinfo import ZoneInfo
-    session_zone = ZoneInfo(candidate.instrument.timezone)
-
-    class StatefulStepDriver:
-        def transaction(self, tick):
-            self.prior_state = state
-            return executor.transaction()
-
-        def snapshot(self, tick):
-            index, bar_start, bar_end = tick
-            visibility.advance(bar_start)
-            if visibility.count < definition.warmup_bars:
-                raise ValueError('insufficient causal warmup at window start')
-            constraint = data.constraints[index]
-            if constraint is None or constraint['AvailableDate'] > bar_start:
-                raise ValueError('no dated trading constraints available at execution start')
-            observed_index = visibility.row(0)
-            point = DecisionPoint(data.ends[observed_index], bar_start, TimeInterval(bar_start, bar_end))
-            portfolio = executor.snapshot_at(point.observed_through, point.decision_at)
-            if portfolio.revision != state.revision or bool(portfolio.quantity) != (state.cycle is not None):
-                raise ValueError('strategy state differs from confirmed execution revision/cycle')
-            if state.cycle is not None and (state.cycle.entry_at != portfolio.cycle_entry
-                                            or state.cycle.cycle_id != executor.cycle):
-                raise ValueError('strategy cycle identity differs from confirmed fill')
-            self.point = point
-            self.constraint = constraint
-            return portfolio
-
-        def decide(self, tick, portfolio):
-            nonlocal feature_seconds, decisions
-            index, bar_start, bar_end = tick
-            point = self.point
-            self.portfolio = portfolio
-            reference = float(data.rows[visibility.row(0)]['Close']) * portfolio.reference_price_scale
-            suppressed = not data.observed[visibility.latest_completed]
-            if suppressed:
-                target = float(portfolio.quantity > 0)
-                payload = {'candidate': owner, 'implementation': implementation,
-                           'specification': spec_hash,
-                           'point': {'observed_through': point.observed_through, 'decision_at': point.decision_at,
-                                     'execution_interval': {'start': bar_start, 'end': bar_end}},
-                           'revision': portfolio.revision, 'reference': reference, 'target': target,
-                           'signal_status': 'SUPPRESSED_UNOBSERVED_BAR'}
-                plan = EquityPlan(equity_hash(payload), point, target, 0, 'WAIT', None,
-                                  portfolio.revision, reference, spec_hash,
-                                  signal_status='SUPPRESSED_UNOBSERVED_BAR')
-                proposed_account = state.account
-                proposed_cycle = state.cycle.values if state.cycle is not None else None
-            else:
-                feature_start = perf_counter()
-                features = evaluator.at(bar_start)
-                auxiliary_views = {}
-                for declaration in definition.auxiliary_inputs:
-                    item, indexer, invalid_at = auxiliary[declaration.name]
-                    indexer.advance(bar_start)
-                    if (indexer.latest_completed < 0 or not item.observed[indexer.latest_completed]
-                            or (invalid_at is not None and invalid_at <= bar_start)):
-                        raise ValueError('AUXILIARY_INPUT_UNAVAILABLE: ' + declaration.name)
-                    if indexer.count < declaration.warmup_bars:
-                        raise ValueError('AUXILIARY_WARMUP_INSUFFICIENT: ' + declaration.name)
-                    latest = indexer.row(0)
-                    if (bar_start - item.ends[latest]).total_seconds() > declaration.max_age_seconds:
-                        raise ValueError('AUXILIARY_INPUT_STALE: ' + declaration.name)
-                    auxiliary_views[declaration.name] = indexer.history_view(bar_start)
-                session = session_available_at = None
-                if definition.session_context:
-                    session_index = session_intervals.get((bar_start, bar_end))
-                    if session_index is None:
-                        raise ValueError('current execution interval has no unique session')
-                    session, session_available_at = prepared._sessions[session_index]
-                    if session_available_at > bar_start:
-                        raise ValueError('CAUSAL_TIME_VIOLATION: session is not yet available')
-                feedback = portfolio
-                if definition.feedback_mode == 'CONFIRMED_EXECUTION' and portfolio.closed_cycle_feedback is not None:
-                    from dataclasses import replace
-                    feedback = replace(portfolio, closed_cycle_feedback=None)
-                if definition.feedback_mode == 'CONFIRMED_CLOSED_CYCLE_V1' and portfolio.closed_cycle_feedback is None:
-                    raise ValueError('CLOSED_CYCLE_FEEDBACK_UNAVAILABLE')
-                ctx = StepContext(point, feedback, parameters, features,
-                                  visibility.history_view(bar_start),
-                                  auxiliary_views, session, session_available_at)
-                feature_seconds += perf_counter() - feature_start
-                result = candidate.step(ctx, state)
-                schema.validate_result(result)
-                proposed_account, proposed_cycle = result.account, result.cycle_values
-                if (portfolio.quantity or result.decision.target) and proposed_cycle is None:
-                    raise ValueError('active or proposed entry requires explicit cycle state values')
-                plan = _plan(result.decision, point, portfolio, reference, spec, spec_hash,
-                             implementation, owner, fee_rate)
-                decisions += 1
-            self.proposed_account = proposed_account
-            self.proposed_cycle = proposed_cycle
-            return plan
-
-        def execute(self, tick, plan):
-            point = self.point
-            interval = point.execution_interval
-            replay_point = ReplayPoint(point.observed_through, point.decision_at, interval.start, interval.end,
-                interval.start.astimezone(session_zone).date().isoformat(), ExecutionPrecision.BAR_INTERVAL)
-            neutral = project_bar_plan(plan, self.portfolio, replay_point, owner=owner)
-            return executor.execute_plan(neutral, plan, data.rows[tick[0]], constraint=self.constraint)
-
-        def commit(self, tick, portfolio, plan, after):
-            nonlocal state, rows
-            proposed_account, proposed_cycle = self.proposed_account, self.proposed_cycle
-            if after.revision != portfolio.revision + 1:
-                raise ValueError('replay transition did not advance exactly one account revision')
-            cycle = None
-            if after.quantity:
-                if proposed_cycle is None:
-                    raise ValueError('actual holding requires proposed typed cycle state')
-                cycle = CycleState(executor.cycle, after.cycle_entry, proposed_cycle)
-                schema.validate_record(cycle.values, scope='cycle')
-            state = StrategyState(after.revision, proposed_account, cycle, binding)
-            rows += 1
-
-        def failure(self, tick, error):
-            nonlocal state
-            state = self.prior_state
-            return ReplayFailure(state, tick[1], error)
-
-        def finish(self):
-            return executor.finish()
-
-    ticks = ((index, bar_start, bar_end)
-             for index, (bar_start, bar_end) in enumerate(zip(data.starts, data.ends))
-             if bar_start >= start and bar_end <= end)
-    execution_result = run_account_replay(ticks, StatefulStepDriver())
-    return ReplayOutcome(execution_result, state,
-                         ReplayStatistics(feature_seconds, perf_counter() - started, rows, decisions))

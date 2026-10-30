@@ -22,7 +22,7 @@ from .evidence import EvidenceRef
 
 if TYPE_CHECKING:
     from .evaluation import EvaluationRequest
-    from .equity_replay_v3 import PreparedAccountEvaluation
+    from .equity_replay import PreparedAccountEvaluation
     from .execution import ResearchExecutionSession
 
 
@@ -52,7 +52,9 @@ class ParameterEvaluationInput(_Record):
 
     def _validate(self):
         value = json.loads(self.binding_json)
-        if value.get("kind") in {"US_EQUITY", "ACCOUNT_REPLAY"}:
+        if value.get('kind') == 'US_EQUITY':
+            raise ValueError('retired equity parameter input contract')
+        if value.get("kind") == "ACCOUNT_REPLAY":
             from strategy_runtime.equity_definition import EquityInputBinding
             if set(value) != {"kind", "binding"}:
                 raise ValueError("equity parameter input fields differ")
@@ -77,7 +79,9 @@ class ParameterEvaluationPlan(_Record):
     schema_version: int = 3
 
     def _validate(self):
-        equity = json.loads(self.center.payload_json).get("runtime", {}).get("kind") in {"US_EQUITY", "ACCOUNT_REPLAY"}
+        if json.loads(self.center.payload_json).get('runtime',{}).get('kind') == 'US_EQUITY':
+            raise ValueError('retired equity parameter plan contract')
+        equity = json.loads(self.center.payload_json).get("runtime", {}).get("kind") == "ACCOUNT_REPLAY"
         if self.design.protocol.version == "parameter-cartesian-neighborhood-v2":
             expected = 4 if equity else 3
         else:
@@ -125,7 +129,7 @@ class ParameterEvaluationPlan(_Record):
                execution: ResearchExecutionSession | None = None) -> ParameterEvaluationPlan:
         """Authenticate prepared inputs, without evaluating or publishing accounts."""
         from .evaluation import EvaluationRequest
-        from .equity_replay_v3 import PreparedAccountEvaluation
+        from .equity_replay import PreparedAccountEvaluation
 
         if type(design) is not ParameterNeighborhoodDesign:
             raise TypeError("new parameter plan requires ParameterNeighborhoodDesign; legacy sphere plans are read-only")
@@ -154,7 +158,7 @@ class ParameterEvaluationPlan(_Record):
                 mapping_evidence=mapping_evidence, feasibility_evidence=feasibility_evidence,
                 dataflows=dataflows, execution=execution)
         if execution is not None:
-            raise TypeError("explicit parameter execution ownership requires prepared V3 requests")
+            raise TypeError("explicit parameter execution ownership requires session-owned prepared requests")
         if type(children) is not tuple or any(type(x) is not EvaluationRequest for x in children):
             raise TypeError("parameter children require a tuple of EvaluationRequest")
         if type(center) is not EvaluationRequest:
@@ -252,7 +256,7 @@ def validate_parameter_contract(contract: dict, plan: ParameterEvaluationPlan,
 
 
 def validate_parameter_request(request: PreparedAccountEvaluation, dataflows: Dataflows, *, execution=None) -> None:
-    from .equity_replay_v3 import PreparedAccountEvaluation
+    from .equity_replay import PreparedAccountEvaluation
 
     from .evaluation import EvaluationRequest
     if type(request) is not PreparedAccountEvaluation:
@@ -274,7 +278,7 @@ def validate_parameter_request(request: PreparedAccountEvaluation, dataflows: Da
             _validate_equity_parameter_request(original, dataflows, prepared=request)
         return
     if execution is not None:
-        raise TypeError("explicit parameter execution ownership requires prepared V3 requests")
+        raise TypeError("explicit parameter execution ownership requires session-owned prepared requests")
     if request.lineage is None or request.lineage.parameter_binding is None:
         return
 
@@ -351,7 +355,7 @@ def parameter_execution_policy(policy: dict) -> dict:
 
 def _parameter_payload(payload):
     """Expose declared equity parameters without weakening whole-payload comparison."""
-    if payload.get("runtime", {}).get("kind") not in {"US_EQUITY", "ACCOUNT_REPLAY"}:
+    if payload.get("runtime", {}).get("kind") != "ACCOUNT_REPLAY":
         return payload
     payload = json.loads(_payload_json(payload))
     if "parameters" in payload:
@@ -363,7 +367,9 @@ def _parameter_payload(payload):
 def equity_planned_identity(payload):
     from strategy_runtime.equity_definition import EquityStrategyDefinition
     definition = EquityStrategyDefinition.from_dict(payload["equity_definition"])
-    expected = {"kind": "ACCOUNT_REPLAY" if definition.contract_version == 4 else "US_EQUITY", "contract_version": definition.contract_version,
+    if definition.contract_version != 4:
+        raise ValueError('equity parameter plans require account contract 4')
+    expected = {"kind": "ACCOUNT_REPLAY", "contract_version": definition.contract_version,
                 "source_files": list(definition.source_files), "source_sha256": definition.source_sha256}
     if set(payload) != {"runtime", "equity_definition"} or _payload_json(payload["runtime"]) != _payload_json(expected):
         raise ValueError("equity planned runtime descriptor differs from definition")
@@ -372,8 +378,8 @@ def equity_planned_identity(payload):
 
 def equity_parameter_contract(request):
     """Project authenticated equity request facts onto parameter-plan identity."""
-    if request.get("schema") not in ('equity-research/v2', 'equity-research/v3', 'equity-research/v4'):
-        raise ValueError("equity parameter contract requires formal v2 or v3 request")
+    if request.get("schema") != "equity-research/v4":
+        raise ValueError("equity parameter contract requires account V4 request")
     definition = json.loads(_payload_json(request["candidate_definition"]))
     definition.pop("parameters_json")
     nonparameter = {key: value for key, value in request.items() if key not in {
@@ -389,7 +395,7 @@ def equity_parameter_contract(request):
         "nonparameter_context_sha256": canonical_sha256(nonparameter),
         "lineage": None if lineage is None else lineage["derivation"],
         "parameter_binding": None if lineage is None else lineage["parameter_binding"],
-        "input_bindings": {request["window_id"]: {"kind": "ACCOUNT_REPLAY" if request["schema"] == "equity-research/v4" else "US_EQUITY", "binding": request["input_binding"]}},
+        "input_bindings": {request["window_id"]: {"kind": "ACCOUNT_REPLAY", "binding": request["input_binding"]}},
     }
 
 
@@ -399,7 +405,7 @@ def _equity_contract(request):
 
 
 def _equity_policy(request):
-    return _payload_json({"policy": {"policy_type": "ACCOUNT_REPLAY" if request.candidate.definition.contract_version == 4 else "US_EQUITY", "settings":
+    return _payload_json({"policy": {"policy_type": "ACCOUNT_REPLAY", "settings":
         _equity_contract(request)["specification"]}})
 
 
@@ -411,26 +417,26 @@ def _equity_candidate(request):
 
 
 def _verify_equity_inputs(request, dataflows, *, execution=None):
-    from .equity_replay_v3 import PreparedAccountEvaluation, _require_prepared, _state
+    from .equity_replay import PreparedAccountEvaluation, _require_prepared, _state
     from .execution import ResearchExecutionSession
     if type(request) is PreparedAccountEvaluation:
         if type(execution) is not ResearchExecutionSession:
-            raise TypeError("V3 parameter inputs require their explicit ResearchExecutionSession")
+            raise TypeError("account parameter inputs require their explicit ResearchExecutionSession")
         access = execution.context.evaluation
         if access.data is not dataflows:
-            raise ValueError("V3 parameter inputs belong to another data context")
+            raise ValueError("account parameter inputs belong to another data context")
         state = _state(access, execution, request.experiment.experiment_id)
         _require_prepared(state, request)
         data = json.loads(request.snapshot.artifact.content)["data"]
         if dict(request.request.input_binding.expected_identities) != {
                 name: value["content_sha256"] for name, value in data.items()}:
-            raise ValueError("V3 parameter input binding differs from its authenticated snapshot")
+            raise ValueError("account parameter input binding differs from its authenticated snapshot")
         return
     raise TypeError("equity parameter inputs require session-owned PreparedAccountEvaluation")
 
 
 def _create_equity_plan(cls, design, center, children, *, mapping_evidence, feasibility_evidence, dataflows, execution=None):
-    from .equity_replay_v3 import PreparedAccountEvaluation
+    from .equity_replay import PreparedAccountEvaluation
     from strategy_runtime.equity import equity_hash
     if type(design) is not ParameterNeighborhoodDesign or design.protocol.version != "parameter-cartesian-neighborhood-v2":
         raise ValueError("new equity parameter plans require neighborhood v2")
@@ -458,7 +464,7 @@ def _create_equity_plan(cls, design, center, children, *, mapping_evidence, feas
             raise ValueError("equity parameter child nonparameter context differs")
     return cls(design, center_value, equity_hash(central), context,
         tuple(_equity_candidate(x) for x in children), mapping_evidence, feasibility_evidence,
-        (ParameterEvaluationInput(originals[0].window_id, _payload_json({"kind": "ACCOUNT_REPLAY" if originals[0].candidate.definition.contract_version == 4 else "US_EQUITY", "binding": originals[0].input_binding.to_dict()})),),
+        (ParameterEvaluationInput(originals[0].window_id, _payload_json({"kind": "ACCOUNT_REPLAY", "binding": originals[0].input_binding.to_dict()})),),
         _equity_policy(center), schema_version=4)
 
 

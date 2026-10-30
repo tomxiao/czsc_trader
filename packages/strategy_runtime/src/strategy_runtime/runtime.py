@@ -14,7 +14,7 @@ from .models import ExecutionPolicy, RuntimeDefinition, StrategyCandidate, Strat
 from .identity import CandidateContentIdentity, ImplementationDependency, content_identity
 from .strategy import StrategyInstance
 from .pricing import ExecutionPricing
-from .equity import EquityCandidate, EquityStrategyInstance, ResearchExecutionSpec
+from .equity import EquityStrategyInstance, ResearchExecutionSpec
 from .equity_definition import EquityStrategyCandidate
 
 
@@ -131,13 +131,13 @@ class StrategyRuntime:
             },
         )
 
-    def create(self, request: StrategyInit | EquityCandidate) -> StrategyInstance | EquityStrategyInstance:
-        if type(request) in (EquityCandidate, EquityStrategyCandidate):
+    def create(self, request: StrategyInit | EquityStrategyCandidate) -> StrategyInstance | EquityStrategyInstance:
+        if type(request) is EquityStrategyCandidate:
             if self.execution_spec is None:
                 raise ValueError("equity candidate requires an explicitly bound runtime")
             return EquityStrategyInstance(request, self.execution_spec)
         if self.execution_spec is not None:
-            raise ValueError("explicit equity runtime requires EquityCandidate")
+            raise ValueError("explicit equity runtime requires EquityStrategyCandidate")
         if self._loader.inspection_permit is not None:
             self._loader.inspection_permit.validate_path(request.data_dir)
         algorithm = self._load(

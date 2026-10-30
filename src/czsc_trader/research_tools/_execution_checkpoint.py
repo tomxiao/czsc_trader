@@ -178,12 +178,12 @@ class CheckpointStore:
 
     def load_equity_result(self, request, request_hash):
         from ._equity_checkpoint import decode_result
-        from .equity_replay_v3 import PreparedAccountEvaluation
+        from .equity_replay import PreparedAccountEvaluation
         if type(request) is not PreparedAccountEvaluation:
-            raise TypeError("equity checkpoint restore requires session-owned V3 preparation")
+            raise TypeError("equity checkpoint restore requires session-owned V4 preparation")
         request = request.request
         _hash(request_hash)
-        if request.experiment != self.experiment or not request.formal or request.prepared is None:
+        if request.experiment != self.experiment or request.prepared is None:
             raise CheckpointIntegrityError("equity checkpoint requires the same prepared experiment")
         payload = self._read(f"results/{request_hash}.json")
         if payload is None:

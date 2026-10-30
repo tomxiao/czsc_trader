@@ -1,6 +1,6 @@
 """Equity request/result contracts, shared inputs and historical evidence validation.
 
-New account computation lives exclusively in equity_replay_v3.
+New account computation lives exclusively in equity_replay.
 """
 from __future__ import annotations
 from dataclasses import asdict, dataclass, field
@@ -13,12 +13,11 @@ import platform
 
 import pandas as pd
 from dataflows import (EquityDataRequest, EquityProduct, EquityQuery, PreparedDataRef, SourceRef, TimeInterval)
-from strategy_runtime.equity import (EquityCandidate, EquityStrategyInstance,
-                                    equity_hash)
+from strategy_runtime.equity import equity_hash
 from strategy_runtime.runtime import StrategyRuntime
 from strategy_runtime.equity_definition import EquityStrategyCandidate, EquityInputBinding
 from dataflows.equity_data import sessions_from_metadata
-from trading_execution_engine.equity import EquityHistoricalExecutor
+from trading_execution_engine.portfolio import PortfolioHistoricalExecutor
 from trading_execution_engine.fills import resolve_fill
 from strategy_evaluator.equity import audit_equity_account
 
@@ -41,7 +40,7 @@ class EquitySources:
 @dataclass(frozen=True, slots=True)
 class EquityEvaluationRequest:
     experiment: ExperimentRef
-    candidate: EquityCandidate | EquityStrategyCandidate
+    candidate: EquityStrategyCandidate
     window: TimeInterval
     history_start: date
     sources: EquitySources
@@ -65,8 +64,8 @@ class EquityEvaluationRequest:
                                 (self.window, TimeInterval), (self.sources, EquitySources), (self.history_start, date)):
             if type(value) is not expected:
                 raise TypeError(f"equity evaluation requires {expected.__name__}")
-        if type(self.candidate) not in (EquityCandidate, EquityStrategyCandidate):
-            raise TypeError("equity evaluation requires an explicit equity candidate")
+        if type(self.candidate) is not EquityStrategyCandidate or self.candidate.definition.contract_version != 4:
+            raise TypeError("equity evaluation requires an explicit contract_version=4 candidate")
         from .evaluation import EvaluationCost, EvaluationLineage
         EvaluationCost(self.scenario_id, self.fee_rate, self.measurement_tier)
         if type(self.window_id) is not str or not self.window_id.strip():
@@ -75,15 +74,12 @@ class EquityEvaluationRequest:
             raise ValueError("equity frequency currently requires 60 trading sessions")
         if self.lineage is not None and type(self.lineage) is not EvaluationLineage:
             raise TypeError("equity lineage requires EvaluationLineage")
-        if self.formal:
-            if type(self.benchmark) is not EvaluationBenchmark or type(self.benchmark.execution) is not EquityBuyHold:
-                raise TypeError("formal equity evaluation requires an explicit EquityBuyHold benchmark")
-            if self.benchmark.execution.execution_spec.fingerprint != self.candidate.execution_spec_hash:
-                raise ValueError("equity benchmark and candidate execution contracts differ")
-            if self.drawdown_basis not in {"SESSION_CLOSE", "BAR_CLOSE"} or self.concentration_basis not in {"TOP_DECILE", "MAX_SINGLE"}:
-                raise ValueError("formal equity evaluation requires explicit drawdown and concentration bases")
-        elif any(x is not None for x in (self.benchmark, self.lineage, self.input_binding, self.drawdown_basis, self.concentration_basis, self.audit_inputs_sha256)):
-            raise ValueError("legacy equity requests cannot claim formal v2 contracts")
+        if type(self.benchmark) is not EvaluationBenchmark or type(self.benchmark.execution) is not EquityBuyHold:
+            raise TypeError("formal equity evaluation requires an explicit EquityBuyHold benchmark")
+        if self.benchmark.execution.execution_spec.fingerprint != self.candidate.execution_spec_hash:
+            raise ValueError("equity benchmark and candidate execution contracts differ")
+        if self.drawdown_basis not in {"SESSION_CLOSE", "BAR_CLOSE"} or self.concentration_basis not in {"TOP_DECILE", "MAX_SINGLE"}:
+            raise ValueError("formal equity evaluation requires explicit drawdown and concentration bases")
         if self.experiment.strategy_id != self.candidate.strategy_id:
             raise ValueError("candidate belongs to another experiment batch")
         if self.history_start > self.window.start.date():
@@ -97,10 +93,6 @@ class EquityEvaluationRequest:
         if self.input_binding is not None and (type(self.input_binding) is not EquityInputBinding or self.input_binding.prepared != self.prepared):
             raise ValueError("equity input binding differs from prepared data")
 
-    @property
-    def formal(self):
-        return type(self.candidate) is EquityStrategyCandidate
-
     def requests(self, specification):
         return tuple(query for _, query in self.request_items(specification))
 
@@ -110,12 +102,12 @@ class EquityEvaluationRequest:
         primary = tuple((product.name.lower(), EquityDataRequest(
             self.candidate.instrument, getattr(self.sources, product.name.lower()),
             EquityQuery(product, self.history_start, end, specification.decision_clock))) for product in EquityProduct)
-        auxiliary = (() if not self.formal else tuple(
+        auxiliary = tuple(
             (item.data_key(query.parameters.query.product), query)
             for item in self.candidate.definition.auxiliary_inputs
-            for query in item.requests(self.history_start, end)))
+            for query in item.requests(self.history_start, end))
         execution = ()
-        if self.formal and self.candidate.definition.contract_version == 4 and self.candidate.definition.execution_input is not None:
+        if self.candidate.definition.execution_input is not None:
             item = self.candidate.definition.execution_input
             execution = tuple((item.data_key(query.parameters.query.product), query)
                 for query in item.requests(pd.Timestamp(self.window.start).tz_convert(self.candidate.instrument.timezone).date(), end))
@@ -123,33 +115,21 @@ class EquityEvaluationRequest:
 
     def identity(self, specification):
         candidate = self.candidate
+        from strategy_runtime import (equity_features, equity_replay as srt_replay, equity_buy_hold_v4,
+            equity_source_runtime, replay_kernel, replay_contracts, account_strategy, account_replay)
+        from strategy_evaluator import equity_assessment as se_assessment, equity_v4
+        from . import equity_replay, equity_assessment, parameter_evaluation, account_preparation
+        from trading_execution_engine import accounting, portfolio
+        from trading_execution_engine import equity as account_ledger
         engine_sources = {item.__module__: sha256(Path(inspect.getsourcefile(item)).read_bytes()).hexdigest()
-                          for item in (EquityEvaluationRequest, StrategyRuntime, EquityStrategyInstance, EquityHistoricalExecutor, resolve_fill, audit_equity_account)}
-        if self.formal:
-            engine_sources[EquityStrategyCandidate.__module__] = sha256(Path(inspect.getsourcefile(EquityStrategyCandidate)).read_bytes()).hexdigest()
-            from strategy_runtime.equity_buy_hold import decide as hold_decision
-            engine_sources[hold_decision.__module__] = sha256(Path(inspect.getsourcefile(hold_decision)).read_bytes()).hexdigest()
-            if candidate.definition.auxiliary_inputs or candidate.definition.session_context:
-                from strategy_runtime.equity_context import build_equity_decision_context
-                engine_sources[build_equity_decision_context.__module__] = sha256(
-                    Path(inspect.getsourcefile(build_equity_decision_context)).read_bytes()).hexdigest()
-            if candidate.definition.contract_version in (3, 4):
-                from strategy_runtime import (equity_features, equity_replay, equity_buy_hold_v3,
-                                              equity_context, equity_source_runtime, replay_kernel, replay_contracts, replay_adapters,
-                                              account_strategy, account_replay)
-                from strategy_evaluator import equity_assessment as se_equity_assessment
-                from . import equity_replay_v3, equity_assessment, parameter_evaluation, account_preparation
-                from trading_execution_engine import accounting, replay as execution_replay, portfolio
-                for module in (equity_features, equity_replay, equity_buy_hold_v3, equity_replay_v3,
-                               equity_context, equity_source_runtime, equity_assessment, se_equity_assessment,
-                               parameter_evaluation, account_preparation, replay_kernel, replay_contracts, replay_adapters, accounting, execution_replay, account_strategy, account_replay, portfolio):
-                    engine_sources[module.__name__] = sha256(Path(module.__file__).read_bytes()).hexdigest()
-                if candidate.definition.contract_version == 4:
-                    from strategy_runtime import equity_buy_hold_v4
-                    from strategy_evaluator import equity_v4
-                    for module in (equity_buy_hold_v4, equity_v4):
-                        engine_sources[module.__name__] = sha256(Path(module.__file__).read_bytes()).hexdigest()
-        version = candidate.definition.contract_version if self.formal else 1
+            for item in (EquityEvaluationRequest, EquityStrategyCandidate, StrategyRuntime,
+                PortfolioHistoricalExecutor, resolve_fill, audit_equity_account)}
+        for module in (equity_features, srt_replay, equity_buy_hold_v4, equity_source_runtime,
+                replay_kernel, replay_contracts, account_strategy, account_replay, se_assessment, equity_v4,
+                equity_replay, equity_assessment, parameter_evaluation, account_preparation, accounting,
+                portfolio, account_ledger):
+            engine_sources[module.__name__] = sha256(Path(module.__file__).read_bytes()).hexdigest()
+        version = 4
         contract = {"schema": f"equity-research/v{version}", "experiment": asdict(self.experiment),
                 "candidate_id": candidate.candidate_id, "instrument": asdict(candidate.instrument),
                 "implementation_hash": candidate.implementation_hash, "warmup_bars": candidate.warmup_bars,
@@ -159,25 +139,24 @@ class EquityEvaluationRequest:
                 "engine_sources": engine_sources, "python_version": platform.python_version(),
                 "pandas_version": pd.__version__,
                 "data_manifest": self.prepared.manifest_sha256 if self.prepared is not None else None}
-        if self.formal:
-            identity = self.candidate.content_identity
-            contract.update(candidate_identity=asdict(identity), content_sha256=identity.content_sha256,
-                            candidate_definition=self.candidate.definition.to_dict(),
-                            benchmark=self.benchmark.to_dict(), benchmark_sha256=self.benchmark.fingerprint,
-                            window_id=self.window_id, scenario_id=self.scenario_id,
-                            measurement_tier=self.measurement_tier, drawdown_basis=self.drawdown_basis,
-                            concentration_basis=self.concentration_basis, frequency_window_days=self.frequency_window_days,
-                            input_binding=None if self.input_binding is None else self.input_binding.to_dict(),
-                            audit_inputs_sha256=self.audit_inputs_sha256,
-                            lineage=None if self.lineage is None else {
-                                "derivation": self.lineage.derivation.to_dict(),
-                                "parameter_binding": None if self.lineage.parameter_binding is None else self.lineage.parameter_binding.to_dict()})
+        identity = self.candidate.content_identity
+        contract.update(candidate_identity=asdict(identity), content_sha256=identity.content_sha256,
+                        candidate_definition=self.candidate.definition.to_dict(),
+                        benchmark=self.benchmark.to_dict(), benchmark_sha256=self.benchmark.fingerprint,
+                        window_id=self.window_id, scenario_id=self.scenario_id,
+                        measurement_tier=self.measurement_tier, drawdown_basis=self.drawdown_basis,
+                        concentration_basis=self.concentration_basis, frequency_window_days=self.frequency_window_days,
+                        input_binding=None if self.input_binding is None else self.input_binding.to_dict(),
+                        audit_inputs_sha256=self.audit_inputs_sha256,
+                        lineage=None if self.lineage is None else {
+                            "derivation": self.lineage.derivation.to_dict(),
+                            "parameter_binding": None if self.lineage.parameter_binding is None else self.lineage.parameter_binding.to_dict()})
         return contract
 
 
 @dataclass(frozen=True, slots=True)
 class EquityArtifact:
-    """An immutable, content addressed member of a v3 evidence closure."""
+    """An immutable, content addressed member of a V4 evidence closure."""
     kind: str
     content: bytes
 
@@ -212,11 +191,11 @@ class EquityEvaluationResult:
             raise TypeError("equity result artifacts require an immutable typed tuple")
         if len({item.sha256 for item in self.artifacts}) != len(self.artifacts):
             raise ValueError("duplicate equity artifact")
-        if payload.get("schema") in {"equity-research/v3", "equity-research/v4"}:
-            from .equity_replay_v3 import validate_result_structure
+        if payload.get("schema") == "equity-research/v4":
+            from .equity_replay import validate_result_structure
             validate_result_structure(payload, self.artifacts)
-        elif self.artifacts:
-            raise ValueError("only v3 results carry detached artifacts")
+        else:
+            raise ValueError("equity results require the V4 artifact closure")
 
     @property
     def payload(self):
@@ -260,22 +239,20 @@ def _audit_inputs(request, specification, products):
     inputs = {"bars": _records(products["bars"]), "action_facts": _records(products["actions"]),
               "constraints": _records(products["constraints"]), "specification": asdict(specification),
               "initial_cash": request.initial_cash, "fee_rate": request.fee_rate}
-    if request.formal:
-        definition = request.candidate.definition
-        decision_inputs = {}
-        if definition.session_context or definition.contract_version == 4:
-            decision_inputs["sessions"] = _records(products["sessions"])
-        if definition.auxiliary_inputs:
-            decision_inputs["auxiliary"] = {item.name: {
-                "bars": _records(products[item.data_key(EquityProduct.BARS)]),
-                "sessions": _records(products[item.data_key(EquityProduct.SESSIONS)])}
-                for item in definition.auxiliary_inputs}
-        if definition.contract_version == 4 and definition.execution_input is not None:
-            item = definition.execution_input
-            decision_inputs['execution'] = {'bars': _records(products[item.data_key(EquityProduct.BARS)]),
-                'sessions': _records(products[item.data_key(EquityProduct.SESSIONS)])}
-        if decision_inputs:
-            inputs["decision_inputs"] = decision_inputs
+    definition = request.candidate.definition
+    decision_inputs = {}
+    decision_inputs["sessions"] = _records(products["sessions"])
+    if definition.auxiliary_inputs:
+        decision_inputs["auxiliary"] = {item.name: {
+            "bars": _records(products[item.data_key(EquityProduct.BARS)]),
+            "sessions": _records(products[item.data_key(EquityProduct.SESSIONS)])}
+            for item in definition.auxiliary_inputs}
+    if definition.execution_input is not None:
+        item = definition.execution_input
+        decision_inputs['execution'] = {'bars': _records(products[item.data_key(EquityProduct.BARS)]),
+            'sessions': _records(products[item.data_key(EquityProduct.SESSIONS)])}
+    if decision_inputs:
+        inputs["decision_inputs"] = decision_inputs
     return inputs
 
 
@@ -284,9 +261,8 @@ def _runtime_inputs(definition, products, identities):
     if definition.auxiliary_inputs:
         kwargs["auxiliary_histories"] = {item.name: products[item.data_key(EquityProduct.BARS)]
                                          for item in definition.auxiliary_inputs}
-    if definition.session_context or definition.contract_version == 4:
-        kwargs["sessions"] = products["sessions"]
-        kwargs["trading_sessions"] = sessions_from_metadata(identities["sessions"]["metadata"])
+    kwargs["sessions"] = products["sessions"]
+    kwargs["trading_sessions"] = sessions_from_metadata(identities["sessions"]["metadata"])
     return kwargs
 
 
@@ -335,43 +311,7 @@ def _json_value(value):
 
 
 def validate_equity_result(access, request, result, *, execution=None):
-    from .equity_replay_v3 import PreparedAccountEvaluation, validate_certified_result
-    if type(request) is PreparedAccountEvaluation:
-        return validate_certified_result(access, request, result, execution=execution)
-    if type(result) is not EquityEvaluationResult or request.prepared is None:
-        raise TypeError("equity publication requires a prepared request and immutable result")
-    expected = _json_value(request.identity(access.execution_spec))
-    payload = result.payload
-    if expected != payload["request"] or equity_hash(expected) != result.request_hash:
-        raise ValueError("published equity request differs from evaluated request")
-    products, identities = _fetch_products(access, request)
-    if _json_value(identities) != payload["data"]:
-        raise ValueError("published equity data identity differs")
-    facts = {name: _records(frame) for name, frame in products.items()}
-    if set(payload["runs"]) != {"candidate", "buy_hold"}:
-        raise ValueError("equity evidence requires candidate and benchmark")
-    for run in payload["runs"].values():
-        expected_times = [row["Date"] for row in facts["bars"]
-                          if pd.Timestamp(row["BarStart"]) >= request.window.start and pd.Timestamp(row["Date"]) <= request.window.end]
-        if [row["time"] for row in run["account_points"]] != expected_times:
-            raise ValueError("published account does not cover its evaluation window")
-        daily = {}
-        for row in run["account_points"]:
-            daily[row["session"]] = row
-        if list(daily.values()) != run["account_daily"]:
-            raise ValueError("published daily account differs from bar observations")
-        audit = audit_equity_account(initial_cash=request.initial_cash, specification=asdict(access.execution_spec),
-                                     bars=facts["bars"], action_facts=facts["actions"], constraints=facts["constraints"],
-                                     fee_rate=request.fee_rate, **{key: run[key] for key in
-                                     ("decisions", "orders", "fills", "actions", "account_points", "trades")},
-                                     decision_contract="FORMAL_V2" if request.formal else None)
-        if _json_value(asdict(audit)) != run["metrics"]:
-            raise ValueError("published equity metrics differ from independent audit")
-        if run.get("data_quality") != _data_quality(facts["bars"], run):
-            raise ValueError("published equity data quality differs from source and execution facts")
-    if request.formal:
-        expected_inputs = _audit_inputs(request, access.execution_spec, products)
-        if payload.get("audit_inputs") != _json_value(expected_inputs):
-            raise ValueError("formal equity audit input differs from authenticated data")
-        from .equity_assessment import build_equity_assessment_payload
-        build_equity_assessment_payload(payload)
+    from .equity_replay import PreparedAccountEvaluation, validate_certified_result
+    if type(request) is not PreparedAccountEvaluation:
+        raise TypeError("equity publication requires a session-owned PreparedAccountEvaluation")
+    return validate_certified_result(access, request, result, execution=execution)

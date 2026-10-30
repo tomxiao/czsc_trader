@@ -1,12 +1,13 @@
 """Normal public inspection and exact-package freezing for a synthetic US candidate."""
 from datetime import date
 from hashlib import sha256
+import json
 import pytest
-from strategy_manager import CandidateEvidence, freeze_contracts as f
+from strategy_manager import CandidateEvidence, CandidateRegistration, CandidateRegistrationOrigin, freeze_contracts as f
 from strategy_manager import StrategyRegistry
 from strategy_runtime import InspectionControl
 from strategy_runtime.deployment import validate_release_package
-from czsc_trader.application import (register_candidate, CandidateRegistrationRequest, record_research_decision,
+from czsc_trader.application import (record_research_decision,register_candidate,CandidateRegistrationRequest,
     CandidateInspectionRequest, EquityInspectionReplay, EquityInspectionProtocol, FreezeTarget,
     InspectionDataKind, inspect_candidate, freeze_candidate, get_freeze_result,
     assemble_delivery, validate_delivery)
@@ -24,9 +25,32 @@ def test_formal_equity_inspect_freeze_exact_package(tmp_path, auxiliary):
     research, evaluation, _, _ = (setup_auxiliary(tmp_path, same_source=True) if auxiliary
                                   else setup_formal_equity(tmp_path))
     evaluation = prepare_inspection_inputs(research, evaluation)
-    context = research.repository
-    register_candidate(context, CandidateRegistrationRequest(evaluation.candidate, evaluation.experiment, (), ()))
+    with pytest.raises(ValueError,match='account contract 4'):
+        register_candidate(research.repository,CandidateRegistrationRequest(evaluation.candidate,evaluation.experiment,(),()))
+    seed_registered_frozen_candidate(research,evaluation)
     inspect_freeze(research, evaluation, None)
+
+
+def seed_registered_frozen_candidate(research,evaluation):
+    """Install an existing V2 registration through SM, not a retired research API."""
+    candidate=evaluation.candidate
+    identity=candidate.content_identity
+    root=research.repository.research_root/candidate.strategy_id
+    prefix=f'assets/candidates/{candidate.candidate_id}'
+    source_root=f'{prefix}/source/strategy_runtime'
+    def write(relative,content):
+        path=root/relative
+        path.parent.mkdir(parents=True,exist_ok=True)
+        path.write_bytes(content)
+        return CandidateEvidence(relative,sha256(content).hexdigest())
+    payload=write(f'{prefix}/payload.json',json.dumps(candidate.payload,sort_keys=True,separators=(',',':')).encode())
+    sources=tuple(write(f'{source_root}/{name}',(candidate.source_root/name).read_bytes())
+        for name in candidate.definition.source_files)
+    record=CandidateRegistration(candidate.key,identity.content_sha256,identity.source_sha256,
+        identity.dependency_sha256,payload,sources,source_root,
+        tuple((item.name,item.version) for item in candidate.definition.dependencies),
+        CandidateRegistrationOrigin(evaluation.experiment.experiment_id,()))
+    StrategyRegistry(research.repository.research_registry_root).register_candidate(record,evidence_root=root)
 
 
 def test_equity_inspection_requires_complete_auxiliary_identity(tmp_path):
@@ -81,7 +105,7 @@ def inspect_freeze(research, evaluation, evidence, *, assessment_ref=None):
     package = validate_release_package(context.strategy_root, 'S999-v1')
     assert package.package_sha256 == report.release.package_sha256
     version = StrategyRegistry(context.strategy_root).get_version('S999', 'v1')
-    with pytest.raises(TypeError, match='V3|v3|prepare|session|Session'):
+    with pytest.raises(ValueError, match='explicit equity context cannot execute'):
         run_backtest(research, version, evaluation)
     source_file = package.source_root / evaluation.candidate.definition.source_files[0]
     original = source_file.read_bytes()

@@ -66,7 +66,7 @@ def _validate_request(context: ResearchContext, request: EvidenceWriteRequest, *
         _validate_report_request(root, request)
     if isinstance(request, EvaluationEvidenceWrite):
         from ..research_tools.equity_evaluation import validate_equity_result
-        from ..research_tools.equity_replay_v3 import PreparedAccountEvaluation
+        from ..research_tools.equity_replay import PreparedAccountEvaluation
         if type(request.request) is PreparedAccountEvaluation:
             validate_equity_result(context.evaluation, request.request, request.result, execution=execution)
             return
@@ -110,12 +110,12 @@ def _publish_serialized(context: ResearchContext, request: EvidenceWriteRequest,
         version = request.result.payload["schema_version"] if equity else 8
         media_type, suffix, schema = "application/json", "json", ("equity_research" if equity else "account_evaluation")
         document = json.loads(data)
-        if equity and document.get("schema") != f"equity-research/v{version}":
+        if equity and (version != 4 or document.get("schema") != "equity-research/v4"):
             raise ValueError("equity publication requires its own versioned schema")
         if not equity and (document.get("schema_version") != version
                 or document.get("request_identity", {}).get("schema_version") != 7):
             raise ValueError("new account publication requires schema 8 and request identity 7")
-        if equity and version in (3, 4):
+        if equity:
             # Dependencies are immutable, content-addressed and installed before
             # the final evaluation document becomes visible.
             for artifact in request.result.artifacts:
@@ -219,7 +219,7 @@ def publish_evidence_many(context: ResearchContext,
 
     publication_keys = {}
     for index, request in enumerate(requests):
-        from ..research_tools.equity_replay_v3 import PreparedAccountEvaluation
+        from ..research_tools.equity_replay import PreparedAccountEvaluation
         if (checkpoint is not None and isinstance(request, EvaluationEvidenceWrite)
                 and type(request.request) is PreparedAccountEvaluation):
             key = canonical_sha256({'request_hash': request.result.request_hash,
@@ -231,12 +231,12 @@ def publish_evidence_many(context: ResearchContext,
                 if (reference.name != request.name or reference.experiment != request.experiment
                         or (reference.schema, reference.schema_version) != ('equity_research', request.result.payload['schema_version'])
                         or reference.resolve(context.repository.root).read_bytes() != request.result.content):
-                    raise ValueError('equity V3 publication checkpoint differs from authenticated result')
+                    raise ValueError('equity publication checkpoint differs from authenticated result')
                 for artifact in request.result.artifacts:
                     target = managed_path(context.repository.root,
                         f'{request.experiment.repository_path.replace("/experiments/", "/assets/evidence/")}/{sha256(artifact.content).hexdigest()}.json')
                     if target.read_bytes() != artifact.content:
-                        raise ValueError('equity V3 checkpoint dependency changed')
+                        raise ValueError('equity checkpoint dependency changed')
                 outcomes[index] = PublicationOutcome(index, PublicationStatus.PUBLISHED, reference)
                 executor.reused_publications += 1
                 continue
@@ -291,7 +291,7 @@ def publish_evidence_many(context: ResearchContext,
             with executor.measure(ExecutionPhase.PUBLISH):
                 outcomes[index] = _publish_outcome(context, index, request, request.content)
         else:
-            from ..research_tools.equity_replay_v3 import PreparedAccountEvaluation
+            from ..research_tools.equity_replay import PreparedAccountEvaluation
             if type(request.request) is PreparedAccountEvaluation:
                 with executor.measure(ExecutionPhase.PUBLISH):
                     outcomes[index] = _publish_outcome(context, index, request, request.result.content)

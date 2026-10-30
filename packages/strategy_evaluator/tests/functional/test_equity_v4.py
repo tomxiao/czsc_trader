@@ -524,7 +524,7 @@ def test_checkpoint_can_spend_only_dividend_cash_paid_before_its_exact_quote(mar
             audit_equity_account(**damaged, account_contract=4, decision_contract="FORMAL_V4")
 
 
-@pytest.mark.parametrize("marker", [4.0, True, False, "4", None])
+@pytest.mark.parametrize("marker", [2, 3, 4.0, True, False, "4", None])
 def test_v4_marker_is_a_strict_integer_in_numeric_and_serialized_contracts(base_ledger, marker):
     source = deepcopy(base_ledger)
     with pytest.raises(ValueError):
@@ -540,8 +540,6 @@ def test_v4_marker_is_a_strict_integer_in_numeric_and_serialized_contracts(base_
         ("CN", (None, None)),
         ("CN", (4, None)),
         ("CN", (None, 4)),
-        ("US", (4, None)),
-        ("US", (None, 4)),
     ],
 )
 def test_assessment_rejects_legacy_cn_or_mismatched_candidate_benchmark_contracts(
@@ -562,3 +560,9 @@ def test_assessment_rejects_legacy_cn_or_mismatched_candidate_benchmark_contract
     )
     with pytest.raises(ValidationError, match="contracts"):
         validate_equity_facts(facts)
+
+
+@pytest.mark.parametrize('decision_contract', ['FORMAL_V2', None])
+def test_current_audit_rejects_retired_or_unlabelled_decision_contract(base_ledger, decision_contract):
+    with pytest.raises(ValueError, match='FORMAL_V4'):
+        audit_equity_account(**base_ledger, account_contract=4, decision_contract=decision_contract)

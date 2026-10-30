@@ -80,15 +80,27 @@ def test_equivalent_rules_produce_same_numeric_accounts(tmp_path,computation):
         assert outputs[0].fills[field].tolist()==outputs[1].fills[field].tolist()
 
 
-def test_v4_requires_real_declared_clock_and_preserves_legacy_identity(tmp_path):
+def test_account_replay_requires_real_clock_and_rejects_retired_definition(tmp_path):
+    import strategy_runtime
+    from strategy_runtime import equity_replay
+    assert not hasattr(strategy_runtime, 'EquityCandidate')
+    assert not hasattr(strategy_runtime, 'equity_implementation_hash')
+    assert not hasattr(equity_replay, 'StepContext') and not hasattr(equity_replay, 'StepResult')
     c,p,_,bars,constraints,_,_=setup(tmp_path,MarketId.CN,BarFrequency.DAILY,StrategyComputation.STATEFUL_STEP)
     with pytest.raises(ValueError,match='calendar|session'):
         run_replay(PreparedReplay.from_frames(bars,constraints,p.graph,frequency=BarFrequency.DAILY,timezone=c.instrument.timezone),c,
             PortfolioHistoricalExecutor(specification=c.definition.execution_spec,initial_cash=100000.,fee_rate=.001,
                 actions=pd.DataFrame([{'Date':bars.BarStart.iloc[0],'AvailableDate':bars.BarStart.iloc[0],'EventId':'none','Kind':'NONE','Ratio':1.,'CashPerShare':0.,'PayAt':None}]),price_basis='RAW'),
             start=bars.BarStart.iloc[1].to_pydatetime(),end=bars.Date.iloc[-1].to_pydatetime(),fee_rate=.001)
-    with pytest.raises(ValueError,match='restricted to US'):
+    with pytest.raises(ValueError,match='unsupported equity definition'):
         replace(c.definition,contract_version=3,computation=None)
+
+
+@pytest.mark.parametrize('mode', ['MARKET_INTENT', 'CONFIRMED_CLOSED_CYCLE_V1'])
+def test_account_replay_rejects_retired_feedback_contract(tmp_path, mode):
+    candidate,_,_,_,_,_,_=setup(tmp_path,MarketId.US,BarFrequency.M30,StrategyComputation.STATEFUL_STEP)
+    with pytest.raises(ValueError,match='requires CONFIRMED_EXECUTION feedback'):
+        replace(candidate.definition,feedback_mode=mode)
 
 
 EXPLICIT = """from strategy_runtime import AccountDecision,AccountStepResult,ReplayOrder
@@ -169,7 +181,9 @@ def test_legacy_definitions_do_not_acquire_v4_fields_or_cn_auxiliary(tmp_path):
     from dataflows import SourceRef
     from strategy_runtime import EquityAuxiliaryInput
     c,_,_,_,_,_,_=setup(tmp_path,MarketId.US,BarFrequency.M30,StrategyComputation.STATEFUL_STEP)
-    legacy=replace(c.definition,contract_version=3,computation=None)
+    legacy=replace(c.definition,contract_version=2,computation=None,feature_graph=None,state_schema=None)
+    with pytest.raises(ValueError,match='unsupported equity definition'):
+        replace(c.definition,contract_version=3,computation=None)
     encoded=legacy.to_dict()
     assert encoded['runtime_kind']=='US_EQUITY'
     assert 'computation' not in encoded and 'execution_input' not in encoded

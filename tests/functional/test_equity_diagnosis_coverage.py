@@ -4,27 +4,19 @@ import json
 
 from strategy_manager import CandidateKey
 from czsc_trader.application import diagnose_accounts, publish_evidence
-from czsc_trader.research_tools import EvidenceRef, MaterialEvidenceWrite
+from czsc_trader.research_tools import EvaluationEvidenceWrite, MaterialEvidenceWrite
 from czsc_trader.research_tools.account_diagnosis import AccountRunRef, AccountDiagnosisRequest, DecisionPopulationRef
 from czsc_trader.research_tools.evaluation import EvaluationIdentity, EvaluationWindow
-from equity_test_support import setup_formal_equity
-from equity_test_support import archived_formal_account_bytes as archived_formal_account_bytes
+from equity_test_support import setup_account_research, account_research
 
 
-def test_equity_population_joins_order_to_decision_and_preserves_unknown(tmp_path, archived_formal_account_bytes):
-    context, request, _, _ = setup_formal_equity(tmp_path)
-    value = json.loads(archived_formal_account_bytes)
-    run = value["runs"]["candidate"]
-    for order in run["orders"]:
-        order["order_id"] = "order-" + order["order_id"]
-    for fill in run["fills"]:
-        fill["order_id"] = "order-" + fill["order_id"]
-    # This archived-V2 reader case deliberately translates order identities;
-    # it does not claim a new V3 account computed or certified by the platform.
-    stored = publish_evidence(context, MaterialEvidenceWrite(request.experiment, "archived-distinct-orders",
-        json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False).encode(), "application/json", "json"))
-    account_ref = EvidenceRef(stored.experiment, stored.evidence_id, stored.sha256, stored.media_type,
-        stored.name, "equity_research", 2)
+def test_equity_population_joins_order_to_decision_and_preserves_unknown(tmp_path):
+    context, request, _, _ = setup_account_research(tmp_path)
+    with account_research(context,request) as (prepared,result,value,execution):
+        account_ref=publish_evidence(context,EvaluationEvidenceWrite(request.experiment,'current-account',
+            prepared,result),execution=execution)
+    run=value['runs']['candidate']
+    assert all(order['order_id']!=order['decision_id'] for order in run['orders'])
     identity = dict(value["evaluation_identity"])
     identity["candidate"] = CandidateKey(**identity["candidate"])
     account = AccountRunRef(account_ref, EvaluationIdentity(**identity))

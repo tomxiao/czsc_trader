@@ -12,29 +12,18 @@ from czsc_trader.application import (publish_evidence, diagnose_accounts, regist
 from account_parity_support import setup_account
 
 
-@pytest.mark.parametrize('legacy_first', [True, False])
-def test_shared_snapshot_keeps_legacy_and_v4_clock_context_separate(tmp_path, legacy_first):
+@pytest.mark.parametrize('contract', [1,2,3])
+def test_retired_research_contracts_are_rejected_at_construction(tmp_path,contract):
     from dataclasses import replace
-    from strategy_runtime import equity_source_hash
-    context, request = setup_account(tmp_path, MarketId.US, BarFrequency.M30)
-    root = request.candidate.source_root/'legacy'
-    root.mkdir()
-    (root/'strategy.py').write_text('''from strategy_runtime.equity_definition import EquityDecision
-from strategy_runtime.equity_replay import StepResult, StateRecord
-def step(ctx,state):
-    return StepResult(EquityDecision.from_facts(1,'hold',facts={'hold':True},next_watch='next bar'),
-        cycle_values=StateRecord())
-''',encoding='utf-8')
-    legacy = replace(request,candidate=replace(request.candidate,candidate_id='C0002',source_root=root,
-        definition=replace(request.candidate.definition,contract_version=3,computation=None,
-            source_sha256=equity_source_hash(root,('strategy.py',)))))
-    with ResearchExecutionSession(context,experiment=request.experiment) as execution:
-        inputs = (legacy,request) if legacy_first else (request,legacy)
-        prepared = tuple(context.evaluation.prepare(item,execution=execution) for item in inputs)
-        assert prepared[0].snapshot.sha256 == prepared[1].snapshot.sha256
-        outcomes = context.evaluation.evaluate_many(prepared,execution=execution)
-        assert all(item.result is not None for item in outcomes),[item.error for item in outcomes]
-        assert {item.result.payload['schema_version'] for item in outcomes} == {3,4}
+    context,request=setup_account(tmp_path,MarketId.US,BarFrequency.M30)
+    if contract==2:
+        candidate=replace(request.candidate,definition=replace(request.candidate.definition,
+            contract_version=2,computation=None,feature_graph=None,state_schema=None))
+        with pytest.raises(TypeError,match='contract_version=4'):
+            replace(request,candidate=candidate)
+    else:
+        with pytest.raises(ValueError,match='contract'):
+            replace(request.candidate.definition,contract_version=contract)
 
 
 @pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
@@ -95,7 +84,7 @@ def step(ctx,state):
             assert facts.parameter_point == design.bind_point(index) and facts.parent == design.center
             checkpoint = encode_result(item.result)
             assert decode_result(checkpoint,item.result.request_hash) == item.result
-            with pytest.raises(ValueError,match='kind differs'):
+            with pytest.raises(ValueError,match='V4 artifact closure'):
                 decode_result(dict(checkpoint,kind='equity-research/v3'),item.result.request_hash)
 
 
@@ -136,8 +125,8 @@ def step(ctx, state):
         facts,=build_assessment_evidence(bound,outcome.result,execution=execution)
         ledger=json.loads(facts.equity.candidate_ledger)
         assert ledger['execution_bars']
-        from czsc_trader.research_tools.equity_replay_v3 import materialize_v3
-        quality = materialize_v3(outcome.result).payload['runs']['candidate']['data_quality']
+        from czsc_trader.research_tools.equity_replay import materialize_equity
+        quality = materialize_equity(outcome.result).payload['runs']['candidate']['data_quality']
         assert quality['execution_input']['affected_sessions'] == ['2026-10-28']
         assert any(row['reason']=='MISSING_EXECUTION_BAR' for row in quality['affected_orders'])
         selected=[r for r in ledger['fills'] if r['quote_source']=='EXECUTION_BARS']
@@ -150,14 +139,14 @@ def step(ctx, state):
 
 @pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
 def test_gap_diagnostics_use_instrument_local_dates_and_recover(tmp_path, market):
-    from czsc_trader.research_tools.equity_replay_v3 import materialize_v3
+    from czsc_trader.research_tools.equity_replay import materialize_equity
     context, request = setup_account(tmp_path,market,BarFrequency.M30,gap_kind='day')
     with ResearchExecutionSession(context,experiment=request.experiment) as execution:
         prepared=context.evaluation.prepare(request,execution=execution)
         outcome,=context.evaluation.evaluate_many((prepared,),execution=execution)
         assert outcome.result is not None,outcome.error
         build_assessment_evidence(prepared,outcome.result,execution=execution)
-        run=materialize_v3(outcome.result).payload['runs']['candidate']
+        run=materialize_equity(outcome.result).payload['runs']['candidate']
         assert run['data_quality']['evaluation_window']['affected_sessions']==['2026-10-28']
         assert run['data_quality']['suppressed_signals']>0
         assert any(row['session']=='2026-10-29' and not row['valuation_stale'] for row in run['account_points'])

@@ -37,7 +37,7 @@ def build_assessment_evidence(
     result: EvaluationResult,
     *, execution=None,
 ) -> tuple[AssessmentEvidence, ...]:
-    from .equity_replay_v3 import PreparedAccountEvaluation, build_v3_assessment, _state
+    from .equity_replay import PreparedAccountEvaluation, build_equity_assessment, _state
     if type(request) is PreparedAccountEvaluation and type(request.request) is EvaluationRequest:
         from .account_preparation import require_account
         if execution is None:
@@ -46,17 +46,16 @@ def build_assessment_evidence(
         return tuple(evidence for evidence, _ in _assessment_with_replays(request, result))
     if type(request) is PreparedAccountEvaluation:
         if execution is None:
-            raise TypeError('V3 assessment requires its explicit execution session')
+            raise TypeError('V4 assessment requires its explicit execution session')
         from .equity_evaluation import validate_equity_result
         validate_equity_result(execution.context.evaluation, request, result, execution=execution)
         state = _state(execution.context.evaluation, execution)
-        return build_v3_assessment(result, scope=state.certification)
+        return build_equity_assessment(result, scope=state.certification)
     if execution is not None:
-        raise ValueError('explicit prepared assessment ownership applies to equity V3')
+        raise ValueError('explicit prepared assessment ownership applies to equity V4')
     from .equity_evaluation import EquityEvaluationRequest, EquityEvaluationResult
     if isinstance(request, EquityEvaluationRequest) or isinstance(result, EquityEvaluationResult):
-        from .equity_assessment import build_equity_assessment_evidence
-        return build_equity_assessment_evidence(request, result)
+        raise TypeError('equity assessment requires its session-owned prepared handle and explicit execution session')
     return tuple(evidence for evidence, _ in _assessment_with_replays(request, result))
 
 
