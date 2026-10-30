@@ -10,7 +10,7 @@ from czsc_trader.research_tools import (
     CheckpointMode, EvaluationEvidenceWrite, ExecutionCheckpointRequest,
     ResearchExecutionSession,
 )
-from test_equity_closure import setup_formal_equity
+from equity_test_support import setup_formal_equity
 
 
 def test_closed_cycle_feedback_formal_parallel_resume_and_legacy_economics(tmp_path):

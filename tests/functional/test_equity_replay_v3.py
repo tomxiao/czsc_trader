@@ -1,40 +1,19 @@
 """V3 public preparation, shared benchmark and independent certification."""
+
+from equity_test_support import setup_v3
 from dataclasses import FrozenInstanceError, replace
 import json
 
 import pytest
-from strategy_runtime.equity_definition import EquityStrategyCandidate, EquityStrategyDefinition, equity_source_hash
+from strategy_runtime.equity_definition import equity_source_hash
 from strategy_runtime.equity_features import FeatureGraph
 from strategy_runtime.equity_replay import StrategyStateSchema
 from strategy_evaluator.equity_assessment import EquityCertificationScope
-from czsc_trader.backtesting.benchmark_contracts import EvaluationBenchmark, EquityBuyHold
 from czsc_trader.research_tools.execution import ResearchExecutionSession
 from czsc_trader.research_tools.equity_evaluation import EquityArtifact, EquityEvaluationResult, validate_equity_result
 from czsc_trader.research_tools.equity_replay_v3 import (
     prepare_equity_v3, evaluate_many_equity_v3, materialize_v3, build_v3_assessment,
 )
-from test_equity_research import setup_equity
-
-
-def setup_v3(tmp_path):
-    context, legacy, products, calls = setup_equity(tmp_path)
-    root = tmp_path / "fixture-source"
-    root.mkdir()
-    (root / "strategy.py").write_text(
-        "from strategy_runtime.equity_definition import EquityDecision\n"
-        "from strategy_runtime.equity_replay import StepResult, StateRecord\n"
-        "def step(ctx, state):\n"
-        "    target = 0 if ctx.portfolio.quantity else 1\n"
-        "    return StepResult(EquityDecision.from_facts(target, 'alternate', "
-        "facts={'quantity': ctx.portfolio.quantity}, next_watch='next bar'), cycle_values=StateRecord())\n", encoding="utf-8")
-    definition = EquityStrategyDefinition(legacy.candidate.instrument, context.execution_spec, 1,
-        "strategy:step", ("strategy.py",), equity_source_hash(root, ("strategy.py",)),
-        contract_version=3, feature_graph=FeatureGraph((), ()), state_schema=StrategyStateSchema())
-    candidate = EquityStrategyCandidate("S999", "C0001", definition, root)
-    request = replace(legacy, candidate=candidate,
-        benchmark=EvaluationBenchmark(EquityBuyHold(context.execution_spec)),
-        drawdown_basis="BAR_CLOSE", concentration_basis="TOP_DECILE")
-    return context, request, products, calls
 
 
 def test_v3_shared_snapshot_benchmark_and_certification(tmp_path, monkeypatch):
@@ -144,6 +123,8 @@ def test_v3_refs_and_certification_reject_mutation(tmp_path):
 def test_v3_requires_explicit_owned_session(tmp_path):
     context, request, _, _ = setup_v3(tmp_path)
     with pytest.raises(TypeError, match="explicit ResearchExecutionSession"):
+        context.evaluation.prepare(request)
+    with pytest.raises(TypeError, match="explicit ResearchExecutionSession"):
         prepare_equity_v3(context.evaluation, request, execution=None)
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:
         with pytest.raises(ValueError, match="not issued"):
@@ -151,7 +132,7 @@ def test_v3_requires_explicit_owned_session(tmp_path):
 
 
 def test_v3_auxiliary_and_sessions_use_indexed_availability(tmp_path, monkeypatch):
-    from test_equity_auxiliary_context import setup_auxiliary
+    from equity_test_support import setup_auxiliary
     from strategy_runtime import equity_context
     context, request, _, _ = setup_auxiliary(tmp_path)
     root = request.candidate.source_root
@@ -193,6 +174,7 @@ def test_v3_public_timing_rejects_invalid_units_and_owner():
 
 
 def test_v3_parameter_plan_uses_owned_preparation_without_refetch(tmp_path, monkeypatch):
+    from strategy_runtime import ExecutionResources
     from strategy_evaluator import (AssessmentCandidate, ParameterAxis, RealDomain, BoundedLocalStep,
         RelativeChangeLimit, ParameterNeighborhoodProtocol, ParameterNeighborhoodRequest,
         ParameterNeighborhoodSpace, build_parameter_neighborhood_design)
@@ -202,6 +184,7 @@ def test_v3_parameter_plan_uses_owned_preparation_without_refetch(tmp_path, monk
     from czsc_trader.research_tools.parameter_evaluation import validate_parameter_request
 
     context, request, _, _ = setup_v3(tmp_path)
+    context.evaluation.resources = ExecutionResources(max_workers=2, native_threads_per_worker=1)
     root = request.candidate.source_root
     (root / "strategy.py").write_text(
         "from strategy_runtime.equity_definition import EquityDecision\n"
@@ -262,6 +245,7 @@ def test_v3_parameter_plan_uses_owned_preparation_without_refetch(tmp_path, monk
         assert len(fetched) == 4
         outcomes = context.evaluation.evaluate_many(tuple(bound), execution=execution)
         assert all(item.result is not None for item in outcomes), [item.error for item in outcomes]
+        assert execution.stats.pool_starts == 1
         assert sorted(materialize_v3(item.result).payload["runs"]["candidate"]["metrics"]["closed_cycles"]
                       for item in outcomes) == [0, 12]
         for index, item in enumerate(outcomes):

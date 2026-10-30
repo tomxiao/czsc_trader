@@ -1,41 +1,23 @@
 """Formal US research lifecycle uses existing public preparation/publication APIs."""
+
+from equity_test_support import setup_formal_equity
 from dataclasses import replace
 import json
 
 import pytest
 from strategy_runtime import ExecutionResources
-from strategy_runtime.equity_definition import EquityStrategyCandidate, EquityStrategyDefinition, equity_source_hash
+from strategy_runtime.equity_definition import equity_source_hash
 from czsc_trader.application import (publish_evidence, publish_evidence_many, register_candidate, load_candidate,
                                     CandidateRegistrationRequest, assemble_delivery, validate_delivery)
-from czsc_trader.research_tools import (EquityBuyHold, EvaluationBenchmark, EvaluationEvidenceWrite,
+from czsc_trader.research_tools import (EvaluationBenchmark, EvaluationEvidenceWrite,
                                       ResearchExecutionSession, ExecutionCheckpointRequest, CheckpointMode)
 from czsc_trader.research_tools.assessment import build_assessment_evidence
 from czsc_trader.research_tools import delivery as d
-from test_equity_research import setup_equity
 
 
 def terminate_equity_worker(*args):
     import os
     os._exit(7)
-
-
-def setup_formal_equity(tmp_path):
-    context, old, products, calls = setup_equity(tmp_path)
-    root = old.experiment.resolve(context.repository.root) / "src"
-    root.mkdir(exist_ok=True)
-    (root / "strategy.py").write_text(
-        'from strategy_runtime.equity_definition import EquityDecision\n'
-        'def decide(ctx):\n'
-        '    target = 0 if ctx.portfolio.quantity else ctx.parameters["enter"]\n'
-        '    return EquityDecision.from_facts(target, "position timing", facts={"quantity":ctx.portfolio.quantity,"enter":ctx.parameters["enter"]}, next_watch="next completed bar")\n',
-        encoding="utf-8")
-    files = ("strategy.py",)
-    definition = EquityStrategyDefinition(old.candidate.instrument, context.execution_spec, 1,
-                                          "strategy:decide", files, equity_source_hash(root, files), '{"enter":1}')
-    candidate = EquityStrategyCandidate(context.strategy_id, "C0001", definition, root)
-    request = replace(old, candidate=candidate, benchmark=EvaluationBenchmark(EquityBuyHold(context.execution_spec)),
-                      drawdown_basis="BAR_CLOSE", concentration_basis="MAX_SINGLE")
-    return context, request, products, calls
 
 
 def test_formal_equity_prepare_assess_register_and_prototype_delivery(tmp_path):

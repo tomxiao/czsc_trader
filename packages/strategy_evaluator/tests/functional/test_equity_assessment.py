@@ -97,24 +97,24 @@ def panel(value):
     return recompute_historical_assessment(m.CandidateAssessmentRequest((value.candidate,), protocol, (), (value,)))
 
 
-def metric(value, key):
-    return next(row for row in panel(value).rows[0].diagnostics if row.metric is key)
+def metric(result, key):
+    return next(row for row in result.rows[0].diagnostics if row.metric is key)
 
 
 def test_equity_shared_assessment_keeps_daily_annualization_and_selects_drawdown():
-    daily, intraday = evidence(), evidence("BAR_CLOSE")
+    daily, intraday = panel(evidence()), panel(evidence("BAR_CLOSE"))
     assert metric(daily, m.ResearchMetric.NET_ANNUAL_RETURN).value == pytest.approx((10264 / 10000) ** (252 / 12) - 1)
     assert metric(intraday, m.ResearchMetric.NET_ANNUAL_RETURN) == metric(daily, m.ResearchMetric.NET_ANNUAL_RETURN)
     assert metric(daily, m.ResearchMetric.DRAWDOWN_MAGNITUDE).value == 0
     assert metric(intraday, m.ResearchMetric.DRAWDOWN_MAGNITUDE).value == pytest.approx(.002)
-    assert panel(intraday).rows[0].benchmark.diagnostics[1].value == pytest.approx(.002)
+    assert intraday.rows[0].benchmark.diagnostics[1].value == pytest.approx(.002)
     assert metric(daily, m.ResearchMetric.FREQUENCY_MEDIAN).status is m.DiagnosticStatus.INSUFFICIENT_DATA
 
 
 def test_equity_concentration_includes_dividend_once_and_explicit_definition():
-    assert metric(evidence(concentration="MAX_SINGLE"), m.ResearchMetric.PROFIT_CONCENTRATION).value == pytest.approx(1 / 12)
-    assert metric(evidence(concentration="TOP_DECILE"), m.ResearchMetric.PROFIT_CONCENTRATION).value == pytest.approx(2 / 12)
-    value = evidence(days=61)
+    assert metric(panel(evidence(concentration="MAX_SINGLE")), m.ResearchMetric.PROFIT_CONCENTRATION).value == pytest.approx(1 / 12)
+    assert metric(panel(evidence(concentration="TOP_DECILE")), m.ResearchMetric.PROFIT_CONCENTRATION).value == pytest.approx(2 / 12)
+    value = panel(evidence(days=61))
     assert metric(value, m.ResearchMetric.FREQUENCY_MEDIAN).value == 60
     assert metric(value, m.ResearchMetric.FREQUENCY_COVERAGE).value == 1
 
@@ -122,7 +122,8 @@ def test_equity_concentration_includes_dividend_once_and_explicit_definition():
 @pytest.mark.parametrize("mutation", ["cash", "receivable", "cycle", "basis", "daily"])
 def test_equity_facts_reject_tampering_and_cannot_use_unverified_sidecars(mutation):
     value = evidence()
-    raw = ledger()
+    if mutation in {"cash", "receivable", "cycle"}:
+        raw = ledger()
     if mutation in {"cash", "receivable"}:
         raw["account_points"][1][mutation] += 1
     elif mutation == "cycle":

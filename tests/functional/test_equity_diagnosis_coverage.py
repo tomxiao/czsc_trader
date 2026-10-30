@@ -8,7 +8,7 @@ from czsc_trader.research_tools import EvaluationEvidenceWrite, MaterialEvidence
 from czsc_trader.research_tools.account_diagnosis import AccountRunRef, AccountDiagnosisRequest, DecisionPopulationRef
 from czsc_trader.research_tools.evaluation import EvaluationIdentity, EvaluationWindow
 from czsc_trader.research_tools.equity_evaluation import EquityEvaluationResult
-from test_equity_closure import setup_formal_equity
+from equity_test_support import setup_formal_equity
 
 
 def test_equity_population_joins_order_to_decision_and_preserves_unknown(tmp_path):

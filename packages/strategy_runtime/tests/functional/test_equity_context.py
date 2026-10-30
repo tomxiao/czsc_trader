@@ -15,6 +15,11 @@ from strategy_runtime import (EquityAuxiliaryInput, EquityAuxiliaryBinding, Equi
     StrategyRuntime, equity_source_hash, build_equity_decision_context)
 
 
+def auxiliary_declaration():
+    return EquityAuxiliaryInput('market', InstrumentId(MarketId.US, AssetClass.ETF, 'SPY'),
+        SourceRef('synthetic', 'v1'), BarFrequency.M30, 2, 3600)
+
+
 def make_candidate(root, *, enabled=True, latency=0):
     root.mkdir(parents=True, exist_ok=True)
     source = ('from strategy_runtime import EquityDecision\n'
@@ -29,8 +34,7 @@ def make_candidate(root, *, enabled=True, latency=0):
     spec = ResearchExecutionSpec(UsEquitySpec(), BarFrequency.M30,
         AccountPolicy('USD', CashAvailabilityPolicy.IMMEDIATE_RESEARCH), 1, .01, .01, 0.,
         data_latency_seconds=latency)
-    auxiliary = EquityAuxiliaryInput('market', InstrumentId(MarketId.US, AssetClass.ETF, 'SPY'),
-        SourceRef('synthetic', 'v1'), BarFrequency.M30, 2, 3600)
+    auxiliary = auxiliary_declaration()
     definition = EquityStrategyDefinition(InstrumentId(MarketId.US, AssetClass.STOCK, 'LITE'), spec,
         1, 'strategy:decide', ('strategy.py',), equity_source_hash(root, ('strategy.py',)),
         auxiliary_inputs=(auxiliary,) if enabled else (), session_context=enabled)
@@ -86,8 +90,8 @@ def test_auxiliary_definition_binding_roundtrip_and_legacy_identity(tmp_path):
 @pytest.mark.parametrize(('field', 'bad'), [('warmup_bars', True), ('warmup_bars', 0),
     ('max_age_seconds', float('nan')), ('max_age_seconds', -1), ('max_age_seconds', True),
     ('analysis_price', 'QFQ'), ('name', 'market:bars')])
-def test_auxiliary_illegal_declaration(tmp_path, field, bad):
-    item = make_candidate(tmp_path).definition.auxiliary_inputs[0]
+def test_auxiliary_illegal_declaration(field, bad):
+    item = auxiliary_declaration()
     with pytest.raises((ValueError, TypeError)):
         replace(item, **{field: bad})
 

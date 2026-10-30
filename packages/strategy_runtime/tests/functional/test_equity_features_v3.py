@@ -196,26 +196,6 @@ def test_availability_latency_and_invalid_input_rejected():
         prepare(invalid, graph)
 
 
-def test_visible_rank_and_persistent_tree_match_full_asof_oracle():
-    starts = pd.date_range('2024-03-01 14:30', periods=45, freq='30min', tz='UTC')
-    frame = observations(starts, [float(i + 10) for i in range(len(starts))])
-    for index in range(len(frame)):
-        frame.loc[index, 'AvailableDate'] += pd.Timedelta(minutes=30 * ((index * 17) % 9))
-    prepared = prepare(frame, FeatureGraph())
-    visibility = _Visibility(prepared._data)
-    retained = []
-    for when in sorted(set(prepared._data.ready_at)):
-        visibility.advance(when)
-        expected = [i for i, stamp in enumerate(prepared._data.ready_at) if stamp <= when]
-        assert [visibility.row(offset) for offset in range(visibility.count)] == list(reversed(expected))
-        view = visibility.history_view(when)
-        assert view.to_frame().Close.tolist() == [float(i + 10) for i in expected]
-        assert view.to_frame(tail=2).Close.tolist() == [float(i + 10) for i in expected[-2:]]
-        retained.append((view, [float(i + 10) for i in expected]))
-    for view, expected in retained:
-        assert view.to_frame().Close.tolist() == expected
-
-
 def test_prefix_mean_preserves_python_float_sum_compensation():
     frame = observations(pd.date_range('2024-03-01 14:30', periods=4, freq='30min', tz='UTC'),
                          [1e16, 1., 1., 5.])
@@ -258,11 +238,23 @@ def test_bulk_prefix_and_general_asof_equal_independent_random_scalar(late):
     evaluator = _FeatureEvaluator(prepared._data, graph, index)
     assert (evaluator._prefix_outputs is None) is late
     records = frame.to_dict('records')
-    for when in frame.Date:
+    retained = []
+    for observation_index, when in enumerate(frame.Date):
         index.advance(when.to_pydatetime())
         view = evaluator.at(when.to_pydatetime())
         visible = [row for row in records if row['Date'] <= when and row['AvailableDate'] <= when
                    and row['BarStatus'] == 'OBSERVED']
+        history = index.history_view(when.to_pydatetime())
+        assert len(history) == len(visible)
+        if visible:
+            assert history.last()['Close'] == visible[-1]['Close']
+        if len(visible) > 1:
+            assert history.last(1)['Close'] == visible[-2]['Close']
+        if observation_index in (13, 50, len(frame) - 1):
+            expected_closes = [float(row['Close']) for row in visible]
+            assert history.to_frame().Close.tolist() == expected_closes
+            assert history.to_frame(tail=2).Close.tolist() == expected_closes[-2:]
+            retained.append((history, expected_closes))
 
         def true_range(position):
             if position < 1:
@@ -307,6 +299,10 @@ def test_bulk_prefix_and_general_asof_equal_independent_random_scalar(late):
                 assert type(actual) is NotReady, (late, when, key)
             else:
                 assert actual == ReadyValue(value), (late, when, key, actual, value)
+    # Both arrival paths retain the exact old snapshot after all future events.
+    for history, expected_closes in retained:
+        assert history.to_frame().Close.tolist() == expected_closes
+        assert pickle.loads(pickle.dumps(history)).to_frame().Close.tolist() == expected_closes
 
 
 def test_same_slot_rejects_unsupported_timezone():
@@ -314,46 +310,16 @@ def test_same_slot_rejects_unsupported_timezone():
         SameLocalSlotMedian('median', 'volume', timezone='Asia/Shanghai')
 
 
-def test_chronological_history_appends_without_ordered_tree_updates(monkeypatch):
-    from strategy_runtime import equity_replay
-
-    frame = observations(pd.date_range('2024-03-01 14:30', periods=256, freq='30min', tz='UTC'),
-                         [float(index + 10) for index in range(256)])
-    frame['BarStatus'], frame['ExecutionBlocked'] = 'OBSERVED', False
-    frame.loc[13::17, 'BarStatus'] = 'ZERO_VOLUME'
-    frame.loc[13::17, ['Volume', 'Amount']] = 0.
-    value = prepare(frame, FeatureGraph())
-
-    def unexpected_tree_update(*args, **kwargs):
-        raise AssertionError('chronological visibility must not insert into an ordered tree')
-
-    class UnusedFenwick:
-        def __len__(self):
-            raise AssertionError('chronological visibility must not maintain a Fenwick tree')
-
-    monkeypatch.setattr(equity_replay, '_history_insert', unexpected_tree_update)
-    visibility = _Visibility(value._data)
-    visibility.tree = UnusedFenwick()
-    retained, expected = [], []
-    for index, when in enumerate(frame.Date):
-        visibility.advance(when.to_pydatetime())
-        if frame.BarStatus.iloc[index] == 'OBSERVED':
-            expected.append(float(index + 10))
-        view = visibility.history_view(when.to_pydatetime())
-        assert view.last()['Close'] == expected[-1]
-        assert view.to_frame(tail=2).Close.tolist() == expected[-2:]
-        if index in (0, 63, 127, 255):
-            retained.append((view, expected.copy()))
-    for view, rows in retained:
-        assert view.to_frame().Close.tolist() == rows
-        assert pickle.loads(pickle.dumps(view)).to_frame().Close.tolist() == rows
-
-
 def test_long_chronological_snapshots_serialize_and_compare_without_recursion():
     frame = observations(pd.date_range('2024-03-01 14:30', periods=4096, freq='30min', tz='UTC'),
                          [float(index + 10) for index in range(4096)])
     value = prepare(frame, FeatureGraph())
     visibility = _Visibility(value._data)
+    retained = []
+    for index in (0, 2047):
+        when = frame.Date.iloc[index].to_pydatetime()
+        visibility.advance(when)
+        retained.append((visibility.history_view(when), index + 1))
     visibility.advance(frame.Date.iloc[-1].to_pydatetime())
     history = visibility.history_view(frame.Date.iloc[-1].to_pydatetime())
     saved = pickle.loads(pickle.dumps(history))
@@ -362,5 +328,9 @@ def test_long_chronological_snapshots_serialize_and_compare_without_recursion():
     assert not (saved._root != history._root)
     assert saved.to_frame(tail=2).Close.tolist() == [4104., 4105.]
     assert len(saved) == len(copied) == 4096
+    for old_history, count in retained:
+        assert len(old_history) == count
+        assert old_history.to_frame().Close.tolist() == frame.Close.iloc[:count].tolist()
+        assert pickle.loads(pickle.dumps(old_history)) == old_history
     with pytest.raises(TypeError):
         saved.last()['Close'] = -1

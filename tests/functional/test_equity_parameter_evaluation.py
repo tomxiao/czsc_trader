@@ -14,12 +14,13 @@ from czsc_trader.application import publish_evidence
 from czsc_trader.research_tools import MaterialEvidenceWrite, ParameterEvaluationPlan, EvaluationLineage
 from czsc_trader.research_tools.equity_assessment import build_equity_assessment_payload
 from czsc_trader.research_tools.parameter_evaluation import validate_parameter_request
-from test_equity_closure import setup_formal_equity
+from equity_test_support import setup_formal_equity
+from equity_test_support import archived_formal_account_bytes as archived_formal_account_bytes
 
 
 def equity_plan(tmp_path, *, applicable=True, auxiliary=False):
     if auxiliary:
-        from test_equity_auxiliary_context import setup_auxiliary
+        from equity_test_support import setup_auxiliary
         context, request, _, _ = setup_auxiliary(tmp_path)
     else:
         context, request, _, _ = setup_formal_equity(tmp_path)
@@ -87,10 +88,8 @@ def test_equity_parameter_plan_preserves_payload_inputs_and_point_mapping(tmp_pa
 
 @pytest.mark.parametrize("field", ["definition", "benchmark", "benchmark-strategy", "version", "binding", "window", "audit", "metrics",
                                    "target", "quantity", "orphan-expired"])
-def test_archived_equity_adapter_rejects_rehashed_inconsistent_facts(tmp_path, field):
-    context, request, _, _ = setup_formal_equity(tmp_path)
-    request = context.evaluation.prepare(request)
-    payload = context.evaluation.evaluate(request).payload
+def test_archived_equity_adapter_rejects_rehashed_inconsistent_facts(archived_formal_account_bytes, field):
+    payload = json.loads(archived_formal_account_bytes)
     if field == "definition":
         payload["request"]["candidate_definition"]["parameters_json"] = '{"enter":0}'
     elif field == "benchmark":

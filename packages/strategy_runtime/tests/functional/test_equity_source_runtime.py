@@ -26,7 +26,10 @@ def set_source(value, source, files=('strategy.py',)):
 
 def multifile_candidate(root):
     value = candidate(root)
-    source = SOURCE.replace('def step(ctx, state):', 'counter = 0\ndef step(ctx, state):')
+    source = ('import sys\nimport types\n'
+        'sys.modules[__package__ + ".manual"] = types.ModuleType(__package__ + ".manual")\n'
+        'sys.modules[__package__ + ".manual.deep"] = types.ModuleType(__package__ + ".manual.deep")\n'
+        + SOURCE.replace('def step(ctx, state):', 'counter = 0\ndef step(ctx, state):'))
     source = source.replace('    close = ctx.features',
         '    global counter\n    counter += 1\n'
         '    expected_threshold, helper_count = 10., 0\n'
@@ -122,8 +125,8 @@ def test_startup_snapshot_survives_source_changes_and_late_import_without_source
     monkeypatch.undo()
 
 
-@pytest.mark.parametrize('failure', ('none', 'load', 'step'))
-def test_namespace_and_import_finder_cleanup_after_success_or_failure(tmp_path, failure):
+@pytest.mark.parametrize('failure', ('load', 'step'))
+def test_namespace_and_import_finder_cleanup_after_failure(tmp_path, failure):
     value = candidate(tmp_path / 'source')
     register = ('namespace = __package__\n'
         'sys.modules[namespace + ".manual"] = types.ModuleType(namespace + ".manual")\n'
@@ -138,13 +141,10 @@ def test_namespace_and_import_finder_cleanup_after_success_or_failure(tmp_path, 
     value = set_source(value, source)
     bars, constraints, executor = inputs(value)
     existing = namespace_state()
-    if failure == 'none':
-        assert replay(value, bars, constraints, executor).statistics.decisions == len(bars) - 1
-    else:
-        expected = ReplayFailure if failure == 'step' else RuntimeError
-        with pytest.raises(expected, match='synthetic .* failure'):
-            replay(value, bars, constraints, executor)
-        assert executor.revision == 0
+    expected = ReplayFailure if failure == 'step' else RuntimeError
+    with pytest.raises(expected, match='synthetic .* failure'):
+        replay(value, bars, constraints, executor)
+    assert executor.revision == 0
     assert namespace_state() == existing
 
 

@@ -1,68 +1,14 @@
 """Synthetic formal auxiliary data and session context integration contracts."""
+
+from equity_test_support import setup_auxiliary
 from dataclasses import replace
-from datetime import date, datetime
-from zoneinfo import ZoneInfo
+import json
 
 import pytest
 
-from dataflows import (AssetClass, EquityProduct, InstrumentId, MarketId, ProviderBinding,
-                       ProviderConfig, ProviderKey, SourceRef, TimeInterval, TradingSession)
-from dataflows.equity_data import equity_metadata
-from strategy_runtime.equity_definition import (EquityAuxiliaryInput, EquityStrategyCandidate,
-                                                 equity_source_hash)
-from czsc_trader.application.research_governance_service import create_research_context
-from test_equity_closure import setup_formal_equity
-
-
-def setup_auxiliary(tmp_path, *, auxiliary_days=(1, 2), max_age_seconds=86400, same_source=False,
-                    latency_seconds=0, half_day=False):
-    """Return context/request/products/calls; products['auxiliary'] is mutable test data."""
-    old_context, old, products, calls = setup_formal_equity(tmp_path)
-    zone = ZoneInfo("America/New_York")
-    sessions = tuple(TradingSession(date(2026, 10, day), str(zone), (TimeInterval(
-        datetime(2026, 10, day, 9, 30, tzinfo=zone), datetime(2026, 10, day, 13 if half_day and day == 2 else 16, tzinfo=zone)),))
-        for day in (1, 2))
-    grid = tuple(bar for session in sessions for bar in session.bars(old_context.execution_spec.decision_clock))
-    products[EquityProduct.BARS] = products[EquityProduct.BARS].loc[lambda rows: rows.Date.isin([bar.end for bar in grid])].copy()
-    products[EquityProduct.CONSTRAINTS] = products[EquityProduct.CONSTRAINTS].loc[lambda rows: rows.Date.isin([bar.start for bar in grid])].copy()
-    old = replace(old, window=TimeInterval(old.window.start, grid[-1].end))
-    source = old.sources.bars if same_source else SourceRef("auxiliary-fixture", "v1")
-    auxiliary = EquityAuxiliaryInput("market", InstrumentId(MarketId.US, AssetClass.ETF, "SPY"),
-        source, old_context.execution_spec.decision_clock, 1, max_age_seconds)
-    products["auxiliary"] = {product: products[product].copy(deep=True)
-                              for product in (EquityProduct.BARS, EquityProduct.SESSIONS)}
-    products["auxiliary"][EquityProduct.BARS].loc[:, ["Open", "High", "Low", "Close"]] *= 10
-    for product, data in products["auxiliary"].items():
-        products["auxiliary"][product] = data.loc[data.Date.dt.day.isin(auxiliary_days)].copy()
-
-    def fetch(request):
-        calls.append(request)
-        is_auxiliary = request.parameters.instrument == auxiliary.instrument
-        data = products["auxiliary"] if is_auxiliary else products
-        calendar = tuple(s for s in sessions if s.session_date.day in auxiliary_days) if is_auxiliary else sessions
-        metadata = equity_metadata(request, calendar, availability_basis="FIXTURE_BAR_CLOSE")
-        metadata["no_actions_verified"] = True
-        return data[request.parameters.query.product].copy(deep=True), metadata
-
-    bindings = {ProviderKey(product, MarketId.US, old.sources.bars): ProviderBinding("fixture", "v1", fetch)
-                for product in EquityProduct}
-    bindings.update({ProviderKey(product, MarketId.US, source): ProviderBinding(source.provider, source.revision, fetch)
-                     for product in (EquityProduct.BARS, EquityProduct.SESSIONS)})
-    specification = replace(old_context.execution_spec, data_latency_seconds=latency_seconds)
-    context = create_research_context(old_context.repository, old_context.batch,
-        providers=ProviderConfig(bindings={}, equity_bindings=bindings), execution_spec=specification)
-    root = old.candidate.source_root
-    (root / "strategy.py").write_text(
-        'from strategy_runtime.equity_definition import EquityDecision\n'
-        'def decide(ctx):\n'
-        '    target = 0 if ctx.portfolio.quantity else ctx.parameters["enter"]\n'
-        '    return EquityDecision.from_facts(target, "auxiliary timing", facts={"market_close":float(ctx.auxiliary_histories["market"].iloc[-1]["Close"]),"session_end":ctx.session.segments[-1].end.isoformat()}, next_watch="next completed bar")\n',
-        encoding="utf-8")
-    definition = replace(old.candidate.definition, source_sha256=equity_source_hash(root, ("strategy.py",)),
-                         auxiliary_inputs=(auxiliary,), session_context=True, execution_spec=specification)
-    candidate = EquityStrategyCandidate(context.strategy_id, "C0001", definition, root)
-    from czsc_trader.research_tools import EquityBuyHold, EvaluationBenchmark
-    return context, replace(old, candidate=candidate, benchmark=EvaluationBenchmark(EquityBuyHold(specification))), products, calls
+from dataflows import (EquityProduct, TimeInterval)
+from strategy_runtime.equity_definition import (equity_source_hash)
+from equity_test_support import archived_auxiliary_account_bytes as archived_auxiliary_account_bytes
 
 
 def test_auxiliary_preparation_evaluation_and_publication(tmp_path):
@@ -83,11 +29,10 @@ def test_auxiliary_preparation_evaluation_and_publication(tmp_path):
 
 
 @pytest.mark.parametrize("field", ["instrument", "source_revision", "sessions"])
-def test_auxiliary_archived_metadata_is_authenticated(tmp_path, field):
+def test_auxiliary_archived_metadata_is_authenticated(archived_auxiliary_account_bytes, field):
     from czsc_trader.research_tools.equity_assessment import build_equity_assessment_payload
-    context, request, _, _ = setup_auxiliary(tmp_path)
-    payload = context.evaluation.evaluate(request).payload
-    key = request.candidate.definition.auxiliary_inputs[0].data_key(EquityProduct.BARS)
+    content, key = archived_auxiliary_account_bytes
+    payload = json.loads(content)
     metadata = payload["data"][key]["metadata"]
     if field == "instrument":
         metadata[field]["symbol"] = "QQQ"
@@ -138,11 +83,10 @@ def test_auxiliary_independent_calendar_is_allowed(tmp_path):
 @pytest.mark.parametrize("mutation,match", [("future", "AUXILIARY_INPUT_UNAVAILABLE"),
     ("stale", "AUXILIARY_INPUT_STALE"), ("missing", "independent session grid"),
     ("session", "session is not yet available")])
-def test_archived_context_validation_survives_rehashed_envelope(tmp_path, mutation, match):
+def test_archived_context_validation_survives_rehashed_envelope(archived_auxiliary_account_bytes, mutation, match):
     from strategy_runtime.equity import equity_hash
     from czsc_trader.research_tools.equity_assessment import build_equity_assessment_payload
-    context, request, _, _ = setup_auxiliary(tmp_path, max_age_seconds=70000)
-    payload = context.evaluation.evaluate(request).payload
+    payload = json.loads(archived_auxiliary_account_bytes[0])
     records = payload["audit_inputs"]["decision_inputs"]
     bars = records["auxiliary"]["market"]["bars"]
     if mutation in {"future", "stale"}:

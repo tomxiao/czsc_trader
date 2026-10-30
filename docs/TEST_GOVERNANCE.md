@@ -190,15 +190,18 @@ TDR、DFLS、FSC、STC、SM、SE、SRT、TXE、PTE和WDG关键业务能力的同
 日常Pytest默认排除标记为`release_acceptance`的昂贵验收场景；显式传入
 `--release-acceptance`时包含这些场景。完整回归脚本为所有Pytest进程传入该参数。
 
-脚本固定划分八组，按较重组优先启动：`TDR_FREEZE`、`PTE_2`、`PTE_1`、`DFLS`、
-`TDR_2`、`TDR_1`、`TDR_RUNTIME`和`PACKAGES`。`MaxParallel`默认为8，允许1至8；较低上限使剩余组排队，不减少测试范围。
+脚本固定划分十二个通道，按较重组优先启动：`TDR_FREEZE`、`TDR_ASSESSMENT`、
+`PTE_2`、`PTE_1`、`TDR_2`、`TDR_1`、`TDR_INTEGRATION`、`PTE_ADVICE`、
+`TDR_RUNTIME`、`TDR_ROUNDTRIP`、`DFLS`和`PACKAGES`。
+`MaxParallel`默认为12，允许1至12；较低上限使剩余组排队，不减少测试范围。
 该参数限制同时活动的通道Job数量；用例内部创建的子进程和线程不计入此上限。
 
-冻结及评估交付测试保持同组；其余TDR和PTE各按完整测试文件划分为两组，保留组内夹具复用。
+冻结、阶段四评估、检验往返和跨模块集成分别运行；完整测试文件保持同组，保留进程内夹具复用。
 第一组选择明确文件，第二组通过目录发现其余文件并排除已分组文件，新增TDR或PTE文件仍自动发现。
-`TDR_RUNTIME`独立覆盖候选运行、SRT桥接、批量评价和输入绑定四个文件；这些文件从其他TDR组排除。
-`DFLS`独立运行；FSC、STC、SM、SE、SRT、TXE六个子包在`PACKAGES`内由同一个Pytest进程
-收集和执行，复用解释器导入，各目录夹具仍按其作用域隔离；全仓共八个Pytest进程。
+`TDR_RUNTIME`独立覆盖指定的候选运行、SRT桥接、批量评价、输入绑定和证据执行等文件；这些文件从其他TDR组排除。
+`DFLS`独立运行，并串行执行独立的PTE控制层测试进程。FSC、STC、SM、SE、SRT、SC、TXE七个子包
+与指定的TDR参数评价、账户诊断和冻结迁移测试在`PACKAGES`中复用一个解释器；
+各目录夹具仍按其作用域隔离。完整入口共执行十三个Pytest步骤，具体文件选择以脚本及选择清单为准。
 控制台Node测试仅在`PTE_2`执行一次。
 各进程使用独立Pytest工作区、禁用Python字节码写入，并将BLAS等原生计算线程数设为1。
 所有通道结束后统一运行Ruff、输出每条通道的耗时和退出码，
@@ -260,6 +263,7 @@ rg -n "TEMP-TDD" tests packages -g "*.py" -g "*.mjs"
   packages\dataflows\tests packages\strategy_evaluator\tests packages\factor_signal_catalog\tests `
   packages\strategy_template_catalog\tests `
   packages\strategy_runtime\tests packages\trading_execution_engine\tests `
+  packages\strategy_chart\tests `
   packages\paper_trading_engine\tests `
   --release-acceptance --collect-only -q
 Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml tests -q }

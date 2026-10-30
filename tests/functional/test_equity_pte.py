@@ -11,7 +11,7 @@ from paper_trading_engine.broker import BrokerOrder
 from paper_trading_engine.equity_contracts import EquityAccountRules, EquityOrderReport, EQUITY_OFFLINE_CHANNEL_ID
 from paper_trading_engine.equity_advice import EquityAdviceClient, prepare_equity_decision
 from paper_trading_engine.equity_execution import EquityExecution
-from test_equity_closure import setup_formal_equity
+from equity_test_support import setup_formal_equity
 
 
 class RecordedChannel:
@@ -23,7 +23,7 @@ class RecordedChannel:
 
 
 def equity_account(tmp_path, cash_policy=None, *, auxiliary=False):
-    from test_equity_auxiliary_context import setup_auxiliary
+    from equity_test_support import setup_auxiliary
     context, request, products, _ = (setup_auxiliary if auxiliary else setup_formal_equity)(tmp_path)
     if cash_policy is not None:
         from dataclasses import replace

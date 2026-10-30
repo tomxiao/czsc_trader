@@ -8,8 +8,8 @@ from dataflows import (EquityProduct, ProviderConfig, TimeInterval, UsEquityBarP
 from czsc_trader.application.research_governance_service import create_research_context
 from czsc_trader.application import publish_evidence
 from czsc_trader.research_tools import EvaluationEvidenceWrite
-from test_equity_research import setup_equity
-from test_equity_closure import setup_formal_equity
+from equity_test_support import setup_equity
+from equity_test_support import setup_formal_equity
 
 
 def gap_context(tmp_path, *, formal=True, missing=(2, 3, 25), zero=(4,), blocked=(7,), split=False):

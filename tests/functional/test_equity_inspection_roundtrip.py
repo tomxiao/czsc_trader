@@ -16,13 +16,13 @@ from czsc_trader.application import run_backtest
 from czsc_trader.research_tools import EvaluationEvidenceWrite
 from czsc_trader.research_tools.delivery import EvaluationEvidenceRef
 from czsc_trader.research_tools import delivery as d
-from test_equity_closure import setup_formal_equity
+from equity_test_support import setup_formal_equity
 from test_equity_pte import equity_protocol
 
 
 @pytest.mark.parametrize('auxiliary', [False, True], ids=['primary', 'auxiliary-session'])
 def test_formal_equity_inspect_freeze_exact_package(tmp_path, auxiliary):
-    from test_equity_auxiliary_context import setup_auxiliary
+    from equity_test_support import setup_auxiliary
     research, evaluation, _, _ = (setup_auxiliary(tmp_path, same_source=True) if auxiliary
                                   else setup_formal_equity(tmp_path))
     evaluation = research.evaluation.prepare(evaluation)
@@ -35,7 +35,7 @@ def test_formal_equity_inspect_freeze_exact_package(tmp_path, auxiliary):
 
 def test_equity_inspection_requires_complete_auxiliary_identity(tmp_path):
     from dataclasses import replace
-    from test_equity_auxiliary_context import setup_auxiliary
+    from equity_test_support import setup_auxiliary
     research, evaluation, _, _ = setup_auxiliary(tmp_path)
     evaluation = research.evaluation.prepare(evaluation)
     replay = EquityInspectionReplay(f.InspectionCoordinate('main', 'standard'), evaluation.input_binding,

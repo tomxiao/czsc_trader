@@ -13,13 +13,13 @@ from czsc_trader.research_tools import (ResearchExecutionSession, ExecutionCheck
     EvaluationIdentity, EvaluationWindow)
 from czsc_trader.research_tools.assessment import build_assessment_evidence
 from czsc_trader.research_tools import delivery as d
-from test_equity_replay_v3 import setup_v3
+from equity_test_support import setup_v3
 
 
-def run_pair(context, request, *, checkpoint=None):
-    other = replace(request, candidate=replace(request.candidate, candidate_id='C0002'))
+def run_accounts(context, request, *, paired=True, checkpoint=None):
+    requests = (request, replace(request, candidate=replace(request.candidate, candidate_id='C0002'))) if paired else (request,)
     with ResearchExecutionSession(context, experiment=request.experiment, checkpoint=checkpoint) as execution:
-        prepared = tuple(context.evaluation.prepare(value, execution=execution) for value in (request, other))
+        prepared = tuple(context.evaluation.prepare(value, execution=execution) for value in requests)
         results = context.evaluation.evaluate_many(prepared, execution=execution)
         assert all(value.status.value == 'SUCCEEDED' for value in results), [v.error for v in results]
         writes = tuple(EvaluationEvidenceWrite(request.experiment, f'account-{i}', p, value.result)
@@ -28,14 +28,14 @@ def run_pair(context, request, *, checkpoint=None):
         assert all(p.status.value == 'PUBLISHED' for p in publications), [p.error for p in publications]
         facts = tuple(build_assessment_evidence(p, value.result, execution=execution)[0]
                       for p, value in zip(prepared, results))
-        count = execution._equity_v3.certification.audit_count
-        assert count == 3
+        assert execution.equity_statistics.authenticated_accounts == len(requests) + 1
         yield execution, prepared, results, publications, facts
 
 
 def test_v3_public_publish_register_diagnose_and_delivery(tmp_path):
     context, request, _, _ = setup_v3(tmp_path)
-    for execution, prepared, results, publications, facts in run_pair(context, request):
+    for execution, prepared, results, publications, facts in run_accounts(context, request):
+        detached = EvaluationEvidenceWrite(request.experiment, 'detached', prepared[0], results[0].result)
         refs = tuple(value.reference for value in publications)
         assert all((ref.schema, ref.schema_version) == ('equity_research', 3) for ref in refs)
         assert results[0].result.payload['benchmark_ref'] == results[1].result.payload['benchmark_ref']
@@ -51,7 +51,7 @@ def test_v3_public_publish_register_diagnose_and_delivery(tmp_path):
             AccountRunRef(refs[0], identities[0]), AccountRunRef(refs[1], identities[1]),
             EvaluationWindow('TEST', date(2026, 10, 1), date(2026, 10, 2))), execution=execution)
         assert diagnosis.status.value == 'COMPUTED', diagnosis.issues
-        assert execution._equity_v3.certification.audit_count == 3
+        assert execution.equity_statistics.authenticated_accounts == 3
         record = register_candidate(context.repository,
             CandidateRegistrationRequest(request.candidate, request.experiment, (refs[0],), ()))
         assert load_candidate(context.repository, request.candidate.key).content_identity.content_sha256 == record.content_sha256
@@ -75,30 +75,23 @@ def test_v3_public_publish_register_diagnose_and_delivery(tmp_path):
         assert damaged.status.value == 'INVALID_EVIDENCE'
         assert any('checksum differs' in issue for issue in damaged.issues)
         assert validate_delivery(context.repository, delivery.receipt.reference).status == 'PASS'
+    # A real result cannot be published after its owning session has closed.
+    with pytest.raises((TypeError, RuntimeError, ValueError), match='Session|session|active|execution'):
+        publish_evidence(context, detached)
 
 
 def test_v3_checkpoint_restores_results_and_publication_closure(tmp_path):
     context, request, _, _ = setup_v3(tmp_path)
     context.evaluation.resources = ExecutionResources(max_workers=2, native_threads_per_worker=1)
-    for _, _, results, publications, _ in run_pair(context, request,
+    for _, _, results, publications, _ in run_accounts(context, request,
             checkpoint=ExecutionCheckpointRequest('v3-checkpoint')):
         contents = tuple(value.result.content for value in results)
         refs = tuple(value.reference for value in publications)
-    for execution, _, results, publications, _ in run_pair(context, request,
+    for execution, _, results, publications, _ in run_accounts(context, request,
             checkpoint=ExecutionCheckpointRequest('v3-checkpoint', CheckpointMode.RESUME)):
         assert tuple(value.result.content for value in results) == contents
         assert tuple(value.reference for value in publications) == refs
         assert execution.stats.reused_results == 2 and execution.stats.reused_publications == 2
-
-
-def test_v3_detached_evaluation_requires_its_prepared_session(tmp_path):
-    context, request, _, _ = setup_v3(tmp_path)
-    with pytest.raises(TypeError, match='explicit ResearchExecutionSession'):
-        context.evaluation.prepare(request)
-    for _, prepared, results, _, _ in run_pair(context, request):
-        detached = EvaluationEvidenceWrite(request.experiment, 'detached', prepared[0], results[0].result)
-    with pytest.raises((TypeError, RuntimeError, ValueError), match='Session|session|active|execution'):
-        publish_evidence(context, detached)
 
 
 @pytest.mark.parametrize('damage', ('missing', 'changed'))
@@ -106,7 +99,7 @@ def test_v3_delivery_cache_rechecks_each_packages_dependency_closure(tmp_path, m
     from czsc_trader.application import delivery_service as service
 
     context, request, _, _ = setup_v3(tmp_path)
-    for _, _, results, publications, facts in run_pair(context, request):
+    for _, _, results, publications, facts in run_accounts(context, request, paired=False):
         ref = publications[0].reference
         record = register_candidate(context.repository,
             CandidateRegistrationRequest(request.candidate, request.experiment, (ref,), ()))

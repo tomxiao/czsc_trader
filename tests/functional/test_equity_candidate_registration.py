@@ -1,7 +1,7 @@
 """Formal equity candidate roundtrip uses the shared registration API."""
 from dataclasses import replace
 import pytest
-from test_equity_research import setup_equity
+from equity_test_support import setup_equity
 from strategy_runtime import EquityStrategyDefinition, EquityStrategyCandidate, equity_source_hash
 from czsc_trader.application.candidate_service import CandidateRegistrationRequest, register_candidate, load_candidate
 

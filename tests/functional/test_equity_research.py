@@ -1,72 +1,18 @@
 """Public US equity path, identity isolation and independent account evidence."""
+
+from equity_test_support import hold, setup_equity
 from dataclasses import asdict, replace
-from datetime import date, datetime
 import json
-from zoneinfo import ZoneInfo
 
 import pandas as pd
 import pytest
-from dataflows import (AssetClass, BarFrequency, EquityProduct, InstrumentId, MarketId,
-                       ProviderBinding, ProviderConfig, ProviderKey, SourceRef, TimeInterval, TradingSession)
-from dataflows.equity_data import equity_metadata
-from strategy_runtime import (AccountPolicy, CashAvailabilityPolicy, EquityCandidate, ResearchExecutionSpec,
-                              UsEquitySpec, equity_implementation_hash)
+from dataflows import (AssetClass, EquityProduct, InstrumentId, MarketId,
+                       SourceRef, TimeInterval)
+from strategy_runtime import (CashAvailabilityPolicy)
 from strategy_evaluator.equity import audit_equity_account
-from czsc_trader.application.context import RepositoryContext
-from czsc_trader.application.research_governance_service import (
-    create_research_batch, create_research_context, create_experiment, ResearchBatchRequest, ExperimentRequest)
 from czsc_trader.application.backtest_service import run_backtest
 from czsc_trader.application.evidence_service import publish_evidence
-from czsc_trader.research_tools import EquityEvaluationRequest, EquitySources, EvaluationEvidenceWrite
-
-
-def alternate(history, portfolio):
-    return 1 if portfolio.quantity == 0 else 0
-
-
-def hold(history, portfolio):
-    return 1
-
-
-def setup_equity(tmp_path, decide=alternate, *, cash_policy=CashAvailabilityPolicy.IMMEDIATE_RESEARCH):
-    repository = RepositoryContext(tmp_path, tmp_path / "research", tmp_path / "research/registrations", tmp_path / "strategies")
-    batch = create_research_batch(repository, ResearchBatchRequest("S999", "Equity fixture", "US:LITE",
-                                  {"goal": "fixture"}), actor="DEV", reason="isolated contract test")
-    spec = ResearchExecutionSpec(UsEquitySpec(), BarFrequency.M30, AccountPolicy("USD", cash_policy),
-                                 1, .01, .01, 0.)
-    instrument, source = InstrumentId(MarketId.US, AssetClass.STOCK, "LITE"), SourceRef("fixture", "v1")
-    zone = ZoneInfo(instrument.timezone)
-    sessions = tuple(TradingSession(date(2026, 10, day), str(zone), (TimeInterval(
-        datetime(2026, 10, day, 9, 30, tzinfo=zone), datetime(2026, 10, day, 16, tzinfo=zone)),)) for day in (1, 2))
-    grid = [bar for session in sessions for bar in session.bars(BarFrequency.M30)]
-    bars = pd.DataFrame({"Date": [b.end for b in grid], "BarStart": [b.start for b in grid],
-                         "AvailableDate": [b.end for b in grid], "Open": 10., "High": 10.2,
-                         "Low": 9.8, "Close": 10., "Volume": 100., "Amount": 1000.})
-    constraints = pd.DataFrame({"Date": [b.start for b in grid], "AvailableDate": [b.start for b in grid],
-                                "QuantityStep": 1, "PriceTick": .01, "Tradable": True,
-                                "SettlementAt": [grid[-1].end for _ in grid]})
-    actions = pd.DataFrame([{"Date": grid[0].start, "AvailableDate": grid[0].start, "EventId": "none",
-                             "Kind": "NONE", "Ratio": 1., "CashPerShare": 0., "PayAt": None}])
-    products = {EquityProduct.BARS: bars, EquityProduct.CONSTRAINTS: constraints, EquityProduct.ACTIONS: actions,
-                EquityProduct.SESSIONS: pd.DataFrame({"Date": [s.segments[0].start for s in sessions],
-                "AvailableDate": [s.segments[0].start for s in sessions],
-                "SessionDate": [s.session_date.isoformat() for s in sessions]})}
-    calls = []
-
-    def fetch(request):
-        calls.append(request)
-        metadata = equity_metadata(request, sessions, availability_basis="FIXTURE_BAR_CLOSE")
-        metadata["no_actions_verified"] = True
-        return products[request.parameters.query.product].copy(deep=True), metadata
-
-    config = ProviderConfig(bindings={}, equity_bindings={ProviderKey(product, MarketId.US, source):
-                            ProviderBinding("fixture", "v1", fetch) for product in EquityProduct})
-    context = create_research_context(repository, batch, providers=config, execution_spec=spec)
-    experiment = create_experiment(context, ExperimentRequest("Fixture", "Does isolated US execution work?", date(2026, 10, 28)))
-    candidate = EquityCandidate("S999", "C001", instrument, spec.fingerprint, equity_implementation_hash(decide), 1, decide)
-    request = EquityEvaluationRequest(experiment, candidate, TimeInterval(grid[1].start, grid[-1].end),
-                                      date(2026, 10, 1), EquitySources(source, source, source, source), 1000., .001)
-    return context, request, products, calls
+from czsc_trader.research_tools import EvaluationEvidenceWrite
 
 
 def test_us_public_prepare_evaluate_backtest_publish_are_identical(tmp_path):

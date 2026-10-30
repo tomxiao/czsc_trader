@@ -120,11 +120,20 @@ def test_scalar_fast_path_preserves_original_complete_json_identity(value):
     assert len(executor.rows['decisions']) == 1
 
 
-@pytest.mark.parametrize('end_value', ['1880-01-01T04:56:01Z', '2000-01-01T04:59:59Z',
-    '2020-03-08T06:59:59Z', '2020-03-08T07:00:00Z',
-    '2020-11-01T05:30:00Z', '2020-11-01T06:30:00Z', '2026-01-01T04:59:59Z'])
-@pytest.mark.parametrize('representation', ['datetime', 'timestamp', 'iso'])
-def test_prepared_session_zone_and_input_times_match_pandas_boundary(end_value, representation):
+# Session-date boundaries and representation acceptance are orthogonal risks.
+# Each timezone offset is exercised close enough to midnight to affect the output.
+@pytest.mark.parametrize('end_value,representation', [
+    pytest.param('1880-01-01T04:56:01Z', 'datetime', id='historical-local-mean-time'),
+    pytest.param('2000-01-01T04:59:59Z', 'datetime', id='year-2000-boundary'),
+    pytest.param('2020-03-08T04:30:00Z', 'datetime', id='spring-before-midnight'),
+    pytest.param('2020-03-09T04:30:00Z', 'datetime', id='spring-after-midnight'),
+    pytest.param('2020-11-01T04:30:00Z', 'datetime', id='fall-before-midnight'),
+    pytest.param('2020-11-02T04:30:00Z', 'datetime', id='fall-after-midnight'),
+    pytest.param('2026-01-01T04:59:59Z', 'datetime', id='utc-datetime-year-boundary'),
+    pytest.param('2026-01-01T04:59:59Z', 'timestamp', id='pandas-timestamp-input'),
+    pytest.param('2026-01-01T04:59:59Z', 'iso', id='iso-input'),
+])
+def test_session_date_boundaries_and_supported_time_representations(end_value, representation):
     end = pd.Timestamp(end_value).to_pydatetime()
     start = end - timedelta(minutes=30)
     interval = TimeInterval(start, end)

@@ -10,7 +10,7 @@ from czsc_trader.application import diagnose_accounts, publish_evidence
 from czsc_trader.research_tools import EvaluationEvidenceWrite
 from czsc_trader.research_tools.account_diagnosis import AccountDiagnosisRequest, AccountRunRef
 from czsc_trader.research_tools.evaluation import EvaluationIdentity, EvaluationWindow
-from test_equity_auxiliary_context import setup_auxiliary
+from equity_test_support import setup_auxiliary
 
 
 @pytest.mark.parametrize("different_cost", [False, True])
