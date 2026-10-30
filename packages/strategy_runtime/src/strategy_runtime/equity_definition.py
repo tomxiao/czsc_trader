@@ -557,7 +557,7 @@ class EquityStrategyCandidate:
     def bind_replay(self):
         from .equity_source_runtime import BoundEquityInvocation
         if self.definition.contract_version != 3:
-            raise TypeError('bound replay readers require equity V3')
+            raise TypeError('bound strategy module scopes require equity V3')
         return BoundEquityInvocation(self)
 
     def _invoke(self, context, state=None):

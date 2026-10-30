@@ -114,6 +114,15 @@ def authenticate(value):
     return path
 
 
+def validate_runtime_statistics(statistics, source_size):
+    """This single-file fixture must load once per account without step checks."""
+    expected = {'source_checks': 0, 'source_bytes_read': source_size, 'module_loads': 1}
+    for key, value in expected.items():
+        actual = statistics.get(key)
+        if type(actual) is not int or actual != value:
+            raise ValueError(f'Account loading contract differs for {key}: {actual!r} != {value}')
+
+
 def normalized(value, maps=None, field=None):
     if isinstance(value, dict):
         return {key: normalized(item, maps, key) for key, item in value.items()}
@@ -264,6 +273,9 @@ def main():
         'fixture_sha256': digest(FIXTURE), 'benchmark_sha256': digest(Path(__file__)),
         'engine_sources': engine_hashes,
         'source_closure_sha256': source_hash, 'sources': provenance, 'candidates': {},
+        'account_loading_contract': {'source_checks': 0, 'module_loads': 1,
+            'source_bytes_read': FIXTURE.stat().st_size,
+            'scope': 'one startup source read and one persistent entrypoint module per account; benchmark file identity checks are separate'},
         'comparison_contract': {'seven_tables': list(TABLES), 'formal_json_double_precision': 10,
             'numeric_tolerance': 0, 'identity_mapping': 'bijection from decision causal points, orders, fills, BUY cycles',
             'time_normalization': 'aware ISO timestamp strings to UTC, including explanation timestamp values'},
@@ -333,6 +345,7 @@ def main():
                    'raw_differences': differences(reference, actual)}
             item['runs'].append(run)
             try:
+                validate_runtime_statistics(run['runtime'], report['account_loading_contract']['source_bytes_read'])
                 maps = identity_maps(reference, actual)
                 aligned = normalized(actual, maps)
                 run['aligned_differences'] = differences(normalized(reference), aligned)
@@ -341,12 +354,12 @@ def main():
                 run['status'] = 'PASS' if run['aligned_differences']['count'] == 0 else 'FAIL'
             except (KeyError, ValueError) as error:
                 run['status'] = 'FAIL'
-                run['identity_error'] = str(error)
+                run['validation_error'] = str(error)
             save(output / 'result.json', report)
             print(json.dumps({'candidate': key, 'repeat': repeat + 1, 'status': run['status'],
                 'core_seconds': elapsed, 'differences': run.get('aligned_differences', {}).get('count'),
                 'runtime': run['runtime'],
-                'identity_error': run.get('identity_error')}, ensure_ascii=False), flush=True)
+                'validation_error': run.get('validation_error')}, ensure_ascii=False), flush=True)
             if run['status'] != 'PASS':
                 save(output / f'{key}-{repeat + 1}-actual.json', actual)
                 report['status'] = 'FAIL'

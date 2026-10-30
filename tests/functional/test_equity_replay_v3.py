@@ -273,3 +273,48 @@ def test_v3_parameter_plan_uses_owned_preparation_without_refetch(tmp_path, monk
     with ResearchExecutionSession(context, experiment=request.experiment) as other_execution:
         with pytest.raises(ValueError, match="not issued"):
             validate_parameter_request(bound[0], context.data, execution=other_execution)
+
+
+@pytest.mark.parametrize("mutation", ["delete", "replace"])
+def test_v3_loaded_account_finishes_and_publishes_after_source_change(tmp_path, monkeypatch, mutation):
+    from strategy_runtime.resources import ExecutionResources
+    from trading_execution_engine.equity import EquityHistoricalExecutor
+    from czsc_trader.application import publish_evidence
+    from czsc_trader.research_tools import EvaluationEvidenceWrite, build_assessment_evidence
+
+    context, request, _, _ = setup_v3(tmp_path)
+    context.evaluation.resources = ExecutionResources(max_workers=1, native_threads_per_worker=1)
+    source = request.candidate.source_root / "strategy.py"
+    execute = EquityHistoricalExecutor.execute
+    changed = False
+    def change_after_first_execution(executor, plan, bar, *, constraint):
+        nonlocal changed
+        result = execute(executor, plan, bar, constraint=constraint)
+        if not changed:
+            # The candidate task runs first in this one-worker public batch.
+            # Its module has loaded and its first decision has already executed.
+            if mutation == "delete":
+                source.unlink()
+            else:
+                source.write_text("raise RuntimeError('replacement must not be loaded')\n", encoding="utf-8")
+            changed = True
+        return result
+    monkeypatch.setattr(EquityHistoricalExecutor, "execute", change_after_first_execution)
+    with ResearchExecutionSession(context, experiment=request.experiment) as execution:
+        prepared = context.evaluation.prepare(request, execution=execution)
+        outcome, = context.evaluation.evaluate_many((prepared,), execution=execution)
+        assert changed and outcome.result is not None, outcome.error
+        facts, = build_assessment_evidence(prepared, outcome.result, execution=execution)
+        reference = publish_evidence(context, EvaluationEvidenceWrite(request.experiment, "loaded-module",
+            prepared, outcome.result), execution=execution)
+        assert reference.schema_version == 3
+        assert reference.resolve(context.repository.root).read_bytes() == outcome.result.content
+        assert facts.result_sha256 == outcome.result.result_hash
+        runs = materialize_v3(outcome.result).payload["runs"]
+        assert runs["candidate"]["metrics"]["closed_cycles"] == 12
+        assert runs["buy_hold"]["metrics"]["closed_cycles"] == 0
+        assert execution.equity_statistics.authenticated_accounts == 2
+        # A new account must load independently rather than borrow the first
+        # account's already loaded module after its source has disappeared.
+        subsequent, = context.evaluation.evaluate_many((prepared,), execution=execution)
+        assert subsequent.status.value == "FAILED" and subsequent.result is None

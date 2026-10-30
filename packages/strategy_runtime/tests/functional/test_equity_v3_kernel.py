@@ -18,12 +18,7 @@ from trading_execution_engine.equity import EquityHistoricalExecutor
 
 SOURCE = '''from strategy_runtime import EquityDecision
 from strategy_runtime.equity_replay import StateRecord, StepResult
-counter = 0
 def step(ctx, state):
-    global counter
-    counter += 1
-    if counter != 1:
-        raise ValueError("namespace state leaked")
     close = ctx.features.get("close").value
     if state.cycle is None:
         held, latched = 0, False

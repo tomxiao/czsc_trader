@@ -1,6 +1,9 @@
-"""Real per-step source changes remain observable with run-scoped readers."""
-import os
+"""One source snapshot and module namespace per replay account."""
+import builtins
 from dataclasses import replace
+import io
+import os
+from pathlib import Path
 import sys
 
 import pandas as pd
@@ -15,146 +18,155 @@ def replay(value, bars, constraints, executor):
         start=bars.BarStart.iloc[1].to_pydatetime(), end=bars.Date.iloc[-1].to_pydatetime(), fee_rate=.001)
 
 
-def test_source_bytes_change_rejected_even_when_size_and_timestamp_are_preserved(tmp_path, monkeypatch):
-    value = candidate(tmp_path/'source')
-    bars, constraints, executor = inputs(value)
-    path = value.source_root/'strategy.py'
-    original, metadata = path.read_bytes(), path.stat()
-    execute = executor.execute
-
-    def change_after_first(*args, **kwargs):
-        result = execute(*args, **kwargs)
-        if result.revision == 1:
-            changed = original.replace(b'close >= 10.', b'close >= 11.')
-            assert changed != original and len(changed) == len(original)
-            path.write_bytes(changed)
-            os.utime(path, ns=(metadata.st_atime_ns, metadata.st_mtime_ns))
-        return result
-
-    monkeypatch.setattr(executor, 'execute', change_after_first)
-    with pytest.raises(ReplayFailure, match='source closure changed') as failure:
-        replay(value, bars, constraints, executor)
-    assert executor.revision == failure.value.committed_state.revision == 1
-    assert len(executor.rows['decisions']) == 1
-
-
-def test_atomic_same_content_replacement_keeps_exact_result_and_namespace_isolation(tmp_path, monkeypatch):
-    value = candidate(tmp_path/'source')
-    bars, constraints, original_executor = inputs(value)
-    original = replay(value, bars, constraints, original_executor)
-    _, _, executor = inputs(value)
-    path = value.source_root/'strategy.py'
-    content = path.read_bytes()
-    execute = executor.execute
-
-    def replace_after_first(*args, **kwargs):
-        result = execute(*args, **kwargs)
-        if result.revision == 1:
-            replacement = path.with_suffix('.replacement')
-            replacement.write_bytes(content)
-            os.replace(replacement, path)
-        return result
-
-    monkeypatch.setattr(executor, 'execute', replace_after_first)
-    replaced = replay(value, bars, constraints, executor)
-    for name in ('decisions', 'orders', 'fills', 'corporate_action_entries', 'account_points', 'account_daily', 'trades'):
-        pd.testing.assert_frame_equal(getattr(original.execution_result, name), getattr(replaced.execution_result, name), check_exact=True)
-    # Source defines a global counter which must be one in every new namespace.
-    assert len(replaced.execution_result.decisions) == len(bars)-1
-    path.unlink()  # Binding scope released all source handles on successful exit.
-
-
-def test_deleted_source_cannot_be_hidden_by_an_open_reader(tmp_path, monkeypatch):
-    value = candidate(tmp_path/'source')
-    bars, constraints, executor = inputs(value)
-    path = value.source_root/'strategy.py'
-    execute = executor.execute
-
-    def delete_after_first(*args, **kwargs):
-        result = execute(*args, **kwargs)
-        if result.revision == 1:
-            path.unlink()
-        return result
-
-    monkeypatch.setattr(executor, 'execute', delete_after_first)
-    with pytest.raises(ReplayFailure, match='source disappeared'):
-        replay(value, bars, constraints, executor)
-    assert executor.revision == 1
+def set_source(value, source, files=('strategy.py',)):
+    (value.source_root / 'strategy.py').write_text(source, encoding='utf-8')
+    return replace(value, definition=replace(value.definition, source_files=files,
+        source_sha256=equity_source_hash(value.source_root, files)))
 
 
 def multifile_candidate(root):
     value = candidate(root)
-    source = 'from .rules import threshold\n' + SOURCE
-    source = source.replace('    close = ctx.features', '    expected_threshold = threshold()\n    close = ctx.features')
+    source = SOURCE.replace('def step(ctx, state):', 'counter = 0\ndef step(ctx, state):')
+    source = source.replace('    close = ctx.features',
+        '    global counter\n    counter += 1\n'
+        '    expected_threshold, helper_count = 10., 0\n'
+        '    if counter > 1:\n'
+        '        from .rules import threshold\n'
+        '        expected_threshold, helper_count = threshold()\n'
+        '    close = ctx.features')
     source = source.replace('close >= 10.', 'close >= expected_threshold')
-    (root / 'strategy.py').write_text(source, encoding='utf-8')
+    source = source.replace('facts={"held":held,',
+        'facts={"module_count":counter,"helper_count":helper_count,"held":held,')
     (root / 'rules').mkdir()
     (root / 'rules/__init__.py').write_text('from .levels import threshold\n', encoding='utf-8')
     (root / 'rules/levels.py').write_text(
         'COUNT = 0\nTHRESHOLD = 10.\ndef threshold():\n'
-        ' global COUNT\n COUNT += 1\n'
-        ' if COUNT != 1:\n  raise ValueError("relative module globals leaked")\n'
-        ' return THRESHOLD\n', encoding='utf-8')
-    files = ('rules/__init__.py', 'rules/levels.py', 'strategy.py')
-    return replace(value, definition=replace(value.definition, source_files=files,
-                                             source_sha256=equity_source_hash(root, files)))
+        ' global COUNT\n COUNT += 1\n return THRESHOLD, COUNT\n', encoding='utf-8')
+    return set_source(value, source, ('rules/__init__.py', 'rules/levels.py', 'strategy.py'))
 
 
-def test_multifile_relative_imports_have_fresh_globals_and_every_file_is_read(tmp_path):
+def namespace_state():
+    return {name for name in sys.modules if name.startswith('_equity_')}, tuple(sys.meta_path)
+
+
+def assert_counts(outcome, expected_bytes, count):
+    assert outcome.statistics.decisions == count
+    assert outcome.statistics.source_checks == 0
+    assert outcome.statistics.source_bytes_read == expected_bytes
+    assert outcome.statistics.module_loads == 1
+    facts = [{item['key']: item['text'] for item in explanation['basis']}
+             for explanation in outcome.execution_result.decisions.explanation]
+    assert [int(row['module_count']) for row in facts] == list(range(1, count + 1))
+    assert [int(row['helper_count']) for row in facts] == list(range(count))
+
+
+def test_module_globals_persist_within_account_and_are_isolated_between_accounts(tmp_path):
     value = multifile_candidate(tmp_path / 'source')
-    bars, constraints, executor = inputs(value)
-    existing = {name for name in sys.modules if name.startswith('_equity_')}
-    meta_path = tuple(sys.meta_path)
-    outcome = replay(value, bars, constraints, executor)
-    assert outcome.statistics.source_checks == outcome.statistics.decisions == len(bars) - 1
     expected_bytes = sum(len((value.source_root / name).read_bytes()) for name in value.definition.source_files)
-    assert outcome.statistics.source_bytes_read == outcome.statistics.decisions * expected_bytes
-    assert {name for name in sys.modules if name.startswith('_equity_')} == existing
-    assert tuple(sys.meta_path) == meta_path
+    existing = namespace_state()
+    outcomes = []
+    for _ in range(2):
+        bars, constraints, executor = inputs(value)
+        outcome = replay(value, bars, constraints, executor)
+        assert_counts(outcome, expected_bytes, len(bars) - 1)
+        assert namespace_state() == existing
+        outcomes.append(outcome)
+    pd.testing.assert_frame_equal(outcomes[0].execution_result.decisions,
+                                  outcomes[1].execution_result.decisions, check_exact=True)
 
 
-def test_mutated_relative_dependency_is_rejected_before_next_account_transition(tmp_path, monkeypatch):
+@pytest.mark.parametrize('change', ('modify', 'delete'))
+def test_startup_snapshot_survives_source_changes_and_late_import_without_source_io(tmp_path, monkeypatch, change):
     value = multifile_candidate(tmp_path / 'source')
-    bars, constraints, executor = inputs(value)
-    path = value.source_root / 'rules/levels.py'
-    content = path.read_bytes()
-    metadata = path.stat()
+    bars, constraints, reference_executor = inputs(value)
+    original = replay(value, bars, constraints, reference_executor)
+    _, _, executor = inputs(value)
+    expected_bytes = sum(len((value.source_root / name).read_bytes()) for name in value.definition.source_files)
     execute = executor.execute
+    existing = namespace_state()
+    root = os.path.normcase(os.path.abspath(value.source_root))
 
-    def change_dependency_after_first(*args, **kwargs):
-        outcome = execute(*args, **kwargs)
-        if outcome.revision == 1:
-            path.write_bytes(content.replace(b'THRESHOLD = 10.', b'THRESHOLD = 11.'))
-            os.utime(path, ns=(metadata.st_atime_ns, metadata.st_mtime_ns))
-        return outcome
+    def guarded(original_call):
+        def call(path, *args, **kwargs):
+            if isinstance(path, (str, bytes, os.PathLike)):
+                normalized = os.path.normcase(os.path.abspath(os.fsdecode(path)))
+                if normalized == root or normalized.startswith(root + os.sep):
+                    raise AssertionError('hot loop accessed source filesystem: ' + normalized)
+            return original_call(path, *args, **kwargs)
+        return call
 
-    monkeypatch.setattr(executor, 'execute', change_dependency_after_first)
-    with pytest.raises(ReplayFailure, match='source closure changed') as failed:
-        replay(value, bars, constraints, executor)
-    assert failed.value.committed_state.revision == executor.revision == 1
-    assert len(executor.rows['decisions']) == 1
+    def change_after_first(*args, **kwargs):
+        result = execute(*args, **kwargs)
+        if result.revision == 1:
+            for name in value.definition.source_files:
+                path = value.source_root / name
+                if change == 'delete':
+                    path.unlink()
+                else:
+                    path.write_text('raise RuntimeError("changed source must not be loaded")\n', encoding='utf-8')
+            # The relative helper has not been imported yet. Neither it nor the
+            # entry source may be read/stat'ed in later decisions or cleanup.
+            monkeypatch.setattr(builtins, 'open', guarded(builtins.open))
+            monkeypatch.setattr(io, 'open', guarded(io.open))
+            monkeypatch.setattr(os, 'stat', guarded(os.stat))
+            monkeypatch.setattr(Path, 'read_bytes', guarded(Path.read_bytes))
+        return result
+
+    monkeypatch.setattr(executor, 'execute', change_after_first)
+    outcome = replay(value, bars, constraints, executor)
+    assert_counts(outcome, expected_bytes, len(bars) - 1)
+    for name in ('decisions', 'orders', 'fills', 'corporate_action_entries', 'account_points', 'account_daily', 'trades'):
+        pd.testing.assert_frame_equal(getattr(original.execution_result, name),
+                                      getattr(outcome.execution_result, name), check_exact=True)
+    assert namespace_state() == existing
+    monkeypatch.undo()
 
 
-@pytest.mark.parametrize('raise_during_step', [False, True])
-def test_user_registered_namespace_children_are_removed_on_success_and_failure(tmp_path, raise_during_step):
+@pytest.mark.parametrize('failure', ('none', 'load', 'step'))
+def test_namespace_and_import_finder_cleanup_after_success_or_failure(tmp_path, failure):
     value = candidate(tmp_path / 'source')
-    register = ('    namespace = __package__\n'
-        '    sys.modules[namespace + ".manual"] = types.ModuleType(namespace + ".manual")\n'
-        '    sys.modules[namespace + ".manual.deep"] = types.ModuleType(namespace + ".manual.deep")\n')
-    if raise_during_step:
-        register += '    raise RuntimeError("synthetic step failed after module registration")\n'
-    source = 'import sys\nimport types\n' + SOURCE.replace('    close = ctx.features', register + '    close = ctx.features')
-    (value.source_root / 'strategy.py').write_text(source, encoding='utf-8')
-    value = replace(value, definition=replace(value.definition,
-        source_sha256=equity_source_hash(value.source_root, ('strategy.py',))))
+    register = ('namespace = __package__\n'
+        'sys.modules[namespace + ".manual"] = types.ModuleType(namespace + ".manual")\n'
+        'sys.modules[namespace + ".manual.deep"] = types.ModuleType(namespace + ".manual.deep")\n')
+    source = 'import sys\nimport types\n' + register
+    if failure == 'load':
+        source += 'raise RuntimeError("synthetic module load failure")\n'
+    source += SOURCE
+    if failure == 'step':
+        source = source.replace('    close = ctx.features',
+            '    raise RuntimeError("synthetic step failure")\n    close = ctx.features')
+    value = set_source(value, source)
     bars, constraints, executor = inputs(value)
-    existing = {name for name in sys.modules if name.startswith('_equity_')}
-    meta_path = tuple(sys.meta_path)
-    if raise_during_step:
-        with pytest.raises(ReplayFailure, match='synthetic step failed'):
+    existing = namespace_state()
+    if failure == 'none':
+        assert replay(value, bars, constraints, executor).statistics.decisions == len(bars) - 1
+    else:
+        expected = ReplayFailure if failure == 'step' else RuntimeError
+        with pytest.raises(expected, match='synthetic .* failure'):
             replay(value, bars, constraints, executor)
         assert executor.revision == 0
-    else:
-        assert replay(value, bars, constraints, executor).statistics.decisions == len(bars) - 1
-    assert {name for name in sys.modules if name.startswith('_equity_')} == existing
-    assert tuple(sys.meta_path) == meta_path
+    assert namespace_state() == existing
+
+
+def test_replay_loads_once_without_repeating_source_identity_verification(tmp_path, monkeypatch):
+    from strategy_runtime import equity_definition
+
+    value = candidate(tmp_path / 'source')
+    bars, constraints, executor = inputs(value)
+    path = value.source_root / 'strategy.py'
+    path.write_text(SOURCE + '\n# edited after preparation\n', encoding='utf-8')
+    expected_bytes = len(path.read_bytes())
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError('replay repeated source identity verification')
+
+    monkeypatch.setattr(type(value), 'verify', forbidden)
+    monkeypatch.setattr(equity_definition, 'equity_source_hash', forbidden)
+    monkeypatch.setattr(equity_definition, '_read_equity_sources', forbidden)
+    existing = namespace_state()
+    outcome = replay(value, bars, constraints, executor)
+    assert outcome.statistics.source_checks == 0
+    assert outcome.statistics.source_bytes_read == expected_bytes
+    assert outcome.statistics.module_loads == 1
+    assert executor.revision == len(bars) - 1
+    assert namespace_state() == existing

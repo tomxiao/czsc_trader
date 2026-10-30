@@ -239,7 +239,6 @@ def _require_prepared(state, value):
         raise ValueError("prepared equity handle was not issued by this execution session")
     if _bytes(value.request.identity(value.candidate.definition.execution_spec)) != value.contract_content:
         raise ValueError("equity engine or request identity changed after preparation")
-    value.candidate.verify()
 
 
 def _replay(state, prepared, *, benchmark=False):
@@ -271,7 +270,6 @@ def _compute_account(replay, candidate, request, actions, owner):
     """Worker computation only: it cannot certify or publish its own output."""
     from strategy_runtime.equity_replay import run_replay
     from trading_execution_engine.equity import EquityHistoricalExecutor
-    candidate.verify()
     executor = EquityHistoricalExecutor(specification=candidate.definition.execution_spec,
         initial_cash=request.initial_cash, fee_rate=request.fee_rate, actions=actions)
     outcome = run_replay(replay, candidate, executor, start=request.window.start,
@@ -452,7 +450,6 @@ def validate_certified_result(access, prepared, result, *, execution):
         raise ValueError("result is not the exact certified result issued by this execution session")
     if result.request_hash != equity_hash(_json_value(prepared.identity(access.execution_spec))):
         raise ValueError("certified result request or engine identity changed")
-    prepared.candidate.verify()
 
 
 def validate_result_structure(payload, artifacts=()):

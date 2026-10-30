@@ -587,6 +587,7 @@ class ReplayStatistics:
     decisions: int
     source_checks: int = 0
     source_bytes_read: int = 0
+    module_loads: int = 0
 
 
 @dataclass(frozen=True, slots=True)
@@ -631,15 +632,15 @@ def _plan(decision, point, portfolio, reference, spec, spec_hash, implementation
 
 
 def run_replay(prepared, candidate, executor, *, start, end, fee_rate, initial_state=None, owner=None):
-    """Authenticate once, keep step source guards active, and execute one account."""
+    """Load the strategy once and execute one independent account in memory."""
     from dataclasses import replace
     started = perf_counter()
-    candidate.verify()
     with candidate.bind_replay() as source_scope:
         outcome = _run_replay(prepared, candidate, executor, start=start, end=end,
                               fee_rate=fee_rate, initial_state=initial_state, owner=owner)
     return replace(outcome, statistics=replace(outcome.statistics, replay_seconds=perf_counter() - started,
-        source_checks=source_scope.checks, source_bytes_read=source_scope.bytes_read))
+        source_checks=source_scope.checks, source_bytes_read=source_scope.bytes_read,
+        module_loads=source_scope.loads))
 
 
 def _run_replay(prepared, candidate, executor, *, start, end, fee_rate, initial_state=None, owner=None):

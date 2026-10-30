@@ -85,3 +85,12 @@ def test_price_and_explanation_changes_are_not_rounded(benchmark):
     actual['decisions'][0]['explanation']['basis'][0]['text'] = '0.12300000000000001'
     maps = benchmark.identity_maps(reference, actual)
     assert benchmark.differences(benchmark.normalized(reference), benchmark.normalized(actual, maps))['count'] == 2
+
+
+def test_account_loading_statistics_require_one_startup_load(benchmark):
+    statistics = {'source_checks': 0, 'source_bytes_read': 6400, 'module_loads': 1}
+    benchmark.validate_runtime_statistics(statistics, 6400)
+    for key, value in (('source_checks', 1), ('source_checks', False),
+                       ('module_loads', 0), ('module_loads', 2), ('source_bytes_read', 12800)):
+        with pytest.raises(ValueError, match=key):
+            benchmark.validate_runtime_statistics({**statistics, key: value}, 6400)

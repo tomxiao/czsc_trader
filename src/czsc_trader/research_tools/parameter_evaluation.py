@@ -447,7 +447,8 @@ def _create_equity_plan(cls, design, center, children, *, mapping_evidence, feas
     central = _equity_contract(center)
     context = equity_parameter_contract(central)["nonparameter_context_sha256"]
     for item in (center, *children):
-        item.candidate.verify()
+        if not v3:
+            item.candidate.verify()
         _verify_equity_inputs(item, dataflows, execution=execution)
         if item.experiment.strategy_id != center.experiment.strategy_id:
             raise ValueError("equity parameter child belongs to another family")
