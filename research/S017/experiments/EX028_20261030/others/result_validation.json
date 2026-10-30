@@ -1,0 +1,34 @@
+{
+  "status": "PASS",
+  "scope": "CENSUS_AND_EVENT_TEMPORAL_ONLY_NO_ACCOUNT_CERTIFICATION",
+  "analysis_sha256": "f02875ab6c0c9f2ce50079485392dbd18811fdda9a80b4bc84bc8bcff34dfb25",
+  "events_sha256": "c27a09075f2591970211b6c2cbba3322ff2945b039a7fab3ff7c55a60b9c18ca",
+  "verification_source_sha256": "c1da6c2ac6ebba11429b7ba5b29cf97a3700301ce0e5de32bd6309b845adbf0b",
+  "legacy_3_13_label_comparisons": 45580,
+  "scalar_vector_event_comparisons": 68370,
+  "rows": 68370,
+  "sessions": 1760,
+  "sequential": {
+    "folds": 24,
+    "future_outcome_perturbations": [
+      "2020-01-02"
+    ],
+    "cross_fold_nonoverlap": "PASS",
+    "mature_training_only": "PASS"
+  },
+  "checks": [
+    "complete_fee_formula",
+    "legacy_label_exact_reproduction",
+    "authorized_window",
+    "prepared_data_identity",
+    "signal_parent_regime_identity",
+    "prefix_causality",
+    "independent_all_horizon_counts_means_matches",
+    "bootstrap_defined_denominator",
+    "independent_training_scores_and_selection",
+    "training_label_maturity",
+    "cross_fold_deoverlap",
+    "future_outcome_perturbation"
+  ],
+  "seconds": 64.84967549983412
+}

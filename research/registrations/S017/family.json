@@ -177,7 +177,7 @@
         "status": "READY_WITH_EXPLICIT_RAW_PRICE_AND_AVAILABILITY_ASSUMPTIONS"
       },
       "completed_new_account_paths": 30,
-      "completed_new_rounds": 18,
+      "completed_new_rounds": 19,
       "downside_failure_authorization": {
         "protocol": "research/S017/experiments/EX022_20261029/protocols/design.md",
         "scope": "3个竞争形态、1个近期超跌背景、旧C参考，固定5期限普查，1轮、0账户",
@@ -207,7 +207,8 @@
         "EX024_20261029",
         "EX025_20261029",
         "EX026_20261029",
-        "EX027_20261029"
+        "EX027_20261029",
+        "EX028_20261030"
       ],
       "failed_new_rounds": 1,
       "final_disjoint_ablation_authorization": {
@@ -240,7 +241,7 @@
         "type": "DeliveryValidation"
       },
       "guideline_commit": "25c09476",
-      "initiated_new_rounds": 19,
+      "initiated_new_rounds": 20,
       "integrated_prototype_account_counts": {
         "basis": "Three published formal candidate evaluations, each containing one candidate and one identical-contract buy-hold path; not six independent research configurations.",
         "completed_new_account_paths": 6,
@@ -368,7 +369,7 @@
       },
       "platform_scope": "正式辅助市场/行业行情因果输入，以及当前可得交易时段；离线验证和既有能力保护",
       "recovery_exit_description": "research/S017/experiments/EX013_20261029/others/recovery_exit_description.json",
-      "remaining_rounds": 1,
+      "remaining_rounds": 0,
       "reports": {
         "EX011_20261029": {
           "evidence_id": "4601d3cefa82067e8f43a9da516739ada4f822b04f6ff53b06e493c9601bb64e.json",
@@ -607,6 +608,20 @@
           "schema_version": 1,
           "sha256": "4ca80cef9c675bcec18fa813dcab5e8163c3929d3a83547f07f0f073ec7f4322",
           "type": "EvidenceRef"
+        },
+        "EX028_20261030": {
+          "evidence_id": "554e51eafbf4ee34d39c2462c1d0e394ef23559ebdc0df73453cfec3cfa2944c.json",
+          "experiment": {
+            "experiment_id": "EX028_20261030",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "554e51eafbf4ee34d39c2462c1d0e394ef23559ebdc0df73453cfec3cfa2944c",
+          "type": "EvidenceRef"
         }
       },
       "research_started": true,
@@ -639,7 +654,15 @@
         "EX025_20261029": "COMPLETED_VOLUME_RANGE_ABLATION_REPORT_PUBLICATION_PASS",
         "EX026_20261029": "COMPLETED_FINAL_DISJOINT_ABLATION_REPORT_PUBLICATION_PASS",
         "EX027_20261029": "COMPLETED_INTEGRATED_M005_EXIT_PROTOTYPES_REPORT_PASS",
+        "EX028_20261030": "COMPLETED_SHORT_ENTRY_TEMPORAL_REPORT_PASS",
         "scope": "Operational progress only; completed rounds require published completed reports."
+      },
+      "short_entry_temporal_authorization": {
+        "engineering_separate_rounds": 0,
+        "protocol": "research/S017/experiments/EX028_20261030/protocols/design.md",
+        "research_rounds": 1,
+        "scope": "新分支三入场短周期普查、时间变化及因果顺序检验；至多四静态账户；剩余1轮",
+        "user_statement": "这个思路可以，请继续"
       },
       "signal_diagnosis_authorization": {
         "context": "同意先对现有30m PAT入场做信号诊断，再决定退出研究",
@@ -647,8 +670,8 @@
         "scope": "单一诊断实验；不运行新完整账户、不改信号、不自动追加后续实验",
         "user_statement": "ok"
       },
-      "status": "INTEGRATED_M005_EXIT_PROTOTYPES_COMPLETE",
-      "stop_rationale": "条件拆解支线保持关闭；集成三退出账户比较完成，剩余一轮按本轮研究结论安排。",
+      "status": "STAGE_TWO_BUDGET_EXHAUSTED_AWAITING_USER",
+      "stop_rationale": "20轮额度已用完；不追加研究、不自动进入阶段三。",
       "successful_new_configurations": 15,
       "technical_failures": {
         "EX010_20261029": "Auxiliary 96-hour age limit excludes valid half-day/long-weekend observations; FAILED report preserved, EX013 successor uses 5 days."
@@ -704,7 +727,7 @@
       "research/S017/materials/registration_20261028.md",
       "research/S017/materials/pre_registration_readiness.json"
     ],
-    "next_action": "建议把最后1轮用于完整账户的再入场节奏竞争：保留S017-M005入场、S017-M009固定65基线及本轮两种价格退出的原阈值，比较止损后立即接受新信号，与等待原65柱持有窗口结束后再接受信号。将两种退出各配一个等待版本，同轮完成接线、核验和账户比较，不另计工程轮次。要分清新增的反复试错是否拖累了风控，而不是继续盲调止损线；等待规则不得使用未来价格，精确重新入场时点在运行前冻结。频率可能进一步下降，必须完整报告，不能用降低交易次数换取回撤后宣称达标。若等待后仍无足够整体改善，停止围绕这两种退出补丁式调整，以已获得的账户依据和未解决目标收口阶段二，不自动进入阶段三。原放量/窄幅拆解支线保持关闭。",
+    "next_action": "额度已用完；请用户决定是否另行批准M012低均价修复条件的研究方案，不追加实验。",
     "objective": "LITE 美股个股30分钟只做多择时研究",
     "other_proposals_confirmation": "CONFIRMED",
     "policy_reference": "research/RSCH_AGENT.md#research-policy",
@@ -805,10 +828,10 @@
         "2018-12-31"
       ]
     },
-    "stage": "STAGE_2_INTEGRATED_M005_EXIT_PROTOTYPES_COMPLETE",
+    "stage": "STAGE_2_SHORT_ENTRY_TEMPORAL_COMPLETE_AWAITING_USER",
     "stage_two_result": {
       "account_replay_count": 68,
-      "conclusion": "本轮完整研究已完成，三组均未同时达到已确认的五项经济及频率目标。S017-M005配合S017-M009固定65柱，把此前事件收益线索兑现为正的完整账户收益：净年化38.31%，略高于同合同买持36.32%，30分钟最大回撤44.47%，低于买持67.34%。这给原入场及数天修复持有提供了继续研究的账户依据，但不是达标或稳健性验收。S017-M010结构失效和S017-M011移动止损在本轮完整账户中都降低收益并扩大回撤，不能作为已有效的风控组件采用。",
+      "conclusion": "三项短周期入场主期限及过去训练后的事件净收益均为负；近期差异存在，但不足以证明缩短开发池即可获得可交易优势。0新账户，不推荐阶段三。",
       "configuration_count": 34,
       "count_scope": "Completed formal configurations and candidate/paired-benchmark account paths; EX010 three technically failed configurations and EX017 one unfinished technical attempt are recorded separately, not successful accounts.",
       "diagnostic_only_configuration_ids": [
@@ -826,12 +849,12 @@
         "stage": "PROTOTYPES",
         "type": "DeliveryReference"
       },
-      "latest_experiment": "EX027_20261029",
-      "latest_experiment_conclusion": "本轮完整研究已完成，三组均未同时达到已确认的五项经济及频率目标。S017-M005配合S017-M009固定65柱，把此前事件收益线索兑现为正的完整账户收益：净年化38.31%，略高于同合同买持36.32%，30分钟最大回撤44.47%，低于买持67.34%。这给原入场及数天修复持有提供了继续研究的账户依据，但不是达标或稳健性验收。S017-M010结构失效和S017-M011移动止损在本轮完整账户中都降低收益并扩大回撤，不能作为已有效的风控组件采用。",
+      "latest_experiment": "EX028_20261030",
+      "latest_experiment_conclusion": "三项短周期入场主期限及过去训练后的事件净收益均为负；近期差异存在，但不足以证明缩短开发池即可获得可交易优势。0新账户，不推荐阶段三。",
       "latest_experiment_report": {
-        "evidence_id": "4ca80cef9c675bcec18fa813dcab5e8163c3929d3a83547f07f0f073ec7f4322.json",
+        "evidence_id": "554e51eafbf4ee34d39c2462c1d0e394ef23559ebdc0df73453cfec3cfa2944c.json",
         "experiment": {
-          "experiment_id": "EX027_20261029",
+          "experiment_id": "EX028_20261030",
           "strategy_id": "S017",
           "type": "ExperimentRef"
         },
@@ -839,10 +862,10 @@
         "name": "experiment-report",
         "schema": "experiment_report",
         "schema_version": 1,
-        "sha256": "4ca80cef9c675bcec18fa813dcab5e8163c3929d3a83547f07f0f073ec7f4322",
+        "sha256": "554e51eafbf4ee34d39c2462c1d0e394ef23559ebdc0df73453cfec3cfa2944c",
         "type": "EvidenceRef"
       },
-      "latest_experiment_scope": "INTEGRATED_M005_THREE_EXIT_ACCOUNT_PROTOTYPES",
+      "latest_experiment_scope": "SHORT_ENTRY_AND_TEMPORAL_COMPETITION",
       "predecessor_delivery": {
         "batch": {
           "strategy_id": "S017",
@@ -1026,5 +1049,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-10-30T00:46:44+08:00"
+  "updated_at": "2026-10-30T17:10:23+08:00"
 }
