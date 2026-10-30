@@ -17,22 +17,28 @@ from test_research_delivery import content, published
 
 @pytest.mark.parametrize("applicable", [True, False])
 def test_equity_stage4_authenticates_plan_targets_and_archived_accounts(tmp_path, applicable):
-    research, request, plan, plan_ref, children = equity_plan(tmp_path, applicable=applicable)
+    with equity_plan(tmp_path, applicable=applicable) as (research, request, plan, plan_ref, children, execution):
+        _check_equity_delivery(research, request, plan, plan_ref, children, execution, applicable)
+
+
+def _check_equity_delivery(research, request, plan, plan_ref, children, execution, applicable):
     context = research.repository
     evidence, refs = [], []
-    pressure = research.evaluation.prepare(replace(request, scenario_id="PRESSURE", measurement_tier="STRESS",
-        fee_rate=request.fee_rate * 2, input_binding=None, audit_inputs_sha256=None))
+    pressure = research.evaluation.prepare(replace(request.request, scenario_id="PRESSURE", measurement_tier="STRESS",
+        fee_rate=request.request.fee_rate * 2, input_binding=None, audit_inputs_sha256=None), execution=execution)
     for index, item in enumerate((request, pressure, *children)):
-        result = research.evaluation.evaluate(item)
-        evidence.extend(build_assessment_evidence(item, result))
-        refs.append(publish_evidence(research, EvaluationEvidenceWrite(item.experiment, f"account-{index}", item, result)))
+        outcome, = research.evaluation.evaluate_many((item,), execution=execution)
+        assert outcome.result is not None, outcome.error
+        result = outcome.result
+        evidence.extend(build_assessment_evidence(item, result, execution=execution))
+        refs.append(publish_evidence(research, EvaluationEvidenceWrite(item.experiment, f"account-{index}", item, result), execution=execution))
     register_candidate(context, CandidateRegistrationRequest(request.candidate, request.experiment, (refs[0],), ()))
     links = tuple(m.PerturbationLink(plan.design.center, row.candidate, 1.,
-        canonical_sha256(child.lineage.derivation.to_dict()), child.lineage.parameter_binding.point)
+        canonical_sha256(child.request.lineage.derivation.to_dict()), child.request.lineage.parameter_binding.point)
         for child, row in zip(children, evidence[2:], strict=True))
     seed = assessment_request((evidence[0],))
-    assessment = replace(seed, protocol=replace(seed.protocol, baseline_window=request.window_id,
-        standard_scenario=request.scenario_id, stress_scenario=pressure.scenario_id),
+    assessment = replace(seed, protocol=replace(seed.protocol, baseline_window=request.request.window_id,
+        standard_scenario=request.request.scenario_id, stress_scenario=pressure.request.scenario_id),
         perturbations=links, evidence=tuple(evidence), incomplete=(), parameter_designs=(plan.design,))
     panel = assess_candidates(assessment)
     targets = (
@@ -41,7 +47,7 @@ def test_equity_stage4_authenticates_plan_targets_and_archived_accounts(tmp_path
             (m.ResearchTarget("point-return", m.ResearchMetric.NET_ANNUAL_RETURN, lower=m.ConstantBound(-1., True)),),
             (m.ResearchTarget("point-dd", m.ResearchMetric.DRAWDOWN_MAGNITUDE, upper=m.ConstantBound(1., True)),)),
         m.ResearchTarget("stress", m.ResearchMetric.NET_ANNUAL_RETURN, lower=m.ConstantBound(-1., True),
-                         scope=m.TargetScope.STRESS, one_way_cost=pressure.fee_rate),
+                         scope=m.TargetScope.STRESS, one_way_cost=pressure.request.fee_rate),
     )
     comparison = replace(comparison_request(panel), targets=m.ResearchTargets(targets, 60))
     confirmation = publish_evidence(research, MaterialEvidenceWrite(request.experiment, "confirmed-targets",
@@ -51,7 +57,7 @@ def test_equity_stage4_authenticates_plan_targets_and_archived_accounts(tmp_path
         d.MandateItem("targets", d.MandateItemKind.OBJECTIVE, "Synthetic limits", confirmed,
                      d.PerformanceRequirement(targets)),
         d.MandateItem("benchmark", d.MandateItemKind.BENCHMARK, "Equity buy hold", confirmed,
-                     d.BenchmarkRequirement(request.benchmark)),
+                     d.BenchmarkRequirement(request.request.benchmark)),
         d.MandateItem("frequency", d.MandateItemKind.EXECUTION, "Session frequency", confirmed,
                      d.NumericRequirement("frequency_window_days", "sessions", lower=60., upper=60.)),
     ))
@@ -80,17 +86,12 @@ def test_equity_stage4_authenticates_plan_targets_and_archived_accounts(tmp_path
     with pytest.raises(d.DeliveryValidationError, match="confirmed mandate|targets must be preserved"):
         assemble_delivery(context, replace(definition, revision=2), content(replace(payload,
             comparison_request=altered, comparison=compare_candidates(altered))))
-    if applicable:
-        from test_equity_inspection_roundtrip import inspect_freeze
-        _, _, inspection_delivery = inspect_freeze(research, request, refs[0], assessment_ref=assembled.receipt.reference)
     # Remove only individually named fixture sources; the delivered snapshot must stand alone.
     (request.candidate.source_root / "strategy.py").unlink()
     originals = {ref.resolve(context.root) for ref in (plan_ref, plan.mapping_evidence, plan.feasibility_evidence, *refs)}
     for original in originals:
         original.unlink()
     assert validate_delivery(context, assembled.receipt.reference).status is d.ValidationStatus.PASS
-    if applicable:
-        assert validate_delivery(context, inspection_delivery.reference).status is d.ValidationStatus.PASS
     saved = published(context, assembled.receipt)
     assert (saved / plan.mapping_evidence.path).is_file()
     assert (saved / plan.feasibility_evidence.path).is_file()

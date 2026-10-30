@@ -5,7 +5,8 @@ payload for each corruption case; no live session or certified handle is shared.
 """
 from dataclasses import replace
 from datetime import date, datetime
-from uuid import uuid4
+from pathlib import Path
+from contextlib import contextmanager
 from zoneinfo import ZoneInfo
 
 import pandas as pd
@@ -168,25 +169,62 @@ def setup_v3(tmp_path):
 
 
 @pytest.fixture(scope="module")
-def archived_formal_account_bytes(frozen_seed_root):
-    from czsc_trader.research_tools.equity_assessment import build_equity_assessment_payload
-    seed = frozen_seed_root / f"formal-archive-{uuid4().hex}"
-    seed.mkdir()
-    context, request, _, _ = setup_formal_equity(seed)
-    prepared = context.evaluation.prepare(request)
-    result = context.evaluation.evaluate(prepared)
-    assert build_equity_assessment_payload(result.payload)
-    return result.content
+def archived_formal_account_bytes():
+    return (Path(__file__).parents[1] / "fixtures/equity_v2/formal.json").read_bytes()
 
 
 @pytest.fixture(scope="module")
-def archived_auxiliary_account_bytes(frozen_seed_root):
-    from czsc_trader.research_tools.equity_assessment import build_equity_assessment_payload
-    seed = frozen_seed_root / f"auxiliary-archive-{uuid4().hex}"
-    seed.mkdir()
-    context, request, _, _ = setup_auxiliary(seed, max_age_seconds=70000)
-    prepared = context.evaluation.prepare(request)
-    result = context.evaluation.evaluate(prepared)
-    assert build_equity_assessment_payload(result.payload)
-    key = request.candidate.definition.auxiliary_inputs[0].data_key(EquityProduct.BARS)
-    return result.content, key
+def archived_auxiliary_account_bytes():
+    import json
+    content = (Path(__file__).parents[1] / "fixtures/equity_v2/auxiliary.json").read_bytes()
+    key = next(key for key in json.loads(content)["data"] if key.startswith("auxiliary:") and key.endswith(":bars"))
+    return content, key
+
+
+def v3_request(context, request):
+    """Express the fixture decision in the current explicit V3 step contract."""
+    from hashlib import sha256
+    if request.formal and request.candidate.definition.contract_version == 3:
+        return request
+    if request.formal:
+        definition = request.candidate.definition
+        content = (request.candidate.source_root / "strategy.py").read_text(encoding="utf-8")
+        content = content.replace('.iloc[-1]["Close"]', '.last()["Close"]')
+    else:
+        target = "1" if request.candidate.decide is hold else "0 if ctx.portfolio.quantity else 1"
+        content = ('from strategy_runtime.equity_definition import EquityDecision\n'
+                   'def decide(ctx):\n'
+                   f'    return EquityDecision.from_facts({target}, "fixture", facts={{"quantity":ctx.portfolio.quantity}}, next_watch="next bar")\n')
+        definition = EquityStrategyDefinition(request.candidate.instrument, context.execution_spec,
+            request.candidate.warmup_bars, "strategy:decide", ("strategy.py",), "0" * 64)
+    content += ('\nfrom strategy_runtime.equity_replay import StepResult, StateRecord\n'
+                'def step(ctx, state):\n'
+                '    return StepResult(decide(ctx), cycle_values=StateRecord())\n')
+    root = request.experiment.resolve(context.repository.root) / ".tmp" / sha256(content.encode()).hexdigest()
+    root.mkdir(parents=True, exist_ok=True)
+    (root / "strategy.py").write_text(content, encoding="utf-8")
+    definition = replace(definition, entrypoint="strategy:step", source_sha256=equity_source_hash(root, ("strategy.py",)),
+        contract_version=3, feature_graph=FeatureGraph((), ()), state_schema=StrategyStateSchema())
+    candidate_id = request.candidate.candidate_id if request.formal else "C0001"
+    candidate = EquityStrategyCandidate(request.candidate.strategy_id, candidate_id, definition, root)
+    return replace(request, candidate=candidate, benchmark=EvaluationBenchmark(EquityBuyHold(context.execution_spec)),
+        drawdown_basis=request.drawdown_basis or "BAR_CLOSE", concentration_basis=request.concentration_basis or "MAX_SINGLE",
+        prepared=None, input_binding=None, audit_inputs_sha256=None)
+
+
+@contextmanager
+def v3_account(context, request):
+    from czsc_trader.research_tools import ResearchExecutionSession
+    from czsc_trader.research_tools.equity_replay_v3 import materialize_v3
+    request = v3_request(context, request)
+    with ResearchExecutionSession(context, experiment=request.experiment) as execution:
+        prepared = context.evaluation.prepare(request, execution=execution)
+        outcome, = context.evaluation.evaluate_many((prepared,), execution=execution)
+        if outcome.result is None:
+            raise ValueError(outcome.error.message)
+        yield prepared, outcome.result, materialize_v3(outcome.result).payload, execution
+
+
+def replay_payload(context, request):
+    with v3_account(context, request) as (_, _, payload, _):
+        return payload

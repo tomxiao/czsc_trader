@@ -22,7 +22,6 @@ from .evidence import EvidenceRef
 
 if TYPE_CHECKING:
     from .evaluation import EvaluationRequest
-    from .equity_evaluation import EquityEvaluationRequest
     from .equity_replay_v3 import PreparedEquityEvaluation
     from .execution import ResearchExecutionSession
 
@@ -120,8 +119,8 @@ class ParameterEvaluationPlan(_Record):
 
     @classmethod
     def create(cls, design: ParameterNeighborhoodDesign,
-               center: EvaluationRequest | EquityEvaluationRequest | PreparedEquityEvaluation,
-               children: tuple[EvaluationRequest, ...] | tuple[EquityEvaluationRequest, ...] | tuple[PreparedEquityEvaluation, ...], *,
+               center: EvaluationRequest | PreparedEquityEvaluation,
+               children: tuple[EvaluationRequest, ...] | tuple[PreparedEquityEvaluation, ...], *,
                mapping_evidence: EvidenceRef, feasibility_evidence: EvidenceRef, dataflows: Dataflows,
                execution: ResearchExecutionSession | None = None) -> ParameterEvaluationPlan:
         """Authenticate prepared inputs, without evaluating or publishing accounts."""
@@ -136,8 +135,7 @@ class ParameterEvaluationPlan(_Record):
         if execution is not None:
             raise TypeError("explicit parameter execution ownership requires prepared V3 requests")
         if type(center) is EquityEvaluationRequest:
-            return _create_equity_plan(cls, design, center, children,
-                mapping_evidence=mapping_evidence, feasibility_evidence=feasibility_evidence, dataflows=dataflows)
+            raise TypeError("equity parameter plans require session-owned PreparedEquityEvaluation inputs")
 
         if type(design) is not ParameterNeighborhoodDesign:
             raise TypeError("new parameter plan requires ParameterNeighborhoodDesign; legacy sphere plans are read-only")
@@ -248,16 +246,11 @@ def validate_parameter_request(request, dataflows: Dataflows, *, execution=None)
         if original.lineage is not None and original.lineage.parameter_binding is not None:
             _validate_equity_parameter_request(original, dataflows, prepared=request)
         return
-    if (type(request) is EquityEvaluationRequest and request.formal
-            and request.candidate.definition.contract_version == 3):
-        raise TypeError("V3 parameter validation requires a session-owned PreparedEquityEvaluation")
+    if type(request) is EquityEvaluationRequest:
+        raise TypeError("equity parameter validation requires a session-owned PreparedEquityEvaluation")
     if execution is not None:
         raise TypeError("explicit parameter execution ownership requires prepared V3 requests")
     if request.lineage is None or request.lineage.parameter_binding is None:
-        return
-
-    if type(request) is EquityEvaluationRequest:
-        _validate_equity_parameter_request(request, dataflows)
         return
 
     binding = request.lineage.parameter_binding
@@ -406,39 +399,23 @@ def _verify_equity_inputs(request, dataflows, *, execution=None):
                 name: value["content_sha256"] for name, value in data.items()}:
             raise ValueError("V3 parameter input binding differs from its authenticated snapshot")
         return
-    if request.prepared is None or request.input_binding is None:
-        raise ValueError("equity parameter plan requires prepared input binding")
-    if request.prepared.space_id != dataflows.binding.space_id:
-        raise ValueError("equity parameter input belongs to another data context")
-    expected = request.input_binding.expected_identities
-    observed = set()
-    for role, query in request.request_items(request.candidate.definition.execution_spec):
-        result = dataflows.fetch(query, prepared=request.prepared)
-        if role in observed or not result.ready or result.identity.content_sha256 != expected.get(role):
-            raise ValueError("equity parameter input content differs")
-        observed.add(role)
-    if observed != set(expected):
-        raise ValueError("equity parameter input coverage differs")
+    raise TypeError("equity parameter inputs require session-owned PreparedEquityEvaluation")
 
 
 def _create_equity_plan(cls, design, center, children, *, mapping_evidence, feasibility_evidence, dataflows, execution=None):
-    from .equity_evaluation import EquityEvaluationRequest
     from .equity_replay_v3 import PreparedEquityEvaluation
     from strategy_runtime.equity import equity_hash
     if type(design) is not ParameterNeighborhoodDesign or design.protocol.version != "parameter-cartesian-neighborhood-v2":
         raise ValueError("new equity parameter plans require neighborhood v2")
-    v3 = type(center) is PreparedEquityEvaluation
-    expected_type = PreparedEquityEvaluation if v3 else EquityEvaluationRequest
-    if not center.formal or type(children) is not tuple or any(type(x) is not expected_type or not x.formal for x in children):
-        raise TypeError("equity parameter plans require formal requests")
-    if not v3 and any(item.candidate.definition.contract_version == 3 for item in (center, *children)):
-        raise TypeError("V3 parameter plans require session-owned PreparedEquityEvaluation inputs")
+    if (type(center) is not PreparedEquityEvaluation or type(children) is not tuple
+            or any(type(x) is not PreparedEquityEvaluation for x in children)):
+        raise TypeError("equity parameter plans require session-owned PreparedEquityEvaluation inputs")
     if not isinstance(dataflows, Dataflows):
         raise TypeError("equity parameter inputs require Dataflows")
     root = dataflows.binding.base_dir
     mapping_evidence.resolve(root)
     feasibility_evidence.resolve(root)
-    originals = tuple(x.request if v3 else x for x in (center, *children))
+    originals = tuple(x.request for x in (center, *children))
     if any(x.lineage and x.lineage.parameter_binding for x in originals):
         raise ValueError("create prospective plan before adding point bindings")
     center_value = _equity_candidate(center)
@@ -447,8 +424,6 @@ def _create_equity_plan(cls, design, center, children, *, mapping_evidence, feas
     central = _equity_contract(center)
     context = equity_parameter_contract(central)["nonparameter_context_sha256"]
     for item in (center, *children):
-        if not v3:
-            item.candidate.verify()
         _verify_equity_inputs(item, dataflows, execution=execution)
         if item.experiment.strategy_id != center.experiment.strategy_id:
             raise ValueError("equity parameter child belongs to another family")
@@ -460,24 +435,21 @@ def _create_equity_plan(cls, design, center, children, *, mapping_evidence, feas
         _equity_policy(center), schema_version=4)
 
 
-def _validate_equity_parameter_request(request, dataflows, *, prepared=None):
+def _validate_equity_parameter_request(request, dataflows, *, prepared):
     binding = request.lineage.parameter_binding
     plan = read_parameter_plan(binding.plan, dataflows.binding.base_dir)
     if plan.schema_version != 4:
         raise ValueError("equity parameter evaluation requires schema 4 plan")
     if binding.plan.experiment.strategy_id != request.experiment.strategy_id:
         raise ValueError("equity parameter plan belongs to another family")
-    source = request if prepared is None else prepared
-    contract = equity_parameter_contract(_equity_contract(source))
+    contract = equity_parameter_contract(_equity_contract(prepared))
     validate_parameter_contract(contract, plan, binding)
     if _equity_candidate(request).payload_json != plan.children[binding.point.point_index].payload_json:
         raise ValueError("equity parameter candidate payload differs from plan")
     if contract["input_bindings"] != {x.window_id: json.loads(x.binding_json) for x in plan.center_inputs}:
         raise ValueError("equity parameter input binding differs from center")
-    if _equity_policy(source) != plan.execution_contract_json:
+    if _equity_policy(prepared) != plan.execution_contract_json:
         raise ValueError("equity parameter execution contract differs")
-    if prepared is None:
-        _verify_equity_inputs(request, dataflows)
 
 
 def _execution_contract(request: EvaluationRequest) -> str:

@@ -126,6 +126,10 @@ def test_v3_requires_explicit_owned_session(tmp_path):
         context.evaluation.prepare(request)
     with pytest.raises(TypeError, match="explicit ResearchExecutionSession"):
         prepare_equity_v3(context.evaluation, request, execution=None)
+    with pytest.raises(TypeError, match="evaluate_many"):
+        context.evaluation.evaluate(request)
+    with pytest.raises(TypeError, match="session-owned"):
+        context.evaluation.evaluate_many((request,))
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:
         with pytest.raises(ValueError, match="not issued"):
             evaluate_many_equity_v3(context.evaluation, (request,), execution=execution)
@@ -302,3 +306,22 @@ def test_v3_loaded_account_finishes_and_publishes_after_source_change(tmp_path, 
         # account's already loaded module after its source has disappeared.
         subsequent, = context.evaluation.evaluate_many((prepared,), execution=execution)
         assert subsequent.status.value == "FAILED" and subsequent.result is None
+
+
+@pytest.mark.parametrize("formal", [False, True])
+def test_retired_equity_replay_rejects_before_acquiring_data(tmp_path, formal):
+    from equity_test_support import setup_equity, setup_formal_equity
+    context, request, _, calls = (setup_formal_equity if formal else setup_equity)(tmp_path)
+    with pytest.raises(TypeError, match="contract_version=3"):
+        context.evaluation.prepare(request)
+    with pytest.raises(TypeError, match="evaluate_many"):
+        context.evaluation.evaluate(request)
+    with pytest.raises(TypeError, match="session-owned"):
+        context.evaluation.evaluate_many((request,))
+    assert not calls
+
+
+def test_checkpoint_rejects_retired_account_schema():
+    from czsc_trader.research_tools._equity_checkpoint import decode_result
+    with pytest.raises(ValueError, match="V3 artifact closure"):
+        decode_result({"kind": "equity-research/v2"}, "0" * 64)

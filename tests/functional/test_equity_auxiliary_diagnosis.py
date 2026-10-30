@@ -10,7 +10,7 @@ from czsc_trader.application import diagnose_accounts, publish_evidence
 from czsc_trader.research_tools import EvaluationEvidenceWrite
 from czsc_trader.research_tools.account_diagnosis import AccountDiagnosisRequest, AccountRunRef
 from czsc_trader.research_tools.evaluation import EvaluationIdentity, EvaluationWindow
-from equity_test_support import setup_auxiliary
+from equity_test_support import setup_auxiliary, v3_account
 
 
 @pytest.mark.parametrize("different_cost", [False, True])
@@ -32,12 +32,11 @@ def test_diagnosis_compares_optional_signal_inputs_but_keeps_execution_contract(
         baseline = replace(baseline, fee_rate=.002)
     accounts = []
     for name, request in (("auxiliary", auxiliary), ("baseline", baseline)):
-        request = context.evaluation.prepare(request)
-        result = context.evaluation.evaluate(request)
-        evidence = publish_evidence(context, EvaluationEvidenceWrite(request.experiment, name, request, result))
-        identity = dict(result.payload["evaluation_identity"])
-        identity["candidate"] = CandidateKey(**identity["candidate"])
-        accounts.append(AccountRunRef(evidence, EvaluationIdentity(**identity)))
+        with v3_account(context, request) as (prepared, result, payload, execution):
+            evidence = publish_evidence(context, EvaluationEvidenceWrite(request.experiment, name, prepared, result), execution=execution)
+            identity = dict(payload["evaluation_identity"])
+            identity["candidate"] = CandidateKey(**identity["candidate"])
+            accounts.append(AccountRunRef(evidence, EvaluationIdentity(**identity)))
     result = diagnose_accounts(context.repository, AccountDiagnosisRequest(*accounts,
         EvaluationWindow("full", date(2026, 10, 1), date(2026, 10, 2))))
     assert result.status == ("INCOMPARABLE" if different_cost else "COMPUTED"), result.issues

@@ -1,6 +1,5 @@
 """Public result and evidence contracts for independently organized research."""
-from .equity_evaluation import (EquitySources, EquityEvaluationRequest, EquityEvaluationResult,
-                                EquityEvaluationOutcome)
+from .equity_evaluation import (EquitySources, EquityEvaluationRequest, EquityEvaluationResult)
 from .equity_replay_v3 import (EquityInputSnapshot, BenchmarkRunIdentity,
     PreparedEquityEvaluation, MaterializedEquityV3)
 from strategy_runtime import ExecutionPriceBasis
@@ -151,7 +150,7 @@ from .delivery import (
 )
 
 __all__ = [
-    "EquitySources", "EquityEvaluationRequest", "EquityEvaluationResult", "EquityEvaluationOutcome",
+    "EquitySources", "EquityEvaluationRequest", "EquityEvaluationResult",
     'EquityInputSnapshot', 'BenchmarkRunIdentity', 'PreparedEquityEvaluation', 'MaterializedEquityV3',
     'CheckpointMode', 'ExecutionCheckpointRequest', 'ExecutionPhase', 'ExecutionProgress',
     'ExecutionStats', 'EquityAccountTiming', 'EquityExecutionStatistics', 'ResearchExecutionSession',

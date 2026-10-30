@@ -14,6 +14,28 @@ from paper_trading_engine.equity_execution import EquityExecution
 from equity_test_support import setup_formal_equity
 
 
+def prepare_inspection_inputs(context, request):
+    """Prepare PTE V2 inputs directly, independently of research replay APIs."""
+    from dataclasses import replace
+    from dataflows import EquityProduct, PreparePolicy
+    from strategy_runtime.equity_definition import EquityAuxiliaryBinding, EquityInputBinding
+    prepared = context.data.prepare(request.requests(context.execution_spec), policy=PreparePolicy.REUSE)
+    assert prepared.ready, [item.error for item in prepared.items]
+    identities = {}
+    for key, query in request.request_items(context.execution_spec):
+        result = context.data.fetch(query, prepared=prepared.reference)
+        assert result.ready, result.error
+        identities[key] = result.identity.content_sha256
+    binding = EquityInputBinding(prepared.reference, request.candidate.instrument,
+        context.execution_spec.fingerprint,
+        tuple((product.name.lower(), identities[product.name.lower()]) for product in EquityProduct),
+        request.candidate.warmup_bars,
+        auxiliary_inputs=tuple(EquityAuxiliaryBinding(item,
+            identities[item.data_key(EquityProduct.BARS)], identities[item.data_key(EquityProduct.SESSIONS)])
+            for item in request.candidate.definition.auxiliary_inputs))
+    return replace(request, prepared=prepared.reference, input_binding=binding)
+
+
 class RecordedChannel:
     channel_id = EQUITY_OFFLINE_CHANNEL_ID
 
@@ -35,7 +57,7 @@ def equity_account(tmp_path, cash_policy=None, *, auxiliary=False):
             evaluation=EvaluationAccess(dataflows=context.data,strategy_id=context.strategy_id,execution_spec=spec))
         candidate = replace(request.candidate,definition=replace(request.candidate.definition,execution_spec=spec))
         request = replace(request,candidate=candidate,benchmark=EvaluationBenchmark(EquityBuyHold(spec)))
-    request = context.evaluation.prepare(request)
+    request = prepare_inspection_inputs(context, request)
     workspace = tmp_path / '.tmp/strategy-inspection/us-test'
     isolated = workspace / 'repository'
     isolated.mkdir(parents=True)

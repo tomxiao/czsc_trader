@@ -237,9 +237,9 @@ SE除普通账户核对外，独立检查开仓预算、数量目标、补买上
 ### 研究库与并行执行
 
 以下配置承接[RSCH研究工具使用原则](../../research/RSCH_AGENT.md#62-研究工具使用原则)，由研究员组织，平台按显式资源请求执行。
-本节账户并行及恢复说明适用于既有`EvaluationRequest`链路。当前美股`EquityEvaluationRequest`批量评价顺序执行，
-不支持检查点会话，见[美股API](#us-equity-api)；设置相同资源预算不会自动获得相同能力。
-这一技术限制不自动豁免RSCH的共同执行约定，研究采用何种调整按指南处理。
+本节账户并行及恢复说明适用于既有`EvaluationRequest`链路。美股仅支持显式会话内准备的 V3 账户，
+同样使用有界进程池与检查点；其共享输入、基准及认证边界见[美股API](#us-equity-api)。
+原始 `EquityEvaluationRequest` 不能直接计算，旧 V1/V2 计算入口已删除。
 
 | 库 | 解决的问题 | 高效使用方式 |
 | --- | --- | --- |
@@ -987,7 +987,9 @@ assert receipt.status.value == "COMMITTED"
 美股研究新契约使用 `EquityStrategyDefinition(contract_version=3)`，声明
 `FeatureGraph`、`StrategyStateSchema` 和 `strategy:step` 入口，细节见
 [SRT V3](../../packages/strategy_runtime/README.md#美股研究-v3可见特征与显式状态)。
-V1/V2 的既有调用和历史原件保留原身份；V3 不会自动回退旧回放器，A股请求和执行分派不变。
+新美股账户回放仅支持 V3。V1 回调、V2 定义的 `prepare`、单次 `evaluate` 及旧批量计算已删除，
+原始美股请求不能直接传给 `evaluate_many`，也不能经 `run_backtest` 绕行。旧请求在数据获取前明确拒绝，
+不会自动转换或回退。历史 V1/V2 证据及冻结包保留原身份，V2 只读认证、诊断与既有生产路径保留；A股计算不变。
 
 V3 必须先创建执行会话，再显式准备。`prepare` 返回会话拥有的
 `PreparedEquityEvaluation`，不能通过复制对象或转移到另一个会话取得执行资格。
@@ -1037,7 +1039,7 @@ outcome, = context.evaluation.evaluate_many((child_bound,), execution=execution)
 
 参数校验拒绝未准备的 V3 请求、复制或跨会话句柄、变化的非参数合同及不一致的点绑定；
 加入 lineage 后仍复用同一输入快照。工作进程只接收回放所需的窗口、资金和费用，
-计划及 lineage 留在父进程认证。A股和 V2 参数入口的调用方式不变。
+计划及 lineage 留在父进程认证。A股参数入口不变；V2 参数计划仅支持历史读取，新计划必须使用会话拥有的 V3 准备句柄。
 
 `EquityEvaluationResult` 的 V3 内容为 `equity-research/v3`，包含
 `input_ref`、`candidate_ref`、`benchmark_ref` 三项内容引用，完整字节位于不可变 `artifacts`。
@@ -1083,7 +1085,7 @@ flowchart TD
 
 | 模块 | 隔离责任 | 复用责任 |
 | --- | --- | --- |
-| TDR | 上下文固定执行合同；拒绝异市场候选及混合请求 | 批次、实验、prepare/evaluate/evaluate_many、run_backtest、publish_evidence |
+| TDR | 上下文固定执行合同；拒绝异市场候选及混合请求 | 批次、实验、显式准备及批量评价、publish_evidence；A股保留 evaluate/run_backtest |
 | DFLS | `InstrumentId`、市场日历、产品、来源及修订精确匹配 | `Dataflows`、`PreparedDataRef`、持久化与不可变内容身份 |
 | SRT | `ResearchExecutionSpec`、有时区的决策边界、整数股单位 | 策略规划职责；与既有运行时共用包但不改写 A 股时间契约 |
 | TXE | `EquityHistoricalExecutor` 管理区间订单、公司行动及交收 | `resolve_fill`；费用、持仓、现金、应收款和净值的同一会计恒等式 |
@@ -1108,21 +1110,11 @@ flowchart TD
 | `EquityEvaluationRequest` | 实验、候选、评价区间、历史起点、四类来源、资金、费率、精确基准、场景及统计口径；准备后绑定输入与审计材料哈希 |
 | `EquityEvaluationResult` | 固定请求哈希、不可变 JSON 字节及内容哈希；读取 `payload` 返回独立副本 |
 
-正式策略函数签名为 `decide(context: EquityDecisionContext) -> EquityDecision`。
-`context` 提供因果行情、确认执行后的账户反馈、决策点及固定参数；输出包含 0/1 目标、原因、
-结构化 `SignalExplanationSnapshot`。可使用 `EquityDecision.from_facts` 构造解释。
-0 表示空仓目标，1 表示持有目标；历史输入为已经完成且已经可得的行情副本，账户快照不可变。
-需要真实平仓历史的策略显式声明 `feedback_mode="CONFIRMED_CLOSED_CYCLE_V1"`，读取
-`context.portfolio.closed_cycle_feedback.latest`。外层 `None` 表示能力不可用并拒绝执行该模式，
-`latest=None` 表示尚无闭合周期。事实包含原买入数量、含买入费总成本、买卖成交区间及退出决策观测边界；
-只支持一次买入、一次全卖且单位未变化的周期，止损线等策略状态由研究实现基于因果行情重建。
-完整边界见 [SRT](../../packages/strategy_runtime/README.md) 和 [TXE](../../packages/trading_execution_engine/README.md)。
-模式随策略定义参与内容身份，执行源码哈希随正式评价合同绑定；串行、多进程与 checkpoint 使用同一合同。
-原 `CONFIRMED_EXECUTION` 不向策略暴露新增事实，历史证据继续按原身份读取，不重签或改写。
-`research.runtime.create(candidate)` 使用同一上下文执行合同创建实例；显式美股运行时拒绝 A 股请求。
-本版不包含分批建仓、多标的组合、卖空、杠杆、碎股或可变价位制度。
+新研究策略函数签名为 `step(context, state) -> StepResult`，返回 `EquityDecision` 与显式状态。
+特征、因果可见历史、账户反馈与状态边界见上文 V3 及 [SRT](../../packages/strategy_runtime/README.md)。
+0 表示空仓目标，1 表示持有目标；本版不包含分批建仓、多标的组合、卖空、杠杆、碎股或可变价位制度。
 源码清单必须覆盖本地导入闭包，依赖必须精确声明；参数、源码或执行合同改变均形成新内容身份。
-旧 `EquityCandidate` 回调仍仅产生 v1 计算证据，不进入正式登记、交付和冻结。
+旧 `decide(EquityDecisionContext)` 定义只服务历史证据及既有冻结/PTE路径，TDR 不再为其生成新研究账户。
 
 ### 10.3 数据产品
 
@@ -1191,7 +1183,7 @@ flowchart TD
 这些诊断在证据发布时依据认证行情和独立审计账户重新计算；不参与新增研究硬门槛。
 
 基准为同标的、同初始资金、同起止点、同预热、同买入规则、同费用及公司行动处理的买入并持有账户。
-正式 v2 基准使用同一正式决策运行时，开盘权益事件先应用再计算整数股预算，避免拆股前取整改变买入数量。
+V3 基准使用同一显式状态回放运行时，开盘权益事件先应用再计算整数股预算，避免拆股前取整改变买入数量。
 首个买单未成交时，后续区间继续尝试；不强制按理论起始价持仓，也不在窗口末尾虚构平仓。
 
 <a id="us-equity-api"></a>
@@ -1207,9 +1199,11 @@ from dataflows import futu_equity_bindings, TimeInterval
 from strategy_runtime import AccountPolicy, CashAvailabilityPolicy, UsEquitySpec
 from strategy_runtime import ResearchExecutionSpec
 from strategy_runtime.equity_definition import EquityStrategyDefinition, EquityStrategyCandidate, equity_source_hash
-from czsc_trader.application import create_research_context, run_backtest, publish_evidence
+from czsc_trader.application import create_research_context, publish_evidence
 from czsc_trader.research_tools import EquitySources, EquityEvaluationRequest, EvaluationEvidenceWrite
-from czsc_trader.research_tools import EvaluationBenchmark, EquityBuyHold
+from czsc_trader.research_tools import EvaluationBenchmark, EquityBuyHold, ResearchExecutionSession
+from strategy_runtime.equity_features import FeatureGraph
+from strategy_runtime.equity_replay import StrategyStateSchema
 
 spec = ResearchExecutionSpec(
     market=UsEquitySpec(), decision_clock=BarFrequency.M30,
@@ -1224,9 +1218,10 @@ providers = ProviderConfig(equity_bindings={
 research = create_research_context(repository, batch, providers=providers, execution_spec=spec)
 definition = EquityStrategyDefinition(
     instrument=InstrumentId(MarketId.US, AssetClass.STOCK, symbol), execution_spec=spec,
-    warmup_bars=60, entrypoint="strategy:decide", source_files=("strategy.py",),
+    warmup_bars=60, entrypoint="strategy:step", source_files=("strategy.py",),
+    contract_version=3, feature_graph=FeatureGraph((), ()), state_schema=StrategyStateSchema(),
     source_sha256=equity_source_hash(source_root, ("strategy.py",)), parameters_json='{"lookback":60}',
-)  # source_root 是本实验源码目录；strategy.py 按上述正式签名返回解释
+)  # source_root 是本实验源码目录；strategy.py 按 V3 step 签名返回决策及状态
 candidate = EquityStrategyCandidate(batch.strategy_id, "C0001", definition, source_root)
 request = EquityEvaluationRequest(
     experiment=experiment, candidate=candidate,
@@ -1236,10 +1231,13 @@ request = EquityEvaluationRequest(
     benchmark=EvaluationBenchmark(EquityBuyHold(spec)),
     drawdown_basis=drawdown_basis, concentration_basis=concentration_basis,
 )
-prepared = research.evaluation.prepare(request)
-result = research.evaluation.evaluate(prepared)
-same_contract_result = run_backtest(research, candidate, prepared)
-reference = publish_evidence(research, EvaluationEvidenceWrite(experiment, "account", prepared, result))
+with ResearchExecutionSession(research, experiment=experiment) as execution:
+    prepared = research.evaluation.prepare(request, execution=execution)
+    outcome, = research.evaluation.evaluate_many((prepared,), execution=execution)
+    if outcome.status.value != "SUCCEEDED":
+        raise RuntimeError(outcome.error)
+    reference = publish_evidence(research,
+        EvaluationEvidenceWrite(experiment, "account", prepared, outcome.result), execution=execution)
 ```
 
 `drawdown_basis` 必须显式选择 `SESSION_CLOSE` 或 `BAR_CLOSE`；`concentration_basis` 必须选择
@@ -1249,7 +1247,7 @@ reference = publish_evidence(research, EvaluationEvidenceWrite(experiment, "acco
 正式 `evaluate_many` 复用 `ExecutionResources` 和 `ResearchExecutionSession` 的有界进程池、
 进度及检查点。每项报告 `SUCCEEDED/FAILED/CANCELLED/UNKNOWN`；worker 只读取已准备资产。
 使用 `ExecutionCheckpointRequest(run_id)` 创建检查点，用 `CheckpointMode.RESUME` 显式恢复；
-校验损坏或身份漂移时失败，不静默重算或重复发布。v1 回调只允许顺序计算，不支持检查点。
+校验损坏或身份漂移时失败，不静默重算或重复发布。检查点只接受 V3 完整依赖闭包；旧计算检查点不再恢复执行。
 多个费用场景或窗口通过多份显式请求组织，不能把不同市场请求混装一个批量调用。
 
 <a id="us-equity-evidence"></a>
@@ -1268,8 +1266,8 @@ SE 从序列化事实独立重建现金、持仓、应收款、公司行动及�
 决策、订单、成交、公司行动、区间账户、日末账户、闭合周期及指标。
 请求身份同时绑定本链路的 TDR/SRT/TXE/SE 模块源码哈希及 Python/pandas 版本。
 发布复用 `EvaluationEvidenceWrite` 和原有不可变写入流程，返回
-`EvidenceRef(schema="equity_research", schema_version=2)`；不能冒充 A 股的 `account_evaluation/v8`。
-发布前再次核对准备数据身份和独立审计指标。
+`EvidenceRef(schema="equity_research", schema_version=3)`；不能冒充 A 股的 `account_evaluation/v8`。
+发布核对会话拥有的已认证请求、结果及依赖闭包。
 
 v2 保存可独立审计的行情、约束、事件和账户事实，映射到共享 `AssessmentEvidence` 的美股扩展。
 `register_candidate/load_candidate` 校验并归档源码身份；`assemble_delivery/validate_delivery` 支持
@@ -1283,8 +1281,8 @@ v2 保存可独立审计的行情、约束、事件和账户事实，映射到�
 美股使用 `EquityInspectionReplay/EquityInspectionProtocol`，以相同输入逐项精确比较候选与最终发布包，
 并使用正常 PTE 引擎及隔离离线渠道验证；
 技术通过仅生成可审批计划。精确批准和冻结事务 `COMMITTED` 是独立条件，生产通道不由研究接口开放。
-`run_backtest(research, frozen_version, request)` 复核版本登记、发布包及源候选内容身份后重放同一合同，
-不依赖原实验源码，也不产生部署收据。
+`run_backtest` 不再提供美股研究账户回放；V2 冻结包的技术检验及既有 PTE执行入口保持原契约，
+不作为新研究计算入口。
 采用该研究入口不迁移或改写历史证据、候选资格及冻结包，也不改变生产账户。
 
 <a id="us-equity-verification"></a>

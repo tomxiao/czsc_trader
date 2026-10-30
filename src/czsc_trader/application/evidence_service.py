@@ -65,16 +65,10 @@ def _validate_request(context: ResearchContext, request: EvidenceWriteRequest, *
         from .experiment_artifact_service import _validate_report_request
         _validate_report_request(root, request)
     if isinstance(request, EvaluationEvidenceWrite):
-        from ..research_tools.equity_evaluation import EquityEvaluationRequest, validate_equity_result
+        from ..research_tools.equity_evaluation import validate_equity_result
         from ..research_tools.equity_replay_v3 import PreparedEquityEvaluation
         if type(request.request) is PreparedEquityEvaluation:
             validate_equity_result(context.evaluation, request.request, request.result, execution=execution)
-            return
-        if type(request.request) is EquityEvaluationRequest:
-            if request.request.prepared is None:
-                raise ValueError("equity publication requires the prepared request")
-            context.evaluation.prepare(request.request)
-            validate_equity_result(context.evaluation, request.request, request.result)
             return
         if request.request.experiment_id != request.experiment.experiment_id:
             raise ValueError("evaluation request belongs to another experiment")
@@ -113,9 +107,7 @@ def _publish_serialized(context: ResearchContext, request: EvidenceWriteRequest,
     if isinstance(request, EvaluationEvidenceWrite):
         from ..research_tools.equity_evaluation import EquityEvaluationResult
         equity = type(request.result) is EquityEvaluationResult
-        from ..research_tools.equity_replay_v3 import PreparedEquityEvaluation
-        version = (3 if type(request.request) is PreparedEquityEvaluation else
-                   2 if request.request.formal else 1) if equity else 8
+        version = 3 if equity else 8
         media_type, suffix, schema = "application/json", "json", ("equity_research" if equity else "account_evaluation")
         document = json.loads(data)
         if equity and document.get("schema") != f"equity-research/v{version}":
@@ -198,10 +190,6 @@ def publish_evidence_many(context: ResearchContext,
     # Every ownership/contract error rejects the entire call before any write.
     for request in requests:
         _validate_request(context, request, execution=execution)
-    from ..research_tools.equity_evaluation import EquityEvaluationRequest
-    if execution is not None and any(isinstance(request, EvaluationEvidenceWrite)
-                                    and type(request.request) is EquityEvaluationRequest and not request.request.formal for request in requests):
-        raise ValueError("BAR_RANGE evidence does not support checkpoint execution sessions")
     if execution is None and context.evaluation._active_execution is not None:
         raise RuntimeError("pass the active execution session explicitly")
     if execution is not None:
@@ -236,22 +224,6 @@ def publish_evidence_many(context: ResearchContext,
                         f'{request.experiment.repository_path.replace("/experiments/", "/assets/evidence/")}/{sha256(artifact.content).hexdigest()}.json')
                     if target.read_bytes() != artifact.content:
                         raise ValueError('equity V3 checkpoint dependency changed')
-                outcomes[index] = PublicationOutcome(index, PublicationStatus.PUBLISHED, reference)
-                executor.reused_publications += 1
-                continue
-        elif (checkpoint is not None and isinstance(request, EvaluationEvidenceWrite)
-                and type(request.request) is EquityEvaluationRequest):
-            key = canonical_sha256({"request_hash": request.result.request_hash,
-                                    "result_hash": request.result.result_hash,
-                                    "experiment": request.experiment.to_dict(), "name": request.name,
-                                    "schema": "equity_research", "version": 2})
-            publication_keys[index] = key
-            reference = checkpoint.load_publication(key)
-            if reference is not None:
-                if (reference.name != request.name or reference.experiment != request.experiment
-                        or (reference.schema, reference.schema_version) != ("equity_research", 2)
-                        or reference.resolve(context.repository.root).read_bytes() != request.result.content):
-                    raise ValueError("equity publication checkpoint differs from authenticated result")
                 outcomes[index] = PublicationOutcome(index, PublicationStatus.PUBLISHED, reference)
                 executor.reused_publications += 1
                 continue

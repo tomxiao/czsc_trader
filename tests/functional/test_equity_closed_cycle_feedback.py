@@ -10,10 +10,11 @@ from czsc_trader.research_tools import (
     CheckpointMode, EvaluationEvidenceWrite, ExecutionCheckpointRequest,
     ResearchExecutionSession,
 )
-from equity_test_support import setup_formal_equity
+from equity_test_support import setup_formal_equity, v3_request
+from czsc_trader.research_tools.equity_replay_v3 import materialize_v3
 
 
-def test_closed_cycle_feedback_formal_parallel_resume_and_legacy_economics(tmp_path):
+def test_closed_cycle_feedback_v3_parallel_resume_and_execution_economics(tmp_path):
     context, request, _, _ = setup_formal_equity(tmp_path)
     root = request.candidate.source_root
     (root / "strategy.py").write_text(
@@ -40,9 +41,18 @@ def test_closed_cycle_feedback_formal_parallel_resume_and_legacy_economics(tmp_p
                      definition=replace(definition, feedback_mode="CONFIRMED_EXECUTION")))
     assert request.candidate.content_identity != legacy.candidate.content_identity
     context.evaluation.resources = ExecutionResources(max_workers=2, native_threads_per_worker=1)
-    prepared = tuple(context.evaluation.prepare(r) for r in (request, legacy))
-    serial = tuple(context.evaluation.evaluate(r) for r in prepared)
-    new, old = (result.payload["runs"]["candidate"] for result in serial)
+    requests = tuple(v3_request(context, r) for r in (request, legacy))
+    with ResearchExecutionSession(context, experiment=request.experiment,
+            checkpoint=ExecutionCheckpointRequest("closed-feedback")) as execution:
+        prepared = tuple(context.evaluation.prepare(r, execution=execution) for r in requests)
+        outcomes = context.evaluation.evaluate_many(prepared, execution=execution)
+        assert [o.status.value for o in outcomes] == ["SUCCEEDED", "SUCCEEDED"], [o.error for o in outcomes]
+        results = tuple(o.result for o in outcomes)
+        writes = tuple(EvaluationEvidenceWrite(r.experiment, f"feedback-{i}", r, o.result)
+                       for i, (r, o) in enumerate(zip(prepared, outcomes)))
+        published = publish_evidence_many(context, writes, execution=execution)
+        assert all(x.status.value == "PUBLISHED" for x in published)
+    new, old = (materialize_v3(result).payload["runs"]["candidate"] for result in results)
     assert new["metrics"] == old["metrics"]
     assert [{k: row[k] for k in ("interval_start", "interval_end", "side", "quantity", "price", "fees")}
             for row in new["fills"]] == [
@@ -73,19 +83,13 @@ def test_closed_cycle_feedback_formal_parallel_resume_and_legacy_economics(tmp_p
         seen.add(facts["cycle_id"])
     assert len(seen) >= 2
     with ResearchExecutionSession(context, experiment=request.experiment,
-            checkpoint=ExecutionCheckpointRequest("closed-feedback")) as execution:
-        outcomes = context.evaluation.evaluate_many(prepared, execution=execution)
-        assert [o.status.value for o in outcomes] == ["SUCCEEDED", "SUCCEEDED"]
-        assert [o.result.content for o in outcomes] == [r.content for r in serial]
-        writes = tuple(EvaluationEvidenceWrite(r.experiment, f"feedback-{i}", r, o.result)
-                       for i, (r, o) in enumerate(zip(prepared, outcomes)))
-        published = publish_evidence_many(context, writes, execution=execution)
-        assert all(x.status.value == "PUBLISHED" for x in published)
-    with ResearchExecutionSession(context, experiment=request.experiment,
             checkpoint=ExecutionCheckpointRequest("closed-feedback", CheckpointMode.RESUME)) as execution:
+        prepared = tuple(context.evaluation.prepare(r, execution=execution) for r in requests)
         restored = context.evaluation.evaluate_many(prepared, execution=execution)
-        assert [o.result.content for o in restored] == [r.content for r in serial]
+        assert [o.result.content for o in restored] == [r.content for r in results]
         assert execution.stats.reused_results == 2
+        writes = tuple(EvaluationEvidenceWrite(r.experiment, f"feedback-{i}", r, o.result)
+                       for i, (r, o) in enumerate(zip(prepared, restored)))
         again = publish_evidence_many(context, writes, execution=execution)
         assert [x.reference for x in again] == [x.reference for x in published]
         assert execution.stats.reused_publications == 2

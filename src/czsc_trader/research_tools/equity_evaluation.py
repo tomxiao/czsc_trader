@@ -1,21 +1,22 @@
-"""Typed BAR_RANGE research routed through the batch evaluation capability."""
+"""Equity request/result contracts, shared inputs and historical evidence validation.
+
+New account computation lives exclusively in equity_replay_v3.
+"""
 from __future__ import annotations
-from dataclasses import asdict, dataclass, replace, field
+from dataclasses import asdict, dataclass, field
 from datetime import date
 import json
-from typing import TYPE_CHECKING
 import inspect
 from pathlib import Path
 from hashlib import sha256
 import platform
 
 import pandas as pd
-from dataflows import (EquityDataRequest, EquityProduct, EquityQuery, MarketId,
-                       PreparePolicy, PreparedDataRef, SourceRef, TimeInterval)
+from dataflows import (EquityDataRequest, EquityProduct, EquityQuery, PreparedDataRef, SourceRef, TimeInterval)
 from strategy_runtime.equity import (EquityCandidate, EquityStrategyInstance,
-                                    ResearchExecutionSpec, equity_hash, equity_implementation_hash)
+                                    equity_hash)
 from strategy_runtime.runtime import StrategyRuntime
-from strategy_runtime.equity_definition import EquityStrategyCandidate, EquityInputBinding, EquityAuxiliaryBinding
+from strategy_runtime.equity_definition import EquityStrategyCandidate, EquityInputBinding
 from dataflows.equity_data import sessions_from_metadata
 from trading_execution_engine.equity import EquityHistoricalExecutor
 from trading_execution_engine.fills import resolve_fill
@@ -23,9 +24,6 @@ from strategy_evaluator.equity import audit_equity_account
 
 from .context import ExperimentRef
 from ..backtesting.benchmark_contracts import EvaluationBenchmark, EquityBuyHold
-
-if TYPE_CHECKING:
-    from .evaluation_access import EvaluationStatus, EvaluationError
 
 
 @dataclass(frozen=True, slots=True)
@@ -227,22 +225,6 @@ class EquityEvaluationResult:
         return sha256(self.content).hexdigest()
 
 
-@dataclass(frozen=True, slots=True)
-class EquityEvaluationOutcome:
-    status: EvaluationStatus
-    result: EquityEvaluationResult | None = None
-    error: EvaluationError | None = None
-
-    def __post_init__(self):
-        from .evaluation_access import EvaluationStatus, EvaluationError
-        if type(self.status) is not EvaluationStatus or self.status not in {EvaluationStatus.SUCCEEDED, EvaluationStatus.FAILED}:
-            raise ValueError("unknown equity evaluation status")
-        if (self.status == "SUCCEEDED") != (type(self.result) is EquityEvaluationResult and self.error is None):
-            raise ValueError("equity outcome status differs from result")
-        if self.status == "FAILED" and (self.result is not None or type(self.error) is not EvaluationError):
-            raise ValueError("failed equity outcome requires an error")
-
-
 def _fetch_products(access, request):
     products, identities, calendars = {}, {}, {}
     for name, query in request.request_items(access.execution_spec):
@@ -290,54 +272,6 @@ def _runtime_inputs(definition, products, identities):
         kwargs["sessions"] = products["sessions"]
         kwargs["trading_sessions"] = sessions_from_metadata(identities["sessions"]["metadata"])
     return kwargs
-
-
-def prepare_equity(access, request):
-    specification = access.execution_spec
-    if type(specification) is not ResearchExecutionSpec:
-        raise ValueError("equity evaluation requires an explicit context execution specification")
-    if specification.market_id is not MarketId.US:
-        raise ValueError("UNSUPPORTED_EXECUTION_COMBINATION: BAR_RANGE currently admits US only")
-    specification.require_instrument(request.candidate.instrument)
-    if request.candidate.execution_spec_hash != specification.fingerprint:
-        raise ValueError("MARKET_CONTRACT_MISMATCH: candidate and context")
-    if request.experiment.strategy_id != access.strategy_id:
-        raise ValueError("equity request belongs to another research batch")
-    if request.formal:
-        request.candidate.verify()
-    elif request.candidate.implementation_hash != equity_implementation_hash(request.candidate.decide):
-        raise ValueError("candidate source changed")
-    if request.prepared is not None:
-        if request.prepared.space_id != access.data.binding.space_id:
-            raise ValueError("prepared data belongs to another research space")
-        products, identities = _fetch_products(access, request)
-        if request.formal:
-            auxiliary = tuple(EquityAuxiliaryBinding(item,
-                identities[item.data_key(EquityProduct.BARS)]["content_sha256"],
-                identities[item.data_key(EquityProduct.SESSIONS)]["content_sha256"])
-                for item in request.candidate.definition.auxiliary_inputs)
-            binding = EquityInputBinding(request.prepared, request.candidate.instrument, specification.fingerprint,
-                tuple((product.name.lower(), identities[product.name.lower()]["content_sha256"])
-                      for product in EquityProduct), request.candidate.warmup_bars, auxiliary_inputs=auxiliary)
-            if request.input_binding is not None and request.input_binding != binding:
-                raise ValueError("equity input identity differs from prepared assets")
-            facts_hash = equity_hash(_audit_inputs(request, specification, products))
-            if request.audit_inputs_sha256 is not None and request.audit_inputs_sha256 != facts_hash:
-                raise ValueError("equity audit facts differ from prepared request")
-            bound = replace(request, input_binding=binding, audit_inputs_sha256=facts_hash)
-            from .parameter_evaluation import validate_parameter_request
-            validate_parameter_request(bound, access.data)
-            return bound
-        return request
-    prepared = access.data.prepare(request.requests(specification), policy=PreparePolicy.REUSE)
-    if not prepared.ready:
-        errors = [str(item.error) for item in prepared.items if not item.ready]
-        raise ValueError("equity preparation failed: " + "; ".join(errors))
-    return prepare_equity(access, replace(request, prepared=prepared.reference))
-
-
-def _hold(history, portfolio):
-    return 1
 
 
 def _records(frame):
@@ -422,74 +356,3 @@ def validate_equity_result(access, request, result, *, execution=None):
             raise ValueError("formal equity audit input differs from authenticated data")
         from .equity_assessment import build_equity_assessment_payload
         build_equity_assessment_payload(payload)
-
-
-def evaluate_equity(access, prepared):
-    specification = access.execution_spec
-    products, identities = _fetch_products(access, prepared)
-    bars = products["bars"]
-    eligible = bars.loc[(bars.BarStart >= prepared.window.start) & (bars.Date <= prepared.window.end)]
-    if eligible.empty or eligible.BarStart.iloc[0] != prepared.window.start or eligible.Date.iloc[-1] != prepared.window.end:
-        raise ValueError("evaluation window must align with observed session bars")
-    # An independent account always starts flat. Both candidate and hold benchmark
-    # use the same history, start, costs, events and execution specification.
-    baseline = EquityCandidate(prepared.candidate.strategy_id, prepared.candidate.candidate_id + ":hold",
-                               prepared.candidate.instrument, specification.fingerprint,
-                               equity_implementation_hash(_hold), prepared.candidate.warmup_bars, _hold)
-    if prepared.formal:
-        from strategy_runtime.equity_definition import EquityStrategyDefinition, equity_source_hash
-        from strategy_runtime.equity_buy_hold import decide as hold_decision
-        source_root = Path(inspect.getsourcefile(hold_decision)).parent
-        source_files = ("equity_buy_hold.py",)
-        definition = EquityStrategyDefinition(prepared.candidate.instrument, specification,
-            prepared.candidate.warmup_bars, "equity_buy_hold:decide", source_files,
-            equity_source_hash(source_root, source_files))
-        baseline = EquityStrategyCandidate(prepared.candidate.strategy_id, prepared.candidate.candidate_id,
-                                           definition, source_root)
-    runs = {}
-    for name, candidate in (("candidate", prepared.candidate), ("buy_hold", baseline)):
-        executor = EquityHistoricalExecutor(specification=specification, initial_cash=prepared.initial_cash,
-                                            fee_rate=prepared.fee_rate, actions=products["actions"])
-        context_inputs = (_runtime_inputs(candidate.definition, products, identities)
-                          if prepared.formal and name == "candidate" else {})
-        account = StrategyRuntime(execution_spec=specification).create(candidate).run_window(
-            bars, products["constraints"], executor, start=prepared.window.start,
-            end=prepared.window.end, fee_rate=prepared.fee_rate, **context_inputs)
-        evidence = {"decisions": _records(account.decisions), "orders": _records(account.orders),
-                    "fills": _records(account.fills), "actions": _records(account.corporate_action_entries),
-                    "account_points": _records(account.account_points), "trades": _records(account.trades)}
-        audit = audit_equity_account(initial_cash=prepared.initial_cash, specification=asdict(specification),
-                                     bars=_records(bars), action_facts=_records(products["actions"]),
-                                     constraints=_records(products["constraints"]), fee_rate=prepared.fee_rate, **evidence,
-                                     decision_contract="FORMAL_V2" if prepared.formal else None)
-        runs[name] = {**evidence, "account_daily": _records(account.account_daily), "metrics": asdict(audit)}
-        runs[name]["data_quality"] = _data_quality(_records(bars), runs[name])
-    contract = prepared.identity(specification)
-    # Normalize timestamps before hashing so JSON readback has the same identity.
-    def encode(value):
-        if hasattr(value, "isoformat"):
-            return value.isoformat()
-        raise TypeError(f"unserializable equity evidence: {type(value)}")
-    contract = json.loads(json.dumps(contract, default=encode))
-    request_hash = equity_hash(contract)
-    payload = {"schema": contract["schema"], "request_hash": request_hash, "request": contract,
-               "data": identities, "runs": runs,
-               "limitations": ["BAR_RANGE model; no exact intrabar fill time", "bar observations are not independent samples",
-                               "research evidence; not frozen release or PTE admission"]}
-    if "BarStatus" in bars:
-        payload["limitations"].extend([
-            "missing/zero-volume bars are modeled as unavailable; this does not establish historical halts",
-            "stale marks use the last observed close adjusted for splits; drawdown during gaps is unobserved",
-            "a nonempty bar does not prove uninterrupted trading; declared interruptions block the overlapping execution interval",
-        ])
-    if prepared.formal:
-        from .evaluation import EvaluationIdentity
-        from strategy_runtime import canonical_sha256
-        identity = EvaluationIdentity(prepared.candidate.key, prepared.candidate.content_identity.content_sha256,
-                                      prepared.prepared.manifest_sha256, request_hash,
-                                      canonical_sha256(contract["engine_sources"]))
-        payload.update(schema_version=2, evaluation_identity=identity.to_dict(), evaluation_id=identity.evaluation_id,
-                       audit_inputs=_audit_inputs(prepared, specification, products))
-        prepared.candidate.verify()
-    content = json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False, default=encode).encode()
-    return EquityEvaluationResult(request_hash, content)

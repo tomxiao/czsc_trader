@@ -1,6 +1,6 @@
 """Public US equity path, identity isolation and independent account evidence."""
 
-from equity_test_support import hold, setup_equity
+from equity_test_support import hold, setup_equity, replay_payload, v3_account, v3_request
 from dataclasses import asdict, replace
 import json
 
@@ -11,33 +11,33 @@ from dataflows import (AssetClass, EquityProduct, InstrumentId, MarketId,
 from strategy_runtime import (CashAvailabilityPolicy)
 from strategy_evaluator.equity import audit_equity_account
 from czsc_trader.application.backtest_service import run_backtest
-from czsc_trader.application.evidence_service import publish_evidence
 from czsc_trader.research_tools import EvaluationEvidenceWrite
 
 
-def test_us_public_prepare_evaluate_backtest_publish_are_identical(tmp_path):
+def test_us_public_prepare_evaluate_publish_uses_v3(tmp_path):
     context, request, _, calls = setup_equity(tmp_path)
-    prepared = context.evaluation.prepare(request)
-    result = context.evaluation.evaluate(prepared)
+    with v3_account(context, request) as (prepared, result, payload, execution):
+        run = payload["runs"]["candidate"]
+        assert run["metrics"]["closed_cycles"] == 12
+        assert run["metrics"]["observations"] == 25
+        assert run["fills"][0]["quantity"] == 98
+        assert run["fills"][0]["interval_start"][:10] == run["fills"][1]["interval_start"][:10]
+        from czsc_trader.application import publish_evidence_many
+        outcome, = publish_evidence_many(context, (EvaluationEvidenceWrite(request.experiment, "account", prepared, result),), execution=execution)
+        assert outcome.reference.schema_version == 3
+        assert outcome.reference.resolve(context.repository.root).read_bytes() == result.content
     assert len(calls) == 4
-    assert run_backtest(context, request.candidate, prepared).content == result.content
-    run = result.payload["runs"]["candidate"]
-    assert run["metrics"]["closed_cycles"] == 12
-    assert run["metrics"]["observations"] == 25
-    assert run["metrics"]["sessions"] == 2
-    assert run["fills"][0]["quantity"] == 98  # one-share US units, not CN round lots
-    assert run["fills"][0]["interval_start"][:10] == run["fills"][1]["interval_start"][:10]
-    evidence = publish_evidence(context, EvaluationEvidenceWrite(request.experiment, "account", prepared, result))
-    assert evidence.schema == "equity_research" and evidence.schema_version == 1
-    assert (context.repository.root / evidence.repository_path).read_bytes() == result.content
-    assert len(calls) == 4
+    with pytest.raises(TypeError, match="prepare.*evaluate_many"):
+        context.evaluation.evaluate(v3_request(context, request))
+    with pytest.raises(TypeError, match="V3|session|prepare"):
+        run_backtest(context, request.candidate, request)
 
 
 def test_equity_cross_market_and_source_revision_fail_before_calculation(tmp_path):
     context, request, _, calls = setup_equity(tmp_path)
     cn = replace(request.candidate, instrument=InstrumentId(MarketId.CN, AssetClass.STOCK, "600722.SH"))
-    with pytest.raises(ValueError, match="MARKET_CONTRACT_MISMATCH"):
-        context.evaluation.prepare(replace(request, candidate=cn))
+    with pytest.raises(TypeError, match="contract_version=3"):
+        context.evaluation.prepare(request)
     assert not calls
     with pytest.raises(ValueError, match="MARKET_CONTRACT_MISMATCH"):
         context.runtime.create(cn)
@@ -45,13 +45,13 @@ def test_equity_cross_market_and_source_revision_fail_before_calculation(tmp_pat
         context.runtime.create(object())
     assert context.runtime.create(request.candidate).specification == context.execution_spec
     bad = replace(request, sources=replace(request.sources, bars=SourceRef("fixture", "v2")))
-    outcomes = context.evaluation.evaluate_many((bad, request))
-    assert [item.status for item in outcomes] == ["FAILED", "SUCCEEDED"]
+    with pytest.raises(ValueError, match="preparation failed"):
+        replay_payload(context, bad)
 
 
 def test_settled_only_sale_cannot_fund_same_day_reentry(tmp_path):
     context, request, _, _ = setup_equity(tmp_path, cash_policy=CashAvailabilityPolicy.SETTLED_ONLY)
-    result = context.evaluation.evaluate(request).payload["runs"]["candidate"]
+    result = replay_payload(context, request)["runs"]["candidate"]
     # Residual cash may purchase one share, but unsettled proceeds cannot fund
     # another full-size entry. Once that residual is spent the account waits.
     assert [row["quantity"] for row in result["fills"] if row["side"] == "BUY"] == [98, 1]
@@ -62,7 +62,7 @@ def test_settled_only_sale_cannot_fund_same_day_reentry(tmp_path):
 
 def test_audit_rejects_tampered_account(tmp_path):
     context, request, products, _ = setup_equity(tmp_path)
-    run = context.evaluation.evaluate(request).payload["runs"]["candidate"]
+    run = replay_payload(context, request)["runs"]["candidate"]
     run["account_points"][3]["cash"] += 1
     facts = json.loads(products[EquityProduct.BARS].to_json(orient="records", date_format="iso"))
     with pytest.raises(ValueError, match="audit mismatch: cash"):
@@ -77,7 +77,7 @@ def test_missing_bar_fails_instead_of_forward_filling(tmp_path):
     context, request, products, _ = setup_equity(tmp_path)
     products[EquityProduct.BARS] = products[EquityProduct.BARS].drop(index=5)
     with pytest.raises(ValueError, match="independent session grid"):
-        context.evaluation.evaluate(request)
+        replay_payload(context, request)
 
 
 def test_split_and_dividend_preserve_entitlements_and_pay_later(tmp_path):
@@ -90,7 +90,7 @@ def test_split_and_dividend_preserve_entitlements_and_pay_later(tmp_path):
         {"Date": stamp, "AvailableDate": stamp, "EventId": "1-split", "Kind": "SPLIT", "Ratio": 2., "CashPerShare": 0., "PayAt": None},
         {"Date": stamp, "AvailableDate": stamp, "EventId": "2-dividend", "Kind": "CASH_DIVIDEND", "Ratio": 1., "CashPerShare": .1, "PayAt": pay},
     ])
-    run = context.evaluation.evaluate(request).payload["runs"]["candidate"]
+    run = replay_payload(context, request)["runs"]["candidate"]
     assert run["account_points"][11]["quantity"] == 98
     assert run["account_points"][12]["quantity"] == 196
     assert run["account_points"][12]["receivable"] == pytest.approx(19.6)
@@ -101,10 +101,10 @@ def test_split_and_dividend_preserve_entitlements_and_pay_later(tmp_path):
 
 def test_future_bar_changes_do_not_change_prior_decisions(tmp_path):
     first_context, first_request, _, _ = setup_equity(tmp_path / "first")
-    original = first_context.evaluation.evaluate(first_request).payload["runs"]["candidate"]
+    original = replay_payload(first_context, first_request)["runs"]["candidate"]
     context, request, products, _ = setup_equity(tmp_path / "changed")
     products[EquityProduct.BARS].loc[20:, ["Open", "High", "Low", "Close"]] *= 2
-    changed = context.evaluation.evaluate(request).payload["runs"]["candidate"]
+    changed = replay_payload(context, request)["runs"]["candidate"]
     assert original["decisions"][:19] == changed["decisions"][:19]
     assert original["account_points"][:19] == changed["account_points"][:19]
 
@@ -134,13 +134,17 @@ def test_positive_latency_delays_which_bar_is_observable(tmp_path):
     context, request, products, _ = setup_equity(tmp_path)
     spec = replace(context.execution_spec, data_latency_seconds=1)
     from czsc_trader.research_tools.evaluation_access import EvaluationAccess
-    access = EvaluationAccess(dataflows=context.data, strategy_id="S999", execution_spec=spec)
+    from strategy_runtime import StrategyRuntime
+    access = EvaluationAccess(dataflows=context.data, strategy_id="S999", execution_spec=spec,
+                              resources=context.evaluation.resources)
+    context = replace(context, runtime=StrategyRuntime(execution_spec=spec), evaluation=access, execution_spec=spec)
     candidate = replace(request.candidate, execution_spec_hash=spec.fingerprint)
     with pytest.raises(ValueError, match="warmup"):
-        access.evaluate(replace(request, candidate=candidate))
+        replay_payload(replace(context, evaluation=access, execution_spec=spec), replace(request, candidate=candidate))
     bars = products[EquityProduct.BARS]
-    delayed = replace(request, candidate=candidate, window=TimeInterval(bars.BarStart.iloc[2], bars.Date.iloc[-1]))
-    run = access.evaluate(delayed).payload["runs"]["candidate"]
+    delayed = replace(request, candidate=candidate, window=TimeInterval(
+        bars.BarStart.iloc[2].to_pydatetime(), bars.Date.iloc[-1].to_pydatetime()))
+    run = replay_payload(replace(context, evaluation=access, execution_spec=spec), delayed)["runs"]["candidate"]
     assert pd.Timestamp(run["decisions"][0]["observed_through"]) == bars.Date.iloc[0]
 
 
@@ -150,15 +154,15 @@ def test_execution_requires_current_trading_constraints_and_volume(tmp_path, def
     if defect == "missing_constraint":
         products[EquityProduct.CONSTRAINTS] = products[EquityProduct.CONSTRAINTS].drop(index=3)
         with pytest.raises(ValueError, match="every execution interval"):
-            context.evaluation.evaluate(request)
+            replay_payload(context, request)
     elif defect == "late_constraint":
         rules = products[EquityProduct.CONSTRAINTS]
         rules.loc[3, "AvailableDate"] += pd.Timedelta(seconds=1)
         with pytest.raises(ValueError, match="unavailable"):
-            context.evaluation.evaluate(request)
+            replay_payload(context, request)
     else:
         products[EquityProduct.BARS]["Volume"] = 0.
-        run = context.evaluation.evaluate(request).payload["runs"]["candidate"]
+        run = replay_payload(context, request)["runs"]["candidate"]
         assert not run["fills"]
         assert all(row["reason"] == "INSUFFICIENT_BAR_VOLUME" for row in run["orders"])
         assert run["metrics"]["total_return"] == 0
@@ -174,18 +178,21 @@ def test_payment_in_session_gap_precedes_next_day_split(tmp_path):
         {"Date": ex, "AvailableDate": ex, "EventId": "div", "Kind": "CASH_DIVIDEND", "Ratio": 1., "CashPerShare": .1, "PayAt": pay},
         {"Date": split, "AvailableDate": split, "EventId": "split", "Kind": "SPLIT", "Ratio": 2., "CashPerShare": 0., "PayAt": None},
     ])
-    run = context.evaluation.evaluate(request).payload["runs"]["candidate"]
+    run = replay_payload(context, request)["runs"]["candidate"]
     assert [row["kind"] for row in run["actions"]] == ["CASH_DIVIDEND", "DIVIDEND_PAYMENT", "SPLIT"]
     assert run["account_points"][-1]["equity"] == pytest.approx(1008.82)
 
 
 def test_publication_rejects_truncated_account_even_with_intact_request_hash(tmp_path):
-    from czsc_trader.research_tools import EquityEvaluationResult
+    from czsc_trader.research_tools.equity_evaluation import EquityEvaluationResult, EquityArtifact
+    from czsc_trader.application import publish_evidence_many
     context, request, _, _ = setup_equity(tmp_path)
-    prepared = context.evaluation.prepare(request)
-    result = context.evaluation.evaluate(prepared)
-    payload = result.payload
-    payload["runs"]["candidate"]["account_points"].pop()
-    altered = EquityEvaluationResult(result.request_hash, json.dumps(payload).encode())
-    with pytest.raises(ValueError, match="evaluation window"):
-        publish_evidence(context, EvaluationEvidenceWrite(request.experiment, "altered", prepared, altered))
+    with v3_account(context, request) as (prepared, result, payload, execution):
+        artifacts = list(result.artifacts)
+        index = next(i for i, item in enumerate(artifacts) if item.sha256 == result.payload["candidate_ref"]["sha256"])
+        value = json.loads(artifacts[index].content)
+        value["run"]["account_points"].pop()
+        artifacts[index] = EquityArtifact(artifacts[index].kind, json.dumps(value).encode())
+        with pytest.raises(ValueError):
+            altered = EquityEvaluationResult(result.request_hash, result.content, tuple(artifacts))
+            publish_evidence_many(context, (EvaluationEvidenceWrite(request.experiment, "altered", prepared, altered),), execution=execution)

@@ -11,13 +11,11 @@ from czsc_trader.application import (register_candidate, CandidateRegistrationRe
     InspectionDataKind, inspect_candidate, freeze_candidate, get_freeze_result,
     assemble_delivery, validate_delivery)
 from czsc_trader.application.research_evidence import validate_inspection
-from czsc_trader.application import publish_evidence
 from czsc_trader.application import run_backtest
-from czsc_trader.research_tools import EvaluationEvidenceWrite
 from czsc_trader.research_tools.delivery import EvaluationEvidenceRef
 from czsc_trader.research_tools import delivery as d
 from equity_test_support import setup_formal_equity
-from test_equity_pte import equity_protocol
+from test_equity_pte import equity_protocol, prepare_inspection_inputs
 
 
 @pytest.mark.parametrize('auxiliary', [False, True], ids=['primary', 'auxiliary-session'])
@@ -25,19 +23,17 @@ def test_formal_equity_inspect_freeze_exact_package(tmp_path, auxiliary):
     from equity_test_support import setup_auxiliary
     research, evaluation, _, _ = (setup_auxiliary(tmp_path, same_source=True) if auxiliary
                                   else setup_formal_equity(tmp_path))
-    evaluation = research.evaluation.prepare(evaluation)
+    evaluation = prepare_inspection_inputs(research, evaluation)
     context = research.repository
-    result = research.evaluation.evaluate(evaluation)
-    evidence = publish_evidence(research, EvaluationEvidenceWrite(evaluation.experiment, 'inspection-baseline', evaluation, result))
-    register_candidate(context, CandidateRegistrationRequest(evaluation.candidate, evaluation.experiment, (evidence,), ()))
-    inspect_freeze(research, evaluation, evidence)
+    register_candidate(context, CandidateRegistrationRequest(evaluation.candidate, evaluation.experiment, (), ()))
+    inspect_freeze(research, evaluation, None)
 
 
 def test_equity_inspection_requires_complete_auxiliary_identity(tmp_path):
     from dataclasses import replace
     from equity_test_support import setup_auxiliary
     research, evaluation, _, _ = setup_auxiliary(tmp_path)
-    evaluation = research.evaluation.prepare(evaluation)
+    evaluation = prepare_inspection_inputs(research, evaluation)
     replay = EquityInspectionReplay(f.InspectionCoordinate('main', 'standard'), evaluation.input_binding,
         evaluation.requests(research.execution_spec), evaluation.window, evaluation.initial_cash, evaluation.fee_rate)
     assert len(replay.requests) == 6
@@ -60,7 +56,7 @@ def inspect_freeze(research, evaluation, evidence, *, assessment_ref=None):
         source, 'Select synthetic fixture only'))
     replay = EquityInspectionReplay(f.InspectionCoordinate('main', 'standard'), evaluation.input_binding,
         evaluation.requests(research.execution_spec), evaluation.window, evaluation.initial_cash, evaluation.fee_rate,
-        EvaluationEvidenceRef(evidence))
+        None if evidence is None else EvaluationEvidenceRef(evidence))
     protocol = EquityInspectionProtocol('candidate-inspection-v2', 'ECONOMIC_V1', 0., equity_protocol(research, evaluation))
     request = CandidateInspectionRequest(registration.key, selection, research, evaluation.experiment,
         FreezeTarget('v1', None, 'synthetic US closure', date(2026,10,2), date(2026,10,3)), protocol, (replay,), InspectionDataKind.SYNTHETIC)
@@ -85,13 +81,14 @@ def inspect_freeze(research, evaluation, evidence, *, assessment_ref=None):
     package = validate_release_package(context.strategy_root, 'S999-v1')
     assert package.package_sha256 == report.release.package_sha256
     version = StrategyRegistry(context.strategy_root).get_version('S999', 'v1')
-    assert run_backtest(research, version, evaluation).payload['runs'] == research.evaluation.evaluate(evaluation).payload['runs']
+    with pytest.raises(TypeError, match='V3|v3|prepare|session|Session'):
+        run_backtest(research, version, evaluation)
     source_file = package.source_root / evaluation.candidate.definition.source_files[0]
     original = source_file.read_bytes()
     try:
         source_file.write_bytes(original + b'\n# unexpected frozen source change\n')
-        with pytest.raises(Exception, match='differs'):
-            run_backtest(research, version, evaluation)
+        with pytest.raises(Exception, match='differs|hash|source'):
+            validate_release_package(context.strategy_root, 'S999-v1')
     finally:
         source_file.write_bytes(original)
     if assessment_ref is not None:

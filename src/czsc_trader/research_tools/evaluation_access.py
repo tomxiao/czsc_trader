@@ -20,8 +20,7 @@ from threadpoolctl import threadpool_limits
 from strategy_runtime import canonical_sha256
 from strategy_runtime.resources import ExecutionResources
 from strategy_runtime.equity import ResearchExecutionSpec
-from .equity_evaluation import (EquityEvaluationRequest, EquityEvaluationOutcome, EquityEvaluationResult,
-                                prepare_equity, evaluate_equity)
+from .equity_evaluation import (EquityEvaluationRequest, EquityEvaluationResult)
 
 from .evaluation import (
     EvaluationRequest, EvaluationResult, _bind_evaluation_inputs,
@@ -96,12 +95,12 @@ class EvaluationAccess:
         )
 
     def prepare(self, request: EvaluationRequest | EquityEvaluationRequest, *,
-                execution: ResearchExecutionSession | None = None) -> EvaluationRequest | EquityEvaluationRequest | PreparedEquityEvaluation:
+                execution: ResearchExecutionSession | None = None) -> EvaluationRequest | PreparedEquityEvaluation:
         if type(request) is EquityEvaluationRequest:
             if request.formal and request.candidate.definition.contract_version == 3:
                 from .equity_replay_v3 import prepare_equity_v3
                 return prepare_equity_v3(self, request, execution=execution)
-            return prepare_equity(self, request)
+            raise TypeError("new equity replay requires contract_version=3 and an explicit ResearchExecutionSession")
         if execution is not None:
             raise ValueError('explicit prepared execution ownership is an equity V3 contract')
         if self.execution_spec is not None:
@@ -123,13 +122,13 @@ class EvaluationAccess:
         validate_parameter_request(prepared, self.data)
         return prepared
 
-    def evaluate(self, request: EvaluationRequest | EquityEvaluationRequest) -> EvaluationResult | EquityEvaluationResult:
+    def evaluate(self, request: EvaluationRequest) -> EvaluationResult:
+        if type(request) is EquityEvaluationRequest:
+            raise TypeError("equity replay requires prepare(..., execution=session) and evaluate_many with session-owned V3 handles")
         if self._active_execution is not None:
             raise RuntimeError("use evaluate_many with the active execution session")
         prepared = self.prepare(request)
         with threadpool_limits(limits=self.resources.native_threads_per_worker):
-            if type(prepared) is EquityEvaluationRequest:
-                return evaluate_equity(self, prepared)
             return _evaluate_strategy(prepared, dataflows=self.data, workers=self.resources.max_workers)
 
     @staticmethod
@@ -166,8 +165,8 @@ class EvaluationAccess:
                 type(exc).__name__, str(exc) or type(exc).__name__,
             ))
 
-    def evaluate_many(self, requests: tuple[EvaluationRequest, ...] | tuple[EquityEvaluationRequest, ...] | tuple[PreparedEquityEvaluation, ...], *,
-                      execution: ResearchExecutionSession | None = None) -> tuple[EvaluationOutcome, ...] | tuple[EquityEvaluationOutcome, ...]:
+    def evaluate_many(self, requests: tuple[EvaluationRequest, ...] | tuple[PreparedEquityEvaluation, ...], *,
+                      execution: ResearchExecutionSession | None = None) -> tuple[EvaluationOutcome, ...]:
         if not isinstance(requests, tuple) or not requests:
             raise ValueError("evaluate_many requires a nonempty tuple")
         from .equity_replay_v3 import PreparedEquityEvaluation, evaluate_many_equity_v3
@@ -178,23 +177,7 @@ class EvaluationAccess:
         if any(type(item) is EquityEvaluationRequest for item in requests):
             if not all(type(item) is EquityEvaluationRequest for item in requests):
                 raise TypeError("one evaluation batch cannot mix execution contracts")
-            if any(item.formal and item.candidate.definition.contract_version == 3 for item in requests):
-                raise TypeError('V3 evaluate_many requires explicitly prepared session-owned requests')
-            if any(item.formal for item in requests):
-                if not all(item.formal for item in requests):
-                    raise TypeError("formal and legacy equity requests cannot share a batch")
-                from ._equity_batch import evaluate_many_equity
-                return evaluate_many_equity(self, requests, execution=execution)
-            if execution is not None or self._active_execution is not None:
-                raise ValueError("BAR_RANGE does not support checkpoint execution sessions")
-            outcomes = []
-            for item in requests:
-                try:
-                    outcomes.append(EquityEvaluationOutcome(EvaluationStatus.SUCCEEDED, self.evaluate(item)))
-                except Exception as exc:
-                    outcomes.append(EquityEvaluationOutcome(EvaluationStatus.FAILED,
-                        error=EvaluationError(type(exc).__name__, str(exc) or type(exc).__name__)))
-            return tuple(outcomes)
+            raise TypeError("equity evaluate_many requires explicitly prepared session-owned V3 requests")
         if not all(isinstance(item, EvaluationRequest) for item in requests):
             raise TypeError("evaluate_many requires EvaluationRequest values")
         if execution is None and self._active_execution is not None:

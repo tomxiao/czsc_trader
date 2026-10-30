@@ -1,89 +1,88 @@
-"""Equity neighborhood plans bind real candidates, prepared assets and archived facts."""
-from dataclasses import replace
+"""Legacy parameter computation is rejected; archived facts retain independent validation."""
 import json
 
 import pytest
 
-from strategy_evaluator import AssessmentCandidate, ParameterAxis, RealDomain, BoundedLocalStep, RelativeChangeLimit
-from strategy_evaluator import ParameterNeighborhoodProtocol, ParameterNeighborhoodRequest, ParameterNeighborhoodSpace
-from strategy_evaluator import build_parameter_neighborhood_design
-from strategy_manager import CandidateDerivation, CandidateDerivationKind, CandidateEvidence
-from strategy_runtime import equity_source_hash
 from strategy_runtime.equity import equity_hash
-from czsc_trader.application import publish_evidence
-from czsc_trader.research_tools import MaterialEvidenceWrite, ParameterEvaluationPlan, EvaluationLineage
+from czsc_trader.research_tools import ParameterEvaluationPlan
 from czsc_trader.research_tools.equity_assessment import build_equity_assessment_payload
 from czsc_trader.research_tools.parameter_evaluation import validate_parameter_request
+from czsc_trader.application.backtest_service import run_backtest
 from equity_test_support import setup_formal_equity
 from equity_test_support import archived_formal_account_bytes as archived_formal_account_bytes
 
 
-def equity_plan(tmp_path, *, applicable=True, auxiliary=False):
-    if auxiliary:
-        from equity_test_support import setup_auxiliary
-        context, request, _, _ = setup_auxiliary(tmp_path)
-    else:
-        context, request, _, _ = setup_formal_equity(tmp_path)
+from contextlib import contextmanager
+from dataclasses import replace
+
+
+@contextmanager
+def equity_plan(tmp_path, *, applicable=True):
+    """Yield one explicit V3 execution owner and its authenticated prospective plan."""
+    from strategy_evaluator import (AssessmentCandidate, ParameterAxis, RealDomain, BoundedLocalStep,
+        RelativeChangeLimit, ParameterNeighborhoodProtocol, ParameterNeighborhoodRequest,
+        ParameterNeighborhoodSpace, build_parameter_neighborhood_design)
+    from strategy_manager import CandidateDerivation, CandidateDerivationKind, CandidateEvidence
+    from strategy_runtime import equity_source_hash
+    from czsc_trader.application import publish_evidence
+    from czsc_trader.research_tools import MaterialEvidenceWrite, EvaluationLineage, ResearchExecutionSession
+    from equity_test_support import setup_v3
+
+    context, request, _, _ = setup_v3(tmp_path)
     source = request.candidate.source_root
     (source / "strategy.py").write_text(
-        'from strategy_runtime.equity_definition import EquityDecision\n'
-        'def decide(ctx):\n'
-        '    active = int(ctx.history.Close.iloc[-1] >= ctx.parameters["threshold"])\n'
-        '    return EquityDecision.from_facts(0 if ctx.portfolio.quantity else active, "threshold comparison", '
-        'facts={"close": float(ctx.history.Close.iloc[-1]), "threshold": ctx.parameters["threshold"]}, '
-        'next_watch="next completed bar")\n', encoding="utf-8")
+        "from strategy_runtime.equity_definition import EquityDecision\n"
+        "from strategy_runtime.equity_replay import StepResult, StateRecord\n"
+        "def step(ctx, state):\n"
+        "    active = int(ctx.history.last()['Close'] >= ctx.parameters['threshold'])\n"
+        "    return StepResult(EquityDecision.from_facts(0 if ctx.portfolio.quantity else active, "
+        "'threshold comparison', facts={'threshold': ctx.parameters['threshold']}, "
+        "next_watch='next completed bar'), cycle_values=StateRecord())\n", encoding="utf-8")
     definition = replace(request.candidate.definition, parameters_json='{"threshold":10.0}',
         parameter_schema_json='{"threshold":{"type":"number","minimum":1,"maximum":20}}',
         source_sha256=equity_source_hash(source, ("strategy.py",)))
-    request = context.evaluation.prepare(replace(request, candidate=replace(request.candidate, definition=definition)))
-    def material(name):
-        return publish_evidence(context, MaterialEvidenceWrite(request.experiment, name, b'{}', "application/json", "json"))
-    mapping, feasible = material("map"), material("feasibility")
-    axes = (ParameterAxis("threshold", 10.0, RealDomain(1., 20.), BoundedLocalStep(RelativeChangeLimit(.05)),
-                          ("threshold",), "price"),) if applicable else ()
-    design = build_parameter_neighborhood_design(ParameterNeighborhoodRequest(
-        AssessmentCandidate("S999-C0001", definition.content_identity.content_sha256), ParameterNeighborhoodProtocol(),
-        ParameterNeighborhoodSpace(axes, mapping.sha256, feasible.sha256)), feasibility=lambda values: True).design
-    children = tuple(context.evaluation.prepare(replace(request, candidate=replace(request.candidate,
-        candidate_id=f"C{index + 2:04}", definition=replace(definition,
-        parameters_json=json.dumps({v.name: v.value for v in point.values}))), input_binding=None, lineage=None))
-        for index, point in enumerate(design.points))
-    plan = ParameterEvaluationPlan.create(design, request, children, mapping_evidence=mapping,
-        feasibility_evidence=feasible, dataflows=context.data)
-    ref = publish_evidence(context, MaterialEvidenceWrite(request.experiment, "plan",
-        json.dumps(plan.to_dict()).encode(), "application/json", "json"))
-    bound = []
-    for index, child in enumerate(children):
-        derivation = CandidateDerivation(request.candidate.key, request.candidate.content_identity.content_sha256,
-            child.candidate.key, child.candidate.content_identity.content_sha256, CandidateDerivationKind.PARAMETERS,
-            {v.name: v.value for v in design.points[index].values}, design.protocol.sha256,
-            CandidateEvidence(ref.repository_path, ref.sha256))
-        bound.append(replace(child, lineage=EvaluationLineage(derivation,
-            plan.bind_point(ref, index, repository_root=context.repository.root))))
-    return context, request, plan, ref, tuple(bound)
+    request = replace(request, candidate=replace(request.candidate, definition=definition))
+    with ResearchExecutionSession(context, experiment=request.experiment) as execution:
+        center = context.evaluation.prepare(request, execution=execution)
+        def material(name, content):
+            return publish_evidence(context, MaterialEvidenceWrite(request.experiment, name, content,
+                "application/json", "json"), execution=execution)
+        mapping, feasible = material("map", b"{}"), material("feasibility", b"{}")
+        axes = (ParameterAxis("threshold", 10.0, RealDomain(1., 20.),
+            BoundedLocalStep(RelativeChangeLimit(.05)), ("threshold",), "price"),) if applicable else ()
+        design = build_parameter_neighborhood_design(ParameterNeighborhoodRequest(
+            AssessmentCandidate("S999-C0001", definition.content_identity.content_sha256),
+            ParameterNeighborhoodProtocol(), ParameterNeighborhoodSpace(axes, mapping.sha256, feasible.sha256)),
+            feasibility=lambda values: True).design
+        children = tuple(context.evaluation.prepare(replace(center.request, candidate=replace(center.candidate,
+            candidate_id=f"C{index + 2:04}", definition=replace(definition,
+                parameters_json=json.dumps({v.name: v.value for v in point.values})))), execution=execution)
+            for index, point in enumerate(design.points))
+        plan = ParameterEvaluationPlan.create(design, center, children, mapping_evidence=mapping,
+            feasibility_evidence=feasible, dataflows=context.data, execution=execution)
+        ref = material("plan", json.dumps(plan.to_dict()).encode())
+        bound = []
+        for index, child in enumerate(children):
+            derivation = CandidateDerivation(center.candidate.key, center.candidate.content_identity.content_sha256,
+                child.candidate.key, child.candidate.content_identity.content_sha256, CandidateDerivationKind.PARAMETERS,
+                {v.name: v.value for v in design.points[index].values}, design.protocol.sha256,
+                CandidateEvidence(ref.repository_path, ref.sha256))
+            proposed = replace(child.request, lineage=EvaluationLineage(derivation,
+                plan.bind_point(ref, index, repository_root=context.repository.root)))
+            bound.append(context.evaluation.prepare(proposed, execution=execution))
+        yield context, center, plan, ref, tuple(bound), execution
 
 
-@pytest.mark.parametrize("applicable,auxiliary", [(True, False), (False, False), (True, True)])
-def test_equity_parameter_plan_preserves_payload_inputs_and_point_mapping(tmp_path, applicable, auxiliary):
-    context, request, plan, reference, children = equity_plan(tmp_path, applicable=applicable, auxiliary=auxiliary)
-    assert plan.schema_version == 4
-    assert ParameterEvaluationPlan.from_dict(plan.to_dict()) == plan
-    assert bool(children) == applicable
-    assert bool(request.input_binding.auxiliary_inputs) == auxiliary
-    center = context.evaluation.evaluate(request)
-    assert build_equity_assessment_payload(center.payload)[0].candidate == plan.design.center
-    for index, child in enumerate(children):
-        validate_parameter_request(child, context.data)
-        result = context.evaluation.evaluate(child)
-        evidence = build_equity_assessment_payload(result.payload)[0]
-        assert evidence.parent == plan.design.center
-        assert evidence.parameter_point == plan.design.bind_point(index)
-    if children:
-        with pytest.raises(ValueError, match="nonparameter context"):
-            validate_parameter_request(replace(children[0], initial_cash=1001.), context.data)
-        reference.resolve(context.repository.root).write_bytes(b"corrupt")
-        with pytest.raises(ValueError, match="content differs"):
-            validate_parameter_request(children[0], context.data)
+def test_legacy_equity_computation_entry_points_reject_before_data_access(tmp_path):
+    context, request, _, calls = setup_formal_equity(tmp_path)
+    with pytest.raises(TypeError, match="session-owned"):
+        ParameterEvaluationPlan.create(None, request, (), mapping_evidence=None,
+            feasibility_evidence=None, dataflows=context.data)
+    with pytest.raises(TypeError, match="session-owned"):
+        validate_parameter_request(request, context.data)
+    with pytest.raises(TypeError, match="ResearchExecutionSession"):
+        run_backtest(context, request.candidate, request)
+    assert calls == []
 
 
 @pytest.mark.parametrize("field", ["definition", "benchmark", "benchmark-strategy", "version", "binding", "window", "audit", "metrics",
