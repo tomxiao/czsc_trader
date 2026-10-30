@@ -1,4 +1,5 @@
 """Public parameter plan, account and immutable delivery business contracts."""
+from evaluation_seed_support import prepare_request
 
 from dataclasses import replace
 from importlib.metadata import version
@@ -34,7 +35,7 @@ from test_research_delivery import attachment, published
 
 
 def parameter_plan(research, request, *, child_parameters=None, vary_lookback=False, not_applicable=False):
-    request = research.evaluation.prepare(request)
+    request = prepare_request(research, request)
     mapping = attachment(research, "parameter-map", {"parameter": "threshold", "unit": "fraction"})
     feasible = attachment(research, "parameter-constraint", {"constraint": "domain"})
     center = AssessmentCandidate(request.strategy.reference_id,
@@ -60,9 +61,13 @@ def parameter_plan(research, request, *, child_parameters=None, vary_lookback=Fa
         candidate = StrategyCandidate("S900", f"C{point.index + 2:04}", payload, request.strategy.source_root)
         child = replace(request, strategy=candidate, runtime_binding={**request.runtime_binding,
                         "candidate_id": candidate.reference_id}, input_bindings={})
-        children.append(research.evaluation.prepare(child))
-    plan = ParameterEvaluationPlan.create(design, request, tuple(children), mapping_evidence=mapping,
-                                         feasibility_evidence=feasible, dataflows=research.data)
+        children.append(prepare_request(research, child))
+    from czsc_trader.research_tools import ResearchExecutionSession
+    with ResearchExecutionSession(research, experiment=ExperimentRef("S900", request.experiment_id)) as execution:
+        center_handle = research.evaluation.prepare(request, execution=execution)
+        child_handles = tuple(research.evaluation.prepare(child, execution=execution) for child in children)
+        plan = ParameterEvaluationPlan.create(design, center_handle, child_handles, mapping_evidence=mapping,
+            feasibility_evidence=feasible, dataflows=research.data, execution=execution)
     reference = publish_evidence(research, MaterialEvidenceWrite(ExperimentRef("S900", request.experiment_id),
         "parameter-plan", json.dumps(plan.to_dict(), ensure_ascii=False).encode(), "application/json", "json"))
     bound = []
@@ -109,13 +114,13 @@ def test_published_parameter_point_reaches_authenticated_account_and_se(managed_
     assert saved["request_identity"]["parameter_binding"]["plan"]["sha256"] == reference.sha256
     assert ParameterEvaluationPlan.from_dict(plan.to_dict()) == plan
     with pytest.raises(ValueError, match="nonparameter context"):
-        research.evaluation.prepare(replace(children[0], initial_cash=center.initial_cash + 1))
+        prepare_request(research, replace(children[0], initial_cash=center.initial_cash + 1))
     with pytest.raises(ValueError, match="actual child content"):
-        research.evaluation.prepare(replace(children[0], strategy=children[1].strategy,
+        prepare_request(research, replace(children[0], strategy=children[1].strategy,
             runtime_binding=children[1].runtime_binding, input_bindings=children[1].input_bindings))
     with pytest.raises(ValueError, match="content differs"):
         reference.resolve(request.repository_root).write_bytes(b"corrupt")
-        research.evaluation.prepare(children[0])
+        prepare_request(research, children[0])
 
 
 def test_parameter_plan_rejects_missing_publication_and_collapsed_payloads(prepared_parameter_plan):
@@ -128,7 +133,7 @@ def test_parameter_plan_rejects_missing_publication_and_collapsed_payloads(prepa
         replace(plan, mapping_evidence=plan.feasibility_evidence)
     reference.resolve(center.repository_root).unlink()
     with pytest.raises(FileNotFoundError, match="published evidence"):
-        research.evaluation.prepare(children[0])
+        prepare_request(research, children[0])
 
 
 @pytest.mark.parametrize("acceptance_target", [True, False], ids=["acceptance", "diagnostic-only"])
@@ -205,7 +210,7 @@ def test_parameter_assessment_delivery_replays_plan_after_source_cleanup(fresh_c
 
 def test_adapter_rejects_altered_raw_input_binding(managed_evaluation):
     research, request = managed_evaluation
-    request = research.evaluation.prepare(request)
+    request = prepare_request(research, request)
     result = research.evaluation.evaluate(request)
     run = result.runs[0]
     changed = replace(result, runs=(replace(run, signals=replace(run.signals,
@@ -337,7 +342,7 @@ def test_parameter_plan_allows_genuine_lookback_extension(managed_evaluation):
     center, plan, _, children = parameter_plan(research, request, vary_lookback=True)
     central_start = center.input_bindings["full"].plan.requests["flow"].start
     assert any(x.input_bindings["full"].plan.requests["flow"].start < central_start for x in children)
-    assert all(research.evaluation.prepare(x).lineage.parameter_binding for x in children)
+    assert all(prepare_request(research, x).lineage.parameter_binding for x in children)
     assert len(plan.children) == 5
 
 
@@ -354,7 +359,7 @@ def test_parameter_plan_rejects_changed_raw_signal_inputs(prepared_parameter_pla
         changed = replace(original, plan=replace(original.plan, requests=requests))
         child = replace(child, input_bindings={"full": changed})
         with pytest.raises(ValueError, match="raw input source contract differs"):
-            research.evaluation.prepare(child)
+            prepare_request(research, child)
     else:
         original = child.input_bindings["full"]
 
@@ -382,7 +387,7 @@ def test_parameter_plan_rejects_changed_raw_signal_inputs(prepared_parameter_pla
 
         monkeypatch.setattr(research.data, "fetch", tracked)
         with pytest.raises(ValueError, match="raw input source or values differ"):
-            research.evaluation.prepare(child)
+            prepare_request(research, child)
         flow_reads = [reference for dataset, reference in calls if str(dataset) == Dataset.ETF_SHARE_SIZE.value]
         assert flow_reads == [center.input_bindings["full"].prepared, prepared.reference]
 
@@ -400,7 +405,7 @@ def test_equal_pinned_inputs_read_once_per_role_and_again_for_each_preparation(p
 
     monkeypatch.setattr(research.data, "fetch", tracked)
     for index, child in enumerate((children[0], children[0], children[1]), start=1):
-        assert research.evaluation.prepare(child) is child
+        assert prepare_request(research, child) is child
         assert len(calls) == index * len(original.plan.requests)
         assert all(reference == original.prepared for _, reference in calls)
     assert sorted(source_request.dataset for source_request, _ in calls) == sorted([
@@ -414,7 +419,7 @@ def test_equal_pinned_inputs_reject_corrupted_asset_after_success(prepared_param
     research, center, _, _, children = prepared_parameter_plan
     original = center.input_bindings["full"]
     assert children[0].input_bindings["full"].prepared == original.prepared
-    assert research.evaluation.prepare(children[0]) is children[0]
+    assert prepare_request(research, children[0]) is children[0]
     # Fault injection affects only this synthetic fixture's managed store.
     path = research.data.binding.base_dir / research.data.binding.space.path / "assets.sqlite3"
     with sqlite3.connect(path) as connection:
@@ -425,7 +430,7 @@ def test_equal_pinned_inputs_reject_corrupted_asset_after_success(prepared_param
     raw = research.data.fetch(next(iter(original.plan.requests.values())), prepared=original.prepared)
     assert not raw.ready and raw.error.code == "ASSET_CORRUPT"
     with pytest.raises(ValueError, match="complete pinned inputs"):
-        research.evaluation.prepare(children[0])
+        prepare_request(research, children[0])
 
 
 def test_unprepared_adapter_uses_authenticated_binding_after_source_cleanup(managed_evaluation):
@@ -467,7 +472,7 @@ def test_bound_preparation_checks_calendars_without_copying_frame_metadata(manag
     import pandas.core.generic as generic
 
     research, request = managed_evaluation
-    bound = research.evaluation.prepare(request)
+    bound = prepare_request(research, request)
     frames = (bound.execution_data.adjusted_daily, bound.execution_data.execution_daily)
     originals = tuple(frame.attrs for frame in frames)
     copies = []
@@ -479,6 +484,49 @@ def test_bound_preparation_checks_calendars_without_copying_frame_metadata(manag
         return original(value, *args, **kwargs)
 
     monkeypatch.setattr(generic, "deepcopy", tracked)
-    assert research.evaluation.prepare(bound) is bound
+    assert prepare_request(research, bound) is bound
     assert copies == []
     assert all(frame.attrs is metadata for frame, metadata in zip(frames, originals, strict=True))
+
+
+@pytest.mark.parametrize("extend_history", [False, True])
+def test_live_parameter_handles_use_certified_facts_without_source_or_data_reads(managed_evaluation, monkeypatch, extend_history):
+    from datetime import date
+    from strategy_runtime.implementation_identity import implementation_sha256
+    from czsc_trader.research_tools import ResearchExecutionSession
+    from czsc_trader.research_tools.parameter_evaluation import validate_parameter_request
+    research, request = managed_evaluation
+    if extend_history:
+        source = request.strategy.source_root / "strategies/candidate_fixture.py"
+        text = source.read_text(encoding="utf-8")
+        old = '\"daily\",\n                1,\n                CutoffRule.SIGNAL_SESSION'
+        assert old in text
+        source.write_text(text.replace(old, '\"daily\",\n                int(parameters.values.get(\"lookback\", 1)),\n                CutoffRule.SIGNAL_SESSION', 1), encoding="utf-8", newline="\n")
+        source_hash = implementation_sha256(("strategies/candidate_fixture.py",), source_root=request.strategy.source_root)
+        payload = {"runtime": {**request.strategy.payload["runtime"], "source_sha256": source_hash},
+                   "parameters": {"threshold": .5, "lookback": 1}}
+        request = replace(request, strategy=replace(request.strategy, payload=payload),
+            runtime_binding={**request.runtime_binding, "implementation_sha256": source_hash},
+            windows=(replace(request.windows[0], start=date(2026, 9, 16)),))
+    center, plan, _, children = parameter_plan(research, request, vary_lookback=extend_history)
+    experiment = ExperimentRef("S900", request.experiment_id)
+    with ResearchExecutionSession(research, experiment=experiment) as execution:
+        center_handle = research.evaluation.prepare(center, execution=execution)
+        child_handles = tuple(research.evaluation.prepare(replace(child, lineage=None), execution=execution)
+                              for child in children)
+        bound_handles = tuple(research.evaluation.prepare(child, execution=execution) for child in children)
+        def forbidden(*args, **kwargs):
+            pytest.fail("parameter handle operations must consume certified facts without source or data reads")
+        monkeypatch.setattr(research.data, "fetch", forbidden)
+        monkeypatch.setattr(StrategyRuntime, "describe", forbidden)
+        monkeypatch.setattr(StrategyRuntime, "identify", forbidden)
+        recreated = ParameterEvaluationPlan.create(plan.design, center_handle, child_handles,
+            mapping_evidence=plan.mapping_evidence, feasibility_evidence=plan.feasibility_evidence,
+            dataflows=research.data, execution=execution)
+        assert recreated == plan
+        for child in bound_handles:
+            validate_parameter_request(child, research.data, execution=execution)
+        with pytest.raises(ValueError, match="not issued"):
+            ParameterEvaluationPlan.create(plan.design, replace(center_handle), child_handles,
+                mapping_evidence=plan.mapping_evidence, feasibility_evidence=plan.feasibility_evidence,
+                dataflows=research.data, execution=execution)

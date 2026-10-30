@@ -1,4 +1,5 @@
 """Public account diagnosis authenticates retained accounts without executing them."""
+from evaluation_seed_support import prepare_request
 
 from dataclasses import replace
 from datetime import date
@@ -44,7 +45,7 @@ def fresh_retained_account(candidate_payload, tmp_path, monkeypatch):
     experiment = create_experiment(
         context, ExperimentRequest("Diagnosis", "Accounting", days[-1].date())
     )
-    request = context.evaluation.prepare(replace(request, experiment_id=experiment.experiment_id))
+    request = prepare_request(context, replace(request, experiment_id=experiment.experiment_id))
     result = context.evaluation.evaluate(request)
     evidence = publish_evidence(
         context, EvaluationEvidenceWrite(experiment, "account", request, result)
@@ -251,7 +252,7 @@ def test_target_without_actual_order_is_not_counted_as_buy_intent(
     experiment = create_experiment(
         context, ExperimentRequest("No-order", "Cash too small", days[-1].date())
     )
-    request = context.evaluation.prepare(replace(request, experiment_id=experiment.experiment_id))
+    request = prepare_request(context, replace(request, experiment_id=experiment.experiment_id))
     result = context.evaluation.evaluate(request)
     run = result.runs[0]
     assert run.execution.orders.empty

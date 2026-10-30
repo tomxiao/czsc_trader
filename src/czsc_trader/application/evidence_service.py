@@ -66,8 +66,8 @@ def _validate_request(context: ResearchContext, request: EvidenceWriteRequest, *
         _validate_report_request(root, request)
     if isinstance(request, EvaluationEvidenceWrite):
         from ..research_tools.equity_evaluation import validate_equity_result
-        from ..research_tools.equity_replay_v3 import PreparedEquityEvaluation
-        if type(request.request) is PreparedEquityEvaluation:
+        from ..research_tools.equity_replay_v3 import PreparedAccountEvaluation
+        if type(request.request) is PreparedAccountEvaluation:
             validate_equity_result(context.evaluation, request.request, request.result, execution=execution)
             return
         if request.request.experiment_id != request.experiment.experiment_id:
@@ -138,7 +138,19 @@ def _publish_serialized(context: ResearchContext, request: EvidenceWriteRequest,
     return reference
 
 
+def _normalize_account_write(context, request, execution):
+    from dataclasses import replace
+    from ..research_tools.account_preparation import PreparedAccountEvaluation, require_account
+    from ..research_tools.evaluation import EvaluationRequest
+    if isinstance(request, EvaluationEvidenceWrite) and type(request.request) is PreparedAccountEvaluation:
+        bound = require_account(context.evaluation, request.request, execution)
+        if type(bound) is EvaluationRequest:
+            return replace(request, request=bound)
+    return request
+
+
 def publish_evidence(context: ResearchContext, request: EvidenceWriteRequest, *, execution=None) -> EvidenceRef:
+    request = _normalize_account_write(context, request, execution)
     _validate_request(context, request, execution=execution)
     if isinstance(request, ExperimentReportWrite):
         from .experiment_artifact_service import _publish_report
@@ -187,6 +199,7 @@ def publish_evidence_many(context: ResearchContext,
         raise TypeError("publication requires ResearchContext")
     if type(requests) is not tuple or not requests:
         raise ValueError("publish_evidence_many requires a nonempty tuple")
+    requests = tuple(_normalize_account_write(context, item, execution) for item in requests)
     # Every ownership/contract error rejects the entire call before any write.
     for request in requests:
         _validate_request(context, request, execution=execution)
@@ -206,9 +219,9 @@ def publish_evidence_many(context: ResearchContext,
 
     publication_keys = {}
     for index, request in enumerate(requests):
-        from ..research_tools.equity_replay_v3 import PreparedEquityEvaluation
+        from ..research_tools.equity_replay_v3 import PreparedAccountEvaluation
         if (checkpoint is not None and isinstance(request, EvaluationEvidenceWrite)
-                and type(request.request) is PreparedEquityEvaluation):
+                and type(request.request) is PreparedAccountEvaluation):
             key = canonical_sha256({'request_hash': request.result.request_hash,
                 'result_hash': request.result.result_hash, 'experiment': request.experiment.to_dict(),
                 'name': request.name, 'schema': 'equity_research', 'version': 3})
@@ -278,8 +291,8 @@ def publish_evidence_many(context: ResearchContext,
             with executor.measure(ExecutionPhase.PUBLISH):
                 outcomes[index] = _publish_outcome(context, index, request, request.content)
         else:
-            from ..research_tools.equity_replay_v3 import PreparedEquityEvaluation
-            if type(request.request) is PreparedEquityEvaluation:
+            from ..research_tools.equity_replay_v3 import PreparedAccountEvaluation
+            if type(request.request) is PreparedAccountEvaluation:
                 with executor.measure(ExecutionPhase.PUBLISH):
                     outcomes[index] = _publish_outcome(context, index, request, request.result.content)
                 if checkpoint is not None and outcomes[index].status is PublicationStatus.PUBLISHED:

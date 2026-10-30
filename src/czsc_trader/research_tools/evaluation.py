@@ -35,7 +35,7 @@ from ..backtesting.execution_data import (
     _require_execution_frequencies,
     _require_market_rules,
 )
-from ..backtesting.benchmarks import BuyHoldReplay, replay_buyhold
+from ..backtesting.benchmarks import BuyHoldReplay, BenchmarkReplayScope, replay_buyhold
 from ..backtesting.benchmark_contracts import EvaluationBenchmark
 from ..backtesting.models import StrategyIdentity, StrategySnapshot
 from ..backtesting.signal_replay import SignalReplay
@@ -515,7 +515,11 @@ def _evaluate_prepared(
     *,
     include_buyhold,
     benchmark=None,
+    benchmark_scope: BenchmarkReplayScope | None = None,
 ):
+    scope = BenchmarkReplayScope() if benchmark_scope is None else benchmark_scope
+    if type(scope) is not BenchmarkReplayScope:
+        raise TypeError("benchmark_scope requires BenchmarkReplayScope")
     tasks = tuple(
         (key, window, scenario, prepared, fee, measurement_tier)
         for key in candidate_ids
@@ -542,9 +546,9 @@ def _evaluate_prepared(
             workspace.execution_data,
         )
         buyhold = (
-            replay_buyhold(
+            scope.replay(
                 signals, workspace.execution_data, context.init_cash,
-                benchmark=benchmark,
+                benchmark=benchmark, calculate=replay_buyhold,
             )
             if include_buyhold
             else None
@@ -865,11 +869,23 @@ def _bind_evaluation_inputs(request: EvaluationRequest, *, dataflows) -> Evaluat
     return replace(request, input_bindings=bindings)
 
 
-def _evaluate_strategy(request: EvaluationRequest, *, dataflows: Dataflows, workers: int = 1) -> EvaluationResult:
+def _evaluate_strategy(request: EvaluationRequest, *, dataflows: Dataflows, workers: int = 1,
+                       benchmark_scope: BenchmarkReplayScope | None = None,
+                       prepared_contract: bytes | None = None) -> EvaluationResult:
     """Evaluate one strategy without candidate admission, ranking or governance writes."""
 
-    request = _prepare_evaluation_inputs(request, dataflows=dataflows)
-    contract, binding_hash = _request_contract(request)
+    if prepared_contract is None:
+        request = _prepare_evaluation_inputs(request, dataflows=dataflows)
+        contract, binding_hash = _request_contract(request)
+    else:
+        from .account_preparation import _read
+        if type(prepared_contract) is not bytes or not request.input_bindings or request.execution_data is None:
+            raise TypeError("prepared computation requires immutable contract and pinned inputs")
+        contract = _read(prepared_contract)
+        binding_hash = contract["runtime_binding_hash"]
+        actual = _request_identity_payload(request, contract["content_sha256"], binding_hash)
+        if canonical_sha256(actual) != canonical_sha256(contract):
+            raise ValueError("worker request differs from its authenticated preparation")
     request_hash = canonical_sha256(contract)
     periods = tuple(
         (
@@ -927,11 +943,13 @@ def _evaluate_strategy(request: EvaluationRequest, *, dataflows: Dataflows, work
         },
         include_buyhold=True,
         benchmark=request.benchmark,
+        benchmark_scope=benchmark_scope,
     )
     environment = canonical_sha256({
         "python": platform.python_version(), "platform": platform.platform(),
         "numpy": np.__version__, "pandas": pd.__version__,
-        "implementation": implementation_sha256(("models.py", "runtime.py", "identity.py", "loader.py"), source_root=Path(__import__("strategy_runtime").__file__).parent),
+        "implementation": implementation_sha256(("models.py", "runtime.py", "identity.py", "loader.py",
+            "strategy.py", "prepared_store.py", "replay_kernel.py", "replay_contracts.py", "replay_adapters.py"), source_root=Path(__import__("strategy_runtime").__file__).parent),
         "evaluator": sha256(Path(__file__).read_bytes()).hexdigest(),
         "benchmark_source": {
             name: sha256((Path(__file__).parents[1] / "backtesting" / name).read_bytes()).hexdigest()

@@ -38,3 +38,15 @@ def relocate_result(result, original_request, root):
         data_dir=path(run.signals.data_dir))) for run in result.runs)
     execution = replace(result.execution_data, root=path(result.execution_data.root))
     return replace(result, runs=runs, execution_data=execution)
+
+
+def prepare_request(context, request):
+    """Return bound request facts via the public explicit-session preparation API.
+
+    This helper does not return or reuse an expired execution handle. Tests that
+    exercise calculation ownership use the live session and handle directly.
+    """
+    from czsc_trader.research_tools import ExperimentRef, ResearchExecutionSession
+    experiment = ExperimentRef(context.strategy_id, request.experiment_id)
+    with ResearchExecutionSession(context, experiment=experiment) as execution:
+        return context.evaluation.prepare(request, execution=execution).request

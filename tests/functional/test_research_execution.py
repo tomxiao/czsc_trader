@@ -25,10 +25,10 @@ def _session(context, request, **kwargs):
 def test_shared_execution_pool_runs_calculate_publish_calculate(managed_evaluation):
     context, request = managed_evaluation
     context.evaluation.resources = ExecutionResources(2)
-    requests = (context.evaluation.prepare(request),
-                context.evaluation.prepare(replace(request, initial_cash=200_000)))
     progress = []
     with _session(context, request, on_progress=progress.append) as execution:
+        requests = tuple(context.evaluation.prepare(item, execution=execution) for item in
+            (request, replace(request, initial_cash=200_000)))
         outcomes = context.evaluation.evaluate_many(requests, execution=execution)
         assert all(item.status is EvaluationStatus.SUCCEEDED for item in outcomes)
         writes = tuple(EvaluationEvidenceWrite(execution.experiment, f"account-{i}", item, outcome.result)
@@ -53,9 +53,9 @@ def test_shared_execution_pool_runs_calculate_publish_calculate(managed_evaluati
 def test_resume_reuses_calculation_and_publication_then_rejects_corruption(managed_evaluation, monkeypatch):
     context, request = managed_evaluation
     context.evaluation.resources = ExecutionResources(2)
-    prepared = context.evaluation.prepare(request)
     checkpoint = ExecutionCheckpointRequest("recovery")
     with _session(context, request, checkpoint=checkpoint) as execution:
+        prepared = context.evaluation.prepare(request, execution=execution)
         outcome = context.evaluation.evaluate_many((prepared,), execution=execution)[0]
         write = EvaluationEvidenceWrite(execution.experiment, "account", prepared, outcome.result)
         reference = publish_evidence_many(context, (write,), execution=execution)[0].reference
@@ -70,9 +70,10 @@ def test_resume_reuses_calculation_and_publication_then_rejects_corruption(manag
     monkeypatch.setattr(evidence_service, "_serialize_worker", unexpected)
     resume = ExecutionCheckpointRequest("recovery", CheckpointMode.RESUME)
     with _session(context, request, checkpoint=resume) as execution:
+        prepared = context.evaluation.prepare(request, execution=execution)
         outcomes = context.evaluation.evaluate_many((prepared, prepared), execution=execution)
         assert all(item.status is EvaluationStatus.SUCCEEDED for item in outcomes)
-        restored_write = replace(write, result=outcomes[0].result)
+        restored_write = replace(write, request=prepared, result=outcomes[0].result)
         publication = publish_evidence_many(context, (restored_write,), execution=execution)[0]
         assert publication.reference == reference
         assert execution.stats.submitted == 0
@@ -84,12 +85,14 @@ def test_resume_reuses_calculation_and_publication_then_rejects_corruption(manag
     record.write_text("interrupted or corrupted", encoding="utf-8")
     with _session(context, request, checkpoint=resume) as execution:
         with pytest.raises(CheckpointIntegrityError, match="authenticate"):
+            prepared = context.evaluation.prepare(request, execution=execution)
             context.evaluation.evaluate_many((prepared,), execution=execution)
         assert execution.stats.submitted == 0
-    source = prepared.strategy.source_root / prepared.runtime_binding["source_files"][0]
+    source = request.strategy.source_root / request.runtime_binding["source_files"][0]
     source.write_bytes(source.read_bytes() + b"\n# changed after checkpoint\n")
     with _session(context, request, checkpoint=resume) as execution:
         with pytest.raises(ValueError, match="source closure"):
+            prepared = context.evaluation.prepare(request, execution=execution)
             context.evaluation.evaluate_many((prepared,), execution=execution)
         assert execution.stats.submitted == 0
 
@@ -99,12 +102,13 @@ def test_broken_pool_is_not_replaced_or_retried_implicitly(managed_evaluation):
     context.evaluation.resources = ExecutionResources(2)
     context.evaluation._batch_evaluator = terminated_worker
     with _session(context, request) as execution:
-        outcomes = context.evaluation.evaluate_many((request, request), execution=execution)
+        prepared = context.evaluation.prepare(request, execution=execution)
+        outcomes = context.evaluation.evaluate_many((prepared, prepared), execution=execution)
         assert all(item.status is EvaluationStatus.UNKNOWN for item in outcomes)
         assert execution.stats.pool_starts == 1
         assert execution.stats.submitted == 2
         with pytest.raises(BrokenProcessPool, match="explicit new session"):
-            context.evaluation.evaluate_many((request,), execution=execution)
+            context.evaluation.evaluate_many((prepared,), execution=execution)
         assert execution.stats.pool_starts == 1
 
 
@@ -114,20 +118,21 @@ def test_session_identity_reuse_and_nested_active_calls_are_rejected(managed_eva
     errors = []
     def progress(_):
         with pytest.raises(RuntimeError, match="active operation") as failure:
-            context.evaluation.evaluate_many((request,), execution=execution)
+            context.evaluation.evaluate_many((prepared,), execution=execution)
         errors.append(failure.value)
 
     execution = _session(context, request, on_progress=progress)
     with execution:
+        prepared = context.evaluation.prepare(request, execution=execution)
         with pytest.raises(RuntimeError, match="reopened"):
             execution.__enter__()
         with pytest.raises(RuntimeError, match="active execution session"):
             _session(context, request).__enter__()
-        outcome = context.evaluation.evaluate_many((request,), execution=execution)[0]
+        outcome = context.evaluation.evaluate_many((prepared,), execution=execution)[0]
         assert outcome.status is EvaluationStatus.SUCCEEDED
         assert errors
         with pytest.raises(ValueError, match="another experiment"):
-            context.evaluation.evaluate_many((replace(request, experiment_id="EX002_20261022"),), execution=execution)
+            context.evaluation.prepare(replace(request, experiment_id="EX002_20261022"), execution=execution)
     with pytest.raises(RuntimeError, match="reopened"):
         execution.__enter__()
 
@@ -136,13 +141,14 @@ def test_checkpoint_save_failure_requires_explicit_new_session(managed_evaluatio
     context, request = managed_evaluation
     context.evaluation.resources = ExecutionResources(2)
     with _session(context, request, checkpoint=ExecutionCheckpointRequest("disk-failure")) as execution:
+        prepared = context.evaluation.prepare(request, execution=execution)
         def fail_save(*_):
             raise OSError("injected checkpoint write failure")
         monkeypatch.setattr(execution.checkpoint, "save_result", fail_save)
         with pytest.raises(OSError, match="checkpoint write failure"):
-            context.evaluation.evaluate_many((request, request), execution=execution)
+            context.evaluation.evaluate_many((prepared, prepared), execution=execution)
         with pytest.raises(BrokenProcessPool, match="explicit new session"):
-            context.evaluation.evaluate_many((request,), execution=execution)
+            context.evaluation.evaluate_many((prepared,), execution=execution)
         assert execution.stats.pool_starts == 1
 
 
@@ -150,11 +156,12 @@ def test_duplicate_concurrent_results_share_one_semantic_checkpoint(managed_eval
     context, request = managed_evaluation
     context.evaluation.resources = ExecutionResources(2)
     with _session(context, request, checkpoint=ExecutionCheckpointRequest("duplicates")) as execution:
-        outcomes = context.evaluation.evaluate_many((request, request), execution=execution)
+        prepared = context.evaluation.prepare(request, execution=execution)
+        outcomes = context.evaluation.evaluate_many((prepared, prepared), execution=execution)
         assert all(item.status is EvaluationStatus.SUCCEEDED for item in outcomes)
         assert outcomes[0].result.result_hash == outcomes[1].result.result_hash
         assert len(tuple((execution.checkpoint.root / "results").glob("*.json"))) == 1
-        restored = context.evaluation.evaluate_many((request,), execution=execution)[0]
+        restored = context.evaluation.evaluate_many((prepared,), execution=execution)[0]
         assert restored.status is EvaluationStatus.SUCCEEDED
         assert restored.result.result_hash == outcomes[0].result.result_hash
 

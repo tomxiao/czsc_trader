@@ -3,9 +3,9 @@ from __future__ import annotations
 
 from concurrent.futures import CancelledError
 from concurrent.futures.process import BrokenProcessPool
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import Enum
-from contextlib import nullcontext, closing
+from contextlib import closing
 from pathlib import Path
 import pickle
 import re
@@ -13,10 +13,9 @@ from threading import Lock
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .equity_replay_v3 import PreparedEquityEvaluation
+    from .equity_replay_v3 import PreparedAccountEvaluation
 
 from dataflows import Dataflows
-from threadpoolctl import threadpool_limits
 from strategy_runtime import canonical_sha256
 from strategy_runtime.resources import ExecutionResources
 from strategy_runtime.equity import ResearchExecutionSpec
@@ -24,12 +23,10 @@ from .equity_evaluation import (EquityEvaluationRequest, EquityEvaluationResult)
 
 from .evaluation import (
     EvaluationRequest, EvaluationResult, _bind_evaluation_inputs,
-    _evaluate_strategy, _evaluation_result_hash, _request_contract,
+    _evaluation_result_hash, _request_contract,
 )
 from ._evaluation_workers import PlatformEvaluator, compute, pack
-from .parameter_evaluation import validate_parameter_request
 from .execution import ResearchExecutionSession, ExecutionPhase, ExecutionProgress
-from ._execution_session import ExecutionExecutor
 
 
 class EvaluationStatus(str, Enum):
@@ -83,6 +80,7 @@ class EvaluationAccess:
         self.resources = resources if resources is not None else ExecutionResources()
         if type(self.resources) is not ExecutionResources:
             raise TypeError("evaluation requires ExecutionResources")
+        self._context = None
         self.strategy_id = strategy_id
         if execution_spec is not None and type(execution_spec) is not ResearchExecutionSpec:
             raise TypeError("execution_spec requires ResearchExecutionSpec")
@@ -95,14 +93,16 @@ class EvaluationAccess:
         )
 
     def prepare(self, request: EvaluationRequest | EquityEvaluationRequest, *,
-                execution: ResearchExecutionSession | None = None) -> EvaluationRequest | PreparedEquityEvaluation:
+                execution: ResearchExecutionSession | None = None) -> PreparedAccountEvaluation:
         if type(request) is EquityEvaluationRequest:
             if request.formal and request.candidate.definition.contract_version == 3:
                 from .equity_replay_v3 import prepare_equity_v3
                 return prepare_equity_v3(self, request, execution=execution)
             raise TypeError("new equity replay requires contract_version=3 and an explicit ResearchExecutionSession")
-        if execution is not None:
-            raise ValueError('explicit prepared execution ownership is an equity V3 contract')
+        from .account_preparation import prepare_account
+        return prepare_account(self, request, execution)
+
+    def _bind_inputs(self, request):
         if self.execution_spec is not None:
             raise ValueError("explicit equity context requires EquityEvaluationRequest")
         if not isinstance(request, EvaluationRequest):
@@ -119,21 +119,31 @@ class EvaluationAccess:
                for binding in request.input_bindings.values()):
             raise ValueError("input binding belongs to another data space")
         prepared = _bind_evaluation_inputs(request, dataflows=self.data)
-        validate_parameter_request(prepared, self.data)
         return prepared
 
     def evaluate(self, request: EvaluationRequest) -> EvaluationResult:
         if type(request) is EquityEvaluationRequest:
             raise TypeError("equity replay requires prepare(..., execution=session) and evaluate_many with session-owned V3 handles")
+        from .context import ExperimentRef
+        from .execution import ResearchExecutionSession
         if self._active_execution is not None:
             raise RuntimeError("use evaluate_many with the active execution session")
-        prepared = self.prepare(request)
-        with threadpool_limits(limits=self.resources.native_threads_per_worker):
-            return _evaluate_strategy(prepared, dataflows=self.data, workers=self.resources.max_workers)
+        context = self._context
+        if context is None:
+            raise TypeError("single evaluation requires a batch ResearchContext")
+        with ResearchExecutionSession(context, experiment=ExperimentRef(self.strategy_id, request.experiment_id)) as execution:
+            prepared = self.prepare(request, execution=execution)
+            outcome, = self.evaluate_many((prepared,), execution=execution)
+            if outcome.result is None:
+                raise RuntimeError(outcome.error.message)
+            return outcome.result
 
     @staticmethod
-    def _outcome(request, calculate):
-        contract, binding_hash = _request_contract(request)
+    def _outcome(request, calculate, *, contract=None):
+        if contract is None:
+            contract, binding_hash = _request_contract(request)
+        else:
+            binding_hash = contract["runtime_binding_hash"]
         request_hash = canonical_sha256(contract)
         try:
             result = calculate()
@@ -165,71 +175,62 @@ class EvaluationAccess:
                 type(exc).__name__, str(exc) or type(exc).__name__,
             ))
 
-    def evaluate_many(self, requests: tuple[EvaluationRequest, ...] | tuple[PreparedEquityEvaluation, ...], *,
+    def evaluate_many(self, requests: tuple[PreparedAccountEvaluation, ...], *,
                       execution: ResearchExecutionSession | None = None) -> tuple[EvaluationOutcome, ...]:
         if not isinstance(requests, tuple) or not requests:
             raise ValueError("evaluate_many requires a nonempty tuple")
-        from .equity_replay_v3 import PreparedEquityEvaluation, evaluate_many_equity_v3
-        if any(type(item) is PreparedEquityEvaluation for item in requests):
-            if not all(type(item) is PreparedEquityEvaluation for item in requests):
-                raise TypeError('one evaluation batch cannot mix prepared V3 and unprepared requests')
+        from .equity_replay_v3 import PreparedAccountEvaluation, evaluate_many_equity_v3
+        from .account_preparation import require_account
+        if not all(type(item) is PreparedAccountEvaluation for item in requests):
+            raise TypeError('evaluate_many requires explicitly prepared session-owned account handles')
+        originals = tuple(require_account(self, item, execution) for item in requests)
+        account_handles = requests
+        if all(type(item) is EquityEvaluationRequest for item in originals):
             return evaluate_many_equity_v3(self, requests, execution=execution)
-        if any(type(item) is EquityEvaluationRequest for item in requests):
-            if not all(type(item) is EquityEvaluationRequest for item in requests):
-                raise TypeError("one evaluation batch cannot mix execution contracts")
-            raise TypeError("equity evaluate_many requires explicitly prepared session-owned V3 requests")
-        if not all(isinstance(item, EvaluationRequest) for item in requests):
-            raise TypeError("evaluate_many requires EvaluationRequest values")
-        if execution is None and self._active_execution is not None:
-            raise RuntimeError("pass the active execution session explicitly")
-        if execution is not None:
-            if type(execution) is not ResearchExecutionSession:
-                raise TypeError("execution requires ResearchExecutionSession")
-            for item in requests:
-                execution.require(self, item.experiment_id)
-        # Contract errors reject the call. Data/preparation failures belong to their item.
-        contracts = tuple(_request_contract(item, require_execution=False)[0] for item in requests)
+        if not all(type(item) is EvaluationRequest for item in originals):
+            raise TypeError('one account batch cannot mix execution contracts')
+        contracts = tuple(item.identity(self.execution_spec) for item in account_handles)
+        requests = originals
         outcomes = [None] * len(requests)
         def fail(error):
             raise error
 
-        executor = execution.executor if execution is not None else ExecutionExecutor(self.resources)
-        checkpoint = None if execution is None else execution.checkpoint
+        executor = execution.executor
+        checkpoint = execution.checkpoint
         prepared_by_index = {}
 
         def tasks():
             for index, (item, contract) in enumerate(zip(requests, contracts, strict=True)):
-                try:
-                    with executor.measure(ExecutionPhase.PREPARE):
-                        prepared = self.prepare(item)
-                except Exception as exc:
-                    outcomes[index] = EvaluationOutcome(EvaluationStatus.FAILED,
-                        canonical_sha256(contract), error=EvaluationError(
-                            type(exc).__name__, str(exc) or type(exc).__name__))
-                    continue
-                request_hash = canonical_sha256(_request_contract(prepared)[0])
+                prepared = item
+                request_hash = canonical_sha256(contract)
                 if checkpoint is not None:
-                    restored = checkpoint.load_result(prepared, request_hash)
+                    restored = checkpoint.load_result(prepared, request_hash, contract=contract)
                     if restored is not None:
-                        outcomes[index] = self._outcome(prepared, lambda: restored)
+                        outcomes[index] = self._outcome(prepared, lambda: restored, contract=contract)
                         if outcomes[index].status is not EvaluationStatus.SUCCEEDED:
                             raise ValueError("restored checkpoint does not match the prepared request")
                         executor.reused_results += 1
                         continue
                 try:
-                    payload = pack((self._batch_evaluator, prepared, self.resources.native_threads_per_worker))
+                    evaluator = self._batch_evaluator
+                    if type(evaluator) is PlatformEvaluator:
+                        from .account_preparation import account_benchmark_seeds
+                        evaluator = replace(evaluator, benchmark_seeds=account_benchmark_seeds(
+                            execution, account_handles[index], request=prepared),
+                                            contract_content=account_handles[index].contract_content)
+                    payload = pack((evaluator, prepared, self.resources.native_threads_per_worker))
                 except Exception as exc:
-                    outcomes[index] = self._outcome(prepared, lambda exc=exc: fail(exc))
+                    outcomes[index] = self._outcome(prepared, lambda exc=exc: fail(exc), contract=contract)
                     continue
                 prepared_by_index[index] = prepared
                 yield index, (payload,)
 
-        with (nullcontext(executor) if execution is not None else executor):
+        if execution is not None:
             with closing(executor.run(compute, tasks(), phase=ExecutionPhase.COMPUTE,
                                       total=len(requests))) as completed:
                 for index, value, error in completed:
                     item = prepared_by_index.pop(index)
-                    outcome = self._outcome(item, lambda: fail(error) if error is not None else pickle.loads(value))
+                    outcome = self._outcome(item, lambda: fail(error) if error is not None else pickle.loads(value), contract=contracts[index])
                     if checkpoint is not None and outcome.status is EvaluationStatus.SUCCEEDED:
                         checkpoint.save_result(outcome.request_hash, outcome.result)
                     outcomes[index] = outcome

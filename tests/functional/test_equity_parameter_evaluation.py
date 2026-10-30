@@ -75,9 +75,21 @@ def equity_plan(tmp_path, *, applicable=True):
 
 def test_legacy_equity_computation_entry_points_reject_before_data_access(tmp_path):
     context, request, _, calls = setup_formal_equity(tmp_path)
+    from strategy_evaluator import (AssessmentCandidate, ParameterNeighborhoodProtocol,
+        ParameterNeighborhoodRequest, ParameterNeighborhoodSpace, build_parameter_neighborhood_design)
+    from czsc_trader.application import publish_evidence
+    from czsc_trader.research_tools import MaterialEvidenceWrite
+    mapping = publish_evidence(context, MaterialEvidenceWrite(request.experiment, "mapping",
+        b"{}", "application/json", "json"))
+    feasible = publish_evidence(context, MaterialEvidenceWrite(request.experiment, "feasibility",
+        b"{}", "application/json", "json"))
+    design = build_parameter_neighborhood_design(ParameterNeighborhoodRequest(
+        AssessmentCandidate(f"{request.candidate.strategy_id}-{request.candidate.candidate_id}", request.candidate.content_identity.content_sha256),
+        ParameterNeighborhoodProtocol(), ParameterNeighborhoodSpace((), mapping.sha256, feasible.sha256)),
+        feasibility=lambda _: True).design
     with pytest.raises(TypeError, match="session-owned"):
-        ParameterEvaluationPlan.create(None, request, (), mapping_evidence=None,
-            feasibility_evidence=None, dataflows=context.data)
+        ParameterEvaluationPlan.create(design, request, (), mapping_evidence=mapping,
+            feasibility_evidence=feasible, dataflows=context.data)
     with pytest.raises(TypeError, match="session-owned"):
         validate_parameter_request(request, context.data)
     with pytest.raises(TypeError, match="ResearchExecutionSession"):

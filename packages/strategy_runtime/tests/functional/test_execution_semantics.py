@@ -1,4 +1,6 @@
 from datetime import date, datetime, timezone
+from dataclasses import replace
+from zoneinfo import ZoneInfo
 from types import SimpleNamespace
 from pathlib import Path
 from decimal import Decimal
@@ -165,10 +167,10 @@ def test_missing_executor_capability_fails_before_snapshot_or_execute():
 
 
 def test_failed_execution_outcome_does_not_finish_window(monkeypatch):
-    instance, _, _ = _instance(pd.DataFrame())
-    plan = SimpleNamespace(
-        plan_identity="a" * 64, required_capabilities=ExecutionCapabilities((OrderType.LIMIT,))
-    )
+    instance, _, _ = _instance(pd.DataFrame({"target_position": [0., 1.]},
+        index=pd.to_datetime(["2026-01-02", "2026-01-05"])))
+    plan = replace(_plan(instance, SignalHistoryMode.WINDOW),
+        generated_at=datetime(2026, 1, 5, 20, 31, tzinfo=ZoneInfo("Asia/Shanghai")))
     monkeypatch.setattr(instance, "_plan_at", lambda **kwargs: plan)
     now = datetime.now(timezone.utc)
     portfolio = PortfolioSnapshot("test", "588080.SH", Decimal(100), Decimal(100), 0, 0, now)
@@ -176,7 +178,7 @@ def test_failed_execution_outcome_does_not_finish_window(monkeypatch):
     executor = SimpleNamespace(
         capabilities=ExecutionCapabilities((OrderType.LIMIT,)),
         snapshot=lambda point: (None, None),
-        execute=lambda plan: ExecutionOutcome(plan.plan_identity, portfolio, state, ExecutionOutcomeStatus.FAILED),
+        execute_plan=lambda neutral, plan: ExecutionOutcome(plan.plan_identity, portfolio, state, ExecutionOutcomeStatus.FAILED),
         finish=lambda: pytest.fail("failed execution must not finish successfully"),
     )
     with pytest.raises(RuntimeExecutionError, match="did not settle"):

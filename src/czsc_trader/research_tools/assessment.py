@@ -37,8 +37,14 @@ def build_assessment_evidence(
     result: EvaluationResult,
     *, execution=None,
 ) -> tuple[AssessmentEvidence, ...]:
-    from .equity_replay_v3 import PreparedEquityEvaluation, build_v3_assessment, _state
-    if type(request) is PreparedEquityEvaluation:
+    from .equity_replay_v3 import PreparedAccountEvaluation, build_v3_assessment, _state
+    if type(request) is PreparedAccountEvaluation and type(request.request) is EvaluationRequest:
+        from .account_preparation import require_account
+        if execution is None:
+            raise TypeError('prepared account assessment requires its explicit execution session')
+        request = require_account(execution.context.evaluation, request, execution)
+        return tuple(evidence for evidence, _ in _assessment_with_replays(request, result))
+    if type(request) is PreparedAccountEvaluation:
         if execution is None:
             raise TypeError('V3 assessment requires its explicit execution session')
         from .equity_evaluation import validate_equity_result

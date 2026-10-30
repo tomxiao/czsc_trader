@@ -1,4 +1,5 @@
 """Prototype handoffs preserve executable identities without candidate promotion."""
+from evaluation_seed_support import prepare_request
 
 from dataclasses import replace
 import json
@@ -83,7 +84,7 @@ def test_prototype_revision_and_overview_preserve_research_state(overview_contex
 
 def test_unregistered_prototype_authenticates_real_accounts_and_identity(managed_evaluation, monkeypatch):
     research, request = managed_evaluation
-    request = research.evaluation.prepare(request)
+    request = prepare_request(research, request)
     result = research.evaluation.evaluate(request)
     account = publish_evidence(research, EvaluationEvidenceWrite(
         ExperimentRef("S900", request.experiment_id), "prototype-account", request, result))

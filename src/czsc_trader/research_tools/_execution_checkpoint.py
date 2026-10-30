@@ -140,12 +140,13 @@ class CheckpointStore:
             raise CheckpointIntegrityError("checkpoint result numeric hash differs")
         self._write(f"results/{request_hash}.json", encode(result))
 
-    def load_result(self, request, request_hash: str):
-        from .evaluation import EvaluationResult, _evaluation_result_hash, _request_contract
+    def load_result(self, request, request_hash: str, *, contract: dict):
+        from .evaluation import EvaluationResult, _evaluation_result_hash, _request_identity_payload
 
         _hash(request_hash)
-        contract, binding_hash = _request_contract(request)
-        if canonical_sha256(contract) != request_hash:
+        binding_hash = contract["runtime_binding_hash"]
+        current = _request_identity_payload(request, contract["content_sha256"], binding_hash)
+        if current != contract or canonical_sha256(contract) != request_hash:
             raise CheckpointIntegrityError("prepared request differs from checkpoint lookup identity")
         if (Path(request.repository_root).resolve() != self.repository_root
                 or request.experiment_id != self.experiment.experiment_id
@@ -177,8 +178,8 @@ class CheckpointStore:
 
     def load_equity_result(self, request, request_hash):
         from ._equity_checkpoint import decode_result
-        from .equity_replay_v3 import PreparedEquityEvaluation
-        if type(request) is not PreparedEquityEvaluation:
+        from .equity_replay_v3 import PreparedAccountEvaluation
+        if type(request) is not PreparedAccountEvaluation:
             raise TypeError("equity checkpoint restore requires session-owned V3 preparation")
         request = request.request
         _hash(request_hash)

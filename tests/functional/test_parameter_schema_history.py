@@ -1,4 +1,5 @@
 """Historical contracts remain readable without permitting relabelled new writes."""
+from evaluation_seed_support import prepare_request
 from dataclasses import replace
 import json
 from hashlib import sha256
@@ -157,7 +158,7 @@ def account_schema_bytes(request, frozen_seed_root):
     seed = frozen_seed_root / "historical-account-schemas.json"
     if not seed.exists():
         context, evaluation = request.getfixturevalue("fresh_managed_evaluation")
-        prepared = context.evaluation.prepare(evaluation)
+        prepared = prepare_request(context, evaluation)
         result = context.evaluation.evaluate(prepared)
         current = serialize_evaluation_evidence(prepared, result)
         assert (current["schema_version"], current["request_identity"]["schema_version"]) == (8, 7)

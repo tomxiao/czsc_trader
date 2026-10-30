@@ -1,4 +1,5 @@
 """Completed calculations survive explicit restart without executable disk data."""
+from evaluation_seed_support import prepare_request
 
 from dataclasses import replace
 from hashlib import sha256
@@ -31,7 +32,7 @@ def test_driver_exit_releases_lock_and_preserves_completed_account(managed_evalu
     from czsc_trader.research_tools._evaluation_workers import pack
 
     context, request = managed_evaluation
-    prepared = context.evaluation.prepare(request)
+    prepared = prepare_request(context, request)
     result = context.evaluation.evaluate(prepared)
     experiment = ExperimentRef("S900", request.experiment_id)
     child = get_context("spawn").Process(target=_persist_then_exit_without_cleanup,
@@ -47,7 +48,7 @@ def test_driver_exit_releases_lock_and_preserves_completed_account(managed_evalu
             child.join(timeout=10)
         child.close()
     with CheckpointStore(context.repository.root, experiment, "driver-crash", "RESUME", "a" * 64) as store:
-        restored = store.load_result(prepared, result.request_hash)
+        restored = load_result(store, prepared, result.request_hash)
         assert restored.result_hash == result.result_hash
         evidence = serialize_evaluation_evidence(prepared, restored)
         validate_evaluation_evidence(evidence)
@@ -56,18 +57,18 @@ def test_driver_exit_releases_lock_and_preserves_completed_account(managed_evalu
 
 def test_checkpoint_restores_real_account_for_authenticated_publication(managed_evaluation):
     context, request = managed_evaluation
-    prepared = context.evaluation.prepare(request)
+    prepared = prepare_request(context, request)
     result = context.evaluation.evaluate(prepared)
     root = context.repository.root
     experiment = ExperimentRef("S900", request.experiment_id)
     with CheckpointStore(root, experiment, "account", "CREATE", "a" * 64) as store:
-        assert store.load_result(prepared, result.request_hash) is None
+        assert load_result(store, prepared, result.request_hash) is None
         store.save_result(result.request_hash, result)
         store.save_result(result.request_hash, result)
         with pytest.raises(RegistryError, match="write lock"):
             CheckpointStore(root, experiment, "account", "RESUME", "a" * 64)
     with CheckpointStore(root, experiment, "account", "RESUME", "a" * 64) as store:
-        restored = store.load_result(prepared, result.request_hash)
+        restored = load_result(store, prepared, result.request_hash)
         assert restored.result_hash == result.result_hash
         assert restored.execution_data is prepared.execution_data
         for original, recovered in zip(result.runs, restored.runs, strict=True):
@@ -80,13 +81,13 @@ def test_checkpoint_restores_real_account_for_authenticated_publication(managed_
         validate_evaluation_evidence(evidence)
         assert evidence == serialize_evaluation_evidence(prepared, result)
         with pytest.raises(CheckpointIntegrityError, match="prepared request differs"):
-            store.load_result(replace(prepared, initial_cash=200_000), result.request_hash)
+            load_result(store, replace(prepared, initial_cash=200_000), result.request_hash)
         path = store.root / "results" / f"{result.request_hash}.json"
         value = json.loads(path.read_bytes())
         value["payload"]["fields"]["result_hash"] = "b" * 64
         path.write_text(json.dumps(value), encoding="utf-8")
         with pytest.raises(CheckpointIntegrityError, match="checksum"):
-            store.load_result(prepared, result.request_hash)
+            load_result(store, prepared, result.request_hash)
     with pytest.raises(CheckpointIntegrityError, match="implementation identity"):
         CheckpointStore(root, experiment, "account", "RESUME", "b" * 64)
 
@@ -201,3 +202,10 @@ def test_checkpoint_create_resume_and_closed_state_are_explicit(tmp_path):
     (store.root / "manifest.json").write_text("truncated", encoding="utf-8")
     with pytest.raises(CheckpointIntegrityError, match="authenticate"):
         CheckpointStore(tmp_path, experiment, "run", "RESUME", "a" * 64)
+
+
+def load_result(store, request, request_hash):
+    # Codec fixtures authenticate once at this boundary. Live execution passes
+    # the immutable contract from its session-owned preparation handle.
+    from czsc_trader.research_tools.evaluation import _request_contract
+    return store.load_result(request, request_hash, contract=_request_contract(request)[0])

@@ -1,4 +1,9 @@
 """Strategy Runtime (SRT) public contracts."""
+from .replay_contracts import (
+    ReplayPoint, AccountSnapshot, ReplayOrder, ReplayLeg, CycleBudget,
+    AccountExecutionPlan, AccountPlanExecutor, StrategyComputation, ExecutionPrecision,
+)
+from .replay_kernel import ReplayDriver, run_account_replay
 from .equity import (AccountPolicy, CashAvailabilityPolicy, CnEquitySpec, UsEquitySpec,
                      ResearchExecutionSpec, ExecutionModel, DecisionPoint, EquityPortfolio,
                      EquityClosedCycle, EquityClosedCycleFeedback,
@@ -198,3 +203,6 @@ __all__ += ['BarField', 'RawField', 'Lag', 'TrueRange', 'Mean', 'SameLocalSlotMe
     'StateValueType', 'StateField', 'StateRecord', 'StrategyStateSchema', 'CycleState',
     'StrategyState', 'StepContext', 'StepResult', 'PreparedReplay', 'ReplayOutcome',
     'ReplayStatistics', 'ReplayFailure', 'run_replay']
+__all__ += ['ReplayPoint', 'AccountSnapshot', 'ReplayOrder', 'ReplayLeg', 'CycleBudget',
+    'AccountExecutionPlan', 'AccountPlanExecutor', 'StrategyComputation', 'ExecutionPrecision',
+    'ReplayDriver', 'run_account_replay']

@@ -731,11 +731,19 @@ def _run_replay(prepared, candidate, executor, *, start, end, fee_rate, initial_
         raise ValueError('session context requires certified calendar evidence')
     parameters = definition.parameters
     decisions = rows = 0
-    for index, (bar_start, bar_end) in enumerate(zip(data.starts, data.ends)):
-        if bar_start < start or bar_end > end:
-            continue
-        prior_state = state
-        try:
+    from .replay_kernel import run_account_replay
+    from .replay_contracts import ReplayPoint, ExecutionPrecision
+    from .replay_adapters import project_bar_plan
+    from zoneinfo import ZoneInfo
+    session_zone = ZoneInfo(candidate.instrument.timezone)
+
+    class StatefulStepDriver:
+        def transaction(self, tick):
+            self.prior_state = state
+            return executor.transaction()
+
+        def snapshot(self, tick):
+            index, bar_start, bar_end = tick
             visibility.advance(bar_start)
             if visibility.count < definition.warmup_bars:
                 raise ValueError('insufficient causal warmup at window start')
@@ -744,84 +752,115 @@ def _run_replay(prepared, candidate, executor, *, start, end, fee_rate, initial_
                 raise ValueError('no dated trading constraints available at execution start')
             observed_index = visibility.row(0)
             point = DecisionPoint(data.ends[observed_index], bar_start, TimeInterval(bar_start, bar_end))
-            with executor.transaction():
-                portfolio = executor.snapshot_at(point.observed_through, point.decision_at)
-                if portfolio.revision != state.revision or bool(portfolio.quantity) != (state.cycle is not None):
-                    raise ValueError('strategy state differs from confirmed execution revision/cycle')
-                if state.cycle is not None and (state.cycle.entry_at != portfolio.cycle_entry
-                                                or state.cycle.cycle_id != executor.cycle):
-                    raise ValueError('strategy cycle identity differs from confirmed fill')
-                reference = float(data.rows[observed_index]['Close']) * portfolio.reference_price_scale
-                suppressed = not data.observed[visibility.latest_completed]
-                if suppressed:
-                    target = float(portfolio.quantity > 0)
-                    payload = {'candidate': owner, 'implementation': implementation,
-                               'specification': spec_hash,
-                               'point': {'observed_through': point.observed_through, 'decision_at': point.decision_at,
-                                         'execution_interval': {'start': bar_start, 'end': bar_end}},
-                               'revision': portfolio.revision, 'reference': reference, 'target': target,
-                               'signal_status': 'SUPPRESSED_UNOBSERVED_BAR'}
-                    plan = EquityPlan(equity_hash(payload), point, target, 0, 'WAIT', None,
-                                      portfolio.revision, reference, spec_hash,
-                                      signal_status='SUPPRESSED_UNOBSERVED_BAR')
-                    proposed_account = state.account
-                    proposed_cycle = state.cycle.values if state.cycle is not None else None
-                else:
-                    feature_start = perf_counter()
-                    features = evaluator.at(bar_start)
-                    auxiliary_views = {}
-                    for declaration in definition.auxiliary_inputs:
-                        item, indexer, invalid_at = auxiliary[declaration.name]
-                        indexer.advance(bar_start)
-                        if (indexer.latest_completed < 0 or not item.observed[indexer.latest_completed]
-                                or (invalid_at is not None and invalid_at <= bar_start)):
-                            raise ValueError('AUXILIARY_INPUT_UNAVAILABLE: ' + declaration.name)
-                        if indexer.count < declaration.warmup_bars:
-                            raise ValueError('AUXILIARY_WARMUP_INSUFFICIENT: ' + declaration.name)
-                        latest = indexer.row(0)
-                        if (bar_start - item.ends[latest]).total_seconds() > declaration.max_age_seconds:
-                            raise ValueError('AUXILIARY_INPUT_STALE: ' + declaration.name)
-                        auxiliary_views[declaration.name] = indexer.history_view(bar_start)
-                    session = session_available_at = None
-                    if definition.session_context:
-                        session_index = session_intervals.get((bar_start, bar_end))
-                        if session_index is None:
-                            raise ValueError('current execution interval has no unique session')
-                        session, session_available_at = prepared._sessions[session_index]
-                        if session_available_at > bar_start:
-                            raise ValueError('CAUSAL_TIME_VIOLATION: session is not yet available')
-                    feedback = portfolio
-                    if definition.feedback_mode == 'CONFIRMED_EXECUTION' and portfolio.closed_cycle_feedback is not None:
-                        from dataclasses import replace
-                        feedback = replace(portfolio, closed_cycle_feedback=None)
-                    if definition.feedback_mode == 'CONFIRMED_CLOSED_CYCLE_V1' and portfolio.closed_cycle_feedback is None:
-                        raise ValueError('CLOSED_CYCLE_FEEDBACK_UNAVAILABLE')
-                    ctx = StepContext(point, feedback, parameters, features,
-                                      visibility.history_view(bar_start),
-                                      auxiliary_views, session, session_available_at)
-                    feature_seconds += perf_counter() - feature_start
-                    result = candidate.step(ctx, state)
-                    schema.validate_result(result)
-                    proposed_account, proposed_cycle = result.account, result.cycle_values
-                    if (portfolio.quantity or result.decision.target) and proposed_cycle is None:
-                        raise ValueError('active or proposed entry requires explicit cycle state values')
-                    plan = _plan(result.decision, point, portfolio, reference, spec, spec_hash,
-                                 implementation, owner, fee_rate)
-                    decisions += 1
-                after = executor.execute(plan, data.rows[index], constraint=constraint)
-                if after.revision != portfolio.revision + 1:
-                    raise ValueError('replay transition did not advance exactly one account revision')
-                cycle = None
-                if after.quantity:
-                    if proposed_cycle is None:
-                        raise ValueError('actual holding requires proposed typed cycle state')
-                    cycle = CycleState(executor.cycle, after.cycle_entry, proposed_cycle)
-                    schema.validate_record(cycle.values, scope='cycle')
-                state = StrategyState(after.revision, proposed_account, cycle, binding)
-                rows += 1
-        except Exception as error:
-            state = prior_state
-            raise ReplayFailure(state, bar_start, error) from error
-    execution_result = executor.finish()
+            portfolio = executor.snapshot_at(point.observed_through, point.decision_at)
+            if portfolio.revision != state.revision or bool(portfolio.quantity) != (state.cycle is not None):
+                raise ValueError('strategy state differs from confirmed execution revision/cycle')
+            if state.cycle is not None and (state.cycle.entry_at != portfolio.cycle_entry
+                                            or state.cycle.cycle_id != executor.cycle):
+                raise ValueError('strategy cycle identity differs from confirmed fill')
+            self.point = point
+            self.constraint = constraint
+            return portfolio
+
+        def decide(self, tick, portfolio):
+            nonlocal feature_seconds, decisions
+            index, bar_start, bar_end = tick
+            point = self.point
+            self.portfolio = portfolio
+            reference = float(data.rows[visibility.row(0)]['Close']) * portfolio.reference_price_scale
+            suppressed = not data.observed[visibility.latest_completed]
+            if suppressed:
+                target = float(portfolio.quantity > 0)
+                payload = {'candidate': owner, 'implementation': implementation,
+                           'specification': spec_hash,
+                           'point': {'observed_through': point.observed_through, 'decision_at': point.decision_at,
+                                     'execution_interval': {'start': bar_start, 'end': bar_end}},
+                           'revision': portfolio.revision, 'reference': reference, 'target': target,
+                           'signal_status': 'SUPPRESSED_UNOBSERVED_BAR'}
+                plan = EquityPlan(equity_hash(payload), point, target, 0, 'WAIT', None,
+                                  portfolio.revision, reference, spec_hash,
+                                  signal_status='SUPPRESSED_UNOBSERVED_BAR')
+                proposed_account = state.account
+                proposed_cycle = state.cycle.values if state.cycle is not None else None
+            else:
+                feature_start = perf_counter()
+                features = evaluator.at(bar_start)
+                auxiliary_views = {}
+                for declaration in definition.auxiliary_inputs:
+                    item, indexer, invalid_at = auxiliary[declaration.name]
+                    indexer.advance(bar_start)
+                    if (indexer.latest_completed < 0 or not item.observed[indexer.latest_completed]
+                            or (invalid_at is not None and invalid_at <= bar_start)):
+                        raise ValueError('AUXILIARY_INPUT_UNAVAILABLE: ' + declaration.name)
+                    if indexer.count < declaration.warmup_bars:
+                        raise ValueError('AUXILIARY_WARMUP_INSUFFICIENT: ' + declaration.name)
+                    latest = indexer.row(0)
+                    if (bar_start - item.ends[latest]).total_seconds() > declaration.max_age_seconds:
+                        raise ValueError('AUXILIARY_INPUT_STALE: ' + declaration.name)
+                    auxiliary_views[declaration.name] = indexer.history_view(bar_start)
+                session = session_available_at = None
+                if definition.session_context:
+                    session_index = session_intervals.get((bar_start, bar_end))
+                    if session_index is None:
+                        raise ValueError('current execution interval has no unique session')
+                    session, session_available_at = prepared._sessions[session_index]
+                    if session_available_at > bar_start:
+                        raise ValueError('CAUSAL_TIME_VIOLATION: session is not yet available')
+                feedback = portfolio
+                if definition.feedback_mode == 'CONFIRMED_EXECUTION' and portfolio.closed_cycle_feedback is not None:
+                    from dataclasses import replace
+                    feedback = replace(portfolio, closed_cycle_feedback=None)
+                if definition.feedback_mode == 'CONFIRMED_CLOSED_CYCLE_V1' and portfolio.closed_cycle_feedback is None:
+                    raise ValueError('CLOSED_CYCLE_FEEDBACK_UNAVAILABLE')
+                ctx = StepContext(point, feedback, parameters, features,
+                                  visibility.history_view(bar_start),
+                                  auxiliary_views, session, session_available_at)
+                feature_seconds += perf_counter() - feature_start
+                result = candidate.step(ctx, state)
+                schema.validate_result(result)
+                proposed_account, proposed_cycle = result.account, result.cycle_values
+                if (portfolio.quantity or result.decision.target) and proposed_cycle is None:
+                    raise ValueError('active or proposed entry requires explicit cycle state values')
+                plan = _plan(result.decision, point, portfolio, reference, spec, spec_hash,
+                             implementation, owner, fee_rate)
+                decisions += 1
+            self.proposed_account = proposed_account
+            self.proposed_cycle = proposed_cycle
+            return plan
+
+        def execute(self, tick, plan):
+            point = self.point
+            interval = point.execution_interval
+            replay_point = ReplayPoint(point.observed_through, point.decision_at, interval.start, interval.end,
+                interval.start.astimezone(session_zone).date().isoformat(), ExecutionPrecision.BAR_INTERVAL)
+            neutral = project_bar_plan(plan, self.portfolio, replay_point, owner=owner)
+            return executor.execute_plan(neutral, plan, data.rows[tick[0]], constraint=self.constraint)
+
+        def commit(self, tick, portfolio, plan, after):
+            nonlocal state, rows
+            proposed_account, proposed_cycle = self.proposed_account, self.proposed_cycle
+            if after.revision != portfolio.revision + 1:
+                raise ValueError('replay transition did not advance exactly one account revision')
+            cycle = None
+            if after.quantity:
+                if proposed_cycle is None:
+                    raise ValueError('actual holding requires proposed typed cycle state')
+                cycle = CycleState(executor.cycle, after.cycle_entry, proposed_cycle)
+                schema.validate_record(cycle.values, scope='cycle')
+            state = StrategyState(after.revision, proposed_account, cycle, binding)
+            rows += 1
+
+        def failure(self, tick, error):
+            nonlocal state
+            state = self.prior_state
+            return ReplayFailure(state, tick[1], error)
+
+        def finish(self):
+            return executor.finish()
+
+    ticks = ((index, bar_start, bar_end)
+             for index, (bar_start, bar_end) in enumerate(zip(data.starts, data.ends))
+             if bar_start >= start and bar_end <= end)
+    execution_result = run_account_replay(ticks, StatefulStepDriver())
     return ReplayOutcome(execution_result, state,
                          ReplayStatistics(feature_seconds, perf_counter() - started, rows, decisions))

@@ -29,6 +29,7 @@ class ExecutionCheckpointRequest:
 class ExecutionPhase(StrEnum):
     PREPARE = "PREPARE"
     COMPUTE = "COMPUTE"
+    BENCHMARK = "BENCHMARK"
     SERIALIZE = "SERIALIZE"
     PUBLISH = "PUBLISH"
     AUTHENTICATE = "AUTHENTICATE"

@@ -1,8 +1,22 @@
 """Historical diagnostics and tradable targets through public evaluation."""
+from dataclasses import replace
+
 import pandas as pd
 import pytest
-from strategy_runtime import RuntimeContractError, implementation_sha256
+from strategy_runtime import implementation_sha256
+from czsc_trader.application import create_experiment
+from czsc_trader.application.research_governance_service import ExperimentRequest
+from czsc_trader.research_tools import ResearchExecutionSession
 from public_backtest_support import request_for_prices
+
+
+def _evaluate(context, request):
+    experiment = create_experiment(context, ExperimentRequest("Bridge fixture", "Evaluate causal history", request.data_cutoff))
+    request = replace(request, experiment_id=experiment.experiment_id)
+    with ResearchExecutionSession(context, experiment=experiment) as execution:
+        prepared = context.evaluation.prepare(request, execution=execution)
+        outcome, = context.evaluation.evaluate_many((prepared,), execution=execution)
+        return outcome
 
 
 def _history_request(candidate_payload, tmp_path, monkeypatch, *, invalid_target=False):
@@ -24,7 +38,9 @@ def _history_request(candidate_payload, tmp_path, monkeypatch, *, invalid_target
 
 def test_srt_history_allows_unavailable_diagnostics_during_warmup(candidate_payload, tmp_path, monkeypatch):
     context, request = _history_request(candidate_payload, tmp_path, monkeypatch)
-    result = context.evaluation.evaluate(request)
+    outcome = _evaluate(context, request)
+    assert outcome.result is not None, outcome.error
+    result = outcome.result
     assert len(result.runs) == 1
     assert len(result.runs[0].signals.decisions) == 2
     assert result.runs[0].signals.decisions["factor_score"].isna().all()
@@ -33,8 +49,9 @@ def test_srt_history_allows_unavailable_diagnostics_during_warmup(candidate_payl
 
 def test_srt_history_rejects_unavailable_target_position(candidate_payload, tmp_path, monkeypatch):
     context, request = _history_request(candidate_payload, tmp_path, monkeypatch, invalid_target=True)
-    with pytest.raises(RuntimeContractError, match="target positions"):
-        context.evaluation.evaluate(request)
+    outcome = _evaluate(context, request)
+    assert outcome.status.value == "FAILED"
+    assert outcome.error.code == "RuntimeContractError" and "target positions" in outcome.error.message
 
 
 @pytest.mark.parametrize("fractional_mode", [True, False])
@@ -59,10 +76,13 @@ def test_public_evaluation_fractional_targets_require_explicit_equity_mode(
         flow=[.25, .75, .25, .5, 0., 0.], cost=0.,
     )
     if not fractional_mode:
-        with pytest.raises(RuntimeContractError, match="binary"):
-            context.evaluation.evaluate(request)
+        outcome = _evaluate(context, request)
+        assert outcome.status.value == "FAILED"
+        assert outcome.error.code == "RuntimeContractError" and "binary" in outcome.error.message
         return
-    run = context.evaluation.evaluate(request).runs[0]
+    outcome = _evaluate(context, request)
+    assert outcome.result is not None, outcome.error
+    run = outcome.result.runs[0]
     assert run.signals.decisions.target_position.tolist() == [.25, .75, .25, .5, 0.]
     assert run.execution.account_daily.target_position.tolist() == [.25, .75, .25, .5, 0.]
     assert run.execution.account_daily.quantity.tolist() == [25_000, 75_000, 25_000, 50_000, 0]

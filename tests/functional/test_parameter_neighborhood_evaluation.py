@@ -1,4 +1,5 @@
 """Typed neighborhood plans bind actual payload leaves, not a mapping declaration alone."""
+from evaluation_seed_support import prepare_request
 
 from dataclasses import replace
 import json
@@ -140,7 +141,7 @@ def test_legacy_sphere_plan_is_readable_but_cannot_start_new_work(prepared_param
     oldbinding = ParameterEvaluationBinding(oldref, olddesign.bind_point(0))
     request = replace(children[0], lineage=replace(children[0].lineage, parameter_binding=oldbinding))
     with pytest.raises(ValueError, match="read-only|legacy|schema 2"):
-        research.evaluation.prepare(request)
+        prepare_request(research, request)
 
 
 def test_legacy_cartesian_plan_remains_read_only_without_changing_serialization(prepared_parameter_plan):

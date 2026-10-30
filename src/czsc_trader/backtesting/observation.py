@@ -6,6 +6,7 @@ from math import isfinite
 import re
 
 from strategy_runtime import (
+    AccountExecutionPlan,
     observe_execution_plan,
     ObservationUnavailable,
     StrategyIdentity,
@@ -88,7 +89,7 @@ class ObservationExecutor:
     def snapshot(self, point: TradingPoint) -> tuple[PortfolioSnapshot, ExecutionState]:
         return self.executor.snapshot(point)
 
-    def execute(self, plan: ExecutionPlan) -> ExecutionOutcome:
+    def _observation(self, plan: ExecutionPlan):
         observation = observe_execution_plan(self.definition, plan)
         if isinstance(observation, ObservationUnavailable):
             observation = UnavailablePlanObservation(
@@ -96,7 +97,18 @@ class ObservationExecutor:
                 plan.plan_identity, plan.signal_date, plan.trading_date, plan.action,
                 plan.target_position, observation,
             )
+        return observation
+
+    def execute(self, plan: ExecutionPlan) -> ExecutionOutcome:
+        observation = self._observation(plan)
         result = self.executor.execute(plan)
+        self.observations.append(observation)
+        return result
+
+    def execute_plan(self, plan: AccountExecutionPlan, native: ExecutionPlan) -> ExecutionOutcome:
+        """Observe the native explanation while the shared kernel executes facts."""
+        observation = self._observation(native)
+        result = self.executor.execute_plan(plan, native)
         self.observations.append(observation)
         return result
 

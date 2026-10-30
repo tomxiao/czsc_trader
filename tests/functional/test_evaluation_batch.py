@@ -13,6 +13,12 @@ from czsc_trader.research_tools.evaluation_access import (
     EvaluationAccess, EvaluationOutcome, EvaluationStatus,
 )
 from test_research_contract_upgrade import managed_evaluation as managed_evaluation
+from czsc_trader.research_tools import ResearchExecutionSession, ExperimentRef
+
+
+def session(context, request, access):
+    return ResearchExecutionSession(replace(context, evaluation=access),
+        experiment=ExperimentRef("S900", request.experiment_id))
 
 
 @dataclass(frozen=True)
@@ -40,8 +46,10 @@ def test_parallel_results_preserve_order_and_failure_is_not_retried(managed_eval
     context, request = managed_evaluation
     access = EvaluationAccess(dataflows=context.data, resources=ExecutionResources(2, 1), strategy_id="S900")
     access._batch_evaluator = SyntheticEvaluator(context.repository.root, DataSpace(Path("research/S900/assets/data")))
-    outcomes = access.evaluate_many((request, replace(request, initial_cash=13),
-                                     replace(request, initial_cash=200_000), request))
+    with session(context, request, access) as execution:
+        prepared = tuple(access.prepare(item, execution=execution) for item in
+            (request, replace(request, initial_cash=13), replace(request, initial_cash=200_000), request))
+        outcomes = access.evaluate_many(prepared, execution=execution)
     assert [x.status for x in outcomes] == [EvaluationStatus.SUCCEEDED, EvaluationStatus.FAILED,
                                            EvaluationStatus.SUCCEEDED, EvaluationStatus.SUCCEEDED]
     assert outcomes[1].error.code == "RuntimeError"
@@ -49,7 +57,7 @@ def test_parallel_results_preserve_order_and_failure_is_not_retried(managed_eval
     assert outcomes[0].result.result_hash == outcomes[3].result.result_hash
     assert len(list((context.repository.root / ".tmp").glob("worker-*"))) == 2
     assert not list(context.repository.root.rglob("record.json"))
-    assert not list((context.repository.root / ".tmp/evaluation-workers").iterdir())
+    assert not (context.repository.root / ".tmp/evaluation-workers").exists()
     assert not (context.repository.root / "data/backtest").exists()
 
 
@@ -57,11 +65,15 @@ def test_cancellation_and_worker_loss_return_truthful_status(managed_evaluation)
     context, request = managed_evaluation
     access = context.evaluation
     access._batch_evaluator = SyntheticEvaluator(context.repository.root, DataSpace(Path("research/S900/assets/data")))
-    cancelled = access.evaluate_many((replace(request, initial_cash=14),))[0]
+    with session(context, request, access) as execution:
+        prepared = access.prepare(replace(request, initial_cash=14), execution=execution)
+        cancelled = access.evaluate_many((prepared,), execution=execution)[0]
     assert cancelled.status is EvaluationStatus.CANCELLED and cancelled.result is None
-    broken = EvaluationAccess(dataflows=context.data, resources=ExecutionResources(2))
+    broken = EvaluationAccess(dataflows=context.data, resources=ExecutionResources(2), strategy_id="S900")
     broken._batch_evaluator = terminated_worker
-    outcomes = broken.evaluate_many((request, request))
+    with session(context, request, broken) as execution:
+        prepared = broken.prepare(request, execution=execution)
+        outcomes = broken.evaluate_many((prepared, prepared), execution=execution)
     assert all(x.status is EvaluationStatus.UNKNOWN and x.result is None for x in outcomes)
 
 
@@ -82,33 +94,31 @@ def test_invalid_resources_reject_before_computation(kwargs):
         ExecutionResources(**kwargs)
 
 
-def test_batch_data_preparation_failure_is_returned_for_only_the_failed_item(managed_evaluation):
+def test_failed_explicit_preparation_does_not_prevent_prepared_account_evaluation(managed_evaluation):
     context, request = managed_evaluation
-    bound = context.evaluation.prepare(request)
-    read_only = Dataflows(base_dir=context.repository.root, space=context.data.binding.space,
-                         providers=ProviderConfig(bindings={}))
-    access = EvaluationAccess(dataflows=read_only, strategy_id="S900")
-    missing = replace(request, symbol="518850.SH", execution_data=None, input_bindings={})
-    outcomes = access.evaluate_many((bound, missing))
-    assert outcomes[0].status is EvaluationStatus.SUCCEEDED
-    assert outcomes[1].status is EvaluationStatus.FAILED and outcomes[1].result is None
-    assert outcomes[1].error.code
+    access = context.evaluation
+    with session(context, request, access) as execution:
+        bound = access.prepare(request, execution=execution)
+        read_only = Dataflows(base_dir=context.repository.root, space=context.data.binding.space,
+                             providers=ProviderConfig(bindings={}))
+        missing = replace(request, symbol="518850.SH", execution_data=None, input_bindings={})
+        access.data = read_only
+        with pytest.raises(ValueError):
+            access.prepare(missing, execution=execution)
+        outcome, = access.evaluate_many((bound,), execution=execution)
+        assert outcome.status is EvaluationStatus.SUCCEEDED
 
 
-def test_batch_submits_prepared_account_before_preparing_the_next(managed_evaluation, monkeypatch):
+def test_batch_evaluates_only_explicit_prepared_accounts_without_repreparation(managed_evaluation, monkeypatch):
     from czsc_trader.research_tools import _execution_session as module
 
     context, request = managed_evaluation
-    bound = context.evaluation.prepare(request)
-    result = context.evaluation.evaluate(bound)
+    result = context.evaluation.evaluate(request)
     access = EvaluationAccess(dataflows=context.data, resources=ExecutionResources(2), strategy_id="S900")
     events = []
 
-    def prepare(item):
-        events.append("prepare")
-        if len(events) == 3:
-            assert events == ["prepare", "submit", "prepare"]
-        return item
+    def forbidden(*args, **kwargs):
+        pytest.fail("evaluate_many must not prepare inputs implicitly")
 
     class InlinePool:
         def __init__(self, **kwargs):
@@ -125,8 +135,10 @@ def test_batch_submits_prepared_account_before_preparing_the_next(managed_evalua
             future.set_result((pack(result), 0.0))
             return future
 
-    monkeypatch.setattr(access, "prepare", prepare)
     monkeypatch.setattr(module, "ProcessPoolExecutor", InlinePool)
-    outcomes = access.evaluate_many((bound, bound))
-    assert events == ["prepare", "submit", "prepare", "submit"]
+    with session(context, request, access) as execution:
+        bound = access.prepare(request, execution=execution)
+        monkeypatch.setattr(access, "prepare", forbidden)
+        outcomes = access.evaluate_many((bound, bound), execution=execution)
+    assert events == ["submit", "submit"]
     assert all(x.status is EvaluationStatus.SUCCEEDED for x in outcomes)

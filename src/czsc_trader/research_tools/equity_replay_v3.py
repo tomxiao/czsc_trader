@@ -22,6 +22,7 @@ from strategy_evaluator.equity_assessment import EquityCertificationScope, certi
 from .equity_evaluation import (EquityArtifact, EquityEvaluationRequest, EquityEvaluationResult,
     _audit_inputs, _data_quality, _fetch_products, _json_value, _records, _runtime_inputs)
 from .execution import ExecutionPhase, ResearchExecutionSession
+from .account_preparation import PreparedAccountEvaluation, BenchmarkRunIdentity
 
 
 def _bytes(value):
@@ -51,65 +52,6 @@ class EquityInputSnapshot:
     @property
     def sha256(self):
         return self.artifact.sha256
-
-
-@dataclass(frozen=True, slots=True)
-class BenchmarkRunIdentity:
-    """Execution identity independent of a research candidate's registration."""
-    content: bytes
-
-    def __post_init__(self):
-        if type(self.content) is not bytes:
-            raise TypeError("benchmark identity requires immutable canonical bytes")
-        value = _read(self.content)
-        if value.get("kind") != "BUY_HOLD" or _bytes(value) != self.content:
-            raise ValueError("invalid benchmark identity")
-
-    @property
-    def sha256(self):
-        return sha256(self.content).hexdigest()
-
-    def to_dict(self):
-        return _read(self.content)
-
-
-@dataclass(frozen=True, slots=True)
-class PreparedEquityEvaluation:
-    request: EquityEvaluationRequest
-    snapshot: EquityInputSnapshot
-    benchmark_identity: BenchmarkRunIdentity
-    scope_token: str
-    contract_content: bytes
-
-    def __post_init__(self):
-        if (type(self.request) is not EquityEvaluationRequest or not self.request.formal
-                or self.request.candidate.definition.contract_version != 3
-                or self.request.prepared is None or self.request.input_binding is None):
-            raise TypeError("prepared v3 evaluation requires a bound v3 request")
-        if type(self.snapshot) is not EquityInputSnapshot or type(self.benchmark_identity) is not BenchmarkRunIdentity:
-            raise TypeError("prepared evaluation requires typed input and benchmark identities")
-        if type(self.scope_token) is not str or not self.scope_token:
-            raise TypeError("prepared evaluation requires an owner token")
-        if type(self.contract_content) is not bytes or _bytes(_read(self.contract_content)) != self.contract_content:
-            raise TypeError("prepared evaluation requires canonical immutable contract bytes")
-
-    @property
-    def experiment(self):
-        return self.request.experiment
-
-    @property
-    def candidate(self):
-        return self.request.candidate
-
-    @property
-    def formal(self):
-        return True
-
-    def identity(self, specification):
-        contract = _read(self.contract_content)
-        if specification.fingerprint != contract["specification_hash"]:
-            raise ValueError("prepared evaluation execution contract differs")
-        return contract
 
 
 class _SessionState:
@@ -222,7 +164,7 @@ def prepare_equity_v3(access, request, *, execution):
             "initial_cash": request.initial_cash, "fee_rate": request.fee_rate,
             "engine_sources": contract["engine_sources"], "python_version": contract["python_version"],
             "pandas_version": contract["pandas_version"]}))
-        value = PreparedEquityEvaluation(request, snapshot, benchmark, state.token, _bytes(contract))
+        value = PreparedAccountEvaluation(request, snapshot, benchmark, state.token, _bytes(contract))
         state.prepared[id(value)] = value
         from .parameter_evaluation import validate_parameter_request
         try:
@@ -234,7 +176,7 @@ def prepare_equity_v3(access, request, *, execution):
 
 
 def _require_prepared(state, value):
-    if (type(value) is not PreparedEquityEvaluation or value.scope_token != state.token
+    if (type(value) is not PreparedAccountEvaluation or value.scope_token != state.token
             or state.prepared.get(id(value)) is not value):
         raise ValueError("prepared equity handle was not issued by this execution session")
     if _bytes(value.request.identity(value.candidate.definition.execution_spec)) != value.contract_content:

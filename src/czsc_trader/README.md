@@ -187,6 +187,7 @@ import json
 from strategy_runtime import StrategyCandidate
 from czsc_trader.research_tools import (
     EvaluationRequest, EvaluationWindow, EvaluationCost, EvaluationBenchmark, NextOpenBuyHold,
+    ResearchExecutionSession,
 )
 
 payload = json.loads((source / "payload.json").read_text(encoding="utf-8"))
@@ -205,11 +206,18 @@ request = EvaluationRequest(
     costs=(EvaluationCost("baseline", one_way_cost=0.001),),
     benchmark=EvaluationBenchmark(NextOpenBuyHold(lot_size=100)),
 )
-bound_request = research.evaluation.prepare(request)
-result = research.evaluation.evaluate(bound_request)
+with ResearchExecutionSession(research, experiment=experiment) as execution:
+    bound_request = research.evaluation.prepare(request, execution=execution)
+    outcome, = research.evaluation.evaluate_many((bound_request,), execution=execution)
+    if outcome.status.value != "SUCCEEDED":
+        raise RuntimeError(outcome.error)
+    result = outcome.result
+    # 在本会话内按需要构造 EvaluationEvidenceWrite 并显式发布。
 ```
 
-保留 `bound_request`，用于结果留证、自检和技术检验的输入绑定。跨进程恢复时，保存请求参数、执行数据准备引用及策略输入绑定，按公开类型重建请求并保留对应数据资产。执行数据和策略输入引用必须来自同一批次空间，
+`prepare`统一返回本会话拥有的`PreparedAccountEvaluation`；句柄不能复制或跨会话使用。
+原始已绑定请求位于`bound_request.request`，保存其参数、执行数据准备引用和策略输入绑定以便重建；新会话必须重新显式准备。
+结果留证须在拥有该句柄的会话内完成。执行数据和策略输入引用必须来自同一批次空间，
 无效引用或内容变化明确失败。普通重复评价会重新计算；显式执行会话的检查点可恢复已完整落盘且通过身份核验的结果。
 
 `signal_cash_fraction / entry_cycle`沿用相同评价、批量和留证入口。策略的`CYCLE_TARGET`信号决定本次资金比例；
@@ -220,19 +228,45 @@ SE除普通账户核对外，独立检查开仓预算、数量目标、补买上
 技术检验的经济比较按引用关系重命名信号、计划和周期身份（含周期JSON内的开仓信号与周期引用）；比例、预算、锁定份额、累计买入金额及阶段状态继续精确比较。
 当前账户损益诊断只支持全仓/现金单次买卖，动态周期分配明确返回`UNSUPPORTED`；这不影响账户评价和数值审计。
 
-`evaluate_many(tuple[EvaluationRequest, ...])` 按输入顺序返回 `EvaluationOutcome`：
+`evaluate_many(tuple[PreparedAccountEvaluation, ...], execution=execution)`按输入顺序返回`EvaluationOutcome`：
 
 | 状态 | 含义 |
 | --- | --- |
 | `SUCCEEDED` | 有经过身份核验的结果，无错误 |
-| `FAILED` | 本项准备或计算失败，有错误，无结果 |
+| `FAILED` | 本项计算或结果认证失败，有错误，无成功结果 |
 | `CANCELLED` | 本项被取消，有错误，无结果 |
 | `UNKNOWN` | 工作进程等异常导致结果无法确认，有错误，无结果 |
 
 批量请求为非空 tuple，资源配置统一来自 `ExecutionResources`，`EvaluationRequest` 不再含 `workers`。
-先预检全部请求契约；主进程逐项绑定输入，准备完成即提交给 `spawn` 子进程，
-使后续准备与已经提交的账户计算重叠。单项准备或传输失败不妨碍其他项；非法类型或批量契约在计算前拒绝整次调用。
+准备与计算明确分离：调用方逐项`prepare(..., execution=execution)`，再提交准备句柄。
+准备错误在本项准备调用时拒绝；调用方可处理失败后继续评价其他已准备项。
+批量入口认证全部句柄的所属会话和请求身份，再按资源预算提交计算；不隐式准备、获取新数据或重复发布。
 平台不自动重试、管理 Optuna study 或决定搜索预算；调用方根据逐项结果组织后续研究。
+
+### 共用回放核心与性能边界
+
+A股批量历史策略与美股V3显式状态策略分别使用`BatchHistory`、`StatefulStep`计算方式，
+共同由SRT时间推进内核组织，并通过中立`AccountExecutionPlan`调用TXE。
+订单列表、数量单位、执行区间、执行腿依赖及原子边界显式表达；市场不再决定账户记账内核。
+TXE复用成交入账、费用、现金和持仓等记账原语；日范围、K线区间及具名检查点仍按各自模型执行。
+市场约束、可卖数量、资金可用、公司行动、价格计量方式和成交证据精度保持明确，不降低为单一全仓/现金模型。
+
+A股对同一候选和窗口在内存中完成一次输入准备及批量历史计算，`fork_for_replay`为每个费用场景账户建立独立执行状态，
+复用已认证输入及只读历史事实，不重复装载策略、fetch数据、计算历史或写入`input-bindings`。
+逐步状态策略则每账户装载模块一次；模块和账户状态不与其他账户共享。
+worker纯计算不创建或删除每账户`evaluation-workers`目录；检查点、数据准备及证据发布的显式I/O单独计量。
+
+A股基准在评价阶段由拥有会话的主进程按`BenchmarkWindow`预计算，身份包含认证执行数据、窗口、资金、费率及基准合同。
+`prepare`只认证输入和请求，不执行账户。评价先查询检查点，命中的账户直接恢复；全部命中时不重新计算基准。
+`BenchmarkReplaySeed`只作为内部进程传输，worker消费已准备结果，缺失基准明确失败，不隐式重算。
+`BenchmarkReplayScope`不使用磁盘或进程全局缓存；相同身份在同一作用域仅计算一次。
+返回每个账户的结果表保持独立，修改某个结果不能污染其他账户或基准缓存。
+美股V3同时按其完整输入和执行合同复用独立买持账户；辅助信号数据不污染基准身份。
+
+统一保持现行费用、现金精度、舍入顺序、部分执行及失败规则。原子模拟单元失败可以回滚，
+已确认执行腿的事实不能抹去。两市场结果仍分别投影至原有证据schema，历史原件及冻结身份不改写。
+性能验证需同时报告工作量、并发及准备、基准、纯回放、认证、进程传输、检查点和发布的耗时与I/O，不能仅以接口成功宣称秒级。
+`ExecutionPhase.BENCHMARK`单列父进程基准耗时；`COMPUTE`墙钟包含调度期间的基准时间，不能把二者再次相加。
 
 ### 研究库与并行执行
 
@@ -253,19 +287,21 @@ SE除普通账户核对外，独立检查开仓预算、数量目标、补买上
 例如16个逻辑核默认12个，实际同时执行数还受独立任务数限制。`ExecutionResources(max_workers=...)`
 显式覆盖，默认`native_threads_per_worker=1`。无法识别逻辑核数时明确报错，调用方可显式指定。
 预算控制工作进程／线程数量，不承诺CPU利用率；同一会话共享总预算，不同顶层会话不受整机调度器协调。
-既有`EvaluationRequest`的`evaluate_many`在请求间并行，子请求内部执行使用一个工作线程；其`evaluate`可在独立窗口／费用场景间使用上下文预算。
+两市场的`evaluate_many`均在显式会话内消费准备句柄；每个候选保持独立账户状态。
+A股`evaluate(request)`是单账户便捷业务入口，内部建立短会话并委托同一准备及批量核心；不是另一套计算实现。
+只有一个任务且尚未创建进程池时直接本进程运行，避免无收益的`spawn`开销。
 资源类型不负责Optuna调度；研究员仍须统筹平台以外的trial及第三方库并发。
 `create_research_context(..., resources=...)`设置评价及批量证据发布预算；
 `assemble_delivery/validate_delivery(..., resources=...)`使用独立的调用预算，不自动继承研究上下文。
 `inspect_candidate(..., control=InspectionControl(max_workers=resources.max_workers))`可显式复用同一上限。
 同一个资源值不代表多个顶层调用共用执行额度；调用方须统筹同时运行的任务。
 
-既有`EvaluationRequest`的正式批量评价调用`context.evaluation.evaluate_many(tuple_of_requests)`，由TDR使用Windows `spawn`
+正式批量评价调用`context.evaluation.evaluate_many(tuple_of_prepared_handles, execution=execution)`，由TDR使用Windows `spawn`
 进程池执行研究员已确定的请求。主进程持有Study和批次上下文，核对逐项结果并选择必要证据；子进程只计算，
 不得按worker或计算分片创建实验。进程数取`ExecutionResources.max_workers`。
 单次`evaluate`返回`EvaluationResult`，失败抛出异常；批量`evaluate_many`逐项返回`EvaluationOutcome`，
 区分`SUCCEEDED/FAILED/CANCELLED/UNKNOWN`。研究员据此决定Optuna回填及显式重试，
-平台不管理研究预算或自动重试；正式发布使用`evaluation.prepare`绑定后的请求和对应结果。
+平台不管理研究预算或自动重试；正式发布使用当前活动会话签发的准备句柄和对应结果。
 正式批量运行前，用最小样例验证公共API、传输、目录隔离和结果一致性。默认配置不适用时，报告阻断证据和调整方案，不得静默串行或增加兜底。
 披露实际配置、种子、搜索范围、评价及独立配置数量、选择依据和方法局限；保存正式结论所需结果与反证。
 内存Study不替代必要的持久证据，无须保留全部trial和技术失败日志；并行采样的复现范围须如实说明。
@@ -276,7 +312,7 @@ SE除普通账户核对外，独立检查开仓预算、数量目标、补买上
 `open_research_execution(research, experiment=..., checkpoint=None, on_progress=None)`返回
 `ResearchExecutionSession`上下文管理器。连续批次通过`execution=session`共享同一个有界`spawn`池，
 评价和证据序列化按完成顺序收取结果，返回tuple仍保持输入顺序。正式证据仅由主进程提交。
-不传会话时，批量API内部创建并关闭一次相同执行器。一个研究上下文同时只允许一个显式会话；
+账户准备和批量计算必须显式传入会话；不创建隐式批量会话。一个研究上下文同时只允许一个显式会话；
 会话活动期间必须明确传入它，避免隐式创建第二个资源预算。
 
 ```python
@@ -289,6 +325,7 @@ with open_research_execution(
     research, experiment=experiment,
     checkpoint=ExecutionCheckpointRequest("stage4-round1", CheckpointMode.CREATE),
 ) as session:
+    bound_requests = tuple(research.evaluation.prepare(item, execution=session) for item in requests)
     outcomes = research.evaluation.evaluate_many(bound_requests, execution=session)
     selected = tuple(
         EvaluationEvidenceWrite(experiment, f"account-{i}", request, outcome.result)
@@ -300,7 +337,7 @@ with open_research_execution(
 stats = session.stats
 ```
 
-重启后用相同运行标识和`CheckpointMode.RESUME`打开会话，重新提供准备后的请求。
+重启后用相同运行标识和`CheckpointMode.RESUME`打开会话，以原始请求重新`prepare(..., execution=session)`，不能沿用前会话句柄。
 检查点位于`.tmp/research-execution/<批次>/<运行标识>/`，包括绑定实验与实现身份的`manifest.json`、
 `results/<请求哈希>.json`和`publications/<发布身份哈希>.json`。使用结构化JSON、校验和、原子写入及单写锁，
 恢复时重新核对请求、源码／实现、数据、参数、数值结果及当前证据字节；不读取磁盘pickle。
@@ -391,7 +428,7 @@ if selected_run.identity is None:
 diagnosis = diagnose_accounts(repository, AccountDiagnosisRequest(
     baseline=AccountRunRef(account_evidence, selected_run.identity),
     alternative=None,
-    window=bound_request.windows[0],
+    window=bound_request.request.windows[0],
 ))
 if diagnosis.status is AccountDiagnosisStatus.COMPUTED:
     print(diagnosis.reconciliation)
@@ -533,7 +570,7 @@ from czsc_trader.application import CandidateRegistrationRequest, register_candi
 
 registration = register_candidate(repository, CandidateRegistrationRequest(
     candidate=candidate, experiment=experiment, evidence=(account_evidence,),
-    dependencies=bound_request.dependencies,
+    dependencies=bound_request.request.dependencies,
 ))
 ```
 
@@ -572,7 +609,7 @@ SE生成`ParameterNeighborhoodDesign`，RSCH按具名点准备实际策略载荷
 
 先用 `MaterialEvidenceWrite` 发布坐标映射及可行性约束材料；其原始字节哈希应分别等于
 `ParameterNeighborhoodSpace.mapping_sha256`、`feasibility_sha256`。中心和全部子候选通过
-`research.evaluation.prepare` 准备后，构造完整计划：
+`research.evaluation.prepare(..., execution=execution)`准备后，在同一活动会话内构造完整计划：
 
 ```python
 from czsc_trader.research_tools import ParameterEvaluationPlan, EvaluationLineage
@@ -580,7 +617,7 @@ from czsc_trader.research_tools import ParameterEvaluationPlan, EvaluationLineag
 plan = ParameterEvaluationPlan.create(
     design, prepared_center, prepared_children,
     mapping_evidence=mapping_reference, feasibility_evidence=constraint_reference,
-    dataflows=research.data,
+    dataflows=research.data, execution=execution,
 )
 plan_reference = publish_evidence(research, MaterialEvidenceWrite(
     experiment, "parameter-evaluation-plan",
@@ -588,8 +625,12 @@ plan_reference = publish_evidence(research, MaterialEvidenceWrite(
 ))
 if design.is_applicable:
     point_binding = plan.bind_point(plan_reference, 0, repository_root=repository.root)
-    child_request = replace(prepared_children[0], lineage=EvaluationLineage(derivation, point_binding))
-    child_result = research.evaluation.evaluate(child_request)
+    child_request = replace(prepared_children[0].request, lineage=EvaluationLineage(derivation, point_binding))
+    child_bound = research.evaluation.prepare(child_request, execution=execution)
+    child_outcome, = research.evaluation.evaluate_many((child_bound,), execution=execution)
+    if child_outcome.status.value != "SUCCEEDED":
+        raise RuntimeError(child_outcome.error)
+    child_result = child_outcome.result
 ```
 
 上例需导入 `json` 及 `dataclasses.replace`；`derivation` 为实际中心与该子候选的 `PARAMETERS` 派生关系。
@@ -989,10 +1030,10 @@ assert receipt.status.value == "COMMITTED"
 [SRT V3](../../packages/strategy_runtime/README.md#美股研究-v3可见特征与显式状态)。
 新美股账户回放仅支持 V3。V1 回调、V2 定义的 `prepare`、单次 `evaluate` 及旧批量计算已删除，
 原始美股请求不能直接传给 `evaluate_many`，也不能经 `run_backtest` 绕行。旧请求在数据获取前明确拒绝，
-不会自动转换或回退。历史 V1/V2 证据及冻结包保留原身份，V2 只读认证、诊断与既有生产路径保留；A股计算不变。
+不会自动转换或回退。历史 V1/V2 证据及冻结包保留原身份，V2只读认证、诊断与既有生产路径保留；A股和美股共享新的回放生命周期及账户记账核心。
 
 V3 必须先创建执行会话，再显式准备。`prepare` 返回会话拥有的
-`PreparedEquityEvaluation`，不能通过复制对象或转移到另一个会话取得执行资格。
+`PreparedAccountEvaluation`，不能通过复制对象或转移到另一个会话取得执行资格。
 `evaluate_many` 只接受该会话签发的准备对象，不隐式重复准备。
 
 ```python
@@ -1039,7 +1080,9 @@ outcome, = context.evaluation.evaluate_many((child_bound,), execution=execution)
 
 参数校验拒绝未准备的 V3 请求、复制或跨会话句柄、变化的非参数合同及不一致的点绑定；
 加入 lineage 后仍复用同一输入快照。工作进程只接收回放所需的窗口、资金和费用，
-计划及 lineage 留在父进程认证。A股参数入口不变；V2 参数计划仅支持历史读取，新计划必须使用会话拥有的 V3 准备句柄。
+计划及lineage留在父进程认证。A股参数计划和参数校验仅接受当前会话拥有的准备句柄，读取已认证合同及输入快照，
+不重新装载源码或fetch数据；准备阶段保存来源、时点、schema及逐行数值身份，支持真实lookback扩展的公共区间比较。
+计算仍须使用当前会话拥有的句柄。V2参数计划仅支持历史读取，新美股计划必须使用会话拥有的V3准备句柄。
 
 `EquityEvaluationResult` 的 V3 内容为 `equity-research/v3`，包含
 `input_ref`、`candidate_ref`、`benchmark_ref` 三项内容引用，完整字节位于不可变 `artifacts`。

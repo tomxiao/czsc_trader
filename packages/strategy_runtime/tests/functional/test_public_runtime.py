@@ -427,3 +427,27 @@ def test_refresh_keeps_old_binding_replayable_and_preserves_historical_files(tmp
     with pytest.raises(RuntimeExecutionError, match="another data space"):
         mismatched.prepare_data(binding=old_binding)
     assert not (tmp_path / "bad-context").exists()
+
+
+def test_prepared_batch_accounts_reuse_facts_without_supplier_or_storage_io(tmp_path, monkeypatch, runtime_candidate):
+    flows = _flows(tmp_path)
+    strategy = StrategyRuntime(ROOT / "strategies", dataflows=flows).create(StrategyInit(
+        runtime_candidate, TradableWindow(date(2026, 9, 3), date(2026, 9, 3)), tmp_path / "in-memory"))
+    strategy.prepare_data(policy=PreparePolicy.REUSE, persist=False)
+    assert not (tmp_path / "in-memory" / "input-bindings").exists()
+    with pytest.raises(RuntimeContractError, match="WINDOW history"):
+        strategy.fork_for_replay(execution_policy=strategy.execution_policy)
+    expected = strategy.inspect_signals()
+    def forbidden(*args, **kwargs):
+        pytest.fail("prepared account replay must not access suppliers or persist bindings")
+    monkeypatch.setattr(flows, "fetch", forbidden)
+    monkeypatch.setattr("strategy_runtime.strategy.save_prepared_inputs", forbidden)
+    first = strategy.fork_for_replay(execution_policy=strategy.execution_policy)
+    second = strategy.fork_for_replay(execution_policy=strategy.execution_policy)
+    exported = first.inspect_signals()
+    exported.loc[:, "target_position"] = 99.
+    pd.testing.assert_frame_equal(second.inspect_signals(), expected)
+    pd.testing.assert_frame_equal(strategy.inspect_signals(), expected)
+    assert first is not second and first.execution_policy == strategy.execution_policy
+    with pytest.raises(RuntimeContractError, match="cannot calculate new history"):
+        first.inspect_signals(history_mode=SignalHistoryMode.CONTINUOUS)

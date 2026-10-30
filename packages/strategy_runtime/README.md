@@ -1,5 +1,32 @@
 # 策略运行时（Strategy Runtime，SRT）
 
+## 共用账户回放内核
+
+`replay_kernel.run_account_replay(points, driver)` 是批量历史策略和显式状态策略共用的逐步运行器。
+每步依次执行事务边界、账户快照、决策、执行和状态提交；只有全部步骤成功才调用账户收尾。
+驱动器表达计算及成交模型差异，不拥有另一套完整账户循环。执行器通过
+`AccountPlanExecutor.execute_plan(neutral, model_plan)` 接收共用计划与明确的模型事实；SRT不导入TXE。
+
+`replay_contracts` 的 `ReplayPoint`、`AccountSnapshot`、`ReplayOrder`、`ReplayLeg`、
+`CycleBudget` 和 `AccountExecutionPlan` 使用有时区的因果时间、整数数量、显式可用资金和执行腿依赖。
+这些类型不固定市场、100股单位或跨交易日执行；具体合法数量、价格和交易时点仍由执行规则认证。
+`ExecutionPrecision` 区分交易日范围、K线区间和检查点，不能把范围成交解释成精确时刻。
+旧冻结计划通过 `replay_adapters` 投影原有事实，不重新计算仓位、价格或Decimal周期预算。
+交易日模型的零点到次日零点区间是日期级容器，不是声明盘中实际成交时刻。
+
+`StrategyInstance.prepare_data(..., persist=False)` 明确选择内存研究准备，完成相同输入认证，
+但不保存input-binding文件。`binding`与`policy`仍必须且只能指定一个；既有持久化准备默认行为不变。
+批量历史先在准备实例上计算 `WINDOW` 信号，再用
+`fork_for_replay(execution_policy=...)` 创建独立账户视图。账户复用已认证输入与批量计算结果，
+不重新获取数据、保存绑定、计算全历史或读取源码。公共历史检查仍返回防御性副本。
+账户视图只持有不可变策略定义和计算事实，不持有可执行的批量实现及模块全局状态；
+未预先计算的历史模式明确拒绝。费用覆盖只改变账户的 `execution_policy`，不改写原策略定义和身份。
+依赖真实成交反馈的 `StatefulStep` 则保持每账户独立装载一次、逐步提交状态。
+
+事务边界由明确执行模型声明：单个模拟区间执行及策略状态原子提交；已确认的依赖腿成交
+不会因为后腿失败而撤回。共同内核不改变这两类失败语义。循环内不进行数据获取、文件发布或源码装载。
+
+
 ## 美股研究 V3：可见特征与显式状态
 
 V3 面向美股 30 分钟研究账户，声明行情特征依赖与状态字段，由公共运行器按真实成交推进状态。

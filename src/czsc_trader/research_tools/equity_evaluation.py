@@ -130,12 +130,13 @@ class EquityEvaluationRequest:
                     Path(inspect.getsourcefile(build_equity_decision_context)).read_bytes()).hexdigest()
             if candidate.definition.contract_version == 3:
                 from strategy_runtime import (equity_features, equity_replay, equity_buy_hold_v3,
-                                              equity_context, equity_source_runtime)
+                                              equity_context, equity_source_runtime, replay_kernel, replay_contracts, replay_adapters)
                 from strategy_evaluator import equity_assessment as se_equity_assessment
-                from . import equity_replay_v3, equity_assessment, parameter_evaluation
+                from . import equity_replay_v3, equity_assessment, parameter_evaluation, account_preparation
+                from trading_execution_engine import accounting, replay as execution_replay
                 for module in (equity_features, equity_replay, equity_buy_hold_v3, equity_replay_v3,
                                equity_context, equity_source_runtime, equity_assessment, se_equity_assessment,
-                               parameter_evaluation):
+                               parameter_evaluation, account_preparation, replay_kernel, replay_contracts, replay_adapters, accounting, execution_replay):
                     engine_sources[module.__name__] = sha256(Path(module.__file__).read_bytes()).hexdigest()
         version = 3 if self.formal and candidate.definition.contract_version == 3 else 2 if self.formal else 1
         contract = {"schema": f"equity-research/v{version}", "experiment": asdict(self.experiment),
@@ -316,8 +317,8 @@ def _json_value(value):
 
 
 def validate_equity_result(access, request, result, *, execution=None):
-    from .equity_replay_v3 import PreparedEquityEvaluation, validate_certified_result
-    if type(request) is PreparedEquityEvaluation:
+    from .equity_replay_v3 import PreparedAccountEvaluation, validate_certified_result
+    if type(request) is PreparedAccountEvaluation:
         return validate_certified_result(access, request, result, execution=execution)
     if type(result) is not EquityEvaluationResult or request.prepared is None:
         raise TypeError("equity publication requires a prepared request and immutable result")

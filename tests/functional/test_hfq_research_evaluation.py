@@ -1,3 +1,4 @@
+from evaluation_seed_support import prepare_request
 from copy import deepcopy
 from dataclasses import replace
 import json
@@ -6,6 +7,8 @@ import pandas as pd
 import pytest
 
 from public_backtest_support import request_for_prices
+from czsc_trader.application import create_experiment
+from czsc_trader.application.research_governance_service import ExperimentRequest
 from czsc_trader.research_tools import ExecutionPriceBasis, EvaluationBenchmark, LimitBuyHold, NextOpenBuyHold
 from czsc_trader.research_tools.evaluation import serialize_evaluation_evidence, validate_evaluation_evidence
 from strategy_runtime import canonical_sha256
@@ -22,9 +25,11 @@ def test_hfq_evaluation_uses_one_price_contract_for_plans_account_benchmark_and_
     context, request, _ = request_for_prices(candidate_payload, tmp_path, monkeypatch, prices,
         benchmark=benchmark, flow=[.1, .8, .8, .1, .1, .1, .1],
         hfq_factors=pd.Series([.3, .3, .411, .411, .411, .411, .411]))
-    raw_request = context.evaluation.prepare(replace(request, price_basis=ExecutionPriceBasis.UNADJUSTED))
+    experiment = create_experiment(context, ExperimentRequest("HFQ fixture", "Compare explicit price contracts", days[-1].date()))
+    request = replace(request, experiment_id=experiment.experiment_id)
+    raw_request = prepare_request(context, replace(request, price_basis=ExecutionPriceBasis.UNADJUSTED))
     raw_result = context.evaluation.evaluate(raw_request)
-    bound = context.evaluation.prepare(replace(request, price_basis=ExecutionPriceBasis.HFQ_RESEARCH))
+    bound = prepare_request(context, replace(request, price_basis=ExecutionPriceBasis.HFQ_RESEARCH))
     result = context.evaluation.evaluate(bound)
     run = result.runs[0]
     assert bound.execution_data.pricing.anchor_date == days[0].date()
@@ -55,4 +60,4 @@ def test_hfq_evaluation_uses_one_price_contract_for_plans_account_benchmark_and_
     with pytest.raises(ValueError, match="pricing differs"):
         validate_evaluation_evidence(tampered)
     with pytest.raises(ValueError, match="units differ"):
-        context.evaluation.prepare(replace(bound, price_basis=ExecutionPriceBasis.UNADJUSTED))
+        prepare_request(context, replace(bound, price_basis=ExecutionPriceBasis.UNADJUSTED))

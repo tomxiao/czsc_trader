@@ -1,4 +1,5 @@
 """Registration records identity; declared account evidence remains authenticated."""
+from evaluation_seed_support import prepare_request
 
 from dataclasses import replace
 import json
@@ -30,7 +31,7 @@ def registration_input(managed_evaluation):
 
 
 def account_support(research, request, experiment):
-    prepared = research.evaluation.prepare(request)
+    prepared = prepare_request(research, request)
     result = research.evaluation.evaluate(prepared)
     return publish_evidence(research, EvaluationEvidenceWrite(experiment, "account", prepared, result))
 

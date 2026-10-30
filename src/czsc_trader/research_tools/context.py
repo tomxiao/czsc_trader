@@ -81,6 +81,8 @@ class ResearchContext:
         if self.runtime.execution_spec != self.execution_spec:
             raise ValueError("research runtime must use the context execution specification")
 
+        self.evaluation._context = self
+
     @property
     def strategy_id(self):
         return self.batch.strategy_id

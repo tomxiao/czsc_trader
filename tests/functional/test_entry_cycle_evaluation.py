@@ -1,4 +1,5 @@
 """Dynamic cycle facts survive real preparation, workers and authenticated retention."""
+from evaluation_seed_support import prepare_request
 from copy import deepcopy
 from dataclasses import replace
 import json
@@ -13,7 +14,7 @@ from strategy_evaluator import (
 )
 
 from czsc_trader.application import describe_inspection_environment, publish_evidence
-from czsc_trader.research_tools import EvaluationEvidenceWrite, ExecutionResources, ExperimentRef
+from czsc_trader.research_tools import EvaluationEvidenceWrite, ExecutionResources, ExperimentRef, ResearchExecutionSession
 from czsc_trader.research_tools.evaluation import validate_evaluation_evidence
 from czsc_trader.research_tools.evaluation_access import EvaluationStatus
 from czsc_trader.application.inspection_replay import technical_ledger_differences
@@ -39,10 +40,12 @@ def test_cycle_allocations_survive_parallel_evaluation_and_formal_authentication
         "candidate_id": candidate.reference_id, "source_files": ["strategies/candidate_fixture.py"],
         "implementation_sha256": payload["runtime"]["source_sha256"],
     })
-    bound = context.evaluation.prepare(request)
+    bound = prepare_request(context, request)
     result = context.evaluation.evaluate(bound)
     context.evaluation.resources = ExecutionResources(2, 1)
-    outcomes = context.evaluation.evaluate_many((bound, bound))
+    with ResearchExecutionSession(context, experiment=ExperimentRef(context.strategy_id, bound.experiment_id)) as execution:
+        prepared = context.evaluation.prepare(bound, execution=execution)
+        outcomes = context.evaluation.evaluate_many((prepared, prepared), execution=execution)
     assert all(outcome.status is EvaluationStatus.SUCCEEDED for outcome in outcomes), outcomes
     for outcome in outcomes:
         assert outcome.result.result_hash == result.result_hash

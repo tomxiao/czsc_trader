@@ -6,8 +6,9 @@
 TXE 是统一成交执行器，位于 DFLS 同一基础能力层。它接收SRT决策及执行计划，生成可审计的
 订单、成交、费用、现金、持仓和净值事实，供研究复算及候选／版本回测共同使用。
 
-`trading_execution_engine.equity.EquityHistoricalExecutor` 增加 US 的显式 BAR_RANGE 研究账户，
-复用 `resolve_fill`，支持下一段订单、同日往返、公司行动与交收；原 A 股执行不变。
+TXE以共用账户记账核心承接日范围／检查点及BAR区间两种成交模型。
+`HistoricalExecutor`与`EquityHistoricalExecutor`保留各自已验证的模型事实，不按市场复制费用、现金、
+持仓和应收的经济计算。BAR模型目前仅接纳US合同，不因内核复用自动开放CN BAR交易能力。
 支持范围、时间精度及拒绝条件见[TDR美股研究接口](../../src/czsc_trader/README.md#us-equity-research)。
 
 ## 能力边界
@@ -31,8 +32,8 @@ PTE仍以渠道成交回报作为模拟账户事实来源。TXE用于研究与�
 
 ## 使用入口与结果
 
-RSCH正式比较策略时，通过TDR的`context.evaluation.evaluate(EvaluationRequest)`或
-`run_backtest(context, strategy, request)`取得完整账户事实。由SRT生成逐日计划、TXE执行。
+RSCH正式比较策略时，通过TDR执行会话显式准备、批量评价，再按需要发布完整账户事实。
+SRT共用回放内核推进时间，TXE通过同一`execute_plan`边界承接模型执行。
 需要自行组织合成或专门回放场景时，可
 直接使用TXE公共接口：
 
@@ -73,6 +74,34 @@ TDR升级事务只认证身份、留存材料和提交发布。比较升级前�
 
 TXE不生成信号解释或渲染图表。SRT物化观察快照，TDR将快照与TXE账本投影到
 [共享策略图表](../strategy_chart/README.md)；展示不可用不会被解释为零信号、零成交或零持仓。
+
+## 共用计划边界与账户记账
+
+`execute_plan(plan: AccountExecutionPlan, model: SessionExecution | BarExecution)`是共用强类型执行入口。
+SRT生成中立计划，模型适配器携带不可变的原计划事实；TXE逐项核验身份、账户修订、时点、数量、
+委托类型／限价、周期预算和依赖腿后，执行该单步模型。`executor.execute_plan(...)`调用同一入口。
+适配不重新计算仓位、预算或委托价，也不静默修复不匹配的投影。
+
+- `SessionExecution`承接现有日范围及检查点模型，保留多档位、周期预算及依赖腿。
+  中立计划的本地交易日零点至次日零点只是SESSION精度的执行容器，观察截止为信号日15:00、
+  决策时点保留原计划事实；容器不宣称实际成交发生在零点。MARKET源计划中的参考价格不作为限价。
+- `BarExecution`承接有时区的BAR区间模型，保留单区间订单、公司行动和交收。
+  同一计划重提必须保持模型行情／约束、目标数量和账户owner一致。
+- 两种模型都调用`accounting`中的同一成交记账运算核，费用、现金、数量和应收不再分别实现。
+  确认的股息应收、支付／结算及拆股使用同一事件记账函数；权益事件顺序和重复事件防护由模型承担。
+
+`AccountBalances`、`FillPosting`、`CashDisposition`及`post_fill`提供纯计算强类型边界；
+`accrue_receivable`、`settle_receivable`和`post_split`表达明确的经济事件。它们不判断行情是否可成交、
+资金是否可用于买入、证券是否可卖或事件是否已经发生；这些规则由已认证计划及执行模型判定。
+原始价格、复权价格的单位转换仍由既有定价合同管理，不将复权收益和显式公司行动重复入账。
+
+实际执行热路径对已经验证的计划使用同一scalar记账核，不为每笔成交重复构造多层账户对象，
+不读写磁盘、不扫描历史账本。事件／成交只追加必要记录；DataFrame在结果物化时构造。
+当前float现金账本、Decimal预算运算及原有舍入顺序保持不变，未引入精度升级。
+
+BAR模拟单元的外层失败回滚同时撤销现金、持仓、应收、事件和中立计划幂等记录；
+检查点前腿已经确认成交后，后腿失败保留事实并阻止成功收尾。两者不是统一成“失败全部回滚”。
+原`execute`模型入口服务明确的冻结及专门模型场景，不形成另一套完整回放循环。
 
 ## 整手数量与完成状态
 

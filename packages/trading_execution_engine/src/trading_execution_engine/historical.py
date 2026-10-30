@@ -27,6 +27,7 @@ from strategy_runtime import (
     TradingPoint,
     canonical_sha256,
 )
+from .accounting import _post_confirmed_fill
 from .fills import OrderSpec, resolve_fill, DailyQuote
 from .market import MarketExecutionRules, SuspensionInformation
 from .result import ExecutionResult
@@ -281,6 +282,10 @@ class HistoricalExecutor:
             as_of,
             pricing=self._pricing,
         ), ExecutionState(self._revision, as_of, self._cycle_target, entry_cycle=self._entry_cycle)
+
+    def execute_plan(self, plan, source):
+        from .replay import execute_plan, SessionExecution
+        return execute_plan(plan, SessionExecution(self, source))
 
     def execute(self, plan: ExecutionPlan) -> ExecutionOutcome:
         if self._execution_failure is not None:
@@ -601,11 +606,9 @@ class HistoricalExecutor:
             )
             if fill_price is None or fill_time is None:
                 continue
-            gross = quantity * fill_price
-            fees = gross * fee_rate
+            self._cash, self._quantity, _, gross, fees, _ = _post_confirmed_fill(
+                self._cash, self._quantity, 0., side == "BUY", quantity, fill_price, fee_rate)
             if side == "BUY":
-                self._cash -= gross + fees
-                self._quantity += quantity
                 if self._entry_cycle is not None:
                     self._entry_cycle = replace(
                         self._entry_cycle,
@@ -614,9 +617,6 @@ class HistoricalExecutor:
                             + Decimal(quantity) * Decimal(str(fill_price)) * (1 + plan.fee_rate)
                         ),
                     )
-            else:
-                self._cash += gross - fees
-                self._quantity -= quantity
             self._fill_rows.append(
                 {
                     "fill_id": _id("FIL", order_id, fill_time),
@@ -813,15 +813,12 @@ class HistoricalExecutor:
                 self._order_rows[-1]["reason"] = failure_reason
             if not can_fill:
                 continue
-            fees = quantity * reference * fee_rate
+            self._cash, self._quantity, _, _, fees, _ = _post_confirmed_fill(
+                self._cash, self._quantity, 0., side == "BUY", quantity, reference, fee_rate)
             if side == "BUY":
-                self._cash -= quantity * reference + fees
-                self._quantity += quantity
                 entry_price = reference
                 trade_quantity = quantity
             else:
-                self._cash += quantity * reference - fees
-                self._quantity -= quantity
                 sellable_quantity -= quantity
                 exit_price = reference
             fill_time = (

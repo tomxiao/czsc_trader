@@ -1,3 +1,4 @@
+from evaluation_seed_support import prepare_request
 from dataclasses import replace
 import json
 import math
@@ -27,7 +28,7 @@ def fresh_completed(managed_evaluation):
     family = StrategyFamily(2, "S900", "Freeze fixture", "ETF", {"hypothesis": "synthetic"},
         ResearchState.RESEARCHING, "2026-10-01T00:00:00+00:00", "test", "2026-10-01T00:00:00+00:00")
     StrategyRegistry(context.research_registry_root).create_family(family, actor="test", reason="fixture")
-    request = research.evaluation.prepare(request)
+    request = prepare_request(research, request)
     result = research.evaluation.evaluate(request)
     experiment = ExperimentRef("S900", request.experiment_id)
     reference = publish_evidence(research, EvaluationEvidenceWrite(experiment, "account", request, result))
@@ -350,7 +351,7 @@ def _reseal_test_delivery(context, receipt, value):
 
 def test_unregistered_account_prototype_is_accepted_in_all_attachment_roles(managed_evaluation, monkeypatch):
     research, request = managed_evaluation
-    request = research.evaluation.prepare(request)
+    request = prepare_request(research, request)
     result = research.evaluation.evaluate(request)
     account = publish_evidence(research, EvaluationEvidenceWrite(
         ExperimentRef("S900", request.experiment_id), "unregistered-account", request, result))

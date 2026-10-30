@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields, replace
+from copy import deepcopy
+from threading import Lock
+from math import isfinite
+import pickle
 
 import pandas as pd
 
@@ -45,6 +49,131 @@ class BuyHoldReplay:
     fills: pd.DataFrame = field(default_factory=pd.DataFrame)
 
 
+
+@dataclass(frozen=True, slots=True)
+class BenchmarkWindow:
+    start: pd.Timestamp
+    end: pd.Timestamp
+    fee_rate: float
+
+    def __post_init__(self):
+        if type(self.start) is not pd.Timestamp or type(self.end) is not pd.Timestamp:
+            raise TypeError("benchmark window requires Timestamp endpoints")
+        if pd.isna(self.start) or pd.isna(self.end) or self.start > self.end:
+            raise ValueError("benchmark window requires ordered finite endpoints")
+        if type(self.fee_rate) not in (float, int) or not isfinite(self.fee_rate) or not 0 <= self.fee_rate < 1:
+            raise ValueError("benchmark fee must be finite in [0, 1)")
+
+    @property
+    def evaluation_start(self):
+        return self.start
+
+    @property
+    def evaluation_end(self):
+        return self.end
+
+
+@dataclass(frozen=True, slots=True)
+class BenchmarkReplaySeed:
+    """Private parent-created worker transport, never an external evidence format."""
+    key: tuple
+    content: bytes
+
+    def __post_init__(self):
+        if type(self.key) is not tuple or len(self.key) != 6 or type(self.content) is not bytes or not self.content:
+            raise TypeError("benchmark seed requires an exact identity and immutable bytes")
+
+
+class BenchmarkReplayScope:
+    """One explicit computation scope; shared calculations, detached result tables.
+
+    Candidate identities and labels do not affect BuyHold. Every economic input
+    does: authenticated execution data, window, funding, fees and benchmark rule.
+    No disk cache or process-global successful-validation state is retained.
+    """
+
+    def __init__(self, *, allow_compute=True):
+        if type(allow_compute) is not bool:
+            raise TypeError("allow_compute requires bool")
+        self._allow_compute = allow_compute
+        self._lock = Lock()
+        self._buyhold = {}
+        self._seeds = {}
+        self.computed = 0
+        self.reused = 0
+
+    @staticmethod
+    def _key(signals, execution_data, initial_cash, benchmark):
+        if type(benchmark) is not EvaluationBenchmark:
+            raise TypeError("benchmark scope requires EvaluationBenchmark")
+        if type(initial_cash) not in (int, float) or not isfinite(initial_cash) or initial_cash <= 0:
+            raise ValueError("benchmark requires positive finite initial cash")
+        return (execution_data.fingerprint, signals.evaluation_start.isoformat(),
+                signals.evaluation_end.isoformat(), float(initial_cash),
+                _fee_rate(signals), benchmark.fingerprint)
+
+    def prepare(self, execution_data, window: BenchmarkWindow, initial_cash, *, benchmark):
+        if type(window) is not BenchmarkWindow:
+            raise TypeError("benchmark preparation requires BenchmarkWindow")
+        key = self._key(window, execution_data, initial_cash, benchmark)
+        with self._lock:
+            seed = self._seeds.get(key)
+            if seed is not None:
+                self.reused += 1
+                return seed
+            if not self._allow_compute:
+                raise ValueError("benchmark was not prepared by its execution session")
+            cached = self._buyhold.get(key)
+            if cached is None:
+                cached = replay_buyhold(window, execution_data, initial_cash, benchmark=benchmark)
+                self._buyhold[key] = cached
+                self.computed += 1
+            # Pickle transports only trusted, parent-created immutable bytes.
+            seed = BenchmarkReplaySeed(key, pickle.dumps(cached, protocol=pickle.HIGHEST_PROTOCOL))
+            self._seeds[key] = seed
+            return seed
+
+    @classmethod
+    def from_seeds(cls, seeds):
+        if type(seeds) is not tuple or any(type(item) is not BenchmarkReplaySeed for item in seeds):
+            raise TypeError("worker benchmarks require typed immutable seeds")
+        scope = cls(allow_compute=False)
+        for seed in seeds:
+            old = scope._seeds.get(seed.key)
+            if old is not None and old != seed:
+                raise ValueError("duplicate benchmark seed identities have different bytes")
+            result = pickle.loads(seed.content)
+            if type(result) is not BuyHoldReplay or result.benchmark.fingerprint != seed.key[-1]:
+                raise ValueError("benchmark seed result identity differs")
+            scope._buyhold[seed.key] = result
+            scope._seeds[seed.key] = seed
+        return scope
+
+    def replay(self, signals, execution_data, initial_cash, *, benchmark, calculate=None):
+        key = self._key(signals, execution_data, initial_cash, benchmark)
+        with self._lock:
+            cached = self._buyhold.get(key)
+            if cached is None:
+                if not self._allow_compute:
+                    raise ValueError("benchmark was not prepared by its execution session")
+                cached = (replay_buyhold if calculate is None else calculate)(
+                    signals, execution_data, initial_cash, benchmark=benchmark)
+                self._buyhold[key] = cached
+                self.computed += 1
+            else:
+                self.reused += 1
+            # Public account tables remain independent. Copy numeric containers,
+            # not source dataframe metadata, and never expose cached mutable rows.
+            def frame(value):
+                return pd.DataFrame(value, copy=True)
+            ledger = cached.execution
+            if ledger is not None:
+                ledger = replace(ledger, **{item.name: frame(getattr(ledger, item.name))
+                                           for item in fields(ledger)})
+            return replace(cached, metrics=deepcopy(cached.metrics),
+                account_daily=frame(cached.account_daily), orders=frame(cached.orders),
+                attempts=frame(cached.attempts), fills=frame(cached.fills), execution=ledger)
+
 def _with_signal_dates(
     rows: pd.DataFrame,
     prior_date: pd.Timestamp,
@@ -60,7 +189,9 @@ def _with_signal_dates(
     return result.reset_index(drop=True)
 
 
-def _fee_rate(signals: SignalReplay) -> float:
+def _fee_rate(signals: SignalReplay | BenchmarkWindow) -> float:
+    if type(signals) is BenchmarkWindow:
+        return float(signals.fee_rate)
     support = signals.support_data or {}
     if support.get("mode") == "srt_input_contract":
         policy = support.get("execution_policy")

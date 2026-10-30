@@ -13,6 +13,8 @@ from strategy_runtime.equity import (CashAvailabilityPolicy, EquityClosedCycle, 
                                     EquityPlan, EquityPortfolio, ResearchExecutionSpec, equity_hash)
 
 from .fills import OrderSpec, resolve_fill
+from .accounting import (AccountBalances, _post_confirmed_fill, post_split,
+                         accrue_receivable, _settle_confirmed_receivable)
 
 
 EquityRow = pd.Series | Mapping[str, object]
@@ -66,7 +68,7 @@ _ACCOUNT_STATE = (
     "cash", "quantity", "receivable", "revision", "last_end", "last_mark_price",
     "last_mark_time", "cycle", "cycle_cost", "cycle_income", "cycle_entry",
     "_cycle_entry_interval", "_cycle_entry_quantity", "_cycle_feedback_supported",
-    "_closed_cycle_feedback",
+    "_closed_cycle_feedback", "_neutral_owner",
 )
 
 
@@ -111,6 +113,8 @@ class EquityHistoricalExecutor:
         self.pending = []
         self.applied = set()
         self.completed = {}
+        self._neutral_targets = {}
+        self._neutral_owner = None
         self.last_end = None
         self.last_mark_price = None
         self.last_mark_time = None
@@ -144,6 +148,7 @@ class EquityHistoricalExecutor:
             self.pending = checkpoint.pending
             for key in checkpoint.completed_added:
                 self.completed.pop(key, None)
+                self._neutral_targets.pop(key, None)
             for key in checkpoint.applied_added:
                 self.applied.discard(key)
             for name, length in checkpoint.lengths.items():
@@ -204,7 +209,8 @@ class EquityHistoricalExecutor:
                 planned = plan_quantity * ratio
                 if not changed.is_integer() or not planned.is_integer():
                     raise ValueError("CORPORATE_ACTION_UNSUPPORTED: fractional split entitlement")
-                self.quantity, plan_quantity = int(changed), int(planned)
+                self.quantity = post_split(AccountBalances(self.cash, self.quantity, self.receivable), ratio).quantity
+                plan_quantity = int(planned)
                 if limit_price is not None:
                     tick = Decimal(str(self.spec.price_tick))
                     limit_price = float((Decimal(str(limit_price)) / Decimal(str(ratio)) / tick)
@@ -217,7 +223,7 @@ class EquityHistoricalExecutor:
                 pay = _timestamp(event.PayAt)
                 if pd.isna(pay) or pay.tzinfo is None or pay < stamp:
                     raise ValueError("CORPORATE_ACTION_UNSUPPORTED: payment date missing")
-                self.receivable += amount
+                self.receivable = accrue_receivable(AccountBalances(self.cash, self.quantity, self.receivable), amount).receivable
                 self.cycle_income += amount if self.cycle is not None else 0.
                 self.pending.append((pay, amount, event.EventId, "DIVIDEND_PAYMENT"))
             else:
@@ -235,8 +241,7 @@ class EquityHistoricalExecutor:
         remaining = []
         for stamp, amount, identity, kind in sorted(self.pending, key=lambda item: item[0]):
             if stamp < through or (inclusive and stamp == through):
-                self.cash += amount
-                self.receivable -= amount
+                self.cash, self.receivable = _settle_confirmed_receivable(self.cash, self.receivable, amount)
                 self.rows["actions"].append({"event_id": identity, "time": stamp, "kind": kind,
                                              "account_revision": self.revision,
                                              "quantity_before": self.quantity, "quantity_after": self.quantity,
@@ -244,6 +249,10 @@ class EquityHistoricalExecutor:
             else:
                 remaining.append((stamp, amount, identity, kind))
         self.pending = remaining
+
+    def execute_plan(self, plan, source, bar, *, constraint):
+        from .replay import execute_plan, BarExecution
+        return execute_plan(plan, BarExecution(self, source, bar, constraint))
 
     def execute(self, plan: EquityPlan, bar: EquityRow, *, constraint: EquityRow):
         """Execute a Series or immutable mapping row through the same fill kernel."""
@@ -343,11 +352,12 @@ class EquityHistoricalExecutor:
                      "status": "FILLED" if fill_price is not None else "EXPIRED", "reason": reason}
             self.rows["orders"].append(order)
             if fill_price is not None:
-                gross = quantity * fill_price
-                fees = gross * self.fee_rate
+                deferred = (plan.side == "SELL"
+                    and self.spec.account.cash_availability is CashAvailabilityPolicy.SETTLED_ONLY)
+                self.cash, self.quantity, self.receivable, gross, fees, _ = _post_confirmed_fill(
+                    self.cash, self.quantity, self.receivable, plan.side == "BUY", quantity,
+                    fill_price, self.fee_rate, deferred)
                 if plan.side == "BUY":
-                    self.cash -= gross + fees
-                    self.quantity += quantity
                     if self.cycle is None:
                         self.cycle = plan.plan_id
                         self.cycle_entry = interval.start
@@ -360,19 +370,15 @@ class EquityHistoricalExecutor:
                         self._closed_cycle_feedback = None
                     self.cycle_cost += gross + fees
                 else:
-                    self.quantity -= quantity
                     if self.quantity:
                         self._cycle_feedback_supported = False
                         self._closed_cycle_feedback = None
                     proceeds = gross - fees
                     self.cycle_income += proceeds
-                    if self.spec.account.cash_availability is CashAvailabilityPolicy.IMMEDIATE_RESEARCH:
-                        self.cash += proceeds
-                    else:
+                    if deferred:
                         settle = _timestamp(constraint["SettlementAt"])
                         if pd.isna(settle) or settle.tzinfo is None or settle < interval.end:
                             raise ValueError("missing or invalid settlement time")
-                        self.receivable += proceeds
                         self.pending.append((settle, proceeds, plan.plan_id, "SALE_SETTLEMENT"))
                 self.rows["fills"].append({"fill_id": plan.plan_id, "order_id": plan.plan_id,
                                            "account_revision": self.revision,

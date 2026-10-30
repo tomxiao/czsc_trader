@@ -183,13 +183,11 @@ def srt_data_directory(
     """Locate computation context; input versions are selected only by bindings."""
 
     parent = Path(root).resolve() / "contexts"
-    parent.mkdir(parents=True, exist_ok=True)
     reference = re.sub(r"[^A-Za-z0-9]+", "", snapshot.identity.reference)
     instrument = re.sub(r"[^A-Za-z0-9]+", "", symbol.split(".", 1)[0].upper())
     if not reference or not instrument:
         raise RuntimeContractError("SRT data-space identity is not path-safe")
     target = parent / f"{reference}_{instrument}"
-    target.mkdir(exist_ok=True)
     return target
 
 
@@ -391,7 +389,7 @@ def build_srt_signal_replay(
         )
     _validate_execution_binding(dataflows, execution_data, execution_data.prepared)
     _validate_execution_binding(dataflows, execution_data, input_binding.prepared)
-    prepared = strategy.prepare_data(binding=input_binding)
+    prepared = strategy.prepare_data(binding=input_binding, persist=False)
     history = strategy.inspect_signals()
     _validate_historical_decisions(history, visible)
     rows: list[dict[str, object]] = []
@@ -506,23 +504,9 @@ def replay_srt_account(
         else:
             settings["one_way_cost"] = float(fee_rate_override)
         effective_policy = ExecutionPolicy(effective_policy.policy_type, settings)
-    strategy_root = Path(signals.snapshot.identity.source)
-    input_binding = strategy.input_binding
-    strategy = StrategyRuntime(strategy_root, dataflows=dataflows).create(
-        StrategyInit(
-            signals.strategy_source,
-            strategy.tradable_window,
-            signals.data_dir,
-            symbol=(
-                execution_data.symbol
-                if signals.snapshot.identity.kind == "REGISTERED"
-                else None
-            ),
-            execution_policy=effective_policy,
-            pricing=execution_data.pricing,
-        )
-    )
-    strategy.prepare_data(binding=input_binding)
+    # Account state is fresh, while authenticated input and batch signal facts
+    # are reused. This path never reloads source, fetches assets or writes bindings.
+    strategy = strategy.fork_for_replay(execution_policy=effective_policy)
     channel = HistoricalExecutor(
         strategy_reference=signals.snapshot.identity.reference,
         symbol=execution_data.symbol,

@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import datetime, time
+from dataclasses import dataclass
+from datetime import datetime, time, timedelta
 from decimal import Decimal
 import math
 from pathlib import Path
@@ -28,14 +29,13 @@ from .contracts import (
     StrategyIdentity,
     TradingPoint,
     TradableWindow,
-    WindowExecutor,
     plan_identity_for,
     signal_identity_for,
 )
 from .data import PreparedStrategyData
 from .errors import RuntimeCompatibilityError, RuntimeContractError, RuntimeExecutionError
 from .execution_planner import build_execution_plan
-from .models import ExecutionPolicy, ExecutionPricingData
+from .models import ExecutionPolicy, ExecutionPricingData, RuntimeDefinition
 from .pricing import ExecutionPricing
 from .preparation import PreparedInputs, prepare_inputs, acquire_binding, calendar_request, plan_inputs
 from .input_binding import StrategyInputPlan, StrategyInputBinding
@@ -43,9 +43,16 @@ from .prepared_store import save_prepared_inputs
 from .signals import StrategySignal
 from .entry_cycle import CycleTarget
 from .calculation import HistoryCalculationContext
+from .replay_contracts import AccountPlanExecutor
 
 
 _SHANGHAI = ZoneInfo("Asia/Shanghai")
+
+
+@dataclass(frozen=True, slots=True)
+class _PreparedBatchAlgorithm:
+    """Facts consumed by account replay; no mutable implementation is shared."""
+    definition: RuntimeDefinition
 
 
 def _planned_order(value: dict[str, object]) -> PlannedOrder:
@@ -198,10 +205,12 @@ class StrategyInstance:
         return self._input_binding
 
     def prepare_data(self, *, binding: StrategyInputBinding | None = None,
-                     policy: PreparePolicy | None = None) -> DataPreparationResult:
+                     policy: PreparePolicy | None = None, persist: bool = True) -> DataPreparationResult:
         """Prepare explicitly selected inputs, or read an existing binding offline."""
         if (binding is None) == (policy is None):
             raise RuntimeContractError("provide exactly one input binding or preparation policy")
+        if type(persist) is not bool:
+            raise TypeError("persist must be bool")
         if self._dataflows is None:
             raise RuntimeContractError("data preparation requires host-supplied Dataflows")
         if binding is not None and not isinstance(binding, StrategyInputBinding):
@@ -222,10 +231,35 @@ class StrategyInstance:
                                 tradable_window=self._tradable_window,
                                 dataflows=self._dataflows, binding=binding)
         prepared = PreparedStrategyData.from_inputs(inputs=inputs, pricing=self._pricing(inputs))
-        save_prepared_inputs(inputs, self._data_dir, binding=binding)
+        if persist:
+            save_prepared_inputs(inputs, self._data_dir, binding=binding)
         self._input_binding = binding
         self._prepared_data = prepared
         return self._summary(prepared)
+
+    def fork_for_replay(self, *, execution_policy: ExecutionPolicy) -> StrategyInstance:
+        """Create an independent account view from authenticated batch facts.
+
+        The WINDOW history must already exist. This view has no strategy module
+        or implementation to execute: source globals and implementation state
+        therefore cannot leak between accounts. Only private read-only input and
+        history facts are shared; public inspections still return defensive copies.
+        """
+        data = self._prepared()
+        if type(execution_policy) is not ExecutionPolicy:
+            raise TypeError("replay requires ExecutionPolicy")
+        if execution_policy.policy_type != self._execution_policy.policy_type:
+            raise RuntimeContractError("replay policy must preserve the strategy policy type")
+        key = (data.dataset_identity, SignalHistoryMode.WINDOW)
+        if key not in self._history_cache:
+            raise RuntimeContractError("calculate WINDOW history before forking account replay")
+        replay = StrategyInstance(algorithm=_PreparedBatchAlgorithm(self.definition),
+            identity=self._identity, tradable_window=self._tradable_window, data_dir=self._data_dir,
+            execution_policy=execution_policy, dataflows=self._dataflows, pricing=self._pricing_contract)
+        replay._prepared_data = data
+        replay._input_binding = self._input_binding
+        replay._history_cache = {key: self._history_cache[key]}
+        return replay
 
     def _prepared(self) -> PreparedStrategyData:
         if self._prepared_data is None:
@@ -243,6 +277,8 @@ class StrategyInstance:
         cached = self._history_cache.get(cache_key)
         if cached is not None:
             return cached
+        if type(self._algorithm) is _PreparedBatchAlgorithm:
+            raise RuntimeContractError("account replay cannot calculate new history; prepare it explicitly")
         frames = {name: result.dataframe.copy(deep=True) for name, result in data._inputs.results.items()}
         if mode is SignalHistoryMode.CONTINUOUS:
             dates = data.calculation_dates()
@@ -580,7 +616,7 @@ class StrategyInstance:
             **cycle_facts,
         )
 
-    def run_window(self, *, executor: WindowExecutor):
+    def run_window(self, *, executor: AccountPlanExecutor):
         """Replay WINDOW history and finish only after every plan is SETTLED."""
         data = self._prepared()
         capabilities = executor.capabilities
@@ -595,36 +631,54 @@ class StrategyInstance:
                 "window executor lacks required capabilities before execution: "
                 f"order_types={sorted(missing_orders)}, checkpoints={sorted(missing_checkpoints)}"
             )
-        for trading_date in data.trading_dates():
-            signal_date = data.signal_date_for(trading_date)
-            point = TradingPoint(
-                trading_date,
-                datetime.combine(signal_date, time(20, 31), tzinfo=_SHANGHAI),
-            )
-            portfolio, state = executor.snapshot(point)
-            plan = self._plan_at(
-                point=point,
-                portfolio=portfolio,
-                state=state,
-                history_mode=SignalHistoryMode.WINDOW,
-            )
-            missing_orders = set(plan.required_capabilities.order_types) - set(
-                executor.capabilities.order_types
-            )
-            missing_checkpoints = set(plan.required_capabilities.checkpoints) - set(
-                executor.capabilities.checkpoints
-            )
-            if missing_orders or missing_checkpoints:
-                raise RuntimeCompatibilityError(
-                    "window executor lacks required capabilities: "
-                    f"order_types={sorted(value.value for value in missing_orders)}, "
-                    f"checkpoints={sorted(missing_checkpoints)}"
-                )
-            outcome = executor.execute(plan)
-            if not isinstance(outcome, ExecutionOutcome):
-                raise RuntimeContractError("executor must return ExecutionOutcome")
-            if outcome.plan_identity != plan.plan_identity:
-                raise RuntimeContractError("executor outcome refers to another plan")
-            if outcome.status is not ExecutionOutcomeStatus.SETTLED:
-                raise RuntimeExecutionError(f"window executor did not settle the plan: {plan.plan_identity}")
-        return executor.finish()
+        from contextlib import nullcontext
+        from .replay_kernel import run_account_replay
+        from .replay_contracts import ReplayPoint, ExecutionPrecision
+        from .replay_adapters import project_window_plan
+        instance = self
+
+        class BatchHistoryDriver:
+            def transaction(self, point):
+                # Execution legs may already be confirmed when a later leg fails.
+                return nullcontext()
+
+            def snapshot(self, point):
+                return executor.snapshot(point)
+
+            def decide(self, point, before):
+                portfolio, state = before
+                return instance._plan_at(point=point, portfolio=portfolio, state=state,
+                                         history_mode=SignalHistoryMode.WINDOW)
+
+            def execute(self, point, plan):
+                missing_orders = set(plan.required_capabilities.order_types) - set(executor.capabilities.order_types)
+                missing_checkpoints = set(plan.required_capabilities.checkpoints) - set(executor.capabilities.checkpoints)
+                if missing_orders or missing_checkpoints:
+                    raise RuntimeCompatibilityError(
+                        "window executor lacks required capabilities: "
+                        f"order_types={sorted(value.value for value in missing_orders)}, "
+                        f"checkpoints={sorted(missing_checkpoints)}")
+                envelope_start = datetime.combine(plan.trading_date, time.min, tzinfo=_SHANGHAI)
+                replay_point = ReplayPoint(
+                    datetime.combine(plan.signal_date, time(15), tzinfo=_SHANGHAI),
+                    plan.generated_at, envelope_start, envelope_start + timedelta(days=1),
+                    plan.trading_date.isoformat(), ExecutionPrecision.SESSION)
+                return executor.execute_plan(project_window_plan(plan, replay_point), plan)
+
+            def commit(self, point, before, plan, outcome):
+                if not isinstance(outcome, ExecutionOutcome):
+                    raise RuntimeContractError("executor must return ExecutionOutcome")
+                if outcome.plan_identity != plan.plan_identity:
+                    raise RuntimeContractError("executor outcome refers to another plan")
+                if outcome.status is not ExecutionOutcomeStatus.SETTLED:
+                    raise RuntimeExecutionError(f"window executor did not settle the plan: {plan.plan_identity}")
+
+            def failure(self, point, error):
+                return error
+
+            def finish(self):
+                return executor.finish()
+
+        points = (TradingPoint(day, datetime.combine(data.signal_date_for(day), time(20, 31), tzinfo=_SHANGHAI))
+                  for day in data.trading_dates())
+        return run_account_replay(points, BatchHistoryDriver())

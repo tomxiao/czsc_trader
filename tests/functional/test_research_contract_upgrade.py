@@ -1,4 +1,5 @@
 """Account evaluation contracts independent of experimental process tracking."""
+from evaluation_seed_support import prepare_request
 from copy import deepcopy
 from dataclasses import replace
 from pathlib import Path
@@ -106,7 +107,7 @@ def test_repeated_account_computation_is_reusable_without_process_records(manage
 
 def test_preparation_uses_only_batch_data_space(unprepared_evaluation):
     context, request = unprepared_evaluation
-    bound = context.evaluation.prepare(request)
+    bound = prepare_request(context, request)
     assert bound.execution_data.prepared.space_id == context.data.binding.space_id
     assert all(binding.prepared.space_id == context.data.binding.space_id
                for binding in bound.input_bindings.values())
@@ -114,13 +115,15 @@ def test_preparation_uses_only_batch_data_space(unprepared_evaluation):
     assert result.request_hash
     foreign = Dataflows(base_dir=context.repository.root, space=DataSpace(Path("research/S901/assets/data")),
                         providers=ProviderConfig(bindings={}))
+    foreign_ref = replace(bound.execution_data.prepared, space_id=foreign.binding.space_id)
+    foreign_request = replace(bound, execution_data=replace(bound.execution_data, prepared=foreign_ref))
     with pytest.raises(ValueError, match="another data space"):
-        EvaluationAccess(dataflows=foreign).evaluate(bound)
+        prepare_request(context, foreign_request)
 
 
 def test_published_account_evidence_authenticates_result_and_ledgers(managed_evaluation):
     context, request = managed_evaluation
-    request = context.evaluation.prepare(request)
+    request = prepare_request(context, request)
     result = context.evaluation.evaluate(request)
     payload = serialize_evaluation_evidence(request, result)
     validate_evaluation_evidence(payload)

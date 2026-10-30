@@ -1,4 +1,5 @@
 """Batch retention keeps account authentication and single-owner atomic writes."""
+from evaluation_seed_support import prepare_request
 from dataclasses import replace
 from concurrent.futures import CancelledError
 import json
@@ -21,7 +22,7 @@ from test_research_contract_upgrade import managed_evaluation as managed_evaluat
 @pytest.fixture
 def fresh_publication(managed_evaluation):
     context, request = managed_evaluation
-    bound = context.evaluation.prepare(request)
+    bound = prepare_request(context, request)
     result = context.evaluation.evaluate(bound)
     experiment = ExperimentRef(context.strategy_id, request.experiment_id)
     return context, EvaluationEvidenceWrite(experiment, "synthetic-account", bound, result)
