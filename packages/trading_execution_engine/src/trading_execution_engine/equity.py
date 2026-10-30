@@ -1,6 +1,6 @@
 """Sequential equity bar execution, sharing canonical order fill resolution."""
 from dataclasses import asdict, dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
 from decimal import Decimal, ROUND_FLOOR
@@ -16,6 +16,31 @@ from .fills import OrderSpec, resolve_fill
 
 
 EquityRow = pd.Series | Mapping[str, object]
+_SESSION_ZONES = {
+    MarketId.US: pd.Timestamp('2000-01-01', tz='America/New_York').tzinfo,
+    MarketId.CN: pd.Timestamp('2000-01-01', tz='Asia/Shanghai').tzinfo,
+}
+
+
+def _timestamp(value):
+    # Local datetime equality at a DST fold differs from Timestamp equality.
+    # Only UTC datetimes can skip the original normalization unconditionally.
+    if type(value) is pd.Timestamp or (type(value) is datetime and value.tzinfo is timezone.utc):
+        return value
+    return pd.Timestamp(value)
+
+
+def _bar_identity_value(value):
+    """The existing JSON payload, avoiding pandas dispatch for ordinary scalars."""
+    kind = type(value)
+    if value is None or (kind is float and math.isnan(value)):
+        return None
+    if kind in (float, int, bool, str):
+        return value
+    if kind is datetime:
+        return value.isoformat()
+    return (None if pd.isna(value) else value.isoformat()
+            if isinstance(value, (datetime, pd.Timestamp)) else value)
 
 
 @dataclass(frozen=True)
@@ -140,20 +165,21 @@ class EquityHistoricalExecutor:
 
     def snapshot_at(self, observed_through, decision_at):
         """Apply already-effective events before a formal causal decision."""
-        from dataclasses import replace
         scale = 1.
         for event in self._action_events:
-            if event.Kind == 'SPLIT' and observed_through <= pd.Timestamp(event.Date) <= decision_at:
+            if event.Kind == 'SPLIT' and observed_through <= _timestamp(event.Date) <= decision_at:
                 scale /= float(event.Ratio)
         with self.transaction():
             self._events(decision_at, after=decision_at, plan_quantity=0, limit_price=None)
-            return replace(self.snapshot(), reference_price_scale=scale)
+            return EquityPortfolio(self.cash, self.quantity, self.receivable, self.revision,
+                                   self.cycle_entry, self.cycle_cost, reference_price_scale=scale,
+                                   closed_cycle_feedback=self._closed_cycle_feedback)
 
     def _events(self, through, *, after, plan_quantity, limit_price, include_actions=True):
         for event in self._action_events:
             if event.Kind == "NONE" or event.EventId in self.applied:
                 continue
-            stamp = pd.Timestamp(event.Date)
+            stamp = _timestamp(event.Date)
             if stamp > through:
                 continue
             if not include_actions and stamp == through:
@@ -188,7 +214,7 @@ class EquityHistoricalExecutor:
                 amount = 0.
             elif event.Kind == "CASH_DIVIDEND":
                 amount = before * float(event.CashPerShare)
-                pay = pd.Timestamp(event.PayAt)
+                pay = _timestamp(event.PayAt)
                 if pd.isna(pay) or pay.tzinfo is None or pay < stamp:
                     raise ValueError("CORPORATE_ACTION_UNSUPPORTED: payment date missing")
                 self.receivable += amount
@@ -242,15 +268,16 @@ class EquityHistoricalExecutor:
                 raise ValueError("missing bar must not contain fabricated prices or volume")
         else:
             prices = [float(bar[name]) for name in ("Open", "High", "Low", "Close")]
+            opening, high, low, close = prices
             if (any(not math.isfinite(value) or value <= 0 for value in prices)
-                or not float(bar["Low"]) <= min(float(bar["Open"]), float(bar["Close"]))
-                or not float(bar["High"]) >= max(float(bar["Open"]), float(bar["Close"]))
-                or not math.isfinite(float(bar["Volume"])) or float(bar["Volume"]) < 0):
+                or not low <= min(opening, close) or not high >= max(opening, close)):
                 raise ValueError("invalid execution OHLCV")
-            if "BarStatus" in bar and ((status == "ZERO_VOLUME") != (float(bar["Volume"]) == 0)):
+            volume = float(bar['Volume'])
+            if not math.isfinite(volume) or volume < 0:
+                raise ValueError("invalid execution OHLCV")
+            if "BarStatus" in bar and ((status == "ZERO_VOLUME") != (volume == 0)):
                 raise ValueError("bar status differs from observed volume")
-        bar_hash = equity_hash({"bar": {k: (None if pd.isna(v) else v.isoformat() if isinstance(v, (datetime, pd.Timestamp)) else v)
-                                       for k, v in bar.items()},
+        bar_hash = equity_hash({"bar": {k: _bar_identity_value(v) for k, v in bar.items()},
                                 "constraints": {k: (v.isoformat() if isinstance(v, (datetime, pd.Timestamp)) else v)
                                                 for k, v in constraint.items()}})
         if plan.plan_id in self.completed:
@@ -259,18 +286,18 @@ class EquityHistoricalExecutor:
             return self.snapshot()
         if plan.portfolio_revision != self.revision or (self.last_end is not None and interval.start < self.last_end):
             raise ValueError("stale portfolio revision or unordered execution")
-        if pd.Timestamp(bar["BarStart"]) != interval.start or pd.Timestamp(bar["Date"]) != interval.end:
+        if _timestamp(bar["BarStart"]) != interval.start or _timestamp(bar["Date"]) != interval.end:
             raise ValueError("execution bar does not match plan interval")
         if (int(constraint["QuantityStep"]), float(constraint["PriceTick"])) != (self.spec.quantity_step, self.spec.price_tick):
             raise ValueError("dated quantity/price rules differ from declared execution specification")
-        if pd.Timestamp(constraint["Date"]) != interval.start or pd.Timestamp(constraint["AvailableDate"]) > interval.start:
+        if _timestamp(constraint["Date"]) != interval.start or _timestamp(constraint["AvailableDate"]) > interval.start:
             raise ValueError("CAUSAL_TIME_VIOLATION: constraints must belong to this execution interval")
         if self.spec.market_id is MarketId.CN:
             # Existing CN engine owns exchange-bound execution. Do not execute CN
             # bars without its price limits and sellability semantics.
             raise ValueError("UNSUPPORTED_EXECUTION_COMBINATION: CN bar execution is not admitted")
         for event in self._action_events:
-            if event.Kind != "NONE" and interval.start < pd.Timestamp(event.Date) < interval.end:
+            if event.Kind != "NONE" and interval.start < _timestamp(event.Date) < interval.end:
                 raise ValueError("CORPORATE_ACTION_UNSUPPORTED: event inside execution bar")
         quantity, limit = self._events(interval.start, after=plan.point.decision_at,
                                        plan_quantity=plan.quantity, limit_price=plan.limit_price)
@@ -290,13 +317,13 @@ class EquityHistoricalExecutor:
                 reason = "ZERO_VOLUME"
             elif blocked:
                 reason = "KNOWN_INTERRUPTION"
-            elif bool(constraint["Tradable"]) and (float(bar["Volume"]) <= 0 or quantity > float(bar["Volume"])):
+            elif bool(constraint["Tradable"]) and (volume <= 0 or quantity > volume):
                 reason = "INSUFFICIENT_BAR_VOLUME"
             elif bool(constraint["Tradable"]):
                 fill = resolve_fill(OrderSpec(plan.side, "LIMIT" if plan.side == "BUY" else "MARKET",
                                                quantity, limit),
-                                    session_open=float(bar["Open"]), session_time=interval.start,
-                                    intraday_touches=((interval.end, float(bar["Low"] if plan.side == "BUY" else bar["High"])),),
+                                    session_open=opening, session_time=interval.start,
+                                    intraday_touches=((interval.end, low if plan.side == "BUY" else high),),
                                     slippage_bp=self.spec.slippage_bp, inclusive_touch=self.spec.inclusive_touch)
                 reason = fill.reason or "FILLED"
                 if fill.filled:
@@ -342,7 +369,7 @@ class EquityHistoricalExecutor:
                     if self.spec.account.cash_availability is CashAvailabilityPolicy.IMMEDIATE_RESEARCH:
                         self.cash += proceeds
                     else:
-                        settle = pd.Timestamp(constraint["SettlementAt"])
+                        settle = _timestamp(constraint["SettlementAt"])
                         if pd.isna(settle) or settle.tzinfo is None or settle < interval.end:
                             raise ValueError("missing or invalid settlement time")
                         self.receivable += proceeds
@@ -375,13 +402,12 @@ class EquityHistoricalExecutor:
         self.revision += 1
         self.last_end = interval.end
         if not stale:
-            self.last_mark_price, self.last_mark_time = float(bar["Close"]), interval.end
+            self.last_mark_price, self.last_mark_time = close, interval.end
         elif self.last_mark_price is None:
             self.last_mark_price, self.last_mark_time = plan.reference_price, plan.point.observed_through
-        zone = "America/New_York" if self.spec.market_id is MarketId.US else "Asia/Shanghai"
         self.rows["points"].append({"time": interval.end,
                                     "account_revision": self.revision - 1,
-                                    "session": pd.Timestamp(interval.end).tz_convert(zone).date().isoformat(),
+                                    "session": interval.end.astimezone(_SESSION_ZONES[self.spec.market_id]).date().isoformat(),
                                     "cash": self.cash, "quantity": self.quantity, "receivable": self.receivable,
                                     "close": self.last_mark_price,
                                     "equity": self.cash + self.receivable + self.quantity * self.last_mark_price,

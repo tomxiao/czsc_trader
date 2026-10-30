@@ -17,7 +17,8 @@ import numpy as np
 from dataflows import BarFrequency, MarketId, TimeInterval, TradingSession
 from .equity import DecisionPoint, EquityPlan, EquityPortfolio, equity_hash
 from .equity_features import (FeatureGraph, FeatureView, HistoryView, Lag, Mean,
-                              NotReady, RawField, ReadyValue, SameLocalSlotMedian, TrueRange, _history_insert)
+                              NotReady, RawField, ReadyValue, SameLocalSlotMedian, TrueRange,
+                              _HistoryAppend, _history_insert)
 
 
 class StateValueType(StrEnum):
@@ -216,8 +217,33 @@ class _Row(Mapping):
     def __len__(self):
         return len(self._values)
 
+    def get(self, key, default=None):
+        return self._values.get(key, default)
+
+    def items(self):
+        return self._values.items()
+
+    def keys(self):
+        return self._values.keys()
+
+    def values(self):
+        return self._values.values()
+
     def __reduce__(self):
         return type(self), (dict(self._values),)
+
+
+def _frame_records(frame, time_columns):
+    """Convert aware datetime columns in bulk, retaining ordinary record boxing."""
+    columns = tuple(name for name in time_columns if name in frame
+                    and isinstance(frame[name], pd.Series)
+                    and isinstance(frame[name].dtype, pd.DatetimeTZDtype))
+    if columns:
+        frame = frame.copy(deep=False)
+        for name in columns:
+            frame[name] = pd.Series(frame[name].array.to_pydatetime(), index=frame.index,
+                                    dtype=object)
+    return frame.to_dict('records')
 
 
 @dataclass(frozen=True, slots=True)
@@ -263,9 +289,7 @@ class PreparedReplay:
         if any(a < b for a, b in zip(bars.BarStart.iloc[1:], bars.Date.iloc[:-1])):
             raise ValueError('replay bars must not overlap')
         rows = []
-        for record in bars.to_dict('records'):
-            for key in ('BarStart', 'Date', 'AvailableDate'):
-                record[key] = record[key].to_pydatetime()
+        for record in _frame_records(bars, ('BarStart', 'Date', 'AvailableDate')):
             status = record.get('BarStatus', 'OBSERVED')
             if status not in ('OBSERVED', 'MISSING', 'ZERO_VOLUME'):
                 raise ValueError('unsupported observed bar status')
@@ -289,13 +313,13 @@ class PreparedReplay:
         constraint_map = {}
         if not {'Date', 'AvailableDate', 'QuantityStep', 'PriceTick', 'Tradable'}.issubset(constraints.columns):
             raise ValueError('replay requires dated trading constraints')
-        for record in constraints.to_dict('records'):
+        for record in _frame_records(constraints, ('Date', 'AvailableDate', 'SettlementAt')):
             for key in ('Date', 'AvailableDate', 'SettlementAt'):
                 if key in record and record[key] is not None:
-                    stamp = pd.Timestamp(record[key])
+                    stamp = record[key] if type(record[key]) is datetime else pd.Timestamp(record[key])
                     if pd.isna(stamp) or stamp.tzinfo is None:
                         raise ValueError('constraint times must be aware and finite')
-                    record[key] = stamp.to_pydatetime()
+                    record[key] = stamp if type(stamp) is datetime else stamp.to_pydatetime()
             if record['Date'] in constraint_map:
                 raise ValueError('duplicate trading constraint')
             constraint_map[record['Date']] = _Row(record)
@@ -372,7 +396,9 @@ class _Visibility:
     def __init__(self, data):
         self.data = data
         self.active = [False] * len(data.rows)
-        self.tree = [0] * (len(data.rows) + 1)
+        self.ordered_arrivals = all(earlier <= later for earlier, later in
+                                    zip(data.ready_at, data.ready_at[1:]))
+        self.tree = None if self.ordered_arrivals else [0] * (len(data.rows) + 1)
         self.count = 0
         self.event = 0
         self.latest_completed = -1
@@ -393,11 +419,17 @@ class _Visibility:
                 self.count += 1
                 row = _Row({key: self.data.rows[index][key] for key in self.history_columns})
                 self.visible_rows[index] = row
-                self.history_root = _history_insert(self.history_root, index, row, self.data.ready_at[index])
-                cursor = index + 1
-                while cursor < len(self.tree):
-                    self.tree[cursor] += 1
-                    cursor += cursor & -cursor
+                if self.ordered_arrivals:
+                    # Certification makes every visible observation set a prefix.
+                    # Keep only the already-visible past, with O(1) append work.
+                    self.history_root = _HistoryAppend(row, self.history_root, self.count,
+                                                       self.data.ready_at[index])
+                else:
+                    self.history_root = _history_insert(self.history_root, index, row, self.data.ready_at[index])
+                    cursor = index + 1
+                    while cursor < len(self.tree):
+                        self.tree[cursor] += 1
+                        cursor += cursor & -cursor
             self.event += 1
         while self.prefix < len(self.observed_indices) and self.active[self.observed_indices[self.prefix]]:
             self.prefix += 1
@@ -441,7 +473,7 @@ class _FeatureEvaluator:
         # This lowering is legal only when every observed sequence seen at a
         # decision is a prefix. Nonmonotonic publication retains as-of evaluation.
         self._prefix_outputs = None
-        if all(earlier <= later for earlier, later in zip(data.ready_at, data.ready_at[1:])):
+        if visibility.ordered_arrivals:
             self._prefix_outputs = self._compile_prefix()
 
     def _compile_prefix(self):

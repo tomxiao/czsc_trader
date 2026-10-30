@@ -1,6 +1,6 @@
 """Explicit equity research contracts and causal bar decision planning."""
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal, ROUND_FLOOR
 from enum import StrEnum
 from functools import lru_cache
@@ -34,6 +34,8 @@ def _positive(value, name):
 
 def equity_hash(value):
     def default(item):
+        if type(item) is datetime and item.tzinfo is UTC:
+            return item.isoformat()
         if isinstance(item, (datetime, pd.Timestamp)):
             return utc(item.to_pydatetime() if isinstance(item, pd.Timestamp) else item).isoformat()
         if isinstance(item, Decimal):

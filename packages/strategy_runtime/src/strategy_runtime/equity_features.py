@@ -5,6 +5,7 @@ from enum import StrEnum
 import math
 import re
 from types import MappingProxyType
+from typing import NamedTuple
 
 
 class BarField(StrEnum):
@@ -196,8 +197,7 @@ class FeatureView:
         return type(self), (self.as_of, dict(self._values))
 
 
-@dataclass(frozen=True, slots=True)
-class _HistoryNode:
+class _HistoryNode(NamedTuple):
     key: int
     row: object
     ready_at: datetime
@@ -206,6 +206,46 @@ class _HistoryNode:
     height: int = 1
     count: int = 1
     latest_ready_at: datetime | None = None
+
+
+class _HistoryAppend(NamedTuple):
+    row: object
+    previous: object
+    count: int
+    latest_ready_at: datetime
+
+    def __eq__(self, other):
+        if type(other) is not _HistoryAppend:
+            return NotImplemented
+        left, right = self, other
+        while left is not right:
+            if left is None or right is None:
+                return False
+            if (left.count != right.count or left.latest_ready_at != right.latest_ready_at
+                    or left.row != right.row):
+                return False
+            left, right = left.previous, right.previous
+        return True
+
+    def __ne__(self, other):
+        equal = self.__eq__(other)
+        return NotImplemented if equal is NotImplemented else not equal
+
+    def __reduce__(self):
+        # Flatten the past chain so long snapshots do not exhaust Python's
+        # recursion limit during pickle or deepcopy.
+        entries, node = [], self
+        while node is not None:
+            entries.append((node.row, node.latest_ready_at))
+            node = node.previous
+        return _restore_history_append, (tuple(reversed(entries)),)
+
+
+def _restore_history_append(entries):
+    root = None
+    for count, (row, ready_at) in enumerate(entries, 1):
+        root = _HistoryAppend(row, root, count, ready_at)
+    return root
 
 
 def _height(node):
@@ -262,6 +302,13 @@ def _history_insert(root, key, row, ready_at):
 def _history_rows(root, skip=0):
     if root is None or skip >= root.count:
         return
+    if type(root) is _HistoryAppend:
+        rows = []
+        while root is not None and root.count > skip:
+            rows.append(root.row)
+            root = root.previous
+        yield from reversed(rows)
+        return
     left_count = _count(root.left)
     if skip < left_count:
         yield from _history_rows(root.left, skip)
@@ -274,7 +321,7 @@ def _history_rows(root, skip=0):
 class HistoryView:
     """Complete visible history; materialization is an explicit independent copy."""
     as_of: datetime
-    _root: _HistoryNode | None
+    _root: _HistoryNode | _HistoryAppend | None
     _count: int
     _recent: tuple = ()
     _columns: tuple[str, ...] = ()
@@ -284,7 +331,7 @@ class HistoryView:
             raise ValueError('history view requires an aware as-of timestamp')
         if type(self._count) is not int or self._count < 0 or type(self._recent) is not tuple:
             raise TypeError('history view requires a nonnegative count and immutable recent rows')
-        if self._root is not None and type(self._root) is not _HistoryNode:
+        if self._root is not None and type(self._root) not in (_HistoryNode, _HistoryAppend):
             raise TypeError('history view requires a persistent visible-history root')
         if _count(self._root) != self._count:
             raise ValueError('history view count differs from its visible snapshot')

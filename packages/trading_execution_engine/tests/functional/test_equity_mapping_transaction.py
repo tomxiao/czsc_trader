@@ -3,13 +3,16 @@ from copy import deepcopy
 from dataclasses import asdict, replace
 from datetime import datetime, timedelta, timezone
 from types import MappingProxyType
+from zoneinfo import ZoneInfo
 
 import pandas as pd
+import numpy as np
 import pytest
 from dataflows import BarFrequency, TimeInterval
 from strategy_runtime import (AccountPolicy, CashAvailabilityPolicy, DecisionPoint,
                               CnEquitySpec, EquityPlan, ResearchExecutionSpec, UsEquitySpec)
 import strategy_runtime.equity as equity_contracts
+import trading_execution_engine.equity as equity_execution
 from trading_execution_engine.equity import EquityHistoricalExecutor
 
 
@@ -93,6 +96,113 @@ def test_replacing_executor_spec_rejects_old_plan_despite_cached_fingerprint(map
     executor.spec = original
     executor.execute(plan, row_type(bar), constraint=row_type(constraint))
     assert len(executor.rows['decisions']) == 1
+
+
+@pytest.mark.parametrize('value', [None, float('nan'), pd.NA, pd.NaT, 0., -0., 0, True, False,
+    '', 'metadata', np.float64('nan'), np.float64(-0.), np.int64(7), np.bool_(True), START,
+    datetime(2020, 1, 2), pd.Timestamp('2020-01-02T03:04:05.123456789Z')])
+def test_scalar_fast_path_preserves_original_complete_json_identity(value):
+    executor = account()
+    plan, bar, constraint = transition(executor)
+    bar['extra_metadata'] = value
+    # The previous contract applies isna to all bar fields, but not constraints.
+    expected = equity_contracts.equity_hash({
+        'bar': {key: (None if pd.isna(item) else item.isoformat()
+                     if isinstance(item, (datetime, pd.Timestamp)) else item)
+                for key, item in bar.items()},
+        'constraints': {key: item.isoformat() if isinstance(item, (datetime, pd.Timestamp)) else item
+                        for key, item in constraint.items()}})
+    first = executor.execute(plan, MappingProxyType(bar), constraint=MappingProxyType(constraint))
+    assert executor.completed[plan.plan_id] == expected
+    assert executor.execute(plan, MappingProxyType(bar), constraint=MappingProxyType(constraint)) == first
+    with pytest.raises(ValueError, match='different execution facts'):
+        executor.execute(plan, MappingProxyType({**bar, 'another_field': 1}), constraint=MappingProxyType(constraint))
+    assert len(executor.rows['decisions']) == 1
+
+
+@pytest.mark.parametrize('end_value', ['1880-01-01T04:56:01Z', '2000-01-01T04:59:59Z',
+    '2020-03-08T06:59:59Z', '2020-03-08T07:00:00Z',
+    '2020-11-01T05:30:00Z', '2020-11-01T06:30:00Z', '2026-01-01T04:59:59Z'])
+@pytest.mark.parametrize('representation', ['datetime', 'timestamp', 'iso'])
+def test_prepared_session_zone_and_input_times_match_pandas_boundary(end_value, representation):
+    end = pd.Timestamp(end_value).to_pydatetime()
+    start = end - timedelta(minutes=30)
+    interval = TimeInterval(start, end)
+    executor = account()
+    plan, bar, constraint = transition(executor)
+    plan = replace(plan, point=DecisionPoint(start, start, interval))
+    convert = {'datetime': lambda value: value, 'timestamp': pd.Timestamp,
+               'iso': lambda value: value.isoformat()}[representation]
+    bar.update(BarStart=convert(start), Date=convert(end))
+    constraint.update(Date=convert(start), AvailableDate=convert(start), SettlementAt=convert(end))
+    executor.execute(plan, MappingProxyType(bar), constraint=MappingProxyType(constraint))
+    assert executor.rows['points'][0]['session'] == pd.Timestamp(end).tz_convert('America/New_York').date().isoformat()
+
+
+@pytest.mark.parametrize('bad_time', [pd.NaT, 'invalid-time', datetime(2026, 10, 1, 14)])
+def test_invalid_execution_time_rejects_without_partial_account_effects(bad_time):
+    executor = account()
+    plan, bar, constraint = transition(executor)
+    bar['BarStart'] = bad_time
+    before = snapshot(executor)
+    with pytest.raises((ValueError, TypeError)):
+        executor.execute(plan, MappingProxyType(bar), constraint=MappingProxyType(constraint))
+    assert snapshot(executor) == before
+
+
+def test_invalid_price_still_precedes_volume_conversion_and_keeps_atomic_failure():
+    executor = account()
+    plan, bar, constraint = transition(executor)
+    bar.update(Open=-1., Volume='invalid-volume')
+    before = snapshot(executor)
+    with pytest.raises(ValueError, match='invalid execution OHLCV'):
+        executor.execute(plan, MappingProxyType(bar), constraint=MappingProxyType(constraint))
+    assert snapshot(executor) == before
+
+
+def test_snapshot_at_builds_one_complete_portfolio_with_closed_cycle_feedback(monkeypatch):
+    executor = account()
+    step(executor)
+    step(executor, 'SELL', 10)
+    expected = executor.snapshot()
+    assert expected.closed_cycle_feedback.latest is not None
+    constructor = equity_execution.EquityPortfolio
+    calls = []
+
+    def counted(*args, **kwargs):
+        calls.append((args, kwargs))
+        return constructor(*args, **kwargs)
+
+    monkeypatch.setattr(equity_execution, 'EquityPortfolio', counted)
+    actual = executor.snapshot_at(executor.last_end, executor.last_end)
+    assert len(calls) == 1
+    assert actual == expected
+    assert actual.closed_cycle_feedback is executor._closed_cycle_feedback
+
+
+@pytest.mark.parametrize('hour,fold', [(1, 0), (1, 1), (3, 0)])
+def test_local_dst_fold_datetime_keeps_original_timestamp_matching(hour, fold):
+    local = datetime(2020, 11, 1, hour, 30, tzinfo=ZoneInfo('America/New_York'), fold=fold)
+    start = local.astimezone(timezone.utc)
+    end = start + timedelta(minutes=30)
+    interval = TimeInterval(start, end)
+    executor = account()
+    plan, bar, constraint = transition(executor)
+    plan = replace(plan, point=DecisionPoint(start, start, interval))
+    bar.update(BarStart=local, Date=end.astimezone(ZoneInfo('America/New_York')))
+    constraint.update(Date=local, AvailableDate=local)
+    # In particular, pandas 3 does not accept every ambiguous local datetime
+    # against a Python UTC datetime. Preserve that boundary rather than widening it.
+    matches = pd.Timestamp(bar['BarStart']) == start and pd.Timestamp(bar['Date']) == end
+    if matches:
+        executor.execute(plan, MappingProxyType(bar), constraint=MappingProxyType(constraint))
+        assert len(executor.rows['fills']) == 1
+        assert executor.rows['points'][0]['session'] == '2020-11-01'
+    else:
+        before = snapshot(executor)
+        with pytest.raises(ValueError, match='execution bar does not match plan interval'):
+            executor.execute(plan, MappingProxyType(bar), constraint=MappingProxyType(constraint))
+        assert snapshot(executor) == before
 
 
 @pytest.mark.parametrize('case,reason', [

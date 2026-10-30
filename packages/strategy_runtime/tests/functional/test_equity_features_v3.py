@@ -1,8 +1,10 @@
 """Visibility-versioned finite features, including nonmonotonic publication."""
 from dataclasses import FrozenInstanceError
+from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 import json
 import pickle
+import warnings
 from statistics import median
 
 import numpy as np
@@ -26,6 +28,44 @@ def prepare(frame, graph):
     constraints = pd.DataFrame({'Date': frame.BarStart, 'AvailableDate': frame.BarStart,
                                 'QuantityStep': 1, 'PriceTick': .01, 'Tradable': True})
     return PreparedReplay.from_frames(frame, constraints, graph)
+
+
+@pytest.mark.parametrize('zone,expected_identity', [
+    ('UTC', 'ad4a9a1db5cc9a1ad4ce29ced77fbafc3a3de086fa32d44c65d88096cd477340'),
+    ('America/New_York', 'e4b974f9cbad01b09549a088b0847e4b27bca0812146e6cc6bf17704ccaaee5f'),
+])
+@pytest.mark.parametrize('text_constraints', [False, True])
+def test_bulk_datetime_preparation_preserves_established_identity(zone, expected_identity, text_constraints):
+    stamps = pd.date_range('2024-11-01 09:30:00.000000123', periods=3, freq='30min', tz=zone)
+    bars = observations(stamps)
+    bars['BarStatus'], bars['ExecutionBlocked'] = 'OBSERVED', False
+    bars.index = [7, 7, 9]
+    constraints = pd.DataFrame({'Date': stamps, 'AvailableDate': stamps, 'QuantityStep': 1,
+        'PriceTick': .01, 'Tradable': True, 'SettlementAt': stamps + pd.Timedelta(days=3)},
+        index=bars.index)
+    if text_constraints:
+        for name in ('Date', 'AvailableDate', 'SettlementAt'):
+            constraints[name] = constraints[name].map(lambda value: value.isoformat())
+    original_bars, original_constraints = bars.copy(deep=True), constraints.copy(deep=True)
+    with warnings.catch_warnings():
+        warnings.filterwarnings('ignore', message='Discarding nonzero nanoseconds.*', category=UserWarning)
+        value = PreparedReplay.from_frames(bars, constraints, FeatureGraph())
+    assert value.identity == expected_identity
+    assert type(value._data.rows[0]['Date']) is datetime
+    assert type(value._data.constraints[0]['SettlementAt']) is datetime
+    pd.testing.assert_frame_equal(bars, original_bars)
+    pd.testing.assert_frame_equal(constraints, original_constraints)
+
+
+@pytest.mark.parametrize('column', ['Date', 'AvailableDate', 'SettlementAt'])
+def test_bulk_constraint_conversion_rejects_nat(column):
+    bars = observations(pd.date_range('2024-11-01 14:30', periods=3, freq='30min', tz='UTC'))
+    constraints = pd.DataFrame({'Date': bars.BarStart, 'AvailableDate': bars.BarStart,
+        'QuantityStep': 1, 'PriceTick': .01, 'Tradable': True,
+        'SettlementAt': bars.BarStart + pd.Timedelta(days=3)}).copy(deep=True)
+    constraints.loc[1, column] = pd.NaT
+    with pytest.raises(ValueError, match='constraint times must be aware and finite'):
+        PreparedReplay.from_frames(bars, constraints, FeatureGraph())
 
 
 def test_graph_types_cycles_roundtrip_and_numeric_order():
@@ -73,6 +113,8 @@ def test_late_bar_insertion_changes_current_asof_not_old_view():
     assert first.get('previous') == ReadyValue(10.)
     assert history.to_frame().Close.tolist() == [10., 30.]
     assert history.last(0)['Close'] == 30. and history.last(1)['Close'] == 10.
+    with pytest.raises(TypeError):
+        history.last(0).items().mapping['Close'] = -1
     assert not hasattr(history, '_data')  # No all-history/future storage capability reaches strategy.
     with pytest.raises(ValueError, match='unavailable'):
         HistoryView(earlier, visibility.history_root, visibility.count)
@@ -270,3 +312,55 @@ def test_bulk_prefix_and_general_asof_equal_independent_random_scalar(late):
 def test_same_slot_rejects_unsupported_timezone():
     with pytest.raises(ValueError, match='America/New_York'):
         SameLocalSlotMedian('median', 'volume', timezone='Asia/Shanghai')
+
+
+def test_chronological_history_appends_without_ordered_tree_updates(monkeypatch):
+    from strategy_runtime import equity_replay
+
+    frame = observations(pd.date_range('2024-03-01 14:30', periods=256, freq='30min', tz='UTC'),
+                         [float(index + 10) for index in range(256)])
+    frame['BarStatus'], frame['ExecutionBlocked'] = 'OBSERVED', False
+    frame.loc[13::17, 'BarStatus'] = 'ZERO_VOLUME'
+    frame.loc[13::17, ['Volume', 'Amount']] = 0.
+    value = prepare(frame, FeatureGraph())
+
+    def unexpected_tree_update(*args, **kwargs):
+        raise AssertionError('chronological visibility must not insert into an ordered tree')
+
+    class UnusedFenwick:
+        def __len__(self):
+            raise AssertionError('chronological visibility must not maintain a Fenwick tree')
+
+    monkeypatch.setattr(equity_replay, '_history_insert', unexpected_tree_update)
+    visibility = _Visibility(value._data)
+    visibility.tree = UnusedFenwick()
+    retained, expected = [], []
+    for index, when in enumerate(frame.Date):
+        visibility.advance(when.to_pydatetime())
+        if frame.BarStatus.iloc[index] == 'OBSERVED':
+            expected.append(float(index + 10))
+        view = visibility.history_view(when.to_pydatetime())
+        assert view.last()['Close'] == expected[-1]
+        assert view.to_frame(tail=2).Close.tolist() == expected[-2:]
+        if index in (0, 63, 127, 255):
+            retained.append((view, expected.copy()))
+    for view, rows in retained:
+        assert view.to_frame().Close.tolist() == rows
+        assert pickle.loads(pickle.dumps(view)).to_frame().Close.tolist() == rows
+
+
+def test_long_chronological_snapshots_serialize_and_compare_without_recursion():
+    frame = observations(pd.date_range('2024-03-01 14:30', periods=4096, freq='30min', tz='UTC'),
+                         [float(index + 10) for index in range(4096)])
+    value = prepare(frame, FeatureGraph())
+    visibility = _Visibility(value._data)
+    visibility.advance(frame.Date.iloc[-1].to_pydatetime())
+    history = visibility.history_view(frame.Date.iloc[-1].to_pydatetime())
+    saved = pickle.loads(pickle.dumps(history))
+    copied = deepcopy(history)
+    assert saved == copied == history
+    assert not (saved._root != history._root)
+    assert saved.to_frame(tail=2).Close.tolist() == [4104., 4105.]
+    assert len(saved) == len(copied) == 4096
+    with pytest.raises(TypeError):
+        saved.last()['Close'] = -1

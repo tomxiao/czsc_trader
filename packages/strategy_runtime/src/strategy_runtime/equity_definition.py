@@ -82,6 +82,20 @@ def _package_distributions():
     return metadata.packages_distributions()
 
 
+@lru_cache(maxsize=4096)
+def _cached_fact_basis(key: str, text: str):
+    """Reuse only immutable exact-string facts; preserve constructor validation."""
+    return SignalBasisSnapshot(key, text)
+
+
+def _fact_basis(key, text):
+    # String subclasses can customize hashing/equality. They retain the original
+    # uncached construction path and must not acquire extra hash operations.
+    if type(key) is str and type(text) is str:
+        return _cached_fact_basis(key, text)
+    return SignalBasisSnapshot(key, text)
+
+
 @dataclass(frozen=True)
 class EquityDecision:
     target: int
@@ -105,7 +119,7 @@ class EquityDecision:
         if type(facts) is not dict or not facts:
             raise ValueError('decision explanations require condition/parameter facts')
         return cls(target, reason, SignalExplanationSnapshot('target', 'long' if target else 'flat', reason,
-            tuple(SignalBasisSnapshot(key, str(value)) for key, value in facts.items()), next_watch, reason))
+            tuple(_fact_basis(key, str(value)) for key, value in facts.items()), next_watch, reason))
 
 
 @dataclass(frozen=True)
