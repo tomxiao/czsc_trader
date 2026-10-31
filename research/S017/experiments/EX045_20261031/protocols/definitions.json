@@ -1,0 +1,1865 @@
+{
+  "C0090": {
+    "runtime_kind": "ACCOUNT_REPLAY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "LITE"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 261,
+    "entrypoint": "strategy:step",
+    "source_files": [
+      "strategy.py"
+    ],
+    "source_sha256": "ab1461baf48fce289f63af8840d1cf9db85d24efa6dc2f9fcb88360aefe7f7ff",
+    "parameters_json": "{\"policy\":\"BASELINE\"}",
+    "dependencies": [],
+    "contract_version": 4,
+    "parameter_schema_json": "{\"policy\":{\"type\":\"string\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "feature_graph": {
+      "nodes": [
+        {
+          "kind": "RawField",
+          "key": "close",
+          "field": "Close"
+        },
+        {
+          "kind": "RawField",
+          "key": "opening",
+          "field": "Open"
+        },
+        {
+          "kind": "RawField",
+          "key": "high",
+          "field": "High"
+        },
+        {
+          "kind": "RawField",
+          "key": "low",
+          "field": "Low"
+        },
+        {
+          "kind": "RawField",
+          "key": "volume",
+          "field": "Volume"
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_close",
+          "source": "close",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_open",
+          "source": "opening",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_high",
+          "source": "high",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_volume",
+          "source": "volume",
+          "bars": 1
+        },
+        {
+          "kind": "TrueRange",
+          "key": "tr",
+          "high": "high",
+          "low": "low",
+          "close": "close"
+        },
+        {
+          "kind": "Mean",
+          "key": "atr13",
+          "source": "tr",
+          "window": 13
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_tr",
+          "source": "tr",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "atr_before_prior",
+          "source": "atr13",
+          "bars": 2
+        },
+        {
+          "kind": "SameLocalSlotMedian",
+          "key": "same_slot_median20",
+          "source": "volume",
+          "sessions": 20,
+          "anchor_lag": 1,
+          "timezone": "America/New_York"
+        },
+        {
+          "kind": "Lag",
+          "key": "high1",
+          "source": "high",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "high2",
+          "source": "high",
+          "bars": 2
+        },
+        {
+          "kind": "Lag",
+          "key": "high3",
+          "source": "high",
+          "bars": 3
+        },
+        {
+          "kind": "Lag",
+          "key": "high4",
+          "source": "high",
+          "bars": 4
+        },
+        {
+          "kind": "Lag",
+          "key": "high5",
+          "source": "high",
+          "bars": 5
+        },
+        {
+          "kind": "Lag",
+          "key": "high6",
+          "source": "high",
+          "bars": 6
+        },
+        {
+          "kind": "Lag",
+          "key": "high7",
+          "source": "high",
+          "bars": 7
+        },
+        {
+          "kind": "Lag",
+          "key": "high8",
+          "source": "high",
+          "bars": 8
+        },
+        {
+          "kind": "Lag",
+          "key": "high9",
+          "source": "high",
+          "bars": 9
+        },
+        {
+          "kind": "Lag",
+          "key": "high10",
+          "source": "high",
+          "bars": 10
+        },
+        {
+          "kind": "Lag",
+          "key": "high11",
+          "source": "high",
+          "bars": 11
+        },
+        {
+          "kind": "Lag",
+          "key": "high12",
+          "source": "high",
+          "bars": 12
+        },
+        {
+          "kind": "Lag",
+          "key": "high13",
+          "source": "high",
+          "bars": 13
+        },
+        {
+          "kind": "Lag",
+          "key": "high14",
+          "source": "high",
+          "bars": 14
+        },
+        {
+          "kind": "Lag",
+          "key": "high15",
+          "source": "high",
+          "bars": 15
+        },
+        {
+          "kind": "Lag",
+          "key": "high16",
+          "source": "high",
+          "bars": 16
+        },
+        {
+          "kind": "Lag",
+          "key": "high17",
+          "source": "high",
+          "bars": 17
+        },
+        {
+          "kind": "Lag",
+          "key": "high18",
+          "source": "high",
+          "bars": 18
+        },
+        {
+          "kind": "Lag",
+          "key": "high19",
+          "source": "high",
+          "bars": 19
+        },
+        {
+          "kind": "Lag",
+          "key": "high20",
+          "source": "high",
+          "bars": 20
+        },
+        {
+          "kind": "Lag",
+          "key": "high21",
+          "source": "high",
+          "bars": 21
+        },
+        {
+          "kind": "Lag",
+          "key": "high22",
+          "source": "high",
+          "bars": 22
+        },
+        {
+          "kind": "Lag",
+          "key": "high23",
+          "source": "high",
+          "bars": 23
+        },
+        {
+          "kind": "Lag",
+          "key": "high24",
+          "source": "high",
+          "bars": 24
+        },
+        {
+          "kind": "Lag",
+          "key": "high25",
+          "source": "high",
+          "bars": 25
+        },
+        {
+          "kind": "Lag",
+          "key": "high26",
+          "source": "high",
+          "bars": 26
+        },
+        {
+          "kind": "Lag",
+          "key": "high27",
+          "source": "high",
+          "bars": 27
+        },
+        {
+          "kind": "Lag",
+          "key": "high28",
+          "source": "high",
+          "bars": 28
+        },
+        {
+          "kind": "Lag",
+          "key": "high29",
+          "source": "high",
+          "bars": 29
+        },
+        {
+          "kind": "Lag",
+          "key": "high30",
+          "source": "high",
+          "bars": 30
+        },
+        {
+          "kind": "Lag",
+          "key": "high31",
+          "source": "high",
+          "bars": 31
+        },
+        {
+          "kind": "Lag",
+          "key": "high32",
+          "source": "high",
+          "bars": 32
+        },
+        {
+          "kind": "Lag",
+          "key": "high33",
+          "source": "high",
+          "bars": 33
+        },
+        {
+          "kind": "Lag",
+          "key": "high34",
+          "source": "high",
+          "bars": 34
+        },
+        {
+          "kind": "Lag",
+          "key": "high35",
+          "source": "high",
+          "bars": 35
+        },
+        {
+          "kind": "Lag",
+          "key": "high36",
+          "source": "high",
+          "bars": 36
+        },
+        {
+          "kind": "Lag",
+          "key": "high37",
+          "source": "high",
+          "bars": 37
+        },
+        {
+          "kind": "Lag",
+          "key": "high38",
+          "source": "high",
+          "bars": 38
+        },
+        {
+          "kind": "Lag",
+          "key": "high39",
+          "source": "high",
+          "bars": 39
+        },
+        {
+          "kind": "Lag",
+          "key": "high40",
+          "source": "high",
+          "bars": 40
+        },
+        {
+          "kind": "Lag",
+          "key": "high41",
+          "source": "high",
+          "bars": 41
+        },
+        {
+          "kind": "Lag",
+          "key": "high42",
+          "source": "high",
+          "bars": 42
+        },
+        {
+          "kind": "Lag",
+          "key": "high43",
+          "source": "high",
+          "bars": 43
+        },
+        {
+          "kind": "Lag",
+          "key": "high44",
+          "source": "high",
+          "bars": 44
+        },
+        {
+          "kind": "Lag",
+          "key": "high45",
+          "source": "high",
+          "bars": 45
+        },
+        {
+          "kind": "Lag",
+          "key": "high46",
+          "source": "high",
+          "bars": 46
+        },
+        {
+          "kind": "Lag",
+          "key": "high47",
+          "source": "high",
+          "bars": 47
+        },
+        {
+          "kind": "Lag",
+          "key": "high48",
+          "source": "high",
+          "bars": 48
+        },
+        {
+          "kind": "Lag",
+          "key": "high49",
+          "source": "high",
+          "bars": 49
+        },
+        {
+          "kind": "Lag",
+          "key": "high50",
+          "source": "high",
+          "bars": 50
+        },
+        {
+          "kind": "Lag",
+          "key": "high51",
+          "source": "high",
+          "bars": 51
+        },
+        {
+          "kind": "Lag",
+          "key": "high52",
+          "source": "high",
+          "bars": 52
+        },
+        {
+          "kind": "Lag",
+          "key": "high53",
+          "source": "high",
+          "bars": 53
+        },
+        {
+          "kind": "Lag",
+          "key": "high54",
+          "source": "high",
+          "bars": 54
+        },
+        {
+          "kind": "Lag",
+          "key": "high55",
+          "source": "high",
+          "bars": 55
+        },
+        {
+          "kind": "Lag",
+          "key": "high56",
+          "source": "high",
+          "bars": 56
+        },
+        {
+          "kind": "Lag",
+          "key": "high57",
+          "source": "high",
+          "bars": 57
+        },
+        {
+          "kind": "Lag",
+          "key": "high58",
+          "source": "high",
+          "bars": 58
+        },
+        {
+          "kind": "Lag",
+          "key": "high59",
+          "source": "high",
+          "bars": 59
+        },
+        {
+          "kind": "Lag",
+          "key": "high60",
+          "source": "high",
+          "bars": 60
+        },
+        {
+          "kind": "Lag",
+          "key": "high61",
+          "source": "high",
+          "bars": 61
+        },
+        {
+          "kind": "Lag",
+          "key": "high62",
+          "source": "high",
+          "bars": 62
+        },
+        {
+          "kind": "Lag",
+          "key": "high63",
+          "source": "high",
+          "bars": 63
+        },
+        {
+          "kind": "Lag",
+          "key": "high64",
+          "source": "high",
+          "bars": 64
+        },
+        {
+          "kind": "Lag",
+          "key": "high65",
+          "source": "high",
+          "bars": 65
+        }
+      ],
+      "outputs": [
+        "close",
+        "previous_close",
+        "previous_open",
+        "previous_high",
+        "previous_volume",
+        "previous_tr",
+        "atr_before_prior",
+        "same_slot_median20",
+        "high1",
+        "high2",
+        "high3",
+        "high4",
+        "high5",
+        "high6",
+        "high7",
+        "high8",
+        "high9",
+        "high10",
+        "high11",
+        "high12",
+        "high13",
+        "high14",
+        "high15",
+        "high16",
+        "high17",
+        "high18",
+        "high19",
+        "high20",
+        "high21",
+        "high22",
+        "high23",
+        "high24",
+        "high25",
+        "high26",
+        "high27",
+        "high28",
+        "high29",
+        "high30",
+        "high31",
+        "high32",
+        "high33",
+        "high34",
+        "high35",
+        "high36",
+        "high37",
+        "high38",
+        "high39",
+        "high40",
+        "high41",
+        "high42",
+        "high43",
+        "high44",
+        "high45",
+        "high46",
+        "high47",
+        "high48",
+        "high49",
+        "high50",
+        "high51",
+        "high52",
+        "high53",
+        "high54",
+        "high55",
+        "high56",
+        "high57",
+        "high58",
+        "high59",
+        "high60",
+        "high61",
+        "high62",
+        "high63",
+        "high64",
+        "high65"
+      ],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [],
+      "cycle_fields": [
+        {
+          "key": "holding_bars",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "last_completed_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "exit_due",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "origin",
+          "value_type": "str",
+          "nullable": false
+        }
+      ]
+    },
+    "computation": "STATEFUL_STEP"
+  },
+  "C0091": {
+    "runtime_kind": "ACCOUNT_REPLAY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "LITE"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 261,
+    "entrypoint": "strategy:step",
+    "source_files": [
+      "strategy.py"
+    ],
+    "source_sha256": "ab1461baf48fce289f63af8840d1cf9db85d24efa6dc2f9fcb88360aefe7f7ff",
+    "parameters_json": "{\"policy\":\"BREAKOUT65\"}",
+    "dependencies": [],
+    "contract_version": 4,
+    "parameter_schema_json": "{\"policy\":{\"type\":\"string\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "feature_graph": {
+      "nodes": [
+        {
+          "kind": "RawField",
+          "key": "close",
+          "field": "Close"
+        },
+        {
+          "kind": "RawField",
+          "key": "opening",
+          "field": "Open"
+        },
+        {
+          "kind": "RawField",
+          "key": "high",
+          "field": "High"
+        },
+        {
+          "kind": "RawField",
+          "key": "low",
+          "field": "Low"
+        },
+        {
+          "kind": "RawField",
+          "key": "volume",
+          "field": "Volume"
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_close",
+          "source": "close",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_open",
+          "source": "opening",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_high",
+          "source": "high",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_volume",
+          "source": "volume",
+          "bars": 1
+        },
+        {
+          "kind": "TrueRange",
+          "key": "tr",
+          "high": "high",
+          "low": "low",
+          "close": "close"
+        },
+        {
+          "kind": "Mean",
+          "key": "atr13",
+          "source": "tr",
+          "window": 13
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_tr",
+          "source": "tr",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "atr_before_prior",
+          "source": "atr13",
+          "bars": 2
+        },
+        {
+          "kind": "SameLocalSlotMedian",
+          "key": "same_slot_median20",
+          "source": "volume",
+          "sessions": 20,
+          "anchor_lag": 1,
+          "timezone": "America/New_York"
+        },
+        {
+          "kind": "Lag",
+          "key": "high1",
+          "source": "high",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "high2",
+          "source": "high",
+          "bars": 2
+        },
+        {
+          "kind": "Lag",
+          "key": "high3",
+          "source": "high",
+          "bars": 3
+        },
+        {
+          "kind": "Lag",
+          "key": "high4",
+          "source": "high",
+          "bars": 4
+        },
+        {
+          "kind": "Lag",
+          "key": "high5",
+          "source": "high",
+          "bars": 5
+        },
+        {
+          "kind": "Lag",
+          "key": "high6",
+          "source": "high",
+          "bars": 6
+        },
+        {
+          "kind": "Lag",
+          "key": "high7",
+          "source": "high",
+          "bars": 7
+        },
+        {
+          "kind": "Lag",
+          "key": "high8",
+          "source": "high",
+          "bars": 8
+        },
+        {
+          "kind": "Lag",
+          "key": "high9",
+          "source": "high",
+          "bars": 9
+        },
+        {
+          "kind": "Lag",
+          "key": "high10",
+          "source": "high",
+          "bars": 10
+        },
+        {
+          "kind": "Lag",
+          "key": "high11",
+          "source": "high",
+          "bars": 11
+        },
+        {
+          "kind": "Lag",
+          "key": "high12",
+          "source": "high",
+          "bars": 12
+        },
+        {
+          "kind": "Lag",
+          "key": "high13",
+          "source": "high",
+          "bars": 13
+        },
+        {
+          "kind": "Lag",
+          "key": "high14",
+          "source": "high",
+          "bars": 14
+        },
+        {
+          "kind": "Lag",
+          "key": "high15",
+          "source": "high",
+          "bars": 15
+        },
+        {
+          "kind": "Lag",
+          "key": "high16",
+          "source": "high",
+          "bars": 16
+        },
+        {
+          "kind": "Lag",
+          "key": "high17",
+          "source": "high",
+          "bars": 17
+        },
+        {
+          "kind": "Lag",
+          "key": "high18",
+          "source": "high",
+          "bars": 18
+        },
+        {
+          "kind": "Lag",
+          "key": "high19",
+          "source": "high",
+          "bars": 19
+        },
+        {
+          "kind": "Lag",
+          "key": "high20",
+          "source": "high",
+          "bars": 20
+        },
+        {
+          "kind": "Lag",
+          "key": "high21",
+          "source": "high",
+          "bars": 21
+        },
+        {
+          "kind": "Lag",
+          "key": "high22",
+          "source": "high",
+          "bars": 22
+        },
+        {
+          "kind": "Lag",
+          "key": "high23",
+          "source": "high",
+          "bars": 23
+        },
+        {
+          "kind": "Lag",
+          "key": "high24",
+          "source": "high",
+          "bars": 24
+        },
+        {
+          "kind": "Lag",
+          "key": "high25",
+          "source": "high",
+          "bars": 25
+        },
+        {
+          "kind": "Lag",
+          "key": "high26",
+          "source": "high",
+          "bars": 26
+        },
+        {
+          "kind": "Lag",
+          "key": "high27",
+          "source": "high",
+          "bars": 27
+        },
+        {
+          "kind": "Lag",
+          "key": "high28",
+          "source": "high",
+          "bars": 28
+        },
+        {
+          "kind": "Lag",
+          "key": "high29",
+          "source": "high",
+          "bars": 29
+        },
+        {
+          "kind": "Lag",
+          "key": "high30",
+          "source": "high",
+          "bars": 30
+        },
+        {
+          "kind": "Lag",
+          "key": "high31",
+          "source": "high",
+          "bars": 31
+        },
+        {
+          "kind": "Lag",
+          "key": "high32",
+          "source": "high",
+          "bars": 32
+        },
+        {
+          "kind": "Lag",
+          "key": "high33",
+          "source": "high",
+          "bars": 33
+        },
+        {
+          "kind": "Lag",
+          "key": "high34",
+          "source": "high",
+          "bars": 34
+        },
+        {
+          "kind": "Lag",
+          "key": "high35",
+          "source": "high",
+          "bars": 35
+        },
+        {
+          "kind": "Lag",
+          "key": "high36",
+          "source": "high",
+          "bars": 36
+        },
+        {
+          "kind": "Lag",
+          "key": "high37",
+          "source": "high",
+          "bars": 37
+        },
+        {
+          "kind": "Lag",
+          "key": "high38",
+          "source": "high",
+          "bars": 38
+        },
+        {
+          "kind": "Lag",
+          "key": "high39",
+          "source": "high",
+          "bars": 39
+        },
+        {
+          "kind": "Lag",
+          "key": "high40",
+          "source": "high",
+          "bars": 40
+        },
+        {
+          "kind": "Lag",
+          "key": "high41",
+          "source": "high",
+          "bars": 41
+        },
+        {
+          "kind": "Lag",
+          "key": "high42",
+          "source": "high",
+          "bars": 42
+        },
+        {
+          "kind": "Lag",
+          "key": "high43",
+          "source": "high",
+          "bars": 43
+        },
+        {
+          "kind": "Lag",
+          "key": "high44",
+          "source": "high",
+          "bars": 44
+        },
+        {
+          "kind": "Lag",
+          "key": "high45",
+          "source": "high",
+          "bars": 45
+        },
+        {
+          "kind": "Lag",
+          "key": "high46",
+          "source": "high",
+          "bars": 46
+        },
+        {
+          "kind": "Lag",
+          "key": "high47",
+          "source": "high",
+          "bars": 47
+        },
+        {
+          "kind": "Lag",
+          "key": "high48",
+          "source": "high",
+          "bars": 48
+        },
+        {
+          "kind": "Lag",
+          "key": "high49",
+          "source": "high",
+          "bars": 49
+        },
+        {
+          "kind": "Lag",
+          "key": "high50",
+          "source": "high",
+          "bars": 50
+        },
+        {
+          "kind": "Lag",
+          "key": "high51",
+          "source": "high",
+          "bars": 51
+        },
+        {
+          "kind": "Lag",
+          "key": "high52",
+          "source": "high",
+          "bars": 52
+        },
+        {
+          "kind": "Lag",
+          "key": "high53",
+          "source": "high",
+          "bars": 53
+        },
+        {
+          "kind": "Lag",
+          "key": "high54",
+          "source": "high",
+          "bars": 54
+        },
+        {
+          "kind": "Lag",
+          "key": "high55",
+          "source": "high",
+          "bars": 55
+        },
+        {
+          "kind": "Lag",
+          "key": "high56",
+          "source": "high",
+          "bars": 56
+        },
+        {
+          "kind": "Lag",
+          "key": "high57",
+          "source": "high",
+          "bars": 57
+        },
+        {
+          "kind": "Lag",
+          "key": "high58",
+          "source": "high",
+          "bars": 58
+        },
+        {
+          "kind": "Lag",
+          "key": "high59",
+          "source": "high",
+          "bars": 59
+        },
+        {
+          "kind": "Lag",
+          "key": "high60",
+          "source": "high",
+          "bars": 60
+        },
+        {
+          "kind": "Lag",
+          "key": "high61",
+          "source": "high",
+          "bars": 61
+        },
+        {
+          "kind": "Lag",
+          "key": "high62",
+          "source": "high",
+          "bars": 62
+        },
+        {
+          "kind": "Lag",
+          "key": "high63",
+          "source": "high",
+          "bars": 63
+        },
+        {
+          "kind": "Lag",
+          "key": "high64",
+          "source": "high",
+          "bars": 64
+        },
+        {
+          "kind": "Lag",
+          "key": "high65",
+          "source": "high",
+          "bars": 65
+        }
+      ],
+      "outputs": [
+        "close",
+        "previous_close",
+        "previous_open",
+        "previous_high",
+        "previous_volume",
+        "previous_tr",
+        "atr_before_prior",
+        "same_slot_median20",
+        "high1",
+        "high2",
+        "high3",
+        "high4",
+        "high5",
+        "high6",
+        "high7",
+        "high8",
+        "high9",
+        "high10",
+        "high11",
+        "high12",
+        "high13",
+        "high14",
+        "high15",
+        "high16",
+        "high17",
+        "high18",
+        "high19",
+        "high20",
+        "high21",
+        "high22",
+        "high23",
+        "high24",
+        "high25",
+        "high26",
+        "high27",
+        "high28",
+        "high29",
+        "high30",
+        "high31",
+        "high32",
+        "high33",
+        "high34",
+        "high35",
+        "high36",
+        "high37",
+        "high38",
+        "high39",
+        "high40",
+        "high41",
+        "high42",
+        "high43",
+        "high44",
+        "high45",
+        "high46",
+        "high47",
+        "high48",
+        "high49",
+        "high50",
+        "high51",
+        "high52",
+        "high53",
+        "high54",
+        "high55",
+        "high56",
+        "high57",
+        "high58",
+        "high59",
+        "high60",
+        "high61",
+        "high62",
+        "high63",
+        "high64",
+        "high65"
+      ],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [],
+      "cycle_fields": [
+        {
+          "key": "holding_bars",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "last_completed_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "exit_due",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "origin",
+          "value_type": "str",
+          "nullable": false
+        }
+      ]
+    },
+    "computation": "STATEFUL_STEP"
+  },
+  "C0092": {
+    "runtime_kind": "ACCOUNT_REPLAY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "LITE"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 261,
+    "entrypoint": "strategy:step",
+    "source_files": [
+      "strategy.py"
+    ],
+    "source_sha256": "ab1461baf48fce289f63af8840d1cf9db85d24efa6dc2f9fcb88360aefe7f7ff",
+    "parameters_json": "{\"policy\":\"UNION26\"}",
+    "dependencies": [],
+    "contract_version": 4,
+    "parameter_schema_json": "{\"policy\":{\"type\":\"string\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "feature_graph": {
+      "nodes": [
+        {
+          "kind": "RawField",
+          "key": "close",
+          "field": "Close"
+        },
+        {
+          "kind": "RawField",
+          "key": "opening",
+          "field": "Open"
+        },
+        {
+          "kind": "RawField",
+          "key": "high",
+          "field": "High"
+        },
+        {
+          "kind": "RawField",
+          "key": "low",
+          "field": "Low"
+        },
+        {
+          "kind": "RawField",
+          "key": "volume",
+          "field": "Volume"
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_close",
+          "source": "close",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_open",
+          "source": "opening",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_high",
+          "source": "high",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_volume",
+          "source": "volume",
+          "bars": 1
+        },
+        {
+          "kind": "TrueRange",
+          "key": "tr",
+          "high": "high",
+          "low": "low",
+          "close": "close"
+        },
+        {
+          "kind": "Mean",
+          "key": "atr13",
+          "source": "tr",
+          "window": 13
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_tr",
+          "source": "tr",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "atr_before_prior",
+          "source": "atr13",
+          "bars": 2
+        },
+        {
+          "kind": "SameLocalSlotMedian",
+          "key": "same_slot_median20",
+          "source": "volume",
+          "sessions": 20,
+          "anchor_lag": 1,
+          "timezone": "America/New_York"
+        },
+        {
+          "kind": "Lag",
+          "key": "high1",
+          "source": "high",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "high2",
+          "source": "high",
+          "bars": 2
+        },
+        {
+          "kind": "Lag",
+          "key": "high3",
+          "source": "high",
+          "bars": 3
+        },
+        {
+          "kind": "Lag",
+          "key": "high4",
+          "source": "high",
+          "bars": 4
+        },
+        {
+          "kind": "Lag",
+          "key": "high5",
+          "source": "high",
+          "bars": 5
+        },
+        {
+          "kind": "Lag",
+          "key": "high6",
+          "source": "high",
+          "bars": 6
+        },
+        {
+          "kind": "Lag",
+          "key": "high7",
+          "source": "high",
+          "bars": 7
+        },
+        {
+          "kind": "Lag",
+          "key": "high8",
+          "source": "high",
+          "bars": 8
+        },
+        {
+          "kind": "Lag",
+          "key": "high9",
+          "source": "high",
+          "bars": 9
+        },
+        {
+          "kind": "Lag",
+          "key": "high10",
+          "source": "high",
+          "bars": 10
+        },
+        {
+          "kind": "Lag",
+          "key": "high11",
+          "source": "high",
+          "bars": 11
+        },
+        {
+          "kind": "Lag",
+          "key": "high12",
+          "source": "high",
+          "bars": 12
+        },
+        {
+          "kind": "Lag",
+          "key": "high13",
+          "source": "high",
+          "bars": 13
+        },
+        {
+          "kind": "Lag",
+          "key": "high14",
+          "source": "high",
+          "bars": 14
+        },
+        {
+          "kind": "Lag",
+          "key": "high15",
+          "source": "high",
+          "bars": 15
+        },
+        {
+          "kind": "Lag",
+          "key": "high16",
+          "source": "high",
+          "bars": 16
+        },
+        {
+          "kind": "Lag",
+          "key": "high17",
+          "source": "high",
+          "bars": 17
+        },
+        {
+          "kind": "Lag",
+          "key": "high18",
+          "source": "high",
+          "bars": 18
+        },
+        {
+          "kind": "Lag",
+          "key": "high19",
+          "source": "high",
+          "bars": 19
+        },
+        {
+          "kind": "Lag",
+          "key": "high20",
+          "source": "high",
+          "bars": 20
+        },
+        {
+          "kind": "Lag",
+          "key": "high21",
+          "source": "high",
+          "bars": 21
+        },
+        {
+          "kind": "Lag",
+          "key": "high22",
+          "source": "high",
+          "bars": 22
+        },
+        {
+          "kind": "Lag",
+          "key": "high23",
+          "source": "high",
+          "bars": 23
+        },
+        {
+          "kind": "Lag",
+          "key": "high24",
+          "source": "high",
+          "bars": 24
+        },
+        {
+          "kind": "Lag",
+          "key": "high25",
+          "source": "high",
+          "bars": 25
+        },
+        {
+          "kind": "Lag",
+          "key": "high26",
+          "source": "high",
+          "bars": 26
+        },
+        {
+          "kind": "Lag",
+          "key": "high27",
+          "source": "high",
+          "bars": 27
+        },
+        {
+          "kind": "Lag",
+          "key": "high28",
+          "source": "high",
+          "bars": 28
+        },
+        {
+          "kind": "Lag",
+          "key": "high29",
+          "source": "high",
+          "bars": 29
+        },
+        {
+          "kind": "Lag",
+          "key": "high30",
+          "source": "high",
+          "bars": 30
+        },
+        {
+          "kind": "Lag",
+          "key": "high31",
+          "source": "high",
+          "bars": 31
+        },
+        {
+          "kind": "Lag",
+          "key": "high32",
+          "source": "high",
+          "bars": 32
+        },
+        {
+          "kind": "Lag",
+          "key": "high33",
+          "source": "high",
+          "bars": 33
+        },
+        {
+          "kind": "Lag",
+          "key": "high34",
+          "source": "high",
+          "bars": 34
+        },
+        {
+          "kind": "Lag",
+          "key": "high35",
+          "source": "high",
+          "bars": 35
+        },
+        {
+          "kind": "Lag",
+          "key": "high36",
+          "source": "high",
+          "bars": 36
+        },
+        {
+          "kind": "Lag",
+          "key": "high37",
+          "source": "high",
+          "bars": 37
+        },
+        {
+          "kind": "Lag",
+          "key": "high38",
+          "source": "high",
+          "bars": 38
+        },
+        {
+          "kind": "Lag",
+          "key": "high39",
+          "source": "high",
+          "bars": 39
+        },
+        {
+          "kind": "Lag",
+          "key": "high40",
+          "source": "high",
+          "bars": 40
+        },
+        {
+          "kind": "Lag",
+          "key": "high41",
+          "source": "high",
+          "bars": 41
+        },
+        {
+          "kind": "Lag",
+          "key": "high42",
+          "source": "high",
+          "bars": 42
+        },
+        {
+          "kind": "Lag",
+          "key": "high43",
+          "source": "high",
+          "bars": 43
+        },
+        {
+          "kind": "Lag",
+          "key": "high44",
+          "source": "high",
+          "bars": 44
+        },
+        {
+          "kind": "Lag",
+          "key": "high45",
+          "source": "high",
+          "bars": 45
+        },
+        {
+          "kind": "Lag",
+          "key": "high46",
+          "source": "high",
+          "bars": 46
+        },
+        {
+          "kind": "Lag",
+          "key": "high47",
+          "source": "high",
+          "bars": 47
+        },
+        {
+          "kind": "Lag",
+          "key": "high48",
+          "source": "high",
+          "bars": 48
+        },
+        {
+          "kind": "Lag",
+          "key": "high49",
+          "source": "high",
+          "bars": 49
+        },
+        {
+          "kind": "Lag",
+          "key": "high50",
+          "source": "high",
+          "bars": 50
+        },
+        {
+          "kind": "Lag",
+          "key": "high51",
+          "source": "high",
+          "bars": 51
+        },
+        {
+          "kind": "Lag",
+          "key": "high52",
+          "source": "high",
+          "bars": 52
+        },
+        {
+          "kind": "Lag",
+          "key": "high53",
+          "source": "high",
+          "bars": 53
+        },
+        {
+          "kind": "Lag",
+          "key": "high54",
+          "source": "high",
+          "bars": 54
+        },
+        {
+          "kind": "Lag",
+          "key": "high55",
+          "source": "high",
+          "bars": 55
+        },
+        {
+          "kind": "Lag",
+          "key": "high56",
+          "source": "high",
+          "bars": 56
+        },
+        {
+          "kind": "Lag",
+          "key": "high57",
+          "source": "high",
+          "bars": 57
+        },
+        {
+          "kind": "Lag",
+          "key": "high58",
+          "source": "high",
+          "bars": 58
+        },
+        {
+          "kind": "Lag",
+          "key": "high59",
+          "source": "high",
+          "bars": 59
+        },
+        {
+          "kind": "Lag",
+          "key": "high60",
+          "source": "high",
+          "bars": 60
+        },
+        {
+          "kind": "Lag",
+          "key": "high61",
+          "source": "high",
+          "bars": 61
+        },
+        {
+          "kind": "Lag",
+          "key": "high62",
+          "source": "high",
+          "bars": 62
+        },
+        {
+          "kind": "Lag",
+          "key": "high63",
+          "source": "high",
+          "bars": 63
+        },
+        {
+          "kind": "Lag",
+          "key": "high64",
+          "source": "high",
+          "bars": 64
+        },
+        {
+          "kind": "Lag",
+          "key": "high65",
+          "source": "high",
+          "bars": 65
+        }
+      ],
+      "outputs": [
+        "close",
+        "previous_close",
+        "previous_open",
+        "previous_high",
+        "previous_volume",
+        "previous_tr",
+        "atr_before_prior",
+        "same_slot_median20",
+        "high1",
+        "high2",
+        "high3",
+        "high4",
+        "high5",
+        "high6",
+        "high7",
+        "high8",
+        "high9",
+        "high10",
+        "high11",
+        "high12",
+        "high13",
+        "high14",
+        "high15",
+        "high16",
+        "high17",
+        "high18",
+        "high19",
+        "high20",
+        "high21",
+        "high22",
+        "high23",
+        "high24",
+        "high25",
+        "high26",
+        "high27",
+        "high28",
+        "high29",
+        "high30",
+        "high31",
+        "high32",
+        "high33",
+        "high34",
+        "high35",
+        "high36",
+        "high37",
+        "high38",
+        "high39",
+        "high40",
+        "high41",
+        "high42",
+        "high43",
+        "high44",
+        "high45",
+        "high46",
+        "high47",
+        "high48",
+        "high49",
+        "high50",
+        "high51",
+        "high52",
+        "high53",
+        "high54",
+        "high55",
+        "high56",
+        "high57",
+        "high58",
+        "high59",
+        "high60",
+        "high61",
+        "high62",
+        "high63",
+        "high64",
+        "high65"
+      ],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [],
+      "cycle_fields": [
+        {
+          "key": "holding_bars",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "last_completed_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "exit_due",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "origin",
+          "value_type": "str",
+          "nullable": false
+        }
+      ]
+    },
+    "computation": "STATEFUL_STEP"
+  }
+}

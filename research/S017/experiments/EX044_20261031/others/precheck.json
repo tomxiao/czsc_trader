@@ -1,0 +1,45 @@
+{
+  "status": "PASS",
+  "strategy_sha256": "8d72edab9b6965840beb37b081bc543f52bd4489246196f0f58c2e966c689a5c",
+  "precheck_sha256": "b18606debe4dff77a4450f540d44ecb890180b6f87a8f89bc39da945ea8fa4c9",
+  "synthetic_only": true,
+  "accounts": {
+    "C0087": {
+      "average_decision_bytes": 3912.726063829787,
+      "prefix_invariance": "PASS",
+      "fills": 1,
+      "module_loads": 1,
+      "restore_held_decisions": 0,
+      "armed_decisions": 0
+    },
+    "C0088": {
+      "average_decision_bytes": 3886.7420212765956,
+      "prefix_invariance": "PASS",
+      "fills": 17,
+      "module_loads": 1,
+      "restore_held_decisions": 0,
+      "armed_decisions": 0
+    },
+    "C0089": {
+      "average_decision_bytes": 3891.965425531915,
+      "prefix_invariance": "PASS",
+      "fills": 17,
+      "module_loads": 1,
+      "restore_held_decisions": 30,
+      "armed_decisions": 289
+    }
+  },
+  "direct_boundaries": [
+    "unfilled proposal cannot arm",
+    "actual26 arms",
+    "restore priority",
+    "restore26 cannot grant",
+    "neutral armed pauses",
+    "neutral M005 waits26",
+    "blocked exit cannot reverse",
+    "failed26 cannot reverse27",
+    "F clears flat/blocked and before26",
+    "notU equality exits"
+  ],
+  "limitations": "Actual public replay plus direct state boundary tests; not every calendar boundary or nonempty corporate action claim."
+}

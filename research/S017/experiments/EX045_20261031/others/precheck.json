@@ -1,0 +1,35 @@
+{
+  "status": "PASS",
+  "strategy_sha256": "79f39b30db303579c8395faf57c900ae6ebf645bac7f50f422e9fd82b3c8ddae",
+  "precheck_sha256": "7a7c848707e90569d13781c54cb6f2def50c4d81dfb68214eb27cbce96b0a091",
+  "synthetic_only": true,
+  "accounts": {
+    "C0090": {
+      "average_decision_bytes": 3532.593085106383,
+      "prefix_invariance": "PASS",
+      "fills": 17,
+      "module_loads": 1
+    },
+    "C0091": {
+      "average_decision_bytes": 3549.872340425532,
+      "prefix_invariance": "PASS",
+      "fills": 19,
+      "module_loads": 1
+    },
+    "C0092": {
+      "average_decision_bytes": 3540.776595744681,
+      "prefix_invariance": "PASS",
+      "fills": 19,
+      "module_loads": 1
+    }
+  },
+  "direct_boundaries": [
+    "strict breakout equality",
+    "include true65th lag",
+    "exclude current high",
+    "union M005 priority",
+    "actual26 expiry",
+    "locked exit despite fresh signal"
+  ],
+  "limitations": "Synthetic public runtime plus direct boundaries; not a new economic account or full calendar/rights-event validation."
+}

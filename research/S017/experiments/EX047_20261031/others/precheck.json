@@ -1,0 +1,35 @@
+{
+  "status": "PASS",
+  "strategy_sha256": "c18d9be4eb234de4b793b1ef0f7067147d2d2620874699f286aa16e946752ad4",
+  "precheck_sha256": "c8b62bd2819438d30abe8bb182459734196ba897530e3ec883df121b38493718",
+  "synthetic_only": true,
+  "accounts": {
+    "C0095": {
+      "average_decision_bytes": 3874.1162162162163,
+      "main_and_aux_separate_prefix_invariance": "PASS",
+      "fills": 1,
+      "module_loads": 1,
+      "relative_qualification_checks": 0
+    },
+    "C0096": {
+      "average_decision_bytes": 3877.8351351351353,
+      "main_and_aux_separate_prefix_invariance": "PASS",
+      "fills": 1,
+      "module_loads": 1,
+      "relative_qualification_checks": 1
+    }
+  },
+  "direct_boundaries": [
+    "20 points19 intervals",
+    "strictly prior local day even visible current day",
+    "half-day exact13 endpoint",
+    "relative equality fails",
+    "absolute equality fails",
+    "missing/duplicate endpoint fails",
+    "actual26 only",
+    "failed26 cannot reverse27",
+    "no relative exit after promotion",
+    "original F exit"
+  ],
+  "limitations": "Public main/aux replay and direct boundaries, not source historical publication-time upgrade or all calendar/rights events."
+}

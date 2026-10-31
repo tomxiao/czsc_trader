@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "strategy_sha256": "4c3f3c910f8827a6f5d421b1fcd073e725957efc2a14ec8d4f4e6b24461ac681",
+  "precheck_sha256": "7411c522f9e0d9a100ab5fdf7817830138ac9382dc9e5b0834f8610cb8a005d3",
+  "synthetic_only": true,
+  "accounts": {
+    "C0093": {
+      "average_decision_bytes": 4129.94414893617,
+      "prefix_invariance": "PASS",
+      "fills": 1,
+      "module_loads": 1
+    },
+    "C0094": {
+      "average_decision_bytes": 4127.94414893617,
+      "prefix_invariance": "PASS",
+      "fills": 1,
+      "module_loads": 1
+    }
+  },
+  "direct_boundaries": [
+    "actual26 net profit promotion",
+    "strict zero equality fails",
+    "negative net mark fails",
+    "control no profit gate",
+    "no early profit stop",
+    "failed26 cannot reverse27",
+    "profit not rechecked after promotion",
+    "F after promotion"
+  ],
+  "limitations": "Public synthetic replay plus direct boundaries, not every calendar/rights event or economic validity."
+}

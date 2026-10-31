@@ -1,0 +1,113 @@
+{
+  "schema": "s017-certified-account-state-diagnostic/v1",
+  "status": "PASS",
+  "source_account": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S017",
+      "experiment_id": "EX043_20261031"
+    },
+    "evidence_id": "e5aff3a04b275ef7ea96ac987285b5d0ef3e1933b9dd42863db931d699e3fd8a.json",
+    "sha256": "e5aff3a04b275ef7ea96ac987285b5d0ef3e1933b9dd42863db931d699e3fd8a",
+    "media_type": "application/json",
+    "name": "formal-C0086",
+    "schema": "equity_research",
+    "schema_version": 4
+  },
+  "analysis_source_sha256": "dce8cac602c4d9619f62d53f035870e318e29fa2e62639aa6d77486775963f3a",
+  "max_drawdown_path": {
+    "peak": "2024-02-07T16:00:00.000000Z",
+    "trough": "2024-05-02T14:00:00.000000Z",
+    "recovery": "2024-11-08T15:00:00.000000Z"
+  },
+  "groups": {
+    "ENTRY_OR_FLAT": {
+      "bars": 2850,
+      "equity_change": 15940.873060000013,
+      "max_dd_interval_equity_change": 1054.5536000000138,
+      "positive_intervals": 14,
+      "sum_interval_return": 0.0697551382124102,
+      "years": {
+        "2024": {
+          "bars": 1851,
+          "equity_change": 1509.2280200000241
+        },
+        "2025": {
+          "bars": 999,
+          "equity_change": 14431.645039999989
+        }
+      }
+    },
+    "M005_BEFORE26": {
+      "bars": 700,
+      "equity_change": 127473.9599999997,
+      "max_dd_interval_equity_change": -14835.995000000024,
+      "positive_intervals": 357,
+      "sum_interval_return": 0.7432406612687946,
+      "years": {
+        "2024": {
+          "bars": 375,
+          "equity_change": 27621.589999999866
+        },
+        "2025": {
+          "bars": 325,
+          "equity_change": 99852.36999999984
+        }
+      }
+    },
+    "EXIT_LOCKED": {
+      "bars": 27,
+      "equity_change": -2667.201079999635,
+      "max_dd_interval_equity_change": -615.0968999999895,
+      "positive_intervals": 6,
+      "sum_interval_return": -0.019285568885177184,
+      "years": {
+        "2024": {
+          "bars": 15,
+          "equity_change": -974.0412549998873
+        },
+        "2025": {
+          "bars": 12,
+          "equity_change": -1693.1598249997478
+        }
+      }
+    },
+    "SUSTAINED_U": {
+      "bars": 2121,
+      "equity_change": 321399.1930000001,
+      "max_dd_interval_equity_change": -22423.5,
+      "positive_intervals": 1114,
+      "sum_interval_return": 0.7777093242283505,
+      "years": {
+        "2024": {
+          "bars": 702,
+          "equity_change": -16121.07499999975
+        },
+        "2025": {
+          "bars": 1419,
+          "equity_change": 337520.2679999998
+        }
+      }
+    },
+    "NEUTRAL_HOLD": {
+      "bars": 792,
+      "equity_change": 191509.2204999997,
+      "max_dd_interval_equity_change": 0.0,
+      "positive_intervals": 412,
+      "sum_interval_return": 0.7086675356978458,
+      "years": {
+        "2024": {
+          "bars": 315,
+          "equity_change": 8395.894999999742
+        },
+        "2025": {
+          "bars": 477,
+          "equity_change": 183113.32549999995
+        }
+      }
+    }
+  },
+  "reconciled_total_equity_change": 653656.0454799999,
+  "limitations": "Descriptive regrouping of the original fixed position path by decision-visible state. Dollar changes are not independent strategy returns or a causal promise for removing neutral exposure. Reentry, capital and future membership would change. No new account, SE, future test or parameter search."
+}

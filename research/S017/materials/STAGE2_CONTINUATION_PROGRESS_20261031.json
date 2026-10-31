@@ -1,0 +1,380 @@
+{
+  "schema": "s017-stage-two-continuation-progress/v1",
+  "authorization": "STAGE2_CONTINUATION_20261031.json",
+  "stage2_experiments_complete_for_handoff": true,
+  "stage3_status": "PROPOSED_NOT_AUTHORIZED",
+  "stage3_proposal": "STAGE3_FEASIBILITY_PROPOSAL_20261031.json",
+  "fixed_round_cap": null,
+  "completed_groups": 5,
+  "new_complete_policies": 9,
+  "technical_controls": 5,
+  "formal_statistics": {
+    "candidate_runs": 14,
+    "benchmark_runs": 5,
+    "authenticated_accounts": 19
+  },
+  "unique_buyhold_technical_artifacts": 2,
+  "buyhold_technical_artifact_sha256": [
+    "713161f1085b3202097ecfc5b097b48973c306dc22c0554a217d04b2639f6294",
+    "d63ee5c1048fe1fe358674983404a268233e9de56877209a6414472665cbfac6"
+  ],
+  "economic_buyhold_paths": 1,
+  "goal_achieved": false,
+  "training": [
+    "2024-01-02",
+    "2025-12-31"
+  ],
+  "test_sealed": [
+    "2026-01-02",
+    "2026-09-30"
+  ],
+  "old_ten_round_history_unchanged": true,
+  "groups": [
+    {
+      "group": 1,
+      "experiment": "EX043_20261031",
+      "new_policies": 3,
+      "controls": 1,
+      "status": "COMPLETED",
+      "report": "experiments/EX043_20261031/report.md",
+      "publication": "experiments/EX043_20261031/others/publication.json",
+      "independent_audit": "experiments/EX043_20261031/others/independent_validation_publication.json",
+      "conclusion": "持续参与提供额外收益但风险/频率仍失败，C86保留发展核心而不采用。",
+      "results": {
+        "C0083": {
+          "parameters": {
+            "policy": "BASELINE"
+          },
+          "annualized_return": 0.8061714239436117,
+          "bar_max_drawdown": 0.22599516028068833,
+          "closed_cycles": 59,
+          "rolling_60_closed_cycle_median": 7,
+          "coverage_at_least_three": 0.9887133182844243,
+          "holding_bar_fraction": 0.23636363636363636,
+          "ending_quantity": 0,
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": true,
+            "absolute_drawdown": true,
+            "frequency_median": true,
+            "frequency_coverage": true
+          },
+          "all_goals_met": false
+        },
+        "C0084": {
+          "parameters": {
+            "policy": "TREND_ONLY"
+          },
+          "annualized_return": 1.0869513805862576,
+          "bar_max_drawdown": 0.3564462720867603,
+          "closed_cycles": 23,
+          "rolling_60_closed_cycle_median": 3,
+          "coverage_at_least_three": 0.5553047404063205,
+          "holding_bar_fraction": 0.5790446841294299,
+          "ending_quantity": 1169,
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": true,
+            "absolute_drawdown": false,
+            "frequency_median": false,
+            "frequency_coverage": false
+          },
+          "all_goals_met": false
+        },
+        "C0085": {
+          "parameters": {
+            "policy": "PARALLEL_ORIGIN"
+          },
+          "annualized_return": 1.4297748653372575,
+          "bar_max_drawdown": 0.4348130608331353,
+          "closed_cycles": 46,
+          "rolling_60_closed_cycle_median": 5,
+          "coverage_at_least_three": 0.8871331828442438,
+          "holding_bar_fraction": 0.6585516178736518,
+          "ending_quantity": 1583,
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": false,
+            "absolute_drawdown": false,
+            "frequency_median": false,
+            "frequency_coverage": false
+          },
+          "all_goals_met": false
+        },
+        "C0086": {
+          "parameters": {
+            "policy": "M005_PROMOTION"
+          },
+          "annualized_return": 1.756347380758546,
+          "bar_max_drawdown": 0.3341305513626671,
+          "closed_cycles": 27,
+          "rolling_60_closed_cycle_median": 3,
+          "coverage_at_least_three": 0.5711060948081265,
+          "holding_bar_fraction": 0.5610169491525424,
+          "ending_quantity": 2034,
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": true,
+            "absolute_drawdown": false,
+            "frequency_median": false,
+            "frequency_coverage": false
+          },
+          "all_goals_met": false
+        }
+      }
+    },
+    {
+      "group": 2,
+      "experiment": "EX044_20261031",
+      "new_policies": 2,
+      "controls": 1,
+      "status": "COMPLETED",
+      "report": "experiments/EX044_20261031/report.md",
+      "publication": "experiments/EX044_20261031/others/publication.json",
+      "independent_audit": "experiments/EX044_20261031/others/independent_validation_publication.json",
+      "conclusion": "快暂停/资格恢复损收益且未修主要DD，停止退出补丁。",
+      "results": {
+        "C0087": {
+          "parameters": {
+            "policy": "CONTROL_SLOW"
+          },
+          "annualized_return": 1.756347380758546,
+          "bar_max_drawdown": 0.3341305513626671,
+          "closed_cycles": 27,
+          "rolling_60_closed_cycle_median": 3,
+          "coverage_at_least_three": 0.5711060948081265,
+          "holding_bar_fraction": 0.5610169491525424,
+          "ending_quantity": 2034,
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": true,
+            "absolute_drawdown": false,
+            "frequency_median": false,
+            "frequency_coverage": false
+          },
+          "all_goals_met": false
+        },
+        "C0088": {
+          "parameters": {
+            "policy": "FAST_EXIT"
+          },
+          "annualized_return": 0.4847126440392937,
+          "bar_max_drawdown": 0.3327346664147697,
+          "closed_cycles": 49,
+          "rolling_60_closed_cycle_median": 6,
+          "coverage_at_least_three": 0.963882618510158,
+          "holding_bar_fraction": 0.3456086286594761,
+          "ending_quantity": 0,
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": true,
+            "absolute_drawdown": false,
+            "frequency_median": true,
+            "frequency_coverage": true
+          },
+          "all_goals_met": false
+        },
+        "C0089": {
+          "parameters": {
+            "policy": "FAST_RESUME"
+          },
+          "annualized_return": 1.0880515316847532,
+          "bar_max_drawdown": 0.33269708266427866,
+          "closed_cycles": 89,
+          "rolling_60_closed_cycle_median": 10,
+          "coverage_at_least_three": 0.9661399548532731,
+          "holding_bar_fraction": 0.4573189522342065,
+          "ending_quantity": 0,
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": true,
+            "absolute_drawdown": false,
+            "frequency_median": true,
+            "frequency_coverage": true
+          },
+          "all_goals_met": false
+        }
+      }
+    },
+    {
+      "group": 3,
+      "experiment": "EX045_20261031",
+      "new_policies": 2,
+      "controls": 1,
+      "status": "COMPLETED",
+      "report": "experiments/EX045_20261031/report.md",
+      "publication": "experiments/EX045_20261031/others/publication.json",
+      "independent_audit": "experiments/EX045_20261031/others/independent_validation_publication.json",
+      "conclusion": "65新高及M005并联增加频率却降低收益/扩大回撤，停止。",
+      "results": {
+        "C0090": {
+          "parameters": {
+            "policy": "BASELINE"
+          },
+          "annualized_return": 0.8061714239436117,
+          "bar_max_drawdown": 0.22599516028068833,
+          "closed_cycles": 59,
+          "rolling_60_closed_cycle_median": 7,
+          "coverage_at_least_three": 0.9887133182844243,
+          "holding_bar_fraction": 0.23636363636363636,
+          "ending_quantity": 0,
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": true,
+            "absolute_drawdown": true,
+            "frequency_median": true,
+            "frequency_coverage": true
+          },
+          "all_goals_met": false
+        },
+        "C0091": {
+          "parameters": {
+            "policy": "BREAKOUT65"
+          },
+          "annualized_return": 0.032194235185293296,
+          "bar_max_drawdown": 0.4065310234179308,
+          "closed_cycles": 75,
+          "rolling_60_closed_cycle_median": 9,
+          "coverage_at_least_three": 1,
+          "holding_bar_fraction": 0.300462249614792,
+          "ending_quantity": 0,
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": true,
+            "absolute_drawdown": false,
+            "frequency_median": true,
+            "frequency_coverage": true
+          },
+          "all_goals_met": false
+        },
+        "C0092": {
+          "parameters": {
+            "policy": "UNION26"
+          },
+          "annualized_return": 0.6042205587142475,
+          "bar_max_drawdown": 0.41176114639705574,
+          "closed_cycles": 107,
+          "rolling_60_closed_cycle_median": 13,
+          "coverage_at_least_three": 1,
+          "holding_bar_fraction": 0.42865947611710326,
+          "ending_quantity": 0,
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": true,
+            "absolute_drawdown": false,
+            "frequency_median": true,
+            "frequency_coverage": true
+          },
+          "all_goals_met": false
+        }
+      }
+    },
+    {
+      "group": 4,
+      "experiment": "EX046_20261031",
+      "new_policies": 1,
+      "controls": 1,
+      "status": "COMPLETED",
+      "report": "experiments/EX046_20261031/report.md",
+      "publication": "experiments/EX046_20261031/others/publication.json",
+      "independent_audit": "experiments/EX046_20261031/others/independent_validation_publication.json",
+      "conclusion": "零净浮盈晋升收益略降、回撤微降/频率不变，停止该门。",
+      "results": {
+        "C0093": {
+          "parameters": {
+            "policy": "CONTROL_SLOW"
+          },
+          "annualized_return": 1.756347380758546,
+          "bar_max_drawdown": 0.3341305513626671,
+          "closed_cycles": 27,
+          "rolling_60_closed_cycle_median": 3,
+          "coverage_at_least_three": 0.5711060948081265,
+          "holding_bar_fraction": 0.5610169491525424,
+          "ending_quantity": 2034,
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": true,
+            "absolute_drawdown": false,
+            "frequency_median": false,
+            "frequency_coverage": false
+          },
+          "all_goals_met": false
+        },
+        "C0094": {
+          "parameters": {
+            "policy": "PROFIT_AT26"
+          },
+          "annualized_return": 1.7193326349033797,
+          "bar_max_drawdown": 0.3327259388488445,
+          "closed_cycles": 29,
+          "rolling_60_closed_cycle_median": 3,
+          "coverage_at_least_three": 0.5711060948081265,
+          "holding_bar_fraction": 0.5476117103235747,
+          "ending_quantity": 1980,
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": true,
+            "absolute_drawdown": false,
+            "frequency_median": false,
+            "frequency_coverage": false
+          },
+          "all_goals_met": false
+        }
+      }
+    },
+    {
+      "group": 5,
+      "experiment": "EX047_20261031",
+      "new_policies": 1,
+      "controls": 1,
+      "status": "COMPLETED",
+      "report": "experiments/EX047_20261031/report.md",
+      "publication": "experiments/EX047_20261031/others/publication.json",
+      "independent_audit": "experiments/EX047_20261031/others/independent_validation_publication.json",
+      "conclusion": "20完整日绝对及相对强势资格降低收益、主要DD不变，停止该门。",
+      "results": {
+        "C0095": {
+          "parameters": {
+            "policy": "CONTROL_SLOW"
+          },
+          "annualized_return": 1.756347380758546,
+          "bar_max_drawdown": 0.3341305513626671,
+          "closed_cycles": 27,
+          "rolling_60_closed_cycle_median": 3,
+          "coverage_at_least_three": 0.5711060948081265,
+          "holding_bar_fraction": 0.5610169491525424,
+          "ending_quantity": 2034,
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": true,
+            "absolute_drawdown": false,
+            "frequency_median": false,
+            "frequency_coverage": false
+          },
+          "all_goals_met": false
+        },
+        "C0096": {
+          "parameters": {
+            "policy": "RELATIVE_AT26"
+          },
+          "annualized_return": 1.6011392311382786,
+          "bar_max_drawdown": 0.3341305513626671,
+          "closed_cycles": 29,
+          "rolling_60_closed_cycle_median": 3,
+          "coverage_at_least_three": 0.6117381489841986,
+          "holding_bar_fraction": 0.5434514637904468,
+          "ending_quantity": 1812,
+          "goals": {
+            "annualized_return": false,
+            "relative_drawdown": true,
+            "absolute_drawdown": false,
+            "frequency_median": false,
+            "frequency_coverage": false
+          },
+          "all_goals_met": false
+        }
+      }
+    }
+  ],
+  "next_decision": "建议用户明确批准有限阶段三达标能力检验；本文件不授权搜索/测试/阶段推进。"
+}

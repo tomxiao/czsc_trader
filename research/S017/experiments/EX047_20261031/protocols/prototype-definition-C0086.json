@@ -1,0 +1,195 @@
+{
+  "runtime_kind": "ACCOUNT_REPLAY",
+  "instrument": {
+    "market": "US",
+    "asset_class": "STOCK",
+    "symbol": "LITE"
+  },
+  "execution_spec": {
+    "market": {
+      "rule_version": "US_EQUITY_V1"
+    },
+    "decision_clock": "30m",
+    "account": {
+      "currency": "USD",
+      "cash_availability": "IMMEDIATE_RESEARCH",
+      "allow_short": false,
+      "allow_negative_cash": false
+    },
+    "quantity_step": 1,
+    "price_tick": 0.01,
+    "buy_premium": 0.01,
+    "slippage_bp": 0.0,
+    "execution": "BAR_RANGE_V1",
+    "inclusive_touch": false,
+    "data_latency_seconds": 0
+  },
+  "warmup_bars": 261,
+  "entrypoint": "strategy:step",
+  "source_files": [
+    "strategy.py"
+  ],
+  "source_sha256": "612069961db8175af268cb04a2c12fd5092a7a78ac5528fc480e90db502f460d",
+  "parameters_json": "{\"policy\":\"M005_PROMOTION\"}",
+  "dependencies": [],
+  "contract_version": 4,
+  "parameter_schema_json": "{\"policy\":{\"type\":\"string\"}}",
+  "feedback_mode": "CONFIRMED_EXECUTION",
+  "analysis_price": "RAW",
+  "explanation_cases": [
+    "flat",
+    "long"
+  ],
+  "feature_graph": {
+    "nodes": [
+      {
+        "kind": "RawField",
+        "key": "close",
+        "field": "Close"
+      },
+      {
+        "kind": "RawField",
+        "key": "opening",
+        "field": "Open"
+      },
+      {
+        "kind": "RawField",
+        "key": "high",
+        "field": "High"
+      },
+      {
+        "kind": "RawField",
+        "key": "low",
+        "field": "Low"
+      },
+      {
+        "kind": "RawField",
+        "key": "volume",
+        "field": "Volume"
+      },
+      {
+        "kind": "Lag",
+        "key": "previous_close",
+        "source": "close",
+        "bars": 1
+      },
+      {
+        "kind": "Lag",
+        "key": "previous_open",
+        "source": "opening",
+        "bars": 1
+      },
+      {
+        "kind": "Lag",
+        "key": "previous_high",
+        "source": "high",
+        "bars": 1
+      },
+      {
+        "kind": "Lag",
+        "key": "previous_volume",
+        "source": "volume",
+        "bars": 1
+      },
+      {
+        "kind": "TrueRange",
+        "key": "tr",
+        "high": "high",
+        "low": "low",
+        "close": "close"
+      },
+      {
+        "kind": "Mean",
+        "key": "atr13",
+        "source": "tr",
+        "window": 13
+      },
+      {
+        "kind": "Lag",
+        "key": "previous_tr",
+        "source": "tr",
+        "bars": 1
+      },
+      {
+        "kind": "Lag",
+        "key": "atr_before_prior",
+        "source": "atr13",
+        "bars": 2
+      },
+      {
+        "kind": "SameLocalSlotMedian",
+        "key": "same_slot_median20",
+        "source": "volume",
+        "sessions": 20,
+        "anchor_lag": 1,
+        "timezone": "America/New_York"
+      },
+      {
+        "kind": "Mean",
+        "key": "ma65",
+        "source": "close",
+        "window": 65
+      },
+      {
+        "kind": "Mean",
+        "key": "ma260",
+        "source": "close",
+        "window": 260
+      }
+    ],
+    "outputs": [
+      "close",
+      "previous_close",
+      "previous_open",
+      "previous_high",
+      "previous_volume",
+      "previous_tr",
+      "atr_before_prior",
+      "same_slot_median20",
+      "ma65",
+      "ma260"
+    ],
+    "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+  },
+  "state_schema": {
+    "account_fields": [],
+    "cycle_fields": [
+      {
+        "key": "holding_bars",
+        "value_type": "int",
+        "nullable": false
+      },
+      {
+        "key": "last_completed_at",
+        "value_type": "datetime",
+        "nullable": false
+      },
+      {
+        "key": "exit_due",
+        "value_type": "bool",
+        "nullable": false
+      },
+      {
+        "key": "origin",
+        "value_type": "str",
+        "nullable": false
+      },
+      {
+        "key": "trend_active",
+        "value_type": "bool",
+        "nullable": false
+      },
+      {
+        "key": "promoted",
+        "value_type": "bool",
+        "nullable": false
+      },
+      {
+        "key": "exit_reason",
+        "value_type": "str",
+        "nullable": false
+      }
+    ]
+  },
+  "computation": "STATEFUL_STEP"
+}
