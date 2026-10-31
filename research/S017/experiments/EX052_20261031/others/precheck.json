@@ -1,0 +1,86 @@
+{
+  "status": "PASS",
+  "strategy_sha256": "a4066ae7292f21edbe07e5dd40f6adae79c23ac81b5880c49a993c220fc8c288",
+  "precheck_sha256": "c8561c8f296efbb459797e8da76fbef2f690fa168f36cc5dd7d9bdfcae7255b2",
+  "legacy_control_source_sha256": "54e864ab6a81c9f9dfa4bd6d68c426b3808d3da0f1738f4cfb23b647bf5397f0",
+  "synthetic_only": true,
+  "accounts": {
+    "C0114": {
+      "parameters": null,
+      "average_decision_bytes": 5206.23670212766,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 5,
+      "support_raises": 9,
+      "forced_public_first_buy_precision": "BAR_INTERVAL",
+      "first_held_peak": 0.0
+    },
+    "C0115": {
+      "parameters": {
+        "alpha": 0.0,
+        "initial_fraction": 0.0,
+        "accepted_fraction": 0.0
+      },
+      "average_decision_bytes": 6824.01329787234,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 5,
+      "support_raises": 9,
+      "forced_public_first_buy_precision": "BAR_INTERVAL",
+      "first_held_peak": 0.0
+    },
+    "C9901": {
+      "parameters": {
+        "alpha": 0.0,
+        "initial_fraction": 1.0,
+        "accepted_fraction": 0.0
+      },
+      "average_decision_bytes": 6824.01329787234,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 5,
+      "support_raises": 9,
+      "forced_public_first_buy_precision": "BAR_INTERVAL",
+      "first_held_peak": 0.0
+    },
+    "C9902": {
+      "parameters": {
+        "alpha": 0.0,
+        "initial_fraction": 0.0,
+        "accepted_fraction": 1.0
+      },
+      "average_decision_bytes": 6496.720744680851,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 13,
+      "support_raises": 5,
+      "forced_public_first_buy_precision": "BAR_INTERVAL",
+      "first_held_peak": 0.0
+    },
+    "C9903": {
+      "parameters": {
+        "alpha": 0.0,
+        "initial_fraction": 1.0,
+        "accepted_fraction": 1.0
+      },
+      "average_decision_bytes": 6414.058510638298,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 14,
+      "support_raises": 5,
+      "forced_public_first_buy_precision": "BAR_INTERVAL",
+      "first_held_peak": 0.0
+    }
+  },
+  "direct_boundaries": [
+    "alpha strict equality and scale0 multiplication",
+    "a0/S0 a1/R and midpoint",
+    "b0/L b1/H and midpoint",
+    "no accepted samebar selfexit",
+    "no implicit max/line naturally rises",
+    "rawS0 vs actual initial line vs accepted pair distinct",
+    "pending cannot overwrite last accepted pair",
+    "current line changes eligible pivot population",
+    "whole entry interval excluded even OPEN",
+    "genuine public BAR_INTERVAL timing inspected",
+    "support equality holds",
+    "a>0 firstexit initial reason",
+    "due no peak or candidate operation"
+  ],
+  "limitations": "Synthetic only; exact complete training six-table C113 baseline equivalence is mandatory before adaptive trials"
+}

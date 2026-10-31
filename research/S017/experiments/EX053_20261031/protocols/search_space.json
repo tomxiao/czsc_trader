@@ -1,0 +1,155 @@
+{
+  "schema": "s017-stage3-progress-protection/v1",
+  "phase": 3,
+  "seed": 17,
+  "optuna_version": "4.9.0",
+  "sampler": {
+    "class": "TPESampler",
+    "n_startup_trials": 15,
+    "multivariate": false,
+    "constant_liar": true,
+    "constraints_func": "normalized signs of exact original5 gates; no weighted score"
+  },
+  "directions": [
+    "maximize_annualized_return",
+    "minimize_bar_close_drawdown"
+  ],
+  "initial_domains": {
+    "alpha": [
+      0.0,
+      1.0
+    ],
+    "initial_fraction": [
+      0.0,
+      1.0
+    ],
+    "accepted_fraction": [
+      0.0,
+      1.0
+    ],
+    "progress_protection": [
+      0.0,
+      1.0
+    ]
+  },
+  "alpha_extension_domain": [
+    0.0,
+    2.0
+  ],
+  "natural_bounds": [
+    "alpha>=0",
+    "initial_fraction in[0,1]",
+    "accepted_fraction in[0,1]"
+  ],
+  "initial_anchors": [
+    {
+      "alpha": 0.0,
+      "initial_fraction": 0.0,
+      "accepted_fraction": 0.0,
+      "progress_protection": 0.0
+    },
+    {
+      "alpha": 0.16388478571696152,
+      "initial_fraction": 0.8905362880544581,
+      "accepted_fraction": 0.14232756274473607,
+      "progress_protection": 0.0
+    },
+    {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "progress_protection": 0.0
+    },
+    {
+      "alpha": 0.0,
+      "initial_fraction": 0.0,
+      "accepted_fraction": 0.0,
+      "progress_protection": 0.25
+    },
+    {
+      "alpha": 0.0,
+      "initial_fraction": 0.0,
+      "accepted_fraction": 0.0,
+      "progress_protection": 0.5
+    },
+    {
+      "alpha": 0.0,
+      "initial_fraction": 0.0,
+      "accepted_fraction": 0.0,
+      "progress_protection": 0.75
+    },
+    {
+      "alpha": 0.0,
+      "initial_fraction": 0.0,
+      "accepted_fraction": 0.0,
+      "progress_protection": 1.0
+    },
+    {
+      "alpha": 0.16388478571696152,
+      "initial_fraction": 0.8905362880544581,
+      "accepted_fraction": 0.14232756274473607,
+      "progress_protection": 0.25
+    },
+    {
+      "alpha": 0.16388478571696152,
+      "initial_fraction": 0.8905362880544581,
+      "accepted_fraction": 0.14232756274473607,
+      "progress_protection": 0.5
+    },
+    {
+      "alpha": 0.16388478571696152,
+      "initial_fraction": 0.8905362880544581,
+      "accepted_fraction": 0.14232756274473607,
+      "progress_protection": 0.75
+    },
+    {
+      "alpha": 0.16388478571696152,
+      "initial_fraction": 0.8905362880544581,
+      "accepted_fraction": 0.14232756274473607,
+      "progress_protection": 1.0
+    },
+    {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "progress_protection": 0.25
+    },
+    {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "progress_protection": 0.5
+    },
+    {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "progress_protection": 0.75
+    },
+    {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "progress_protection": 1.0
+    }
+  ],
+  "initial_unique": 36,
+  "necessary_alpha_extension_unique_reserve": 12,
+  "matched_zero_parameter_ablation_unique_reserve": 8,
+  "maximum_unique_parameters": 56,
+  "old_exact_control": "C0163/C0164/C0165 outside within-family unique budget",
+  "zero_point": "Three g0 baselines C0166/C0167/C0168 included in36",
+  "execution": {
+    "workers": 4,
+    "native_threads": 1,
+    "batch_size": 4,
+    "session_max_unique": 16,
+    "checkpoint": "CREATE each segment; explicit RESUME selected evidence, no private cache mutation",
+    "memory": "record WorkingSet/PeakWorkingSet each batch; measured explanation6.8KB implies44MB candidate/~two cached copies; max16/session bounds retained bytes",
+    "shared_benchmark": "one compute per new segment, count actual; RESUME shared artifacts not new observations"
+  },
+  "publication": "all trial states/params/source identities/metrics/results/boundary records compact public evidence; only essential anchor/control/final representatives full ledgers; no bulk pre-registration",
+  "qualification": "AND all5 original goals across every COMPLETE trial, not only study.best_trials; allpassing equally qualified; no stage4/test/freeze",
+  "new_information": "No new predictor; conditional giveback slope only",
+  "prior_family": "EX05248complete/0joint, allreturnsfail; old selection history retained"
+}

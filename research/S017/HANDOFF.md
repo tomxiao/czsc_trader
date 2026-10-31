@@ -1,5 +1,24 @@
 # S017 研究交接
 
+## 当前：阶段三完成，0达标候选，等待用户决定后继（2026-10-31，RSCH）
+
+[四问总报告](materials/STAGE3_FINANCIAL_OPTIMIZATION_REVIEW_20261031.md)及[机器统计](materials/STAGE3_FINANCIAL_OPTIMIZATION_REVIEW_20261031.json)完整；[EX053正式报告](experiments/EX053_20261031/others/publication.json)和[CANDIDATES/1正式交付](experiments/EX053_20261031/others/candidate_delivery.json)FULL PASS。两族48+43=91族内唯一记录、95候选compute+8BH=103、0技术失败、0joint，candidates/handoff均空；4旧源控制及4新源零点复现非独立样本。EX052/053原alpha扩边均未触发，剩余额度不强用。全部原五门不变，2026封存；阶段四/生产未执行。
+
+连续金融决策函数及Optuna优化任务已完成，风险前沿改善但新增收益不足。C136最大收益仍失败收益/绝对DD，C179通过其余四门但收益失败，均非达标候选；C179主要DD转向初始状态，不继续盲加接受后退出参数。下一建议为入场信息与额外收益辨别，待用户决定新研究方向，不自动启动第三族/阶段四。旧36+12继续WITHDRAWN；历史PROTOTYPES1—10及全部冻结原件保留。根会话统一审阅本地提交，无合并/tag/push。
+
+
+## 当前：阶段三继续，EX052完整负证已交付，EX053已启动（2026-10-31，RSCH）
+
+用户已明确批准阶段三改造/优化，沿`codex/s017-ten-rounds`，起点`006f0b86a5fc1a09d789a68d5165823e938aa8b2`。旧36+12仍WITHDRAWN；PROTOTYPES10和既有源/结果不覆盖。
+
+[EX052四问报告](experiments/EX052_20261031/report.md)及[正式发布](experiments/EX052_20261031/others/publication.json)已PASS：48unique/48COMPLETE/0joint，40初始+8匹配，alpha扩边未触发、16 reserve未用；49候选含额外exact控制+4BH=53compute。全48原收益失败，18过绝对DD，全部过相对DD及双频率。C136185.69%/32.74%为全体最大收益，C147171.90%/22.54%为其余4门通过池max-return；C157匹配b0为171.38%/21.58%、覆盖96.61%，均非达标。零点24经济投影、全48/502daily统计审计、12公开ref金额/11本族raw状态均PASS，C136既有raw审计精确复用，无新SE/账户。[全族紧凑公共证据](experiments/EX052_20261031/others/search_publication.json)。
+
+root已明确授权[EX053新有界继任](materials/STAGE3_PROGRESS_PROTECTION_AUTHORIZATION_20261031.json)，[协议](experiments/EX053_20261031/protocols/design.md)/[预算域](experiments/EX053_20261031/protocols/search_space.json)：S_dyn=L+b(H−L)+g*max(0,P−H)，只保护已确认H之后的新增完成收盘价格推进，不等于净利润/预测器。旧accepted峰/线先更新、旧线先失效，alive才处理pending失资格/新接受；不隐藏max降线，不加profit门。g0三条先对原C113/C136/C147与exact控制共72经济投影已PASS，六ref公开，真实BAR_INTERVAL/g边界/未来后缀PASS。当前唯一正式Study已进入36点（3g0+12g轴+21joint），必要12扩alpha+<=8匹配，max56 within-family unique；3旧源控制额外计compute，不把跨族g0当独立信息。4worker/batch4/session16/checkpoint/WorkingSet记录保持，source已冻结。
+
+C136 DD补充：[跨夜拆分公共引用](experiments/EX052_20261031/others/c136_overnight_clarification_publication.json)：−19450.08为Close→次日Open−14058.72加首30m−5391.36，合占原DD51.78%，不是全纯gap，也不是可避损金额。新g不能保证更早触发、线价卖出或避免gap，正常回踩/再入费用与收益损失反证保留。
+
+阶段三未结束，不装配空CANDIDATES或推进阶段四。当前只2024—25训练/必要2023暖机、旧缓存、100000新空仓、原五门/0或1只多/每侧.1%/1%买限价/下一段执行。2026封存，无新源/平台/生产/冻结/merge/tag/push。由root统一审阅提交。下面各“当前”段为历史状态，不否认本阶段三授权。
+
 ## 当前：金融原型阶段二交付完成，原五目标未达（2026-10-31，RSCH）
 
 新[四问总报告](materials/STAGE2_FINANCIAL_PROTOTYPE_REVIEW_20261031.md)与[完整机器统计](materials/STAGE2_FINANCIAL_PROTOTYPE_PROGRESS_20261031.json) supersede此前阶段三推荐，旧总结/快照保留。[正式PROTOTYPES修订10](deliveries/PROTOTYPES/10/report.md)自包含FULL校验PASS；[receipt](experiments/EX051_20261031/others/prototype_delivery.json)，内容SHA `2ce11f1457e13fa55c1dac4f8684bd5496ef76c08fa1052b4d45c1cc063325f9`。旧1—9不覆盖，不升级旧资格。

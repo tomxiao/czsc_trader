@@ -1,0 +1,119 @@
+{
+  "schema": "s017-stage3-three-financial-functions/v1",
+  "phase": 3,
+  "seed": 17,
+  "optuna_version": "4.9.0",
+  "sampler": {
+    "class": "TPESampler",
+    "n_startup_trials": 12,
+    "multivariate": false,
+    "constant_liar": true,
+    "constraints_func": "normalized signs of exact original5 gates; no weighted score"
+  },
+  "directions": [
+    "maximize_annualized_return",
+    "minimize_bar_close_drawdown"
+  ],
+  "initial_domains": {
+    "alpha": [
+      0.0,
+      1.0
+    ],
+    "initial_fraction": [
+      0.0,
+      1.0
+    ],
+    "accepted_fraction": [
+      0.0,
+      1.0
+    ]
+  },
+  "alpha_extension_domain": [
+    0.0,
+    2.0
+  ],
+  "natural_bounds": [
+    "alpha>=0",
+    "initial_fraction in[0,1]",
+    "accepted_fraction in[0,1]"
+  ],
+  "initial_anchors": [
+    {
+      "alpha": 0.0,
+      "initial_fraction": 0.0,
+      "accepted_fraction": 0.0
+    },
+    {
+      "alpha": 0.0,
+      "initial_fraction": 0.0,
+      "accepted_fraction": 0.5
+    },
+    {
+      "alpha": 0.0,
+      "initial_fraction": 0.0,
+      "accepted_fraction": 1.0
+    },
+    {
+      "alpha": 0.0,
+      "initial_fraction": 0.5,
+      "accepted_fraction": 0.0
+    },
+    {
+      "alpha": 0.0,
+      "initial_fraction": 0.5,
+      "accepted_fraction": 0.5
+    },
+    {
+      "alpha": 0.0,
+      "initial_fraction": 0.5,
+      "accepted_fraction": 1.0
+    },
+    {
+      "alpha": 0.0,
+      "initial_fraction": 1.0,
+      "accepted_fraction": 0.0
+    },
+    {
+      "alpha": 0.0,
+      "initial_fraction": 1.0,
+      "accepted_fraction": 0.5
+    },
+    {
+      "alpha": 0.0,
+      "initial_fraction": 1.0,
+      "accepted_fraction": 1.0
+    },
+    {
+      "alpha": 0.25,
+      "initial_fraction": 0.0,
+      "accepted_fraction": 0.0
+    },
+    {
+      "alpha": 0.5,
+      "initial_fraction": 0.0,
+      "accepted_fraction": 0.0
+    },
+    {
+      "alpha": 1.0,
+      "initial_fraction": 0.0,
+      "accepted_fraction": 0.0
+    }
+  ],
+  "initial_unique": 40,
+  "necessary_alpha_extension_unique_reserve": 16,
+  "matched_zero_parameter_ablation_unique_reserve": 8,
+  "maximum_unique_parameters": 64,
+  "old_exact_control": "C0114 outside unique budget",
+  "zero_point": "C0115 included in initial40",
+  "execution": {
+    "workers": 4,
+    "native_threads": 1,
+    "batch_size": 4,
+    "session_max_unique": 16,
+    "checkpoint": "CREATE each segment; explicit RESUME selected evidence, no private cache mutation",
+    "memory": "record WorkingSet/PeakWorkingSet each batch; measured explanation6.8KB implies44MB candidate/~two cached copies; max16/session bounds retained bytes",
+    "shared_benchmark": "one compute per new segment, count actual; RESUME shared artifacts not new observations"
+  },
+  "publication": "all trial states/params/source identities/metrics/results/boundary records compact public evidence; only essential anchor/control/final representatives full ledgers; no bulk pre-registration",
+  "qualification": "AND all5 original goals across every COMPLETE trial, not only study.best_trials; allpassing equally qualified; no stage4/test/freeze"
+}

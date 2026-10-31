@@ -1,0 +1,130 @@
+{
+  "status": "PASS",
+  "strategy_sha256": "beb2b240d2253005c616fc00cf23af766396576531e43c18758ef743361744f0",
+  "precheck_sha256": "1071ac1a4cd26f7053a844418f41fef5ba2f8b174cc8568bd9c07a413ea22188",
+  "control_source_hashes": {
+    "C0163": "54e864ab6a81c9f9dfa4bd6d68c426b3808d3da0f1738f4cfb23b647bf5397f0",
+    "C0164": "a4066ae7292f21edbe07e5dd40f6adae79c23ac81b5880c49a993c220fc8c288",
+    "C0165": "a4066ae7292f21edbe07e5dd40f6adae79c23ac81b5880c49a993c220fc8c288"
+  },
+  "synthetic_old_controls": [
+    "C0163"
+  ],
+  "synthetic_only": true,
+  "accounts": {
+    "C0163": {
+      "parameters": null,
+      "average_decision_bytes": 5206.247340425532,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 5,
+      "support_raises": 9,
+      "forced_public_first_buy_precision": "BAR_INTERVAL",
+      "first_held_peak": 0.0
+    },
+    "C0166": {
+      "parameters": {
+        "alpha": 0.0,
+        "initial_fraction": 0.0,
+        "accepted_fraction": 0.0,
+        "progress_protection": 0.0
+      },
+      "average_decision_bytes": 7605.848404255319,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 5,
+      "support_raises": 9,
+      "forced_public_first_buy_precision": "BAR_INTERVAL",
+      "first_held_peak": 0.0
+    },
+    "C0167": {
+      "parameters": {
+        "alpha": 0.16388478571696152,
+        "initial_fraction": 0.8905362880544581,
+        "accepted_fraction": 0.14232756274473607,
+        "progress_protection": 0.0
+      },
+      "average_decision_bytes": 7718.300531914893,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 5,
+      "support_raises": 9,
+      "forced_public_first_buy_precision": "BAR_INTERVAL",
+      "first_held_peak": 0.0
+    },
+    "C0168": {
+      "parameters": {
+        "alpha": 0.3435458360048906,
+        "initial_fraction": 0.42823406094793653,
+        "accepted_fraction": 0.1569056351519751,
+        "progress_protection": 0.0
+      },
+      "average_decision_bytes": 7715.726063829788,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 5,
+      "support_raises": 9,
+      "forced_public_first_buy_precision": "BAR_INTERVAL",
+      "first_held_peak": 0.0
+    },
+    "C9901": {
+      "parameters": {
+        "alpha": 0.0,
+        "initial_fraction": 0.0,
+        "accepted_fraction": 0.0,
+        "progress_protection": 1.0
+      },
+      "average_decision_bytes": 7513.590425531915,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 7,
+      "support_raises": 3,
+      "forced_public_first_buy_precision": "BAR_INTERVAL",
+      "first_held_peak": 0.0
+    },
+    "C9902": {
+      "parameters": {
+        "alpha": 0.0,
+        "initial_fraction": 0.0,
+        "accepted_fraction": 1.0,
+        "progress_protection": 1.0
+      },
+      "average_decision_bytes": 6991.071808510638,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 13,
+      "support_raises": 5,
+      "forced_public_first_buy_precision": "BAR_INTERVAL",
+      "first_held_peak": 0.0
+    },
+    "C9903": {
+      "parameters": {
+        "alpha": 0.0,
+        "initial_fraction": 0.0,
+        "accepted_fraction": 0.0,
+        "progress_protection": 0.5
+      },
+      "average_decision_bytes": 7576.13829787234,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 7,
+      "support_raises": 8,
+      "forced_public_first_buy_precision": "BAR_INTERVAL",
+      "first_held_peak": 0.0
+    }
+  },
+  "direct_boundaries": [
+    "alpha strict equality and scale0 multiplication",
+    "a0/S0 a1/R and midpoint",
+    "b0/L b1/H and midpoint",
+    "no accepted samebar selfexit",
+    "no implicit max/line naturally rises",
+    "rawS0 vs actual initial line vs accepted pair distinct",
+    "pending cannot overwrite last accepted pair",
+    "current line changes eligible pivot population",
+    "whole entry interval excluded even OPEN",
+    "genuine public BAR_INTERVAL timing inspected",
+    "support equality holds",
+    "a>0 firstexit initial reason",
+    "g1/b1 newpeak equality",
+    "dynamic-only failure vs base failure distinct",
+    "pending L<=dynamic line revoked",
+    "adversarial pending cannot reverse oldline due",
+    "blocked due financial state frozen",
+    "g protects confirmed price advance not net cycle profit"
+  ],
+  "limitations": "Synthetic only; three g0 complete training12 economic paths plus exact prior source controls required before adaptive"
+}
