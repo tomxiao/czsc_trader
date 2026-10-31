@@ -1,0 +1,38 @@
+{
+  "schema": "s017-user-sample-amendment/v1",
+  "status": "USER_CONFIRMED",
+  "effective_date": "2026-10-31",
+  "strategy_id": "S017",
+  "authorization": "用户决定：训练集调整为2024首个交易日至2025最后交易日，测试集为2026年首个交易日至2026年9月最后一个交易日。",
+  "session_timezone": "America/New_York",
+  "boundaries_inclusive": true,
+  "training": {
+    "first_session": "2024-01-02",
+    "last_session": "2025-12-31",
+    "purpose": "后续机制开发、策略选择及获准的训练；此前已用于开发，不声称新样本。"
+  },
+  "test": {
+    "first_session": "2026-01-02",
+    "last_session": "2026-09-30",
+    "purpose": "策略及参数固定后的测试，不用于训练和根据测试成绩反复选择规则。",
+    "prices_or_strategy_performance_read_in_this_amendment": false,
+    "executed": false
+  },
+  "calendar_check": "核对NYSE Group公布的2024、2025、2026休市日历；本次仅核对日期，未核验区间行情覆盖。",
+  "warmup": "只使用各评价起点之前所需的历史初始化指标；不计入对应区间绩效。具体长度、账户与策略状态初始化及跨边界标签截断在新实验执行前固定。",
+  "prior_sample": {
+    "development_first_session": "2019-01-02",
+    "development_last_session": "2025-12-31",
+    "treatment": "历史原件、结果、选择历史和资格均保留；后续开发改用上述训练窗口。2019—2023不继续作为开发评分区间，仅可按需作起点前指标预热。"
+  },
+  "exposure_disclosure": "历史已核验2026数据覆盖与质量元信息，并已见2026公开经营信息；此前未将2026价格或策略绩效用于选择，不能笼统称从未接触2026信息。",
+  "unchanged": [
+    "LITE、30分钟RTH决策、允许跨夜、只做多不加杠杆、原资金和执行合同",
+    "每侧0.1%费用、固定1%买入限价溢价",
+    "原收益、相对及绝对回撤、滚动交易频率目标公式；各区间相对门槛依据对应同合同买持重新计算，不沿用旧七年的54.48%或53.87%数值",
+    "原研究额度：本次10轮已启动9轮，余1轮；本次样本修订不计新轮，也不重置额度"
+  ],
+  "scope": "本次仅记录用户样本修订；无新实验、参数搜索、候选选择、测试计算、阶段推进或生产操作。",
+  "prior_mandate": "../deliveries/MANDATE/3/report.md",
+  "prior_closeout": "TEN_ROUND_CLOSEOUT_20261031.md"
+}
