@@ -1,0 +1,44 @@
+{
+  "schema": "s017-volume-census-contract/v1",
+  "strategy_id": "S017",
+  "experiment_id": "EX060_20261101",
+  "signal_start": "2024-01-02",
+  "signal_end": "2025-12-31",
+  "fixed_alpha": 0.3435458360048906,
+  "V1": "E0 AND priorVolume<positive priorSlotMedian20",
+  "V2": "V1 AND positive currentSlotMedian20 AND currentVolume*priorSlotMedian20>priorVolume*currentSlotMedian20",
+  "slot_reference": "Each bar separately:last20 distinct actual observed local days at own America/New_York RTH BarStart slot;exclude own current day;no imputation/epsilon.",
+  "groups": [
+    "E0",
+    "V1",
+    "V2",
+    "E0_NOT_V1",
+    "E0_NOT_V2",
+    "V1_NOT_V2"
+  ],
+  "horizons": [
+    3,
+    13,
+    26,
+    65,
+    130
+  ],
+  "ordinary_reference": "COMMON_ALL5_MATURE_UNIVERSE_EXCLUDING_ALL_RAW_E0",
+  "family_reference": "COMMON_ALL5_MATURE_E0_EXCLUDING_ALL_RAW_CURRENT_TARGET;E0_ITSELF_NOT_APPLICABLE",
+  "matching": [
+    "planned_entry_year_month",
+    "planned_entry_America_New_York_slot"
+  ],
+  "sparse_matching": "Never widen/fallback;show unsupported targets and support coverage;full raw own mean always retained.",
+  "common_cohort": "Allfive label statuses COMPLETE. Samemembers for allfive horizons. This is retrospective diagnostic availability,never entrycondition.",
+  "fixed_nonoverlap": "Chronological raw signals before outcome/completeness;nexti>previousi+131;never replace failure;then intersect commonall5.",
+  "annual_diagnostic": "Signal-year slice of same common/fixed selections and same reference pool;no year refilter/rethin;labels may cross year but never approved trainingend.",
+  "fee_per_side": 0.001,
+  "buy_limit_premium": 0.01,
+  "execution": "Reuse exact EX020 public one-share nextinterval labels,no newTXE paths/SE.",
+  "new_execution_labels": 0,
+  "horizons_are_not_holding_caps": true,
+  "census_is_not_new_financial_gate": true,
+  "feature_sha256": "696e5363fde976c197ede11f5c083db64ec712627e1f6a76a8da6e6c989320ee",
+  "execution_label_sha256": "4b487cef6ec042ed2b58b99113b6657f8ecca3327e66a6535eae7328b18bf5e5"
+}

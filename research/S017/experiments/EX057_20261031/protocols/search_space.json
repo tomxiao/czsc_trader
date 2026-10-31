@@ -1,0 +1,139 @@
+{
+  "schema": "s017-entry-frozen-background-joint/v1",
+  "phase": 3,
+  "raw_source_sha256": "a932d2e28b47c24ec3609c6b2c252bf6fdd69803c4bed9dee5ce611670d16629",
+  "aggregate_source_hash": "6269f767e96e74051487c9999a25c2b7dd25265d95b44565e2b45e6a3973ea0e",
+  "input_sha256": "2d2a98bfe9f04891e47cb6c938d0eb1b27bb28f41622f73aef010ae23d6d717c",
+  "domains": {
+    "alpha": [
+      0.0,
+      2.0
+    ],
+    "initial_fraction": [
+      0.0,
+      1.0
+    ],
+    "accepted_fraction": [
+      0.0,
+      1.0
+    ],
+    "g_when_u": [
+      0.0,
+      1.0
+    ],
+    "g_when_other": [
+      0.0,
+      1.0
+    ]
+  },
+  "initial_anchors": [
+    {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "g_when_u": 0.25,
+      "g_when_other": 0.0
+    },
+    {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "g_when_u": 0.5,
+      "g_when_other": 0.0
+    },
+    {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "g_when_u": 1.0,
+      "g_when_other": 0.0
+    },
+    {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "g_when_u": 0.75,
+      "g_when_other": 0.25
+    },
+    {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "g_when_u": 0.75,
+      "g_when_other": 0.5
+    },
+    {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "g_when_u": 0.75,
+      "g_when_other": 1.0
+    },
+    {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "g_when_u": 0.0,
+      "g_when_other": 0.25
+    },
+    {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "g_when_u": 0.0,
+      "g_when_other": 0.5
+    },
+    {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "g_when_u": 0.0,
+      "g_when_other": 1.0
+    },
+    {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "g_when_u": 0.25,
+      "g_when_other": 0.75
+    },
+    {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "g_when_u": 0.5,
+      "g_when_other": 0.75
+    },
+    {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "g_when_u": 1.0,
+      "g_when_other": 0.75
+    }
+  ],
+  "warm_imported": 4,
+  "initial_new_proposals": 40,
+  "fixed_anchor_proposals": 12,
+  "model_tpe_proposals": 28,
+  "matched_new_max": 6,
+  "study_records_max": 50,
+  "actual_candidate_compute_max": 46,
+  "actual_benchmark_compute_max": 3,
+  "actual_total_compute_max": 49,
+  "segment_unique_limit": 16,
+  "batch": 4,
+  "workers": 4,
+  "native_threads": 1,
+  "seed": 17,
+  "sampler": {
+    "class": "TPESampler",
+    "n_startup_trials": 16,
+    "constant_liar": true,
+    "multivariate": false,
+    "constraints_func": "five normalized original gate signs"
+  },
+  "duplicate_policy": "Existing certified values reused and recorded;unexpected initial duplicate consumes proposal,not silently replaced;actual unique shortfall disclosed",
+  "failure_policy": "Actual start counts;FAIL/unknown preserved,no free retry or silent new Study",
+  "matched_selection": "all COMPLETE with other four original gates pass,max annualized return,tie candidate_id lexicographic;all joint separately retained"
+}

@@ -1,0 +1,174 @@
+{
+  "status": "PASS",
+  "strategy_sha256": "fa96b2ec79a44be1c1397333c6a8c906b57cf2d3738aa7d61b6a601001052b23",
+  "precheck_sha256": "dff574a72827290e2668c26dc4ad52f7b6a88c7d241df13d6c7c0a7d066d8dbc",
+  "control_source_hashes": {
+    "C0163": "54e864ab6a81c9f9dfa4bd6d68c426b3808d3da0f1738f4cfb23b647bf5397f0",
+    "rho0_E0": "f62852377a7921dcca142d176b4ebcbb45b0bedcd730b8aa5584a10888b70400"
+  },
+  "synthetic_old_controls": [
+    "C0163"
+  ],
+  "synthetic_only": true,
+  "accounts": {
+    "C0163": {
+      "parameters": null,
+      "average_decision_bytes": 5206.247340425532,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 5,
+      "support_raises": 9,
+      "forced_public_first_buy_precision": "BAR_INTERVAL",
+      "first_held_peak": 0.0
+    },
+    "C0166": {
+      "parameters": {
+        "entry_mode": "E0",
+        "rho": 0.0,
+        "alpha": 0.0,
+        "initial_fraction": 0.0,
+        "accepted_fraction": 0.0,
+        "progress_protection": 0.0
+      },
+      "average_decision_bytes": 8361.965425531915,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 5,
+      "support_raises": 9,
+      "forced_public_first_buy_precision": "BAR_INTERVAL",
+      "first_held_peak": 0.0
+    },
+    "C0167": {
+      "parameters": {
+        "alpha": 0.3435458360048906,
+        "initial_fraction": 0.42823406094793653,
+        "accepted_fraction": 0.1569056351519751,
+        "progress_protection": 0.0,
+        "entry_mode": "E0",
+        "rho": 0.0
+      },
+      "average_decision_bytes": 8471.90159574468,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 5,
+      "support_raises": 9,
+      "forced_public_first_buy_precision": "BAR_INTERVAL",
+      "first_held_peak": 0.0
+    },
+    "C0168": {
+      "parameters": {
+        "alpha": 0.3435458360048906,
+        "initial_fraction": 0.42823406094793653,
+        "accepted_fraction": 0.1569056351519751,
+        "progress_protection": 0.75,
+        "entry_mode": "E0",
+        "rho": 0.0
+      },
+      "average_decision_bytes": 7106.265957446809,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 6,
+      "support_raises": 2,
+      "forced_public_first_buy_precision": "BAR_INTERVAL",
+      "first_held_peak": 0.0
+    },
+    "C9901": {
+      "parameters": {
+        "entry_mode": "E0",
+        "rho": 0.0,
+        "alpha": 0.0,
+        "initial_fraction": 0.0,
+        "accepted_fraction": 0.0,
+        "progress_protection": 1.0
+      },
+      "average_decision_bytes": 8264.260638297872,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 7,
+      "support_raises": 3,
+      "forced_public_first_buy_precision": "BAR_INTERVAL",
+      "first_held_peak": 0.0
+    },
+    "C9902": {
+      "parameters": {
+        "entry_mode": "E0",
+        "rho": 0.0,
+        "alpha": 0.0,
+        "initial_fraction": 0.0,
+        "accepted_fraction": 1.0,
+        "progress_protection": 1.0
+      },
+      "average_decision_bytes": 7722.752659574468,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 13,
+      "support_raises": 5,
+      "forced_public_first_buy_precision": "BAR_INTERVAL",
+      "first_held_peak": 0.0
+    },
+    "C9903": {
+      "parameters": {
+        "entry_mode": "E0",
+        "rho": 0.0,
+        "alpha": 0.0,
+        "initial_fraction": 0.0,
+        "accepted_fraction": 0.0,
+        "progress_protection": 0.5
+      },
+      "average_decision_bytes": 8330.212765957447,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 7,
+      "support_raises": 8,
+      "forced_public_first_buy_precision": "BAR_INTERVAL",
+      "first_held_peak": 0.0
+    },
+    "C9904": {
+      "parameters": {
+        "alpha": 0.3435458360048906,
+        "initial_fraction": 0.42823406094793653,
+        "accepted_fraction": 0.1569056351519751,
+        "progress_protection": 0.0,
+        "entry_mode": "E0",
+        "rho": 0.5
+      },
+      "average_decision_bytes": 8471.90159574468,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 5,
+      "support_raises": 9,
+      "forced_public_first_buy_precision": "BAR_INTERVAL",
+      "first_held_peak": 0.0
+    },
+    "C9905": {
+      "parameters": {
+        "alpha": 0.3435458360048906,
+        "initial_fraction": 0.42823406094793653,
+        "accepted_fraction": 0.1569056351519751,
+        "progress_protection": 0.75,
+        "entry_mode": "E0",
+        "rho": 0.6666666666666666
+      },
+      "average_decision_bytes": 6508.385638297872,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 4,
+      "support_raises": 1,
+      "forced_public_first_buy_precision": "BAR_INTERVAL",
+      "first_held_peak": 0.0
+    }
+  },
+  "direct_boundaries": [
+    "rho equality passes, greater rejects and rho0 preserves E0",
+    "alpha strict equality and scale0 multiplication",
+    "a0/S0 a1/R and midpoint",
+    "b0/L b1/H and midpoint",
+    "no accepted samebar selfexit",
+    "no implicit max/line naturally rises",
+    "rawS0 vs actual initial line vs accepted pair distinct",
+    "pending cannot overwrite last accepted pair",
+    "current line changes eligible pivot population",
+    "whole entry interval excluded even OPEN",
+    "genuine public BAR_INTERVAL timing inspected",
+    "support equality holds",
+    "a>0 firstexit initial reason",
+    "g1/b1 newpeak equality",
+    "dynamic-only failure vs base failure distinct",
+    "pending L<=dynamic line revoked",
+    "adversarial pending cannot reverse oldline due",
+    "blocked due financial state frozen",
+    "g protects confirmed price advance not net cycle profit"
+  ],
+  "limitations": "Synthetic only; two rho0 complete24 economic projections vs054 E0 before financial interpretation;fixed four enqueued trials only"
+}

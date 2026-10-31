@@ -1,0 +1,1354 @@
+{
+  "C0219": {
+    "parameters": {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "g_when_u": 0.0,
+      "g_when_other": 0.0
+    },
+    "definition": {
+      "runtime_kind": "ACCOUNT_REPLAY",
+      "instrument": {
+        "market": "US",
+        "asset_class": "STOCK",
+        "symbol": "LITE"
+      },
+      "execution_spec": {
+        "market": {
+          "rule_version": "US_EQUITY_V1"
+        },
+        "decision_clock": "30m",
+        "account": {
+          "currency": "USD",
+          "cash_availability": "IMMEDIATE_RESEARCH",
+          "allow_short": false,
+          "allow_negative_cash": false
+        },
+        "quantity_step": 1,
+        "price_tick": 0.01,
+        "buy_premium": 0.01,
+        "slippage_bp": 0.0,
+        "execution": "BAR_RANGE_V1",
+        "inclusive_touch": false,
+        "data_latency_seconds": 0
+      },
+      "warmup_bars": 261,
+      "entrypoint": "strategy:step",
+      "source_files": [
+        "strategy.py"
+      ],
+      "source_sha256": "6269f767e96e74051487c9999a25c2b7dd25265d95b44565e2b45e6a3973ea0e",
+      "parameters_json": "{\"accepted_fraction\":0.1569056351519751,\"alpha\":0.3435458360048906,\"g_when_other\":0.0,\"g_when_u\":0.0,\"initial_fraction\":0.42823406094793653}",
+      "dependencies": [],
+      "contract_version": 4,
+      "parameter_schema_json": "{\"accepted_fraction\":{\"type\":\"number\"},\"alpha\":{\"type\":\"number\"},\"g_when_other\":{\"type\":\"number\"},\"g_when_u\":{\"type\":\"number\"},\"initial_fraction\":{\"type\":\"number\"}}",
+      "feedback_mode": "CONFIRMED_EXECUTION",
+      "analysis_price": "RAW",
+      "explanation_cases": [
+        "flat",
+        "long"
+      ],
+      "feature_graph": {
+        "nodes": [
+          {
+            "kind": "RawField",
+            "key": "close",
+            "field": "Close"
+          },
+          {
+            "kind": "RawField",
+            "key": "opening",
+            "field": "Open"
+          },
+          {
+            "kind": "RawField",
+            "key": "high",
+            "field": "High"
+          },
+          {
+            "kind": "RawField",
+            "key": "low",
+            "field": "Low"
+          },
+          {
+            "kind": "RawField",
+            "key": "volume",
+            "field": "Volume"
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_close",
+            "source": "close",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_open",
+            "source": "opening",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_high",
+            "source": "high",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_low",
+            "source": "low",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "low2",
+            "source": "low",
+            "bars": 2
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_volume",
+            "source": "volume",
+            "bars": 1
+          },
+          {
+            "kind": "TrueRange",
+            "key": "tr",
+            "high": "high",
+            "low": "low",
+            "close": "close"
+          },
+          {
+            "kind": "Mean",
+            "key": "atr13",
+            "source": "tr",
+            "window": 13
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_tr",
+            "source": "tr",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "atr_before_prior",
+            "source": "atr13",
+            "bars": 2
+          },
+          {
+            "kind": "SameLocalSlotMedian",
+            "key": "same_slot_median20",
+            "source": "volume",
+            "sessions": 20,
+            "anchor_lag": 1,
+            "timezone": "America/New_York"
+          },
+          {
+            "kind": "Mean",
+            "key": "ma65",
+            "source": "close",
+            "window": 65
+          },
+          {
+            "kind": "Mean",
+            "key": "ma260",
+            "source": "close",
+            "window": 260
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_ma65",
+            "source": "ma65",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_ma260",
+            "source": "ma260",
+            "bars": 1
+          }
+        ],
+        "outputs": [
+          "close",
+          "high",
+          "low",
+          "previous_low",
+          "low2",
+          "previous_close",
+          "previous_open",
+          "previous_high",
+          "previous_volume",
+          "previous_tr",
+          "atr_before_prior",
+          "same_slot_median20",
+          "previous_ma65",
+          "previous_ma260"
+        ],
+        "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+      },
+      "state_schema": {
+        "account_fields": [],
+        "cycle_fields": [
+          {
+            "key": "holding_bars",
+            "value_type": "int",
+            "nullable": false
+          },
+          {
+            "key": "last_completed_at",
+            "value_type": "datetime",
+            "nullable": false
+          },
+          {
+            "key": "exit_due",
+            "value_type": "bool",
+            "nullable": false
+          },
+          {
+            "key": "initial_support",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "support",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "support_raises",
+            "value_type": "int",
+            "nullable": false
+          },
+          {
+            "key": "exit_reason",
+            "value_type": "str",
+            "nullable": false
+          },
+          {
+            "key": "peak",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "peak_before_last",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "pending_support",
+            "value_type": "bool",
+            "nullable": false
+          },
+          {
+            "key": "candidate_low",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "candidate_high",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "candidate_at",
+            "value_type": "datetime",
+            "nullable": false
+          },
+          {
+            "key": "raw_s0",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "reclaimed_level",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "accepted_active",
+            "value_type": "bool",
+            "nullable": false
+          },
+          {
+            "key": "accepted_low",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "accepted_high",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "accepted_peak_close",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "entry_scale",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "signal_reference_close",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "entry_u",
+            "value_type": "bool",
+            "nullable": false
+          },
+          {
+            "key": "cycle_g",
+            "value_type": "float",
+            "nullable": false
+          }
+        ]
+      },
+      "computation": "STATEFUL_STEP"
+    },
+    "evidence": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S017",
+        "experiment_id": "EX056_20261031"
+      },
+      "evidence_id": "95ab6ed3ab8af76dcfd5ca4a0fb34c9ecf68b1e6ac598e32a88c9a00a6441ffb.json",
+      "sha256": "95ab6ed3ab8af76dcfd5ca4a0fb34c9ecf68b1e6ac598e32a88c9a00a6441ffb",
+      "media_type": "application/json",
+      "name": "formal-C0219",
+      "schema": "equity_research",
+      "schema_version": 4
+    },
+    "evaluation_identity": {
+      "candidate": {
+        "candidate_id": "C0219",
+        "strategy_id": "S017"
+      },
+      "content_sha256": "5728e05a1dafb5ee19bfeefb457f9cb30beec7f52a64fca180c4c2a423cd9d0e",
+      "environment_sha256": "be2aab2fd5115bb6e83e6bbf82382b9c51bd5b548396b260af84e6817b4a4a25",
+      "input_sha256": "a671f92acb0723e4054b26247bca52d39186c3a0f87e25e70a133b48987a242d",
+      "protocol_sha256": "25e89f13bef7e0772860d6556819e0c6523347eca77c5dd6c02bed39450ed7d2"
+    },
+    "evaluation_id": "6974c6ae04b9917ce122d0cb71a15c083fd3c1ebd7d234e0356ba947abef1b94",
+    "request_hash": "25e89f13bef7e0772860d6556819e0c6523347eca77c5dd6c02bed39450ed7d2"
+  },
+  "C0220": {
+    "parameters": {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "g_when_u": 0.75,
+      "g_when_other": 0.75
+    },
+    "definition": {
+      "runtime_kind": "ACCOUNT_REPLAY",
+      "instrument": {
+        "market": "US",
+        "asset_class": "STOCK",
+        "symbol": "LITE"
+      },
+      "execution_spec": {
+        "market": {
+          "rule_version": "US_EQUITY_V1"
+        },
+        "decision_clock": "30m",
+        "account": {
+          "currency": "USD",
+          "cash_availability": "IMMEDIATE_RESEARCH",
+          "allow_short": false,
+          "allow_negative_cash": false
+        },
+        "quantity_step": 1,
+        "price_tick": 0.01,
+        "buy_premium": 0.01,
+        "slippage_bp": 0.0,
+        "execution": "BAR_RANGE_V1",
+        "inclusive_touch": false,
+        "data_latency_seconds": 0
+      },
+      "warmup_bars": 261,
+      "entrypoint": "strategy:step",
+      "source_files": [
+        "strategy.py"
+      ],
+      "source_sha256": "6269f767e96e74051487c9999a25c2b7dd25265d95b44565e2b45e6a3973ea0e",
+      "parameters_json": "{\"accepted_fraction\":0.1569056351519751,\"alpha\":0.3435458360048906,\"g_when_other\":0.75,\"g_when_u\":0.75,\"initial_fraction\":0.42823406094793653}",
+      "dependencies": [],
+      "contract_version": 4,
+      "parameter_schema_json": "{\"accepted_fraction\":{\"type\":\"number\"},\"alpha\":{\"type\":\"number\"},\"g_when_other\":{\"type\":\"number\"},\"g_when_u\":{\"type\":\"number\"},\"initial_fraction\":{\"type\":\"number\"}}",
+      "feedback_mode": "CONFIRMED_EXECUTION",
+      "analysis_price": "RAW",
+      "explanation_cases": [
+        "flat",
+        "long"
+      ],
+      "feature_graph": {
+        "nodes": [
+          {
+            "kind": "RawField",
+            "key": "close",
+            "field": "Close"
+          },
+          {
+            "kind": "RawField",
+            "key": "opening",
+            "field": "Open"
+          },
+          {
+            "kind": "RawField",
+            "key": "high",
+            "field": "High"
+          },
+          {
+            "kind": "RawField",
+            "key": "low",
+            "field": "Low"
+          },
+          {
+            "kind": "RawField",
+            "key": "volume",
+            "field": "Volume"
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_close",
+            "source": "close",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_open",
+            "source": "opening",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_high",
+            "source": "high",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_low",
+            "source": "low",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "low2",
+            "source": "low",
+            "bars": 2
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_volume",
+            "source": "volume",
+            "bars": 1
+          },
+          {
+            "kind": "TrueRange",
+            "key": "tr",
+            "high": "high",
+            "low": "low",
+            "close": "close"
+          },
+          {
+            "kind": "Mean",
+            "key": "atr13",
+            "source": "tr",
+            "window": 13
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_tr",
+            "source": "tr",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "atr_before_prior",
+            "source": "atr13",
+            "bars": 2
+          },
+          {
+            "kind": "SameLocalSlotMedian",
+            "key": "same_slot_median20",
+            "source": "volume",
+            "sessions": 20,
+            "anchor_lag": 1,
+            "timezone": "America/New_York"
+          },
+          {
+            "kind": "Mean",
+            "key": "ma65",
+            "source": "close",
+            "window": 65
+          },
+          {
+            "kind": "Mean",
+            "key": "ma260",
+            "source": "close",
+            "window": 260
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_ma65",
+            "source": "ma65",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_ma260",
+            "source": "ma260",
+            "bars": 1
+          }
+        ],
+        "outputs": [
+          "close",
+          "high",
+          "low",
+          "previous_low",
+          "low2",
+          "previous_close",
+          "previous_open",
+          "previous_high",
+          "previous_volume",
+          "previous_tr",
+          "atr_before_prior",
+          "same_slot_median20",
+          "previous_ma65",
+          "previous_ma260"
+        ],
+        "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+      },
+      "state_schema": {
+        "account_fields": [],
+        "cycle_fields": [
+          {
+            "key": "holding_bars",
+            "value_type": "int",
+            "nullable": false
+          },
+          {
+            "key": "last_completed_at",
+            "value_type": "datetime",
+            "nullable": false
+          },
+          {
+            "key": "exit_due",
+            "value_type": "bool",
+            "nullable": false
+          },
+          {
+            "key": "initial_support",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "support",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "support_raises",
+            "value_type": "int",
+            "nullable": false
+          },
+          {
+            "key": "exit_reason",
+            "value_type": "str",
+            "nullable": false
+          },
+          {
+            "key": "peak",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "peak_before_last",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "pending_support",
+            "value_type": "bool",
+            "nullable": false
+          },
+          {
+            "key": "candidate_low",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "candidate_high",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "candidate_at",
+            "value_type": "datetime",
+            "nullable": false
+          },
+          {
+            "key": "raw_s0",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "reclaimed_level",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "accepted_active",
+            "value_type": "bool",
+            "nullable": false
+          },
+          {
+            "key": "accepted_low",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "accepted_high",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "accepted_peak_close",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "entry_scale",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "signal_reference_close",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "entry_u",
+            "value_type": "bool",
+            "nullable": false
+          },
+          {
+            "key": "cycle_g",
+            "value_type": "float",
+            "nullable": false
+          }
+        ]
+      },
+      "computation": "STATEFUL_STEP"
+    },
+    "evidence": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S017",
+        "experiment_id": "EX056_20261031"
+      },
+      "evidence_id": "067dbd4e5ae5fcb428e8538210b97231c120625fad1209c7b02be5654b561ac3.json",
+      "sha256": "067dbd4e5ae5fcb428e8538210b97231c120625fad1209c7b02be5654b561ac3",
+      "media_type": "application/json",
+      "name": "formal-C0220",
+      "schema": "equity_research",
+      "schema_version": 4
+    },
+    "evaluation_identity": {
+      "candidate": {
+        "candidate_id": "C0220",
+        "strategy_id": "S017"
+      },
+      "content_sha256": "6640c69c559ceefd84fed4138d32a4e1165c2ed6f65265cc03ead0203ec7448e",
+      "environment_sha256": "be2aab2fd5115bb6e83e6bbf82382b9c51bd5b548396b260af84e6817b4a4a25",
+      "input_sha256": "a671f92acb0723e4054b26247bca52d39186c3a0f87e25e70a133b48987a242d",
+      "protocol_sha256": "ca2dce0004ac9f536b2d46dcbf7eb3415bb91fabecbde952fe86968f958e7321"
+    },
+    "evaluation_id": "6ab7b35915ead7fdb07e1d9c023dbf63a5a6046f65af83469e580700fde2255d",
+    "request_hash": "ca2dce0004ac9f536b2d46dcbf7eb3415bb91fabecbde952fe86968f958e7321"
+  },
+  "C0221": {
+    "parameters": {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "g_when_u": 0.0,
+      "g_when_other": 0.75
+    },
+    "definition": {
+      "runtime_kind": "ACCOUNT_REPLAY",
+      "instrument": {
+        "market": "US",
+        "asset_class": "STOCK",
+        "symbol": "LITE"
+      },
+      "execution_spec": {
+        "market": {
+          "rule_version": "US_EQUITY_V1"
+        },
+        "decision_clock": "30m",
+        "account": {
+          "currency": "USD",
+          "cash_availability": "IMMEDIATE_RESEARCH",
+          "allow_short": false,
+          "allow_negative_cash": false
+        },
+        "quantity_step": 1,
+        "price_tick": 0.01,
+        "buy_premium": 0.01,
+        "slippage_bp": 0.0,
+        "execution": "BAR_RANGE_V1",
+        "inclusive_touch": false,
+        "data_latency_seconds": 0
+      },
+      "warmup_bars": 261,
+      "entrypoint": "strategy:step",
+      "source_files": [
+        "strategy.py"
+      ],
+      "source_sha256": "6269f767e96e74051487c9999a25c2b7dd25265d95b44565e2b45e6a3973ea0e",
+      "parameters_json": "{\"accepted_fraction\":0.1569056351519751,\"alpha\":0.3435458360048906,\"g_when_other\":0.75,\"g_when_u\":0.0,\"initial_fraction\":0.42823406094793653}",
+      "dependencies": [],
+      "contract_version": 4,
+      "parameter_schema_json": "{\"accepted_fraction\":{\"type\":\"number\"},\"alpha\":{\"type\":\"number\"},\"g_when_other\":{\"type\":\"number\"},\"g_when_u\":{\"type\":\"number\"},\"initial_fraction\":{\"type\":\"number\"}}",
+      "feedback_mode": "CONFIRMED_EXECUTION",
+      "analysis_price": "RAW",
+      "explanation_cases": [
+        "flat",
+        "long"
+      ],
+      "feature_graph": {
+        "nodes": [
+          {
+            "kind": "RawField",
+            "key": "close",
+            "field": "Close"
+          },
+          {
+            "kind": "RawField",
+            "key": "opening",
+            "field": "Open"
+          },
+          {
+            "kind": "RawField",
+            "key": "high",
+            "field": "High"
+          },
+          {
+            "kind": "RawField",
+            "key": "low",
+            "field": "Low"
+          },
+          {
+            "kind": "RawField",
+            "key": "volume",
+            "field": "Volume"
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_close",
+            "source": "close",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_open",
+            "source": "opening",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_high",
+            "source": "high",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_low",
+            "source": "low",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "low2",
+            "source": "low",
+            "bars": 2
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_volume",
+            "source": "volume",
+            "bars": 1
+          },
+          {
+            "kind": "TrueRange",
+            "key": "tr",
+            "high": "high",
+            "low": "low",
+            "close": "close"
+          },
+          {
+            "kind": "Mean",
+            "key": "atr13",
+            "source": "tr",
+            "window": 13
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_tr",
+            "source": "tr",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "atr_before_prior",
+            "source": "atr13",
+            "bars": 2
+          },
+          {
+            "kind": "SameLocalSlotMedian",
+            "key": "same_slot_median20",
+            "source": "volume",
+            "sessions": 20,
+            "anchor_lag": 1,
+            "timezone": "America/New_York"
+          },
+          {
+            "kind": "Mean",
+            "key": "ma65",
+            "source": "close",
+            "window": 65
+          },
+          {
+            "kind": "Mean",
+            "key": "ma260",
+            "source": "close",
+            "window": 260
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_ma65",
+            "source": "ma65",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_ma260",
+            "source": "ma260",
+            "bars": 1
+          }
+        ],
+        "outputs": [
+          "close",
+          "high",
+          "low",
+          "previous_low",
+          "low2",
+          "previous_close",
+          "previous_open",
+          "previous_high",
+          "previous_volume",
+          "previous_tr",
+          "atr_before_prior",
+          "same_slot_median20",
+          "previous_ma65",
+          "previous_ma260"
+        ],
+        "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+      },
+      "state_schema": {
+        "account_fields": [],
+        "cycle_fields": [
+          {
+            "key": "holding_bars",
+            "value_type": "int",
+            "nullable": false
+          },
+          {
+            "key": "last_completed_at",
+            "value_type": "datetime",
+            "nullable": false
+          },
+          {
+            "key": "exit_due",
+            "value_type": "bool",
+            "nullable": false
+          },
+          {
+            "key": "initial_support",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "support",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "support_raises",
+            "value_type": "int",
+            "nullable": false
+          },
+          {
+            "key": "exit_reason",
+            "value_type": "str",
+            "nullable": false
+          },
+          {
+            "key": "peak",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "peak_before_last",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "pending_support",
+            "value_type": "bool",
+            "nullable": false
+          },
+          {
+            "key": "candidate_low",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "candidate_high",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "candidate_at",
+            "value_type": "datetime",
+            "nullable": false
+          },
+          {
+            "key": "raw_s0",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "reclaimed_level",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "accepted_active",
+            "value_type": "bool",
+            "nullable": false
+          },
+          {
+            "key": "accepted_low",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "accepted_high",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "accepted_peak_close",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "entry_scale",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "signal_reference_close",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "entry_u",
+            "value_type": "bool",
+            "nullable": false
+          },
+          {
+            "key": "cycle_g",
+            "value_type": "float",
+            "nullable": false
+          }
+        ]
+      },
+      "computation": "STATEFUL_STEP"
+    },
+    "evidence": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S017",
+        "experiment_id": "EX056_20261031"
+      },
+      "evidence_id": "8ccd0bee61900ea0245a2f098d3e652c0153a44d3b0f302101e242fcd83b5485.json",
+      "sha256": "8ccd0bee61900ea0245a2f098d3e652c0153a44d3b0f302101e242fcd83b5485",
+      "media_type": "application/json",
+      "name": "formal-C0221",
+      "schema": "equity_research",
+      "schema_version": 4
+    },
+    "evaluation_identity": {
+      "candidate": {
+        "candidate_id": "C0221",
+        "strategy_id": "S017"
+      },
+      "content_sha256": "aa0c9b3cdca40e2d4c37d758a0d9df91e558785e44f3262fa16103dec88752e7",
+      "environment_sha256": "be2aab2fd5115bb6e83e6bbf82382b9c51bd5b548396b260af84e6817b4a4a25",
+      "input_sha256": "a671f92acb0723e4054b26247bca52d39186c3a0f87e25e70a133b48987a242d",
+      "protocol_sha256": "179803834ba24b98f12c04ad4ecb1830494ffd4a777228c2c529157b3ad79bd0"
+    },
+    "evaluation_id": "c8d5eb94e453c0235deba8d0501fde4b79ec2dffdbb4a970a328c27474df759f",
+    "request_hash": "179803834ba24b98f12c04ad4ecb1830494ffd4a777228c2c529157b3ad79bd0"
+  },
+  "C0222": {
+    "parameters": {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "g_when_u": 0.75,
+      "g_when_other": 0.0
+    },
+    "definition": {
+      "runtime_kind": "ACCOUNT_REPLAY",
+      "instrument": {
+        "market": "US",
+        "asset_class": "STOCK",
+        "symbol": "LITE"
+      },
+      "execution_spec": {
+        "market": {
+          "rule_version": "US_EQUITY_V1"
+        },
+        "decision_clock": "30m",
+        "account": {
+          "currency": "USD",
+          "cash_availability": "IMMEDIATE_RESEARCH",
+          "allow_short": false,
+          "allow_negative_cash": false
+        },
+        "quantity_step": 1,
+        "price_tick": 0.01,
+        "buy_premium": 0.01,
+        "slippage_bp": 0.0,
+        "execution": "BAR_RANGE_V1",
+        "inclusive_touch": false,
+        "data_latency_seconds": 0
+      },
+      "warmup_bars": 261,
+      "entrypoint": "strategy:step",
+      "source_files": [
+        "strategy.py"
+      ],
+      "source_sha256": "6269f767e96e74051487c9999a25c2b7dd25265d95b44565e2b45e6a3973ea0e",
+      "parameters_json": "{\"accepted_fraction\":0.1569056351519751,\"alpha\":0.3435458360048906,\"g_when_other\":0.0,\"g_when_u\":0.75,\"initial_fraction\":0.42823406094793653}",
+      "dependencies": [],
+      "contract_version": 4,
+      "parameter_schema_json": "{\"accepted_fraction\":{\"type\":\"number\"},\"alpha\":{\"type\":\"number\"},\"g_when_other\":{\"type\":\"number\"},\"g_when_u\":{\"type\":\"number\"},\"initial_fraction\":{\"type\":\"number\"}}",
+      "feedback_mode": "CONFIRMED_EXECUTION",
+      "analysis_price": "RAW",
+      "explanation_cases": [
+        "flat",
+        "long"
+      ],
+      "feature_graph": {
+        "nodes": [
+          {
+            "kind": "RawField",
+            "key": "close",
+            "field": "Close"
+          },
+          {
+            "kind": "RawField",
+            "key": "opening",
+            "field": "Open"
+          },
+          {
+            "kind": "RawField",
+            "key": "high",
+            "field": "High"
+          },
+          {
+            "kind": "RawField",
+            "key": "low",
+            "field": "Low"
+          },
+          {
+            "kind": "RawField",
+            "key": "volume",
+            "field": "Volume"
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_close",
+            "source": "close",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_open",
+            "source": "opening",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_high",
+            "source": "high",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_low",
+            "source": "low",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "low2",
+            "source": "low",
+            "bars": 2
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_volume",
+            "source": "volume",
+            "bars": 1
+          },
+          {
+            "kind": "TrueRange",
+            "key": "tr",
+            "high": "high",
+            "low": "low",
+            "close": "close"
+          },
+          {
+            "kind": "Mean",
+            "key": "atr13",
+            "source": "tr",
+            "window": 13
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_tr",
+            "source": "tr",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "atr_before_prior",
+            "source": "atr13",
+            "bars": 2
+          },
+          {
+            "kind": "SameLocalSlotMedian",
+            "key": "same_slot_median20",
+            "source": "volume",
+            "sessions": 20,
+            "anchor_lag": 1,
+            "timezone": "America/New_York"
+          },
+          {
+            "kind": "Mean",
+            "key": "ma65",
+            "source": "close",
+            "window": 65
+          },
+          {
+            "kind": "Mean",
+            "key": "ma260",
+            "source": "close",
+            "window": 260
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_ma65",
+            "source": "ma65",
+            "bars": 1
+          },
+          {
+            "kind": "Lag",
+            "key": "previous_ma260",
+            "source": "ma260",
+            "bars": 1
+          }
+        ],
+        "outputs": [
+          "close",
+          "high",
+          "low",
+          "previous_low",
+          "low2",
+          "previous_close",
+          "previous_open",
+          "previous_high",
+          "previous_volume",
+          "previous_tr",
+          "atr_before_prior",
+          "same_slot_median20",
+          "previous_ma65",
+          "previous_ma260"
+        ],
+        "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+      },
+      "state_schema": {
+        "account_fields": [],
+        "cycle_fields": [
+          {
+            "key": "holding_bars",
+            "value_type": "int",
+            "nullable": false
+          },
+          {
+            "key": "last_completed_at",
+            "value_type": "datetime",
+            "nullable": false
+          },
+          {
+            "key": "exit_due",
+            "value_type": "bool",
+            "nullable": false
+          },
+          {
+            "key": "initial_support",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "support",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "support_raises",
+            "value_type": "int",
+            "nullable": false
+          },
+          {
+            "key": "exit_reason",
+            "value_type": "str",
+            "nullable": false
+          },
+          {
+            "key": "peak",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "peak_before_last",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "pending_support",
+            "value_type": "bool",
+            "nullable": false
+          },
+          {
+            "key": "candidate_low",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "candidate_high",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "candidate_at",
+            "value_type": "datetime",
+            "nullable": false
+          },
+          {
+            "key": "raw_s0",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "reclaimed_level",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "accepted_active",
+            "value_type": "bool",
+            "nullable": false
+          },
+          {
+            "key": "accepted_low",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "accepted_high",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "accepted_peak_close",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "entry_scale",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "signal_reference_close",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "entry_u",
+            "value_type": "bool",
+            "nullable": false
+          },
+          {
+            "key": "cycle_g",
+            "value_type": "float",
+            "nullable": false
+          }
+        ]
+      },
+      "computation": "STATEFUL_STEP"
+    },
+    "evidence": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S017",
+        "experiment_id": "EX056_20261031"
+      },
+      "evidence_id": "e46bde8a5ce93b448e35dc1f1628271830b02976eadc0da21971633709eaa43e.json",
+      "sha256": "e46bde8a5ce93b448e35dc1f1628271830b02976eadc0da21971633709eaa43e",
+      "media_type": "application/json",
+      "name": "formal-C0222",
+      "schema": "equity_research",
+      "schema_version": 4
+    },
+    "evaluation_identity": {
+      "candidate": {
+        "candidate_id": "C0222",
+        "strategy_id": "S017"
+      },
+      "content_sha256": "94e390e7e71c5931a8a17f305589b9f19d4917b9fd81d8eadd06aa2d028fa36a",
+      "environment_sha256": "be2aab2fd5115bb6e83e6bbf82382b9c51bd5b548396b260af84e6817b4a4a25",
+      "input_sha256": "a671f92acb0723e4054b26247bca52d39186c3a0f87e25e70a133b48987a242d",
+      "protocol_sha256": "42ae1016138c1166b33cf494ddcbc3ff9ed979fff5729c5012f19fc774374257"
+    },
+    "evaluation_id": "6bdd76df48e98c4403aa1245d4888aeedb769adce626c4fa40e1fd05d75ba27e",
+    "request_hash": "42ae1016138c1166b33cf494ddcbc3ff9ed979fff5729c5012f19fc774374257"
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "schema": "s017-income-joint-components/v1",
+  "phase": 3,
+  "raw_source_sha256": "a932d2e28b47c24ec3609c6b2c252bf6fdd69803c4bed9dee5ce611670d16629",
+  "aggregate_source_hash": "6269f767e96e74051487c9999a25c2b7dd25265d95b44565e2b45e6a3973ea0e",
+  "input_sha256": "2d2a98bfe9f04891e47cb6c938d0eb1b27bb28f41622f73aef010ae23d6d717c",
+  "domains": {
+    "alpha": [
+      0.0,
+      2.0
+    ],
+    "initial_fraction": [
+      0.0,
+      1.0
+    ],
+    "accepted_fraction": [
+      0.0,
+      1.0
+    ],
+    "g_when_u": [
+      0.0,
+      1.0
+    ],
+    "g_when_other": [
+      0.0,
+      1.0
+    ]
+  },
+  "initial_anchors": [],
+  "warm_imported": 69,
+  "initial_new_proposals": 24,
+  "fixed_anchor_proposals": 0,
+  "model_tpe_proposals": 24,
+  "matched_new_max": 6,
+  "study_records_max": 99,
+  "actual_candidate_compute_max": 30,
+  "actual_benchmark_compute_max": 2,
+  "actual_total_compute_max": 32,
+  "segment_unique_limit": 16,
+  "batch": 4,
+  "workers": 4,
+  "native_threads": 1,
+  "seed": 17,
+  "sampler": {
+    "class": "TPESampler",
+    "n_startup_trials": 16,
+    "constant_liar": true,
+    "multivariate": true,
+    "constraints_func": "four normalized original risk/frequency values only;return remains objective;original five AND independent"
+  },
+  "duplicate_policy": "Existing certified values reused and recorded;unexpected initial duplicate consumes proposal,not silently replaced;actual unique shortfall disclosed",
+  "failure_policy": "Actual start counts;FAIL/unknown preserved,no free retry or silent new Study",
+  "matched_selection": "all COMPLETE with other four original gates pass,max annualized return,tie candidate_id lexicographic;all joint separately retained",
+  "sampling_constraints": "four original risk/frequency signs;annualized return stays maximize objective;financial qualification remains all original5",
+  "prior_family": {
+    "family": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S017",
+        "experiment_id": "EX058_20261031"
+      },
+      "evidence_id": "ccebac6cc96449b8d3d1378acd83633594035fe3f3a56b7b751ef2cfbac9ef9c.json",
+      "sha256": "ccebac6cc96449b8d3d1378acd83633594035fe3f3a56b7b751ef2cfbac9ef9c",
+      "media_type": "application/json",
+      "name": "complete-optuna-family",
+      "schema": null,
+      "schema_version": null
+    },
+    "calendar": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S017",
+        "experiment_id": "EX058_20261031"
+      },
+      "evidence_id": "5961fd308cc3489ccc6529f2d14829a0c6b3622b4c62c770fa6db8bbff2ab791.json",
+      "sha256": "5961fd308cc3489ccc6529f2d14829a0c6b3622b4c62c770fa6db8bbff2ab791",
+      "media_type": "application/json",
+      "name": "common-calendar",
+      "schema": null,
+      "schema_version": null
+    },
+    "all_joint_pass_retained": true,
+    "no_stage4_or_test": true
+  },
+  "prior_experiment": "EX058_20261031",
+  "source_unchanged": true,
+  "directions": [
+    "maximize_annualized_return"
+  ],
+  "proposal_changes": [
+    "single_income_objective",
+    "multivariate_shared_observation_components"
+  ],
+  "financial_objectives_preserved": [
+    "annualized_return",
+    "bar_max_drawdown"
+  ],
+  "activation": "EX058_FINAL_ZERO_JOINT_CONFIRMED"
+}
