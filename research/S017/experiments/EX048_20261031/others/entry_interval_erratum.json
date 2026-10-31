@@ -1,0 +1,28 @@
+{
+  "status": "ERRATUM_GUARANTEE_WITHDRAWN",
+  "original_source_sha256": "4de466f6ff5982b2893805d2e41ab2125782c22dd97605d87c6c2425c770b9bf",
+  "original_report": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S017",
+      "experiment_id": "EX048_20261031"
+    },
+    "evidence_id": "66e87f4d1b78668b8096fc37c3ff00a8ba517bf6d771db17be73ffd5af571901.json",
+    "sha256": "66e87f4d1b78668b8096fc37c3ff00a8ba517bf6d771db17be73ffd5af571901",
+    "media_type": "application/json",
+    "name": "experiment-report",
+    "schema": "experiment_report",
+    "schema_version": 1
+  },
+  "unchanged": [
+    "source",
+    "account artifacts",
+    "prior immutable reports",
+    "prior independent audit original"
+  ],
+  "finding": "BAR_INTERVAL cycle_entry/trade.entry_at represents entry interval start, not exact within-bar fill instant. BarStart>=cycle_entry cannot generally exclude pre-fill parts of that interval. Prior direct mock at interval end did not establish real runtime semantics.",
+  "scope": "Withdraw universal true-postfill-complete-bar guarantee for C99 pivot support; existing source-rule ledger/118 raises audit unchanged. No lookahead established: all entry-bar data was completed/visible by decisions.",
+  "observed_ex050_boundary": "All observed BAR_INTERVAL candidate/raise effect counts zero; older strict> alternatives also exclude valid OPEN bars and change economics. Not evidence of old return contamination.",
+  "successor": "EX051 explicitly whole entry interval excluded for all precision types, 4 effective boundary configurations+exact C108 control; not pure economic-equivalent technical fix."
+}

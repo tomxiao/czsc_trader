@@ -3,8 +3,8 @@
   "batch": "S017",
   "numbering_agreed_on": "2026-10-29",
   "policy": "编号只表示身份，不表示质量排名；沟通使用编号和中文说明。相同规则保持编号，实质规则变更另号，旧号不回收。已发布历史材料不重写。",
-  "scope": "EX024至EX047机制身份；旧冻结副本不改，编号非质量排名。",
-  "next_sequence": 51,
+  "scope": "EX024至EX051机制身份；旧冻结副本不改，编号非质量排名。",
+  "next_sequence": 62,
   "definitions": [
     {
       "id": "S017-M001",
@@ -357,6 +357,83 @@
       "role": "EX047降低收益、主要DD不变，目标未达，停止本资格；既有SPY信息非首次发现",
       "origin": "EX047_20261031",
       "definition": "仅真实M005第26完成持仓柱U成立时，以严格早于决策本地日期的20个完整SPY日末点精确匹配LITE主M30日末Close，LITE末/首>1且>SPY末/首才同cycle晋升；20点19间隔，缺失/重复不补；之后只原F，不加相对退出。主273、aux20/432000秒，既有RAW缓存及发布假设保留。"
+    },
+    {
+      "id": "S017-M051",
+      "name": "收复原两柱低点失效且无时限",
+      "role": "EX048正年化依赖末仓、已平整体亏损，五门全失败",
+      "origin": "EX048_20261031",
+      "definition": "复用旧M010原低点结构，取消65cap；M005买后只Close<min前阴Low/信号Low退出，无时间退出。"
+    },
+    {
+      "id": "S017-M052",
+      "name": "成交后更高局部低点确认抬升支撑",
+      "role": "冻结实现保留；BAR_INTERVAL entry区间起点语义使真正postfill完整柱声明待继任修正，金融结论暂缓",
+      "origin": "EX048_20261031",
+      "definition": "M051起点；真实成交后完整三柱严格中间Low小于左右且高于现支撑，右柱完成才单向抬线；无时间退出。"
+    },
+    {
+      "id": "S017-M053",
+      "name": "收复延续的镜像量价反压失效",
+      "role": "EX048频率达标但收益与绝对回撤失败",
+      "origin": "EX048_20261031",
+      "definition": "M051起点；前阳、同槽放量>=1.5及窄TR<=前ATR、当前Close<前Low另退出，结构破优先；无时间退出。"
+    },
+    {
+      "id": "S017-M054",
+      "name": "阳线收复后静态支撑失效",
+      "role": "EX049事前惰性NOT_RUN：原C98全部10实际买信号皆阳，身份保留不算新经济政策",
+      "origin": "EX049_20261031",
+      "definition": "原M005另需当前Close>Open，下一段买，原两柱S0冻结失效，无时间退出。"
+    },
+    {
+      "id": "S017-M055",
+      "name": "收复High后等待回试接受且原结构失效",
+      "role": "EX049五门全失败，已平全部亏损、正收益仍依赖末仓MTM，停止该回试政策",
+      "origin": "EX049_20261031",
+      "definition": "M005仅pending；后续Low<=冻结前阴High且Close>该High并Close>Open才下一段买，原S0失效，newM005优先替换/no samebar buy，无等待或持仓时间cap。"
+    },
+    {
+      "id": "S017-M056",
+      "name": "回试接受后以确认Low失效",
+      "role": "EX049五门全失败，已平全部亏损、正收益仍依赖末仓MTM，停止该回试政策",
+      "origin": "EX049_20261031",
+      "definition": "同M055入口，冻结确认柱Low失效，可能低于原S0不截断，无时间cap。"
+    },
+    {
+      "id": "S017-M057",
+      "name": "M005回调低点经推进高点确认后抬升支撑",
+      "origin": "EX050_20261031",
+      "definition": "原M005/S0；postfill三点更高Low只建候选L，H冻结截至left真实持仓最高High，后Close>H才抬L；Low<L先撤、较高小pivot不替换，无时间cap。",
+      "role": "原050冻结实现保留，理论完整postfill保证撤回；factual BAR_INTERVAL候选影响0，不称收益污染；由051明确整entry区间排除另验"
+    },
+    {
+      "id": "S017-M058",
+      "name": "普通阴线收复配即时局部支撑",
+      "origin": "EX050_20261031",
+      "definition": "旧M006仅前阴Close<Open且当前Close>前High，冻结S0；真实postfill三点更高Low立即抬支撑，与C99仅完整入口不同，无时间cap。",
+      "role": "原050冻结实现保留，理论完整postfill保证撤回；factual BAR_INTERVAL候选影响0，不称收益污染；由051明确整entry区间排除另验"
+    },
+    {
+      "id": "S017-M059",
+      "name": "普通阴线收复配高点接受后支撑",
+      "origin": "EX050_20261031",
+      "definition": "M006入口与M057完整候选/高点接受支撑结合；2x2整体政策之一，非新入场发现/优化。",
+      "role": "原050冻结实现保留，理论完整postfill保证撤回；factual BAR_INTERVAL候选影响0，不称收益污染；由051明确整entry区间排除另验"
+    },
+    {
+      "id": "S017-M060",
+      "name": "整入场区间排除的即时局部低点支撑",
+      "origin": "EX051_20261031",
+      "definition": "M005或旧M006入口，S0冻结；left.BarStart>cycle_entry的严格三点更高Low右柱完成即抬支撑，收盘破位锁存，排整个entry interval含OPEN，无timecap。",
+      "role": "完整2x2经真实BAR_INTERVAL与独立raw状态核验；C113兑现原型DEVELOP仅研究，收益与绝对DD未达"
+    },
+    {
+      "id": "S017-M061",
+      "name": "整入场区间排除的价格接受后支撑",
+      "origin": "EX051_20261031",
+      "definition": "同S0和完整排entry边界；三点更高Low仅候选，H冻结截至left全局持仓推进High，候选破Low先撤/高小pivot忽略，Close>H才升L，无timecap。",
+      "role": "完整2x2经真实BAR_INTERVAL与独立raw状态核验；C113兑现原型DEVELOP仅研究，收益与绝对DD未达"
     }
   ],
   "shared_price_notation": "t为已完成且可用的30m柱。TR=max(High-Low,abs(High-前Close),abs(Low-前Close))，首TR未知；ATR13为13个TR简单均值。全部条件只用当时已知数据；满足后下一段尝试按既定合同买入。"

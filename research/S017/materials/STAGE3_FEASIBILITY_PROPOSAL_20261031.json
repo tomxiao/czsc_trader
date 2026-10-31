@@ -1,6 +1,6 @@
 {
   "schema": "s017-stage-three-feasibility-proposal/v1",
-  "status": "PROPOSED_NOT_AUTHORIZED",
+  "status": "WITHDRAWN",
   "date": "2026-10-31",
   "strategy_id": "S017",
   "executed": false,
@@ -16,9 +16,15 @@
     ],
     "judgment": "C82固定26支持风险和频率职责；C86实际26后持续晋升在重复训练池中将年化提高到175.63%，说明扩大持续上涨参与有完整账户用途，但回撤33.41%、中位3且收益仍低247.63%目标。暂停恢复、无条件新高及两项晋升资格未解决取舍。剩余拟检验问题是持有与趋势观察尺度的联合达标能力，属于阶段三。"
   },
-  "training": ["2024-01-02", "2025-12-31"],
+  "training": [
+    "2024-01-02",
+    "2025-12-31"
+  ],
   "warmup_proposed": "2023-09-01起仅指标预热，以支持获准扩边后的最长780柱；只机械复用S017已有缓存，不评分2023，不新增下载。实际充足性先核验。",
-  "test_sealed": ["2026-01-02", "2026-09-30"],
+  "test_sealed": [
+    "2026-01-02",
+    "2026-09-30"
+  ],
   "fixed_contract": [
     "LITE、30分钟RTH决策、允许跨夜、只做多不加杠杆、整股全资金0/1",
     "每账户100000美元现金零仓空cycle起步，预热不生成持仓或绩效",
@@ -32,9 +38,22 @@
     "PROMOTION": "M005实际成交后完成H柱，仅该次若Close>MA_short>MA_long则晋升持续持有；否则到期退出。晋升后Close<MA_long或MA_short<MA_long退出，等号维持原中间持有区。"
   },
   "initial_domain": {
-    "initial_holding_bars": [13, 26, 39, 65],
-    "short_mean_bars": [26, 65, 130],
-    "long_mean_bars": [130, 260, 520],
+    "initial_holding_bars": [
+      13,
+      26,
+      39,
+      65
+    ],
+    "short_mean_bars": [
+      26,
+      65,
+      130
+    ],
+    "long_mean_bars": [
+      130,
+      260,
+      520
+    ],
     "constraint": "short_mean_bars < long_mean_bars，仅PROMOTION适用",
     "unique_fixed_configurations": 4,
     "unique_promotion_configurations": 32,
@@ -44,9 +63,20 @@
   "expansion": {
     "maximum_additional_unique_configurations": 12,
     "predeclared_outer_values": {
-      "initial_holding_bars": [6, 130],
-      "short_mean_bars": [13, 195, 260],
-      "long_mean_bars": [65, 98, 780]
+      "initial_holding_bars": [
+        6,
+        130
+      ],
+      "short_mean_bars": [
+        13,
+        195,
+        260
+      ],
+      "long_mean_bars": [
+        65,
+        98,
+        780
+      ]
     },
     "rule": "发现暂定边界贴边或边界改善线索时必须实际扩边，仍保持short<long。按原始收益/回撤前沿及原目标缺口选择应核维度，先固定具体对照，再执行；一维对照尽量保持其他配置不变。未覆盖的边界及其原因必须报告。",
     "budget_exhaustion": "必要扩边超过12个额度时，记录未完成范围并交用户决定；不得静默不测、声称域已覆盖或自行扩充预算。"
@@ -71,5 +101,11 @@
     "发现核心依据动摇时提出回到阶段二的具体问题，不能继续扩大搜索掩盖失败。",
     "交付全部达标配置及有关前沿、正式证据与实现身份；后续阶段、封存测试、冻结及生产另行批准。"
   ],
-  "approval_basis": "../../RSCH_AGENT.md第1节与第5.2/5.3节要求阶段推进明确批准。本文件只供评审，未开始阶段三实现、数据准备或搜索。"
+  "approval_basis": "../../RSCH_AGENT.md第1节与第5.2/5.3节要求阶段推进明确批准。本文件只供评审，未开始阶段三实现、数据准备或搜索。",
+  "withdrawal": {
+    "date": "2026-10-31",
+    "reason": "用户明确留阶段二，先定义买入后期待、持有理由与失效，不把26周期当金融逻辑。",
+    "stage3_implementation_or_search_executed": false,
+    "historical_public_snapshots": "保持原件；此仅工作提案撤回，不改旧正式PROTOTYPES/实验。"
+  }
 }

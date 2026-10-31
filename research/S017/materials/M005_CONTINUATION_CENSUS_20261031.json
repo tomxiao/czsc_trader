@@ -1,0 +1,357 @@
+{
+  "schema": "s017-m005-fixed-multiple-horizon-census/v1",
+  "status": "PASS",
+  "source_sha256": "4aac5b6b523e5cd8fae573e77468cafb768c3a5396dc605e04c24a5522ac7120",
+  "parent_signal_diagnostic_sha256": "7228daff67b5a76280f7e2ccca65be6d081e3f49e7a395b4e28ce26cd390fd75",
+  "source_account": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S017",
+      "experiment_id": "EX042_20261031"
+    },
+    "evidence_id": "f5cfba1a42d948f26f9b3506e60b46e37c0a3b1c8f6246b811c4ebbf5d41b388.json",
+    "sha256": "f5cfba1a42d948f26f9b3506e60b46e37c0a3b1c8f6246b811c4ebbf5d41b388",
+    "media_type": "application/json",
+    "name": "formal-C0082",
+    "schema": "equity_research",
+    "schema_version": 4
+  },
+  "source_input_sha256": "2d2a98bfe9f04891e47cb6c938d0eb1b27bb28f41622f73aef010ae23d6d717c",
+  "horizons_predeclared": [
+    3,
+    13,
+    26,
+    65,
+    130
+  ],
+  "training": [
+    "2024-01-02",
+    "2025-12-31"
+  ],
+  "warmup": "2023-11-01 only indicator initialization",
+  "per_horizon": {
+    "3": {
+      "all_signal": {
+        "population": 96,
+        "mature": 96,
+        "unmature": 0,
+        "filled_mature": 96,
+        "mean": -0.001098381456861602,
+        "median": -0.002408362200712444,
+        "positive_fraction": 0.3541666666666667
+      },
+      "ordinary_excludes_all_signals": {
+        "population": 6394,
+        "mature": 6391,
+        "unmature": 3,
+        "filled_mature": 6316,
+        "mean": -0.0008775571789750778,
+        "median": -0.0012933047532019404,
+        "positive_fraction": 0.45250158328055734
+      },
+      "common130_mature_signal": {
+        "population": 96,
+        "mature": 96,
+        "unmature": 0,
+        "filled_mature": 96,
+        "mean": -0.001098381456861602,
+        "median": -0.002408362200712444,
+        "positive_fraction": 0.3541666666666667
+      },
+      "chronological_planned_nonoverlap": {
+        "population": 92,
+        "mature": 92,
+        "unmature": 0,
+        "filled_mature": 92,
+        "mean": -0.0017299333854690804,
+        "median": -0.0025893998642517735,
+        "positive_fraction": 0.34782608695652173
+      },
+      "coarse_control": {
+        "matched_signals": 96,
+        "signal_denominator": 96,
+        "minimum_controls": 53,
+        "mean_difference": -0.00025989890188218227
+      },
+      "years": {
+        "2024": {
+          "population": 49,
+          "mature": 49,
+          "unmature": 0,
+          "filled_mature": 49,
+          "mean": -0.005363686877257356,
+          "median": -0.004212755493055775,
+          "positive_fraction": 0.2653061224489796
+        },
+        "2025": {
+          "population": 47,
+          "mature": 47,
+          "unmature": 0,
+          "filled_mature": 47,
+          "mean": 0.0033484263218488642,
+          "median": -0.0009535702619137831,
+          "positive_fraction": 0.44680851063829785
+        }
+      }
+    },
+    "13": {
+      "all_signal": {
+        "population": 96,
+        "mature": 96,
+        "unmature": 0,
+        "filled_mature": 96,
+        "mean": 0.0019803519341009754,
+        "median": 0.0009344631759953259,
+        "positive_fraction": 0.53125
+      },
+      "ordinary_excludes_all_signals": {
+        "population": 6394,
+        "mature": 6381,
+        "unmature": 13,
+        "filled_mature": 6306,
+        "mean": 0.0028689198378804653,
+        "median": 0.0021568115096253226,
+        "positive_fraction": 0.5285442435775451
+      },
+      "common130_mature_signal": {
+        "population": 96,
+        "mature": 96,
+        "unmature": 0,
+        "filled_mature": 96,
+        "mean": 0.0019803519341009754,
+        "median": 0.0009344631759953259,
+        "positive_fraction": 0.53125
+      },
+      "chronological_planned_nonoverlap": {
+        "population": 74,
+        "mature": 74,
+        "unmature": 0,
+        "filled_mature": 74,
+        "mean": -0.0015721711805125394,
+        "median": 0.0002539020076640641,
+        "positive_fraction": 0.5135135135135135
+      },
+      "coarse_control": {
+        "matched_signals": 96,
+        "signal_denominator": 96,
+        "minimum_controls": 53,
+        "mean_difference": -0.0010660257082786158
+      },
+      "years": {
+        "2024": {
+          "population": 49,
+          "mature": 49,
+          "unmature": 0,
+          "filled_mature": 49,
+          "mean": 0.0002520744479446282,
+          "median": 0.00048503122965537493,
+          "positive_fraction": 0.5102040816326531
+        },
+        "2025": {
+          "population": 47,
+          "mature": 47,
+          "unmature": 0,
+          "filled_mature": 47,
+          "mean": 0.0037821731430724864,
+          "median": 0.003362543976942689,
+          "positive_fraction": 0.5531914893617021
+        }
+      }
+    },
+    "26": {
+      "all_signal": {
+        "population": 96,
+        "mature": 96,
+        "unmature": 0,
+        "filled_mature": 96,
+        "mean": 0.010496800428526801,
+        "median": 0.004057106251922349,
+        "positive_fraction": 0.5625
+      },
+      "ordinary_excludes_all_signals": {
+        "population": 6394,
+        "mature": 6368,
+        "unmature": 26,
+        "filled_mature": 6293,
+        "mean": 0.0076267700097684184,
+        "median": 0.005912848268427862,
+        "positive_fraction": 0.5569680597489274
+      },
+      "common130_mature_signal": {
+        "population": 96,
+        "mature": 96,
+        "unmature": 0,
+        "filled_mature": 96,
+        "mean": 0.010496800428526801,
+        "median": 0.004057106251922349,
+        "positive_fraction": 0.5625
+      },
+      "chronological_planned_nonoverlap": {
+        "population": 58,
+        "mature": 58,
+        "unmature": 0,
+        "filled_mature": 58,
+        "mean": 0.0203592438143999,
+        "median": 0.014098450400914841,
+        "positive_fraction": 0.6379310344827587
+      },
+      "coarse_control": {
+        "matched_signals": 96,
+        "signal_denominator": 96,
+        "minimum_controls": 53,
+        "mean_difference": 0.0030321512556268776
+      },
+      "years": {
+        "2024": {
+          "population": 49,
+          "mature": 49,
+          "unmature": 0,
+          "filled_mature": 49,
+          "mean": 0.0048714020452582255,
+          "median": 0.00039192846789881663,
+          "positive_fraction": 0.5102040816326531
+        },
+        "2025": {
+          "population": 47,
+          "mature": 47,
+          "unmature": 0,
+          "filled_mature": 47,
+          "mean": 0.01636157746640255,
+          "median": 0.013951026871802386,
+          "positive_fraction": 0.6170212765957447
+        }
+      }
+    },
+    "65": {
+      "all_signal": {
+        "population": 96,
+        "mature": 96,
+        "unmature": 0,
+        "filled_mature": 96,
+        "mean": 0.02147108846954298,
+        "median": 0.002600323771351609,
+        "positive_fraction": 0.5
+      },
+      "ordinary_excludes_all_signals": {
+        "population": 6394,
+        "mature": 6329,
+        "unmature": 65,
+        "filled_mature": 6254,
+        "mean": 0.022502713962092604,
+        "median": 0.01788355761387983,
+        "positive_fraction": 0.5887432043492165
+      },
+      "common130_mature_signal": {
+        "population": 96,
+        "mature": 96,
+        "unmature": 0,
+        "filled_mature": 96,
+        "mean": 0.02147108846954298,
+        "median": 0.002600323771351609,
+        "positive_fraction": 0.5
+      },
+      "chronological_planned_nonoverlap": {
+        "population": 43,
+        "mature": 43,
+        "unmature": 0,
+        "filled_mature": 43,
+        "mean": 0.02911546715271289,
+        "median": 0.010837543272468553,
+        "positive_fraction": 0.5348837209302325
+      },
+      "coarse_control": {
+        "matched_signals": 96,
+        "signal_denominator": 96,
+        "minimum_controls": 52,
+        "mean_difference": -0.0008349797195823972
+      },
+      "years": {
+        "2024": {
+          "population": 49,
+          "mature": 49,
+          "unmature": 0,
+          "filled_mature": 49,
+          "mean": 0.006932230786938876,
+          "median": -0.007876146128448558,
+          "positive_fraction": 0.4489795918367347
+        },
+        "2025": {
+          "population": 47,
+          "mature": 47,
+          "unmature": 0,
+          "filled_mature": 47,
+          "mean": 0.03662862094715152,
+          "median": 0.024966696110744424,
+          "positive_fraction": 0.5531914893617021
+        }
+      }
+    },
+    "130": {
+      "all_signal": {
+        "population": 96,
+        "mature": 96,
+        "unmature": 0,
+        "filled_mature": 96,
+        "mean": 0.03520158936818989,
+        "median": 0.03218701229258114,
+        "positive_fraction": 0.6354166666666666
+      },
+      "ordinary_excludes_all_signals": {
+        "population": 6394,
+        "mature": 6264,
+        "unmature": 130,
+        "filled_mature": 6192,
+        "mean": 0.04673448426022944,
+        "median": 0.04723505356198909,
+        "positive_fraction": 0.6377583979328165
+      },
+      "common130_mature_signal": {
+        "population": 96,
+        "mature": 96,
+        "unmature": 0,
+        "filled_mature": 96,
+        "mean": 0.03520158936818989,
+        "median": 0.03218701229258114,
+        "positive_fraction": 0.6354166666666666
+      },
+      "chronological_planned_nonoverlap": {
+        "population": 29,
+        "mature": 29,
+        "unmature": 0,
+        "filled_mature": 29,
+        "mean": 0.05592667690432218,
+        "median": 0.042239202719843716,
+        "positive_fraction": 0.7586206896551724
+      },
+      "coarse_control": {
+        "matched_signals": 96,
+        "signal_denominator": 96,
+        "minimum_controls": 52,
+        "mean_difference": -0.011880355799145724
+      },
+      "years": {
+        "2024": {
+          "population": 49,
+          "mature": 49,
+          "unmature": 0,
+          "filled_mature": 49,
+          "mean": 0.001327425170391745,
+          "median": 0.0022818396081591974,
+          "positive_fraction": 0.5306122448979592
+        },
+        "2025": {
+          "population": 47,
+          "mature": 47,
+          "unmature": 0,
+          "filled_mature": 47,
+          "mean": 0.07051720736163902,
+          "median": 0.06438599493883745,
+          "positive_fraction": 0.7446808510638298
+        }
+      }
+    }
+  },
+  "scope": "All known legal M005 signals, including held signals, unit-event labels using previously verified next-interval1% limit/tick/strict fills and .1% each side; entry to n completed held bars then next interval open. No account, search, horizon recommendation or test access. New policies have financial support/pressure failure, not time exits.",
+  "limitations": "Horizon populations differ at training end; common130 cohort shown. Overlapping events/control reuse are not independent. Greedy nonoverlap uses only planned chronological reservation before filling/maturity, not an account. Ordinary coarse year/signal-slot/fixed1% prior volatility is descriptive, no causality/significance gate. Positive post-entry labels do not supply holding or exit logic; already-reclaimed prior High is not remaining profit."
+}

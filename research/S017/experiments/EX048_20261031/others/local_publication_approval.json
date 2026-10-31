@@ -1,0 +1,6 @@
+{
+  "first_attempt": "REJECTED_BEFORE_EXECUTION",
+  "rejection": "该命令除本地写报告外还会通过 publish_evidence 将内部研究审计结果、账户数据及报告发送到未明确授权的外部/公共目的地；自主研究授权不足以授权这项具体敏感数据披露。",
+  "verified": "evidence_service.py _publish_serialized constructs EvidenceRef relative repository path and _publish_bytes writes repository_root/research with local os.link; no network or external message",
+  "resolution": "Escalated retry allowed after local implementation proof and explicit root authorization; local report/audit published PASS, no external disclosure"
+}

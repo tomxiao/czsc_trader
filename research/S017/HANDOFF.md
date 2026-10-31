@@ -1,5 +1,32 @@
 # S017 研究交接
 
+## 当前：金融原型阶段二交付完成，原五目标未达（2026-10-31，RSCH）
+
+新[四问总报告](materials/STAGE2_FINANCIAL_PROTOTYPE_REVIEW_20261031.md)与[完整机器统计](materials/STAGE2_FINANCIAL_PROTOTYPE_PROGRESS_20261031.json) supersede此前阶段三推荐，旧总结/快照保留。[正式PROTOTYPES修订10](deliveries/PROTOTYPES/10/report.md)自包含FULL校验PASS；[receipt](experiments/EX051_20261031/others/prototype_delivery.json)，内容SHA `2ce11f1457e13fa55c1dac4f8684bd5496ef76c08fa1052b4d45c1cc063325f9`。旧1—9不覆盖，不升级旧资格。
+
+C113＝旧M006普通阴线收复＋更高Low须重新突破此前推进High才接受为支撑；结构素材排整个entry interval（含OPEN），无时间退出/晋升，S0即时有效。C113仅DEVELOP研究原型：年化174.2582%、BAR_CLOSE回撤37.0176%、150闭合、中位18、覆盖100%，末仓0、已平净增646176.75美元，末次正常支撑失效非年末强平。原收益门247.633956%和绝对DD25%仍失败，相对DD及双频率过；不称达标、可采用或生产策略。完整2x2及强同入口C112参照保留，两个入口下接受政策都提高DD。
+
+EX048—051共4组：12新/修订有效经济配置＋4参照＝16正式候选，4次共享买持＝20实际compute，0compute失败；1唯一买持blob/同经济路径，不是独立样本。C102事前惰性NOT_RUN，旧十轮历史不改。各正式报告/公共诊断/独立证据齐；EX050金融时序保证FAIL但金额/原实现PASS，不抹去正式启动。
+
+结构勘误已公开：[EX048新revision/勘误](experiments/EX048_20261031/others/publication.json)撤普遍postfill保证，旧源/账户/报告/审计全保留；EX050原factual BAR_INTERVAL候选/抬线影响0，不能说收益污染。EX051统一strict>连合法OPEN entry也排除，是4项有效经济边界修订，不是等价免费技术重试。[新真实BAR_INTERVAL前检](experiments/EX051_20261031/others/precheck.json)和[独立5ref/7dep全账/443窗/raw峰候选/DD审计](experiments/EX051_20261031/others/independent_validation_publication.json)PASS。
+
+主要DD为2024-02-07—05-31，09-13恢复；既有净浮盈且支撑已抬时仍有显著回吐。完整最差交易/亏损簇/150笔mark回吐/接受到失效/年度费用见总报告附录与独立JSON，全部是旧固定路径描述，不称删除分组可避损。
+
+经济实验已按root决策收敛，不再自添路线或为目标堆门。下一阶段仅建议待用户明确批准后比较：初始失败S0 vs被收复R重新失守；已接受后的深低点L vs最后一次已接受L/H配对冻结H重新失守（不能用pending H）。不设无依据域/额度、不写搜索实现。旧36+12工作提案继续WITHDRAWN，未执行；旧26仅诊断。训练2024—25/必要2023暖机、旧缓存、原执行合同与五门不变，2026测试封存，无新数据/平台/生产/merge/tag/push。本地提交由root统一审阅完成。
+
+## 历史：恢复阶段二，先研究买后延续的金融逻辑（2026-10-31，RSCH）
+
+用户明确恢复研究并自主开展实验，留阶段二，先定义买入后期待、持有理由、失效条件；[新授权](materials/STAGE2_FINANCIAL_LOGIC_RESTART_20261031.json)。工作36+12阶段三提案已WITHDRAWN且从未实现/搜索，旧正式PROTOTYPES及实验快照不改。当前`codex/s017-ten-rounds`基线`ca2e82cf5`。
+
+M005信号已收复前阴High后才买，利润对象是其后继续上涨。EX048三新无时限金融退出已完整运行/公共报告修订与独立原始金融路径审计PASS，联合0达标；原静态低点线正年化依赖期末单仓，已平整体亏损，局部抬线/镜像虽增加闭合却未同时保留收益/风险。C82固定26仅诊断，不因较好而作为可采用默认。[EX048四问报告](experiments/EX048_20261031/report.md)及[发布](experiments/EX048_20261031/others/publication.json)。
+
+EX049两回试新政策+C98静态技术参照完整报告/公开配对诊断/独立pending与冻结线重建PASS，原五门全失败；两新政策已平全亏，正收益仍依赖期末单仓，入口等待不能补兑现职责。阳线附加C102因原C98所有真实买信号均阳线而事前惰性NOT_RUN，身份不回收。[EX049四问报告](experiments/EX049_20261031/report.md)与[发布](experiments/EX049_20261031/others/publication.json)。
+
+EX050的4臂账户计算/控制完成，发现重要金融契约限制：BAR_INTERVAL fill的cycle_entry是entry interval起点；原BarStart>=cycle_entry会纳整entry interval，不能声称其中High/Low都来自真实成交后完整柱。当前数字只作冻结实现结果，C108金融原型判断暂缓，暂停扩展DD解释与新正式运行；等待独立影响定位。最小修正拟全部结构资格改BarStart>cycle_entry保守排整个entry interval，不编造精确fill时点；root将按影响决定保留2x2全臂修正或证明不变后压缩。原源/账户/已公开证据不覆盖，048强postfill断言将用新勘误关联撤回，050首次报告直接披露。
+
+只2024—25训练/必要2023暖机，复用既有S017缓存，2026封存、原五目标和执行合同保持。按需无新固定cap；不阶段三/search/新源/平台/生产/merge/tag/push。报告正文依新指南回答尝试/收获/建议/依据，绩效对照和验证集中附录。下方阶段三待批状态是历史，不代表当前方向。
+
+
 ## 当前：阶段二五组正式交付完成，阶段三待用户批准（2026-10-31，RSCH）
 
 [正式PROTOTYPES修订9](deliveries/PROTOTYPES/9/report.md)及[公开receipt](deliveries/PROTOTYPES/9/receipt.json)已公共装配FULL校验PASS，引用`2c429066731e188fdd29f04e642c46c4e14c795f3ccd71daf3d85cc0ebf468e0`。修订8原件保留，9只纠正正式报告相对导航链接，面板/定义/证据相同，无新账户。此为新训练/新研究自包含当前V4面板，不迁移重签旧1—7、不升级历史资格、无旧V2/V3强制前驱。

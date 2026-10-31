@@ -1,0 +1,65 @@
+{
+  "status": "PASS",
+  "strategy_sha256": "9340b42f0167a741dc34f6e415fa953507034437189814e36e65e3a206b46233",
+  "precheck_sha256": "7751887179cdbde52d6b23ca37172be30bef5de00db45691e6755dd335d2bf68",
+  "synthetic_only": true,
+  "accounts": {
+    "C0101": {
+      "average_decision_bytes": 4506.074468085107,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 3,
+      "module_loads": 1,
+      "retest_confirmations": 0,
+      "support_exits": 1
+    },
+    "C0102": {
+      "average_decision_bytes": 4508.074468085107,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 3,
+      "module_loads": 1,
+      "retest_confirmations": 0,
+      "support_exits": 1
+    },
+    "C0103": {
+      "average_decision_bytes": 4529.606382978724,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 3,
+      "module_loads": 1,
+      "retest_confirmations": 2,
+      "support_exits": 1
+    },
+    "C0104": {
+      "average_decision_bytes": 4519.606382978724,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 3,
+      "module_loads": 1,
+      "retest_confirmations": 2,
+      "support_exits": 1
+    }
+  },
+  "direct_boundaries": [
+    "bullish strict close>open",
+    "same signal never retest",
+    "newM005 replaces before oldcancel/no samebar buy",
+    "pending survives proposed/failed buy",
+    "fresh confirmation required",
+    "close=R not confirmation",
+    "Low=R confirmation",
+    "doji no confirmation",
+    "close=S0 pending holds",
+    "belowS0 cancels",
+    "retestLow belowS0 retained",
+    "realheld clears pending",
+    "support equality holds",
+    "due exit cannot reverse/rebuild"
+  ],
+  "limitations": "Focused public replay and price/volume suffix, not every calendar/event or financial validity",
+  "effective_formal_candidates": [
+    "C0101",
+    "C0103",
+    "C0104"
+  ],
+  "excluded_before_formal": {
+    "C0102": "predeclared but inert on actual C98 path; NOT_RUN identity retained"
+  }
+}

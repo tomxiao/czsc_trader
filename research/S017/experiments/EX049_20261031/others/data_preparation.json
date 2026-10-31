@@ -1,0 +1,55 @@
+{
+  "reference": {
+    "space_id": "a50f7929-988e-4650-af5c-5baee1cd84eb",
+    "preparation_id": "25deca64-3978-46af-8824-ee46d95cf3b9",
+    "manifest_sha256": "a671f92acb0723e4054b26247bca52d39186c3a0f87e25e70a133b48987a242d"
+  },
+  "parent_formal_evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S017",
+      "experiment_id": "EX040_20261031"
+    },
+    "evidence_id": "bd0d57e1bf28d9adbf3c8b6a56597d93a35f25e0be4138a8b06c39cd652249c2.json",
+    "sha256": "bd0d57e1bf28d9adbf3c8b6a56597d93a35f25e0be4138a8b06c39cd652249c2",
+    "media_type": "application/json",
+    "name": "formal-C0077",
+    "schema": "equity_research",
+    "schema_version": 4
+  },
+  "parent_input_sha256": "746259fc49151b37a134b944b99024365a981251a875196c2050ed25054c2689",
+  "status": {
+    "status": "READY",
+    "items": [
+      {
+        "product": "equity.bars",
+        "status": "READY",
+        "error": null,
+        "sha256": "1069ea6528a791491d97149e33c38d3f3d47e2a9fe00488915a3127bc57ed6ee"
+      },
+      {
+        "product": "equity.sessions",
+        "status": "READY",
+        "error": null,
+        "sha256": "55fc5a0d78f358e02f9d2a060acecbdd7d5bb5bc2f19e858378f91d16c855955"
+      },
+      {
+        "product": "equity.actions",
+        "status": "READY",
+        "error": null,
+        "sha256": "8491b14a56b4afd9b481a14fde4c5ab05764664e7e2afdadbf7bef68c3370b95"
+      },
+      {
+        "product": "equity.constraints",
+        "status": "READY",
+        "error": null,
+        "sha256": "f91b6b650ef40ac6941dfddfd7c32fe6add34524f0221d86f775e09bc3ba400f"
+      }
+    ]
+  },
+  "warmup_start": "2023-11-01",
+  "last_date": "2025-12-31",
+  "new_external_downloads": 0,
+  "semantics": "Exact date slice of existing bars/sessions/V4 research rules, original NONE no-event semantics retained with first-window canonical marker; no new historical verification claim"
+}

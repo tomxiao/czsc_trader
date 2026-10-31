@@ -1,0 +1,60 @@
+{
+  "status": "PASS",
+  "strategy_sha256": "4de466f6ff5982b2893805d2e41ab2125782c22dd97605d87c6c2425c770b9bf",
+  "precheck_sha256": "ecf0e4d628d57a6e39137a711a8b8906e147c919efcc2fa5d0b359a1252f42e2",
+  "synthetic_only": true,
+  "accounts": {
+    "C0097": {
+      "average_decision_bytes": 3942.619680851064,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 17,
+      "module_loads": 1,
+      "observed_exit_reasons": [
+        "DIAGNOSTIC_26"
+      ],
+      "support_raise_decisions": 0
+    },
+    "C0098": {
+      "average_decision_bytes": 4020.68085106383,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 3,
+      "module_loads": 1,
+      "observed_exit_reasons": [
+        "INITIAL_SUPPORT_BREAK"
+      ],
+      "support_raise_decisions": 0
+    },
+    "C0099": {
+      "average_decision_bytes": 4017.9148936170213,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 3,
+      "module_loads": 1,
+      "observed_exit_reasons": [
+        "CONFIRMED_HIGHER_SUPPORT_BREAK"
+      ],
+      "support_raise_decisions": 9
+    },
+    "C0100": {
+      "average_decision_bytes": 4018.095744680851,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 3,
+      "module_loads": 1,
+      "observed_exit_reasons": [
+        "OPPOSING_PRESSURE"
+      ],
+      "support_raise_decisions": 0
+    }
+  },
+  "direct_boundaries": [
+    "signal floor frozen proposal",
+    "close=floor holds",
+    "strict pivot left/right equality",
+    "pivot=floor not raised",
+    "all3 BarStart after actual fill",
+    "due no pivot reversal",
+    "mirror prevVol/prevTR equal boundaries",
+    "close=prevLow not pressure",
+    "floor priority when both fail"
+  ],
+  "limitations": "Public replay/price+volume future suffix and direct boundaries, not every calendar/corporate event or economic validity."
+}

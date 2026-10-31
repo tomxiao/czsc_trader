@@ -1,0 +1,68 @@
+{
+  "status": "PASS",
+  "strategy_sha256": "447ea66a6b0a9cc18d12c72fa328f05680fbd1d30b6246f9619c1e55227925da",
+  "precheck_sha256": "b9c6515d9bb25494df694e2060b7cd667587b8fbac697a0c67a7fb047180f97e",
+  "synthetic_only": true,
+  "accounts": {
+    "C0105": {
+      "average_decision_bytes": 5053.351063829788,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 3,
+      "module_loads": 1,
+      "support_raises": 9,
+      "candidate_created": 0,
+      "candidate_cancelled": 0,
+      "candidate_accepted": 0,
+      "support_exit_decisions": 1
+    },
+    "C0106": {
+      "average_decision_bytes": 5108.61170212766,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 3,
+      "module_loads": 1,
+      "support_raises": 7,
+      "candidate_created": 10,
+      "candidate_cancelled": 3,
+      "candidate_accepted": 7,
+      "support_exit_decisions": 1
+    },
+    "C0107": {
+      "average_decision_bytes": 5133.968085106383,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 3,
+      "module_loads": 1,
+      "support_raises": 11,
+      "candidate_created": 0,
+      "candidate_cancelled": 0,
+      "candidate_accepted": 0,
+      "support_exit_decisions": 1
+    },
+    "C0108": {
+      "average_decision_bytes": 5199.54255319149,
+      "price_and_volume_prefix_invariance": "PASS",
+      "fills": 3,
+      "module_loads": 1,
+      "support_raises": 9,
+      "candidate_created": 12,
+      "candidate_cancelled": 3,
+      "candidate_accepted": 9,
+      "support_exit_decisions": 1
+    }
+  },
+  "direct_boundaries": [
+    "strict M006 removes volume/TR only",
+    "same completed right bar may accept",
+    "asof left highest High excludes middle/right",
+    "H frozen and higher pivot ignored",
+    "candidate lowerLow cancels before samebar close>H",
+    "strict Close>H",
+    "strict pivot equality",
+    "pivot=support no upgrade",
+    "truepostfill full left bars only",
+    "partial actualentry bar high excluded",
+    "unfilled proposal no peak activation",
+    "support equality holds",
+    "due no candidate upgrade/reversal"
+  ],
+  "limitations": "Focused synthetic/price+volume suffix/state boundaries, not all calendar/events or financial validity"
+}
