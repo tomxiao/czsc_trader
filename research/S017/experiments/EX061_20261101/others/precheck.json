@@ -1,0 +1,33 @@
+{
+  "status": "PASS",
+  "strategy_sha256": "2e7e19e44f36acf6c3ed6e946cc19034333a2f8bbd33b4b0868d0c47582e03a1",
+  "precheck_sha256": "9b295db3ad392da6b22963bbf23fcf4e3e90a24c2501a349a1fb4ab1b078a29c",
+  "synthetic_only": true,
+  "checked_C_rows": 376,
+  "price_future_suffix": "PASS",
+  "real_first_buy_precision": "BAR_INTERVAL",
+  "real_failed_buy_cycle_absent": true,
+  "real_order_source_frozen_levels_checked_held_decisions": 3,
+  "real_interval_high_low_cross_no_close_exit": true,
+  "real_above_target_buy_retained": true,
+  "actual_exit_reasons": [
+    "INITIAL_STRUCTURE_FAILED",
+    "NONE",
+    "TARGET_REACHED"
+  ],
+  "average_decision_bytes": 3221.526595744681,
+  "direct_boundaries": [
+    "priorATRlag1/meanlag1 independent scalar",
+    "deep<= equality",
+    "strict reclaim/room",
+    "target>=/stop<",
+    "frozen target despite changing mean",
+    "no200daycap",
+    "negative net target space not a gate",
+    "real above-target BUY still target exit with negative net space",
+    "intrabar low/high alone not close exit",
+    "blocked due never reverses"
+  ],
+  "account_compute": 0,
+  "formal_SE": 0
+}

@@ -1,0 +1,136 @@
+{
+  "status": "PASS",
+  "summaries": {
+    "C0321": {
+      "parameters": {
+        "policy": "FROZEN_CENTER_REPAIR"
+      },
+      "candidate": {
+        "annualized_return": 0.5019217046012874,
+        "bar_max_drawdown": 0.4158149416666085,
+        "closed_cycles": 100,
+        "fees": 22835.5310999,
+        "rolling_60_closed_cycle_median": 12,
+        "total_return": 1.248498614001,
+        "ending_equity": 224849.8614001,
+        "ending_quantity": 0,
+        "coverage_at_least_three": 1,
+        "frequency_windows": 443,
+        "holding_bar_fraction": 0.3204930662557781,
+        "mean_invested_equity_fraction": 0.31698168294410495,
+        "year_returns": {
+          "2024": 0.15693464894200004,
+          "2025": 0.9434966495793167
+        },
+        "max_drawdown_path": {
+          "peak": "2025-02-06T21:00:00.000000Z",
+          "trough": "2025-03-10T19:00:00.000000Z",
+          "recovery": "2025-09-29T14:00:00.000000Z"
+        },
+        "trade_pnl": {
+          "closed_net_pnl": 124849.86140010001,
+          "positive_pnl": 291488.9808411,
+          "negative_pnl": -166639.119441,
+          "nonclosed_equity_change": -1.4551915228366852e-11,
+          "win_rate": 0.38,
+          "mean_cycle_net_return": 0.009757574885,
+          "median_cycle_net_return": -0.01290256235,
+          "top_five_positive_pnl_share": 0.41871116533401037
+        },
+        "decision_counts": {
+          "entry_signals": 350,
+          "held_signals_ignored": 249,
+          "flat_signals": 101,
+          "buy_fills": 100,
+          "unfilled_orders": {
+            "LIMIT_NOT_CROSSED": 1
+          }
+        }
+      },
+      "benchmark": {
+        "annualized_return": 1.6508930371568176,
+        "bar_max_drawdown": 0.5351281449250265,
+        "closed_cycles": 0,
+        "fees": 98.124,
+        "rolling_60_closed_cycle_median": 0,
+        "total_return": 5.97307206,
+        "ending_equity": 697307.206,
+        "ending_quantity": 1887,
+        "coverage_at_least_three": 0,
+        "frequency_windows": 443,
+        "holding_bar_fraction": 1,
+        "mean_invested_equity_fraction": 0.9867760090276189,
+        "year_returns": {
+          "2024": 0.6019152600000002,
+          "2025": 3.352959381883908
+        },
+        "max_drawdown_path": {
+          "peak": "2025-01-22T15:00:00.000000Z",
+          "trough": "2025-04-04T15:00:00.000000Z",
+          "recovery": "2025-07-17T16:00:00.000000Z"
+        },
+        "trade_pnl": {
+          "closed_net_pnl": 0.0,
+          "positive_pnl": 0.0,
+          "negative_pnl": 0.0,
+          "nonclosed_equity_change": 597307.206,
+          "win_rate": null,
+          "mean_cycle_net_return": null,
+          "median_cycle_net_return": null,
+          "top_five_positive_pnl_share": null
+        },
+        "decision_counts": {
+          "entry_signals": 0,
+          "held_signals_ignored": 0,
+          "flat_signals": 0,
+          "buy_fills": 1,
+          "unfilled_orders": {}
+        }
+      },
+      "goals": {
+        "annualized_return": false,
+        "relative_drawdown": true,
+        "absolute_drawdown": false,
+        "frequency_median": true,
+        "frequency_coverage": true
+      },
+      "all_goals_met": false
+    }
+  },
+  "source_accounts": {
+    "C0321": {
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S017",
+          "experiment_id": "EX061_20261101"
+        },
+        "evidence_id": "40da55734e5cc983dd41a638900f0a37750406b9df9e1a51cd88a81efeb8ad5e.json",
+        "sha256": "40da55734e5cc983dd41a638900f0a37750406b9df9e1a51cd88a81efeb8ad5e",
+        "media_type": "application/json",
+        "name": "formal-C0321",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "evaluation_identity": {
+        "candidate": {
+          "candidate_id": "C0321",
+          "strategy_id": "S017"
+        },
+        "content_sha256": "d755a2ba372dd0a1f23e20d2f3e93e0248d95aeeab35f507c50b8973efa7eaa3",
+        "environment_sha256": "be2aab2fd5115bb6e83e6bbf82382b9c51bd5b548396b260af84e6817b4a4a25",
+        "input_sha256": "a671f92acb0723e4054b26247bca52d39186c3a0f87e25e70a133b48987a242d",
+        "protocol_sha256": "cfff7092ff2401166949e025acf88a42b0cbd1640c01d4a13925d8a1e73e22ae"
+      },
+      "evaluation_id": "64f04a7eb096f766bae32f3c98520c750a93875699aa5105afde3b2b7b06ef78",
+      "request_hash": "cfff7092ff2401166949e025acf88a42b0cbd1640c01d4a13925d8a1e73e22ae"
+    }
+  },
+  "source_sha256": "e1cb05ab6d6cb71a8ba980455e8ae6619c27f5fe525c99577526b69e35c71036",
+  "elapsed_seconds": 25.381300599779934,
+  "new_economic_policies": 1,
+  "candidate_compute": 1,
+  "benchmark_compute": 1,
+  "same_train_not_independent": true
+}

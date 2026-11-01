@@ -1,5 +1,65 @@
 # S017 研究交接
 
+## 当前：阶段二本批六组完成，目标未达，PROTOTYPES/11正式交付（2026-11-01，RSCH）
+
+[六组四问总报告](materials/STAGE2_MECHANISM_RESEARCH_REVIEW_20261101.md)、[机器统计与全部正式引用](materials/STAGE2_MECHANISM_RESEARCH_REVIEW_20261101.json)及[发布回执](materials/STAGE2_MECHANISM_DELIVERY_20261101.json)均已完成。schema10的[PROTOTYPES/11正式报告](deliveries/PROTOTYPES/11/report.md)为COMPLETE负面空原型面板，FULL校验PASS，精确内容SHA为c70d5e9cae3db66f2da9e15c59e87d1cda903626549fc7561b8f7d153cfca12f；COMPLETE表示本批交付完成，原五门目标仍未达成。
+
+EX061—066共15次实际计算：11候选（9新金融政策、2必要新源控制）及4次共享BH，对应一种经济买持路径；63/64无新策略账户，0联合达标、0正式金融技术失败、无参数搜索或新执行标签。所有六份正式报告、完整定义/源码、V4原账及其所属输入、独立审计/依赖与多期普查随交付保存，旧1—10修订、C113/C179/C222研究参照与原有资格保留。不存在可由本批直接进入阶段三的新完整优势，不注册新候选、不推进阶段三/四。
+
+当前研究状态已通过公共intent更新为STAGE_2_MECHANISM_BATCH_COMPLETE_TARGET_NOT_MET。停止本批精确修复、开盘/前日高点及恢复表达的细调；原30分钟RTH、允许隔夜、2024—2025训练和必要2023预热、2026封存及原资金/成本/执行/五门不变。下一步建议仍在阶段二，以现有训练缓存零新账户拆解LITE隔夜/日内收益与C222实际空仓机会，定位新的收入假设后再实验；这项总体诊断尚未实施，不预设时间优势、不直接设时间规则，不需新外部来源或基本面择时。原SEC提案未获新授权，不启动。
+
+本地研究分支继续为codex/s017-ten-rounds；本批只做本地提交，不合并、tag、推送、冻结或生产。以下保留各项研究过程记录，最新状态以本节、正式回执及当前明确指令为准。
+
+## 当前：本批最后EX066已正式收口，总体负面交付由根终审执行（2026-11-01，RSCH）
+
+[六实验总结](materials/STAGE2_MECHANISM_RESEARCH_REVIEW_20261101.md)与[机器统计](materials/STAGE2_MECHANISM_RESEARCH_REVIEW_20261101.json)已准备完成，空面板装配脚本仅preview，尚未发布总体；根终审后执行。根在正式前增加failedLine初始失败竞争，明确本批止于66；[066协议](experiments/EX066_20261101/protocols/design.md)固定C329关闭恢复精确C222源控制、C330父L、C331恢复线，两新风险职责不扫中间值。3候选+共享BH最多4，本批若全成功累计15compute=11候选（9新金融+2必要控制）+4BH，一种经济基准路径。
+
+watch只由自身真实accepted首次due且父L未破产生，冻结actual support而非oldline；每个Close先撤父L破坏watch，确认flat后首次上cross只消耗一次，E0同刻优先/BUY失败不补。恢复rawS0=L、R=failedLine，但实际initial_support分别L或line，g在proposal冻结且新accepted=False，自身postfill确认后才可再授watch。无旧日期名单、私有执行缓存或影子成交。
+
+[真实公共前检](experiments/EX066_20261101/others/precheck.json)PASS，source25a5…beb28/prechecke2fb…7d0ac，真实watch链/阻SELL父L破/实际E0优先BUY失败后第二cross不补/旧源六表/prefix均过。根明确条件放行后4compute/0失败已完成，控制对原C222候选+BH十二经济投影PASS。[066正式报告](experiments/EX066_20261101/report.md)及[发布校验](experiments/EX066_20261101/others/publication.json)PASS，report SHA2a518a2f3a56ffe4ad458300fbbaabe957745c61011d34abd1cecf7f74335e50。两独立金额/raw原件均public；3对公共诊断齐且补边0compute。C330177.4424%/DD21.1608%、C331171.8704%/DD23.4336%，两者两年收入都低于C329控制186.3551%/DD22.5401%，全部末平且只收入门失败。父L恢复分组净正不代表账户增量，较紧线11恢复全亏；旧C179原Ref同窗合同核对后双指标支配C330。旧007/008负证、E0多期和93b/c01零收益标签可行性均pre_run公共引用，12/11不当新交易/利润。
+
+原训练/2026封存/五门/成本限价0或1资金合同不变，无参数搜索/新源/平台/阶段三四。本批六实验实际15compute=11候选（9新金融、2必要源控制）+4BH，一种经济基准路径；0joint、正式金融技术失败0，无参数搜索/新收益标签。无值得阶段三发展的新完整优势，按约不再新表达或中间参数；旧C113/C222资格不改。根完成schema10 COMPLETE负面空PROTOTYPES最高修订+1/FULL验证、intent更新与本地提交。下一研究问题仅建议阶段二零新账户定位LITE隔夜/日内收益及C222实际空仓机会；尚未诊断，不断言时间优势、不设时间规则、不请求新资源/放宽目标/基本面择时。writer停止写入。
+
+## 当前：EX065前日高点完整机制四格已正式发布（2026-11-01，RSCH）
+
+[065运行前协议](experiments/EX065_20261101/protocols/design.md)已由根明确条件放行，四新完整政策C325—328为UP_CROSS/UP_ACCEPT各配静态冻结H与ACCEPTED高低点接管，4候选+共享BH至多5compute，无搜索/时间cap/目标cap。初始H随原proposal真fill激活，换日不改；actualfill<H不拒绝或重置，Close==H继续持有。
+
+helper只用public27尾窗和真实DecisionPoint.execution_interval/执行session；市场首次独立持仓/未成交，末柱不次日追但held仍按冻结周期H/S判断。[全6490时钟映射](experiments/EX065_20261101/others/all_clock_features_precheck.json)精确113/83，首暖机false。[真实公共四格前检](experiments/EX065_20261101/others/precheck.json)PASS，价格prefix/实际BAR_INTERVAL/失败不补/源H跨日/市场时刻跨政策一致/真实低于H买且等于H持有均覆盖。source c5fda…6b389、helper71db…beece、最终前检b8137…e5419已冻结，正式5compute/0失败完成。[四问报告](experiments/EX065_20261101/report.md)与[REPORT_PUBLICATION](experiments/EX065_20261101/others/publication.json)PASS，report SHA 5f21247001f7f45e27db386dbd3d6fdbe741197afec5915693292521a48afc77。全4账独立金额/原五门/443频窗及市场first/真实H跨日/候选接受均PASS并公共留证，0joint。静态两臂已平净亏/正收益靠末仓且全五门失败；accepted两臂末平有兑现但收入和25%DD失败，等待UP_ACCEPT在同两支撑都收入低/DD高，不构成完整优势。原325到其余3对与补327→328/326→328公共诊断均完成，补边0新账户/SE。writer不继续加条件，根据全四格决定后继。
+
+复用064全锁普查，不选13/26作退出或追加价量门。2024—2025训练/必要2023缓存、2026封存及原五门/0或1资金/费用限价下一段合同不变。纯C222空仓覆盖仅公开背景说明，不筛入口或组成组合；根据全四格和独立证据决定继续/停止，未进阶段三/四或新源。
+
+## 当前：EX064前日RTH区间普查已发布，EX065仅机制设计准备（2026-11-01，RSCH）
+
+[064四问报告](experiments/EX064_20261101/report.md)与[正式发布](experiments/EX064_20261101/others/publication.json)PASS，report SHA 6f060e5a9e5f76db2b3bff279ec30911150dd105a23135f609bba875d810f763。三个固定首事件UP_CROSS/UP_ACCEPT/LOW_REJECT及全部五档、年度、去重普通差保留；独立特征与统计均[公共留证](experiments/EX064_20261101/others/independent_validation_publication.json)，显式保留冻结063统计helper和旧身份备忘。所有公锁src/protocol不改，0新账户/标签/SE。
+
+UP_ACCEPT13/26原始及去重普通差正，去重两个年度均正，是有限机制线索；65/130年度及最长档弱、LOW_REJECT去重13/26/65转负、UP_CROSS长档弱均保留。ordinary仍含同日后续重复谓词，不能把群均值差称纯confirmation因果，不设26周期默认。
+
+根拟下一小型机制对照：UP_ACCEPT与UP_CROSS各配入场冻结前日H失效/已接受更高低点接管，四新完整政策+共享BH最多5compute。当前仅准准备协议/设计给根审，不账户、不优化；market首事件需独立held/失败更新，session_context区分观察日与执行日，末柱不次日追但持仓允许隔夜。新初始H不得随换日重置，严格postentry-L/H core保持，无timer/目标cap。仍阶段二/旧训练缓存/2026封存/原五门与成本执行合同，SEC仍未授权。
+
+## 当前：EX063开盘缺口普查正式收口，阶段二继续（2026-11-01，RSCH）
+
+[063四问报告](experiments/EX063_20261101/report.md)与[正式发布](experiments/EX063_20261101/others/publication.json)PASS，report SHA b2978ad56acb669084692249d8723ca41ef09419ef2de0cdf8fc4043f4fbe0d1。固定G0首柱Low高于前计划RTH收盘、G1再需首柱收涨及旧M025/差集五群；源码/合同/特征先公锁后读旧标签。独立日历纯特征与全部五档/去重/年度/匹配统计均PASS，原件已[公共留证](experiments/EX063_20261101/others/independent_validation_publication.json)。冻结src/protocol未改。
+
+G0/G1及相对旧表达新增38机会的中长档普通增量弱/负，停止两精确表达，不做策略账户。被G1删除51机会的raw13—130及去重65/130正增量仅保留弱线索，年度/权重敏感，不立即反转过滤或设timer。0新账户/0新成交标签/0SE，没有完整新原型或目标达成。
+
+初次锁定WinError5是沙箱本地hardlink权限拒绝；相同公共脚本提升后成功，不算金融失败，公锁b4967591…a944先于标签。根继续独立评估其他阶段二价格问题；此writer不创建后继实验、不动后继目录，已停止写入供根审阅提交。原目标/训练/2026封存与费用执行合同不变，无新外部源/平台/阶段三或四。
+
+## 当前：EX061已发布，EX062有界持有职责竞争已正式收口（2026-11-01，RSCH）
+
+[061四问报告](experiments/EX061_20261101/report.md)与[正式发布](experiments/EX061_20261101/others/publication.json)PASS，report SHA8a50f7bcef9c0232b6eedbea161f6014215c591344067d512a2241b19bd42fe6；独立金额/逐状态原件已公开。冻结中枢修复存在实际已平收益，但C0321仍失败原收入与绝对DD，规则/负证不改写。
+
+根明确放行[062有界协议](experiments/EX062_20261101/protocols/design.md)：同C_room/T/S0入口，C0322为原T修复必要新源控制，C0323无T仅S0删项，C0324无T已接受更高低点接管。三候选+共享BH至多4compute，控制12完整经济投影先guard。strict排entry整区间，冻结截至left峰H、右柱Close>H接受L，未接受候选不是支撑；无时间cap/a-b-g优化/背景/C222组合。
+
+[公共真实前检](experiments/EX062_20261101/others/precheck.json)PASS、根逐源审放行，source74d7e22bd21b25f98ac00959ebe1900f632001a2deda77c0db21ec1793d5998a已冻结，正式4compute/0失败完成。[062四问报告](experiments/EX062_20261101/report.md)与[正式发布](experiments/EX062_20261101/others/publication.json)PASS，report SHA bcbe62b98ae99188092b0fe2d315f62cb13fa8f29f682aa2d068e5d561e0549b；独立全3账金额/频率/12投影及raw候选接受全部PASS并公共留证。C323正年化依赖末仓/频率失败，C324已平改善但双DD与收入失败、2024为负；0joint，按事前停止C表达，不扫pivot/floor/MA补救。根负责其他新问题，本writer不创建或触碰EX063。仅区分修复入口能否承载持续恢复，不预称T过窄、不把新资金路径当延长旧36赢家；复用061普查无新标签分组。原五门/训练/2026封存与执行合同全不变，根据实际结果决定继续或停止。SEC仍未授权不执行，尚无阶段三/四/新源或平台动作。
+
+## 当前：阶段二C冻结中枢修复结果已落，独立机制审核中（2026-11-01，RSCH）
+
+用户已明确授权阶段二自主研究，根已更新公共intent；[EX061协议](experiments/EX061_20261101/protocols/design.md)只含C0321一个新金融政策与共享BH，至多2compute。旧C尺度严格为前SMA65/前ATR13(t−1)，收复且信号Close低于冻结前均价才有剩余毛价目标；冻结T及两柱低点S0，收盘到T兑现或低于S0失效，次段执行、due锁存、无cap/优化/背景组合。真实fill高于T或双费净空间非正也不事后排除。
+
+[先公锁后标签](experiments/EX061_20261101/others/census_pre_run.json)与[三群普查](experiments/EX061_20261101/others/census_publication.json)已留证。room350raw/342共同成熟，不是旧350common同成员；去重年度相反、内族支持稀少的反证保留，不选期限作退出。[真实公共因果前检](experiments/EX061_20261101/others/precheck.json)PASS，source2e7e19…e03a1、precheck9b295…a29c，根与独立审阅无阻断后正式运行完成，2compute/0失败；C0321年化50.1922%、DD41.5815%、100闭合/中位12/覆盖100%，收益与绝对DD失败。期末0股、净增124849.86全已平。公共solo诊断COMPUTED/对账通过；现等独立金额和真实T/S0触发/成本空间审核后发布本轮报告，未改其他源或旧原件。
+
+仍仅2024—2025训练/必要2023缓存暖机、2026封存、原五门与成本执行/全资金0或1只多合同。机制依据与完整策略达标分开；不进入阶段三/四、不新增来源或平台。SEC新源提案仍待授权，不执行且不作为当前下一主线；旧提案/复盘原文保持历史。本轮后续继续/停止由根据正式结果决定，不向用户逐项重问；根统一提交。
+
 ## 当前：054—060批次收口，下一信息研究待授权（2026-11-01，RSCH）
 
 [四问总复盘](materials/ENTRY_EXIT_RESEARCH_REVIEW_20261101.md)和[机器统计/各正式Ref](materials/ENTRY_EXIT_RESEARCH_REVIEW_20261101.json)记录实际123compute=112候选（含9必要新源控制）+11共享BH，一种经济BH路径；导入Study不是新计算或独立样本。0joint，无阶段四候选。最高其余四门合格C222年化186.3551%/DD22.5401%；未达标最高收入C290年化202.7259%/DD35.8591%，仍失败收益与绝对DD。

@@ -1,0 +1,682 @@
+{
+  "C0325": {
+    "runtime_kind": "ACCOUNT_REPLAY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "LITE"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 27,
+    "entrypoint": "strategy:step",
+    "source_files": [
+      "session_features.py",
+      "strategy.py"
+    ],
+    "source_sha256": "fe73995c09d4f5a19ae41157792ecf2820460da81c270099924fbd3a7c3612b4",
+    "parameters_json": "{\"entry\":\"UP_CROSS\",\"support\":\"STATIC_H\"}",
+    "dependencies": [],
+    "contract_version": 4,
+    "parameter_schema_json": "{\"entry\":{\"type\":\"string\"},\"support\":{\"type\":\"string\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "session_context": true,
+    "feature_graph": {
+      "nodes": [
+        {
+          "kind": "RawField",
+          "key": "close",
+          "field": "Close"
+        },
+        {
+          "kind": "RawField",
+          "key": "high",
+          "field": "High"
+        },
+        {
+          "kind": "RawField",
+          "key": "low",
+          "field": "Low"
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_low",
+          "source": "low",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "low2",
+          "source": "low",
+          "bars": 2
+        }
+      ],
+      "outputs": [
+        "close",
+        "high",
+        "low",
+        "previous_low",
+        "low2"
+      ],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [],
+      "cycle_fields": [
+        {
+          "key": "signal_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "reference_prior_day",
+          "value_type": "str",
+          "nullable": false
+        },
+        {
+          "key": "initial_reference_high",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "support",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "last_completed_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "exit_due",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "exit_reason",
+          "value_type": "str",
+          "nullable": false
+        },
+        {
+          "key": "support_raises",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "peak",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "peak_before_last",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "pending_support",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "candidate_low",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "candidate_high",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "candidate_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "accepted_low",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "accepted_high",
+          "value_type": "float",
+          "nullable": false
+        }
+      ]
+    },
+    "computation": "STATEFUL_STEP"
+  },
+  "C0326": {
+    "runtime_kind": "ACCOUNT_REPLAY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "LITE"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 27,
+    "entrypoint": "strategy:step",
+    "source_files": [
+      "session_features.py",
+      "strategy.py"
+    ],
+    "source_sha256": "fe73995c09d4f5a19ae41157792ecf2820460da81c270099924fbd3a7c3612b4",
+    "parameters_json": "{\"entry\":\"UP_CROSS\",\"support\":\"ACCEPTED\"}",
+    "dependencies": [],
+    "contract_version": 4,
+    "parameter_schema_json": "{\"entry\":{\"type\":\"string\"},\"support\":{\"type\":\"string\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "session_context": true,
+    "feature_graph": {
+      "nodes": [
+        {
+          "kind": "RawField",
+          "key": "close",
+          "field": "Close"
+        },
+        {
+          "kind": "RawField",
+          "key": "high",
+          "field": "High"
+        },
+        {
+          "kind": "RawField",
+          "key": "low",
+          "field": "Low"
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_low",
+          "source": "low",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "low2",
+          "source": "low",
+          "bars": 2
+        }
+      ],
+      "outputs": [
+        "close",
+        "high",
+        "low",
+        "previous_low",
+        "low2"
+      ],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [],
+      "cycle_fields": [
+        {
+          "key": "signal_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "reference_prior_day",
+          "value_type": "str",
+          "nullable": false
+        },
+        {
+          "key": "initial_reference_high",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "support",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "last_completed_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "exit_due",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "exit_reason",
+          "value_type": "str",
+          "nullable": false
+        },
+        {
+          "key": "support_raises",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "peak",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "peak_before_last",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "pending_support",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "candidate_low",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "candidate_high",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "candidate_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "accepted_low",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "accepted_high",
+          "value_type": "float",
+          "nullable": false
+        }
+      ]
+    },
+    "computation": "STATEFUL_STEP"
+  },
+  "C0327": {
+    "runtime_kind": "ACCOUNT_REPLAY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "LITE"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 27,
+    "entrypoint": "strategy:step",
+    "source_files": [
+      "session_features.py",
+      "strategy.py"
+    ],
+    "source_sha256": "fe73995c09d4f5a19ae41157792ecf2820460da81c270099924fbd3a7c3612b4",
+    "parameters_json": "{\"entry\":\"UP_ACCEPT\",\"support\":\"STATIC_H\"}",
+    "dependencies": [],
+    "contract_version": 4,
+    "parameter_schema_json": "{\"entry\":{\"type\":\"string\"},\"support\":{\"type\":\"string\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "session_context": true,
+    "feature_graph": {
+      "nodes": [
+        {
+          "kind": "RawField",
+          "key": "close",
+          "field": "Close"
+        },
+        {
+          "kind": "RawField",
+          "key": "high",
+          "field": "High"
+        },
+        {
+          "kind": "RawField",
+          "key": "low",
+          "field": "Low"
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_low",
+          "source": "low",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "low2",
+          "source": "low",
+          "bars": 2
+        }
+      ],
+      "outputs": [
+        "close",
+        "high",
+        "low",
+        "previous_low",
+        "low2"
+      ],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [],
+      "cycle_fields": [
+        {
+          "key": "signal_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "reference_prior_day",
+          "value_type": "str",
+          "nullable": false
+        },
+        {
+          "key": "initial_reference_high",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "support",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "last_completed_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "exit_due",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "exit_reason",
+          "value_type": "str",
+          "nullable": false
+        },
+        {
+          "key": "support_raises",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "peak",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "peak_before_last",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "pending_support",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "candidate_low",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "candidate_high",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "candidate_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "accepted_low",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "accepted_high",
+          "value_type": "float",
+          "nullable": false
+        }
+      ]
+    },
+    "computation": "STATEFUL_STEP"
+  },
+  "C0328": {
+    "runtime_kind": "ACCOUNT_REPLAY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "LITE"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 27,
+    "entrypoint": "strategy:step",
+    "source_files": [
+      "session_features.py",
+      "strategy.py"
+    ],
+    "source_sha256": "fe73995c09d4f5a19ae41157792ecf2820460da81c270099924fbd3a7c3612b4",
+    "parameters_json": "{\"entry\":\"UP_ACCEPT\",\"support\":\"ACCEPTED\"}",
+    "dependencies": [],
+    "contract_version": 4,
+    "parameter_schema_json": "{\"entry\":{\"type\":\"string\"},\"support\":{\"type\":\"string\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "session_context": true,
+    "feature_graph": {
+      "nodes": [
+        {
+          "kind": "RawField",
+          "key": "close",
+          "field": "Close"
+        },
+        {
+          "kind": "RawField",
+          "key": "high",
+          "field": "High"
+        },
+        {
+          "kind": "RawField",
+          "key": "low",
+          "field": "Low"
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_low",
+          "source": "low",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "low2",
+          "source": "low",
+          "bars": 2
+        }
+      ],
+      "outputs": [
+        "close",
+        "high",
+        "low",
+        "previous_low",
+        "low2"
+      ],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [],
+      "cycle_fields": [
+        {
+          "key": "signal_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "reference_prior_day",
+          "value_type": "str",
+          "nullable": false
+        },
+        {
+          "key": "initial_reference_high",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "support",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "last_completed_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "exit_due",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "exit_reason",
+          "value_type": "str",
+          "nullable": false
+        },
+        {
+          "key": "support_raises",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "peak",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "peak_before_last",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "pending_support",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "candidate_low",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "candidate_high",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "candidate_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "accepted_low",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "accepted_high",
+          "value_type": "float",
+          "nullable": false
+        }
+      ]
+    },
+    "computation": "STATEFUL_STEP"
+  }
+}

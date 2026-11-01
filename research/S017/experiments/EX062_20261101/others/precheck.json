@@ -1,0 +1,61 @@
+{
+  "status": "PASS",
+  "strategy_sha256": "74d7e22bd21b25f98ac00959ebe1900f632001a2deda77c0db21ec1793d5998a",
+  "precheck_sha256": "d7feeca42aea6a150d27a647d13315e50005219a05b9f00991fac5979191fe9f",
+  "synthetic_only": true,
+  "synthetic_control_six_economic_tables": {
+    "decisions": true,
+    "orders": true,
+    "fills": true,
+    "account_points": true,
+    "account_daily": true,
+    "trades": true
+  },
+  "competing_public_policies": {
+    "C0323": {
+      "fills": 3,
+      "actual_accepted_raises": 0,
+      "exit_reasons": [
+        "INITIAL_STRUCTURE_FAILED",
+        "NONE"
+      ],
+      "future_prefix": "PASS"
+    },
+    "C0324": {
+      "fills": 9,
+      "actual_accepted_raises": 4,
+      "exit_reasons": [
+        "ACCEPTED_SUPPORT_FAILED",
+        "INITIAL_STRUCTURE_FAILED",
+        "NONE"
+      ],
+      "future_prefix": "PASS"
+    }
+  },
+  "checked_C_rows": 376,
+  "price_future_suffix": "PASS",
+  "real_first_buy_precision": "BAR_INTERVAL",
+  "real_failed_buy_cycle_absent": true,
+  "real_order_source_frozen_levels_checked_held_decisions": 3,
+  "real_interval_high_low_cross_no_close_exit": true,
+  "real_above_target_buy_retained": true,
+  "actual_exit_reasons": [
+    "INITIAL_STRUCTURE_FAILED",
+    "NONE",
+    "TARGET_REACHED"
+  ],
+  "average_decision_bytes": 3962.5159574468084,
+  "direct_boundaries": [
+    "C_room target/stop original061 boundaries",
+    "right simultaneous pivot and acceptance with frozen left H",
+    "H equality",
+    "pending Low break precedes Close>H",
+    "valid candidate not replaced",
+    "old support failure not bypassed",
+    "whole entry interval excluded",
+    "existing due freezes machinery",
+    "noT policies never target exit"
+  ],
+  "account_compute": 0,
+  "formal_SE": 0
+}

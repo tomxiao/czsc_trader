@@ -1,0 +1,159 @@
+{
+  "C0321": {
+    "runtime_kind": "ACCOUNT_REPLAY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "LITE"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 261,
+    "entrypoint": "strategy:step",
+    "source_files": [
+      "strategy.py"
+    ],
+    "source_sha256": "164026fa4d7f8a8d8b3ee83f17be38bec55bcbbefb9a9cefe460366254704211",
+    "parameters_json": "{\"policy\":\"FROZEN_CENTER_REPAIR\"}",
+    "dependencies": [],
+    "contract_version": 4,
+    "parameter_schema_json": "{\"policy\":{\"type\":\"string\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "feature_graph": {
+      "nodes": [
+        {
+          "kind": "RawField",
+          "key": "close",
+          "field": "Close"
+        },
+        {
+          "kind": "RawField",
+          "key": "high",
+          "field": "High"
+        },
+        {
+          "kind": "RawField",
+          "key": "low",
+          "field": "Low"
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_close",
+          "source": "close",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_high",
+          "source": "high",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_low",
+          "source": "low",
+          "bars": 1
+        },
+        {
+          "kind": "Mean",
+          "key": "mean65",
+          "source": "close",
+          "window": 65
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_mean65",
+          "source": "mean65",
+          "bars": 1
+        },
+        {
+          "kind": "TrueRange",
+          "key": "tr",
+          "high": "high",
+          "low": "low",
+          "close": "close"
+        },
+        {
+          "kind": "Mean",
+          "key": "atr13",
+          "source": "tr",
+          "window": 13
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_atr13",
+          "source": "atr13",
+          "bars": 1
+        }
+      ],
+      "outputs": [
+        "close",
+        "low",
+        "previous_close",
+        "previous_high",
+        "previous_low",
+        "previous_mean65",
+        "previous_atr13"
+      ],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [],
+      "cycle_fields": [
+        {
+          "key": "signal_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "frozen_target",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "initial_support",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "last_completed_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "exit_due",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "exit_reason",
+          "value_type": "str",
+          "nullable": false
+        }
+      ]
+    },
+    "computation": "STATEFUL_STEP"
+  }
+}

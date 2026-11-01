@@ -1,0 +1,41 @@
+{
+  "schema": "s017-prior-session-range-census/v1",
+  "experiment_id": "EX064_20261101",
+  "train_start": "2024-01-02",
+  "train_end": "2025-12-31",
+  "horizons": [
+    3,
+    13,
+    26,
+    65,
+    130
+  ],
+  "groups": [
+    "UP_CROSS",
+    "UP_ACCEPT",
+    "LOW_REJECT"
+  ],
+  "universe": "All5486 same-session observations from second complete candle through penultimate;prior completed RTH high/low fully known;543 full grids verified;502 training sessions.",
+  "UP_CROSS": "First perday previousClose<=priorSessionHigh<Close;previous same observed session",
+  "UP_ACCEPT": "First perday Low>priorSessionHigh AND some earlier same observed-session completedClose<=that sameHigh",
+  "LOW_REJECT": "First perday previousClose>=priorSessionLow AND Low<priorSessionLow<Close",
+  "day_reference": "Previous complete RTH high/low keyed by observed-session date,not next execution session;freeze all day",
+  "entry_freshness": "Same-session next execution must exist;never chase final-bar signals next morning;overnight holdings still allowed",
+  "ordinary": "COMMON_ALL5 eligible5486 observations excluding raw union of allthree daily-first events",
+  "inner": {},
+  "matching": [
+    "planned_entry_year_month",
+    "planned_entry_America_New_York_slot"
+  ],
+  "sparse": "No widening,fallback,self-inclusion or zero imputation;all-target mean and supported subset separate",
+  "nonoverlap": "Chronological RAW daily-first events select next old index>previous+131,THEN common all5;never replace failure",
+  "yearly": "Slice the same selected cohorts by signal year;never reselect or use year as gate",
+  "cost": "Reuse one-share oldEX020 nextinterval1pct tickfloor/strictLow touch,.001eachside,nextinterval marketexit",
+  "members": "Common mature cohort is retrospective diagnostic only;repeat predicate matches not separate event entries",
+  "interpretation": "Price-range reference,not volume/cost/participant proof;accept andcross differ in timing/members,not pure confirmation effect;horizon diagnostic,not exitclock",
+  "input_sha256": "2d2a98bfe9f04891e47cb6c938d0eb1b27bb28f41622f73aef010ae23d6d717c",
+  "execution_label_sha256": "4b487cef6ec042ed2b58b99113b6657f8ecca3327e66a6535eae7328b18bf5e5",
+  "new_execution_labels": 0,
+  "new_full_strategy_account_compute": 0,
+  "sealed_test_access": false
+}

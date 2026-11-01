@@ -1,0 +1,48 @@
+{
+  "status": "PASS",
+  "result": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S017",
+      "experiment_id": "EX064_20261101"
+    },
+    "evidence_id": "86cc9e60a884a5e8b8e5103a538ca20598fcdaa6048e9be2ad81132b1130f97e.json",
+    "sha256": "86cc9e60a884a5e8b8e5103a538ca20598fcdaa6048e9be2ad81132b1130f97e",
+    "media_type": "application/json",
+    "name": "previous-RTH-range-fixed-census",
+    "schema": null,
+    "schema_version": null
+  },
+  "public_lock": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S017",
+      "experiment_id": "EX064_20261101"
+    },
+    "evidence_id": "e78cb9d9df1f9f7550c9ccf3183c6f1bcf13791b033b4def8caf00f755e055ad.json",
+    "sha256": "e78cb9d9df1f9f7550c9ccf3183c6f1bcf13791b033b4def8caf00f755e055ad",
+    "media_type": "application/json",
+    "name": "session-range-pre-label-lock",
+    "schema": null,
+    "schema_version": null
+  },
+  "decision": "LIMITED_UP_ACCEPT_MECHANISM_CLUE_NOT_STRATEGY",
+  "fixed_horizons": [
+    3,
+    13,
+    26,
+    65,
+    130
+  ],
+  "limitations": [
+    "UP_ACCEPT13/26 raw and thinned positive including each thinned year;long65/130 not consistently positive",
+    "LOW_REJECT raw positive but thinning flips13/26/65;UP_CROSSlongweak",
+    "ordinary includes later repeat predicates;not pure confirmation causality",
+    "Repeated training with sparse nonoverlap events;no financial adoption conclusion"
+  ],
+  "new_account_compute": 0,
+  "new_execution_labels": 0,
+  "new_SE": 0
+}

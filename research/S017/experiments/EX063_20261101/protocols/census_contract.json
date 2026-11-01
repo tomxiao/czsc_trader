@@ -1,0 +1,46 @@
+{
+  "schema": "s017-opening-acceptance-census/v1",
+  "experiment_id": "EX063_20261101",
+  "train_start": "2024-01-02",
+  "train_end": "2025-12-31",
+  "horizons": [
+    3,
+    13,
+    26,
+    65,
+    130
+  ],
+  "groups": [
+    "G0",
+    "G1",
+    "OLD_M025",
+    "G0_WITHOUT_G1",
+    "G1_NEW_NOT_M025"
+  ],
+  "universe": "All502 exact planned first complete RTH M30 observations;previous observed Date equals previous planned RTH last end;any missing requirement fails.",
+  "G0": "first Low>previous planned session Close;strict equality rejects",
+  "G1": "G0 AND first Close>Open",
+  "OLD_M025": "first Open>=priorClose+lag1 simpleATR13 AND first Close>Open",
+  "G0_WITHOUT_G1": "G0 AND NOT G1;includes doji",
+  "G1_NEW_NOT_M025": "G1 AND NOT OLD_M025;diagnostic new coverage,not new trading filter",
+  "ordinary": "COMMON_ALL5 first openings excluding ALL_RAW union(G0,OLD_M025)",
+  "inner": {
+    "G1": "G0_WITHOUT_G1",
+    "G1_NEW_NOT_M025": "OLD_M025"
+  },
+  "matching": [
+    "planned_entry_year_month",
+    "planned_entry_America_New_York_slot"
+  ],
+  "sparse": "No widening,fallback,self-inclusion or zero imputation;all-target mean and supported subset separate",
+  "nonoverlap": "Chronological RAW signals select next old label index>previous+131,THEN common all5;never replace failed/unmature events",
+  "yearly": "Slice same selected common cohort by signal year;never reselect or use future year as entry gate",
+  "cost": "one-share oldEX020 nextinterval1pct tickfloor/strictLow touch buy,.001eachside,nextinterval market exit",
+  "members": "common-complete diagnostic eligibility is never a trading filter",
+  "interpretation": "Horizon is diagnostic,not exit clock;G0 vsordinary whole-event association,not pure no-fill causal;G1 vsinner conditional association",
+  "input_sha256": "2d2a98bfe9f04891e47cb6c938d0eb1b27bb28f41622f73aef010ae23d6d717c",
+  "execution_label_sha256": "4b487cef6ec042ed2b58b99113b6657f8ecca3327e66a6535eae7328b18bf5e5",
+  "new_execution_labels": 0,
+  "new_full_strategy_account_compute": 0,
+  "sealed_test_access": false
+}

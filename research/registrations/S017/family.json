@@ -4,6 +4,56 @@
   "name": "LITE美股个股30分钟只做多择时研究",
   "research_intent": {
     "accepted_gap_assumption": "完整取数后缺失及零量区间不成交、不进入信号历史；沿用最近有效价并标记陈旧；已知中断另外阻断；不称为完整历史停牌事实。",
+    "active_stage_two_research_20261101": {
+      "allowed": "既有S017缓存价量数据、机制实验、必要完整账户及对照；自主选择与有界迭代",
+      "branch": "codex/s017-ten-rounds",
+      "completed_experiments": [
+        "EX061_20261101",
+        "EX062_20261101",
+        "EX063_20261101",
+        "EX064_20261101",
+        "EX065_20261101",
+        "EX066_20261101"
+      ],
+      "context": "用户确认研究主问题回到阶段二，先检验C修复机制及完整职责，再决定阶段三组合与优化",
+      "excluded": [
+        "新外部数据源",
+        "2026封存样本",
+        "阶段三组合与参数优化",
+        "阶段四",
+        "平台与DEV变更",
+        "生产/PTE",
+        "冻结、合并、tag及推送"
+      ],
+      "final_account_compute": 15,
+      "initial_question": "深偏离后收复能否以冻结原中枢目标与价格失效、无时间上限兑现净修复收益；不预设成立",
+      "latest_delivery": {
+        "batch": {
+          "strategy_id": "S017",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "c70d5e9cae3db66f2da9e15c59e87d1cda903626549fc7561b8f7d153cfca12f",
+        "revision": 11,
+        "stage": "PROTOTYPES",
+        "type": "DeliveryReference"
+      },
+      "objective": "在原五项收益、双回撤和双频率要求下形成值得继续发展的完整原型；达标目标不放宽",
+      "prior_batch_review": "research/S017/materials/ENTRY_EXIT_RESEARCH_REVIEW_20261101.md",
+      "result_key": "stage_two_mechanism_batch_20261101_result",
+      "sealed_test": [
+        "2026-01-02",
+        "2026-09-30"
+      ],
+      "stage": "STAGE_2",
+      "starting_commit": "8b35d46b6",
+      "status": "BATCH_COMPLETE_TARGET_NOT_MET",
+      "training": [
+        "2024-01-02",
+        "2025-12-31"
+      ],
+      "user_statement": "同意，请你围绕产出达标的策略原型，自主开展阶段二的研究",
+      "warmup": "必要2023历史，沿用EX042准备身份"
+    },
     "authorization": {
       "continuation_evidence": {
         "evidence_id": "fd809a5ab580523fbda0ab0a45bdc7fbfe1f3ddac27ab5107090479086da2f6b.md",
@@ -727,11 +777,21 @@
       "research/S017/materials/registration_20261028.md",
       "research/S017/materials/pre_registration_readiness.json"
     ],
-    "next_action": "按事前停止约定，收口低均价突破继续加过滤的路线，保留M017正收益入场线索和M019风险对照，不再以日期、阈值或止损小改动追加实验；不推进阶段三。下一步建议先重新评审收益来源与持有职责：短暂修复能否承担当前高收益及频率目标，或者需要有独立依据的持续持有机制。新方案须区别此前已停止的趋势表达，不能因额度不限重复旧路线；现目标和授权边界保持不变。",
+    "next_action": "保留原目标，停止EX061—066精确表达的细调。建议仍在阶段二，先以既有训练缓存零新账户拆解LITE隔夜/日内收益及C222实际空仓机会，明确新的收入假设后再实验；该总体诊断尚未实施，不预设时间优势或直接设时间规则，不推进阶段三/四、测试或生产。",
     "objective": "LITE 美股个股30分钟只做多择时研究",
     "other_proposals_confirmation": "CONFIRMED",
     "policy_reference": "research/RSCH_AGENT.md#research-policy",
     "prototype_reference": {
+      "batch": {
+        "strategy_id": "S017",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "c70d5e9cae3db66f2da9e15c59e87d1cda903626549fc7561b8f7d153cfca12f",
+      "revision": 11,
+      "stage": "PROTOTYPES",
+      "type": "DeliveryReference"
+    },
+    "prototype_reference_before_20261101_mechanism_closeout": {
       "batch": {
         "strategy_id": "S017",
         "type": "ResearchBatchRef"
@@ -828,7 +888,7 @@
         "2018-12-31"
       ]
     },
-    "stage": "STAGE_2_REPAIR_CONTEXT_COMPETITION_COMPLETE",
+    "stage": "STAGE_2_MECHANISM_BATCH_COMPLETE_TARGET_NOT_MET",
     "stage_two_continuation_authorization": {
       "completed_experiments": [
         "EX029_20261030",
@@ -875,6 +935,153 @@
       "scope": "阶段二证据驱动自主续研；原样本、目标和交易合同保持，不自动进入阶段三",
       "status": "COMPLETED_REVIEWED_NEXT_STEP",
       "user_statement": "不用受额度约束，可以继续开展实验"
+    },
+    "stage_two_mechanism_batch_20261101_result": {
+      "actual_counts": {
+        "account_compute": 15,
+        "benchmark_compute": 4,
+        "candidate_compute": 11,
+        "census_evidence_uses": 5,
+        "distinct_new_fixed_census_groupings": 3,
+        "economic_benchmark_paths": 1,
+        "experiments": 6,
+        "explicit_same_entry_census_reuses": 2,
+        "formal_financial_failures": 0,
+        "joint_pass": 0,
+        "necessary_new_source_controls": 2,
+        "new_execution_labels": 0,
+        "new_financial_policies": 9,
+        "parameter_search_trials": 0
+      },
+      "current_expression_research_stopped": true,
+      "delivery": {
+        "batch": {
+          "strategy_id": "S017",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "c70d5e9cae3db66f2da9e15c59e87d1cda903626549fc7561b8f7d153cfca12f",
+        "revision": 11,
+        "stage": "PROTOTYPES",
+        "type": "DeliveryReference"
+      },
+      "delivery_validation": {
+        "scope": "FULL",
+        "status": "PASS"
+      },
+      "experiments": [
+        "EX061_20261101",
+        "EX062_20261101",
+        "EX063_20261101",
+        "EX064_20261101",
+        "EX065_20261101",
+        "EX066_20261101"
+      ],
+      "goal_met": false,
+      "historical_research_references_preserved": [
+        "C113",
+        "C179",
+        "C222"
+      ],
+      "machine_summary_sha256": "780683491fc93362e930392a3bb3b1c9ae230b1f59cdbe257d502ecc3c05f989",
+      "new_recommended_prototypes": 0,
+      "new_stage3_or_stage4_authorization": false,
+      "next_research_question": {
+        "financial_conclusion": null,
+        "limitations": "No such diagnostic has been done here;no claim overnight has advantage,no time rule,no new resource/source or goal relaxation",
+        "new_account_compute": 0,
+        "new_strategy_prepared": false,
+        "question": "Decompose cached LITE overnight/intraday returns and C222 actual-flat opportunity paths to locate a new income hypothesis",
+        "status": "PROPOSED_ZERO_ACCOUNT_DIAGNOSTIC_NOT_EXECUTED"
+      },
+      "reports": {
+        "EX061_20261101": {
+          "evidence_id": "8a50f7bcef9c0232b6eedbea161f6014215c591344067d512a2241b19bd42fe6.json",
+          "experiment": {
+            "experiment_id": "EX061_20261101",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "8a50f7bcef9c0232b6eedbea161f6014215c591344067d512a2241b19bd42fe6",
+          "type": "EvidenceRef"
+        },
+        "EX062_20261101": {
+          "evidence_id": "bcbe62b98ae99188092b0fe2d315f62cb13fa8f29f682aa2d068e5d561e0549b.json",
+          "experiment": {
+            "experiment_id": "EX062_20261101",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "bcbe62b98ae99188092b0fe2d315f62cb13fa8f29f682aa2d068e5d561e0549b",
+          "type": "EvidenceRef"
+        },
+        "EX063_20261101": {
+          "evidence_id": "b2978ad56acb669084692249d8723ca41ef09419ef2de0cdf8fc4043f4fbe0d1.json",
+          "experiment": {
+            "experiment_id": "EX063_20261101",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "b2978ad56acb669084692249d8723ca41ef09419ef2de0cdf8fc4043f4fbe0d1",
+          "type": "EvidenceRef"
+        },
+        "EX064_20261101": {
+          "evidence_id": "6f060e5a9e5f76db2b3bff279ec30911150dd105a23135f609bba875d810f763.json",
+          "experiment": {
+            "experiment_id": "EX064_20261101",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "6f060e5a9e5f76db2b3bff279ec30911150dd105a23135f609bba875d810f763",
+          "type": "EvidenceRef"
+        },
+        "EX065_20261101": {
+          "evidence_id": "5f21247001f7f45e27db386dbd3d6fdbe741197afec5915693292521a48afc77.json",
+          "experiment": {
+            "experiment_id": "EX065_20261101",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "5f21247001f7f45e27db386dbd3d6fdbe741197afec5915693292521a48afc77",
+          "type": "EvidenceRef"
+        },
+        "EX066_20261101": {
+          "evidence_id": "2a518a2f3a56ffe4ad458300fbbaabe957745c61011d34abd1cecf7f74335e50.json",
+          "experiment": {
+            "experiment_id": "EX066_20261101",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "2a518a2f3a56ffe4ad458300fbbaabe957745c61011d34abd1cecf7f74335e50",
+          "type": "EvidenceRef"
+        }
+      },
+      "status": "COMPLETE_NEGATIVE_NO_NEW_STAGE3_PROTOTYPE",
+      "summary_path": "research/S017/materials/STAGE2_MECHANISM_RESEARCH_REVIEW_20261101.md",
+      "summary_sha256": "36a9ad00eab7c72d59fdda10ba2863b5ff59df5ee3b678ff6d2de12aca59f142"
     },
     "stage_two_result": {
       "account_replay_count": 68,
@@ -1096,5 +1303,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-10-30T19:00:07+08:00"
+  "updated_at": "2026-11-01T18:05:23+08:00"
 }
