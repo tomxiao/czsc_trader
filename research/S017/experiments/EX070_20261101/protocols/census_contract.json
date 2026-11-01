@@ -1,0 +1,52 @@
+{
+  "schema": "s017-e0-consecutive-negative-body-context-census/v1",
+  "experiment_id": "EX070_20261101",
+  "train_start": "2024-01-02",
+  "train_end": "2025-12-31",
+  "horizons": [
+    3,
+    13,
+    26,
+    65,
+    130
+  ],
+  "groups": [
+    "ALL",
+    "SINGLE",
+    "MULTI_FULL",
+    "MULTI_PARTIAL",
+    "FULL"
+  ],
+  "E0": "Exact fixed C222 previousClose<previousOpen and Close-previousHigh>.3435458360048906*simpleATR13[t-2];209 original market signals independent of held/flat.",
+  "negative_run": "From t-1 backwards over consecutive observed RTH candles with Close<Open,across sessions with no reset;stop at actual first Close>=Open;exclude t and nonnegative terminator from runHigh R.",
+  "left_censor": "No real prior nonnegative terminator means undefined runHigh/margin;record separately,never assume FULL or truncate at261/trainingstart. ALL still contains all original209;defined components partition ALL minus any undefined.",
+  "ALL": "All original E0;not a new financial policy.",
+  "SINGLE": "E0 and actual terminated negative run length=1.",
+  "MULTI_FULL": "E0 and actual terminated run length>=2 and currentClose>R,strict.",
+  "MULTI_PARTIAL": "E0 and actual terminated run length>=2 and currentClose<=R,including equality.",
+  "FULL": "SINGLE union MULTI_FULL;mixes length and reclaim context,not pure full-reclaim effect.",
+  "natural_full": "If previousHigh is already R in a multirun,E0 naturally satisfies FULL;separate pure counts,not a new group or gate.",
+  "strength_relation": "MULTI_FULL is delta=Close-previousHigh>R-previousHigh;record runlength/margin/NYslot associations without declaring independent alpha information or adding rules.",
+  "universe": "Original6489 strictly signal_at2024-25 EX020 label observations;C2226490 clock includes one2023 warmup observation,excluded separately.",
+  "entry_contract": "Current original E0 entry time/1pct tickfloor strictLow touch,.001fees eachside;this is not waiting for a PARTIAL signal to later crossR,new timing would need a separate policy.",
+  "ordinary": "COMMON_ALL5 original universe excluding ALL raw E0;per-horizon mature comparison uses its own complete universe minus ALL E0.",
+  "inner": {
+    "MULTI_FULL": "MULTI_PARTIAL",
+    "MULTI_PARTIAL": "MULTI_FULL",
+    "FULL": "MULTI_PARTIAL",
+    "SINGLE": "MULTI_FULL"
+  },
+  "matching": [
+    "planned_entry_year_month",
+    "planned_entry_America_New_York_slot"
+  ],
+  "sparse": "No widening,fallback,self-inclusion or zero imputation;show full target own mean and supported subset/coverage separately.",
+  "nonoverlap": "Chronological RAW each cohort old original index next>previous+131 selected BEFORE completeness;then commonall5 intersection,never replace failure.",
+  "yearly": "Signal-year slice of same preselected common/raw/thin cohorts;no year rethinning or gate.",
+  "interpretation": "Negative bodies can gap upward and need not net decline;no identified selling pressure/orderflow. SAME E0 time context,not a new confirmed-later entry;no horizon-as-timer.",
+  "input_sha256": "2d2a98bfe9f04891e47cb6c938d0eb1b27bb28f41622f73aef010ae23d6d717c",
+  "execution_label_sha256": "4b487cef6ec042ed2b58b99113b6657f8ecca3327e66a6535eae7328b18bf5e5",
+  "new_execution_labels": 0,
+  "new_full_strategy_account_compute": 0,
+  "sealed_test_access": false
+}

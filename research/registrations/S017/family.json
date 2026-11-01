@@ -4,6 +4,50 @@
   "name": "LITE美股个股30分钟只做多择时研究",
   "research_intent": {
     "accepted_gap_assumption": "完整取数后缺失及零量区间不成交、不进入信号历史；沿用最近有效价并标记陈旧；已知中断另外阻断；不称为完整历史停牌事实。",
+    "active_stage_two_opportunity_research_20261101": {
+      "completed_experiments": [
+        "EX067_20261101",
+        "EX068_20261101",
+        "EX069_20261101",
+        "EX070_20261101",
+        "EX071_20261101"
+      ],
+      "execution_and_five_simultaneous_gates_unchanged": true,
+      "final_account_compute": 8,
+      "first_question": "使用既有训练输入及真实C222账本，区分隔夜/日内价格收益、实际持仓归因和空仓机会；据诊断选择可交易收入假设。",
+      "followup_experiments": "RSCH依据诊断自主设计；运行前固定机制、对照、预算和停止条件，公开留证。",
+      "initial_diagnostic_new_account_compute": 0,
+      "latest_delivery": {
+        "batch": {
+          "strategy_id": "S017",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "d330952ec1186978404d15859f5140d987287ce51fad6fcaed6210702b88645b",
+        "revision": 12,
+        "stage": "PROTOTYPES",
+        "type": "DeliveryReference"
+      },
+      "new_external_sources_or_platform_changes_authorized": false,
+      "prior_negative_reports_and_references_preserved": true,
+      "result_key": "stage_two_opportunity_batch_20261101_result",
+      "sealed_test": [
+        "2026-01-02",
+        "2026-09-30"
+      ],
+      "sealed_test_access_authorized": false,
+      "stage": 2,
+      "stage3_stage4_freeze_production_authorized": false,
+      "starting_branch": "codex/s017-ten-rounds",
+      "starting_head": "07ed619e7",
+      "status": "COMPLETE_TARGET_NOT_MET_LIMITED_DEVELOPMENT_PROTOTYPE",
+      "target": "产出满足原全部验收条件的策略原型",
+      "training": [
+        "2024-01-02",
+        "2025-12-31"
+      ],
+      "user_instruction": "同意，先拆解LITE隔夜与日内收益，以及C222空仓时遗漏的机会，根据诊断结果自主推进阶段二研究，目标仍是产出达标策略原型。",
+      "warmup_start": "2023-11-01"
+    },
     "active_stage_two_research_20261101": {
       "allowed": "既有S017缓存价量数据、机制实验、必要完整账户及对照；自主选择与有界迭代",
       "branch": "codex/s017-ten-rounds",
@@ -777,17 +821,26 @@
       "research/S017/materials/registration_20261028.md",
       "research/S017/materials/pre_registration_readiness.json"
     ],
-    "next_action": "保留原目标，停止EX061—066精确表达的细调。建议仍在阶段二，先以既有训练缓存零新账户拆解LITE隔夜/日内收益及C222实际空仓机会，明确新的收入假设后再实验；该总体诊断尚未实施，不预设时间优势或直接设时间规则，不推进阶段三/四、测试或生产。",
+    "next_action": "请求用户审阅PROTOTYPES/12和六参数有界提案，明确是否批准C337进入阶段三；本批仅完成阶段二、目标未达，未启动搜索，最多27compute仅为提案，2026继续封存。",
     "objective": "LITE 美股个股30分钟只做多择时研究",
     "other_proposals_confirmation": "CONFIRMED",
+    "pending_stage_three_mf_context_proposal": {
+      "candidate_compute_limit": 25,
+      "execution_started": false,
+      "path": "research/S017/materials/STAGE3_MF_CONTEXT_OPTIMIZATION_PROPOSAL_20261101.json",
+      "sealed_2026_access": false,
+      "status": "PROPOSED_PENDING_USER_AUTHORIZATION",
+      "total_account_compute_limit": 27,
+      "user_approval_recorded": false
+    },
     "policy_reference": "research/RSCH_AGENT.md#research-policy",
     "prototype_reference": {
       "batch": {
         "strategy_id": "S017",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "c70d5e9cae3db66f2da9e15c59e87d1cda903626549fc7561b8f7d153cfca12f",
-      "revision": 11,
+      "content_sha256": "d330952ec1186978404d15859f5140d987287ce51fad6fcaed6210702b88645b",
+      "revision": 12,
       "stage": "PROTOTYPES",
       "type": "DeliveryReference"
     },
@@ -798,6 +851,16 @@
       },
       "content_sha256": "ec9f16bf61dfcac8d33aaa320e867305da142decb637c14cbbe84470c746a1af",
       "revision": 4,
+      "stage": "PROTOTYPES",
+      "type": "DeliveryReference"
+    },
+    "prototype_reference_before_opportunity_closeout_20261101": {
+      "batch": {
+        "strategy_id": "S017",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "c70d5e9cae3db66f2da9e15c59e87d1cda903626549fc7561b8f7d153cfca12f",
+      "revision": 11,
       "stage": "PROTOTYPES",
       "type": "DeliveryReference"
     },
@@ -888,7 +951,7 @@
         "2018-12-31"
       ]
     },
-    "stage": "STAGE_2_MECHANISM_BATCH_COMPLETE_TARGET_NOT_MET",
+    "stage": "STAGE_2_COMPLETE_C337_DEVELOP_PENDING_STAGE3_APPROVAL",
     "stage_two_continuation_authorization": {
       "completed_experiments": [
         "EX029_20261030",
@@ -1082,6 +1145,132 @@
       "status": "COMPLETE_NEGATIVE_NO_NEW_STAGE3_PROTOTYPE",
       "summary_path": "research/S017/materials/STAGE2_MECHANISM_RESEARCH_REVIEW_20261101.md",
       "summary_sha256": "36a9ad00eab7c72d59fdda10ba2863b5ff59df5ee3b678ff6d2de12aca59f142"
+    },
+    "stage_two_opportunity_batch_20261101_result": {
+      "actual_changed_exit_cycles": 4,
+      "actual_counts": {
+        "account_compute": 8,
+        "benchmark_compute": 2,
+        "candidate_compute": 6,
+        "economic_buyhold_paths": 1,
+        "experiments": 5,
+        "formal_financial_failures": 0,
+        "joint_pass": 0,
+        "new_execution_labels": 0,
+        "new_financial_policies": 4,
+        "new_provider_downloads": 0,
+        "parameter_searches": 0,
+        "technical_source_controls": 2
+      },
+      "annualized_return": 1.9233642595664695,
+      "delivery": {
+        "batch": {
+          "strategy_id": "S017",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "d330952ec1186978404d15859f5140d987287ce51fad6fcaed6210702b88645b",
+        "revision": 12,
+        "stage": "PROTOTYPES",
+        "type": "DeliveryReference"
+      },
+      "delivery_validation": {
+        "scope": "FULL",
+        "status": "PASS"
+      },
+      "development_prototype": "C0337",
+      "experiments": [
+        "EX067_20261101",
+        "EX068_20261101",
+        "EX069_20261101",
+        "EX070_20261101",
+        "EX071_20261101"
+      ],
+      "goal_met": false,
+      "historical_C113_C179_C222_identities_and_eligibility_preserved": true,
+      "materials": {
+        "STAGE2_OPPORTUNITY_RESEARCH_REVIEW_20261101.json": "8e5caf98425113bc6936b1a318138399de4a9fa390ffc6ac5407ea6f6d1bb433",
+        "STAGE2_OPPORTUNITY_RESEARCH_REVIEW_20261101.md": "53e0f1a20e51eb2f2db82df46677de9adaaae1c3a9506cf78a9dad902ff34692",
+        "STAGE3_MF_CONTEXT_OPTIMIZATION_PROPOSAL_20261101.json": "ef4efeabf64a4adb59808c47cac5f72583627ddb83b9900ea92701d29b6338d3"
+      },
+      "maximum_drawdown": 0.22537871538586707,
+      "new_stage3_authorization": false,
+      "new_stage4_authorization": false,
+      "not_independent_validation": true,
+      "qualified_prototypes": 0,
+      "reports": {
+        "EX067_20261101": {
+          "evidence_id": "80f0c9baa4a580fdcf5929c53c58b4f9ff1a7096da1feac979140d51e0fee412.json",
+          "experiment": {
+            "experiment_id": "EX067_20261101",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "80f0c9baa4a580fdcf5929c53c58b4f9ff1a7096da1feac979140d51e0fee412",
+          "type": "EvidenceRef"
+        },
+        "EX068_20261101": {
+          "evidence_id": "7962f56726d4195312bbb7ff9aa8825766e903d8754ca391caa0fb908d2a4469.json",
+          "experiment": {
+            "experiment_id": "EX068_20261101",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "7962f56726d4195312bbb7ff9aa8825766e903d8754ca391caa0fb908d2a4469",
+          "type": "EvidenceRef"
+        },
+        "EX069_20261101": {
+          "evidence_id": "dc500b72dae4eef63293182d5c7aa41a2fe0f50d76d6e7c803134767f7543210.json",
+          "experiment": {
+            "experiment_id": "EX069_20261101",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "dc500b72dae4eef63293182d5c7aa41a2fe0f50d76d6e7c803134767f7543210",
+          "type": "EvidenceRef"
+        },
+        "EX070_20261101": {
+          "evidence_id": "957b9182cbb492aa2b0f6e07d753b257518abd77bf9eb752c5ee3f30f0d1c671.json",
+          "experiment": {
+            "experiment_id": "EX070_20261101",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "957b9182cbb492aa2b0f6e07d753b257518abd77bf9eb752c5ee3f30f0d1c671",
+          "type": "EvidenceRef"
+        },
+        "EX071_20261101": {
+          "evidence_id": "7b42b59743200715273d3eeb8aaa32824eb8d62c4e31b62c1ef82c50954cab8a.json",
+          "experiment": {
+            "experiment_id": "EX071_20261101",
+            "strategy_id": "S017",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "experiment-report",
+          "schema": "experiment_report",
+          "schema_version": 1,
+          "sha256": "7b42b59743200715273d3eeb8aaa32824eb8d62c4e31b62c1ef82c50954cab8a",
+          "type": "EvidenceRef"
+        }
+      },
+      "sealed_2026_access": false,
+      "status": "COMPLETE_LIMITED_IMPROVED_PROTOTYPE_TARGET_NOT_MET"
     },
     "stage_two_result": {
       "account_replay_count": 68,
@@ -1303,5 +1492,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-11-01T18:05:23+08:00"
+  "updated_at": "2026-11-01T23:54:00+08:00"
 }

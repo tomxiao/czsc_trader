@@ -1,0 +1,43 @@
+{
+  "schema": "s017-e0-observed-opening-context-census/v1",
+  "experiment_id": "EX069_20261101",
+  "train_start": "2024-01-02",
+  "train_end": "2025-12-31",
+  "horizons": [
+    3,
+    13,
+    26,
+    65,
+    130
+  ],
+  "groups": [
+    "ALL",
+    "ABOVE_OR_EQUAL",
+    "BELOW"
+  ],
+  "E0": "Exact fixed C222 previousClose<previousOpen and Close-previousHigh>.3435458360048906*simpleATR13[t-2];209 actual original raw signals,independent of held/flat.",
+  "ALL": "All original E0 signals;no new economic policy.",
+  "ABOVE_OR_EQUAL": "E0 and signal completedClose>=first complete RTH Low of signal observed NY day.",
+  "BELOW": "E0 and signal completedClose<first complete RTH Low of signal observed NY day.",
+  "universe": "Original 6489 strictly signal_at2024-25 EX020 label observations;actual C2226490 clock includes one prior2023 warmup observation,which is not an entry and is separately excluded.",
+  "day_reference": "Own observed-session first complete30mLow,not execution session future openingLow;first candle necessarily above-or-equal;previous-session finalClose traded nextOpen still uses old observed day.",
+  "entry_contract": "Original nextinterval1pct tickfloor strictLow touch,.001eachside;actual fill can be below context reference and is never filtered after execution.",
+  "ordinary": "COMMON_ALL5 original full universe excluding ALL raw E0;not only excluded group.",
+  "inner": {
+    "ABOVE_OR_EQUAL": "BELOW",
+    "BELOW": "ABOVE_OR_EQUAL"
+  },
+  "matching": [
+    "planned_entry_year_month",
+    "planned_entry_America_New_York_slot"
+  ],
+  "sparse": "No widening,fallback,self-inclusion or zero imputation;all-target mean and supported subset separate.",
+  "nonoverlap": "Chronological RAW each cohort old original index next>previous+131 selected BEFORE completeness;then commonall5 intersection,never replace failure.",
+  "yearly": "Signal-year slice of fixed common/raw and nonoverlap selections;no year rethinning or rule selection.",
+  "interpretation": "Opening context is not proof of selling pressure or cheap recovery;above may chase;do not select horizon as holding timer or assume a new filter works from negative exit test.",
+  "input_sha256": "2d2a98bfe9f04891e47cb6c938d0eb1b27bb28f41622f73aef010ae23d6d717c",
+  "execution_label_sha256": "4b487cef6ec042ed2b58b99113b6657f8ecca3327e66a6535eae7328b18bf5e5",
+  "new_execution_labels": 0,
+  "new_full_strategy_account_compute": 0,
+  "sealed_test_access": false
+}

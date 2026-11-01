@@ -1,0 +1,128 @@
+{
+  "schema": "s017-mf-context-stage3-proposal/v1",
+  "status": "PROPOSED_PENDING_USER_AUTHORIZATION",
+  "execution_started": false,
+  "strategy_id": "S017",
+  "basis_prototype": "C0337",
+  "basis_report": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S017",
+      "experiment_id": "EX071_20261101"
+    },
+    "evidence_id": "7b42b59743200715273d3eeb8aaa32824eb8d62c4e31b62c1ef82c50954cab8a.json",
+    "sha256": "7b42b59743200715273d3eeb8aaa32824eb8d62c4e31b62c1ef82c50954cab8a",
+    "media_type": "application/json",
+    "name": "experiment-report",
+    "schema": "experiment_report",
+    "schema_version": 1
+  },
+  "objective": "保持原五门同时验收，以C337为基线寻找达标配置，达标后另请阶段四批准。",
+  "reason": "新入场上下文对原风险映射有有限完整增量，允许检验联合参数空间；仅四次退出改动，不预设足以补足收入差距。",
+  "source_change": "新研究实现将固定MF_PROTECT改为显式g_when_mf参数；MF只在proposal选择，实际BUY冻结。旧C337及所有原件不可修改，新实现创建新身份。",
+  "parameters": {
+    "alpha": {
+      "meaning": "前High收复幅度/lag2 ATR13",
+      "domain": [
+        0,
+        2
+      ],
+      "center": 0.3435458360048906
+    },
+    "initial_fraction": {
+      "meaning": "S0至前High的初始失效位置",
+      "domain": [
+        0,
+        1
+      ],
+      "center": 0.42823406094793653
+    },
+    "accepted_fraction": {
+      "meaning": "已接受L至H之间的基础失效位置",
+      "domain": [
+        0,
+        1
+      ],
+      "center": 0.1569056351519751
+    },
+    "g_when_u": {
+      "meaning": "非MF且U为真时新增推进保护比例",
+      "domain": [
+        0,
+        1
+      ],
+      "center": 0.75
+    },
+    "g_when_other": {
+      "meaning": "非MF且U为假时新增推进保护比例",
+      "domain": [
+        0,
+        1
+      ],
+      "center": 0
+    },
+    "g_when_mf": {
+      "meaning": "MF真实入场后冻结的新增推进保护比例",
+      "domain": [
+        0,
+        1
+      ],
+      "center": 0.75
+    }
+  },
+  "population_change": "联合调整alpha会改变E0及MF成员，不是只在当前209个信号、17次g赋值或4笔退出上微调；不得将联合搜索增量纯归为g_when_mf。",
+  "known_equivalences": {
+    "g_when_mf=0_other_parameters_at_center": "旧C0336经济政策",
+    "all_six_parameters_at_center": "旧C0337经济政策；新源必须先等价复现"
+  },
+  "preserved": [
+    "原E0公式与完整MF定义",
+    "原L/H确认与strict post-entry边界",
+    "资金、费用、限价与下一段执行合同",
+    "2024—2025训练与2026封存",
+    "原五门AND"
+  ],
+  "first_batch": {
+    "candidate_compute_limit": 25,
+    "exact_C337_new_source_control": 1,
+    "parameter_evaluations_limit": 24,
+    "economic_equivalent_points_must_be_reported_separately": true,
+    "fixed_MF_axis_points": [
+      0,
+      0.25,
+      0.5,
+      1
+    ],
+    "joint_model_proposals_limit": 20,
+    "benchmark_compute_limit": 2,
+    "total_account_compute_limit": 27,
+    "max_workers": 4,
+    "native_threads_per_worker": 1,
+    "random_seed": 17,
+    "optimizer": "Optuna multivariate TPE;one objective=max net annualized return",
+    "sampler_guidance": "原四项风险/频率违约仅引导采样；最终保持原五门AND，收益门不被抽掉。",
+    "no_automatic_extra_budget_or_domain_expansion": true
+  },
+  "order": [
+    "只在取得用户阶段批准后实现参数接口并做公共因果前检",
+    "同源中心必须完整复现C337候选/BH十二经济表；否则停止搜索并说明",
+    "固定四个MF轴点和20个联合模型提案，同实现正式账户评价；失败/重复如实记账不免费补点",
+    "完整报告达标、未达标、收益集中与选择史；不自动进入阶段四或读取封存样本"
+  ],
+  "excluded": [
+    "新入场族",
+    "时间cap或按盈利标签设期限",
+    "run长度或阈值搜索",
+    "新外部数据/依赖",
+    "平台/生产变更",
+    "自动阶段四/冻结/合并/推送"
+  ],
+  "sealed_2026_access": false,
+  "new_external_sources": false,
+  "required_authorization": {
+    "source": "research/RSCH_AGENT.md §1",
+    "instruction": "每阶段结束后呈现成果，取得明确批准才能进入下一阶段。",
+    "user_current_scope": "自主推进阶段二；未在本批获得新阶段三批准"
+  }
+}

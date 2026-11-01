@@ -1,0 +1,959 @@
+{
+  "C0335": {
+    "runtime_kind": "ACCOUNT_REPLAY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "LITE"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 261,
+    "entrypoint": "strategy:step",
+    "source_files": [
+      "negative_run.py",
+      "strategy.py"
+    ],
+    "source_sha256": "5cde8aa1aa67c120fddf7e546775e40972de3b23e3cc598a8c5e59a797f3b461",
+    "parameters_json": "{\"accepted_fraction\":0.1569056351519751,\"alpha\":0.3435458360048906,\"g_when_other\":0.0,\"g_when_u\":0.75,\"initial_fraction\":0.42823406094793653,\"multi_full_mode\":\"KEEP\"}",
+    "dependencies": [],
+    "contract_version": 4,
+    "parameter_schema_json": "{\"accepted_fraction\":{\"type\":\"number\"},\"alpha\":{\"type\":\"number\"},\"g_when_other\":{\"type\":\"number\"},\"g_when_u\":{\"type\":\"number\"},\"initial_fraction\":{\"type\":\"number\"},\"multi_full_mode\":{\"type\":\"string\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "feature_graph": {
+      "nodes": [
+        {
+          "kind": "RawField",
+          "key": "close",
+          "field": "Close"
+        },
+        {
+          "kind": "RawField",
+          "key": "opening",
+          "field": "Open"
+        },
+        {
+          "kind": "RawField",
+          "key": "high",
+          "field": "High"
+        },
+        {
+          "kind": "RawField",
+          "key": "low",
+          "field": "Low"
+        },
+        {
+          "kind": "RawField",
+          "key": "volume",
+          "field": "Volume"
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_close",
+          "source": "close",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_open",
+          "source": "opening",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_high",
+          "source": "high",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_low",
+          "source": "low",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "low2",
+          "source": "low",
+          "bars": 2
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_volume",
+          "source": "volume",
+          "bars": 1
+        },
+        {
+          "kind": "TrueRange",
+          "key": "tr",
+          "high": "high",
+          "low": "low",
+          "close": "close"
+        },
+        {
+          "kind": "Mean",
+          "key": "atr13",
+          "source": "tr",
+          "window": 13
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_tr",
+          "source": "tr",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "atr_before_prior",
+          "source": "atr13",
+          "bars": 2
+        },
+        {
+          "kind": "SameLocalSlotMedian",
+          "key": "same_slot_median20",
+          "source": "volume",
+          "sessions": 20,
+          "anchor_lag": 1,
+          "timezone": "America/New_York"
+        },
+        {
+          "kind": "Mean",
+          "key": "ma65",
+          "source": "close",
+          "window": 65
+        },
+        {
+          "kind": "Mean",
+          "key": "ma260",
+          "source": "close",
+          "window": 260
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_ma65",
+          "source": "ma65",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_ma260",
+          "source": "ma260",
+          "bars": 1
+        }
+      ],
+      "outputs": [
+        "close",
+        "high",
+        "low",
+        "previous_low",
+        "low2",
+        "previous_close",
+        "previous_open",
+        "previous_high",
+        "previous_volume",
+        "previous_tr",
+        "atr_before_prior",
+        "same_slot_median20",
+        "previous_ma65",
+        "previous_ma260"
+      ],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [],
+      "cycle_fields": [
+        {
+          "key": "entry_multi_full",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "entry_negative_run_length",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "entry_negative_run_high",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "holding_bars",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "last_completed_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "exit_due",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "initial_support",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "support",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "support_raises",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "exit_reason",
+          "value_type": "str",
+          "nullable": false
+        },
+        {
+          "key": "peak",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "peak_before_last",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "pending_support",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "candidate_low",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "candidate_high",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "candidate_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "raw_s0",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "reclaimed_level",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "accepted_active",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "accepted_low",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "accepted_high",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "accepted_peak_close",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "entry_scale",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "signal_reference_close",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "entry_u",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "cycle_g",
+          "value_type": "float",
+          "nullable": false
+        }
+      ]
+    },
+    "computation": "STATEFUL_STEP"
+  },
+  "C0336": {
+    "runtime_kind": "ACCOUNT_REPLAY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "LITE"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 261,
+    "entrypoint": "strategy:step",
+    "source_files": [
+      "negative_run.py",
+      "strategy.py"
+    ],
+    "source_sha256": "5cde8aa1aa67c120fddf7e546775e40972de3b23e3cc598a8c5e59a797f3b461",
+    "parameters_json": "{\"accepted_fraction\":0.1569056351519751,\"alpha\":0.3435458360048906,\"g_when_other\":0.0,\"g_when_u\":0.75,\"initial_fraction\":0.42823406094793653,\"multi_full_mode\":\"MF_STRUCTURE\"}",
+    "dependencies": [],
+    "contract_version": 4,
+    "parameter_schema_json": "{\"accepted_fraction\":{\"type\":\"number\"},\"alpha\":{\"type\":\"number\"},\"g_when_other\":{\"type\":\"number\"},\"g_when_u\":{\"type\":\"number\"},\"initial_fraction\":{\"type\":\"number\"},\"multi_full_mode\":{\"type\":\"string\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "feature_graph": {
+      "nodes": [
+        {
+          "kind": "RawField",
+          "key": "close",
+          "field": "Close"
+        },
+        {
+          "kind": "RawField",
+          "key": "opening",
+          "field": "Open"
+        },
+        {
+          "kind": "RawField",
+          "key": "high",
+          "field": "High"
+        },
+        {
+          "kind": "RawField",
+          "key": "low",
+          "field": "Low"
+        },
+        {
+          "kind": "RawField",
+          "key": "volume",
+          "field": "Volume"
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_close",
+          "source": "close",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_open",
+          "source": "opening",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_high",
+          "source": "high",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_low",
+          "source": "low",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "low2",
+          "source": "low",
+          "bars": 2
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_volume",
+          "source": "volume",
+          "bars": 1
+        },
+        {
+          "kind": "TrueRange",
+          "key": "tr",
+          "high": "high",
+          "low": "low",
+          "close": "close"
+        },
+        {
+          "kind": "Mean",
+          "key": "atr13",
+          "source": "tr",
+          "window": 13
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_tr",
+          "source": "tr",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "atr_before_prior",
+          "source": "atr13",
+          "bars": 2
+        },
+        {
+          "kind": "SameLocalSlotMedian",
+          "key": "same_slot_median20",
+          "source": "volume",
+          "sessions": 20,
+          "anchor_lag": 1,
+          "timezone": "America/New_York"
+        },
+        {
+          "kind": "Mean",
+          "key": "ma65",
+          "source": "close",
+          "window": 65
+        },
+        {
+          "kind": "Mean",
+          "key": "ma260",
+          "source": "close",
+          "window": 260
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_ma65",
+          "source": "ma65",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_ma260",
+          "source": "ma260",
+          "bars": 1
+        }
+      ],
+      "outputs": [
+        "close",
+        "high",
+        "low",
+        "previous_low",
+        "low2",
+        "previous_close",
+        "previous_open",
+        "previous_high",
+        "previous_volume",
+        "previous_tr",
+        "atr_before_prior",
+        "same_slot_median20",
+        "previous_ma65",
+        "previous_ma260"
+      ],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [],
+      "cycle_fields": [
+        {
+          "key": "entry_multi_full",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "entry_negative_run_length",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "entry_negative_run_high",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "holding_bars",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "last_completed_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "exit_due",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "initial_support",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "support",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "support_raises",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "exit_reason",
+          "value_type": "str",
+          "nullable": false
+        },
+        {
+          "key": "peak",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "peak_before_last",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "pending_support",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "candidate_low",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "candidate_high",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "candidate_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "raw_s0",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "reclaimed_level",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "accepted_active",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "accepted_low",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "accepted_high",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "accepted_peak_close",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "entry_scale",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "signal_reference_close",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "entry_u",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "cycle_g",
+          "value_type": "float",
+          "nullable": false
+        }
+      ]
+    },
+    "computation": "STATEFUL_STEP"
+  },
+  "C0337": {
+    "runtime_kind": "ACCOUNT_REPLAY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "LITE"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 261,
+    "entrypoint": "strategy:step",
+    "source_files": [
+      "negative_run.py",
+      "strategy.py"
+    ],
+    "source_sha256": "5cde8aa1aa67c120fddf7e546775e40972de3b23e3cc598a8c5e59a797f3b461",
+    "parameters_json": "{\"accepted_fraction\":0.1569056351519751,\"alpha\":0.3435458360048906,\"g_when_other\":0.0,\"g_when_u\":0.75,\"initial_fraction\":0.42823406094793653,\"multi_full_mode\":\"MF_PROTECT\"}",
+    "dependencies": [],
+    "contract_version": 4,
+    "parameter_schema_json": "{\"accepted_fraction\":{\"type\":\"number\"},\"alpha\":{\"type\":\"number\"},\"g_when_other\":{\"type\":\"number\"},\"g_when_u\":{\"type\":\"number\"},\"initial_fraction\":{\"type\":\"number\"},\"multi_full_mode\":{\"type\":\"string\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "feature_graph": {
+      "nodes": [
+        {
+          "kind": "RawField",
+          "key": "close",
+          "field": "Close"
+        },
+        {
+          "kind": "RawField",
+          "key": "opening",
+          "field": "Open"
+        },
+        {
+          "kind": "RawField",
+          "key": "high",
+          "field": "High"
+        },
+        {
+          "kind": "RawField",
+          "key": "low",
+          "field": "Low"
+        },
+        {
+          "kind": "RawField",
+          "key": "volume",
+          "field": "Volume"
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_close",
+          "source": "close",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_open",
+          "source": "opening",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_high",
+          "source": "high",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_low",
+          "source": "low",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "low2",
+          "source": "low",
+          "bars": 2
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_volume",
+          "source": "volume",
+          "bars": 1
+        },
+        {
+          "kind": "TrueRange",
+          "key": "tr",
+          "high": "high",
+          "low": "low",
+          "close": "close"
+        },
+        {
+          "kind": "Mean",
+          "key": "atr13",
+          "source": "tr",
+          "window": 13
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_tr",
+          "source": "tr",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "atr_before_prior",
+          "source": "atr13",
+          "bars": 2
+        },
+        {
+          "kind": "SameLocalSlotMedian",
+          "key": "same_slot_median20",
+          "source": "volume",
+          "sessions": 20,
+          "anchor_lag": 1,
+          "timezone": "America/New_York"
+        },
+        {
+          "kind": "Mean",
+          "key": "ma65",
+          "source": "close",
+          "window": 65
+        },
+        {
+          "kind": "Mean",
+          "key": "ma260",
+          "source": "close",
+          "window": 260
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_ma65",
+          "source": "ma65",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_ma260",
+          "source": "ma260",
+          "bars": 1
+        }
+      ],
+      "outputs": [
+        "close",
+        "high",
+        "low",
+        "previous_low",
+        "low2",
+        "previous_close",
+        "previous_open",
+        "previous_high",
+        "previous_volume",
+        "previous_tr",
+        "atr_before_prior",
+        "same_slot_median20",
+        "previous_ma65",
+        "previous_ma260"
+      ],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [],
+      "cycle_fields": [
+        {
+          "key": "entry_multi_full",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "entry_negative_run_length",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "entry_negative_run_high",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "holding_bars",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "last_completed_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "exit_due",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "initial_support",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "support",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "support_raises",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "exit_reason",
+          "value_type": "str",
+          "nullable": false
+        },
+        {
+          "key": "peak",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "peak_before_last",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "pending_support",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "candidate_low",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "candidate_high",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "candidate_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "raw_s0",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "reclaimed_level",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "accepted_active",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "accepted_low",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "accepted_high",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "accepted_peak_close",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "entry_scale",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "signal_reference_close",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "entry_u",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "cycle_g",
+          "value_type": "float",
+          "nullable": false
+        }
+      ]
+    },
+    "computation": "STATEFUL_STEP"
+  }
+}

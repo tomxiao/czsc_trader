@@ -1,5 +1,29 @@
 # S017 研究交接
 
+## 当前：本批阶段二完成，C337有限DEVELOP原型已FULL交付，原目标未达（2026-11-01，RSCH）
+
+[五项研究四问总结](materials/STAGE2_OPPORTUNITY_RESEARCH_REVIEW_20261101.md)、[机器统计及正式引用](materials/STAGE2_OPPORTUNITY_RESEARCH_REVIEW_20261101.json)、[PROTOTYPES/12](deliveries/PROTOTYPES/12/report.md)及[正式回执](materials/STAGE2_OPPORTUNITY_PROTOTYPES_DELIVERY_20261101.json)已发布，schema10/FULL校验PASS；精确交付内容SHA为d330952ec1186978404d15859f5140d987287ce51fad6fcaed6210702b88645b。COMPLETE只表示本次工作及交付完成，原五门仍未同时满足。
+
+EX067—071共五项研究、八次实际账户计算：六候选含四个新金融政策及两次必要新源控制，两次共享BH对应同一经济路径；0正式金融技术失败、0联合达标、0参数搜索、新执行标签或新外部下载。全部五份实验报告、源码/定义/参数、原始V4及其输入、审计与标签依赖已随交付保存。旧1—11修订及C113/C179/C222身份与资格保持。
+
+C337只在信号已经收复多根连续负实体完整High范围时，冻结原g=.75新增推进保护，其余原E0、U映射及完整持有框架保持。净年化192.3364%、BAR_CLOSE DD22.5379%、94闭合、60日中位12、覆盖100%，末仓0；较C222年化提高5.98135个百分点、DD仅低0.002233个百分点。17笔g赋值变化只改变四笔实际退出，全部94个BUY时点相同，增量包含资本/股数传播，不称普遍成熟模块；收益仍低原门55.29753个百分点。面板C337=DEVELOP、C335=INVESTIGATE、C336=STOP，未登记达标SM候选或生产采用。
+
+公共intent已更新为STAGE_2_COMPLETE_C337_DEVELOP_PENDING_STAGE3_APPROVAL，最终达标目标尚未完成。建议按[六参数有界提案](materials/STAGE3_MF_CONTEXT_OPTIMIZATION_PROPOSAL_20261101.json)经用户明确批准后进入阶段三：先新源精确复现C337，再最多24个参数评价点；含控制最多25候选计算及两次BH，总上限27，仅提案、尚未实施或执行。已知经济等价点单列；联合alpha变化会改变E0/MF人口。当前没有新阶段三或四授权，不自动搜索、扩额、冻结或访问2026。
+
+本批研究分支沿codex/s017-ten-rounds，仅本地提交；2024—2025训练、必要2023预热、2026测试封存及原资金/成本/执行/五门不变。无新源、平台、PTE/生产、合并、tag或推送。以下各节保留过程原文，最新状态以本节及实际正式回执为准。
+
+## 当前：67—71完成，C337有限改进原型，原目标未达（2026-11-01，RSCH）
+
+用户明确授权先拆解LITE隔夜/日内与C222空仓遗漏，再依据诊断自主推进阶段二，原五门达标目标不变。当前仅使用既有2024—2025训练与必要2023预热，2026测试封存；无新外部源、平台/生产改动或阶段三四推进。旧PROTOTYPES修订与C113/C179/C222研究参照、资格及各历史负证全部保留。
+
+- [EX067](experiments/EX067_20261101/report.md)：根与early完成零账户诊断，市场多数净上涨在隔夜，但C222已捕获大部；原空仓RTH变化两年同向为负。会计拆解不是可避损或补flat入口的盈利证据，0金融compute。[正式回执](experiments/EX067_20261101/others/publication.json)。
+- [EX068](experiments/EX068_20261101/report.md)：原C222精确新源C332控制、仅判断前未accepted的carryin首Low guard C333、全部carryin的C334，实际3candidate+1共享BH=4compute（2新金融职责+1必要源控制，0技术失败）。C332原候选/BH共12经济投影先PASS才评新臂；两新政策净年化164.1907%/111.3292%，DD22.5377%/18.3221%，均仅原收益门失败、全部末仓0。原五门联合0；两独立金额/逐状态审计与三对public diagnose PASS。停止该opening退出线/阶段/时刻调节。[正式回执](experiments/EX068_20261101/others/publication.json)，report SHA7962f56726d4195312bbb7ff9aa8825766e903d8754ca391caa0fb908d2a4469。
+- [EX069](experiments/EX069_20261101/report.md)：公锁后仅复用旧五期成本标签，固定原E0209按观察日firstLow分为上195/下14；共同成熟208/194/14，固定130先预选后成熟40/40/10。下组raw/thin五档普通差均正但年度反向，上组中档与65年度有冲突，内族支持6/194及3/40极薄，首柱80事件天然全在上组。BELOW-only原频率必要界确定不可能，但不作为新统计样本门。两独立purefeature/全统计PASS，0新账户/候选/标签/搜索；停止将该上下文直接作ABOVE过滤或g映射，不移阈值。[正式回执](experiments/EX069_20261101/others/publication.json)，report SHAdc500b72dae4eef63293182d5c7aa41a2fe0f50d76d6e7c803134767f7543210。
+- [EX070](experiments/EX070_20261101/report.md)：公锁后五群原E0上下文普查，ALL209、单阴111、多阴整串收复48、多阴未完整50、FULL159；最大真实run7、左删失0，多阴前High天然等于R3，跨session不重置。多阴完整群26/65/130的thin普通差两年同正，但13反向、族内支持raw9/47及thin7/23较薄；多阴未完整thin五档普通差均正，FULL混单/多且年度有冲突，不能直接过滤或据长档设timer。两独立purefeature/全统计PASS，0新账户/候选/标签/搜索。[正式回执](experiments/EX070_20261101/others/publication.json)，report SHA957b9182cbb492aa2b0f6e07d753b257518abd77bf9eb752c5ee3f30f0d1c671。
+- [EX071](experiments/EX071_20261101/report.md)：所有原E0不变，KEEP C335原C222精确控制、仅MF强制g0的C336、仅MF强制g.75的C337，实际3candidate+1共享BH=4compute，12经济投影及两独立金额/状态审计、三对public diagnose均PASS。C337净年化192.3364%、DD22.5379%、94闭合/中位12/覆盖100%，两年财富改善但只4实际退出变化，含相邻日期与资本/股数传播；仍仅收益门失败，末仓0。根定C337 DEVELOP仅建议完善、C335 INVESTIGATE、C336本固定表达STOP，非达标候选或成熟模块，不再本批细调。[正式回执](experiments/EX071_20261101/others/publication.json)，report SHA7b42b59743200715273d3eeb8aaa32824eb8d62c4e31b62c1ef82c50954cab8a。
+
+本段67—71实际8次金融计算=6候选（4新金融职责、2必要新源控制）+2次共享BH，对应一种经济买持路径；67/69/70没有新账户，不把复用标签或五群重复人口当独立样本。总体四问见[阶段二机会研究总结](materials/STAGE2_OPPORTUNITY_RESEARCH_REVIEW_20261101.md)及[机器统计](materials/STAGE2_OPPORTUNITY_RESEARCH_REVIEW_20261101.json)。[六参数MF联合完善提案](materials/STAGE3_MF_CONTEXT_OPTIMIZATION_PROPOSAL_20261101.json)仅PROPOSED_PENDING_USER_AUTHORIZATION，尚未实现或执行，进入阶段三须用户明确批准，2026继续封存。PROTOTYPES/12三原型自包含装配脚本只预览，根最终执行/FULL验证/公共intent和中文本地提交；实际正式交付以单独发布回执为准。本writer不执行装配、不自动合并、tag或push。SEC经营披露新源提案仍未获得新的数据源授权，不启动。
+
 ## 当前：阶段二本批六组完成，目标未达，PROTOTYPES/11正式交付（2026-11-01，RSCH）
 
 [六组四问总报告](materials/STAGE2_MECHANISM_RESEARCH_REVIEW_20261101.md)、[机器统计与全部正式引用](materials/STAGE2_MECHANISM_RESEARCH_REVIEW_20261101.json)及[发布回执](materials/STAGE2_MECHANISM_DELIVERY_20261101.json)均已完成。schema10的[PROTOTYPES/11正式报告](deliveries/PROTOTYPES/11/report.md)为COMPLETE负面空原型面板，FULL校验PASS，精确内容SHA为c70d5e9cae3db66f2da9e15c59e87d1cda903626549fc7561b8f7d153cfca12f；COMPLETE表示本批交付完成，原五门目标仍未达成。

@@ -1,0 +1,312 @@
+{
+  "status": "PASS_OUTCOME_BLIND_BRANCH_FEASIBILITY",
+  "source_account": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S017",
+      "experiment_id": "EX056_20261031"
+    },
+    "evidence_id": "e46bde8a5ce93b448e35dc1f1628271830b02976eadc0da21971633709eaa43e.json",
+    "sha256": "e46bde8a5ce93b448e35dc1f1628271830b02976eadc0da21971633709eaa43e",
+    "media_type": "application/json",
+    "name": "formal-C0222",
+    "schema": "equity_research",
+    "schema_version": 4
+  },
+  "source_sha256": "b7389ca6caf774064a47f5a673a88eee8d68f8e0fd08eec6fcf3f22571bd3e64",
+  "counts": {
+    "raw": {
+      "OTHER_NON_U": 107,
+      "MF_U": 15,
+      "OTHER_U": 54,
+      "MF_NON_U": 33
+    },
+    "flat_proposal": {
+      "OTHER_NON_U": 63,
+      "MF_NON_U": 17,
+      "OTHER_U": 10,
+      "MF_U": 4
+    },
+    "actual_BUY": {
+      "OTHER_NON_U": 63,
+      "MF_NON_U": 17,
+      "OTHER_U": 10,
+      "MF_U": 4
+    }
+  },
+  "mf_clock48_equals_ex070": true,
+  "ex070_features_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S017",
+      "experiment_id": "EX070_20261101"
+    },
+    "evidence_id": "343816c635b3567311480795c45d5d01f6aa2d541ddcfc4d68e00da1cd761a81.json",
+    "sha256": "343816c635b3567311480795c45d5d01f6aa2d541ddcfc4d68e00da1cd761a81",
+    "media_type": "application/json",
+    "name": "pre-label-features",
+    "schema": null,
+    "schema_version": null
+  },
+  "affected": {
+    "MF_STRUCTURE": {
+      "changed_raw": 15,
+      "changed_original_flat_proposals": 4,
+      "changed_original_actual_BUY": 4,
+      "prior_cycles_ever_accepted": 4,
+      "prior_cycles_with_positive_completed_postaccepted_progress": 4,
+      "source_decisions": [
+        {
+          "signal_at": "2024-08-19T20:00:00.000000Z",
+          "tag": "MF_U",
+          "entry_multi_full": true,
+          "entry_u": true,
+          "run_length": 2,
+          "run_high": 52.33,
+          "entry_at": "2024-08-20T13:30:00.000000Z",
+          "confirmed_at": "2024-08-20T14:00:00.000000Z",
+          "actual_fill_below_signal_run_high": false
+        },
+        {
+          "signal_at": "2025-07-15T14:00:00.000000Z",
+          "tag": "MF_U",
+          "entry_multi_full": true,
+          "entry_u": true,
+          "run_length": 3,
+          "run_high": 93.59,
+          "entry_at": "2025-07-15T14:00:00.000000Z",
+          "confirmed_at": "2025-07-15T14:30:00.000000Z",
+          "actual_fill_below_signal_run_high": false
+        },
+        {
+          "signal_at": "2025-08-12T14:00:00.000000Z",
+          "tag": "MF_U",
+          "entry_multi_full": true,
+          "entry_u": true,
+          "run_length": 2,
+          "run_high": 115.97,
+          "entry_at": "2025-08-12T14:00:00.000000Z",
+          "confirmed_at": "2025-08-12T14:30:00.000000Z",
+          "actual_fill_below_signal_run_high": false
+        },
+        {
+          "signal_at": "2025-08-28T14:00:00.000000Z",
+          "tag": "MF_U",
+          "entry_multi_full": true,
+          "entry_u": true,
+          "run_length": 3,
+          "run_high": 128.16,
+          "entry_at": "2025-08-28T14:00:00.000000Z",
+          "confirmed_at": "2025-08-28T14:30:00.000000Z",
+          "actual_fill_below_signal_run_high": false
+        }
+      ]
+    },
+    "MF_PROTECT": {
+      "changed_raw": 33,
+      "changed_original_flat_proposals": 17,
+      "changed_original_actual_BUY": 17,
+      "prior_cycles_ever_accepted": 9,
+      "prior_cycles_with_positive_completed_postaccepted_progress": 9,
+      "source_decisions": [
+        {
+          "signal_at": "2024-02-22T15:00:00.000000Z",
+          "tag": "MF_NON_U",
+          "entry_multi_full": true,
+          "entry_u": false,
+          "run_length": 4,
+          "run_high": 48.62,
+          "entry_at": "2024-02-22T15:00:00.000000Z",
+          "confirmed_at": "2024-02-22T15:30:00.000000Z",
+          "actual_fill_below_signal_run_high": false
+        },
+        {
+          "signal_at": "2024-04-01T18:00:00.000000Z",
+          "tag": "MF_NON_U",
+          "entry_multi_full": true,
+          "entry_u": false,
+          "run_length": 2,
+          "run_high": 47.56,
+          "entry_at": "2024-04-01T18:00:00.000000Z",
+          "confirmed_at": "2024-04-01T18:30:00.000000Z",
+          "actual_fill_below_signal_run_high": false
+        },
+        {
+          "signal_at": "2024-04-08T15:00:00.000000Z",
+          "tag": "MF_NON_U",
+          "entry_multi_full": true,
+          "entry_u": false,
+          "run_length": 4,
+          "run_high": 46.21,
+          "entry_at": "2024-04-08T15:00:00.000000Z",
+          "confirmed_at": "2024-04-08T15:30:00.000000Z",
+          "actual_fill_below_signal_run_high": false
+        },
+        {
+          "signal_at": "2024-04-09T14:00:00.000000Z",
+          "tag": "MF_NON_U",
+          "entry_multi_full": true,
+          "entry_u": false,
+          "run_length": 4,
+          "run_high": 46.35,
+          "entry_at": "2024-04-09T14:00:00.000000Z",
+          "confirmed_at": "2024-04-09T14:30:00.000000Z",
+          "actual_fill_below_signal_run_high": false
+        },
+        {
+          "signal_at": "2024-04-16T14:00:00.000000Z",
+          "tag": "MF_NON_U",
+          "entry_multi_full": true,
+          "entry_u": false,
+          "run_length": 2,
+          "run_high": 42.305,
+          "entry_at": "2024-04-16T14:00:00.000000Z",
+          "confirmed_at": "2024-04-16T14:30:00.000000Z",
+          "actual_fill_below_signal_run_high": false
+        },
+        {
+          "signal_at": "2024-05-07T14:00:00.000000Z",
+          "tag": "MF_NON_U",
+          "entry_multi_full": true,
+          "entry_u": false,
+          "run_length": 2,
+          "run_high": 44.53,
+          "entry_at": "2024-05-07T14:00:00.000000Z",
+          "confirmed_at": "2024-05-07T14:30:00.000000Z",
+          "actual_fill_below_signal_run_high": false
+        },
+        {
+          "signal_at": "2024-08-07T14:00:00.000000Z",
+          "tag": "MF_NON_U",
+          "entry_multi_full": true,
+          "entry_u": false,
+          "run_length": 3,
+          "run_high": 42.3,
+          "entry_at": "2024-08-07T14:00:00.000000Z",
+          "confirmed_at": "2024-08-07T14:30:00.000000Z",
+          "actual_fill_below_signal_run_high": false
+        },
+        {
+          "signal_at": "2024-08-08T14:00:00.000000Z",
+          "tag": "MF_NON_U",
+          "entry_multi_full": true,
+          "entry_u": false,
+          "run_length": 2,
+          "run_high": 41.1,
+          "entry_at": "2024-08-08T14:00:00.000000Z",
+          "confirmed_at": "2024-08-08T14:30:00.000000Z",
+          "actual_fill_below_signal_run_high": false
+        },
+        {
+          "signal_at": "2024-08-28T19:00:00.000000Z",
+          "tag": "MF_NON_U",
+          "entry_multi_full": true,
+          "entry_u": false,
+          "run_length": 3,
+          "run_high": 56.33,
+          "entry_at": "2024-08-28T19:00:00.000000Z",
+          "confirmed_at": "2024-08-28T19:30:00.000000Z",
+          "actual_fill_below_signal_run_high": false
+        },
+        {
+          "signal_at": "2024-10-02T14:00:00.000000Z",
+          "tag": "MF_NON_U",
+          "entry_multi_full": true,
+          "entry_u": false,
+          "run_length": 2,
+          "run_high": 62.2566,
+          "entry_at": "2024-10-02T14:00:00.000000Z",
+          "confirmed_at": "2024-10-02T14:30:00.000000Z",
+          "actual_fill_below_signal_run_high": false
+        },
+        {
+          "signal_at": "2024-10-29T14:00:00.000000Z",
+          "tag": "MF_NON_U",
+          "entry_multi_full": true,
+          "entry_u": false,
+          "run_length": 2,
+          "run_high": 65.63,
+          "entry_at": "2024-10-29T14:00:00.000000Z",
+          "confirmed_at": "2024-10-29T14:30:00.000000Z",
+          "actual_fill_below_signal_run_high": false
+        },
+        {
+          "signal_at": "2025-01-08T21:00:00.000000Z",
+          "tag": "MF_NON_U",
+          "entry_multi_full": true,
+          "entry_u": false,
+          "run_length": 2,
+          "run_high": 85.18,
+          "entry_at": "2025-01-10T14:30:00.000000Z",
+          "confirmed_at": "2025-01-10T15:00:00.000000Z",
+          "actual_fill_below_signal_run_high": true
+        },
+        {
+          "signal_at": "2025-02-14T15:30:00.000000Z",
+          "tag": "MF_NON_U",
+          "entry_multi_full": true,
+          "entry_u": false,
+          "run_length": 3,
+          "run_high": 78.85,
+          "entry_at": "2025-02-14T15:30:00.000000Z",
+          "confirmed_at": "2025-02-14T16:00:00.000000Z",
+          "actual_fill_below_signal_run_high": true
+        },
+        {
+          "signal_at": "2025-03-24T14:00:00.000000Z",
+          "tag": "MF_NON_U",
+          "entry_multi_full": true,
+          "entry_u": false,
+          "run_length": 6,
+          "run_high": 67.44,
+          "entry_at": "2025-03-24T14:00:00.000000Z",
+          "confirmed_at": "2025-03-24T14:30:00.000000Z",
+          "actual_fill_below_signal_run_high": false
+        },
+        {
+          "signal_at": "2025-11-17T15:00:00.000000Z",
+          "tag": "MF_NON_U",
+          "entry_multi_full": true,
+          "entry_u": false,
+          "run_length": 3,
+          "run_high": 235.68,
+          "entry_at": "2025-11-17T15:00:00.000000Z",
+          "confirmed_at": "2025-11-17T15:30:00.000000Z",
+          "actual_fill_below_signal_run_high": false
+        },
+        {
+          "signal_at": "2025-11-21T15:00:00.000000Z",
+          "tag": "MF_NON_U",
+          "entry_multi_full": true,
+          "entry_u": false,
+          "run_length": 2,
+          "run_high": 242.3,
+          "entry_at": "2025-11-21T15:00:00.000000Z",
+          "confirmed_at": "2025-11-21T15:30:00.000000Z",
+          "actual_fill_below_signal_run_high": false
+        },
+        {
+          "signal_at": "2025-12-18T15:00:00.000000Z",
+          "tag": "MF_NON_U",
+          "entry_multi_full": true,
+          "entry_u": false,
+          "run_length": 2,
+          "run_high": 322.22,
+          "entry_at": "2025-12-18T15:00:00.000000Z",
+          "confirmed_at": "2025-12-18T15:30:00.000000Z",
+          "actual_fill_below_signal_run_high": false
+        }
+      ]
+    }
+  },
+  "actual_BUY_MF_fill_below_runR": 2,
+  "financial_compute": 0,
+  "new_return_labels": 0,
+  "limitations": [
+    "Prior accepted/progress flags only,not new-policy economic fork proof.",
+    "No PnL/returns/equity/fees or group outcomes consumed;actual fill versus signal runR is execution geometry,not a return label.",
+    "Own successor path must re-evaluate context; no original date whitelist."
+  ]
+}
