@@ -1,0 +1,194 @@
+{
+  "schema": "s017-stage3-mf-six-float-search/v1",
+  "experiment": "EX072_20261102",
+  "authorization": "User explicitly approved autonomous stage3 on2026-11-02 within <=27compute;historical pending proposal unchanged.",
+  "strategy_sha256": "bb6384963b6ce5cb66e64114b960b7e85054bd35548f098a14326e63707d04de",
+  "helper_sha256": "404c56f4887f74e8d0686e7a9b88385fed20cd405a585d4cf0ddbf938dfbaaaa",
+  "source_hashes": {
+    "src/common.py": "bc01465c288da553b19c53aa80f77fcc02e9233626d7e98a92f00a08f016d240",
+    "src/metrics.py": "c0e4eef6edea351dd4cba233737fc2b55aba8c4183a66e32eb706bc7a2269fb4",
+    "src/negative_run.py": "404c56f4887f74e8d0686e7a9b88385fed20cd405a585d4cf0ddbf938dfbaaaa",
+    "src/precheck.py": "a53d8a8f6f517f3bc46e50f0221af86218cb6f3dcb35fb8c804330603ed0139f",
+    "src/publish_selected.py": "b6a2da9290cf3801e7cda753253fa27c45f9f69895995d5e34eabc2e775d2455",
+    "src/sampler.py": "4ea6c0b9d39850f5d3fab10cba4c59ff2f8ece9bc99b12c2829b276fdfce070c",
+    "src/search.py": "d6971f4feb3487ae6d7472ec4aec9bd2f6d1f6c6e449e119ce758c8798265647",
+    "src/strategy.py": "bb6384963b6ce5cb66e64114b960b7e85054bd35548f098a14326e63707d04de",
+    "protocols/configurations.json": "20300d19fa9d8ae9415dd520bdd71ad1b442a09b07be41ae37d144d07cd88f04",
+    "protocols/control_definitions.json": "e3566b3a06430868d71e9287dfd6c6c520a3da027aabea01951d407ee131dc2f",
+    "protocols/design.md": "24f0bf3d2fe119cca47515246f79012e1146b1ee7bab0721988a9f777ec4c1d8",
+    "protocols/economic_reference.json": "e341cfddde82b10d57a6dae7e7095ae753349e2a7610f5bd09ed17799d5d3f21",
+    "protocols/training_population.json": "1f0e300260c0a169c8c1d9f0751647ffa2135e6d64f34a669fd7a0dee1da5e49"
+  },
+  "input_sha256": "2d2a98bfe9f04891e47cb6c938d0eb1b27bb28f41622f73aef010ae23d6d717c",
+  "prepared_manifest_sha256": "a671f92acb0723e4054b26247bca52d39186c3a0f87e25e70a133b48987a242d",
+  "domains": {
+    "alpha": [
+      0.0,
+      2.0
+    ],
+    "initial_fraction": [
+      0.0,
+      1.0
+    ],
+    "accepted_fraction": [
+      0.0,
+      1.0
+    ],
+    "g_when_u": [
+      0.0,
+      1.0
+    ],
+    "g_when_other": [
+      0.0,
+      1.0
+    ],
+    "g_when_mf": [
+      0.0,
+      1.0
+    ]
+  },
+  "fixed_anchors": [
+    {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "g_when_u": 0.75,
+      "g_when_other": 0.0,
+      "g_when_mf": 0.75
+    },
+    {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "g_when_u": 0.75,
+      "g_when_other": 0.0,
+      "g_when_mf": 0.0
+    },
+    {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "g_when_u": 0.75,
+      "g_when_other": 0.0,
+      "g_when_mf": 0.25
+    },
+    {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "g_when_u": 0.75,
+      "g_when_other": 0.0,
+      "g_when_mf": 0.5
+    },
+    {
+      "alpha": 0.3435458360048906,
+      "initial_fraction": 0.42823406094793653,
+      "accepted_fraction": 0.1569056351519751,
+      "g_when_u": 0.75,
+      "g_when_other": 0.0,
+      "g_when_mf": 1.0
+    }
+  ],
+  "candidate_slot_mapping": {
+    "C0338": "CENTER_CONTROL",
+    "C0339": "FIXED_MF_AXIS",
+    "C0340": "FIXED_MF_AXIS",
+    "C0341": "FIXED_MF_AXIS",
+    "C0342": "FIXED_MF_AXIS",
+    "C0343": "JOINT_MODEL_TPE",
+    "C0344": "JOINT_MODEL_TPE",
+    "C0345": "JOINT_MODEL_TPE",
+    "C0346": "JOINT_MODEL_TPE",
+    "C0347": "JOINT_MODEL_TPE",
+    "C0348": "JOINT_MODEL_TPE",
+    "C0349": "JOINT_MODEL_TPE",
+    "C0350": "JOINT_MODEL_TPE",
+    "C0351": "JOINT_MODEL_TPE",
+    "C0352": "JOINT_MODEL_TPE",
+    "C0353": "JOINT_MODEL_TPE",
+    "C0354": "JOINT_MODEL_TPE",
+    "C0355": "JOINT_MODEL_TPE",
+    "C0356": "JOINT_MODEL_TPE",
+    "C0357": "JOINT_MODEL_TPE",
+    "C0358": "JOINT_MODEL_TPE",
+    "C0359": "JOINT_MODEL_TPE",
+    "C0360": "JOINT_MODEL_TPE",
+    "C0361": "JOINT_MODEL_TPE",
+    "C0362": "JOINT_MODEL_TPE"
+  },
+  "known_economic_equivalences": {
+    "C0338": {
+      "original_experiment": "EX071_20261101",
+      "original_candidate": "C0337",
+      "role": "New-source exact center control,actual compute included"
+    },
+    "C0339": {
+      "original_experiment": "EX071_20261101",
+      "original_candidate": "C0336",
+      "role": "Fixed gMF0 axis is known economic equivalent,actual compute included;not independent discovery"
+    }
+  },
+  "sampler": {
+    "optuna_version": "4.9.0",
+    "seed": 17,
+    "n_startup_trials": 5,
+    "multivariate": true,
+    "constant_liar": true,
+    "independent_fallback": false,
+    "objective": "maximize net annualized return",
+    "sampling_constraints": "Only four original risk/frequency normalized violations; actual system_attrs dimension4",
+    "financial_acceptance": "All five original goals AND,including original return gate",
+    "anchors_all_suggest6FloatDistributions": true,
+    "first_model_only_after5COMPLETE": true
+  },
+  "budget": {
+    "candidate_compute_max": 25,
+    "center_control": 1,
+    "fixed_axis_points": 4,
+    "joint_model_proposal_slots": 20,
+    "benchmark_compute_max": 2,
+    "financial_compute_max": 27,
+    "segments_candidate_max": [
+      16,
+      9
+    ],
+    "workers": 4,
+    "native_threads": 1,
+    "batch_max": 4,
+    "no_extra_replacement_for_duplicates_or_failures": true,
+    "no_automatic_domain_or_budget_extension": true
+  },
+  "statistics": {
+    "rolling60_frequency_windows": 443,
+    "rolling252_sessions": 252,
+    "rolling252_step_sessions": 21,
+    "rolling252_windows": 12,
+    "rolling252_diagnostic_only": true,
+    "all_SUCCESS_public_V4_each_batch": true,
+    "all_unique_sequences_retained": true
+  },
+  "boundary": {
+    "alpha_domain": [
+      0.0,
+      2.0
+    ],
+    "near_upper_threshold": 1.9,
+    "natural_endpoints_other_parameters": [
+      0.0,
+      1.0
+    ],
+    "outside_alpha_ge2_joint_frequency_impossible": "At alpha2<=29 raw entries but original two frequency gates require >=32 closed;no new filter.",
+    "no_automatic_additional_computes": true,
+    "uncovered_boundary_improvement_must_be_disclosed": true
+  },
+  "final_evidence": "All successful public V4 immediately;selected alljoint/maxreturn/other4maxreturn/center/gMF0-1/firstmodel reuse only. No RESUME/evaluate fallback.",
+  "scope": {
+    "train": "2024-01-02 through2025-12-31 actual6490clock",
+    "necessary_warmup": "2023-11-01",
+    "test2026": "SEALED",
+    "new_external_sources": false,
+    "platform_changes": false,
+    "stage4": false,
+    "production": false
+  }
+}

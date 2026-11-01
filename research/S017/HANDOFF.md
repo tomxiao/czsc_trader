@@ -1,5 +1,18 @@
 # S017 研究交接
 
+## 当前：阶段三MF六参数搜索完成，0达标候选（2026-11-02，RSCH）
+
+[本轮四问报告](experiments/EX072_20261102/report.md)、[全25点机器统计](experiments/EX072_20261102/others/research_summary.json)、[正式报告回执](experiments/EX072_20261102/others/publication.json)及[CANDIDATES/2](deliveries/CANDIDATES/2/report.md)已发布；[交付回执](experiments/EX072_20261102/others/candidate_delivery.json)FULL PASS。COMPLETE仅指批准工作与证据交付完成，产出达标候选的目标未达成，候选与handoff均为空。
+
+沿用用户本轮明确阶段三授权及已批准六参数提案：5固定锚点含C337中心和已知C336等价轴，20实际六维联合Optuna模型点，25成功唯一点、0重复、0正式金融技术失败，25候选compute+2共享BH=27实际计算，额度全部用完；统计点不是独立市场样本。全部成功账户在原会话公开留证，选代表及金额/状态/搜索审计未新增金融计算。新源中心与MF0轴分别对旧C337/C336的候选及BH十二经济投影PASS。
+
+五门同时达标0。C342通过其余四门，净年化196.2468%、最大DD22.5373%，较中心192.3364%仅提高3.91035个百分点，距247.63396%收益门仍差51.38718个百分点；全族最高收益C356为205.5698%、DD34.7472%，收益与绝对DD均失败。两者是研究代表，不登记或交接为达标候选；旧原型和历史负证不改。
+
+建议停止本六参数族继续追加常数搜索。有限25点未找到不是域内不可行证明；若继续研究，应回阶段二，以公开匹配账户区分收入增加与主回撤承担的风险，先提出当前六旋钮不能表达且当时可见的具体问题，再决定新结构实验。根已完成阶段三收口，待用户决定后继，不自动扩额、换seed、访问2026或进入阶段四。
+
+分支codex/s017-ten-rounds；2024—2025训练及必要2023预热、2026封存和原五门/资金/费用/执行合同保持。无外部新源、平台、PTE/prod、合并、tag或push；当前正式入口优先于下方历史时态。
+
+
 ## 当前：本批阶段二完成，C337有限DEVELOP原型已FULL交付，原目标未达（2026-11-01，RSCH）
 
 [五项研究四问总结](materials/STAGE2_OPPORTUNITY_RESEARCH_REVIEW_20261101.md)、[机器统计及正式引用](materials/STAGE2_OPPORTUNITY_RESEARCH_REVIEW_20261101.json)、[PROTOTYPES/12](deliveries/PROTOTYPES/12/report.md)及[正式回执](materials/STAGE2_OPPORTUNITY_PROTOTYPES_DELIVERY_20261101.json)已发布，schema10/FULL校验PASS；精确交付内容SHA为d330952ec1186978404d15859f5140d987287ce51fad6fcaed6210702b88645b。COMPLETE只表示本次工作及交付完成，原五门仍未同时满足。
