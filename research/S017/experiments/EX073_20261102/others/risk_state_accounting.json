@@ -1,0 +1,2971 @@
+{
+  "status": "PASS_EXACT_GAP_SPLIT_KNOWN_STATE_ACCOUNTING",
+  "source_sha256": "cc3a96f694c6aa4b6fbe8f8083f6df74c7f5eac2f2b382196877ea5e85e9cfa5",
+  "authentication_helper_sha256": "3dc3d2a3d4cafdba57754330a05ea5e68c04c10605c05f066f54d2f4371fed89",
+  "public_family_sha256": "e758e4998858e0b9886e93f2861b7b4876769e45b9fc174f9bd795190d94faff",
+  "accounts": {
+    "C0338": {
+      "public_proof": {
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S017",
+            "experiment_id": "EX072_20261102"
+          },
+          "evidence_id": "0ccdebeaaa4ceccc5e9ad0880441cbda5c5a2e875ef8ab9e7f762cfa1a09395c.json",
+          "sha256": "0ccdebeaaa4ceccc5e9ad0880441cbda5c5a2e875ef8ab9e7f762cfa1a09395c",
+          "media_type": "application/json",
+          "name": "formal-C0338",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "closure": {
+          "input_ref": {
+            "kind": "equity_input",
+            "sha256": "2d2a98bfe9f04891e47cb6c938d0eb1b27bb28f41622f73aef010ae23d6d717c"
+          },
+          "candidate_ref": {
+            "kind": "equity_account",
+            "sha256": "46a28ba644883f07bf12b2d40e538d3691e39e951e6fc9e633bc7686ff957ffe"
+          },
+          "benchmark_ref": {
+            "kind": "equity_account",
+            "sha256": "d63ee5c1048fe1fe358674983404a268233e9de56877209a6414472665cbfac6"
+          }
+        },
+        "authenticated_dependencies": {
+          "2d2a98bfe9f04891e47cb6c938d0eb1b27bb28f41622f73aef010ae23d6d717c": "equity_input",
+          "46a28ba644883f07bf12b2d40e538d3691e39e951e6fc9e633bc7686ff957ffe": "equity_account",
+          "d63ee5c1048fe1fe358674983404a268233e9de56877209a6414472665cbfac6": "equity_account"
+        },
+        "evaluation_identity": {
+          "candidate": {
+            "candidate_id": "C0338",
+            "strategy_id": "S017"
+          },
+          "content_sha256": "ed6c277ac2d7afe784c3825ce5a138cee75e47c7833c06787523c86b669330c2",
+          "environment_sha256": "be2aab2fd5115bb6e83e6bbf82382b9c51bd5b548396b260af84e6817b4a4a25",
+          "input_sha256": "a671f92acb0723e4054b26247bca52d39186c3a0f87e25e70a133b48987a242d",
+          "protocol_sha256": "7eb826c8dbceae16298367753fb8cbc19250ac8add1b146ac47638255bcdd0a8"
+        },
+        "request_hash": "7eb826c8dbceae16298367753fb8cbc19250ac8add1b146ac47638255bcdd0a8"
+      },
+      "metrics": {
+        "annualized_return": 1.9233642595664695,
+        "bar_max_drawdown": 0.22537871538586707,
+        "closed_cycles": 94,
+        "fees": 41826.3220993,
+        "rolling_60_closed_cycle_median": 12,
+        "total_return": 7.473608262007,
+        "ending_equity": 847360.8262006999,
+        "ending_quantity": 0,
+        "coverage_at_least_three": 1,
+        "frequency_windows": 443,
+        "holding_bar_fraction": 0.5178736517719569,
+        "mean_invested_equity_fraction": 0.5131984378036282,
+        "year_returns": {
+          "2024": 0.8605775599369989,
+          "2025": 3.554289186575981
+        },
+        "max_drawdown_path": {
+          "peak": "2025-04-09T18:30:00.000000Z",
+          "trough": "2025-04-22T19:30:00.000000Z",
+          "recovery": "2025-05-07T17:30:00.000000Z"
+        },
+        "trade_pnl": {
+          "closed_net_pnl": 747360.8262006999,
+          "positive_pnl": 986669.3859850001,
+          "negative_pnl": -239308.5597843001,
+          "nonclosed_equity_change": 0.0,
+          "win_rate": 0.4148936170212766,
+          "mean_cycle_net_return": 0.026163902775531916,
+          "median_cycle_net_return": -0.00767211205,
+          "top_five_positive_pnl_share": 0.496145525039572
+        },
+        "decision_counts": {
+          "entry_signals": 209,
+          "held_signals_ignored": 115,
+          "flat_signals": 94,
+          "buy_fills": 94,
+          "unfilled_orders": {}
+        }
+      },
+      "max_dd_window": [
+        "2025-04-09 18:30:00+00:00",
+        "2025-04-22 19:30:00+00:00"
+      ],
+      "accounting": [
+        {
+          "period": "2024",
+          "dimension": "LEG",
+          "group": "CLOSE_TO_OPEN",
+          "n": 3258,
+          "net_usd": 44474.529293996035,
+          "net_log": 0.3222662119264649,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "LEG",
+          "group": "OPEN_TO_END",
+          "n": 3258,
+          "net_usd": 41583.22669970385,
+          "net_log": 0.2986207436936644,
+          "fees": 12240.655306300003
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE",
+          "group": "ACCEPTED",
+          "n": 1764,
+          "net_usd": 75621.10506999982,
+          "net_log": 0.571898940642027,
+          "fees": 2935.03493
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE",
+          "group": "FLAT",
+          "n": 3381,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE",
+          "group": "INITIAL",
+          "n": 1371,
+          "net_usd": 10436.650923700072,
+          "net_log": 0.04898801497810325,
+          "fees": 9305.6203763
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_MF",
+          "n": 141,
+          "net_usd": 197.9721899999131,
+          "net_log": -0.011865367852918661,
+          "fees": 566.2178100000001
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_NON_MF_OTHER",
+          "n": 1508,
+          "net_usd": 62674.60422999991,
+          "net_log": 0.4740397772021313,
+          "fees": 2247.34577
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_NON_MF_U",
+          "n": 115,
+          "net_usd": 12748.528649999993,
+          "net_log": 0.10972453129281445,
+          "fees": 121.47135
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_ROUTE",
+          "group": "FLAT_FLAT",
+          "n": 3381,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_MF",
+          "n": 409,
+          "net_usd": -8491.011051299909,
+          "net_log": -0.08423637224318857,
+          "fees": 2086.4173513
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_NON_MF_OTHER",
+          "n": 692,
+          "net_usd": 20292.378884999984,
+          "net_log": 0.13726086576919594,
+          "fees": 6160.036115000001
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_NON_MF_U",
+          "n": 270,
+          "net_usd": -1364.7169100000028,
+          "net_log": -0.004036478547904203,
+          "fees": 1059.16691
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_EXIT",
+          "n": 24,
+          "net_usd": -2935.034930000169,
+          "net_log": -0.023783651462600426,
+          "fees": 2935.03493
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_GAP",
+          "n": 870,
+          "net_usd": 51948.1881940014,
+          "net_log": 0.36690160333227523,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_HOLD",
+          "n": 870,
+          "net_usd": 26607.951805998586,
+          "net_log": 0.228780988772351,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "FLAT_FLAT",
+          "n": 1664,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "FLAT_GAP",
+          "n": 1717,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_ENTRY",
+          "n": 53,
+          "net_usd": -1598.4836974996724,
+          "net_log": -0.005916573323135416,
+          "fees": 6163.103697500001
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_EXIT",
+          "n": 28,
+          "net_usd": -3142.5166788000497,
+          "net_log": -0.027729554488600316,
+          "fees": 3142.5166787999997
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_GAP",
+          "n": 671,
+          "net_usd": -7473.658900005365,
+          "net_log": -0.044635391405810326,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_HOLD",
+          "n": 619,
+          "net_usd": 22651.31020000516,
+          "net_log": 0.1272695341956492,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "ROUTE",
+          "group": "FLAT",
+          "n": 3381,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "ROUTE",
+          "group": "MF",
+          "n": 550,
+          "net_usd": -8293.038861299996,
+          "net_log": -0.09610174009610714,
+          "fees": 2652.6351613
+        },
+        {
+          "period": "2024",
+          "dimension": "ROUTE",
+          "group": "NON_MF_OTHER",
+          "n": 2200,
+          "net_usd": 82966.9831149999,
+          "net_log": 0.6113006429713272,
+          "fees": 8407.381884999999
+        },
+        {
+          "period": "2024",
+          "dimension": "ROUTE",
+          "group": "NON_MF_U",
+          "n": 385,
+          "net_usd": 11383.81173999999,
+          "net_log": 0.10568805274491021,
+          "fees": 1180.63826
+        },
+        {
+          "period": "2024",
+          "dimension": "TOTAL",
+          "group": "TOTAL",
+          "n": 6516,
+          "net_usd": 86057.75599369989,
+          "net_log": 0.62088695562013,
+          "fees": 12240.655306300003
+        },
+        {
+          "period": "2025",
+          "dimension": "LEG",
+          "group": "CLOSE_TO_OPEN",
+          "n": 3232,
+          "net_usd": 416290.97046499065,
+          "net_log": 1.0228358475775545,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "LEG",
+          "group": "OPEN_TO_END",
+          "n": 3232,
+          "net_usd": 245012.0997420094,
+          "net_log": 0.4932336197114423,
+          "fees": 29585.666793000004
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE",
+          "group": "ACCEPTED",
+          "n": 2611,
+          "net_usd": 269626.307695,
+          "net_log": 0.48107836064690324,
+          "fees": 11585.332304999998
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE",
+          "group": "FLAT",
+          "n": 2783,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE",
+          "group": "INITIAL",
+          "n": 1070,
+          "net_usd": 391676.762512,
+          "net_log": 1.0349911066420934,
+          "fees": 18000.334488000004
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_MF",
+          "n": 192,
+          "net_usd": 84733.14323999998,
+          "net_log": 0.058572057245175856,
+          "fees": 3594.62676
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_NON_MF_OTHER",
+          "n": 2211,
+          "net_usd": 171900.80764500002,
+          "net_log": 0.3715637083160446,
+          "fees": 6943.222355
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_NON_MF_U",
+          "n": 208,
+          "net_usd": 12992.356810000027,
+          "net_log": 0.050942595085683,
+          "fees": 1047.48319
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_ROUTE",
+          "group": "FLAT_FLAT",
+          "n": 2783,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_MF",
+          "n": 193,
+          "net_usd": 168357.26974499982,
+          "net_log": 0.32445124838362754,
+          "fees": 3709.8652549999997
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_NON_MF_OTHER",
+          "n": 768,
+          "net_usd": 147820.66316200024,
+          "net_log": 0.5926719870988365,
+          "fees": 11343.383838000002
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_NON_MF_U",
+          "n": 109,
+          "net_usd": 75498.82960499992,
+          "net_log": 0.11786787115962954,
+          "fees": 2947.085395
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_EXIT",
+          "n": 31,
+          "net_usd": -11585.33230499993,
+          "net_log": -0.03072579376309586,
+          "fees": 11585.332304999998
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_GAP",
+          "n": 1290,
+          "net_usd": 225419.49241399043,
+          "net_log": 0.539421739511285,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_HOLD",
+          "n": 1290,
+          "net_usd": 55792.14758600952,
+          "net_log": -0.02761758510128578,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "FLAT_FLAT",
+          "n": 1371,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "FLAT_GAP",
+          "n": 1412,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_ENTRY",
+          "n": 41,
+          "net_usd": 13010.360922000284,
+          "net_log": 0.016898099754365657,
+          "fees": 14355.463778000001
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_EXIT",
+          "n": 11,
+          "net_usd": -3644.870709999959,
+          "net_log": -0.010861116455281898,
+          "fees": 3644.87071
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_GAP",
+          "n": 530,
+          "net_usd": 190871.4780510002,
+          "net_log": 0.4834141080662693,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_HOLD",
+          "n": 488,
+          "net_usd": 191439.79424899947,
+          "net_log": 0.5455400152767405,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "ROUTE",
+          "group": "FLAT",
+          "n": 2783,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "ROUTE",
+          "group": "MF",
+          "n": 385,
+          "net_usd": 253090.41298499983,
+          "net_log": 0.3830233056288032,
+          "fees": 7304.492014999999
+        },
+        {
+          "period": "2025",
+          "dimension": "ROUTE",
+          "group": "NON_MF_OTHER",
+          "n": 2979,
+          "net_usd": 319721.4708070003,
+          "net_log": 0.9642356954148823,
+          "fees": 18286.606193000003
+        },
+        {
+          "period": "2025",
+          "dimension": "ROUTE",
+          "group": "NON_MF_U",
+          "n": 317,
+          "net_usd": 88491.18641499995,
+          "net_log": 0.16881046624531248,
+          "fees": 3994.568585
+        },
+        {
+          "period": "2025",
+          "dimension": "TOTAL",
+          "group": "TOTAL",
+          "n": 6464,
+          "net_usd": 661303.070207,
+          "net_log": 1.5160694672889963,
+          "fees": 29585.666793000004
+        },
+        {
+          "period": "ALL",
+          "dimension": "LEG",
+          "group": "CLOSE_TO_OPEN",
+          "n": 6490,
+          "net_usd": 460765.49975898664,
+          "net_log": 1.3451020595040197,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "LEG",
+          "group": "OPEN_TO_END",
+          "n": 6490,
+          "net_usd": 286595.32644171326,
+          "net_log": 0.7918543634051072,
+          "fees": 41826.3220993
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE",
+          "group": "ACCEPTED",
+          "n": 4375,
+          "net_usd": 345247.41276499984,
+          "net_log": 1.0529773012889327,
+          "fees": 14520.367235000002
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE",
+          "group": "FLAT",
+          "n": 6164,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE",
+          "group": "INITIAL",
+          "n": 2441,
+          "net_usd": 402113.41343570006,
+          "net_log": 1.0839791216201975,
+          "fees": 27305.954864299994
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_MF",
+          "n": 333,
+          "net_usd": 84931.11542999989,
+          "net_log": 0.04670668939225713,
+          "fees": 4160.84457
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_NON_MF_OTHER",
+          "n": 3719,
+          "net_usd": 234575.41187499993,
+          "net_log": 0.8456034855181777,
+          "fees": 9190.568125
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_NON_MF_U",
+          "n": 323,
+          "net_usd": 25740.88546000002,
+          "net_log": 0.16066712637849756,
+          "fees": 1168.95454
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_ROUTE",
+          "group": "FLAT_FLAT",
+          "n": 6164,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_MF",
+          "n": 602,
+          "net_usd": 159866.2586936999,
+          "net_log": 0.24021487614043896,
+          "fees": 5796.2826063
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_NON_MF_OTHER",
+          "n": 1460,
+          "net_usd": 168113.04204700023,
+          "net_log": 0.7299328528680319,
+          "fees": 17503.419953000004
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_NON_MF_U",
+          "n": 379,
+          "net_usd": 74134.11269499992,
+          "net_log": 0.11383139261172534,
+          "fees": 4006.252305
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_EXIT",
+          "n": 55,
+          "net_usd": -14520.3672350001,
+          "net_log": -0.054509445225696285,
+          "fees": 14520.367235000002
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_GAP",
+          "n": 2160,
+          "net_usd": 277367.6806079918,
+          "net_log": 0.9063233428435615,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_HOLD",
+          "n": 2160,
+          "net_usd": 82400.09939200811,
+          "net_log": 0.20116340367106542,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "FLAT_FLAT",
+          "n": 3035,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "FLAT_GAP",
+          "n": 3129,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_ENTRY",
+          "n": 94,
+          "net_usd": 11411.877224500611,
+          "net_log": 0.010981526431230232,
+          "fees": 20518.5674755
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_EXIT",
+          "n": 39,
+          "net_usd": -6787.387388800009,
+          "net_log": -0.03859067094388223,
+          "fees": 6787.387388800001
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_GAP",
+          "n": 1201,
+          "net_usd": 183397.81915099482,
+          "net_log": 0.438778716660459,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_HOLD",
+          "n": 1107,
+          "net_usd": 214091.10444900463,
+          "net_log": 0.67280954947239,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "ROUTE",
+          "group": "FLAT",
+          "n": 6164,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "ROUTE",
+          "group": "MF",
+          "n": 935,
+          "net_usd": 244797.3741236998,
+          "net_log": 0.2869215655326962,
+          "fees": 9957.1271763
+        },
+        {
+          "period": "ALL",
+          "dimension": "ROUTE",
+          "group": "NON_MF_OTHER",
+          "n": 5179,
+          "net_usd": 402688.4539220002,
+          "net_log": 1.5755363383862067,
+          "fees": 26693.98807800001
+        },
+        {
+          "period": "ALL",
+          "dimension": "ROUTE",
+          "group": "NON_MF_U",
+          "n": 702,
+          "net_usd": 99874.99815499992,
+          "net_log": 0.274498518990223,
+          "fees": 5175.206845
+        },
+        {
+          "period": "ALL",
+          "dimension": "TOTAL",
+          "group": "TOTAL",
+          "n": 12980,
+          "net_usd": 747360.8262006999,
+          "net_log": 2.136956422909122,
+          "fees": 41826.3220993
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "LEG",
+          "group": "CLOSE_TO_OPEN",
+          "n": 106,
+          "net_usd": -15331.06349999999,
+          "net_log": -0.07415525457679208,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "LEG",
+          "group": "OPEN_TO_END",
+          "n": 106,
+          "net_usd": -37549.88824000003,
+          "net_log": -0.18122577950167887,
+          "fees": 740.8617399999999
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE",
+          "group": "ACCEPTED",
+          "n": 168,
+          "net_usd": -45988.2255,
+          "net_log": -0.21815837701715035,
+          "fees": 186.8755
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE",
+          "group": "FLAT",
+          "n": 28,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE",
+          "group": "INITIAL",
+          "n": 16,
+          "net_usd": -6892.726240000018,
+          "net_log": -0.03722265706132043,
+          "fees": 553.98624
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_NON_MF_OTHER",
+          "n": 168,
+          "net_usd": -45988.2255,
+          "net_log": -0.21815837701715035,
+          "fees": 186.8755
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_ROUTE",
+          "group": "FLAT_FLAT",
+          "n": 28,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_NON_MF_OTHER",
+          "n": 16,
+          "net_usd": -6892.726240000018,
+          "net_log": -0.03722265706132043,
+          "fees": 553.98624
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_EXIT",
+          "n": 1,
+          "net_usd": -186.87549999999464,
+          "net_log": -0.0009901385272736874,
+          "fees": 186.8755
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_GAP",
+          "n": 84,
+          "net_usd": -15190.84349999993,
+          "net_log": -0.07340704705724058,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_HOLD",
+          "n": 83,
+          "net_usd": -30610.506500000076,
+          "net_log": -0.14376119143263624,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "FLAT_FLAT",
+          "n": 13,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "FLAT_GAP",
+          "n": 15,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_ENTRY",
+          "n": 2,
+          "net_usd": -3179.8074899999774,
+          "net_log": -0.017087601873999814,
+          "fees": 370.15749
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_EXIT",
+          "n": 1,
+          "net_usd": -183.82875000001513,
+          "net_log": -0.0009904124166123913,
+          "fees": 183.82875
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_GAP",
+          "n": 7,
+          "net_usd": -140.22000000005937,
+          "net_log": -0.0007482075195514892,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_HOLD",
+          "n": 6,
+          "net_usd": -3388.8699999999662,
+          "net_log": -0.018396435251156733,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "ROUTE",
+          "group": "FLAT",
+          "n": 28,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "ROUTE",
+          "group": "NON_MF_OTHER",
+          "n": 184,
+          "net_usd": -52880.95174000002,
+          "net_log": -0.25538103407847074,
+          "fees": 740.8617399999999
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "TOTAL",
+          "group": "TOTAL",
+          "n": 212,
+          "net_usd": -52880.95174000002,
+          "net_log": -0.25538103407847074,
+          "fees": 740.8617399999999
+        }
+      ]
+    },
+    "C0342": {
+      "public_proof": {
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S017",
+            "experiment_id": "EX072_20261102"
+          },
+          "evidence_id": "2f6f3e145d849e2b2be94a4f009c19b2cacc46faf0e719cfc9da795bc5e514de.json",
+          "sha256": "2f6f3e145d849e2b2be94a4f009c19b2cacc46faf0e719cfc9da795bc5e514de",
+          "media_type": "application/json",
+          "name": "formal-C0342",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "closure": {
+          "input_ref": {
+            "kind": "equity_input",
+            "sha256": "2d2a98bfe9f04891e47cb6c938d0eb1b27bb28f41622f73aef010ae23d6d717c"
+          },
+          "candidate_ref": {
+            "kind": "equity_account",
+            "sha256": "412b584d6521a729a1ed3e002bbcdd687669ee1e5c9fecef4b82ab9e43e2d6d6"
+          },
+          "benchmark_ref": {
+            "kind": "equity_account",
+            "sha256": "d63ee5c1048fe1fe358674983404a268233e9de56877209a6414472665cbfac6"
+          }
+        },
+        "authenticated_dependencies": {
+          "2d2a98bfe9f04891e47cb6c938d0eb1b27bb28f41622f73aef010ae23d6d717c": "equity_input",
+          "412b584d6521a729a1ed3e002bbcdd687669ee1e5c9fecef4b82ab9e43e2d6d6": "equity_account",
+          "d63ee5c1048fe1fe358674983404a268233e9de56877209a6414472665cbfac6": "equity_account"
+        },
+        "evaluation_identity": {
+          "candidate": {
+            "candidate_id": "C0342",
+            "strategy_id": "S017"
+          },
+          "content_sha256": "523f30fd4203afa6eb29d696682d02e6f9b428ea31e8363b42dde50fb1722637",
+          "environment_sha256": "be2aab2fd5115bb6e83e6bbf82382b9c51bd5b548396b260af84e6817b4a4a25",
+          "input_sha256": "a671f92acb0723e4054b26247bca52d39186c3a0f87e25e70a133b48987a242d",
+          "protocol_sha256": "cee60e062baa51fbb20b000f83b73d798bfdcfaeb097fa4908efb12c7abff8a9"
+        },
+        "request_hash": "cee60e062baa51fbb20b000f83b73d798bfdcfaeb097fa4908efb12c7abff8a9"
+      },
+      "metrics": {
+        "annualized_return": 1.9624677256753662,
+        "bar_max_drawdown": 0.22537267059295352,
+        "closed_cycles": 94,
+        "fees": 42216.1256917,
+        "rolling_60_closed_cycle_median": 12,
+        "total_return": 7.700895898083001,
+        "ending_equity": 870089.5898083,
+        "ending_quantity": 0,
+        "coverage_at_least_three": 1,
+        "frequency_windows": 443,
+        "holding_bar_fraction": 0.5121725731895224,
+        "mean_invested_equity_fraction": 0.5075397245923023,
+        "year_returns": {
+          "2024": 0.860159949689,
+          "2025": 3.6774987815094624
+        },
+        "max_drawdown_path": {
+          "peak": "2025-04-09T18:30:00.000000Z",
+          "trough": "2025-04-22T19:30:00.000000Z",
+          "recovery": "2025-05-07T17:30:00.000000Z"
+        },
+        "trade_pnl": {
+          "closed_net_pnl": 770089.5898082999,
+          "positive_pnl": 1011319.4957200001,
+          "negative_pnl": -241229.9059117002,
+          "nonclosed_equity_change": 1.1641532182693481e-10,
+          "win_rate": 0.4148936170212766,
+          "mean_cycle_net_return": 0.02642325879680851,
+          "median_cycle_net_return": -0.00767211205,
+          "top_five_positive_pnl_share": 0.4780547199782801
+        },
+        "decision_counts": {
+          "entry_signals": 209,
+          "held_signals_ignored": 115,
+          "flat_signals": 94,
+          "buy_fills": 94,
+          "unfilled_orders": {}
+        }
+      },
+      "max_dd_window": [
+        "2025-04-09 18:30:00+00:00",
+        "2025-04-22 19:30:00+00:00"
+      ],
+      "accounting": [
+        {
+          "period": "2024",
+          "dimension": "LEG",
+          "group": "CLOSE_TO_OPEN",
+          "n": 3258,
+          "net_usd": 44572.86831600235,
+          "net_log": 0.3233364199890286,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "LEG",
+          "group": "OPEN_TO_END",
+          "n": 3258,
+          "net_usd": 41443.12665289764,
+          "net_log": 0.29732605849522914,
+          "fees": 12238.311131100005
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE",
+          "group": "ACCEPTED",
+          "n": 1752,
+          "net_usd": 75588.99836,
+          "net_log": 0.5717225811885123,
+          "fees": 2934.3766399999995
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE",
+          "group": "FLAT",
+          "n": 3393,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE",
+          "group": "INITIAL",
+          "n": 1371,
+          "net_usd": 10426.996608899994,
+          "net_log": 0.048939897295745334,
+          "fees": 9303.934491100003
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_MF",
+          "n": 129,
+          "net_usd": 172.98661499998707,
+          "net_log": -0.012100366624379626,
+          "fees": 566.028385
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_NON_MF_OTHER",
+          "n": 1508,
+          "net_usd": 62673.42646500001,
+          "net_log": 0.47411921725148876,
+          "fees": 2246.9335349999997
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_NON_MF_U",
+          "n": 115,
+          "net_usd": 12742.58528,
+          "net_log": 0.1097037305614028,
+          "fees": 121.41472
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_ROUTE",
+          "group": "FLAT_FLAT",
+          "n": 3393,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_MF",
+          "n": 409,
+          "net_usd": -8493.494476099979,
+          "net_log": -0.08426373269431457,
+          "fees": 2086.0455761
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_NON_MF_OTHER",
+          "n": 692,
+          "net_usd": 20286.839055000062,
+          "net_log": 0.13725909904389896,
+          "fees": 6159.000945000001
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_NON_MF_U",
+          "n": 270,
+          "net_usd": -1366.3479700000898,
+          "net_log": -0.0040554690538388595,
+          "fees": 1058.88797
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_EXIT",
+          "n": 24,
+          "net_usd": -2934.376640000017,
+          "net_log": -0.023783034399357736,
+          "fees": 2934.3766399999995
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_GAP",
+          "n": 864,
+          "net_usd": 52045.44251600394,
+          "net_log": 0.3679681542059008,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_HOLD",
+          "n": 864,
+          "net_usd": 26477.932483996075,
+          "net_log": 0.22753746138196937,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "FLAT_FLAT",
+          "n": 1670,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "FLAT_GAP",
+          "n": 1723,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_ENTRY",
+          "n": 53,
+          "net_usd": -1601.8934625001275,
+          "net_log": -0.005943487911831566,
+          "fees": 6161.953662499999
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_EXIT",
+          "n": 28,
+          "net_usd": -3141.9808286001207,
+          "net_log": -0.02773002366368462,
+          "fees": 3141.9808285999993
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_GAP",
+          "n": 671,
+          "net_usd": -7472.574200001589,
+          "net_log": -0.04463173421687219,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_HOLD",
+          "n": 619,
+          "net_usd": 22643.44510000183,
+          "net_log": 0.1272451430881338,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "ROUTE",
+          "group": "FLAT",
+          "n": 3393,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "ROUTE",
+          "group": "MF",
+          "n": 538,
+          "net_usd": -8320.507861099992,
+          "net_log": -0.09636409931869416,
+          "fees": 2652.0739611
+        },
+        {
+          "period": "2024",
+          "dimension": "ROUTE",
+          "group": "NON_MF_OTHER",
+          "n": 2200,
+          "net_usd": 82960.26552000007,
+          "net_log": 0.6113783162953873,
+          "fees": 8405.93448
+        },
+        {
+          "period": "2024",
+          "dimension": "ROUTE",
+          "group": "NON_MF_U",
+          "n": 385,
+          "net_usd": 11376.23730999991,
+          "net_log": 0.10564826150756398,
+          "fees": 1180.30269
+        },
+        {
+          "period": "2024",
+          "dimension": "TOTAL",
+          "group": "TOTAL",
+          "n": 6516,
+          "net_usd": 86015.99496889999,
+          "net_log": 0.6206624784842566,
+          "fees": 12238.311131100005
+        },
+        {
+          "period": "2025",
+          "dimension": "LEG",
+          "group": "CLOSE_TO_OPEN",
+          "n": 3232,
+          "net_usd": 431122.7099319847,
+          "net_log": 1.0259468730365933,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "LEG",
+          "group": "OPEN_TO_END",
+          "n": 3232,
+          "net_usd": 252950.88490741534,
+          "net_log": 0.5168166456291022,
+          "fees": 29977.814560599996
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE",
+          "group": "ACCEPTED",
+          "n": 2549,
+          "net_usd": 286835.3754850008,
+          "net_log": 0.5078201162135672,
+          "fees": 11757.879515
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE",
+          "group": "FLAT",
+          "n": 2845,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE",
+          "group": "INITIAL",
+          "n": 1070,
+          "net_usd": 397238.21935439925,
+          "net_log": 1.0349434024521278,
+          "fees": 18219.9350456
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_MF",
+          "n": 130,
+          "net_usd": 99852.41360000023,
+          "net_log": 0.08525303393042875,
+          "fees": 3675.7064
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_NON_MF_OTHER",
+          "n": 2211,
+          "net_usd": 173749.7892950004,
+          "net_log": 0.37162501443451107,
+          "fees": 7015.335705
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_NON_MF_U",
+          "n": 208,
+          "net_usd": 13233.172590000147,
+          "net_log": 0.05094206784862757,
+          "fees": 1066.83741
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_ROUTE",
+          "group": "FLAT_FLAT",
+          "n": 2845,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_MF",
+          "n": 193,
+          "net_usd": 171374.01214999962,
+          "net_log": 0.32445682502049755,
+          "fees": 3772.49785
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_NON_MF_OTHER",
+          "n": 768,
+          "net_usd": 148434.0456343998,
+          "net_log": 0.5926135015001011,
+          "fees": 11483.5887656
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_NON_MF_U",
+          "n": 109,
+          "net_usd": 77430.16156999982,
+          "net_log": 0.1178730759315302,
+          "fees": 2963.84843
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_EXIT",
+          "n": 31,
+          "net_usd": -11757.879514999717,
+          "net_log": -0.03072523154244541,
+          "fees": 11757.879515
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_GAP",
+          "n": 1259,
+          "net_usd": 237634.67107699002,
+          "net_log": 0.5425362052249302,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_HOLD",
+          "n": 1259,
+          "net_usd": 60958.583923010476,
+          "net_log": -0.003990857468917736,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "FLAT_FLAT",
+          "n": 1402,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "FLAT_GAP",
+          "n": 1443,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_ENTRY",
+          "n": 41,
+          "net_usd": 12515.499874400237,
+          "net_log": 0.016887928284093696,
+          "fees": 14539.9563256
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_EXIT",
+          "n": 11,
+          "net_usd": -3679.9787199999846,
+          "net_log": -0.010861079628221,
+          "fees": 3679.97872
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_GAP",
+          "n": 530,
+          "net_usd": 193488.03885499467,
+          "net_log": 0.48341066781166386,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_HOLD",
+          "n": 488,
+          "net_usd": 194914.65934500433,
+          "net_log": 0.5455058859845929,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "ROUTE",
+          "group": "FLAT",
+          "n": 2845,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "ROUTE",
+          "group": "MF",
+          "n": 323,
+          "net_usd": 271226.4257499998,
+          "net_log": 0.40970985895092643,
+          "fees": 7448.20425
+        },
+        {
+          "period": "2025",
+          "dimension": "ROUTE",
+          "group": "NON_MF_OTHER",
+          "n": 2979,
+          "net_usd": 322183.83492940024,
+          "net_log": 0.9642385159346111,
+          "fees": 18498.924470600003
+        },
+        {
+          "period": "2025",
+          "dimension": "ROUTE",
+          "group": "NON_MF_U",
+          "n": 317,
+          "net_usd": 90663.33415999997,
+          "net_log": 0.16881514378015783,
+          "fees": 4030.68584
+        },
+        {
+          "period": "2025",
+          "dimension": "TOTAL",
+          "group": "TOTAL",
+          "n": 6464,
+          "net_usd": 684073.5948394,
+          "net_log": 1.5427635186656974,
+          "fees": 29977.814560599996
+        },
+        {
+          "period": "ALL",
+          "dimension": "LEG",
+          "group": "CLOSE_TO_OPEN",
+          "n": 6490,
+          "net_usd": 475695.578247987,
+          "net_log": 1.349283293025625,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "LEG",
+          "group": "OPEN_TO_END",
+          "n": 6490,
+          "net_usd": 294394.011560313,
+          "net_log": 0.8141427041243295,
+          "fees": 42216.12569170002
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE",
+          "group": "ACCEPTED",
+          "n": 4301,
+          "net_usd": 362424.37384500075,
+          "net_log": 1.0795426974020799,
+          "fees": 14692.256155000003
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE",
+          "group": "FLAT",
+          "n": 6238,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE",
+          "group": "INITIAL",
+          "n": 2441,
+          "net_usd": 407665.21596329927,
+          "net_log": 1.0838832997478733,
+          "fees": 27523.869536699996
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_MF",
+          "n": 259,
+          "net_usd": 100025.40021500022,
+          "net_log": 0.07315266730604915,
+          "fees": 4241.734785
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_NON_MF_OTHER",
+          "n": 3719,
+          "net_usd": 236423.2157600004,
+          "net_log": 0.8457442316859985,
+          "fees": 9262.26924
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_NON_MF_U",
+          "n": 323,
+          "net_usd": 25975.757870000147,
+          "net_log": 0.1606457984100304,
+          "fees": 1188.25213
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_ROUTE",
+          "group": "FLAT_FLAT",
+          "n": 6238,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_MF",
+          "n": 602,
+          "net_usd": 162880.51767389965,
+          "net_log": 0.24019309232618294,
+          "fees": 5858.5434261
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_NON_MF_OTHER",
+          "n": 1460,
+          "net_usd": 168720.88468939986,
+          "net_log": 0.7298726005439993,
+          "fees": 17642.589710599997
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_NON_MF_U",
+          "n": 379,
+          "net_usd": 76063.81359999973,
+          "net_log": 0.11381760687769134,
+          "fees": 4022.7364000000002
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_EXIT",
+          "n": 55,
+          "net_usd": -14692.256154999734,
+          "net_log": -0.05450826594180314,
+          "fees": 14692.256155000003
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_GAP",
+          "n": 2123,
+          "net_usd": 289680.11359299393,
+          "net_log": 0.9105043594308324,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_HOLD",
+          "n": 2123,
+          "net_usd": 87436.51640700655,
+          "net_log": 0.2235466039130513,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "FLAT_FLAT",
+          "n": 3072,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "FLAT_GAP",
+          "n": 3166,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_ENTRY",
+          "n": 94,
+          "net_usd": 10913.60641190011,
+          "net_log": 0.01094444037226212,
+          "fees": 20701.909988099993
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_EXIT",
+          "n": 39,
+          "net_usd": -6821.959548600105,
+          "net_log": -0.03859110329190562,
+          "fees": 6821.959548599999
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_GAP",
+          "n": 1201,
+          "net_usd": 186015.4646549931,
+          "net_log": 0.43877893359479136,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_HOLD",
+          "n": 1107,
+          "net_usd": 217558.10444500617,
+          "net_log": 0.6727510290727268,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "ROUTE",
+          "group": "FLAT",
+          "n": 6238,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "ROUTE",
+          "group": "MF",
+          "n": 861,
+          "net_usd": 262905.91788889986,
+          "net_log": 0.31334575963223227,
+          "fees": 10100.2782111
+        },
+        {
+          "period": "ALL",
+          "dimension": "ROUTE",
+          "group": "NON_MF_OTHER",
+          "n": 5179,
+          "net_usd": 405144.10044940026,
+          "net_log": 1.5756168322299975,
+          "fees": 26904.858950599995
+        },
+        {
+          "period": "ALL",
+          "dimension": "ROUTE",
+          "group": "NON_MF_U",
+          "n": 702,
+          "net_usd": 102039.57146999988,
+          "net_log": 0.2744634052877217,
+          "fees": 5210.98853
+        },
+        {
+          "period": "ALL",
+          "dimension": "TOTAL",
+          "group": "TOTAL",
+          "n": 12980,
+          "net_usd": 770089.5898083,
+          "net_log": 2.16342599714995,
+          "fees": 42216.12569170002
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "LEG",
+          "group": "CLOSE_TO_OPEN",
+          "n": 106,
+          "net_usd": -15326.969699999929,
+          "net_log": -0.0741530971324915,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "LEG",
+          "group": "OPEN_TO_END",
+          "n": 106,
+          "net_usd": -37539.79043000017,
+          "net_log": -0.1812201334303146,
+          "fees": 740.66013
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE",
+          "group": "ACCEPTED",
+          "n": 168,
+          "net_usd": -45975.94559999998,
+          "net_log": -0.21815216689674424,
+          "fees": 186.8256
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE",
+          "group": "FLAT",
+          "n": 28,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE",
+          "group": "INITIAL",
+          "n": 16,
+          "net_usd": -6890.81453000012,
+          "net_log": -0.037221063666061864,
+          "fees": 553.8345300000001
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_NON_MF_OTHER",
+          "n": 168,
+          "net_usd": -45975.94559999998,
+          "net_log": -0.21815216689674424,
+          "fees": 186.8256
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_ROUTE",
+          "group": "FLAT_FLAT",
+          "n": 28,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_NON_MF_OTHER",
+          "n": 16,
+          "net_usd": -6890.81453000012,
+          "net_log": -0.037221063666061864,
+          "fees": 553.8345300000001
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_EXIT",
+          "n": 1,
+          "net_usd": -186.82559999998193,
+          "net_log": -0.000990107171367048,
+          "fees": 186.8256
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_GAP",
+          "n": 84,
+          "net_usd": -15186.787199999555,
+          "net_log": -0.07340491356058954,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_HOLD",
+          "n": 83,
+          "net_usd": -30602.33280000044,
+          "net_log": -0.1437571461647877,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "FLAT_FLAT",
+          "n": 13,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "FLAT_GAP",
+          "n": 15,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_ENTRY",
+          "n": 2,
+          "net_usd": -3178.925130000076,
+          "net_log": -0.017086871815569338,
+          "fees": 370.05512999999996
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_EXIT",
+          "n": 1,
+          "net_usd": -183.77939999999944,
+          "net_log": -0.000990379079907522,
+          "fees": 183.7794
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_GAP",
+          "n": 7,
+          "net_usd": -140.1825000003737,
+          "net_log": -0.000748183571901982,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_HOLD",
+          "n": 6,
+          "net_usd": -3387.9274999996705,
+          "net_log": -0.018395629198683018,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "ROUTE",
+          "group": "FLAT",
+          "n": 28,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "ROUTE",
+          "group": "NON_MF_OTHER",
+          "n": 184,
+          "net_usd": -52866.7601300001,
+          "net_log": -0.25537323056280603,
+          "fees": 740.66013
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "TOTAL",
+          "group": "TOTAL",
+          "n": 212,
+          "net_usd": -52866.7601300001,
+          "net_log": -0.25537323056280603,
+          "fees": 740.66013
+        }
+      ]
+    },
+    "C0356": {
+      "public_proof": {
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S017",
+            "experiment_id": "EX072_20261102"
+          },
+          "evidence_id": "cf0cb261b9c2a4eef6834591d3116ce0cde6c50b11ccbf901d94eb10d145c7ec.json",
+          "sha256": "cf0cb261b9c2a4eef6834591d3116ce0cde6c50b11ccbf901d94eb10d145c7ec",
+          "media_type": "application/json",
+          "name": "formal-C0356",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "closure": {
+          "input_ref": {
+            "kind": "equity_input",
+            "sha256": "2d2a98bfe9f04891e47cb6c938d0eb1b27bb28f41622f73aef010ae23d6d717c"
+          },
+          "candidate_ref": {
+            "kind": "equity_account",
+            "sha256": "ec3f9f205dc5cd5a0b272bb06156af3a56e8b53226440359540e3d4849779d48"
+          },
+          "benchmark_ref": {
+            "kind": "equity_account",
+            "sha256": "d63ee5c1048fe1fe358674983404a268233e9de56877209a6414472665cbfac6"
+          }
+        },
+        "authenticated_dependencies": {
+          "2d2a98bfe9f04891e47cb6c938d0eb1b27bb28f41622f73aef010ae23d6d717c": "equity_input",
+          "ec3f9f205dc5cd5a0b272bb06156af3a56e8b53226440359540e3d4849779d48": "equity_account",
+          "d63ee5c1048fe1fe358674983404a268233e9de56877209a6414472665cbfac6": "equity_account"
+        },
+        "evaluation_identity": {
+          "candidate": {
+            "candidate_id": "C0356",
+            "strategy_id": "S017"
+          },
+          "content_sha256": "62abbf634ab66f5343bdfacd1fa57a5bda60a57b3164df8315a6a939d34f9b68",
+          "environment_sha256": "be2aab2fd5115bb6e83e6bbf82382b9c51bd5b548396b260af84e6817b4a4a25",
+          "input_sha256": "a671f92acb0723e4054b26247bca52d39186c3a0f87e25e70a133b48987a242d",
+          "protocol_sha256": "23585177ea151722a89d9ba5aab35cd44145f90253957d626196ea6fee192b7c"
+        },
+        "request_hash": "23585177ea151722a89d9ba5aab35cd44145f90253957d626196ea6fee192b7c"
+      },
+      "metrics": {
+        "annualized_return": 2.0556980478555094,
+        "bar_max_drawdown": 0.3474720090552321,
+        "closed_cycles": 167,
+        "fees": 91867.015493,
+        "rolling_60_closed_cycle_median": 19,
+        "total_return": 8.254879971069991,
+        "ending_equity": 925487.9971069992,
+        "ending_quantity": 0,
+        "coverage_at_least_three": 1,
+        "frequency_windows": 443,
+        "holding_bar_fraction": 0.6727272727272727,
+        "mean_invested_equity_fraction": 0.6658988655689471,
+        "year_returns": {
+          "2024": 0.823234822661002,
+          "2025": 4.076076792764709
+        },
+        "max_drawdown_path": {
+          "peak": "2024-02-07T16:00:00.000000Z",
+          "trough": "2024-04-16T15:00:00.000000Z",
+          "recovery": "2024-08-23T18:30:00.000000Z"
+        },
+        "trade_pnl": {
+          "closed_net_pnl": 825487.9971069987,
+          "positive_pnl": 1489889.1782395998,
+          "negative_pnl": -664401.181132601,
+          "nonclosed_equity_change": 4.656612873077393e-10,
+          "win_rate": 0.3413173652694611,
+          "mean_cycle_net_return": 0.016017147876646706,
+          "median_cycle_net_return": -0.0094237813,
+          "top_five_positive_pnl_share": 0.4428214335609465
+        },
+        "decision_counts": {
+          "entry_signals": 497,
+          "held_signals_ignored": 328,
+          "flat_signals": 169,
+          "buy_fills": 167,
+          "unfilled_orders": {
+            "LIMIT_NOT_CROSSED": 2
+          }
+        }
+      },
+      "max_dd_window": [
+        "2024-02-07 16:00:00+00:00",
+        "2024-04-16 15:00:00+00:00"
+      ],
+      "accounting": [
+        {
+          "period": "2024",
+          "dimension": "LEG",
+          "group": "CLOSE_TO_OPEN",
+          "n": 3258,
+          "net_usd": 46203.873313992575,
+          "net_log": 0.3353977219245803,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "LEG",
+          "group": "OPEN_TO_END",
+          "n": 3258,
+          "net_usd": 36119.608952107636,
+          "net_log": 0.2652145765906097,
+          "fees": 19105.10063389999
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE",
+          "group": "ACCEPTED",
+          "n": 2739,
+          "net_usd": 88860.52641500001,
+          "net_log": 0.6880920490703785,
+          "fees": 3690.3685850000006
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE",
+          "group": "FLAT",
+          "n": 2310,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE",
+          "group": "INITIAL",
+          "n": 1467,
+          "net_usd": -6537.044148899804,
+          "net_log": -0.08747975055518982,
+          "fees": 15414.732048899996
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_MF",
+          "n": 118,
+          "net_usd": -3229.966009999989,
+          "net_log": -0.036540018001638086,
+          "fees": 357.44601
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_NON_MF_OTHER",
+          "n": 2465,
+          "net_usd": 79212.91645500001,
+          "net_log": 0.6108614286726578,
+          "fees": 3102.6885450000004
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_NON_MF_U",
+          "n": 156,
+          "net_usd": 12877.57596999999,
+          "net_log": 0.11377063839935918,
+          "fees": 230.23403000000002
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_ROUTE",
+          "group": "FLAT_FLAT",
+          "n": 2310,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_MF",
+          "n": 309,
+          "net_usd": -11251.685426100012,
+          "net_log": -0.12290077107331591,
+          "fees": 1627.2865261
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_NON_MF_OTHER",
+          "n": 1016,
+          "net_usd": 15702.7125960001,
+          "net_log": 0.10886090652306919,
+          "fees": 10902.513404
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_NON_MF_U",
+          "n": 142,
+          "net_usd": -10988.071318799892,
+          "net_log": -0.07343988600494315,
+          "fees": 2884.9321188
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_EXIT",
+          "n": 33,
+          "net_usd": -3690.3685849999893,
+          "net_log": -0.03269916097957699,
+          "fees": 3690.3685850000006
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_GAP",
+          "n": 1353,
+          "net_usd": 40729.60071399958,
+          "net_log": 0.2704965660818292,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_HOLD",
+          "n": 1353,
+          "net_usd": 51821.294286000426,
+          "net_log": 0.4502946439681268,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "FLAT_FLAT",
+          "n": 1110,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "FLAT_GAP",
+          "n": 1200,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_ENTRY",
+          "n": 90,
+          "net_usd": -15950.791850500202,
+          "net_log": -0.1345413970085394,
+          "fees": 9591.956350499999
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_EXIT",
+          "n": 56,
+          "net_usd": -5822.775698399855,
+          "net_log": -0.05541128627627053,
+          "fees": 5822.7756984000025
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_GAP",
+          "n": 705,
+          "net_usd": 5474.272599992997,
+          "net_log": 0.06490115584275102,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_HOLD",
+          "n": 616,
+          "net_usd": 9762.250800007256,
+          "net_log": 0.037571776886869156,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "ROUTE",
+          "group": "FLAT",
+          "n": 2310,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2024",
+          "dimension": "ROUTE",
+          "group": "MF",
+          "n": 427,
+          "net_usd": -14481.6514361,
+          "net_log": -0.1594407890749538,
+          "fees": 1984.7325361
+        },
+        {
+          "period": "2024",
+          "dimension": "ROUTE",
+          "group": "NON_MF_OTHER",
+          "n": 3481,
+          "net_usd": 94915.62905100011,
+          "net_log": 0.7197223351957271,
+          "fees": 14005.201948999997
+        },
+        {
+          "period": "2024",
+          "dimension": "ROUTE",
+          "group": "NON_MF_U",
+          "n": 298,
+          "net_usd": 1889.504651200099,
+          "net_log": 0.040330752394416094,
+          "fees": 3115.1661487999995
+        },
+        {
+          "period": "2024",
+          "dimension": "TOTAL",
+          "group": "TOTAL",
+          "n": 6516,
+          "net_usd": 82323.48226610021,
+          "net_log": 0.6006122985151894,
+          "fees": 19105.10063389999
+        },
+        {
+          "period": "2025",
+          "dimension": "LEG",
+          "group": "CLOSE_TO_OPEN",
+          "n": 3232,
+          "net_usd": 375947.83160000027,
+          "net_log": 0.8909465502307903,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "LEG",
+          "group": "OPEN_TO_END",
+          "n": 3232,
+          "net_usd": 367216.68324089865,
+          "net_log": 0.7335921281051654,
+          "fees": 72761.9148591
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE",
+          "group": "ACCEPTED",
+          "n": 3167,
+          "net_usd": 318160.19652760006,
+          "net_log": 0.7070288543778677,
+          "fees": 19727.040872399997
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE",
+          "group": "FLAT",
+          "n": 1771,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE",
+          "group": "INITIAL",
+          "n": 1526,
+          "net_usd": 425004.31831329886,
+          "net_log": 0.9175098239580888,
+          "fees": 53034.87398670001
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_MF",
+          "n": 194,
+          "net_usd": 97431.98711499991,
+          "net_log": 0.04734513703706851,
+          "fees": 4336.017885
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_NON_MF_OTHER",
+          "n": 2645,
+          "net_usd": 283550.87424000015,
+          "net_log": 0.6665976968944591,
+          "fees": 10153.08076
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_NON_MF_U",
+          "n": 328,
+          "net_usd": -62822.664827399945,
+          "net_log": -0.006913979553660717,
+          "fees": 5237.942227400001
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_ROUTE",
+          "group": "FLAT_FLAT",
+          "n": 1771,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_MF",
+          "n": 198,
+          "net_usd": 182859.33581,
+          "net_log": 0.300480699007133,
+          "fees": 6381.554190000001
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_NON_MF_OTHER",
+          "n": 977,
+          "net_usd": 143029.69470879904,
+          "net_log": 0.5346592011673543,
+          "fees": 31263.541491200005
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_NON_MF_U",
+          "n": 351,
+          "net_usd": 99115.28779449983,
+          "net_log": 0.08236992378360156,
+          "fees": 15389.778305500002
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_EXIT",
+          "n": 41,
+          "net_usd": -19727.040872400015,
+          "net_log": -0.040594447171320124,
+          "fees": 19727.040872399997
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_GAP",
+          "n": 1563,
+          "net_usd": 219487.36789999914,
+          "net_log": 0.5864011962266505,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_HOLD",
+          "n": 1563,
+          "net_usd": 118399.86950000096,
+          "net_log": 0.16122210532253525,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "FLAT_FLAT",
+          "n": 847,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "FLAT_GAP",
+          "n": 924,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_ENTRY",
+          "n": 77,
+          "net_usd": -35216.06698970089,
+          "net_log": -0.026160228720972928,
+          "fees": 35882.87388969999
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_EXIT",
+          "n": 37,
+          "net_usd": -17152.00009700004,
+          "net_log": -0.03650179148846037,
+          "fees": 17152.000097
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_GAP",
+          "n": 745,
+          "net_usd": 156460.46370000116,
+          "net_log": 0.3045453540041399,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_HOLD",
+          "n": 667,
+          "net_usd": 320911.92169999867,
+          "net_log": 0.6756264901633826,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "ROUTE",
+          "group": "FLAT",
+          "n": 1771,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "2025",
+          "dimension": "ROUTE",
+          "group": "MF",
+          "n": 392,
+          "net_usd": 280291.32292499987,
+          "net_log": 0.3478258360442013,
+          "fees": 10717.572075000002
+        },
+        {
+          "period": "2025",
+          "dimension": "ROUTE",
+          "group": "NON_MF_OTHER",
+          "n": 3622,
+          "net_usd": 426580.56894879916,
+          "net_log": 1.2012568980618108,
+          "fees": 41416.62225120002
+        },
+        {
+          "period": "2025",
+          "dimension": "ROUTE",
+          "group": "NON_MF_U",
+          "n": 679,
+          "net_usd": 36292.62296709989,
+          "net_log": 0.075455944229941,
+          "fees": 20627.720532900003
+        },
+        {
+          "period": "2025",
+          "dimension": "TOTAL",
+          "group": "TOTAL",
+          "n": 6464,
+          "net_usd": 743164.5148408989,
+          "net_log": 1.624538678335954,
+          "fees": 72761.9148591
+        },
+        {
+          "period": "ALL",
+          "dimension": "LEG",
+          "group": "CLOSE_TO_OPEN",
+          "n": 6490,
+          "net_usd": 422151.7049139929,
+          "net_log": 1.2263442721553695,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "LEG",
+          "group": "OPEN_TO_END",
+          "n": 6490,
+          "net_usd": 403336.29219300626,
+          "net_log": 0.9988067046957769,
+          "fees": 91867.01549299997
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE",
+          "group": "ACCEPTED",
+          "n": 5906,
+          "net_usd": 407020.7229426001,
+          "net_log": 1.395120903448243,
+          "fees": 23417.409457400005
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE",
+          "group": "FLAT",
+          "n": 4081,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE",
+          "group": "INITIAL",
+          "n": 2993,
+          "net_usd": 418467.2741643991,
+          "net_log": 0.8300300734028994,
+          "fees": 68449.60603559997
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_MF",
+          "n": 312,
+          "net_usd": 94202.02110499992,
+          "net_log": 0.010805119035430293,
+          "fees": 4693.463895000001
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_NON_MF_OTHER",
+          "n": 5110,
+          "net_usd": 362763.79069500015,
+          "net_log": 1.2774591255671148,
+          "fees": 13255.769304999998
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_NON_MF_U",
+          "n": 484,
+          "net_usd": -49945.088857399955,
+          "net_log": 0.10685665884569863,
+          "fees": 5468.1762574
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_ROUTE",
+          "group": "FLAT_FLAT",
+          "n": 4081,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_MF",
+          "n": 507,
+          "net_usd": 171607.65038389998,
+          "net_log": 0.17757992793381688,
+          "fees": 8008.8407161000005
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_NON_MF_OTHER",
+          "n": 1993,
+          "net_usd": 158732.40730479913,
+          "net_log": 0.6435201076904229,
+          "fees": 42166.05489520001
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_NON_MF_U",
+          "n": 493,
+          "net_usd": 88127.21647569994,
+          "net_log": 0.008930037778658488,
+          "fees": 18274.7104243
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_EXIT",
+          "n": 74,
+          "net_usd": -23417.409457400005,
+          "net_log": -0.07329360815089711,
+          "fees": 23417.409457400005
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_GAP",
+          "n": 2916,
+          "net_usd": 260216.96861399873,
+          "net_log": 0.8568977623084794,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_HOLD",
+          "n": 2916,
+          "net_usd": 170221.1637860014,
+          "net_log": 0.6115167492906622,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "FLAT_FLAT",
+          "n": 1957,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "FLAT_GAP",
+          "n": 2124,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_ENTRY",
+          "n": 167,
+          "net_usd": -51166.858840201094,
+          "net_log": -0.16070162572951227,
+          "fees": 45474.83024020001
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_EXIT",
+          "n": 93,
+          "net_usd": -22974.775795399895,
+          "net_log": -0.09191307776473087,
+          "fees": 22974.775795400004
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_GAP",
+          "n": 1450,
+          "net_usd": 161934.73629999417,
+          "net_log": 0.3694465098468912,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_HOLD",
+          "n": 1283,
+          "net_usd": 330674.1725000059,
+          "net_log": 0.7131982670502519,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "ROUTE",
+          "group": "FLAT",
+          "n": 4081,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "ALL",
+          "dimension": "ROUTE",
+          "group": "MF",
+          "n": 819,
+          "net_usd": 265809.6714888999,
+          "net_log": 0.18838504696924752,
+          "fees": 12702.3046111
+        },
+        {
+          "period": "ALL",
+          "dimension": "ROUTE",
+          "group": "NON_MF_OTHER",
+          "n": 7103,
+          "net_usd": 521496.1979997993,
+          "net_log": 1.9209792332575375,
+          "fees": 55421.82420019999
+        },
+        {
+          "period": "ALL",
+          "dimension": "ROUTE",
+          "group": "NON_MF_U",
+          "n": 977,
+          "net_usd": 38182.12761829997,
+          "net_log": 0.11578669662435707,
+          "fees": 23742.8866817
+        },
+        {
+          "period": "ALL",
+          "dimension": "TOTAL",
+          "group": "TOTAL",
+          "n": 12980,
+          "net_usd": 825487.9971069992,
+          "net_log": 2.2251509768511446,
+          "fees": 91867.01549299997
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "LEG",
+          "group": "CLOSE_TO_OPEN",
+          "n": 611,
+          "net_usd": -24520.85830000158,
+          "net_log": -0.24273196057642563,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "LEG",
+          "group": "OPEN_TO_END",
+          "n": 611,
+          "net_usd": -17575.417387498324,
+          "net_log": -0.18416928212931194,
+          "fees": 4401.988187499999
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE",
+          "group": "ACCEPTED",
+          "n": 233,
+          "net_usd": -23290.2464950001,
+          "net_log": -0.21024178599399607,
+          "fees": 727.156495
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE",
+          "group": "FLAT",
+          "n": 657,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE",
+          "group": "INITIAL",
+          "n": 332,
+          "net_usd": -18806.029192499802,
+          "net_log": -0.2166594567117416,
+          "fees": 3674.8316924999995
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_MF",
+          "n": 13,
+          "net_usd": -2782.7427599999937,
+          "net_log": -0.03271469700692713,
+          "fees": 82.86276
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_ROUTE",
+          "group": "ACCEPTED_NON_MF_OTHER",
+          "n": 220,
+          "net_usd": -20507.503735000108,
+          "net_log": -0.17752708898706893,
+          "fees": 644.293735
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_ROUTE",
+          "group": "FLAT_FLAT",
+          "n": 657,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_MF",
+          "n": 162,
+          "net_usd": -6762.775077500002,
+          "net_log": -0.07795398907118789,
+          "fees": 681.2725775
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_ROUTE",
+          "group": "INITIAL_NON_MF_OTHER",
+          "n": 170,
+          "net_usd": -12043.2541149998,
+          "net_log": -0.13870546764055375,
+          "fees": 2993.559115
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_EXIT",
+          "n": 8,
+          "net_usd": -727.1564950001484,
+          "net_log": -0.007924038300867894,
+          "fees": 727.156495
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_GAP",
+          "n": 113,
+          "net_usd": -17311.418900000048,
+          "net_log": -0.1644851808477474,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "ACCEPTED_HOLD",
+          "n": 112,
+          "net_usd": -5251.671099999905,
+          "net_log": -0.03783256684538049,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "FLAT_FLAT",
+          "n": 316,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "FLAT_GAP",
+          "n": 341,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_ENTRY",
+          "n": 25,
+          "net_usd": -4102.970427499895,
+          "net_log": -0.049787436832915685,
+          "fees": 2198.8279275
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_EXIT",
+          "n": 17,
+          "net_usd": -1476.003765000045,
+          "net_log": -0.01683938175079567,
+          "fees": 1476.003765
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_GAP",
+          "n": 157,
+          "net_usd": -7209.439400001531,
+          "net_log": -0.07824677972867809,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "PHASE_TRANSITION",
+          "group": "INITIAL_HOLD",
+          "n": 133,
+          "net_usd": -6017.615599998331,
+          "net_log": -0.07178585839935214,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "ROUTE",
+          "group": "FLAT",
+          "n": 657,
+          "net_usd": 0.0,
+          "net_log": 0.0,
+          "fees": 0.0
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "ROUTE",
+          "group": "MF",
+          "n": 175,
+          "net_usd": -9545.517837499996,
+          "net_log": -0.11066868607811502,
+          "fees": 764.1353375
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "ROUTE",
+          "group": "NON_MF_OTHER",
+          "n": 390,
+          "net_usd": -32550.757849999907,
+          "net_log": -0.31623255662762284,
+          "fees": 3637.852850000001
+        },
+        {
+          "period": "MAX_DD",
+          "dimension": "TOTAL",
+          "group": "TOTAL",
+          "n": 1222,
+          "net_usd": -42096.2756874999,
+          "net_log": -0.4269012427057379,
+          "fees": 4401.988187499999
+        }
+      ]
+    }
+  },
+  "new_account_computes": 0,
+  "new_strategy_replays": 0,
+  "new_horizon_labels": 0,
+  "sealed_test_access": false,
+  "supersedes": "v1 assigned the complete prior-close/end move to current decision phase; v2 assigns close/open price gaps to previous live phase and RTH/fills/fees to current known phase.",
+  "scope": "Known-at-execution risk state partitions actual interval equity deltas/log growth. MAX_DD is each existing account hindsight descriptive window, not a trading rule. Every interval first marks previous cash/quantity to current Open; this CLOSE_TO_OPEN leg uses the previous activated phase, so a new first-RTH acceptance cannot claim the already-realized overnight gap. OPEN_TO_END uses current decision phase and includes actual fills/fees. INITIAL/ACCEPTED include transitions. Dollar/log amounts describe the existing cash path, not avoidable loss, standalone component alpha, counterfactual strategy performance, or independent samples."
+}
