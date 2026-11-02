@@ -58,6 +58,22 @@
         "sha256": "31332116470f08ff791ec44d003674007620651d2723493d103277af8d5942f8",
         "type": "EvidenceRef"
       },
+      "checkpoint_publication_receipts_pending_recovery": 8,
+      "complete_numeric_aggregation_dev_commit": "ed75fda1d",
+      "complete_numeric_aggregation_rsch_acceptance": {
+        "evidence_id": "bdbe3ba8b64e3fbd46119dce46f320a2c57c6dd13bc08ed5e550e1c4eae0b6c4.json",
+        "experiment": {
+          "experiment_id": "EX076_20261102",
+          "strategy_id": "S017",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "complete-numeric-aggregation-rsch-acceptance",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "bdbe3ba8b64e3fbd46119dce46f320a2c57c6dd13bc08ed5e550e1c4eae0b6c4",
+        "type": "EvidenceRef"
+      },
       "confirmed_selfcheck_policy": {
         "evidence_id": "316ff9560631551abc1ae28198aad2de91ad945b00a59a151ce45d95ffaef0ab.json",
         "experiment": {
@@ -83,14 +99,29 @@
         "stage": "MANDATE",
         "type": "DeliveryReference"
       },
-      "current_parallel_work_processes": 12,
+      "current_parallel_work_processes": 0,
       "dev_commit": "07158c34299935447582fcfe4af42e415ae316fc",
-      "execution_paused_by_user": false,
+      "execution_paused_by_user": true,
+      "execution_revision_pending": "v3_STATIC_ONLY_NOT_STARTED",
       "final_acceptance_on_legacy_annual_return_gates_suspended": true,
       "full_assessment_delivery_published": false,
       "hard_gate_definition_and_final_verification_owner": "RSCH_UNDER_USER_CONFIRMED_OBJECTIVES",
+      "latest_pause": {
+        "evidence_id": "2317e9c6f1ef587a08cd5122c47abc1a21272bd38722bf03ca664fe7e9ac944f.json",
+        "experiment": {
+          "experiment_id": "EX076_20261102",
+          "strategy_id": "S017",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "calmar-v3-user-pause",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "2317e9c6f1ef587a08cd5122c47abc1a21272bd38722bf03ca664fe7e9ac944f",
+        "type": "EvidenceRef"
+      },
       "latest_report": {
-        "evidence_id": "4ec9235ac2f154004938d6bd7863a4de795d364419bc8f675b3500b79a927fa9.json",
+        "evidence_id": "62ddabfa9dd59d2258d74692cb9b4b568966b1d4fc423e8fc57f173bdb6b8daf.json",
         "experiment": {
           "experiment_id": "EX076_20261102",
           "strategy_id": "S017",
@@ -100,26 +131,29 @@
         "name": "experiment-report",
         "schema": "experiment_report",
         "schema_version": 1,
-        "sha256": "4ec9235ac2f154004938d6bd7863a4de795d364419bc8f675b3500b79a927fa9",
+        "sha256": "62ddabfa9dd59d2258d74692cb9b4b568966b1d4fc423e8fc57f173bdb6b8daf",
         "type": "EvidenceRef"
       },
       "legacy_annual_return_gates_not_used_for_new_final_acceptance": true,
       "live_execution_state": "research/S017/experiments/EX076_20261102/others/neighborhood_execution_v2.json",
+      "maximum_parallel_work_processes_when_resumed": 12,
       "native_threads_per_worker": 1,
       "neighborhood_comparability_and_zero_scale": "USER_CONFIRMED_COMMON_CONTRACT_ZERO_G_ABSOLUTE_005",
-      "neighbors_executed": 252,
-      "neighbors_remaining": 2577,
+      "neighbors_executed": 444,
+      "neighbors_remaining": 2385,
       "new_12_worker_controller_started": false,
       "new_goal_acceptance": "INDETERMINATE_COMPLETE_NEIGHBORHOOD_PENDING",
       "new_ranking_platform_implementation": "COMPLETE_284_FOCUSED_TESTS_PASS",
       "next_dev_scope_authorized": false,
       "old_annual_failures_not_new_goal_veto": true,
+      "old_neighbor_cold_audits_completed": 108,
       "planned_neighbors": 2829,
       "pressure_completed": 6,
       "pressure_pass": [
         "C0338",
         "C0342"
       ],
+      "recovery_probe_started": false,
       "requested_future_max_parallel_batches": 12,
       "resume_authorization": {
         "evidence_id": "7896e8db81bbef6126fd46e23e7227237b567462cc2512246f0054c32b10e7b4.json",
@@ -136,7 +170,7 @@
         "type": "EvidenceRef"
       },
       "sealed_test_authorized": false,
-      "status": "CALMAR_V2_SELF_CHECK_RUNNING",
+      "status": "PAUSED_BY_USER_AFTER_CURRENT_PROCESSES_FINISHED",
       "tdr_role": "DETERMINISTIC_CALCULATION_AND_SORTING_BY_EXPLICIT_INPUT_RULES",
       "user_continuation": "我建议RSCH继续主导完成阶段四，控制好自检的并发度即可",
       "user_sorting_confirmation": "同意：Calmar/DD分层及逐点Calmar Q10第一项，其他顺序不变",
@@ -1855,7 +1889,7 @@
       "research/S017/materials/registration_20261028.md",
       "research/S017/materials/pre_registration_readiness.json"
     ],
-    "next_action": "RSCH按MANDATE/8完整核验252旧点并回放2577新点，内存允许时最多12并发；完整N齐备后由平台按显式规则计算排序，RSCH最终核验硬门与研究结论，不打开2026封存样本或冻结。",
+    "next_action": "等待用户明确恢复后，先验收公开RESUME复用探针，再恢复完整点集；当前不计算新点、不自动恢复。",
     "objective": "LITE 美股个股30分钟只做多择时研究",
     "other_proposals_confirmation": "CONFIRMED",
     "pending_stage_three_mf_context_proposal": {
@@ -2599,5 +2633,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-11-02T14:57:22+08:00"
+  "updated_at": "2026-11-02T15:28:12+08:00"
 }

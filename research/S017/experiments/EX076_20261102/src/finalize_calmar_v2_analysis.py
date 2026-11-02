@@ -466,7 +466,7 @@ def main():
         "research_readiness": "DECLARED_ECONOMIC_CONDITIONS_ONLY_NOT_FINAL_SELECTION",
         "official_SE_ranking_run": False, "whole_request_TDR_FULL_claimed": False,
         "verification_scope": "RSCH independent scalar target/quantile arithmetic over previously published TDR outcomes; envelope hashes, complete plans, point payloads and bindings verified sequentially; no ledger artifact loading or SE panel replacement",
-        "remaining_formal_limit": "The platform has no scalar-batch-to-full-assessment aggregation API. Complete RSCH statistics are not a full-request SE/TDR certification or an automatic final selection."}
+        "remaining_formal_limit": "This independent analysis does not invoke SE ranking. The separately accepted performance-input SE API can compute numeric ranking; neither output is a whole-request TDR journal FULL certification or an automatic final selection."}
     write_outputs({index_path: index, WORK / "others/complete_calmar_v2_analysis.json": summary})
     print("COMPLETE_CALMAR_V2_RSCH_ANALYSIS", index["point_count"], summary["qualified_under_declared_economic_targets"], flush=True)
 

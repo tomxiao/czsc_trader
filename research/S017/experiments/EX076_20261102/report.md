@@ -1,32 +1,25 @@
-# EX076：统一Calmar计算能力已补齐并由RSCH验收，自检仍暂停
+# EX076：按用户最新指令暂停，保留结果与显式恢复清单
 
-本次用户授权的RSCH提需求→DEV补能力→RSCH验收目标已达成。DEV提交d6b846ac4；236项SE和110项TDR聚焦检查、Ruff及diff检查通过，未运行全仓回归。新MANDATE/8为COMPLETE，FULL验证PASS；这只确认新约定及必要证据，不代表策略验收。
+用户先批准按统一Calmar约定恢复阶段四，随后明确要求“完成当前进程的计算任务后请先暂停”。当前原邻点进程池已因技术故障退出，16既有账户两路数值验收已完成，已核实无运行中的自检进程。控制已设pause_requested=true；未启动独立进程恢复探针或任何新批次，保持暂停等待下一步指令。
 
 ## 做了哪些尝试
 
-RSCH明确了完整Calmar自检规则和逐窗公式。DEV新增CalmarSelfCheckProtocol/v8与v6排序，参数/压力支持显式Calmar条件，TDR schema14认证新版本并保持旧版本读取。平台不选择倍数或添加正年化门；RSCH对目标输入及最终研究验收负责。未修改策略、撮合、费用、原账或账本存储表示。
+本次恢复沿用MANDATE/8、原prospective完整2829点及真实边界，最多12批并发、每进程1线程。252旧点保留，其中108点完成冷读复核；192个新点完成回放、认证、发布及批次收尾。检查点另有两批共8份发布回执，尚未完成恢复收尾，未混入192点计数。其余在途缓存及未派单点均保留，不重置N或自动重试。
 
-RSCH随后完整认证六标准、六压力及四个已发布邻点，共16个既有账户；从逐柱账本独立复算每中心12个滚动252日/步长21窗口Calmar差Q10，及标准C减压力C，并与新面板和排序分箱一致性核对。零新研究账户，不恢复剩余自检。已有252邻点仍保留，原计数及年化门结果仅属于旧规则，不作为新目标最终否决。
+原ProcessPoolExecutor工作进程回收时，在multiprocessing.Queue._sem.release报告WinError 6无效句柄，进而BrokenProcessPool。调度明确失败并停派单；没有证明内存不足，也没有确认其与公开Python相近问题属于同一根因。RSCH已核对旧进程退出、全部在途文件、断点存在和实现身份；原故障状态及11份未收尾工作JSON按SHA归档，已完成结果保持原位。
+
+显式v3恢复清单覆盖全部剩余点。新研究编排改用每批一个独立Popen进程，保留最多12批、48GiB进程树预算、至少16GiB可用内存和35%批峰值余量；现存断点只用公开RESUME，不匹配时明确失败，不回退CREATE。该脚本仅通过Ruff及AST静态检查，真实恢复尚未验收。按最新暂停指令没有启动探针或全队列。
 
 ## 有哪些收获
 
-|配置|滚动超额Calmar Q10|压力净Calmar|压力Calmar下降量|压力Calmar硬门|
-|---|---:|---:|---:|---|
-|S017-C0338|3.272346|7.276733|1.257189|通过|
-|S017-C0339|3.208033|6.852938|1.210595|通过|
-|S017-C0340|3.272346|6.705096|1.191477|通过|
-|S017-C0341|3.272346|6.948559|1.219911|通过|
-|S017-C0342|3.270321|7.434386|1.273270|通过|
-|S017-C0352|1.817193|5.345372|0.795618|通过|
+RSCH提出逐点绩效事实的完整聚合需求，DEV在SE新增强类型纯数值输入，复用v8计算和v6排序，本地提交ed75fda1d。281项单进程SE聚焦检查、Ruff和差异空白检查通过，未执行全仓回归。RSCH复用六标准、六压力、四邻点共16个已发布账户，原账与绩效输入两路的全部数值行、分位数、覆盖、目标判定及比较一致，标准投影与真实来源准备一致；认证18份唯一账本，零新研究回放。
 
-4个旧年化邻域门失败点，在新Calmar点条件下均通过，说明计算链没有额外继承年化否决门。六中心的新压力Calmar目标也均通过，包括旧相对年化门失败的配置。它们仍须完整邻域及其余适用要求；本验收面板仅纳入4个既有邻点，六点完整目标状态均为INDETERMINATE，无Pareto名次，不宣称252点或2829点已全部按新规则认证。
+新面板明确标为PERFORMANCE_PROJECTION，不宣称该输入调用重新执行所有原账TDR FULL审计；该类型尚未整合原全账CandidateAssessmentDelivery/FULL。正式ASSESSMENT交付未发布，完整N尚未齐备，当前没有六配置最终排名或策略通过结论。RSCH制定并最终核验用户确认的硬门，平台按显式事实和规则计算。当前无独立净年化收益门，旧annual joint_pass和压力年化失败仅属于旧规则历史。
 
-这些是反复使用训练样本中的规则修订重评及数值能力验收，不是新的独立验证。时间、集中性和统计不确定性仍按研究约定披露，族内选择偏差资料不足不伪造通过；2026价格和策略绩效未读取。历史报告、旧FAIL及旧交付保留，当前以新约定解释后续输入。
+## 下一步建议
 
-## 下一步建议是什么
-
-等待用户明确恢复阶段四，再核对并复用252份已发布邻点，按新约定完成剩余2577点及完整比较。在内存允许时上限12个独立进程，每进程1线程，逐批发布并退出；不直接沿用旧脚本的年化joint_pass作新规则资格判据。本次不自动恢复，不开封测试或进入选型冻结。
+当前保持暂停。用户明确恢复后，先用单批验证公开RESUME能复用4个已算结果和4份发布，再按资源约定恢复剩余完整点集；全部N齐备后才计算完整分位数和平台排序，RSCH独立核验研究条件。2026封存价格及绩效未读取，未新搜、冻结、部署、合并或推送。
 
 ## 有什么依据
 
-[计算需求](protocols/calmar_v2_compute_request.md)、[用户确认与分工](protocols/confirmed_calmar_selfcheck_v2.json)、[DEV完成记录](others/calmar_v2_dev_completion.json)、[RSCH验收](others/calmar_v2_rsch_acceptance.json)、[新显式目标](others/calmar_v2_targets.json)、[验收面板](others/calmar_v2_acceptance_panel.json)、[对应比较](others/calmar_v2_acceptance_comparison.json)、[新约定](../../deliveries/MANDATE/8/report.md)。正式账户及依赖仍在批次assets中，须与Git材料共同保留。
+[暂停状态](others/calmar_v3_pause_state.json)、[实时控制](others/neighborhood_execution_v2_control.json)、[故障清点](others/calmar_v2_pool_failure_inventory.json)、[恢复清单](others/calmar_v3_recovery_manifest.json)、[DEV聚焦验证](others/complete_numeric_aggregation_dev_completion.json)、[RSCH真实账户等价验收](others/complete_numeric_aggregation_rsch_acceptance.json)、[现行Calmar规则](protocols/confirmed_calmar_selfcheck_v2.json)。原账、历史失败、原计划及旧交付保留，assets中的正式依赖须与Git材料共同保存。

@@ -1,0 +1,31 @@
+{
+  "status": "DEV_COMPLETE_PENDING_RSCH_REAL_ACCOUNT_ACCEPTANCE",
+  "commit": "ed75fda1d",
+  "request": "research/S017/experiments/EX076_20261102/protocols/complete_numeric_aggregation_request.md",
+  "scope": "SE pure numeric models, projection, aggregation and public exports only",
+  "public_types": ["CandidatePerformanceAssessmentRequest", "ParameterPerformanceEvidence"],
+  "public_functions": ["project_parameter_performance", "assessment_benchmark_fingerprint"],
+  "existing_assess_candidates_accepts_new_explicit_input_type": true,
+  "formula_version": "research-assessment-v8",
+  "ranking_formula": "research-ranking-v6",
+  "new_panel_input_kind": "PERFORMANCE_PROJECTION",
+  "legacy_panel_none_field_omitted_and_decode_defaulted": true,
+  "economic_thresholds_hardcoded": false,
+  "caller_supplied_panel_or_pass_accepted": false,
+  "financial_execution_or_TDR_modified": false,
+  "whole_request_TDR_FULL_claimed": false,
+  "focused_validation": {
+    "test_count": 281,
+    "test_result": "PASSED",
+    "elapsed_seconds": 45.66,
+    "parallel_pytest_workers": 1,
+    "exit_code": 0,
+    "tool_session": 49621,
+    "evidence_kind": "delegated tool execution result; no redirected stdout file",
+    "command": ".venv/Scripts/python.exe -m pytest -c pyproject.toml packages/strategy_evaluator/tests/functional/test_performance_assessment.py packages/strategy_evaluator/tests/functional/test_calmar_selfcheck.py packages/strategy_evaluator/tests/functional/test_calmar_ranking.py packages/strategy_evaluator/tests/functional/test_calmar_acceptance.py packages/strategy_evaluator/tests/functional/test_research_acceptance.py packages/strategy_evaluator/tests/functional/test_research_assessment.py packages/strategy_evaluator/tests/functional/test_research_comparison_v2.py packages/strategy_evaluator/tests/functional/test_parameter_neighborhood_acceptance.py packages/strategy_evaluator/tests/functional/test_neighborhood_assessment.py packages/strategy_evaluator/tests/functional/test_parameter_perturbation.py packages/strategy_evaluator/tests/functional/test_rsch_ranking.py packages/strategy_evaluator/tests/functional/test_equity_assessment.py packages/strategy_evaluator/tests/functional/test_stage4_bootstrap.py -q",
+    "ruff": "PASS",
+    "diff_whitespace": "PASS",
+    "repository_full_regression": "NOT_RUN"
+  },
+  "coverage": ["raw-account and performance-input row/quantile/target/ranking equivalence", "BAR_CLOSE synthetic journal equivalence", "complete/missing/empty neighborhoods", "parent, derivation, binding and duplicate rejection", "cost, context, metric, window, scenario, frequency and benchmark mismatch", "zero or near-zero drawdown, unavailable Calmar and nonfinite inputs", "no hidden annual-return hard gate"]
+}
