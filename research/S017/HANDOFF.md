@@ -1,5 +1,15 @@
 # S017 研究交接
 
+## 当前：DEV补齐已完成，阶段一只剩非正基准语义决定（2026-11-02，RSCH）
+
+用户在接收会话明确同意“在当前分支实施最小DEV方案”。DEV已在原分支完成NET_CALMAR标准中心强类型目标、严格基准倍数/条件及BLOCKED/PARTIAL源约定的INCOMPLETE_MANDATE阻断，提交7d2fb962d20f764c671b4af586edeef8bc5985be。SE145项、TDR75项聚焦检查及Ruff通过，未运行全仓回归；未改变旧面板诊断、原排序、邻域/压力合同或历史证据资格。
+
+已切回RSCH，发布[MANDATE/6当前报告](deliveries/MANDATE/6/report.md)、[回执](deliveries/MANDATE/6/receipt.json)，[DEV完成记录](materials/STAGE1_DEV_COMPLETION_20261102.json)、[当前合同](materials/STAGE1_CURRENT_CONTRACT_20261102.json)、[发布记录](materials/STAGE1_CURRENT_PUBLICATION_20261102.json)及[核查](materials/STAGE1_CURRENT_VERIFICATION_20261102.json)可审阅。状态仍BLOCKED，FULL验证PASS；当前已绑定正基准Calmar严格1.5倍门，保留其余十项目标。旧/4、/5受阻状态和当时能力证据保留，不将其旧能力缺口描述误读为当前实现状态。
+
+训练2024-01-02—2025-12-31、测试2026-01-02—2026-09-30封存，样本职责、预热/fresh状态、末仓/跨界、反馈边界及原执行合同均已明确。无S017新账户、候选重筛/登记、搜索、阶段四或2026价格/策略绩效访问；220项软件检查均为离线合成夹具。
+
+唯一剩余决定：有效非正基准Calmar时，A继续字面C策略>1.5×C基准（建议，不新增正收益门，负基准可能允许负收益通过单项），还是B改为策略净年化>0（新增中心正收益分支）。用户只回复了DEV实施授权，尚未回复此项，不代其选择，不称完整阶段一已完成。回复后RSCH直接在当前已授权范围内发布完整新MANDATE、FULL核验及本地提交；不重复询问是否继续阶段一。候选重筛/登记、后续研究、阶段四、封存测试、冻结、生产、合并/tag/push仍须分别授权。以下保留历史交接原文，当前状态以本节及最高正式修订为准。
+
 ## 当前：阶段一修订已留证，完整目标契约受阻（2026-11-02，RSCH）
 
 接收会话已核验交接HEAD和当前本地研究分支，完成本次授权范围内的协议细化、公共能力探针、当前意图统一及正式发布。[MANDATE/5报告](deliveries/MANDATE/5/report.md)、[回执](deliveries/MANDATE/5/receipt.json)、[发布记录](materials/STAGE1_REVISION_PUBLICATION_20261102.json)与[聚焦核查](materials/STAGE1_REVISION_VERIFICATION_20261102.json)可审阅；schema12，交付状态BLOCKED，FULL完整性验证PASS。/5修正/4承接样本条目仍带旧日期的问题，/4及更早正式原件全部保留。

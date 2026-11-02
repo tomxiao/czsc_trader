@@ -1,0 +1,85 @@
+{
+  "schema": "s017-calmar-dev-handback/v1",
+  "status": "DEV_COMPLETED_FOCUSED_CHECKS_PASS",
+  "authorization": {
+    "user_statement": "同意，在当前分支实施最小DEV方案",
+    "source": "current receiving chat explicit reply to DEV scope question",
+    "scope_plan": "research/S017/materials/STAGE1_CALMAR_DEV_REQUEST_20261102.md"
+  },
+  "code_commit": "7d2fb962d20f764c671b4af586edeef8bc5985be",
+  "source_sha256": {
+    "packages/strategy_evaluator/src/strategy_evaluator/research_models.py": "92d1e32b790b04605e61e7fa7f40e01376d0b00125dabe811581f21208e0b7de",
+    "packages/strategy_evaluator/src/strategy_evaluator/research_acceptance.py": "afac0feb60d926a21d4cad2006bb2a60d9470294da73ada058278f8e14854872",
+    "packages/strategy_evaluator/src/strategy_evaluator/research_assessment.py": "303ca505b858de75192bc77d7caf52eeb4e525eabd651da3fbdb9fc35216d48d",
+    "src/czsc_trader/application/delivery_service.py": "39063e113d3905ea17440c85ed29a2af892ba2d4f7126f2d39f178808c902ca5"
+  },
+  "calmar_target_constructor_roundtrip": {
+    "type": "ResearchTarget",
+    "target_id": "center-net-calmar-positive",
+    "metric": "NET_CALMAR",
+    "lower": {
+      "type": "BenchmarkBound",
+      "multiplier": 1.5,
+      "inclusive": false
+    },
+    "upper": null,
+    "when": {
+      "type": "BenchmarkCondition",
+      "metric": "NET_CALMAR",
+      "operator": "GT",
+      "value": 0.0
+    },
+    "scope": "STANDARD",
+    "one_way_cost": 0.001
+  },
+  "calmar_standard_target_supported": true,
+  "incomplete_mandate_rejected_downstream": true,
+  "incomplete_mandate_error_code": "INCOMPLETE_MANDATE",
+  "old_persisted_diagnostics_unchanged": true,
+  "benchmark_ranking_metrics_remain": [
+    "NET_ANNUAL_RETURN",
+    "DRAWDOWN_MAGNITUDE"
+  ],
+  "checks": [
+    {
+      "command": ".venv/Scripts/python.exe -m pytest -c pyproject.toml packages/strategy_evaluator/tests/functional/test_calmar_acceptance.py packages/strategy_evaluator/tests/functional/test_research_acceptance.py packages/strategy_evaluator/tests/functional/test_research_assessment.py packages/strategy_evaluator/tests/functional/test_research_comparison_v2.py packages/strategy_evaluator/tests/functional/test_parameter_neighborhood_acceptance.py packages/strategy_evaluator/tests/functional/test_neighborhood_assessment.py packages/strategy_evaluator/tests/functional/test_rsch_ranking.py -q",
+      "passed": 145,
+      "seconds": 12.35
+    },
+    {
+      "command": ".venv/Scripts/python.exe -m pytest -c pyproject.toml tests/functional/test_assessment_delivery.py tests/functional/test_equity_assessment_delivery.py tests/functional/test_delivery_v2.py -q",
+      "passed": 75,
+      "seconds": 133.59
+    }
+  ],
+  "ruff_changed_sources_and_tests": "PASS",
+  "whitespace_check_with_cr_at_eol": "PASS",
+  "full_repository_regression_run": false,
+  "old_mandate_5_full_after_code_change": {
+    "type": "DeliveryValidation",
+    "status": "PASS",
+    "scope": "FULL",
+    "issues": [],
+    "stats": {
+      "type": "DeliveryValidationStats",
+      "unique_deliveries": 5,
+      "reference_visits": 5,
+      "recursive_expansions": 5,
+      "semantic_reuses": 0,
+      "files_hashed": 195,
+      "bytes_hashed": 1956289,
+      "elapsed_seconds": 0.24253699998371303,
+      "authentication_seconds": 0.0,
+      "recomputation_seconds": 0.0,
+      "final_recheck_seconds": 0.06847850000485778,
+      "accounts_authenticated": 0,
+      "account_reuses": 0,
+      "file_read_task_seconds": 0.02492790180258453,
+      "file_hash_task_seconds": 0.004607000621035695,
+      "package_load_seconds": 0.08397700032219291
+    }
+  },
+  "new_real_research_account_computes": 0,
+  "sealed_prices_or_performance_accessed": false,
+  "nonpositive_benchmark_economic_branch": "PENDING_USER_DECISION_NOT_SELECTED_BY_ENGINEERING_TESTS"
+}

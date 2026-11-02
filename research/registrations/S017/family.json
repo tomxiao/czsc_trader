@@ -913,31 +913,33 @@
       },
       "authorized_scope": "stage-one revision/publication/local commit only",
       "complete_economic_acceptance_allowed": false,
-      "contract": "research/S017/materials/STAGE1_REVISION_CONTRACT_20261102.json",
+      "contract": "research/S017/materials/STAGE1_CURRENT_CONTRACT_20261102.json",
       "delivery": {
         "batch": {
           "strategy_id": "S017",
           "type": "ResearchBatchRef"
         },
-        "content_sha256": "873bd12bfee37e9cfdd327542e2d5fff85c362d704ea26a672c5a97895a28143",
-        "revision": 5,
+        "content_sha256": "4faa435f118e375251fa60f37f818f2e453c2ec5aa4c6672f8a94109b908a72a",
+        "revision": 6,
         "stage": "MANDATE",
         "type": "DeliveryReference"
       },
-      "dev_implementation": "PENDING_USER_AUTHORIZATION",
+      "dev_authorization_user_statement": "同意，在当前分支实施最小DEV方案",
+      "dev_commit": "7d2fb962d20f764c671b4af586edeef8bc5985be",
+      "dev_implementation": "COMPLETED",
       "historical_authorization_records": "preserved; do not treat them as current task authorization",
+      "incomplete_mandate_block_enforced": true,
       "later_stages_automatically_resumed": false,
       "new_account_computes": 0,
       "new_candidates": 0,
       "new_searches": 0,
       "pending_decisions": [
-        "公共ResearchTarget无Calmar及Calmar基准倍数，尚未绑定完整中心目标；DEV实施须另获用户授权。",
-        "有效非正基准Calmar使用字面倍数还是新增正收益分支，等待用户决定。",
-        "当前下游不检查源MANDATE受阻状态，禁止把本受阻版本用于完整候选验收；DEV需补齐防漏检保护。"
+        "有效非正基准Calmar采用A字面1.5倍还是B净年化>0；仍待用户回复。"
       ],
-      "protocol": "research/S017/materials/STAGE1_REVISION_PROTOCOL_20261102.md",
+      "protocol": "research/S017/materials/STAGE1_CURRENT_MANDATE_20261102.md",
+      "public_calmar_target_supported": true,
       "sealed_test_access": "NOT_AUTHORIZED",
-      "status": "BLOCKED_PUBLIC_CALMAR_CONTRACT_AND_PENDING_NONPOSITIVE_DECISION"
+      "status": "BLOCKED_NONPOSITIVE_BENCHMARK_DECISION"
     },
     "data_readiness": {
       "bars": 25976,
@@ -1552,8 +1554,8 @@
         "strategy_id": "S017",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "873bd12bfee37e9cfdd327542e2d5fff85c362d704ea26a672c5a97895a28143",
-      "revision": 5,
+      "content_sha256": "4faa435f118e375251fa60f37f818f2e453c2ec5aa4c6672f8a94109b908a72a",
+      "revision": 6,
       "stage": "MANDATE",
       "type": "DeliveryReference"
     },
@@ -1572,7 +1574,7 @@
       "research/S017/materials/registration_20261028.md",
       "research/S017/materials/pre_registration_readiness.json"
     ],
-    "next_action": "阶段一受阻协议已留证；待用户确认最小DEV范围及非正BH语义后，补齐公开能力并另发完整MANDATE；此前禁止候选重筛/登记、阶段四或2026测试。",
+    "next_action": "DEV最小方案已完成且220项聚焦检查通过；用户决定非正BH语义后，RSCH在已授权范围内发布完整MANDATE。此前不重筛/登记候选、不进阶段四或开2026测试。",
     "objective": "LITE 美股个股30分钟只做多择时研究",
     "other_proposals_confirmation": "CONFIRMED",
     "pending_stage_three_mf_context_proposal": {
@@ -2316,5 +2318,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-11-02T09:45:35+08:00"
+  "updated_at": "2026-11-02T09:56:43+08:00"
 }

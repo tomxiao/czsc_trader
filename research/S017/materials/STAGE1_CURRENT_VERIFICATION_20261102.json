@@ -1,0 +1,65 @@
+{
+  "status": "PASS",
+  "delivery_status": "BLOCKED_ONE_ECONOMIC_DECISION",
+  "delivery_reference": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S017"
+    },
+    "stage": "MANDATE",
+    "revision": 6,
+    "content_sha256": "4faa435f118e375251fa60f37f818f2e453c2ec5aa4c6672f8a94109b908a72a"
+  },
+  "full_validation": {
+    "type": "DeliveryValidation",
+    "status": "PASS",
+    "scope": "FULL",
+    "issues": [],
+    "stats": {
+      "type": "DeliveryValidationStats",
+      "unique_deliveries": 6,
+      "reference_visits": 6,
+      "recursive_expansions": 6,
+      "semantic_reuses": 0,
+      "files_hashed": 242,
+      "bytes_hashed": 2243203,
+      "elapsed_seconds": 0.30837580002844334,
+      "authentication_seconds": 0.0,
+      "recomputation_seconds": 0.0,
+      "final_recheck_seconds": 0.08773489994928241,
+      "accounts_authenticated": 0,
+      "account_reuses": 0,
+      "file_read_task_seconds": 0.03260100050829351,
+      "file_hash_task_seconds": 0.00590270129032433,
+      "package_load_seconds": 0.10330179985612631
+    }
+  },
+  "preserved_historical_files": 51,
+  "preserved_typed_targets": 10,
+  "new_positive_branch_typed_target": {
+    "type": "ResearchTarget",
+    "target_id": "center-net-calmar-positive",
+    "metric": "NET_CALMAR",
+    "lower": {
+      "type": "BenchmarkBound",
+      "multiplier": 1.5,
+      "inclusive": false
+    },
+    "upper": null,
+    "when": {
+      "type": "BenchmarkCondition",
+      "metric": "NET_CALMAR",
+      "operator": "GT",
+      "value": 0.0
+    },
+    "scope": "STANDARD",
+    "one_way_cost": 0.001
+  },
+  "sample_unchanged": true,
+  "experiments_and_candidate_deliveries_unchanged": true,
+  "verified_report_links": 4,
+  "focused_test_nodes_passed": 220,
+  "new_real_research_account_computes": 0,
+  "sealed_prices_or_performance_accessed": false
+}
