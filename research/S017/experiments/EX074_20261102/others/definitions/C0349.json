@@ -1,0 +1,368 @@
+{
+  "schema": "s017-prototype-restoration/v1",
+  "candidate_id": "C0349",
+  "definition": {
+    "runtime_kind": "ACCOUNT_REPLAY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "LITE"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 261,
+    "entrypoint": "strategy:step",
+    "source_files": [
+      "negative_run.py",
+      "strategy.py"
+    ],
+    "source_sha256": "22e9545f370a2f5e1c4d7e68017cd92cf4a1d67910be62c8695ba93910f1fd8d",
+    "parameters_json": "{\"accepted_fraction\":0.06874269821971955,\"alpha\":0.1224170395746769,\"g_when_mf\":0.5891597310082293,\"g_when_other\":0.7046216770902249,\"g_when_u\":0.9443445858670778,\"initial_fraction\":0.029763255532319066}",
+    "dependencies": [],
+    "contract_version": 4,
+    "parameter_schema_json": "{\"accepted_fraction\":{\"type\":\"number\"},\"alpha\":{\"type\":\"number\"},\"g_when_mf\":{\"type\":\"number\"},\"g_when_other\":{\"type\":\"number\"},\"g_when_u\":{\"type\":\"number\"},\"initial_fraction\":{\"type\":\"number\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "feature_graph": {
+      "nodes": [
+        {
+          "kind": "RawField",
+          "key": "close",
+          "field": "Close"
+        },
+        {
+          "kind": "RawField",
+          "key": "opening",
+          "field": "Open"
+        },
+        {
+          "kind": "RawField",
+          "key": "high",
+          "field": "High"
+        },
+        {
+          "kind": "RawField",
+          "key": "low",
+          "field": "Low"
+        },
+        {
+          "kind": "RawField",
+          "key": "volume",
+          "field": "Volume"
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_close",
+          "source": "close",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_open",
+          "source": "opening",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_high",
+          "source": "high",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_low",
+          "source": "low",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "low2",
+          "source": "low",
+          "bars": 2
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_volume",
+          "source": "volume",
+          "bars": 1
+        },
+        {
+          "kind": "TrueRange",
+          "key": "tr",
+          "high": "high",
+          "low": "low",
+          "close": "close"
+        },
+        {
+          "kind": "Mean",
+          "key": "atr13",
+          "source": "tr",
+          "window": 13
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_tr",
+          "source": "tr",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "atr_before_prior",
+          "source": "atr13",
+          "bars": 2
+        },
+        {
+          "kind": "SameLocalSlotMedian",
+          "key": "same_slot_median20",
+          "source": "volume",
+          "sessions": 20,
+          "anchor_lag": 1,
+          "timezone": "America/New_York"
+        },
+        {
+          "kind": "Mean",
+          "key": "ma65",
+          "source": "close",
+          "window": 65
+        },
+        {
+          "kind": "Mean",
+          "key": "ma260",
+          "source": "close",
+          "window": 260
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_ma65",
+          "source": "ma65",
+          "bars": 1
+        },
+        {
+          "kind": "Lag",
+          "key": "previous_ma260",
+          "source": "ma260",
+          "bars": 1
+        }
+      ],
+      "outputs": [
+        "close",
+        "high",
+        "low",
+        "previous_low",
+        "low2",
+        "previous_close",
+        "previous_open",
+        "previous_high",
+        "previous_volume",
+        "previous_tr",
+        "atr_before_prior",
+        "same_slot_median20",
+        "previous_ma65",
+        "previous_ma260"
+      ],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [],
+      "cycle_fields": [
+        {
+          "key": "entry_multi_full",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "entry_negative_run_length",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "entry_negative_run_high",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "holding_bars",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "last_completed_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "exit_due",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "initial_support",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "support",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "support_raises",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "exit_reason",
+          "value_type": "str",
+          "nullable": false
+        },
+        {
+          "key": "peak",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "peak_before_last",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "pending_support",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "candidate_low",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "candidate_high",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "candidate_at",
+          "value_type": "datetime",
+          "nullable": false
+        },
+        {
+          "key": "raw_s0",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "reclaimed_level",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "accepted_active",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "accepted_low",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "accepted_high",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "accepted_peak_close",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "entry_scale",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "signal_reference_close",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "entry_u",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "cycle_g",
+          "value_type": "float",
+          "nullable": false
+        }
+      ]
+    },
+    "computation": "STATEFUL_STEP"
+  },
+  "evaluation_identity": {
+    "candidate": {
+      "candidate_id": "C0349",
+      "strategy_id": "S017"
+    },
+    "content_sha256": "8e33e9a8fe0743ed44646d74c4e7317a3ca69c2e9352a9fcfda0d73e83feb724",
+    "environment_sha256": "be2aab2fd5115bb6e83e6bbf82382b9c51bd5b548396b260af84e6817b4a4a25",
+    "input_sha256": "a671f92acb0723e4054b26247bca52d39186c3a0f87e25e70a133b48987a242d",
+    "protocol_sha256": "78f16f336aac5087cd04534597da91c2af176c8a456355a3bbcbcab57ff2b1a6"
+  },
+  "source_directory": "research/S017/experiments/EX072_20261102/src",
+  "source_files": [
+    {
+      "path": "negative_run.py",
+      "sha256": "404c56f4887f74e8d0686e7a9b88385fed20cd405a585d4cf0ddbf938dfbaaaa",
+      "utf8_content": "\"\"\"Visible terminated negative-body context; no session reset or fabricated boundary.\"\"\"\n\n\ndef negative_run(history,point):\n    frame=history.to_frame(tail=261)\n    if len(frame)!=261 or not frame.Date.is_monotonic_increasing or frame.Date.duplicated().any():\n        raise ValueError('Declared261 unique completed observations required')\n    if frame.Date.iloc[-1]!=point.observed_through or any(frame.Date>point.decision_at):\n        raise ValueError('Visible completed history only')\n    j=len(frame)-2\n    while j>=0 and float(frame.Close.iloc[j])<float(frame.Open.iloc[j]):j-=1\n    if j<0:raise ValueError('NEGATIVE_RUN_LEFT_CENSORED: no actual nonnegative terminator in visible261')\n    length=len(frame)-2-j\n    if length<1:raise ValueError('E0 context requires a previous negative body')\n    high=float(frame.High.iloc[j+1:-1].max())\n    if high<=0:raise ValueError('Positive completed run high required')\n    return {'length':length,'high':high,'terminator_at':frame.Date.iloc[j],\n            'run_start_at':frame.Date.iloc[j+1]}\n"
+    },
+    {
+      "path": "strategy.py",
+      "sha256": "bb6384963b6ce5cb66e64114b960b7e85054bd35548f098a14326e63707d04de",
+      "utf8_content": "\"\"\"Six continuous financial parameters; MF proposal protection freezes on real BUY.\"\"\"\nfrom math import isfinite\nfrom .negative_run import negative_run\nfrom strategy_runtime import (AccountDecision,AccountStepResult,BarField,FeatureGraph,Lag,Mean,RawField,ReadyValue,SameLocalSlotMedian,StateField,StateRecord,StateValueType,StrategyStateSchema,TrueRange)\nOUTPUTS=('close','high','low','previous_low','low2','previous_close','previous_open','previous_high','previous_volume','previous_tr','atr_before_prior','same_slot_median20','previous_ma65','previous_ma260')\ndef feature_graph():\n    return FeatureGraph((RawField('close',BarField.CLOSE),RawField('opening',BarField.OPEN),RawField('high',BarField.HIGH),RawField('low',BarField.LOW),RawField('volume',BarField.VOLUME),Lag('previous_close','close',1),Lag('previous_open','opening',1),Lag('previous_high','high',1),Lag('previous_low','low',1),Lag('low2','low',2),Lag('previous_volume','volume',1),TrueRange('tr','high','low','close'),Mean('atr13','tr',13),Lag('previous_tr','tr',1),Lag('atr_before_prior','atr13',2),SameLocalSlotMedian('same_slot_median20','volume',20,1),Mean('ma65','close',65),Mean('ma260','close',260),Lag('previous_ma65','ma65',1),Lag('previous_ma260','ma260',1)),OUTPUTS)\ndef state_schema():\n    fields=(('entry_multi_full',StateValueType.BOOL),('entry_negative_run_length',StateValueType.INT),('entry_negative_run_high',StateValueType.FLOAT),('holding_bars',StateValueType.INT),('last_completed_at',StateValueType.DATETIME),('exit_due',StateValueType.BOOL),('initial_support',StateValueType.FLOAT),('support',StateValueType.FLOAT),('support_raises',StateValueType.INT),('exit_reason',StateValueType.STR),('peak',StateValueType.FLOAT),('peak_before_last',StateValueType.FLOAT),('pending_support',StateValueType.BOOL),('candidate_low',StateValueType.FLOAT),('candidate_high',StateValueType.FLOAT),('candidate_at',StateValueType.DATETIME),('raw_s0',StateValueType.FLOAT),('reclaimed_level',StateValueType.FLOAT),('accepted_active',StateValueType.BOOL),('accepted_low',StateValueType.FLOAT),('accepted_high',StateValueType.FLOAT),('accepted_peak_close',StateValueType.FLOAT),('entry_scale',StateValueType.FLOAT),('signal_reference_close',StateValueType.FLOAT),('entry_u',StateValueType.BOOL),('cycle_g',StateValueType.FLOAT))\n    return StrategyStateSchema(cycle_fields=tuple(StateField(k,v) for k,v in fields))\ndef accepted_failure_line(L,H,P,b,g):\n    if not H>L or P<H:raise ValueError('Accepted structural pair and completed peak required')\n    if g==0:return L+b*(H-L)\n    if g==1:return P-(1-b)*(H-L)\n    return L+b*(H-L)+g*max(0.,P-H)\n\ndef step(ctx,state):\n    if set(ctx.parameters)!={'alpha','initial_fraction','accepted_fraction','g_when_u','g_when_other','g_when_mf'}:raise ValueError('Six explicit float financial parameters required')\n    if any(type(x) is not float for x in ctx.parameters.values()):raise ValueError('Six parameters must be finite floats,not booleans or integers')\n    pars={k:float(x) for k,x in ctx.parameters.items() if type(x) in (int,float)}\n    if len(pars)!=6 or not all(isfinite(x) for x in pars.values()) or not 0<=pars['alpha']<=2 or not all(0<=pars[k]<=1 for k in ('initial_fraction','accepted_fraction','g_when_u','g_when_other','g_when_mf')):raise ValueError('Declared initial/extension and natural parameter domains only')\n    p=ctx.portfolio\n    if p.reference_price_scale!=1. or ctx.events:raise ValueError('RAW NONE contract only')\n    v={}\n    for k in OUTPUTS:\n        x=ctx.features.get(k)\n        if type(x) is not ReadyValue:raise ValueError('Ready complete observations required')\n        v[k]=float(x.value)\n    m006=v['previous_close']<v['previous_open'] and v['close']>v['previous_high'];m005=m006 and v['previous_volume']>=1.5*v['same_slot_median20'] and v['previous_tr']<=v['atr_before_prior']\n    delta=v['close']-v['previous_high'];scale=v['atr_before_prior']\n    if scale<0:raise ValueError('True range scale cannot be negative')\n    signal=m006 and delta>pars['alpha']*scale\n    entry_u=v['previous_close']>v['previous_ma65']>v['previous_ma260'];selected_g=pars['g_when_u'] if entry_u else pars['g_when_other']\n    run=negative_run(ctx.history,ctx.point) if signal else None\n    current_mf=bool(run is not None and run['length']>=2 and v['close']>run['high'])\n    original_g=selected_g\n    if current_mf:selected_g=pars['g_when_mf']\n    current=ctx.history.last()['Date'];held=p.quantity>0;proposal=None\n    facts={**v,'entry_signal':bool(signal),'m005_signal':bool(m005),'m006_signal':bool(m006),'alpha':pars['alpha'],'initial_fraction':pars['initial_fraction'],'accepted_fraction':pars['accepted_fraction'],'current_u':bool(entry_u),'current_setup_g_choice':selected_g,'reclaim_margin_atr':delta/scale if scale>0 else None,'setup_risk_distance_atr':(v['close']-min(v['previous_low'],v['low']))/scale if scale>0 else None,'normalization_defined':scale>0,'held':held,'portfolio_quantity':p.quantity,'portfolio_cash':p.cash,'cycle_present':state.cycle is not None,'holding_bars':0,'exit_due':False,'exit_trigger':'NONE','support_raised':False,'pivot_confirmed':False,'candidate_cancelled':False,'candidate_created':False,'candidate_accepted':False,'candidate_lost_line_qualification':False,'dynamic_line_raised':False,'old_effective_line':None,'accepted_base_failure_line':None,'progress_increment':0.,'base_failure':False,'dynamic_failure_only':False}\n    facts.update(g_when_mf=pars['g_when_mf'],current_multi_full=current_mf,current_negative_run_length=run['length'] if run else None,current_negative_run_high=run['high'] if run else None,current_original_u_g=original_g,current_context_g=selected_g)\n    if held:\n        if state.cycle is None or state.cycle.entry_at!=p.cycle_entry or p.cycle_cost<=0:raise ValueError('Actual activated cycle required')\n        s=dict(state.cycle.values.values)\n        cycle_g=s['cycle_g']\n        facts.update(entry_multi_full=s['entry_multi_full'],entry_negative_run_length=s['entry_negative_run_length'],entry_negative_run_high=s['entry_negative_run_high'])\n        if type(s['entry_u']) is not bool or type(cycle_g) is not float or not 0<=cycle_g<=1:raise ValueError('Typed frozen entry background and cycle protection required')\n        if current<=s['last_completed_at']:raise ValueError('Complete observation must advance')\n        s['holding_bars']+=1;s['last_completed_at']=current\n        facts['old_effective_line']=s['support']\n        if not s['exit_due']:\n            if s['accepted_active']:\n                s['accepted_peak_close']=max(s['accepted_peak_close'],v['close'])\n                updated=accepted_failure_line(s['accepted_low'],s['accepted_high'],s['accepted_peak_close'],pars['accepted_fraction'],cycle_g)\n                if updated<s['support']:raise ValueError('Dynamic line must not decrease; no hidden clamp')\n                facts['dynamic_line_raised']=updated>s['support'];s['support']=updated\n                base_line=s['accepted_low']+pars['accepted_fraction']*(s['accepted_high']-s['accepted_low'])\n                facts.update(accepted_base_failure_line=base_line,progress_increment=updated-base_line,base_failure=v['close']<base_line,dynamic_failure_only=base_line<=v['close']<updated)\n            if v['close']<s['support']:\n                s['exit_due']=True;s['exit_reason']='INITIAL_SUPPORT_BREAK' if not s['accepted_active'] else 'CONFIRMED_HIGHER_SUPPORT_BREAK'\n            if not s['exit_due']:\n                if s['pending_support'] and (v['low']<s['candidate_low'] or s['candidate_low']<=s['support']):\n                    facts['candidate_lost_line_qualification']=s['candidate_low']<=s['support'];s['pending_support']=False;facts['candidate_cancelled']=True\n                pivot=v['previous_low']<v['low2'] and v['previous_low']<v['low'] and v['previous_low']>s['support']\n                eligible=False\n                if pivot:\n                    three=ctx.history.to_frame(tail=3)\n                    if len(three)!=3 or not three.Date.is_monotonic_increasing or three.Date.duplicated().any() or three.Date.iloc[-1]!=current:raise ValueError('Exactly last three completed bars required')\n                    eligible=three.BarStart.iloc[0]>p.cycle_entry\n                facts['pivot_confirmed']=bool(eligible)\n                if eligible and not s['pending_support']:\n                    if s['peak_before_last']<=0:raise ValueError('Pre-pivot full held peak required')\n                    s.update(pending_support=True,candidate_low=v['previous_low'],candidate_high=s['peak_before_last'],candidate_at=current);facts['candidate_created']=True\n                if s['pending_support'] and v['close']>s['candidate_high']:\n                    L=s['candidate_low'];H=s['candidate_high']\n                    if not L>s['support']:raise ValueError('Accepted low must remain above current dynamic line')\n                    new_line=accepted_failure_line(L,H,v['close'],pars['accepted_fraction'],cycle_g)\n                    if not s['support']<new_line<=v['close']:raise ValueError('New accepted line naturally increases without acceptance-bar self-exit')\n                    s.update(support=new_line,accepted_active=True,accepted_low=L,accepted_high=H,accepted_peak_close=v['close']);s['support_raises']+=1;s['pending_support']=False;facts.update(support_raised=True,candidate_accepted=True,accepted_base_failure_line=L+pars['accepted_fraction']*(H-L),progress_increment=new_line-(L+pars['accepted_fraction']*(H-L)))\n            if ctx.history.last()['BarStart']>p.cycle_entry:s['peak_before_last']=s['peak'];s['peak']=max(s['peak'],v['high'])\n        proposal=StateRecord(tuple(s.items()));target=int(not s['exit_due']);facts.update(entry_u=s['entry_u'],cycle_g=cycle_g,holding_bars=s['holding_bars'],exit_due=s['exit_due'],exit_trigger=s['exit_reason'],initial_support=s['initial_support'],support=s['support'],support_raises=s['support_raises'],pending_support=s['pending_support'],candidate_low=s['candidate_low'],candidate_high=s['candidate_high'],candidate_at=s['candidate_at'],peak=s['peak'],peak_before_last=s['peak_before_last'],raw_s0=s['raw_s0'],reclaimed_level=s['reclaimed_level'],accepted_active=s['accepted_active'],accepted_low=s['accepted_low'],accepted_high=s['accepted_high'],initial_position=(v['close']-s['raw_s0'])/(s['reclaimed_level']-s['raw_s0']),entry_signal_risk_atr=(s['signal_reference_close']-s['raw_s0'])/s['entry_scale'] if s['entry_scale']>0 else None,entry_scale=s['entry_scale'],signal_reference_close=s['signal_reference_close'],actual_cycle_net_mark_return=(p.quantity*v['close']*.999-p.cycle_cost)/p.cycle_cost)\n        if s['accepted_active']:\n            D=s['accepted_high']-s['accepted_low']\n            if D<=0:raise ValueError('Accepted H/L pair must have positive span')\n            facts.update(accepted_position=(v['close']-s['accepted_low'])/D,accepted_progress=(s['accepted_peak_close']-s['accepted_high'])/D,accepted_retracement=(s['accepted_peak_close']-v['close'])/D)\n    else:\n        target=int(signal)\n        if target:\n            raw=min(v['previous_low'],v['low']);R=v['previous_high']\n            if not R>raw:raise ValueError('Reclaim structure must have positive width')\n            floor=raw+pars['initial_fraction']*(R-raw);proposal=StateRecord((('entry_multi_full',current_mf),('entry_negative_run_length',run['length']),('entry_negative_run_high',run['high']),('holding_bars',0),('last_completed_at',current),('exit_due',False),('initial_support',floor),('support',floor),('support_raises',0),('exit_reason','NONE'),('peak',0.),('peak_before_last',0.),('pending_support',False),('candidate_low',0.),('candidate_high',0.),('candidate_at',current),('raw_s0',raw),('reclaimed_level',R),('accepted_active',False),('accepted_low',0.),('accepted_high',0.),('accepted_peak_close',0.),('entry_scale',scale),('signal_reference_close',v['close']),('entry_u',bool(entry_u)),('cycle_g',float(selected_g))))\n    return AccountStepResult(AccountDecision.from_facts(target,'Reclaimed continuation, confirmed swing and price acceptance',facts=facts,next_watch='Only real complete held structure; candidate is not yet support, all exits next interval and locked',capital_mode='full_available_cash'),StateRecord(),proposal)\n\n"
+    }
+  ],
+  "parameters": {
+    "alpha": 0.1224170395746769,
+    "initial_fraction": 0.029763255532319066,
+    "accepted_fraction": 0.06874269821971955,
+    "g_when_u": 0.9443445858670778,
+    "g_when_other": 0.7046216770902249,
+    "g_when_mf": 0.5891597310082293
+  },
+  "source_account": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S017",
+      "experiment_id": "EX072_20261102"
+    },
+    "evidence_id": "6f1eb51ef6810b583b264b82880438456352e27416967505aa64f8a970049601.json",
+    "sha256": "6f1eb51ef6810b583b264b82880438456352e27416967505aa64f8a970049601",
+    "media_type": "application/json",
+    "name": "formal-C0349",
+    "schema": "equity_research",
+    "schema_version": 4
+  }
+}
