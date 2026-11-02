@@ -1,0 +1,740 @@
+{
+  "schema": "s017-confirmed-bounded-stage4/v3",
+  "role": "RSCH",
+  "status": "ADOPTED_BY_RSCH_UNDER_USER_STAGE4_CONTINUATION_AUTHORIZATION",
+  "source_mandate": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S017"
+    },
+    "stage": "MANDATE",
+    "revision": 8,
+    "content_sha256": "63c77aced4cb43e4f317c6cbf787a0a629d7c8955e441358a9ca64a1b0513d74"
+  },
+  "source_candidates": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S017"
+    },
+    "stage": "CANDIDATES",
+    "revision": 3,
+    "content_sha256": "98eb8a596b0cf07a7f35e75d4e5e30d01d3dba374b97726543ba693911dd4f68"
+  },
+  "overview_metadata_snapshot_sha256": "99eeb3314540ac6af8b856e5b5406d63c2af6dc997186e820e1e5a04c0fde378",
+  "authorization": {
+    "schema": "s017-user-stage4-continuation-authorization/v1",
+    "user_instruction": "切换RSCH，继续完成阶段四",
+    "source": "current user instruction relayed by parent agent",
+    "interpretation": "resume stage four and allow RSCH to implement the reviewed bounded method autonomously",
+    "user_numerical_targets_unchanged": true,
+    "method_owner": "RSCH",
+    "not_claiming_user_specified_each_of_257_points": true,
+    "sealed_2026_data_authorized": false
+  },
+  "scope": {
+    "candidates": [
+      "C0338",
+      "C0339",
+      "C0340",
+      "C0341",
+      "C0342",
+      "C0352"
+    ],
+    "window": "TRAIN_2024_2025",
+    "history_start": "2023-11-01",
+    "initial_cash": 100000.0,
+    "standard_one_way_cost": 0.001,
+    "pressure_one_way_cost": 0.002,
+    "drawdown_basis": "BAR_CLOSE",
+    "concentration_basis": "MAX_SINGLE",
+    "sealed_2026_market_data_or_results_authorized": false
+  },
+  "construction": {
+    "axis_order": [
+      "alpha",
+      "initial_fraction",
+      "accepted_fraction",
+      "g_when_u",
+      "g_when_other",
+      "g_when_mf"
+    ],
+    "joint_generator": "F=A*B*C*D*E; A..E enumerate (-1,+1)^5",
+    "orientation": "+1 fixed independently of performance and existing-account availability",
+    "levels": "existing legal min/max for joint rows; every legal noncenter axis value for axial rows",
+    "boundary_handling": "keep legal center endpoint where only one perturbation direction exists; never clip an illegal value",
+    "joint_each_factor_low_high_counts": [
+      16,
+      16
+    ],
+    "joint_each_pair_four_combination_counts": [
+      8,
+      8,
+      8,
+      8
+    ],
+    "point_weights": "all axial and joint points jointly form one equally weighted declared test set",
+    "selection_uses_performance": false,
+    "selection_uses_source_availability": false
+  },
+  "construction_sha256": "d7d8ce3141d97f7502bef9a7df5213e320c8388e037ac718c10fa682f9471534",
+  "construction_hash_algorithm": "strategy_runtime.canonical_sha256(construction)",
+  "point_sets": {
+    "C0338": {
+      "source_full_design_sha256": "0c584cc1dee43e05f609385d2ebae08bb4f8bfc6d109aa0ff592e6a4cf77a984",
+      "source_point_indices": [
+        161,
+        323,
+        53,
+        107,
+        17,
+        35,
+        5,
+        11,
+        2,
+        0,
+        1,
+        240,
+        244,
+        247,
+        249,
+        259,
+        261,
+        264,
+        268,
+        295,
+        297,
+        300,
+        304,
+        312,
+        316,
+        319,
+        321,
+        403,
+        405,
+        408,
+        412,
+        420,
+        424,
+        427,
+        429,
+        456,
+        460,
+        463,
+        465,
+        475,
+        477,
+        480,
+        484
+      ],
+      "N": 43,
+      "minimum_joint_passes": 35
+    },
+    "C0339": {
+      "source_full_design_sha256": "640a2a9e5468f7990f51b6f7d83a35b5fe45e7ec57fda7d87baf6096bbfc1cb6",
+      "source_point_indices": [
+        107,
+        215,
+        35,
+        71,
+        11,
+        23,
+        3,
+        7,
+        1,
+        0,
+        159,
+        162,
+        164,
+        165,
+        172,
+        173,
+        175,
+        178,
+        196,
+        197,
+        199,
+        202,
+        207,
+        210,
+        212,
+        213,
+        268,
+        269,
+        271,
+        274,
+        279,
+        282,
+        284,
+        285,
+        303,
+        306,
+        308,
+        309,
+        316,
+        317,
+        319,
+        322
+      ],
+      "N": 42,
+      "minimum_joint_passes": 35
+    },
+    "C0340": {
+      "source_full_design_sha256": "e76dab4e1e6cd7a7ddd896f1fd05e40f724b2ef69caac8ff38832bc0e74e22ed",
+      "source_point_indices": [
+        161,
+        323,
+        53,
+        107,
+        17,
+        35,
+        5,
+        11,
+        2,
+        0,
+        1,
+        240,
+        244,
+        247,
+        249,
+        259,
+        261,
+        264,
+        268,
+        295,
+        297,
+        300,
+        304,
+        312,
+        316,
+        319,
+        321,
+        403,
+        405,
+        408,
+        412,
+        420,
+        424,
+        427,
+        429,
+        456,
+        460,
+        463,
+        465,
+        475,
+        477,
+        480,
+        484
+      ],
+      "N": 43,
+      "minimum_joint_passes": 35
+    },
+    "C0341": {
+      "source_full_design_sha256": "06103e20fcb88881a7da3158d01e3fa66006d6a4be3b0e80586545e1dac9b493",
+      "source_point_indices": [
+        161,
+        323,
+        53,
+        107,
+        17,
+        35,
+        5,
+        11,
+        2,
+        0,
+        1,
+        240,
+        244,
+        247,
+        249,
+        259,
+        261,
+        264,
+        268,
+        295,
+        297,
+        300,
+        304,
+        312,
+        316,
+        319,
+        321,
+        403,
+        405,
+        408,
+        412,
+        420,
+        424,
+        427,
+        429,
+        456,
+        460,
+        463,
+        465,
+        475,
+        477,
+        480,
+        484
+      ],
+      "N": 43,
+      "minimum_joint_passes": 35
+    },
+    "C0342": {
+      "source_full_design_sha256": "bdedd0173605250c6ce24caa11905c12e607c2b7377590be026b6705bc6d25bc",
+      "source_point_indices": [
+        107,
+        215,
+        35,
+        71,
+        11,
+        23,
+        3,
+        7,
+        1,
+        0,
+        160,
+        161,
+        163,
+        166,
+        171,
+        174,
+        176,
+        177,
+        195,
+        198,
+        200,
+        201,
+        208,
+        209,
+        211,
+        214,
+        267,
+        270,
+        272,
+        273,
+        280,
+        281,
+        283,
+        286,
+        304,
+        305,
+        307,
+        310,
+        315,
+        318,
+        320,
+        321
+      ],
+      "N": 42,
+      "minimum_joint_passes": 35
+    },
+    "C0352": {
+      "source_full_design_sha256": "95cccb8b460689d540f49d1b882a056b59eede5074fb47d8ff1edb32424e05d4",
+      "source_point_indices": [
+        242,
+        485,
+        80,
+        161,
+        26,
+        53,
+        8,
+        17,
+        2,
+        5,
+        0,
+        1,
+        363,
+        367,
+        373,
+        375,
+        391,
+        393,
+        399,
+        403,
+        445,
+        447,
+        453,
+        457,
+        471,
+        475,
+        481,
+        483,
+        607,
+        609,
+        615,
+        619,
+        633,
+        637,
+        643,
+        645,
+        687,
+        691,
+        697,
+        699,
+        715,
+        717,
+        723,
+        727
+      ],
+      "N": 44,
+      "minimum_joint_passes": 36
+    }
+  },
+  "targets": {
+    "type": "ResearchTargets",
+    "requirements": [
+      {
+        "type": "ResearchTarget",
+        "target_id": "center-net-calmar",
+        "metric": "NET_CALMAR",
+        "lower": {
+          "type": "BenchmarkBound",
+          "multiplier": 1.5,
+          "inclusive": false
+        },
+        "upper": null,
+        "when": null,
+        "scope": "STANDARD",
+        "one_way_cost": 0.001
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "center-relative-dd",
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "lower": null,
+        "upper": {
+          "type": "BenchmarkBound",
+          "multiplier": 0.8,
+          "inclusive": true
+        },
+        "when": null,
+        "scope": "STANDARD",
+        "one_way_cost": null
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "center-absolute-dd",
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "lower": null,
+        "upper": {
+          "type": "ConstantBound",
+          "value": 0.25,
+          "inclusive": true
+        },
+        "when": null,
+        "scope": "STANDARD",
+        "one_way_cost": null
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "frequency-median",
+        "metric": "FREQUENCY_MEDIAN",
+        "lower": {
+          "type": "ConstantBound",
+          "value": 6.0,
+          "inclusive": true
+        },
+        "upper": null,
+        "when": null,
+        "scope": "STANDARD",
+        "one_way_cost": null
+      },
+      {
+        "type": "FrequencyCoverageTarget",
+        "target_id": "frequency-coverage",
+        "window_days": 60,
+        "minimum_closed_cycles": 3,
+        "minimum_numerator": 9,
+        "minimum_denominator": 10
+      },
+      {
+        "type": "ParameterNeighborhoodTarget",
+        "target_id": "parameters",
+        "minimum_numerator": 13,
+        "minimum_denominator": 16,
+        "joint_targets": [
+          {
+            "type": "ResearchTarget",
+            "target_id": "point-net-calmar",
+            "metric": "NET_CALMAR",
+            "lower": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.25,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          {
+            "type": "ResearchTarget",
+            "target_id": "point-relative-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "BenchmarkBound",
+              "multiplier": 0.9,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          }
+        ],
+        "all_point_targets": [
+          {
+            "type": "ResearchTarget",
+            "target_id": "point-absolute-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.25,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          }
+        ]
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "stress-net-calmar",
+        "metric": "NET_CALMAR",
+        "lower": {
+          "type": "BenchmarkBound",
+          "multiplier": 1.0,
+          "inclusive": false
+        },
+        "upper": null,
+        "when": null,
+        "scope": "STRESS",
+        "one_way_cost": 0.002
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "stress-relative-dd",
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "lower": null,
+        "upper": {
+          "type": "BenchmarkBound",
+          "multiplier": 1.0,
+          "inclusive": false
+        },
+        "when": {
+          "type": "BenchmarkCondition",
+          "metric": "DRAWDOWN_MAGNITUDE",
+          "operator": "GT",
+          "value": 0.0
+        },
+        "scope": "STRESS",
+        "one_way_cost": 0.002
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "stress-zero-dd",
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "lower": null,
+        "upper": {
+          "type": "ConstantBound",
+          "value": 0.0,
+          "inclusive": true
+        },
+        "when": {
+          "type": "BenchmarkCondition",
+          "metric": "DRAWDOWN_MAGNITUDE",
+          "operator": "LE",
+          "value": 0.0
+        },
+        "scope": "STRESS",
+        "one_way_cost": 0.002
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "stress-absolute-dd",
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "lower": null,
+        "upper": {
+          "type": "ConstantBound",
+          "value": 0.25,
+          "inclusive": true
+        },
+        "when": null,
+        "scope": "STRESS",
+        "one_way_cost": 0.002
+      }
+    ],
+    "frequency_window_days": 60
+  },
+  "protocol": {
+    "type": "CalmarSelfCheckProtocol",
+    "version": "s017-calmar-selfcheck-v2",
+    "baseline_window": "TRAIN_2024_2025",
+    "standard_scenario": "STANDARD",
+    "stress_scenario": "PRESSURE",
+    "rolling_window_days": 252,
+    "rolling_step_days": 21,
+    "quantile_method": "LINEAR",
+    "minimum_rolling_windows": 1,
+    "bootstrap_repetitions": 1000,
+    "bootstrap_block_length": 20,
+    "seed": 17,
+    "reconciliation_tolerance": 1e-07,
+    "parameter_protocol": {
+      "type": "ParameterNeighborhoodProtocol",
+      "purpose": "LOCAL_SENSITIVITY",
+      "max_combinations": 10000,
+      "quantile_method": "LINEAR",
+      "version": "parameter-cartesian-neighborhood-v2"
+    },
+    "pbo_blocks": 10,
+    "frequency_min_closed_cycles": 3
+  },
+  "policy": {
+    "type": "ComparisonPolicy",
+    "version": "s017-calmar-selfcheck-v2",
+    "bins": [
+      {
+        "type": "MetricBinSpec",
+        "metric": "NET_CALMAR",
+        "resolution": 0.0001,
+        "origin": 0.0,
+        "rounding": "FLOOR"
+      },
+      {
+        "type": "MetricBinSpec",
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "resolution": 0.0001,
+        "origin": 0.0,
+        "rounding": "FLOOR"
+      },
+      {
+        "type": "MetricBinSpec",
+        "metric": "PARAMETER_CALMAR_Q10",
+        "resolution": 0.0001,
+        "origin": 0.0,
+        "rounding": "FLOOR"
+      },
+      {
+        "type": "MetricBinSpec",
+        "metric": "PARAMETER_DRAWDOWN_Q90",
+        "resolution": 0.0001,
+        "origin": 0.0,
+        "rounding": "FLOOR"
+      },
+      {
+        "type": "MetricBinSpec",
+        "metric": "ROLLING_EXCESS_CALMAR_Q10",
+        "resolution": 0.0001,
+        "origin": 0.0,
+        "rounding": "FLOOR"
+      },
+      {
+        "type": "MetricBinSpec",
+        "metric": "STRESS_CALMAR_LOSS",
+        "resolution": 0.0001,
+        "origin": 0.0,
+        "rounding": "FLOOR"
+      },
+      {
+        "type": "MetricBinSpec",
+        "metric": "PROFIT_CONCENTRATION",
+        "resolution": 0.0001,
+        "origin": 0.0,
+        "rounding": "FLOOR"
+      },
+      {
+        "type": "MetricBinSpec",
+        "metric": "FREQUENCY_MEDIAN",
+        "resolution": 0.5,
+        "origin": 0.0,
+        "rounding": "FLOOR"
+      }
+    ],
+    "pareto_basis": "RAW",
+    "missing_evidence_policy": "REQUIRE_COMPLETE",
+    "sensitivities": [],
+    "formula_version": "research-ranking-v6"
+  },
+  "comparison": {
+    "type": "DeclaredPointSetComparisonContract",
+    "construction_sha256": "d7d8ce3141d97f7502bef9a7df5213e320c8388e037ac718c10fa682f9471534",
+    "source_scale": {
+      "type": "CommonNeighborhoodComparisonContract",
+      "relative_limit": {
+        "type": "RelativeChangeLimit",
+        "fraction": 0.05
+      },
+      "zero_limits": [
+        {
+          "type": "ZeroCenterAbsoluteLimit",
+          "name": "g_when_u",
+          "limit": {
+            "type": "AbsoluteChangeLimit",
+            "amount": 0.05
+          }
+        },
+        {
+          "type": "ZeroCenterAbsoluteLimit",
+          "name": "g_when_other",
+          "limit": {
+            "type": "AbsoluteChangeLimit",
+            "amount": 0.05
+          }
+        },
+        {
+          "type": "ZeroCenterAbsoluteLimit",
+          "name": "g_when_mf",
+          "limit": {
+            "type": "AbsoluteChangeLimit",
+            "amount": 0.05
+          }
+        }
+      ]
+    }
+  },
+  "budget": {
+    "parameter_strategy_accounts": 257,
+    "center_standard_accounts": 6,
+    "center_pressure_accounts": 6,
+    "maximum_strategy_accounts": 269,
+    "maximum_shared_benchmark_accounts": 2,
+    "historical_65_counted_as_current_execution": 0,
+    "target_minutes": 45,
+    "target_is_hard_deadline": false,
+    "target_is_sla": false,
+    "after_target": "record elapsed/remaining estimate and finish within the same declared workload; no extra search or point expansion",
+    "max_workers": 12,
+    "native_threads_per_worker": 1,
+    "public_tdr_session_only": true,
+    "suggested_batch_size": 12,
+    "independent_audit_required": false
+  },
+  "historical_handling": {
+    "old_65_not_automatically_compatible": true,
+    "old_implementation_checkpoints_not_resumed": true,
+    "old_account_bindings_not_resigned": true,
+    "new_plans_required_for_current_execution": true,
+    "old_failures_and_unfinished_2829_point_contract_preserved": true,
+    "old_annual_gate_failure_not_itself_new_calmar_gate_failure": true,
+    "posthoc_method_redesign_disclosed": true
+  },
+  "five_selfchecks": [
+    "center and stress account completeness plus confirmed hard gates",
+    "all 257 declared parameter points, joint counts, every-point DD and Q10/Q90",
+    "same-ledger annual and rolling-252-step-21 time stability report",
+    "pressure hard gates, Calmar loss, profit concentration and historical counterevidence",
+    "paired uncertainty and family-data availability, schema15 FULL numerical delivery and RSCH recommendation"
+  ],
+  "completion": {
+    "all_candidates_must_pass": false,
+    "technical_missing_is_not_completion": true,
+    "unavailable_report_only_family_diagnostics_disclosed": true,
+    "rsch_final_hard_gate_verification_required": true,
+    "assessment_schema_version": 15,
+    "sealed_test_or_stage5_or_freeze_automatic": false
+  }
+}

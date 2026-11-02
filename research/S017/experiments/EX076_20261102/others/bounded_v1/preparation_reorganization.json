@@ -1,0 +1,18 @@
+{
+  "schema": "s017-source-preparation-reorganization/v1",
+  "reason": "prepare independent source plans concurrently through public TDR sessions before any account replay",
+  "strategy_replays_before_reorganization": 0,
+  "preserved_ready_plans": [
+    "C0338",
+    "C0339"
+  ],
+  "parallel_prepare_only_centers": [
+    "C0340",
+    "C0341",
+    "C0342",
+    "C0352"
+  ],
+  "account_worker_pools_during_parallel_preparation": 0,
+  "account_execution": "one public TDR session with max_workers=12 after all source plans ready",
+  "old_source_plan_and_evidence_rewritten": false
+}
