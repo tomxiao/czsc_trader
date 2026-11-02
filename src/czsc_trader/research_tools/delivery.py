@@ -61,7 +61,7 @@ def _schema_version(stage: DeliveryStage) -> int:
 
 def _readable_schema_versions(stage: DeliveryStage) -> tuple[int, ...]:
     if stage is DeliveryStage.ASSESSMENT:
-        return (8, 11, 12, 13)
+        return (8, 11, 12, 13, 14)
     if stage in (DeliveryStage.MANDATE, DeliveryStage.ASSESSMENT):
         return (8, 11, 12)
     return (_schema_version(stage),)

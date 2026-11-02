@@ -11,6 +11,7 @@ import numpy as np
 from . import research_models as m
 from .research_acceptance import acceptance_status, check_target as _check_target, _calmar
 from .bootstrap import _paired_stationary_bootstrap_cagr
+from .calmar_diagnostics import rolling_calmar_excess, stress_calmar_loss
 from .audit_models import ReturnMatrixEvidence
 from .search_bias import annualized_sharpe, calculate_dsr_bundle, cscv_pbo, effective_trial_count
 
@@ -530,11 +531,13 @@ def _assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPan
                 if not request.parameter_designs
                 else _parameter_context(request, center, evidence, base),
                 coverage, point_facts, stress_facts,
+                rolling_calmar_excess(base, p) if isinstance(p, m.CalmarSelfCheckProtocol) else None,
             )
         )
     family, limitations = _family(request)
     return m.AssessmentPanel(request.sha256, p.sha256, tuple(rows), family, limitations,
-        formula_version=("research-assessment-v7" if p.parameter_protocol.version == "parameter-cartesian-neighborhood-v2"
+        formula_version="research-assessment-v8" if isinstance(p, m.CalmarSelfCheckProtocol) else
+        ("research-assessment-v7" if p.parameter_protocol.version == "parameter-cartesian-neighborhood-v2"
                          else "research-assessment-v6") if isinstance(p, m.NeighborhoodSelfCheckProtocol)
         else "research-assessment-v5")
 
@@ -646,6 +649,7 @@ def _compare_pair(a, b, layer, order, parameter_methods):
                 m.ResearchMetric.PARAMETER_RETURN_Q10,
                 m.ResearchMetric.PARAMETER_CALMAR_Q10,
                 m.ResearchMetric.ROLLING_EXCESS_Q10,
+                m.ResearchMetric.ROLLING_EXCESS_CALMAR_Q10,
             )
             relation = (
                 m.PairwiseRelation.A_BEFORE_B
@@ -717,9 +721,12 @@ def _order_layer(members, layer, order, parameter_methods):
 
 def _ranking_diagnostics(row, policy):
     metrics = {x.metric: x for x in row.diagnostics}
-    if policy.formula_version != "research-ranking-v5":
+    if policy.formula_version not in ("research-ranking-v5", "research-ranking-v6"):
         return metrics
     metrics[m.ResearchMetric.NET_CALMAR] = _calmar(metrics)
+    if policy.formula_version == "research-ranking-v6":
+        metrics[m.ResearchMetric.ROLLING_EXCESS_CALMAR_Q10] = row.rolling_calmar_excess_q10
+        metrics[m.ResearchMetric.STRESS_CALMAR_LOSS] = stress_calmar_loss(row)
     context, facts = row.parameter_context, row.parameter_performances
     status, value, reason = m.DiagnosticStatus.INSUFFICIENT_DATA, None, "INCOMPLETE_OR_UNAVAILABLE_PARAMETER_CALMAR"
     if isinstance(context, m.ParameterNeighborhoodContext) and not context.is_applicable:
@@ -756,7 +763,7 @@ def _rank(request, bins, order):
     specifications = {x.metric: x for x in bins}
     pareto_metrics = request.policy.pareto_metrics
     parameter_metrics = (
-        m.ResearchMetric.PARAMETER_CALMAR_Q10 if request.policy.formula_version == "research-ranking-v5"
+        m.ResearchMetric.PARAMETER_CALMAR_Q10 if request.policy.formula_version in ("research-ranking-v5", "research-ranking-v6")
         else m.ResearchMetric.PARAMETER_RETURN_Q10, m.ResearchMetric.PARAMETER_DRAWDOWN_Q90,
     )
     records, profiles, eligible_rows = [], [], []
@@ -910,9 +917,10 @@ def _rank(request, bins, order):
 def compare_candidates(request: m.CandidateComparisonRequest | m.CalmarComparisonRequest) -> m.CandidateComparison:
     if type(request) not in (m.CandidateComparisonRequest, m.CalmarComparisonRequest):
         raise TypeError("compare_candidates requires a typed comparison request")
-    version = "research-ranking-v5" if type(request) is m.CalmarComparisonRequest else "research-ranking-v4"
-    m.require(request.policy.formula_version == version
-              and request.panel.formula_version == "research-assessment-v7",
+    expected = (("research-ranking-v5", "research-assessment-v7"),
+                ("research-ranking-v6", "research-assessment-v8")) if type(request) is m.CalmarComparisonRequest else (
+                    ("research-ranking-v4", "research-assessment-v7"),)
+    m.require((request.policy.formula_version, request.panel.formula_version) in expected,
               "historical comparison protocols are read-only")
     return _compare_candidates(request)
 

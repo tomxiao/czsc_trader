@@ -194,7 +194,7 @@ from .account_diagnosis import (
     diagnose_account_replays,
 )
 
-from .research_models import (NeighborhoodSelfCheckProtocol, ParameterNeighborhoodTarget, ParameterNeighborhoodCheck)
+from .research_models import (NeighborhoodSelfCheckProtocol, CalmarSelfCheckProtocol, ParameterNeighborhoodTarget, ParameterNeighborhoodCheck)
 from .parameter_neighborhood import (
     RelativeChangeLimit, AbsoluteChangeLimit, BoundedLocalStep,
     ParameterStepStatus, ParameterStepDecision, ParameterAxisApplicability,
@@ -393,3 +393,5 @@ __all__ += [
 ]
 
 __all__ += ["CalmarComparisonRequest", "CommonNeighborhoodComparisonContract", "ZeroCenterAbsoluteLimit"]
+
+__all__ += ["CalmarSelfCheckProtocol"]

@@ -498,7 +498,8 @@ def _validate_parameter_method_schema(definition, payload):
               "parameter method differs from the delivery schema; historical methods are read-only")
     expected_method = {11: "parameter-cartesian-neighborhood-v1",
                        12: "parameter-cartesian-neighborhood-v2",
-                       13: "parameter-cartesian-neighborhood-v2"}.get(definition.schema_version)
+                       13: "parameter-cartesian-neighborhood-v2",
+                       14: "parameter-cartesian-neighborhood-v2"}.get(definition.schema_version)
     if expected_method is not None and any(
         isinstance(value, ParameterNeighborhoodProtocol) and value.version != expected_method
         for value in _walk(payload)
@@ -507,16 +508,20 @@ def _validate_parameter_method_schema(definition, payload):
               "parameter neighborhood version differs from delivery schema")
     if definition.stage is d.DeliveryStage.ASSESSMENT:
         expected_assessment = {8: "research-assessment-v5", 11: "research-assessment-v6",
-                               12: "research-assessment-v7", 13: "research-assessment-v7"}[definition.schema_version]
-        expected_ranking = {12: "research-ranking-v4", 13: "research-ranking-v5"}.get(
+                               12: "research-assessment-v7", 13: "research-assessment-v7",
+                               14: "research-assessment-v8"}[definition.schema_version]
+        expected_ranking = {12: "research-ranking-v4", 13: "research-ranking-v5",
+                            14: "research-ranking-v6"}.get(
             definition.schema_version, "research-ranking-v3")
         if (payload.assessment.formula_version != expected_assessment
             or payload.comparison_request.policy.formula_version != expected_ranking
-            or (definition.schema_version == 13) != isinstance(
-                payload.comparison_request, m.CalmarComparisonRequest)):
+            or (definition.schema_version in (13, 14)) != isinstance(
+                payload.comparison_request, m.CalmarComparisonRequest)
+            or (definition.schema_version == 14) != isinstance(
+                payload.assessment_request.protocol, m.CalmarSelfCheckProtocol)):
             _fail("PARAMETER_METHOD_SCHEMA", "content.payload",
                   "assessment or ranking version differs from delivery schema")
-        if (definition.schema_version == 13
+        if (definition.schema_version in (13, 14)
             and payload.comparison_request.parameter_designs != payload.assessment_request.parameter_designs):
             _fail("PARAMETER_METHOD_SCHEMA", "content.payload",
                   "Calmar comparison designs must equal assessment request designs")
@@ -837,7 +842,7 @@ def assemble_delivery(context: RepositoryContext, definition: d.DeliveryDefiniti
         or type(content) is not d.DeliveryContent):
         raise TypeError("assembly requires RepositoryContext, DeliveryDefinition and DeliveryContent")
     if (definition.schema_version != d._schema_version(definition.stage)
-        and not (definition.stage is d.DeliveryStage.ASSESSMENT and definition.schema_version == 13)):
+        and not (definition.stage is d.DeliveryStage.ASSESSMENT and definition.schema_version in (13, 14))):
         _fail("DELIVERY_SCHEMA", "definition.schema_version", "historical delivery schemas are read-only")
     _validate_parameter_method_schema(definition, content.payload)
     lock = _resolve(context.root, f".tmp/delivery-publication/{definition.strategy_id}")

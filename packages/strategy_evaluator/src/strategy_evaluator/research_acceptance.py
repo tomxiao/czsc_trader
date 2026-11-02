@@ -92,7 +92,7 @@ def _performance_check(target, facts):
         return _scalar(target, {}, {}, None, None, None)
 
     def values(annual, drawdown):
-        return {
+        metrics = {
             metric: m.DiagnosticValue(
                 metric,
                 m.MetricUnit.RATIO,
@@ -105,6 +105,10 @@ def _performance_check(target, facts):
             )
             for metric, value in zip(m.BENCHMARK_METRICS, (annual, drawdown))
         }
+        if (target.metric is m.ResearchMetric.NET_CALMAR
+                or (target.when is not None and target.when.metric is m.ResearchMetric.NET_CALMAR)):
+            metrics[m.ResearchMetric.NET_CALMAR] = _calmar(metrics)
+        return metrics
 
     return _scalar(
         target,
@@ -260,19 +264,21 @@ def _parameter_neighborhood(target, row):
     )
 
 
+def _calmar_value(annual, drawdown):
+    if annual is None or drawdown is None or drawdown <= 1e-12:
+        return None
+    quotient = annual / drawdown
+    return quotient if math.isfinite(quotient) else None
+
+
 def _calmar(metrics):
     annual = metrics.get(m.ResearchMetric.NET_ANNUAL_RETURN)
     drawdown = metrics.get(m.ResearchMetric.DRAWDOWN_MAGNITUDE)
     sources = tuple(dict.fromkeys(
         source for item in (annual, drawdown) if item is not None for source in item.evaluation_ids
     ))
-    value = None
-    if (annual is not None and annual.value is not None
-            and drawdown is not None and drawdown.value is not None
-            and drawdown.value > 1e-12):
-        quotient = annual.value / drawdown.value
-        if math.isfinite(quotient):
-            value = quotient
+    value = _calmar_value(None if annual is None else annual.value,
+                          None if drawdown is None else drawdown.value)
     return m.DiagnosticValue(
         m.ResearchMetric.NET_CALMAR, m.MetricUnit.RATIO,
         m.DiagnosticStatus.AVAILABLE if value is not None else m.DiagnosticStatus.INSUFFICIENT_DATA,

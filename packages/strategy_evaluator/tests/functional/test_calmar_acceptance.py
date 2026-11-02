@@ -154,17 +154,17 @@ def test_nonfinite_input_is_rejected_before_calmar_evaluation(value):
 
 @pytest.mark.parametrize("where", ["stress", "group", "neighborhood"])
 @pytest.mark.parametrize("condition_only", [False, True])
-def test_calmar_does_not_expand_pressure_or_parameter_acceptance(where, condition_only):
+def test_explicit_calmar_pressure_and_parameter_targets_preserve_strong_types(where, condition_only):
     target = calmar_target()
     if condition_only:
         target = replace(
             target, metric=ResearchMetric.NET_ANNUAL_RETURN,
             when=BenchmarkCondition(ResearchMetric.NET_CALMAR, ComparisonOperator.GT, 0.0),
         )
-    with pytest.raises(ValueError, match="performance metrics"):
-        if where == "stress":
-            replace(target, scope=m.TargetScope.STRESS)
-        elif where == "group":
-            m.ParameterGroupTarget("parameters", 1, 1, (target,), (replace(target, target_id="risk"),))
-        else:
-            m.ParameterNeighborhoodTarget("parameters", 13, 16, (target,), (replace(target, target_id="risk"),))
+    if where == "stress":
+        result = replace(target, scope=m.TargetScope.STRESS)
+    elif where == "group":
+        result = m.ParameterGroupTarget("parameters", 1, 1, (target,), (replace(target, target_id="risk"),))
+    else:
+        result = m.ParameterNeighborhoodTarget("parameters", 13, 16, (target,), (replace(target, target_id="risk"),))
+    assert type(result).from_dict(result.to_dict()) == result

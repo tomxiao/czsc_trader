@@ -315,11 +315,16 @@ class ResearchMetric(StrEnum):
     PARAMETER_DRAWDOWN_Q90 = "PARAMETER_DRAWDOWN_Q90"
     ROLLING_EXCESS_Q10 = "ROLLING_EXCESS_Q10"
     STRESS_ANNUAL_LOSS = "STRESS_ANNUAL_LOSS"
+    ROLLING_EXCESS_CALMAR_Q10 = "ROLLING_EXCESS_CALMAR_Q10"
+    STRESS_CALMAR_LOSS = "STRESS_CALMAR_LOSS"
     PROFIT_CONCENTRATION = "PROFIT_CONCENTRATION"
 
 
 # Calmar is derived only when requested; persisted diagnostic panels keep their schema.
-DERIVED_RANKING_METRICS = (ResearchMetric.NET_CALMAR, ResearchMetric.PARAMETER_CALMAR_Q10)
+DERIVED_RANKING_METRICS = (
+    ResearchMetric.NET_CALMAR, ResearchMetric.PARAMETER_CALMAR_Q10,
+    ResearchMetric.ROLLING_EXCESS_CALMAR_Q10, ResearchMetric.STRESS_CALMAR_LOSS,
+)
 ASSESSMENT_METRICS = tuple(x for x in ResearchMetric if x not in DERIVED_RANKING_METRICS)
 
 
@@ -331,6 +336,7 @@ FREQUENCY_METRICS = (
     ResearchMetric.FREQUENCY_Q10,
 )
 BENCHMARK_METRICS = (ResearchMetric.NET_ANNUAL_RETURN, ResearchMetric.DRAWDOWN_MAGNITUDE)
+PERFORMANCE_METRICS = (*BENCHMARK_METRICS, ResearchMetric.NET_CALMAR)
 
 
 class MetricUnit(StrEnum):
@@ -743,6 +749,16 @@ class NeighborhoodSelfCheckProtocol(ResearchRecord):
                 "self-check requires local sensitivity protocol")
 
 
+@dataclass(frozen=True)
+class CalmarSelfCheckProtocol(NeighborhoodSelfCheckProtocol):
+    """Explicit Calmar rolling diagnostics; historical protocols retain their formulas."""
+
+    def validate(self):
+        super().validate()
+        require(self.parameter_protocol.version == "parameter-cartesian-neighborhood-v2",
+                "Calmar self-check requires current neighborhoods")
+
+
 class IncompleteEvaluationStatus(StrEnum):
     NOT_RUN = "NOT_RUN"
     FAILED = "FAILED"
@@ -801,7 +817,7 @@ class FamilyReturnEvidence(ResearchRecord):
 @dataclass(frozen=True)
 class CandidateAssessmentRequest(ResearchRecord):
     centers: tuple[AssessmentCandidate, ...]
-    protocol: SelfCheckProtocol | NeighborhoodSelfCheckProtocol
+    protocol: SelfCheckProtocol | NeighborhoodSelfCheckProtocol | CalmarSelfCheckProtocol
     perturbations: tuple[PerturbationLink, ...]
     evidence: tuple[AssessmentEvidence, ...]
     incomplete: tuple[IncompleteEvaluation, ...] = ()
@@ -1017,8 +1033,23 @@ class CandidateAssessment(ResearchRecord):
     frequency_coverage: FrequencyCoverageFacts | None = None
     parameter_performances: tuple[PerformanceFacts, ...] = ()
     stress_performance: PerformanceFacts | None = None
+    rolling_calmar_excess_q10: DiagnosticValue | None = None
+
+    def _serialized_fields(self):
+        return tuple(f.name for f in fields(self)
+                     if f.name != "rolling_calmar_excess_q10" or self.rolling_calmar_excess_q10 is not None)
+
+    @classmethod
+    def _decode_defaults(cls, value):
+        return {"rolling_calmar_excess_q10": None} if type(value) is dict and "rolling_calmar_excess_q10" not in value else {}
 
     def validate(self):
+        if self.rolling_calmar_excess_q10 is not None:
+            require(self.rolling_calmar_excess_q10.metric is ResearchMetric.ROLLING_EXCESS_CALMAR_Q10,
+                    "rolling Calmar diagnostic metric differs")
+            require(self.baseline_scenario is not None
+                    or self.rolling_calmar_excess_q10.status is not DiagnosticStatus.AVAILABLE,
+                    "available rolling Calmar requires a baseline scenario")
         unique((x.point_index for x in self.parameter_performances), "performance point")
         unique((x.candidate for x in self.parameter_performances), "performance candidate")
         require(not self.parameter_performances or self.parameter_context is not None,
@@ -1106,11 +1137,14 @@ class AssessmentPanel(ResearchRecord):
 
     def validate(self):
         require(
-            self.formula_version in ("research-assessment-v5", "research-assessment-v6", "research-assessment-v7"),
+            self.formula_version in ("research-assessment-v5", "research-assessment-v6", "research-assessment-v7", "research-assessment-v8"),
             "unsupported assessment formula version",
         )
         unique((x.candidate.candidate_id for x in self.rows), "panel candidate")
-        if self.formula_version == "research-assessment-v7":
+        require(all((row.rolling_calmar_excess_q10 is not None)
+                    == (self.formula_version == "research-assessment-v8") for row in self.rows),
+                "rolling Calmar field differs from assessment version")
+        if self.formula_version in ("research-assessment-v7", "research-assessment-v8"):
             require(all(row.parameter_context is None or (
                 isinstance(row.parameter_context, ParameterNeighborhoodContext)
                 and row.parameter_context.protocol.version == "parameter-cartesian-neighborhood-v2"
@@ -1167,8 +1201,8 @@ class ResearchTarget(ResearchRecord):
 
     def validate(self):
         require(self.one_way_cost is None or 0 <= self.one_way_cost < 1, "invalid target cost")
-        require(self.scope is TargetScope.STANDARD or (self.metric in BENCHMARK_METRICS
-                and (self.when is None or self.when.metric in BENCHMARK_METRICS)),
+        require(self.scope is TargetScope.STANDARD or (self.metric in PERFORMANCE_METRICS
+                and (self.when is None or self.when.metric in PERFORMANCE_METRICS)),
                 "stress targets require performance metrics")
         require(
             self.metric
@@ -1224,8 +1258,8 @@ class ParameterGroupTarget(ResearchRecord):
         require(0 < self.minimum_joint_passes <= self.required_points, "invalid parameter group count")
         require(bool(self.joint_targets) and bool(self.all_point_targets), "empty parameter conditions")
         unique((x.target_id for x in (*self.joint_targets, *self.all_point_targets)), "point target")
-        require(all(x.scope is TargetScope.STANDARD and x.metric in BENCHMARK_METRICS
-                    and (x.when is None or x.when.metric in BENCHMARK_METRICS)
+        require(all(x.scope is TargetScope.STANDARD and x.metric in PERFORMANCE_METRICS
+                    and (x.when is None or x.when.metric in PERFORMANCE_METRICS)
                     for x in (*self.joint_targets, *self.all_point_targets)),
                 "parameter conditions require standard performance metrics")
 
@@ -1243,8 +1277,8 @@ class ParameterNeighborhoodTarget(ResearchRecord):
                 "invalid neighborhood pass fraction")
         require(bool(self.joint_targets) and bool(self.all_point_targets), "empty parameter conditions")
         unique((x.target_id for x in (*self.joint_targets, *self.all_point_targets)), "point target")
-        require(all(x.scope is TargetScope.STANDARD and x.metric in BENCHMARK_METRICS
-                    and (x.when is None or x.when.metric in BENCHMARK_METRICS)
+        require(all(x.scope is TargetScope.STANDARD and x.metric in PERFORMANCE_METRICS
+                    and (x.when is None or x.when.metric in PERFORMANCE_METRICS)
                     for x in (*self.joint_targets, *self.all_point_targets)),
                 "parameter conditions require standard performance metrics")
 
@@ -1287,6 +1321,11 @@ RANKING_METRICS = (
 
 CALMAR_WITHIN_LAYER_METRICS = (ResearchMetric.PARAMETER_CALMAR_Q10, *WITHIN_LAYER_METRICS[1:])
 CALMAR_PARETO_METRICS = (ResearchMetric.NET_CALMAR, ResearchMetric.DRAWDOWN_MAGNITUDE)
+CALMAR_V2_WITHIN_LAYER_METRICS = (
+    ResearchMetric.PARAMETER_CALMAR_Q10, ResearchMetric.PARAMETER_DRAWDOWN_Q90,
+    ResearchMetric.ROLLING_EXCESS_CALMAR_Q10, ResearchMetric.STRESS_CALMAR_LOSS,
+    ResearchMetric.PROFIT_CONCENTRATION,
+)
 
 
 class BinRounding(StrEnum):
@@ -1324,6 +1363,7 @@ class ComparisonVariant(ResearchRecord):
             metrics - set(FREQUENCY_METRICS) in (
                 set((*BENCHMARK_METRICS, *WITHIN_LAYER_METRICS)),
                 set((*CALMAR_PARETO_METRICS, *CALMAR_WITHIN_LAYER_METRICS)),
+                set((*CALMAR_PARETO_METRICS, *CALMAR_V2_WITHIN_LAYER_METRICS)),
             )
             and len(metrics & set(FREQUENCY_METRICS)) == 1,
             "eight bins required: two Pareto, five robustness and one frequency metric",
@@ -1354,7 +1394,7 @@ class ComparisonPolicy(ResearchRecord):
     formula_version: str = "research-ranking-v4"
 
     def validate(self):
-        require(self.formula_version in ("research-ranking-v3", "research-ranking-v4", "research-ranking-v5"),
+        require(self.formula_version in ("research-ranking-v3", "research-ranking-v4", "research-ranking-v5", "research-ranking-v6"),
                 "unsupported ranking formula version")
         ComparisonVariant("baseline", self.bins)
         expected = set((*self.pareto_metrics, *self.ranking_metrics))
@@ -1378,12 +1418,14 @@ class ComparisonPolicy(ResearchRecord):
 
     @property
     def ranking_metrics(self) -> tuple[ResearchMetric, ...]:
-        within = CALMAR_WITHIN_LAYER_METRICS if self.formula_version == "research-ranking-v5" else WITHIN_LAYER_METRICS
+        within = (CALMAR_V2_WITHIN_LAYER_METRICS if self.formula_version == "research-ranking-v6"
+                  else CALMAR_WITHIN_LAYER_METRICS if self.formula_version == "research-ranking-v5"
+                  else WITHIN_LAYER_METRICS)
         return (*within, self.frequency_metric)
 
     @property
     def pareto_metrics(self) -> tuple[ResearchMetric, ...]:
-        return CALMAR_PARETO_METRICS if self.formula_version == "research-ranking-v5" else BENCHMARK_METRICS
+        return CALMAR_PARETO_METRICS if self.formula_version in ("research-ranking-v5", "research-ranking-v6") else BENCHMARK_METRICS
 
 
 @dataclass(frozen=True)
@@ -1395,7 +1437,7 @@ class CandidateComparisonRequest(ResearchRecord):
 
     def validate(self):
         _validate_comparison_scope(self)
-        require(self.policy.formula_version != "research-ranking-v5",
+        require(self.policy.formula_version not in ("research-ranking-v5", "research-ranking-v6"),
                 "Calmar ranking requires CalmarComparisonRequest and complete designs")
 
 
@@ -1461,9 +1503,10 @@ class CalmarComparisonRequest(ResearchRecord):
 
     def validate(self):
         _validate_comparison_scope(self)
-        require(self.policy.formula_version == "research-ranking-v5"
-                and self.panel.formula_version == "research-assessment-v7",
-                "Calmar comparison requires v7 assessment and v5 ranking")
+        require((self.policy.formula_version, self.panel.formula_version) in (
+            ("research-ranking-v5", "research-assessment-v7"),
+            ("research-ranking-v6", "research-assessment-v8"),
+        ), "Calmar comparison requires v7/v5 or v8/v6 assessment/ranking pair")
         unique((x.center for x in self.parameter_designs), "comparison parameter design")
         require({x.center for x in self.parameter_designs} == set(self.candidates),
                 "complete parameter designs required for every center")
