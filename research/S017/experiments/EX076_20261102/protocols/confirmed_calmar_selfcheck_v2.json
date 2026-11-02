@@ -1,0 +1,88 @@
+{
+  "schema": "s017-calmar-selfcheck-policy/v2",
+  "date": "2026-11-02",
+  "status": "USER_CONFIRMED_RESEARCH_POLICY_EXECUTION_PAUSED",
+  "user_confirmation": "同意，另外请确认RSCH制定并最终核验硬门，TDR只支持按输入参数及规则实施自检计算和排序的分工",
+  "supersession": "本批次新自检及排序采用统一Calmar口径；历史MANDATE/7、旧年化门结果、既有交付和证据均保留原样，不将旧年化门失败直接作为新口径最终否决",
+  "legacy_result_interpretation": "既有批次记录中的joint_pass及压力relative_return是旧年化规则计算值，保留历史但不得直接用于新政策最终核验；RSCH须从真实收益/回撤/Calmar及证据重新核验",
+  "scope": {
+    "strategy_id": "S017",
+    "candidates": ["C0338", "C0339", "C0340", "C0341", "C0342", "C0352"],
+    "development_window": ["2024-01-02", "2025-12-31"],
+    "history_start": "2023-11-01",
+    "standard_one_way_cost": 0.001,
+    "pressure_one_way_cost": 0.002,
+    "initial_cash_usd": 100000.0,
+    "drawdown_basis": "BAR_CLOSE",
+    "benchmark": "same-window same-execution-contract net buy-and-hold",
+    "sealed_2026_prices_or_strategy_results_authorized": false
+  },
+  "calmar_definition": {
+    "formula": "net_annualized_return / maximum_drawdown_magnitude",
+    "available_when": "drawdown > 1e-12 and quotient finite",
+    "benchmark_multiplier": "literal signed multiplication; no additional positive-annual-return branch",
+    "unavailable": "INSUFFICIENT_DATA; no zero/infinity substitution, point deletion or annual-return fallback"
+  },
+  "hard_targets": {
+    "center": {
+      "net_calmar": {"operator": ">", "benchmark_multiplier": 1.5},
+      "relative_drawdown": {"operator": "<=", "benchmark_multiplier": 0.8},
+      "absolute_drawdown": {"operator": "<=", "value": 0.25}
+    },
+    "parameter_neighborhood": {
+      "complete_N": {"C0338": 485, "C0339": 323, "C0340": 485, "C0341": 485, "C0342": 323, "C0352": 728},
+      "required_joint_passes": "ceil(N * 13 / 16)",
+      "joint_net_calmar": {"operator": ">=", "benchmark_multiplier": 1.25},
+      "joint_relative_drawdown": {"operator": "<=", "benchmark_multiplier": 0.9},
+      "all_point_absolute_drawdown": {"operator": "<=", "value": 0.25},
+      "nonzero_relative_scale": 0.05,
+      "zero_g_absolute_scale": 0.05,
+      "weights": "equal",
+      "comparison_contract": "each complete legal neighborhood under the approved common construction contract; preserve true boundary, N and original signature"
+    },
+    "pressure": {
+      "net_calmar": {"operator": ">", "benchmark_multiplier": 1.0},
+      "relative_drawdown": "strictly below same-pressure benchmark; retain original zero-benchmark-DD exception of strategy DD <= 0, while Calmar availability still applies",
+      "absolute_drawdown": {"operator": "<=", "value": 0.25},
+      "independent_positive_annual_return_gate": false,
+      "independent_annual_return_vs_benchmark_gate": false
+    },
+    "frequency": {
+      "window_actual_trading_sessions": 60,
+      "closed_cycle_median_minimum": 6,
+      "minimum_closed_cycles_per_window": 3,
+      "minimum_covered_fraction": {"numerator": 9, "denominator": 10}
+    }
+  },
+  "report_only": ["net annualized return", "time stability", "profit concentration", "paired uncertainty interval", "research-family selection bias"],
+  "ranking_direction_confirmed": {
+    "pareto": ["center NET_CALMAR higher", "center DRAWDOWN_MAGNITUDE lower"],
+    "within_layer": ["individual-neighbor Calmar LINEAR Q10 higher", "neighbor DD Q90 lower", "rolling excess Calmar Q10 higher", "standard-minus-pressure Calmar loss lower", "maximum-single-profit concentration lower", "rolling-60-session closed-cycle median higher"],
+    "annual_return_ranking_metrics_replaced": ["ROLLING_EXCESS_Q10", "STRESS_ANNUAL_LOSS"],
+    "detailed_new_metric_formula_and_serialized_contract": "RSCH to specify and verify before implementation or use; no silent old-metric substitution"
+  },
+  "responsibilities": {
+    "user": "confirm research objectives, hard constraints, policy changes and stage advancement",
+    "RSCH": "specify hard gates and complete selfcheck/ranking protocol from confirmed objectives; verify current inputs, coverage, metrics and computed comparisons; own final research acceptance and recommendations",
+    "TDR_and_SE": "execute deterministic account/selfcheck calculations, explicit rule comparisons and ranking according to supplied typed parameters/rules; return facts and clear success/failure/insufficiency/unsupported states",
+    "platform_correctness_checks": ["request types", "data and candidate identity", "time consistency", "resource limits", "evidence integrity", "exact correspondence to the supplied confirmed rule version"],
+    "platform_must_not": ["select or inherit research gates on its own", "add independent annual-return gates", "silently fall back to old formulas", "interpret prose as research authorization", "replace RSCH final acceptance with technical PASS"],
+    "DEV": "implement authorized reusable calculation contracts; does not select research thresholds or declare candidate research qualification"
+  },
+  "execution": {
+    "paused_by_user": true,
+    "completed_parameter_accounts": 252,
+    "active_financial_workers": 0,
+    "new_twelve_worker_controller_started": false,
+    "future_max_parallel_batches_if_resumed_and_memory_allows": 12,
+    "existing_accounts_reusable_after_identity_checks": true,
+    "resume_authorized_by_this_confirmation": false,
+    "additional_platform_implementation_authorized_by_this_confirmation": false
+  },
+  "capability_review": {
+    "status": "EXISTING_PUBLIC_CONTRACT_NOT_YET_SUFFICIENT_FOR_ALL_NEW_METRICS",
+    "observed_gaps": ["ParameterNeighborhoodTarget restricts point conditions to old annual-return/DD metrics", "stress ResearchTarget excludes NET_CALMAR", "new rolling-excess-Calmar and stress-Calmar-loss ranking metrics are not implemented"],
+    "interpretation": "calculation capability gap, not an additional research hard gate or candidate economic failure",
+    "formal_delivery_update": "new typed mandate/assessment has not been published; do not relabel historical MANDATE/7 as containing these new rules"
+  }
+}

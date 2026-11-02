@@ -1,0 +1,1814 @@
+{
+  "type": "AssessmentPanel",
+  "request_sha256": "61d2670e0059fcf10c2aee4fc98cd0f82be6f0badebf77fdeb3ddd5926c4e0ec",
+  "protocol_sha256": "4d0cdcef419079b2ab71a38f79ace05f98199e8eed270e0ba76ab47f22576eaf",
+  "rows": [
+    {
+      "type": "CandidateAssessment",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S017-C0338",
+        "content_sha256": "ed6c277ac2d7afe784c3825ce5a138cee75e47c7833c06787523c86b669330c2"
+      },
+      "context_sha256": "58f7ac0041af69b706862793390d4d5a53e70bc3795c50a8a86d31b81ceab1f2",
+      "metric_version": "equity-assessment-v4:BAR_CLOSE:MAX_SINGLE",
+      "frequency_window_days": 60,
+      "baseline_scenario": {
+        "type": "EvaluationScenarioContext",
+        "one_way_cost": 0.001,
+        "measurement_tier": "FORMAL",
+        "benchmark_id": "BuyHold",
+        "benchmark_kind": "BUYHOLD",
+        "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+      },
+      "stress_scenario": {
+        "type": "EvaluationScenarioContext",
+        "one_way_cost": 0.002,
+        "measurement_tier": "STRESS",
+        "benchmark_id": "BuyHold",
+        "benchmark_kind": "BUYHOLD",
+        "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+      },
+      "diagnostics": [
+        {
+          "type": "DiagnosticValue",
+          "metric": "FREQUENCY_COVERAGE",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 1.0,
+          "reason": null,
+          "evaluation_ids": [
+            "4fd0d49133b4218d12fbba22ef6bdfda31fbeee676b37b93e4ae45b23cc1b83a"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "FULL_SAMPLE_FREQUENCY",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 11.235059760956176,
+          "reason": null,
+          "evaluation_ids": [
+            "4fd0d49133b4218d12fbba22ef6bdfda31fbeee676b37b93e4ae45b23cc1b83a"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "BENCHMARK_POSITIVE_YEAR_FREQUENCY",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 11.235059760956176,
+          "reason": null,
+          "evaluation_ids": [
+            "4fd0d49133b4218d12fbba22ef6bdfda31fbeee676b37b93e4ae45b23cc1b83a"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "NET_ANNUAL_RETURN",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 1.9233642595664695,
+          "reason": null,
+          "evaluation_ids": [
+            "4fd0d49133b4218d12fbba22ef6bdfda31fbeee676b37b93e4ae45b23cc1b83a"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "DRAWDOWN_MAGNITUDE",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.22537871538586707,
+          "reason": null,
+          "evaluation_ids": [
+            "4fd0d49133b4218d12fbba22ef6bdfda31fbeee676b37b93e4ae45b23cc1b83a"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "FREQUENCY_MEDIAN",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 12.0,
+          "reason": null,
+          "evaluation_ids": [
+            "4fd0d49133b4218d12fbba22ef6bdfda31fbeee676b37b93e4ae45b23cc1b83a"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "FREQUENCY_Q10",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 7.0,
+          "reason": null,
+          "evaluation_ids": [
+            "4fd0d49133b4218d12fbba22ef6bdfda31fbeee676b37b93e4ae45b23cc1b83a"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_RETURN_DEGRADATION",
+          "unit": "RATIO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+          "evaluation_ids": [
+            "4fd0d49133b4218d12fbba22ef6bdfda31fbeee676b37b93e4ae45b23cc1b83a"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_DRAWDOWN_DEGRADATION",
+          "unit": "RATIO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+          "evaluation_ids": [
+            "4fd0d49133b4218d12fbba22ef6bdfda31fbeee676b37b93e4ae45b23cc1b83a"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_RETURN_Q10",
+          "unit": "RATIO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+          "evaluation_ids": [
+            "4fd0d49133b4218d12fbba22ef6bdfda31fbeee676b37b93e4ae45b23cc1b83a"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_DRAWDOWN_Q90",
+          "unit": "RATIO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+          "evaluation_ids": [
+            "4fd0d49133b4218d12fbba22ef6bdfda31fbeee676b37b93e4ae45b23cc1b83a"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "ROLLING_EXCESS_Q10",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.38150919819402396,
+          "reason": null,
+          "evaluation_ids": [
+            "4fd0d49133b4218d12fbba22ef6bdfda31fbeee676b37b93e4ae45b23cc1b83a"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "STRESS_ANNUAL_LOSS",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.2608987845242483,
+          "reason": null,
+          "evaluation_ids": [
+            "4fd0d49133b4218d12fbba22ef6bdfda31fbeee676b37b93e4ae45b23cc1b83a",
+            "b73d97fecc26a809d8fac5055d5881058002d0d11d731e91771755da46f47279"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PROFIT_CONCENTRATION",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.11651150192040889,
+          "reason": null,
+          "evaluation_ids": [
+            "4fd0d49133b4218d12fbba22ef6bdfda31fbeee676b37b93e4ae45b23cc1b83a"
+          ]
+        }
+      ],
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -1.7255012096934177,
+        "upper_95": 1.3542548130129717,
+        "reason": null
+      },
+      "coverage_gaps": [
+        "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "behavior_sha256": "9757f67a3cddc4207abfbedb629bb7657c2276de6c606ca0aaedd35ea035da27",
+      "benchmark": {
+        "type": "BenchmarkAssessment",
+        "diagnostics": [
+          {
+            "type": "DiagnosticValue",
+            "metric": "NET_ANNUAL_RETURN",
+            "unit": "RATIO",
+            "status": "AVAILABLE",
+            "value": 1.6508930371568176,
+            "reason": null,
+            "evaluation_ids": [
+              "4fd0d49133b4218d12fbba22ef6bdfda31fbeee676b37b93e4ae45b23cc1b83a"
+            ]
+          },
+          {
+            "type": "DiagnosticValue",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "unit": "RATIO",
+            "status": "AVAILABLE",
+            "value": 0.5351281449250265,
+            "reason": null,
+            "evaluation_ids": [
+              "4fd0d49133b4218d12fbba22ef6bdfda31fbeee676b37b93e4ae45b23cc1b83a"
+            ]
+          }
+        ]
+      },
+      "parameter_context": {
+        "type": "ParameterNeighborhoodContext",
+        "protocol": {
+          "type": "ParameterNeighborhoodProtocol",
+          "purpose": "LOCAL_SENSITIVITY",
+          "max_combinations": 10000,
+          "quantile_method": "LINEAR",
+          "version": "parameter-cartesian-neighborhood-v2"
+        },
+        "design_sha256": "0c584cc1dee43e05f609385d2ebae08bb4f8bfc6d109aa0ff592e6a4cf77a984",
+        "space_sha256": "82dd989f4ee1007d76964c0e1a250783e1ab1973ca30161c5dbbf60827590071",
+        "dimension": 6,
+        "prescribed_points": 485,
+        "valid_points": 2,
+        "comparison_sha256": "2a562380208b8106260a88b13cd0bd8a29c9495314852c027ee733a2ab21cdd9"
+      },
+      "frequency_coverage": {
+        "type": "FrequencyCoverageFacts",
+        "window_days": 60,
+        "minimum_closed_cycles": 3,
+        "total_windows": 443,
+        "covered_windows": 443,
+        "evaluation_ids": [
+          "4fd0d49133b4218d12fbba22ef6bdfda31fbeee676b37b93e4ae45b23cc1b83a"
+        ]
+      },
+      "parameter_performances": [
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S017-C4243",
+            "content_sha256": "4b0bd80e8dc459309bff8beb00603b8f631019d5c64ac2c2147bfe1904a03295"
+          },
+          "evaluation_id": "521deef36062dd12546bc650212427e626225849ce9663aec98f3a90c1361ee3",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+          },
+          "annual_return": 1.9070107691382097,
+          "drawdown": 0.22523838387933348,
+          "benchmark_return": 1.6508930371568176,
+          "benchmark_drawdown": 0.5351281449250265,
+          "point_index": 243
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S017-C4244",
+            "content_sha256": "d66a01f24777858e6776ad70ee66ea0c9fc86555110a9f7de1f382a986cf266a"
+          },
+          "evaluation_id": "b443f74ed6c3776920850301920e13757e4b7e009838087bb7241c14cadd2bf6",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+          },
+          "annual_return": 1.9365892502140136,
+          "drawdown": 0.2252548218085032,
+          "benchmark_return": 1.6508930371568176,
+          "benchmark_drawdown": 0.5351281449250265,
+          "point_index": 244
+        }
+      ],
+      "stress_performance": {
+        "type": "PerformanceFacts",
+        "candidate": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S017-C0338",
+          "content_sha256": "ed6c277ac2d7afe784c3825ce5a138cee75e47c7833c06787523c86b669330c2"
+        },
+        "evaluation_id": "b73d97fecc26a809d8fac5055d5881058002d0d11d731e91771755da46f47279",
+        "scenario": {
+          "type": "EvaluationScenarioContext",
+          "one_way_cost": 0.002,
+          "measurement_tier": "STRESS",
+          "benchmark_id": "BuyHold",
+          "benchmark_kind": "BUYHOLD",
+          "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+        },
+        "annual_return": 1.6624654750422212,
+        "drawdown": 0.22846317441123565,
+        "benchmark_return": 1.6494974636757074,
+        "benchmark_drawdown": 0.535106133164511,
+        "point_index": null
+      },
+      "rolling_calmar_excess_q10": {
+        "type": "DiagnosticValue",
+        "metric": "ROLLING_EXCESS_CALMAR_Q10",
+        "unit": "RATIO",
+        "status": "AVAILABLE",
+        "value": 3.27234564768054,
+        "reason": null,
+        "evaluation_ids": [
+          "4fd0d49133b4218d12fbba22ef6bdfda31fbeee676b37b93e4ae45b23cc1b83a"
+        ]
+      }
+    },
+    {
+      "type": "CandidateAssessment",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S017-C0339",
+        "content_sha256": "f5ab7754b48223e23590c56bb27e540278b5c1a0dcac2eda2ea599bd0d8c1224"
+      },
+      "context_sha256": "58f7ac0041af69b706862793390d4d5a53e70bc3795c50a8a86d31b81ceab1f2",
+      "metric_version": "equity-assessment-v4:BAR_CLOSE:MAX_SINGLE",
+      "frequency_window_days": 60,
+      "baseline_scenario": {
+        "type": "EvaluationScenarioContext",
+        "one_way_cost": 0.001,
+        "measurement_tier": "FORMAL",
+        "benchmark_id": "BuyHold",
+        "benchmark_kind": "BUYHOLD",
+        "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+      },
+      "stress_scenario": {
+        "type": "EvaluationScenarioContext",
+        "one_way_cost": 0.002,
+        "measurement_tier": "STRESS",
+        "benchmark_id": "BuyHold",
+        "benchmark_kind": "BUYHOLD",
+        "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+      },
+      "diagnostics": [
+        {
+          "type": "DiagnosticValue",
+          "metric": "FREQUENCY_COVERAGE",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 1.0,
+          "reason": null,
+          "evaluation_ids": [
+            "949a5446a005794058fa0a7799d9d0db20515f313dc2e589e6ca563fab0e4896"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "FULL_SAMPLE_FREQUENCY",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 11.235059760956176,
+          "reason": null,
+          "evaluation_ids": [
+            "949a5446a005794058fa0a7799d9d0db20515f313dc2e589e6ca563fab0e4896"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "BENCHMARK_POSITIVE_YEAR_FREQUENCY",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 11.235059760956176,
+          "reason": null,
+          "evaluation_ids": [
+            "949a5446a005794058fa0a7799d9d0db20515f313dc2e589e6ca563fab0e4896"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "NET_ANNUAL_RETURN",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 1.8175288196835435,
+          "reason": null,
+          "evaluation_ids": [
+            "949a5446a005794058fa0a7799d9d0db20515f313dc2e589e6ca563fab0e4896"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "DRAWDOWN_MAGNITUDE",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.22540104126927496,
+          "reason": null,
+          "evaluation_ids": [
+            "949a5446a005794058fa0a7799d9d0db20515f313dc2e589e6ca563fab0e4896"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "FREQUENCY_MEDIAN",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 12.0,
+          "reason": null,
+          "evaluation_ids": [
+            "949a5446a005794058fa0a7799d9d0db20515f313dc2e589e6ca563fab0e4896"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "FREQUENCY_Q10",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 7.0,
+          "reason": null,
+          "evaluation_ids": [
+            "949a5446a005794058fa0a7799d9d0db20515f313dc2e589e6ca563fab0e4896"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_RETURN_DEGRADATION",
+          "unit": "RATIO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+          "evaluation_ids": [
+            "949a5446a005794058fa0a7799d9d0db20515f313dc2e589e6ca563fab0e4896"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_DRAWDOWN_DEGRADATION",
+          "unit": "RATIO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+          "evaluation_ids": [
+            "949a5446a005794058fa0a7799d9d0db20515f313dc2e589e6ca563fab0e4896"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_RETURN_Q10",
+          "unit": "RATIO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+          "evaluation_ids": [
+            "949a5446a005794058fa0a7799d9d0db20515f313dc2e589e6ca563fab0e4896"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_DRAWDOWN_Q90",
+          "unit": "RATIO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+          "evaluation_ids": [
+            "949a5446a005794058fa0a7799d9d0db20515f313dc2e589e6ca563fab0e4896"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "ROLLING_EXCESS_Q10",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.26945063511834444,
+          "reason": null,
+          "evaluation_ids": [
+            "949a5446a005794058fa0a7799d9d0db20515f313dc2e589e6ca563fab0e4896"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "STRESS_ANNUAL_LOSS",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.25188279387461954,
+          "reason": null,
+          "evaluation_ids": [
+            "949a5446a005794058fa0a7799d9d0db20515f313dc2e589e6ca563fab0e4896",
+            "787b8a75df9efc7c168123b2a1fa4c61a5ccee13a169cc2054673db203e9cffe"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PROFIT_CONCENTRATION",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.1090263612427949,
+          "reason": null,
+          "evaluation_ids": [
+            "949a5446a005794058fa0a7799d9d0db20515f313dc2e589e6ca563fab0e4896"
+          ]
+        }
+      ],
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -1.9329058840354316,
+        "upper_95": 1.2706645072803275,
+        "reason": null
+      },
+      "coverage_gaps": [
+        "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "behavior_sha256": "38c72ea4d8b08d5932e12d4f012f35de173ac036ca92aa065c1ff22088d070ff",
+      "benchmark": {
+        "type": "BenchmarkAssessment",
+        "diagnostics": [
+          {
+            "type": "DiagnosticValue",
+            "metric": "NET_ANNUAL_RETURN",
+            "unit": "RATIO",
+            "status": "AVAILABLE",
+            "value": 1.6508930371568176,
+            "reason": null,
+            "evaluation_ids": [
+              "949a5446a005794058fa0a7799d9d0db20515f313dc2e589e6ca563fab0e4896"
+            ]
+          },
+          {
+            "type": "DiagnosticValue",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "unit": "RATIO",
+            "status": "AVAILABLE",
+            "value": 0.5351281449250265,
+            "reason": null,
+            "evaluation_ids": [
+              "949a5446a005794058fa0a7799d9d0db20515f313dc2e589e6ca563fab0e4896"
+            ]
+          }
+        ]
+      },
+      "parameter_context": {
+        "type": "ParameterNeighborhoodContext",
+        "protocol": {
+          "type": "ParameterNeighborhoodProtocol",
+          "purpose": "LOCAL_SENSITIVITY",
+          "max_combinations": 10000,
+          "quantile_method": "LINEAR",
+          "version": "parameter-cartesian-neighborhood-v2"
+        },
+        "design_sha256": "640a2a9e5468f7990f51b6f7d83a35b5fe45e7ec57fda7d87baf6096bbfc1cb6",
+        "space_sha256": "43cf42fd11a323f53e820339b9cc9eb99f7dfb8c943addd6ec29f5266167cb7f",
+        "dimension": 6,
+        "prescribed_points": 323,
+        "valid_points": 2,
+        "comparison_sha256": "024ef990597bd72b37a381b16298dcfc2f4b4a50b95fbdd6f149beace36e2162"
+      },
+      "frequency_coverage": {
+        "type": "FrequencyCoverageFacts",
+        "window_days": 60,
+        "minimum_closed_cycles": 3,
+        "total_windows": 443,
+        "covered_windows": 443,
+        "evaluation_ids": [
+          "949a5446a005794058fa0a7799d9d0db20515f313dc2e589e6ca563fab0e4896"
+        ]
+      },
+      "parameter_performances": [
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S017-C4647",
+            "content_sha256": "cf44fc75205b3c7b3a73cce02b8a71085ddf317675ca990bc8c151ceb1d6ee65"
+          },
+          "evaluation_id": "700dbda7ef927d422c5500ba6024c421a02edffc33aa4aaca2712a67de559af7",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+          },
+          "annual_return": 1.8172920449522452,
+          "drawdown": 0.22524389801140876,
+          "benchmark_return": 1.6508930371568176,
+          "benchmark_drawdown": 0.5351281449250265,
+          "point_index": 162
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S017-C4651",
+            "content_sha256": "540233635b371296236829d25d2723c67bded9cf7222f4392aa79b06380101c6"
+          },
+          "evaluation_id": "83b5a68fa27abcb87711aef8e944cec7dfbac260d5067c3c2d1e5d8a36ca8f9d",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+          },
+          "annual_return": 1.646004937502152,
+          "drawdown": 0.22523890411627023,
+          "benchmark_return": 1.6508930371568176,
+          "benchmark_drawdown": 0.5351281449250265,
+          "point_index": 166
+        }
+      ],
+      "stress_performance": {
+        "type": "PerformanceFacts",
+        "candidate": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S017-C0339",
+          "content_sha256": "f5ab7754b48223e23590c56bb27e540278b5c1a0dcac2eda2ea599bd0d8c1224"
+        },
+        "evaluation_id": "787b8a75df9efc7c168123b2a1fa4c61a5ccee13a169cc2054673db203e9cffe",
+        "scenario": {
+          "type": "EvaluationScenarioContext",
+          "one_way_cost": 0.002,
+          "measurement_tier": "STRESS",
+          "benchmark_id": "BuyHold",
+          "benchmark_kind": "BUYHOLD",
+          "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+        },
+        "annual_return": 1.565646025808924,
+        "drawdown": 0.22846345885968022,
+        "benchmark_return": 1.6494974636757074,
+        "benchmark_drawdown": 0.535106133164511,
+        "point_index": null
+      },
+      "rolling_calmar_excess_q10": {
+        "type": "DiagnosticValue",
+        "metric": "ROLLING_EXCESS_CALMAR_Q10",
+        "unit": "RATIO",
+        "status": "AVAILABLE",
+        "value": 3.2080332167499335,
+        "reason": null,
+        "evaluation_ids": [
+          "949a5446a005794058fa0a7799d9d0db20515f313dc2e589e6ca563fab0e4896"
+        ]
+      }
+    },
+    {
+      "type": "CandidateAssessment",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S017-C0340",
+        "content_sha256": "a08ff75f635b487f5b7316edd105e3e0fda26677bd12d42219f28ae4b90a460f"
+      },
+      "context_sha256": "58f7ac0041af69b706862793390d4d5a53e70bc3795c50a8a86d31b81ceab1f2",
+      "metric_version": "equity-assessment-v4:BAR_CLOSE:MAX_SINGLE",
+      "frequency_window_days": 60,
+      "baseline_scenario": {
+        "type": "EvaluationScenarioContext",
+        "one_way_cost": 0.001,
+        "measurement_tier": "FORMAL",
+        "benchmark_id": "BuyHold",
+        "benchmark_kind": "BUYHOLD",
+        "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+      },
+      "stress_scenario": {
+        "type": "EvaluationScenarioContext",
+        "one_way_cost": 0.002,
+        "measurement_tier": "STRESS",
+        "benchmark_id": "BuyHold",
+        "benchmark_kind": "BUYHOLD",
+        "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+      },
+      "diagnostics": [
+        {
+          "type": "DiagnosticValue",
+          "metric": "FREQUENCY_COVERAGE",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 1.0,
+          "reason": null,
+          "evaluation_ids": [
+            "4f97a3b538247aba6575953e88171dd47eebd6133d1d28ea34be9dbd33f7e8f8"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "FULL_SAMPLE_FREQUENCY",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 11.235059760956176,
+          "reason": null,
+          "evaluation_ids": [
+            "4f97a3b538247aba6575953e88171dd47eebd6133d1d28ea34be9dbd33f7e8f8"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "BENCHMARK_POSITIVE_YEAR_FREQUENCY",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 11.235059760956176,
+          "reason": null,
+          "evaluation_ids": [
+            "4f97a3b538247aba6575953e88171dd47eebd6133d1d28ea34be9dbd33f7e8f8"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "NET_ANNUAL_RETURN",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 1.7797195561076875,
+          "reason": null,
+          "evaluation_ids": [
+            "4f97a3b538247aba6575953e88171dd47eebd6133d1d28ea34be9dbd33f7e8f8"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "DRAWDOWN_MAGNITUDE",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.22537871538586707,
+          "reason": null,
+          "evaluation_ids": [
+            "4f97a3b538247aba6575953e88171dd47eebd6133d1d28ea34be9dbd33f7e8f8"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "FREQUENCY_MEDIAN",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 12.0,
+          "reason": null,
+          "evaluation_ids": [
+            "4f97a3b538247aba6575953e88171dd47eebd6133d1d28ea34be9dbd33f7e8f8"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "FREQUENCY_Q10",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 7.0,
+          "reason": null,
+          "evaluation_ids": [
+            "4f97a3b538247aba6575953e88171dd47eebd6133d1d28ea34be9dbd33f7e8f8"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_RETURN_DEGRADATION",
+          "unit": "RATIO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+          "evaluation_ids": [
+            "4f97a3b538247aba6575953e88171dd47eebd6133d1d28ea34be9dbd33f7e8f8"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_DRAWDOWN_DEGRADATION",
+          "unit": "RATIO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+          "evaluation_ids": [
+            "4f97a3b538247aba6575953e88171dd47eebd6133d1d28ea34be9dbd33f7e8f8"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_RETURN_Q10",
+          "unit": "RATIO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+          "evaluation_ids": [
+            "4f97a3b538247aba6575953e88171dd47eebd6133d1d28ea34be9dbd33f7e8f8"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_DRAWDOWN_Q90",
+          "unit": "RATIO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+          "evaluation_ids": [
+            "4f97a3b538247aba6575953e88171dd47eebd6133d1d28ea34be9dbd33f7e8f8"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "ROLLING_EXCESS_Q10",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.27490596339857015,
+          "reason": null,
+          "evaluation_ids": [
+            "4f97a3b538247aba6575953e88171dd47eebd6133d1d28ea34be9dbd33f7e8f8"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "STRESS_ANNUAL_LOSS",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.2478520289372197,
+          "reason": null,
+          "evaluation_ids": [
+            "4f97a3b538247aba6575953e88171dd47eebd6133d1d28ea34be9dbd33f7e8f8",
+            "625bbb0a6d9f3eeaf7ad499c9b59641c07634e045c3b24376baa224f8cbab50e"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PROFIT_CONCENTRATION",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.10934525520934896,
+          "reason": null,
+          "evaluation_ids": [
+            "4f97a3b538247aba6575953e88171dd47eebd6133d1d28ea34be9dbd33f7e8f8"
+          ]
+        }
+      ],
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -2.0815569288081726,
+        "upper_95": 1.2305363483449534,
+        "reason": null
+      },
+      "coverage_gaps": [
+        "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "behavior_sha256": "83ed403295542788c812c230eab3719440ce0f4b1f68f982d1e21f9ce91d6861",
+      "benchmark": {
+        "type": "BenchmarkAssessment",
+        "diagnostics": [
+          {
+            "type": "DiagnosticValue",
+            "metric": "NET_ANNUAL_RETURN",
+            "unit": "RATIO",
+            "status": "AVAILABLE",
+            "value": 1.6508930371568176,
+            "reason": null,
+            "evaluation_ids": [
+              "4f97a3b538247aba6575953e88171dd47eebd6133d1d28ea34be9dbd33f7e8f8"
+            ]
+          },
+          {
+            "type": "DiagnosticValue",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "unit": "RATIO",
+            "status": "AVAILABLE",
+            "value": 0.5351281449250265,
+            "reason": null,
+            "evaluation_ids": [
+              "4f97a3b538247aba6575953e88171dd47eebd6133d1d28ea34be9dbd33f7e8f8"
+            ]
+          }
+        ]
+      },
+      "parameter_context": {
+        "type": "ParameterNeighborhoodContext",
+        "protocol": {
+          "type": "ParameterNeighborhoodProtocol",
+          "purpose": "LOCAL_SENSITIVITY",
+          "max_combinations": 10000,
+          "quantile_method": "LINEAR",
+          "version": "parameter-cartesian-neighborhood-v2"
+        },
+        "design_sha256": "e76dab4e1e6cd7a7ddd896f1fd05e40f724b2ef69caac8ff38832bc0e74e22ed",
+        "space_sha256": "af87a37eda2be9d244883a6b9b5b07ebcdc6e10435818f969a7d5819fc580209",
+        "dimension": 6,
+        "prescribed_points": 485,
+        "valid_points": 0,
+        "comparison_sha256": "e5ab5f732677eb5ca89cccf97117fedee8d2a5153e2e37c75368b45ba70b074c"
+      },
+      "frequency_coverage": {
+        "type": "FrequencyCoverageFacts",
+        "window_days": 60,
+        "minimum_closed_cycles": 3,
+        "total_windows": 443,
+        "covered_windows": 443,
+        "evaluation_ids": [
+          "4f97a3b538247aba6575953e88171dd47eebd6133d1d28ea34be9dbd33f7e8f8"
+        ]
+      },
+      "parameter_performances": [],
+      "stress_performance": {
+        "type": "PerformanceFacts",
+        "candidate": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S017-C0340",
+          "content_sha256": "a08ff75f635b487f5b7316edd105e3e0fda26677bd12d42219f28ae4b90a460f"
+        },
+        "evaluation_id": "625bbb0a6d9f3eeaf7ad499c9b59641c07634e045c3b24376baa224f8cbab50e",
+        "scenario": {
+          "type": "EvaluationScenarioContext",
+          "one_way_cost": 0.002,
+          "measurement_tier": "STRESS",
+          "benchmark_id": "BuyHold",
+          "benchmark_kind": "BUYHOLD",
+          "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+        },
+        "annual_return": 1.5318675271704678,
+        "drawdown": 0.22846317441123565,
+        "benchmark_return": 1.6494974636757074,
+        "benchmark_drawdown": 0.535106133164511,
+        "point_index": null
+      },
+      "rolling_calmar_excess_q10": {
+        "type": "DiagnosticValue",
+        "metric": "ROLLING_EXCESS_CALMAR_Q10",
+        "unit": "RATIO",
+        "status": "AVAILABLE",
+        "value": 3.27234564768054,
+        "reason": null,
+        "evaluation_ids": [
+          "4f97a3b538247aba6575953e88171dd47eebd6133d1d28ea34be9dbd33f7e8f8"
+        ]
+      }
+    },
+    {
+      "type": "CandidateAssessment",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S017-C0341",
+        "content_sha256": "1b974b9306abfb93461211986f58163e9790682326ff15e935ca72320f5b3530"
+      },
+      "context_sha256": "58f7ac0041af69b706862793390d4d5a53e70bc3795c50a8a86d31b81ceab1f2",
+      "metric_version": "equity-assessment-v4:BAR_CLOSE:MAX_SINGLE",
+      "frequency_window_days": 60,
+      "baseline_scenario": {
+        "type": "EvaluationScenarioContext",
+        "one_way_cost": 0.001,
+        "measurement_tier": "FORMAL",
+        "benchmark_id": "BuyHold",
+        "benchmark_kind": "BUYHOLD",
+        "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+      },
+      "stress_scenario": {
+        "type": "EvaluationScenarioContext",
+        "one_way_cost": 0.002,
+        "measurement_tier": "STRESS",
+        "benchmark_id": "BuyHold",
+        "benchmark_kind": "BUYHOLD",
+        "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+      },
+      "diagnostics": [
+        {
+          "type": "DiagnosticValue",
+          "metric": "FREQUENCY_COVERAGE",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 1.0,
+          "reason": null,
+          "evaluation_ids": [
+            "8f74f34bdb86ab09b90c4cadc89bf7dd0782ab8408bd214aa8def519c86b096c"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "FULL_SAMPLE_FREQUENCY",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 11.235059760956176,
+          "reason": null,
+          "evaluation_ids": [
+            "8f74f34bdb86ab09b90c4cadc89bf7dd0782ab8408bd214aa8def519c86b096c"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "BENCHMARK_POSITIVE_YEAR_FREQUENCY",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 11.235059760956176,
+          "reason": null,
+          "evaluation_ids": [
+            "8f74f34bdb86ab09b90c4cadc89bf7dd0782ab8408bd214aa8def519c86b096c"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "NET_ANNUAL_RETURN",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 1.8409993470978865,
+          "reason": null,
+          "evaluation_ids": [
+            "8f74f34bdb86ab09b90c4cadc89bf7dd0782ab8408bd214aa8def519c86b096c"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "DRAWDOWN_MAGNITUDE",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.22537871538586707,
+          "reason": null,
+          "evaluation_ids": [
+            "8f74f34bdb86ab09b90c4cadc89bf7dd0782ab8408bd214aa8def519c86b096c"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "FREQUENCY_MEDIAN",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 12.0,
+          "reason": null,
+          "evaluation_ids": [
+            "8f74f34bdb86ab09b90c4cadc89bf7dd0782ab8408bd214aa8def519c86b096c"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "FREQUENCY_Q10",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 7.0,
+          "reason": null,
+          "evaluation_ids": [
+            "8f74f34bdb86ab09b90c4cadc89bf7dd0782ab8408bd214aa8def519c86b096c"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_RETURN_DEGRADATION",
+          "unit": "RATIO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+          "evaluation_ids": [
+            "8f74f34bdb86ab09b90c4cadc89bf7dd0782ab8408bd214aa8def519c86b096c"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_DRAWDOWN_DEGRADATION",
+          "unit": "RATIO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+          "evaluation_ids": [
+            "8f74f34bdb86ab09b90c4cadc89bf7dd0782ab8408bd214aa8def519c86b096c"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_RETURN_Q10",
+          "unit": "RATIO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+          "evaluation_ids": [
+            "8f74f34bdb86ab09b90c4cadc89bf7dd0782ab8408bd214aa8def519c86b096c"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_DRAWDOWN_Q90",
+          "unit": "RATIO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+          "evaluation_ids": [
+            "8f74f34bdb86ab09b90c4cadc89bf7dd0782ab8408bd214aa8def519c86b096c"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "ROLLING_EXCESS_Q10",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.27490596339857015,
+          "reason": null,
+          "evaluation_ids": [
+            "8f74f34bdb86ab09b90c4cadc89bf7dd0782ab8408bd214aa8def519c86b096c"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "STRESS_ANNUAL_LOSS",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.25350947013312064,
+          "reason": null,
+          "evaluation_ids": [
+            "8f74f34bdb86ab09b90c4cadc89bf7dd0782ab8408bd214aa8def519c86b096c",
+            "d44e833d9f3fbe2e71936ffb9ffde81532af2b575a2de4f94be3cf09061fb06e"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PROFIT_CONCENTRATION",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.10889702224889843,
+          "reason": null,
+          "evaluation_ids": [
+            "8f74f34bdb86ab09b90c4cadc89bf7dd0782ab8408bd214aa8def519c86b096c"
+          ]
+        }
+      ],
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -1.935037859125181,
+        "upper_95": 1.2797185541694602,
+        "reason": null
+      },
+      "coverage_gaps": [
+        "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "behavior_sha256": "0e0a9015511f6b67862fd3ee6b9a3f002545190c14db0ab5b4cd3fa6969c38ab",
+      "benchmark": {
+        "type": "BenchmarkAssessment",
+        "diagnostics": [
+          {
+            "type": "DiagnosticValue",
+            "metric": "NET_ANNUAL_RETURN",
+            "unit": "RATIO",
+            "status": "AVAILABLE",
+            "value": 1.6508930371568176,
+            "reason": null,
+            "evaluation_ids": [
+              "8f74f34bdb86ab09b90c4cadc89bf7dd0782ab8408bd214aa8def519c86b096c"
+            ]
+          },
+          {
+            "type": "DiagnosticValue",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "unit": "RATIO",
+            "status": "AVAILABLE",
+            "value": 0.5351281449250265,
+            "reason": null,
+            "evaluation_ids": [
+              "8f74f34bdb86ab09b90c4cadc89bf7dd0782ab8408bd214aa8def519c86b096c"
+            ]
+          }
+        ]
+      },
+      "parameter_context": {
+        "type": "ParameterNeighborhoodContext",
+        "protocol": {
+          "type": "ParameterNeighborhoodProtocol",
+          "purpose": "LOCAL_SENSITIVITY",
+          "max_combinations": 10000,
+          "quantile_method": "LINEAR",
+          "version": "parameter-cartesian-neighborhood-v2"
+        },
+        "design_sha256": "06103e20fcb88881a7da3158d01e3fa66006d6a4be3b0e80586545e1dac9b493",
+        "space_sha256": "c432a6b570842e5127b00bb964afda28534fbe67f0f9a674f69ffe223b8a4999",
+        "dimension": 6,
+        "prescribed_points": 485,
+        "valid_points": 0,
+        "comparison_sha256": "34749492b848219ce2df4db65dbd6c2bc99c1dea60a2a133eeebcbc8b6ea74b2"
+      },
+      "frequency_coverage": {
+        "type": "FrequencyCoverageFacts",
+        "window_days": 60,
+        "minimum_closed_cycles": 3,
+        "total_windows": 443,
+        "covered_windows": 443,
+        "evaluation_ids": [
+          "8f74f34bdb86ab09b90c4cadc89bf7dd0782ab8408bd214aa8def519c86b096c"
+        ]
+      },
+      "parameter_performances": [],
+      "stress_performance": {
+        "type": "PerformanceFacts",
+        "candidate": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S017-C0341",
+          "content_sha256": "1b974b9306abfb93461211986f58163e9790682326ff15e935ca72320f5b3530"
+        },
+        "evaluation_id": "d44e833d9f3fbe2e71936ffb9ffde81532af2b575a2de4f94be3cf09061fb06e",
+        "scenario": {
+          "type": "EvaluationScenarioContext",
+          "one_way_cost": 0.002,
+          "measurement_tier": "STRESS",
+          "benchmark_id": "BuyHold",
+          "benchmark_kind": "BUYHOLD",
+          "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+        },
+        "annual_return": 1.5874898769647658,
+        "drawdown": 0.22846317441123565,
+        "benchmark_return": 1.6494974636757074,
+        "benchmark_drawdown": 0.535106133164511,
+        "point_index": null
+      },
+      "rolling_calmar_excess_q10": {
+        "type": "DiagnosticValue",
+        "metric": "ROLLING_EXCESS_CALMAR_Q10",
+        "unit": "RATIO",
+        "status": "AVAILABLE",
+        "value": 3.27234564768054,
+        "reason": null,
+        "evaluation_ids": [
+          "8f74f34bdb86ab09b90c4cadc89bf7dd0782ab8408bd214aa8def519c86b096c"
+        ]
+      }
+    },
+    {
+      "type": "CandidateAssessment",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S017-C0342",
+        "content_sha256": "523f30fd4203afa6eb29d696682d02e6f9b428ea31e8363b42dde50fb1722637"
+      },
+      "context_sha256": "58f7ac0041af69b706862793390d4d5a53e70bc3795c50a8a86d31b81ceab1f2",
+      "metric_version": "equity-assessment-v4:BAR_CLOSE:MAX_SINGLE",
+      "frequency_window_days": 60,
+      "baseline_scenario": {
+        "type": "EvaluationScenarioContext",
+        "one_way_cost": 0.001,
+        "measurement_tier": "FORMAL",
+        "benchmark_id": "BuyHold",
+        "benchmark_kind": "BUYHOLD",
+        "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+      },
+      "stress_scenario": {
+        "type": "EvaluationScenarioContext",
+        "one_way_cost": 0.002,
+        "measurement_tier": "STRESS",
+        "benchmark_id": "BuyHold",
+        "benchmark_kind": "BUYHOLD",
+        "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+      },
+      "diagnostics": [
+        {
+          "type": "DiagnosticValue",
+          "metric": "FREQUENCY_COVERAGE",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 1.0,
+          "reason": null,
+          "evaluation_ids": [
+            "56c78a1f063808218860879fbe0a01bdd9eb619c065f366b164125264a26f9b5"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "FULL_SAMPLE_FREQUENCY",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 11.235059760956176,
+          "reason": null,
+          "evaluation_ids": [
+            "56c78a1f063808218860879fbe0a01bdd9eb619c065f366b164125264a26f9b5"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "BENCHMARK_POSITIVE_YEAR_FREQUENCY",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 11.235059760956176,
+          "reason": null,
+          "evaluation_ids": [
+            "56c78a1f063808218860879fbe0a01bdd9eb619c065f366b164125264a26f9b5"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "NET_ANNUAL_RETURN",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 1.9624677256753662,
+          "reason": null,
+          "evaluation_ids": [
+            "56c78a1f063808218860879fbe0a01bdd9eb619c065f366b164125264a26f9b5"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "DRAWDOWN_MAGNITUDE",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.22537267059295352,
+          "reason": null,
+          "evaluation_ids": [
+            "56c78a1f063808218860879fbe0a01bdd9eb619c065f366b164125264a26f9b5"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "FREQUENCY_MEDIAN",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 12.0,
+          "reason": null,
+          "evaluation_ids": [
+            "56c78a1f063808218860879fbe0a01bdd9eb619c065f366b164125264a26f9b5"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "FREQUENCY_Q10",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 7.0,
+          "reason": null,
+          "evaluation_ids": [
+            "56c78a1f063808218860879fbe0a01bdd9eb619c065f366b164125264a26f9b5"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_RETURN_DEGRADATION",
+          "unit": "RATIO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+          "evaluation_ids": [
+            "56c78a1f063808218860879fbe0a01bdd9eb619c065f366b164125264a26f9b5"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_DRAWDOWN_DEGRADATION",
+          "unit": "RATIO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+          "evaluation_ids": [
+            "56c78a1f063808218860879fbe0a01bdd9eb619c065f366b164125264a26f9b5"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_RETURN_Q10",
+          "unit": "RATIO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+          "evaluation_ids": [
+            "56c78a1f063808218860879fbe0a01bdd9eb619c065f366b164125264a26f9b5"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_DRAWDOWN_Q90",
+          "unit": "RATIO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+          "evaluation_ids": [
+            "56c78a1f063808218860879fbe0a01bdd9eb619c065f366b164125264a26f9b5"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "ROLLING_EXCESS_Q10",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.42375274035010146,
+          "reason": null,
+          "evaluation_ids": [
+            "56c78a1f063808218860879fbe0a01bdd9eb619c065f366b164125264a26f9b5"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "STRESS_ANNUAL_LOSS",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.26416075525473337,
+          "reason": null,
+          "evaluation_ids": [
+            "56c78a1f063808218860879fbe0a01bdd9eb619c065f366b164125264a26f9b5",
+            "d6fd806295aed7b093b9b926f03e2b8faa540ea9e895b03b76ed458e962fa8d0"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PROFIT_CONCENTRATION",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.10786141833678373,
+          "reason": null,
+          "evaluation_ids": [
+            "56c78a1f063808218860879fbe0a01bdd9eb619c065f366b164125264a26f9b5"
+          ]
+        }
+      ],
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -1.6452233006198262,
+        "upper_95": 1.4289037064212433,
+        "reason": null
+      },
+      "coverage_gaps": [
+        "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "behavior_sha256": "fb09258a2e78ca7a3e1582a1045f6cf8d12834dd397238027cbf8df2fc07d174",
+      "benchmark": {
+        "type": "BenchmarkAssessment",
+        "diagnostics": [
+          {
+            "type": "DiagnosticValue",
+            "metric": "NET_ANNUAL_RETURN",
+            "unit": "RATIO",
+            "status": "AVAILABLE",
+            "value": 1.6508930371568176,
+            "reason": null,
+            "evaluation_ids": [
+              "56c78a1f063808218860879fbe0a01bdd9eb619c065f366b164125264a26f9b5"
+            ]
+          },
+          {
+            "type": "DiagnosticValue",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "unit": "RATIO",
+            "status": "AVAILABLE",
+            "value": 0.5351281449250265,
+            "reason": null,
+            "evaluation_ids": [
+              "56c78a1f063808218860879fbe0a01bdd9eb619c065f366b164125264a26f9b5"
+            ]
+          }
+        ]
+      },
+      "parameter_context": {
+        "type": "ParameterNeighborhoodContext",
+        "protocol": {
+          "type": "ParameterNeighborhoodProtocol",
+          "purpose": "LOCAL_SENSITIVITY",
+          "max_combinations": 10000,
+          "quantile_method": "LINEAR",
+          "version": "parameter-cartesian-neighborhood-v2"
+        },
+        "design_sha256": "bdedd0173605250c6ce24caa11905c12e607c2b7377590be026b6705bc6d25bc",
+        "space_sha256": "036b040dacbe198d91875b16a274bf45f0bf0b8d4f9377d0ba479786f35d8edf",
+        "dimension": 6,
+        "prescribed_points": 323,
+        "valid_points": 0,
+        "comparison_sha256": "ba83d65a25e7009e72b4795708c61f635fe84bd02d00c066412297865bc197c1"
+      },
+      "frequency_coverage": {
+        "type": "FrequencyCoverageFacts",
+        "window_days": 60,
+        "minimum_closed_cycles": 3,
+        "total_windows": 443,
+        "covered_windows": 443,
+        "evaluation_ids": [
+          "56c78a1f063808218860879fbe0a01bdd9eb619c065f366b164125264a26f9b5"
+        ]
+      },
+      "parameter_performances": [],
+      "stress_performance": {
+        "type": "PerformanceFacts",
+        "candidate": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S017-C0342",
+          "content_sha256": "523f30fd4203afa6eb29d696682d02e6f9b428ea31e8363b42dde50fb1722637"
+        },
+        "evaluation_id": "d6fd806295aed7b093b9b926f03e2b8faa540ea9e895b03b76ed458e962fa8d0",
+        "scenario": {
+          "type": "EvaluationScenarioContext",
+          "one_way_cost": 0.002,
+          "measurement_tier": "STRESS",
+          "benchmark_id": "BuyHold",
+          "benchmark_kind": "BUYHOLD",
+          "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+        },
+        "annual_return": 1.6983069704206328,
+        "drawdown": 0.22843943099200492,
+        "benchmark_return": 1.6494974636757074,
+        "benchmark_drawdown": 0.535106133164511,
+        "point_index": null
+      },
+      "rolling_calmar_excess_q10": {
+        "type": "DiagnosticValue",
+        "metric": "ROLLING_EXCESS_CALMAR_Q10",
+        "unit": "RATIO",
+        "status": "AVAILABLE",
+        "value": 3.2703209292624718,
+        "reason": null,
+        "evaluation_ids": [
+          "56c78a1f063808218860879fbe0a01bdd9eb619c065f366b164125264a26f9b5"
+        ]
+      }
+    },
+    {
+      "type": "CandidateAssessment",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S017-C0352",
+        "content_sha256": "0fa8cd0635211650fa58bae2ea53ee1dc70e4bdea61576ac02f8c170e6166a97"
+      },
+      "context_sha256": "58f7ac0041af69b706862793390d4d5a53e70bc3795c50a8a86d31b81ceab1f2",
+      "metric_version": "equity-assessment-v4:BAR_CLOSE:MAX_SINGLE",
+      "frequency_window_days": 60,
+      "baseline_scenario": {
+        "type": "EvaluationScenarioContext",
+        "one_way_cost": 0.001,
+        "measurement_tier": "FORMAL",
+        "benchmark_id": "BuyHold",
+        "benchmark_kind": "BUYHOLD",
+        "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+      },
+      "stress_scenario": {
+        "type": "EvaluationScenarioContext",
+        "one_way_cost": 0.002,
+        "measurement_tier": "STRESS",
+        "benchmark_id": "BuyHold",
+        "benchmark_kind": "BUYHOLD",
+        "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+      },
+      "diagnostics": [
+        {
+          "type": "DiagnosticValue",
+          "metric": "FREQUENCY_COVERAGE",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 1.0,
+          "reason": null,
+          "evaluation_ids": [
+            "f174d2bb326c043028ae41f9029e5036b2e4bb4e73cb3c84d767afe69f6a7637"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "FULL_SAMPLE_FREQUENCY",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 6.334661354581673,
+          "reason": null,
+          "evaluation_ids": [
+            "f174d2bb326c043028ae41f9029e5036b2e4bb4e73cb3c84d767afe69f6a7637"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "BENCHMARK_POSITIVE_YEAR_FREQUENCY",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 6.334661354581673,
+          "reason": null,
+          "evaluation_ids": [
+            "f174d2bb326c043028ae41f9029e5036b2e4bb4e73cb3c84d767afe69f6a7637"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "NET_ANNUAL_RETURN",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 1.2931841504426993,
+          "reason": null,
+          "evaluation_ids": [
+            "f174d2bb326c043028ae41f9029e5036b2e4bb4e73cb3c84d767afe69f6a7637"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "DRAWDOWN_MAGNITUDE",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.21058236444088552,
+          "reason": null,
+          "evaluation_ids": [
+            "f174d2bb326c043028ae41f9029e5036b2e4bb4e73cb3c84d767afe69f6a7637"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "FREQUENCY_MEDIAN",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 7.0,
+          "reason": null,
+          "evaluation_ids": [
+            "f174d2bb326c043028ae41f9029e5036b2e4bb4e73cb3c84d767afe69f6a7637"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "FREQUENCY_Q10",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 4.0,
+          "reason": null,
+          "evaluation_ids": [
+            "f174d2bb326c043028ae41f9029e5036b2e4bb4e73cb3c84d767afe69f6a7637"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_RETURN_DEGRADATION",
+          "unit": "RATIO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+          "evaluation_ids": [
+            "f174d2bb326c043028ae41f9029e5036b2e4bb4e73cb3c84d767afe69f6a7637"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_DRAWDOWN_DEGRADATION",
+          "unit": "RATIO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+          "evaluation_ids": [
+            "f174d2bb326c043028ae41f9029e5036b2e4bb4e73cb3c84d767afe69f6a7637"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_RETURN_Q10",
+          "unit": "RATIO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+          "evaluation_ids": [
+            "f174d2bb326c043028ae41f9029e5036b2e4bb4e73cb3c84d767afe69f6a7637"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_DRAWDOWN_Q90",
+          "unit": "RATIO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+          "evaluation_ids": [
+            "f174d2bb326c043028ae41f9029e5036b2e4bb4e73cb3c84d767afe69f6a7637"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "ROLLING_EXCESS_Q10",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": -0.7271762398642719,
+          "reason": null,
+          "evaluation_ids": [
+            "f174d2bb326c043028ae41f9029e5036b2e4bb4e73cb3c84d767afe69f6a7637"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "STRESS_ANNUAL_LOSS",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.11780548616741893,
+          "reason": null,
+          "evaluation_ids": [
+            "f174d2bb326c043028ae41f9029e5036b2e4bb4e73cb3c84d767afe69f6a7637",
+            "e0eb615bdf48411b1c5336138a98840dd38bfae3e1ad422a4954b5d997dcb201"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PROFIT_CONCENTRATION",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.17225927761965518,
+          "reason": null,
+          "evaluation_ids": [
+            "f174d2bb326c043028ae41f9029e5036b2e4bb4e73cb3c84d767afe69f6a7637"
+          ]
+        }
+      ],
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -3.4115825335985726,
+        "upper_95": 0.9380416291348823,
+        "reason": null
+      },
+      "coverage_gaps": [
+        "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "behavior_sha256": "3c316036ac73ff6683dc580fcf195de8f84ba1b2f9a7bc19163e24e17e864b08",
+      "benchmark": {
+        "type": "BenchmarkAssessment",
+        "diagnostics": [
+          {
+            "type": "DiagnosticValue",
+            "metric": "NET_ANNUAL_RETURN",
+            "unit": "RATIO",
+            "status": "AVAILABLE",
+            "value": 1.6508930371568176,
+            "reason": null,
+            "evaluation_ids": [
+              "f174d2bb326c043028ae41f9029e5036b2e4bb4e73cb3c84d767afe69f6a7637"
+            ]
+          },
+          {
+            "type": "DiagnosticValue",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "unit": "RATIO",
+            "status": "AVAILABLE",
+            "value": 0.5351281449250265,
+            "reason": null,
+            "evaluation_ids": [
+              "f174d2bb326c043028ae41f9029e5036b2e4bb4e73cb3c84d767afe69f6a7637"
+            ]
+          }
+        ]
+      },
+      "parameter_context": {
+        "type": "ParameterNeighborhoodContext",
+        "protocol": {
+          "type": "ParameterNeighborhoodProtocol",
+          "purpose": "LOCAL_SENSITIVITY",
+          "max_combinations": 10000,
+          "quantile_method": "LINEAR",
+          "version": "parameter-cartesian-neighborhood-v2"
+        },
+        "design_sha256": "95cccb8b460689d540f49d1b882a056b59eede5074fb47d8ff1edb32424e05d4",
+        "space_sha256": "4316b6ca0437223818f62dccfe911690f3bfb05d15de6827112472c65f8ff4bd",
+        "dimension": 6,
+        "prescribed_points": 728,
+        "valid_points": 0,
+        "comparison_sha256": "a05929fee3683f867c5506aff5a346283c5e56349fe1790c79aac01466c489cd"
+      },
+      "frequency_coverage": {
+        "type": "FrequencyCoverageFacts",
+        "window_days": 60,
+        "minimum_closed_cycles": 3,
+        "total_windows": 443,
+        "covered_windows": 443,
+        "evaluation_ids": [
+          "f174d2bb326c043028ae41f9029e5036b2e4bb4e73cb3c84d767afe69f6a7637"
+        ]
+      },
+      "parameter_performances": [],
+      "stress_performance": {
+        "type": "PerformanceFacts",
+        "candidate": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S017-C0352",
+          "content_sha256": "0fa8cd0635211650fa58bae2ea53ee1dc70e4bdea61576ac02f8c170e6166a97"
+        },
+        "evaluation_id": "e0eb615bdf48411b1c5336138a98840dd38bfae3e1ad422a4954b5d997dcb201",
+        "scenario": {
+          "type": "EvaluationScenarioContext",
+          "one_way_cost": 0.002,
+          "measurement_tier": "STRESS",
+          "benchmark_id": "BuyHold",
+          "benchmark_kind": "BUYHOLD",
+          "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+        },
+        "annual_return": 1.1753786642752804,
+        "drawdown": 0.21988715001774517,
+        "benchmark_return": 1.6494974636757074,
+        "benchmark_drawdown": 0.535106133164511,
+        "point_index": null
+      },
+      "rolling_calmar_excess_q10": {
+        "type": "DiagnosticValue",
+        "metric": "ROLLING_EXCESS_CALMAR_Q10",
+        "unit": "RATIO",
+        "status": "AVAILABLE",
+        "value": 1.8171933328118945,
+        "reason": null,
+        "evaluation_ids": [
+          "f174d2bb326c043028ae41f9029e5036b2e4bb4e73cb3c84d767afe69f6a7637"
+        ]
+      }
+    }
+  ],
+  "family_diagnostics": [
+    {
+      "type": "FamilyDiagnostic",
+      "name": "PBO",
+      "status": "INSUFFICIENT_DATA",
+      "value": null,
+      "reason": "FAMILY_RETURN_MATRIX_NOT_SUPPLIED"
+    },
+    {
+      "type": "FamilyDiagnostic",
+      "name": "DSR_RAW",
+      "status": "INSUFFICIENT_DATA",
+      "value": null,
+      "reason": "FAMILY_RETURN_MATRIX_NOT_SUPPLIED"
+    },
+    {
+      "type": "FamilyDiagnostic",
+      "name": "DSR_EFFECTIVE",
+      "status": "INSUFFICIENT_DATA",
+      "value": null,
+      "reason": "FAMILY_RETURN_MATRIX_NOT_SUPPLIED"
+    }
+  ],
+  "family_limitations": [],
+  "formula_version": "research-assessment-v8"
+}

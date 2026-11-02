@@ -1,0 +1,188 @@
+{
+  "type": "ResearchTargets",
+  "requirements": [
+    {
+      "type": "ResearchTarget",
+      "target_id": "center-net-calmar",
+      "metric": "NET_CALMAR",
+      "lower": {
+        "type": "BenchmarkBound",
+        "multiplier": 1.5,
+        "inclusive": false
+      },
+      "upper": null,
+      "when": null,
+      "scope": "STANDARD",
+      "one_way_cost": 0.001
+    },
+    {
+      "type": "ResearchTarget",
+      "target_id": "center-relative-dd",
+      "metric": "DRAWDOWN_MAGNITUDE",
+      "lower": null,
+      "upper": {
+        "type": "BenchmarkBound",
+        "multiplier": 0.8,
+        "inclusive": true
+      },
+      "when": null,
+      "scope": "STANDARD",
+      "one_way_cost": null
+    },
+    {
+      "type": "ResearchTarget",
+      "target_id": "center-absolute-dd",
+      "metric": "DRAWDOWN_MAGNITUDE",
+      "lower": null,
+      "upper": {
+        "type": "ConstantBound",
+        "value": 0.25,
+        "inclusive": true
+      },
+      "when": null,
+      "scope": "STANDARD",
+      "one_way_cost": null
+    },
+    {
+      "type": "ResearchTarget",
+      "target_id": "frequency-median",
+      "metric": "FREQUENCY_MEDIAN",
+      "lower": {
+        "type": "ConstantBound",
+        "value": 6.0,
+        "inclusive": true
+      },
+      "upper": null,
+      "when": null,
+      "scope": "STANDARD",
+      "one_way_cost": null
+    },
+    {
+      "type": "FrequencyCoverageTarget",
+      "target_id": "frequency-coverage",
+      "window_days": 60,
+      "minimum_closed_cycles": 3,
+      "minimum_numerator": 9,
+      "minimum_denominator": 10
+    },
+    {
+      "type": "ParameterNeighborhoodTarget",
+      "target_id": "parameters",
+      "minimum_numerator": 13,
+      "minimum_denominator": 16,
+      "joint_targets": [
+        {
+          "type": "ResearchTarget",
+          "target_id": "point-net-calmar",
+          "metric": "NET_CALMAR",
+          "lower": {
+            "type": "BenchmarkBound",
+            "multiplier": 1.25,
+            "inclusive": true
+          },
+          "upper": null,
+          "when": null,
+          "scope": "STANDARD",
+          "one_way_cost": null
+        },
+        {
+          "type": "ResearchTarget",
+          "target_id": "point-relative-dd",
+          "metric": "DRAWDOWN_MAGNITUDE",
+          "lower": null,
+          "upper": {
+            "type": "BenchmarkBound",
+            "multiplier": 0.9,
+            "inclusive": true
+          },
+          "when": null,
+          "scope": "STANDARD",
+          "one_way_cost": null
+        }
+      ],
+      "all_point_targets": [
+        {
+          "type": "ResearchTarget",
+          "target_id": "point-absolute-dd",
+          "metric": "DRAWDOWN_MAGNITUDE",
+          "lower": null,
+          "upper": {
+            "type": "ConstantBound",
+            "value": 0.25,
+            "inclusive": true
+          },
+          "when": null,
+          "scope": "STANDARD",
+          "one_way_cost": null
+        }
+      ]
+    },
+    {
+      "type": "ResearchTarget",
+      "target_id": "stress-net-calmar",
+      "metric": "NET_CALMAR",
+      "lower": {
+        "type": "BenchmarkBound",
+        "multiplier": 1.0,
+        "inclusive": false
+      },
+      "upper": null,
+      "when": null,
+      "scope": "STRESS",
+      "one_way_cost": 0.002
+    },
+    {
+      "type": "ResearchTarget",
+      "target_id": "stress-relative-dd",
+      "metric": "DRAWDOWN_MAGNITUDE",
+      "lower": null,
+      "upper": {
+        "type": "BenchmarkBound",
+        "multiplier": 1.0,
+        "inclusive": false
+      },
+      "when": {
+        "type": "BenchmarkCondition",
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "operator": "GT",
+        "value": 0.0
+      },
+      "scope": "STRESS",
+      "one_way_cost": 0.002
+    },
+    {
+      "type": "ResearchTarget",
+      "target_id": "stress-zero-dd",
+      "metric": "DRAWDOWN_MAGNITUDE",
+      "lower": null,
+      "upper": {
+        "type": "ConstantBound",
+        "value": 0.0,
+        "inclusive": true
+      },
+      "when": {
+        "type": "BenchmarkCondition",
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "operator": "LE",
+        "value": 0.0
+      },
+      "scope": "STRESS",
+      "one_way_cost": 0.002
+    },
+    {
+      "type": "ResearchTarget",
+      "target_id": "stress-absolute-dd",
+      "metric": "DRAWDOWN_MAGNITUDE",
+      "lower": null,
+      "upper": {
+        "type": "ConstantBound",
+        "value": 0.25,
+        "inclusive": true
+      },
+      "when": null,
+      "scope": "STRESS",
+      "one_way_cost": 0.002
+    }
+  ],
+  "frequency_window_days": 60
+}

@@ -7,6 +7,35 @@
     "active_stage_four_20261102": {
       "additional_dev_not_required_before_measured_failure": true,
       "authorized_independent_pressure_candidates": 6,
+      "calmar_v2_compute_request": {
+        "evidence_id": "e85d029b12b79e1e9e29c78107c1b7c22c4e7cc3f7f5a89e23fae6890386f040.md",
+        "experiment": {
+          "experiment_id": "EX076_20261102",
+          "strategy_id": "S017",
+          "type": "ExperimentRef"
+        },
+        "media_type": "text/markdown",
+        "name": "calmar-v2-compute-request",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "e85d029b12b79e1e9e29c78107c1b7c22c4e7cc3f7f5a89e23fae6890386f040",
+        "type": "EvidenceRef"
+      },
+      "calmar_v2_dev_authorization": {
+        "evidence_id": "eb911d07526a32d523dbe5cb9eaccff5283ec7754f2c9828475db6d6b9259107.json",
+        "experiment": {
+          "experiment_id": "EX076_20261102",
+          "strategy_id": "S017",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "calmar-v2-dev-authorization",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "eb911d07526a32d523dbe5cb9eaccff5283ec7754f2c9828475db6d6b9259107",
+        "type": "EvidenceRef"
+      },
+      "calmar_v2_dev_commit": "d6b846ac40fa275b9ddebdffecaf5de7931d3048",
       "candidates": [
         "C0338",
         "C0339",
@@ -15,11 +44,51 @@
         "C0342",
         "C0352"
       ],
+      "capability_acceptance_report": {
+        "evidence_id": "31332116470f08ff791ec44d003674007620651d2723493d103277af8d5942f8.json",
+        "experiment": {
+          "experiment_id": "EX076_20261102",
+          "strategy_id": "S017",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "experiment-report",
+        "schema": "experiment_report",
+        "schema_version": 1,
+        "sha256": "31332116470f08ff791ec44d003674007620651d2723493d103277af8d5942f8",
+        "type": "EvidenceRef"
+      },
+      "confirmed_selfcheck_policy": {
+        "evidence_id": "316ff9560631551abc1ae28198aad2de91ad945b00a59a151ce45d95ffaef0ab.json",
+        "experiment": {
+          "experiment_id": "EX076_20261102",
+          "strategy_id": "S017",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "confirmed-calmar-selfcheck-v2",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "316ff9560631551abc1ae28198aad2de91ad945b00a59a151ce45d95ffaef0ab",
+        "type": "EvidenceRef"
+      },
+      "current_calmar_capability_support": "IMPLEMENTED_346_FOCUSED_TESTS_AND_RSCH_EXISTING_ACCOUNT_ACCEPTANCE_PASS",
+      "current_mandate": {
+        "batch": {
+          "strategy_id": "S017",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "63c77aced4cb43e4f317c6cbf787a0a629d7c8955e441358a9ca64a1b0513d74",
+        "revision": 8,
+        "stage": "MANDATE",
+        "type": "DeliveryReference"
+      },
       "current_parallel_work_processes": 2,
       "dev_commit": "07158c34299935447582fcfe4af42e415ae316fc",
       "execution_paused_by_user": true,
       "final_acceptance_on_legacy_annual_return_gates_suspended": true,
       "full_assessment_delivery_published": false,
+      "hard_gate_definition_and_final_verification_owner": "RSCH_UNDER_USER_CONFIRMED_OBJECTIVES",
       "latest_report": {
         "evidence_id": "4ec9235ac2f154004938d6bd7863a4de795d364419bc8f675b3500b79a927fa9.json",
         "experiment": {
@@ -34,13 +103,16 @@
         "sha256": "4ec9235ac2f154004938d6bd7863a4de795d364419bc8f675b3500b79a927fa9",
         "type": "EvidenceRef"
       },
+      "legacy_annual_return_gates_not_used_for_new_final_acceptance": true,
       "native_threads_per_worker": 1,
       "neighborhood_comparability_and_zero_scale": "USER_CONFIRMED_COMMON_CONTRACT_ZERO_G_ABSOLUTE_005",
       "neighbors_executed": 252,
       "neighbors_remaining": 2577,
       "new_12_worker_controller_started": false,
+      "new_goal_acceptance": "INDETERMINATE_COMPLETE_NEIGHBORHOOD_PENDING",
       "new_ranking_platform_implementation": "COMPLETE_284_FOCUSED_TESTS_PASS",
       "next_dev_scope_authorized": false,
+      "old_annual_failures_not_new_goal_veto": true,
       "planned_neighbors": 2829,
       "pressure_completed": 6,
       "pressure_pass": [
@@ -49,7 +121,8 @@
       ],
       "requested_future_max_parallel_batches": 12,
       "sealed_test_authorized": false,
-      "status": "PAUSED_BY_USER_SELF_CHECK_STANDARD_REVIEW",
+      "status": "CALMAR_V2_CAPABILITY_ACCEPTED_EXECUTION_PAUSED",
+      "tdr_role": "DETERMINISTIC_CALCULATION_AND_SORTING_BY_EXPLICIT_INPUT_RULES",
       "user_continuation": "我建议RSCH继续主导完成阶段四，控制好自检的并发度即可",
       "user_sorting_confirmation": "同意：Calmar/DD分层及逐点Calmar Q10第一项，其他顺序不变",
       "user_stage_four_authorization": "批准这6个配置进入阶段四，请你主导执行自检与排序"
@@ -1767,7 +1840,7 @@
       "research/S017/materials/registration_20261028.md",
       "research/S017/materials/pre_registration_readiness.json"
     ],
-    "next_action": "仅对齐合理的Calmar自检标准；用户明确暂停账户计算，标准及恢复执行获得确认前不新增派单或排名。",
+    "next_action": "用户明确恢复后，RSCH按MANDATE/8及v8/v6新规则核验复用252已发布邻点，内存允许时最多12并发完成剩余2577点；当前保持暂停，不开封或冻结。",
     "objective": "LITE 美股个股30分钟只做多择时研究",
     "other_proposals_confirmation": "CONFIRMED",
     "pending_stage_three_mf_context_proposal": {
@@ -2511,5 +2584,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-11-02T13:07:45+08:00"
+  "updated_at": "2026-11-02T14:20:25+08:00"
 }

@@ -1,0 +1,2377 @@
+{
+  "type": "CandidateComparison",
+  "request_sha256": "bbdbb5e4e7e0bc7aa218bc700aabcfc2e9873f13c9eb682040649f46e369ba20",
+  "rows": [
+    {
+      "type": "CandidateRank",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S017-C0338",
+        "content_sha256": "ed6c277ac2d7afe784c3825ce5a138cee75e47c7833c06787523c86b669330c2"
+      },
+      "status": "INCOMPARABLE",
+      "target_checks": [
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-net-calmar",
+            "metric": "NET_CALMAR",
+            "lower": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.5,
+              "inclusive": false
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": 0.001
+          },
+          "observed": 8.53392147645136,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 4.627563657826615,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "4fd0d49133b4218d12fbba22ef6bdfda31fbeee676b37b93e4ae45b23cc1b83a"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-relative-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "BenchmarkBound",
+              "multiplier": 0.8,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 0.22537871538586707,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.4281025159400212,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "4fd0d49133b4218d12fbba22ef6bdfda31fbeee676b37b93e4ae45b23cc1b83a"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-absolute-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.25,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 0.22537871538586707,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.25,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "4fd0d49133b4218d12fbba22ef6bdfda31fbeee676b37b93e4ae45b23cc1b83a"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "frequency-median",
+            "metric": "FREQUENCY_MEDIAN",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 6.0,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 12.0,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 6.0,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "4fd0d49133b4218d12fbba22ef6bdfda31fbeee676b37b93e4ae45b23cc1b83a"
+          ]
+        },
+        {
+          "type": "FrequencyCoverageCheck",
+          "target": {
+            "type": "FrequencyCoverageTarget",
+            "target_id": "frequency-coverage",
+            "window_days": 60,
+            "minimum_closed_cycles": 3,
+            "minimum_numerator": 9,
+            "minimum_denominator": 10
+          },
+          "facts": {
+            "type": "FrequencyCoverageFacts",
+            "window_days": 60,
+            "minimum_closed_cycles": 3,
+            "total_windows": 443,
+            "covered_windows": 443,
+            "evaluation_ids": [
+              "4fd0d49133b4218d12fbba22ef6bdfda31fbeee676b37b93e4ae45b23cc1b83a"
+            ]
+          },
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "type": "ParameterNeighborhoodCheck",
+          "target": {
+            "type": "ParameterNeighborhoodTarget",
+            "target_id": "parameters",
+            "minimum_numerator": 13,
+            "minimum_denominator": 16,
+            "joint_targets": [
+              {
+                "type": "ResearchTarget",
+                "target_id": "point-net-calmar",
+                "metric": "NET_CALMAR",
+                "lower": {
+                  "type": "BenchmarkBound",
+                  "multiplier": 1.25,
+                  "inclusive": true
+                },
+                "upper": null,
+                "when": null,
+                "scope": "STANDARD",
+                "one_way_cost": null
+              },
+              {
+                "type": "ResearchTarget",
+                "target_id": "point-relative-dd",
+                "metric": "DRAWDOWN_MAGNITUDE",
+                "lower": null,
+                "upper": {
+                  "type": "BenchmarkBound",
+                  "multiplier": 0.9,
+                  "inclusive": true
+                },
+                "when": null,
+                "scope": "STANDARD",
+                "one_way_cost": null
+              }
+            ],
+            "all_point_targets": [
+              {
+                "type": "ResearchTarget",
+                "target_id": "point-absolute-dd",
+                "metric": "DRAWDOWN_MAGNITUDE",
+                "lower": null,
+                "upper": {
+                  "type": "ConstantBound",
+                  "value": 0.25,
+                  "inclusive": true
+                },
+                "when": null,
+                "scope": "STANDARD",
+                "one_way_cost": null
+              }
+            ]
+          },
+          "required_points": 485,
+          "minimum_joint_passes": 395,
+          "valid_points": 2,
+          "joint_passes": 2,
+          "points": [
+            {
+              "type": "ParameterPointCheck",
+              "point_index": 243,
+              "candidate": {
+                "type": "AssessmentCandidate",
+                "candidate_id": "S017-C4243",
+                "content_sha256": "4b0bd80e8dc459309bff8beb00603b8f631019d5c64ac2c2147bfe1904a03295"
+              },
+              "evaluation_id": "521deef36062dd12546bc650212427e626225849ce9663aec98f3a90c1361ee3",
+              "joint_checks": [
+                {
+                  "type": "TargetCheck",
+                  "target": {
+                    "type": "ResearchTarget",
+                    "target_id": "point-net-calmar",
+                    "metric": "NET_CALMAR",
+                    "lower": {
+                      "type": "BenchmarkBound",
+                      "multiplier": 1.25,
+                      "inclusive": true
+                    },
+                    "upper": null,
+                    "when": null,
+                    "scope": "STANDARD",
+                    "one_way_cost": null
+                  },
+                  "observed": 8.466633156806207,
+                  "status": "PASSED",
+                  "reason": null,
+                  "resolved_lower": 3.8563030481888454,
+                  "resolved_upper": null,
+                  "condition_observed": null,
+                  "evaluation_ids": [
+                    "521deef36062dd12546bc650212427e626225849ce9663aec98f3a90c1361ee3"
+                  ]
+                },
+                {
+                  "type": "TargetCheck",
+                  "target": {
+                    "type": "ResearchTarget",
+                    "target_id": "point-relative-dd",
+                    "metric": "DRAWDOWN_MAGNITUDE",
+                    "lower": null,
+                    "upper": {
+                      "type": "BenchmarkBound",
+                      "multiplier": 0.9,
+                      "inclusive": true
+                    },
+                    "when": null,
+                    "scope": "STANDARD",
+                    "one_way_cost": null
+                  },
+                  "observed": 0.22523838387933348,
+                  "status": "PASSED",
+                  "reason": null,
+                  "resolved_lower": null,
+                  "resolved_upper": 0.48161533043252386,
+                  "condition_observed": null,
+                  "evaluation_ids": [
+                    "521deef36062dd12546bc650212427e626225849ce9663aec98f3a90c1361ee3"
+                  ]
+                }
+              ],
+              "all_point_checks": [
+                {
+                  "type": "TargetCheck",
+                  "target": {
+                    "type": "ResearchTarget",
+                    "target_id": "point-absolute-dd",
+                    "metric": "DRAWDOWN_MAGNITUDE",
+                    "lower": null,
+                    "upper": {
+                      "type": "ConstantBound",
+                      "value": 0.25,
+                      "inclusive": true
+                    },
+                    "when": null,
+                    "scope": "STANDARD",
+                    "one_way_cost": null
+                  },
+                  "observed": 0.22523838387933348,
+                  "status": "PASSED",
+                  "reason": null,
+                  "resolved_lower": null,
+                  "resolved_upper": 0.25,
+                  "condition_observed": null,
+                  "evaluation_ids": [
+                    "521deef36062dd12546bc650212427e626225849ce9663aec98f3a90c1361ee3"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "ParameterPointCheck",
+              "point_index": 244,
+              "candidate": {
+                "type": "AssessmentCandidate",
+                "candidate_id": "S017-C4244",
+                "content_sha256": "d66a01f24777858e6776ad70ee66ea0c9fc86555110a9f7de1f382a986cf266a"
+              },
+              "evaluation_id": "b443f74ed6c3776920850301920e13757e4b7e009838087bb7241c14cadd2bf6",
+              "joint_checks": [
+                {
+                  "type": "TargetCheck",
+                  "target": {
+                    "type": "ResearchTarget",
+                    "target_id": "point-net-calmar",
+                    "metric": "NET_CALMAR",
+                    "lower": {
+                      "type": "BenchmarkBound",
+                      "multiplier": 1.25,
+                      "inclusive": true
+                    },
+                    "upper": null,
+                    "when": null,
+                    "scope": "STANDARD",
+                    "one_way_cost": null
+                  },
+                  "observed": 8.597326506335008,
+                  "status": "PASSED",
+                  "reason": null,
+                  "resolved_lower": 3.8563030481888454,
+                  "resolved_upper": null,
+                  "condition_observed": null,
+                  "evaluation_ids": [
+                    "b443f74ed6c3776920850301920e13757e4b7e009838087bb7241c14cadd2bf6"
+                  ]
+                },
+                {
+                  "type": "TargetCheck",
+                  "target": {
+                    "type": "ResearchTarget",
+                    "target_id": "point-relative-dd",
+                    "metric": "DRAWDOWN_MAGNITUDE",
+                    "lower": null,
+                    "upper": {
+                      "type": "BenchmarkBound",
+                      "multiplier": 0.9,
+                      "inclusive": true
+                    },
+                    "when": null,
+                    "scope": "STANDARD",
+                    "one_way_cost": null
+                  },
+                  "observed": 0.2252548218085032,
+                  "status": "PASSED",
+                  "reason": null,
+                  "resolved_lower": null,
+                  "resolved_upper": 0.48161533043252386,
+                  "condition_observed": null,
+                  "evaluation_ids": [
+                    "b443f74ed6c3776920850301920e13757e4b7e009838087bb7241c14cadd2bf6"
+                  ]
+                }
+              ],
+              "all_point_checks": [
+                {
+                  "type": "TargetCheck",
+                  "target": {
+                    "type": "ResearchTarget",
+                    "target_id": "point-absolute-dd",
+                    "metric": "DRAWDOWN_MAGNITUDE",
+                    "lower": null,
+                    "upper": {
+                      "type": "ConstantBound",
+                      "value": 0.25,
+                      "inclusive": true
+                    },
+                    "when": null,
+                    "scope": "STANDARD",
+                    "one_way_cost": null
+                  },
+                  "observed": 0.2252548218085032,
+                  "status": "PASSED",
+                  "reason": null,
+                  "resolved_lower": null,
+                  "resolved_upper": 0.25,
+                  "condition_observed": null,
+                  "evaluation_ids": [
+                    "b443f74ed6c3776920850301920e13757e4b7e009838087bb7241c14cadd2bf6"
+                  ]
+                }
+              ]
+            }
+          ],
+          "status": "INDETERMINATE",
+          "reason": "INCOMPLETE_PARAMETER_COVERAGE"
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-net-calmar",
+            "metric": "NET_CALMAR",
+            "lower": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.0,
+              "inclusive": false
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 7.276732800927336,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 3.0825613115680586,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "b73d97fecc26a809d8fac5055d5881058002d0d11d731e91771755da46f47279"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-relative-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.0,
+              "inclusive": false
+            },
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "DRAWDOWN_MAGNITUDE",
+              "operator": "GT",
+              "value": 0.0
+            },
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.22846317441123565,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.535106133164511,
+          "condition_observed": 0.535106133164511,
+          "evaluation_ids": [
+            "b73d97fecc26a809d8fac5055d5881058002d0d11d731e91771755da46f47279"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-zero-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.0,
+              "inclusive": true
+            },
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "DRAWDOWN_MAGNITUDE",
+              "operator": "LE",
+              "value": 0.0
+            },
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.22846317441123565,
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE",
+          "resolved_lower": null,
+          "resolved_upper": null,
+          "condition_observed": 0.535106133164511,
+          "evaluation_ids": [
+            "b73d97fecc26a809d8fac5055d5881058002d0d11d731e91771755da46f47279"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-absolute-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.25,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.22846317441123565,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.25,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "b73d97fecc26a809d8fac5055d5881058002d0d11d731e91771755da46f47279"
+          ]
+        }
+      ],
+      "pareto_layer": null,
+      "rank_in_layer": null,
+      "bin_values": [
+        null,
+        null,
+        32723,
+        12571,
+        1165,
+        24
+      ],
+      "reasons": [
+        "INCOMPLETE_PARAMETER_COVERAGE",
+        "PARAMETER_CALMAR_Q10:INCOMPLETE_OR_UNAVAILABLE_PARAMETER_CALMAR",
+        "PARAMETER_DRAWDOWN_Q90:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "rank_min": null,
+      "rank_max": null,
+      "acceptance_status": "INDETERMINATE",
+      "floor_metrics": []
+    },
+    {
+      "type": "CandidateRank",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S017-C0339",
+        "content_sha256": "f5ab7754b48223e23590c56bb27e540278b5c1a0dcac2eda2ea599bd0d8c1224"
+      },
+      "status": "INCOMPARABLE",
+      "target_checks": [
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-net-calmar",
+            "metric": "NET_CALMAR",
+            "lower": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.5,
+              "inclusive": false
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": 0.001
+          },
+          "observed": 8.06353337787928,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 4.627563657826615,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "949a5446a005794058fa0a7799d9d0db20515f313dc2e589e6ca563fab0e4896"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-relative-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "BenchmarkBound",
+              "multiplier": 0.8,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 0.22540104126927496,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.4281025159400212,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "949a5446a005794058fa0a7799d9d0db20515f313dc2e589e6ca563fab0e4896"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-absolute-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.25,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 0.22540104126927496,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.25,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "949a5446a005794058fa0a7799d9d0db20515f313dc2e589e6ca563fab0e4896"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "frequency-median",
+            "metric": "FREQUENCY_MEDIAN",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 6.0,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 12.0,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 6.0,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "949a5446a005794058fa0a7799d9d0db20515f313dc2e589e6ca563fab0e4896"
+          ]
+        },
+        {
+          "type": "FrequencyCoverageCheck",
+          "target": {
+            "type": "FrequencyCoverageTarget",
+            "target_id": "frequency-coverage",
+            "window_days": 60,
+            "minimum_closed_cycles": 3,
+            "minimum_numerator": 9,
+            "minimum_denominator": 10
+          },
+          "facts": {
+            "type": "FrequencyCoverageFacts",
+            "window_days": 60,
+            "minimum_closed_cycles": 3,
+            "total_windows": 443,
+            "covered_windows": 443,
+            "evaluation_ids": [
+              "949a5446a005794058fa0a7799d9d0db20515f313dc2e589e6ca563fab0e4896"
+            ]
+          },
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "type": "ParameterNeighborhoodCheck",
+          "target": {
+            "type": "ParameterNeighborhoodTarget",
+            "target_id": "parameters",
+            "minimum_numerator": 13,
+            "minimum_denominator": 16,
+            "joint_targets": [
+              {
+                "type": "ResearchTarget",
+                "target_id": "point-net-calmar",
+                "metric": "NET_CALMAR",
+                "lower": {
+                  "type": "BenchmarkBound",
+                  "multiplier": 1.25,
+                  "inclusive": true
+                },
+                "upper": null,
+                "when": null,
+                "scope": "STANDARD",
+                "one_way_cost": null
+              },
+              {
+                "type": "ResearchTarget",
+                "target_id": "point-relative-dd",
+                "metric": "DRAWDOWN_MAGNITUDE",
+                "lower": null,
+                "upper": {
+                  "type": "BenchmarkBound",
+                  "multiplier": 0.9,
+                  "inclusive": true
+                },
+                "when": null,
+                "scope": "STANDARD",
+                "one_way_cost": null
+              }
+            ],
+            "all_point_targets": [
+              {
+                "type": "ResearchTarget",
+                "target_id": "point-absolute-dd",
+                "metric": "DRAWDOWN_MAGNITUDE",
+                "lower": null,
+                "upper": {
+                  "type": "ConstantBound",
+                  "value": 0.25,
+                  "inclusive": true
+                },
+                "when": null,
+                "scope": "STANDARD",
+                "one_way_cost": null
+              }
+            ]
+          },
+          "required_points": 323,
+          "minimum_joint_passes": 263,
+          "valid_points": 2,
+          "joint_passes": 2,
+          "points": [
+            {
+              "type": "ParameterPointCheck",
+              "point_index": 162,
+              "candidate": {
+                "type": "AssessmentCandidate",
+                "candidate_id": "S017-C4647",
+                "content_sha256": "cf44fc75205b3c7b3a73cce02b8a71085ddf317675ca990bc8c151ceb1d6ee65"
+              },
+              "evaluation_id": "700dbda7ef927d422c5500ba6024c421a02edffc33aa4aaca2712a67de559af7",
+              "joint_checks": [
+                {
+                  "type": "TargetCheck",
+                  "target": {
+                    "type": "ResearchTarget",
+                    "target_id": "point-net-calmar",
+                    "metric": "NET_CALMAR",
+                    "lower": {
+                      "type": "BenchmarkBound",
+                      "multiplier": 1.25,
+                      "inclusive": true
+                    },
+                    "upper": null,
+                    "when": null,
+                    "scope": "STANDARD",
+                    "one_way_cost": null
+                  },
+                  "observed": 8.068107775599755,
+                  "status": "PASSED",
+                  "reason": null,
+                  "resolved_lower": 3.8563030481888454,
+                  "resolved_upper": null,
+                  "condition_observed": null,
+                  "evaluation_ids": [
+                    "700dbda7ef927d422c5500ba6024c421a02edffc33aa4aaca2712a67de559af7"
+                  ]
+                },
+                {
+                  "type": "TargetCheck",
+                  "target": {
+                    "type": "ResearchTarget",
+                    "target_id": "point-relative-dd",
+                    "metric": "DRAWDOWN_MAGNITUDE",
+                    "lower": null,
+                    "upper": {
+                      "type": "BenchmarkBound",
+                      "multiplier": 0.9,
+                      "inclusive": true
+                    },
+                    "when": null,
+                    "scope": "STANDARD",
+                    "one_way_cost": null
+                  },
+                  "observed": 0.22524389801140876,
+                  "status": "PASSED",
+                  "reason": null,
+                  "resolved_lower": null,
+                  "resolved_upper": 0.48161533043252386,
+                  "condition_observed": null,
+                  "evaluation_ids": [
+                    "700dbda7ef927d422c5500ba6024c421a02edffc33aa4aaca2712a67de559af7"
+                  ]
+                }
+              ],
+              "all_point_checks": [
+                {
+                  "type": "TargetCheck",
+                  "target": {
+                    "type": "ResearchTarget",
+                    "target_id": "point-absolute-dd",
+                    "metric": "DRAWDOWN_MAGNITUDE",
+                    "lower": null,
+                    "upper": {
+                      "type": "ConstantBound",
+                      "value": 0.25,
+                      "inclusive": true
+                    },
+                    "when": null,
+                    "scope": "STANDARD",
+                    "one_way_cost": null
+                  },
+                  "observed": 0.22524389801140876,
+                  "status": "PASSED",
+                  "reason": null,
+                  "resolved_lower": null,
+                  "resolved_upper": 0.25,
+                  "condition_observed": null,
+                  "evaluation_ids": [
+                    "700dbda7ef927d422c5500ba6024c421a02edffc33aa4aaca2712a67de559af7"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "ParameterPointCheck",
+              "point_index": 166,
+              "candidate": {
+                "type": "AssessmentCandidate",
+                "candidate_id": "S017-C4651",
+                "content_sha256": "540233635b371296236829d25d2723c67bded9cf7222f4392aa79b06380101c6"
+              },
+              "evaluation_id": "83b5a68fa27abcb87711aef8e944cec7dfbac260d5067c3c2d1e5d8a36ca8f9d",
+              "joint_checks": [
+                {
+                  "type": "TargetCheck",
+                  "target": {
+                    "type": "ResearchTarget",
+                    "target_id": "point-net-calmar",
+                    "metric": "NET_CALMAR",
+                    "lower": {
+                      "type": "BenchmarkBound",
+                      "multiplier": 1.25,
+                      "inclusive": true
+                    },
+                    "upper": null,
+                    "when": null,
+                    "scope": "STANDARD",
+                    "one_way_cost": null
+                  },
+                  "observed": 7.30781808746712,
+                  "status": "PASSED",
+                  "reason": null,
+                  "resolved_lower": 3.8563030481888454,
+                  "resolved_upper": null,
+                  "condition_observed": null,
+                  "evaluation_ids": [
+                    "83b5a68fa27abcb87711aef8e944cec7dfbac260d5067c3c2d1e5d8a36ca8f9d"
+                  ]
+                },
+                {
+                  "type": "TargetCheck",
+                  "target": {
+                    "type": "ResearchTarget",
+                    "target_id": "point-relative-dd",
+                    "metric": "DRAWDOWN_MAGNITUDE",
+                    "lower": null,
+                    "upper": {
+                      "type": "BenchmarkBound",
+                      "multiplier": 0.9,
+                      "inclusive": true
+                    },
+                    "when": null,
+                    "scope": "STANDARD",
+                    "one_way_cost": null
+                  },
+                  "observed": 0.22523890411627023,
+                  "status": "PASSED",
+                  "reason": null,
+                  "resolved_lower": null,
+                  "resolved_upper": 0.48161533043252386,
+                  "condition_observed": null,
+                  "evaluation_ids": [
+                    "83b5a68fa27abcb87711aef8e944cec7dfbac260d5067c3c2d1e5d8a36ca8f9d"
+                  ]
+                }
+              ],
+              "all_point_checks": [
+                {
+                  "type": "TargetCheck",
+                  "target": {
+                    "type": "ResearchTarget",
+                    "target_id": "point-absolute-dd",
+                    "metric": "DRAWDOWN_MAGNITUDE",
+                    "lower": null,
+                    "upper": {
+                      "type": "ConstantBound",
+                      "value": 0.25,
+                      "inclusive": true
+                    },
+                    "when": null,
+                    "scope": "STANDARD",
+                    "one_way_cost": null
+                  },
+                  "observed": 0.22523890411627023,
+                  "status": "PASSED",
+                  "reason": null,
+                  "resolved_lower": null,
+                  "resolved_upper": 0.25,
+                  "condition_observed": null,
+                  "evaluation_ids": [
+                    "83b5a68fa27abcb87711aef8e944cec7dfbac260d5067c3c2d1e5d8a36ca8f9d"
+                  ]
+                }
+              ]
+            }
+          ],
+          "status": "INDETERMINATE",
+          "reason": "INCOMPLETE_PARAMETER_COVERAGE"
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-net-calmar",
+            "metric": "NET_CALMAR",
+            "lower": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.0,
+              "inclusive": false
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 6.852938468249869,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 3.0825613115680586,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "787b8a75df9efc7c168123b2a1fa4c61a5ccee13a169cc2054673db203e9cffe"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-relative-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.0,
+              "inclusive": false
+            },
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "DRAWDOWN_MAGNITUDE",
+              "operator": "GT",
+              "value": 0.0
+            },
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.22846345885968022,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.535106133164511,
+          "condition_observed": 0.535106133164511,
+          "evaluation_ids": [
+            "787b8a75df9efc7c168123b2a1fa4c61a5ccee13a169cc2054673db203e9cffe"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-zero-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.0,
+              "inclusive": true
+            },
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "DRAWDOWN_MAGNITUDE",
+              "operator": "LE",
+              "value": 0.0
+            },
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.22846345885968022,
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE",
+          "resolved_lower": null,
+          "resolved_upper": null,
+          "condition_observed": 0.535106133164511,
+          "evaluation_ids": [
+            "787b8a75df9efc7c168123b2a1fa4c61a5ccee13a169cc2054673db203e9cffe"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-absolute-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.25,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.22846345885968022,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.25,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "787b8a75df9efc7c168123b2a1fa4c61a5ccee13a169cc2054673db203e9cffe"
+          ]
+        }
+      ],
+      "pareto_layer": null,
+      "rank_in_layer": null,
+      "bin_values": [
+        null,
+        null,
+        32080,
+        12105,
+        1090,
+        24
+      ],
+      "reasons": [
+        "INCOMPLETE_PARAMETER_COVERAGE",
+        "PARAMETER_CALMAR_Q10:INCOMPLETE_OR_UNAVAILABLE_PARAMETER_CALMAR",
+        "PARAMETER_DRAWDOWN_Q90:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "rank_min": null,
+      "rank_max": null,
+      "acceptance_status": "INDETERMINATE",
+      "floor_metrics": []
+    },
+    {
+      "type": "CandidateRank",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S017-C0340",
+        "content_sha256": "a08ff75f635b487f5b7316edd105e3e0fda26677bd12d42219f28ae4b90a460f"
+      },
+      "status": "INCOMPARABLE",
+      "target_checks": [
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-net-calmar",
+            "metric": "NET_CALMAR",
+            "lower": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.5,
+              "inclusive": false
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": 0.001
+          },
+          "observed": 7.8965733434972325,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 4.627563657826615,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "4f97a3b538247aba6575953e88171dd47eebd6133d1d28ea34be9dbd33f7e8f8"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-relative-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "BenchmarkBound",
+              "multiplier": 0.8,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 0.22537871538586707,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.4281025159400212,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "4f97a3b538247aba6575953e88171dd47eebd6133d1d28ea34be9dbd33f7e8f8"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-absolute-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.25,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 0.22537871538586707,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.25,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "4f97a3b538247aba6575953e88171dd47eebd6133d1d28ea34be9dbd33f7e8f8"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "frequency-median",
+            "metric": "FREQUENCY_MEDIAN",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 6.0,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 12.0,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 6.0,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "4f97a3b538247aba6575953e88171dd47eebd6133d1d28ea34be9dbd33f7e8f8"
+          ]
+        },
+        {
+          "type": "FrequencyCoverageCheck",
+          "target": {
+            "type": "FrequencyCoverageTarget",
+            "target_id": "frequency-coverage",
+            "window_days": 60,
+            "minimum_closed_cycles": 3,
+            "minimum_numerator": 9,
+            "minimum_denominator": 10
+          },
+          "facts": {
+            "type": "FrequencyCoverageFacts",
+            "window_days": 60,
+            "minimum_closed_cycles": 3,
+            "total_windows": 443,
+            "covered_windows": 443,
+            "evaluation_ids": [
+              "4f97a3b538247aba6575953e88171dd47eebd6133d1d28ea34be9dbd33f7e8f8"
+            ]
+          },
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "type": "ParameterNeighborhoodCheck",
+          "target": {
+            "type": "ParameterNeighborhoodTarget",
+            "target_id": "parameters",
+            "minimum_numerator": 13,
+            "minimum_denominator": 16,
+            "joint_targets": [
+              {
+                "type": "ResearchTarget",
+                "target_id": "point-net-calmar",
+                "metric": "NET_CALMAR",
+                "lower": {
+                  "type": "BenchmarkBound",
+                  "multiplier": 1.25,
+                  "inclusive": true
+                },
+                "upper": null,
+                "when": null,
+                "scope": "STANDARD",
+                "one_way_cost": null
+              },
+              {
+                "type": "ResearchTarget",
+                "target_id": "point-relative-dd",
+                "metric": "DRAWDOWN_MAGNITUDE",
+                "lower": null,
+                "upper": {
+                  "type": "BenchmarkBound",
+                  "multiplier": 0.9,
+                  "inclusive": true
+                },
+                "when": null,
+                "scope": "STANDARD",
+                "one_way_cost": null
+              }
+            ],
+            "all_point_targets": [
+              {
+                "type": "ResearchTarget",
+                "target_id": "point-absolute-dd",
+                "metric": "DRAWDOWN_MAGNITUDE",
+                "lower": null,
+                "upper": {
+                  "type": "ConstantBound",
+                  "value": 0.25,
+                  "inclusive": true
+                },
+                "when": null,
+                "scope": "STANDARD",
+                "one_way_cost": null
+              }
+            ]
+          },
+          "required_points": 485,
+          "minimum_joint_passes": 395,
+          "valid_points": 0,
+          "joint_passes": 0,
+          "points": [],
+          "status": "INDETERMINATE",
+          "reason": "INCOMPLETE_PARAMETER_COVERAGE"
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-net-calmar",
+            "metric": "NET_CALMAR",
+            "lower": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.0,
+              "inclusive": false
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 6.7050960449892605,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 3.0825613115680586,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "625bbb0a6d9f3eeaf7ad499c9b59641c07634e045c3b24376baa224f8cbab50e"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-relative-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.0,
+              "inclusive": false
+            },
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "DRAWDOWN_MAGNITUDE",
+              "operator": "GT",
+              "value": 0.0
+            },
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.22846317441123565,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.535106133164511,
+          "condition_observed": 0.535106133164511,
+          "evaluation_ids": [
+            "625bbb0a6d9f3eeaf7ad499c9b59641c07634e045c3b24376baa224f8cbab50e"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-zero-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.0,
+              "inclusive": true
+            },
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "DRAWDOWN_MAGNITUDE",
+              "operator": "LE",
+              "value": 0.0
+            },
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.22846317441123565,
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE",
+          "resolved_lower": null,
+          "resolved_upper": null,
+          "condition_observed": 0.535106133164511,
+          "evaluation_ids": [
+            "625bbb0a6d9f3eeaf7ad499c9b59641c07634e045c3b24376baa224f8cbab50e"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-absolute-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.25,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.22846317441123565,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.25,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "625bbb0a6d9f3eeaf7ad499c9b59641c07634e045c3b24376baa224f8cbab50e"
+          ]
+        }
+      ],
+      "pareto_layer": null,
+      "rank_in_layer": null,
+      "bin_values": [
+        null,
+        null,
+        32723,
+        11914,
+        1093,
+        24
+      ],
+      "reasons": [
+        "INCOMPLETE_PARAMETER_COVERAGE",
+        "PARAMETER_CALMAR_Q10:INCOMPLETE_OR_UNAVAILABLE_PARAMETER_CALMAR",
+        "PARAMETER_DRAWDOWN_Q90:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "rank_min": null,
+      "rank_max": null,
+      "acceptance_status": "INDETERMINATE",
+      "floor_metrics": []
+    },
+    {
+      "type": "CandidateRank",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S017-C0341",
+        "content_sha256": "1b974b9306abfb93461211986f58163e9790682326ff15e935ca72320f5b3530"
+      },
+      "status": "INCOMPARABLE",
+      "target_checks": [
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-net-calmar",
+            "metric": "NET_CALMAR",
+            "lower": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.5,
+              "inclusive": false
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": 0.001
+          },
+          "observed": 8.168470318707527,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 4.627563657826615,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "8f74f34bdb86ab09b90c4cadc89bf7dd0782ab8408bd214aa8def519c86b096c"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-relative-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "BenchmarkBound",
+              "multiplier": 0.8,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 0.22537871538586707,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.4281025159400212,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "8f74f34bdb86ab09b90c4cadc89bf7dd0782ab8408bd214aa8def519c86b096c"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-absolute-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.25,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 0.22537871538586707,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.25,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "8f74f34bdb86ab09b90c4cadc89bf7dd0782ab8408bd214aa8def519c86b096c"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "frequency-median",
+            "metric": "FREQUENCY_MEDIAN",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 6.0,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 12.0,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 6.0,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "8f74f34bdb86ab09b90c4cadc89bf7dd0782ab8408bd214aa8def519c86b096c"
+          ]
+        },
+        {
+          "type": "FrequencyCoverageCheck",
+          "target": {
+            "type": "FrequencyCoverageTarget",
+            "target_id": "frequency-coverage",
+            "window_days": 60,
+            "minimum_closed_cycles": 3,
+            "minimum_numerator": 9,
+            "minimum_denominator": 10
+          },
+          "facts": {
+            "type": "FrequencyCoverageFacts",
+            "window_days": 60,
+            "minimum_closed_cycles": 3,
+            "total_windows": 443,
+            "covered_windows": 443,
+            "evaluation_ids": [
+              "8f74f34bdb86ab09b90c4cadc89bf7dd0782ab8408bd214aa8def519c86b096c"
+            ]
+          },
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "type": "ParameterNeighborhoodCheck",
+          "target": {
+            "type": "ParameterNeighborhoodTarget",
+            "target_id": "parameters",
+            "minimum_numerator": 13,
+            "minimum_denominator": 16,
+            "joint_targets": [
+              {
+                "type": "ResearchTarget",
+                "target_id": "point-net-calmar",
+                "metric": "NET_CALMAR",
+                "lower": {
+                  "type": "BenchmarkBound",
+                  "multiplier": 1.25,
+                  "inclusive": true
+                },
+                "upper": null,
+                "when": null,
+                "scope": "STANDARD",
+                "one_way_cost": null
+              },
+              {
+                "type": "ResearchTarget",
+                "target_id": "point-relative-dd",
+                "metric": "DRAWDOWN_MAGNITUDE",
+                "lower": null,
+                "upper": {
+                  "type": "BenchmarkBound",
+                  "multiplier": 0.9,
+                  "inclusive": true
+                },
+                "when": null,
+                "scope": "STANDARD",
+                "one_way_cost": null
+              }
+            ],
+            "all_point_targets": [
+              {
+                "type": "ResearchTarget",
+                "target_id": "point-absolute-dd",
+                "metric": "DRAWDOWN_MAGNITUDE",
+                "lower": null,
+                "upper": {
+                  "type": "ConstantBound",
+                  "value": 0.25,
+                  "inclusive": true
+                },
+                "when": null,
+                "scope": "STANDARD",
+                "one_way_cost": null
+              }
+            ]
+          },
+          "required_points": 485,
+          "minimum_joint_passes": 395,
+          "valid_points": 0,
+          "joint_passes": 0,
+          "points": [],
+          "status": "INDETERMINATE",
+          "reason": "INCOMPLETE_PARAMETER_COVERAGE"
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-net-calmar",
+            "metric": "NET_CALMAR",
+            "lower": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.0,
+              "inclusive": false
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 6.9485591323670866,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 3.0825613115680586,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "d44e833d9f3fbe2e71936ffb9ffde81532af2b575a2de4f94be3cf09061fb06e"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-relative-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.0,
+              "inclusive": false
+            },
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "DRAWDOWN_MAGNITUDE",
+              "operator": "GT",
+              "value": 0.0
+            },
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.22846317441123565,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.535106133164511,
+          "condition_observed": 0.535106133164511,
+          "evaluation_ids": [
+            "d44e833d9f3fbe2e71936ffb9ffde81532af2b575a2de4f94be3cf09061fb06e"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-zero-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.0,
+              "inclusive": true
+            },
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "DRAWDOWN_MAGNITUDE",
+              "operator": "LE",
+              "value": 0.0
+            },
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.22846317441123565,
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE",
+          "resolved_lower": null,
+          "resolved_upper": null,
+          "condition_observed": 0.535106133164511,
+          "evaluation_ids": [
+            "d44e833d9f3fbe2e71936ffb9ffde81532af2b575a2de4f94be3cf09061fb06e"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-absolute-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.25,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.22846317441123565,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.25,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "d44e833d9f3fbe2e71936ffb9ffde81532af2b575a2de4f94be3cf09061fb06e"
+          ]
+        }
+      ],
+      "pareto_layer": null,
+      "rank_in_layer": null,
+      "bin_values": [
+        null,
+        null,
+        32723,
+        12199,
+        1088,
+        24
+      ],
+      "reasons": [
+        "INCOMPLETE_PARAMETER_COVERAGE",
+        "PARAMETER_CALMAR_Q10:INCOMPLETE_OR_UNAVAILABLE_PARAMETER_CALMAR",
+        "PARAMETER_DRAWDOWN_Q90:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "rank_min": null,
+      "rank_max": null,
+      "acceptance_status": "INDETERMINATE",
+      "floor_metrics": []
+    },
+    {
+      "type": "CandidateRank",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S017-C0342",
+        "content_sha256": "523f30fd4203afa6eb29d696682d02e6f9b428ea31e8363b42dde50fb1722637"
+      },
+      "status": "INCOMPARABLE",
+      "target_checks": [
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-net-calmar",
+            "metric": "NET_CALMAR",
+            "lower": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.5,
+              "inclusive": false
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": 0.001
+          },
+          "observed": 8.707656170165313,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 4.627563657826615,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "56c78a1f063808218860879fbe0a01bdd9eb619c065f366b164125264a26f9b5"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-relative-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "BenchmarkBound",
+              "multiplier": 0.8,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 0.22537267059295352,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.4281025159400212,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "56c78a1f063808218860879fbe0a01bdd9eb619c065f366b164125264a26f9b5"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-absolute-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.25,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 0.22537267059295352,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.25,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "56c78a1f063808218860879fbe0a01bdd9eb619c065f366b164125264a26f9b5"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "frequency-median",
+            "metric": "FREQUENCY_MEDIAN",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 6.0,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 12.0,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 6.0,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "56c78a1f063808218860879fbe0a01bdd9eb619c065f366b164125264a26f9b5"
+          ]
+        },
+        {
+          "type": "FrequencyCoverageCheck",
+          "target": {
+            "type": "FrequencyCoverageTarget",
+            "target_id": "frequency-coverage",
+            "window_days": 60,
+            "minimum_closed_cycles": 3,
+            "minimum_numerator": 9,
+            "minimum_denominator": 10
+          },
+          "facts": {
+            "type": "FrequencyCoverageFacts",
+            "window_days": 60,
+            "minimum_closed_cycles": 3,
+            "total_windows": 443,
+            "covered_windows": 443,
+            "evaluation_ids": [
+              "56c78a1f063808218860879fbe0a01bdd9eb619c065f366b164125264a26f9b5"
+            ]
+          },
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "type": "ParameterNeighborhoodCheck",
+          "target": {
+            "type": "ParameterNeighborhoodTarget",
+            "target_id": "parameters",
+            "minimum_numerator": 13,
+            "minimum_denominator": 16,
+            "joint_targets": [
+              {
+                "type": "ResearchTarget",
+                "target_id": "point-net-calmar",
+                "metric": "NET_CALMAR",
+                "lower": {
+                  "type": "BenchmarkBound",
+                  "multiplier": 1.25,
+                  "inclusive": true
+                },
+                "upper": null,
+                "when": null,
+                "scope": "STANDARD",
+                "one_way_cost": null
+              },
+              {
+                "type": "ResearchTarget",
+                "target_id": "point-relative-dd",
+                "metric": "DRAWDOWN_MAGNITUDE",
+                "lower": null,
+                "upper": {
+                  "type": "BenchmarkBound",
+                  "multiplier": 0.9,
+                  "inclusive": true
+                },
+                "when": null,
+                "scope": "STANDARD",
+                "one_way_cost": null
+              }
+            ],
+            "all_point_targets": [
+              {
+                "type": "ResearchTarget",
+                "target_id": "point-absolute-dd",
+                "metric": "DRAWDOWN_MAGNITUDE",
+                "lower": null,
+                "upper": {
+                  "type": "ConstantBound",
+                  "value": 0.25,
+                  "inclusive": true
+                },
+                "when": null,
+                "scope": "STANDARD",
+                "one_way_cost": null
+              }
+            ]
+          },
+          "required_points": 323,
+          "minimum_joint_passes": 263,
+          "valid_points": 0,
+          "joint_passes": 0,
+          "points": [],
+          "status": "INDETERMINATE",
+          "reason": "INCOMPLETE_PARAMETER_COVERAGE"
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-net-calmar",
+            "metric": "NET_CALMAR",
+            "lower": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.0,
+              "inclusive": false
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 7.434386274933732,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 3.0825613115680586,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "d6fd806295aed7b093b9b926f03e2b8faa540ea9e895b03b76ed458e962fa8d0"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-relative-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.0,
+              "inclusive": false
+            },
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "DRAWDOWN_MAGNITUDE",
+              "operator": "GT",
+              "value": 0.0
+            },
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.22843943099200492,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.535106133164511,
+          "condition_observed": 0.535106133164511,
+          "evaluation_ids": [
+            "d6fd806295aed7b093b9b926f03e2b8faa540ea9e895b03b76ed458e962fa8d0"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-zero-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.0,
+              "inclusive": true
+            },
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "DRAWDOWN_MAGNITUDE",
+              "operator": "LE",
+              "value": 0.0
+            },
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.22843943099200492,
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE",
+          "resolved_lower": null,
+          "resolved_upper": null,
+          "condition_observed": 0.535106133164511,
+          "evaluation_ids": [
+            "d6fd806295aed7b093b9b926f03e2b8faa540ea9e895b03b76ed458e962fa8d0"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-absolute-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.25,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.22843943099200492,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.25,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "d6fd806295aed7b093b9b926f03e2b8faa540ea9e895b03b76ed458e962fa8d0"
+          ]
+        }
+      ],
+      "pareto_layer": null,
+      "rank_in_layer": null,
+      "bin_values": [
+        null,
+        null,
+        32703,
+        12732,
+        1078,
+        24
+      ],
+      "reasons": [
+        "INCOMPLETE_PARAMETER_COVERAGE",
+        "PARAMETER_CALMAR_Q10:INCOMPLETE_OR_UNAVAILABLE_PARAMETER_CALMAR",
+        "PARAMETER_DRAWDOWN_Q90:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "rank_min": null,
+      "rank_max": null,
+      "acceptance_status": "INDETERMINATE",
+      "floor_metrics": []
+    },
+    {
+      "type": "CandidateRank",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S017-C0352",
+        "content_sha256": "0fa8cd0635211650fa58bae2ea53ee1dc70e4bdea61576ac02f8c170e6166a97"
+      },
+      "status": "INCOMPARABLE",
+      "target_checks": [
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-net-calmar",
+            "metric": "NET_CALMAR",
+            "lower": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.5,
+              "inclusive": false
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": 0.001
+          },
+          "observed": 6.140989792170942,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 4.627563657826615,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "f174d2bb326c043028ae41f9029e5036b2e4bb4e73cb3c84d767afe69f6a7637"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-relative-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "BenchmarkBound",
+              "multiplier": 0.8,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 0.21058236444088552,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.4281025159400212,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "f174d2bb326c043028ae41f9029e5036b2e4bb4e73cb3c84d767afe69f6a7637"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-absolute-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.25,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 0.21058236444088552,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.25,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "f174d2bb326c043028ae41f9029e5036b2e4bb4e73cb3c84d767afe69f6a7637"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "frequency-median",
+            "metric": "FREQUENCY_MEDIAN",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 6.0,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 7.0,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 6.0,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "f174d2bb326c043028ae41f9029e5036b2e4bb4e73cb3c84d767afe69f6a7637"
+          ]
+        },
+        {
+          "type": "FrequencyCoverageCheck",
+          "target": {
+            "type": "FrequencyCoverageTarget",
+            "target_id": "frequency-coverage",
+            "window_days": 60,
+            "minimum_closed_cycles": 3,
+            "minimum_numerator": 9,
+            "minimum_denominator": 10
+          },
+          "facts": {
+            "type": "FrequencyCoverageFacts",
+            "window_days": 60,
+            "minimum_closed_cycles": 3,
+            "total_windows": 443,
+            "covered_windows": 443,
+            "evaluation_ids": [
+              "f174d2bb326c043028ae41f9029e5036b2e4bb4e73cb3c84d767afe69f6a7637"
+            ]
+          },
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "type": "ParameterNeighborhoodCheck",
+          "target": {
+            "type": "ParameterNeighborhoodTarget",
+            "target_id": "parameters",
+            "minimum_numerator": 13,
+            "minimum_denominator": 16,
+            "joint_targets": [
+              {
+                "type": "ResearchTarget",
+                "target_id": "point-net-calmar",
+                "metric": "NET_CALMAR",
+                "lower": {
+                  "type": "BenchmarkBound",
+                  "multiplier": 1.25,
+                  "inclusive": true
+                },
+                "upper": null,
+                "when": null,
+                "scope": "STANDARD",
+                "one_way_cost": null
+              },
+              {
+                "type": "ResearchTarget",
+                "target_id": "point-relative-dd",
+                "metric": "DRAWDOWN_MAGNITUDE",
+                "lower": null,
+                "upper": {
+                  "type": "BenchmarkBound",
+                  "multiplier": 0.9,
+                  "inclusive": true
+                },
+                "when": null,
+                "scope": "STANDARD",
+                "one_way_cost": null
+              }
+            ],
+            "all_point_targets": [
+              {
+                "type": "ResearchTarget",
+                "target_id": "point-absolute-dd",
+                "metric": "DRAWDOWN_MAGNITUDE",
+                "lower": null,
+                "upper": {
+                  "type": "ConstantBound",
+                  "value": 0.25,
+                  "inclusive": true
+                },
+                "when": null,
+                "scope": "STANDARD",
+                "one_way_cost": null
+              }
+            ]
+          },
+          "required_points": 728,
+          "minimum_joint_passes": 592,
+          "valid_points": 0,
+          "joint_passes": 0,
+          "points": [],
+          "status": "INDETERMINATE",
+          "reason": "INCOMPLETE_PARAMETER_COVERAGE"
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-net-calmar",
+            "metric": "NET_CALMAR",
+            "lower": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.0,
+              "inclusive": false
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 5.34537222470902,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 3.0825613115680586,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "e0eb615bdf48411b1c5336138a98840dd38bfae3e1ad422a4954b5d997dcb201"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-relative-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.0,
+              "inclusive": false
+            },
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "DRAWDOWN_MAGNITUDE",
+              "operator": "GT",
+              "value": 0.0
+            },
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.21988715001774517,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.535106133164511,
+          "condition_observed": 0.535106133164511,
+          "evaluation_ids": [
+            "e0eb615bdf48411b1c5336138a98840dd38bfae3e1ad422a4954b5d997dcb201"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-zero-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.0,
+              "inclusive": true
+            },
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "DRAWDOWN_MAGNITUDE",
+              "operator": "LE",
+              "value": 0.0
+            },
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.21988715001774517,
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE",
+          "resolved_lower": null,
+          "resolved_upper": null,
+          "condition_observed": 0.535106133164511,
+          "evaluation_ids": [
+            "e0eb615bdf48411b1c5336138a98840dd38bfae3e1ad422a4954b5d997dcb201"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-absolute-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.25,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.21988715001774517,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.25,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "e0eb615bdf48411b1c5336138a98840dd38bfae3e1ad422a4954b5d997dcb201"
+          ]
+        }
+      ],
+      "pareto_layer": null,
+      "rank_in_layer": null,
+      "bin_values": [
+        null,
+        null,
+        18171,
+        7956,
+        1722,
+        14
+      ],
+      "reasons": [
+        "INCOMPLETE_PARAMETER_COVERAGE",
+        "PARAMETER_CALMAR_Q10:INCOMPLETE_OR_UNAVAILABLE_PARAMETER_CALMAR",
+        "PARAMETER_DRAWDOWN_Q90:INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS"
+      ],
+      "rank_min": null,
+      "rank_max": null,
+      "acceptance_status": "INDETERMINATE",
+      "floor_metrics": []
+    }
+  ],
+  "sensitivities": [],
+  "behavior_groups": [],
+  "pairs": []
+}
