@@ -201,6 +201,28 @@ def test_delivery_certifies_each_unique_account_once_per_operation(completed, mo
     assert len(calls) == 3
 
 
+@pytest.mark.parametrize("status", [d.DeliveryStatus.BLOCKED, d.DeliveryStatus.PARTIAL])
+def test_assessment_rejects_incomplete_mandate_even_when_all_declared_targets_match(completed, status):
+    context = completed[0]
+    definition, value = prepare(completed)
+    # First exercise the same real account and matching targets with a complete source.
+    assert assemble_delivery(context, definition, value).validation.status is d.ValidationStatus.PASS
+    source = json.loads((context.root / "research/S900/assets/deliveries/MANDATE/1/delivery.json")
+                        .read_text(encoding="utf-8"))
+    mandate_content = d.DeliveryContent.from_dict(source["content"])
+    mandate = assemble_delivery(context,
+        d.DeliveryDefinition(definition.batch, d.DeliveryStage.MANDATE, 2,
+                             predecessors=(value.payload.source_mandate,)),
+        replace(mandate_content, status=status, incomplete_items=("Unbound economic target",))).receipt
+    payload = replace(value.payload, source_mandate=mandate.reference)
+    attempt = replace(definition, revision=2,
+                      predecessors=(payload.source_candidates, mandate.reference))
+    with pytest.raises(d.DeliveryValidationError) as failed:
+        assemble_delivery(context, attempt, replace(value, payload=payload))
+    assert failed.value.issues[0].code == "INCOMPLETE_MANDATE"
+    assert not (context.root / "research/S900/deliveries/ASSESSMENT/2").exists()
+
+
 def acceptance_targets():
     return (
         m.ResearchTarget("median", m.ResearchMetric.FREQUENCY_MEDIAN,

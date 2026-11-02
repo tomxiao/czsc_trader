@@ -304,6 +304,7 @@ class ResearchMetric(StrEnum):
     FULL_SAMPLE_FREQUENCY = "FULL_SAMPLE_FREQUENCY"
     BENCHMARK_POSITIVE_YEAR_FREQUENCY = "BENCHMARK_POSITIVE_YEAR_FREQUENCY"
     NET_ANNUAL_RETURN = "NET_ANNUAL_RETURN"
+    NET_CALMAR = "NET_CALMAR"
     DRAWDOWN_MAGNITUDE = "DRAWDOWN_MAGNITUDE"
     FREQUENCY_MEDIAN = "FREQUENCY_MEDIAN"
     FREQUENCY_Q10 = "FREQUENCY_Q10"
@@ -314,6 +315,10 @@ class ResearchMetric(StrEnum):
     ROLLING_EXCESS_Q10 = "ROLLING_EXCESS_Q10"
     STRESS_ANNUAL_LOSS = "STRESS_ANNUAL_LOSS"
     PROFIT_CONCENTRATION = "PROFIT_CONCENTRATION"
+
+
+# Calmar is derived only when requested; persisted diagnostic panels keep their schema.
+ASSESSMENT_METRICS = tuple(x for x in ResearchMetric if x is not ResearchMetric.NET_CALMAR)
 
 
 FREQUENCY_METRICS = (
@@ -1077,7 +1082,7 @@ class CandidateAssessment(ResearchRecord):
         )
         unique((x.metric for x in self.diagnostics), "diagnostic metric")
         require(
-            {x.metric for x in self.diagnostics} == set(ResearchMetric),
+            {x.metric for x in self.diagnostics} == set(ASSESSMENT_METRICS),
             "incomplete diagnostic schema",
         )
         require(
@@ -1138,7 +1143,8 @@ class BenchmarkCondition(ResearchRecord):
     value: float
 
     def validate(self):
-        require(self.metric in BENCHMARK_METRICS, "unsupported benchmark condition metric")
+        require(self.metric in (*BENCHMARK_METRICS, ResearchMetric.NET_CALMAR),
+                "unsupported benchmark condition metric")
 
 
 class TargetScope(StrEnum):
@@ -1158,13 +1164,15 @@ class ResearchTarget(ResearchRecord):
 
     def validate(self):
         require(self.one_way_cost is None or 0 <= self.one_way_cost < 1, "invalid target cost")
-        require(self.scope is TargetScope.STANDARD or self.metric in BENCHMARK_METRICS,
+        require(self.scope is TargetScope.STANDARD or (self.metric in BENCHMARK_METRICS
+                and (self.when is None or self.when.metric in BENCHMARK_METRICS)),
                 "stress targets require performance metrics")
         require(
             self.metric
             in (
                 ResearchMetric.NET_ANNUAL_RETURN,
                 ResearchMetric.DRAWDOWN_MAGNITUDE,
+                ResearchMetric.NET_CALMAR,
                 ResearchMetric.FREQUENCY_MEDIAN,
                 ResearchMetric.FREQUENCY_Q10,
                 ResearchMetric.FULL_SAMPLE_FREQUENCY,
@@ -1184,7 +1192,8 @@ class ResearchTarget(ResearchRecord):
                 "empty or reversed target bounds",
             )
         if any(isinstance(x, BenchmarkBound) for x in (self.lower, self.upper)):
-            require(self.metric in BENCHMARK_METRICS, "unsupported benchmark bound metric")
+            require(self.metric in (*BENCHMARK_METRICS, ResearchMetric.NET_CALMAR),
+                    "unsupported benchmark bound metric")
 
 
 @dataclass(frozen=True)
@@ -1213,6 +1222,7 @@ class ParameterGroupTarget(ResearchRecord):
         require(bool(self.joint_targets) and bool(self.all_point_targets), "empty parameter conditions")
         unique((x.target_id for x in (*self.joint_targets, *self.all_point_targets)), "point target")
         require(all(x.scope is TargetScope.STANDARD and x.metric in BENCHMARK_METRICS
+                    and (x.when is None or x.when.metric in BENCHMARK_METRICS)
                     for x in (*self.joint_targets, *self.all_point_targets)),
                 "parameter conditions require standard performance metrics")
 
@@ -1231,6 +1241,7 @@ class ParameterNeighborhoodTarget(ResearchRecord):
         require(bool(self.joint_targets) and bool(self.all_point_targets), "empty parameter conditions")
         unique((x.target_id for x in (*self.joint_targets, *self.all_point_targets)), "point target")
         require(all(x.scope is TargetScope.STANDARD and x.metric in BENCHMARK_METRICS
+                    and (x.when is None or x.when.metric in BENCHMARK_METRICS)
                     for x in (*self.joint_targets, *self.all_point_targets)),
                 "parameter conditions require standard performance metrics")
 

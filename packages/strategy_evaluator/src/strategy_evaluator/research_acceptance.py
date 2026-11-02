@@ -260,6 +260,26 @@ def _parameter_neighborhood(target, row):
     )
 
 
+def _calmar(metrics):
+    annual = metrics.get(m.ResearchMetric.NET_ANNUAL_RETURN)
+    drawdown = metrics.get(m.ResearchMetric.DRAWDOWN_MAGNITUDE)
+    sources = tuple(dict.fromkeys(
+        source for item in (annual, drawdown) if item is not None for source in item.evaluation_ids
+    ))
+    value = None
+    if (annual is not None and annual.value is not None
+            and drawdown is not None and drawdown.value is not None
+            and drawdown.value > 1e-12):
+        quotient = annual.value / drawdown.value
+        if math.isfinite(quotient):
+            value = quotient
+    return m.DiagnosticValue(
+        m.ResearchMetric.NET_CALMAR, m.MetricUnit.RATIO,
+        m.DiagnosticStatus.AVAILABLE if value is not None else m.DiagnosticStatus.INSUFFICIENT_DATA,
+        value, None if value is not None else "CALMAR_UNAVAILABLE", sources,
+    )
+
+
 def check_target(target, row, frequency_window_days):
     if isinstance(target, m.FrequencyCoverageTarget):
         return _coverage(target, row, frequency_window_days)
@@ -269,10 +289,16 @@ def check_target(target, row, frequency_window_days):
         return _parameter_neighborhood(target, row)
     if target.scope is m.TargetScope.STRESS:
         return _performance_check(target, row.stress_performance)
+    metrics = {x.metric: x for x in row.diagnostics}
+    benchmark = {x.metric: x for x in row.benchmark.diagnostics}
+    if (target.metric is m.ResearchMetric.NET_CALMAR
+            or (target.when is not None and target.when.metric is m.ResearchMetric.NET_CALMAR)):
+        metrics[m.ResearchMetric.NET_CALMAR] = _calmar(metrics)
+        benchmark[m.ResearchMetric.NET_CALMAR] = _calmar(benchmark)
     return _scalar(
         target,
-        {x.metric: x for x in row.diagnostics},
-        {x.metric: x for x in row.benchmark.diagnostics},
+        metrics,
+        benchmark,
         row.baseline_scenario,
         row.frequency_window_days,
         frequency_window_days,

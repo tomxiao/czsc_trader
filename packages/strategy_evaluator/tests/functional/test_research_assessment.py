@@ -296,7 +296,7 @@ def policy(resolution=0.01, frequency_metric=m.ResearchMetric.FULL_SAMPLE_FREQUE
 
 def row(who, annual=0.1, drawdown=0.1, degradation=0.02, missing=None):
     diagnostics = []
-    for metric in m.ResearchMetric:
+    for metric in m.ASSESSMENT_METRICS:
         value = {
             m.ResearchMetric.NET_ANNUAL_RETURN: annual,
             m.ResearchMetric.DRAWDOWN_MAGNITUDE: drawdown,

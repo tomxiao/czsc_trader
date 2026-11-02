@@ -540,10 +540,14 @@ def _validate_assessment_delivery(definition, payload, root, context, content, s
         document = _read_json(_resolve(_delivery_path(context, ref), "delivery.json"))
         if document.get("schema_version") not in d._readable_schema_versions(ref.stage):
             _fail("ASSESSMENT_SOURCE", ref.stage.value, "unsupported assessment handoff schema")
-        return d.DeliveryContent.from_dict(document["content"]).payload
+        return d.DeliveryContent.from_dict(document["content"])
 
-    candidates = source(payload.source_candidates)
-    mandate = source(payload.source_mandate)
+    candidates = source(payload.source_candidates).payload
+    mandate_source = source(payload.source_mandate)
+    if mandate_source.status is not d.DeliveryStatus.COMPLETE or mandate_source.incomplete_items:
+        _fail("INCOMPLETE_MANDATE", "source_mandate",
+              "assessment requires a complete mandate with no incomplete items")
+    mandate = mandate_source.payload
     expected = {f"{key.strategy_id}-{key.candidate_id}": next(
         x.identity.content_sha256 for x in candidates.candidates if x.identity.key == key)
         for key in candidates.handoff}

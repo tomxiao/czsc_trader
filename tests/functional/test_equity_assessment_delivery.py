@@ -48,6 +48,8 @@ def _check_equity_delivery(research, request, plan, plan_ref, children, executio
             (m.ResearchTarget("point-dd", m.ResearchMetric.DRAWDOWN_MAGNITUDE, upper=m.ConstantBound(1., True)),)),
         m.ResearchTarget("stress", m.ResearchMetric.NET_ANNUAL_RETURN, lower=m.ConstantBound(-1., True),
                          scope=m.TargetScope.STRESS, one_way_cost=pressure.request.fee_rate),
+        m.ResearchTarget("calmar", m.ResearchMetric.NET_CALMAR, lower=m.BenchmarkBound(1.5, False),
+                         one_way_cost=request.request.fee_rate),
     )
     comparison = replace(comparison_request(panel), targets=m.ResearchTargets(targets, 60))
     confirmation = publish_evidence(research, MaterialEvidenceWrite(request.experiment, "confirmed-targets",
@@ -81,8 +83,11 @@ def _check_equity_delivery(research, request, plan, plan_ref, children, executio
     assert validate_delivery(context, assembled.receipt.reference).status is d.ValidationStatus.PASS
     check = payload.comparison.rows[0].target_checks[1]
     assert check.status is (m.TargetCheckStatus.PASSED if applicable else m.TargetCheckStatus.NOT_APPLICABLE)
-    relaxed = replace(targets[0], lower=m.ConstantBound(-2., True))
-    altered = replace(comparison, targets=m.ResearchTargets((relaxed, *targets[1:]), 60))
+    calmar = payload.comparison.rows[0].target_checks[-1]
+    assert calmar.target == targets[-1]
+    assert calmar.evaluation_ids == (evidence[0].evaluation_id,)
+    altered_calmar = replace(targets[-1], lower=m.BenchmarkBound(1.6, False))
+    altered = replace(comparison, targets=m.ResearchTargets((*targets[:-1], altered_calmar), 60))
     with pytest.raises(d.DeliveryValidationError, match="confirmed mandate|targets must be preserved"):
         assemble_delivery(context, replace(definition, revision=2), content(replace(payload,
             comparison_request=altered, comparison=compare_candidates(altered))))

@@ -260,7 +260,7 @@ def _assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPan
                 tuple(x.evaluation_id for x in sources),
             )
 
-        for metric in m.ResearchMetric:
+        for metric in m.ASSESSMENT_METRICS:
             put(metric)
         interval = m.UncertaintyInterval(
             m.DiagnosticStatus.INSUFFICIENT_DATA, None, None, "MISSING_BASELINE"
@@ -521,7 +521,7 @@ def _assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPan
                 None if base is None else base.frequency_window_days,
                 None if base is None else base.scenario_context,
                 None if base is None or stress is None else stress.scenario_context,
-                tuple(diagnostics[x] for x in m.ResearchMetric),
+                tuple(diagnostics[x] for x in m.ASSESSMENT_METRICS),
                 interval,
                 tuple(gaps),
                 None if base is None else base.behavior_sha256,
