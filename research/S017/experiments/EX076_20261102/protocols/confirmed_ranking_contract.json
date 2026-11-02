@@ -1,0 +1,43 @@
+{
+  "schema": "s017-stage4-ranking-confirmation/v1",
+  "date": "2026-11-02",
+  "stage": 4,
+  "candidates": ["C0338", "C0339", "C0340", "C0341", "C0342", "C0352"],
+  "dev_authorization": {
+    "question_scope": "当前分支最小实现Calmar/DD分层、逐邻点Calmar Q10及对应FULL/历史兼容验证，并认证共同邻域合同",
+    "user_answer": "同意，在当前分支实施该DEV方案"
+  },
+  "comparison_confirmation": {
+    "user_answer": "同意共同合同及零g绝对0.05",
+    "semantics": "同一构造合同下比较各自完整合法邻域，不声称绝对扰动分布相同或边界证据同样充分",
+    "nonzero_relative_limit": 0.05,
+    "zero_g_absolute_limit": 0.05,
+    "zero_g_axes": ["g_when_u", "g_when_other", "g_when_mf"],
+    "full_legal_cartesian_product": true,
+    "constraint_exclusions": [],
+    "point_weights": "equal",
+    "retain_actual_design_hash_shape_and_N": true,
+    "expected_N": {"C0338": 485, "C0339": 323, "C0340": 485, "C0341": 485, "C0342": 323, "C0352": 728},
+    "total_noncenter_points": 2829
+  },
+  "ranking": {
+    "formula": "research-ranking-v5",
+    "pareto": ["NET_CALMAR", "DRAWDOWN_MAGNITUDE"],
+    "pareto_basis": "RAW",
+    "within_layer": ["PARAMETER_CALMAR_Q10", "PARAMETER_DRAWDOWN_Q90", "ROLLING_EXCESS_Q10", "STRESS_ANNUAL_LOSS", "PROFIT_CONCENTRATION", "FREQUENCY_MEDIAN"],
+    "calmar": "R/D only when D>1e-12 and quotient finite",
+    "neighbor_calmar_q10": "LINEAR Q10 of all individual R_i/D_i; never ratio of quantiles",
+    "missing_or_undefined_point": "unavailable; no deletion or imputation",
+    "bin_resolution": 0.0001,
+    "frequency_bin_resolution": 0.5,
+    "bin_origin": 0.0,
+    "bin_rounding": "FLOOR",
+    "ties": "retain; candidate ID for display only"
+  },
+  "target_mandate": "MANDATE/7",
+  "acceptance_targets_changed": false,
+  "current_branch_required": true,
+  "sealed_test_access_authorized": false,
+  "freeze_or_production_authorized": false,
+  "merge_tag_push_authorized": false
+}
