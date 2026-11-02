@@ -9,7 +9,7 @@ import math
 import numpy as np
 
 from . import research_models as m
-from .research_acceptance import acceptance_status, check_target as _check_target
+from .research_acceptance import acceptance_status, check_target as _check_target, _calmar
 from .bootstrap import _paired_stationary_bootstrap_cagr
 from .audit_models import ReturnMatrixEvidence
 from .search_bias import annualized_sharpe, calculate_dsr_bundle, cscv_pbo, effective_trial_count
@@ -616,6 +616,7 @@ def _compare_pair(a, b, layer, order, parameter_methods):
                 metric, None)
         if metric in (
             m.ResearchMetric.PARAMETER_RETURN_Q10,
+            m.ResearchMetric.PARAMETER_CALMAR_Q10,
             m.ResearchMetric.PARAMETER_DRAWDOWN_Q90,
         ):
             method_a, method_b = parameter_methods[a.candidate], parameter_methods[b.candidate]
@@ -643,6 +644,7 @@ def _compare_pair(a, b, layer, order, parameter_methods):
             maximize = metric in (
                 *m.FREQUENCY_METRICS,
                 m.ResearchMetric.PARAMETER_RETURN_Q10,
+                m.ResearchMetric.PARAMETER_CALMAR_Q10,
                 m.ResearchMetric.ROLLING_EXCESS_Q10,
             )
             relation = (
@@ -713,18 +715,59 @@ def _order_layer(members, layer, order, parameter_methods):
     return sorted(result, key=lambda x: (x.rank_min, x.candidate.candidate_id)), pairs
 
 
+def _ranking_diagnostics(row, policy):
+    metrics = {x.metric: x for x in row.diagnostics}
+    if policy.formula_version != "research-ranking-v5":
+        return metrics
+    metrics[m.ResearchMetric.NET_CALMAR] = _calmar(metrics)
+    context, facts = row.parameter_context, row.parameter_performances
+    status, value, reason = m.DiagnosticStatus.INSUFFICIENT_DATA, None, "INCOMPLETE_OR_UNAVAILABLE_PARAMETER_CALMAR"
+    if isinstance(context, m.ParameterNeighborhoodContext) and not context.is_applicable:
+        if row.baseline_scenario is not None:
+            status, reason = m.DiagnosticStatus.NOT_APPLICABLE, "NO_APPLICABLE_LOCAL_NEIGHBORHOOD"
+    elif (isinstance(context, m.ParameterNeighborhoodContext)
+            and context.valid_points == context.prescribed_points
+            and len(facts) == context.prescribed_points
+            and {x.point_index for x in facts} == set(range(context.prescribed_points))):
+        calmars = []
+        for point in sorted(facts, key=lambda x: x.point_index):
+            if point.annual_return is None or point.drawdown is None or point.drawdown <= 1e-12:
+                break
+            quotient = point.annual_return / point.drawdown
+            if not math.isfinite(quotient):
+                break
+            calmars.append(quotient)
+        if len(calmars) == context.prescribed_points:
+            with np.errstate(over="ignore", invalid="ignore"):
+                quantile = _quantile(calmars, 0.1, m.QuantileMethod.LINEAR)
+            if math.isfinite(quantile):
+                status, value, reason = m.DiagnosticStatus.AVAILABLE, quantile, None
+    sources = tuple(dict.fromkeys((
+        *metrics[m.ResearchMetric.NET_CALMAR].evaluation_ids,
+        *(x.evaluation_id for x in sorted(facts, key=lambda x: x.point_index)),
+    )))
+    metrics[m.ResearchMetric.PARAMETER_CALMAR_Q10] = m.DiagnosticValue(
+        m.ResearchMetric.PARAMETER_CALMAR_Q10, m.MetricUnit.RATIO, status, value, reason, sources,
+    )
+    return metrics
+
+
 def _rank(request, bins, order):
     specifications = {x.metric: x for x in bins}
+    pareto_metrics = request.policy.pareto_metrics
+    parameter_metrics = (
+        m.ResearchMetric.PARAMETER_CALMAR_Q10 if request.policy.formula_version == "research-ranking-v5"
+        else m.ResearchMetric.PARAMETER_RETURN_Q10, m.ResearchMetric.PARAMETER_DRAWDOWN_Q90,
+    )
     records, profiles, eligible_rows = [], [], []
     for row in request.panel.rows:
-        metrics = {x.metric: x for x in row.diagnostics}
-        floor_metrics = () if request.policy.formula_version == "research-ranking-v4" else None
+        metrics = _ranking_diagnostics(row, request.policy)
+        floor_metrics = None if request.policy.formula_version == "research-ranking-v3" else ()
         if (floor_metrics is not None
                 and isinstance(row.parameter_context, m.ParameterNeighborhoodContext)
                 and not row.parameter_context.is_applicable
-                and all(metrics[x].status is m.DiagnosticStatus.NOT_APPLICABLE for x in (
-                    m.ResearchMetric.PARAMETER_RETURN_Q10, m.ResearchMetric.PARAMETER_DRAWDOWN_Q90))):
-            floor_metrics = (m.ResearchMetric.PARAMETER_RETURN_Q10, m.ResearchMetric.PARAMETER_DRAWDOWN_Q90)
+                and all(metrics[x].status is m.DiagnosticStatus.NOT_APPLICABLE for x in parameter_metrics)):
+            floor_metrics = parameter_metrics
         checks = tuple(
             _check_target(x, row, request.targets.frequency_window_days)
             for x in request.targets.requirements
@@ -736,7 +779,7 @@ def _rank(request, bins, order):
             if x.status in (m.TargetCheckStatus.FAILED, m.TargetCheckStatus.INDETERMINATE)
         ]
         missing = [
-            metric for metric in (*m.BENCHMARK_METRICS, *order)
+            metric for metric in (*pareto_metrics, *order)
             if metrics[metric].value is None and metric not in (floor_metrics or ())
         ]
         reasons.extend(f"{metric.value}:{metrics[metric].reason}" for metric in missing)
@@ -747,10 +790,7 @@ def _rank(request, bins, order):
                 metric
                 for metric in order
                 if metric
-                in (
-                    m.ResearchMetric.PARAMETER_RETURN_Q10,
-                    m.ResearchMetric.PARAMETER_DRAWDOWN_Q90,
-                )
+                in parameter_metrics
                 and metric not in missing
             )
         if accepted is m.TargetCheckStatus.FAILED:
@@ -759,7 +799,7 @@ def _rank(request, bins, order):
             (bool(checks) and accepted is m.TargetCheckStatus.INDETERMINATE)
             or row.frequency_window_days != request.targets.frequency_window_days
             or row.context_sha256 is None
-            or any(x in missing for x in m.BENCHMARK_METRICS)
+            or any(x in missing for x in pareto_metrics)
             or (
                 missing
                 and request.policy.missing_evidence_policy
@@ -777,10 +817,7 @@ def _rank(request, bins, order):
             None
             if missing_parameter_method
             and metric
-            in (
-                m.ResearchMetric.PARAMETER_RETURN_Q10,
-                m.ResearchMetric.PARAMETER_DRAWDOWN_Q90,
-            )
+            in parameter_metrics
             else _bin(metrics[metric].value, specifications[metric])
             for metric in order
         )
@@ -793,11 +830,11 @@ def _rank(request, bins, order):
         if status is m.ComparisonStatus.RANKED:
             eligible_rows.append(row)
             raw = request.policy.pareto_basis is m.ParetoBasis.RAW
-            annual, dd = (
+            primary, dd = (
                 metrics[x].value if raw else _bin(metrics[x].value, specifications[x])
-                for x in m.BENCHMARK_METRICS
+                for x in pareto_metrics
             )
-            profiles.append((row.candidate.candidate_id, annual, -dd))
+            profiles.append((row.candidate.candidate_id, primary, -dd))
 
     contexts = {
         (x.context_sha256, x.metric_version, x.frequency_window_days, x.baseline_scenario)
@@ -808,6 +845,8 @@ def _rank(request, bins, order):
     parameter_methods = {
         x.candidate: None
         if x.parameter_context is None
+        else ("common-legal-neighborhood", request.neighborhood_contract.sha256)
+        if type(request) is m.CalmarComparisonRequest
         else parameter_comparison_key(x.parameter_context)
         for x in eligible_rows
     }
@@ -868,10 +907,11 @@ def _rank(request, bins, order):
     return tuple(result), tuple(pairs)
 
 
-def compare_candidates(request: m.CandidateComparisonRequest) -> m.CandidateComparison:
-    if type(request) is not m.CandidateComparisonRequest:
-        raise TypeError("compare_candidates requires CandidateComparisonRequest")
-    m.require(request.policy.formula_version == "research-ranking-v4"
+def compare_candidates(request: m.CandidateComparisonRequest | m.CalmarComparisonRequest) -> m.CandidateComparison:
+    if type(request) not in (m.CandidateComparisonRequest, m.CalmarComparisonRequest):
+        raise TypeError("compare_candidates requires a typed comparison request")
+    version = "research-ranking-v5" if type(request) is m.CalmarComparisonRequest else "research-ranking-v4"
+    m.require(request.policy.formula_version == version
               and request.panel.formula_version == "research-assessment-v7",
               "historical comparison protocols are read-only")
     return _compare_candidates(request)
@@ -887,10 +927,10 @@ def recompute_historical_comparison(request: m.CandidateComparisonRequest) -> m.
     return _compare_candidates(request)
 
 
-def _compare_candidates(request: m.CandidateComparisonRequest) -> m.CandidateComparison:
-    if type(request) is not m.CandidateComparisonRequest:
-        raise TypeError("compare_candidates requires CandidateComparisonRequest")
-    request = m.CandidateComparisonRequest.from_dict(request.to_dict())
+def _compare_candidates(request: m.CandidateComparisonRequest | m.CalmarComparisonRequest) -> m.CandidateComparison:
+    if type(request) not in (m.CandidateComparisonRequest, m.CalmarComparisonRequest):
+        raise TypeError("compare_candidates requires a typed comparison request")
+    request = type(request).from_dict(request.to_dict())
     baseline, pairs = _rank(request, request.policy.bins, request.policy.ranking_metrics)
     sensitivities = []
     for variant in request.policy.sensitivities:

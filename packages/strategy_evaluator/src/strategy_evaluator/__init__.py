@@ -61,6 +61,7 @@ from .research_models import (
     ComparisonVariant,
     ComparisonPolicy,
     CandidateComparisonRequest,
+    CalmarComparisonRequest, CommonNeighborhoodComparisonContract, ZeroCenterAbsoluteLimit,
     ComparisonStatus,
     TargetCheck,
     CandidateRank,
@@ -390,3 +391,5 @@ __all__ += [
     "ParameterNeighborhoodDesign", "ParameterNeighborhoodResult", "ParameterNeighborhoodContext",
     "build_parameter_neighborhood_design", "NeighborhoodConstraintExclusion",
 ]
+
+__all__ += ["CalmarComparisonRequest", "CommonNeighborhoodComparisonContract", "ZeroCenterAbsoluteLimit"]

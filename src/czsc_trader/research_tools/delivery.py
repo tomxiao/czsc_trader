@@ -14,6 +14,7 @@ from strategy_evaluator import (
     CandidateAssessmentRequest,
     AssessmentPanel,
     CandidateComparisonRequest,
+    CalmarComparisonRequest,
     CandidateComparison,
     ResearchTarget,
     FrequencyCoverageTarget,
@@ -59,6 +60,8 @@ def _schema_version(stage: DeliveryStage) -> int:
 
 
 def _readable_schema_versions(stage: DeliveryStage) -> tuple[int, ...]:
+    if stage is DeliveryStage.ASSESSMENT:
+        return (8, 11, 12, 13)
     if stage in (DeliveryStage.MANDATE, DeliveryStage.ASSESSMENT):
         return (8, 11, 12)
     return (_schema_version(stage),)
@@ -552,7 +555,7 @@ class CandidateAssessmentDelivery(_Record):
     source_mandate: DeliveryReference
     assessment_request: CandidateAssessmentRequest
     assessment: AssessmentPanel
-    comparison_request: CandidateComparisonRequest
+    comparison_request: CandidateComparisonRequest | CalmarComparisonRequest
     comparison: CandidateComparison
     target_bindings: tuple[TargetMandateBinding, ...]
     frequency_window_item_id: str | None

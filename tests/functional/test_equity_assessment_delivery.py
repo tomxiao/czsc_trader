@@ -16,12 +16,13 @@ from test_research_delivery import content, published
 
 
 @pytest.mark.parametrize("applicable", [True, False])
-def test_equity_stage4_authenticates_plan_targets_and_archived_accounts(tmp_path, applicable):
+@pytest.mark.parametrize("ranking", ["research-ranking-v4", "research-ranking-v5"])
+def test_equity_stage4_authenticates_plan_targets_and_archived_accounts(tmp_path, applicable, ranking):
     with equity_plan(tmp_path, applicable=applicable) as (research, request, plan, plan_ref, children, execution):
-        _check_equity_delivery(research, request, plan, plan_ref, children, execution, applicable)
+        _check_equity_delivery(research, request, plan, plan_ref, children, execution, applicable, ranking)
 
 
-def _check_equity_delivery(research, request, plan, plan_ref, children, execution, applicable):
+def _check_equity_delivery(research, request, plan, plan_ref, children, execution, applicable, ranking):
     context = research.repository
     evidence, refs = [], []
     pressure = research.evaluation.prepare(replace(request.request, scenario_id="PRESSURE", measurement_tier="STRESS",
@@ -52,6 +53,14 @@ def _check_equity_delivery(research, request, plan, plan_ref, children, executio
                          one_way_cost=request.request.fee_rate),
     )
     comparison = replace(comparison_request(panel), targets=m.ResearchTargets(targets, 60))
+    if ranking == "research-ranking-v5":
+        bins = tuple(replace(item, metric={
+            m.ResearchMetric.NET_ANNUAL_RETURN: m.ResearchMetric.NET_CALMAR,
+            m.ResearchMetric.PARAMETER_RETURN_Q10: m.ResearchMetric.PARAMETER_CALMAR_Q10,
+        }.get(item.metric, item.metric)) for item in comparison.policy.bins)
+        comparison = m.CalmarComparisonRequest(comparison.candidates, comparison.targets, panel,
+            replace(comparison.policy, bins=bins, formula_version=ranking), (plan.design,),
+            m.CommonNeighborhoodComparisonContract(m.RelativeChangeLimit(.05), ()))
     confirmation = publish_evidence(research, MaterialEvidenceWrite(request.experiment, "confirmed-targets",
         b'{"engineering_fixture":true}', "application/json", "json"))
     confirmed = d.ConfirmationRecord(d.ConfirmationStatus.CONFIRMED, confirmation)
@@ -76,11 +85,22 @@ def _check_equity_delivery(research, request, plan, plan_ref, children, executio
         tuple(d.TargetMandateBinding(t.target_id, "targets") for t in targets), "frequency", "benchmark",
         "Engineering closure only; no research selection", tuple(refs), (), parameter_plans=(plan_ref,))
     definition = d.DeliveryDefinition(research.batch, d.DeliveryStage.ASSESSMENT, 1,
-                                     predecessors=(candidates.reference, mandate_receipt.reference))
+                                     predecessors=(candidates.reference, mandate_receipt.reference),
+                                     schema_version=13 if ranking == "research-ranking-v5" else 12)
     assembled = assemble_delivery(context, definition, content(payload))
     assert assembled.validation.status is d.ValidationStatus.PASS
     assert assembled.validation.stats.accounts_authenticated == 2 + len(children)
     assert validate_delivery(context, assembled.receipt.reference).status is d.ValidationStatus.PASS
+    if ranking == "research-ranking-v5":
+        assert assembled.receipt.schema_version == 13
+        assert d.DeliveryContent.from_dict(content(payload).to_dict()).payload == payload
+        with pytest.raises(d.DeliveryValidationError, match="ranking version"):
+            assemble_delivery(context, replace(definition, revision=2, schema_version=12), content(payload))
+        with pytest.raises(d.DeliveryValidationError, match="designs must equal"):
+            changed_request = replace(assessment, parameter_designs=(), perturbations=(),
+                                      evidence=tuple(evidence[:2]))
+            assemble_delivery(context, replace(definition, revision=2),
+                              content(replace(payload, assessment_request=changed_request)))
     check = payload.comparison.rows[0].target_checks[1]
     assert check.status is (m.TargetCheckStatus.PASSED if applicable else m.TargetCheckStatus.NOT_APPLICABLE)
     calmar = payload.comparison.rows[0].target_checks[-1]

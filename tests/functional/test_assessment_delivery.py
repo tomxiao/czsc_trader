@@ -604,6 +604,46 @@ def test_stage_four_roundtrip_recomputation_and_source_cleanup(completed):
     assert assemble_delivery(context, definition, value).receipt == receipt
 
 
+@pytest.mark.parametrize("version", [8, 11])
+def test_historical_assessment_full_recomputation_preserves_original_schema(completed, version):
+    """Install historical fixture bytes directly; never use a legacy publication path."""
+    from czsc_trader.application import delivery_service as service
+    from strategy_evaluator.research_assessment import (
+        recompute_historical_assessment, recompute_historical_comparison,
+    )
+
+    context = completed[0]
+    definition, value = prepare(completed)
+    receipt = assemble_delivery(context, definition, value).receipt
+    request = value.payload.assessment_request
+    if version == 8:
+        protocol = m.SelfCheckProtocol("historical", "full", "standard", "fee_x2",
+            2, 1, m.QuantileMethod.LINEAR, 1, 1, 40, 2, 1, 1e-7, pbo_blocks=2)
+    else:
+        protocol = replace(request.protocol, parameter_protocol=m.ParameterNeighborhoodProtocol(
+            version="parameter-cartesian-neighborhood-v1"))
+    request = replace(request, protocol=protocol)
+    panel = recompute_historical_assessment(request)
+    comparison = replace(value.payload.comparison_request, panel=panel,
+        policy=replace(value.payload.comparison_request.policy, formula_version="research-ranking-v3"))
+    historical = replace(value, payload=replace(value.payload, assessment_request=request, assessment=panel,
+        comparison_request=comparison, comparison=recompute_historical_comparison(comparison)))
+    old_definition = replace(definition, schema_version=version)
+    root = published(context, receipt)
+    (root / "delivery.json").write_bytes(d._canonical({"schema_version": version,
+        "definition": old_definition.to_dict(), "content": historical.to_dict()}))
+    files = service._manifest(root)
+    old_receipt = replace(receipt, schema_version=version, files=files,
+        reference=replace(receipt.reference, content_sha256=d._digest(files)))
+    for directory in (root, service._public_delivery_path(context, receipt.reference)):
+        (directory / "receipt.json").write_bytes(d._canonical(old_receipt))
+    before = {path.relative_to(root): path.read_bytes() for path in root.rglob("*") if path.is_file()}
+    assert validate_delivery(context, old_receipt.reference).status is d.ValidationStatus.PASS
+    assert before == {path.relative_to(root): path.read_bytes() for path in root.rglob("*") if path.is_file()}
+    with pytest.raises(d.DeliveryValidationError, match="read-only"):
+        assemble_delivery(context, old_definition, historical)
+
+
 def test_stage_four_rejects_old_formula_versions_and_forged_comparison(completed):
     context, _, _, _, _ = completed
     definition, value = prepare(completed)

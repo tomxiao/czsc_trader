@@ -305,6 +305,7 @@ class ResearchMetric(StrEnum):
     BENCHMARK_POSITIVE_YEAR_FREQUENCY = "BENCHMARK_POSITIVE_YEAR_FREQUENCY"
     NET_ANNUAL_RETURN = "NET_ANNUAL_RETURN"
     NET_CALMAR = "NET_CALMAR"
+    PARAMETER_CALMAR_Q10 = "PARAMETER_CALMAR_Q10"
     DRAWDOWN_MAGNITUDE = "DRAWDOWN_MAGNITUDE"
     FREQUENCY_MEDIAN = "FREQUENCY_MEDIAN"
     FREQUENCY_Q10 = "FREQUENCY_Q10"
@@ -318,7 +319,8 @@ class ResearchMetric(StrEnum):
 
 
 # Calmar is derived only when requested; persisted diagnostic panels keep their schema.
-ASSESSMENT_METRICS = tuple(x for x in ResearchMetric if x is not ResearchMetric.NET_CALMAR)
+DERIVED_RANKING_METRICS = (ResearchMetric.NET_CALMAR, ResearchMetric.PARAMETER_CALMAR_Q10)
+ASSESSMENT_METRICS = tuple(x for x in ResearchMetric if x not in DERIVED_RANKING_METRICS)
 
 
 FREQUENCY_METRICS = (
@@ -628,6 +630,7 @@ class ParameterDiagnosticContext(ResearchRecord):
 from .parameter_neighborhood import (  # noqa: E402
     ParameterNeighborhoodBinding, ParameterNeighborhoodDesign,
     ParameterNeighborhoodProtocol, ParameterNeighborhoodContext, StudyPurpose,
+    RelativeChangeLimit, AbsoluteChangeLimit, BoundedLocalStep, RealDomain,
 )
 
 
@@ -1282,6 +1285,10 @@ RANKING_METRICS = (
 )
 
 
+CALMAR_WITHIN_LAYER_METRICS = (ResearchMetric.PARAMETER_CALMAR_Q10, *WITHIN_LAYER_METRICS[1:])
+CALMAR_PARETO_METRICS = (ResearchMetric.NET_CALMAR, ResearchMetric.DRAWDOWN_MAGNITUDE)
+
+
 class BinRounding(StrEnum):
     FLOOR = "FLOOR"
     NEAREST_HALF_EVEN = "NEAREST_HALF_EVEN"
@@ -1297,7 +1304,8 @@ class MetricBinSpec(ResearchRecord):
 
     def validate(self):
         require(
-            self.metric in (*BENCHMARK_METRICS, *WITHIN_LAYER_METRICS, *FREQUENCY_METRICS)
+            self.metric in (*BENCHMARK_METRICS, *WITHIN_LAYER_METRICS, *FREQUENCY_METRICS,
+                            *DERIVED_RANKING_METRICS)
             and self.resolution > 0,
             "invalid ranking bin",
         )
@@ -1313,7 +1321,10 @@ class ComparisonVariant(ResearchRecord):
         unique((x.metric for x in self.bins), "variant bin")
         metrics = {x.metric for x in self.bins}
         require(
-            metrics - set(FREQUENCY_METRICS) == set((*BENCHMARK_METRICS, *WITHIN_LAYER_METRICS))
+            metrics - set(FREQUENCY_METRICS) in (
+                set((*BENCHMARK_METRICS, *WITHIN_LAYER_METRICS)),
+                set((*CALMAR_PARETO_METRICS, *CALMAR_WITHIN_LAYER_METRICS)),
+            )
             and len(metrics & set(FREQUENCY_METRICS)) == 1,
             "eight bins required: two Pareto, five robustness and one frequency metric",
         )
@@ -1343,8 +1354,14 @@ class ComparisonPolicy(ResearchRecord):
     formula_version: str = "research-ranking-v4"
 
     def validate(self):
-        require(self.formula_version in ("research-ranking-v3", "research-ranking-v4"), "unsupported ranking formula version")
+        require(self.formula_version in ("research-ranking-v3", "research-ranking-v4", "research-ranking-v5"),
+                "unsupported ranking formula version")
         ComparisonVariant("baseline", self.bins)
+        expected = set((*self.pareto_metrics, *self.ranking_metrics))
+        require(all({x.metric for x in bins if x.metric not in FREQUENCY_METRICS}
+                    == expected - set(FREQUENCY_METRICS)
+                    for bins in (self.bins, *(variant.bins for variant in self.sensitivities))),
+                "ranking bins differ from formula version")
         unique((x.name for x in self.sensitivities), "sensitivity name")
         require(
             all(
@@ -1361,7 +1378,12 @@ class ComparisonPolicy(ResearchRecord):
 
     @property
     def ranking_metrics(self) -> tuple[ResearchMetric, ...]:
-        return (*WITHIN_LAYER_METRICS, self.frequency_metric)
+        within = CALMAR_WITHIN_LAYER_METRICS if self.formula_version == "research-ranking-v5" else WITHIN_LAYER_METRICS
+        return (*within, self.frequency_metric)
+
+    @property
+    def pareto_metrics(self) -> tuple[ResearchMetric, ...]:
+        return CALMAR_PARETO_METRICS if self.formula_version == "research-ranking-v5" else BENCHMARK_METRICS
 
 
 @dataclass(frozen=True)
@@ -1372,15 +1394,95 @@ class CandidateComparisonRequest(ResearchRecord):
     policy: ComparisonPolicy
 
     def validate(self):
-        require(bool(self.candidates), "explicit comparison set required")
-        unique((x.candidate_id for x in self.candidates), "comparison candidate")
-        require(
-            set(self.candidates) == {x.candidate for x in self.panel.rows},
-            "comparison set differs from panel",
+        _validate_comparison_scope(self)
+        require(self.policy.formula_version != "research-ranking-v5",
+                "Calmar ranking requires CalmarComparisonRequest and complete designs")
+
+
+def _validate_comparison_scope(request):
+    require(bool(request.candidates), "explicit comparison set required")
+    unique((x.candidate_id for x in request.candidates), "comparison candidate")
+    require(set(request.candidates) == {x.candidate for x in request.panel.rows},
+            "comparison set differs from panel")
+    require(request.policy.frequency_metric is not ResearchMetric.FREQUENCY_COVERAGE or any(
+        isinstance(x, FrequencyCoverageTarget) for x in request.targets.requirements),
+        "coverage ranking requires a coverage target definition")
+
+
+@dataclass(frozen=True)
+class ZeroCenterAbsoluteLimit(ResearchRecord):
+    name: str
+    limit: AbsoluteChangeLimit
+
+
+@dataclass(frozen=True)
+class CommonNeighborhoodComparisonContract(ResearchRecord):
+    """Compare each complete legal continuous Cartesian neighborhood under one scale contract."""
+    relative_limit: RelativeChangeLimit
+    zero_limits: tuple[ZeroCenterAbsoluteLimit, ...]
+
+    def validate(self):
+        unique((x.name for x in self.zero_limits), "zero-center scale")
+
+    def authenticate(self, design):
+        require(design.protocol.version == "parameter-cartesian-neighborhood-v2"
+                and design.protocol.purpose is StudyPurpose.LOCAL_SENSITIVITY,
+                "common comparison requires current local neighborhoods")
+        require(not design.constraint_exclusions,
+                "common comparison requires the full legal Cartesian neighborhood without constraint exclusions")
+        zero_limits = {x.name: x.limit for x in self.zero_limits}
+        for axis in design.space.axes:
+            require(type(axis.domain) is RealDomain and axis.domain.quantum is None,
+                    "common comparison requires continuous real axes")
+            require(type(axis.rule) is BoundedLocalStep,
+                    "common comparison requires bounded local steps")
+            if axis.center == 0.0:
+                require(axis.name in zero_limits and axis.rule.limit == zero_limits[axis.name],
+                        "zero-center axis differs from declared absolute scale")
+            else:
+                require(axis.rule.limit == self.relative_limit,
+                        "nonzero axis differs from declared relative scale")
+        return (
+            design.protocol.method_sha256,
+            tuple((axis.name, axis.kind, axis.unit, axis.domain.to_dict(), axis.payload_path)
+                  for axis in design.space.axes),
+            design.space.mapping_sha256, design.space.feasibility_sha256,
         )
-        require(self.policy.frequency_metric is not ResearchMetric.FREQUENCY_COVERAGE or any(
-            isinstance(x, FrequencyCoverageTarget) for x in self.targets.requirements),
-            "coverage ranking requires a coverage target definition")
+
+
+@dataclass(frozen=True)
+class CalmarComparisonRequest(ResearchRecord):
+    candidates: tuple[AssessmentCandidate, ...]
+    targets: ResearchTargets
+    panel: AssessmentPanel
+    policy: ComparisonPolicy
+    parameter_designs: tuple[ParameterNeighborhoodDesign, ...]
+    neighborhood_contract: CommonNeighborhoodComparisonContract
+
+    def validate(self):
+        _validate_comparison_scope(self)
+        require(self.policy.formula_version == "research-ranking-v5"
+                and self.panel.formula_version == "research-assessment-v7",
+                "Calmar comparison requires v7 assessment and v5 ranking")
+        unique((x.center for x in self.parameter_designs), "comparison parameter design")
+        require({x.center for x in self.parameter_designs} == set(self.candidates),
+                "complete parameter designs required for every center")
+        rows = {x.candidate: x for x in self.panel.rows}
+        common = None
+        for design in self.parameter_designs:
+            context = rows[design.center].parameter_context
+            require(isinstance(context, ParameterNeighborhoodContext),
+                    "Calmar comparison requires authenticated neighborhood context")
+            require((context.protocol, context.design_sha256, context.space_sha256,
+                     context.dimension, context.prescribed_points, context.comparison_sha256)
+                    == (design.protocol, design.sha256, design.space.sha256,
+                        len(design.space.axes), design.point_count, design.comparison_sha256),
+                    "comparison design differs from assessment context")
+            semantic = self.neighborhood_contract.authenticate(design)
+            if design.is_applicable:
+                require(common is None or semantic == common,
+                        "common neighborhood semantics, domains, units or mapping differ")
+                common = semantic
 
 
 class ComparisonStatus(StrEnum):
@@ -1515,7 +1617,8 @@ class CandidateRank(ResearchRecord):
     def validate(self):
         require(self.floor_metrics in (None, (), (
             ResearchMetric.PARAMETER_RETURN_Q10, ResearchMetric.PARAMETER_DRAWDOWN_Q90,
-        )), "floor policy only covers both inapplicable parameter metrics")
+        ), (ResearchMetric.PARAMETER_CALMAR_Q10, ResearchMetric.PARAMETER_DRAWDOWN_Q90)),
+                "floor policy only covers both inapplicable parameter metrics")
         require((self.rank_min is None) == (self.rank_max is None), "rank interval incomplete")
         if self.rank_min is not None:
             require(
