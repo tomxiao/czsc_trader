@@ -111,16 +111,10 @@ def test_equity_concentration_includes_dividend_once_and_explicit_definition():
     assert metric(value, m.ResearchMetric.FREQUENCY_COVERAGE).value == 1
 
 
-@pytest.mark.parametrize("mutation", ["cash", "receivable", "cycle", "basis", "daily"])
-def test_equity_facts_reject_tampering_and_cannot_use_unverified_sidecars(mutation):
+@pytest.mark.parametrize("mutation", ["basis", "daily"])
+def test_equity_facts_reject_invalid_basis_and_disagreeing_projection(mutation):
     value = evidence()
-    if mutation in {"cash", "receivable", "cycle"}:
-        raw = ledger()
-    if mutation in {"cash", "receivable"}:
-        raw["account_points"][1][mutation] += 1
-    elif mutation == "cycle":
-        raw["trades"][0]["net_pnl"] += 1
-    elif mutation == "basis":
+    if mutation == "basis":
         with pytest.raises(ValueError, match="drawdown basis"):
             replace(value.equity, drawdown_basis="TICK")
         return
@@ -128,8 +122,23 @@ def test_equity_facts_reject_tampering_and_cannot_use_unverified_sidecars(mutati
         with pytest.raises(ValueError, match="daily account differs"):
             replace(value, account=(replace(value.account[0], cash=value.account[0].cash + 1), *value.account[1:]))
         return
-    with pytest.raises(ValueError, match="audit mismatch"):
-        replace(value.equity, candidate_ledger=canonical_ledger(raw))
+
+
+@pytest.mark.parametrize("days", [12, 61])
+def test_observation_metrics_match_reference_without_auditing_constructors(days, monkeypatch):
+    from dataclasses import asdict
+    from strategy_evaluator.equity import audit_equity_account
+    from strategy_evaluator import equity_assessment
+    from strategy_evaluator.equity_metrics import summarize_equity_ledger
+    raw = ledger(days)
+    reference = audit_equity_account(**raw)
+    def forbidden(*args, **kwargs):
+        raise AssertionError("constructing facts must not perform independent accounting")
+    monkeypatch.setattr(equity_assessment, "audit_equity_account", forbidden)
+    facts = EquityAssessmentFacts("US", "America/New_York", "USD", "BAR_CLOSE", "MAX_SINGLE",
+        canonical_ledger(raw), canonical_ledger(raw))
+    assert facts.market == "US"
+    assert asdict(summarize_equity_ledger(raw)) == asdict(reference)
 
 
 def test_equity_facts_roundtrip_and_legacy_serialization_has_no_new_fields():
@@ -138,3 +147,23 @@ def test_equity_facts_roundtrip_and_legacy_serialization_has_no_new_fields():
     legacy = replace(value, equity=None, metric_version="legacy")
     assert "equity" not in legacy.to_dict()
     assert m.AssessmentEvidence.from_dict(legacy.to_dict()) == legacy
+
+
+@pytest.mark.parametrize("mutation", ["initial", "nan", "order", "quantity", "session", "cycle"])
+def test_observation_summary_rejects_invalid_input_contract(mutation):
+    from strategy_evaluator.equity_metrics import summarize_equity_ledger
+    raw = ledger(2)
+    if mutation == "initial":
+        raw["initial_cash"] = True
+    elif mutation == "nan":
+        raw["account_points"][0]["equity"] = float("nan")
+    elif mutation == "order":
+        raw["account_points"][1]["time"] = raw["account_points"][0]["time"]
+    elif mutation == "quantity":
+        raw["account_points"][0]["quantity"] = True
+    elif mutation == "session":
+        raw["account_points"][0]["session"] = "2026-01-01"
+    else:
+        raw["trades"].append(raw["trades"][0])
+    with pytest.raises(ValueError):
+        summarize_equity_ledger(raw)

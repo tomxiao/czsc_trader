@@ -396,14 +396,19 @@ TDR的[同版本升级API](../../src/czsc_trader/README.md#同版本发布包升
 TDR的 `build_assessment_evidence`只将当前V4账户闭包适配为 `AssessmentEvidence`，
 附加 `EquityAssessmentFacts`。旧研究ledger读取、认证、转换和默认审计分支已删除。
 现有冻结V2技术复验所需数值审计位于内部冻结适配，不作为公开研究API或V4失败兜底。
-SE独立核对成交、权益事件、应收与到账、周期损益和现金／持仓／应收共同组成的净值。
+默认评估从TXE账本计算指标，类型构造、读取和指标投影不触发独立账户复算。
+成交、权益事件、应收与到账、周期损益和账户恒等式的独立审计由已有显式审计入口按需执行。
+`strategy_evaluator.equity_metrics.summarize_equity_ledger`返回`EquityAccountMetrics`，从已记录净值、
+成交费用及结束周期汇总收益、回撤和60交易日频率，不推导成交价格或重演现金持仓。
+费用以序列化成交记录为准；核对已保存汇总时允许`rel_tol=1e-10, abs_tol=1e-7`的费用精度误差，
+其余指标和计数字段精确核对。结构、数值范围、时序及评价事实与原账的一致性检查继续执行。
 
 | 口径 | 显式选择与计算 |
 | --- | --- |
 | 年化、频率 | 按纽约市场交易日聚合，年化使用交易日数；60 日频率按完整周期的平仓日计数，30 分钟 bar 不充当独立交易日 |
 | 最大回撤 | `SESSION_CLOSE` 使用每日最后净值；`BAR_CLOSE` 使用每个 30 分钟净值。候选和基准使用相同选择，包含初始资金基点 |
 | 盈利集中度 | `TOP_DECILE` 使用盈利周期中最大的前 10%（向上取整）占比；`MAX_SINGLE` 使用最大单个盈利周期占比。无盈利周期时标记不适用 |
-| 交付认证 | 仅根据档案中的定义、输入绑定、完整窗口、原始事实及哈希独立重算，不依赖当前策略源代码 |
+| 交付校验 | 核对档案中的定义、输入绑定、完整窗口、原始事实及哈希；FULL复核SE指标与排序，不默认独立重做账户会计 |
 
 回撤和集中度选择进入指标版本与比较上下文，禁止混用口径。诊断结果不会自动变成硬性研究目标。
 旧 A 股 `AssessmentEvidence` 未设置附加事实时不序列化新字段，既有语义、档案及哈希保持不变。
@@ -437,12 +442,29 @@ V4 `EquityAssessmentFacts`按实际市场时区、币种及交易日聚合，指
 同一作用域中相同内容可以复用结果，不接受调用方提供 `validated=True` 或持久化 PASS。
 类型构造和结构校验不能签发数值认证。作用域不能被 pickle、跨进程传递或当作永久证书保存。
 
-TDR V4 将工作进程的回放结果交回父进程认证；后续评估事实构造、发布和诊断共享明确拥有的作用域。
-冷读证据和恢复检查点在新的作用域重新认证。公开审计只接纳V4；冻结内部适配继续独立审计，不读取旧研究声明作为认证。
+该作用域只用于显式独立审计调用；TDR V4默认回放、评估事实构造、发布、冷读及恢复不创建该作用域。
+计算完成、证据完整与独立审计完成分别表达。公开审计只接纳V4；冻结内部适配继续按其原有契约执行。
 共享买持由独立账户身份绑定，不以候选ID替换或拼接既有账本取得复用。
 
 `audit_count` 和 `reused_count` 是作用域实际调用计数，不表示独立验证方法的种类数。
 缓存精确内容仍包含规范化和哈希成本；不能把复用次数直接解释为对应比例的端到端提速。
+
+### 显式有限参数检验集
+
+`DeclaredParameterPointSet(source_design, point_indices, construction_sha256)`声明从原始完整设计中
+选取的固定点集。`source_design`保留坐标域与尺度，`point_indices`保留原编号，`bind_point`返回原始
+绑定，不重签历史账户。构造合同哈希由RSCH给定，平台不据此认证统计充分性或完整笛卡尔覆盖。
+空集合、重复、越界及非整数编号拒绝；选择方法不能伪装成约束排除。
+
+`CandidateAssessmentRequest.parameter_designs`可接收该类型；
+`CandidatePerformanceAssessmentRequest`可将中心原账与`ParameterPerformanceEvidence`邻点绩效合并。
+声明点集的输出使用`DeclaredParameterPointContext`及`DeclaredParameterPointSetCheck`，保留原编号和完整N。
+缺失或不可比不能缩小分母，不能形成部分样本Q10/Q90；已发现的全点风险失败仍保留。
+
+Calmar比较通过`DeclaredPointSetComparisonContract(construction_sha256, source_scale)`明确共同构造和
+原坐标尺度，仍执行v8评估/v6排序。点集Q10/Q90仅描述所声明的离散检验集，不代表原全邻域分布。
+原完整邻域比较合同不接纳该类型。正式交付使用TDR ASSESSMENT schema 15，复核已声明来源及数值；
+不同实现上下文不会因几何选择相同而自动成为可比或允许恢复的结果。
 
 ## 基准整手审计
 

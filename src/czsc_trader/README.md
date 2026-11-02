@@ -354,6 +354,13 @@ stats = session.stats
 准备与计算、发布与序列化可能重叠，分段区间不能直接相加；累计工作进程时间也不等于端到端耗时。
 资源变化不改变策略参数，平台源码变化可能改变评价环境／结果身份，应比较经济账本与数值并核验新身份。
 
+### V4账户检查点依赖对象
+
+V4账户检查点的`results/<请求哈希>.json`使用schema 2，只保存结果字节及三个artifact的种类、内容哈希引用。
+依赖内容分别保存在同一运行的`artifacts/<内容哈希>.json`，共享输入与买持账本只落盘一次；依赖全部原子提交后才提交结果。
+恢复显式读取这些依赖，核对校验和、内容哈希、种类及完整闭包，不执行独立账户复算；依赖缺失或损坏明确失败。
+检查点仍绑定精确实现身份，不接受旧内嵌格式或跨实现`RESUME`；历史正式证据保持原样。
+
 ### 显式基准执行合同
 
 `EvaluationRequest.benchmark` 必填。`NextOpenBuyHold(lot_size)` 使用下一交易日开盘价，
@@ -827,6 +834,16 @@ if checked.status is not ValidationStatus.PASS:
 `PARTIAL/BLOCKED` 须列明未完成项，完整交付不能同时声称有未完成项。
 ASSESSMENT的中心候选ID及内容哈希集合须与前驱`CandidateSet.handoff`完全一致，部分交付也保留完整名单；
 尚未完成的计算可通过缺失证据和`IncompleteEvaluation`如实表达，不要求所有计算先完成才能交付。
+
+ASSESSMENT schema 15显式使用`CandidatePerformanceAssessmentRequest`：中心保留原账事实，
+邻点使用`ParameterPerformanceEvidence`，发布和FULL校验按保存账户提取的绩效事实核对，再复算SE面板及排序。
+参数账户读取后仅缓存紧凑事实和计划核验元数据，不在缓存中常驻全部原账。
+`DeclaredParameterPointSet`可声明原完整设计中的有限检验集，保留源设计、原点编号及构造合同哈希；
+`parameter_plans`仍引用原计划，交付逐点核验所选子候选、原绑定、请求、执行政策和输入，不要求未选点进入新检验集。
+点集比较使用`DeclaredPointSetComparisonContract`，完整N、缺失状态及分位数均指本次声明集合，
+不得据此宣称原笛卡尔邻域通过。不同实现身份、上下文或基准的结果不自动混用；源码变更后应创建新执行记录，
+由RSCH重新核定旧来源可用性及新增计算预算，不直接恢复旧manifest。
+
 `CandidateAssessmentDelivery.pending_decisions`及`CandidateInspectionDelivery.pending_decisions`均可为空元组，
 不因未冻结而强制新增待决事项；已填写事项仍须为非空文本。
 校验默认 `DeliveryValidationScope.FULL`，核对文件身份和关联事实，并重算阶段四 SE 结果；
@@ -1064,25 +1081,36 @@ V4结果为 `equity-research/v4`，发布引用为 `EvidenceRef(schema="equity_r
 三阶段公共验收见[账户能力](../../tests/functional/test_account_parity_acceptance.py)及
 [独立交付闭包](../../tests/functional/test_account_v4_delivery.py)。合成验收证明软件契约，不替代真实标的研究复验。
 
-### 一次准备、共享基准与显式认证
+### 一次准备、共享基准与可审计事实
 
 `prepare`签发当前会话拥有的 `PreparedAccountEvaluation`；`evaluate_many`只接纳这些句柄，
 不隐式准备、转换旧定义或恢复旧计算检查点。账户启动时装载策略一次，随后全程使用内存模块；
 回放、收尾及发布不重新读取策略源码。修改源码后开始的新账户独立装载当时的声明文件。
 
 会话按完整来源选择复用不可变输入，同经济合同的买持基准只回放一次；候选辅助数据和执行专用报价
-不污染基准。独立账户不共享可变状态。工作进程只计算，父进程执行SE独立认证；相同精确账本在
-同一认证作用域内复用结果，冷读证据或恢复检查点重新认证，不相信持久化PASS。
+不污染基准。独立账户不共享可变状态。TXE产生唯一账户账本，SE从观察值、成交及已结束交易周期
+汇总指标。回放、事实构造、发布、冷读、检查点恢复和阶段四交付均不隐式独立重演成交或现金持仓。
+类型、范围、时序、引用身份和证据完整性检查仍执行；计算成功不表示已经执行独立审计。
+保留原始数据引用、参数、执行条件、实现版本、账本与指标关联，支持按需复核；本次不新增独立审计模块。
 
 参数计划沿用权益schema4。中心和子项先显式准备，再以
 `ParameterEvaluationPlan.create(..., execution=execution)`创建计划；发布计划后用
 `plan.bind_point(...)`构造 `EvaluationLineage`并重新准备子请求，不复制句柄伪造所有权。
 计划及lineage留在父进程，参数变化不能更换市场、输入、执行或非参数合同。
 
-`execution.equity_statistics`区分准备、账户回放、独立认证和发布。
+`execution.equity_statistics`返回输入快照数、候选及基准回放次数和账户计时，不返回审计次数或审计PASS。
 `account_timings`包括启动装载、特征、策略、执行及账表；特征是其子项，不重复相加。
-数据获取、认证、检查点与发布的端到端时间须另报。合成基准见
+数据获取、完整性检查、检查点与发布的端到端时间须另报。`COMPUTE`墙钟包含逐个返回结果的处理，
+`worker_seconds`只统计工作进程任务耗时；阶段计时可嵌套，不能直接相加。合成基准见
 [回放基准](../../scripts/benchmarks/README.md)，不能由接口成功推导任意策略秒级。
+
+并发统一使用`ResearchExecutionSession`和`ExecutionResources(max_workers=12,
+native_threads_per_worker=1)`等显式资源配置。公共执行器复用一个`spawn`进程池并有界提交；
+调用方在同一会话内分批准备、计算、发布和释放结果，基准仍可跨批复用。不要在外层再套账户进程池。
+同一次`evaluate_many`内相同完整请求只计算一次；再次显式调用仍属于新执行，免计算恢复须使用
+明确检查点或直接复用已有结果。会话通过弱引用登记句柄及结果，调用方释放后不再强制保留其原账。
+账户结果完成即编码，不先累积全部原始回放对象。公共资源合同没有自动内存调度字段，调用方需按
+实际内存和任务规模确定并发，不将12进程视为所有工作量下的资源保证。失败不自动重试或降级。
 
 V1回调、V2/V3研究计算及证据读取认证链已删除，不提供别名、转换或失败兜底。
 历史研究原件保留供查阅；保留原件不等于平台继续支持旧schema机器复算。
@@ -1100,7 +1128,7 @@ flowchart TD
     D --> S
     S --> X[TXE 日期/区间/真实检查点模型]
     X --> F[共用成交及账户记账核心]
-    F --> E[SE 独立账本审计与指标]
+    F --> E[SE 观察值指标与确定性评价]
     E --> R[共享不可变证据发布与 EvidenceRef]
 ```
 
@@ -1199,7 +1227,7 @@ CN/US个股权益研究统一采用V4；既有A股日期模型继续服务其明
 
 候选及买入持有账户分别返回 `data_quality`：`prepared_history` 与 `evaluation_window` 各自报告缺失、零量、
 已知中断数量、涉及交易日和区间；同时报告陈旧估值数量、抑制信号数量和受影响订单的身份、区间、原因。
-这些诊断在证据发布时依据认证行情和独立审计账户重新计算；不参与新增研究硬门槛。
+这些诊断在证据发布时依据声明行情和账户事实重新计算；不参与新增研究硬门槛。
 
 基准为同标的、同初始资金、同起止点、同预热、同买入规则、同费用及公司行动处理的买入并持有账户。
 V4基准使用同一显式状态回放运行时，开盘权益事件先应用再计算整数股预算，避免拆股前取整改变买入数量。
@@ -1238,14 +1266,17 @@ with ResearchExecutionSession(context, experiment=experiment,
 
 逐项检查批量计算和发布状态。主结果通过 `input_ref/candidate_ref/benchmark_ref`绑定三个内容寻址依赖；
 发布、检查点与交付必须保存完整闭包。冷读由 `materialize_equity`解析，再以
-`build_equity_assessment`独立认证；缺少依赖或身份不同即失败，不静默重算。
+`build_equity_assessment`检查引用关联、统计一致性并构造评价事实；缺少依赖或身份不同即失败，
+不静默重算，也不触发独立会计审计。公开`materialize_equity(...).payload`每次返回独立解码对象，
+不将可变字典缓存后共享给调用方。
 
 <a id="us-equity-evidence"></a>
 
-### 10.6 审计、指标及证据
+### 10.6 可审计事实、指标及证据
 
 仅接纳 `equity-research/v4`与 `EvidenceRef(schema="equity_research", schema_version=4)`。
-请求绑定TDR/SRT/TXE/SE实现身份和运行环境，数值审计消费序列化原始事实，不装载策略。
+请求绑定TDR/SRT/TXE/SE实际计算实现身份和运行环境；默认指标汇总消费序列化观察值，不装载策略，
+不再次推导成交和会计事件。SE既有显式审计能力保留，未被调用时不声称审计通过。
 `register_candidate/load_candidate`、`assemble_delivery/validate_delivery`及 `diagnose_accounts`
 沿当前V4契约处理候选、原型、评估和损益事实；交付复核不依赖原实验可变目录。
 权益参数计划schema4与既有A股日期模型参数计划各按自身合同处理，不自动互转。

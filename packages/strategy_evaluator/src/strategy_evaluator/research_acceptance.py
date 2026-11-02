@@ -197,7 +197,7 @@ def _parameter_group(target, row):
 
 def _parameter_neighborhood(target, row):
     context = row.parameter_context
-    if type(context) is not m.ParameterNeighborhoodContext:
+    if not isinstance(context, m.ParameterNeighborhoodContext):
         return m.ParameterNeighborhoodCheck(
             target,
             0,
@@ -246,7 +246,8 @@ def _parameter_neighborhood(target, row):
     elif (
         context.valid_points != required
         or len(points) != required
-        or {x.point_index for x in points} != set(range(required))
+        or {x.point_index for x in points} != (set(context.point_indices)
+            if isinstance(context, m.DeclaredParameterPointContext) else set(range(required)))
     ):
         status, reason = m.TargetCheckStatus.INDETERMINATE, "INCOMPLETE_PARAMETER_COVERAGE"
     elif any(
@@ -259,9 +260,10 @@ def _parameter_neighborhood(target, row):
         status, reason = m.TargetCheckStatus.FAILED, "PARAMETER_JOINT_COUNT_NOT_MET"
     else:
         status, reason = m.TargetCheckStatus.PASSED, None
-    return m.ParameterNeighborhoodCheck(
-        target, required, minimum, len(points), joint_passes, points, status, reason
-    )
+    values = (target, required, minimum, len(points), joint_passes, points, status, reason)
+    return (m.DeclaredParameterPointSetCheck(*values, context.point_indices)
+            if isinstance(context, m.DeclaredParameterPointContext)
+            else m.ParameterNeighborhoodCheck(*values))
 
 
 def _calmar_value(annual, drawdown):

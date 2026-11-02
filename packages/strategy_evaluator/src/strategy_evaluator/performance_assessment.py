@@ -108,7 +108,7 @@ class CandidatePerformanceAssessmentRequest(m.ResearchRecord):
             m.require(identities.get(item.candidate.candidate_id) == item.candidate.content_sha256,
                       "performance candidate content identity conflict")
             design = designs.get(item.parent)
-            m.require(isinstance(design, m.ParameterNeighborhoodDesign),
+            m.require(isinstance(design, (m.ParameterNeighborhoodDesign, m.DeclaredParameterPointSet)),
                       "performance parent requires a neighborhood design")
             m.require(item.parameter_point == design.bind_point(item.parameter_point.point_index),
                       "performance point differs from design")

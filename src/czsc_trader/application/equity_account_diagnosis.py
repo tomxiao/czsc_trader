@@ -16,16 +16,12 @@ def diagnose_equity_evidence(repository, request, *, execution=None):
         return fail(AccountDiagnosisStatus.INCOMPARABLE, "diagnosis requires the same explicit equity evidence contract")
     try:
         loaded = []
-        from strategy_evaluator.equity_assessment import EquityCertificationScope
         from ..research_tools.equity_replay import build_equity_assessment
         from .equity_evidence_io import materialize_equity_document
-        if execution is None:
-            certification = EquityCertificationScope()
-        else:
-            from ..research_tools.equity_replay import _state
+        if execution is not None:
             if execution.context.repository.root != repository.root:
                 raise ValueError('diagnosis session belongs to another repository')
-            certification = _state(execution.context.evaluation, execution).certification
+            execution.require(execution.context.evaluation)
         for ref in refs:
             value = _json(ref.evidence._read_verified(repository.root)[1])
             if (value.get("schema_version") != ref.evidence.schema_version or value["request"]["experiment"] != {
@@ -33,7 +29,7 @@ def diagnose_equity_evidence(repository, request, *, execution=None):
                     or value["evaluation_identity"] != ref.identity.to_dict()):
                 raise ValueError("equity account identity or origin differs")
             view = materialize_equity_document(repository.root, ref.evidence.repository_path, value)
-            facts = build_equity_assessment(view, scope=certification)[0]
+            facts = build_equity_assessment(view)[0]
             value = view.payload
             loaded.append((value, read_ledger(facts.equity.candidate_ledger)))
         def comparable(value):

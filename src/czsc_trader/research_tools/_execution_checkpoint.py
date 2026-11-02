@@ -114,11 +114,11 @@ class CheckpointStore:
 
     def _write(self, name, payload):
         target = self._target(name)
-        encoded = _json({"sha256": sha256(_json(payload)).hexdigest(), "payload": payload})
         if target.exists():
             if self._read(name, required=True) != payload:
                 raise CheckpointIntegrityError("completed checkpoint cannot be replaced with different facts")
             return
+        encoded = _json({"sha256": sha256(_json(payload)).hexdigest(), "payload": payload})
         target.parent.mkdir(parents=True, exist_ok=True)
         temporary = self._target(f"{name}.{uuid4().hex}.pending")
         try:
@@ -174,7 +174,25 @@ class CheckpointStore:
         _hash(request_hash)
         if result.request_hash != request_hash:
             raise CheckpointIntegrityError("equity checkpoint request differs")
-        self._write(f"results/{request_hash}.json", encode_result(result))
+        payload = encode_result(result)
+        # Commit dependencies first. An interrupted result commit can leave an
+        # unused object, but cannot expose a completed result without its bytes.
+        for artifact, reference in zip(result.artifacts, payload["artifact_refs"], strict=True):
+            self._write(f"artifacts/{reference['sha256']}.json", {
+                **reference, "content": artifact.content.decode("utf-8")})
+        self._write(f"results/{request_hash}.json", payload)
+
+    def _load_equity_artifact(self, kind, digest):
+        from .equity_evaluation import EquityArtifact
+        _hash(digest)
+        payload = self._read(f"artifacts/{digest}.json", required=True)
+        if (type(payload) is not dict or set(payload) != {"kind", "sha256", "content"}
+                or payload["kind"] != kind or payload["sha256"] != digest):
+            raise CheckpointIntegrityError("equity checkpoint artifact identity differs")
+        artifact = EquityArtifact(kind, payload["content"].encode("utf-8"))
+        if artifact.sha256 != digest:
+            raise CheckpointIntegrityError("equity checkpoint artifact bytes differ")
+        return artifact
 
     def load_equity_result(self, request, request_hash):
         from ._equity_checkpoint import decode_result
@@ -189,8 +207,8 @@ class CheckpointStore:
         if payload is None:
             return None
         try:
-            return decode_result(payload, request_hash)
-        except (TypeError, KeyError, ValueError) as exc:
+            return decode_result(payload, request_hash, self._load_equity_artifact)
+        except (TypeError, KeyError, ValueError, AttributeError) as exc:
             raise CheckpointIntegrityError(f"cannot restore equity checkpoint: {exc}") from exc
 
     def save_publication(self, publication_key: str, reference: EvidenceRef):

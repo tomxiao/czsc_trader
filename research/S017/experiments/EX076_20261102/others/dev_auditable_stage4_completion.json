@@ -1,0 +1,108 @@
+{
+  "schema": "s017-dev-auditable-stage4-completion/v1",
+  "role": "DEV",
+  "status": "IMPLEMENTED_FOCUSED_TESTS_PASS_PENDING_RSCH_ACCEPTANCE",
+  "branch": "codex/s017-ten-rounds",
+  "tested_workingtree_base": "599222b2a",
+  "scope": [
+    "V4 default account paths do not independently replay accounting",
+    "SE observation metrics and explicit finite point sets",
+    "ASSESSMENT schema 15 compact performance delivery",
+    "TDR public execution pool with per-call request deduplication",
+    "weak result ownership and content-addressed checkpoint dependencies",
+    "TDR and SE module README updates"
+  ],
+  "independent_audit_module_developed": false,
+  "research_selfcheck_paused": true,
+  "real_research_replays": 0,
+  "production_changed": false,
+  "focused_tests": {
+    "tests": 360,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "junit_seconds": 273.774,
+    "pytest_reported_seconds": 277.51,
+    "junit_sha256": "56b677d8c2f2a3cc922e80203808301adaaab81426fbda0677670a42e9554fcc",
+    "scope": "15 directly affected SE/TDR functional files; not repository-wide regression"
+  },
+  "static_checks": [
+    "changed-code Ruff PASS",
+    "git diff --check PASS"
+  ],
+  "synthetic_microbenchmark": {
+    "kind": "synthetic_metrics_microbenchmark",
+    "sessions": 61,
+    "observations": 244,
+    "repetitions": 5,
+    "workers": 1,
+    "warmup_calls_per_operation": 1,
+    "timing": {
+      "independent_audit": {
+        "median_seconds": 0.015358600066974759,
+        "samples_seconds": [
+          0.015585599932819605,
+          0.015358600066974759,
+          0.015023800078779459,
+          0.01598909986205399,
+          0.014816300012171268
+        ]
+      },
+      "observation_summary": {
+        "median_seconds": 0.000768100144341588,
+        "samples_seconds": [
+          0.0009407000616192818,
+          0.0007841000333428383,
+          0.0007652000058442354,
+          0.000768100144341588,
+          0.0007639999967068434
+        ]
+      }
+    },
+    "research_replays": 0,
+    "not_end_to_end_speedup": true
+  },
+  "independent_risks": [
+    "TXE numerical correctness retains existing execution and explicit-audit reference tests",
+    "default fact constructors no longer promise independent economic attestation",
+    "input ranges, chronology, identity links and completeness remain validated",
+    "old corruption assertions are covered by existing explicit V4 audit tests; new default tests protect source/hash/metric consistency"
+  ],
+  "limitations": [
+    "No 257-point protocol adoption or stage-four completion claim",
+    "No real whole-workload timing or peak RSS acceptance",
+    "Old implementation checkpoints cannot RESUME under new source identity",
+    "Old and new implementation point results cannot automatically share a formal parameter plan",
+    "12 workers bound in-flight work, not the size of returned result tuples; use bounded batches in one public session"
+  ],
+  "source_sha256": {
+    "packages/strategy_evaluator/README.md": "574dd67a09ed943b2a2936e723fb4de4c44f801ad30703f8346975c4f252ab99",
+    "packages/strategy_evaluator/src/strategy_evaluator/__init__.py": "de5ffdd1496b36134323696db92b179a566e5d752390ce2dd7be20d181ed4bfd",
+    "packages/strategy_evaluator/src/strategy_evaluator/equity_assessment.py": "c099e921683d7c1ee1a4113b6a20431d3521c427223ccdce2695c21adee9e675",
+    "packages/strategy_evaluator/src/strategy_evaluator/parameter_neighborhood.py": "5ea25e8363b732b26f1dbe08b3a8740e935ccc49f768fc35a80818de3e566570",
+    "packages/strategy_evaluator/src/strategy_evaluator/performance_assessment.py": "bd301d73d630e7e582d29da48adea6c79001c2d9449ae9211957bd5860496e7c",
+    "packages/strategy_evaluator/src/strategy_evaluator/research_acceptance.py": "9d5c6a335e06608fdbc85c2f20a48f9ddd192941e5249693c3e5149ebe2b763a",
+    "packages/strategy_evaluator/src/strategy_evaluator/research_assessment.py": "42d1e0fc686fad3d3d952b1dd3f9457620401115db0a5c44b5c9cab778f3ed56",
+    "packages/strategy_evaluator/src/strategy_evaluator/research_models.py": "6be0c07d7084557fa1dc73337a8d01856de5d59b2e2a8d0b6c44fa5490ded19c",
+    "packages/strategy_evaluator/tests/functional/test_equity_assessment.py": "b3138643c4727339ea6d00b60b914825cc842460e1ed80bf62caf4d8de342582",
+    "packages/strategy_evaluator/tests/functional/test_equity_v4.py": "49ed631529ab0fc4759acecd4c0067743aa7e890a4ab5083d9456a2a2f07c00f",
+    "packages/strategy_evaluator/tests/functional/test_performance_assessment.py": "3e451713a333aa83684f8554fee9e5e4367272ae59a3487f2d39d76610fb1c90",
+    "src/czsc_trader/README.md": "a7f90ae6cfb23548ca4878fbc513fef49b69c34b90669c2e947c3f39c1c41a92",
+    "src/czsc_trader/application/delivery_service.py": "b6d4182a89184f3045861b92648c7d8d7035e31b92ceb8a18900b3ea6a27bf19",
+    "src/czsc_trader/application/equity_account_diagnosis.py": "1d3df34979738a1ce2dcb1c3ca2e7ae7415579750db10e36886f894d33707e86",
+    "src/czsc_trader/research_tools/_equity_checkpoint.py": "ac01a965dbdf9dc22eec7ff6ff8928c70fa1d0753d05ecb0d10aeb6ae9053fb4",
+    "src/czsc_trader/research_tools/_execution_checkpoint.py": "18ff9113f548c972fb396a172762005a1767abfc88fb9afc27c58bbd660299c4",
+    "src/czsc_trader/research_tools/account_preparation.py": "75ade231fa8e3b1f74b1a101e4c34650d55cda228af8636e1252b2d692329bb1",
+    "src/czsc_trader/research_tools/assessment.py": "96127fb7197bd01a6c0c3b5a29e1fda6fecb9ea1aa9d262e54556b90888a060f",
+    "src/czsc_trader/research_tools/delivery.py": "66247a216f908dfdb20114d19aeca66bb53b1689dfa0db3720553f1084d2fe58",
+    "src/czsc_trader/research_tools/equity_assessment.py": "c9cc69847944532e538e416e71a660efd7b163050a1c3c9dadc339c9b459aeca",
+    "src/czsc_trader/research_tools/equity_evaluation.py": "dbb1c701c0bf061a1bc98791267c8119969169db23a3da444df70e690385b040",
+    "src/czsc_trader/research_tools/equity_replay.py": "b6b02bbc7001773cff9b9fdbb039d1455263a45f30ef695103877217766d0ebf",
+    "src/czsc_trader/research_tools/execution.py": "70694ad11bf581ab25699376384a255881494fa2a28fc6f37214f5edd9a6a01d",
+    "tests/functional/test_equity_account_lifecycle.py": "9a73808038895559ca355244a33fbff3967827bdb92228cf7c4846e25f792bd8",
+    "tests/functional/test_equity_account_replay.py": "8e9386e89223c9e22f936296410ac896f740ff555e5cacc1e31690685130df0d",
+    "tests/functional/test_equity_assessment_delivery.py": "d0b9cd093288d6da4acb9e57c685bf101e45b6351d94c5d1256c9e4f30b6d5b7",
+    "tests/functional/test_execution_checkpoint.py": "e9b9c2608b18968086567370b5656704b655849b5ade10f1c93011900db8b025",
+    "packages/strategy_evaluator/src/strategy_evaluator/equity_metrics.py": "443c7ea50ad1fc6703f62bf1f9403c3fdb42f8c954fbd52e681a58602e6cf7f3"
+  }
+}

@@ -1,23 +1,24 @@
 """Session-owned V4 equity preparation, event replay and immutable evidence.
 
-Only the owning session can reuse certification. Persisted artifacts contain
-facts, not authority: a reader authenticates the closure and audits it afresh.
+TXE produces account facts once; SE summarizes observations. Readers validate
+content and reference integrity without independently replaying accounting.
 """
 from __future__ import annotations
 
 from contextlib import closing
 from concurrent.futures import CancelledError
 from concurrent.futures.process import BrokenProcessPool
-from dataclasses import asdict, dataclass, replace
+from dataclasses import asdict, dataclass, field, replace
 from hashlib import sha256
 import inspect
 import json
 from pathlib import Path
+from weakref import WeakValueDictionary, ref
 
 from dataflows import EquityProduct, PreparePolicy, TimeInterval
 from strategy_runtime.equity import ResearchExecutionSpec, equity_hash
 from strategy_runtime.equity_definition import EquityAuxiliaryBinding, EquityInputBinding, EquityStrategyCandidate, ExecutionInputBinding
-from strategy_evaluator.equity_assessment import EquityCertificationScope, certify_equity_ledger
+from strategy_evaluator.equity_metrics import summarize_equity_ledger
 
 from .equity_evaluation import (EquityArtifact, EquityEvaluationRequest, EquityEvaluationResult,
     _audit_inputs, _data_quality, _fetch_products, _json_value, _records, _runtime_inputs)
@@ -44,10 +45,16 @@ def _read(content):
 @dataclass(frozen=True, slots=True)
 class EquityInputSnapshot:
     artifact: EquityArtifact
+    primary_sha256: str = field(init=False, repr=False, compare=False)
 
     def __post_init__(self):
         if type(self.artifact) is not EquityArtifact or self.artifact.kind != "equity_input":
             raise TypeError("input snapshot requires an immutable input artifact")
+        value = _read(self.artifact.content)
+        primary = {"schema": value["schema"],
+            "products": {key: value["products"][key] for key in ("bars", "sessions", "actions", "constraints")},
+            "data": {key: value["data"][key] for key in ("bars", "sessions", "actions", "constraints")}}
+        object.__setattr__(self, "primary_sha256", sha256(_bytes(primary)).hexdigest())
 
     @property
     def sha256(self):
@@ -60,15 +67,15 @@ class _SessionState:
         self.token = uuid4().hex
         self.snapshots = {}
         self.products = {}
+        self.input_records = {}
         self.replays = {}
         self.execution_quotes = {}
-        self.prepared = {}
+        self.prepared = WeakValueDictionary()
         self.benchmarks = {}
         self.results = {}
         self.replay_statistics = {}
         self.candidate_runs = 0
         self.benchmark_runs = 0
-        self.certification = EquityCertificationScope()
 
 
 def _state(access, execution, experiment_id=None):
@@ -108,10 +115,7 @@ def _query_identity(request, specification):
 
 
 def _primary_input_sha256(snapshot):
-    value = _read(snapshot.artifact.content)
-    return sha256(_bytes({"schema": value["schema"],
-        "products": {key: value["products"][key] for key in ("bars", "sessions", "actions", "constraints")},
-        "data": {key: value["data"][key] for key in ("bars", "sessions", "actions", "constraints")}})).hexdigest()
+    return snapshot.primary_sha256
 
 
 def prepare_equity(access, request, *, execution):
@@ -217,7 +221,7 @@ class _ReplayAccountRequest:
 
 
 def _compute_account(replay, candidate, request, actions, owner, execution_bars=None):
-    """Worker computation only: it cannot certify or publish its own output."""
+    """Execute the authoritative account once; publication stays caller-owned."""
     from strategy_runtime.equity_replay import run_replay
     from trading_execution_engine.portfolio import PortfolioHistoricalExecutor
     executor = PortfolioHistoricalExecutor(specification=candidate.definition.execution_spec,
@@ -253,23 +257,24 @@ def _record_timing(state, prepared, benchmark, timing):
         state.candidate_runs += 1
 
 
-def _inputs(snapshot, request):
-    products = _read(snapshot.artifact.content)["products"]
+def _inputs(state, snapshot, request):
+    if snapshot.sha256 not in state.input_records:
+        state.input_records[snapshot.sha256] = _read(snapshot.artifact.content)["products"]
+    products = state.input_records[snapshot.sha256]
     return {"bars": products["bars"], "action_facts": products["actions"], "constraints": products["constraints"],
         "specification": _json_value(asdict(request.candidate.definition.execution_spec)),
         "initial_cash": request.initial_cash, "fee_rate": request.fee_rate}
 
 
-def _certify_run(state, prepared, run, *, benchmark):
-    inputs = _inputs(prepared.snapshot, prepared.request)
+def _account_artifact(state, prepared, run, *, benchmark):
+    inputs = _inputs(state, prepared.snapshot, prepared.request)
     ledger = {**inputs, **{name: run[name] for name in
         ("decisions", "orders", "fills", "actions", "account_points", "trades")}}
     ledger["account_contract"] = 4
     if not benchmark and prepared.candidate.definition.execution_input is not None:
         ledger['execution_bars'] = _read(prepared.snapshot.artifact.content)['products']['execution:bars']
-    with state.certification:
-        audit = certify_equity_ledger(ledger, decision_contract="FORMAL_V4")
-    run = {**run, "metrics": _json_value(asdict(audit)), "data_quality": _data_quality(inputs["bars"], run,
+    metrics = summarize_equity_ledger(ledger)
+    run = {**run, "metrics": _json_value(asdict(metrics)), "data_quality": _data_quality(inputs["bars"], run,
         timezone=prepared.candidate.instrument.timezone, execution_bars=ledger.get("execution_bars"))}
     owner = ({"kind": "BENCHMARK", "run_identity": prepared.benchmark_identity.to_dict(),
               "run_sha256": prepared.benchmark_identity.sha256} if benchmark else
@@ -299,7 +304,7 @@ def _result(prepared, candidate, benchmark):
 
 
 def evaluate_many_equity(access, requests, *, execution):
-    """Replay unique accounts, then independently certify in the owning process."""
+    """Replay accounts through the public executor and retain auditable facts."""
     from .evaluation_access import EvaluationOutcome, EvaluationStatus, EvaluationError
     state = _state(access, execution)
     if type(requests) is not tuple or not requests:
@@ -308,10 +313,11 @@ def evaluate_many_equity(access, requests, *, execution):
         _require_prepared(state, prepared)
         if prepared.experiment.experiment_id != execution.experiment.experiment_id:
             raise ValueError("equity evaluation belongs to another experiment")
+    request_hashes = tuple(equity_hash(_json_value(p.identity(access.execution_spec))) for p in requests)
     restored = {}
     if execution.checkpoint is not None:
         for i, prepared in enumerate(requests):
-            request_hash = equity_hash(_json_value(prepared.identity(access.execution_spec)))
+            request_hash = request_hashes[i]
             cached = execution.checkpoint.load_equity_result(prepared, request_hash)
             if cached is None:
                 continue
@@ -324,7 +330,7 @@ def evaluate_many_equity(access, requests, *, execution):
         if i in restored:
             continue
         for benchmark in (False, True):
-            key = ("benchmark", prepared.benchmark_identity.sha256) if benchmark else ("candidate", i)
+            key = ("benchmark", prepared.benchmark_identity.sha256) if benchmark else ("candidate", request_hashes[i])
             if key in task_meta or (benchmark and key[1] in state.benchmarks):
                 continue
             task_meta[key] = (prepared, benchmark)
@@ -345,33 +351,31 @@ def evaluate_many_equity(access, requests, *, execution):
                 tasks.append((key, (replay, candidate, contract, state.products[prepared.snapshot.sha256]["actions"], owner, quotes)))
             except Exception as exc:
                 failures[key] = exc
-    completed = {}
-    # Drain compute first: COMPUTE wall time does not hide parent certification.
+    accounts = {}
+    # Consume each finished result immediately rather than retaining all raw runs.
+    # COMPUTE wall time includes streamed handling; worker time is separate.
     with closing(execution.executor.run(_compute_account, iter(tasks), phase=ExecutionPhase.COMPUTE, total=len(tasks))) as values:
         for key, value, error in values:
-            completed[key] = (value, error)
-    accounts = {}
-    for key, (value, error) in completed.items():
-        if error is not None:
-            failures[key] = error
-            continue
-        prepared, benchmark = task_meta[key]
-        _record_timing(state, prepared, benchmark, value[1])
-        try:
-            with execution.executor.measure(ExecutionPhase.AUTHENTICATE):
-                artifact = _certify_run(state, prepared, value[0], benchmark=benchmark)
-            accounts[key] = artifact
-            if benchmark:
-                state.benchmarks[key[1]] = artifact
-        except Exception as exc:
-            failures[key] = exc
+            if error is not None:
+                failures[key] = error
+                continue
+            prepared, benchmark = task_meta[key]
+            _record_timing(state, prepared, benchmark, value[1])
+            try:
+                with execution.executor.measure(ExecutionPhase.SERIALIZE):
+                    artifact = _account_artifact(state, prepared, value[0], benchmark=benchmark)
+                accounts[key] = artifact
+                if benchmark:
+                    state.benchmarks[key[1]] = artifact
+            except Exception as exc:
+                failures[key] = exc
     outcomes = []
     for i, prepared in enumerate(requests):
-        request_hash = equity_hash(_json_value(prepared.identity(access.execution_spec)))
+        request_hash = request_hashes[i]
         if i in restored:
             outcomes.append(EvaluationOutcome(EvaluationStatus.SUCCEEDED, request_hash, restored[i]))
             continue
-        errors = [failures[key] for key in (("candidate", i), ("benchmark", prepared.benchmark_identity.sha256)) if key in failures]
+        errors = [failures[key] for key in (("candidate", request_hash), ("benchmark", prepared.benchmark_identity.sha256)) if key in failures]
         if errors:
             error = errors[0]
             status = (EvaluationStatus.UNKNOWN if isinstance(error, BrokenProcessPool) else
@@ -382,10 +386,10 @@ def evaluate_many_equity(access, requests, *, execution):
             continue
         try:
             _require_prepared(state, prepared)
-            result = _result(prepared, accounts[("candidate", i)], state.benchmarks[prepared.benchmark_identity.sha256])
-            with execution.executor.measure(ExecutionPhase.AUTHENTICATE), state.certification:
-                build_equity_assessment(result, scope=state.certification)
-            state.results[id(result)] = (result, result.result_hash, prepared)
+            result = _result(prepared, accounts[("candidate", request_hash)], state.benchmarks[prepared.benchmark_identity.sha256])
+            with execution.executor.measure(ExecutionPhase.AUTHENTICATE):
+                build_equity_assessment(result)
+            _remember_result(state, prepared, result)
             if execution.checkpoint is not None:
                 execution.checkpoint.save_equity_result(request_hash, result)
             outcomes.append(EvaluationOutcome(EvaluationStatus.SUCCEEDED, request_hash, result))
@@ -401,17 +405,22 @@ def _authenticate_restore(state, prepared, result):
     if (payload["request"] != expected or payload["input_ref"] != prepared.snapshot.artifact.reference()
             or payload["benchmark_identity"] != prepared.benchmark_identity.to_dict()):
         raise ValueError("restored equity result differs from authenticated prepared inputs")
-    build_equity_assessment(result, scope=state.certification)
+    build_equity_assessment(result)
     state.benchmarks[prepared.benchmark_identity.sha256] = next(item for item in result.artifacts
         if item.sha256 == payload["benchmark_ref"]["sha256"])
-    state.results[id(result)] = (result, result.result_hash, prepared)
+    _remember_result(state, prepared, result)
+
+
+def _remember_result(state, prepared, result):
+    key = id(result)
+    state.results[key] = (ref(result, lambda _: state.results.pop(key, None)), result.result_hash, ref(prepared))
 
 
 def validate_certified_result(access, prepared, result, *, execution):
     state = _state(access, execution, prepared.experiment.experiment_id)
     _require_prepared(state, prepared)
     expected = state.results.get(id(result))
-    if expected is None or expected[0] is not result or expected[1] != result.result_hash or expected[2] is not prepared:
+    if expected is None or expected[0]() is not result or expected[1] != result.result_hash or expected[2]() is not prepared:
         raise ValueError("result is not the exact certified result issued by this execution session")
     if result.request_hash != equity_hash(_json_value(prepared.identity(access.execution_spec))):
         raise ValueError("certified result request or engine identity changed")
@@ -506,8 +515,7 @@ class MaterializedEquity:
         return payload
 
 
-def materialize_equity(value, resolver=None):
-    """Resolve an immutable closure; resolver receives a {kind, sha256} reference."""
+def _resolve_equity(value, resolver):
     if type(value) is EquityEvaluationResult:
         content, artifacts = value.content, value.artifacts
     elif type(value) is dict:
@@ -529,17 +537,18 @@ def materialize_equity(value, resolver=None):
                 raise ValueError("equity artifact content digest differs")
             values.append(item)
         artifacts = tuple(values)
-    view = MaterializedEquity(content, artifacts)
-    view.payload  # Authenticate all owner/input links at the resolver boundary.
+    return MaterializedEquity(content, artifacts)
+
+
+def materialize_equity(value, resolver=None):
+    """Resolve and validate an immutable closure, including owner/input links."""
+    view = _resolve_equity(value, resolver)
+    view.payload
     return view
 
 
-def build_equity_assessment(value, resolver=None, *, scope=None):
+def build_equity_assessment(value, resolver=None):
+    """Project recorded account facts without independently auditing them."""
     from .equity_assessment import build_equity_assessment_payload
-    if scope is None:
-        scope = EquityCertificationScope()
-    if type(scope) is not EquityCertificationScope:
-        raise TypeError("equity assessment requires an owned certification scope")
-    view = value if type(value) is MaterializedEquity else materialize_equity(value, resolver)
-    with scope:
-        return build_equity_assessment_payload(view)
+    view = value if type(value) is MaterializedEquity else _resolve_equity(value, resolver)
+    return build_equity_assessment_payload(view)

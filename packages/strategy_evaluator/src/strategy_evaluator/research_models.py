@@ -634,8 +634,8 @@ class ParameterDiagnosticContext(ResearchRecord):
 
 
 from .parameter_neighborhood import (  # noqa: E402
-    ParameterNeighborhoodBinding, ParameterNeighborhoodDesign,
-    ParameterNeighborhoodProtocol, ParameterNeighborhoodContext, StudyPurpose,
+    ParameterNeighborhoodBinding, ParameterNeighborhoodDesign, DeclaredParameterPointSet,
+    ParameterNeighborhoodProtocol, ParameterNeighborhoodContext, DeclaredParameterPointContext, StudyPurpose,
     RelativeChangeLimit, AbsoluteChangeLimit, BoundedLocalStep, RealDomain,
 )
 
@@ -822,7 +822,7 @@ class CandidateAssessmentRequest(ResearchRecord):
     evidence: tuple[AssessmentEvidence, ...]
     incomplete: tuple[IncompleteEvaluation, ...] = ()
     family_returns: FamilyReturnEvidence | None = None
-    parameter_designs: tuple[ParameterPerturbationDesign | ParameterNeighborhoodDesign, ...] = ()
+    parameter_designs: tuple[ParameterPerturbationDesign | ParameterNeighborhoodDesign | DeclaredParameterPointSet, ...] = ()
 
     def validate(self):
         require(bool(self.centers), "explicit center set must be nonempty")
@@ -1029,7 +1029,7 @@ class CandidateAssessment(ResearchRecord):
     coverage_gaps: tuple[str, ...]
     behavior_sha256: str | None
     benchmark: BenchmarkAssessment
-    parameter_context: ParameterDiagnosticContext | ParameterNeighborhoodContext | None = None
+    parameter_context: ParameterDiagnosticContext | ParameterNeighborhoodContext | DeclaredParameterPointContext | None = None
     frequency_coverage: FrequencyCoverageFacts | None = None
     parameter_performances: tuple[PerformanceFacts, ...] = ()
     stress_performance: PerformanceFacts | None = None
@@ -1056,7 +1056,9 @@ class CandidateAssessment(ResearchRecord):
                 "parameter facts require design context")
         if self.parameter_context is not None:
             require(all(x.point_index is not None
-                        and x.point_index < self.parameter_context.prescribed_points
+                        and (x.point_index in self.parameter_context.point_indices
+                             if isinstance(self.parameter_context, DeclaredParameterPointContext)
+                             else x.point_index < self.parameter_context.prescribed_points)
                         and x.candidate != self.candidate
                         and x.scenario == self.baseline_scenario
                         for x in self.parameter_performances), "invalid parameter performance identity")
@@ -1481,6 +1483,8 @@ class CommonNeighborhoodComparisonContract(ResearchRecord):
         unique((x.name for x in self.zero_limits), "zero-center scale")
 
     def authenticate(self, design):
+        require(type(design) is ParameterNeighborhoodDesign,
+                "full neighborhood comparison requires a full neighborhood design")
         require(design.protocol.version == "parameter-cartesian-neighborhood-v2"
                 and design.protocol.purpose is StudyPurpose.LOCAL_SENSITIVITY,
                 "common comparison requires current local neighborhoods")
@@ -1507,13 +1511,28 @@ class CommonNeighborhoodComparisonContract(ResearchRecord):
 
 
 @dataclass(frozen=True)
+class DeclaredPointSetComparisonContract(ResearchRecord):
+    """One explicit caller-defined construction and source-coordinate scale."""
+
+    construction_sha256: str
+    source_scale: CommonNeighborhoodComparisonContract
+
+    def authenticate(self, design):
+        require(type(design) is DeclaredParameterPointSet,
+                "declared comparison requires declared point sets")
+        require(design.construction_sha256 == self.construction_sha256,
+                "declared point construction differs")
+        return (self.construction_sha256, self.source_scale.authenticate(design.source_design))
+
+
+@dataclass(frozen=True)
 class CalmarComparisonRequest(ResearchRecord):
     candidates: tuple[AssessmentCandidate, ...]
     targets: ResearchTargets
     panel: AssessmentPanel
     policy: ComparisonPolicy
-    parameter_designs: tuple[ParameterNeighborhoodDesign, ...]
-    neighborhood_contract: CommonNeighborhoodComparisonContract
+    parameter_designs: tuple[ParameterNeighborhoodDesign | DeclaredParameterPointSet, ...]
+    neighborhood_contract: CommonNeighborhoodComparisonContract | DeclaredPointSetComparisonContract
 
     def validate(self):
         _validate_comparison_scope(self)
@@ -1530,6 +1549,12 @@ class CalmarComparisonRequest(ResearchRecord):
             context = rows[design.center].parameter_context
             require(isinstance(context, ParameterNeighborhoodContext),
                     "Calmar comparison requires authenticated neighborhood context")
+            require((type(design) is DeclaredParameterPointSet)
+                    == (type(context) is DeclaredParameterPointContext),
+                    "declared point context differs from design")
+            if type(design) is DeclaredParameterPointSet:
+                require(context.point_indices == design.point_indices,
+                        "declared point indices differ from assessment context")
             require((context.protocol, context.design_sha256, context.space_sha256,
                      context.dimension, context.prescribed_points, context.comparison_sha256)
                     == (design.protocol, design.sha256, design.space.sha256,
@@ -1640,18 +1665,35 @@ class ParameterNeighborhoodCheck(ResearchRecord):
             self.required_points * self.target.minimum_numerator + self.target.minimum_denominator - 1
         ) // self.target.minimum_denominator, "invalid required joint pass count")
         unique((x.point_index for x in self.points), "checked parameter point")
-        require(all(0 <= x.point_index < self.required_points for x in self.points), "point index outside design")
+        require(all(self._contains_point(x.point_index) for x in self.points), "point index outside design")
         require((self.status is TargetCheckStatus.PASSED) == (self.reason is None), "invalid neighborhood result")
         require(self.status is not TargetCheckStatus.PASSED or (
             self.required_points > 0 and self.valid_points == self.required_points
             and self.joint_passes >= self.minimum_joint_passes), "passed neighborhood requires complete coverage")
+
+    def _contains_point(self, index):
+        return 0 <= index < self.required_points
+
+
+@dataclass(frozen=True)
+class DeclaredParameterPointSetCheck(ParameterNeighborhoodCheck):
+    point_indices: tuple[int, ...]
+
+    def validate(self):
+        unique(self.point_indices, "declared checked point")
+        require(len(self.point_indices) == self.required_points and all(i >= 0 for i in self.point_indices),
+                "declared checked point coverage differs")
+        super().validate()
+
+    def _contains_point(self, index):
+        return index in self.point_indices
 
 
 @dataclass(frozen=True)
 class CandidateRank(ResearchRecord):
     candidate: AssessmentCandidate
     status: ComparisonStatus
-    target_checks: tuple[TargetCheck | FrequencyCoverageCheck | ParameterGroupCheck | ParameterNeighborhoodCheck, ...]
+    target_checks: tuple[TargetCheck | FrequencyCoverageCheck | ParameterGroupCheck | ParameterNeighborhoodCheck | DeclaredParameterPointSetCheck, ...]
     pareto_layer: int | None
     rank_in_layer: int | None
     bin_values: tuple[int | None, ...]
@@ -1754,7 +1796,7 @@ class ParameterRobustnessComparisonRequest(ResearchRecord):
 class ParameterRobustnessRow(ResearchRecord):
     candidate: AssessmentCandidate
     evaluation_context_sha256: str | None
-    parameter_context: ParameterDiagnosticContext | ParameterNeighborhoodContext | None
+    parameter_context: ParameterDiagnosticContext | ParameterNeighborhoodContext | DeclaredParameterPointContext | None
     metric_version: str | None
     frequency_window_days: int | None
     return_degradation: float | None

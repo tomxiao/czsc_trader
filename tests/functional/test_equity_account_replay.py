@@ -1,4 +1,4 @@
-"""V4 public preparation, shared benchmark and independent certification."""
+"""V4 public execution, shared benchmark and auditable account facts."""
 
 from equity_test_support import setup_account_research
 from dataclasses import FrozenInstanceError, replace
@@ -8,7 +8,6 @@ import pytest
 from strategy_runtime.equity_definition import equity_source_hash
 from strategy_runtime.equity_features import FeatureGraph
 from strategy_runtime.equity_replay import StrategyStateSchema
-from strategy_evaluator.equity_assessment import EquityCertificationScope
 from czsc_trader.research_tools.execution import ResearchExecutionSession
 from czsc_trader.research_tools.equity_evaluation import EquityArtifact, EquityEvaluationResult, validate_equity_result
 from czsc_trader.research_tools.equity_replay import (
@@ -16,12 +15,17 @@ from czsc_trader.research_tools.equity_replay import (
 )
 
 
-def test_account_shared_snapshot_benchmark_and_certification(tmp_path, monkeypatch):
+def test_account_shared_snapshot_benchmark_without_independent_audit(tmp_path, monkeypatch):
     from strategy_runtime.resources import ExecutionResources
     from czsc_trader.research_tools import equity_replay
     context, request, _, calls = setup_account_research(tmp_path)
     access = context.evaluation
     access.resources = ExecutionResources(max_workers=1, native_threads_per_worker=1)
+    from strategy_evaluator import equity, equity_assessment
+    def forbidden_audit(*args, **kwargs):
+        raise AssertionError("default account calculation must not independently audit")
+    monkeypatch.setattr(equity, "audit_equity_account", forbidden_audit)
+    monkeypatch.setattr(equity_assessment, "audit_equity_account", forbidden_audit)
     owners = []
     compute = equity_replay._compute_account
     def record_owner(*args):
@@ -46,9 +50,11 @@ def test_account_shared_snapshot_benchmark_and_certification(tmp_path, monkeypat
         assert left.snapshot is right.snapshot
         assert left.benchmark_identity == right.benchmark_identity
         assert len(fetched) == 4 and len(calls) == 4
-        outcomes = access.evaluate_many((left, right), execution=execution)
+        outcomes = access.evaluate_many((left, right, left), execution=execution)
         assert all(item.status.value == "SUCCEEDED" for item in outcomes), [item.error for item in outcomes]
-        a, b = (item.result for item in outcomes)
+        a, b, duplicate = (item.result for item in outcomes)
+        assert duplicate.content == a.content
+        validate_equity_result(access, left, duplicate, execution=execution)
         assert a.payload["benchmark_ref"] == b.payload["benchmark_ref"]
         assert a.payload["candidate_ref"] != b.payload["candidate_ref"]
         assert set(owners) == {
@@ -58,14 +64,14 @@ def test_account_shared_snapshot_benchmark_and_certification(tmp_path, monkeypat
         }
         statistics = execution.equity_statistics
         assert statistics.input_snapshots == 1
-        assert (statistics.candidate_runs, statistics.benchmark_runs, statistics.authenticated_accounts) == (2, 1, 3)
+        assert (statistics.candidate_runs, statistics.benchmark_runs) == (2, 1)
         assert len(statistics.account_timings) == 3
         assert {item.owner for item in statistics.account_timings} == set(owners)
         assert all(0 <= item.feature_seconds <= item.replay_seconds and item.decisions == 25
                    for item in statistics.account_timings)
         assert "strategy_runtime.equity_source_runtime" in left.identity(access.execution_spec)["engine_sources"]
         validate_equity_result(access, left, a, execution=execution)
-        assert execution.equity_statistics.authenticated_accounts == 3
+        assert execution.equity_statistics == statistics
         with pytest.raises(ValueError, match="exact certified"):
             validate_equity_result(access, left, EquityEvaluationResult(a.request_hash, a.content, a.artifacts), execution=execution)
         with pytest.raises(ValueError, match="not issued"):
@@ -73,24 +79,21 @@ def test_account_shared_snapshot_benchmark_and_certification(tmp_path, monkeypat
         repeated, = access.evaluate_many((left,), execution=execution)
         assert repeated.result is not None, repeated.error
         accumulated = execution.equity_statistics
-        assert (accumulated.candidate_runs, accumulated.benchmark_runs, accumulated.authenticated_accounts) == (3, 1, 3)
+        assert (accumulated.candidate_runs, accumulated.benchmark_runs) == (3, 1)
         assert len(accumulated.account_timings) == 3
         owner = f"candidate:S999:C0001:{request.candidate.content_identity.content_sha256}"
         assert next(item for item in accumulated.account_timings if item.owner == owner).decisions == 50
-        assert accumulated.reused_authentications > statistics.reused_authentications
         assert statistics.candidate_runs == 2  # earlier public snapshot cannot change
         with pytest.raises(FrozenInstanceError):
             statistics.candidate_runs = 99
         assert len(fetched) == 4
-    scope = EquityCertificationScope()
-    first = build_equity_assessment(a, scope=scope)
-    second = build_equity_assessment(b, scope=scope)
-    assert scope.audit_count == 3
+    first = build_equity_assessment(a)
+    second = build_equity_assessment(b)
     assert first[0].result_sha256 == a.result_hash and second[0].result_sha256 == b.result_hash
     assert materialize_equity(a).payload["runs"]["candidate"]["metrics"]["closed_cycles"] == 12
 
 
-def test_account_refs_and_certification_reject_mutation(tmp_path):
+def test_account_refs_and_metrics_reject_inconsistent_material(tmp_path):
     context, request, _, _ = setup_account_research(tmp_path)
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:
         prepared = prepare_equity(context.evaluation, request, execution=execution)
@@ -100,23 +103,25 @@ def test_account_refs_and_certification_reject_mutation(tmp_path):
     saved = {item.sha256: item.content for item in result.artifacts}
     view = materialize_equity(result.content, lambda ref: saved[ref["sha256"]])
     assert view.source_sha256 == result.result_hash
+    detached = view.payload
+    detached["runs"]["candidate"]["account_points"].clear()
+    assert view.payload["runs"]["candidate"]["account_points"]
     with pytest.raises(ValueError, match="digest differs"):
         materialize_equity(result.content, lambda ref: b"{}")
     payload = result.payload
     payload["candidate_ref"]["sha256"] = "a" * 64
     with pytest.raises(ValueError, match="closure differs"):
         EquityEvaluationResult(result.request_hash, json.dumps(payload).encode(), result.artifacts)
-    # Rehashing the envelope is insufficient: the independent accounting audit
-    # must still reject a self-consistent content-addressed but false account.
+    # Rehashing does not repair a disagreement between observations and metrics.
     candidate = next(item for item in result.artifacts if item.sha256 == result.payload["candidate_ref"]["sha256"])
     document = json.loads(candidate.content)
-    document["run"]["account_points"][2]["cash"] += 1
+    document["run"]["metrics"]["fees"] += 1
     changed = EquityArtifact(candidate.kind, json.dumps(document).encode())
     payload = result.payload
     payload["candidate_ref"] = changed.reference()
     altered = EquityEvaluationResult(result.request_hash, json.dumps(payload).encode(),
         tuple(changed if item is candidate else item for item in result.artifacts))
-    with pytest.raises(ValueError, match="audit mismatch"):
+    with pytest.raises(ValueError, match="metrics differ from account observations"):
         build_equity_assessment(altered)
 
 
@@ -161,7 +166,7 @@ def test_account_auxiliary_and_sessions_use_indexed_availability(tmp_path, monke
         prepared = context.evaluation.prepare(request, execution=execution)
         outcome, = context.evaluation.evaluate_many((prepared,), execution=execution)
         assert outcome.result is not None, outcome.error
-        assert execution.equity_statistics.authenticated_accounts == 2
+        assert execution.equity_statistics.benchmark_runs == 1
     assert build_equity_assessment(outcome.result)
 
 
@@ -175,7 +180,7 @@ def test_account_public_timing_rejects_invalid_units_and_owner():
         EquityAccountTiming("BENCHMARK", "benchmark:hash", 2., 1., 1, 1)
     valid = EquityAccountTiming("BENCHMARK", "benchmark:hash", 0., 1., 1, 1)
     with pytest.raises(ValueError, match="unique"):
-        EquityExecutionStatistics(1, 0, 2, 1, 0, (valid, valid))
+        EquityExecutionStatistics(1, 0, 2, (valid, valid))
 
 
 def test_account_parameter_plan_uses_owned_preparation_without_refetch(tmp_path, monkeypatch):
@@ -302,11 +307,18 @@ def test_account_loaded_account_finishes_and_publishes_after_source_change(tmp_p
         runs = materialize_equity(outcome.result).payload["runs"]
         assert runs["candidate"]["metrics"]["closed_cycles"] == 12
         assert runs["buy_hold"]["metrics"]["closed_cycles"] == 0
-        assert execution.equity_statistics.authenticated_accounts == 2
+        assert execution.equity_statistics.benchmark_runs == 1
         # A new account must load independently rather than borrow the first
         # account's already loaded module after its source has disappeared.
         subsequent, = context.evaluation.evaluate_many((prepared,), execution=execution)
         assert subsequent.status.value == "FAILED" and subsequent.result is None
+        # Publishing facts must not keep the completed result or handle alive.
+        import gc
+        from weakref import ref
+        result_ref, prepared_ref = ref(outcome.result), ref(prepared)
+        del outcome, prepared
+        gc.collect()
+        assert result_ref() is None and prepared_ref() is None
 
 
 def test_checkpoint_rejects_retired_account_schema():

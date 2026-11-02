@@ -69,7 +69,7 @@ class AccountInputSnapshot:
         return sha256(self.content).hexdigest()
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, weakref_slot=True)
 class PreparedAccountEvaluation:
     request: EvaluationRequest | EquityEvaluationRequest
     snapshot: AccountInputSnapshot | EquityInputSnapshot

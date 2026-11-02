@@ -690,6 +690,62 @@ class ParameterNeighborhoodDesign(m.ResearchRecord):
 
 
 @dataclass(frozen=True)
+class DeclaredParameterPointSet(m.ResearchRecord):
+    """An explicit selection, retaining the original design and point bindings.
+
+    The source protocol describes the coordinate domain. construction_sha256
+    identifies the caller's selection contract, not Cartesian completeness or
+    a statistical certification of that selection.
+    """
+
+    source_design: ParameterNeighborhoodDesign
+    point_indices: tuple[int, ...]
+    construction_sha256: str
+
+    def validate(self):
+        m.require(self.source_design.protocol.version == "parameter-cartesian-neighborhood-v2",
+                  "declared point sets require a current source design")
+        m.require(bool(self.point_indices), "declared point set must be nonempty")
+        m.unique(self.point_indices, "declared source point")
+        m.require(all(0 <= i < self.source_design.point_count for i in self.point_indices),
+                  "declared source point outside design")
+
+    @property
+    def center(self):
+        return self.source_design.center
+
+    @property
+    def protocol(self):
+        return self.source_design.protocol
+
+    @property
+    def space(self):
+        return self.source_design.space
+
+    @property
+    def points(self):
+        return tuple(self.source_design.points[i] for i in self.point_indices)
+
+    @property
+    def point_count(self):
+        return len(self.point_indices)
+
+    @property
+    def is_applicable(self):
+        return True
+
+    @property
+    def comparison_sha256(self):
+        return m.digest(("DECLARED_POINT_SET", self.construction_sha256,
+                         self.source_design.comparison_sha256, self.point_indices))
+
+    def bind_point(self, index):
+        if type(index) is not int or index not in self.point_indices:
+            raise ValueError("point index outside declared point set")
+        return self.source_design.bind_point(index)
+
+
+@dataclass(frozen=True)
 class ParameterNeighborhoodResult(m.ResearchRecord):
     request_sha256: str
     status: m.ParameterDesignStatus
@@ -761,6 +817,17 @@ class ParameterNeighborhoodContext(m.ResearchRecord):
     @property
     def is_applicable(self):
         return self.prescribed_points > 0
+
+
+@dataclass(frozen=True)
+class DeclaredParameterPointContext(ParameterNeighborhoodContext):
+    point_indices: tuple[int, ...]
+
+    def validate(self):
+        super().validate()
+        m.unique(self.point_indices, "declared context point")
+        m.require(len(self.point_indices) == self.prescribed_points
+                  and all(i >= 0 for i in self.point_indices), "declared context coverage differs")
 
 
 def build_parameter_neighborhood_design(

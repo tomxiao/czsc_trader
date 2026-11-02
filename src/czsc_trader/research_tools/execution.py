@@ -99,7 +99,7 @@ class EquityAccountTiming:
     """Cumulative successful replay work for one full account owner identity.
 
     replay_seconds includes feature_seconds. Both are worker elapsed seconds,
-    not end-to-end wall time, and exclude subsequent independent certification.
+    not end-to-end wall time, and exclude subsequent metrics and encoding.
     Repeated executions of the same owner are added rather than overwritten.
     """
     kind: Literal["CANDIDATE", "BENCHMARK"]
@@ -128,20 +128,16 @@ class EquityExecutionStatistics:
     """Detached V4 session statistics, including completed but rejected accounts.
 
     Run counts include only replays that returned successfully, even when their
-    subsequent certification failed. Restored results do not count as replays.
-    Authentication counters describe exact ledger audits and their reuse within
-    this session; they are not a serialized certification authority.
+    subsequent result construction failed. Restored results do not count as
+    replays. Default execution does not independently audit accounts.
     """
     input_snapshots: int
     candidate_runs: int
     benchmark_runs: int
-    authenticated_accounts: int
-    reused_authentications: int
     account_timings: tuple[EquityAccountTiming, ...]
 
     def __post_init__(self):
-        counts = (self.input_snapshots, self.candidate_runs, self.benchmark_runs,
-                  self.authenticated_accounts, self.reused_authentications)
+        counts = (self.input_snapshots, self.candidate_runs, self.benchmark_runs)
         if any(type(value) is not int or value < 0 for value in counts):
             raise ValueError("equity execution counters must be nonnegative integers")
         if type(self.account_timings) is not tuple or any(type(item) is not EquityAccountTiming for item in self.account_timings):
@@ -251,8 +247,7 @@ class ResearchExecutionSession:
         timings = tuple(EquityAccountTiming(kind, owner, item.feature_seconds, item.replay_seconds,
                                            item.rows, item.decisions)
                         for (kind, owner), item in sorted(state.replay_statistics.items()))
-        return EquityExecutionStatistics(len(state.products), state.candidate_runs, state.benchmark_runs,
-            state.certification.audit_count, state.certification.reused_count, timings)
+        return EquityExecutionStatistics(len(state.products), state.candidate_runs, state.benchmark_runs, timings)
 
 
 ProgressCallback = Callable[[ExecutionProgress], None]

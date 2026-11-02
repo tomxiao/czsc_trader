@@ -28,7 +28,9 @@ def run_accounts(context, request, *, paired=True, checkpoint=None):
         assert all(p.status.value == 'PUBLISHED' for p in publications), [p.error for p in publications]
         facts = tuple(build_assessment_evidence(p, value.result, execution=execution)[0]
                       for p, value in zip(prepared, results))
-        assert execution.equity_statistics.authenticated_accounts == len(requests) + 1
+        restored = checkpoint is not None and checkpoint.mode is CheckpointMode.RESUME
+        assert execution.equity_statistics.candidate_runs == (0 if restored else len(requests))
+        assert execution.equity_statistics.benchmark_runs == (0 if restored else 1)
         yield execution, prepared, results, publications, facts
 
 
@@ -51,7 +53,8 @@ def test_v4_public_publish_register_diagnose_and_delivery(tmp_path):
             AccountRunRef(refs[0], identities[0]), AccountRunRef(refs[1], identities[1]),
             EvaluationWindow('TEST', date(2026, 10, 1), date(2026, 10, 2))), execution=execution)
         assert diagnosis.status.value == 'COMPUTED', diagnosis.issues
-        assert execution.equity_statistics.authenticated_accounts == 3
+        assert execution.equity_statistics.candidate_runs == 2
+        assert execution.equity_statistics.benchmark_runs == 1
         record = register_candidate(context.repository,
             CandidateRegistrationRequest(request.candidate, request.experiment, (refs[0],), ()))
         assert load_candidate(context.repository, request.candidate.key).content_identity.content_sha256 == record.content_sha256

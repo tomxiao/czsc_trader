@@ -62,6 +62,8 @@ from .research_models import (
     ComparisonPolicy,
     CandidateComparisonRequest,
     CalmarComparisonRequest, CommonNeighborhoodComparisonContract, ZeroCenterAbsoluteLimit,
+    DeclaredPointSetComparisonContract, DeclaredParameterPointSet, DeclaredParameterPointContext,
+    DeclaredParameterPointSetCheck,
     ComparisonStatus,
     TargetCheck,
     CandidateRank,
@@ -400,6 +402,8 @@ __all__ += [
 ]
 
 __all__ += ["CalmarComparisonRequest", "CommonNeighborhoodComparisonContract", "ZeroCenterAbsoluteLimit"]
+__all__ += ["DeclaredParameterPointSet", "DeclaredPointSetComparisonContract", "DeclaredParameterPointContext"]
+__all__ += ["DeclaredParameterPointSetCheck"]
 
 __all__ += ["CalmarSelfCheckProtocol"]
 __all__ += [

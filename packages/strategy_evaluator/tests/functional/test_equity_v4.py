@@ -356,8 +356,15 @@ def ledger(market=MarketId.US, *, variant="scaling"):
     ],
 )
 def test_independent_v4_audit_certifies_sized_orders_and_explicit_market_rules(market, variant):
+    from dataclasses import asdict
+    from strategy_evaluator.equity_metrics import summarize_equity_ledger
     source = ledger(market, variant=variant)
     result = audit_equity_account(**source, account_contract=4, decision_contract="FORMAL_V4")
+    summarized, audited = asdict(summarize_equity_ledger({**source, "account_contract": 4})), asdict(result)
+    # The auditor reconstructs precision before journal JSON rounding; the
+    # default summary deliberately uses the recorded fee facts as its answer.
+    assert summarized.pop("fees") == pytest.approx(audited.pop("fees"), rel=1e-10, abs=1e-7)
+    assert summarized == audited
     assert result.observations == len(source["account_points"])
     assert result.closed_cycles == len(source["trades"])
     if variant == "scaling":

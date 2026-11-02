@@ -3,7 +3,10 @@ from dataclasses import replace
 import json
 
 import pytest
-from strategy_evaluator import assess_candidates, compare_candidates
+from strategy_evaluator import (
+    assess_candidates, compare_candidates, CandidatePerformanceAssessmentRequest,
+    project_parameter_performance, DeclaredParameterPointSet, DeclaredPointSetComparisonContract,
+)
 from strategy_evaluator import research_models as m
 from strategy_runtime import canonical_sha256
 from czsc_trader.application import (assemble_delivery, validate_delivery, publish_evidence,
@@ -22,7 +25,14 @@ def test_equity_stage4_authenticates_plan_targets_and_archived_accounts(tmp_path
         _check_equity_delivery(research, request, plan, plan_ref, children, execution, applicable, ranking)
 
 
-def _check_equity_delivery(research, request, plan, plan_ref, children, execution, applicable, ranking):
+def test_declared_point_set_delivery_reuses_original_bindings_and_rejects_forged_numeric_facts(tmp_path):
+    with equity_plan(tmp_path) as (research, request, plan, plan_ref, children, execution):
+        _check_equity_delivery(research, request, plan, plan_ref, children, execution, True,
+                               "research-ranking-v6", declared=True)
+
+
+def _check_equity_delivery(research, request, plan, plan_ref, children, execution, applicable, ranking,
+                           *, declared=False):
     context = research.repository
     evidence, refs = [], []
     pressure = research.evaluation.prepare(replace(request.request, scenario_id="PRESSURE", measurement_tier="STRESS",
@@ -45,7 +55,18 @@ def _check_equity_delivery(research, request, plan, plan_ref, children, executio
         protocol = assessment.protocol.to_dict()
         protocol["type"] = "CalmarSelfCheckProtocol"
         assessment = replace(assessment, protocol=m.CalmarSelfCheckProtocol.from_dict(protocol))
-    panel = assess_candidates(assessment)
+    if declared:
+        geometry = DeclaredParameterPointSet(plan.design, (plan.design.point_count - 1,), "d" * 64)
+        assessment = replace(assessment, parameter_designs=(geometry,),
+            perturbations=tuple(x for x in assessment.perturbations if x.parameter_point.point_index in geometry.point_indices),
+            evidence=tuple(x for x in assessment.evidence if x.parent is None
+                           or x.parameter_point.point_index in geometry.point_indices))
+        assessment_input = CandidatePerformanceAssessmentRequest(
+            replace(assessment, evidence=tuple(x for x in assessment.evidence if x.parent is None)),
+            tuple(project_parameter_performance(x) for x in assessment.evidence if x.parent is not None))
+    else:
+        assessment_input = assessment
+    panel = assess_candidates(assessment_input)
     performance_metric = m.ResearchMetric.NET_CALMAR if ranking == "research-ranking-v6" else m.ResearchMetric.NET_ANNUAL_RETURN
     performance_lower = -1e100 if ranking == "research-ranking-v6" else -1.
     targets = (
@@ -69,9 +90,10 @@ def _check_equity_delivery(research, request, plan, plan_ref, children, executio
                                  m.ResearchMetric.STRESS_ANNUAL_LOSS: m.ResearchMetric.STRESS_CALMAR_LOSS})
         bins = tuple(replace(item, metric=replacements.get(item.metric, item.metric))
                      for item in comparison.policy.bins)
+        scale = m.CommonNeighborhoodComparisonContract(m.RelativeChangeLimit(.05), ())
         comparison = m.CalmarComparisonRequest(comparison.candidates, comparison.targets, panel,
-            replace(comparison.policy, bins=bins, formula_version=ranking), (plan.design,),
-            m.CommonNeighborhoodComparisonContract(m.RelativeChangeLimit(.05), ()))
+            replace(comparison.policy, bins=bins, formula_version=ranking), assessment.parameter_designs,
+            DeclaredPointSetComparisonContract("d" * 64, scale) if declared else scale)
     confirmation = publish_evidence(research, MaterialEvidenceWrite(request.experiment, "confirmed-targets",
         b'{"engineering_fixture":true}', "application/json", "json"))
     confirmed = d.ConfirmationRecord(d.ConfirmationStatus.CONFIRMED, confirmation)
@@ -92,18 +114,28 @@ def _check_equity_delivery(research, request, plan, plan_ref, children, executio
     candidates = assemble_delivery(context, d.DeliveryDefinition(research.batch, d.DeliveryStage.CANDIDATES, 1),
         content(d.CandidateSet((entry,), (request.candidate.key,), (), "One synthetic center"))).receipt
     payload = d.CandidateAssessmentDelivery(candidates.reference, mandate_receipt.reference,
-        assessment, panel, comparison, compare_candidates(comparison),
+        assessment_input, panel, comparison, compare_candidates(comparison),
         tuple(d.TargetMandateBinding(t.target_id, "targets") for t in targets), "frequency", "benchmark",
         "Engineering closure only; no research selection", tuple(refs), (), parameter_plans=(plan_ref,))
     definition = d.DeliveryDefinition(research.batch, d.DeliveryStage.ASSESSMENT, 1,
                                      predecessors=(candidates.reference, mandate_receipt.reference),
-                                     schema_version={"research-ranking-v4": 12, "research-ranking-v5": 13,
-                                                     "research-ranking-v6": 14}[ranking])
+                                     schema_version=15 if declared else {"research-ranking-v4": 12,
+                                         "research-ranking-v5": 13, "research-ranking-v6": 14}[ranking])
     assembled = assemble_delivery(context, definition, content(payload))
     assert assembled.validation.status is d.ValidationStatus.PASS
     assert assembled.validation.stats.accounts_authenticated == 2 + len(children)
     assert validate_delivery(context, assembled.receipt.reference).status is d.ValidationStatus.PASS
-    if ranking in ("research-ranking-v5", "research-ranking-v6"):
+    if declared:
+        assert assembled.receipt.schema_version == 15
+        assert d.DeliveryContent.from_dict(content(payload).to_dict()).payload == payload
+        point, = assessment_input.parameter_evidence
+        assert point.parameter_point == plan.design.bind_point(plan.design.point_count - 1)
+        forged = replace(assessment_input, parameter_evidence=(replace(point,
+            performance=replace(point.performance, annual_return=point.performance.annual_return + .25)),))
+        with pytest.raises(d.DeliveryValidationError, match="saved evaluation facts"):
+            assemble_delivery(context, replace(definition, revision=2),
+                              content(replace(payload, assessment_request=forged)))
+    if not declared and ranking in ("research-ranking-v5", "research-ranking-v6"):
         assert assembled.receipt.schema_version == (14 if ranking == "research-ranking-v6" else 13)
         assert d.DeliveryContent.from_dict(content(payload).to_dict()).payload == payload
         with pytest.raises(d.DeliveryValidationError, match="ranking version"):
@@ -113,7 +145,7 @@ def _check_equity_delivery(research, request, plan, plan_ref, children, executio
                                       evidence=tuple(evidence[:2]))
             assemble_delivery(context, replace(definition, revision=2),
                               content(replace(payload, assessment_request=changed_request)))
-    if ranking == "research-ranking-v6":
+    if not declared and ranking == "research-ranking-v6":
         with pytest.raises(d.DeliveryValidationError, match="ranking version"):
             assemble_delivery(context, replace(definition, revision=2, schema_version=13), content(payload))
         old_protocol = assessment.protocol.to_dict()

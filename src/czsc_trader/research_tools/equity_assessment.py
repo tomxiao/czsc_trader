@@ -4,6 +4,7 @@ from dataclasses import asdict
 from datetime import date, datetime, timedelta
 from hashlib import sha256
 import json
+import math
 
 import pandas as pd
 from dataflows import EquityDataRequest, EquityProduct, EquityQuery, SourceRef
@@ -14,7 +15,8 @@ from strategy_evaluator import (
     AccountPoint, AssessmentCandidate, AssessmentDerivationKind, AssessmentEvidence,
     AssessmentFill, ClosedCycle, EquityAssessmentFacts, EvaluationScenarioContext, FillSide,
 )
-from strategy_evaluator.equity_assessment import canonical_ledger, daily_points, session, certify_equity_ledger
+from strategy_evaluator.equity_assessment import canonical_ledger, daily_points, session
+from strategy_evaluator.equity_metrics import summarize_equity_ledger
 from strategy_manager import CandidateDerivation, CandidateKey
 from strategy_runtime import canonical_sha256
 from strategy_runtime.equity import equity_hash
@@ -235,15 +237,24 @@ def build_equity_assessment_payload(payload):
         ledger["account_contract"] = 4
         if name == 'candidate' and definition.execution_input is not None:
             ledger['execution_bars'] = inputs['decision_inputs']['execution']['bars']
-        audit = certify_equity_ledger(ledger)
-        if _canonical(asdict(audit)) != _canonical(run["metrics"]):
-            raise ValueError("equity metrics differ from independently audited account")
+        metrics = summarize_equity_ledger(ledger)
+        recorded = dict(run["metrics"])
+        # Persisted fill fees have the ledger's JSON precision. Compare their
+        # aggregate numerically; all other fields retain exact fact semantics.
+        fees = recorded.get("fees")
+        if type(fees) not in (int, float) or not math.isfinite(fees) or fees < 0 or not math.isclose(
+            fees, metrics.fees, rel_tol=1e-10, abs_tol=1e-7
+        ):
+            raise ValueError("equity metrics differ from account observations")
+        recorded["fees"] = metrics.fees
+        if _canonical(asdict(metrics)) != _canonical(recorded):
+            raise ValueError("equity metrics differ from account observations")
         if list(daily_points(ledger)) != run["account_daily"]:
             raise ValueError("equity daily observations differ from account journal")
         from .equity_evaluation import _data_quality
         if run.get("data_quality") != _data_quality(inputs["bars"], run,
                 timezone=definition.instrument.timezone, execution_bars=ledger.get("execution_bars")):
-            raise ValueError("equity archived data quality differs from audited facts")
+            raise ValueError("equity archived data quality differs from account facts")
         ledgers[name] = ledger
     facts = EquityAssessmentFacts(instrument["market"], definition.instrument.timezone, definition.instrument.currency, request["drawdown_basis"],
         request["concentration_basis"], canonical_ledger(ledgers["candidate"]), canonical_ledger(ledgers["buy_hold"]))

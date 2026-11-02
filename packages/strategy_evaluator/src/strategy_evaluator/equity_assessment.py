@@ -10,6 +10,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from .equity import audit_equity_account
+from .equity_metrics import summarize_equity_ledger
 from .models import ValidationError
 
 
@@ -123,10 +124,7 @@ def validate_equity_facts(facts):
             raise ValidationError("equity ledger market differs")
         if ledger["specification"]["account"]["currency"] != facts.currency:
             raise ValidationError("equity ledger currency differs")
-        certify_equity_ledger(ledger)
-        for point in ledger["account_points"]:
-            if point["session"] != session(point["time"], facts.timezone):
-                raise ValidationError("equity account session differs from market timezone")
+        summarize_equity_ledger(ledger)
     for key in ("initial_cash", "specification", "bars", "action_facts", "constraints", "fee_rate"):
         if candidate[key] != benchmark[key]:
             raise ValidationError("equity benchmark execution facts differ")
@@ -143,19 +141,19 @@ def validate_equity_assessment(evidence):
                      for r in daily_points(candidate))
     actual = tuple((r.session, r.cash, r.quantity, r.close, r.equity) for r in evidence.account)
     if actual != expected:
-        raise ValidationError("equity assessment daily account differs from audited journal")
+        raise ValidationError("equity assessment daily account differs from account journal")
     expected_fills = tuple((r["cycle_id"], session(r["interval_end"], facts.timezone), r["side"],
                             int(r["quantity"]), float(r["price"]), float(r["fees"])) for r in candidate["fills"])
     actual_fills = tuple((r.cycle_id, r.session, r.side.value, r.quantity, r.price, r.fees) for r in evidence.fills)
     if expected_fills != actual_fills:
-        raise ValidationError("equity assessment fills differ from audited journal")
+        raise ValidationError("equity assessment fills differ from account journal")
     expected_cycles = tuple((r["cycle_id"], session(r["exit_at"], facts.timezone)) for r in candidate["trades"])
     if expected_cycles != tuple((r.cycle_id, r.exit_session) for r in evidence.closed_cycles):
-        raise ValidationError("equity assessment cycles differ from audited journal")
+        raise ValidationError("equity assessment cycles differ from account journal")
     if evidence.benchmark_equity != tuple(float(r["equity"]) for r in daily_points(benchmark)):
-        raise ValidationError("equity assessment benchmark differs from audited journal")
+        raise ValidationError("equity assessment benchmark differs from account journal")
     if evidence.scenario_context.one_way_cost != candidate["fee_rate"]:
-        raise ValidationError("equity assessment fee differs from audited journal")
+        raise ValidationError("equity assessment fee differs from account journal")
     expected_version = f"equity-assessment-v4:{facts.drawdown_basis}:{facts.concentration_basis}"
     if evidence.metric_version != expected_version:
         raise ValidationError("equity metric semantics differ")

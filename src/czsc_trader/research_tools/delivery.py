@@ -12,6 +12,7 @@ from strategy_manager import CandidateKey
 from strategy_manager import ResearchEvidenceRef, DecisionReference, FreezeReceipt
 from strategy_evaluator import (
     CandidateAssessmentRequest,
+    CandidatePerformanceAssessmentRequest,
     AssessmentPanel,
     CandidateComparisonRequest,
     CalmarComparisonRequest,
@@ -61,7 +62,7 @@ def _schema_version(stage: DeliveryStage) -> int:
 
 def _readable_schema_versions(stage: DeliveryStage) -> tuple[int, ...]:
     if stage is DeliveryStage.ASSESSMENT:
-        return (8, 11, 12, 13, 14)
+        return (8, 11, 12, 13, 14, 15)
     if stage in (DeliveryStage.MANDATE, DeliveryStage.ASSESSMENT):
         return (8, 11, 12)
     return (_schema_version(stage),)
@@ -553,7 +554,7 @@ class TargetMandateBinding(_Record):
 class CandidateAssessmentDelivery(_Record):
     source_candidates: DeliveryReference
     source_mandate: DeliveryReference
-    assessment_request: CandidateAssessmentRequest
+    assessment_request: CandidateAssessmentRequest | CandidatePerformanceAssessmentRequest
     assessment: AssessmentPanel
     comparison_request: CandidateComparisonRequest | CalmarComparisonRequest
     comparison: CandidateComparison

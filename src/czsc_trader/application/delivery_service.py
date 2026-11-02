@@ -17,7 +17,11 @@ from threadpoolctl import threadpool_limits
 from strategy_runtime.resources import ExecutionResources
 
 from factor_signal_catalog import FactorDefinition, SignalDefinition
-from strategy_evaluator import AssessmentEvidence, AssessmentPanel, assess_candidates, compare_candidates
+from strategy_evaluator import (
+    AssessmentEvidence, AssessmentPanel, CandidatePerformanceAssessmentRequest,
+    ParameterNeighborhoodBinding, project_parameter_performance,
+    assess_candidates, compare_candidates,
+)
 from strategy_evaluator.research_models import is_frequency_target
 from strategy_manager.write_lock import RegistryWriteLock
 from strategy_manager.errors import RegistryError, StrategyManagerError
@@ -259,7 +263,8 @@ def _certify_account(data, reference, root=None):
             if root is None:
                 raise ValueError('account dependency certification requires its repository root')
             view = materialize_equity_document(root, reference.path, value)
-            records = build_equity_assessment(view)
+            records = tuple(project_parameter_performance(item) if isinstance(item.parameter_point, ParameterNeighborhoodBinding) else item
+                            for item in build_equity_assessment(view))
             value = view.payload
             request = value["request"]
             projection = {"schema_version": reference.schema_version, "request_hash": value["request_hash"],
@@ -268,6 +273,8 @@ def _certify_account(data, reference, root=None):
             return projection, records
         validate_evaluation_evidence(value)
         records = tuple(AssessmentEvidence.from_dict(item) for item in value["assessment_evidence"])
+        records = tuple(project_parameter_performance(item) if isinstance(item.parameter_point, ParameterNeighborhoodBinding) else item
+                        for item in records)
         # Retain only fields needed for later identity/plan checks. Raw JSON and
         # account ledgers are deliberately released after full certification.
         projection = {"schema_version": value["schema_version"],
@@ -477,6 +484,17 @@ def _validate_inspection_delivery(definition, content, root, context):
                 _fail("FREEZE_RECEIPT", "freeze", "freeze request report/approval differs")
 
 
+def _assessment_base(payload):
+    request = payload.assessment_request
+    return request.baseline_request if type(request) is CandidatePerformanceAssessmentRequest else request
+
+
+def _assessment_evidence(payload):
+    request = payload.assessment_request
+    return ((*request.baseline_request.evidence, *request.parameter_evidence)
+            if type(request) is CandidatePerformanceAssessmentRequest else request.evidence)
+
+
 def _validate_parameter_method_schema(definition, payload):
     """Versioned envelopes must not relabel either generation of parameter facts."""
     from strategy_evaluator import research_models as m
@@ -499,7 +517,8 @@ def _validate_parameter_method_schema(definition, payload):
     expected_method = {11: "parameter-cartesian-neighborhood-v1",
                        12: "parameter-cartesian-neighborhood-v2",
                        13: "parameter-cartesian-neighborhood-v2",
-                       14: "parameter-cartesian-neighborhood-v2"}.get(definition.schema_version)
+                       14: "parameter-cartesian-neighborhood-v2",
+                       15: "parameter-cartesian-neighborhood-v2"}.get(definition.schema_version)
     if expected_method is not None and any(
         isinstance(value, ParameterNeighborhoodProtocol) and value.version != expected_method
         for value in _walk(payload)
@@ -509,22 +528,29 @@ def _validate_parameter_method_schema(definition, payload):
     if definition.stage is d.DeliveryStage.ASSESSMENT:
         expected_assessment = {8: "research-assessment-v5", 11: "research-assessment-v6",
                                12: "research-assessment-v7", 13: "research-assessment-v7",
-                               14: "research-assessment-v8"}[definition.schema_version]
+                               14: "research-assessment-v8", 15: "research-assessment-v8"}[definition.schema_version]
         expected_ranking = {12: "research-ranking-v4", 13: "research-ranking-v5",
-                            14: "research-ranking-v6"}.get(
+                            14: "research-ranking-v6", 15: "research-ranking-v6"}.get(
             definition.schema_version, "research-ranking-v3")
         if (payload.assessment.formula_version != expected_assessment
             or payload.comparison_request.policy.formula_version != expected_ranking
-            or (definition.schema_version in (13, 14)) != isinstance(
+            or (definition.schema_version in (13, 14, 15)) != isinstance(
                 payload.comparison_request, m.CalmarComparisonRequest)
-            or (definition.schema_version == 14) != isinstance(
-                payload.assessment_request.protocol, m.CalmarSelfCheckProtocol)):
+            or (definition.schema_version in (14, 15)) != isinstance(
+                _assessment_base(payload).protocol, m.CalmarSelfCheckProtocol)):
             _fail("PARAMETER_METHOD_SCHEMA", "content.payload",
                   "assessment or ranking version differs from delivery schema")
-        if (definition.schema_version in (13, 14)
-            and payload.comparison_request.parameter_designs != payload.assessment_request.parameter_designs):
+        if (definition.schema_version in (13, 14, 15)
+            and payload.comparison_request.parameter_designs != _assessment_base(payload).parameter_designs):
             _fail("PARAMETER_METHOD_SCHEMA", "content.payload",
                   "Calmar comparison designs must equal assessment request designs")
+        if (definition.schema_version == 15) != (type(payload.assessment_request)
+                                                is CandidatePerformanceAssessmentRequest):
+            _fail("PARAMETER_METHOD_SCHEMA", "content.payload", "performance inputs require assessment schema 15")
+        if definition.schema_version != 15 and any(
+            isinstance(value, m.DeclaredParameterPointSet) for value in _walk(payload)
+        ):
+            _fail("PARAMETER_METHOD_SCHEMA", "content.payload", "declared point sets require assessment schema 15")
 
 
 def _assessment_recomputation_matches(recomputed: AssessmentPanel, published: AssessmentPanel) -> bool:
@@ -564,7 +590,7 @@ def _validate_assessment_delivery(definition, payload, root, context, content, s
     expected = {f"{key.strategy_id}-{key.candidate_id}": next(
         x.identity.content_sha256 for x in candidates.candidates if x.identity.key == key)
         for key in candidates.handoff}
-    actual = {x.candidate_id: x.content_sha256 for x in payload.assessment_request.centers}
+    actual = {x.candidate_id: x.content_sha256 for x in _assessment_base(payload).centers}
     if expected != actual:
         _fail("ASSESSMENT_SCOPE", "centers", "assessment centers differ from stage-three handoff")
     declarations = {x.item_id: x for x in mandate.items}
@@ -593,7 +619,7 @@ def _validate_assessment_delivery(definition, payload, root, context, content, s
         or not isinstance(item.requirement, d.BenchmarkRequirement)):
         _fail("BENCHMARK_BINDING", "benchmark", "benchmark requires a confirmed typed mandate")
     benchmark = item.requirement.benchmark
-    for evidence in payload.assessment_request.evidence:
+    for evidence in _assessment_evidence(payload):
         if (evidence.scenario_context.benchmark_contract_sha256 != benchmark.fingerprint
             or evidence.scenario_context.benchmark_id != benchmark.benchmark_id
             or evidence.scenario_context.benchmark_kind != benchmark.kind):
@@ -618,8 +644,11 @@ def _validate_assessment_delivery(definition, payload, root, context, content, s
                 previous = saved.setdefault(evidence.evaluation_id, evidence)
                 if previous != evidence:
                     _fail("ASSESSMENT_EVIDENCE", evidence.evaluation_id, "conflicting saved account facts")
-    for evidence in payload.assessment_request.evidence:
-        if saved.get(evidence.evaluation_id) != evidence:
+    for evidence in _assessment_evidence(payload):
+        expected = (project_parameter_performance(evidence)
+                    if type(evidence) is AssessmentEvidence
+                    and isinstance(evidence.parameter_point, ParameterNeighborhoodBinding) else evidence)
+        if saved.get(evidence.evaluation_id) != expected:
             _fail("ASSESSMENT_EVIDENCE", evidence.evaluation_id, "assessment differs from saved evaluation facts")
     _validate_parameter_plans(payload, root, saved_requests, saved_policies)
     if scope is d.DeliveryValidationScope.INTEGRITY:
@@ -655,6 +684,9 @@ def _validate_parameter_plans(payload, root, saved_requests, saved_policies):
         parameter_execution_policy, equity_planned_identity,
     )
 
+    from strategy_evaluator import DeclaredParameterPointSet
+    designs = {(x.source_design.sha256 if type(x) is DeclaredParameterPointSet else x.sha256): x
+               for x in _assessment_base(payload).parameter_designs}
     plans = {}
     for reference in payload.parameter_plans:
         plan = ParameterEvaluationPlan.from_dict(json.loads(_read_evidence(root, reference)))
@@ -672,9 +704,9 @@ def _validate_parameter_plans(payload, root, saved_requests, saved_policies):
                     _fail("PARAMETER_PAYLOAD", reference.path, "planned payload runtime identity differs")
         plans[plan.design.sha256] = (reference, plan)
         central = saved_requests.get(plan.center_request_sha256)
-        evidence = tuple(x for x in payload.assessment_request.evidence if x.candidate == plan.design.center
-                         and x.window_id == payload.assessment_request.protocol.baseline_window
-                         and x.scenario_id == payload.assessment_request.protocol.standard_scenario)
+        evidence = tuple(x for x in _assessment_evidence(payload) if x.candidate == plan.design.center
+                         and x.window_id == _assessment_base(payload).protocol.baseline_window
+                         and x.scenario_id == _assessment_base(payload).protocol.standard_scenario)
         if (central is None or not evidence or any(x.request_sha256 != plan.center_request_sha256 for x in evidence)
             or central["nonparameter_context_sha256"] != plan.nonparameter_context_sha256
             or central["content_sha256"] != plan.design.center.content_sha256
@@ -688,14 +720,19 @@ def _validate_parameter_plans(payload, root, saved_requests, saved_policies):
         policy = json.loads(plan.execution_contract_json)["policy"]
         if any(parameter_execution_policy(x) != policy for x in saved_policies[plan.center_request_sha256]):
             _fail("PARAMETER_CENTER", reference.path, "planned center execution policy differs")
-        links = tuple(x for x in payload.assessment_request.perturbations if x.parent == plan.design.center)
-        expected = tuple((x.candidate, plan.design.bind_point(index)) for index, x in enumerate(plan.children))
+        links = tuple(x for x in _assessment_base(payload).perturbations if x.parent == plan.design.center)
+        declared = designs.get(plan.design.sha256)
+        if declared is None:
+            _fail("PARAMETER_PLAN", reference.path, "source plan is absent from assessment designs")
+        selected = (declared.point_indices if type(declared) is DeclaredParameterPointSet
+                    else tuple(range(plan.design.point_count)))
+        expected = tuple((plan.children[index].candidate, plan.design.bind_point(index)) for index in selected)
         actual = tuple((x.child, x.parameter_point) for x in links)
         if set(actual) != set(expected) or len(actual) != len(expected):
-            _fail("PARAMETER_PLAN", reference.path, "assessment links differ from complete plan")
-    if set(plans) != {x.sha256 for x in payload.assessment_request.parameter_designs}:
+            _fail("PARAMETER_PLAN", reference.path, "assessment links differ from declared plan points")
+    if set(plans) != set(designs):
         _fail("PARAMETER_PLAN", "parameter_plans", "assessment designs differ from published plans")
-    for evidence in payload.assessment_request.evidence:
+    for evidence in _assessment_evidence(payload):
         if evidence.parameter_point is None:
             continue
         reference, plan = plans[evidence.parameter_point.design_sha256]
@@ -842,7 +879,7 @@ def assemble_delivery(context: RepositoryContext, definition: d.DeliveryDefiniti
         or type(content) is not d.DeliveryContent):
         raise TypeError("assembly requires RepositoryContext, DeliveryDefinition and DeliveryContent")
     if (definition.schema_version != d._schema_version(definition.stage)
-        and not (definition.stage is d.DeliveryStage.ASSESSMENT and definition.schema_version in (13, 14))):
+        and not (definition.stage is d.DeliveryStage.ASSESSMENT and definition.schema_version in (13, 14, 15))):
         _fail("DELIVERY_SCHEMA", "definition.schema_version", "historical delivery schemas are read-only")
     _validate_parameter_method_schema(definition, content.payload)
     lock = _resolve(context.root, f".tmp/delivery-publication/{definition.strategy_id}")

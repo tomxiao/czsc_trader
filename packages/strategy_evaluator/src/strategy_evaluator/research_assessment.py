@@ -380,7 +380,8 @@ def _assess_candidates(request: m.CandidateAssessmentRequest, *, parameter_evide
             declared_complete = design is None or (
                 len(links) == _point_count(design)
                 and {x.parameter_point.point_index for x in links}
-                == set(range(_point_count(design)))
+                == (set(design.point_indices) if isinstance(design, m.DeclaredParameterPointSet)
+                    else set(range(_point_count(design))))
             )
             if isinstance(design, m.ParameterNeighborhoodDesign) and not design.is_applicable:
                 for metric in (
@@ -554,7 +555,7 @@ def _assess_candidates(request: m.CandidateAssessmentRequest, *, parameter_evide
 
 
 def _point_count(design):
-    return design.point_count if isinstance(design, m.ParameterNeighborhoodDesign) else design.protocol.point_count
+    return design.point_count if isinstance(design, (m.ParameterNeighborhoodDesign, m.DeclaredParameterPointSet)) else design.protocol.point_count
 
 
 def parameter_comparison_key(context):
@@ -597,7 +598,12 @@ def _parameter_context(request, center, evidence, base, projection_context=None)
             and _parameter_comparable(neighbor, base, request.protocol, projection_context)
         ):
             valid += 1
-    if isinstance(design, m.ParameterNeighborhoodDesign):
+    if isinstance(design, (m.ParameterNeighborhoodDesign, m.DeclaredParameterPointSet)):
+        if isinstance(design, m.DeclaredParameterPointSet):
+            return m.DeclaredParameterPointContext(
+                design.protocol, design.sha256, design.space.sha256, len(design.space.axes),
+                design.point_count, valid, design.comparison_sha256, design.point_indices,
+            )
         return m.ParameterNeighborhoodContext(
             design.protocol, design.sha256, design.space.sha256, len(design.space.axes),
             design.point_count, valid, design.comparison_sha256,
@@ -758,7 +764,9 @@ def _ranking_diagnostics(row, policy):
     elif (isinstance(context, m.ParameterNeighborhoodContext)
             and context.valid_points == context.prescribed_points
             and len(facts) == context.prescribed_points
-            and {x.point_index for x in facts} == set(range(context.prescribed_points))):
+            and {x.point_index for x in facts} == (
+                set(context.point_indices) if isinstance(context, m.DeclaredParameterPointContext)
+                else set(range(context.prescribed_points)))):
         calmars = []
         for point in sorted(facts, key=lambda x: x.point_index):
             if point.annual_return is None or point.drawdown is None or point.drawdown <= 1e-12:

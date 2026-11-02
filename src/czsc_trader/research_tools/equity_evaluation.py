@@ -19,7 +19,7 @@ from strategy_runtime.equity_definition import EquityStrategyCandidate, EquityIn
 from dataflows.equity_data import sessions_from_metadata
 from trading_execution_engine.portfolio import PortfolioHistoricalExecutor
 from trading_execution_engine.fills import resolve_fill
-from strategy_evaluator.equity import audit_equity_account
+from strategy_evaluator.equity_metrics import summarize_equity_ledger
 
 from .context import ExperimentRef
 from ..backtesting.benchmark_contracts import EvaluationBenchmark, EquityBuyHold
@@ -117,15 +117,15 @@ class EquityEvaluationRequest:
         candidate = self.candidate
         from strategy_runtime import (equity_features, equity_replay as srt_replay, equity_buy_hold_v4,
             equity_source_runtime, replay_kernel, replay_contracts, account_strategy, account_replay)
-        from strategy_evaluator import equity_assessment as se_assessment, equity_v4
+        from strategy_evaluator import equity_assessment as se_assessment
         from . import equity_replay, equity_assessment, parameter_evaluation, account_preparation
         from trading_execution_engine import accounting, portfolio
         from trading_execution_engine import equity as account_ledger
         engine_sources = {item.__module__: sha256(Path(inspect.getsourcefile(item)).read_bytes()).hexdigest()
             for item in (EquityEvaluationRequest, EquityStrategyCandidate, StrategyRuntime,
-                PortfolioHistoricalExecutor, resolve_fill, audit_equity_account)}
+                PortfolioHistoricalExecutor, resolve_fill, summarize_equity_ledger)}
         for module in (equity_features, srt_replay, equity_buy_hold_v4, equity_source_runtime,
-                replay_kernel, replay_contracts, account_strategy, account_replay, se_assessment, equity_v4,
+                replay_kernel, replay_contracts, account_strategy, account_replay, se_assessment,
                 equity_replay, equity_assessment, parameter_evaluation, account_preparation, accounting,
                 portfolio, account_ledger):
             engine_sources[module.__name__] = sha256(Path(module.__file__).read_bytes()).hexdigest()
@@ -159,22 +159,24 @@ class EquityArtifact:
     """An immutable, content addressed member of a V4 evidence closure."""
     kind: str
     content: bytes
+    _content_sha256: str = field(init=False, repr=False, compare=False)
 
     def __post_init__(self):
         if self.kind not in {"equity_input", "equity_account"}:
             raise ValueError("unknown equity artifact kind")
         if type(self.content) is not bytes or not self.content:
             raise TypeError("equity artifact requires immutable bytes")
+        object.__setattr__(self, "_content_sha256", sha256(self.content).hexdigest())
 
     @property
     def sha256(self):
-        return sha256(self.content).hexdigest()
+        return self._content_sha256
 
     def reference(self):
         return {"kind": self.kind, "sha256": self.sha256}
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, weakref_slot=True)
 class EquityEvaluationResult:
     """Canonical immutable evidence bytes; views returned by payload are detached."""
     request_hash: str
