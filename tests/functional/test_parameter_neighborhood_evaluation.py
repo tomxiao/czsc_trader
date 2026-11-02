@@ -1,4 +1,4 @@
-"""Typed neighborhood plans bind actual payload leaves, not a mapping declaration alone."""
+"""Typed parameter plans retain declared inputs without implicit research certification."""
 from evaluation_seed_support import prepare_request
 
 from dataclasses import replace
@@ -14,7 +14,7 @@ from test_research_contract_upgrade import managed_evaluation as managed_evaluat
 
 
 @pytest.mark.parametrize("mutation", ["wrong_point", "hidden_parameter", "wrong_type", "hidden_payload"])
-def test_plan_rejects_payload_not_equal_to_prescribed_point(prepared_parameter_plan, mutation):
+def test_plan_records_payload_changes_for_explicit_research_review(prepared_parameter_plan, mutation):
     _, _, plan, _, _ = prepared_parameter_plan
     child = plan.children[0]
     payload = json.loads(child.payload_json)
@@ -27,8 +27,8 @@ def test_plan_rejects_payload_not_equal_to_prescribed_point(prepared_parameter_p
     else:
         payload["undeclared"] = {"outside_parameters": True}
     altered = replace(child, payload_json=_payload_json(payload))
-    with pytest.raises(ValueError, match="declared point mapping"):
-        replace(plan, children=(altered, *plan.children[1:]))
+    recorded = replace(plan, children=(altered, *plan.children[1:]))
+    assert json.loads(recorded.children[0].payload_json) == payload
 
 
 def test_plan_rejects_missing_point_and_duplicate_content(prepared_parameter_plan):
@@ -42,7 +42,7 @@ def test_plan_rejects_missing_point_and_duplicate_content(prepared_parameter_pla
 
 
 @pytest.mark.parametrize("mutation", ["value", "type", "path"])
-def test_plan_authenticates_declared_center_payload(prepared_parameter_plan, mutation):
+def test_plan_records_declared_center_payload_without_proving_its_mapping(prepared_parameter_plan, mutation):
     _, _, plan, _, _ = prepared_parameter_plan
     payload = json.loads(plan.center.payload_json)
     if mutation == "value":
@@ -52,8 +52,7 @@ def test_plan_authenticates_declared_center_payload(prepared_parameter_plan, mut
     else:
         del payload["parameters"]["threshold"]
     altered = replace(plan.center, payload_json=_payload_json(payload))
-    with pytest.raises(ValueError, match="center payload differs|payload path does not exist"):
-        replace(plan, center=altered)
+    assert json.loads(replace(plan, center=altered).center.payload_json) == payload
 
 
 def test_new_plan_schema_cannot_be_downgraded(prepared_parameter_plan):
@@ -65,19 +64,18 @@ def test_new_plan_schema_cannot_be_downgraded(prepared_parameter_plan):
         ParameterEvaluationPlan.from_dict(saved)
 
 
-def test_structural_control_cannot_use_local_evaluation_plan(prepared_parameter_plan):
+def test_plan_preserves_the_callers_declared_study_purpose(prepared_parameter_plan):
     from strategy_evaluator import StudyPurpose
 
     _, _, plan, _, _ = prepared_parameter_plan
     design = replace(plan.design, protocol=replace(plan.design.protocol, purpose=StudyPurpose.STRUCTURAL_CONTROL))
-    with pytest.raises(ValueError, match="structural controls are separate"):
-        replace(plan, design=design)
+    assert replace(plan, design=design).design.protocol.purpose is StudyPurpose.STRUCTURAL_CONTROL
 
 
-def test_create_rejects_hidden_parameter_even_when_execution_is_unchanged(managed_evaluation):
+def test_create_retains_additional_parameters_for_explicit_review(managed_evaluation):
     research, request = managed_evaluation
-    with pytest.raises(ValueError, match="declared point mapping"):
-        parameter_plan(research, request, child_parameters=lambda point: {"unreported": 1})
+    _, plan, _, _ = parameter_plan(research, request, child_parameters=lambda point: {"unreported": 1})
+    assert all(json.loads(child.payload_json)["parameters"]["unreported"] == 1 for child in plan.children)
 
 
 def test_nested_payload_path_preserves_exact_typed_values(prepared_parameter_plan):
@@ -104,8 +102,8 @@ def test_nested_payload_path_preserves_exact_typed_values(prepared_parameter_pla
     assert ParameterEvaluationPlan.from_dict(typed.to_dict()) == typed
     child_payload = json.loads(children[0].payload_json)
     child_payload["parameters"]["timing"]["hold"] = float(child_payload["parameters"]["timing"]["hold"])
-    with pytest.raises(ValueError, match="declared point mapping"):
-        replace(typed, children=(replace(children[0], payload_json=_payload_json(child_payload)), children[1]))
+    changed = replace(typed, children=(replace(children[0], payload_json=_payload_json(child_payload)), children[1]))
+    assert type(json.loads(changed.children[0].payload_json)["parameters"]["timing"]["hold"]) is float
 
 
 def test_legacy_sphere_plan_is_readable_but_cannot_start_new_work(prepared_parameter_plan):
@@ -133,14 +131,14 @@ def test_legacy_sphere_plan_is_readable_but_cannot_start_new_work(prepared_param
     oldref = publish_evidence(research, MaterialEvidenceWrite(reference.experiment,
         "legacy-read-only-plan", json.dumps(legacy.to_dict()).encode(), "application/json", "json"))
     assert read_parameter_plan(oldref, center.repository_root) == legacy
-    with pytest.raises(TypeError, match="legacy sphere plans are read-only"):
+    with pytest.raises(TypeError, match="typed neighborhood"):
         ParameterEvaluationPlan.create(olddesign, center, (), mapping_evidence=plan.mapping_evidence,
             feasibility_evidence=plan.feasibility_evidence, dataflows=research.data)
     with pytest.raises(ValueError, match="read-only"):
         legacy.bind_point(oldref, 0, repository_root=center.repository_root)
     oldbinding = ParameterEvaluationBinding(oldref, olddesign.bind_point(0))
     request = replace(children[0], lineage=replace(children[0].lineage, parameter_binding=oldbinding))
-    with pytest.raises(ValueError, match="read-only|legacy|schema 2"):
+    with pytest.raises(ValueError, match="historical read-only"):
         prepare_request(research, request)
 
 

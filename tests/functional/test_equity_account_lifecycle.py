@@ -97,6 +97,32 @@ def test_v4_checkpoint_restores_results_and_publication_closure(tmp_path):
         assert execution.stats.reused_results == 2 and execution.stats.reused_publications == 2
 
 
+def test_v4_batch_publication_reads_shared_artifacts_once(tmp_path, monkeypatch):
+    from collections import Counter
+    from pathlib import Path
+    context, request, _, _ = setup_account_research(tmp_path)
+    with ResearchExecutionSession(context, experiment=request.experiment) as execution:
+        requests = (request, replace(request, candidate=replace(request.candidate, candidate_id='C0002')))
+        prepared = tuple(context.evaluation.prepare(value, execution=execution) for value in requests)
+        outcomes = context.evaluation.evaluate_many(prepared, execution=execution)
+        assert all(value.result is not None for value in outcomes), [value.error for value in outcomes]
+        writes = tuple(EvaluationEvidenceWrite(request.experiment, f'batch-{index}', handle, outcome.result)
+                       for index, (handle, outcome) in enumerate(zip(prepared, outcomes)))
+        first = publish_evidence_many(context, writes, execution=execution)
+        assert all(value.status.value == 'PUBLISHED' for value in first)
+        artifacts = {item.sha256 for outcome in outcomes for item in outcome.result.artifacts}
+        reads = Counter()
+        original = Path.read_bytes
+        def counted(path):
+            if path.stem in artifacts:
+                reads[path.stem] += 1
+            return original(path)
+        monkeypatch.setattr(Path, 'read_bytes', counted)
+        repeated = publish_evidence_many(context, writes, execution=execution)
+        assert all(value.status.value == 'PUBLISHED' for value in repeated)
+        assert reads == Counter({digest: 1 for digest in artifacts})
+
+
 @pytest.mark.parametrize('damage', ('missing', 'changed'))
 def test_v4_delivery_cache_rechecks_each_packages_dependency_closure(tmp_path, monkeypatch, damage):
     from czsc_trader.application import delivery_service as service

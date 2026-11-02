@@ -114,7 +114,6 @@ class EquityEvaluationRequest:
         return primary + auxiliary + execution
 
     def identity(self, specification):
-        candidate = self.candidate
         from strategy_runtime import (equity_features, equity_replay as srt_replay, equity_buy_hold_v4,
             equity_source_runtime, replay_kernel, replay_contracts, account_strategy, account_replay)
         from strategy_evaluator import equity_assessment as se_assessment
@@ -129,6 +128,11 @@ class EquityEvaluationRequest:
                 equity_replay, equity_assessment, parameter_evaluation, account_preparation, accounting,
                 portfolio, account_ledger):
             engine_sources[module.__name__] = sha256(Path(module.__file__).read_bytes()).hexdigest()
+        return self._identity_with_sources(specification, engine_sources)
+
+    def _identity_with_sources(self, specification, engine_sources):
+        """Build request metadata using implementation bytes pinned by its session."""
+        candidate = self.candidate
         version = 4
         contract = {"schema": f"equity-research/v{version}", "experiment": asdict(self.experiment),
                 "candidate_id": candidate.candidate_id, "instrument": asdict(candidate.instrument),
@@ -182,10 +186,12 @@ class EquityEvaluationResult:
     request_hash: str
     content: bytes
     artifacts: tuple[EquityArtifact, ...] = ()
+    _result_sha256: str = field(init=False, repr=False, compare=False)
 
     def __post_init__(self):
         if type(self.content) is not bytes or not self.content:
             raise TypeError("equity result requires nonempty immutable bytes")
+        object.__setattr__(self, "_result_sha256", sha256(self.content).hexdigest())
         payload = self.payload
         if payload["request_hash"] != self.request_hash or equity_hash(payload["request"]) != self.request_hash:
             raise ValueError("equity result request identity differs")
@@ -214,8 +220,7 @@ class EquityEvaluationResult:
 
     @property
     def result_hash(self):
-        from hashlib import sha256
-        return sha256(self.content).hexdigest()
+        return self._result_sha256
 
 
 def _fetch_products(access, request):

@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, fields, is_dataclass
 from datetime import date
 from enum import StrEnum
-from functools import lru_cache
+from functools import cached_property, lru_cache
 from hashlib import sha256
 import json
 import math
@@ -119,7 +119,7 @@ class ResearchRecord:
     def from_dict(cls, value):
         return decode(value, cls)
 
-    @property
+    @cached_property
     def sha256(self):
         return digest(self)
 
@@ -201,7 +201,7 @@ class EvaluationScenarioContext(ResearchRecord):
 
 @dataclass(frozen=True)
 class EquityAssessmentFacts(ResearchRecord):
-    """Versioned, independently auditable equity journals; never executable state."""
+    """Recorded equity observations; complete source journals remain separate evidence."""
     market: str
     timezone: str
     currency: str
@@ -1490,6 +1490,10 @@ class CommonNeighborhoodComparisonContract(ResearchRecord):
                 "common comparison requires current local neighborhoods")
         require(not design.constraint_exclusions,
                 "common comparison requires the full legal Cartesian neighborhood without constraint exclusions")
+        return self._scale_signature(design)
+
+    def _scale_signature(self, design):
+        """Check the caller's axis contract, without traversing source points."""
         zero_limits = {x.name: x.limit for x in self.zero_limits}
         for axis in design.space.axes:
             require(type(axis.domain) is RealDomain and axis.domain.quantum is None,
@@ -1522,7 +1526,7 @@ class DeclaredPointSetComparisonContract(ResearchRecord):
                 "declared comparison requires declared point sets")
         require(design.construction_sha256 == self.construction_sha256,
                 "declared point construction differs")
-        return (self.construction_sha256, self.source_scale.authenticate(design.source_design))
+        return (self.construction_sha256, self.source_scale._scale_signature(design.source_design))
 
 
 @dataclass(frozen=True)

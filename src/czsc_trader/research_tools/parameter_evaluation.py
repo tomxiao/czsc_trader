@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from functools import lru_cache
+from functools import cached_property, lru_cache
 import json
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -12,7 +12,7 @@ from strategy_evaluator import (
     AssessmentCandidate, ParameterPerturbationDesign, ParameterPointBinding,
 )
 from strategy_evaluator.parameter_neighborhood import (
-    ParameterNeighborhoodDesign, ParameterNeighborhoodBinding, StudyPurpose,
+    DeclaredParameterPointSet, ParameterNeighborhoodDesign, ParameterNeighborhoodBinding,
 )
 from dataflows import Dataflows
 from strategy_runtime import canonical_sha256, StrategyInputBinding, StrategyRuntime
@@ -65,9 +65,9 @@ class ParameterEvaluationInput(_Record):
 
 @dataclass(frozen=True, slots=True)
 class ParameterEvaluationPlan(_Record):
-    """Complete prospective plan; coordinates are materialized by the researcher."""
+    """Explicit execution plan for all points declared by the caller."""
 
-    design: ParameterNeighborhoodDesign | ParameterPerturbationDesign
+    design: ParameterNeighborhoodDesign | ParameterPerturbationDesign | DeclaredParameterPointSet
     center: ParameterEvaluationCandidate
     center_request_sha256: str
     nonparameter_context_sha256: str
@@ -113,26 +113,22 @@ class ParameterEvaluationPlan(_Record):
             raise ValueError("parameter mapping and feasibility evidence must belong to center family")
         if any(x.candidate.candidate_id.split("-", 1)[0] != family for x in self.children):
             raise ValueError("parameter children must belong to center strategy family")
-        if self.schema_version in (2, 3, 4):
-            if self.design.protocol.purpose is not StudyPurpose.LOCAL_SENSITIVITY:
-                raise ValueError("parameter evaluation plans require local sensitivity; structural controls are separate")
-            _validate_parameter_payloads(self.design, self.center, self.children)
         if self.schema_version in (3, 4) and not self.design.is_applicable:
             if type(_parameter_payload(json.loads(self.center.payload_json)).get("parameters")) is not dict:
                 raise ValueError("not-applicable plan requires an explicit parameter object")
 
     @classmethod
-    def create(cls, design: ParameterNeighborhoodDesign,
+    def create(cls, design: ParameterNeighborhoodDesign | DeclaredParameterPointSet,
                center: PreparedAccountEvaluation,
                children: tuple[PreparedAccountEvaluation, ...], *,
                mapping_evidence: EvidenceRef, feasibility_evidence: EvidenceRef, dataflows: Dataflows,
                execution: ResearchExecutionSession | None = None) -> ParameterEvaluationPlan:
-        """Authenticate prepared inputs, without evaluating or publishing accounts."""
+        """Bind actual prepared contexts without evaluating or publishing accounts."""
         from .evaluation import EvaluationRequest
         from .equity_replay import PreparedAccountEvaluation
 
-        if type(design) is not ParameterNeighborhoodDesign:
-            raise TypeError("new parameter plan requires ParameterNeighborhoodDesign; legacy sphere plans are read-only")
+        if type(design) not in (ParameterNeighborhoodDesign, DeclaredParameterPointSet):
+            raise TypeError("new parameter plan requires a typed neighborhood or declared point set")
         if design.protocol.version != "parameter-cartesian-neighborhood-v2":
             raise ValueError("historical parameter designs are read-only; new plans require neighborhood v2")
         if type(center) is not PreparedAccountEvaluation:
@@ -203,16 +199,27 @@ class ParameterEvaluationPlan(_Record):
                          for name, binding in sorted(center.input_bindings.items())), execution_contract)
 
     def bind_point(self, reference: EvidenceRef, index: int, *, repository_root: Path) -> ParameterEvaluationBinding:
-        """Bind only after the exact plan bytes have been explicitly published."""
+        """Bind an actual planned point without reading or publishing evidence."""
         if self.schema_version not in (3, 4):
             raise ValueError("historical parameter plans are read-only")
         if not self.design.is_applicable:
             raise ValueError("not-applicable parameter plans have no point to bind")
-        if read_parameter_plan(reference, repository_root) != self:
-            raise ValueError("published parameter plan differs")
+        _plan_child(self, index)
         if reference.experiment.strategy_id != self.design.center.candidate_id.split("-", 1)[0]:
             raise ValueError("published parameter plan belongs to another strategy family")
         return ParameterEvaluationBinding(reference, self.design.bind_point(index))
+
+    @cached_property
+    def _children_by_point(self):
+        indices = (self.design.point_indices if type(self.design) is DeclaredParameterPointSet
+                   else range(len(self.children)))
+        return dict(zip(indices, self.children, strict=True))
+
+
+def _plan_child(plan, point_index):
+    if type(point_index) is not int or point_index not in plan._children_by_point:
+        raise ValueError("point index outside parameter plan")
+    return plan._children_by_point[point_index]
 
 
 def read_parameter_plan(reference: EvidenceRef, repository_root: Path) -> ParameterEvaluationPlan:
@@ -235,7 +242,7 @@ def validate_parameter_contract(contract: dict, plan: ParameterEvaluationPlan,
     point = plan.design.bind_point(binding.point.point_index)
     if point != binding.point:
         raise ValueError("parameter binding differs from prescribed design point")
-    child = plan.children[binding.point.point_index]
+    child = _plan_child(plan, binding.point.point_index)
     if (contract["strategy_reference"], contract["content_sha256"], contract["strategy_identity"]) != (
         child.candidate.candidate_id, child.candidate.content_sha256, child.runtime_identity_sha256,
     ):
@@ -261,21 +268,20 @@ def validate_parameter_request(request: PreparedAccountEvaluation, dataflows: Da
     from .evaluation import EvaluationRequest
     if type(request) is not PreparedAccountEvaluation:
         raise TypeError("parameter validation requires a session-owned PreparedAccountEvaluation")
-    prepared_contract, prepared_facts = None, None
     if type(request) is PreparedAccountEvaluation and type(request.request) is EvaluationRequest:
         from .account_preparation import require_account
         if execution is None:
             raise TypeError('parameter validation requires its explicit execution session')
         original = require_account(execution.context.evaluation, request, execution)
-        prepared_contract = json.loads(request.contract_content)
-        prepared_facts = _account_parameter_facts(request)
         request = original
         execution = None
     if type(request) is PreparedAccountEvaluation:
         _verify_equity_inputs(request, dataflows, execution=execution)
         original = request.request
         if original.lineage is not None and original.lineage.parameter_binding is not None:
-            _validate_equity_parameter_request(original, dataflows, prepared=request)
+            binding = original.lineage.parameter_binding
+            if binding.plan.experiment.strategy_id != original.experiment.strategy_id:
+                raise ValueError("equity parameter plan belongs to another family")
         return
     if execution is not None:
         raise TypeError("explicit parameter execution ownership requires session-owned prepared requests")
@@ -283,63 +289,13 @@ def validate_parameter_request(request: PreparedAccountEvaluation, dataflows: Da
         return
 
     binding = request.lineage.parameter_binding
-    plan = read_parameter_plan(binding.plan, request.repository_root)
-    if plan.schema_version != 3:
-        raise ValueError("historical parameter plans are read-only; new evaluations require schema 3")
     if binding.plan.experiment.strategy_id != request.strategy.strategy_family_id:
         raise ValueError("parameter plan belongs to another strategy family")
-    validate_parameter_contract(prepared_contract, plan, binding)
-    if _payload_json(request.strategy.payload) != plan.children[binding.point.point_index].payload_json:
-        raise ValueError("parameter candidate payload differs from plan")
-    if prepared_facts.get("reference_plan_sha256") != binding.plan.sha256:
-        raise ValueError("prepared parameter reference differs from its published plan")
-    _compare_prepared_inputs(prepared_facts["reference_inputs"], prepared_facts["inputs"], dataflows)
-    execution_contract = prepared_facts["execution_contract"]
-    if execution_contract != plan.execution_contract_json:
-        raise ValueError("parameter evaluation SRT execution contract differs")
 
 
 def _payload_json(payload) -> str:
     return json.dumps(payload, default=dict, ensure_ascii=False, sort_keys=True,
                       separators=(",", ":"), allow_nan=False)
-
-
-def _parameter_parent(payload: dict, path: tuple[str, ...]) -> tuple[dict, str]:
-    """Resolve an existing object leaf below parameters; never create or coerce it."""
-    if not path or any(type(part) is not str or not part for part in path):
-        raise ValueError("parameter payload path requires nonempty string components")
-    node = payload.get("parameters")
-    for part in path[:-1]:
-        if type(node) is not dict or part not in node:
-            raise ValueError(f"parameter payload path does not exist: {path}")
-        node = node[part]
-    if type(node) is not dict or path[-1] not in node:
-        raise ValueError(f"parameter payload path does not exist: {path}")
-    return node, path[-1]
-
-
-def _validate_parameter_payloads(design, center, children) -> None:
-    """Authenticate declared typed points against every byte of candidate payloads."""
-    original = _parameter_payload(json.loads(center.payload_json))
-    axes = design.space.axes
-    paths = tuple(axis.payload_path for axis in axes)
-    for i, path in enumerate(paths):
-        if any(path[:len(other)] == other or other[:len(path)] == path
-               for other in paths[:i]):
-            raise ValueError("parameter payload paths overlap")
-    for axis in axes:
-        parent, key = _parameter_parent(original, axis.payload_path)
-        if type(parent[key]) is not type(axis.center) or parent[key] != axis.center:
-            raise ValueError(f"parameter center payload differs at {axis.payload_path}")
-    for point, child in zip(design.points, children, strict=True):
-        expected = _parameter_payload(json.loads(center.payload_json))
-        if tuple(value.name for value in point.values) != tuple(axis.name for axis in axes):
-            raise ValueError("parameter point names differ from declared axes")
-        for axis, value in zip(axes, point.values, strict=True):
-            parent, key = _parameter_parent(expected, axis.payload_path)
-            parent[key] = value.value
-        if _payload_json(expected) != _payload_json(_parameter_payload(json.loads(child.payload_json))):
-            raise ValueError("parameter child payload differs from declared point mapping; undeclared changes are forbidden")
 
 
 def parameter_execution_policy(policy: dict) -> dict:
@@ -354,7 +310,7 @@ def parameter_execution_policy(policy: dict) -> dict:
 
 
 def _parameter_payload(payload):
-    """Expose declared equity parameters without weakening whole-payload comparison."""
+    """Read the explicit parameter object from the supplied runtime payload."""
     if payload.get("runtime", {}).get("kind") != "ACCOUNT_REPLAY":
         return payload
     payload = json.loads(_payload_json(payload))
@@ -438,7 +394,7 @@ def _verify_equity_inputs(request, dataflows, *, execution=None):
 def _create_equity_plan(cls, design, center, children, *, mapping_evidence, feasibility_evidence, dataflows, execution=None):
     from .equity_replay import PreparedAccountEvaluation
     from strategy_runtime.equity import equity_hash
-    if type(design) is not ParameterNeighborhoodDesign or design.protocol.version != "parameter-cartesian-neighborhood-v2":
+    if type(design) not in (ParameterNeighborhoodDesign, DeclaredParameterPointSet) or design.protocol.version != "parameter-cartesian-neighborhood-v2":
         raise ValueError("new equity parameter plans require neighborhood v2")
     if (type(center) is not PreparedAccountEvaluation or type(children) is not tuple
             or any(type(x) is not PreparedAccountEvaluation for x in children)):
@@ -468,23 +424,6 @@ def _create_equity_plan(cls, design, center, children, *, mapping_evidence, feas
         _equity_policy(center), schema_version=4)
 
 
-def _validate_equity_parameter_request(request, dataflows, *, prepared):
-    binding = request.lineage.parameter_binding
-    plan = read_parameter_plan(binding.plan, dataflows.binding.base_dir)
-    if plan.schema_version != 4:
-        raise ValueError("equity parameter evaluation requires schema 4 plan")
-    if binding.plan.experiment.strategy_id != request.experiment.strategy_id:
-        raise ValueError("equity parameter plan belongs to another family")
-    contract = equity_parameter_contract(_equity_contract(prepared))
-    validate_parameter_contract(contract, plan, binding)
-    if _equity_candidate(request).payload_json != plan.children[binding.point.point_index].payload_json:
-        raise ValueError("equity parameter candidate payload differs from plan")
-    if contract["input_bindings"] != {x.window_id: json.loads(x.binding_json) for x in plan.center_inputs}:
-        raise ValueError("equity parameter input binding differs from center")
-    if _equity_policy(prepared) != plan.execution_contract_json:
-        raise ValueError("equity parameter execution contract differs")
-
-
 def _execution_contract(request: EvaluationRequest) -> str:
     definition = StrategyRuntime().describe(request.strategy)
     return _payload_json({
@@ -499,11 +438,11 @@ def _execution_contract(request: EvaluationRequest) -> str:
 
 
 def prepare_parameter_facts(request, dataflows: Dataflows) -> dict:
-    """Capture authenticated comparison facts once, during explicit preparation.
+    """Record the actual input facts during explicit preparation.
 
     Row values use the same pandas numerical hashes as DFLS canonical hashing;
-    dataframe schema is separately certified. Excluding the RangeIndex lets a
-    longer warmup be compared on the exact common range without fetching again.
+    dataframe schema is recorded separately. Excluding the RangeIndex lets an
+    explicit plan compare the common range without fetching source data again.
     """
     from dataflows import canonical_frame_sha256
     import pandas as pd
@@ -534,35 +473,7 @@ def prepare_parameter_facts(request, dataflows: Dataflows) -> dict:
                 roles[role] = facts
             windows[window] = roles
         return windows
-    reference_inputs, reference = None, None
-    if request.lineage is not None and request.lineage.parameter_binding is not None:
-        reference = request.lineage.parameter_binding.plan
-        plan = read_parameter_plan(reference, request.repository_root)
-        central = {item.window_id: StrategyInputBinding.from_mapping(json.loads(item.binding_json))
-                   for item in plan.center_inputs}
-        # Reject changed source declarations before trying an unrelated product.
-        if set(central) != set(request.input_bindings):
-            raise ValueError("parameter input windows differ")
-        for window, binding in central.items():
-            declared = request.input_bindings[window]
-            if set(binding.plan.requests) != set(declared.plan.requests):
-                raise ValueError("parameter raw input space or roles differ")
-            for role in binding.plan.requests:
-                contracts = [json.loads(_payload_json(item.plan.to_dict()["requests"][role]))
-                             for item in (binding, declared)]
-                for contract in contracts:
-                    contract.pop("start")
-                    if contract["coverage"] is not None:
-                        contract["coverage"].pop("minimum_observations")
-                        contract["coverage"].pop("minimum_sessions")
-                if contracts[0] != contracts[1]:
-                    raise ValueError(f"parameter raw input source contract differs: {window}/{role}")
-        reference_inputs = collect(central)
-    facts = {"execution_contract": _execution_contract(request), "inputs": collect(request.input_bindings)}
-    if reference is not None:
-        facts["reference_plan_sha256"] = reference.sha256
-        facts["reference_inputs"] = reference_inputs
-    return facts
+    return {"execution_contract": _execution_contract(request), "inputs": collect(request.input_bindings)}
 
 
 def _account_parameter_facts(handle):

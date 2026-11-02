@@ -42,8 +42,9 @@ SE按显式协议提供指标、协议校验、比较、帕累托分层、PBO、
 | `compare_candidates(request)` | `CandidateComparisonRequest` | `CandidateComparison` |
 
 全部类型和函数从`strategy_evaluator`顶层导入。TDR的
-`build_assessment_evidence(EvaluationRequest, EvaluationResult)`先认证受管评价，再适配为
-`AssessmentEvidence`。SE只计算传入事实，不读取仓库、调度搜索或代替执行证据认证。
+`build_assessment_evidence(EvaluationRequest, EvaluationResult)`检查本次请求与结果的关联，再投影为
+`AssessmentEvidence`，不附带来源认证或重复指标核对。SE只计算传入事实，不读取仓库或调度搜索。
+已构造的不可变强类型请求直接参与计算；反序列化在存储入口执行一次，不通过全请求字典往返反复构造。
 
 `AssessmentEvidence.scenario_context`必须使用`EvaluationScenarioContext`，字段为
 `one_way_cost: float`、`measurement_tier: str`、`benchmark_id: str`、`benchmark_kind: str`
@@ -393,22 +394,25 @@ TDR的[同版本升级API](../../src/czsc_trader/README.md#同版本发布包升
 这些字段表明研究假设与估值盲区，不证明历史停牌，也不代表缺口期间净值没有波动。
 
 美股正式账户仍通过 `assess_candidates`、`compare_candidates` 完成自检与比较。
-TDR的 `build_assessment_evidence`只将当前V4账户闭包适配为 `AssessmentEvidence`，
-附加 `EquityAssessmentFacts`。旧研究ledger读取、认证、转换和默认审计分支已删除。
+TDR的`build_assessment_evidence`将当前V4账户观测适配为`AssessmentEvidence`，
+附加`EquityAssessmentFacts`。中心附加事实可采用`observation_contract=1`的紧凑观测编码，
+保留初始资金、执行规格、逐柱净值及周期损益；原始行情、订单和完整账户材料独立保存在TDR账户产物中。
+紧凑观测用于既有收益、回撤、时间、集中度及统计区间计算，不作为独立审计输入。
 现有冻结V2技术复验所需数值审计位于内部冻结适配，不作为公开研究API或V4失败兜底。
 默认评估从TXE账本计算指标，类型构造、读取和指标投影不触发独立账户复算。
 成交、权益事件、应收与到账、周期损益和账户恒等式的独立审计由已有显式审计入口按需执行。
 `strategy_evaluator.equity_metrics.summarize_equity_ledger`返回`EquityAccountMetrics`，从已记录净值、
 成交费用及结束周期汇总收益、回撤和60交易日频率，不推导成交价格或重演现金持仓。
 费用以序列化成交记录为准；核对已保存汇总时允许`rel_tol=1e-10, abs_tol=1e-7`的费用精度误差，
-其余指标和计数字段精确核对。结构、数值范围、时序及评价事实与原账的一致性检查继续执行。
+其余指标和计数字段精确核对。这种已保存汇总的深入核对由显式核验组织；
+普通事实构造仅检查结构、有限数值及时间顺序，不重汇总账本或将日观测与原账再次逐项对账。
 
 | 口径 | 显式选择与计算 |
 | --- | --- |
 | 年化、频率 | 按纽约市场交易日聚合，年化使用交易日数；60 日频率按完整周期的平仓日计数，30 分钟 bar 不充当独立交易日 |
 | 最大回撤 | `SESSION_CLOSE` 使用每日最后净值；`BAR_CLOSE` 使用每个 30 分钟净值。候选和基准使用相同选择，包含初始资金基点 |
 | 盈利集中度 | `TOP_DECILE` 使用盈利周期中最大的前 10%（向上取整）占比；`MAX_SINGLE` 使用最大单个盈利周期占比。无盈利周期时标记不适用 |
-| 交付校验 | 核对档案中的定义、输入绑定、完整窗口、原始事实及哈希；FULL复核SE指标与排序，不默认独立重做账户会计 |
+| 交付校验 | 阶段四发布保存已计算事实和关联，返回存储完整性状态；显式FULL才复核来源及SE指标与排序，不重跑策略账户 |
 
 回撤和集中度选择进入指标版本与比较上下文，禁止混用口径。诊断结果不会自动变成硬性研究目标。
 旧 A 股 `AssessmentEvidence` 未设置附加事实时不序列化新字段，既有语义、档案及哈希保持不变。
@@ -463,7 +467,8 @@ V4 `EquityAssessmentFacts`按实际市场时区、币种及交易日聚合，指
 
 Calmar比较通过`DeclaredPointSetComparisonContract(construction_sha256, source_scale)`明确共同构造和
 原坐标尺度，仍执行v8评估/v6排序。点集Q10/Q90仅描述所声明的离散检验集，不代表原全邻域分布。
-原完整邻域比较合同不接纳该类型。正式交付使用TDR ASSESSMENT schema 15，复核已声明来源及数值；
+原完整邻域比较合同不接纳该类型。TDR参数计划直接支持声明集合，只准备实际点；
+绑定保留原点编号，不读取或要求事前发布计划。正式交付使用TDR ASSESSMENT schema 15保存声明来源及数值，深入复核须显式发起；
 不同实现上下文不会因几何选择相同而自动成为可比或允许恢复的结果。
 
 ## 基准整手审计

@@ -208,7 +208,6 @@ def assess_candidates(
     request: m.CandidateAssessmentRequest | CandidatePerformanceAssessmentRequest,
 ) -> m.AssessmentPanel:
     if type(request) is CandidatePerformanceAssessmentRequest:
-        request = CandidatePerformanceAssessmentRequest.from_dict(request.to_dict())
         return _assess_candidates(request.baseline_request,
             parameter_evidence=request.parameter_evidence, request_sha256=request.sha256)
     if type(request) is not m.CandidateAssessmentRequest:
@@ -234,8 +233,6 @@ def _assess_candidates(request: m.CandidateAssessmentRequest, *, parameter_evide
                        request_sha256=None) -> m.AssessmentPanel:
     if type(request) is not m.CandidateAssessmentRequest:
         raise TypeError("assess_candidates requires CandidateAssessmentRequest")
-    # Revalidate at the public boundary, including values restored from storage.
-    request = m.CandidateAssessmentRequest.from_dict(request.to_dict())
     p = request.protocol
     evidence = {(x.candidate, x.window_id, x.scenario_id): x for x in request.evidence}
     if parameter_evidence is not None:
@@ -969,7 +966,6 @@ def recompute_historical_comparison(request: m.CandidateComparisonRequest) -> m.
 def _compare_candidates(request: m.CandidateComparisonRequest | m.CalmarComparisonRequest) -> m.CandidateComparison:
     if type(request) not in (m.CandidateComparisonRequest, m.CalmarComparisonRequest):
         raise TypeError("compare_candidates requires a typed comparison request")
-    request = type(request).from_dict(request.to_dict())
     baseline, pairs = _rank(request, request.policy.bins, request.policy.ranking_metrics)
     sensitivities = []
     for variant in request.policy.sensitivities:

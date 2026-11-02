@@ -340,7 +340,7 @@ stats = session.stats
 重启后用相同运行标识和`CheckpointMode.RESUME`打开会话，以原始请求重新`prepare(..., execution=session)`，不能沿用前会话句柄。
 检查点位于`.tmp/research-execution/<批次>/<运行标识>/`，包括绑定实验与实现身份的`manifest.json`、
 `results/<请求哈希>.json`和`publications/<发布身份哈希>.json`。使用结构化JSON、校验和、原子写入及单写锁，
-恢复时重新核对请求、源码／实现、数据、参数、数值结果及当前证据字节；不读取磁盘pickle。
+恢复核对请求、实现身份、数据引用及保存字节的完整性；V4不重新提取账户事实或复算指标，不读取磁盘pickle。
 同一请求可恢复已完整保存的计算结果，继续显式发布；不同名称的发布不会错误复用旧名称引用。
 缓存损坏或身份不符明确失败，不自动重新计算掩盖问题。未保存的结果需要调用方明确决定重试。
 缓存可清理，正式交付不依赖检查点；`CREATE`不覆盖已有运行，`RESUME`不创建缺失运行。
@@ -600,13 +600,13 @@ from czsc_trader.research_tools import build_assessment_evidence
 assessment_evidence = build_assessment_evidence(bound_request, result)
 ```
 
-该适配器核验请求与结果，返回 `tuple[AssessmentEvidence, ...]`，供 SE `assess_candidates` 与 `compare_candidates` 使用。
+该适配器检查本次请求与结果的关联，将已有账户观测投影为 `tuple[AssessmentEvidence, ...]`，供 SE `assess_candidates` 与 `compare_candidates` 使用；不重新认证行情来源或重算指标来证明原结果。
 实际费用、计量层级、基准、窗口及输入身份须可比，不能仅依赖相同场景名。
 账户比较使用 SE `compare_ledgers`，按目的选用 `STRICT/ECONOMIC` 并读取实际状态；计算口径见 [SE 手册](../../packages/strategy_evaluator/README.md)。
 
 ### 参数扰动评价
 
-SE生成`ParameterNeighborhoodDesign`，RSCH按具名点准备实际策略载荷；TDR认证声明值与载荷路径、同源执行条件和真实账户。新局部设计使用v2协议及`BoundedLocalStep(RelativeChangeLimit(...) | AbsoluteChangeLimit(...))`，按合法域和最小步长判断幅度上限，仅展开适用变化，其他参数保持中心值。全部变化不适用时仍保存零点设计及适用性依据，不制造邻域账户。类型、完整点集与分位数口径见[SE参数扰动](../../packages/strategy_evaluator/README.md)。
+SE生成`ParameterNeighborhoodDesign`或接受`DeclaredParameterPointSet`，RSCH确定检验范围并按具名点准备实际策略载荷；TDR绑定本次请求、点ID与结果。新局部设计使用v2协议及`BoundedLocalStep(RelativeChangeLimit(...) | AbsoluteChangeLimit(...))`，按合法域和最小步长判断幅度上限，仅展开适用变化，其他参数保持中心值。全部变化不适用时保存零点设计及适用性依据，不制造邻域账户。类型、点集与分位数口径见[SE参数扰动](../../packages/strategy_evaluator/README.md)。
 
 默认五项独立检验时，参数计划中的中心和全部子候选只声明同一基准窗口、标准费用；
 中心费用压力另建独立请求，不与子点交叉。完整非参数契约包含整个窗口及费用列表，
@@ -614,9 +614,9 @@ SE生成`ParameterNeighborhoodDesign`，RSCH按具名点准备实际策略载荷
 中心标准账本同时支撑时间稳定性、收益集中性及收益区间；完整身份核对通过的既有结果可复用。
 没有可复用证据时，每中心需要N+2个策略账户场景：N个邻域点、中心标准与中心压力；整项不适用时只需中心标准与中心压力，研究族补证另计。
 
-先用 `MaterialEvidenceWrite` 发布坐标映射及可行性约束材料；其原始字节哈希应分别等于
-`ParameterNeighborhoodSpace.mapping_sha256`、`feasibility_sha256`。中心和全部子候选通过
-`research.evaluation.prepare(..., execution=execution)`准备后，在同一活动会话内构造完整计划：
+可用 `MaterialEvidenceWrite` 发布坐标映射及可行性约束材料；其原始字节哈希应分别等于
+`ParameterNeighborhoodSpace.mapping_sha256`、`feasibility_sha256`。中心和实际声明子候选通过
+`research.evaluation.prepare(..., execution=execution)`准备后，在同一活动会话内构造计划；下例展示事前发布的一种组织方式：
 
 ```python
 from czsc_trader.research_tools import ParameterEvaluationPlan, EvaluationLineage
@@ -641,42 +641,31 @@ if design.is_applicable:
 ```
 
 上例需导入 `json` 及 `dataclasses.replace`；`derivation` 为实际中心与该子候选的 `PARAMETERS` 派生关系。
-新`ParameterEvaluationPlan`使用schema 3，保存中心和各子候选的完整规范 JSON 载荷、内容身份、
-规定点集、中心请求身份、中心输入准备身份、固定执行契约和映射／约束材料引用。
-各子载荷及有效内容必须互不相同，也必须不同于中心；相同行为不构成拒绝理由。
-每个轴的`payload_path`相对于载荷`parameters`；中心值须匹配声明的精确类型和值，子载荷只允许在这些路径替换为对应具名点值。缺路径、隐藏改参、声明外变更、类型替换及多个点坍缩到同一内容均拒绝。不适用设计允许`children=()`，仍核验中心载荷、真实请求、输入、映射与约束材料，禁止`bind_point`。旧plan schema 1（球面）和2（v1邻域）保留读取与证据认证；`create`、`bind_point`及新评价均拒绝旧版本，不自动转换旧点集。
-schema 3计划以`design.space.axes`为RSCH声明的检验范围，不从`parameters`的全部叶子字段推断研究参数全集。
-未映射的列表、空值或其他配置不参与参数域检查；声明路径仍须存在、互不重叠，中心值及类型须与真实载荷一致。
-子候选只能改变声明参数，其余载荷保持一致。空轴允许表达空的声明范围；`is_applicable=False`仅表示声明空间内没有合法非中心扰动点，
-不证明策略全部生效参数均已检查。参数识别、遗漏说明及结论适用范围由RSCH通过现有`mapping_evidence`和研究报告说明。
-`ParameterEvaluationBinding` 保存已发布计划引用及 SE `ParameterNeighborhoodBinding`，进入请求哈希和账户证据。
-普通评价可以不提供该绑定；带绑定的评价必须核验计划已经发布、文件字节一致、点序号及实际载荷匹配。
+`ParameterEvaluationPlan.create`保留调用形式，接受完整邻域或已有的`DeclaredParameterPointSet`。
+声明集合仅要求对应的实际子候选，不准备未选来源点。计划保留中心、实际点、参数载荷及执行上下文，原点编号不重新编号。
+`bind_point(reference, index, repository_root=...)`仅按内存计划和原点ID构造绑定，不读取文件或要求已事前发布；
+是否事前发布由RSCH协议安排。显式`read_parameter_plan`读取所指定的材料，不作为每次计算的附带步骤。
+点ID、内容身份和参数映射须满足强类型契约；工具不替RSCH证明参数识别充分或检验方法合理。
 
-参数计划读取每次核验计划及两份材料的实际字节。内部只复用最近一份已验证内容的不可变解析结果，
-不缓存文件核验成功状态。一次交付发布或校验内，相同实际账户字节可复用已通过的解析、账本认证及结构化事实，
-仍在每次引用时重新读取文件、核验哈希和证据归属。不同公开调用各自认证，FULL交付仍独立复算SE面板与比较结果。
+中心和邻点共享相同的实际输入与公共执行会话；收益、回撤和必要观测从账户事实计算一次。
+`build_assessment_evidence`只投影已有事实，不重新物化完整行情及账本进行来源认证。
+中心使用紧凑的逐柱净值及周期观测支撑时间、集中度和区间计算；原始账户单独保存供显式深入核验。
+缺失或失败点如实返回，声明N不因缺失而缩小，不以填零或中心值替代邻点。
 
-计划和实际评价固定源码、依赖、非参数结构、标的、窗口、截止日、资金、费用场景、价格单位、基准和频率口径。
-同时核验 SRT 实际执行政策、订单能力及决策时间规则，不能通过参数切换执行契约。
-参数导致的预热起点变化允许存在；策略原始输入用已固定的 DFLS 准备引用，在中心与子候选共同日期范围内
-通过公开 `Dataflows.fetch` 核对来源、原始值及时间契约。除起点与预热所需最小观测／交易日数量外，
-输入源请求须相同；共同范围使用两者中较小的历史覆盖要求，范围不足或数据失败明确拒绝。
-中心范围以外新增的预热内容保留其准备身份，不能据共同范围校验声称已与不存在的中心区间逐值复验。
-这些校验不调用实时供应商重新获取数据，也不比较整个可能随参数变化的派生输入哈希。
-
-`build_assessment_evidence` 把已认证点绑定传给 SE；缺失或失败账户仍按实际状态处理，不能填零。
-阶段四 `CandidateAssessmentDelivery.parameter_plans` 显式引用计划。交付浅快照计划及其映射／约束材料，
-核对实际中心请求、全部规定父子关系和保存账户的点身份，并在 `FULL` 范围重算 SE。不适用设计也必须关联计划；缺计划或缺账户不能冒充不适用。部分参数适用时，固定轴仍进入映射核验；全不适用时校验真实中心，不要求子账户。
-发布后的校验读取交付快照，不依赖实验工作目录、原计划材料文件或可变源码。一次调用内按完整身份、位置及校验范围复用已完成节点的递归展开和语义计算；循环检测独立维护，每次引用仍认证当前文件，结束前再次核对输入。不同调用不复用成功状态。`validate_delivery`返回`stats`记录不同交付数、引用访问、展开、语义复用、文件哈希次数/字节量及耗时；统计不进入交付身份。
-平台只认证声明、身份及确定性计算；坐标业务含义、映射合理性及研究授权由 RSCH 负责。
+阶段四`CandidateAssessmentDelivery.parameter_plans`显式关联计划。发布保存选定材料及其直接依赖，
+每份共享材料按唯一内容处理一次；不递归认证历史交付、不重算SE、不判断实验步骤或结论是否正确。
+`validate_delivery(..., scope=FULL)`是显式深入核验入口，可按保存账户核对来源、参数及规则并复算SE；
+此过程与正常计算和发布分离。RSCH负责声明范围、比较口径、标准及最终研究核验。
 
 ## 7. 五阶段交付
 
 `assemble_delivery(repository, DeliveryDefinition, DeliveryContent, *, resources=None, on_progress=None) -> DeliveryAssemblyResult` 直接接受强类型数据。
-返回值包含 `receipt: DeliveryReceipt` 和 `validation: DeliveryValidation`；后者是包含安装后完整性复核的本次 `FULL PASS`，无需紧接着再调用一次完整校验。
-同内容修订的重复组装也重新执行 FULL。后续独立调用 `validate_delivery(..., resources=None, on_progress=None)` 时重新读取当前文件，绝不以历史 PASS 代替认证。
-两个入口的独立账户认证默认采用 `ExecutionResources` 的本机 75% 逻辑核预算，显式资源可覆盖；单项认证直接执行。
-认证缓存只在本次调用内保存按 SHA-256 标识的必要事实，每次消费仍核验文件当前字节和账户引用所属实验；最终复核覆盖前驱及公开副本。
+返回值包含`receipt: DeliveryReceipt`和`validation: DeliveryValidation`，函数签名及访问方式不变。
+阶段四返回实际发布完整性检查的`INTEGRITY PASS`：保存报告、请求、结果、指定证据及引用，检查直接存储事务，不签发`FULL PASS`。
+普通发布不认证账户、不递归展开前驱、不重算SE；同修订同内容幂等返回，冲突或缺失材料明确失败。
+其它阶段的专门交付要求保持原有契约，冻结和生产发布不受本次阶段四改造影响。
+需要深入核验时显式调用`validate_delivery(..., scope=FULL, resources=..., on_progress=...)`；
+其账户处理仍使用公共资源预算，结果和计时单独返回，不作为正常发布的前置步骤。
 `DeliveryValidationProgress` 回调报告 `PACKAGE_LOAD`、`AUTHENTICATION`、`RECOMPUTATION`、`FINAL_RECHECK` 阶段、完成数量及累计墙钟耗时。
 `PACKAGE_LOAD` 在读取每个交付包之前立即发出；`package_load_seconds` 累计包封装读取、清单哈希与强类型解析的墙钟时间，包含失败读取，排除递归前驱、账户认证和 SE 复算。
 `DeliveryValidationStats` 记录认证墙钟时间（含并行进程启动及结果传输）、SE 复算时间、最终复核时间、认证账户数和缓存复用数；阶段数值不包含其他序列化及 I/O，不将这些局部计时之和称为端到端时间。
@@ -691,10 +680,10 @@ schema 3计划以`design.space.axes`为RSCH声明的检验范围，不从`parame
 报告使用的额外材料通过 `evidence: tuple[EvidenceRef, ...] = ()` 显式关联，
 与内容契约中的证据一起核验和浅快照；平台不会从报告文字自动提取证据引用。
 
-所有位置上显式声明 `schema="account_evaluation"` 的 `EvidenceRef` 都须通过账户认证，
+显式深入交付核验中，声明`schema="account_evaluation"`的`EvidenceRef`执行账户核验，
 包括组件测试、顶层 `DeliveryContent.evidence`、`SearchSummary.evidence` 和候选评价引用。
 新账户采用schema 8／请求身份7；历史schema 7／请求身份6保留只读认证。引用头与正文版本必须一致，认证请求、结果身份、保存账本及数值一致性；其他或交叉版本明确拒绝。
-`INTEGRITY` 和 `FULL` 均执行此认证，不重跑策略。普通材料仍检查归属、路径及文件哈希，
+阶段四`INTEGRITY`仅检查本交付的保存字节、清单和报告；`FULL`执行账户事实核验而不重跑策略。普通材料检查归属、路径及文件哈希，
 平台不会扫描材料 JSON 或 Markdown 中嵌套的账户声明；支撑正式账户结论的引用必须直接纳入强类型交付。
 同批次可以复用其他实验账户，但账户内来源必须与该引用自身的实验身份一致；
 `CandidateEntry.evaluations`及`PrototypeEntry.evaluations`还须匹配所声明实现的编号、内容哈希及`evaluation_ids`。
@@ -836,18 +825,18 @@ ASSESSMENT的中心候选ID及内容哈希集合须与前驱`CandidateSet.handof
 尚未完成的计算可通过缺失证据和`IncompleteEvaluation`如实表达，不要求所有计算先完成才能交付。
 
 ASSESSMENT schema 15显式使用`CandidatePerformanceAssessmentRequest`：中心保留原账事实，
-邻点使用`ParameterPerformanceEvidence`，发布和FULL校验按保存账户提取的绩效事实核对，再复算SE面板及排序。
+邻点使用`ParameterPerformanceEvidence`。发布保存已计算结果；仅显式FULL校验按保存账户核对绩效事实并复算SE面板及排序。
 参数账户读取后仅缓存紧凑事实和计划核验元数据，不在缓存中常驻全部原账。
 `DeclaredParameterPointSet`可声明原完整设计中的有限检验集，保留源设计、原点编号及构造合同哈希；
-`parameter_plans`仍引用原计划，交付逐点核验所选子候选、原绑定、请求、执行政策和输入，不要求未选点进入新检验集。
+`parameter_plans`可引用只含声明点的执行计划，保留所选子候选、原点绑定及请求；不准备未选点，不在发布时逐点重新认证。
 点集比较使用`DeclaredPointSetComparisonContract`，完整N、缺失状态及分位数均指本次声明集合，
 不得据此宣称原笛卡尔邻域通过。不同实现身份、上下文或基准的结果不自动混用；源码变更后应创建新执行记录，
 由RSCH重新核定旧来源可用性及新增计算预算，不直接恢复旧manifest。
 
 `CandidateAssessmentDelivery.pending_decisions`及`CandidateInspectionDelivery.pending_decisions`均可为空元组，
 不因未冻结而强制新增待决事项；已填写事项仍须为非空文本。
-校验默认 `DeliveryValidationScope.FULL`，核对文件身份和关联事实，并重算阶段四 SE 结果；
-`INTEGRITY` 仍核对文件、引用及保存事实，但不重新执行阶段四 SE 自检和排序计算。两者都不重跑整个研究过程。
+显式`validate_delivery`默认`DeliveryValidationScope.FULL`，核对关联事实并重算阶段四SE结果；
+阶段四`INTEGRITY`仅检查本包文件、清单和报告，不递归检查历史交付或核对账户事实。两者都不重跑策略账户。
 两种范围均核验 `report.md` 与提交的 `report` 字节一致；该检查不判断文字解释或研究结论的正确性。
 阶段四使用 SE 自检公式 `research-assessment-v7` 与排序公式 `research-ranking-v4`，
 按中心收益和回撤分层、同层稳健性优先及交易频率最后比较；指标、分箱与频率口径见
@@ -867,7 +856,7 @@ ASSESSMENT schema 15显式使用`CandidatePerformanceAssessmentRequest`：中心
 | 入口 | 输入要求 | 输出及检查 |
 | --- | --- | --- |
 | `assemble_delivery`阶段一 | 在`ResearchMandate.items`的`PerformanceRequirement.targets`保存完整目标；每项有真实`ConfirmationRecord`；基准使用`BenchmarkRequirement` | 保存目标及确认引用，供后继交付精确绑定；不推断确认文本语义 |
-| `assemble_delivery`阶段四 | `CandidateAssessmentDelivery`携带自检请求/面板、比较请求/结果、账户正式证据，以及每个外层目标的`TargetMandateBinding(target_id, mandate_item_id)` | 所有已确认绩效目标必须完整保留且值一致，包括参数组内层；漏项或改阈值拒绝 |
+| `assemble_delivery`阶段四 | `CandidateAssessmentDelivery`携带显式请求、面板、排序、声明目标及选定证据 | 保存声明与关联，返回发布完整性状态；不代替RSCH核验目标或隐式重算 |
 | `validate_delivery(..., scope=FULL)` | 当前schema交付引用及其前驱 | 认证账户、参数设计和阶段一绑定，再用`assess_candidates/compare_candidates`复算覆盖事实、逐点和压力验收及排序；不一致拒绝 |
 
 两项频率验收共用`ResearchTargets.frequency_window_days`，在已确认的执行条目中保存
@@ -878,7 +867,7 @@ ASSESSMENT schema 15显式使用`CandidatePerformanceAssessmentRequest`：中心
 适用邻域固定N，`ParameterNeighborhoodTarget("parameters", 13, 16, ...)`要求至少ceil(13N/16)点联合通过；N=17时需14点且全部17点满足全部点条件。经完整设计确认整项不适用时，目标仍须绑定原约定，结果为`NOT_APPLICABLE`，不以0/0通过率伪装达标。不要用排序频率替代双频率目标。
 `target_bindings`只绑定参数组外层ID，内层条件随整个组的强类型值精确核对。
 
-技术校验`PASS`表示交付真实、可复算；研究验收读取`comparison.rows[*].acceptance_status`及
+技术校验`PASS`只表示所返回scope的检查已通过；阶段四发布不宣称独立认证或复算成功。研究验收读取`comparison.rows[*].acceptance_status`及
 `target_checks`，推荐排序还须满足可比性和完整证据政策。研究未达标或证据不足的真实报告可正常留存，
 不能将保存成功当作研究通过。`INTEGRITY`不重算数值，不得替代FULL声称复算成功。
 
@@ -1075,7 +1064,7 @@ V4要求显式逐区间价格限制、可卖时点及余股清仓规则，延迟
 
 V4结果为 `equity-research/v4`，发布引用为 `EvidenceRef(schema="equity_research", schema_version=4)`，
 沿用输入、候选、基准三项不可变依赖闭包及参数计划schema4。检查点严格匹配版本、请求、引擎和输入，
-恢复时重新认证；准备对象固定当前V4时钟上下文。诊断、缺口日期和交易日聚合使用实际市场时区，
+恢复核对检查点请求及依赖字节；准备对象固定当前V4时钟上下文。诊断、缺口日期和交易日聚合使用实际市场时区，
 缺失细报价单独留证。PTE部署、生产状态持久化、技术检验及冻结准入仍按原已支持版本处理，V4研究通过不自动取得这些能力。
 
 三阶段公共验收见[账户能力](../../tests/functional/test_account_parity_acceptance.py)及
@@ -1084,7 +1073,8 @@ V4结果为 `equity-research/v4`，发布引用为 `EvidenceRef(schema="equity_r
 ### 一次准备、共享基准与可审计事实
 
 `prepare`签发当前会话拥有的 `PreparedAccountEvaluation`；`evaluate_many`只接纳这些句柄，
-不隐式准备、转换旧定义或恢复旧计算检查点。账户启动时装载策略一次，随后全程使用内存模块；
+不隐式准备、转换旧定义或恢复旧计算检查点。会话首次准备固定平台实现身份，后续请求复用该身份；
+账户启动时装载策略一次，随后全程使用内存模块；
 回放、收尾及发布不重新读取策略源码。修改源码后开始的新账户独立装载当时的声明文件。
 
 会话按完整来源选择复用不可变输入，同经济合同的买持基准只回放一次；候选辅助数据和执行专用报价
@@ -1094,9 +1084,9 @@ V4结果为 `equity-research/v4`，发布引用为 `EvidenceRef(schema="equity_r
 保留原始数据引用、参数、执行条件、实现版本、账本与指标关联，支持按需复核；本次不新增独立审计模块。
 
 参数计划沿用权益schema4。中心和子项先显式准备，再以
-`ParameterEvaluationPlan.create(..., execution=execution)`创建计划；发布计划后用
-`plan.bind_point(...)`构造 `EvaluationLineage`并重新准备子请求，不复制句柄伪造所有权。
-计划及lineage留在父进程，参数变化不能更换市场、输入、执行或非参数合同。
+`ParameterEvaluationPlan.create(..., execution=execution)`创建实际声明点计划，再用
+`plan.bind_point(...)`构造`EvaluationLineage`并重新准备子请求，不复制句柄伪造所有权。
+是否事前发布由RSCH安排，绑定不读取计划文件。计划及lineage留在父进程，实际市场、输入、执行及非参数条件随请求留证。
 
 `execution.equity_statistics`返回输入快照数、候选及基准回放次数和账户计时，不返回审计次数或审计PASS。
 `account_timings`包括启动装载、特征、策略、执行及账表；特征是其子项，不重复相加。

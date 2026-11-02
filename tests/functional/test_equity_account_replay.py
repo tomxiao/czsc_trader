@@ -93,7 +93,7 @@ def test_account_shared_snapshot_benchmark_without_independent_audit(tmp_path, m
     assert materialize_equity(a).payload["runs"]["candidate"]["metrics"]["closed_cycles"] == 12
 
 
-def test_account_refs_and_metrics_reject_inconsistent_material(tmp_path):
+def test_account_refs_check_structure_without_recertifying_recorded_metrics(tmp_path):
     context, request, _, _ = setup_account_research(tmp_path)
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:
         prepared = prepare_equity(context.evaluation, request, execution=execution)
@@ -112,7 +112,8 @@ def test_account_refs_and_metrics_reject_inconsistent_material(tmp_path):
     payload["candidate_ref"]["sha256"] = "a" * 64
     with pytest.raises(ValueError, match="closure differs"):
         EquityEvaluationResult(result.request_hash, json.dumps(payload).encode(), result.artifacts)
-    # Rehashing does not repair a disagreement between observations and metrics.
+    # Ordinary projection consumes account observations; it does not attest to
+    # independently supplied stored metrics or compare them against the journal.
     candidate = next(item for item in result.artifacts if item.sha256 == result.payload["candidate_ref"]["sha256"])
     document = json.loads(candidate.content)
     document["run"]["metrics"]["fees"] += 1
@@ -121,8 +122,64 @@ def test_account_refs_and_metrics_reject_inconsistent_material(tmp_path):
     payload["candidate_ref"] = changed.reference()
     altered = EquityEvaluationResult(result.request_hash, json.dumps(payload).encode(),
         tuple(changed if item is candidate else item for item in result.artifacts))
-    with pytest.raises(ValueError, match="metrics differ from account observations"):
-        build_equity_assessment(altered)
+    projected, = build_equity_assessment(altered)
+    original, = build_equity_assessment(result)
+    assert projected.account == original.account and projected.fills == original.fills
+    assert projected.equity == original.equity
+
+
+def test_projection_preserves_metrics_without_recomputation(tmp_path, monkeypatch):
+    from strategy_evaluator.equity_assessment import canonical_ledger, equity_performance, equity_concentration
+    from czsc_trader.research_tools import equity_replay
+    context, request, _, _ = setup_account_research(tmp_path)
+    with ResearchExecutionSession(context, experiment=request.experiment) as execution:
+        prepared = context.evaluation.prepare(request, execution=execution)
+        result, = context.evaluation.evaluate_many((prepared,), execution=execution)
+        assert result.result is not None, result.error
+        raw = materialize_equity(result.result).payload
+        def forbidden(*args, **kwargs):
+            raise AssertionError("fact projection must not recompute recorded metrics")
+        monkeypatch.setattr(equity_replay, "summarize_equity_ledger", forbidden)
+        facts, = build_equity_assessment(result.result)
+    ledgers = {}
+    economic = {name: raw["audit_inputs"][name] for name in (
+        "bars", "action_facts", "constraints", "specification", "initial_cash", "fee_rate")}
+    for name, run in raw["runs"].items():
+        ledgers[name] = {**economic, **{field: run[field] for field in (
+            "decisions", "orders", "fills", "actions", "account_points", "trades")}, "account_contract": 4}
+    for basis in ("SESSION_CLOSE", "BAR_CLOSE"):
+        compact = replace(facts, equity=replace(facts.equity, drawdown_basis=basis),
+            metric_version=f"equity-assessment-v4:{basis}:{facts.equity.concentration_basis}")
+        full = replace(compact, equity=replace(compact.equity,
+            candidate_ledger=canonical_ledger(ledgers["candidate"]),
+            benchmark_ledger=canonical_ledger(ledgers["buy_hold"])))
+        assert equity_performance(compact) == equity_performance(full)
+        assert equity_performance(compact, benchmark=True) == equity_performance(full, benchmark=True)
+        assert equity_concentration(compact) == equity_concentration(full)
+        assert len(compact.equity.candidate_ledger) < len(full.equity.candidate_ledger)
+
+
+def test_prepared_execution_does_not_rebuild_source_identity_or_certify_result(tmp_path, monkeypatch):
+    from czsc_trader.application import publish_evidence
+    from czsc_trader.research_tools import EvaluationEvidenceWrite, build_assessment_evidence
+    from czsc_trader.research_tools import equity_replay
+    from czsc_trader.research_tools.equity_evaluation import EquityEvaluationRequest
+    context, request, _, _ = setup_account_research(tmp_path)
+    with ResearchExecutionSession(context, experiment=request.experiment) as execution:
+        prepared = context.evaluation.prepare(request, execution=execution)
+        def forbidden(*args, **kwargs):
+            raise AssertionError("prepared execution must not re-read source identities or certify the account")
+        projection = equity_replay.build_equity_assessment
+        monkeypatch.setattr(EquityEvaluationRequest, "identity", forbidden)
+        monkeypatch.setattr(equity_replay, "build_equity_assessment", forbidden)
+        outcome, = context.evaluation.evaluate_many((prepared,), execution=execution)
+        assert outcome.result is not None, outcome.error
+        monkeypatch.setattr(equity_replay, "build_equity_assessment", projection)
+        facts, = build_assessment_evidence(prepared, outcome.result, execution=execution)
+        assert facts.result_sha256 == outcome.result.result_hash
+        reference = publish_evidence(context, EvaluationEvidenceWrite(request.experiment, "once",
+            prepared, outcome.result), execution=execution)
+        assert reference.resolve(context.repository.root).read_bytes() == outcome.result.content
 
 
 def test_account_requires_explicit_owned_session(tmp_path):
@@ -261,8 +318,9 @@ def test_account_parameter_plan_uses_owned_preparation_without_refetch(tmp_path,
         for index, item in enumerate(outcomes):
             facts, = build_equity_assessment(item.result)
             assert facts.parameter_point == design.bind_point(index) and facts.parent == design.center
-        with pytest.raises(ValueError, match="nonparameter context"):
-            context.evaluation.prepare(replace(bound[0].request, initial_cash=1001., audit_inputs_sha256=None), execution=execution)
+        changed = context.evaluation.prepare(replace(bound[0].request, initial_cash=1001., audit_inputs_sha256=None), execution=execution)
+        assert changed.request.initial_cash == 1001.
+        assert changed.contract_content != bound[0].contract_content
         assert len(fetched) == 4
     with ResearchExecutionSession(context, experiment=request.experiment) as other_execution:
         with pytest.raises(ValueError, match="not issued"):

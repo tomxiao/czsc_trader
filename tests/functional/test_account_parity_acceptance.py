@@ -12,6 +12,20 @@ from czsc_trader.application import (publish_evidence, diagnose_accounts, regist
 from account_parity_support import setup_account
 
 
+def _retained_ledger(result, *, benchmark=False):
+    """Read the retained full journal when a test explicitly inspects execution."""
+    from czsc_trader.research_tools.equity_replay import materialize_equity
+    payload = materialize_equity(result).payload
+    run = payload['runs']['buy_hold' if benchmark else 'candidate']
+    ledger = {**{name: payload['audit_inputs'][name] for name in (
+        'bars', 'action_facts', 'constraints', 'specification', 'initial_cash', 'fee_rate')},
+        **{name: run[name] for name in ('decisions', 'orders', 'fills', 'actions', 'account_points', 'trades')},
+        'account_contract': 4}
+    if not benchmark and payload['request']['candidate_definition'].get('execution_input') is not None:
+        ledger['execution_bars'] = payload['audit_inputs']['decision_inputs']['execution']['bars']
+    return ledger
+
+
 @pytest.mark.parametrize('contract', [1,2,3])
 def test_retired_research_contracts_are_rejected_at_construction(tmp_path,contract):
     from dataclasses import replace
@@ -83,7 +97,9 @@ def step(ctx,state):
             facts, = build_assessment_evidence(bound[index],item.result,execution=execution)
             assert facts.parameter_point == design.bind_point(index) and facts.parent == design.center
             checkpoint = encode_result(item.result)
-            assert decode_result(checkpoint,item.result.request_hash) == item.result
+            artifacts = {(artifact.kind, artifact.sha256): artifact for artifact in item.result.artifacts}
+            assert decode_result(checkpoint,item.result.request_hash,
+                lambda kind,digest: artifacts[(kind,digest)]) == item.result
             with pytest.raises(ValueError,match='V4 artifact closure'):
                 decode_result(dict(checkpoint,kind='equity-research/v3'),item.result.request_hash)
 
@@ -123,7 +139,7 @@ def step(ctx, state):
         outcome,=context.evaluation.evaluate_many((bound,),execution=execution)
         assert outcome.result is not None,outcome.error
         facts,=build_assessment_evidence(bound,outcome.result,execution=execution)
-        ledger=json.loads(facts.equity.candidate_ledger)
+        ledger=_retained_ledger(outcome.result)
         assert ledger['execution_bars']
         from czsc_trader.research_tools.equity_replay import materialize_equity
         quality = materialize_equity(outcome.result).payload['runs']['candidate']['data_quality']
@@ -181,7 +197,7 @@ def step(ctx, state):
         outcome, = context.evaluation.evaluate_many((prepared,),execution=execution)
         assert outcome.result is not None, outcome.error
         facts, = build_assessment_evidence(prepared,outcome.result,execution=execution)
-        ledger=json.loads(facts.equity.candidate_ledger)
+        ledger=_retained_ledger(outcome.result)
         assert len(ledger['fills']) > len({r['interval_end'] for r in ledger['fills']})
         assert ledger['trades']
         from strategy_evaluator.equity_diagnosis import diagnose_equity_accounts
@@ -231,7 +247,7 @@ def test_stage_three_raw_actions_and_independent_multi_fill_diagnosis(tmp_path, 
         outcome, = context.evaluation.evaluate_many((prepared,), execution=execution)
         assert outcome.result is not None, outcome.error
         facts, = build_assessment_evidence(prepared, outcome.result, execution=execution)
-        ledger = json.loads(facts.equity.benchmark_ledger)
+        ledger = _retained_ledger(outcome.result, benchmark=True)
         assert ledger['account_contract'] == 4
         assert {row['kind'] for row in ledger['actions']} >= {'SPLIT', 'CASH_DIVIDEND', 'DIVIDEND_PAYMENT'}
         from strategy_evaluator.equity import audit_equity_account

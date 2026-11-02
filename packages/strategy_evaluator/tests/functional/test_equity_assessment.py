@@ -111,17 +111,27 @@ def test_equity_concentration_includes_dividend_once_and_explicit_definition():
     assert metric(value, m.ResearchMetric.FREQUENCY_COVERAGE).value == 1
 
 
-@pytest.mark.parametrize("mutation", ["basis", "daily"])
-def test_equity_facts_reject_invalid_basis_and_disagreeing_projection(mutation):
+def test_equity_facts_reject_invalid_basis_without_implicitly_reconciling_projection():
     value = evidence()
-    if mutation == "basis":
-        with pytest.raises(ValueError, match="drawdown basis"):
-            replace(value.equity, drawdown_basis="TICK")
-        return
-    elif mutation == "daily":
-        with pytest.raises(ValueError, match="daily account differs"):
-            replace(value, account=(replace(value.account[0], cash=value.account[0].cash + 1), *value.account[1:]))
-        return
+    with pytest.raises(ValueError, match="drawdown basis"):
+        replace(value.equity, drawdown_basis="TICK")
+    changed = replace(value, account=(replace(value.account[0], cash=value.account[0].cash + 1), *value.account[1:]))
+    assert changed.account[0].cash == value.account[0].cash + 1
+
+
+@pytest.mark.parametrize("drawdown", ["SESSION_CLOSE", "BAR_CLOSE"])
+@pytest.mark.parametrize("concentration", ["MAX_SINGLE", "TOP_DECILE"])
+def test_compact_observations_preserve_metrics_and_immutable_parsed_values(drawdown, concentration):
+    from strategy_evaluator.equity_assessment import canonical_observations, read_ledger
+    original = evidence(drawdown, concentration)
+    compact = canonical_observations(ledger())
+    projected = replace(original, equity=replace(original.equity,
+        candidate_ledger=compact, benchmark_ledger=compact))
+    assert len(compact) < len(original.equity.candidate_ledger) / 4
+    assert panel(projected).rows == panel(original).rows
+    parsed = read_ledger(compact)
+    with pytest.raises(TypeError):
+        parsed["account_points"][0]["equity"] = 0.
 
 
 @pytest.mark.parametrize("days", [12, 61])

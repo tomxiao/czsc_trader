@@ -1,7 +1,7 @@
 """Authenticate V4 retained evidence before pure continuous-account diagnosis."""
 import math
 from strategy_evaluator.account_diagnosis import AccountDiagnosisStatus, DecisionCoverage
-from strategy_evaluator.equity_assessment import read_ledger, session
+from strategy_evaluator.equity_assessment import session
 from strategy_evaluator.equity_diagnosis import diagnose_equity_accounts, PROTOCOL
 from ..research_tools.account_diagnosis import AccountDiagnosisResult, DiagnosisReconciliation
 
@@ -16,7 +16,6 @@ def diagnose_equity_evidence(repository, request, *, execution=None):
         return fail(AccountDiagnosisStatus.INCOMPARABLE, "diagnosis requires the same explicit equity evidence contract")
     try:
         loaded = []
-        from ..research_tools.equity_replay import build_equity_assessment
         from .equity_evidence_io import materialize_equity_document
         if execution is not None:
             if execution.context.repository.root != repository.root:
@@ -29,9 +28,15 @@ def diagnose_equity_evidence(repository, request, *, execution=None):
                     or value["evaluation_identity"] != ref.identity.to_dict()):
                 raise ValueError("equity account identity or origin differs")
             view = materialize_equity_document(repository.root, ref.evidence.repository_path, value)
-            facts = build_equity_assessment(view)[0]
             value = view.payload
-            loaded.append((value, read_ledger(facts.equity.candidate_ledger)))
+            run = value["runs"]["candidate"]
+            ledger = {**{field: value["audit_inputs"][field] for field in (
+                "bars", "action_facts", "constraints", "specification", "initial_cash", "fee_rate")},
+                **{field: run[field] for field in (
+                    "decisions", "orders", "fills", "actions", "account_points", "trades")}, "account_contract": 4}
+            if value["request"]["candidate_definition"].get("execution_input") is not None:
+                ledger["execution_bars"] = value["audit_inputs"]["decision_inputs"]["execution"]["bars"]
+            loaded.append((value, ledger))
         def comparable(value):
             r = value["request"]
             return {k: r[k] for k in ("instrument", "specification", "initial_cash", "fee_rate", "window", "benchmark",

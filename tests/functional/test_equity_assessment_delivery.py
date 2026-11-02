@@ -1,4 +1,4 @@
-"""Real equity stage-A/C evidence survives source cleanup and is recomputed."""
+"""Stage-four publication stores facts; explicit FULL checks recompute them."""
 from dataclasses import replace
 import json
 
@@ -9,9 +9,11 @@ from strategy_evaluator import (
 )
 from strategy_evaluator import research_models as m
 from strategy_runtime import canonical_sha256
+from strategy_manager import CandidateEvidence
 from czsc_trader.application import (assemble_delivery, validate_delivery, publish_evidence,
                                     register_candidate, CandidateRegistrationRequest)
-from czsc_trader.research_tools import EvaluationEvidenceWrite, MaterialEvidenceWrite, build_assessment_evidence
+from czsc_trader.research_tools import (EvaluationEvidenceWrite, MaterialEvidenceWrite,
+    build_assessment_evidence, ParameterEvaluationPlan, EvaluationLineage)
 from czsc_trader.research_tools import delivery as d
 from equity_parameter_support import equity_plan
 from test_assessment_delivery import assessment_request, comparison_request
@@ -25,14 +27,26 @@ def test_equity_stage4_authenticates_plan_targets_and_archived_accounts(tmp_path
         _check_equity_delivery(research, request, plan, plan_ref, children, execution, applicable, ranking)
 
 
-def test_declared_point_set_delivery_reuses_original_bindings_and_rejects_forged_numeric_facts(tmp_path):
+def test_declared_point_set_delivery_reuses_original_bindings_and_explicitly_checks_numeric_facts(tmp_path, monkeypatch):
     with equity_plan(tmp_path) as (research, request, plan, plan_ref, children, execution):
-        _check_equity_delivery(research, request, plan, plan_ref, children, execution, True,
-                               "research-ranking-v6", declared=True)
+        point_id = plan.design.point_count - 1
+        geometry = DeclaredParameterPointSet(plan.design, (point_id,), "d" * 64)
+        original = children[-1]
+        child = research.evaluation.prepare(replace(original.request, lineage=None), execution=execution)
+        plan = ParameterEvaluationPlan.create(geometry, request, (child,), mapping_evidence=plan.mapping_evidence,
+            feasibility_evidence=plan.feasibility_evidence, dataflows=research.data, execution=execution)
+        plan_ref = publish_evidence(research, MaterialEvidenceWrite(request.experiment, "selected-plan",
+            json.dumps(plan.to_dict()).encode(), "application/json", "json"), execution=execution)
+        derivation = replace(original.request.lineage.derivation,
+            evidence=CandidateEvidence(plan_ref.repository_path, plan_ref.sha256))
+        child = research.evaluation.prepare(replace(child.request, lineage=EvaluationLineage(
+            derivation, plan.bind_point(plan_ref, point_id, repository_root=tmp_path))), execution=execution)
+        _check_equity_delivery(research, request, plan, plan_ref, (child,), execution, True,
+                               "research-ranking-v6", declared=True, monkeypatch=monkeypatch)
 
 
 def _check_equity_delivery(research, request, plan, plan_ref, children, execution, applicable, ranking,
-                           *, declared=False):
+                           *, declared=False, monkeypatch=None):
     context = research.repository
     evidence, refs = [], []
     pressure = research.evaluation.prepare(replace(request.request, scenario_id="PRESSURE", measurement_tier="STRESS",
@@ -56,7 +70,8 @@ def _check_equity_delivery(research, request, plan, plan_ref, children, executio
         protocol["type"] = "CalmarSelfCheckProtocol"
         assessment = replace(assessment, protocol=m.CalmarSelfCheckProtocol.from_dict(protocol))
     if declared:
-        geometry = DeclaredParameterPointSet(plan.design, (plan.design.point_count - 1,), "d" * 64)
+        geometry = (plan.design if type(plan.design) is DeclaredParameterPointSet else
+                    DeclaredParameterPointSet(plan.design, (plan.design.point_count - 1,), "d" * 64))
         assessment = replace(assessment, parameter_designs=(geometry,),
             perturbations=tuple(x for x in assessment.perturbations if x.parameter_point.point_index in geometry.point_indices),
             evidence=tuple(x for x in assessment.evidence if x.parent is None
@@ -121,20 +136,35 @@ def _check_equity_delivery(research, request, plan, plan_ref, children, executio
                                      predecessors=(candidates.reference, mandate_receipt.reference),
                                      schema_version=15 if declared else {"research-ranking-v4": 12,
                                          "research-ranking-v5": 13, "research-ranking-v6": 14}[ranking])
-    assembled = assemble_delivery(context, definition, content(payload))
+    if monkeypatch is None:
+        assembled = assemble_delivery(context, definition, content(payload))
+    else:
+        from czsc_trader.application import delivery_service
+        def forbidden(*args, **kwargs):
+            raise AssertionError("publication must not certify accounts, recurse or recompute")
+        with monkeypatch.context() as storage_only:
+            for name in ("_read_delivery", "_certify_account", "assess_candidates", "compare_candidates"):
+                storage_only.setattr(delivery_service, name, forbidden)
+            assembled = assemble_delivery(context, definition, content(payload))
+            assert assemble_delivery(context, definition, content(payload)).receipt == assembled.receipt
     assert assembled.validation.status is d.ValidationStatus.PASS
-    assert assembled.validation.stats.accounts_authenticated == 2 + len(children)
+    assert assembled.validation.scope is d.DeliveryValidationScope.INTEGRITY
+    assert assembled.validation.stats.accounts_authenticated == 0
+    assert assembled.validation.stats.recomputation_seconds == 0
     assert validate_delivery(context, assembled.receipt.reference).status is d.ValidationStatus.PASS
     if declared:
         assert assembled.receipt.schema_version == 15
         assert d.DeliveryContent.from_dict(content(payload).to_dict()).payload == payload
         point, = assessment_input.parameter_evidence
-        assert point.parameter_point == plan.design.bind_point(plan.design.point_count - 1)
+        point_id = plan.design.point_indices[-1] if type(plan.design) is DeclaredParameterPointSet else plan.design.point_count - 1
+        assert point.parameter_point == plan.design.bind_point(point_id)
         forged = replace(assessment_input, parameter_evidence=(replace(point,
             performance=replace(point.performance, annual_return=point.performance.annual_return + .25)),))
-        with pytest.raises(d.DeliveryValidationError, match="saved evaluation facts"):
-            assemble_delivery(context, replace(definition, revision=2),
-                              content(replace(payload, assessment_request=forged)))
+        stored = assemble_delivery(context, replace(definition, revision=2),
+                                   content(replace(payload, assessment_request=forged)))
+        checked = validate_delivery(context, stored.receipt.reference, scope=d.DeliveryValidationScope.FULL)
+        assert checked.status is d.ValidationStatus.FAIL
+        assert any("saved evaluation facts" in issue.message for issue in checked.issues)
     if not declared and ranking in ("research-ranking-v5", "research-ranking-v6"):
         assert assembled.receipt.schema_version == (14 if ranking == "research-ranking-v6" else 13)
         assert d.DeliveryContent.from_dict(content(payload).to_dict()).payload == payload
@@ -160,8 +190,10 @@ def _check_equity_delivery(research, request, plan, plan_ref, children, executio
         forged_request = replace(comparison, panel=forged_panel)
         forged = replace(payload, assessment=forged_panel, comparison_request=forged_request,
                          comparison=compare_candidates(forged_request))
-        with pytest.raises(d.DeliveryValidationError, match="recomputation"):
-            assemble_delivery(context, replace(definition, revision=2), content(forged))
+        stored = assemble_delivery(context, replace(definition, revision=3), content(forged))
+        checked = validate_delivery(context, stored.receipt.reference, scope=d.DeliveryValidationScope.FULL)
+        assert checked.status is d.ValidationStatus.FAIL
+        assert any("recomputation" in issue.message for issue in checked.issues)
     check = payload.comparison.rows[0].target_checks[1]
     expected = m.TargetCheckStatus.PASSED if applicable else m.TargetCheckStatus.NOT_APPLICABLE
     if ranking == "research-ranking-v6" and applicable:
@@ -174,9 +206,12 @@ def _check_equity_delivery(research, request, plan, plan_ref, children, executio
     assert calmar.evaluation_ids == (evidence[0].evaluation_id,)
     altered_calmar = replace(targets[-1], lower=m.BenchmarkBound(1.6, False))
     altered = replace(comparison, targets=m.ResearchTargets((*targets[:-1], altered_calmar), 60))
-    with pytest.raises(d.DeliveryValidationError, match="confirmed mandate|targets must be preserved"):
-        assemble_delivery(context, replace(definition, revision=2), content(replace(payload,
-            comparison_request=altered, comparison=compare_candidates(altered))))
+    stored = assemble_delivery(context, replace(definition, revision=4), content(replace(payload,
+        comparison_request=altered, comparison=compare_candidates(altered))))
+    checked = validate_delivery(context, stored.receipt.reference, scope=d.DeliveryValidationScope.FULL)
+    assert checked.status is d.ValidationStatus.FAIL
+    assert any("confirmed mandate" in issue.message or "targets must be preserved" in issue.message
+               for issue in checked.issues)
     # Remove only individually named fixture sources; the delivered snapshot must stand alone.
     (request.candidate.source_root / "strategy.py").unlink()
     originals = {ref.resolve(context.root) for ref in (plan_ref, plan.mapping_evidence, plan.feasibility_evidence, *refs)}

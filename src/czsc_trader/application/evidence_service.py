@@ -103,7 +103,7 @@ def _serialize_worker(payload: bytes, native_threads: int) -> bytes:
         return _serialize_account(request)
 
 
-def _publish_serialized(context: ResearchContext, request: EvidenceWriteRequest, data: bytes) -> EvidenceRef:
+def _publish_serialized(context: ResearchContext, request: EvidenceWriteRequest, data: bytes, *, artifacts_seen=None) -> EvidenceRef:
     if isinstance(request, EvaluationEvidenceWrite):
         from ..research_tools.equity_evaluation import EquityEvaluationResult
         equity = type(request.result) is EquityEvaluationResult
@@ -119,7 +119,10 @@ def _publish_serialized(context: ResearchContext, request: EvidenceWriteRequest,
             # Dependencies are immutable, content-addressed and installed before
             # the final evaluation document becomes visible.
             for artifact in request.result.artifacts:
-                digest = sha256(artifact.content).hexdigest()
+                digest = artifact.sha256
+                key = (request.experiment, digest)
+                if artifacts_seen is not None and key in artifacts_seen:
+                    continue
                 target = managed_path(context.repository.root,
                     f'{request.experiment.repository_path.replace("/experiments/", "/assets/evidence/")}/{digest}.json')
                 if target.exists():
@@ -127,6 +130,8 @@ def _publish_serialized(context: ResearchContext, request: EvidenceWriteRequest,
                         raise ValueError('published equity dependency differs from its content identity')
                 else:
                     _publish_bytes(context.repository.root, target, artifact.content)
+                if artifacts_seen is not None:
+                    artifacts_seen.add(key)
     else:
         media_type, suffix = request.media_type, request.suffix
         schema, version = None, None
@@ -167,12 +172,12 @@ def _failed(index: int, error: BaseException, status: PublicationStatus = Public
     ))
 
 
-def _publish_outcome(context, index, request, data):
+def _publish_outcome(context, index, request, data, *, artifacts_seen=None):
     if type(data) is not bytes or not data:
         return _failed(index, TypeError("publication requires nonempty serialized bytes"))
     try:
         return PublicationOutcome(index, PublicationStatus.PUBLISHED,
-                                  _publish_serialized(context, request, data))
+                                  _publish_serialized(context, request, data, artifacts_seen=artifacts_seen))
     except BaseException as exc:
         # A failure after the atomic link (for example temporary-file cleanup)
         # must not claim that no evidence was installed. Never retry publication.
@@ -218,6 +223,7 @@ def publish_evidence_many(context: ResearchContext,
     from ..research_tools._evaluation_workers import pack
 
     publication_keys = {}
+    artifacts_seen = set()
     for index, request in enumerate(requests):
         from ..research_tools.equity_replay import PreparedAccountEvaluation
         if (checkpoint is not None and isinstance(request, EvaluationEvidenceWrite)
@@ -233,10 +239,14 @@ def publish_evidence_many(context: ResearchContext,
                         or reference.resolve(context.repository.root).read_bytes() != request.result.content):
                     raise ValueError('equity publication checkpoint differs from authenticated result')
                 for artifact in request.result.artifacts:
+                    artifact_key = (request.experiment, artifact.sha256)
+                    if artifact_key in artifacts_seen:
+                        continue
                     target = managed_path(context.repository.root,
-                        f'{request.experiment.repository_path.replace("/experiments/", "/assets/evidence/")}/{sha256(artifact.content).hexdigest()}.json')
+                        f'{request.experiment.repository_path.replace("/experiments/", "/assets/evidence/")}/{artifact.sha256}.json')
                     if target.read_bytes() != artifact.content:
                         raise ValueError('equity checkpoint dependency changed')
+                    artifacts_seen.add(artifact_key)
                 outcomes[index] = PublicationOutcome(index, PublicationStatus.PUBLISHED, reference)
                 executor.reused_publications += 1
                 continue
@@ -294,7 +304,8 @@ def publish_evidence_many(context: ResearchContext,
             from ..research_tools.equity_replay import PreparedAccountEvaluation
             if type(request.request) is PreparedAccountEvaluation:
                 with executor.measure(ExecutionPhase.PUBLISH):
-                    outcomes[index] = _publish_outcome(context, index, request, request.result.content)
+                    outcomes[index] = _publish_outcome(context, index, request, request.result.content,
+                                                     artifacts_seen=artifacts_seen)
                 if checkpoint is not None and outcomes[index].status is PublicationStatus.PUBLISHED:
                     checkpoint.save_publication(publication_keys[index], outcomes[index].reference)
             else:

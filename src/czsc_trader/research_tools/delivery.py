@@ -750,15 +750,14 @@ class DeliveryReceipt(_Record):
 
 @dataclass(frozen=True, slots=True)
 class DeliveryAssemblyResult(_Record):
-    """Runtime result; the persisted receipt/schema remains unchanged."""
+    """Published receipt and the scope actually checked by this operation."""
 
     receipt: DeliveryReceipt
     validation: DeliveryValidation
 
     def _validate(self):
-        if (self.validation.status is not ValidationStatus.PASS
-            or self.validation.scope is not DeliveryValidationScope.FULL):
-            raise ValueError("assembly result requires a completed FULL PASS")
+        if self.validation.status is not ValidationStatus.PASS:
+            raise ValueError("assembly result requires successful publication checks")
 
 
 

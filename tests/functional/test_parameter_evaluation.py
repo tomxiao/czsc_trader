@@ -113,17 +113,19 @@ def test_published_parameter_point_reaches_authenticated_account_and_se(managed_
     assert saved["schema_version"] == 8
     assert saved["request_identity"]["parameter_binding"]["plan"]["sha256"] == reference.sha256
     assert ParameterEvaluationPlan.from_dict(plan.to_dict()) == plan
-    with pytest.raises(ValueError, match="nonparameter context"):
-        prepare_request(research, replace(children[0], initial_cash=center.initial_cash + 1))
-    with pytest.raises(ValueError, match="actual child content"):
-        prepare_request(research, replace(children[0], strategy=children[1].strategy,
-            runtime_binding=children[1].runtime_binding, input_bindings=children[1].input_bindings))
+    changed_cash = prepare_request(research, replace(children[0], initial_cash=center.initial_cash + 1))
+    assert changed_cash.initial_cash == center.initial_cash + 1
+    changed_child = prepare_request(research, replace(children[0], strategy=children[1].strategy,
+        runtime_binding=children[1].runtime_binding, input_bindings=children[1].input_bindings))
+    assert changed_child.strategy == children[1].strategy
+    reference.resolve(request.repository_root).write_bytes(b"corrupt")
+    assert prepare_request(research, children[0]).lineage == children[0].lineage
+    from czsc_trader.research_tools.parameter_evaluation import read_parameter_plan
     with pytest.raises(ValueError, match="content differs"):
-        reference.resolve(request.repository_root).write_bytes(b"corrupt")
-        prepare_request(research, children[0])
+        read_parameter_plan(reference, request.repository_root)
 
 
-def test_parameter_plan_rejects_missing_publication_and_collapsed_payloads(prepared_parameter_plan):
+def test_parameter_plan_rejects_ambiguous_inputs_without_requiring_prior_publication(prepared_parameter_plan):
     research, center, plan, reference, children = prepared_parameter_plan
     with pytest.raises(ValueError, match="duplicate parameter child candidate"):
         replace(plan, children=(plan.children[0], plan.children[0]))
@@ -132,8 +134,7 @@ def test_parameter_plan_rejects_missing_publication_and_collapsed_payloads(prepa
     with pytest.raises(ValueError, match="evidence differs"):
         replace(plan, mapping_evidence=plan.feasibility_evidence)
     reference.resolve(center.repository_root).unlink()
-    with pytest.raises(FileNotFoundError, match="published evidence"):
-        prepare_request(research, children[0])
+    assert prepare_request(research, children[0]).lineage == children[0].lineage
 
 
 @pytest.mark.parametrize("acceptance_target", [True, False], ids=["acceptance", "diagnostic-only"])
@@ -184,21 +185,23 @@ def test_parameter_assessment_delivery_replays_plan_after_source_cleanup(fresh_c
     false_center = replace(plan, center_request_sha256="f" * 64)
     false_reference = publish_evidence(research, MaterialEvidenceWrite(ExperimentRef("S900", request.experiment_id),
         "false-parameter-center", json.dumps(false_center.to_dict()).encode(), "application/json", "json"))
-    with pytest.raises(ValueError, match="planned center differs"):
-        assemble_delivery(context, definition,
-                          replace(content, payload=replace(payload, parameter_plans=(false_reference,)))).receipt
     from strategy_runtime.resources import ExecutionResources
     progress = []
     assembled = assemble_delivery(context, definition, replace(content, payload=payload),
                                   resources=ExecutionResources(max_workers=2), on_progress=progress.append)
     receipt = assembled.receipt
-    assert assembled.validation.stats.accounts_authenticated == 3
-    assert any(event.phase.value == "AUTHENTICATION" and event.completed == event.total == 2
-               for event in progress)
+    assert assembled.validation.scope.value == "INTEGRITY"
+    assert assembled.validation.stats.accounts_authenticated == 0
+    assert not any(event.phase.value in ("AUTHENTICATION", "RECOMPUTATION") for event in progress)
     parallel = validate_delivery(context, receipt.reference, resources=ExecutionResources(max_workers=2))
     serial = validate_delivery(context, receipt.reference, resources=ExecutionResources(max_workers=1))
-    assert parallel == serial == assembled.validation
+    assert parallel == serial
+    assert parallel.status == assembled.validation.status
     assert parallel.stats.accounts_authenticated == serial.stats.accounts_authenticated == 3
+    false_assembly = assemble_delivery(context, replace(definition, revision=definition.revision + 1),
+        replace(content, payload=replace(payload, parameter_plans=(false_reference,))))
+    assert false_assembly.validation.status.value == "PASS"
+    assert validate_delivery(context, false_assembly.receipt.reference).status.value == "FAIL"
     shutil.rmtree(request.strategy.source_root)
     for material in (reference, plan.mapping_evidence, plan.feasibility_evidence):
         material.resolve(context.root).unlink()
@@ -241,8 +244,8 @@ def test_not_applicable_plan_and_delivery_retain_authenticated_center_without_ch
         plan.bind_point(reference, 0, repository_root=context.root)
     bad_payload = json.loads(plan.center.payload_json)
     bad_payload["parameters"]["threshold"] = .4
-    with pytest.raises(ValueError, match="center payload differs"):
-        replace(plan, center=replace(plan.center, payload_json=_payload_json(bad_payload)))
+    recorded = replace(plan, center=replace(plan.center, payload_json=_payload_json(bad_payload)))
+    assert json.loads(recorded.center.payload_json)["parameters"]["threshold"] == .4
     empty_design = build_parameter_neighborhood_design(ParameterNeighborhoodRequest(
         plan.design.center, plan.design.protocol, replace(plan.design.space, axes=())),
         feasibility=lambda values: True).design
@@ -278,14 +281,18 @@ def test_not_applicable_plan_and_delivery_retain_authenticated_center_without_ch
     forged_payload = replace(payload, assessment_request=forged_request, assessment=forged_panel,
         comparison_request=forged_comparison, comparison=compare_candidates(forged_comparison),
         parameter_plans=(forged_ref,))
-    with pytest.raises(d.DeliveryValidationError, match="payload runtime identity differs"):
-        assemble_delivery(context, definition, replace(content, payload=forged_payload))
     assembled = assemble_delivery(context, definition, replace(content, payload=payload))
     assert assembled.receipt.schema_version == 12
     assert assembled.validation.status is d.ValidationStatus.PASS
-    assert assembled.validation.stats.accounts_authenticated == 1
+    assert assembled.validation.scope is d.DeliveryValidationScope.INTEGRITY
+    assert assembled.validation.stats.accounts_authenticated == 0
     assert validate_delivery(context, assembled.receipt.reference).status is d.ValidationStatus.PASS
     assert d.DeliveryContent.from_dict(replace(content, payload=payload).to_dict()).payload == payload
+    forged_assembly = assemble_delivery(context, replace(definition, revision=definition.revision + 1),
+                                       replace(content, payload=forged_payload))
+    explicit = validate_delivery(context, forged_assembly.receipt.reference)
+    assert explicit.status is d.ValidationStatus.FAIL
+    assert any("payload runtime identity differs" in issue.message for issue in explicit.issues)
 
 
 @pytest.mark.parametrize("applicable", [False, True])
@@ -307,14 +314,13 @@ def test_parameter_plan_checks_declared_scope_and_preserves_unmapped_fields(mana
     bad_space = replace(plan.design.space, axes=(replace(axis, payload_path=("absent",)),))
     bad_design = build_parameter_neighborhood_design(ParameterNeighborhoodRequest(
         plan.design.center, plan.design.protocol, bad_space), feasibility=lambda values: True).design
-    with pytest.raises(ValueError, match="path does not exist"):
-        replace(plan, design=bad_design)
+    assert replace(plan, design=bad_design).design.space.axes[0].payload_path == ("absent",)
 
 
-def test_parameter_plan_rejects_undeclared_configuration_change(managed_evaluation):
+def test_parameter_plan_retains_undeclared_configuration_for_research_review(managed_evaluation):
     research, request = managed_evaluation
-    with pytest.raises(ValueError, match="undeclared changes are forbidden"):
-        parameter_plan(research, request, child_parameters=lambda point: {"unmapped": [1, None]})
+    _, plan, _, _ = parameter_plan(research, request, child_parameters=lambda point: {"unmapped": [1, None]})
+    assert all(json.loads(child.payload_json)["parameters"]["unmapped"] == [1, None] for child in plan.children)
 
 
 def test_parameter_plan_rejects_parameter_driven_execution_switch(managed_evaluation):
@@ -347,7 +353,7 @@ def test_parameter_plan_allows_genuine_lookback_extension(managed_evaluation):
 
 
 @pytest.mark.parametrize("failure", ["source_contract", "raw_values"])
-def test_parameter_plan_rejects_changed_raw_signal_inputs(prepared_parameter_plan, monkeypatch, failure):
+def test_parameter_preparation_keeps_actual_inputs_without_reauditing_center(prepared_parameter_plan, monkeypatch, failure):
     from dataflows import Dataflows, Dataset, PreparePolicy, ProviderBinding, ProviderConfig
 
     research, center, _, _, children = prepared_parameter_plan
@@ -358,7 +364,7 @@ def test_parameter_plan_rejects_changed_raw_signal_inputs(prepared_parameter_pla
         requests["flow"] = replace(requests["flow"], symbol="510500.SH")
         changed = replace(original, plan=replace(original.plan, requests=requests))
         child = replace(child, input_bindings={"full": changed})
-        with pytest.raises(ValueError, match="raw input source contract differs"):
+        with pytest.raises(ValueError):
             prepare_request(research, child)
     else:
         original = child.input_bindings["full"]
@@ -386,10 +392,10 @@ def test_parameter_plan_rejects_changed_raw_signal_inputs(prepared_parameter_pla
             return fetch(source_request, prepared=prepared)
 
         monkeypatch.setattr(research.data, "fetch", tracked)
-        with pytest.raises(ValueError, match="raw input source or values differ"):
-            prepare_request(research, child)
+        actual = prepare_request(research, child)
+        assert actual.input_bindings["full"].prepared == prepared.reference
         flow_reads = [reference for dataset, reference in calls if str(dataset) == Dataset.ETF_SHARE_SIZE.value]
-        assert flow_reads == [center.input_bindings["full"].prepared, prepared.reference]
+        assert flow_reads == [prepared.reference]
 
 
 def test_equal_pinned_inputs_read_once_per_role_and_again_for_each_preparation(prepared_parameter_plan, monkeypatch):

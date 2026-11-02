@@ -46,11 +46,13 @@ def _read(content):
 class EquityInputSnapshot:
     artifact: EquityArtifact
     primary_sha256: str = field(init=False, repr=False, compare=False)
+    data_content: bytes = field(init=False, repr=False, compare=False)
 
     def __post_init__(self):
         if type(self.artifact) is not EquityArtifact or self.artifact.kind != "equity_input":
             raise TypeError("input snapshot requires an immutable input artifact")
         value = _read(self.artifact.content)
+        object.__setattr__(self, "data_content", _bytes(value["data"]))
         primary = {"schema": value["schema"],
             "products": {key: value["products"][key] for key in ("bars", "sessions", "actions", "constraints")},
             "data": {key: value["data"][key] for key in ("bars", "sessions", "actions", "constraints")}}
@@ -73,6 +75,8 @@ class _SessionState:
         self.prepared = WeakValueDictionary()
         self.benchmarks = {}
         self.results = {}
+        self.engine_sources = None
+        self.input_fact_hashes = {}
         self.replay_statistics = {}
         self.candidate_runs = 0
         self.benchmark_runs = 0
@@ -162,12 +166,21 @@ def prepare_equity(access, request, *, execution):
                     if definition.execution_input is not None else {}))
         if request.input_binding is not None and request.input_binding != binding:
             raise ValueError("equity input identity differs from prepared assets")
-        facts_hash = equity_hash(_audit_inputs(request, spec, state.products[snapshot.sha256]))
+        fact_key = (snapshot.sha256, request.initial_cash, request.fee_rate, spec.fingerprint,
+                    equity_hash({"auxiliary": [asdict(item) for item in definition.auxiliary_inputs],
+                                 "execution": None if definition.execution_input is None else asdict(definition.execution_input)}))
+        if fact_key not in state.input_fact_hashes:
+            state.input_fact_hashes[fact_key] = equity_hash(_audit_inputs(request, spec, state.products[snapshot.sha256]))
+        facts_hash = state.input_fact_hashes[fact_key]
         if request.audit_inputs_sha256 is not None and request.audit_inputs_sha256 != facts_hash:
             raise ValueError("equity audit input fingerprint differs")
         request = replace(request, input_binding=binding, audit_inputs_sha256=facts_hash)
         baseline = _benchmark_candidate(request)
-        contract = request.identity(spec)
+        if state.engine_sources is None:
+            contract = request.identity(spec)
+            state.engine_sources = contract["engine_sources"]
+        else:
+            contract = request._identity_with_sources(spec, state.engine_sources)
         benchmark = BenchmarkRunIdentity(_bytes({"kind": "BUY_HOLD", "input_snapshot_sha256": _primary_input_sha256(snapshot),
             "instrument": asdict(request.candidate.instrument), "definition": baseline.definition.to_dict(),
             "window": asdict(request.window), "history_start": request.history_start.isoformat(),
@@ -189,8 +202,6 @@ def _require_prepared(state, value):
     if (type(value) is not PreparedAccountEvaluation or value.scope_token != state.token
             or state.prepared.get(id(value)) is not value):
         raise ValueError("prepared equity handle was not issued by this execution session")
-    if _bytes(value.request.identity(value.candidate.definition.execution_spec)) != value.contract_content:
-        raise ValueError("equity engine or request identity changed after preparation")
 
 
 def _replay(state, prepared, *, benchmark=False):
@@ -204,7 +215,7 @@ def _replay(state, prepared, *, benchmark=False):
     if key not in state.replays:
         products = state.products[prepared.snapshot.sha256]
         base = next((value for k, value in state.replays.items() if k[0] == key[0] and k[2:] == key[2:]), None)
-        identities = _read(prepared.snapshot.artifact.content)["data"]
+        identities = _read(prepared.snapshot.data_content)
         state.replays[key] = (base.with_graph(graph) if base is not None else PreparedReplay.from_frames(
             products["bars"], products["constraints"], graph, latency_seconds=key[2],
             frequency=candidate.definition.execution_spec.decision_clock, timezone=candidate.instrument.timezone,
@@ -220,7 +231,15 @@ class _ReplayAccountRequest:
     fee_rate: float
 
 
-def _compute_account(replay, candidate, request, actions, owner, execution_bars=None):
+@dataclass(frozen=True, slots=True)
+class _AccountOutputContext:
+    input_sha256: str
+    owner_content: bytes
+    bars: tuple
+    execution_bars: tuple | None
+
+
+def _compute_account(replay, candidate, request, actions, owner, execution_bars, output):
     """Execute the authoritative account once; publication stays caller-owned."""
     from strategy_runtime.equity_replay import run_replay
     from trading_execution_engine.portfolio import PortfolioHistoricalExecutor
@@ -234,7 +253,14 @@ def _compute_account(replay, candidate, request, actions, owner, execution_bars=
         "fills": _records(account.fills), "actions": _records(account.corporate_action_entries),
         "account_points": _records(account.account_points), "trades": _records(account.trades),
         "account_daily": _records(account.account_daily)}
-    return run, outcome.statistics
+    ledger = {**run, "specification": asdict(candidate.definition.execution_spec),
+              "initial_cash": request.initial_cash, "fee_rate": request.fee_rate}
+    metrics = summarize_equity_ledger(ledger)
+    run.update(metrics=_json_value(asdict(metrics)), data_quality=_data_quality(
+        output.bars, run, timezone=candidate.instrument.timezone, execution_bars=output.execution_bars))
+    artifact = EquityArtifact("equity_account", _bytes({"schema": "equity-account/v1",
+        "owner": _read(output.owner_content), "input_sha256": output.input_sha256, "run": run}))
+    return artifact, outcome.statistics
 
 
 def _account_owner(prepared, *, benchmark):
@@ -257,45 +283,32 @@ def _record_timing(state, prepared, benchmark, timing):
         state.candidate_runs += 1
 
 
-def _inputs(state, snapshot, request):
-    if snapshot.sha256 not in state.input_records:
-        state.input_records[snapshot.sha256] = _read(snapshot.artifact.content)["products"]
-    products = state.input_records[snapshot.sha256]
-    return {"bars": products["bars"], "action_facts": products["actions"], "constraints": products["constraints"],
-        "specification": _json_value(asdict(request.candidate.definition.execution_spec)),
-        "initial_cash": request.initial_cash, "fee_rate": request.fee_rate}
-
-
-def _account_artifact(state, prepared, run, *, benchmark):
-    inputs = _inputs(state, prepared.snapshot, prepared.request)
-    ledger = {**inputs, **{name: run[name] for name in
-        ("decisions", "orders", "fills", "actions", "account_points", "trades")}}
-    ledger["account_contract"] = 4
-    if not benchmark and prepared.candidate.definition.execution_input is not None:
-        ledger['execution_bars'] = _read(prepared.snapshot.artifact.content)['products']['execution:bars']
-    metrics = summarize_equity_ledger(ledger)
-    run = {**run, "metrics": _json_value(asdict(metrics)), "data_quality": _data_quality(inputs["bars"], run,
-        timezone=prepared.candidate.instrument.timezone, execution_bars=ledger.get("execution_bars"))}
+def _account_output_context(state, prepared, *, benchmark):
+    digest = prepared.snapshot.sha256
+    if digest not in state.input_records:
+        state.input_records[digest] = _read(prepared.snapshot.artifact.content)["products"]
+    products = state.input_records[digest]
     owner = ({"kind": "BENCHMARK", "run_identity": prepared.benchmark_identity.to_dict(),
               "run_sha256": prepared.benchmark_identity.sha256} if benchmark else
              {"kind": "CANDIDATE", "candidate": asdict(prepared.candidate.key),
               "content_sha256": prepared.candidate.content_identity.content_sha256})
-    return EquityArtifact("equity_account", _bytes({"schema": "equity-account/v1", "owner": owner,
-        "input_sha256": _primary_input_sha256(prepared.snapshot) if benchmark else prepared.snapshot.sha256, "run": run}))
+    return _AccountOutputContext(_primary_input_sha256(prepared.snapshot) if benchmark else digest,
+        _bytes(owner), tuple(products["bars"]), tuple(products["execution:bars"])
+        if not benchmark and prepared.candidate.definition.execution_input is not None else None)
 
 
 def _result(prepared, candidate, benchmark):
     from .evaluation import EvaluationIdentity
     from strategy_runtime import canonical_sha256
     request = prepared.request
-    contract = prepared.identity(request.candidate.definition.execution_spec)
+    contract = _read(prepared.contract_content)
     request_hash = equity_hash(contract)
     identity = EvaluationIdentity(request.candidate.key, request.candidate.content_identity.content_sha256,
         request.prepared.manifest_sha256, request_hash, canonical_sha256(contract["engine_sources"]))
     version = request.candidate.definition.contract_version
     payload = {"schema": f"equity-research/v{version}", "schema_version": version, "request": contract,
         "request_hash": request_hash, "evaluation_identity": identity.to_dict(), "evaluation_id": identity.evaluation_id,
-        "data": _read(prepared.snapshot.artifact.content)["data"], "input_ref": prepared.snapshot.artifact.reference(),
+        "data": _read(prepared.snapshot.data_content), "input_ref": prepared.snapshot.artifact.reference(),
         "candidate_ref": candidate.reference(), "benchmark_ref": benchmark.reference(),
         "benchmark_identity": prepared.benchmark_identity.to_dict(),
         "limitations": ["BAR_RANGE model; no exact intrabar fill time", "bar observations are not independent samples",
@@ -313,7 +326,7 @@ def evaluate_many_equity(access, requests, *, execution):
         _require_prepared(state, prepared)
         if prepared.experiment.experiment_id != execution.experiment.experiment_id:
             raise ValueError("equity evaluation belongs to another experiment")
-    request_hashes = tuple(equity_hash(_json_value(p.identity(access.execution_spec))) for p in requests)
+    request_hashes = tuple(sha256(p.contract_content).hexdigest() for p in requests)
     restored = {}
     if execution.checkpoint is not None:
         for i, prepared in enumerate(requests):
@@ -348,7 +361,8 @@ def evaluate_many_equity(access, requests, *, execution):
                             state.execution_quotes[key_quote] = PreparedExecutionQuotes.from_frame(
                                 state.products[prepared.snapshot.sha256]['execution:bars'], candidate.instrument.market)
                     quotes = state.execution_quotes[key_quote]
-                tasks.append((key, (replay, candidate, contract, state.products[prepared.snapshot.sha256]["actions"], owner, quotes)))
+                output = _account_output_context(state, prepared, benchmark=benchmark)
+                tasks.append((key, (replay, candidate, contract, state.products[prepared.snapshot.sha256]["actions"], owner, quotes, output)))
             except Exception as exc:
                 failures[key] = exc
     accounts = {}
@@ -362,8 +376,9 @@ def evaluate_many_equity(access, requests, *, execution):
             prepared, benchmark = task_meta[key]
             _record_timing(state, prepared, benchmark, value[1])
             try:
-                with execution.executor.measure(ExecutionPhase.SERIALIZE):
-                    artifact = _account_artifact(state, prepared, value[0], benchmark=benchmark)
+                artifact = value[0]
+                if type(artifact) is not EquityArtifact or artifact.kind != "equity_account":
+                    raise TypeError("account worker must return an immutable equity account artifact")
                 accounts[key] = artifact
                 if benchmark:
                     state.benchmarks[key[1]] = artifact
@@ -387,8 +402,6 @@ def evaluate_many_equity(access, requests, *, execution):
         try:
             _require_prepared(state, prepared)
             result = _result(prepared, accounts[("candidate", request_hash)], state.benchmarks[prepared.benchmark_identity.sha256])
-            with execution.executor.measure(ExecutionPhase.AUTHENTICATE):
-                build_equity_assessment(result)
             _remember_result(state, prepared, result)
             if execution.checkpoint is not None:
                 execution.checkpoint.save_equity_result(request_hash, result)
@@ -400,12 +413,11 @@ def evaluate_many_equity(access, requests, *, execution):
 
 
 def _authenticate_restore(state, prepared, result):
-    expected = _json_value(prepared.identity(prepared.candidate.definition.execution_spec))
+    expected = _read(prepared.contract_content)
     payload = result.payload
     if (payload["request"] != expected or payload["input_ref"] != prepared.snapshot.artifact.reference()
             or payload["benchmark_identity"] != prepared.benchmark_identity.to_dict()):
         raise ValueError("restored equity result differs from authenticated prepared inputs")
-    build_equity_assessment(result)
     state.benchmarks[prepared.benchmark_identity.sha256] = next(item for item in result.artifacts
         if item.sha256 == payload["benchmark_ref"]["sha256"])
     _remember_result(state, prepared, result)
@@ -422,7 +434,7 @@ def validate_certified_result(access, prepared, result, *, execution):
     expected = state.results.get(id(result))
     if expected is None or expected[0]() is not result or expected[1] != result.result_hash or expected[2]() is not prepared:
         raise ValueError("result is not the exact certified result issued by this execution session")
-    if result.request_hash != equity_hash(_json_value(prepared.identity(access.execution_spec))):
+    if result.request_hash != sha256(prepared.contract_content).hexdigest():
         raise ValueError("certified result request or engine identity changed")
 
 

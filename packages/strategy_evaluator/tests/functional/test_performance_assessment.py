@@ -102,6 +102,22 @@ def test_complete_projection_matches_full_v8_v6_quantiles_targets_and_ranking():
         assert group.minimum_joint_passes == 6 and group.valid_points == group.joint_passes == 8
 
 
+def test_constructed_requests_compute_without_serialization_roundtrips(monkeypatch):
+    raw = economic_request()
+    numeric = projected_request(raw)
+    expected = se.assess_candidates(numeric)
+    expected_comparison = comparison(raw, expected)
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("typed computation must not deserialize its own input")
+
+    for record in (m.CandidateAssessmentRequest, se.CandidatePerformanceAssessmentRequest, se.CalmarComparisonRequest):
+        monkeypatch.setattr(record, "from_dict", classmethod(forbidden))
+    actual = se.assess_candidates(numeric)
+    assert actual == expected
+    assert comparison(raw, actual) == expected_comparison
+
+
 def declared_request():
     original = economic_request()
     selected = (1, 4, 7)
@@ -109,6 +125,21 @@ def declared_request():
     links = tuple(x for x in original.perturbations if x.parameter_point.point_index in selected)
     items = tuple(x for x in original.evidence if x.parent is None or x.parameter_point.point_index in selected)
     return replace(original, parameter_designs=designs, perturbations=links, evidence=items)
+
+
+def test_declared_comparison_uses_explicit_axis_contract_without_authenticating_source_shape(monkeypatch):
+    from strategy_evaluator import parameter_neighborhood
+    raw = declared_request()
+    numeric = projected_request(raw)
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("declared comparison must not inspect the unselected full shape")
+
+    monkeypatch.setattr(se.CommonNeighborhoodComparisonContract, "authenticate", forbidden)
+    monkeypatch.setattr(parameter_neighborhood, "_relative", forbidden)
+    panel = se.assess_candidates(numeric)
+    contract = se.DeclaredPointSetComparisonContract("d" * 64, common_contract())
+    assert comparison(raw, panel, contract).rows
 
 
 @pytest.mark.parametrize("missing", [False, True])

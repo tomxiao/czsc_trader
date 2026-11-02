@@ -8,6 +8,7 @@ from concurrent.futures.process import BrokenProcessPool
 from hashlib import sha256
 import json
 import math
+import re
 from pathlib import Path
 from multiprocessing import get_context
 import shutil
@@ -505,6 +506,8 @@ def _validate_parameter_method_schema(definition, payload):
 
     if definition.stage not in (d.DeliveryStage.MANDATE, d.DeliveryStage.ASSESSMENT):
         return
+    if definition.stage is d.DeliveryStage.ASSESSMENT and type(payload) is not d.CandidateAssessmentDelivery:
+        raise TypeError("stage-four publication requires CandidateAssessmentDelivery")
     legacy = (m.ParameterGroupTarget, m.ParameterPerturbationDesign,
               m.ParameterPerturbationProtocol, m.ParameterPointBinding, m.ParameterDiagnosticContext)
     current = (ParameterNeighborhoodDesign, ParameterNeighborhoodProtocol,
@@ -681,7 +684,7 @@ def _validate_parameter_plans(payload, root, saved_requests, saved_policies):
     from strategy_runtime import StrategyCandidate
     from ..research_tools.parameter_evaluation import (
         ParameterEvaluationPlan, ParameterEvaluationBinding, validate_parameter_contract,
-        parameter_execution_policy, equity_planned_identity,
+        parameter_execution_policy, equity_planned_identity, _plan_child,
     )
 
     from strategy_evaluator import DeclaredParameterPointSet
@@ -690,9 +693,11 @@ def _validate_parameter_plans(payload, root, saved_requests, saved_policies):
     plans = {}
     for reference in payload.parameter_plans:
         plan = ParameterEvaluationPlan.from_dict(json.loads(_read_evidence(root, reference)))
+        plan_key = (plan.design.source_design.sha256 if type(plan.design) is DeclaredParameterPointSet
+                    else plan.design.sha256)
         _read_evidence(root, plan.mapping_evidence)
         _read_evidence(root, plan.feasibility_evidence)
-        if plan.design.sha256 in plans:
+        if plan_key in plans:
             _fail("PARAMETER_PLAN", reference.path, "duplicate parameter design")
         if plan.schema_version in (3, 4):
             for candidate in (plan.center, *plan.children):
@@ -702,7 +707,7 @@ def _validate_parameter_plans(payload, root, saved_requests, saved_policies):
                     json.loads(candidate.payload_json)).runtime_identity_sha256)
                 if actual_identity != candidate.runtime_identity_sha256:
                     _fail("PARAMETER_PAYLOAD", reference.path, "planned payload runtime identity differs")
-        plans[plan.design.sha256] = (reference, plan)
+        plans[plan_key] = (reference, plan)
         central = saved_requests.get(plan.center_request_sha256)
         evidence = tuple(x for x in _assessment_evidence(payload) if x.candidate == plan.design.center
                          and x.window_id == _assessment_base(payload).protocol.baseline_window
@@ -721,12 +726,14 @@ def _validate_parameter_plans(payload, root, saved_requests, saved_policies):
         if any(parameter_execution_policy(x) != policy for x in saved_policies[plan.center_request_sha256]):
             _fail("PARAMETER_CENTER", reference.path, "planned center execution policy differs")
         links = tuple(x for x in _assessment_base(payload).perturbations if x.parent == plan.design.center)
-        declared = designs.get(plan.design.sha256)
+        declared = designs.get(plan_key)
         if declared is None:
             _fail("PARAMETER_PLAN", reference.path, "source plan is absent from assessment designs")
+        if type(plan.design) is DeclaredParameterPointSet and plan.design != declared:
+            _fail("PARAMETER_PLAN", reference.path, "declared execution plan differs from assessment point set")
         selected = (declared.point_indices if type(declared) is DeclaredParameterPointSet
                     else tuple(range(plan.design.point_count)))
-        expected = tuple((plan.children[index].candidate, plan.design.bind_point(index)) for index in selected)
+        expected = tuple((_plan_child(plan, index).candidate, plan.design.bind_point(index)) for index in selected)
         actual = tuple((x.child, x.parameter_point) for x in links)
         if set(actual) != set(expected) or len(actual) != len(expected):
             _fail("PARAMETER_PLAN", reference.path, "assessment links differ from declared plan points")
@@ -808,9 +815,24 @@ def _read_delivery(context, reference, root, visited, scope=d.DeliveryValidation
         definition = d.DeliveryDefinition.from_dict(document["definition"])
         if definition.schema_version != document["schema_version"] or receipt.schema_version != document["schema_version"]:
             _fail("DELIVERY_SCHEMA", "delivery.json", "envelope, definition and receipt schemas differ")
-        content = d.DeliveryContent.from_dict(document["content"])
         if (definition.batch, definition.stage, definition.revision) != identity:
             _fail("DELIVERY_IDENTITY", "definition", "definition differs from reference")
+        storage_only = (definition.stage is d.DeliveryStage.ASSESSMENT
+                        and scope is d.DeliveryValidationScope.INTEGRITY)
+        if storage_only:
+            report = document["content"]["report"]
+            if type(report) is not str or not report.strip():
+                _fail("REPORT_CONTENT", "report.md", "stored research report must be nonempty text")
+        else:
+            content = d.DeliveryContent.from_dict(document["content"])
+    if definition.stage is d.DeliveryStage.ASSESSMENT and scope is d.DeliveryValidationScope.INTEGRITY:
+        if _read_bytes(_resolve(root, "report.md")) != report.encode("utf-8"):
+            _fail("REPORT_CONTENT", "report.md", "report differs from the submitted research report")
+        if published:
+            _validate_public_copy(context, reference, root)
+        if session is not None:
+            session.completed.add(key)
+        return receipt
     for predecessor in definition.predecessors:
         _read_delivery(context, predecessor, _delivery_path(context, predecessor), visited,
                        account_cache=account_cache)
@@ -890,8 +912,12 @@ def assemble_delivery(context: RepositoryContext, definition: d.DeliveryDefiniti
             receipt = _assemble_delivery(context, definition, content)
             session.close()
             return d.DeliveryAssemblyResult(receipt, d.DeliveryValidation(
-                d.ValidationStatus.PASS, d.DeliveryValidationScope.FULL, stats=session.stats()))
-    except (RegistryError, OSError) as exc:
+                d.ValidationStatus.PASS,
+                d.DeliveryValidationScope.INTEGRITY if definition.stage is d.DeliveryStage.ASSESSMENT
+                else d.DeliveryValidationScope.FULL, stats=session.stats()))
+    except (d.DeliveryValidationError, d.DeliveryConflictError):
+        raise
+    except (RegistryError, OSError, ValueError, TypeError, KeyError) as exc:
         raise d.DeliveryValidationError((d.DeliveryIssue("ASSEMBLY_FAILED", "delivery", str(exc)),)) from exc
     finally:
         try:
@@ -900,7 +926,132 @@ def assemble_delivery(context: RepositoryContext, definition: d.DeliveryDefiniti
             _validation_session.reset(token)
 
 
+def _assemble_assessment_delivery(context, definition, content):
+    """Store the caller's stage-four result; do not certify its research claims."""
+    session = _validation_session.get()
+    destination = _delivery_path(context, definition)
+    public_destination = _public_delivery_path(context, definition)
+    document = {"schema_version": definition.schema_version, "definition": definition.to_dict(),
+                "content": content.to_dict()}
+    if destination.exists() or public_destination.exists():
+        if not destination.is_dir() or not public_destination.is_dir():
+            _fail("PARTIAL_PUBLICATION", "delivery", "delivery publication is incomplete")
+        if _read_json(_resolve(destination, "delivery.json")) != document:
+            raise d.DeliveryConflictError("delivery revision contains different content")
+        receipt = d.DeliveryReceipt.from_dict(_read_json(_resolve(destination, "receipt.json")))
+        if d._digest(receipt.files) != receipt.reference.content_sha256:
+            _fail("DELIVERY_IDENTITY", "receipt", "stored publication receipt identity differs")
+        for item in receipt.files:
+            if not _resolve(destination, item.path).is_file():
+                _fail("DELIVERY_FILES", item.path, "published material is missing")
+        _validate_public_copy(context, receipt.reference, destination)
+        return receipt
+
+    # Direct references must exist. Their historical research and calculations
+    # are not re-executed as a side effect of publishing the current result.
+    for predecessor in definition.predecessors:
+        previous = d.DeliveryReceipt.from_dict(_read_json(
+            _resolve(_delivery_path(context, predecessor), "receipt.json")))
+        if previous.reference != predecessor:
+            _fail("DELIVERY_IDENTITY", "predecessors", "direct predecessor identity differs")
+
+    staging = public_staging = None
+    installed_package = installed_public = completed = False
+    try:
+        staging = create_temporary_directory(context.root, "delivery")
+        copied = {}
+
+        def copy_source(source, relative, expected):
+            known = copied.get(relative)
+            if known is not None:
+                if known != expected:
+                    _fail("EVIDENCE_CONFLICT", relative, "conflicting selected evidence")
+                return
+            data = _read_bytes(source)
+            if _file_hash(data) != expected:
+                _fail("EVIDENCE_HASH", relative, "selected bytes differ from their reference")
+            target = _resolve(staging, relative)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(data)
+            copied[relative] = expected
+
+        def copy_reference(reference):
+            if reference.experiment.strategy_id != definition.strategy_id:
+                _fail("EVIDENCE_OWNER", reference.path, "evidence belongs to another batch")
+            copy_source(_resolve(context.root, reference.repository_path), reference.path, reference.sha256)
+
+        references = _references(content)
+        for reference in references:
+            copy_reference(reference)
+            if reference.schema == "equity_research":
+                # Copy immutable dependencies once by their declared identity.
+                # Parsing the journals or rebuilding assessment facts is not a
+                # storage operation and belongs to explicit FULL validation.
+                header = _read_json(_resolve(staging, reference.path))
+                for name, kind in (("input_ref", "equity_input"), ("candidate_ref", "equity_account"),
+                                   ("benchmark_ref", "equity_account")):
+                    artifact = header[name]
+                    if (type(artifact) is not dict or set(artifact) != {"kind", "sha256"}
+                        or artifact["kind"] != kind or type(artifact["sha256"]) is not str
+                        or re.fullmatch(r"[0-9a-f]{64}", artifact["sha256"]) is None):
+                        _fail("EVIDENCE_REFERENCE", reference.path, "invalid account dependency reference")
+                    digest = artifact["sha256"]
+                    source = _resolve(context.root,
+                        f"{Path(reference.repository_path).parent.as_posix()}/{digest}.json")
+                    copy_source(source, f"evidence/{digest}.json", digest)
+
+        for reference in content.payload.parameter_plans:
+            copy_reference(reference)
+            plan = _read_json(_resolve(staging, reference.path))
+            for name in ("mapping_evidence", "feasibility_evidence"):
+                copy_reference(EvidenceRef.from_dict(plan[name]))
+
+        def write_generated(relative, data):
+            _resolve(staging, relative).write_bytes(data)
+            copied[relative] = _file_hash(data)
+
+        write_generated("delivery.json", d._canonical(document))
+        write_generated("report.md", content.report.encode("utf-8"))
+        files = tuple(d.PublicationFile(path, digest) for path, digest in sorted(copied.items()))
+        reference = d.DeliveryReference(definition.batch, definition.stage, definition.revision, d._digest(files))
+        receipt = d.DeliveryReceipt(reference, files, schema_version=definition.schema_version)
+        _resolve(staging, "receipt.json").write_bytes(d._canonical(receipt))
+        public_staging = create_temporary_directory(context.root, "delivery-public")
+        for name in ("report.md", "receipt.json"):
+            shutil.copyfile(_resolve(staging, name), _resolve(public_staging, name))
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        public_destination.parent.mkdir(parents=True, exist_ok=True)
+        staging.rename(destination)
+        staging = None
+        installed_package = True
+        public_staging.rename(public_destination)
+        public_staging = None
+        installed_public = True
+        _validate_public_copy(context, reference, destination)
+        if session is not None:
+            session.identities.add((definition.batch, definition.stage, definition.revision,
+                                    reference.content_sha256))
+        completed = True
+        return receipt
+    except (d.DeliveryValidationError, d.DeliveryConflictError):
+        raise
+    except (OSError, ValueError, TypeError, KeyError, StrategyManagerError) as exc:
+        raise d.DeliveryValidationError((d.DeliveryIssue("ASSEMBLY_FAILED", "delivery", str(exc)),)) from exc
+    finally:
+        if not completed:
+            for installed, path in ((installed_public, public_destination), (installed_package, destination)):
+                if installed and path.exists():
+                    safe = _resolve(context.root, path.relative_to(context.root).as_posix())
+                    shutil.rmtree(safe)
+        for temporary in (staging, public_staging):
+            if temporary is not None and temporary.exists():
+                if temporary.resolve().is_relative_to((context.root / ".tmp").resolve()) and not temporary.is_symlink():
+                    shutil.rmtree(temporary)
+
+
 def _assemble_delivery(context, definition, content):
+    if definition.stage is d.DeliveryStage.ASSESSMENT:
+        return _assemble_assessment_delivery(context, definition, content)
     session = _validation_session.get()
     account_cache = {} if session is None else session.account_cache
     staging = public_staging = None

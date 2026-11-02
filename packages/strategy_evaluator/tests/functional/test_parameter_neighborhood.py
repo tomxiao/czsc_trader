@@ -50,6 +50,22 @@ def axis(name="allocation", center=0.95, domain=None, rule=None, path=None, unit
     )
 
 
+def test_binding_many_points_computes_immutable_design_identity_once(monkeypatch):
+    design = build_parameter_neighborhood_design(request(axis(center=.5)), feasibility=lambda _: True).design
+    digest = m.digest
+    calls = []
+
+    def counted(value):
+        if value is design:
+            calls.append(value)
+        return digest(value)
+
+    monkeypatch.setattr(m, "digest", counted)
+    identities = {design.bind_point(i % design.point_count).design_sha256 for i in range(20)}
+    assert len(identities) == 1
+    assert len(calls) <= 1
+
+
 def request(*axes, purpose=StudyPurpose.STRUCTURAL_CONTROL, limit=10000):
     return ParameterNeighborhoodRequest(
         m.AssessmentCandidate("S001-C0001", "a" * 64),

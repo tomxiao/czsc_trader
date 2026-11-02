@@ -3,14 +3,15 @@
 from datetime import datetime
 from contextvars import ContextVar
 from hashlib import sha256
+from functools import lru_cache
 import inspect
 import json
 import math
 from pathlib import Path
 from zoneinfo import ZoneInfo
+from types import MappingProxyType
 
 from .equity import audit_equity_account
-from .equity_metrics import summarize_equity_ledger
 from .models import ValidationError
 
 
@@ -75,6 +76,35 @@ def canonical_ledger(value):
     return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False)
 
 
+def canonical_observations(ledger):
+    """Encode only the recorded values needed by deterministic SE metrics.
+
+    Complete journals remain separate evidence. This projection is neither a
+    journal audit nor a reconstruction of trading or accounting events.
+    """
+    return canonical_ledger({
+        "observation_contract": 1,
+        "initial_cash": ledger["initial_cash"],
+        "specification": {
+            "market": ledger["specification"]["market"],
+            "account": {"currency": ledger["specification"]["account"]["currency"]},
+        },
+        "account_points": [{name: row[name] for name in ("time", "session", "equity")}
+                           for row in ledger["account_points"]],
+        "trades": [{name: row[name] for name in ("cycle_id", "exit_at", "net_pnl")}
+                   for row in ledger["trades"]],
+    })
+
+
+def _freeze(value):
+    if type(value) is dict:
+        return MappingProxyType({key: _freeze(item) for key, item in value.items()})
+    if type(value) is list:
+        return tuple(_freeze(item) for item in value)
+    return value
+
+
+@lru_cache(maxsize=16)
 def read_ledger(value):
     def pairs(items):
         result = {}
@@ -85,11 +115,44 @@ def read_ledger(value):
         return result
     ledger = json.loads(value, object_pairs_hook=pairs,
                         parse_constant=lambda _: (_ for _ in ()).throw(ValidationError("nonfinite equity fact")))
-    if type(ledger) is not dict or set(ledger) not in (LEDGER_FIELDS, LEDGER_FIELDS | {"execution_bars"}) or canonical_ledger(ledger) != value:
-        raise ValidationError("equity ledger contracts require V4 schema and canonical encoding")
-    if type(ledger["account_contract"]) is not int or ledger["account_contract"] != 4:
+    compact = (type(ledger) is dict and type(ledger.get("observation_contract")) is int
+               and ledger["observation_contract"] == 1
+               and set(ledger) == {"observation_contract", "initial_cash", "specification", "account_points", "trades"})
+    if type(ledger) is not dict or (not compact and set(ledger) not in (LEDGER_FIELDS, LEDGER_FIELDS | {"execution_bars"})):
+        raise ValidationError("equity observations require full V4 fields or an explicit observation schema")
+    if not compact and (type(ledger["account_contract"]) is not int or ledger["account_contract"] != 4):
         raise ValidationError("unknown account ledger contract")
-    return ledger
+    initial = ledger["initial_cash"]
+    if type(initial) not in (int, float) or not math.isfinite(initial) or initial <= 0:
+        raise ValidationError("equity observations require positive finite initial cash")
+    points = ledger["account_points"]
+    if not points:
+        raise ValidationError("equity observations require account points")
+    market = ledger["specification"]["market"]["rule_version"]
+    if market not in {"US_EQUITY_V1", "CN_EQUITY_V1"}:
+        raise ValidationError("unsupported equity observation market")
+    timezone = "America/New_York" if market == "US_EQUITY_V1" else "Asia/Shanghai"
+    previous = None
+    for point in points:
+        stamp = datetime.fromisoformat(point["time"])
+        if stamp.utcoffset() is None or (previous is not None and stamp <= previous):
+            raise ValidationError("equity observation times must be aware, ordered and unique")
+        if point["session"] != session(point["time"], timezone):
+            raise ValidationError("equity observation session differs from market timezone")
+        previous = stamp
+        equity = point["equity"]
+        if type(equity) not in (int, float) or not math.isfinite(equity) or equity < 0:
+            raise ValidationError("equity observations require finite nonnegative equity")
+    cycles, dates = set(), {row["session"] for row in points}
+    for row in ledger["trades"]:
+        if type(row["cycle_id"]) is not str or not row["cycle_id"] or row["cycle_id"] in cycles:
+            raise ValidationError("equity cycles require unique nonempty identities")
+        if session(row["exit_at"], timezone) not in dates:
+            raise ValidationError("equity cycle exit outside observation calendar")
+        cycles.add(row["cycle_id"])
+        if type(row["net_pnl"]) not in (int, float) or not math.isfinite(row["net_pnl"]):
+            raise ValidationError("equity cycles require finite net profit")
+    return _freeze(ledger)
 
 
 def _assessment_ledgers(facts):
@@ -124,8 +187,7 @@ def validate_equity_facts(facts):
             raise ValidationError("equity ledger market differs")
         if ledger["specification"]["account"]["currency"] != facts.currency:
             raise ValidationError("equity ledger currency differs")
-        summarize_equity_ledger(ledger)
-    for key in ("initial_cash", "specification", "bars", "action_facts", "constraints", "fee_rate"):
+    for key in ("initial_cash", "specification"):
         if candidate[key] != benchmark[key]:
             raise ValidationError("equity benchmark execution facts differ")
     if [p["time"] for p in candidate["account_points"]] != [p["time"] for p in benchmark["account_points"]]:
@@ -134,26 +196,8 @@ def validate_equity_facts(facts):
 
 def validate_equity_assessment(evidence):
     facts = evidence.equity
-    candidate, benchmark = _assessment_ledgers(facts)
-    if evidence.initial_cash != candidate["initial_cash"] or evidence.opening_cash != evidence.initial_cash or evidence.opening_quantity:
+    if evidence.opening_cash != evidence.initial_cash or evidence.opening_quantity:
         raise ValidationError("equity assessment opening identity differs")
-    expected = tuple((r["session"], float(r["cash"]), int(r["quantity"]), float(r["close"]), float(r["equity"]))
-                     for r in daily_points(candidate))
-    actual = tuple((r.session, r.cash, r.quantity, r.close, r.equity) for r in evidence.account)
-    if actual != expected:
-        raise ValidationError("equity assessment daily account differs from account journal")
-    expected_fills = tuple((r["cycle_id"], session(r["interval_end"], facts.timezone), r["side"],
-                            int(r["quantity"]), float(r["price"]), float(r["fees"])) for r in candidate["fills"])
-    actual_fills = tuple((r.cycle_id, r.session, r.side.value, r.quantity, r.price, r.fees) for r in evidence.fills)
-    if expected_fills != actual_fills:
-        raise ValidationError("equity assessment fills differ from account journal")
-    expected_cycles = tuple((r["cycle_id"], session(r["exit_at"], facts.timezone)) for r in candidate["trades"])
-    if expected_cycles != tuple((r.cycle_id, r.exit_session) for r in evidence.closed_cycles):
-        raise ValidationError("equity assessment cycles differ from account journal")
-    if evidence.benchmark_equity != tuple(float(r["equity"]) for r in daily_points(benchmark)):
-        raise ValidationError("equity assessment benchmark differs from account journal")
-    if evidence.scenario_context.one_way_cost != candidate["fee_rate"]:
-        raise ValidationError("equity assessment fee differs from account journal")
     expected_version = f"equity-assessment-v4:{facts.drawdown_basis}:{facts.concentration_basis}"
     if evidence.metric_version != expected_version:
         raise ValidationError("equity metric semantics differ")

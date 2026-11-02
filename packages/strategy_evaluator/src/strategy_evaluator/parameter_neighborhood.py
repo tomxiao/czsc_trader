@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
 from fractions import Fraction
+from functools import cached_property
 from itertools import product
 import math
 from typing import Callable
@@ -670,7 +671,7 @@ class ParameterNeighborhoodDesign(m.ResearchRecord):
                   "applicability requires local neighborhood v2")
         return tuple(_axis_applicability(axis) for axis in self.space.axes)
 
-    @property
+    @cached_property
     def comparison_sha256(self):
         # Center locations are represented through actual local shape, not an
         # assumed common radius. Conditional exclusions remain part of identity.
@@ -722,7 +723,7 @@ class DeclaredParameterPointSet(m.ResearchRecord):
     def space(self):
         return self.source_design.space
 
-    @property
+    @cached_property
     def points(self):
         return tuple(self.source_design.points[i] for i in self.point_indices)
 
@@ -734,15 +735,19 @@ class DeclaredParameterPointSet(m.ResearchRecord):
     def is_applicable(self):
         return True
 
-    @property
+    @cached_property
     def comparison_sha256(self):
         return m.digest(("DECLARED_POINT_SET", self.construction_sha256,
-                         self.source_design.comparison_sha256, self.point_indices))
+                         self.source_design.sha256, self.point_indices))
 
     def bind_point(self, index):
-        if type(index) is not int or index not in self.point_indices:
+        if type(index) is not int or index not in self._point_index_set:
             raise ValueError("point index outside declared point set")
         return self.source_design.bind_point(index)
+
+    @cached_property
+    def _point_index_set(self):
+        return frozenset(self.point_indices)
 
 
 @dataclass(frozen=True)
