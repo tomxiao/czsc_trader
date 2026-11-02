@@ -12,6 +12,10 @@ from . import research_models as m
 from .research_acceptance import acceptance_status, check_target as _check_target, _calmar
 from .bootstrap import _paired_stationary_bootstrap_cagr
 from .calmar_diagnostics import rolling_calmar_excess, stress_calmar_loss
+from .performance_assessment import (
+    CandidatePerformanceAssessmentRequest, ParameterPerformanceEvidence,
+    assessment_benchmark_fingerprint,
+)
 from .audit_models import ReturnMatrixEvidence
 from .search_bias import annualized_sharpe, calculate_dsr_bundle, cscv_pbo, effective_trial_count
 
@@ -28,6 +32,8 @@ def _quantile(values, q, method, weights=None):
 
 
 def _performance(evidence):
+    if type(evidence) is ParameterPerformanceEvidence:
+        return evidence.performance.annual_return, evidence.performance.drawdown
     if evidence.equity is not None:
         from .equity_assessment import equity_performance
         return equity_performance(evidence)
@@ -51,6 +57,8 @@ def _equity_performance(equity, initial_cash):
 
 
 def _performance_facts(evidence):
+    if type(evidence) is ParameterPerformanceEvidence:
+        return evidence.performance
     annual, drawdown = _performance(evidence)
     benchmark = (_benchmark_performance(evidence)
                  if evidence.benchmark_equity else (None, None))
@@ -196,9 +204,15 @@ def _family(request):
     return tuple(values), family.limitations
 
 
-def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPanel:
+def assess_candidates(
+    request: m.CandidateAssessmentRequest | CandidatePerformanceAssessmentRequest,
+) -> m.AssessmentPanel:
+    if type(request) is CandidatePerformanceAssessmentRequest:
+        request = CandidatePerformanceAssessmentRequest.from_dict(request.to_dict())
+        return _assess_candidates(request.baseline_request,
+            parameter_evidence=request.parameter_evidence, request_sha256=request.sha256)
     if type(request) is not m.CandidateAssessmentRequest:
-        raise TypeError("assess_candidates requires CandidateAssessmentRequest")
+        raise TypeError("assess_candidates requires CandidateAssessmentRequest or CandidatePerformanceAssessmentRequest")
     m.require(isinstance(request.protocol, m.NeighborhoodSelfCheckProtocol)
               and request.protocol.parameter_protocol.version == "parameter-cartesian-neighborhood-v2",
               "historical assessment protocols are read-only")
@@ -216,13 +230,16 @@ def recompute_historical_assessment(request: m.CandidateAssessmentRequest) -> m.
     return _assess_candidates(request)
 
 
-def _assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPanel:
+def _assess_candidates(request: m.CandidateAssessmentRequest, *, parameter_evidence=None,
+                       request_sha256=None) -> m.AssessmentPanel:
     if type(request) is not m.CandidateAssessmentRequest:
         raise TypeError("assess_candidates requires CandidateAssessmentRequest")
     # Revalidate at the public boundary, including values restored from storage.
     request = m.CandidateAssessmentRequest.from_dict(request.to_dict())
     p = request.protocol
     evidence = {(x.candidate, x.window_id, x.scenario_id): x for x in request.evidence}
+    if parameter_evidence is not None:
+        evidence.update({(x.candidate, x.window_id, x.scenario_id): x for x in parameter_evidence})
     rows = []
     for center in request.centers:
         base = evidence.get((center, p.baseline_window, p.standard_scenario))
@@ -337,6 +354,9 @@ def _assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPan
             neighbors = [
                 evidence.get((x.child, p.baseline_window, p.standard_scenario)) for x in links
             ]
+            projection_context = None if parameter_evidence is None else (
+                assessment_benchmark_fingerprint(base), _benchmark_performance(base)
+                if base.benchmark_equity else (None, None))
             for link, neighbor in zip(links, neighbors):
                 if neighbor is not None:
                     m.require(
@@ -352,23 +372,11 @@ def _assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPan
                         neighbor.parameter_point == link.parameter_point,
                         "parameter evidence point differs from link",
                     )
-            comparable = all(
-                x is not None
-                and x.context_sha256 == base.context_sha256
-                and x.metric_version == base.metric_version
-                and x.scenario_context == base.scenario_context
-                and (not isinstance(p, m.NeighborhoodSelfCheckProtocol)
-                     or (bool(base.benchmark_equity) and x.benchmark_equity == base.benchmark_equity))
-                for x in neighbors
-            )
+            comparable = all(_parameter_comparable(x, base, p, projection_context) for x in neighbors)
             if design is not None:
                 point_facts = tuple(_performance_facts(x) for x in neighbors
                     if x is not None and x.parameter_point is not None
-                    and x.context_sha256 == base.context_sha256
-                    and x.metric_version == base.metric_version
-                    and x.scenario_context == base.scenario_context
-                    and (not isinstance(p, m.NeighborhoodSelfCheckProtocol) or bool(base.benchmark_equity))
-                    and x.benchmark_equity == base.benchmark_equity)
+                    and _parameter_comparable(x, base, p, projection_context, require_benchmark=True))
             declared_complete = design is None or (
                 len(links) == _point_count(design)
                 and {x.parameter_point.point_index for x in links}
@@ -529,17 +537,20 @@ def _assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPan
                 benchmark,
                 None
                 if not request.parameter_designs
-                else _parameter_context(request, center, evidence, base),
+                else _parameter_context(request, center, evidence, base,
+                    projection_context if base is not None else None),
                 coverage, point_facts, stress_facts,
                 rolling_calmar_excess(base, p) if isinstance(p, m.CalmarSelfCheckProtocol) else None,
             )
         )
     family, limitations = _family(request)
-    return m.AssessmentPanel(request.sha256, p.sha256, tuple(rows), family, limitations,
+    return m.AssessmentPanel(request.sha256 if request_sha256 is None else request_sha256,
+        p.sha256, tuple(rows), family, limitations,
         formula_version="research-assessment-v8" if isinstance(p, m.CalmarSelfCheckProtocol) else
         ("research-assessment-v7" if p.parameter_protocol.version == "parameter-cartesian-neighborhood-v2"
                          else "research-assessment-v6") if isinstance(p, m.NeighborhoodSelfCheckProtocol)
-        else "research-assessment-v5")
+        else "research-assessment-v5",
+        input_kind=None if parameter_evidence is None else m.AssessmentInputKind.PERFORMANCE_PROJECTION)
 
 
 def _point_count(design):
@@ -552,7 +563,24 @@ def parameter_comparison_key(context):
     return ("legacy-sphere", context.protocol.method_sha256)
 
 
-def _parameter_context(request, center, evidence, base):
+def _parameter_comparable(neighbor, base, protocol, projection_context=None, *, require_benchmark=False):
+    if base is None or neighbor is None or (
+        neighbor.context_sha256, neighbor.metric_version, neighbor.scenario_context
+    ) != (base.context_sha256, base.metric_version, base.scenario_context):
+        return False
+    if type(neighbor) is ParameterPerformanceEvidence:
+        return (projection_context is not None and bool(base.benchmark_equity)
+                and neighbor.benchmark_equity_sha256 == projection_context[0]
+                and (neighbor.performance.benchmark_return, neighbor.performance.benchmark_drawdown)
+                    == projection_context[1]
+                and neighbor.initial_cash == base.initial_cash
+                and neighbor.frequency_window_days == base.frequency_window_days)
+    return (not isinstance(protocol, m.NeighborhoodSelfCheckProtocol) and not require_benchmark
+            or ((bool(base.benchmark_equity) or not isinstance(protocol, m.NeighborhoodSelfCheckProtocol))
+                and neighbor.benchmark_equity == base.benchmark_equity))
+
+
+def _parameter_context(request, center, evidence, base, projection_context=None):
     design = next((x for x in request.parameter_designs if x.center == center), None)
     if design is None:
         return None
@@ -564,14 +592,9 @@ def _parameter_context(request, center, evidence, base):
             (link.child, request.protocol.baseline_window, request.protocol.standard_scenario)
         )
         if (
-            base is not None
-            and neighbor is not None
+            neighbor is not None
             and neighbor.parameter_point == link.parameter_point
-            and neighbor.context_sha256 == base.context_sha256
-            and neighbor.metric_version == base.metric_version
-            and neighbor.scenario_context == base.scenario_context
-            and (not isinstance(request.protocol, m.NeighborhoodSelfCheckProtocol)
-                 or (bool(base.benchmark_equity) and neighbor.benchmark_equity == base.benchmark_equity))
+            and _parameter_comparable(neighbor, base, request.protocol, projection_context)
         ):
             valid += 1
     if isinstance(design, m.ParameterNeighborhoodDesign):

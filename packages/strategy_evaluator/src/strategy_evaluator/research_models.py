@@ -1126,6 +1126,10 @@ class CandidateAssessment(ResearchRecord):
         )
 
 
+class AssessmentInputKind(StrEnum):
+    PERFORMANCE_PROJECTION = "PERFORMANCE_PROJECTION"
+
+
 @dataclass(frozen=True)
 class AssessmentPanel(ResearchRecord):
     request_sha256: str
@@ -1134,8 +1138,18 @@ class AssessmentPanel(ResearchRecord):
     family_diagnostics: tuple[FamilyDiagnostic, ...]
     family_limitations: tuple[str, ...]
     formula_version: str = "research-assessment-v5"
+    input_kind: AssessmentInputKind | None = None
+
+    def _serialized_fields(self):
+        return tuple(f.name for f in fields(self) if f.name != "input_kind" or self.input_kind is not None)
+
+    @staticmethod
+    def _decode_defaults(value):
+        return {"input_kind": None} if type(value) is dict and "input_kind" not in value else {}
 
     def validate(self):
+        require(self.input_kind is None or self.formula_version == "research-assessment-v8",
+                "performance projection requires assessment v8")
         require(
             self.formula_version in ("research-assessment-v5", "research-assessment-v6", "research-assessment-v7", "research-assessment-v8"),
             "unsupported assessment formula version",

@@ -70,6 +70,13 @@ from .research_models import (
     CandidateComparison,
 )
 from .research_assessment import assess_candidates, compare_candidates
+from .performance_assessment import (
+    CandidatePerformanceAssessmentRequest,
+    ParameterPerformanceEvidence,
+    project_parameter_performance,
+    assessment_benchmark_fingerprint,
+)
+from .research_models import AssessmentInputKind
 from .research_models import (
     ParameterCoordinateKind,
     ParameterCoordinate,
@@ -395,3 +402,7 @@ __all__ += [
 __all__ += ["CalmarComparisonRequest", "CommonNeighborhoodComparisonContract", "ZeroCenterAbsoluteLimit"]
 
 __all__ += ["CalmarSelfCheckProtocol"]
+__all__ += [
+    "AssessmentInputKind", "CandidatePerformanceAssessmentRequest", "ParameterPerformanceEvidence",
+    "project_parameter_performance", "assessment_benchmark_fingerprint",
+]
