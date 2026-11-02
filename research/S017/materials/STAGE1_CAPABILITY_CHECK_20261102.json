@@ -1,0 +1,60 @@
+{
+  "schema": "s017-stage1-public-capability-check/v1",
+  "scope": "public typed constructors and local contract reading only",
+  "public_metric_values": [
+    "FREQUENCY_COVERAGE",
+    "FULL_SAMPLE_FREQUENCY",
+    "BENCHMARK_POSITIVE_YEAR_FREQUENCY",
+    "NET_ANNUAL_RETURN",
+    "DRAWDOWN_MAGNITUDE",
+    "FREQUENCY_MEDIAN",
+    "FREQUENCY_Q10",
+    "PARAMETER_RETURN_DEGRADATION",
+    "PARAMETER_DRAWDOWN_DEGRADATION",
+    "PARAMETER_RETURN_Q10",
+    "PARAMETER_DRAWDOWN_Q90",
+    "ROLLING_EXCESS_Q10",
+    "STRESS_ANNUAL_LOSS",
+    "PROFIT_CONCENTRATION"
+  ],
+  "calmar_metric_supported": false,
+  "calmar_rejection": {
+    "type": "ValueError",
+    "message": "'CALMAR' is not a valid ResearchMetric"
+  },
+  "strict_benchmark_bound_roundtrip": {
+    "type": "ResearchTarget",
+    "target_id": "capability-only-annual-return",
+    "metric": "NET_ANNUAL_RETURN",
+    "lower": {
+      "type": "BenchmarkBound",
+      "multiplier": 1.5,
+      "inclusive": false
+    },
+    "upper": null,
+    "when": null,
+    "scope": "STANDARD",
+    "one_way_cost": 0.001
+  },
+  "strict_probe_limitation": "The probe is annual-return only and is not a Calmar substitute or economic evaluation.",
+  "supported_retained_target_count": 10,
+  "supported_retained_targets_roundtrip": "PASS",
+  "blocked_mandate_automatically_rejected_downstream": false,
+  "downstream_risk": "Current target binding ignores source delivery status and text-only Calmar requirements; use for complete acceptance is prohibited pending DEV.",
+  "existing_calmar_availability": {
+    "valid_when": "drawdown magnitude > 1e-12 and quotient finite",
+    "otherwise_value": null,
+    "otherwise_status": "UNAVAILABLE",
+    "acceptance_mapping_proposal": "INDETERMINATE, never zero or infinity"
+  },
+  "source_sha256": {
+    "src/czsc_trader/README.md": "fa5c0f004e3146814ab3b42914ce903cbf93c4daf38b1f7453be4aa7075efcc9",
+    "packages/strategy_evaluator/src/strategy_evaluator/research_models.py": "021cbf17d8db15cd7fa339482201c3c078ec6bbc68859834886d7ae23baf97a6",
+    "packages/strategy_evaluator/src/strategy_evaluator/research_acceptance.py": "1863e21a89a5fcf97f5d38f0392199d2b70c158614d6c2c87a36e1f8418e7024",
+    "src/czsc_trader/application/delivery_service.py": "7e5c61101b55589279d557e845a0613d6ed80c770f04a626bd4c8420aa605695",
+    "src/czsc_trader/research_tools/evaluation.py": "95f3cde1e43f5e3e0c710bb6b4bafc35ca613aca0efb333fba94ec5c14c69ff8"
+  },
+  "new_account_computes": 0,
+  "new_searches": 0,
+  "sealed_prices_or_performance_accessed": false
+}

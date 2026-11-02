@@ -896,6 +896,49 @@
       "one_way_cost": 0.001,
       "sample_windows": "CONFIRMED"
     },
+    "current_stage_one_revision_20261102": {
+      "authorization_evidence": {
+        "evidence_id": "5a2f48f0dbbaa3ff055e2d30e9e886d3a3fb154252998a24b30af83550894ae5.md",
+        "experiment": {
+          "experiment_id": "EX001_20261028",
+          "strategy_id": "S017",
+          "type": "ExperimentRef"
+        },
+        "media_type": "text/plain",
+        "name": "stage1-user-decision-provenance",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "5a2f48f0dbbaa3ff055e2d30e9e886d3a3fb154252998a24b30af83550894ae5",
+        "type": "EvidenceRef"
+      },
+      "authorized_scope": "stage-one revision/publication/local commit only",
+      "complete_economic_acceptance_allowed": false,
+      "contract": "research/S017/materials/STAGE1_REVISION_CONTRACT_20261102.json",
+      "delivery": {
+        "batch": {
+          "strategy_id": "S017",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "873bd12bfee37e9cfdd327542e2d5fff85c362d704ea26a672c5a97895a28143",
+        "revision": 5,
+        "stage": "MANDATE",
+        "type": "DeliveryReference"
+      },
+      "dev_implementation": "PENDING_USER_AUTHORIZATION",
+      "historical_authorization_records": "preserved; do not treat them as current task authorization",
+      "later_stages_automatically_resumed": false,
+      "new_account_computes": 0,
+      "new_candidates": 0,
+      "new_searches": 0,
+      "pending_decisions": [
+        "公共ResearchTarget无Calmar及Calmar基准倍数，尚未绑定完整中心目标；DEV实施须另获用户授权。",
+        "有效非正基准Calmar使用字面倍数还是新增正收益分支，等待用户决定。",
+        "当前下游不检查源MANDATE受阻状态，禁止把本受阻版本用于完整候选验收；DEV需补齐防漏检保护。"
+      ],
+      "protocol": "research/S017/materials/STAGE1_REVISION_PROTOCOL_20261102.md",
+      "sealed_test_access": "NOT_AUTHORIZED",
+      "status": "BLOCKED_PUBLIC_CALMAR_CONTRACT_AND_PENDING_NONPOSITIVE_DECISION"
+    },
     "data_readiness": {
       "bars": 25976,
       "batch_data_prepared": true,
@@ -1509,6 +1552,16 @@
         "strategy_id": "S017",
         "type": "ResearchBatchRef"
       },
+      "content_sha256": "873bd12bfee37e9cfdd327542e2d5fff85c362d704ea26a672c5a97895a28143",
+      "revision": 5,
+      "stage": "MANDATE",
+      "type": "DeliveryReference"
+    },
+    "mandate_reference_history_before_20261102": {
+      "batch": {
+        "strategy_id": "S017",
+        "type": "ResearchBatchRef"
+      },
       "content_sha256": "9cf4d820844383d8c845aaf24ee06a58db5885a39269a86fc9decc2474a6d900",
       "revision": 3,
       "stage": "MANDATE",
@@ -1519,7 +1572,7 @@
       "research/S017/materials/registration_20261028.md",
       "research/S017/materials/pre_registration_readiness.json"
     ],
-    "next_action": "按用户已批准的六参数有界提案执行阶段三；先核新源及C337完整等价控制，再四轴和20联合TPE提案，原五门AND及2026封存不变，最多27实际计算。",
+    "next_action": "阶段一受阻协议已留证；待用户确认最小DEV范围及非正BH语义后，补齐公开能力并另发完整MANDATE；此前禁止候选重筛/登记、阶段四或2026测试。",
     "objective": "LITE 美股个股30分钟只做多择时研究",
     "other_proposals_confirmation": "CONFIRMED",
     "pending_stage_three_mf_context_proposal": {
@@ -1676,6 +1729,38 @@
       "user_authorization": "同意恢复，你自主执行"
     },
     "sample_contract": {
+      "development": [
+        "2024-01-02",
+        "2025-12-31"
+      ],
+      "development_validation": "seen-data diagnostics only",
+      "exposure": "2026 coverage metadata and some public business information previously seen; sealed prices/performance not used",
+      "independent_validation_window": null,
+      "last_position": "BAR_CLOSE mark; no synthetic liquidation, fee, closed cycle, or later exit/label",
+      "per_window_accounts": "fresh USD100000, zero inventory/orders/cycle; no cross-boundary account state",
+      "prior_sample_amendment": "research/S017/materials/SAMPLE_SPLIT_20261031.json",
+      "reserved": [
+        "2026-01-02",
+        "2026-09-30"
+      ],
+      "reserved_access": "NOT_AUTHORIZED",
+      "test": [
+        "2026-01-02",
+        "2026-09-30"
+      ],
+      "test_feedback": "If used for selection/change, loses independent final-test identity; repeated fixed technical verification adds no independent evidence.",
+      "test_warmup": "pre-test already-seen history only; exact minimum start/dependencies fixed from selected implementation before separately authorized test, no 2026 feedback",
+      "training": [
+        "2024-01-02",
+        "2025-12-31"
+      ],
+      "warmup": [
+        "2023-11-01",
+        "2023-12-29"
+      ],
+      "warmup_role": "indicator-only history, no fills or scored account state; verify actual full dependencies per fixed implementation"
+    },
+    "sample_contract_history_before_20261102": {
       "development": [
         "2019-01-02",
         "2025-12-31"
@@ -2231,5 +2316,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-11-02T08:53:08+08:00"
+  "updated_at": "2026-11-02T09:45:35+08:00"
 }
