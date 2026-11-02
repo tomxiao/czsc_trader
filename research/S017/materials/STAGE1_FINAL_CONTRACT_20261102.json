@@ -1,0 +1,357 @@
+{
+  "schema": "s017-stage1-final-contract/v1",
+  "status": "COMPLETE",
+  "date": "2026-11-02",
+  "source_mandate": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S017"
+    },
+    "stage": "MANDATE",
+    "revision": 6,
+    "content_sha256": "4faa435f118e375251fa60f37f818f2e453c2ec5aa4c6672f8a94109b908a72a"
+  },
+  "nonpositive_benchmark_choice": "A_USER_CONFIRMED",
+  "targets": {
+    "type": "ResearchTargets",
+    "requirements": [
+      {
+        "type": "ResearchTarget",
+        "target_id": "center-net-calmar",
+        "metric": "NET_CALMAR",
+        "lower": {
+          "type": "BenchmarkBound",
+          "multiplier": 1.5,
+          "inclusive": false
+        },
+        "upper": null,
+        "when": null,
+        "scope": "STANDARD",
+        "one_way_cost": 0.001
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "center-relative-dd",
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "lower": null,
+        "upper": {
+          "type": "BenchmarkBound",
+          "multiplier": 0.8,
+          "inclusive": true
+        },
+        "when": null,
+        "scope": "STANDARD",
+        "one_way_cost": null
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "center-absolute-dd",
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "lower": null,
+        "upper": {
+          "type": "ConstantBound",
+          "value": 0.25,
+          "inclusive": true
+        },
+        "when": null,
+        "scope": "STANDARD",
+        "one_way_cost": null
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "frequency-median",
+        "metric": "FREQUENCY_MEDIAN",
+        "lower": {
+          "type": "ConstantBound",
+          "value": 6.0,
+          "inclusive": true
+        },
+        "upper": null,
+        "when": null,
+        "scope": "STANDARD",
+        "one_way_cost": null
+      },
+      {
+        "type": "FrequencyCoverageTarget",
+        "target_id": "frequency-coverage",
+        "window_days": 60,
+        "minimum_closed_cycles": 3,
+        "minimum_numerator": 9,
+        "minimum_denominator": 10
+      },
+      {
+        "type": "ParameterNeighborhoodTarget",
+        "target_id": "parameters",
+        "minimum_numerator": 13,
+        "minimum_denominator": 16,
+        "joint_targets": [
+          {
+            "type": "ResearchTarget",
+            "target_id": "point-return-positive",
+            "metric": "NET_ANNUAL_RETURN",
+            "lower": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.25,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "NET_ANNUAL_RETURN",
+              "operator": "GT",
+              "value": 0.0
+            },
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          {
+            "type": "ResearchTarget",
+            "target_id": "point-return-nonpositive",
+            "metric": "NET_ANNUAL_RETURN",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 0.0,
+              "inclusive": false
+            },
+            "upper": null,
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "NET_ANNUAL_RETURN",
+              "operator": "LE",
+              "value": 0.0
+            },
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          {
+            "type": "ResearchTarget",
+            "target_id": "point-relative-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "BenchmarkBound",
+              "multiplier": 0.9,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          }
+        ],
+        "all_point_targets": [
+          {
+            "type": "ResearchTarget",
+            "target_id": "point-absolute-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.25,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          }
+        ]
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "stress-positive-return",
+        "metric": "NET_ANNUAL_RETURN",
+        "lower": {
+          "type": "ConstantBound",
+          "value": 0.0,
+          "inclusive": false
+        },
+        "upper": null,
+        "when": null,
+        "scope": "STRESS",
+        "one_way_cost": 0.002
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "stress-relative-return",
+        "metric": "NET_ANNUAL_RETURN",
+        "lower": {
+          "type": "BenchmarkBound",
+          "multiplier": 1.0,
+          "inclusive": false
+        },
+        "upper": null,
+        "when": null,
+        "scope": "STRESS",
+        "one_way_cost": 0.002
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "stress-relative-dd",
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "lower": null,
+        "upper": {
+          "type": "BenchmarkBound",
+          "multiplier": 1.0,
+          "inclusive": false
+        },
+        "when": {
+          "type": "BenchmarkCondition",
+          "metric": "DRAWDOWN_MAGNITUDE",
+          "operator": "GT",
+          "value": 0.0
+        },
+        "scope": "STRESS",
+        "one_way_cost": 0.002
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "stress-zero-dd",
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "lower": null,
+        "upper": {
+          "type": "ConstantBound",
+          "value": 0.0,
+          "inclusive": true
+        },
+        "when": {
+          "type": "BenchmarkCondition",
+          "metric": "DRAWDOWN_MAGNITUDE",
+          "operator": "LE",
+          "value": 0.0
+        },
+        "scope": "STRESS",
+        "one_way_cost": 0.002
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "stress-absolute-dd",
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "lower": null,
+        "upper": {
+          "type": "ConstantBound",
+          "value": 0.25,
+          "inclusive": true
+        },
+        "when": null,
+        "scope": "STRESS",
+        "one_way_cost": 0.002
+      }
+    ],
+    "frequency_window_days": 60
+  },
+  "complete_target_contract": true,
+  "calmar_availability": "drawdown magnitude > 1e-12 and quotient finite; otherwise INDETERMINATE, never substitute zero/infinity/annual-return gate",
+  "sample_contract": {
+    "development": [
+      "2024-01-02",
+      "2025-12-31"
+    ],
+    "training": [
+      "2024-01-02",
+      "2025-12-31"
+    ],
+    "reserved": [
+      "2026-01-02",
+      "2026-09-30"
+    ],
+    "test": [
+      "2026-01-02",
+      "2026-09-30"
+    ],
+    "reserved_access": "NOT_AUTHORIZED",
+    "warmup": [
+      "2023-11-01",
+      "2023-12-29"
+    ],
+    "warmup_role": "indicator-only history, no fills or scored account state; verify actual full dependencies per fixed implementation",
+    "test_warmup": "pre-test already-seen history only; exact minimum start/dependencies fixed from selected implementation before separately authorized test, no 2026 feedback",
+    "independent_validation_window": null,
+    "development_validation": "seen-data diagnostics only",
+    "per_window_accounts": "fresh USD100000, zero inventory/orders/cycle; no cross-boundary account state",
+    "last_position": "BAR_CLOSE mark; no synthetic liquidation, fee, closed cycle, or later exit/label",
+    "test_feedback": "If used for selection/change, loses independent final-test identity; repeated fixed technical verification adds no independent evidence.",
+    "exposure": "2026 coverage metadata and some public business information previously seen; sealed prices/performance not used",
+    "prior_sample_amendment": "research/S017/materials/SAMPLE_SPLIT_20261031.json"
+  },
+  "unchanged_execution": {
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "execution_spec_hash": "cc778dfdba77564b45d5a9f82131761f82f1df2e9b79e81bdea9585d4a7d6b76",
+    "benchmark": {
+      "benchmark_id": "BuyHold",
+      "kind": "BUYHOLD",
+      "execution_version": "buyhold-execution-v1",
+      "execution": {
+        "type": "EquityBuyHold",
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "30m",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        }
+      }
+    },
+    "initial_cash": 100000.0,
+    "one_way_cost": 0.001,
+    "stress_cost": 0.002,
+    "drawdown_basis": "BAR_CLOSE",
+    "concentration_basis": "MAX_SINGLE"
+  },
+  "ranking": {
+    "pareto_basis": "RAW",
+    "missing_evidence": "REQUIRE_COMPLETE",
+    "policy": "unchanged original return/drawdown layers then six robustness/frequency items",
+    "bin_widths": [
+      0.0001,
+      0.0001,
+      0.0001,
+      0.0001,
+      0.0001,
+      0.5
+    ],
+    "bin_origins": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "pending_decisions": [],
+  "dev_commit": "7d2fb962d20f764c671b4af586edeef8bc5985be",
+  "future_evaluation_requires_its_own_authorization": true,
+  "new_real_research_account_computes": 0,
+  "new_candidates": 0,
+  "sealed_prices_or_performance_accessed": false
+}

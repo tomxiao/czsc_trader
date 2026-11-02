@@ -1,0 +1,28 @@
+{
+  "schema": "s017-stage1-final-confirmation/v1",
+  "status": "USER_CONFIRMED",
+  "date": "2026-11-02",
+  "source": "current chat explicit user reply",
+  "user_reply": "A",
+  "question_context": {
+    "condition": "benchmark Calmar is valid and <= 0",
+    "option_A": "retain strategy Calmar > 1.5 * benchmark Calmar, with no extra center positive-return gate",
+    "option_B_not_selected": "strategy net annual return > 0; a new center positive-return gate"
+  },
+  "effective_rule": "same literal strict 1.5 multiple for all valid positive, zero and negative benchmark Calmar",
+  "zero_example": "benchmark 0 => strategy Calmar > 0",
+  "negative_example": "benchmark -1 => strategy Calmar > -1.5; this one target may pass with negative net return",
+  "does_not_authorize": [
+    "new real accounts",
+    "candidate rescreening or registration",
+    "search",
+    "stage four",
+    "sealed test",
+    "freeze",
+    "production",
+    "merge",
+    "tag",
+    "push"
+  ],
+  "completion_authorization": "already-authorized stage-one final publication, FULL verification and local Chinese commit"
+}

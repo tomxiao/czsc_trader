@@ -1,0 +1,63 @@
+{
+  "status": "PASS",
+  "delivery_status": "COMPLETE",
+  "delivery_reference": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S017"
+    },
+    "stage": "MANDATE",
+    "revision": 7,
+    "content_sha256": "a743a1d92ec1b94991378ec1d794c58ede11ee96b77a64a765eb22c4d9d3f8d0"
+  },
+  "full_validation": {
+    "type": "DeliveryValidation",
+    "status": "PASS",
+    "scope": "FULL",
+    "issues": [],
+    "stats": {
+      "type": "DeliveryValidationStats",
+      "unique_deliveries": 7,
+      "reference_visits": 7,
+      "recursive_expansions": 7,
+      "semantic_reuses": 0,
+      "files_hashed": 298,
+      "bytes_hashed": 2602249,
+      "elapsed_seconds": 0.34125979989767075,
+      "authentication_seconds": 0.0,
+      "recomputation_seconds": 0.0,
+      "final_recheck_seconds": 0.09696830017492175,
+      "accounts_authenticated": 0,
+      "account_reuses": 0,
+      "file_read_task_seconds": 0.03644509962759912,
+      "file_hash_task_seconds": 0.00630479771643877,
+      "package_load_seconds": 0.11208660039119422
+    }
+  },
+  "preserved_historical_files": 90,
+  "retained_targets_unchanged": 10,
+  "complete_outer_target_count": 11,
+  "unconditional_strict_calmar_target": {
+    "type": "ResearchTarget",
+    "target_id": "center-net-calmar",
+    "metric": "NET_CALMAR",
+    "lower": {
+      "type": "BenchmarkBound",
+      "multiplier": 1.5,
+      "inclusive": false
+    },
+    "upper": null,
+    "when": null,
+    "scope": "STANDARD",
+    "one_way_cost": 0.001
+  },
+  "pending_decisions": [],
+  "sample_unchanged": true,
+  "experiments_and_candidate_deliveries_unchanged": true,
+  "formal_report_links_verified": 5,
+  "new_real_research_account_computes": 0,
+  "new_candidates": 0,
+  "sealed_prices_or_performance_accessed": false,
+  "scope": "final mandate integrity and exact confirmed target binding; no strategy reassessment or full-repository regression"
+}
