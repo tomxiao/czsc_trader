@@ -1,5 +1,13 @@
 # S017 研究交接
 
+## 当前：用户授权交接新会话并完成阶段一修订（2026-11-02，RSCH）
+
+用户最新指令：“同意。请交接工作到新会话，然后完成阶段一的修订”。完整上下文、已确认事项、待精确化边界和证据见[阶段一修订交接](materials/STAGE1_REVISION_HANDOFF_20261102.md)。接收会话在codex/s017-ten-rounds核验现场后直接完成阶段一目标/样本用途协议及正式MANDATE新修订，不在只读接手后等待重复授权；不创建worktree或切分支。
+
+新方向是用净Calmar严格大于同合同基准1.5倍替代旧净年化倍数门，原双回撤与双频率保持；用户已明确60日闭合中位仍≥6、≥90%窗口至少3笔，R4不自动改变风险预算。推荐训练2024—2025与2026-01-02—09-30封存测试日期保持，开发内复核不冒充独立验证，测试使用职责与边界在阶段一精确定义。当前尚未发布新MANDATE或改变历史资格；family中旧sample_contract与后续有效修订并存，须通过公共API统一当前生效约定并保留历史。
+
+EX073零账户研究诊断已正式发布（reportRef SHA eaed9b6cac5e1e18f5b2c19b29a994d254e88afeae1963e02dd2ec86581d7c2e），最后结果提交5b56f775155ea2afca656c2c41a7f4678e89b9f4。交接提交只含本入口及详细交接；本会话随后停止写入，新会话单独执行阶段一。无新实验/参数搜索/候选重筛或登记、阶段四、2026开封、平台/生产、合并/tag/push授权。
+
 ## 当前：阶段三MF六参数搜索完成，0达标候选（2026-11-02，RSCH）
 
 [本轮四问报告](experiments/EX072_20261102/report.md)、[全25点机器统计](experiments/EX072_20261102/others/research_summary.json)、[正式报告回执](experiments/EX072_20261102/others/publication.json)及[CANDIDATES/2](deliveries/CANDIDATES/2/report.md)已发布；[交付回执](experiments/EX072_20261102/others/candidate_delivery.json)FULL PASS。COMPLETE仅指批准工作与证据交付完成，产出达标候选的目标未达成，候选与handoff均为空。
