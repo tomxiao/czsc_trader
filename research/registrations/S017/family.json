@@ -83,9 +83,9 @@
         "stage": "MANDATE",
         "type": "DeliveryReference"
       },
-      "current_parallel_work_processes": 2,
+      "current_parallel_work_processes": 12,
       "dev_commit": "07158c34299935447582fcfe4af42e415ae316fc",
-      "execution_paused_by_user": true,
+      "execution_paused_by_user": false,
       "final_acceptance_on_legacy_annual_return_gates_suspended": true,
       "full_assessment_delivery_published": false,
       "hard_gate_definition_and_final_verification_owner": "RSCH_UNDER_USER_CONFIRMED_OBJECTIVES",
@@ -104,6 +104,7 @@
         "type": "EvidenceRef"
       },
       "legacy_annual_return_gates_not_used_for_new_final_acceptance": true,
+      "live_execution_state": "research/S017/experiments/EX076_20261102/others/neighborhood_execution_v2.json",
       "native_threads_per_worker": 1,
       "neighborhood_comparability_and_zero_scale": "USER_CONFIRMED_COMMON_CONTRACT_ZERO_G_ABSOLUTE_005",
       "neighbors_executed": 252,
@@ -120,8 +121,22 @@
         "C0342"
       ],
       "requested_future_max_parallel_batches": 12,
+      "resume_authorization": {
+        "evidence_id": "7896e8db81bbef6126fd46e23e7227237b567462cc2512246f0054c32b10e7b4.json",
+        "experiment": {
+          "experiment_id": "EX076_20261102",
+          "strategy_id": "S017",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "calmar-v2-resume-user-authorization",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "7896e8db81bbef6126fd46e23e7227237b567462cc2512246f0054c32b10e7b4",
+        "type": "EvidenceRef"
+      },
       "sealed_test_authorized": false,
-      "status": "CALMAR_V2_CAPABILITY_ACCEPTED_EXECUTION_PAUSED",
+      "status": "CALMAR_V2_SELF_CHECK_RUNNING",
       "tdr_role": "DETERMINISTIC_CALCULATION_AND_SORTING_BY_EXPLICIT_INPUT_RULES",
       "user_continuation": "我建议RSCH继续主导完成阶段四，控制好自检的并发度即可",
       "user_sorting_confirmation": "同意：Calmar/DD分层及逐点Calmar Q10第一项，其他顺序不变",
@@ -1840,7 +1855,7 @@
       "research/S017/materials/registration_20261028.md",
       "research/S017/materials/pre_registration_readiness.json"
     ],
-    "next_action": "用户明确恢复后，RSCH按MANDATE/8及v8/v6新规则核验复用252已发布邻点，内存允许时最多12并发完成剩余2577点；当前保持暂停，不开封或冻结。",
+    "next_action": "RSCH按MANDATE/8完整核验252旧点并回放2577新点，内存允许时最多12并发；完整N齐备后由平台按显式规则计算排序，RSCH最终核验硬门与研究结论，不打开2026封存样本或冻结。",
     "objective": "LITE 美股个股30分钟只做多择时研究",
     "other_proposals_confirmation": "CONFIRMED",
     "pending_stage_three_mf_context_proposal": {
@@ -2584,5 +2599,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-11-02T14:20:25+08:00"
+  "updated_at": "2026-11-02T14:57:22+08:00"
 }

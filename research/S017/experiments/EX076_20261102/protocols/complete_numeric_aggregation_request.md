@@ -1,0 +1,21 @@
+# RSCH补充计算需求：逐点绩效事实的完整数值聚合
+
+承接用户已授权的“RSCH提计算能力需求，DEV补全能力缺口，RSCH验收”和本次恢复阶段四。账户回放继续按12进程上限执行；这项补充仅增加纯数值计算输入，不改变账户执行、审计、账本格式、既有发布内容、完整点集或研究阈值。
+
+## 问题与目标
+
+现有assess_candidates仅接受每邻点均内嵌完整账本的CandidateAssessmentRequest。逐批计算/审计能控制回放内存，但最终参数统计只需要每点R/DD及明确上下文；当前没有受支持的完整聚合入口。RSCH不得手工改写平台面板，也不能用不完整邻域分位数取得资格。需要平台根据完整、明确的绩效输入自行生成数值面板，再调用既有v6排序。
+
+## 最小接口
+
+扩展现有公开assess_candidates，增加一个独立强类型输入CandidatePerformanceAssessmentRequest：包含原始中心/压力baseline_request，以及完整或明确缺失的参数ParameterPerformanceEvidence。baseline_request仅含中心账户事实，保留全部真实设计及逐点派生link；参数绩效输入含PerformanceFacts、parent、derivation kind/hash、真实point binding、window/scenario/context/metric identity、frequency window及benchmark-equity fingerprint。提供从实际AssessmentEvidence生成该绩效输入的公开纯函数，作为可核验的标准投影。
+
+新入口先调用原有中心/压力计算，再由SE按同一完整邻域算法计算参数Q10/Q90、退化、逐点事实及有效覆盖；输出由平台生成的v8面板，使用v6比较。输入类型和request hash明确区别于全原账输入；不得把RSCH提供的面板或分位数当作已计算结果。RSCH准备并核验真实来源及全部N个数值输入，平台校验类型、派生/点绑定、重复、范围、场景、基准及上下文可比性。缺失/不一致仍不足，不丢点、不伪造N/A或最低值。
+
+这是按输入事实作确定性数值计算的接口，不宣称逐个输入已经通过本次调用中的原账全量FULL重审，也不改变原CandidateAssessmentDelivery或其FULL语义。原始账户真实性由逐批TDR审计/发布、复用冷读审计、来源哈希校核及RSCH最终验收留证。输出必须明确记录新输入类型；现有原账路径、旧序列化、历史校验和旧API行为保持。
+
+## 验收及实现边界
+
+将同一组真实合成账户分别通过全原账路径与新绩效输入路径计算，除请求身份外，完整行、分位数、有效覆盖、目标比较及排名须一致；覆盖部分缺点、错parent/derivation/binding、重复eval/point、费用/metric/context/benchmark不同、零DD及Calmar不可用、空合法邻域。验证新接口不接受预先宣称的PASS或调用方分位数，且阈值仅来自RSCH显式ResearchTargets。
+
+仅修改SE纯数值模型/计算/导出及其聚焦测试；不得修改TDR权益回放/账户适配、SRT、TXE、金融审计模块或正在运行的研究编排源。独立模块内聚参数聚合，不建立重复的一套研究政策。先由DEV补齐并测试，再由RSCH用已发布小样本作两路数值等价验收；最终全N齐备后才计算正式数值比较。新接口数值验收通过不等于策略合格或原账全量TDR FULL。
