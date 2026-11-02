@@ -4,6 +4,62 @@
   "name": "LITE美股个股30分钟只做多择时研究",
   "research_intent": {
     "accepted_gap_assumption": "完整取数后缺失及零量区间不成交、不进入信号历史；沿用最近有效价并标记陈旧；已知中断另外阻断；不称为完整历史停牌事实。",
+    "active_final_test_20261102": {
+      "candidates": [
+        "C0342",
+        "C0352",
+        "C0338",
+        "C0341",
+        "C0340"
+      ],
+      "conclusion": "五配置频率达标，但标准及压力经济条件全部失败；无配置推荐进入阶段五。",
+      "experiment": {
+        "experiment_id": "EX077_20261102",
+        "strategy_id": "S017",
+        "type": "ExperimentRef"
+      },
+      "passed": [],
+      "prices_accessed": true,
+      "protocol": {
+        "evidence_id": "880320cf4d0fcde7dfed992cef7bdb51fd5b6c7fce3b2aff00be734b285f8175.json",
+        "experiment": {
+          "experiment_id": "EX077_20261102",
+          "strategy_id": "S017",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "fixed-five-candidate-holdout-protocol",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "880320cf4d0fcde7dfed992cef7bdb51fd5b6c7fce3b2aff00be734b285f8175",
+        "type": "EvidenceRef"
+      },
+      "recommended": null,
+      "report": {
+        "evidence_id": "5eaa49fffd700840d672a3288fa99a2fefc0a8566de253d982c3a678d4abc511.json",
+        "experiment": {
+          "experiment_id": "EX077_20261102",
+          "strategy_id": "S017",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "experiment-report",
+        "schema": "experiment_report",
+        "schema_version": 1,
+        "sha256": "5eaa49fffd700840d672a3288fa99a2fefc0a8566de253d982c3a678d4abc511",
+        "type": "EvidenceRef"
+      },
+      "results": "research/S017/experiments/EX077_20261102/others/results.json",
+      "stage_five_or_freeze_authorized": false,
+      "status": "COMPLETED",
+      "test_window": {
+        "boundaries_inclusive": true,
+        "first_session": "2026-01-02",
+        "last_session": "2026-09-30",
+        "timezone": "America/New_York"
+      },
+      "user_instruction": "通过阶段四的5个配置都参与测试集验证"
+    },
     "active_stage_four_20261102": {
       "annual_excess_return_95pct_intervals": "ALL_SIX_INCLUDE_ZERO",
       "assessment": {
@@ -1848,7 +1904,7 @@
       "research/S017/materials/registration_20261028.md",
       "research/S017/materials/pre_registration_readiness.json"
     ],
-    "next_action": "阶段四完成：推荐C0342，等待用户选择是否进入阶段五技术检验；不读取2026封存行情，不冻结或部署。",
+    "next_action": "五配置联合测试完成且全部失败，暂停晋级；等待用户决定是否授权失效机制诊断，测试窗口已见。",
     "objective": "LITE 美股个股30分钟只做多择时研究",
     "other_proposals_confirmation": "CONFIRMED",
     "pending_stage_three_mf_context_proposal": {
@@ -2592,5 +2648,5 @@
     "US.LITE"
   ],
   "strategy_id": "S017",
-  "updated_at": "2026-11-02T21:04:36+08:00"
+  "updated_at": "2026-11-03T00:13:44+08:00"
 }
