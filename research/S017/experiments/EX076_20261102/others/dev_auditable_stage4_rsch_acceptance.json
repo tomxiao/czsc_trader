@@ -1,0 +1,140 @@
+{
+  "status": "PASS_RSCH_AUDITABLE_STAGE4_CAPABILITY_ACCEPTANCE",
+  "role": "RSCH",
+  "reused_published_accounts": 16,
+  "parameter_accounts": 4,
+  "independent_audit_calls": 0,
+  "new_account_replays": 0,
+  "raw_and_compact_all_rows_and_comparison_equal": true,
+  "historical_request_hashes_panel_and_comparison_unchanged": true,
+  "numeric_request_sha256": "82d7580cac007e94af5c9484967e78f167f539bcb002c6bdd03ed225a085afa1",
+  "raw_request_sha256": "61d2670e0059fcf10c2aee4fc98cd0f82be6f0badebf77fdeb3ddd5926c4e0ec",
+  "confirmed_calmar_targets_and_ranking_preserved": true,
+  "independent_net_annual_return_gate_added": false,
+  "declared_point_capability_example": [
+    {
+      "candidate": "S017-C0338",
+      "original_point_indices": [
+        0,
+        243,
+        484
+      ],
+      "required_points": 3,
+      "valid_points": 1,
+      "status": "INDETERMINATE"
+    },
+    {
+      "candidate": "S017-C0339",
+      "original_point_indices": [
+        0,
+        162,
+        322
+      ],
+      "required_points": 3,
+      "valid_points": 1,
+      "status": "INDETERMINATE"
+    },
+    {
+      "candidate": "S017-C0340",
+      "original_point_indices": [
+        0,
+        243,
+        484
+      ],
+      "required_points": 3,
+      "valid_points": 0,
+      "status": "INDETERMINATE"
+    },
+    {
+      "candidate": "S017-C0341",
+      "original_point_indices": [
+        0,
+        243,
+        484
+      ],
+      "required_points": 3,
+      "valid_points": 0,
+      "status": "INDETERMINATE"
+    },
+    {
+      "candidate": "S017-C0342",
+      "original_point_indices": [
+        0,
+        162,
+        322
+      ],
+      "required_points": 3,
+      "valid_points": 0,
+      "status": "INDETERMINATE"
+    },
+    {
+      "candidate": "S017-C0352",
+      "original_point_indices": [
+        0,
+        365,
+        727
+      ],
+      "required_points": 3,
+      "valid_points": 0,
+      "status": "INDETERMINATE"
+    }
+  ],
+  "execution_stays_paused": true,
+  "stage_four_complete": false,
+  "strategy_qualification_claimed": false,
+  "new_257_point_protocol_approved": false,
+  "sealed_2026_market_data_accessed": false,
+  "cross_implementation_reuse": {
+    "automatic_resume_allowed": false,
+    "old_65_sources_automatically_compatible_with_new_replays": false,
+    "new_execution_plans_and_replay_budget_require_rsch_reassessment": true
+  },
+  "historical_files_preserved": {
+    "others/calmar_v2_rsch_acceptance.json": "8a0a9993abc4116220db01037ec9b04d273b04399130b12f46fc3dce83dc1271",
+    "others/complete_numeric_aggregation_rsch_acceptance.json": "bdbe3ba8b64e3fbd46119dce46f320a2c57c6dd13bc08ed5e550e1c4eae0b6c4",
+    "others/calmar_v2_acceptance_panel.json": "6a02b47266394aad4c1f0b8b94756bbdfd5f156546653c6b091638d2b8ee92bb",
+    "others/calmar_v2_acceptance_comparison.json": "d0bb52496d87eb627f3ef2c59068ee1cdc81e88303cb4335ea314ebd0ef6f67d",
+    "others/neighborhood_execution_v2_control.json": "32efe26d2a939c5115630beb77f07a09033c8b1d36f259e80add54076b8e9549",
+    "others/bounded_parameter_check_proposal.json": "21310f27f6875038119d981e8e96383d2269e2b6460a2d708b23f82217431154",
+    "protocols/confirmed_calmar_selfcheck_v2.json": "316ff9560631551abc1ae28198aad2de91ad945b00a59a151ce45d95ffaef0ab"
+  },
+  "elapsed_seconds": 651.9170725999866,
+  "limits": [
+    "This is numerical capability acceptance using old published facts, not a completed stage-four assessment.",
+    "Formal schema 15 delivery and shared executor/checkpoint behavior are covered by DEV synthetic focused tests.",
+    "No end-to-end research duration or 12-worker real-workload memory guarantee is established.",
+    "Acceptance wall time includes several raw/compact/declared SE panels and historical equivalence checks, not new account replay.",
+    "Repeated full-ledger decoding and canonicalization remain observable in SE paths; no end-to-end speedup is claimed."
+  ],
+  "dev_verification": {
+    "dev_commit": "7e521fd4e",
+    "completion_record": "research/S017/experiments/EX076_20261102/others/dev_auditable_stage4_completion.json",
+    "completion_record_sha256": "88f58a6d277224519cc4e60bbe31b67fce1ed49e1f224aa8f6409e896e778e35",
+    "tested_source_files_checked": 28,
+    "focused_tests": {
+      "tests": 360,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "junit_seconds": 273.774,
+      "pytest_reported_seconds": 277.51,
+      "junit_sha256": "56b677d8c2f2a3cc922e80203808301adaaab81426fbda0677670a42e9554fcc",
+      "scope": "15 directly affected SE/TDR functional files; not repository-wide regression"
+    },
+    "static_checks": [
+      "changed-code Ruff PASS",
+      "git diff --check PASS"
+    ]
+  },
+  "memory_observation": {
+    "pid": 73356,
+    "observed_at_unix_seconds": 1793613528.021611,
+    "rss_bytes": 1782345728,
+    "peak_working_set_to_sample_bytes": 4497461248,
+    "peak_private_to_sample_bytes": 4472909824,
+    "cpu_seconds": 495.046875,
+    "elapsed_since_process_start_seconds": 512.5228109359741,
+    "scope": "single-process existing-account reading and SE acceptance; not concurrent research replay",
+    "sample_stage": "while SE verification was running; final process peak was not sampled"
+  }
+}
