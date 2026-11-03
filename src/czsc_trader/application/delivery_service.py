@@ -1,13 +1,12 @@
 """Publish research conclusions and selected evidence without execution history."""
 
-from dataclasses import fields, is_dataclass, replace
+from dataclasses import fields, is_dataclass
 from contextvars import ContextVar
 from contextlib import contextmanager
 from concurrent.futures import ProcessPoolExecutor, wait, FIRST_COMPLETED
 from concurrent.futures.process import BrokenProcessPool
 from hashlib import sha256
 import json
-import math
 import re
 from pathlib import Path
 from multiprocessing import get_context
@@ -19,11 +18,9 @@ from strategy_runtime.resources import ExecutionResources
 
 from factor_signal_catalog import FactorDefinition, SignalDefinition
 from strategy_evaluator import (
-    AssessmentEvidence, AssessmentPanel, CandidatePerformanceAssessmentRequest,
+    AssessmentEvidence, CandidatePerformanceAssessmentRequest,
     ParameterNeighborhoodBinding, project_parameter_performance,
-    assess_candidates, compare_candidates,
 )
-from strategy_evaluator.research_models import is_frequency_target
 from strategy_manager.write_lock import RegistryWriteLock
 from strategy_manager.errors import RegistryError, StrategyManagerError
 
@@ -50,7 +47,7 @@ class _ValidationSession:
         self.account_cache = {}
         self.reference_visits = self.recursive_expansions = self.semantic_reuses = 0
         self.files_hashed = self.bytes_hashed = 0
-        self.authentication_seconds = self.recomputation_seconds = self.final_recheck_seconds = 0.0
+        self.authentication_seconds = self.final_recheck_seconds = 0.0
         self.accounts_authenticated = self.account_reuses = 0
         self.file_read_task_seconds = self.file_hash_task_seconds = 0.0
         self.package_load_seconds = 0.0
@@ -71,7 +68,7 @@ class _ValidationSession:
             len(self.identities), self.reference_visits, self.recursive_expansions,
             self.semantic_reuses, self.files_hashed, self.bytes_hashed,
             float(perf_counter() - self.started),
-            self.authentication_seconds, self.recomputation_seconds, self.final_recheck_seconds,
+            self.authentication_seconds, 0.0, self.final_recheck_seconds,
             self.accounts_authenticated, self.account_reuses,
             self.file_read_task_seconds, self.file_hash_task_seconds,
             self.package_load_seconds,
@@ -266,7 +263,6 @@ def _certify_account(data, reference, root=None):
             view = materialize_equity_document(root, reference.path, value)
             records = tuple(project_parameter_performance(item) if isinstance(item.parameter_point, ParameterNeighborhoodBinding) else item
                             for item in build_equity_assessment(view))
-            value = view.payload
             request = value["request"]
             projection = {"schema_version": reference.schema_version, "request_hash": value["request_hash"],
                           "request_identity": equity_parameter_contract(request),
@@ -360,8 +356,7 @@ def _check_evaluation(root, ref, candidate, account_cache=None):
         _fail("EVALUATION_REFERENCE", ref.evidence.path, "evaluation ID absent from saved result")
 
 
-def _validate_content(definition, content, root, context, scope=d.DeliveryValidationScope.FULL,
-                      *, account_cache=None):
+def _validate_content(definition, content, root, context, *, account_cache=None):
     if account_cache is None:
         account_cache = {}
     expected = {
@@ -426,8 +421,6 @@ def _validate_content(definition, content, root, context, scope=d.DeliveryValida
                       "candidate requires a published account evaluation")
             for ref in candidate.evaluations:
                 _check_evaluation(root, ref, candidate.identity, account_cache)
-    elif isinstance(payload, d.CandidateAssessmentDelivery):
-        _validate_assessment_delivery(definition, payload, root, context, content, scope, account_cache)
     elif isinstance(payload, d.CandidateInspectionDelivery):
         _validate_inspection_delivery(definition, content, root, context)
 
@@ -490,12 +483,6 @@ def _assessment_base(payload):
     return request.baseline_request if type(request) is CandidatePerformanceAssessmentRequest else request
 
 
-def _assessment_evidence(payload):
-    request = payload.assessment_request
-    return ((*request.baseline_request.evidence, *request.parameter_evidence)
-            if type(request) is CandidatePerformanceAssessmentRequest else request.evidence)
-
-
 def _validate_parameter_method_schema(definition, payload):
     """Versioned envelopes must not relabel either generation of parameter facts."""
     from strategy_evaluator import research_models as m
@@ -554,203 +541,6 @@ def _validate_parameter_method_schema(definition, payload):
             isinstance(value, m.DeclaredParameterPointSet) for value in _walk(payload)
         ):
             _fail("PARAMETER_METHOD_SCHEMA", "content.payload", "declared point sets require assessment schema 15")
-
-
-def _assessment_recomputation_matches(recomputed: AssessmentPanel, published: AssessmentPanel) -> bool:
-    if replace(recomputed, family_diagnostics=published.family_diagnostics) != published:
-        return False
-    if len(recomputed.family_diagnostics) != len(published.family_diagnostics):
-        return False
-    for actual, expected in zip(recomputed.family_diagnostics, published.family_diagnostics):
-        if actual == expected:
-            continue
-        if (actual.name != "DSR_EFFECTIVE" or (actual.name, actual.status, actual.reason)
-            != (expected.name, expected.status, expected.reason) or actual.value is None
-            or expected.value is None or not 0.0 <= actual.value <= 1.0
-            or not 0.0 <= expected.value <= 1.0
-            or not math.isclose(actual.value, expected.value, rel_tol=1e-12, abs_tol=0.0)):
-            return False
-    return True
-
-
-def _validate_assessment_delivery(definition, payload, root, context, content, scope, account_cache):
-    for ref in (payload.source_candidates, payload.source_mandate):
-        if ref not in definition.predecessors:
-            _fail("ASSESSMENT_SOURCE", "predecessors", "assessment sources must be predecessors")
-
-    def source(ref):
-        document = _read_json(_resolve(_delivery_path(context, ref), "delivery.json"))
-        if document.get("schema_version") not in d._readable_schema_versions(ref.stage):
-            _fail("ASSESSMENT_SOURCE", ref.stage.value, "unsupported assessment handoff schema")
-        return d.DeliveryContent.from_dict(document["content"])
-
-    candidates = source(payload.source_candidates).payload
-    mandate_source = source(payload.source_mandate)
-    if mandate_source.status is not d.DeliveryStatus.COMPLETE or mandate_source.incomplete_items:
-        _fail("INCOMPLETE_MANDATE", "source_mandate",
-              "assessment requires a complete mandate with no incomplete items")
-    mandate = mandate_source.payload
-    expected = {f"{key.strategy_id}-{key.candidate_id}": next(
-        x.identity.content_sha256 for x in candidates.candidates if x.identity.key == key)
-        for key in candidates.handoff}
-    actual = {x.candidate_id: x.content_sha256 for x in _assessment_base(payload).centers}
-    if expected != actual:
-        _fail("ASSESSMENT_SCOPE", "centers", "assessment centers differ from stage-three handoff")
-    declarations = {x.item_id: x for x in mandate.items}
-    targets = {x.target_id: x for x in payload.comparison_request.targets.requirements}
-    if {x.target_id for x in payload.target_bindings} != set(targets):
-        _fail("TARGET_BINDING", "target_bindings", "each target needs a confirmed mandate binding")
-    expected = {target.target_id: (item.item_id, target)
-        for item in mandate.items if isinstance(item.requirement, d.PerformanceRequirement)
-        and item.confirmation.status is d.ConfirmationStatus.CONFIRMED
-        for target in item.requirement.targets}
-    if set(expected) != set(targets):
-        _fail("TARGET_BINDING", "target_bindings", "confirmed performance targets must be preserved")
-    for binding in payload.target_bindings:
-        if expected[binding.target_id] != (binding.mandate_item_id, targets[binding.target_id]):
-            _fail("TARGET_BINDING", binding.target_id, "target differs from confirmed mandate")
-    if any(is_frequency_target(x) for x in targets.values()):
-        item = declarations.get(payload.frequency_window_item_id)
-        days = payload.comparison_request.targets.frequency_window_days
-        if (item is None or item.confirmation.status is not d.ConfirmationStatus.CONFIRMED
-            or not isinstance(item.requirement, d.NumericRequirement)
-            or (item.requirement.metric, item.requirement.unit, item.requirement.lower,
-                item.requirement.upper) != ("frequency_window_days", "sessions", float(days), float(days))):
-            _fail("TARGET_BINDING", "frequency_window", "frequency window requires confirmed exact sessions")
-    item = declarations.get(payload.benchmark_mandate_item_id)
-    if (item is None or item.confirmation.status is not d.ConfirmationStatus.CONFIRMED
-        or not isinstance(item.requirement, d.BenchmarkRequirement)):
-        _fail("BENCHMARK_BINDING", "benchmark", "benchmark requires a confirmed typed mandate")
-    benchmark = item.requirement.benchmark
-    for evidence in _assessment_evidence(payload):
-        if (evidence.scenario_context.benchmark_contract_sha256 != benchmark.fingerprint
-            or evidence.scenario_context.benchmark_id != benchmark.benchmark_id
-            or evidence.scenario_context.benchmark_kind != benchmark.kind):
-            _fail("BENCHMARK_BINDING", evidence.evaluation_id, "benchmark differs from confirmed mandate")
-    saved = {}
-    saved_requests = {}
-    saved_policies = {}
-    for reference in _references(content):
-        if _is_account_reference(reference):
-            account, records = _account_document(root, reference, account_cache)
-            saved_requests[account["request_hash"]] = account["request_identity"]
-            saved_policies[account["request_hash"]] = account["execution_policies"]
-            for evidence in records:
-                saved[evidence.evaluation_id] = evidence
-    predecessor_root = _delivery_path(context, payload.source_candidates)
-    for candidate in candidates.candidates:
-        for reference in candidate.evaluations:
-            account, records = _account_document(predecessor_root, reference.evidence, account_cache)
-            saved_requests[account["request_hash"]] = account["request_identity"]
-            saved_policies[account["request_hash"]] = account["execution_policies"]
-            for evidence in records:
-                previous = saved.setdefault(evidence.evaluation_id, evidence)
-                if previous != evidence:
-                    _fail("ASSESSMENT_EVIDENCE", evidence.evaluation_id, "conflicting saved account facts")
-    for evidence in _assessment_evidence(payload):
-        expected = (project_parameter_performance(evidence)
-                    if type(evidence) is AssessmentEvidence
-                    and isinstance(evidence.parameter_point, ParameterNeighborhoodBinding) else evidence)
-        if saved.get(evidence.evaluation_id) != expected:
-            _fail("ASSESSMENT_EVIDENCE", evidence.evaluation_id, "assessment differs from saved evaluation facts")
-    _validate_parameter_plans(payload, root, saved_requests, saved_policies)
-    if scope is d.DeliveryValidationScope.INTEGRITY:
-        return
-    session = _validation_session.get()
-    started = perf_counter()
-    if session is not None:
-        session.progress(d.DeliveryValidationPhase.RECOMPUTATION, 0, 2)
-    try:
-        assess, compare = assess_candidates, compare_candidates
-        if definition.schema_version in (8, 11):
-            from strategy_evaluator.research_assessment import (
-                recompute_historical_assessment, recompute_historical_comparison,
-            )
-            assess, compare = recompute_historical_assessment, recompute_historical_comparison
-        if not _assessment_recomputation_matches(assess(payload.assessment_request), payload.assessment):
-            _fail("ASSESSMENT_RESULT", "assessment", "assessment differs from numeric recomputation")
-        if session is not None:
-            session.progress(d.DeliveryValidationPhase.RECOMPUTATION, 1, 2)
-        if compare(payload.comparison_request) != payload.comparison:
-            _fail("COMPARISON_RESULT", "comparison", "comparison differs from numeric recomputation")
-        if session is not None:
-            session.progress(d.DeliveryValidationPhase.RECOMPUTATION, 2, 2)
-    finally:
-        if session is not None:
-            session.recomputation_seconds += perf_counter() - started
-
-
-def _validate_parameter_plans(payload, root, saved_requests, saved_policies):
-    from strategy_runtime import StrategyCandidate
-    from ..research_tools.parameter_evaluation import (
-        ParameterEvaluationPlan, ParameterEvaluationBinding, validate_parameter_contract,
-        parameter_execution_policy, equity_planned_identity, _plan_child,
-    )
-
-    from strategy_evaluator import DeclaredParameterPointSet
-    designs = {(x.source_design.sha256 if type(x) is DeclaredParameterPointSet else x.sha256): x
-               for x in _assessment_base(payload).parameter_designs}
-    plans = {}
-    for reference in payload.parameter_plans:
-        plan = ParameterEvaluationPlan.from_dict(json.loads(_read_evidence(root, reference)))
-        plan_key = (plan.design.source_design.sha256 if type(plan.design) is DeclaredParameterPointSet
-                    else plan.design.sha256)
-        _read_evidence(root, plan.mapping_evidence)
-        _read_evidence(root, plan.feasibility_evidence)
-        if plan_key in plans:
-            _fail("PARAMETER_PLAN", reference.path, "duplicate parameter design")
-        if plan.schema_version in (3, 4):
-            for candidate in (plan.center, *plan.children):
-                family, name = candidate.candidate.candidate_id.split("-", 1)
-                actual_identity = (equity_planned_identity(json.loads(candidate.payload_json))
-                    if plan.schema_version == 4 else StrategyCandidate(family, name,
-                    json.loads(candidate.payload_json)).runtime_identity_sha256)
-                if actual_identity != candidate.runtime_identity_sha256:
-                    _fail("PARAMETER_PAYLOAD", reference.path, "planned payload runtime identity differs")
-        plans[plan_key] = (reference, plan)
-        central = saved_requests.get(plan.center_request_sha256)
-        evidence = tuple(x for x in _assessment_evidence(payload) if x.candidate == plan.design.center
-                         and x.window_id == _assessment_base(payload).protocol.baseline_window
-                         and x.scenario_id == _assessment_base(payload).protocol.standard_scenario)
-        if (central is None or not evidence or any(x.request_sha256 != plan.center_request_sha256 for x in evidence)
-            or central["nonparameter_context_sha256"] != plan.nonparameter_context_sha256
-            or central["content_sha256"] != plan.design.center.content_sha256
-            or central["strategy_reference"] != plan.design.center.candidate_id):
-            _fail("PARAMETER_CENTER", reference.path, "planned center differs from saved center account")
-        if plan.schema_version in (3, 4) and central["strategy_identity"] != plan.center.runtime_identity_sha256:
-            _fail("PARAMETER_CENTER", reference.path, "planned center runtime identity differs from saved account")
-        center_bindings = {x.window_id: json.loads(x.binding_json) for x in plan.center_inputs}
-        if central["input_bindings"] != center_bindings:
-            _fail("PARAMETER_CENTER", reference.path, "planned center input identities differ")
-        policy = json.loads(plan.execution_contract_json)["policy"]
-        if any(parameter_execution_policy(x) != policy for x in saved_policies[plan.center_request_sha256]):
-            _fail("PARAMETER_CENTER", reference.path, "planned center execution policy differs")
-        links = tuple(x for x in _assessment_base(payload).perturbations if x.parent == plan.design.center)
-        declared = designs.get(plan_key)
-        if declared is None:
-            _fail("PARAMETER_PLAN", reference.path, "source plan is absent from assessment designs")
-        if type(plan.design) is DeclaredParameterPointSet and plan.design != declared:
-            _fail("PARAMETER_PLAN", reference.path, "declared execution plan differs from assessment point set")
-        selected = (declared.point_indices if type(declared) is DeclaredParameterPointSet
-                    else tuple(range(plan.design.point_count)))
-        expected = tuple((_plan_child(plan, index).candidate, plan.design.bind_point(index)) for index in selected)
-        actual = tuple((x.child, x.parameter_point) for x in links)
-        if set(actual) != set(expected) or len(actual) != len(expected):
-            _fail("PARAMETER_PLAN", reference.path, "assessment links differ from declared plan points")
-    if set(plans) != set(designs):
-        _fail("PARAMETER_PLAN", "parameter_plans", "assessment designs differ from published plans")
-    for evidence in _assessment_evidence(payload):
-        if evidence.parameter_point is None:
-            continue
-        reference, plan = plans[evidence.parameter_point.design_sha256]
-        contract = saved_requests[evidence.request_sha256]
-        binding = ParameterEvaluationBinding.from_dict(contract["parameter_binding"])
-        if binding.plan != reference or binding.point != evidence.parameter_point:
-            _fail("PARAMETER_PLAN", evidence.evaluation_id, "saved account uses another parameter plan")
-        validate_parameter_contract(contract, plan, binding)
-        if any(parameter_execution_policy(x) != json.loads(plan.execution_contract_json)["policy"]
-               for x in saved_policies[evidence.request_sha256]):
-            _fail("PARAMETER_PLAN", evidence.evaluation_id, "saved child execution policy differs")
 
 
 def _manifest(root) -> tuple[d.PublicationFile, ...]:
@@ -817,15 +607,14 @@ def _read_delivery(context, reference, root, visited, scope=d.DeliveryValidation
             _fail("DELIVERY_SCHEMA", "delivery.json", "envelope, definition and receipt schemas differ")
         if (definition.batch, definition.stage, definition.revision) != identity:
             _fail("DELIVERY_IDENTITY", "definition", "definition differs from reference")
-        storage_only = (definition.stage is d.DeliveryStage.ASSESSMENT
-                        and scope is d.DeliveryValidationScope.INTEGRITY)
+        storage_only = definition.stage is d.DeliveryStage.ASSESSMENT
         if storage_only:
             report = document["content"]["report"]
             if type(report) is not str or not report.strip():
                 _fail("REPORT_CONTENT", "report.md", "stored research report must be nonempty text")
         else:
             content = d.DeliveryContent.from_dict(document["content"])
-    if definition.stage is d.DeliveryStage.ASSESSMENT and scope is d.DeliveryValidationScope.INTEGRITY:
+    if storage_only:
         if _read_bytes(_resolve(root, "report.md")) != report.encode("utf-8"):
             _fail("REPORT_CONTENT", "report.md", "report differs from the submitted research report")
         if published:
@@ -836,7 +625,7 @@ def _read_delivery(context, reference, root, visited, scope=d.DeliveryValidation
     for predecessor in definition.predecessors:
         _read_delivery(context, predecessor, _delivery_path(context, predecessor), visited,
                        account_cache=account_cache)
-    _validate_content(definition, content, root, context, scope, account_cache=account_cache)
+    _validate_content(definition, content, root, context, account_cache=account_cache)
     if _read_bytes(_resolve(root, "report.md")) != content.report.encode("utf-8"):
         _fail("REPORT_CONTENT", "report.md", "report differs from the submitted research report")
     if published:
@@ -847,14 +636,21 @@ def _read_delivery(context, reference, root, visited, scope=d.DeliveryValidation
 
 
 def validate_delivery(context: RepositoryContext, reference: d.DeliveryReference, *,
-                      scope: d.DeliveryValidationScope = d.DeliveryValidationScope.FULL,
+                      scope: d.DeliveryValidationScope | None = None,
                       resources: ExecutionResources | None = None,
                       on_progress: Callable[[d.DeliveryValidationProgress], None] | None = None) -> d.DeliveryValidation:
-    """Check evidence; FULL also recomputes SE without replaying research accounts."""
-    if type(scope) is not d.DeliveryValidationScope:
-        raise TypeError("scope requires DeliveryValidationScope")
+    """Validate the stored delivery at a scope supported by its stage."""
     if type(context) is not RepositoryContext or type(reference) is not d.DeliveryReference:
         raise TypeError("validate_delivery requires RepositoryContext and DeliveryReference")
+    assessment = reference.stage is d.DeliveryStage.ASSESSMENT
+    if scope is None:
+        scope = d.DeliveryValidationScope.INTEGRITY if assessment else d.DeliveryValidationScope.FULL
+    if type(scope) is not d.DeliveryValidationScope:
+        raise TypeError("scope requires DeliveryValidationScope")
+    if assessment and scope is d.DeliveryValidationScope.FULL:
+        return d.DeliveryValidation(d.ValidationStatus.FAIL, scope, (
+            d.DeliveryIssue("UNSUPPORTED_SCOPE", "scope", "ASSESSMENT supports INTEGRITY validation only"),
+        ))
     session = _ValidationSession(resources, on_progress)
     token = _validation_session.set(session)
     issues = ()
@@ -926,6 +722,19 @@ def assemble_delivery(context: RepositoryContext, definition: d.DeliveryDefiniti
             _validation_session.reset(token)
 
 
+def _equity_dependencies(context, reference, header):
+    for name, kind in (("input_ref", "equity_input"), ("candidate_ref", "equity_account"),
+                       ("benchmark_ref", "equity_account")):
+        artifact = header[name]
+        if (type(artifact) is not dict or set(artifact) != {"kind", "sha256"}
+            or artifact["kind"] != kind or type(artifact["sha256"]) is not str
+            or re.fullmatch(r"[0-9a-f]{64}", artifact["sha256"]) is None):
+            _fail("EVIDENCE_REFERENCE", reference.path, "invalid account dependency reference")
+        digest = artifact["sha256"]
+        source = _resolve(context.root, f"{Path(reference.repository_path).parent.as_posix()}/{digest}.json")
+        yield source, f"evidence/{digest}.json", digest
+
+
 def _assemble_assessment_delivery(context, definition, content):
     """Store the caller's stage-four result; do not certify its research claims."""
     session = _validation_session.get()
@@ -985,20 +794,9 @@ def _assemble_assessment_delivery(context, definition, content):
             copy_reference(reference)
             if reference.schema == "equity_research":
                 # Copy immutable dependencies once by their declared identity.
-                # Parsing the journals or rebuilding assessment facts is not a
-                # storage operation and belongs to explicit FULL validation.
-                header = _read_json(_resolve(staging, reference.path))
-                for name, kind in (("input_ref", "equity_input"), ("candidate_ref", "equity_account"),
-                                   ("benchmark_ref", "equity_account")):
-                    artifact = header[name]
-                    if (type(artifact) is not dict or set(artifact) != {"kind", "sha256"}
-                        or artifact["kind"] != kind or type(artifact["sha256"]) is not str
-                        or re.fullmatch(r"[0-9a-f]{64}", artifact["sha256"]) is None):
-                        _fail("EVIDENCE_REFERENCE", reference.path, "invalid account dependency reference")
-                    digest = artifact["sha256"]
-                    source = _resolve(context.root,
-                        f"{Path(reference.repository_path).parent.as_posix()}/{digest}.json")
-                    copy_source(source, f"evidence/{digest}.json", digest)
+                for source, relative, digest in _equity_dependencies(context, reference,
+                        _read_json(_resolve(staging, reference.path))):
+                    copy_source(source, relative, digest)
 
         for reference in content.payload.parameter_plans:
             copy_reference(reference)
@@ -1075,9 +873,10 @@ def _assemble_delivery(context, definition, content):
                 session.recheck(context)
             return checked
         _validate_handoff(context, content)
-        for predecessor in definition.predecessors:
-            _read_delivery(context, predecessor, _delivery_path(context, predecessor), set(),
-                           account_cache=account_cache)
+        if definition.stage is not d.DeliveryStage.CANDIDATES:
+            for predecessor in definition.predecessors:
+                _read_delivery(context, predecessor, _delivery_path(context, predecessor), set(),
+                               account_cache=account_cache)
         _resolve(context.root, ".tmp/delivery")
         staging = create_temporary_directory(context.root, "delivery")
 
@@ -1093,12 +892,18 @@ def _assemble_delivery(context, definition, content):
                 with target.open("xb") as stream:
                     stream.write(data)
 
+        copied_dependencies = set()
         for reference in _references(content):
             if reference.experiment.strategy_id != definition.strategy_id:
                 _fail("EVIDENCE_OWNER", reference.path, "evidence belongs to another batch")
             source = reference._read_verified(context.root)[1]
             copy(source, reference.path, reference.sha256)
-            if reference.schema == 'equity_research':
+            if reference.schema == "equity_research" and definition.stage is d.DeliveryStage.CANDIDATES:
+                for dependency, relative, digest in _equity_dependencies(context, reference, _decode_json(source.decode("utf-8"))):
+                    if dependency not in copied_dependencies:
+                        copy(dependency.read_bytes(), relative, digest)
+                        copied_dependencies.add(dependency)
+            elif reference.schema == 'equity_research':
                 from .equity_evidence_io import materialize_equity_document
                 view = materialize_equity_document(context.root, reference.repository_path, source)
                 for artifact in view.artifacts:
@@ -1120,7 +925,7 @@ def _assemble_delivery(context, definition, content):
         (staging / "receipt.json").write_bytes(d._canonical(receipt))
         _read_delivery(context, reference, staging, set(), d.DeliveryValidationScope.FULL,
                        published=False, account_cache=account_cache)
-        if session is not None:
+        if session is not None and definition.stage is not d.DeliveryStage.CANDIDATES:
             session.recheck(context)
         public_staging = create_temporary_directory(context.root, "delivery-public")
         for name in ("report.md", "receipt.json"):

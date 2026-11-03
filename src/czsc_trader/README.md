@@ -590,6 +590,7 @@ TDR 保存 `assets/candidates/<候选>/payload/<hash>.json` 和 `assets/candidat
 文件引用相对批次根 `research/<策略ID>/`，`source_root` 记录快照源码根。
 同键同登记内容复用，冲突拒绝；`load_candidate(repository, CandidateKey(...))` 认证记录及源码后返回候选。
 登记记录、源码快照和支撑证据须一起保留，修改原实验源码不影响已登记候选。
+美股登记校验账户闭包及候选绑定。候选交付按直接依赖复制美股证据，在暂存包中完成一次语义校验，再核对最终发布的清单。
 
 未交接的搜索点无须逐个登记。`CandidateDerivation` 记录参数、实现或执行规则派生；
 补充评价关系可使用 `EvaluationLineage`，不能据此覆盖已登记内容。
@@ -654,8 +655,7 @@ if design.is_applicable:
 
 阶段四`CandidateAssessmentDelivery.parameter_plans`显式关联计划。发布保存选定材料及其直接依赖，
 每份共享材料按唯一内容处理一次；不递归认证历史交付、不重算SE、不判断实验步骤或结论是否正确。
-`validate_delivery(..., scope=FULL)`是显式深入核验入口，可按保存账户核对来源、参数及规则并复算SE；
-此过程与正常计算和发布分离。RSCH负责声明范围、比较口径、标准及最终研究核验。
+阶段四`validate_delivery`只检查交付包完整性。RSCH负责声明范围、比较口径、标准及最终研究核验。
 
 ## 7. 五阶段交付
 
@@ -664,11 +664,9 @@ if design.is_applicable:
 阶段四返回实际发布完整性检查的`INTEGRITY PASS`：保存报告、请求、结果、指定证据及引用，检查直接存储事务，不签发`FULL PASS`。
 普通发布不认证账户、不递归展开前驱、不重算SE；同修订同内容幂等返回，冲突或缺失材料明确失败。
 其它阶段的专门交付要求保持原有契约，冻结和生产发布不受本次阶段四改造影响。
-需要深入核验时显式调用`validate_delivery(..., scope=FULL, resources=..., on_progress=...)`；
-其账户处理仍使用公共资源预算，结果和计时单独返回，不作为正常发布的前置步骤。
-`DeliveryValidationProgress` 回调报告 `PACKAGE_LOAD`、`AUTHENTICATION`、`RECOMPUTATION`、`FINAL_RECHECK` 阶段、完成数量及累计墙钟耗时。
-`PACKAGE_LOAD` 在读取每个交付包之前立即发出；`package_load_seconds` 累计包封装读取、清单哈希与强类型解析的墙钟时间，包含失败读取，排除递归前驱、账户认证和 SE 复算。
-`DeliveryValidationStats` 记录认证墙钟时间（含并行进程启动及结果传输）、SE 复算时间、最终复核时间、认证账户数和缓存复用数；阶段数值不包含其他序列化及 I/O，不将这些局部计时之和称为端到端时间。
+阶段四默认使用`INTEGRITY`，显式请求`FULL`返回`UNSUPPORTED_SCOPE`。其他阶段默认仍为`FULL`。
+`DeliveryValidationProgress`报告包读取、证据校验及最终复核的进度，`DeliveryValidationStats`提供分段计时和复用统计。
+阶段四完整性验证不进行 SE 复算，既有统计结构中的`recomputation_seconds`为零。
 `file_read_task_seconds` 和 `file_hash_task_seconds` 是校验路径的主进程及工作进程逐项文件读取／哈希累计耗时，含在认证与最终复核阶段内；并行任务累计时间不可相加或当作墙钟耗时。
 这些执行统计和组装返回包装不写入交付文件，不改变交付 schema 或内容身份。
 研究员提供结论、必要事实、解释、人工报告和关联证据，自主组织实验过程。
@@ -683,7 +681,7 @@ if design.is_applicable:
 显式深入交付核验中，声明`schema="account_evaluation"`的`EvidenceRef`执行账户核验，
 包括组件测试、顶层 `DeliveryContent.evidence`、`SearchSummary.evidence` 和候选评价引用。
 新账户采用schema 8／请求身份7；历史schema 7／请求身份6保留只读认证。引用头与正文版本必须一致，认证请求、结果身份、保存账本及数值一致性；其他或交叉版本明确拒绝。
-阶段四`INTEGRITY`仅检查本交付的保存字节、清单和报告；`FULL`执行账户事实核验而不重跑策略。普通材料检查归属、路径及文件哈希，
+阶段四`INTEGRITY`检查本交付的保存字节、清单和报告。其他阶段的普通材料检查归属、路径及文件哈希，
 平台不会扫描材料 JSON 或 Markdown 中嵌套的账户声明；支撑正式账户结论的引用必须直接纳入强类型交付。
 同批次可以复用其他实验账户，但账户内来源必须与该引用自身的实验身份一致；
 `CandidateEntry.evaluations`及`PrototypeEntry.evaluations`还须匹配所声明实现的编号、内容哈希及`evaluation_ids`。
@@ -825,7 +823,7 @@ ASSESSMENT的中心候选ID及内容哈希集合须与前驱`CandidateSet.handof
 尚未完成的计算可通过缺失证据和`IncompleteEvaluation`如实表达，不要求所有计算先完成才能交付。
 
 ASSESSMENT schema 15显式使用`CandidatePerformanceAssessmentRequest`：中心保留原账事实，
-邻点使用`ParameterPerformanceEvidence`。发布保存已计算结果；仅显式FULL校验按保存账户核对绩效事实并复算SE面板及排序。
+邻点使用`ParameterPerformanceEvidence`。发布保存已计算结果，研究核验由 RSCH 组织。
 参数账户读取后仅缓存紧凑事实和计划核验元数据，不在缓存中常驻全部原账。
 `DeclaredParameterPointSet`可声明原完整设计中的有限检验集，保留源设计、原点编号及构造合同哈希；
 `parameter_plans`可引用只含声明点的执行计划，保留所选子候选、原点绑定及请求；不准备未选点，不在发布时逐点重新认证。
@@ -835,16 +833,7 @@ ASSESSMENT schema 15显式使用`CandidatePerformanceAssessmentRequest`：中心
 
 `CandidateAssessmentDelivery.pending_decisions`及`CandidateInspectionDelivery.pending_decisions`均可为空元组，
 不因未冻结而强制新增待决事项；已填写事项仍须为非空文本。
-显式`validate_delivery`默认`DeliveryValidationScope.FULL`，核对关联事实并重算阶段四SE结果；
-阶段四`INTEGRITY`仅检查本包文件、清单和报告，不递归检查历史交付或核对账户事实。两者都不重跑策略账户。
-两种范围均核验 `report.md` 与提交的 `report` 字节一致；该检查不判断文字解释或研究结论的正确性。
-阶段四使用 SE 自检公式 `research-assessment-v7` 与排序公式 `research-ranking-v4`，
-按中心收益和回撤分层、同层稳健性优先及交易频率最后比较；指标、分箱与频率口径见
-[SE 比较政策](../../packages/strategy_evaluator/README.md#比较请求与政策)。
-盈利年份合并频率由已保存基准净值与实际退出日计算，频率硬门仍须绑定已确认的目标及精确窗口。
-新交付拒绝旧自检或排序字段；受支持的历史交付按原版本只读认证，不自动改写历史排名。
-参数项正式不适用时，两项邻域指标保留`NOT_APPLICABLE`及空实测值，验收不将其计为通过或失败；排序仍包含该候选，通过`floor_metrics`明确两项最低得分来源，不用0收益、0回撤或中心值填补。其余条件和证据继续校验，真实缺失与执行失败仍按原政策处理。帕累托层级优先，同层最低得分相同后继续比较后续指标。
-阶段五继续核验实际决定、检验及冻结状态；交付快照不取代运行发布和批准事实。
+阶段四`validate_delivery`默认检查包完整性。显式`FULL`返回`UNSUPPORTED_SCOPE`。
 
 ### 完整目标集合的交付绑定
 
@@ -857,7 +846,6 @@ ASSESSMENT schema 15显式使用`CandidatePerformanceAssessmentRequest`：中心
 | --- | --- | --- |
 | `assemble_delivery`阶段一 | 在`ResearchMandate.items`的`PerformanceRequirement.targets`保存完整目标；每项有真实`ConfirmationRecord`；基准使用`BenchmarkRequirement` | 保存目标及确认引用，供后继交付精确绑定；不推断确认文本语义 |
 | `assemble_delivery`阶段四 | `CandidateAssessmentDelivery`携带显式请求、面板、排序、声明目标及选定证据 | 保存声明与关联，返回发布完整性状态；不代替RSCH核验目标或隐式重算 |
-| `validate_delivery(..., scope=FULL)` | 当前schema交付引用及其前驱 | 认证账户、参数设计和阶段一绑定，再用`assess_candidates/compare_candidates`复算覆盖事实、逐点和压力验收及排序；不一致拒绝 |
 
 两项频率验收共用`ResearchTargets.frequency_window_days`，在已确认的执行条目中保存
 `NumericRequirement("frequency_window_days", "sessions", lower=60.0, upper=60.0)`，
@@ -869,9 +857,9 @@ ASSESSMENT schema 15显式使用`CandidatePerformanceAssessmentRequest`：中心
 
 技术校验`PASS`只表示所返回scope的检查已通过；阶段四发布不宣称独立认证或复算成功。研究验收读取`comparison.rows[*].acceptance_status`及
 `target_checks`，推荐排序还须满足可比性和完整证据政策。研究未达标或证据不足的真实报告可正常留存，
-不能将保存成功当作研究通过。`INTEGRITY`不重算数值，不得替代FULL声称复算成功。
+不能将保存成功当作研究通过。阶段四完整性通过表示交付包一致。
 
-schema 7阶段交付仍不支持；schema 12的MANDATE/ASSESSMENT保留指定旧schema 8、11的读取认证，不改写历史原件。FULL验证按旧封装分别重算v5/v3及v6/v3；不以新公式重解释旧结果。新ASSESSMENT包含邻域设计时须使用v2 `NeighborhoodSelfCheckProtocol.parameter_protocol`，无自动协议转换。
+schema 7阶段交付仍不支持；schema 12的MANDATE/ASSESSMENT保留指定旧schema 8、11的读取认证，不改写历史原件。阶段四历史包按保存的内容检查完整性。新ASSESSMENT包含邻域设计时须使用v2 `NeighborhoodSelfCheckProtocol.parameter_protocol`，无自动协议转换。
 邻域可仅用于诊断，不强制新增`ParameterNeighborhoodTarget`；已有确认目标仍须完整保留并精确绑定原约定。
 无设计的缺失诊断可以如实留存，但不会取得不适用待遇。
 已有schema 7账户证据可经认证显式引用。旧MANDATE中的32点/26点目标不能自动变成新比例目标；新研究需经确认建立新MANDATE和相应交付，历史资格与结论不变。
@@ -1044,7 +1032,7 @@ CN和US共用策略计算、回放编排、账户记账、独立数值审计及�
 | 盘中检查点 | 日线可声明独立M30执行报价，使用真实开盘、11:30等边界；不从日线OHLC猜价 |
 | 账户反馈 | 实际可用现金／可卖数量、多次成交周期、已确认机械权益事件及显式状态初值 |
 | 经济账本 | RAW成交、拆股、现金分红应收／支付及卖出交收；碎股权益和区间内公司行动拒绝 |
-| 研究闭环 | 参数计划、批量评价、评估事实、连续损益诊断、候选登记、发布及阶段交付FULL复验 |
+| 研究闭环 | 参数计划、批量评价、评估事实、连续损益诊断、候选登记、发布及阶段交付校验 |
 
 定义必须显式声明 `computation=StrategyComputation.BATCH_HISTORY`或 `STATEFUL_STEP`；
 前者入口返回逐观察的 `AccountDecision`元组，后者返回 `AccountStepResult`。

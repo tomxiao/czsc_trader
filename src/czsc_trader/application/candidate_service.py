@@ -197,9 +197,7 @@ def _register_equity_candidate(context, request):
             raise ValueError('equity registration requires equity_research contract 4')
         value = json.loads(data)
         from .equity_evidence_io import materialize_equity_document
-        from ..research_tools.equity_replay import build_equity_assessment
-        view = materialize_equity_document(context.root, ref.repository_path, value)
-        build_equity_assessment(view)
+        materialize_equity_document(context.root, ref.repository_path, value)
         declaration = value['request']
         if declaration.get('candidate_id') != candidate.candidate_id or declaration.get('implementation_hash') != identity.content_sha256:
             raise ValueError('equity support differs from candidate content')
