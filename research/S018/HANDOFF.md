@@ -2,7 +2,7 @@
 
 ## 当前阶段一约定
 
-[MANDATE/2](deliveries/MANDATE/2/report.md) 为当前约定，已通过完整校验。剩余工作为交易日历、公司行动及最小日线账户核验。以下初始意图及 MANDATE/1 记录保留立项时状态。
+[MANDATE/3](deliveries/MANDATE/3/report.md) 已完整发布并通过校验。阶段一完成，下一步等待阶段二授权开展日线收益持续能力普查。以下初始记录保留各自历史时点。
 
 ## 当前身份
 
