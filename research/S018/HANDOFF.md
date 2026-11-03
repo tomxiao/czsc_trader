@@ -2,6 +2,10 @@
 
 ## 当前阶段二结论
 
+[EX008](experiments/EX008_20261103/report.md) 验证三机制合并账户。累计 7/10 轮，双频率通过，经济与回撤失败。
+
+[EX007](experiments/EX007_20261103/report.md) 完成三机制重合复核。累计 6/10 轮。机会密度值得进行一个固定规则账户检验，回撤与Calmar仍需由账户核验。
+
 [EX006](experiments/EX006_20261103/report.md) 新增 M007–M024 的固定普查。当前累计 5/10 轮，完整索引包含 24 种机制。
 
 [PROTOTYPES/2](deliveries/PROTOTYPES/2/report.md) 已发布并通过完整校验。已用 4/10 轮，按[机制索引](materials/mechanism_index.json)统一编号加中文全称。六机制扩展普查完成，保留稀少线索及负证，当前无阶段三推荐。
