@@ -2,6 +2,8 @@
 
 ## 当前阶段二结论
 
+[EX006](experiments/EX006_20261103/report.md) 新增 M007–M024 的固定普查。当前累计 5/10 轮，完整索引包含 24 种机制。
+
 [PROTOTYPES/2](deliveries/PROTOTYPES/2/report.md) 已发布并通过完整校验。已用 4/10 轮，按[机制索引](materials/mechanism_index.json)统一编号加中文全称。六机制扩展普查完成，保留稀少线索及负证，当前无阶段三推荐。
 
 ## 当前阶段一约定
