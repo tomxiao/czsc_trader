@@ -1,0 +1,176 @@
+{
+  "results": {
+    "C9038": {
+      "candidate": {
+        "net_return": 6.698157844472004,
+        "annual": 0.7077898139170509,
+        "dd": 0.25041075697465487,
+        "calmar": 2.826515212318492,
+        "frequency_median": 5.0,
+        "covered": 893,
+        "windows": 902,
+        "closed": 81,
+        "fees": 27651.4783528,
+        "groups": [
+          {
+            "group": "2023–2024",
+            "net_return": 0.769120473172002,
+            "max_drawdown": 0.19142255163294697,
+            "exposed_sessions": 301,
+            "sessions": 502
+          },
+          {
+            "group": "2025–2026",
+            "net_return": 3.351403966666748,
+            "max_drawdown": 0.25041075697465487,
+            "exposed_sessions": 263,
+            "sessions": 459
+          }
+        ]
+      },
+      "benchmark": {
+        "net_return": 16.5454201987,
+        "annual": 1.1195962552673357,
+        "dd": 0.5730512034565817,
+        "calmar": 1.953745578953599,
+        "frequency_median": 0.0,
+        "covered": 0,
+        "windows": 902,
+        "closed": 0,
+        "fees": 99.88013,
+        "groups": [
+          {
+            "group": "2023–2024",
+            "net_return": 0.6839330987000001,
+            "max_drawdown": 0.4475927860237229,
+            "exposed_sessions": 502,
+            "sessions": 502
+          },
+          {
+            "group": "2025–2026",
+            "net_return": 9.419309539224036,
+            "max_drawdown": 0.4038161473701892,
+            "exposed_sessions": 459,
+            "sessions": 459
+          }
+        ]
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX043_20261103"
+        },
+        "evidence_id": "a43d7e180b55e614e84d0d64f3e47798093ef478a321c57f8c2216c2af08c89b.json",
+        "sha256": "a43d7e180b55e614e84d0d64f3e47798093ef478a321c57f8c2216c2af08c89b",
+        "media_type": "application/json",
+        "name": "mu-C9038",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "candidate_key": {
+        "strategy_id": "S018",
+        "candidate_id": "C9038"
+      },
+      "identity": {
+        "content_sha256": "37956e4cf0ecad9ef5aa4a1be10406885a67846aa394774cdb51c371677cea90",
+        "source_sha256": "edce9642088ba96f39cfedc563488f4bbdc84c549d83d19f3b628b5a2ff73f69",
+        "dependency_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema_version": 2
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 66,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "edce9642088ba96f39cfedc563488f4bbdc84c549d83d19f3b628b5a2ff73f69",
+        "parameters_json": "{}",
+        "dependencies": [],
+        "contract_version": 4,
+        "parameter_schema_json": "{}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "month_only",
+              "value_type": "bool",
+              "nullable": false
+            },
+            {
+              "key": "extended",
+              "value_type": "bool",
+              "nullable": false
+            },
+            {
+              "key": "long_extension",
+              "value_type": "bool",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      }
+    }
+  },
+  "workload": {
+    "input_snapshots": 1,
+    "candidate_runs": 1,
+    "benchmark_runs": 1,
+    "account_timings": [
+      {
+        "kind": "BENCHMARK",
+        "owner": "benchmark:5a7b3f7f44368fc366f965d36d092a8f148d487c2c2ae7593ee875d81bea85ce",
+        "feature_seconds": 0.010389900000973284,
+        "replay_seconds": 0.5404140999999072,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C9038:37956e4cf0ecad9ef5aa4a1be10406885a67846aa394774cdb51c371677cea90",
+        "feature_seconds": 0.013110299998970731,
+        "replay_seconds": 3.056369299999915,
+        "rows": 961,
+        "decisions": 961
+      }
+    ]
+  }
+}
