@@ -1,0 +1,53 @@
+{
+  "number": 31,
+  "question": "持续下跌能否通过路径和波动提前辨别？对照回调前五日典型振幅扩张、回调当期单日振幅达到背景两倍、此前十日下跌过半、此前十日高点偏早，各跑互补组。退出保持C6300。",
+  "configurations": [
+    [
+      "expanding",
+      "signal_line",
+      1.0
+    ],
+    [
+      "not_expanding",
+      "signal_line",
+      1.0
+    ],
+    [
+      "range_shock",
+      "signal_line",
+      1.0
+    ],
+    [
+      "not_range_shock",
+      "signal_line",
+      1.0
+    ],
+    [
+      "falling_majority",
+      "signal_line",
+      1.0
+    ],
+    [
+      "not_falling_majority",
+      "signal_line",
+      1.0
+    ],
+    [
+      "early_peak",
+      "signal_line",
+      1.0
+    ],
+    [
+      "late_peak",
+      "signal_line",
+      1.0
+    ]
+  ],
+  "reuse": [
+    [
+      "EX025_20261104",
+      "C6300"
+    ]
+  ],
+  "stop": "单独隔离波动和下跌路径。十月仍只作已见诊断。"
+}

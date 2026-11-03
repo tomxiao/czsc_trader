@@ -1,0 +1,53 @@
+{
+  "number": 28,
+  "question": "两日连跌末日是否已有可观察的卖压衰减？对照跌幅收窄、收盘站回当日日内中点、当日低点不再下移、低开后日内回升，各跑正反组。其余保持C6300。",
+  "configurations": [
+    [
+      "slowdown",
+      "signal_line",
+      1.0
+    ],
+    [
+      "acceleration",
+      "signal_line",
+      1.0
+    ],
+    [
+      "reject_lows",
+      "signal_line",
+      1.0
+    ],
+    [
+      "accept_lows",
+      "signal_line",
+      1.0
+    ],
+    [
+      "higher_low",
+      "signal_line",
+      1.0
+    ],
+    [
+      "lower_low",
+      "signal_line",
+      1.0
+    ],
+    [
+      "intraday_repair",
+      "signal_line",
+      1.0
+    ],
+    [
+      "not_intraday_repair",
+      "signal_line",
+      1.0
+    ]
+  ],
+  "reuse": [
+    [
+      "EX025_20261104",
+      "C6300"
+    ]
+  ],
+  "stop": "方向若不一致或双频率失守，单项过滤不作达标原型。"
+}

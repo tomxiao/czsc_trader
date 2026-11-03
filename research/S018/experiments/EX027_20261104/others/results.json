@@ -1,0 +1,952 @@
+{
+  "accounts": {
+    "C6324": {
+      "config": [
+        "support",
+        "signal_line",
+        1.0
+      ],
+      "candidate": {
+        "october_return": 0.0,
+        "october_closed": 0,
+        "october_closed_pnl": 0,
+        "observed_signal_days": 61,
+        "annual": 0.19268035190188915,
+        "dd": 0.3397900649275857,
+        "calmar": 0.567057050190541,
+        "closed": 35,
+        "median": 2.0,
+        "coverage": 0.37250554323725055,
+        "exit_orders": {
+          "complete": 35
+        }
+      },
+      "gates": {
+        "calmar": false,
+        "dd_absolute": false,
+        "dd_relative": true,
+        "median": false,
+        "coverage": false
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX027_20261104"
+        },
+        "evidence_id": "fb8c42c008f2849811cc022c69d2622848ac9db8334e92b940b65d6d1dd66ba5.json",
+        "sha256": "fb8c42c008f2849811cc022c69d2622848ac9db8334e92b940b65d6d1dd66ba5",
+        "media_type": "application/json",
+        "name": "mu-C6324",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 21,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "e2ce6b78204d4b8fc61f6ac37de8db8c02398c7cfa07fda4593fe631f6ab67aa",
+        "parameters_json": "{\"allocation\":1.0,\"entry\":\"support\",\"exit\":\"signal_line\"}",
+        "dependencies": [],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"allocation\":{\"enum\":[1.0],\"type\":\"number\"},\"entry\":{\"enum\":[\"support\"],\"type\":\"string\"},\"exit\":{\"enum\":[\"signal_line\"],\"type\":\"string\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "floor",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      }
+    },
+    "C6325": {
+      "config": [
+        "not_support",
+        "signal_line",
+        1.0
+      ],
+      "candidate": {
+        "october_return": -0.1374860064883754,
+        "october_closed": 2,
+        "october_closed_pnl": -122598.0571400001,
+        "observed_signal_days": 158,
+        "annual": 0.7073819640883816,
+        "dd": 0.21099032657696393,
+        "calmar": 3.3526748622304567,
+        "closed": 73,
+        "median": 5.0,
+        "coverage": 0.9423503325942351,
+        "exit_orders": {
+          "complete": 73
+        }
+      },
+      "gates": {
+        "calmar": true,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": false,
+        "coverage": true
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX027_20261104"
+        },
+        "evidence_id": "4d796f6b2917e53c15a7f7efe86264be94d55283a90c0151bec7351fcf1a0e24.json",
+        "sha256": "4d796f6b2917e53c15a7f7efe86264be94d55283a90c0151bec7351fcf1a0e24",
+        "media_type": "application/json",
+        "name": "mu-C6325",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 21,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "e2ce6b78204d4b8fc61f6ac37de8db8c02398c7cfa07fda4593fe631f6ab67aa",
+        "parameters_json": "{\"allocation\":1.0,\"entry\":\"not_support\",\"exit\":\"signal_line\"}",
+        "dependencies": [],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"allocation\":{\"enum\":[1.0],\"type\":\"number\"},\"entry\":{\"enum\":[\"not_support\"],\"type\":\"string\"},\"exit\":{\"enum\":[\"signal_line\"],\"type\":\"string\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "floor",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      }
+    },
+    "C6326": {
+      "config": [
+        "no_break",
+        "signal_line",
+        1.0
+      ],
+      "candidate": {
+        "october_return": -0.1374345445048719,
+        "october_closed": 2,
+        "october_closed_pnl": -64700.846990000005,
+        "observed_signal_days": 163,
+        "annual": 0.4440853557655615,
+        "dd": 0.4185313587196082,
+        "calmar": 1.061056349813618,
+        "closed": 74,
+        "median": 4.0,
+        "coverage": 0.9811529933481153,
+        "exit_orders": {
+          "complete": 74
+        }
+      },
+      "gates": {
+        "calmar": false,
+        "dd_absolute": false,
+        "dd_relative": true,
+        "median": false,
+        "coverage": true
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX027_20261104"
+        },
+        "evidence_id": "771f4dba4cf86ed6c19b092bfa22f2fbca065dbefacbcdd922055af182ac4c5c.json",
+        "sha256": "771f4dba4cf86ed6c19b092bfa22f2fbca065dbefacbcdd922055af182ac4c5c",
+        "media_type": "application/json",
+        "name": "mu-C6326",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 21,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "e2ce6b78204d4b8fc61f6ac37de8db8c02398c7cfa07fda4593fe631f6ab67aa",
+        "parameters_json": "{\"allocation\":1.0,\"entry\":\"no_break\",\"exit\":\"signal_line\"}",
+        "dependencies": [],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"allocation\":{\"enum\":[1.0],\"type\":\"number\"},\"entry\":{\"enum\":[\"no_break\"],\"type\":\"string\"},\"exit\":{\"enum\":[\"signal_line\"],\"type\":\"string\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "floor",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      }
+    },
+    "C6327": {
+      "config": [
+        "breakdown",
+        "signal_line",
+        1.0
+      ],
+      "candidate": {
+        "october_return": -0.0036067002832091966,
+        "october_closed": 0,
+        "october_closed_pnl": 0,
+        "observed_signal_days": 56,
+        "annual": 0.24177585491513987,
+        "dd": 0.2075203077138078,
+        "calmar": 1.165070819230733,
+        "closed": 34,
+        "median": 2.0,
+        "coverage": 0.3270509977827051,
+        "exit_orders": {
+          "complete": 34
+        }
+      },
+      "gates": {
+        "calmar": false,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": false,
+        "coverage": false
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX027_20261104"
+        },
+        "evidence_id": "839a2c79b930f8a17cd8d2dc95e66102475e62fd8df175ffc00a113b5e9d0958.json",
+        "sha256": "839a2c79b930f8a17cd8d2dc95e66102475e62fd8df175ffc00a113b5e9d0958",
+        "media_type": "application/json",
+        "name": "mu-C6327",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 21,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "e2ce6b78204d4b8fc61f6ac37de8db8c02398c7cfa07fda4593fe631f6ab67aa",
+        "parameters_json": "{\"allocation\":1.0,\"entry\":\"breakdown\",\"exit\":\"signal_line\"}",
+        "dependencies": [],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"allocation\":{\"enum\":[1.0],\"type\":\"number\"},\"entry\":{\"enum\":[\"breakdown\"],\"type\":\"string\"},\"exit\":{\"enum\":[\"signal_line\"],\"type\":\"string\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "floor",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      }
+    },
+    "C6328": {
+      "config": [
+        "contained",
+        "signal_line",
+        1.0
+      ],
+      "candidate": {
+        "october_return": -0.011538825537366737,
+        "october_closed": 1,
+        "october_closed_pnl": -3666.4517499999,
+        "observed_signal_days": 79,
+        "annual": 0.3500140127606268,
+        "dd": 0.2967089784261632,
+        "calmar": 1.1796542680211775,
+        "closed": 45,
+        "median": 3.0,
+        "coverage": 0.6685144124168514,
+        "exit_orders": {
+          "complete": 45
+        }
+      },
+      "gates": {
+        "calmar": false,
+        "dd_absolute": false,
+        "dd_relative": true,
+        "median": false,
+        "coverage": false
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX027_20261104"
+        },
+        "evidence_id": "82384d5a02d4eb9f6976c06a6412c42a9ab27032873c9648c028d02a714d160d.json",
+        "sha256": "82384d5a02d4eb9f6976c06a6412c42a9ab27032873c9648c028d02a714d160d",
+        "media_type": "application/json",
+        "name": "mu-C6328",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 21,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "e2ce6b78204d4b8fc61f6ac37de8db8c02398c7cfa07fda4593fe631f6ab67aa",
+        "parameters_json": "{\"allocation\":1.0,\"entry\":\"contained\",\"exit\":\"signal_line\"}",
+        "dependencies": [],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"allocation\":{\"enum\":[1.0],\"type\":\"number\"},\"entry\":{\"enum\":[\"contained\"],\"type\":\"string\"},\"exit\":{\"enum\":[\"signal_line\"],\"type\":\"string\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "floor",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      }
+    },
+    "C6329": {
+      "config": [
+        "not_contained",
+        "signal_line",
+        1.0
+      ],
+      "candidate": {
+        "october_return": -0.12740623769413129,
+        "october_closed": 1,
+        "october_closed_pnl": -89766.1515399999,
+        "observed_signal_days": 140,
+        "annual": 0.6100050381565434,
+        "dd": 0.2629671621301587,
+        "calmar": 2.319700426529356,
+        "closed": 68,
+        "median": 4.0,
+        "coverage": 0.983370288248337,
+        "exit_orders": {
+          "complete": 68
+        }
+      },
+      "gates": {
+        "calmar": false,
+        "dd_absolute": false,
+        "dd_relative": true,
+        "median": false,
+        "coverage": true
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX027_20261104"
+        },
+        "evidence_id": "3ac142bb8a36c6d698d2ef4cc7afe73a1c6bfd0a73a543f48b80c4b06ffc0e9b.json",
+        "sha256": "3ac142bb8a36c6d698d2ef4cc7afe73a1c6bfd0a73a543f48b80c4b06ffc0e9b",
+        "media_type": "application/json",
+        "name": "mu-C6329",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 21,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "e2ce6b78204d4b8fc61f6ac37de8db8c02398c7cfa07fda4593fe631f6ab67aa",
+        "parameters_json": "{\"allocation\":1.0,\"entry\":\"not_contained\",\"exit\":\"signal_line\"}",
+        "dependencies": [],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"allocation\":{\"enum\":[1.0],\"type\":\"number\"},\"entry\":{\"enum\":[\"not_contained\"],\"type\":\"string\"},\"exit\":{\"enum\":[\"signal_line\"],\"type\":\"string\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "floor",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      }
+    },
+    "C6330": {
+      "config": [
+        "recent_floor",
+        "signal_line",
+        1.0
+      ],
+      "candidate": {
+        "october_return": -0.011549185485693947,
+        "october_closed": 1,
+        "october_closed_pnl": -5058.46055,
+        "observed_signal_days": 88,
+        "annual": 0.46854396878939863,
+        "dd": 0.17157939683483736,
+        "calmar": 2.7307705787100995,
+        "closed": 49,
+        "median": 3.0,
+        "coverage": 0.7017738359201774,
+        "exit_orders": {
+          "complete": 49
+        }
+      },
+      "gates": {
+        "calmar": false,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": false,
+        "coverage": false
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX027_20261104"
+        },
+        "evidence_id": "49accbabbb6c9d9465dec2beed87bf9bb9cf8bf9cbb2a5a2fc01592ccdbd2f85.json",
+        "sha256": "49accbabbb6c9d9465dec2beed87bf9bb9cf8bf9cbb2a5a2fc01592ccdbd2f85",
+        "media_type": "application/json",
+        "name": "mu-C6330",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 21,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "e2ce6b78204d4b8fc61f6ac37de8db8c02398c7cfa07fda4593fe631f6ab67aa",
+        "parameters_json": "{\"allocation\":1.0,\"entry\":\"recent_floor\",\"exit\":\"signal_line\"}",
+        "dependencies": [],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"allocation\":{\"enum\":[1.0],\"type\":\"number\"},\"entry\":{\"enum\":[\"recent_floor\"],\"type\":\"string\"},\"exit\":{\"enum\":[\"signal_line\"],\"type\":\"string\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "floor",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      }
+    },
+    "C6331": {
+      "config": [
+        "not_recent_floor",
+        "signal_line",
+        1.0
+      ],
+      "candidate": {
+        "october_return": -0.01958131955559861,
+        "october_closed": 1,
+        "october_closed_pnl": -9370.4826949999,
+        "observed_signal_days": 131,
+        "annual": 0.5695155210762783,
+        "dd": 0.2278821998352395,
+        "calmar": 2.4991663301830607,
+        "closed": 66,
+        "median": 4.0,
+        "coverage": 0.8713968957871396,
+        "exit_orders": {
+          "complete": 66
+        }
+      },
+      "gates": {
+        "calmar": false,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": false,
+        "coverage": false
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX027_20261104"
+        },
+        "evidence_id": "cedd304d8bd69947c4074ba9ef51662ba527670027cec8346dfdac5961ce282b.json",
+        "sha256": "cedd304d8bd69947c4074ba9ef51662ba527670027cec8346dfdac5961ce282b",
+        "media_type": "application/json",
+        "name": "mu-C6331",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 21,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "e2ce6b78204d4b8fc61f6ac37de8db8c02398c7cfa07fda4593fe631f6ab67aa",
+        "parameters_json": "{\"allocation\":1.0,\"entry\":\"not_recent_floor\",\"exit\":\"signal_line\"}",
+        "dependencies": [],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"allocation\":{\"enum\":[1.0],\"type\":\"number\"},\"entry\":{\"enum\":[\"not_recent_floor\"],\"type\":\"string\"},\"exit\":{\"enum\":[\"signal_line\"],\"type\":\"string\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "floor",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      }
+    }
+  },
+  "benchmark": {
+    "october_return": -0.15103539755623951,
+    "october_closed": 0,
+    "october_closed_pnl": 0,
+    "observed_signal_days": 0,
+    "annual": 1.1195962552673357,
+    "dd": 0.5730512034565817,
+    "calmar": 1.953745578953599,
+    "closed": 0,
+    "median": 0.0,
+    "coverage": 0.0,
+    "exit_orders": {}
+  },
+  "workload": {
+    "input_snapshots": 1,
+    "candidate_runs": 8,
+    "benchmark_runs": 1,
+    "account_timings": [
+      {
+        "kind": "BENCHMARK",
+        "owner": "benchmark:c3c27d166552eb00f345a8195f935e0e21ba93395a003be706908a69f99e6fdf",
+        "feature_seconds": 0.01378510007270961,
+        "replay_seconds": 0.8132640000003448,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C6324:46efa3207b04188cce9eb7858e571ab9dd74055278fc89afe532672299297a2c",
+        "feature_seconds": 0.018868400020437548,
+        "replay_seconds": 3.644524699997419,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C6325:eccb5c62063d65bea9520dba44633e58b0f8bfe549ba625dc2b2ba16292ee2aa",
+        "feature_seconds": 0.01826139998229337,
+        "replay_seconds": 3.6426659999997355,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C6326:30f5e54194c7e7ad0d21f64d7f8df06a6b05ea1a06775a648ae07d2c77f20b9c",
+        "feature_seconds": 0.018123999983799877,
+        "replay_seconds": 3.616913599998952,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C6327:7cd11b01d8fa514a24fd47cccabe88d7e865ff1047d92f13a821e0efe9eafb02",
+        "feature_seconds": 0.018666200016014045,
+        "replay_seconds": 3.5547264000015275,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C6328:376323d8f986f0018950f89ddcc1b808e61c3b489c9dcccb3f3ce3aad8c83723",
+        "feature_seconds": 0.016478500059747603,
+        "replay_seconds": 3.156073299996933,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C6329:1220a19057786777d8edabf3a0a6830092e354daa4d975084f8b52428b27903e",
+        "feature_seconds": 0.01655899993420462,
+        "replay_seconds": 3.229045500000211,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C6330:0cdb1eb8fd711a05e011844fa27543bb0b69b906fde27da090671681168e2da2",
+        "feature_seconds": 0.01690089999101474,
+        "replay_seconds": 3.1960993000029703,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C6331:b3e0f5363f749246ac1a83e8e804970e83b6461ea204a6459cb1a85f149f8f0d",
+        "feature_seconds": 0.015759900023113005,
+        "replay_seconds": 3.0446375999999873,
+        "rows": 961,
+        "decisions": 961
+      }
+    ]
+  }
+}

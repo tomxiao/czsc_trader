@@ -1,0 +1,97 @@
+{
+  "status": "PASS",
+  "window": [
+    "2026-03-23",
+    "2026-10-30"
+  ],
+  "purpose": "execution and dividend accrual/payment only",
+  "checks": {
+    "candidate": {
+      "accrual": {
+        "account_revision": 5,
+        "amount": 34.95,
+        "cash_delta": 0.0,
+        "event_id": "MU-2026-03-30-cash",
+        "kind": "CASH_DIVIDEND",
+        "quantity_after": 233,
+        "quantity_before": 233,
+        "receivable_delta": 34.95,
+        "time": "2026-03-30T13:30:00.000000Z"
+      },
+      "payment": {
+        "account_revision": 16,
+        "amount": 34.95,
+        "cash_delta": 34.95,
+        "event_id": "MU-2026-03-30-cash",
+        "kind": "DIVIDEND_PAYMENT",
+        "quantity_after": 233,
+        "quantity_before": 233,
+        "receivable_delta": -34.95,
+        "time": "2026-04-15T20:00:00.000000Z"
+      },
+      "sessions": 155
+    },
+    "benchmark": {
+      "accrual": {
+        "account_revision": 5,
+        "amount": 34.95,
+        "cash_delta": 0.0,
+        "event_id": "MU-2026-03-30-cash",
+        "kind": "CASH_DIVIDEND",
+        "quantity_after": 233,
+        "quantity_before": 233,
+        "receivable_delta": 34.95,
+        "time": "2026-03-30T13:30:00.000000Z"
+      },
+      "payment": {
+        "account_revision": 16,
+        "amount": 34.95,
+        "cash_delta": 34.95,
+        "event_id": "MU-2026-03-30-cash",
+        "kind": "DIVIDEND_PAYMENT",
+        "quantity_after": 233,
+        "quantity_before": 233,
+        "receivable_delta": -34.95,
+        "time": "2026-04-15T20:00:00.000000Z"
+      },
+      "sessions": 155
+    }
+  },
+  "evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S018",
+      "experiment_id": "EX001_20261104"
+    },
+    "evidence_id": "e2c8e4ab678f7ef44930dadc76c99ba211457de0828f10370e634d115109ff95.json",
+    "sha256": "e2c8e4ab678f7ef44930dadc76c99ba211457de0828f10370e634d115109ff95",
+    "media_type": "application/json",
+    "name": "daily-readiness-dividend-probe",
+    "schema": "equity_research",
+    "schema_version": 4
+  },
+  "statistics": {
+    "input_snapshots": 1,
+    "candidate_runs": 1,
+    "benchmark_runs": 1,
+    "account_timings": [
+      {
+        "kind": "BENCHMARK",
+        "owner": "benchmark:a3ace3fcd945fdcd8877a8450ab50b3e5095ad060c6dcd1dbb0da9ba7cfd0286",
+        "feature_seconds": 0.0025695000076666474,
+        "replay_seconds": 0.1270650000005844,
+        "rows": 155,
+        "decisions": 155
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C9999:9cf48a64e4a5643c6cda59f445d19af5538d93146407391595b704d8a7665569",
+        "feature_seconds": 0.002133400023012655,
+        "replay_seconds": 0.11314979999951902,
+        "rows": 155,
+        "decisions": 155
+      }
+    ]
+  }
+}

@@ -1,119 +1,36 @@
 {
-  "created_at": "2026-11-03T13:49:49+08:00",
+  "created_at": "2026-11-04T00:27:24+08:00",
   "created_by": "RSCH",
   "name": "MU美股日线只做多择时研究",
   "research_intent": {
-    "current_mandate": {
-      "batch": {
-        "strategy_id": "S018",
-        "type": "ResearchBatchRef"
-      },
-      "content_sha256": "d1f97674a389f4ee726bcae30a8fc652a95f59f81d270055b18986b602efce11",
-      "revision": 3,
-      "stage": "MANDATE",
-      "type": "DeliveryReference"
-    },
     "development": {
       "end": "2026-10-30",
       "history_start": "2022-01-03",
       "start": "2023-01-03"
     },
-    "development_observation_groups": [
-      "2023–2024",
-      "2025–2026-10-30"
-    ],
     "final_validation": {
       "kind": "PROSPECTIVE",
       "sessions": 252,
       "starts_after_rule_and_criteria_fixed": true
     },
-    "known_user_case": [
-      "2025-12",
-      "2026-06"
-    ],
-    "latest_attribution": {
-      "evidence_id": "4fe075606c0b2df0b8c6897fb85c6a7752ceb60255071e08c07e8702589e3d3d.json",
-      "experiment": {
-        "experiment_id": "EX009_20261103",
-        "strategy_id": "S018",
-        "type": "ExperimentRef"
-      },
-      "media_type": "application/json",
-      "name": "experiment-report",
-      "schema": "experiment_report",
-      "schema_version": 1,
-      "sha256": "4fe075606c0b2df0b8c6897fb85c6a7752ceb60255071e08c07e8702589e3d3d",
-      "type": "EvidenceRef"
-    },
-    "latest_census": {
-      "evidence_id": "9db761b2caca704dbfbe7ac3c6dc6a0b7f3cd7a76b73d5f401926d9b095a03c9.json",
-      "experiment": {
-        "experiment_id": "EX006_20261103",
-        "strategy_id": "S018",
-        "type": "ExperimentRef"
-      },
-      "media_type": "application/json",
-      "name": "experiment-report",
-      "schema": "experiment_report",
-      "schema_version": 1,
-      "sha256": "9db761b2caca704dbfbe7ac3c6dc6a0b7f3cd7a76b73d5f401926d9b095a03c9",
-      "type": "EvidenceRef"
-    },
-    "latest_overlap": {
-      "evidence_id": "868c9cf11369a69d2cb153e38fcd933cbf80e91d74e95eab97c7cf09bba99c6a.json",
-      "experiment": {
-        "experiment_id": "EX007_20261103",
-        "strategy_id": "S018",
-        "type": "ExperimentRef"
-      },
-      "media_type": "application/json",
-      "name": "experiment-report",
-      "schema": "experiment_report",
-      "schema_version": 1,
-      "sha256": "868c9cf11369a69d2cb153e38fcd933cbf80e91d74e95eab97c7cf09bba99c6a",
-      "type": "EvidenceRef"
-    },
-    "latest_union_account": {
-      "evidence_id": "2051b1d16dbb164f461dc885be675b879819410afea09f28b8cb16dbb2c61fba.json",
-      "experiment": {
-        "experiment_id": "EX008_20261103",
-        "strategy_id": "S018",
-        "type": "ExperimentRef"
-      },
-      "media_type": "application/json",
-      "name": "experiment-report",
-      "schema": "experiment_report",
-      "schema_version": 1,
-      "sha256": "2051b1d16dbb164f461dc885be675b879819410afea09f28b8cb16dbb2c61fba",
-      "type": "EvidenceRef"
-    },
-    "mechanism_index": "research/S018/materials/mechanism_index.json",
-    "next_action": "待用户审阅阶段三候选并决定阶段四自检范围。",
+    "next_action": "Await explicit authorization for stage two.",
     "objective": "MU 日线只做多择时。以同窗同条件买持为基准改善净 Calmar 和回撤。",
-    "stage_one_status": "COMPLETE",
-    "stage_three_delivery": {
-      "batch": {
+    "prior_sample_exposure": "旧 S018 的 2023-01-03 至 2026-10-30 开发池已见，不能作为独立或前瞻验证。",
+    "stage_one_evidence": {
+      "evidence_id": "aa1ce4535de343731190adf4e006e3d495cfe0d8c1aedb998b0cb84f30c20561.json",
+      "experiment": {
+        "experiment_id": "EX001_20261104",
         "strategy_id": "S018",
-        "type": "ResearchBatchRef"
+        "type": "ExperimentRef"
       },
-      "content_sha256": "eff7e24c511e8d3fd3ec8c65cab9ed8631218d5807728c93d19cfe9aaa844da3",
-      "revision": 1,
-      "stage": "CANDIDATES",
-      "type": "DeliveryReference"
+      "media_type": "application/json",
+      "name": "experiment-report",
+      "schema": "experiment_report",
+      "schema_version": 1,
+      "sha256": "aa1ce4535de343731190adf4e006e3d495cfe0d8c1aedb998b0cb84f30c20561",
+      "type": "EvidenceRef"
     },
-    "stage_three_status": "COMPLETE_CANDIDATES",
-    "stage_two_delivery": {
-      "batch": {
-        "strategy_id": "S018",
-        "type": "ResearchBatchRef"
-      },
-      "content_sha256": "e5fd0f1bd01d9c94b99d39723f663bbe36ed59a88e03a40a35a8224375438f11",
-      "revision": 3,
-      "stage": "PROTOTYPES",
-      "type": "DeliveryReference"
-    },
-    "stage_two_rounds_used": 8,
-    "stage_two_status": "COMPLETE_TARGET_PROTOTYPE"
+    "stage_one_status": "COMPLETE"
   },
   "research_state": "RESEARCHING",
   "schema_version": 2,
@@ -121,5 +38,5 @@
     "US.MU"
   ],
   "strategy_id": "S018",
-  "updated_at": "2026-11-03T22:33:27+08:00"
+  "updated_at": "2026-11-04T00:54:50+08:00"
 }

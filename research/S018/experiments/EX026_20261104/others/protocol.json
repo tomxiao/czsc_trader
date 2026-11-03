@@ -1,0 +1,43 @@
+{
+  "number": 26,
+  "question": "两日连跌前有上行背景，能否区分回调与下跌？三种已完成价格定义分别跑齐正反组：前10日净涨、最近5日中位高于此前10日、最近5日中位高于再前5日。保持C6300退出。",
+  "configurations": [
+    [
+      "up10",
+      "signal_line",
+      1.0
+    ],
+    [
+      "not_up10",
+      "signal_line",
+      1.0
+    ],
+    [
+      "up_center",
+      "signal_line",
+      1.0
+    ],
+    [
+      "not_up_center",
+      "signal_line",
+      1.0
+    ],
+    [
+      "up_recent_center",
+      "signal_line",
+      1.0
+    ],
+    [
+      "not_up_recent_center",
+      "signal_line",
+      1.0
+    ]
+  ],
+  "reuse": [
+    [
+      "EX025_20261104",
+      "C6300"
+    ]
+  ],
+  "stop": "保留有可重复方向差异的解释，拒绝只在十月改善的规则。"
+}

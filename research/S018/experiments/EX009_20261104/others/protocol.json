@@ -1,0 +1,16 @@
+{
+  "question": "区间折让原型。旧十日最低收盘为失效线，中位数为固定修复目标；折让仍在区间内且覆盖买入溢价及费用才入场。",
+  "configuration": {
+    "entry": "range_repair",
+    "exit": "price_fail"
+  },
+  "comparison_experiments": [
+    "EX007_20261104"
+  ],
+  "window": [
+    "2023-01-03",
+    "2026-10-30"
+  ],
+  "fee_each_side": 0.001,
+  "parameter_search": false
+}

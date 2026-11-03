@@ -1,0 +1,38 @@
+{
+  "number": 30,
+  "question": "多等一个完整日线是否有辨别力？对照无条件晚一天、等收涨才入场、收盘仍未上涨才入场，再把收涨按是否高于日内中点拆分。保持原两日连跌日收盘为持有锚点，控制等待与确认的区别。",
+  "configurations": [
+    [
+      "delay_all",
+      "signal_line",
+      1.0
+    ],
+    [
+      "delay_up",
+      "signal_line",
+      1.0
+    ],
+    [
+      "delay_no_up",
+      "signal_line",
+      1.0
+    ],
+    [
+      "delay_up_strong",
+      "signal_line",
+      1.0
+    ],
+    [
+      "delay_up_weak",
+      "signal_line",
+      1.0
+    ]
+  ],
+  "reuse": [
+    [
+      "EX025_20261104",
+      "C6300"
+    ]
+  ],
+  "stop": "若晚一天与方向确认均无法保留原频率和净卡玛，不继续增加等待窗口。"
+}

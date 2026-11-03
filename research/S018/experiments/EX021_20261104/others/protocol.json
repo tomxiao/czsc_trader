@@ -1,0 +1,16 @@
+{
+  "question": "保持 EX013 入场与收盘失效规则。将兑现确认由收盘达到目标改为日内最高价曾达到目标；收盘后才发退出决定，下一交易日按原合同卖出。",
+  "configuration": {
+    "entry": "intact",
+    "exit": "touch_exit"
+  },
+  "comparison_experiments": [
+    "EX013_20261104"
+  ],
+  "window": [
+    "2023-01-03",
+    "2026-10-30"
+  ],
+  "fee_each_side": 0.001,
+  "parameter_search": false
+}
