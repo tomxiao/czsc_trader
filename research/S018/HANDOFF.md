@@ -2,8 +2,7 @@
 
 ## 当前阶段二结论
 
-[PROTOTYPES/1](deliveries/PROTOTYPES/1/report.md) 已发布并通过完整校验。使用 3/10 轮，完成收益持续普查、突破账户对照和回调修复反证。当前日线原型均不建议进入阶段三。以下保留历史阶段一记录。
-
+[PROTOTYPES/2](deliveries/PROTOTYPES/2/report.md) 已发布并通过完整校验。已用 4/10 轮，按[机制索引](materials/mechanism_index.json)统一编号加中文全称。六机制扩展普查完成，保留稀少线索及负证，当前无阶段三推荐。
 
 ## 当前阶段一约定
 
