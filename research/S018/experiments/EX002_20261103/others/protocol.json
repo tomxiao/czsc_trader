@@ -1,0 +1,24 @@
+{
+  "signal": "Close strictly exceeds previous 20 closes",
+  "control": "all eligible signal days including breakout, same execution rules",
+  "entry": "next session opening improvement or prior close times 1.01 rounded down to cents; strict low touch",
+  "exit": "open after N held sessions",
+  "horizons": [
+    5,
+    10,
+    20
+  ],
+  "fee_per_side": 0.001,
+  "development": [
+    "2023-01-03",
+    "2026-10-30"
+  ],
+  "comparison_groups": [
+    "2023–2024",
+    "2025–2026"
+  ],
+  "dividend": "include only cash entitlements while holding across ex-date; fixed one-share event diagnostic",
+  "risk": "close marked drawdown including accrued dividends; from entry price",
+  "limitations": "Overlapping opportunities; not independent trades. No optimized parameters. No end-of-window truncation.",
+  "decision": "Use direction of median excess and signal frequency across groups to decide whether to try a complete account."
+}

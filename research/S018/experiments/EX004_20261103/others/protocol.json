@@ -1,0 +1,14 @@
+{
+  "entry": "close crosses from at/below SMA20 to above SMA20",
+  "filter": "close above SMA60 and SMA60 above its value 20 sessions ago",
+  "exit": "close below preceding 10 closes, next eligible session exit, thereafter re-enter on new signal",
+  "window": [
+    "2023-01-03",
+    "2026-10-30"
+  ],
+  "prehistory": "2022-01-03",
+  "fee": 0.001,
+  "one_comparison": "same slow trend filter and exit as EX003 C9002, change entry trigger only",
+  "parameter_search": false,
+  "decision": "Stop this route if recovery also misses economic and frequency objectives by a large margin."
+}
