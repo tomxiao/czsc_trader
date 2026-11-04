@@ -1,0 +1,14 @@
+{
+  "number": 44,
+  "question": "获准的MU/SOXX含分红后复权日线是否能够形成一致、时序可解释的行业对照输入，并支持下一项机制研究？",
+  "authorization": "用户批准增加SOXX日线，批准MU/SOXX研究信号统一含分红后复权，实际成交与MU正式账户保持原口径。30轮额度第11轮，剩余19轮。",
+  "scope": "仅US.MU和US.SOXX，2022-01-03至2026-10-30；2022只预热，开发池2023-01-03至2026-10-30。无生产、交易、订阅、平台修改或新依赖。",
+  "design": "先核验现有Futu SDK的HFQ和复权因子是否含现金分配、拆股、完整日历覆盖及与冻结MU原价一致性；检查时点复权和正式辅助历史接口。若数据可用，可在本轮作行业共同变化与MU相对变化的信息探索；若正式账户接口不支持，交付具体技术缺口，不以改写RAW字段或事后信号表绕过。",
+  "preservation": "保留原实验与原账户。最新数据若修订旧MU行情，要单列影响，不能悄然替换既有执行数据。分红后复权定义和生效时点未核实前，不宣称完整信号或可运行原型。",
+  "sources": [
+    "https://openapi.futunn.com/futu-api-doc/quote/request-history-kline.html",
+    "https://openapi.futunn.com/futu-api-doc/quote/get-rehab.html",
+    "Futu OpenD 127.0.0.1:11111 read-only quote context"
+  ],
+  "source_sha256": "3179de5daf7c66e8722d94a66fbbe5f967be9a76d957c1f4a31f5abe691cb1e3"
+}

@@ -1,0 +1,55 @@
+{
+  "status": "PARTIAL",
+  "scope": "Research HFQ bars and sessions only, not a complete RAW account input",
+  "source": {
+    "provider": "futu",
+    "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+  },
+  "reference": null,
+  "items": [
+    {
+      "instrument": {
+        "market": "US",
+        "asset_class": "STOCK",
+        "symbol": "MU"
+      },
+      "product": "equity.bars",
+      "status": "FAILED",
+      "error": "DataError(code='SOURCE_REQUEST_FAILED', message='Futu history failed', retryable=False, context=mappingproxy({'dataset': 'equity.bars', 'symbol': 'MU', 'start': '2022-01-03T05:00:00+00:00', 'end': '2026-10-31T03:59:59.999999+00:00', 'result': -1, 'page': 0}))",
+      "content_sha256": null
+    },
+    {
+      "instrument": {
+        "market": "US",
+        "asset_class": "STOCK",
+        "symbol": "MU"
+      },
+      "product": "equity.sessions",
+      "status": "READY",
+      "error": null,
+      "content_sha256": "4455664424475f1a136651bcdf5e6a41b5f0fe8d3d10a9826e701110785f546a"
+    },
+    {
+      "instrument": {
+        "market": "US",
+        "asset_class": "ETF",
+        "symbol": "SOXX"
+      },
+      "product": "equity.bars",
+      "status": "FAILED",
+      "error": "DataError(code='SOURCE_REQUEST_FAILED', message='Futu history failed', retryable=False, context=mappingproxy({'dataset': 'equity.bars', 'symbol': 'SOXX', 'start': '2022-01-03T05:00:00+00:00', 'end': '2026-10-31T03:59:59.999999+00:00', 'result': -1, 'page': 0}))",
+      "content_sha256": null
+    },
+    {
+      "instrument": {
+        "market": "US",
+        "asset_class": "ETF",
+        "symbol": "SOXX"
+      },
+      "product": "equity.sessions",
+      "status": "READY",
+      "error": null,
+      "content_sha256": "4455664424475f1a136651bcdf5e6a41b5f0fe8d3d10a9826e701110785f546a"
+    }
+  ]
+}

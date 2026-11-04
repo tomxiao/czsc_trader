@@ -1,0 +1,74 @@
+{
+  "scope": "Offline installed SDK pack_req only; no OpenQuoteContext, no market data, sockets blocked",
+  "futu_version": "10.10.7008",
+  "constants": {
+    "NONE": "None",
+    "FORWARD": "qfq",
+    "BACKWARD": "hfq",
+    "RTH": "RTH",
+    "DEFAULT_SESSION": "N/A",
+    "DAILY": "K_DAY"
+  },
+  "cases": [
+    {
+      "autype": "HFQ",
+      "session": "RTH",
+      "autype_valid": false,
+      "session_valid": true,
+      "ret": -1,
+      "message": "ERROR. autype is HFQ, which is not valid. (None,qfq,hfq)",
+      "serialized_bytes": null,
+      "protocol_id": 0
+    },
+    {
+      "autype": "hfq",
+      "session": "RTH",
+      "autype_valid": true,
+      "session_valid": true,
+      "ret": 0,
+      "message": "",
+      "serialized_bytes": 97,
+      "protocol_id": 3103
+    },
+    {
+      "autype": "QFQ",
+      "session": "RTH",
+      "autype_valid": false,
+      "session_valid": true,
+      "ret": -1,
+      "message": "ERROR. autype is QFQ, which is not valid. (None,qfq,hfq)",
+      "serialized_bytes": null,
+      "protocol_id": 0
+    },
+    {
+      "autype": "qfq",
+      "session": "RTH",
+      "autype_valid": true,
+      "session_valid": true,
+      "ret": 0,
+      "message": "",
+      "serialized_bytes": 97,
+      "protocol_id": 3103
+    },
+    {
+      "autype": "None",
+      "session": "RTH",
+      "autype_valid": true,
+      "session_valid": true,
+      "ret": 0,
+      "message": "",
+      "serialized_bytes": 97,
+      "protocol_id": 3103
+    },
+    {
+      "autype": "hfq",
+      "session": "N/A",
+      "autype_valid": true,
+      "session_valid": true,
+      "ret": 0,
+      "message": "",
+      "serialized_bytes": 97,
+      "protocol_id": 3103
+    }
+  ]
+}
