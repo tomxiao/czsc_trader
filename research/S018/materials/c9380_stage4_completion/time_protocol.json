@@ -1,0 +1,52 @@
+{
+  "status": "DECLARED_BEFORE_COMPUTATION",
+  "candidate": "S018-C9380",
+  "candidate_content_sha256": "186dffc6fe4df3aec1638030d7c0f65d594b6c9578593c39b5676796fe3c5d4a",
+  "source_account": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S018",
+      "experiment_id": "EX064_20261104"
+    },
+    "evidence_id": "b2a1d6c30c1a1b0c65b633de3d8f6d6cd08cdf534214c397c4a66f6cfaf15d92.json",
+    "sha256": "b2a1d6c30c1a1b0c65b633de3d8f6d6cd08cdf534214c397c4a66f6cfaf15d92",
+    "media_type": "application/json",
+    "name": "c9380-CENTER",
+    "schema": "equity_research",
+    "schema_version": 4
+  },
+  "source_results": "research/S018/experiments/EX064_20261104/others/recovery_01/results.json",
+  "source_results_sha256": "3ff0016482e93700a6ac7b8ad2e9d7d4f8e45ecfb5a82e675e45677c6a635ad5",
+  "data_window": "2023-01-03 through 2026-10-30, previously used development pool",
+  "annual_slices": "Actual calendar-year sessions; 2026 is observed YTD, not a full year. Report realized period return and annualized return separately.",
+  "slice_opening": "Prior actual session closing equity, or original initial cash at first session; inherit original holdings and cash paths.",
+  "drawdown": "Use all existing account_points. Local-window DD starts from prior close; also report continuous historical-high-water drawdown without resetting old peak.",
+  "rolling": {
+    "window_sessions": 252,
+    "step_sessions": 21,
+    "start_offset": 0,
+    "only_complete_windows": true,
+    "append_off_grid_tail_window": false
+  },
+  "underperformance": "A window is behind on Calmar iff local BAR_CLOSE Calmar minus matched BuyHold Calmar is strictly negative; annualized return shortfall separately reported.",
+  "concentration": "MAX_SINGLE: largest strictly positive closed-cycle net_pnl divided by sum of all strictly positive closed-cycle net_pnl; also top5 and open cycle state.",
+  "bootstrap": {
+    "api": "strategy_evaluator.paired_stationary_bootstrap",
+    "repetitions": 10000,
+    "mean_block_length": 21,
+    "seed": 9380,
+    "pairing": "Identical resampled day indices for strategy and BuyHold daily net returns.",
+    "calmar_basis": "Daily-closing-equity returns, not simulated BAR_CLOSE strategy replay.",
+    "interval": "Percentile 95%, fixed method; no multiple block-length scan."
+  },
+  "hard_gates_added": false,
+  "account_replays": 0,
+  "new_data": false,
+  "limits": [
+    "Repeated development sample and adaptive research selection are not corrected by this bootstrap.",
+    "Overlapping rolling windows are not independent market observations.",
+    "Blocks only approximate local serial dependence; future structural changes and execution paths are not generated.",
+    "No stage-five or production action."
+  ]
+}

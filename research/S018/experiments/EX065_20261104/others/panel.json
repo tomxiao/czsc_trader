@@ -1,0 +1,2449 @@
+{
+  "type": "AssessmentPanel",
+  "request_sha256": "16b8821931d8817108a27672043e8d5e97365f1965c1f1d2197acabd81d9b73f",
+  "protocol_sha256": "8e02a69bd69dd710ec64e93576f87f35c10f96e91e9b7343cb0150d4752630a7",
+  "rows": [
+    {
+      "type": "CandidateAssessment",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S018-C9380",
+        "content_sha256": "186dffc6fe4df3aec1638030d7c0f65d594b6c9578593c39b5676796fe3c5d4a"
+      },
+      "context_sha256": "a6307c6f23b4c1ec548949080b2e050cd0c36b3819aca269147935003ac21c1f",
+      "metric_version": "equity-assessment-v4:BAR_CLOSE:MAX_SINGLE",
+      "frequency_window_days": 60,
+      "baseline_scenario": {
+        "type": "EvaluationScenarioContext",
+        "one_way_cost": 0.001,
+        "measurement_tier": "FORMAL",
+        "benchmark_id": "BuyHold",
+        "benchmark_kind": "BUYHOLD",
+        "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+      },
+      "stress_scenario": {
+        "type": "EvaluationScenarioContext",
+        "one_way_cost": 0.002,
+        "measurement_tier": "STRESS",
+        "benchmark_id": "BuyHold",
+        "benchmark_kind": "BUYHOLD",
+        "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+      },
+      "diagnostics": [
+        {
+          "type": "DiagnosticValue",
+          "metric": "FREQUENCY_COVERAGE",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 1.0,
+          "reason": null,
+          "evaluation_ids": [
+            "0ecca4c618631a8fc5722670b02126aa89d729bcce5ed108a8e41c905073d0a0"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "FULL_SAMPLE_FREQUENCY",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 5.931321540062435,
+          "reason": null,
+          "evaluation_ids": [
+            "0ecca4c618631a8fc5722670b02126aa89d729bcce5ed108a8e41c905073d0a0"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "BENCHMARK_POSITIVE_YEAR_FREQUENCY",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 5.754583921015515,
+          "reason": null,
+          "evaluation_ids": [
+            "0ecca4c618631a8fc5722670b02126aa89d729bcce5ed108a8e41c905073d0a0"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "NET_ANNUAL_RETURN",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.45411631274346154,
+          "reason": null,
+          "evaluation_ids": [
+            "0ecca4c618631a8fc5722670b02126aa89d729bcce5ed108a8e41c905073d0a0"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "DRAWDOWN_MAGNITUDE",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.08568584976513338,
+          "reason": null,
+          "evaluation_ids": [
+            "0ecca4c618631a8fc5722670b02126aa89d729bcce5ed108a8e41c905073d0a0"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "FREQUENCY_MEDIAN",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 6.0,
+          "reason": null,
+          "evaluation_ids": [
+            "0ecca4c618631a8fc5722670b02126aa89d729bcce5ed108a8e41c905073d0a0"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "FREQUENCY_Q10",
+          "unit": "CLOSED_CYCLES_PER_WINDOW",
+          "status": "AVAILABLE",
+          "value": 4.0,
+          "reason": null,
+          "evaluation_ids": [
+            "0ecca4c618631a8fc5722670b02126aa89d729bcce5ed108a8e41c905073d0a0"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_RETURN_DEGRADATION",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.04258159248971721,
+          "reason": null,
+          "evaluation_ids": [
+            "0ecca4c618631a8fc5722670b02126aa89d729bcce5ed108a8e41c905073d0a0",
+            "082fe86d7017aa65da9fc3e45b109fe4d7b52502e4ac97c3e98af00ef07c7a24",
+            "a0c394173971120a862f178bdcc0c06210a3e50171bda959f9f7eac7c33de38c",
+            "1594bc191094e72811abf307027e1340c80f04a2cd168b6b1e018dc09b4c360c",
+            "6d1a6075a51ef13d0430c3a7fd4462e29e8e81361bc773139a4eac66a67c4f34",
+            "96e160056acd4e5f06e6e61d7a3f71ccb465220f0d03fd1b6e250e269e651e09",
+            "936541483d136ed4883a362494d9c01a05d59aa439ab4851825bd1ba8af66e8d",
+            "74eeaa22ddc28bbe4d475ec30e2c6efd613ce484f4a3257600c3cbc678f598f2",
+            "04a176592d32c11c0dfd17d9c411f2956ca3c7755dd29b4d3f3e3f0c5afbf118",
+            "2dd77a065628d98bac2fc68d15b04afc9f1fc79c2e4c19883069a515ffd5181b",
+            "f59b9998a657c4186135ae468f01e3e8f2bd195de45e2f134d1f7a38e0382861",
+            "eb97ca00d8604d5bb66e3752e5d8f2cdad8357c7b755c36ea2c49731c6a73e5b",
+            "942ce2dae29fa12643908e1e7d8b6afab389b637065034b9079b6a382e0dba8d",
+            "1c82db55a69ed7d8c4f5861cd80efeee3eafcf977cdfef262f3e5f9617a721ec",
+            "d4d043e8ab567a43456d24357a876bfc80789631a9f28e5963499b5ea0008c06",
+            "2b814f8cc4c9c9b13b264a9f655cbfe085842832f4fa8a37853614b4671aa5f7",
+            "3bb8f3c9c4fe25342fc4bf75a8539f52fb81b387ac118f346e80ff2182f6cb16",
+            "6343e1e6804beab24dc78c2c6111d4ae8a38fd44d05d48a967eafb5efceff304",
+            "a5654b495bef3f52511eb2a2d9c1c7be022690943e5e2010f4d5764f6bd6f260",
+            "761e68b7173be258bdb5bd54ab134da0dd63f40a677dbba5ecf151ff781e98e3",
+            "352b6b630771c6fdb7fa9322bc4354b59bb4c55e1f0d7b6f346f58fbe54a5e18",
+            "30e99948663a71a4ce2167542cf11def855d9a3c31891a1d49beb8186b48d68c",
+            "c4d6c54c70270b7e80946dc0402bbaa843f0e38eac450bfcce7e5557ae28db87",
+            "6b254e1868b733796752bc167b52e386fe889ba7b5dd88f883a6e48493b619cd",
+            "7769fcf05f11aa4ae1caf33f37db92010a2dac3f8782a81226c98f33c33ddf3e",
+            "ceef92f1149912984dbefa0a3932d81802cf2ef85ef17406d9d0c6d55bbb0574",
+            "8d4b92615c2bf7512ecc50856855d1b272ef9444131fad4a27349c0346bcbea6",
+            "908fca37b3e25b124611e6892863d582393d2bc367904907eae7a364a54bca50",
+            "bd83986a357e7e35690dadee7ac65bca189d85e984188f48cd4c70f52cc7649c",
+            "348780402190c19bde960f16a46d97ef7d0d9dbf6eb1658e0a5e5d0f63ae772f",
+            "c7a38d286908f7877451481b828a0faacdd3670bb9d8b0661740965ce7fbbae5",
+            "39575f8677242b9382b9d08f3512a78ea7d9c16226ebcaeb1b156f6be3e8e42a",
+            "457a051cdbbb414ded31e4997f21cc1f38911ecf4f60e73a37fb4093a2770c47",
+            "d929a8117675a4732b35f1204607ff6426e828b155d6978752b08fecfacc4f36",
+            "335bde7a6decb50bbe383f14cce0111cb75be91537bb05b9418f19835c6a9124",
+            "d8920be536390f89dc6b988be68eb2cf151441fefe5177a7af3f540b0988cf54",
+            "b6fa4b359a78f4ed03fa598d9080145dea881aabaa1bf0ab22549ba649d5c1fc",
+            "f6b259ca50845634a67f997894b70d35eb67176efa21a72140e6b267764a7b0f",
+            "5c492ca44555c3539f8dad64d9e3adc42afcf2c65b40a51d14b8a75b92cd810a",
+            "f690ad94d365c195b3eb2c3c392066d31b462e9a50a6a3d9429691ba8523723c",
+            "8de8310fa3a07364447082bb6841eecefdf46a54f6e0fa4f94e644917b5adacf",
+            "9b703dbb0733f151faee175c0269492f3ae68bda5ece6e058f2c5846c65e337b",
+            "8f0c4dd385570c084d9c3e32622fe21e0dbf6b9814fe76bf93cb405099c71eeb",
+            "49ddad494fc7a4e000c34599d9a6f305ff251df9a090c375152904f1dd8eec24",
+            "d01b61f4f6d9962fd700bb1df547c0751b884cde5512e8fb176a9d1a448eab5a",
+            "9db4898131d9e85f15268fc53b5229c70c77dc023c30c03be63bdaeec89bb8ea",
+            "d06ff3a7f921a1276082013d679180b157b89710127e9f250a3f1f3951704d19",
+            "b53b85f843d5afc9781b2ad1862cc6dcee54d30a2fde1f97b7f21afe63faa514",
+            "d18580880a9c55bef4a55dd6068d99d44ed7381e531e050f2c055deb8198d5df",
+            "3a85b7f17831d09d355fba1715e6fe05ffb737da71373aae062d88659aa48069",
+            "e9ea9f78dc45a45e97a70ff88892752f42943c4c62791ab4f9c1789279a7a9f5",
+            "a374e89a028017fd2c258e28d51fe621f85799374513d8f08aad6708512a01d3",
+            "b5dfa0e49b56f80811b5f90058ac30cbf783864769637be634392fb3c5fa8809",
+            "3df04cf266ae991f84731b4dd543335942472b672090326cd1307862c4e240a6",
+            "e121299f525897145e6b23375b860d74111ff3cdf7ebec370a3933eedf9f55a6",
+            "63fb5d13c35f1d5637aac4120e580898f7d1afb3e2a4f60a173004b1fcbbfbdc",
+            "42be4b455471c89ee6d1e178d38c2c1f9c0c395fcfccf0de4f95b75df75c0f69",
+            "70dd734b343a15630c559836e5a5c4cf8ecf2c5ff7c83cb3ab389cc6e8ff7c8c",
+            "e4a01a6406e62ee2b47833c3321361377f4d98ee759880b657d6b38fcfaa6004",
+            "3c5a2ea5431c251c31072d711dd8ef8346d4bd84cb950d218cf239b26147c949",
+            "1926c29545fe33eccd5bfe1f1d67ea5832bbc6ec47d82cacdd702eb41d54231a",
+            "b4472d1bb707b25339f4a16187c767865a168d9ece3f9bddc3edc158f0f8b02e",
+            "c5add6f2996584ed96d0d550e4bebc2d29d96b62983e251782e77b305c9fd680",
+            "d71fa0ba0e67fec7864c108ab092c10895fcbb8f832be42c2e6f238979e96857",
+            "d87b002708e0c7a7dd1b2acc830f18d41a50881370543116c1e97d21191a42eb",
+            "b82fadde018d96ca186bd73785ebdc8c9fe35920f854e0c23f5d7bcf2b2c05da",
+            "13a6a3138ee85c3c7a1c884098c25a95c18387809092929ced020a5e66f71d1b",
+            "ed7acfce130f5353f79224b47cae69c3b931ed736d3fd5085e1c3aa969ce1452",
+            "948b52d1a5bf8d34d7ae14b3b3d04c98b711042f5c8a0a8a6a33b7e67641bc60",
+            "8d40c407903a0e085834cc63c7392fce534d266f8ecf22886a274758b8b8afac",
+            "550349897e04395cc8c35986c3f0a7d40ee50de829f5fa61b743918909d6e5f5",
+            "dc351e68ab7488411a64b56a6dd967d36dacd8b44ee9d22c7c8e5f32ee7d2f33",
+            "1ba506aefbb9e60ddfa0c026dc48948a5fe69e9537a80f09115a6acd68d1fa2e",
+            "2d28cfbaa871bea6bf832a10a63b0b03754a00d773b42b22873bfa430ab29339",
+            "ffcfed5f50ba03a5455e8501773e19c9567b03396924bab8e2905e5659234770",
+            "c6a7f5a78a43d925f0d271ecff61b4b780ddee0f6fdbd99c7c6b9019e692ed76",
+            "18151ef9836e2d669a31421a956ca3902c0d7811b567b9f4d292e3d9922c4815",
+            "1b21074b05ba1eadea1da42f360e2ab6991bba5d4f915a65c8a84d12b3b1d1df",
+            "1ae9a22c8d0649160540fe4d25f5ee857f0e45197cb873dab5f21970e305e0cc",
+            "4af0f3304eaf4297022480789db91c5d4734a30a2d64d777f1cb6a90f2359499"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_DRAWDOWN_DEGRADATION",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.002615859457386474,
+          "reason": null,
+          "evaluation_ids": [
+            "0ecca4c618631a8fc5722670b02126aa89d729bcce5ed108a8e41c905073d0a0",
+            "082fe86d7017aa65da9fc3e45b109fe4d7b52502e4ac97c3e98af00ef07c7a24",
+            "a0c394173971120a862f178bdcc0c06210a3e50171bda959f9f7eac7c33de38c",
+            "1594bc191094e72811abf307027e1340c80f04a2cd168b6b1e018dc09b4c360c",
+            "6d1a6075a51ef13d0430c3a7fd4462e29e8e81361bc773139a4eac66a67c4f34",
+            "96e160056acd4e5f06e6e61d7a3f71ccb465220f0d03fd1b6e250e269e651e09",
+            "936541483d136ed4883a362494d9c01a05d59aa439ab4851825bd1ba8af66e8d",
+            "74eeaa22ddc28bbe4d475ec30e2c6efd613ce484f4a3257600c3cbc678f598f2",
+            "04a176592d32c11c0dfd17d9c411f2956ca3c7755dd29b4d3f3e3f0c5afbf118",
+            "2dd77a065628d98bac2fc68d15b04afc9f1fc79c2e4c19883069a515ffd5181b",
+            "f59b9998a657c4186135ae468f01e3e8f2bd195de45e2f134d1f7a38e0382861",
+            "eb97ca00d8604d5bb66e3752e5d8f2cdad8357c7b755c36ea2c49731c6a73e5b",
+            "942ce2dae29fa12643908e1e7d8b6afab389b637065034b9079b6a382e0dba8d",
+            "1c82db55a69ed7d8c4f5861cd80efeee3eafcf977cdfef262f3e5f9617a721ec",
+            "d4d043e8ab567a43456d24357a876bfc80789631a9f28e5963499b5ea0008c06",
+            "2b814f8cc4c9c9b13b264a9f655cbfe085842832f4fa8a37853614b4671aa5f7",
+            "3bb8f3c9c4fe25342fc4bf75a8539f52fb81b387ac118f346e80ff2182f6cb16",
+            "6343e1e6804beab24dc78c2c6111d4ae8a38fd44d05d48a967eafb5efceff304",
+            "a5654b495bef3f52511eb2a2d9c1c7be022690943e5e2010f4d5764f6bd6f260",
+            "761e68b7173be258bdb5bd54ab134da0dd63f40a677dbba5ecf151ff781e98e3",
+            "352b6b630771c6fdb7fa9322bc4354b59bb4c55e1f0d7b6f346f58fbe54a5e18",
+            "30e99948663a71a4ce2167542cf11def855d9a3c31891a1d49beb8186b48d68c",
+            "c4d6c54c70270b7e80946dc0402bbaa843f0e38eac450bfcce7e5557ae28db87",
+            "6b254e1868b733796752bc167b52e386fe889ba7b5dd88f883a6e48493b619cd",
+            "7769fcf05f11aa4ae1caf33f37db92010a2dac3f8782a81226c98f33c33ddf3e",
+            "ceef92f1149912984dbefa0a3932d81802cf2ef85ef17406d9d0c6d55bbb0574",
+            "8d4b92615c2bf7512ecc50856855d1b272ef9444131fad4a27349c0346bcbea6",
+            "908fca37b3e25b124611e6892863d582393d2bc367904907eae7a364a54bca50",
+            "bd83986a357e7e35690dadee7ac65bca189d85e984188f48cd4c70f52cc7649c",
+            "348780402190c19bde960f16a46d97ef7d0d9dbf6eb1658e0a5e5d0f63ae772f",
+            "c7a38d286908f7877451481b828a0faacdd3670bb9d8b0661740965ce7fbbae5",
+            "39575f8677242b9382b9d08f3512a78ea7d9c16226ebcaeb1b156f6be3e8e42a",
+            "457a051cdbbb414ded31e4997f21cc1f38911ecf4f60e73a37fb4093a2770c47",
+            "d929a8117675a4732b35f1204607ff6426e828b155d6978752b08fecfacc4f36",
+            "335bde7a6decb50bbe383f14cce0111cb75be91537bb05b9418f19835c6a9124",
+            "d8920be536390f89dc6b988be68eb2cf151441fefe5177a7af3f540b0988cf54",
+            "b6fa4b359a78f4ed03fa598d9080145dea881aabaa1bf0ab22549ba649d5c1fc",
+            "f6b259ca50845634a67f997894b70d35eb67176efa21a72140e6b267764a7b0f",
+            "5c492ca44555c3539f8dad64d9e3adc42afcf2c65b40a51d14b8a75b92cd810a",
+            "f690ad94d365c195b3eb2c3c392066d31b462e9a50a6a3d9429691ba8523723c",
+            "8de8310fa3a07364447082bb6841eecefdf46a54f6e0fa4f94e644917b5adacf",
+            "9b703dbb0733f151faee175c0269492f3ae68bda5ece6e058f2c5846c65e337b",
+            "8f0c4dd385570c084d9c3e32622fe21e0dbf6b9814fe76bf93cb405099c71eeb",
+            "49ddad494fc7a4e000c34599d9a6f305ff251df9a090c375152904f1dd8eec24",
+            "d01b61f4f6d9962fd700bb1df547c0751b884cde5512e8fb176a9d1a448eab5a",
+            "9db4898131d9e85f15268fc53b5229c70c77dc023c30c03be63bdaeec89bb8ea",
+            "d06ff3a7f921a1276082013d679180b157b89710127e9f250a3f1f3951704d19",
+            "b53b85f843d5afc9781b2ad1862cc6dcee54d30a2fde1f97b7f21afe63faa514",
+            "d18580880a9c55bef4a55dd6068d99d44ed7381e531e050f2c055deb8198d5df",
+            "3a85b7f17831d09d355fba1715e6fe05ffb737da71373aae062d88659aa48069",
+            "e9ea9f78dc45a45e97a70ff88892752f42943c4c62791ab4f9c1789279a7a9f5",
+            "a374e89a028017fd2c258e28d51fe621f85799374513d8f08aad6708512a01d3",
+            "b5dfa0e49b56f80811b5f90058ac30cbf783864769637be634392fb3c5fa8809",
+            "3df04cf266ae991f84731b4dd543335942472b672090326cd1307862c4e240a6",
+            "e121299f525897145e6b23375b860d74111ff3cdf7ebec370a3933eedf9f55a6",
+            "63fb5d13c35f1d5637aac4120e580898f7d1afb3e2a4f60a173004b1fcbbfbdc",
+            "42be4b455471c89ee6d1e178d38c2c1f9c0c395fcfccf0de4f95b75df75c0f69",
+            "70dd734b343a15630c559836e5a5c4cf8ecf2c5ff7c83cb3ab389cc6e8ff7c8c",
+            "e4a01a6406e62ee2b47833c3321361377f4d98ee759880b657d6b38fcfaa6004",
+            "3c5a2ea5431c251c31072d711dd8ef8346d4bd84cb950d218cf239b26147c949",
+            "1926c29545fe33eccd5bfe1f1d67ea5832bbc6ec47d82cacdd702eb41d54231a",
+            "b4472d1bb707b25339f4a16187c767865a168d9ece3f9bddc3edc158f0f8b02e",
+            "c5add6f2996584ed96d0d550e4bebc2d29d96b62983e251782e77b305c9fd680",
+            "d71fa0ba0e67fec7864c108ab092c10895fcbb8f832be42c2e6f238979e96857",
+            "d87b002708e0c7a7dd1b2acc830f18d41a50881370543116c1e97d21191a42eb",
+            "b82fadde018d96ca186bd73785ebdc8c9fe35920f854e0c23f5d7bcf2b2c05da",
+            "13a6a3138ee85c3c7a1c884098c25a95c18387809092929ced020a5e66f71d1b",
+            "ed7acfce130f5353f79224b47cae69c3b931ed736d3fd5085e1c3aa969ce1452",
+            "948b52d1a5bf8d34d7ae14b3b3d04c98b711042f5c8a0a8a6a33b7e67641bc60",
+            "8d40c407903a0e085834cc63c7392fce534d266f8ecf22886a274758b8b8afac",
+            "550349897e04395cc8c35986c3f0a7d40ee50de829f5fa61b743918909d6e5f5",
+            "dc351e68ab7488411a64b56a6dd967d36dacd8b44ee9d22c7c8e5f32ee7d2f33",
+            "1ba506aefbb9e60ddfa0c026dc48948a5fe69e9537a80f09115a6acd68d1fa2e",
+            "2d28cfbaa871bea6bf832a10a63b0b03754a00d773b42b22873bfa430ab29339",
+            "ffcfed5f50ba03a5455e8501773e19c9567b03396924bab8e2905e5659234770",
+            "c6a7f5a78a43d925f0d271ecff61b4b780ddee0f6fdbd99c7c6b9019e692ed76",
+            "18151ef9836e2d669a31421a956ca3902c0d7811b567b9f4d292e3d9922c4815",
+            "1b21074b05ba1eadea1da42f360e2ab6991bba5d4f915a65c8a84d12b3b1d1df",
+            "1ae9a22c8d0649160540fe4d25f5ee857f0e45197cb873dab5f21970e305e0cc",
+            "4af0f3304eaf4297022480789db91c5d4734a30a2d64d777f1cb6a90f2359499"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_RETURN_Q10",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.4115347202537443,
+          "reason": null,
+          "evaluation_ids": [
+            "0ecca4c618631a8fc5722670b02126aa89d729bcce5ed108a8e41c905073d0a0",
+            "082fe86d7017aa65da9fc3e45b109fe4d7b52502e4ac97c3e98af00ef07c7a24",
+            "a0c394173971120a862f178bdcc0c06210a3e50171bda959f9f7eac7c33de38c",
+            "1594bc191094e72811abf307027e1340c80f04a2cd168b6b1e018dc09b4c360c",
+            "6d1a6075a51ef13d0430c3a7fd4462e29e8e81361bc773139a4eac66a67c4f34",
+            "96e160056acd4e5f06e6e61d7a3f71ccb465220f0d03fd1b6e250e269e651e09",
+            "936541483d136ed4883a362494d9c01a05d59aa439ab4851825bd1ba8af66e8d",
+            "74eeaa22ddc28bbe4d475ec30e2c6efd613ce484f4a3257600c3cbc678f598f2",
+            "04a176592d32c11c0dfd17d9c411f2956ca3c7755dd29b4d3f3e3f0c5afbf118",
+            "2dd77a065628d98bac2fc68d15b04afc9f1fc79c2e4c19883069a515ffd5181b",
+            "f59b9998a657c4186135ae468f01e3e8f2bd195de45e2f134d1f7a38e0382861",
+            "eb97ca00d8604d5bb66e3752e5d8f2cdad8357c7b755c36ea2c49731c6a73e5b",
+            "942ce2dae29fa12643908e1e7d8b6afab389b637065034b9079b6a382e0dba8d",
+            "1c82db55a69ed7d8c4f5861cd80efeee3eafcf977cdfef262f3e5f9617a721ec",
+            "d4d043e8ab567a43456d24357a876bfc80789631a9f28e5963499b5ea0008c06",
+            "2b814f8cc4c9c9b13b264a9f655cbfe085842832f4fa8a37853614b4671aa5f7",
+            "3bb8f3c9c4fe25342fc4bf75a8539f52fb81b387ac118f346e80ff2182f6cb16",
+            "6343e1e6804beab24dc78c2c6111d4ae8a38fd44d05d48a967eafb5efceff304",
+            "a5654b495bef3f52511eb2a2d9c1c7be022690943e5e2010f4d5764f6bd6f260",
+            "761e68b7173be258bdb5bd54ab134da0dd63f40a677dbba5ecf151ff781e98e3",
+            "352b6b630771c6fdb7fa9322bc4354b59bb4c55e1f0d7b6f346f58fbe54a5e18",
+            "30e99948663a71a4ce2167542cf11def855d9a3c31891a1d49beb8186b48d68c",
+            "c4d6c54c70270b7e80946dc0402bbaa843f0e38eac450bfcce7e5557ae28db87",
+            "6b254e1868b733796752bc167b52e386fe889ba7b5dd88f883a6e48493b619cd",
+            "7769fcf05f11aa4ae1caf33f37db92010a2dac3f8782a81226c98f33c33ddf3e",
+            "ceef92f1149912984dbefa0a3932d81802cf2ef85ef17406d9d0c6d55bbb0574",
+            "8d4b92615c2bf7512ecc50856855d1b272ef9444131fad4a27349c0346bcbea6",
+            "908fca37b3e25b124611e6892863d582393d2bc367904907eae7a364a54bca50",
+            "bd83986a357e7e35690dadee7ac65bca189d85e984188f48cd4c70f52cc7649c",
+            "348780402190c19bde960f16a46d97ef7d0d9dbf6eb1658e0a5e5d0f63ae772f",
+            "c7a38d286908f7877451481b828a0faacdd3670bb9d8b0661740965ce7fbbae5",
+            "39575f8677242b9382b9d08f3512a78ea7d9c16226ebcaeb1b156f6be3e8e42a",
+            "457a051cdbbb414ded31e4997f21cc1f38911ecf4f60e73a37fb4093a2770c47",
+            "d929a8117675a4732b35f1204607ff6426e828b155d6978752b08fecfacc4f36",
+            "335bde7a6decb50bbe383f14cce0111cb75be91537bb05b9418f19835c6a9124",
+            "d8920be536390f89dc6b988be68eb2cf151441fefe5177a7af3f540b0988cf54",
+            "b6fa4b359a78f4ed03fa598d9080145dea881aabaa1bf0ab22549ba649d5c1fc",
+            "f6b259ca50845634a67f997894b70d35eb67176efa21a72140e6b267764a7b0f",
+            "5c492ca44555c3539f8dad64d9e3adc42afcf2c65b40a51d14b8a75b92cd810a",
+            "f690ad94d365c195b3eb2c3c392066d31b462e9a50a6a3d9429691ba8523723c",
+            "8de8310fa3a07364447082bb6841eecefdf46a54f6e0fa4f94e644917b5adacf",
+            "9b703dbb0733f151faee175c0269492f3ae68bda5ece6e058f2c5846c65e337b",
+            "8f0c4dd385570c084d9c3e32622fe21e0dbf6b9814fe76bf93cb405099c71eeb",
+            "49ddad494fc7a4e000c34599d9a6f305ff251df9a090c375152904f1dd8eec24",
+            "d01b61f4f6d9962fd700bb1df547c0751b884cde5512e8fb176a9d1a448eab5a",
+            "9db4898131d9e85f15268fc53b5229c70c77dc023c30c03be63bdaeec89bb8ea",
+            "d06ff3a7f921a1276082013d679180b157b89710127e9f250a3f1f3951704d19",
+            "b53b85f843d5afc9781b2ad1862cc6dcee54d30a2fde1f97b7f21afe63faa514",
+            "d18580880a9c55bef4a55dd6068d99d44ed7381e531e050f2c055deb8198d5df",
+            "3a85b7f17831d09d355fba1715e6fe05ffb737da71373aae062d88659aa48069",
+            "e9ea9f78dc45a45e97a70ff88892752f42943c4c62791ab4f9c1789279a7a9f5",
+            "a374e89a028017fd2c258e28d51fe621f85799374513d8f08aad6708512a01d3",
+            "b5dfa0e49b56f80811b5f90058ac30cbf783864769637be634392fb3c5fa8809",
+            "3df04cf266ae991f84731b4dd543335942472b672090326cd1307862c4e240a6",
+            "e121299f525897145e6b23375b860d74111ff3cdf7ebec370a3933eedf9f55a6",
+            "63fb5d13c35f1d5637aac4120e580898f7d1afb3e2a4f60a173004b1fcbbfbdc",
+            "42be4b455471c89ee6d1e178d38c2c1f9c0c395fcfccf0de4f95b75df75c0f69",
+            "70dd734b343a15630c559836e5a5c4cf8ecf2c5ff7c83cb3ab389cc6e8ff7c8c",
+            "e4a01a6406e62ee2b47833c3321361377f4d98ee759880b657d6b38fcfaa6004",
+            "3c5a2ea5431c251c31072d711dd8ef8346d4bd84cb950d218cf239b26147c949",
+            "1926c29545fe33eccd5bfe1f1d67ea5832bbc6ec47d82cacdd702eb41d54231a",
+            "b4472d1bb707b25339f4a16187c767865a168d9ece3f9bddc3edc158f0f8b02e",
+            "c5add6f2996584ed96d0d550e4bebc2d29d96b62983e251782e77b305c9fd680",
+            "d71fa0ba0e67fec7864c108ab092c10895fcbb8f832be42c2e6f238979e96857",
+            "d87b002708e0c7a7dd1b2acc830f18d41a50881370543116c1e97d21191a42eb",
+            "b82fadde018d96ca186bd73785ebdc8c9fe35920f854e0c23f5d7bcf2b2c05da",
+            "13a6a3138ee85c3c7a1c884098c25a95c18387809092929ced020a5e66f71d1b",
+            "ed7acfce130f5353f79224b47cae69c3b931ed736d3fd5085e1c3aa969ce1452",
+            "948b52d1a5bf8d34d7ae14b3b3d04c98b711042f5c8a0a8a6a33b7e67641bc60",
+            "8d40c407903a0e085834cc63c7392fce534d266f8ecf22886a274758b8b8afac",
+            "550349897e04395cc8c35986c3f0a7d40ee50de829f5fa61b743918909d6e5f5",
+            "dc351e68ab7488411a64b56a6dd967d36dacd8b44ee9d22c7c8e5f32ee7d2f33",
+            "1ba506aefbb9e60ddfa0c026dc48948a5fe69e9537a80f09115a6acd68d1fa2e",
+            "2d28cfbaa871bea6bf832a10a63b0b03754a00d773b42b22873bfa430ab29339",
+            "ffcfed5f50ba03a5455e8501773e19c9567b03396924bab8e2905e5659234770",
+            "c6a7f5a78a43d925f0d271ecff61b4b780ddee0f6fdbd99c7c6b9019e692ed76",
+            "18151ef9836e2d669a31421a956ca3902c0d7811b567b9f4d292e3d9922c4815",
+            "1b21074b05ba1eadea1da42f360e2ab6991bba5d4f915a65c8a84d12b3b1d1df",
+            "1ae9a22c8d0649160540fe4d25f5ee857f0e45197cb873dab5f21970e305e0cc",
+            "4af0f3304eaf4297022480789db91c5d4734a30a2d64d777f1cb6a90f2359499"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PARAMETER_DRAWDOWN_Q90",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.08830170922251986,
+          "reason": null,
+          "evaluation_ids": [
+            "0ecca4c618631a8fc5722670b02126aa89d729bcce5ed108a8e41c905073d0a0",
+            "082fe86d7017aa65da9fc3e45b109fe4d7b52502e4ac97c3e98af00ef07c7a24",
+            "a0c394173971120a862f178bdcc0c06210a3e50171bda959f9f7eac7c33de38c",
+            "1594bc191094e72811abf307027e1340c80f04a2cd168b6b1e018dc09b4c360c",
+            "6d1a6075a51ef13d0430c3a7fd4462e29e8e81361bc773139a4eac66a67c4f34",
+            "96e160056acd4e5f06e6e61d7a3f71ccb465220f0d03fd1b6e250e269e651e09",
+            "936541483d136ed4883a362494d9c01a05d59aa439ab4851825bd1ba8af66e8d",
+            "74eeaa22ddc28bbe4d475ec30e2c6efd613ce484f4a3257600c3cbc678f598f2",
+            "04a176592d32c11c0dfd17d9c411f2956ca3c7755dd29b4d3f3e3f0c5afbf118",
+            "2dd77a065628d98bac2fc68d15b04afc9f1fc79c2e4c19883069a515ffd5181b",
+            "f59b9998a657c4186135ae468f01e3e8f2bd195de45e2f134d1f7a38e0382861",
+            "eb97ca00d8604d5bb66e3752e5d8f2cdad8357c7b755c36ea2c49731c6a73e5b",
+            "942ce2dae29fa12643908e1e7d8b6afab389b637065034b9079b6a382e0dba8d",
+            "1c82db55a69ed7d8c4f5861cd80efeee3eafcf977cdfef262f3e5f9617a721ec",
+            "d4d043e8ab567a43456d24357a876bfc80789631a9f28e5963499b5ea0008c06",
+            "2b814f8cc4c9c9b13b264a9f655cbfe085842832f4fa8a37853614b4671aa5f7",
+            "3bb8f3c9c4fe25342fc4bf75a8539f52fb81b387ac118f346e80ff2182f6cb16",
+            "6343e1e6804beab24dc78c2c6111d4ae8a38fd44d05d48a967eafb5efceff304",
+            "a5654b495bef3f52511eb2a2d9c1c7be022690943e5e2010f4d5764f6bd6f260",
+            "761e68b7173be258bdb5bd54ab134da0dd63f40a677dbba5ecf151ff781e98e3",
+            "352b6b630771c6fdb7fa9322bc4354b59bb4c55e1f0d7b6f346f58fbe54a5e18",
+            "30e99948663a71a4ce2167542cf11def855d9a3c31891a1d49beb8186b48d68c",
+            "c4d6c54c70270b7e80946dc0402bbaa843f0e38eac450bfcce7e5557ae28db87",
+            "6b254e1868b733796752bc167b52e386fe889ba7b5dd88f883a6e48493b619cd",
+            "7769fcf05f11aa4ae1caf33f37db92010a2dac3f8782a81226c98f33c33ddf3e",
+            "ceef92f1149912984dbefa0a3932d81802cf2ef85ef17406d9d0c6d55bbb0574",
+            "8d4b92615c2bf7512ecc50856855d1b272ef9444131fad4a27349c0346bcbea6",
+            "908fca37b3e25b124611e6892863d582393d2bc367904907eae7a364a54bca50",
+            "bd83986a357e7e35690dadee7ac65bca189d85e984188f48cd4c70f52cc7649c",
+            "348780402190c19bde960f16a46d97ef7d0d9dbf6eb1658e0a5e5d0f63ae772f",
+            "c7a38d286908f7877451481b828a0faacdd3670bb9d8b0661740965ce7fbbae5",
+            "39575f8677242b9382b9d08f3512a78ea7d9c16226ebcaeb1b156f6be3e8e42a",
+            "457a051cdbbb414ded31e4997f21cc1f38911ecf4f60e73a37fb4093a2770c47",
+            "d929a8117675a4732b35f1204607ff6426e828b155d6978752b08fecfacc4f36",
+            "335bde7a6decb50bbe383f14cce0111cb75be91537bb05b9418f19835c6a9124",
+            "d8920be536390f89dc6b988be68eb2cf151441fefe5177a7af3f540b0988cf54",
+            "b6fa4b359a78f4ed03fa598d9080145dea881aabaa1bf0ab22549ba649d5c1fc",
+            "f6b259ca50845634a67f997894b70d35eb67176efa21a72140e6b267764a7b0f",
+            "5c492ca44555c3539f8dad64d9e3adc42afcf2c65b40a51d14b8a75b92cd810a",
+            "f690ad94d365c195b3eb2c3c392066d31b462e9a50a6a3d9429691ba8523723c",
+            "8de8310fa3a07364447082bb6841eecefdf46a54f6e0fa4f94e644917b5adacf",
+            "9b703dbb0733f151faee175c0269492f3ae68bda5ece6e058f2c5846c65e337b",
+            "8f0c4dd385570c084d9c3e32622fe21e0dbf6b9814fe76bf93cb405099c71eeb",
+            "49ddad494fc7a4e000c34599d9a6f305ff251df9a090c375152904f1dd8eec24",
+            "d01b61f4f6d9962fd700bb1df547c0751b884cde5512e8fb176a9d1a448eab5a",
+            "9db4898131d9e85f15268fc53b5229c70c77dc023c30c03be63bdaeec89bb8ea",
+            "d06ff3a7f921a1276082013d679180b157b89710127e9f250a3f1f3951704d19",
+            "b53b85f843d5afc9781b2ad1862cc6dcee54d30a2fde1f97b7f21afe63faa514",
+            "d18580880a9c55bef4a55dd6068d99d44ed7381e531e050f2c055deb8198d5df",
+            "3a85b7f17831d09d355fba1715e6fe05ffb737da71373aae062d88659aa48069",
+            "e9ea9f78dc45a45e97a70ff88892752f42943c4c62791ab4f9c1789279a7a9f5",
+            "a374e89a028017fd2c258e28d51fe621f85799374513d8f08aad6708512a01d3",
+            "b5dfa0e49b56f80811b5f90058ac30cbf783864769637be634392fb3c5fa8809",
+            "3df04cf266ae991f84731b4dd543335942472b672090326cd1307862c4e240a6",
+            "e121299f525897145e6b23375b860d74111ff3cdf7ebec370a3933eedf9f55a6",
+            "63fb5d13c35f1d5637aac4120e580898f7d1afb3e2a4f60a173004b1fcbbfbdc",
+            "42be4b455471c89ee6d1e178d38c2c1f9c0c395fcfccf0de4f95b75df75c0f69",
+            "70dd734b343a15630c559836e5a5c4cf8ecf2c5ff7c83cb3ab389cc6e8ff7c8c",
+            "e4a01a6406e62ee2b47833c3321361377f4d98ee759880b657d6b38fcfaa6004",
+            "3c5a2ea5431c251c31072d711dd8ef8346d4bd84cb950d218cf239b26147c949",
+            "1926c29545fe33eccd5bfe1f1d67ea5832bbc6ec47d82cacdd702eb41d54231a",
+            "b4472d1bb707b25339f4a16187c767865a168d9ece3f9bddc3edc158f0f8b02e",
+            "c5add6f2996584ed96d0d550e4bebc2d29d96b62983e251782e77b305c9fd680",
+            "d71fa0ba0e67fec7864c108ab092c10895fcbb8f832be42c2e6f238979e96857",
+            "d87b002708e0c7a7dd1b2acc830f18d41a50881370543116c1e97d21191a42eb",
+            "b82fadde018d96ca186bd73785ebdc8c9fe35920f854e0c23f5d7bcf2b2c05da",
+            "13a6a3138ee85c3c7a1c884098c25a95c18387809092929ced020a5e66f71d1b",
+            "ed7acfce130f5353f79224b47cae69c3b931ed736d3fd5085e1c3aa969ce1452",
+            "948b52d1a5bf8d34d7ae14b3b3d04c98b711042f5c8a0a8a6a33b7e67641bc60",
+            "8d40c407903a0e085834cc63c7392fce534d266f8ecf22886a274758b8b8afac",
+            "550349897e04395cc8c35986c3f0a7d40ee50de829f5fa61b743918909d6e5f5",
+            "dc351e68ab7488411a64b56a6dd967d36dacd8b44ee9d22c7c8e5f32ee7d2f33",
+            "1ba506aefbb9e60ddfa0c026dc48948a5fe69e9537a80f09115a6acd68d1fa2e",
+            "2d28cfbaa871bea6bf832a10a63b0b03754a00d773b42b22873bfa430ab29339",
+            "ffcfed5f50ba03a5455e8501773e19c9567b03396924bab8e2905e5659234770",
+            "c6a7f5a78a43d925f0d271ecff61b4b780ddee0f6fdbd99c7c6b9019e692ed76",
+            "18151ef9836e2d669a31421a956ca3902c0d7811b567b9f4d292e3d9922c4815",
+            "1b21074b05ba1eadea1da42f360e2ab6991bba5d4f915a65c8a84d12b3b1d1df",
+            "1ae9a22c8d0649160540fe4d25f5ee857f0e45197cb873dab5f21970e305e0cc",
+            "4af0f3304eaf4297022480789db91c5d4734a30a2d64d777f1cb6a90f2359499"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "ROLLING_EXCESS_Q10",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": -5.152839465146118,
+          "reason": null,
+          "evaluation_ids": [
+            "0ecca4c618631a8fc5722670b02126aa89d729bcce5ed108a8e41c905073d0a0"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "STRESS_ANNUAL_LOSS",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.05166095214269384,
+          "reason": null,
+          "evaluation_ids": [
+            "0ecca4c618631a8fc5722670b02126aa89d729bcce5ed108a8e41c905073d0a0",
+            "c26f709694624b76dd60f4be1986cf9859ecebff25289ac7f20893a303d5fe4b"
+          ]
+        },
+        {
+          "type": "DiagnosticValue",
+          "metric": "PROFIT_CONCENTRATION",
+          "unit": "RATIO",
+          "status": "AVAILABLE",
+          "value": 0.09044531140410113,
+          "reason": null,
+          "evaluation_ids": [
+            "0ecca4c618631a8fc5722670b02126aa89d729bcce5ed108a8e41c905073d0a0"
+          ]
+        }
+      ],
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -2.2932873831394938,
+        "upper_95": 0.18114700987370902,
+        "reason": null
+      },
+      "coverage_gaps": [],
+      "behavior_sha256": "e46860eb5eba73d67a909b8c73efdd33ba0c4a47e61791d659cb233abf81cec5",
+      "benchmark": {
+        "type": "BenchmarkAssessment",
+        "diagnostics": [
+          {
+            "type": "DiagnosticValue",
+            "metric": "NET_ANNUAL_RETURN",
+            "unit": "RATIO",
+            "status": "AVAILABLE",
+            "value": 1.1195962552673357,
+            "reason": null,
+            "evaluation_ids": [
+              "0ecca4c618631a8fc5722670b02126aa89d729bcce5ed108a8e41c905073d0a0"
+            ]
+          },
+          {
+            "type": "DiagnosticValue",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "unit": "RATIO",
+            "status": "AVAILABLE",
+            "value": 0.5730512034565817,
+            "reason": null,
+            "evaluation_ids": [
+              "0ecca4c618631a8fc5722670b02126aa89d729bcce5ed108a8e41c905073d0a0"
+            ]
+          }
+        ]
+      },
+      "parameter_context": {
+        "type": "DeclaredParameterPointContext",
+        "protocol": {
+          "type": "ParameterNeighborhoodProtocol",
+          "purpose": "LOCAL_SENSITIVITY",
+          "max_combinations": 10000,
+          "quantile_method": "LINEAR",
+          "version": "parameter-cartesian-neighborhood-v2"
+        },
+        "design_sha256": "e9d59b3b2f3e0812803ab8435e0e147158de6de946c2795d808a2e097b409841",
+        "space_sha256": "05f415b35e2609fefab1068f2e0aa8c3ec0e4e7c91e73df89f293dc166747c69",
+        "dimension": 13,
+        "prescribed_points": 79,
+        "valid_points": 79,
+        "comparison_sha256": "829453dd6886b1417b106df4f0eb53d8f2eb9936c5508b002087f50998846c7f",
+        "point_indices": [
+          161,
+          323,
+          26,
+          53,
+          80,
+          0,
+          1,
+          2,
+          5,
+          8,
+          17,
+          1457,
+          2915,
+          485,
+          971,
+          4170,
+          3693,
+          3687,
+          4182,
+          2713,
+          2236,
+          2230,
+          2725,
+          2631,
+          2154,
+          2148,
+          2643,
+          4090,
+          3613,
+          3607,
+          4102,
+          2253,
+          2748,
+          2742,
+          2265,
+          3712,
+          4207,
+          4201,
+          3724,
+          3630,
+          4125,
+          4119,
+          3642,
+          2173,
+          2668,
+          2662,
+          2185,
+          2388,
+          2883,
+          2877,
+          2400,
+          3847,
+          4342,
+          4336,
+          3859,
+          3765,
+          4260,
+          4254,
+          3777,
+          2308,
+          2803,
+          2797,
+          2320,
+          4359,
+          3882,
+          3876,
+          4371,
+          2902,
+          2425,
+          2419,
+          2914,
+          2820,
+          2343,
+          2337,
+          2832,
+          4279,
+          3802,
+          3796,
+          4291
+        ]
+      },
+      "frequency_coverage": {
+        "type": "FrequencyCoverageFacts",
+        "window_days": 60,
+        "minimum_closed_cycles": 3,
+        "total_windows": 902,
+        "covered_windows": 902,
+        "evaluation_ids": [
+          "0ecca4c618631a8fc5722670b02126aa89d729bcce5ed108a8e41c905073d0a0"
+        ]
+      },
+      "parameter_performances": [
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1000",
+            "content_sha256": "7c560a7f0ef7b137123e2bd77857f80d3b7e9407e4ab2f4e83595346537eeb9c"
+          },
+          "evaluation_id": "082fe86d7017aa65da9fc3e45b109fe4d7b52502e4ac97c3e98af00ef07c7a24",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.45411631274346154,
+          "drawdown": 0.08568584976513338,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 161
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1001",
+            "content_sha256": "180c0a1ced6ca5e4f37a1f96720a38c9397c4a75e8d7f2f8ee90aea5edc6afa2"
+          },
+          "evaluation_id": "a0c394173971120a862f178bdcc0c06210a3e50171bda959f9f7eac7c33de38c",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.45411631274346154,
+          "drawdown": 0.08568584976513338,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 323
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1002",
+            "content_sha256": "ce8481b210f0ecfac7d63f0fbae2f2091356a935ac03e721190a0262cea1b38d"
+          },
+          "evaluation_id": "1594bc191094e72811abf307027e1340c80f04a2cd168b6b1e018dc09b4c360c",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.45411631274346154,
+          "drawdown": 0.08568584976513338,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 26
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1003",
+            "content_sha256": "8790faf6175ee04597f014a8bff64bbc6eb354ef73932929c0177b7d985c80ef"
+          },
+          "evaluation_id": "6d1a6075a51ef13d0430c3a7fd4462e29e8e81361bc773139a4eac66a67c4f34",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.45411631274346154,
+          "drawdown": 0.08568584976513338,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 53
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1004",
+            "content_sha256": "f55a5e5efe9ebb8052620e87b2c0283519be75309f9e7088228b056cf58af6db"
+          },
+          "evaluation_id": "96e160056acd4e5f06e6e61d7a3f71ccb465220f0d03fd1b6e250e269e651e09",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.43056597591258794,
+          "drawdown": 0.08154043406308797,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 80
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1005",
+            "content_sha256": "c5acf2dc61f83f0f5c62a9e7a05d9449aeaf8a207f60ee8b6799b43d08bcd656"
+          },
+          "evaluation_id": "936541483d136ed4883a362494d9c01a05d59aa439ab4851825bd1ba8af66e8d",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.45232558859831773,
+          "drawdown": 0.08554086814039596,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 0
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1006",
+            "content_sha256": "c831ae1d8a370acabea0382d6256e9fb34907bfe120b7b369b25071366820444"
+          },
+          "evaluation_id": "74eeaa22ddc28bbe4d475ec30e2c6efd613ce484f4a3257600c3cbc678f598f2",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4562253451793641,
+          "drawdown": 0.08548861080913062,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 1
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1007",
+            "content_sha256": "117ac313d1317e522fd452338ae0b9abd042ec2fc2233bc919e79a7a02280a3f"
+          },
+          "evaluation_id": "04a176592d32c11c0dfd17d9c411f2956ca3c7755dd29b4d3f3e3f0c5afbf118",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.44008327290481075,
+          "drawdown": 0.08280565425355801,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1008",
+            "content_sha256": "24f75df2a90d2db4e30332e4ad7ec4eb16f48aa8cd44d368e438161b2a4a5033"
+          },
+          "evaluation_id": "2dd77a065628d98bac2fc68d15b04afc9f1fc79c2e4c19883069a515ffd5181b",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.46829655331617737,
+          "drawdown": 0.08830131182499068,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 5
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1009",
+            "content_sha256": "6c061f3d9ee5a37b420a9520dab39f006de7033a02464e6fc888c60db13001eb"
+          },
+          "evaluation_id": "f59b9998a657c4186135ae468f01e3e8f2bd195de45e2f134d1f7a38e0382861",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.45411631274346154,
+          "drawdown": 0.08568584976513338,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 8
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1010",
+            "content_sha256": "ffae861d962b7642a7c25a261b53386e36481ba34d7b0e199fd9a84b20440bdf"
+          },
+          "evaluation_id": "eb97ca00d8604d5bb66e3752e5d8f2cdad8357c7b755c36ea2c49731c6a73e5b",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.45411631274346154,
+          "drawdown": 0.08568584976513338,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 17
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1011",
+            "content_sha256": "e432e41cda734f82d331ebce4de47b06d630fafb3616651c5835b350d1f84c6f"
+          },
+          "evaluation_id": "942ce2dae29fa12643908e1e7d8b6afab389b637065034b9079b6a382e0dba8d",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.45411631274346154,
+          "drawdown": 0.08568584976513338,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 1457
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1012",
+            "content_sha256": "1ac52780a96d504f3362d5c24bb963c78d443c9ba4f34d7ec2c1a72165860c0c"
+          },
+          "evaluation_id": "1c82db55a69ed7d8c4f5861cd80efeee3eafcf977cdfef262f3e5f9617a721ec",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4487518361999807,
+          "drawdown": 0.08568857941087515,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2915
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1013",
+            "content_sha256": "50d498ea4479205ccb2a0b4cf71185c5fc85fd1094132e27c7584269a20a9312"
+          },
+          "evaluation_id": "d4d043e8ab567a43456d24357a876bfc80789631a9f28e5963499b5ea0008c06",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4463788587547741,
+          "drawdown": 0.085469100511806,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 485
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1014",
+            "content_sha256": "7a5663135049d04f3e2b688735871c48abea35ee5096ea5463b5f9de5203905b"
+          },
+          "evaluation_id": "2b814f8cc4c9c9b13b264a9f655cbfe085842832f4fa8a37853614b4671aa5f7",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.45411631274346154,
+          "drawdown": 0.08568584976513338,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 971
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1015",
+            "content_sha256": "a968f461c78ac6eb5f4c8fd8081e44dcb3c9093435afdfff9f7e533cd7d3ef6d"
+          },
+          "evaluation_id": "3bb8f3c9c4fe25342fc4bf75a8539f52fb81b387ac118f346e80ff2182f6cb16",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4102249887148244,
+          "drawdown": 0.07901413079730757,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 4170
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1016",
+            "content_sha256": "dee4e9ef254e4bb29b82b49fc9ee0743167873ceeee08c4af37430eabf597d15"
+          },
+          "evaluation_id": "6343e1e6804beab24dc78c2c6111d4ae8a38fd44d05d48a967eafb5efceff304",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4029300850527451,
+          "drawdown": 0.08140986855575538,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 3693
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1017",
+            "content_sha256": "2f586726c2d5127862fa3f819711580e3934867d70f2d66ad601f6e1d9b0e4eb"
+          },
+          "evaluation_id": "a5654b495bef3f52511eb2a2d9c1c7be022690943e5e2010f4d5764f6bd6f260",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.43009845822085646,
+          "drawdown": 0.08402775197305035,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 3687
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1018",
+            "content_sha256": "061e883c210349e5e0301fab5fa6bc2cc818d96304882988c07c36a9774ec753"
+          },
+          "evaluation_id": "761e68b7173be258bdb5bd54ab134da0dd63f40a677dbba5ecf151ff781e98e3",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4370086038166421,
+          "drawdown": 0.08408610791644977,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 4182
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1019",
+            "content_sha256": "03171784184e31e63624b8f280432e31a224835333309fb0952bfbd9d39b732d"
+          },
+          "evaluation_id": "352b6b630771c6fdb7fa9322bc4354b59bb4c55e1f0d7b6f346f58fbe54a5e18",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4194952802474936,
+          "drawdown": 0.07888707839458198,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2713
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1020",
+            "content_sha256": "c598eec4cc406d1e6844df675c8926434374eb5e63c02ff1ebd063ef05d01aa7"
+          },
+          "evaluation_id": "30e99948663a71a4ce2167542cf11def855d9a3c31891a1d49beb8186b48d68c",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4118621531384743,
+          "drawdown": 0.08507275352655042,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2236
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1021",
+            "content_sha256": "37a322ad7516231d4c23bd13cfbe8b0ab3ae73578c7b18d69539792094384cb6"
+          },
+          "evaluation_id": "c4d6c54c70270b7e80946dc0402bbaa843f0e38eac450bfcce7e5557ae28db87",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.43905397683387304,
+          "drawdown": 0.08502338068033044,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2230
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1022",
+            "content_sha256": "2dbcd3bd268388485e47f6707774ad8904ae6b9ed5216b102cbf946725e00845"
+          },
+          "evaluation_id": "6b254e1868b733796752bc167b52e386fe889ba7b5dd88f883a6e48493b619cd",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.44594544484707965,
+          "drawdown": 0.08416293200885572,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2725
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1023",
+            "content_sha256": "7cb04d3a2eabbf88d70bd16b64cfcf3f4a43f60484fec5a25d70f1f897a7fc44"
+          },
+          "evaluation_id": "7769fcf05f11aa4ae1caf33f37db92010a2dac3f8782a81226c98f33c33ddf3e",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4381845506937636,
+          "drawdown": 0.08295084479188064,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2631
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1024",
+            "content_sha256": "f24c4f0cf41261ca4fdb65d01e50090b5f71f2fd6feee7004c6e470f065cc274"
+          },
+          "evaluation_id": "ceef92f1149912984dbefa0a3932d81802cf2ef85ef17406d9d0c6d55bbb0574",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4299304716544996,
+          "drawdown": 0.08367803329124424,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2154
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1025",
+            "content_sha256": "5fa77e5709cdcd64dc5be8866282539d8ad7f9931fab20e814b8a597d160b48f"
+          },
+          "evaluation_id": "8d4b92615c2bf7512ecc50856855d1b272ef9444131fad4a27349c0346bcbea6",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4583845895677374,
+          "drawdown": 0.08833741415990282,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2148
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1026",
+            "content_sha256": "84b02af896226bd369724b64034ed143d088eb777bd082f8607dffd261f50588"
+          },
+          "evaluation_id": "908fca37b3e25b124611e6892863d582393d2bc367904907eae7a364a54bca50",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.46605374521978926,
+          "drawdown": 0.08819003708502993,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2643
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1027",
+            "content_sha256": "9fdd1fe2b5d61fd9904f045cd22fb4e24f2d6c7f651ef66288650b99eb245fa4"
+          },
+          "evaluation_id": "bd83986a357e7e35690dadee7ac65bca189d85e984188f48cd4c70f52cc7649c",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4365838451748807,
+          "drawdown": 0.08291743400864904,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 4090
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1028",
+            "content_sha256": "aa4aa676f222d42900957d8e8a665687e927208befa5ee68567cf36e9a960a17"
+          },
+          "evaluation_id": "348780402190c19bde960f16a46d97ef7d0d9dbf6eb1658e0a5e5d0f63ae772f",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4288214437301048,
+          "drawdown": 0.08732030873044605,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 3613
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1029",
+            "content_sha256": "d54a474949946d65ebb290235a36b4ff36c00732d9665428583142cb36cf5851"
+          },
+          "evaluation_id": "c7a38d286908f7877451481b828a0faacdd3670bb9d8b0661740965ce7fbbae5",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.45783202832459424,
+          "drawdown": 0.08823908240457345,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 3607
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1030",
+            "content_sha256": "f5eab41096cd6e373518d79d8cad9bf0f35662aedab499991268ac39052da14f"
+          },
+          "evaluation_id": "39575f8677242b9382b9d08f3512a78ea7d9c16226ebcaeb1b156f6be3e8e42a",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4652324298795181,
+          "drawdown": 0.08834485876869536,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 4102
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1031",
+            "content_sha256": "7df263ccf669bccdf28759670667dfc0d460c1f4fdd2b12b50ec5487746d416d"
+          },
+          "evaluation_id": "457a051cdbbb414ded31e4997f21cc1f38911ecf4f60e73a37fb4093a2770c47",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4079757396129464,
+          "drawdown": 0.08140986855575538,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2253
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1032",
+            "content_sha256": "0228ce238e3f9563302f228f27654aca8b3d0802acfac7344d26b3a87f1bd318"
+          },
+          "evaluation_id": "d929a8117675a4732b35f1204607ff6426e828b155d6978752b08fecfacc4f36",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.415239193650488,
+          "drawdown": 0.07892674109106579,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2748
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1033",
+            "content_sha256": "aa5acd588d522486ba3fa82873e6934854d7635e1adfd7b0511e56da18ea3f13"
+          },
+          "evaluation_id": "335bde7a6decb50bbe383f14cce0111cb75be91537bb05b9418f19835c6a9124",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4418221314047457,
+          "drawdown": 0.08422980696857707,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2742
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1034",
+            "content_sha256": "206a0f8cd7bd1ea49f5025fe5d057051b1687487d153d05d55a6b299aa70d860"
+          },
+          "evaluation_id": "d8920be536390f89dc6b988be68eb2cf151441fefe5177a7af3f540b0988cf54",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.43485752736249994,
+          "drawdown": 0.08412692727682103,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2265
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1035",
+            "content_sha256": "54e4452ffeba0ebc8dbf833d244b41886cfae6a741d774334d765d2ffdf0a561"
+          },
+          "evaluation_id": "b6fa4b359a78f4ed03fa598d9080145dea881aabaa1bf0ab22549ba649d5c1fc",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.40658970912110437,
+          "drawdown": 0.08507275352655042,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 3712
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1036",
+            "content_sha256": "155671751ad887cc79d13cbe4d0de0268849acd41f5f3dd36cb996033134cd77"
+          },
+          "evaluation_id": "f6b259ca50845634a67f997894b70d35eb67176efa21a72140e6b267764a7b0f",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4145086718713371,
+          "drawdown": 0.0789794109155364,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 4207
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1037",
+            "content_sha256": "00ab954d905e94388fa20456d6873717ea4fd219d3fe5a1e1e37413512cffad1"
+          },
+          "evaluation_id": "5c492ca44555c3539f8dad64d9e3adc42afcf2c65b40a51d14b8a75b92cd810a",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4411617790181652,
+          "drawdown": 0.08409632528271671,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 4201
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1038",
+            "content_sha256": "f283e87b2d84ff71034f44028b84438e90a606ac3f3e1c1569fffd49e5ab5ed1"
+          },
+          "evaluation_id": "f690ad94d365c195b3eb2c3c392066d31b462e9a50a6a3d9429691ba8523723c",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.43434816407309484,
+          "drawdown": 0.08502338068033044,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 3724
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1039",
+            "content_sha256": "a36f0f7a605185e5d793c6a27ee95c1e5bfc48f4a5289cff69426db1a0b07a52"
+          },
+          "evaluation_id": "8de8310fa3a07364447082bb6841eecefdf46a54f6e0fa4f94e644917b5adacf",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4247161876901866,
+          "drawdown": 0.08367803329124424,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 3630
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1040",
+            "content_sha256": "088529db79e760468cdbe14fd9b4aa4a1a4d884df7095c868b95a8be031552da"
+          },
+          "evaluation_id": "9b703dbb0733f151faee175c0269492f3ae68bda5ece6e058f2c5846c65e337b",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4329019445922677,
+          "drawdown": 0.08289608556798944,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 4125
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1041",
+            "content_sha256": "6dcf8356da3ccb7bbc98ca25815e3106e5bb97ca4c673954d8d5170cc43d2938"
+          },
+          "evaluation_id": "8f0c4dd385570c084d9c3e32622fe21e0dbf6b9814fe76bf93cb405099c71eeb",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.46098173420691824,
+          "drawdown": 0.08820398196626078,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 4119
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1042",
+            "content_sha256": "40b133360cb5a9e7d60a08e266b5ff6c2266127952f6773b710142435ae99a75"
+          },
+          "evaluation_id": "49ddad494fc7a4e000c34599d9a6f305ff251df9a090c375152904f1dd8eec24",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4534865315786054,
+          "drawdown": 0.08830329881263654,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 3642
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1043",
+            "content_sha256": "4fe68b4a071af3ae35749b36da5c216c2420014fb5abdf0d86170229e83c8f8c"
+          },
+          "evaluation_id": "d01b61f4f6d9962fd700bb1df547c0751b884cde5512e8fb176a9d1a448eab5a",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4341664210248899,
+          "drawdown": 0.08732030873044605,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2173
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1044",
+            "content_sha256": "a182c6f5540356e23fbe9f86d0b12c3097cd29ef5e4bc8ea584608a57b4886c6"
+          },
+          "evaluation_id": "9db4898131d9e85f15268fc53b5229c70c77dc023c30c03be63bdaeec89bb8ea",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.44220925740111494,
+          "drawdown": 0.08292313286176056,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2668
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1045",
+            "content_sha256": "e6f5d7418dbfbacb2e78cf087258b81fa272b2feb88edf317eda0cdb4472d347"
+          },
+          "evaluation_id": "d06ff3a7f921a1276082013d679180b157b89710127e9f250a3f1f3951704d19",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.47024505877296474,
+          "drawdown": 0.08840212587879626,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2662
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1046",
+            "content_sha256": "08f9606864acb158ebddf9c2ebace4944b29a20e18a45feea71c3b85afb7513d"
+          },
+          "evaluation_id": "b53b85f843d5afc9781b2ad1862cc6dcee54d30a2fde1f97b7f21afe63faa514",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4629767546816539,
+          "drawdown": 0.08820112359238919,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2185
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1047",
+            "content_sha256": "9e7ebcf68ddb1806b44878cc248f76927802f9cd369309b507358eef5fdd2e67"
+          },
+          "evaluation_id": "d18580880a9c55bef4a55dd6068d99d44ed7381e531e050f2c055deb8198d5df",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4079757396129464,
+          "drawdown": 0.08140986855575538,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2388
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1048",
+            "content_sha256": "932576a1bf869e44bc6e5c94d19ad1d537ef6b87acfbee7f0a0f60e0fad7fdc1"
+          },
+          "evaluation_id": "3a85b7f17831d09d355fba1715e6fe05ffb737da71373aae062d88659aa48069",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.415239193650488,
+          "drawdown": 0.07892674109106579,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2883
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1049",
+            "content_sha256": "5980c020c93c474179a53b329ad21b0368dc441550a40cf4277f56b5971a03e8"
+          },
+          "evaluation_id": "e9ea9f78dc45a45e97a70ff88892752f42943c4c62791ab4f9c1789279a7a9f5",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4418221314047457,
+          "drawdown": 0.08422980696857707,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2877
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1050",
+            "content_sha256": "3e789148eb561b45eb4c37fb139e30eef624fc0bedcb0a9aadb37f298550260c"
+          },
+          "evaluation_id": "a374e89a028017fd2c258e28d51fe621f85799374513d8f08aad6708512a01d3",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.43485752736249994,
+          "drawdown": 0.08412692727682103,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2400
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1051",
+            "content_sha256": "a0dc303574ab1d2eebcb802a1509b87c97a5bfff9f52b2aa526050aae85df45b"
+          },
+          "evaluation_id": "b5dfa0e49b56f80811b5f90058ac30cbf783864769637be634392fb3c5fa8809",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.40658970912110437,
+          "drawdown": 0.08507275352655042,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 3847
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1052",
+            "content_sha256": "f60958b985f89e76e7b7fd2b35daf72f6c597cb9d1afccdd373d50526b956aee"
+          },
+          "evaluation_id": "3df04cf266ae991f84731b4dd543335942472b672090326cd1307862c4e240a6",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4145086718713371,
+          "drawdown": 0.0789794109155364,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 4342
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1053",
+            "content_sha256": "c87a8606122863265a08b0f77e8e586d856dc66a008f776f325cd5aa19ee9c96"
+          },
+          "evaluation_id": "e121299f525897145e6b23375b860d74111ff3cdf7ebec370a3933eedf9f55a6",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4411617790181652,
+          "drawdown": 0.08409632528271671,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 4336
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1054",
+            "content_sha256": "8ce5be56b3b0c36514ef128d4a0e1c558990dfc05c3be558d03966ea53a72356"
+          },
+          "evaluation_id": "63fb5d13c35f1d5637aac4120e580898f7d1afb3e2a4f60a173004b1fcbbfbdc",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.43434816407309484,
+          "drawdown": 0.08502338068033044,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 3859
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1055",
+            "content_sha256": "bf557888c0112a560ac9bd9c1faca9a4da506e07b274eb9810ebd4090e9ffc6a"
+          },
+          "evaluation_id": "42be4b455471c89ee6d1e178d38c2c1f9c0c395fcfccf0de4f95b75df75c0f69",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4247161876901866,
+          "drawdown": 0.08367803329124424,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 3765
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1056",
+            "content_sha256": "37c9fc674a16b881b0405b1ac2e3ba293b3b75eb6e3d639b795fd37e47940515"
+          },
+          "evaluation_id": "70dd734b343a15630c559836e5a5c4cf8ecf2c5ff7c83cb3ab389cc6e8ff7c8c",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4329019445922677,
+          "drawdown": 0.08289608556798944,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 4260
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1057",
+            "content_sha256": "4b35ca2a35cb9df06c84905e75596c2a781aaf5d0450bfafe97875f4126f3650"
+          },
+          "evaluation_id": "e4a01a6406e62ee2b47833c3321361377f4d98ee759880b657d6b38fcfaa6004",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.46098173420691824,
+          "drawdown": 0.08820398196626078,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 4254
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1058",
+            "content_sha256": "13d444ff1f750ad308a90782501230e07150e22fa5d44e1a33f262f69fb962c2"
+          },
+          "evaluation_id": "3c5a2ea5431c251c31072d711dd8ef8346d4bd84cb950d218cf239b26147c949",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4534865315786054,
+          "drawdown": 0.08830329881263654,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 3777
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1059",
+            "content_sha256": "8973a4c21c829171c6e27fd0e3aca5b3495062697ab301e139b70606d800e388"
+          },
+          "evaluation_id": "1926c29545fe33eccd5bfe1f1d67ea5832bbc6ec47d82cacdd702eb41d54231a",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4341664210248899,
+          "drawdown": 0.08732030873044605,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2308
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1060",
+            "content_sha256": "568800762a1046148faea62343e713f1cfe337859312888a34c647f2cdcd359d"
+          },
+          "evaluation_id": "b4472d1bb707b25339f4a16187c767865a168d9ece3f9bddc3edc158f0f8b02e",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.44220925740111494,
+          "drawdown": 0.08292313286176056,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2803
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1061",
+            "content_sha256": "00f79c15c283f302aecca64b69b08f3609c72ead0efd1fa1b7095827f0389ca8"
+          },
+          "evaluation_id": "c5add6f2996584ed96d0d550e4bebc2d29d96b62983e251782e77b305c9fd680",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.47024505877296474,
+          "drawdown": 0.08840212587879626,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2797
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1062",
+            "content_sha256": "827cc6a5323e459936c220b24cf99498e80dababf420552144a8cf8026defa48"
+          },
+          "evaluation_id": "d71fa0ba0e67fec7864c108ab092c10895fcbb8f832be42c2e6f238979e96857",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4629767546816539,
+          "drawdown": 0.08820112359238919,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2320
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1063",
+            "content_sha256": "a9812a530b4a146d5d71ad1001731803b16e85aa8555616c5e99239cefdb1fbc"
+          },
+          "evaluation_id": "d87b002708e0c7a7dd1b2acc830f18d41a50881370543116c1e97d21191a42eb",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4102249887148244,
+          "drawdown": 0.07901413079730757,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 4359
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1064",
+            "content_sha256": "6401b821456f7418a1612def9fa91d540c0a55afef0959c803668cf6f4f9afaf"
+          },
+          "evaluation_id": "b82fadde018d96ca186bd73785ebdc8c9fe35920f854e0c23f5d7bcf2b2c05da",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4029300850527451,
+          "drawdown": 0.08140986855575538,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 3882
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1065",
+            "content_sha256": "909b45631ab6705cd415f8564b08bca33fb649a927ab6b8fc1194e9b5745f1cc"
+          },
+          "evaluation_id": "13a6a3138ee85c3c7a1c884098c25a95c18387809092929ced020a5e66f71d1b",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.43009845822085646,
+          "drawdown": 0.08402775197305035,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 3876
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1066",
+            "content_sha256": "aa957502da403d97dfa29041cb702391091826ad509351fc101bd4fb761a119e"
+          },
+          "evaluation_id": "ed7acfce130f5353f79224b47cae69c3b931ed736d3fd5085e1c3aa969ce1452",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4370086038166421,
+          "drawdown": 0.08408610791644977,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 4371
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1067",
+            "content_sha256": "d202576e718721e497be59b29f16f4da04c8bf0bc5cabbd54a431afece1e6056"
+          },
+          "evaluation_id": "948b52d1a5bf8d34d7ae14b3b3d04c98b711042f5c8a0a8a6a33b7e67641bc60",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4194952802474936,
+          "drawdown": 0.07888707839458198,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2902
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1068",
+            "content_sha256": "7a50737bebe731c209d4397547b286f8511bc56692b6775d5aefceba3bc0812e"
+          },
+          "evaluation_id": "8d40c407903a0e085834cc63c7392fce534d266f8ecf22886a274758b8b8afac",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4118621531384743,
+          "drawdown": 0.08507275352655042,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2425
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1069",
+            "content_sha256": "4686ec787b0870a3c684c87aa755473ddfd6455019dd008a20558e2bdc775de5"
+          },
+          "evaluation_id": "550349897e04395cc8c35986c3f0a7d40ee50de829f5fa61b743918909d6e5f5",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.43905397683387304,
+          "drawdown": 0.08502338068033044,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2419
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1070",
+            "content_sha256": "f1e4595668ea13248b7d19cd0fb4ce3ca84f4c0222f45855546695ae3d1a1c63"
+          },
+          "evaluation_id": "dc351e68ab7488411a64b56a6dd967d36dacd8b44ee9d22c7c8e5f32ee7d2f33",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.44594544484707965,
+          "drawdown": 0.08416293200885572,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2914
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1071",
+            "content_sha256": "4788f0041cf8b41eb8fbf1e29515675f82c14c902a0726f607e881eb9247779c"
+          },
+          "evaluation_id": "1ba506aefbb9e60ddfa0c026dc48948a5fe69e9537a80f09115a6acd68d1fa2e",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4381845506937636,
+          "drawdown": 0.08295084479188064,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2820
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1072",
+            "content_sha256": "e7547b6b23ede40c67d12547fbb22b84a157a2018fb2ce05dd8b686e3d0c0493"
+          },
+          "evaluation_id": "2d28cfbaa871bea6bf832a10a63b0b03754a00d773b42b22873bfa430ab29339",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4299304716544996,
+          "drawdown": 0.08367803329124424,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2343
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1073",
+            "content_sha256": "17dfc2dd85c5b612bfe58cc2480ca6fb363ecdd1b6bfe9421e4ba5ddb19628d8"
+          },
+          "evaluation_id": "ffcfed5f50ba03a5455e8501773e19c9567b03396924bab8e2905e5659234770",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4583845895677374,
+          "drawdown": 0.08833741415990282,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2337
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1074",
+            "content_sha256": "aa05af5f1cebae8adb2209b6d663e78afda598b66bc11743c5962a5f63260ab2"
+          },
+          "evaluation_id": "c6a7f5a78a43d925f0d271ecff61b4b780ddee0f6fdbd99c7c6b9019e692ed76",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.46605374521978926,
+          "drawdown": 0.08819003708502993,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 2832
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1075",
+            "content_sha256": "745bbaa10e96aecc9bb9f30d0bb1a2d95501e721bb50dc92bc91fb2e036cf490"
+          },
+          "evaluation_id": "18151ef9836e2d669a31421a956ca3902c0d7811b567b9f4d292e3d9922c4815",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4365838451748807,
+          "drawdown": 0.08291743400864904,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 4279
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1076",
+            "content_sha256": "669468d570f7a58a70ab6dd98ac55dc9274fe4d9bda593e038ebf379018be961"
+          },
+          "evaluation_id": "1b21074b05ba1eadea1da42f360e2ab6991bba5d4f915a65c8a84d12b3b1d1df",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4288214437301048,
+          "drawdown": 0.08732030873044605,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 3802
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1077",
+            "content_sha256": "58651060511b791c38cde4d4e7e168b56ae4e3cec1e2e3d5a4b5412a70a7121f"
+          },
+          "evaluation_id": "1ae9a22c8d0649160540fe4d25f5ee857f0e45197cb873dab5f21970e305e0cc",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.45783202832459424,
+          "drawdown": 0.08823908240457345,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 3796
+        },
+        {
+          "type": "PerformanceFacts",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S018-C1078",
+            "content_sha256": "d60b3778e8fa05bd05ac3611275fa7641221cb898273b6ed054e36e7c3deb610"
+          },
+          "evaluation_id": "4af0f3304eaf4297022480789db91c5d4734a30a2d64d777f1cb6a90f2359499",
+          "scenario": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+          },
+          "annual_return": 0.4652324298795181,
+          "drawdown": 0.08834485876869536,
+          "benchmark_return": 1.1195962552673357,
+          "benchmark_drawdown": 0.5730512034565817,
+          "point_index": 4291
+        }
+      ],
+      "stress_performance": {
+        "type": "PerformanceFacts",
+        "candidate": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S018-C9380",
+          "content_sha256": "186dffc6fe4df3aec1638030d7c0f65d594b6c9578593c39b5676796fe3c5d4a"
+        },
+        "evaluation_id": "c26f709694624b76dd60f4be1986cf9859ecebff25289ac7f20893a303d5fe4b",
+        "scenario": {
+          "type": "EvaluationScenarioContext",
+          "one_way_cost": 0.002,
+          "measurement_tier": "STRESS",
+          "benchmark_id": "BuyHold",
+          "benchmark_kind": "BUYHOLD",
+          "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+        },
+        "annual_return": 0.4024553606007677,
+        "drawdown": 0.08686620896992336,
+        "benchmark_return": 1.1190347391155737,
+        "benchmark_drawdown": 0.5730487911250425,
+        "point_index": null
+      },
+      "rolling_calmar_excess_q10": {
+        "type": "DiagnosticValue",
+        "metric": "ROLLING_EXCESS_CALMAR_Q10",
+        "unit": "RATIO",
+        "status": "AVAILABLE",
+        "value": -4.696829790875301,
+        "reason": null,
+        "evaluation_ids": [
+          "0ecca4c618631a8fc5722670b02126aa89d729bcce5ed108a8e41c905073d0a0"
+        ]
+      }
+    }
+  ],
+  "family_diagnostics": [
+    {
+      "type": "FamilyDiagnostic",
+      "name": "PBO",
+      "status": "INSUFFICIENT_DATA",
+      "value": null,
+      "reason": "FAMILY_RETURN_MATRIX_NOT_SUPPLIED"
+    },
+    {
+      "type": "FamilyDiagnostic",
+      "name": "DSR_RAW",
+      "status": "INSUFFICIENT_DATA",
+      "value": null,
+      "reason": "FAMILY_RETURN_MATRIX_NOT_SUPPLIED"
+    },
+    {
+      "type": "FamilyDiagnostic",
+      "name": "DSR_EFFECTIVE",
+      "status": "INSUFFICIENT_DATA",
+      "value": null,
+      "reason": "FAMILY_RETURN_MATRIX_NOT_SUPPLIED"
+    }
+  ],
+  "family_limitations": [],
+  "formula_version": "research-assessment-v8",
+  "input_kind": "PERFORMANCE_PROJECTION"
+}
