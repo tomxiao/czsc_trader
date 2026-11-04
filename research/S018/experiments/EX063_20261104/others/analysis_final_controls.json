@@ -1,0 +1,115 @@
+{
+  "status": "PASS",
+  "comparisons": [
+    {
+      "left": "C9387",
+      "right": "C8214",
+      "fields_equal": {
+        "fills": true,
+        "account_daily": true,
+        "trades": true,
+        "actions": true
+      },
+      "metrics_equal": true,
+      "rows": {
+        "fills": 188,
+        "account_daily": 961,
+        "trades": 94,
+        "actions": 30
+      },
+      "status": "EXACT_MATCH"
+    },
+    {
+      "left": "C9380",
+      "right": "C9381",
+      "fields_equal": {
+        "fills": true,
+        "account_daily": true,
+        "trades": true,
+        "actions": true
+      },
+      "metrics_equal": true,
+      "rows": {
+        "fills": 230,
+        "account_daily": 961,
+        "trades": 95,
+        "actions": 30
+      },
+      "status": "EXACT_MATCH"
+    }
+  ],
+  "evidence": {
+    "C9301": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S018",
+        "experiment_id": "EX063_20261104"
+      },
+      "evidence_id": "538fbe5cc57e2c56301a641fcc2f541f630ccd8b99f02d9a0f88e097641de7db.json",
+      "sha256": "538fbe5cc57e2c56301a641fcc2f541f630ccd8b99f02d9a0f88e097641de7db",
+      "media_type": "application/json",
+      "name": "C9301",
+      "schema": "equity_research",
+      "schema_version": 4
+    },
+    "C9380": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S018",
+        "experiment_id": "EX063_20261104"
+      },
+      "evidence_id": "89de59aa866223ba2e15c8265977372aaa72b887b5c2fedb2b1b8f3ff9ac8c38.json",
+      "sha256": "89de59aa866223ba2e15c8265977372aaa72b887b5c2fedb2b1b8f3ff9ac8c38",
+      "media_type": "application/json",
+      "name": "C9380",
+      "schema": "equity_research",
+      "schema_version": 4
+    },
+    "C9381": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S018",
+        "experiment_id": "EX063_20261104"
+      },
+      "evidence_id": "3c19af0ee67bd63875c0271f68436250db980813ded6f7fa4e954c958419690c.json",
+      "sha256": "3c19af0ee67bd63875c0271f68436250db980813ded6f7fa4e954c958419690c",
+      "media_type": "application/json",
+      "name": "C9381",
+      "schema": "equity_research",
+      "schema_version": 4
+    },
+    "C9387": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S018",
+        "experiment_id": "EX063_20261104"
+      },
+      "evidence_id": "2659d5412c94acdaf187cca2d3eef9158b62dda7975d3375c9412af6b7fb0ca6.json",
+      "sha256": "2659d5412c94acdaf187cca2d3eef9158b62dda7975d3375c9412af6b7fb0ca6",
+      "media_type": "application/json",
+      "name": "C9387",
+      "schema": "equity_research",
+      "schema_version": 4
+    },
+    "C8214": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S018",
+        "experiment_id": "EX052_20261104"
+      },
+      "evidence_id": "3bfee1e99cc1cdb0868c074f28802414de006b51a0309e00ef6c4ce4b904037a.json",
+      "sha256": "3bfee1e99cc1cdb0868c074f28802414de006b51a0309e00ef6c4ce4b904037a",
+      "media_type": "application/json",
+      "name": "C8214",
+      "schema": "equity_research",
+      "schema_version": 4
+    }
+  },
+  "method": "SHA-authenticated formal account materialization. Exact economic row list equality after dropping identity-only _id fields; no numeric rounding or tolerance. Full metric dictionary equality.",
+  "account_runs": 0
+}

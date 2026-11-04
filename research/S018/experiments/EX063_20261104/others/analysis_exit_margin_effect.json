@@ -1,0 +1,5725 @@
+{
+  "status": "PASS",
+  "accounts": {
+    "C9301": {
+      "config": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.01,
+        "add_sector_margin": 0.0,
+        "beta_window": 40,
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "metrics": {
+        "annual": 0.4445240730713722,
+        "dd": 0.0854596726297685,
+        "calmar": 5.2015653628484575,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": 0.029747187700000177,
+          "2024": 0.08477861479378324,
+          "2025": 0.9218116366627915,
+          "2026": 0.8937674473834583
+        },
+        "october_return": -0.06553552571326815,
+        "invested_days": 376
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX063_20261104"
+        },
+        "evidence_id": "538fbe5cc57e2c56301a641fcc2f541f630ccd8b99f02d9a0f88e097641de7db.json",
+        "sha256": "538fbe5cc57e2c56301a641fcc2f541f630ccd8b99f02d9a0f88e097641de7db",
+        "media_type": "application/json",
+        "name": "C9301",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C9380": {
+      "config": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.01,
+        "add_sector_margin": 0.0,
+        "beta_window": 40,
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.005,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "metrics": {
+        "annual": 0.45411631274346154,
+        "dd": 0.08568584976513338,
+        "calmar": 5.299781865829695,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": 0.04396844450000015,
+          "2024": 0.08301369577267903,
+          "2025": 0.9468454981448442,
+          "2026": 0.8941647366388563
+        },
+        "october_return": -0.06572742136408227,
+        "invested_days": 373
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX063_20261104"
+        },
+        "evidence_id": "89de59aa866223ba2e15c8265977372aaa72b887b5c2fedb2b1b8f3ff9ac8c38.json",
+        "sha256": "89de59aa866223ba2e15c8265977372aaa72b887b5c2fedb2b1b8f3ff9ac8c38",
+        "media_type": "application/json",
+        "name": "C9380",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    }
+  },
+  "counts": {
+    "original_cycles": 94,
+    "margin_cycles": 95,
+    "removed_entries": 0,
+    "new_entries": 1,
+    "common_entry_changed_execution_path": 4,
+    "common_entry_only_size_fee_changes": 71,
+    "exact_unchanged_cycles": 19,
+    "original_successful_adds": 40,
+    "margin_successful_adds": 40
+  },
+  "final_equity_delta": 10391.578268699814,
+  "net_pnl_delta_by_actual_path_group": {
+    "common_entry_path_changed": 3130.101705,
+    "common_entry_path_unchanged": 7299.420563700007,
+    "new_entries": -37.944,
+    "removed_entries": 0
+  },
+  "changed_execution_paths": [
+    {
+      "entry_at": "2023-09-22T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 48252.91471,
+          "cycle_id": "352ed8f27b9b0e1e6a4bde1d40c0b52ec60231d8fd397cd0159a9402002f0985:0",
+          "entry_at": "2023-09-22T13:30:00.000000Z",
+          "exit_at": "2023-09-29T20:00:00.000000Z",
+          "income": 46604.42892,
+          "net_pnl": -1648.48579,
+          "net_return": -0.0341634448,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2023-09-22T13:30:00.000000Z",
+            "interval_end": "2023-09-22T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 68.57,
+            "quantity": 703,
+            "fees": 48.20471
+          },
+          {
+            "interval_start": "2023-09-29T13:30:00.000000Z",
+            "interval_end": "2023-09-29T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 66.36,
+            "quantity": 703,
+            "fees": 46.65108
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 48252.91471,
+          "cycle_id": "51b8418f41294e15940a417ef3c2114ac54ca62c41ee7fbe8d08d41e8778a197:0",
+          "entry_at": "2023-09-22T13:30:00.000000Z",
+          "exit_at": "2023-09-27T20:00:00.000000Z",
+          "income": 47840.47164,
+          "net_pnl": -412.44307,
+          "net_return": -0.0085475266,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2023-09-22T13:30:00.000000Z",
+            "interval_end": "2023-09-22T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 68.57,
+            "quantity": 703,
+            "fees": 48.20471
+          },
+          {
+            "interval_start": "2023-09-27T13:30:00.000000Z",
+            "interval_end": "2023-09-27T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 68.12,
+            "quantity": 703,
+            "fees": 47.88836
+          }
+        ]
+      },
+      "exit_changed": true,
+      "buy_path_changed": false,
+      "net_pnl_delta": 1236.04272,
+      "net_return_delta": 0.025615918199999997
+    },
+    {
+      "entry_at": "2023-11-17T14:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 19169.15,
+          "cycle_id": "b046e0a9a30cba782c521bea30291ea4641cde24b3a21650e6c8d9b83a5953a9:0",
+          "entry_at": "2023-11-17T14:30:00.000000Z",
+          "exit_at": "2023-11-27T21:00:00.000000Z",
+          "income": 19198.2825,
+          "net_pnl": 29.1325,
+          "net_return": 0.0015197596,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2023-11-17T14:30:00.000000Z",
+            "interval_end": "2023-11-17T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 76.6,
+            "quantity": 250,
+            "fees": 19.15
+          },
+          {
+            "interval_start": "2023-11-27T14:30:00.000000Z",
+            "interval_end": "2023-11-27T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 76.87,
+            "quantity": 250,
+            "fees": 19.2175
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 19399.1798,
+          "cycle_id": "a7031cbdc59277f3239c035b6eb46f849788a083b0d53f25e721020f8d8f2e4a:0",
+          "entry_at": "2023-11-17T14:30:00.000000Z",
+          "exit_at": "2023-11-22T21:00:00.000000Z",
+          "income": 19512.0684,
+          "net_pnl": 112.8886,
+          "net_return": 0.005819246,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2023-11-17T14:30:00.000000Z",
+            "interval_end": "2023-11-17T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 76.6,
+            "quantity": 253,
+            "fees": 19.3798
+          },
+          {
+            "interval_start": "2023-11-22T14:30:00.000000Z",
+            "interval_end": "2023-11-22T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 77.2,
+            "quantity": 253,
+            "fees": 19.5316
+          }
+        ]
+      },
+      "exit_changed": true,
+      "buy_path_changed": false,
+      "net_pnl_delta": 83.7561,
+      "net_return_delta": 0.0042994864
+    },
+    {
+      "entry_at": "2024-07-01T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 37586.52898,
+          "cycle_id": "51fbfc1c2461b81b42aa108aa2d978e3f2539dae96c2717a7eafb502c6bb5169:0",
+          "entry_at": "2024-07-01T13:30:00.000000Z",
+          "exit_at": "2024-07-09T20:00:00.000000Z",
+          "income": 37017.04325,
+          "net_pnl": -569.48573,
+          "net_return": -0.0151513254,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-07-01T13:30:00.000000Z",
+            "interval_end": "2024-07-01T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 130.5,
+            "quantity": 142,
+            "fees": 18.531
+          },
+          {
+            "interval_start": "2024-07-05T13:30:00.000000Z",
+            "interval_end": "2024-07-05T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 136.82,
+            "quantity": 139,
+            "fees": 19.01798
+          },
+          {
+            "interval_start": "2024-07-09T13:30:00.000000Z",
+            "interval_end": "2024-07-09T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 131.75,
+            "quantity": 281,
+            "fees": 37.02175
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 38121.70362,
+          "cycle_id": "0d8437a117b22f73ad1e800bfe7005ce3200d1f491b284f5e614b5b9bc729c5c:0",
+          "entry_at": "2024-07-01T13:30:00.000000Z",
+          "exit_at": "2024-07-08T20:00:00.000000Z",
+          "income": 37414.430925,
+          "net_pnl": -707.272695,
+          "net_return": -0.0185530191,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-07-01T13:30:00.000000Z",
+            "interval_end": "2024-07-01T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 130.5,
+            "quantity": 144,
+            "fees": 18.792
+          },
+          {
+            "interval_start": "2024-07-05T13:30:00.000000Z",
+            "interval_end": "2024-07-05T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 136.82,
+            "quantity": 141,
+            "fees": 19.29162
+          },
+          {
+            "interval_start": "2024-07-08T13:30:00.000000Z",
+            "interval_end": "2024-07-08T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 131.295,
+            "quantity": 285,
+            "fees": 37.419075
+          }
+        ]
+      },
+      "exit_changed": true,
+      "buy_path_changed": false,
+      "net_pnl_delta": -137.786965,
+      "net_return_delta": -0.003401693699999998
+    },
+    {
+      "entry_at": "2025-05-22T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 71915.57373,
+          "cycle_id": "de113c48ace8a46141686793a2ad38b7cb52842d3669e499f5522d3b3e7fb681:0",
+          "entry_at": "2025-05-22T13:30:00.000000Z",
+          "exit_at": "2025-05-30T20:00:00.000000Z",
+          "income": 72245.80188,
+          "net_pnl": 330.22815,
+          "net_return": 0.0045918865,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-05-22T13:30:00.000000Z",
+            "interval_end": "2025-05-22T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 95.41,
+            "quantity": 753,
+            "fees": 71.84373
+          },
+          {
+            "interval_start": "2025-05-30T13:30:00.000000Z",
+            "interval_end": "2025-05-30T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 96.04,
+            "quantity": 753,
+            "fees": 72.31812
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 72870.62783,
+          "cycle_id": "8ee533e3f424c9b89f98bbdb83d2079ddaea202e1a346ed7a72613e5205d5d14:0",
+          "entry_at": "2025-05-22T13:30:00.000000Z",
+          "exit_at": "2025-05-29T20:00:00.000000Z",
+          "income": 75148.94583,
+          "net_pnl": 2278.318,
+          "net_return": 0.0312652446,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-05-22T13:30:00.000000Z",
+            "interval_end": "2025-05-22T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 95.41,
+            "quantity": 763,
+            "fees": 72.79783
+          },
+          {
+            "interval_start": "2025-05-29T13:30:00.000000Z",
+            "interval_end": "2025-05-29T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 98.59,
+            "quantity": 763,
+            "fees": 75.22417
+          }
+        ]
+      },
+      "exit_changed": true,
+      "buy_path_changed": false,
+      "net_pnl_delta": 1948.0898500000003,
+      "net_return_delta": 0.0266733581
+    }
+  ],
+  "same_path_size_changes": [
+    {
+      "entry_at": "2023-10-04T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 94212.16805,
+          "cycle_id": "3924faf9158ad1641957c3023e45712a9e9fde8265c4fecda01c5fd7f304d02a:0",
+          "entry_at": "2023-10-04T13:30:00.000000Z",
+          "exit_at": "2023-10-11T20:00:00.000000Z",
+          "income": 95152.2122,
+          "net_pnl": 940.04415,
+          "net_return": 0.0099779484,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2023-10-04T13:30:00.000000Z",
+            "interval_end": "2023-10-04T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 68.31,
+            "quantity": 692,
+            "fees": 47.27052
+          },
+          {
+            "interval_start": "2023-10-09T13:30:00.000000Z",
+            "interval_end": "2023-10-09T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 69.61,
+            "quantity": 673,
+            "fees": 46.84753
+          },
+          {
+            "interval_start": "2023-10-11T13:30:00.000000Z",
+            "interval_end": "2023-10-11T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 69.72,
+            "quantity": 1365,
+            "fees": 95.1678
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 95454.68933,
+          "cycle_id": "5db954399b159cbdfbe17a02234b0f1d3765783b3f5402bdf900caeca20e8be9:0",
+          "entry_at": "2023-10-04T13:30:00.000000Z",
+          "exit_at": "2023-10-11T20:00:00.000000Z",
+          "income": 96406.95224,
+          "net_pnl": 952.26291,
+          "net_return": 0.0099760726,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2023-10-04T13:30:00.000000Z",
+            "interval_end": "2023-10-04T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 68.31,
+            "quantity": 701,
+            "fees": 47.88531
+          },
+          {
+            "interval_start": "2023-10-09T13:30:00.000000Z",
+            "interval_end": "2023-10-09T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 69.61,
+            "quantity": 682,
+            "fees": 47.47402
+          },
+          {
+            "interval_start": "2023-10-11T13:30:00.000000Z",
+            "interval_end": "2023-10-11T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 69.72,
+            "quantity": 1383,
+            "fees": 96.42276
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 12.218760000000088,
+      "net_return_delta": -1.8758000000004132e-06
+    },
+    {
+      "entry_at": "2023-10-16T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 47250.04284,
+          "cycle_id": "34e1b5b9f8bf01595284fbb4bae7cb3ed910fde4b6698aab459e12e4fbee04be:0",
+          "entry_at": "2023-10-16T13:30:00.000000Z",
+          "exit_at": "2023-10-19T20:00:00.000000Z",
+          "income": 47613.45888,
+          "net_pnl": 363.41604,
+          "net_return": 0.0076913378,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2023-10-16T13:30:00.000000Z",
+            "interval_end": "2023-10-16T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 69.01,
+            "quantity": 684,
+            "fees": 47.20284
+          },
+          {
+            "interval_start": "2023-10-19T13:30:00.000000Z",
+            "interval_end": "2023-10-19T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 69.68,
+            "quantity": 684,
+            "fees": 47.66112
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 47871.75393,
+          "cycle_id": "9e97c101f6631ae73202de228d13ec61e8d71f8b04f474e5772b7abede898d23:0",
+          "entry_at": "2023-10-16T13:30:00.000000Z",
+          "exit_at": "2023-10-19T20:00:00.000000Z",
+          "income": 48239.95176,
+          "net_pnl": 368.19783,
+          "net_return": 0.0076913378,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2023-10-16T13:30:00.000000Z",
+            "interval_end": "2023-10-16T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 69.01,
+            "quantity": 693,
+            "fees": 47.82393
+          },
+          {
+            "interval_start": "2023-10-19T13:30:00.000000Z",
+            "interval_end": "2023-10-19T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 69.68,
+            "quantity": 693,
+            "fees": 48.28824
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 4.781790000000001,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2023-10-23T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 47288.98174,
+          "cycle_id": "b9aa17a7ffe9a3817446c8f8cb6ba0c14469b264b2407780b03efa12a4091a27:0",
+          "entry_at": "2023-10-23T13:30:00.000000Z",
+          "exit_at": "2023-10-26T20:00:00.000000Z",
+          "income": 46933.16985,
+          "net_pnl": -355.81189,
+          "net_return": -0.0075242028,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2023-10-23T13:30:00.000000Z",
+            "interval_end": "2023-10-23T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 66.82,
+            "quantity": 707,
+            "fees": 47.24174
+          },
+          {
+            "interval_start": "2023-10-26T13:30:00.000000Z",
+            "interval_end": "2023-10-26T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 66.45,
+            "quantity": 707,
+            "fees": 46.98015
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 47890.96312,
+          "cycle_id": "5bc19764ee39e5f69d1fcb066b50c26d3fd1c7ab47e5cdde9464a43c7e1a12ef:0",
+          "entry_at": "2023-10-23T13:30:00.000000Z",
+          "exit_at": "2023-10-26T20:00:00.000000Z",
+          "income": 47530.6218,
+          "net_pnl": -360.34132,
+          "net_return": -0.0075242028,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2023-10-23T13:30:00.000000Z",
+            "interval_end": "2023-10-23T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 66.82,
+            "quantity": 716,
+            "fees": 47.84312
+          },
+          {
+            "interval_start": "2023-10-26T13:30:00.000000Z",
+            "interval_end": "2023-10-26T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 66.45,
+            "quantity": 716,
+            "fees": 47.5782
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -4.529429999999991,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2023-10-27T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 95515.6202,
+          "cycle_id": "0f6dc0eccfb309f745469cca88fdb65f441715e1111d579b4880f2f5be29d602:0",
+          "entry_at": "2023-10-27T13:30:00.000000Z",
+          "exit_at": "2023-11-03T20:00:00.000000Z",
+          "income": 103067.9289,
+          "net_pnl": 7552.3087,
+          "net_return": 0.0790688338,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2023-10-27T13:30:00.000000Z",
+            "interval_end": "2023-10-27T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 64.92,
+            "quantity": 735,
+            "fees": 47.7162
+          },
+          {
+            "interval_start": "2023-11-01T13:30:00.000000Z",
+            "interval_end": "2023-11-01T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 67.0,
+            "quantity": 712,
+            "fees": 47.704
+          },
+          {
+            "interval_start": "2023-11-03T13:30:00.000000Z",
+            "interval_end": "2023-11-03T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 71.3,
+            "quantity": 1447,
+            "fees": 103.1711
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 96771.15448,
+          "cycle_id": "e5bbca899a03f520afa29dd62fe3226936bc82b58e93dd32e2400a755e83b7f0:0",
+          "entry_at": "2023-10-27T13:30:00.000000Z",
+          "exit_at": "2023-11-03T20:00:00.000000Z",
+          "income": 104421.2742,
+          "net_pnl": 7650.11972,
+          "net_return": 0.0790537197,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2023-10-27T13:30:00.000000Z",
+            "interval_end": "2023-10-27T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 64.92,
+            "quantity": 744,
+            "fees": 48.30048
+          },
+          {
+            "interval_start": "2023-11-01T13:30:00.000000Z",
+            "interval_end": "2023-11-01T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 67.0,
+            "quantity": 722,
+            "fees": 48.374
+          },
+          {
+            "interval_start": "2023-11-03T13:30:00.000000Z",
+            "interval_end": "2023-11-03T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 71.3,
+            "quantity": 1466,
+            "fees": 104.5258
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 97.8110200000001,
+      "net_return_delta": -1.5114100000004904e-05
+    },
+    {
+      "entry_at": "2023-12-04T14:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 19024.84584,
+          "cycle_id": "bbed7dedf84ec22d9896c5f5c6cb926fb536278c7c3335c6817f3e0454152a06:0",
+          "entry_at": "2023-12-04T14:30:00.000000Z",
+          "exit_at": "2023-12-07T21:00:00.000000Z",
+          "income": 18634.38696,
+          "net_pnl": -390.45888,
+          "net_return": -0.0205236291,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2023-12-04T14:30:00.000000Z",
+            "interval_end": "2023-12-04T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 75.42,
+            "quantity": 252,
+            "fees": 19.00584
+          },
+          {
+            "interval_start": "2023-12-07T14:30:00.000000Z",
+            "interval_end": "2023-12-07T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 74.02,
+            "quantity": 252,
+            "fees": 18.65304
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 19326.82752,
+          "cycle_id": "07d3cfa99cd506b0b6f7d61c60a2086a4c727c8a4902b354011722b266e031f8:0",
+          "entry_at": "2023-12-04T14:30:00.000000Z",
+          "exit_at": "2023-12-07T21:00:00.000000Z",
+          "income": 18930.17088,
+          "net_pnl": -396.65664,
+          "net_return": -0.0205236291,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2023-12-04T14:30:00.000000Z",
+            "interval_end": "2023-12-04T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 75.42,
+            "quantity": 256,
+            "fees": 19.30752
+          },
+          {
+            "interval_start": "2023-12-07T14:30:00.000000Z",
+            "interval_end": "2023-12-07T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 74.02,
+            "quantity": 256,
+            "fees": 18.94912
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -6.19775999999996,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2023-12-29T14:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 19075.53648,
+          "cycle_id": "98d9409789dd7c4dd06eb1bdcf7c425dbf579cec64356b90825127340f488a19:0",
+          "entry_at": "2023-12-29T14:30:00.000000Z",
+          "exit_at": "2024-01-04T21:00:00.000000Z",
+          "income": 18511.80966,
+          "net_pnl": -563.72682,
+          "net_return": -0.0295523442,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2023-12-29T14:30:00.000000Z",
+            "interval_end": "2023-12-29T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 85.84,
+            "quantity": 222,
+            "fees": 19.05648
+          },
+          {
+            "interval_start": "2024-01-04T14:30:00.000000Z",
+            "interval_end": "2024-01-04T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 83.47,
+            "quantity": 222,
+            "fees": 18.53034
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 19333.314,
+          "cycle_id": "ec2623891cd7d26cef4925336a9a56679e394b0ea8d392cfaf8624a5979e77a8:0",
+          "entry_at": "2023-12-29T14:30:00.000000Z",
+          "exit_at": "2024-01-04T21:00:00.000000Z",
+          "income": 18761.96925,
+          "net_pnl": -571.34475,
+          "net_return": -0.0295523442,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2023-12-29T14:30:00.000000Z",
+            "interval_end": "2023-12-29T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 85.84,
+            "quantity": 225,
+            "fees": 19.314
+          },
+          {
+            "interval_start": "2024-01-04T14:30:00.000000Z",
+            "interval_end": "2024-01-04T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 83.47,
+            "quantity": 225,
+            "fees": 18.78075
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -7.617930000000001,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2024-01-11T14:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 37995.89794,
+          "cycle_id": "60c0bcfa019f270c686cb404e27f63c366525eb0a8e4a13e004df8a0f6876fe0:0",
+          "entry_at": "2024-01-11T14:30:00.000000Z",
+          "exit_at": "2024-01-19T21:00:00.000000Z",
+          "income": 39204.11664,
+          "net_pnl": 1208.2187,
+          "net_return": 0.0317986616,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-01-11T14:30:00.000000Z",
+            "interval_end": "2024-01-11T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 82.8,
+            "quantity": 230,
+            "fees": 19.044
+          },
+          {
+            "interval_start": "2024-01-17T14:30:00.000000Z",
+            "interval_end": "2024-01-17T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 83.69,
+            "quantity": 226,
+            "fees": 18.91394
+          },
+          {
+            "interval_start": "2024-01-19T14:30:00.000000Z",
+            "interval_end": "2024-01-19T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 86.06,
+            "quantity": 456,
+            "fees": 39.24336
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 38578.75021,
+          "cycle_id": "3dd8bfaf89c3b9dbe0b5e2a87e94c29db55d7dfd8f5297f6de8045be5b55369e:0",
+          "entry_at": "2024-01-11T14:30:00.000000Z",
+          "exit_at": "2024-01-19T21:00:00.000000Z",
+          "income": 39805.93422,
+          "net_pnl": 1227.18401,
+          "net_return": 0.0318098436,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-01-11T14:30:00.000000Z",
+            "interval_end": "2024-01-11T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 82.8,
+            "quantity": 234,
+            "fees": 19.3752
+          },
+          {
+            "interval_start": "2024-01-17T14:30:00.000000Z",
+            "interval_end": "2024-01-17T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 83.69,
+            "quantity": 229,
+            "fees": 19.16501
+          },
+          {
+            "interval_start": "2024-01-19T14:30:00.000000Z",
+            "interval_end": "2024-01-19T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 86.06,
+            "quantity": 463,
+            "fees": 39.84578
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 18.965310000000045,
+      "net_return_delta": 1.1181999999998471e-05
+    },
+    {
+      "entry_at": "2024-02-01T14:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 103063.01005,
+          "cycle_id": "427e59029c78456ee53a67e0686d891d27d69780da80c6c54c853d4a16ea0f77:0",
+          "entry_at": "2024-02-01T14:30:00.000000Z",
+          "exit_at": "2024-02-07T21:00:00.000000Z",
+          "income": 100110.52926,
+          "net_pnl": -2952.48079,
+          "net_return": -0.0286473371,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-02-01T14:30:00.000000Z",
+            "interval_end": "2024-02-01T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 86.07,
+            "quantity": 598,
+            "fees": 51.46986
+          },
+          {
+            "interval_start": "2024-02-06T14:30:00.000000Z",
+            "interval_end": "2024-02-06T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 86.83,
+            "quantity": 593,
+            "fees": 51.49019
+          },
+          {
+            "interval_start": "2024-02-07T14:30:00.000000Z",
+            "interval_end": "2024-02-07T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 84.14,
+            "quantity": 1191,
+            "fees": 100.21074
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 104534.51008,
+          "cycle_id": "0679734c7104102aadd08676d779f90c817fa52f43122d9acf36300d55dbf8bf:0",
+          "entry_at": "2024-02-01T14:30:00.000000Z",
+          "exit_at": "2024-02-07T21:00:00.000000Z",
+          "income": 101539.47888,
+          "net_pnl": -2995.0312,
+          "net_return": -0.0286511239,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-02-01T14:30:00.000000Z",
+            "interval_end": "2024-02-01T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 86.07,
+            "quantity": 606,
+            "fees": 52.15842
+          },
+          {
+            "interval_start": "2024-02-06T14:30:00.000000Z",
+            "interval_end": "2024-02-06T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 86.83,
+            "quantity": 602,
+            "fees": 52.27166
+          },
+          {
+            "interval_start": "2024-02-07T14:30:00.000000Z",
+            "interval_end": "2024-02-07T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 84.14,
+            "quantity": 1208,
+            "fees": 101.64112
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -42.55040999999983,
+      "net_return_delta": -3.786799999998952e-06
+    },
+    {
+      "entry_at": "2024-02-20T14:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 37722.409725,
+          "cycle_id": "f7e3e33bf1474a7ce5cd69abb12d79d33c22890848a91aeaa2971548e19cfbdc:0",
+          "entry_at": "2024-02-20T14:30:00.000000Z",
+          "exit_at": "2024-02-27T21:00:00.000000Z",
+          "income": 41768.14005,
+          "net_pnl": 4045.730325,
+          "net_return": 0.1072500499,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-02-20T14:30:00.000000Z",
+            "interval_end": "2024-02-20T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 79.335,
+            "quantity": 235,
+            "fees": 18.643725
+          },
+          {
+            "interval_start": "2024-02-23T14:30:00.000000Z",
+            "interval_end": "2024-02-23T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 86.55,
+            "quantity": 220,
+            "fees": 19.041
+          },
+          {
+            "interval_start": "2024-02-27T14:30:00.000000Z",
+            "interval_end": "2024-02-27T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 91.89,
+            "quantity": 455,
+            "fees": 41.80995
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 38220.56238,
+          "cycle_id": "638abe7e250c0bf4684e369ea895e281b6814f02b02b1f2b93f9dbfaa7d28ada:0",
+          "entry_at": "2024-02-20T14:30:00.000000Z",
+          "exit_at": "2024-02-27T21:00:00.000000Z",
+          "income": 42318.92871,
+          "net_pnl": 4098.36633,
+          "net_return": 0.107229357,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-02-20T14:30:00.000000Z",
+            "interval_end": "2024-02-20T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 79.335,
+            "quantity": 238,
+            "fees": 18.88173
+          },
+          {
+            "interval_start": "2024-02-23T14:30:00.000000Z",
+            "interval_end": "2024-02-23T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 86.55,
+            "quantity": 223,
+            "fees": 19.30065
+          },
+          {
+            "interval_start": "2024-02-27T14:30:00.000000Z",
+            "interval_end": "2024-02-27T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 91.89,
+            "quantity": 461,
+            "fees": 42.36129
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 52.63600499999984,
+      "net_return_delta": -2.0692900000007786e-05
+    },
+    {
+      "entry_at": "2024-03-12T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 52293.08084,
+          "cycle_id": "ad3604b38d2020ff61f51acf2b42468e2a85461421909ea269adaf0824103f66:0",
+          "entry_at": "2024-03-12T13:30:00.000000Z",
+          "exit_at": "2024-03-15T20:00:00.000000Z",
+          "income": 50628.36096,
+          "net_pnl": -1664.71988,
+          "net_return": -0.0318344196,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-03-12T13:30:00.000000Z",
+            "interval_end": "2024-03-12T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 95.33,
+            "quantity": 548,
+            "fees": 52.24084
+          },
+          {
+            "interval_start": "2024-03-15T13:30:00.000000Z",
+            "interval_end": "2024-03-15T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 92.48,
+            "quantity": 548,
+            "fees": 50.67904
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 53056.48348,
+          "cycle_id": "e234ef501a84c25fed66d7a44e89db32a44ff39cc8fa1a0b5cfb736e019d6368:0",
+          "entry_at": "2024-03-12T13:30:00.000000Z",
+          "exit_at": "2024-03-15T20:00:00.000000Z",
+          "income": 51367.46112,
+          "net_pnl": -1689.02236,
+          "net_return": -0.0318344196,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-03-12T13:30:00.000000Z",
+            "interval_end": "2024-03-12T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 95.33,
+            "quantity": 556,
+            "fees": 53.00348
+          },
+          {
+            "interval_start": "2024-03-15T13:30:00.000000Z",
+            "interval_end": "2024-03-15T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 92.48,
+            "quantity": 556,
+            "fees": 51.41888
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -24.302479999999832,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2024-04-08T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 51473.14172,
+          "cycle_id": "500b13c31fecc14adaf077384f84091a7114da5832a9a503d9c45639bf1d3b80:0",
+          "entry_at": "2024-04-08T13:30:00.000000Z",
+          "exit_at": "2024-04-11T20:00:00.000000Z",
+          "income": 50584.1652,
+          "net_pnl": -888.97652,
+          "net_return": -0.017270687,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-04-08T13:30:00.000000Z",
+            "interval_end": "2024-04-08T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 124.81,
+            "quantity": 412,
+            "fees": 51.42172
+          },
+          {
+            "interval_start": "2024-04-11T13:30:00.000000Z",
+            "interval_end": "2024-04-11T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 122.9,
+            "quantity": 412,
+            "fees": 50.6348
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 52222.75058,
+          "cycle_id": "696f3be2e42bd3ffcc8c08920c12ebe0ee50a3ab6d290e3f2cad1749a6a2c717:0",
+          "entry_at": "2024-04-08T13:30:00.000000Z",
+          "exit_at": "2024-04-11T20:00:00.000000Z",
+          "income": 51320.8278,
+          "net_pnl": -901.92278,
+          "net_return": -0.017270687,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-04-08T13:30:00.000000Z",
+            "interval_end": "2024-04-08T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 124.81,
+            "quantity": 418,
+            "fees": 52.17058
+          },
+          {
+            "interval_start": "2024-04-11T13:30:00.000000Z",
+            "interval_end": "2024-04-11T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 122.9,
+            "quantity": 418,
+            "fees": 51.3722
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -12.946259999999938,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2024-04-16T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 49774.20448,
+          "cycle_id": "70d85f49788a25315c11171866432dfbb917727ca2ebab2641881bf3e1cad6c9:0",
+          "entry_at": "2024-04-16T13:30:00.000000Z",
+          "exit_at": "2024-04-19T20:00:00.000000Z",
+          "income": 45572.94144,
+          "net_pnl": -4201.26304,
+          "net_return": -0.0844064327,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-04-16T13:30:00.000000Z",
+            "interval_end": "2024-04-16T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 119.53,
+            "quantity": 416,
+            "fees": 49.72448
+          },
+          {
+            "interval_start": "2024-04-19T13:30:00.000000Z",
+            "interval_end": "2024-04-19T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 109.66,
+            "quantity": 416,
+            "fees": 45.61856
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 50492.10166,
+          "cycle_id": "ec4816d1f87064b78b2d5584ab978ee239fe15580b9eeff8548cf5d5eb87ee22:0",
+          "entry_at": "2024-04-16T13:30:00.000000Z",
+          "exit_at": "2024-04-19T20:00:00.000000Z",
+          "income": 46230.24348,
+          "net_pnl": -4261.85818,
+          "net_return": -0.0844064327,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-04-16T13:30:00.000000Z",
+            "interval_end": "2024-04-16T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 119.53,
+            "quantity": 422,
+            "fees": 50.44166
+          },
+          {
+            "interval_start": "2024-04-19T13:30:00.000000Z",
+            "interval_end": "2024-04-19T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 109.66,
+            "quantity": 422,
+            "fees": 46.27652
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -60.595140000000356,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2024-04-22T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 96523.995568,
+          "cycle_id": "dea0481ba812c9315a2936626ca3429846d1e11e3ab39bc5c3ebf826cfb7bed6:0",
+          "entry_at": "2024-04-22T13:30:00.000000Z",
+          "exit_at": "2024-04-29T20:00:00.000000Z",
+          "income": 101075.91291,
+          "net_pnl": 4551.917342,
+          "net_return": 0.0471584015,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-04-22T13:30:00.000000Z",
+            "interval_end": "2024-04-22T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 107.6,
+            "quantity": 454,
+            "fees": 48.8504
+          },
+          {
+            "interval_start": "2024-04-25T13:30:00.000000Z",
+            "interval_end": "2024-04-25T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 109.3728,
+            "quantity": 435,
+            "fees": 47.577168
+          },
+          {
+            "interval_start": "2024-04-29T13:30:00.000000Z",
+            "interval_end": "2024-04-29T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 113.81,
+            "quantity": 889,
+            "fees": 101.17709
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 97827.1342048,
+          "cycle_id": "18100c28d43c903b835998a4138d153ded0f079479d0cb94d6c837db4eb9c5bc:0",
+          "entry_at": "2024-04-22T13:30:00.000000Z",
+          "exit_at": "2024-04-29T20:00:00.000000Z",
+          "income": 102440.26719,
+          "net_pnl": 4613.1329852,
+          "net_return": 0.0471559657,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-04-22T13:30:00.000000Z",
+            "interval_end": "2024-04-22T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 107.6,
+            "quantity": 460,
+            "fees": 49.496
+          },
+          {
+            "interval_start": "2024-04-25T13:30:00.000000Z",
+            "interval_end": "2024-04-25T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 109.3728,
+            "quantity": 441,
+            "fees": 48.2334048
+          },
+          {
+            "interval_start": "2024-04-29T13:30:00.000000Z",
+            "interval_end": "2024-04-29T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 113.81,
+            "quantity": 901,
+            "fees": 102.54281
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 61.21564320000016,
+      "net_return_delta": -2.435800000005761e-06
+    },
+    {
+      "entry_at": "2024-05-01T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 102110.88888,
+          "cycle_id": "294c180a9fa86f345bfdcb912a636d67ab9300019fc3dd78a18b3fef8bab6aab:0",
+          "entry_at": "2024-05-01T13:30:00.000000Z",
+          "exit_at": "2024-05-08T20:00:00.000000Z",
+          "income": 104592.57273,
+          "net_pnl": 2481.68385,
+          "net_return": 0.024303812,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-05-01T13:30:00.000000Z",
+            "interval_end": "2024-05-01T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 110.52,
+            "quantity": 449,
+            "fees": 49.62348
+          },
+          {
+            "interval_start": "2024-05-07T13:30:00.000000Z",
+            "interval_end": "2024-05-07T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 120.15,
+            "quantity": 436,
+            "fees": 52.3854
+          },
+          {
+            "interval_start": "2024-05-08T13:30:00.000000Z",
+            "interval_end": "2024-05-08T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 118.302,
+            "quantity": 885,
+            "fees": 104.69727
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 103496.2929,
+          "cycle_id": "2f188de203d4d3faf942aef2774b446449940922b3e1ce082120a96eb0205483:0",
+          "entry_at": "2024-05-01T13:30:00.000000Z",
+          "exit_at": "2024-05-08T20:00:00.000000Z",
+          "income": 106010.777106,
+          "net_pnl": 2514.484206,
+          "net_return": 0.0242954036,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-05-01T13:30:00.000000Z",
+            "interval_end": "2024-05-01T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 110.52,
+            "quantity": 455,
+            "fees": 50.2866
+          },
+          {
+            "interval_start": "2024-05-07T13:30:00.000000Z",
+            "interval_end": "2024-05-07T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 120.15,
+            "quantity": 442,
+            "fees": 53.1063
+          },
+          {
+            "interval_start": "2024-05-08T13:30:00.000000Z",
+            "interval_end": "2024-05-08T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 118.302,
+            "quantity": 897,
+            "fees": 106.116894
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 32.80035600000019,
+      "net_return_delta": -8.408399999999816e-06
+    },
+    {
+      "entry_at": "2024-05-23T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 38789.91116,
+          "cycle_id": "6a33768925e0842d34a1b06651769837039f9d1b42181bdc322a17febe509f98:0",
+          "entry_at": "2024-05-23T13:30:00.000000Z",
+          "exit_at": "2024-05-31T20:00:00.000000Z",
+          "income": 37993.31865,
+          "net_pnl": -796.59251,
+          "net_return": -0.0205360746,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-05-23T13:30:00.000000Z",
+            "interval_end": "2024-05-23T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 127.54,
+            "quantity": 154,
+            "fees": 19.64116
+          },
+          {
+            "interval_start": "2024-05-29T13:30:00.000000Z",
+            "interval_end": "2024-05-29T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 130.0,
+            "quantity": 147,
+            "fees": 19.11
+          },
+          {
+            "interval_start": "2024-05-31T13:30:00.000000Z",
+            "interval_end": "2024-05-31T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 126.35,
+            "quantity": 301,
+            "fees": 38.03135
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 39305.50624,
+          "cycle_id": "a98c4caf6b910252a21b2d10104908f368160938a64bfe4ff181880373c646eb:0",
+          "entry_at": "2024-05-23T13:30:00.000000Z",
+          "exit_at": "2024-05-31T20:00:00.000000Z",
+          "income": 38498.21325,
+          "net_pnl": -807.29299,
+          "net_return": -0.0205389287,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-05-23T13:30:00.000000Z",
+            "interval_end": "2024-05-23T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 127.54,
+            "quantity": 156,
+            "fees": 19.89624
+          },
+          {
+            "interval_start": "2024-05-29T13:30:00.000000Z",
+            "interval_end": "2024-05-29T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 130.0,
+            "quantity": 149,
+            "fees": 19.37
+          },
+          {
+            "interval_start": "2024-05-31T13:30:00.000000Z",
+            "interval_end": "2024-05-31T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 126.35,
+            "quantity": 305,
+            "fees": 38.53675
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -10.700480000000084,
+      "net_return_delta": -2.854100000001386e-06
+    },
+    {
+      "entry_at": "2024-06-03T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 38888.1493,
+          "cycle_id": "40f5a998c0d8f745634de0d0d13cd929952dc9877b33be18524950fbd12159f5:0",
+          "entry_at": "2024-06-03T13:30:00.000000Z",
+          "exit_at": "2024-06-10T20:00:00.000000Z",
+          "income": 38744.50671,
+          "net_pnl": -143.64259,
+          "net_return": -0.0036937368,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-06-03T13:30:00.000000Z",
+            "interval_end": "2024-06-03T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 126.25,
+            "quantity": 154,
+            "fees": 19.4425
+          },
+          {
+            "interval_start": "2024-06-06T13:30:00.000000Z",
+            "interval_end": "2024-06-06T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 133.84,
+            "quantity": 145,
+            "fees": 19.4068
+          },
+          {
+            "interval_start": "2024-06-10T13:30:00.000000Z",
+            "interval_end": "2024-06-10T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 129.71,
+            "quantity": 299,
+            "fees": 38.78329
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 39408.84948,
+          "cycle_id": "5ff906508f8e93fd62baf59e0977acca3b20187065752264166c92f31899a53e:0",
+          "entry_at": "2024-06-03T13:30:00.000000Z",
+          "exit_at": "2024-06-10T20:00:00.000000Z",
+          "income": 39262.82787,
+          "net_pnl": -146.02161,
+          "net_return": -0.0037053,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-06-03T13:30:00.000000Z",
+            "interval_end": "2024-06-03T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 126.25,
+            "quantity": 156,
+            "fees": 19.695
+          },
+          {
+            "interval_start": "2024-06-06T13:30:00.000000Z",
+            "interval_end": "2024-06-06T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 133.84,
+            "quantity": 147,
+            "fees": 19.67448
+          },
+          {
+            "interval_start": "2024-06-10T13:30:00.000000Z",
+            "interval_end": "2024-06-10T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 129.71,
+            "quantity": 303,
+            "fees": 39.30213
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -2.379019999999997,
+      "net_return_delta": -1.1563200000000093e-05
+    },
+    {
+      "entry_at": "2024-06-24T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 52055.17317,
+          "cycle_id": "e6494ae18335c587be589725c2c8e3444f192835116aba15ad46dd6e424ae19a:0",
+          "entry_at": "2024-06-24T13:30:00.000000Z",
+          "exit_at": "2024-06-28T20:00:00.000000Z",
+          "income": 48961.56942,
+          "net_pnl": -3093.60375,
+          "net_return": -0.059429324,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-06-24T13:30:00.000000Z",
+            "interval_end": "2024-06-24T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 140.93,
+            "quantity": 369,
+            "fees": 52.00317
+          },
+          {
+            "interval_start": "2024-06-28T13:30:00.000000Z",
+            "interval_end": "2024-06-28T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 132.82,
+            "quantity": 369,
+            "fees": 49.01058
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 52760.52782,
+          "cycle_id": "1154ee716172f05a9985a691a49cdd9dd82af82ed4905279d093f49270e5d61d:0",
+          "entry_at": "2024-06-24T13:30:00.000000Z",
+          "exit_at": "2024-06-28T20:00:00.000000Z",
+          "income": 49625.00532,
+          "net_pnl": -3135.5225,
+          "net_return": -0.059429324,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-06-24T13:30:00.000000Z",
+            "interval_end": "2024-06-24T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 140.93,
+            "quantity": 374,
+            "fees": 52.70782
+          },
+          {
+            "interval_start": "2024-06-28T13:30:00.000000Z",
+            "interval_end": "2024-06-28T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 132.82,
+            "quantity": 374,
+            "fees": 49.67468
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -41.91874999999982,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2024-07-17T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 17914.57668,
+          "cycle_id": "580a21912327440e0004ea8304958986e7014d5edfdea8453804169a27345c67:0",
+          "entry_at": "2024-07-17T13:30:00.000000Z",
+          "exit_at": "2024-07-22T20:00:00.000000Z",
+          "income": 16825.71744,
+          "net_pnl": -1088.85924,
+          "net_return": -0.0607806291,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-07-17T13:30:00.000000Z",
+            "interval_end": "2024-07-17T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 122.58,
+            "quantity": 146,
+            "fees": 17.89668
+          },
+          {
+            "interval_start": "2024-07-22T13:30:00.000000Z",
+            "interval_end": "2024-07-22T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 115.36,
+            "quantity": 146,
+            "fees": 16.84256
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 18037.27926,
+          "cycle_id": "ccabb44063972459835bfbd63375e57207719b7cf48ff4fb1e8687363183fc80:0",
+          "entry_at": "2024-07-17T13:30:00.000000Z",
+          "exit_at": "2024-07-22T20:00:00.000000Z",
+          "income": 16940.96208,
+          "net_pnl": -1096.31718,
+          "net_return": -0.0607806291,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-07-17T13:30:00.000000Z",
+            "interval_end": "2024-07-17T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 122.58,
+            "quantity": 147,
+            "fees": 18.01926
+          },
+          {
+            "interval_start": "2024-07-22T13:30:00.000000Z",
+            "interval_end": "2024-07-22T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 115.36,
+            "quantity": 147,
+            "fees": 16.95792
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -7.457940000000008,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2024-07-25T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 47573.526,
+          "cycle_id": "0699f78ae2211debb8281ee843e7fc26e7e09c3b5eb2964f18c3684ed6d1926b:0",
+          "entry_at": "2024-07-25T13:30:00.000000Z",
+          "exit_at": "2024-07-30T20:00:00.000000Z",
+          "income": 48456.495,
+          "net_pnl": 882.969,
+          "net_return": 0.0185600916,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-07-25T13:30:00.000000Z",
+            "interval_end": "2024-07-25T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 106.8,
+            "quantity": 445,
+            "fees": 47.526
+          },
+          {
+            "interval_start": "2024-07-30T13:30:00.000000Z",
+            "interval_end": "2024-07-30T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 109.0,
+            "quantity": 445,
+            "fees": 48.505
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 48214.9668,
+          "cycle_id": "b046d63c216b50638e622fb445ad2d9fcc50b063817abe7181ed8e935d6cf17e:0",
+          "entry_at": "2024-07-25T13:30:00.000000Z",
+          "exit_at": "2024-07-30T20:00:00.000000Z",
+          "income": 49109.841,
+          "net_pnl": 894.8742,
+          "net_return": 0.0185600916,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-07-25T13:30:00.000000Z",
+            "interval_end": "2024-07-25T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 106.8,
+            "quantity": 451,
+            "fees": 48.1668
+          },
+          {
+            "interval_start": "2024-07-30T13:30:00.000000Z",
+            "interval_end": "2024-07-30T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 109.0,
+            "quantity": 451,
+            "fees": 49.159
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 11.905199999999923,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2024-08-05T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 46928.93205,
+          "cycle_id": "0cf06c0efa38eaf927320b0a7dbeb481c98aa0f36f56d8d13d803e66fa6dbdb7:0",
+          "entry_at": "2024-08-05T13:30:00.000000Z",
+          "exit_at": "2024-08-08T20:00:00.000000Z",
+          "income": 47289.4632,
+          "net_pnl": 360.53115,
+          "net_return": 0.0076824921,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-08-05T13:30:00.000000Z",
+            "interval_end": "2024-08-05T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 87.63,
+            "quantity": 535,
+            "fees": 46.88205
+          },
+          {
+            "interval_start": "2024-08-08T13:30:00.000000Z",
+            "interval_end": "2024-08-08T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 88.48,
+            "quantity": 535,
+            "fees": 47.3368
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 47455.23783,
+          "cycle_id": "a4fe592a377c075e81694c87d368571a45acae6c51202c70689fe75ca52aec30:0",
+          "entry_at": "2024-08-05T13:30:00.000000Z",
+          "exit_at": "2024-08-08T20:00:00.000000Z",
+          "income": 47819.81232,
+          "net_pnl": 364.57449,
+          "net_return": 0.0076824921,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-08-05T13:30:00.000000Z",
+            "interval_end": "2024-08-05T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 87.63,
+            "quantity": 541,
+            "fees": 47.40783
+          },
+          {
+            "interval_start": "2024-08-08T13:30:00.000000Z",
+            "interval_end": "2024-08-08T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 88.48,
+            "quantity": 541,
+            "fees": 47.86768
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 4.043340000000001,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2024-08-26T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 18239.49127,
+          "cycle_id": "4b37ca5593e76a58e0d3fa0846e5ca04a9ef497546aa0cd73b1be2d3995edb78:0",
+          "entry_at": "2024-08-26T13:30:00.000000Z",
+          "exit_at": "2024-08-29T20:00:00.000000Z",
+          "income": 17459.88264,
+          "net_pnl": -779.60863,
+          "net_return": -0.0427428933,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-08-26T13:30:00.000000Z",
+            "interval_end": "2024-08-26T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 100.67,
+            "quantity": 181,
+            "fees": 18.22127
+          },
+          {
+            "interval_start": "2024-08-29T13:30:00.000000Z",
+            "interval_end": "2024-08-29T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 96.56,
+            "quantity": 181,
+            "fees": 17.47736
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 18441.03261,
+          "cycle_id": "d9ce246c4058ab37dc52962363dc1373e8884c3cc8ac1a63ba2fbb5e7a5dac06:0",
+          "entry_at": "2024-08-26T13:30:00.000000Z",
+          "exit_at": "2024-08-29T20:00:00.000000Z",
+          "income": 17652.80952,
+          "net_pnl": -788.22309,
+          "net_return": -0.0427428933,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-08-26T13:30:00.000000Z",
+            "interval_end": "2024-08-26T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 100.67,
+            "quantity": 183,
+            "fees": 18.42261
+          },
+          {
+            "interval_start": "2024-08-29T13:30:00.000000Z",
+            "interval_end": "2024-08-29T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 96.56,
+            "quantity": 183,
+            "fees": 17.67048
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -8.614460000000008,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2024-09-10T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 99876.05628,
+          "cycle_id": "56f5f67fedf7b902913326aa4b3065059b457e245dfbc306e769128043f3c283:0",
+          "entry_at": "2024-09-10T13:30:00.000000Z",
+          "exit_at": "2024-09-17T20:00:00.000000Z",
+          "income": 100288.0116,
+          "net_pnl": 411.95532,
+          "net_return": 0.0041246655,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-09-10T13:30:00.000000Z",
+            "interval_end": "2024-09-10T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 86.97,
+            "quantity": 572,
+            "fees": 49.74684
+          },
+          {
+            "interval_start": "2024-09-13T13:30:00.000000Z",
+            "interval_end": "2024-09-13T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 88.08,
+            "quantity": 568,
+            "fees": 50.02944
+          },
+          {
+            "interval_start": "2024-09-17T13:30:00.000000Z",
+            "interval_end": "2024-09-17T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 88.06,
+            "quantity": 1140,
+            "fees": 100.3884
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 101102.63163,
+          "cycle_id": "8ef16ca8b3802ba2c48be2eb2c6c11a6ede712dd51a1522b21c5242f66274a35:0",
+          "entry_at": "2024-09-10T13:30:00.000000Z",
+          "exit_at": "2024-09-17T20:00:00.000000Z",
+          "income": 101519.61876,
+          "net_pnl": 416.98713,
+          "net_return": 0.0041243944,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-09-10T13:30:00.000000Z",
+            "interval_end": "2024-09-10T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 86.97,
+            "quantity": 579,
+            "fees": 50.35563
+          },
+          {
+            "interval_start": "2024-09-13T13:30:00.000000Z",
+            "interval_end": "2024-09-13T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 88.08,
+            "quantity": 575,
+            "fees": 50.646
+          },
+          {
+            "interval_start": "2024-09-17T13:30:00.000000Z",
+            "interval_end": "2024-09-17T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 88.06,
+            "quantity": 1154,
+            "fees": 101.62124
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 5.031810000000007,
+      "net_return_delta": -2.7110000000007267e-07
+    },
+    {
+      "entry_at": "2024-10-01T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 49474.6252,
+          "cycle_id": "842151ef2241fd2a9446c263ea38d40e667101a38ad3590ce6eee0c965907477:0",
+          "entry_at": "2024-10-01T13:30:00.000000Z",
+          "exit_at": "2024-10-04T20:00:00.000000Z",
+          "income": 49495.1553,
+          "net_pnl": 20.5301,
+          "net_return": 0.0004149622,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-10-01T13:30:00.000000Z",
+            "interval_end": "2024-10-01T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 103.4,
+            "quantity": 478,
+            "fees": 49.4252
+          },
+          {
+            "interval_start": "2024-10-04T13:30:00.000000Z",
+            "interval_end": "2024-10-04T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 103.65,
+            "quantity": 478,
+            "fees": 49.5447
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 50095.6456,
+          "cycle_id": "5419e466aecc7920a55bfe0a81bfe9b9e8a29a6b05d33f33c27efbde0adea754:0",
+          "entry_at": "2024-10-01T13:30:00.000000Z",
+          "exit_at": "2024-10-04T20:00:00.000000Z",
+          "income": 50116.4334,
+          "net_pnl": 20.7878,
+          "net_return": 0.0004149622,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-10-01T13:30:00.000000Z",
+            "interval_end": "2024-10-01T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 103.4,
+            "quantity": 484,
+            "fees": 50.0456
+          },
+          {
+            "interval_start": "2024-10-04T13:30:00.000000Z",
+            "interval_end": "2024-10-04T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 103.65,
+            "quantity": 484,
+            "fees": 50.1666
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 0.2576999999999998,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2024-10-10T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 37254.19698,
+          "cycle_id": "da529a201c7581f0650564ddc3909c98cde78793c8b5079104b5b77da6abfa26:0",
+          "entry_at": "2024-10-10T13:30:00.000000Z",
+          "exit_at": "2024-10-17T20:00:00.000000Z",
+          "income": 39597.40296,
+          "net_pnl": 2343.20598,
+          "net_return": 0.0628977718,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-10-10T13:30:00.000000Z",
+            "interval_end": "2024-10-10T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 101.37,
+            "quantity": 182,
+            "fees": 18.44934
+          },
+          {
+            "interval_start": "2024-10-15T13:30:00.000000Z",
+            "interval_end": "2024-10-15T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 107.86,
+            "quantity": 174,
+            "fees": 18.76764
+          },
+          {
+            "interval_start": "2024-10-17T13:30:00.000000Z",
+            "interval_end": "2024-10-17T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 111.34,
+            "quantity": 356,
+            "fees": 39.63704
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 37774.54681,
+          "cycle_id": "564946ce51beb1b1b79d4c475222d909124a53b7e7f2df5d35d29e92e0fff623:0",
+          "entry_at": "2024-10-10T13:30:00.000000Z",
+          "exit_at": "2024-10-17T20:00:00.000000Z",
+          "income": 40153.54626,
+          "net_pnl": 2378.99945,
+          "net_return": 0.0629789012,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-10-10T13:30:00.000000Z",
+            "interval_end": "2024-10-10T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 101.37,
+            "quantity": 185,
+            "fees": 18.75345
+          },
+          {
+            "interval_start": "2024-10-15T13:30:00.000000Z",
+            "interval_end": "2024-10-15T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 107.86,
+            "quantity": 176,
+            "fees": 18.98336
+          },
+          {
+            "interval_start": "2024-10-17T13:30:00.000000Z",
+            "interval_end": "2024-10-17T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 111.34,
+            "quantity": 361,
+            "fees": 40.19374
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 35.793469999999616,
+      "net_return_delta": 8.112940000000457e-05
+    },
+    {
+      "entry_at": "2024-10-22T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 18852.59376,
+          "cycle_id": "f13d3bd0dea42b6f848d8acbf328fbc11dd9d2ed0fee9e099130e77ab2e2679a:0",
+          "entry_at": "2024-10-22T13:30:00.000000Z",
+          "exit_at": "2024-10-25T20:00:00.000000Z",
+          "income": 18832.30884,
+          "net_pnl": -20.28492,
+          "net_return": -0.001075975,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-10-22T13:30:00.000000Z",
+            "interval_end": "2024-10-22T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 108.24,
+            "quantity": 174,
+            "fees": 18.83376
+          },
+          {
+            "interval_start": "2024-10-25T13:30:00.000000Z",
+            "interval_end": "2024-10-25T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 108.34,
+            "quantity": 174,
+            "fees": 18.85116
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 19069.29024,
+          "cycle_id": "de6bc8ec2bedf19ac6c3f1f5b4654c218ae7fc45cb658a5cacbe7dde8c140aa9:0",
+          "entry_at": "2024-10-22T13:30:00.000000Z",
+          "exit_at": "2024-10-25T20:00:00.000000Z",
+          "income": 19048.77216,
+          "net_pnl": -20.51808,
+          "net_return": -0.001075975,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-10-22T13:30:00.000000Z",
+            "interval_end": "2024-10-22T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 108.24,
+            "quantity": 176,
+            "fees": 19.05024
+          },
+          {
+            "interval_start": "2024-10-25T13:30:00.000000Z",
+            "interval_end": "2024-10-25T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 108.34,
+            "quantity": 176,
+            "fees": 19.06784
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -0.2331600000000016,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2024-11-01T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 102441.6194802,
+          "cycle_id": "9e89828e33653275f8718897b9f978bb112c4e837e49fb777c1fd6c1389e1b97:0",
+          "entry_at": "2024-11-01T13:30:00.000000Z",
+          "exit_at": "2024-11-08T21:00:00.000000Z",
+          "income": 108218.91276,
+          "net_pnl": 5777.2932798,
+          "net_return": 0.0563959581,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-11-01T13:30:00.000000Z",
+            "interval_end": "2024-11-01T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 100.0,
+            "quantity": 509,
+            "fees": 50.9
+          },
+          {
+            "interval_start": "2024-11-07T14:30:00.000000Z",
+            "interval_end": "2024-11-07T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 112.5586,
+            "quantity": 457,
+            "fees": 51.4392802
+          },
+          {
+            "interval_start": "2024-11-08T14:30:00.000000Z",
+            "interval_end": "2024-11-08T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 112.14,
+            "quantity": 966,
+            "fees": 108.32724
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 103718.2464318,
+          "cycle_id": "4c07c06bf282463d346e652854c7a068f5f5064e6d51706f2edb93141ce4d5e6:0",
+          "entry_at": "2024-11-01T13:30:00.000000Z",
+          "exit_at": "2024-11-08T21:00:00.000000Z",
+          "income": 109563.24708,
+          "net_pnl": 5845.0006482,
+          "net_return": 0.0563546035,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-11-01T13:30:00.000000Z",
+            "interval_end": "2024-11-01T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 100.0,
+            "quantity": 515,
+            "fees": 51.5
+          },
+          {
+            "interval_start": "2024-11-07T14:30:00.000000Z",
+            "interval_end": "2024-11-07T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 112.5586,
+            "quantity": 463,
+            "fees": 52.1146318
+          },
+          {
+            "interval_start": "2024-11-08T14:30:00.000000Z",
+            "interval_end": "2024-11-08T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 112.14,
+            "quantity": 978,
+            "fees": 109.67292
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 67.70736839999972,
+      "net_return_delta": -4.1354599999994524e-05
+    },
+    {
+      "entry_at": "2024-11-12T14:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 51816.765,
+          "cycle_id": "5bd01015c519022a9555806121ed3c2aa9d9cf2fc10b6030ff913d5e1b877dee:0",
+          "entry_at": "2024-11-12T14:30:00.000000Z",
+          "exit_at": "2024-11-15T21:00:00.000000Z",
+          "income": 48044.05785,
+          "net_pnl": -3772.70715,
+          "net_return": -0.07280862,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-11-12T14:30:00.000000Z",
+            "interval_end": "2024-11-12T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 105.0,
+            "quantity": 493,
+            "fees": 51.765
+          },
+          {
+            "interval_start": "2024-11-15T14:30:00.000000Z",
+            "interval_end": "2024-11-15T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 97.55,
+            "quantity": 493,
+            "fees": 48.09215
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 52447.395,
+          "cycle_id": "f6ca9c469d9f59eec2cf4e7009780ac0175b394b85e903e633a47091a0a53bba:0",
+          "entry_at": "2024-11-12T14:30:00.000000Z",
+          "exit_at": "2024-11-15T21:00:00.000000Z",
+          "income": 48628.77255,
+          "net_pnl": -3818.62245,
+          "net_return": -0.07280862,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-11-12T14:30:00.000000Z",
+            "interval_end": "2024-11-12T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 105.0,
+            "quantity": 499,
+            "fees": 52.395
+          },
+          {
+            "interval_start": "2024-11-15T14:30:00.000000Z",
+            "interval_end": "2024-11-15T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 97.55,
+            "quantity": 499,
+            "fees": 48.67745
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -45.91529999999966,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2024-11-18T14:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 104604.665165,
+          "cycle_id": "6a50dd2207b604e5a3f1dac575a0aa194c27b7742021facc61fcd1e3c13fadff:0",
+          "entry_at": "2024-11-18T14:30:00.000000Z",
+          "exit_at": "2024-11-25T21:00:00.000000Z",
+          "income": 110697.14205,
+          "net_pnl": 6092.476885,
+          "net_return": 0.0582428793,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-11-18T14:30:00.000000Z",
+            "interval_end": "2024-11-18T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 96.545,
+            "quantity": 537,
+            "fees": 51.844665
+          },
+          {
+            "interval_start": "2024-11-21T14:30:00.000000Z",
+            "interval_end": "2024-11-21T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 99.35,
+            "quantity": 530,
+            "fees": 52.6555
+          },
+          {
+            "interval_start": "2024-11-25T14:30:00.000000Z",
+            "interval_end": "2024-11-25T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 103.85,
+            "quantity": 1067,
+            "fees": 110.80795
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 105880.659885,
+          "cycle_id": "e2b4184c67f935449c892c15ca6791c097ad2d591c8e52d5aa6bd0dac158d986:0",
+          "entry_at": "2024-11-18T14:30:00.000000Z",
+          "exit_at": "2024-11-25T21:00:00.000000Z",
+          "income": 112045.842,
+          "net_pnl": 6165.182115,
+          "net_return": 0.058227651,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-11-18T14:30:00.000000Z",
+            "interval_end": "2024-11-18T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 96.545,
+            "quantity": 543,
+            "fees": 52.423935
+          },
+          {
+            "interval_start": "2024-11-21T14:30:00.000000Z",
+            "interval_end": "2024-11-21T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 99.35,
+            "quantity": 537,
+            "fees": 53.35095
+          },
+          {
+            "interval_start": "2024-11-25T14:30:00.000000Z",
+            "interval_end": "2024-11-25T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 103.85,
+            "quantity": 1080,
+            "fees": 112.158
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 72.70522999999957,
+      "net_return_delta": -1.5228300000003081e-05
+    },
+    {
+      "entry_at": "2024-11-29T14:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 110704.47388,
+          "cycle_id": "f3c374658c3a8939305212be082ab8d0bd11de4001e7ba7d792ffe6e8a58447a:0",
+          "entry_at": "2024-11-29T14:30:00.000000Z",
+          "exit_at": "2024-12-06T21:00:00.000000Z",
+          "income": 112570.27704,
+          "net_pnl": 1865.80316,
+          "net_return": 0.0168539093,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-11-29T14:30:00.000000Z",
+            "interval_end": "2024-11-29T18:00:00.000000Z",
+            "side": "BUY",
+            "price": 97.24,
+            "quantity": 557,
+            "fees": 54.16268
+          },
+          {
+            "interval_start": "2024-12-04T14:30:00.000000Z",
+            "interval_end": "2024-12-04T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 100.77,
+            "quantity": 560,
+            "fees": 56.4312
+          },
+          {
+            "interval_start": "2024-12-06T14:30:00.000000Z",
+            "interval_end": "2024-12-06T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 100.88,
+            "quantity": 1117,
+            "fees": 112.68296
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 111991.05918,
+          "cycle_id": "fb0bcb9c83e37dd8d626a5d589e779fcd326f81ea6ce2065cf4ac5a4b89d726d:0",
+          "entry_at": "2024-11-29T14:30:00.000000Z",
+          "exit_at": "2024-12-06T21:00:00.000000Z",
+          "income": 113880.4056,
+          "net_pnl": 1889.34642,
+          "net_return": 0.0168705112,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-11-29T14:30:00.000000Z",
+            "interval_end": "2024-11-29T18:00:00.000000Z",
+            "side": "BUY",
+            "price": 97.24,
+            "quantity": 564,
+            "fees": 54.84336
+          },
+          {
+            "interval_start": "2024-12-04T14:30:00.000000Z",
+            "interval_end": "2024-12-04T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 100.77,
+            "quantity": 566,
+            "fees": 57.03582
+          },
+          {
+            "interval_start": "2024-12-06T14:30:00.000000Z",
+            "interval_end": "2024-12-06T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 100.88,
+            "quantity": 1130,
+            "fees": 113.9944
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 23.543260000000146,
+      "net_return_delta": 1.6601899999999642e-05
+    },
+    {
+      "entry_at": "2024-12-20T14:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 41782.3463057,
+          "cycle_id": "9004c80048a2767126e8d83f7c5b96ba46e8a72025a8f9d6e06655df876b3b72:0",
+          "entry_at": "2024-12-20T14:30:00.000000Z",
+          "exit_at": "2024-12-30T21:00:00.000000Z",
+          "income": 41766.2472,
+          "net_pnl": -16.0991057,
+          "net_return": -0.0003853088,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-12-20T14:30:00.000000Z",
+            "interval_end": "2024-12-20T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 85.4063,
+            "quantity": 239,
+            "fees": 20.4121057
+          },
+          {
+            "interval_start": "2024-12-26T14:30:00.000000Z",
+            "interval_end": "2024-12-26T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 88.5,
+            "quantity": 241,
+            "fees": 21.3285
+          },
+          {
+            "interval_start": "2024-12-30T14:30:00.000000Z",
+            "interval_end": "2024-12-30T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 86.985,
+            "quantity": 480,
+            "fees": 41.7528
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 42304.5869246,
+          "cycle_id": "6c6b5f1a0ef5928bbd429cb4ac45eba50afed439fd824e8e3cb02356746c3d0d:0",
+          "entry_at": "2024-12-20T14:30:00.000000Z",
+          "exit_at": "2024-12-30T21:00:00.000000Z",
+          "income": 42288.32529,
+          "net_pnl": -16.2616346,
+          "net_return": -0.0003843941,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-12-20T14:30:00.000000Z",
+            "interval_end": "2024-12-20T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 85.4063,
+            "quantity": 242,
+            "fees": 20.6683246
+          },
+          {
+            "interval_start": "2024-12-26T14:30:00.000000Z",
+            "interval_end": "2024-12-26T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 88.5,
+            "quantity": 244,
+            "fees": 21.594
+          },
+          {
+            "interval_start": "2024-12-30T14:30:00.000000Z",
+            "interval_end": "2024-12-30T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 86.985,
+            "quantity": 486,
+            "fees": 42.27471
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -0.16252890000000164,
+      "net_return_delta": 9.146999999999931e-07
+    },
+    {
+      "entry_at": "2024-12-31T14:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 55762.58688,
+          "cycle_id": "b33ebeca499e73c6f6c70298cf085469d3e523111a1261c5e50785c2d780a1b9:0",
+          "entry_at": "2024-12-31T14:30:00.000000Z",
+          "exit_at": "2025-01-08T21:00:00.000000Z",
+          "income": 66971.60136,
+          "net_pnl": 11209.01448,
+          "net_return": 0.2010131722,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-12-31T14:30:00.000000Z",
+            "interval_end": "2024-12-31T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 85.44,
+            "quantity": 652,
+            "fees": 55.70688
+          },
+          {
+            "interval_start": "2025-01-08T14:30:00.000000Z",
+            "interval_end": "2025-01-08T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 102.82,
+            "quantity": 652,
+            "fees": 67.03864
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 56446.7904,
+          "cycle_id": "7b42f28a0f818498f4887de00bda9f652924f09fa6010df11e71eb505065a46d:0",
+          "entry_at": "2024-12-31T14:30:00.000000Z",
+          "exit_at": "2025-01-08T21:00:00.000000Z",
+          "income": 67793.3388,
+          "net_pnl": 11346.5484,
+          "net_return": 0.2010131722,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2024-12-31T14:30:00.000000Z",
+            "interval_end": "2024-12-31T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 85.44,
+            "quantity": 660,
+            "fees": 56.3904
+          },
+          {
+            "interval_start": "2025-01-08T14:30:00.000000Z",
+            "interval_end": "2025-01-08T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 102.82,
+            "quantity": 660,
+            "fees": 67.8612
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 137.53391999999985,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2025-01-13T14:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 123673.16962,
+          "cycle_id": "b242810705f163d2bf2f7b5708018d2ec07f3a8fb34ad747f7c458e2147e1557:0",
+          "entry_at": "2025-01-13T14:30:00.000000Z",
+          "exit_at": "2025-01-21T21:00:00.000000Z",
+          "income": 130069.675125,
+          "net_pnl": 6396.505505,
+          "net_return": 0.0517210445,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-01-13T14:30:00.000000Z",
+            "interval_end": "2025-01-13T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 95.84,
+            "quantity": 616,
+            "fees": 59.03744
+          },
+          {
+            "interval_start": "2025-01-16T14:30:00.000000Z",
+            "interval_end": "2025-01-16T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 104.22,
+            "quantity": 619,
+            "fees": 64.51218
+          },
+          {
+            "interval_start": "2025-01-21T14:30:00.000000Z",
+            "interval_end": "2025-01-21T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 105.425,
+            "quantity": 1235,
+            "fees": 130.199875
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 125179.31426,
+          "cycle_id": "cbc8ddffd7e0628e66434145237f79aca980e81123ddb865eea341615fed232d:0",
+          "entry_at": "2025-01-13T14:30:00.000000Z",
+          "exit_at": "2025-01-21T21:00:00.000000Z",
+          "income": 131649.46875,
+          "net_pnl": 6470.15449,
+          "net_return": 0.0516870901,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-01-13T14:30:00.000000Z",
+            "interval_end": "2025-01-13T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 95.84,
+            "quantity": 623,
+            "fees": 59.70832
+          },
+          {
+            "interval_start": "2025-01-16T14:30:00.000000Z",
+            "interval_end": "2025-01-16T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 104.22,
+            "quantity": 627,
+            "fees": 65.34594
+          },
+          {
+            "interval_start": "2025-01-21T14:30:00.000000Z",
+            "interval_end": "2025-01-21T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 105.425,
+            "quantity": 1250,
+            "fees": 131.78125
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 73.64898499999981,
+      "net_return_delta": -3.3954400000001106e-05
+    },
+    {
+      "entry_at": "2025-01-24T14:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 24289.265,
+          "cycle_id": "1c96c5c2d52a9200e4e5d75a64db1d7d9e8bc97557802fc500f7865d80283da4:0",
+          "entry_at": "2025-01-24T14:30:00.000000Z",
+          "exit_at": "2025-01-29T21:00:00.000000Z",
+          "income": 20651.7276,
+          "net_pnl": -3637.5374,
+          "net_return": -0.1497590561,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-01-24T14:30:00.000000Z",
+            "interval_end": "2025-01-24T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 105.5,
+            "quantity": 230,
+            "fees": 24.265
+          },
+          {
+            "interval_start": "2025-01-29T14:30:00.000000Z",
+            "interval_end": "2025-01-29T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 89.88,
+            "quantity": 230,
+            "fees": 20.6724
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 24606.0815,
+          "cycle_id": "b45b5ca5a40d9401bafcc23fde7e8dafb863391809f91e36cdda9d8d282d7c40:0",
+          "entry_at": "2025-01-24T14:30:00.000000Z",
+          "exit_at": "2025-01-29T21:00:00.000000Z",
+          "income": 20921.09796,
+          "net_pnl": -3684.98354,
+          "net_return": -0.1497590561,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-01-24T14:30:00.000000Z",
+            "interval_end": "2025-01-24T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 105.5,
+            "quantity": 233,
+            "fees": 24.5815
+          },
+          {
+            "interval_start": "2025-01-29T14:30:00.000000Z",
+            "interval_end": "2025-01-29T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 89.88,
+            "quantity": 233,
+            "fees": 20.94204
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -47.446140000000014,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2025-02-04T14:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 126554.2278,
+          "cycle_id": "59d970089a50ba034169734d677c7865aa0b5dadebf0d7fe8a0853d48915657e:0",
+          "entry_at": "2025-02-04T14:30:00.000000Z",
+          "exit_at": "2025-02-11T21:00:00.000000Z",
+          "income": 129080.685105,
+          "net_pnl": 2526.457305,
+          "net_return": 0.0199634366,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-02-04T14:30:00.000000Z",
+            "interval_end": "2025-02-04T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 89.05,
+            "quantity": 696,
+            "fees": 61.9788
+          },
+          {
+            "interval_start": "2025-02-07T14:30:00.000000Z",
+            "interval_end": "2025-02-07T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 95.48,
+            "quantity": 675,
+            "fees": 64.449
+          },
+          {
+            "interval_start": "2025-02-11T14:30:00.000000Z",
+            "interval_end": "2025-02-11T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 94.245,
+            "quantity": 1371,
+            "fees": 129.209895
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 128031.94404,
+          "cycle_id": "b49c384d4a1c53162cc0b5a48cf5c2b0db86b4502bc256c6812a2c0a254d32ec:0",
+          "entry_at": "2025-02-04T14:30:00.000000Z",
+          "exit_at": "2025-02-11T21:00:00.000000Z",
+          "income": 130587.097185,
+          "net_pnl": 2555.153145,
+          "net_return": 0.0199571534,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-02-04T14:30:00.000000Z",
+            "interval_end": "2025-02-04T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 89.05,
+            "quantity": 704,
+            "fees": 62.6912
+          },
+          {
+            "interval_start": "2025-02-07T14:30:00.000000Z",
+            "interval_end": "2025-02-07T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 95.48,
+            "quantity": 683,
+            "fees": 65.21284
+          },
+          {
+            "interval_start": "2025-02-11T14:30:00.000000Z",
+            "interval_end": "2025-02-11T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 94.245,
+            "quantity": 1387,
+            "fees": 130.717815
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 28.695840000000317,
+      "net_return_delta": -6.28319999999849e-06
+    },
+    {
+      "entry_at": "2025-02-13T14:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 47870.357535,
+          "cycle_id": "5545bc4b2df147e2c42d3b0dd83ce97f3a2f2b70db6f7914c5fb995a5f9caed4:0",
+          "entry_at": "2025-02-13T14:30:00.000000Z",
+          "exit_at": "2025-02-21T21:00:00.000000Z",
+          "income": 50318.67096,
+          "net_pnl": 2448.313425,
+          "net_return": 0.0511446655,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-02-13T14:30:00.000000Z",
+            "interval_end": "2025-02-13T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 92.06,
+            "quantity": 261,
+            "fees": 24.02766
+          },
+          {
+            "interval_start": "2025-02-19T14:30:00.000000Z",
+            "interval_end": "2025-02-19T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 105.755,
+            "quantity": 225,
+            "fees": 23.794875
+          },
+          {
+            "interval_start": "2025-02-21T14:30:00.000000Z",
+            "interval_end": "2025-02-21T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 103.64,
+            "quantity": 486,
+            "fees": 50.36904
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 48464.39598,
+          "cycle_id": "f4e45cd31178067a7c067018870e2b32143dfbf703d2421f19f6b0b191717d6e:0",
+          "entry_at": "2025-02-13T14:30:00.000000Z",
+          "exit_at": "2025-02-21T21:00:00.000000Z",
+          "income": 50939.88912,
+          "net_pnl": 2475.49314,
+          "net_return": 0.0510785926,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-02-13T14:30:00.000000Z",
+            "interval_end": "2025-02-13T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 92.06,
+            "quantity": 264,
+            "fees": 24.30384
+          },
+          {
+            "interval_start": "2025-02-19T14:30:00.000000Z",
+            "interval_end": "2025-02-19T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 105.755,
+            "quantity": 228,
+            "fees": 24.11214
+          },
+          {
+            "interval_start": "2025-02-21T14:30:00.000000Z",
+            "interval_end": "2025-02-21T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 103.64,
+            "quantity": 492,
+            "fees": 50.99088
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 27.179715000000215,
+      "net_return_delta": -6.607289999999849e-05
+    },
+    {
+      "entry_at": "2025-02-24T14:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 65747.24156,
+          "cycle_id": "299c088f58395301ee0f61e07418615f0fdacd4921f277b898214e265e594924:0",
+          "entry_at": "2025-02-24T14:30:00.000000Z",
+          "exit_at": "2025-02-27T21:00:00.000000Z",
+          "income": 64314.34128,
+          "net_pnl": -1432.90028,
+          "net_return": -0.0217940745,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-02-24T14:30:00.000000Z",
+            "interval_end": "2025-02-24T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 99.82,
+            "quantity": 658,
+            "fees": 65.68156
+          },
+          {
+            "interval_start": "2025-02-27T14:30:00.000000Z",
+            "interval_end": "2025-02-27T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 97.84,
+            "quantity": 658,
+            "fees": 64.37872
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 66546.60012,
+          "cycle_id": "e4ee8d3c5664261d18aee595db8e1f27ac4d6955a2d71934a56ba1e532aecaac:0",
+          "entry_at": "2025-02-24T14:30:00.000000Z",
+          "exit_at": "2025-02-27T21:00:00.000000Z",
+          "income": 65096.27856,
+          "net_pnl": -1450.32156,
+          "net_return": -0.0217940745,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-02-24T14:30:00.000000Z",
+            "interval_end": "2025-02-24T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 99.82,
+            "quantity": 666,
+            "fees": 66.48012
+          },
+          {
+            "interval_start": "2025-02-27T14:30:00.000000Z",
+            "interval_end": "2025-02-27T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 97.84,
+            "quantity": 666,
+            "fees": 65.16144
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -17.421280000000024,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2025-03-27T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 63644.40082,
+          "cycle_id": "7a135a9db989fd24ff378cef1fb15baf6f78fcae45a1e38bbe9b472b52e502c1:0",
+          "entry_at": "2025-03-27T13:30:00.000000Z",
+          "exit_at": "2025-04-01T20:00:00.000000Z",
+          "income": 61808.92955,
+          "net_pnl": -1835.47127,
+          "net_return": -0.0288394776,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-03-27T13:30:00.000000Z",
+            "interval_end": "2025-03-27T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 91.09,
+            "quantity": 698,
+            "fees": 63.58082
+          },
+          {
+            "interval_start": "2025-04-01T13:30:00.000000Z",
+            "interval_end": "2025-04-01T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 88.525,
+            "quantity": 698,
+            "fees": 61.79045
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 64373.84954,
+          "cycle_id": "c8df2b26f275f8b655ad0b550273cdd7e8a2dbe6d547163121afdeb948a25cb5:0",
+          "entry_at": "2025-03-27T13:30:00.000000Z",
+          "exit_at": "2025-04-01T20:00:00.000000Z",
+          "income": 62517.34135,
+          "net_pnl": -1856.50819,
+          "net_return": -0.0288394776,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-03-27T13:30:00.000000Z",
+            "interval_end": "2025-03-27T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 91.09,
+            "quantity": 706,
+            "fees": 64.30954
+          },
+          {
+            "interval_start": "2025-04-01T13:30:00.000000Z",
+            "interval_end": "2025-04-01T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 88.525,
+            "quantity": 706,
+            "fees": 62.49865
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -21.03692000000001,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2025-04-04T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 60253.9938,
+          "cycle_id": "99dfe923adb37a7180d9c1967f2ab52afa88370fae90d7748a68e747355380cc:0",
+          "entry_at": "2025-04-04T13:30:00.000000Z",
+          "exit_at": "2025-04-09T20:00:00.000000Z",
+          "income": 56345.9976,
+          "net_pnl": -3907.9962,
+          "net_return": -0.0648587082,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-04-04T13:30:00.000000Z",
+            "interval_end": "2025-04-04T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 70.65,
+            "quantity": 852,
+            "fees": 60.1938
+          },
+          {
+            "interval_start": "2025-04-09T13:30:00.000000Z",
+            "interval_end": "2025-04-09T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 66.2,
+            "quantity": 852,
+            "fees": 56.4024
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 61031.92095,
+          "cycle_id": "61c217e5b888f39d320e6f44f305f5f65fb4c96bc8d885de6d8d40d2a014c156:0",
+          "entry_at": "2025-04-04T13:30:00.000000Z",
+          "exit_at": "2025-04-09T20:00:00.000000Z",
+          "income": 57073.4694,
+          "net_pnl": -3958.45155,
+          "net_return": -0.0648587082,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-04-04T13:30:00.000000Z",
+            "interval_end": "2025-04-04T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 70.65,
+            "quantity": 863,
+            "fees": 60.97095
+          },
+          {
+            "interval_start": "2025-04-09T13:30:00.000000Z",
+            "interval_end": "2025-04-09T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 66.2,
+            "quantity": 863,
+            "fees": 57.1306
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -50.45535000000018,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2025-04-14T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 62083.94192,
+          "cycle_id": "05521640de3f4ae2eeec41355f07d27b5ae150492653e090f458bfda16e5a6b4:0",
+          "entry_at": "2025-04-14T13:30:00.000000Z",
+          "exit_at": "2025-04-17T20:00:00.000000Z",
+          "income": 62131.910895,
+          "net_pnl": 47.968975,
+          "net_return": 0.0007726471,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-04-14T13:30:00.000000Z",
+            "interval_end": "2025-04-14T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 70.24,
+            "quantity": 883,
+            "fees": 62.02192
+          },
+          {
+            "interval_start": "2025-04-17T13:30:00.000000Z",
+            "interval_end": "2025-04-17T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 70.435,
+            "quantity": 883,
+            "fees": 62.194105
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 62857.35456,
+          "cycle_id": "30f536b6a919a377be89801b3e4c244bfe14340c0f4521ecdd7aa59228fd3bbf:0",
+          "entry_at": "2025-04-14T13:30:00.000000Z",
+          "exit_at": "2025-04-17T20:00:00.000000Z",
+          "income": 62905.92111,
+          "net_pnl": 48.56655,
+          "net_return": 0.0007726471,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-04-14T13:30:00.000000Z",
+            "interval_end": "2025-04-14T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 70.24,
+            "quantity": 894,
+            "fees": 62.79456
+          },
+          {
+            "interval_start": "2025-04-17T13:30:00.000000Z",
+            "interval_end": "2025-04-17T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 70.435,
+            "quantity": 894,
+            "fees": 62.96889
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 0.5975749999999991,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2025-04-21T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 124408.97469,
+          "cycle_id": "0f0bb0bcfe3eaff480557708325055ed7448fd49aabea90c4ef6b7c4971e6700:0",
+          "entry_at": "2025-04-21T13:30:00.000000Z",
+          "exit_at": "2025-04-28T20:00:00.000000Z",
+          "income": 138409.087365,
+          "net_pnl": 14000.112675,
+          "net_return": 0.1125329801,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-04-21T13:30:00.000000Z",
+            "interval_end": "2025-04-21T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 67.76,
+            "quantity": 894,
+            "fees": 60.57744
+          },
+          {
+            "interval_start": "2025-04-24T13:30:00.000000Z",
+            "interval_end": "2025-04-24T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 73.65,
+            "quantity": 865,
+            "fees": 63.70725
+          },
+          {
+            "interval_start": "2025-04-28T13:30:00.000000Z",
+            "interval_end": "2025-04-28T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 78.765,
+            "quantity": 1759,
+            "fees": 138.547635
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 125892.31655,
+          "cycle_id": "e00e8044efdcfdd0c7fff7142ee70a30b85e634b9bfcef58163a58a007264873:0",
+          "entry_at": "2025-04-21T13:30:00.000000Z",
+          "exit_at": "2025-04-28T20:00:00.000000Z",
+          "income": 140061.4983,
+          "net_pnl": 14169.18175,
+          "net_return": 0.1125500121,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-04-21T13:30:00.000000Z",
+            "interval_end": "2025-04-21T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 67.76,
+            "quantity": 905,
+            "fees": 61.3228
+          },
+          {
+            "interval_start": "2025-04-24T13:30:00.000000Z",
+            "interval_end": "2025-04-24T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 73.65,
+            "quantity": 875,
+            "fees": 64.44375
+          },
+          {
+            "interval_start": "2025-04-28T13:30:00.000000Z",
+            "interval_end": "2025-04-28T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 78.765,
+            "quantity": 1780,
+            "fees": 140.2017
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 169.06907499999943,
+      "net_return_delta": 1.7032000000000158e-05
+    },
+    {
+      "entry_at": "2025-04-30T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 136491.87552,
+          "cycle_id": "f096cc5d4cd097c6669a927a32141bb0b0e6e0a68a08adb0874d09167409863b:0",
+          "entry_at": "2025-04-30T13:30:00.000000Z",
+          "exit_at": "2025-05-07T20:00:00.000000Z",
+          "income": 144179.85582,
+          "net_pnl": 7687.9803,
+          "net_return": 0.0563255525,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-04-30T13:30:00.000000Z",
+            "interval_end": "2025-04-30T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 73.62,
+            "quantity": 890,
+            "fees": 65.5218
+          },
+          {
+            "interval_start": "2025-05-05T13:30:00.000000Z",
+            "interval_end": "2025-05-05T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 79.41,
+            "quantity": 892,
+            "fees": 70.83372
+          },
+          {
+            "interval_start": "2025-05-07T13:30:00.000000Z",
+            "interval_end": "2025-05-07T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 80.99,
+            "quantity": 1782,
+            "fees": 144.32418
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 138097.39944,
+          "cycle_id": "44464653ec793530d4e2a6008058ac168173b9ad2a38fb9f62289f8131f4d85a:0",
+          "entry_at": "2025-04-30T13:30:00.000000Z",
+          "exit_at": "2025-05-07T20:00:00.000000Z",
+          "income": 145878.94503,
+          "net_pnl": 7781.54559,
+          "net_return": 0.0563482413,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-04-30T13:30:00.000000Z",
+            "interval_end": "2025-04-30T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 73.62,
+            "quantity": 901,
+            "fees": 66.33162
+          },
+          {
+            "interval_start": "2025-05-05T13:30:00.000000Z",
+            "interval_end": "2025-05-05T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 79.41,
+            "quantity": 902,
+            "fees": 71.62782
+          },
+          {
+            "interval_start": "2025-05-07T13:30:00.000000Z",
+            "interval_end": "2025-05-07T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 80.99,
+            "quantity": 1803,
+            "fees": 146.02497
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 93.56528999999955,
+      "net_return_delta": 2.2688799999996678e-05
+    },
+    {
+      "entry_at": "2025-06-27T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 26932.0051,
+          "cycle_id": "c657ec25235fe2649b715cbd61505522a3e5d32e191f7788367df5349d741c25:0",
+          "entry_at": "2025-06-27T13:30:00.000000Z",
+          "exit_at": "2025-07-02T20:00:00.000000Z",
+          "income": 25881.5925,
+          "net_pnl": -1050.4126,
+          "net_return": -0.0390023912,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-06-27T13:30:00.000000Z",
+            "interval_end": "2025-06-27T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 125.14,
+            "quantity": 215,
+            "fees": 26.9051
+          },
+          {
+            "interval_start": "2025-07-02T13:30:00.000000Z",
+            "interval_end": "2025-07-02T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 120.5,
+            "quantity": 215,
+            "fees": 25.9075
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 27558.3308,
+          "cycle_id": "063f6aa9395652b91859014982c15f27a04665d1073757b64163f382969c7e93:0",
+          "entry_at": "2025-06-27T13:30:00.000000Z",
+          "exit_at": "2025-07-02T20:00:00.000000Z",
+          "income": 26483.49,
+          "net_pnl": -1074.8408,
+          "net_return": -0.0390023912,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-06-27T13:30:00.000000Z",
+            "interval_end": "2025-06-27T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 125.14,
+            "quantity": 220,
+            "fees": 27.5308
+          },
+          {
+            "interval_start": "2025-07-02T13:30:00.000000Z",
+            "interval_end": "2025-07-02T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 120.5,
+            "quantity": 220,
+            "fees": 26.51
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -24.428199999999833,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2025-07-18T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 27216.30912,
+          "cycle_id": "e894e48ec680dc2df3115abd7de83abf810cf761fe7972936cfa55595babe68d:0",
+          "entry_at": "2025-07-18T13:30:00.000000Z",
+          "exit_at": "2025-07-23T20:00:00.000000Z",
+          "income": 26020.67328,
+          "net_pnl": -1195.63584,
+          "net_return": -0.0439308591,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-07-18T13:30:00.000000Z",
+            "interval_end": "2025-07-18T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 114.24,
+            "quantity": 238,
+            "fees": 27.18912
+          },
+          {
+            "interval_start": "2025-07-23T13:30:00.000000Z",
+            "interval_end": "2025-07-23T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 109.44,
+            "quantity": 238,
+            "fees": 26.04672
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 27902.43456,
+          "cycle_id": "25b56f57dd8636b6c7c6c98bc2d3a88914b67daa84b3811342f1fb4f1eb9bcc8:0",
+          "entry_at": "2025-07-18T13:30:00.000000Z",
+          "exit_at": "2025-07-23T20:00:00.000000Z",
+          "income": 26676.65664,
+          "net_pnl": -1225.77792,
+          "net_return": -0.0439308591,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-07-18T13:30:00.000000Z",
+            "interval_end": "2025-07-18T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 114.24,
+            "quantity": 244,
+            "fees": 27.87456
+          },
+          {
+            "interval_start": "2025-07-23T13:30:00.000000Z",
+            "interval_end": "2025-07-23T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 109.44,
+            "quantity": 244,
+            "fees": 26.70336
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -30.142080000000078,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2025-07-29T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 26917.6908,
+          "cycle_id": "0bc61f7d41b402602c37c60775c8323ff664a900cbf7c8f9d1b7637a68a39212:0",
+          "entry_at": "2025-07-29T13:30:00.000000Z",
+          "exit_at": "2025-08-01T20:00:00.000000Z",
+          "income": 25292.2824,
+          "net_pnl": -1625.4084,
+          "net_return": -0.0603843923,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-07-29T13:30:00.000000Z",
+            "interval_end": "2025-07-29T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 112.045,
+            "quantity": 240,
+            "fees": 26.8908
+          },
+          {
+            "interval_start": "2025-08-01T13:30:00.000000Z",
+            "interval_end": "2025-08-01T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 105.49,
+            "quantity": 240,
+            "fees": 25.3176
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 27590.63307,
+          "cycle_id": "6a9f50593472d3b9f7965ecef478fb5f9840bd2869d2b5bc0b2d640e48b33783:0",
+          "entry_at": "2025-07-29T13:30:00.000000Z",
+          "exit_at": "2025-08-01T20:00:00.000000Z",
+          "income": 25924.58946,
+          "net_pnl": -1666.04361,
+          "net_return": -0.0603843923,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-07-29T13:30:00.000000Z",
+            "interval_end": "2025-07-29T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 112.045,
+            "quantity": 246,
+            "fees": 27.56307
+          },
+          {
+            "interval_start": "2025-08-01T13:30:00.000000Z",
+            "interval_end": "2025-08-01T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 105.49,
+            "quantity": 246,
+            "fees": 25.95054
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -40.635209999999915,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2025-08-04T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 141987.18534,
+          "cycle_id": "92938ab0b7e883e49330f4b17adbf910fd9a1665e4a8121a22aa25348b68f34a:0",
+          "entry_at": "2025-08-04T13:30:00.000000Z",
+          "exit_at": "2025-08-11T20:00:00.000000Z",
+          "income": 162548.22906,
+          "net_pnl": 20561.04372,
+          "net_return": 0.1448091507,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-08-04T13:30:00.000000Z",
+            "interval_end": "2025-08-04T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 105.92,
+            "quantity": 672,
+            "fees": 71.17824
+          },
+          {
+            "interval_start": "2025-08-08T13:30:00.000000Z",
+            "interval_end": "2025-08-08T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 112.17,
+            "quantity": 630,
+            "fees": 70.6671
+          },
+          {
+            "interval_start": "2025-08-11T13:30:00.000000Z",
+            "interval_end": "2025-08-11T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 124.97,
+            "quantity": 1302,
+            "fees": 162.71094
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 145586.1407,
+          "cycle_id": "2e6cb647be4efa5a57ee0a4fafc5932afbc0d280ab54c4357a7c6a393f6d432a:0",
+          "entry_at": "2025-08-04T13:30:00.000000Z",
+          "exit_at": "2025-08-11T20:00:00.000000Z",
+          "income": 166668.11505,
+          "net_pnl": 21081.97435,
+          "net_return": 0.1448075637,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-08-04T13:30:00.000000Z",
+            "interval_end": "2025-08-04T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 105.92,
+            "quantity": 689,
+            "fees": 72.97888
+          },
+          {
+            "interval_start": "2025-08-08T13:30:00.000000Z",
+            "interval_end": "2025-08-08T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 112.17,
+            "quantity": 646,
+            "fees": 72.46182
+          },
+          {
+            "interval_start": "2025-08-11T13:30:00.000000Z",
+            "interval_end": "2025-08-11T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 124.97,
+            "quantity": 1335,
+            "fees": 166.83495
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 520.9306299999989,
+      "net_return_delta": -1.5869999999973405e-06
+    },
+    {
+      "entry_at": "2025-08-21T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 80576.496,
+          "cycle_id": "c217173db727b62f0c94afef94e6446a053e398184d6114c53a62772d9305f5f:0",
+          "entry_at": "2025-08-21T13:30:00.000000Z",
+          "exit_at": "2025-08-26T20:00:00.000000Z",
+          "income": 79790.05008,
+          "net_pnl": -786.44592,
+          "net_return": -0.0097602398,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-08-21T13:30:00.000000Z",
+            "interval_end": "2025-08-21T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 117.0,
+            "quantity": 688,
+            "fees": 80.496
+          },
+          {
+            "interval_start": "2025-08-26T13:30:00.000000Z",
+            "interval_end": "2025-08-26T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 116.09,
+            "quantity": 688,
+            "fees": 79.86992
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 82567.485,
+          "cycle_id": "b1255b1e83a1a4bfd225e4c3f83a6eb411170ce9aa3da242da5fa9154b7a069f:0",
+          "entry_at": "2025-08-21T13:30:00.000000Z",
+          "exit_at": "2025-08-26T20:00:00.000000Z",
+          "income": 81761.60655,
+          "net_pnl": -805.87845,
+          "net_return": -0.0097602398,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-08-21T13:30:00.000000Z",
+            "interval_end": "2025-08-21T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 117.0,
+            "quantity": 705,
+            "fees": 82.485
+          },
+          {
+            "interval_start": "2025-08-26T13:30:00.000000Z",
+            "interval_end": "2025-08-26T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 116.09,
+            "quantity": 705,
+            "fees": 81.84345
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -19.432530000000042,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2025-09-03T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 160994.70387,
+          "cycle_id": "88c63584074a92c1ab950fe45a06558a66e652a47abb5fc7ccd912c7cadfeeca:0",
+          "entry_at": "2025-09-03T13:30:00.000000Z",
+          "exit_at": "2025-09-10T20:00:00.000000Z",
+          "income": 180445.1742,
+          "net_pnl": 19450.47033,
+          "net_return": 0.1208143489,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-09-03T13:30:00.000000Z",
+            "interval_end": "2025-09-03T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 119.36,
+            "quantity": 677,
+            "fees": 80.80672
+          },
+          {
+            "interval_start": "2025-09-08T13:30:00.000000Z",
+            "interval_end": "2025-09-08T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 130.55,
+            "quantity": 613,
+            "fees": 80.02715
+          },
+          {
+            "interval_start": "2025-09-10T13:30:00.000000Z",
+            "interval_end": "2025-09-10T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 140.02,
+            "quantity": 1290,
+            "fees": 180.6258
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 164986.06124,
+          "cycle_id": "f0ebaac627b52060b313cccda9a9f73690186de697e5c6e6cc57d94dd4f18e3b:0",
+          "entry_at": "2025-09-03T13:30:00.000000Z",
+          "exit_at": "2025-09-10T20:00:00.000000Z",
+          "income": 184921.33356,
+          "net_pnl": 19935.27232,
+          "net_return": 0.1208300396,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-09-03T13:30:00.000000Z",
+            "interval_end": "2025-09-03T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 119.36,
+            "quantity": 694,
+            "fees": 82.83584
+          },
+          {
+            "interval_start": "2025-09-08T13:30:00.000000Z",
+            "interval_end": "2025-09-08T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 130.55,
+            "quantity": 628,
+            "fees": 81.9854
+          },
+          {
+            "interval_start": "2025-09-10T13:30:00.000000Z",
+            "interval_end": "2025-09-10T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 140.02,
+            "quantity": 1322,
+            "fees": 185.10644
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 484.80198999999993,
+      "net_return_delta": 1.5690700000001168e-05
+    },
+    {
+      "entry_at": "2025-09-26T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 67414.00666,
+          "cycle_id": "b5eba577be2e7c5794dc09a64c49181efb7e438a44c083ab2aa728ec39367cf7:0",
+          "entry_at": "2025-09-26T13:30:00.000000Z",
+          "exit_at": "2025-10-03T20:00:00.000000Z",
+          "income": 77018.15264,
+          "net_pnl": 9604.14598,
+          "net_return": 0.1424651412,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-09-26T13:30:00.000000Z",
+            "interval_end": "2025-09-26T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 158.39,
+            "quantity": 214,
+            "fees": 33.89546
+          },
+          {
+            "interval_start": "2025-10-01T13:30:00.000000Z",
+            "interval_end": "2025-10-01T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 165.6,
+            "quantity": 202,
+            "fees": 33.4512
+          },
+          {
+            "interval_start": "2025-10-03T13:30:00.000000Z",
+            "interval_end": "2025-10-03T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 185.21,
+            "quantity": 416,
+            "fees": 77.04736
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 69028.3594,
+          "cycle_id": "2c077594eca1f0f95d7af5a1246d110b006b21597ee8066b7f531a44f66e8c2e:0",
+          "entry_at": "2025-09-26T13:30:00.000000Z",
+          "exit_at": "2025-10-03T20:00:00.000000Z",
+          "income": 78869.55054,
+          "net_pnl": 9841.19114,
+          "net_return": 0.1425673625,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-09-26T13:30:00.000000Z",
+            "interval_end": "2025-09-26T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 158.39,
+            "quantity": 220,
+            "fees": 34.8458
+          },
+          {
+            "interval_start": "2025-10-01T13:30:00.000000Z",
+            "interval_end": "2025-10-01T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 165.6,
+            "quantity": 206,
+            "fees": 34.1136
+          },
+          {
+            "interval_start": "2025-10-03T13:30:00.000000Z",
+            "interval_end": "2025-10-03T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 185.21,
+            "quantity": 426,
+            "fees": 78.89946
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 237.0451600000015,
+      "net_return_delta": 0.00010222129999998275
+    },
+    {
+      "entry_at": "2025-10-23T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 189710.06054,
+          "cycle_id": "d73887c54441a5535ddcedd9436f3beb210df15169dba0a15cb78432860aff1a:0",
+          "entry_at": "2025-10-23T13:30:00.000000Z",
+          "exit_at": "2025-10-30T20:00:00.000000Z",
+          "income": 206448.7446,
+          "net_pnl": 16738.68406,
+          "net_return": 0.0882329804,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-10-23T13:30:00.000000Z",
+            "interval_end": "2025-10-23T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 196.7,
+            "quantity": 476,
+            "fees": 93.6292
+          },
+          {
+            "interval_start": "2025-10-28T13:30:00.000000Z",
+            "interval_end": "2025-10-28T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 218.93,
+            "quantity": 438,
+            "fees": 95.89134
+          },
+          {
+            "interval_start": "2025-10-30T13:30:00.000000Z",
+            "interval_end": "2025-10-30T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 226.1,
+            "quantity": 914,
+            "fees": 206.6554
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 194702.6081,
+          "cycle_id": "370364d2b123c4046d4c7a17e72aacd45e62d2c3a7759332e0f93febba69f0db:0",
+          "entry_at": "2025-10-23T13:30:00.000000Z",
+          "exit_at": "2025-10-30T20:00:00.000000Z",
+          "income": 211869.7182,
+          "net_pnl": 17167.1101,
+          "net_return": 0.0881709304,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-10-23T13:30:00.000000Z",
+            "interval_end": "2025-10-23T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 196.7,
+            "quantity": 488,
+            "fees": 95.9896
+          },
+          {
+            "interval_start": "2025-10-28T13:30:00.000000Z",
+            "interval_end": "2025-10-28T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 218.93,
+            "quantity": 450,
+            "fees": 98.5185
+          },
+          {
+            "interval_start": "2025-10-30T13:30:00.000000Z",
+            "interval_end": "2025-10-30T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 226.1,
+            "quantity": 938,
+            "fees": 212.0818
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 428.4260400000021,
+      "net_return_delta": -6.204999999999405e-05
+    },
+    {
+      "entry_at": "2025-11-19T14:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 102211.6095,
+          "cycle_id": "92296852e9d1971813304f12cd34b8f9172c2940c20b8206f7ecfa7a6952b332:0",
+          "entry_at": "2025-11-19T14:30:00.000000Z",
+          "exit_at": "2025-11-24T21:00:00.000000Z",
+          "income": 95938.4655,
+          "net_pnl": -6273.144,
+          "net_return": -0.0613740849,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-11-19T14:30:00.000000Z",
+            "interval_end": "2025-11-19T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 226.91,
+            "quantity": 450,
+            "fees": 102.1095
+          },
+          {
+            "interval_start": "2025-11-24T14:30:00.000000Z",
+            "interval_end": "2025-11-24T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 213.41,
+            "quantity": 450,
+            "fees": 96.0345
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 104710.11551,
+          "cycle_id": "0917a5e80728804dd647c3ae7abb8218d37196b9ef5b57154fffb14bdb678d20:0",
+          "entry_at": "2025-11-19T14:30:00.000000Z",
+          "exit_at": "2025-11-24T21:00:00.000000Z",
+          "income": 98283.62799,
+          "net_pnl": -6426.48752,
+          "net_return": -0.0613740849,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-11-19T14:30:00.000000Z",
+            "interval_end": "2025-11-19T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 226.91,
+            "quantity": 461,
+            "fees": 104.60551
+          },
+          {
+            "interval_start": "2025-11-24T14:30:00.000000Z",
+            "interval_end": "2025-11-24T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 213.41,
+            "quantity": 461,
+            "fees": 98.38201
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -153.34351999999944,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2025-12-04T14:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 74828.93418,
+          "cycle_id": "3063dcb9dacaa02cfa1f43448e6b9efa1d5c3b8dd1e24435d242f0cfc34a6c2a:0",
+          "entry_at": "2025-12-04T14:30:00.000000Z",
+          "exit_at": "2025-12-11T21:00:00.000000Z",
+          "income": 82299.56805,
+          "net_pnl": 7470.63387,
+          "net_return": 0.0998361657,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-12-04T14:30:00.000000Z",
+            "interval_end": "2025-12-04T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 230.28,
+            "quantity": 159,
+            "fees": 36.61452
+          },
+          {
+            "interval_start": "2025-12-09T14:30:00.000000Z",
+            "interval_end": "2025-12-09T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 244.485,
+            "quantity": 156,
+            "fees": 38.13966
+          },
+          {
+            "interval_start": "2025-12-11T14:30:00.000000Z",
+            "interval_end": "2025-12-11T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 261.53,
+            "quantity": 315,
+            "fees": 82.38195
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 76729.89324,
+          "cycle_id": "2f522aa581ba42e0a321794eb101c260d44d76938ec80b6fa53098be9c6c487d:0",
+          "entry_at": "2025-12-04T14:30:00.000000Z",
+          "exit_at": "2025-12-11T21:00:00.000000Z",
+          "income": 84389.71581,
+          "net_pnl": 7659.82257,
+          "net_return": 0.0998284012,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-12-04T14:30:00.000000Z",
+            "interval_end": "2025-12-04T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 230.28,
+            "quantity": 163,
+            "fees": 37.53564
+          },
+          {
+            "interval_start": "2025-12-09T14:30:00.000000Z",
+            "interval_end": "2025-12-09T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 244.485,
+            "quantity": 160,
+            "fees": 39.1176
+          },
+          {
+            "interval_start": "2025-12-11T14:30:00.000000Z",
+            "interval_end": "2025-12-11T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 261.53,
+            "quantity": 323,
+            "fees": 84.47419
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 189.1887000000006,
+      "net_return_delta": -7.764500000007057e-06
+    },
+    {
+      "entry_at": "2025-12-15T14:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 104587.43295,
+          "cycle_id": "5bb34c87bd48a78f592b378d17c49493069267f586dd4a69a564be74330f5807:0",
+          "entry_at": "2025-12-15T14:30:00.000000Z",
+          "exit_at": "2025-12-18T21:00:00.000000Z",
+          "income": 109941.31863,
+          "net_pnl": 5353.88568,
+          "net_return": 0.0511905258,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-12-15T14:30:00.000000Z",
+            "interval_end": "2025-12-15T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 243.55,
+            "quantity": 429,
+            "fees": 104.48295
+          },
+          {
+            "interval_start": "2025-12-18T14:30:00.000000Z",
+            "interval_end": "2025-12-18T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 256.53,
+            "quantity": 429,
+            "fees": 110.05137
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 107269.162,
+          "cycle_id": "bba8ba1eec9452da4f2f43854d177a54efddcca4bfff02b52310b2a9450d7d17:0",
+          "entry_at": "2025-12-15T14:30:00.000000Z",
+          "exit_at": "2025-12-18T21:00:00.000000Z",
+          "income": 112760.3268,
+          "net_pnl": 5491.1648,
+          "net_return": 0.0511905258,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2025-12-15T14:30:00.000000Z",
+            "interval_end": "2025-12-15T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 243.55,
+            "quantity": 440,
+            "fees": 107.162
+          },
+          {
+            "interval_start": "2025-12-18T14:30:00.000000Z",
+            "interval_end": "2025-12-18T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 256.53,
+            "quantity": 440,
+            "fees": 112.8732
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 137.27911999999924,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2026-01-09T14:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 212365.87372,
+          "cycle_id": "c697743c5fa0d6b71efbd803c821afce067c89b7e1f72e7880497c123744a01c:0",
+          "entry_at": "2026-01-09T14:30:00.000000Z",
+          "exit_at": "2026-01-16T21:00:00.000000Z",
+          "income": 225052.5222,
+          "net_pnl": 12686.64848,
+          "net_return": 0.0597395818,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-01-09T14:30:00.000000Z",
+            "interval_end": "2026-01-09T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 330.29,
+            "quantity": 324,
+            "fees": 107.01396
+          },
+          {
+            "interval_start": "2026-01-14T14:30:00.000000Z",
+            "interval_end": "2026-01-14T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 334.84,
+            "quantity": 314,
+            "fees": 105.13976
+          },
+          {
+            "interval_start": "2026-01-16T14:30:00.000000Z",
+            "interval_end": "2026-01-16T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 353.1,
+            "quantity": 638,
+            "fees": 225.2778
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 217692.23476,
+          "cycle_id": "924dd43ad0c7d3fecb036358dac8c484d5b1e5dc6e92402ac54e6a2288f6e536:0",
+          "entry_at": "2026-01-09T14:30:00.000000Z",
+          "exit_at": "2026-01-16T21:00:00.000000Z",
+          "income": 230696.4726,
+          "net_pnl": 13004.23784,
+          "net_return": 0.0597368016,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-01-09T14:30:00.000000Z",
+            "interval_end": "2026-01-09T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 330.29,
+            "quantity": 332,
+            "fees": 109.65628
+          },
+          {
+            "interval_start": "2026-01-14T14:30:00.000000Z",
+            "interval_end": "2026-01-14T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 334.84,
+            "quantity": 322,
+            "fees": 107.81848
+          },
+          {
+            "interval_start": "2026-01-16T14:30:00.000000Z",
+            "interval_end": "2026-01-16T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 353.1,
+            "quantity": 654,
+            "fees": 230.9274
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 317.58935999999994,
+      "net_return_delta": -2.7801999999965687e-06
+    },
+    {
+      "entry_at": "2026-02-05T14:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 223555.82249,
+          "cycle_id": "8ad358f72e5c2ac6f434f20bc4fdb1003a2d036ee16689fb375f896756f87457:0",
+          "entry_at": "2026-02-05T14:30:00.000000Z",
+          "exit_at": "2026-02-11T21:00:00.000000Z",
+          "income": 236598.779385,
+          "net_pnl": 13042.956895,
+          "net_return": 0.0583431769,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-02-05T14:30:00.000000Z",
+            "interval_end": "2026-02-05T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 369.62,
+            "quantity": 296,
+            "fees": 109.40752
+          },
+          {
+            "interval_start": "2026-02-10T14:30:00.000000Z",
+            "interval_end": "2026-02-10T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 375.99,
+            "quantity": 303,
+            "fees": 113.92497
+          },
+          {
+            "interval_start": "2026-02-11T14:30:00.000000Z",
+            "interval_end": "2026-02-11T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 395.385,
+            "quantity": 599,
+            "fees": 236.835615
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 229533.04374,
+          "cycle_id": "97ff89f5c2e778d23a94d8c589c7759051e3ffcc88cb004c792636ad4948c93f:0",
+          "entry_at": "2026-02-05T14:30:00.000000Z",
+          "exit_at": "2026-02-11T21:00:00.000000Z",
+          "income": 242918.613225,
+          "net_pnl": 13385.569485,
+          "net_return": 0.058316525,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-02-05T14:30:00.000000Z",
+            "interval_end": "2026-02-05T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 369.62,
+            "quantity": 303,
+            "fees": 111.99486
+          },
+          {
+            "interval_start": "2026-02-10T14:30:00.000000Z",
+            "interval_end": "2026-02-10T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 375.99,
+            "quantity": 312,
+            "fees": 117.30888
+          },
+          {
+            "interval_start": "2026-02-11T14:30:00.000000Z",
+            "interval_end": "2026-02-11T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 395.385,
+            "quantity": 615,
+            "fees": 243.161775
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 342.61259000000064,
+      "net_return_delta": -2.6651900000000672e-05
+    },
+    {
+      "entry_at": "2026-02-18T14:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 88775.73705,
+          "cycle_id": "e44fc9d6cd421baaa8452acb605f69698fe34268c77c789fa0d0cefa86950bf4:0",
+          "entry_at": "2026-02-18T14:30:00.000000Z",
+          "exit_at": "2026-02-25T21:00:00.000000Z",
+          "income": 92031.876,
+          "net_pnl": 3256.13895,
+          "net_return": 0.0366782531,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-02-18T14:30:00.000000Z",
+            "interval_end": "2026-02-18T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 399.5,
+            "quantity": 111,
+            "fees": 44.3445
+          },
+          {
+            "interval_start": "2026-02-23T14:30:00.000000Z",
+            "interval_end": "2026-02-23T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 422.31,
+            "quantity": 105,
+            "fees": 44.34255
+          },
+          {
+            "interval_start": "2026-02-25T14:30:00.000000Z",
+            "interval_end": "2026-02-25T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 426.5,
+            "quantity": 216,
+            "fees": 92.124
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 91243.63248,
+          "cycle_id": "e4f8bc69efa4efd1a92c887793a43772226b6d8924c4a53aa1e8bdce49ed5ea3:0",
+          "entry_at": "2026-02-18T14:30:00.000000Z",
+          "exit_at": "2026-02-25T21:00:00.000000Z",
+          "income": 94588.317,
+          "net_pnl": 3344.68452,
+          "net_return": 0.0366566349,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-02-18T14:30:00.000000Z",
+            "interval_end": "2026-02-18T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 399.5,
+            "quantity": 114,
+            "fees": 45.543
+          },
+          {
+            "interval_start": "2026-02-23T14:30:00.000000Z",
+            "interval_end": "2026-02-23T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 422.31,
+            "quantity": 108,
+            "fees": 45.60948
+          },
+          {
+            "interval_start": "2026-02-25T14:30:00.000000Z",
+            "interval_end": "2026-02-25T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 426.5,
+            "quantity": 222,
+            "fees": 94.683
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 88.54556999999977,
+      "net_return_delta": -2.1618200000003696e-05
+    },
+    {
+      "entry_at": "2026-03-02T14:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 117346.46924,
+          "cycle_id": "99c8c09d999c978cf8d91d8a4fb18a5a42968e8881ad6c4c43c5ffe85df04185:0",
+          "entry_at": "2026-03-02T14:30:00.000000Z",
+          "exit_at": "2026-03-05T21:00:00.000000Z",
+          "income": 116274.8088,
+          "net_pnl": -1071.66044,
+          "net_return": -0.0091324472,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-03-02T14:30:00.000000Z",
+            "interval_end": "2026-03-02T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 401.47,
+            "quantity": 292,
+            "fees": 117.22924
+          },
+          {
+            "interval_start": "2026-03-05T14:30:00.000000Z",
+            "interval_end": "2026-03-05T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 398.6,
+            "quantity": 292,
+            "fees": 116.3912
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 120159.56953,
+          "cycle_id": "9f387c04c7b9c59a2324e3b5aca4e17ab0c40c870c4bdd4b6586a767b2ecbe14:0",
+          "entry_at": "2026-03-02T14:30:00.000000Z",
+          "exit_at": "2026-03-05T21:00:00.000000Z",
+          "income": 119062.2186,
+          "net_pnl": -1097.35093,
+          "net_return": -0.0091324472,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-03-02T14:30:00.000000Z",
+            "interval_end": "2026-03-02T21:00:00.000000Z",
+            "side": "BUY",
+            "price": 401.47,
+            "quantity": 299,
+            "fees": 120.03953
+          },
+          {
+            "interval_start": "2026-03-05T14:30:00.000000Z",
+            "interval_end": "2026-03-05T21:00:00.000000Z",
+            "side": "SELL",
+            "price": 398.6,
+            "quantity": 299,
+            "fees": 119.1814
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -25.690489999999954,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2026-03-09T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 238746.112605,
+          "cycle_id": "93e9a4728339460dea1d7585ccb692ca0f8e9bf7b69d5466ec131c34f8567093:0",
+          "entry_at": "2026-03-09T13:30:00.000000Z",
+          "exit_at": "2026-03-16T20:00:00.000000Z",
+          "income": 275451.15312,
+          "net_pnl": 36705.0405150001,
+          "net_return": 0.1537408928,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-03-09T13:30:00.000000Z",
+            "interval_end": "2026-03-09T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 363.96,
+            "quantity": 323,
+            "fees": 117.55908
+          },
+          {
+            "interval_start": "2026-03-12T13:30:00.000000Z",
+            "interval_end": "2026-03-12T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 409.995,
+            "quantity": 295,
+            "fees": 120.948525
+          },
+          {
+            "interval_start": "2026-03-16T13:30:00.000000Z",
+            "interval_end": "2026-03-16T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 446.16,
+            "quantity": 618,
+            "fees": 275.72688
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 244487.458215,
+          "cycle_id": "f0bb2a90a5c3a8a7e520e79782f5ec8117b8aa8fc50c80c0fe2c60cc6a7843ab:0",
+          "entry_at": "2026-03-09T13:30:00.000000Z",
+          "exit_at": "2026-03-16T20:00:00.000000Z",
+          "income": 282136.8607200001,
+          "net_pnl": 37649.4025050001,
+          "net_return": 0.1539931855,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-03-09T13:30:00.000000Z",
+            "interval_end": "2026-03-09T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 363.96,
+            "quantity": 332,
+            "fees": 120.83472
+          },
+          {
+            "interval_start": "2026-03-12T13:30:00.000000Z",
+            "interval_end": "2026-03-12T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 409.995,
+            "quantity": 301,
+            "fees": 123.408495
+          },
+          {
+            "interval_start": "2026-03-16T13:30:00.000000Z",
+            "interval_end": "2026-03-16T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 446.16,
+            "quantity": 633,
+            "fees": 282.41928
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 944.3619899999976,
+      "net_return_delta": 0.0002522926999999897
+    },
+    {
+      "entry_at": "2026-03-23T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 52041.67969,
+          "cycle_id": "36d1f080b937d068f35e03de4ced2e0137fd565a7961e26fbf4386ea52fdd6f2:0",
+          "entry_at": "2026-03-23T13:30:00.000000Z",
+          "exit_at": "2026-03-26T20:00:00.000000Z",
+          "income": 45097.29756,
+          "net_pnl": -6944.38213,
+          "net_return": -0.1334388546,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-03-23T13:30:00.000000Z",
+            "interval_end": "2026-03-23T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 426.145,
+            "quantity": 122,
+            "fees": 51.98969
+          },
+          {
+            "interval_start": "2026-03-26T13:30:00.000000Z",
+            "interval_end": "2026-03-26T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 370.02,
+            "quantity": 122,
+            "fees": 45.14244
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 53321.393125,
+          "cycle_id": "66d259495ce73a7412e5ebd158a537c28e44d465aedab4d5ce25306be91dbd4c:0",
+          "entry_at": "2026-03-23T13:30:00.000000Z",
+          "exit_at": "2026-03-26T20:00:00.000000Z",
+          "income": 46206.2475,
+          "net_pnl": -7115.145625,
+          "net_return": -0.1334388546,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-03-23T13:30:00.000000Z",
+            "interval_end": "2026-03-23T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 426.145,
+            "quantity": 125,
+            "fees": 53.268125
+          },
+          {
+            "interval_start": "2026-03-26T13:30:00.000000Z",
+            "interval_end": "2026-03-26T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 370.02,
+            "quantity": 125,
+            "fees": 46.2525
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -170.76349500000015,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2026-03-27T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 135841.48578,
+          "cycle_id": "ac309637482669850b0fe361ffff8ca75d2852cf93d8574b8446ba664a7d542b:0",
+          "entry_at": "2026-03-27T13:30:00.000000Z",
+          "exit_at": "2026-04-01T20:00:00.000000Z",
+          "income": 131810.90391,
+          "net_pnl": -4030.58187,
+          "net_return": -0.0296712146,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-03-27T13:30:00.000000Z",
+            "interval_end": "2026-03-27T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 359.01,
+            "quantity": 378,
+            "fees": 135.70578
+          },
+          {
+            "interval_start": "2026-04-01T13:30:00.000000Z",
+            "interval_end": "2026-04-01T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 348.905,
+            "quantity": 378,
+            "fees": 131.88609
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 139435.17588,
+          "cycle_id": "28ca515be2f444725abfb25b42b50338703196dd936696c6479a319ba41510ac:0",
+          "entry_at": "2026-03-27T13:30:00.000000Z",
+          "exit_at": "2026-04-01T20:00:00.000000Z",
+          "income": 135297.96486,
+          "net_pnl": -4137.21102,
+          "net_return": -0.0296712146,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-03-27T13:30:00.000000Z",
+            "interval_end": "2026-03-27T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 359.01,
+            "quantity": 388,
+            "fees": 139.29588
+          },
+          {
+            "interval_start": "2026-04-01T13:30:00.000000Z",
+            "interval_end": "2026-04-01T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 348.905,
+            "quantity": 388,
+            "fees": 135.37514
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -106.62914999999975,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2026-04-21T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 49694.8452,
+          "cycle_id": "b92645ff4566d2a28487202bef85ffea23c2c84b9ac24a26e1be8a0b66ffec50:0",
+          "entry_at": "2026-04-21T13:30:00.000000Z",
+          "exit_at": "2026-04-28T20:00:00.000000Z",
+          "income": 55334.0106,
+          "net_pnl": 5639.1654,
+          "net_return": 0.1134758621,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-04-21T13:30:00.000000Z",
+            "interval_end": "2026-04-21T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 451.32,
+            "quantity": 110,
+            "fees": 49.6452
+          },
+          {
+            "interval_start": "2026-04-28T13:30:00.000000Z",
+            "interval_end": "2026-04-28T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 503.54,
+            "quantity": 110,
+            "fees": 55.3894
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 51050.15916,
+          "cycle_id": "00f03d767832a93aad7dbe89328a920ebd6fdb66b9a670ecab80845c917614fe:0",
+          "entry_at": "2026-04-21T13:30:00.000000Z",
+          "exit_at": "2026-04-28T20:00:00.000000Z",
+          "income": 56843.11998,
+          "net_pnl": 5792.96082,
+          "net_return": 0.1134758621,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-04-21T13:30:00.000000Z",
+            "interval_end": "2026-04-21T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 451.32,
+            "quantity": 113,
+            "fees": 50.99916
+          },
+          {
+            "interval_start": "2026-04-28T13:30:00.000000Z",
+            "interval_end": "2026-04-28T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 503.54,
+            "quantity": 113,
+            "fees": 56.90002
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 153.79542000000038,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2026-05-18T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 273369.45636,
+          "cycle_id": "93329150293fc648c003e42eb7bf0d187477b2ba36bc998d090a0baf147fcd1f:0",
+          "entry_at": "2026-05-18T13:30:00.000000Z",
+          "exit_at": "2026-05-26T20:00:00.000000Z",
+          "income": 304920.774,
+          "net_pnl": 31551.31764,
+          "net_return": 0.1154163968,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-05-18T13:30:00.000000Z",
+            "interval_end": "2026-05-18T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 731.9,
+            "quantity": 186,
+            "fees": 136.1334
+          },
+          {
+            "interval_start": "2026-05-21T13:30:00.000000Z",
+            "interval_end": "2026-05-21T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 736.36,
+            "quantity": 186,
+            "fees": 136.96296
+          },
+          {
+            "interval_start": "2026-05-26T13:30:00.000000Z",
+            "interval_end": "2026-05-26T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 820.5,
+            "quantity": 372,
+            "fees": 305.226
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 279981.0013,
+          "cycle_id": "be065be0646cd365ee4a10d84a4ef1f08b5a495a3cb29b00c9db0927177914fb:0",
+          "entry_at": "2026-05-18T13:30:00.000000Z",
+          "exit_at": "2026-05-26T20:00:00.000000Z",
+          "income": 312297.8895,
+          "net_pnl": 32316.8882,
+          "net_return": 0.1154252898,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-05-18T13:30:00.000000Z",
+            "interval_end": "2026-05-18T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 731.9,
+            "quantity": 191,
+            "fees": 139.7929
+          },
+          {
+            "interval_start": "2026-05-21T13:30:00.000000Z",
+            "interval_end": "2026-05-21T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 736.36,
+            "quantity": 190,
+            "fees": 139.9084
+          },
+          {
+            "interval_start": "2026-05-26T13:30:00.000000Z",
+            "interval_end": "2026-05-26T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 820.5,
+            "quantity": 381,
+            "fees": 312.6105
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 765.5705600000001,
+      "net_return_delta": 8.892999999995932e-06
+    },
+    {
+      "entry_at": "2026-06-11T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 305280.0250499999,
+          "cycle_id": "4269a635084ce270ca81037564380246084538b038d8b9300996d00b31781180:0",
+          "entry_at": "2026-06-11T13:30:00.000000Z",
+          "exit_at": "2026-06-18T20:00:00.000000Z",
+          "income": 340942.73598,
+          "net_pnl": 35662.7109300001,
+          "net_return": 0.1168196672,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-06-11T13:30:00.000000Z",
+            "interval_end": "2026-06-11T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 900.79,
+            "quantity": 169,
+            "fees": 152.23351
+          },
+          {
+            "interval_start": "2026-06-16T13:30:00.000000Z",
+            "interval_end": "2026-06-16T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 1098.86,
+            "quantity": 139,
+            "fees": 152.74154
+          },
+          {
+            "interval_start": "2026-06-18T13:30:00.000000Z",
+            "interval_end": "2026-06-18T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 1108.065,
+            "quantity": 308,
+            "fees": 341.28402
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 312186.66479,
+          "cycle_id": "003d81f133819e75a2e3f145c67ef5bdddceb026cc6141f06e1ba5d2cb9b5f09:0",
+          "entry_at": "2026-06-11T13:30:00.000000Z",
+          "exit_at": "2026-06-18T20:00:00.000000Z",
+          "income": 348691.434525,
+          "net_pnl": 36504.7697350001,
+          "net_return": 0.1169325082,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-06-11T13:30:00.000000Z",
+            "interval_end": "2026-06-11T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 900.79,
+            "quantity": 173,
+            "fees": 155.83667
+          },
+          {
+            "interval_start": "2026-06-16T13:30:00.000000Z",
+            "interval_end": "2026-06-16T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 1098.86,
+            "quantity": 142,
+            "fees": 156.03812
+          },
+          {
+            "interval_start": "2026-06-18T13:30:00.000000Z",
+            "interval_end": "2026-06-18T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 1108.065,
+            "quantity": 315,
+            "fees": 349.040475
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 842.0588050000006,
+      "net_return_delta": 0.00011284099999998853
+    },
+    {
+      "entry_at": "2026-07-06T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 169642.79332,
+          "cycle_id": "562a034159ed662c729d1e72ca5941aabef48461d9b1f0937fe6e8b1499f005a:0",
+          "entry_at": "2026-07-06T13:30:00.000000Z",
+          "exit_at": "2026-07-09T20:00:00.000000Z",
+          "income": 174664.88028,
+          "net_pnl": 5022.08696,
+          "net_return": 0.0296038922,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-07-06T13:30:00.000000Z",
+            "interval_end": "2026-07-06T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 985.31,
+            "quantity": 172,
+            "fees": 169.47332
+          },
+          {
+            "interval_start": "2026-07-09T13:30:00.000000Z",
+            "interval_end": "2026-07-09T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 1016.51,
+            "quantity": 172,
+            "fees": 174.83972
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 174574.26987,
+          "cycle_id": "a6069e05a85c9ab4618ec47b5049864aae0c06984c4fc6450d868ee248df12a7:0",
+          "entry_at": "2026-07-06T13:30:00.000000Z",
+          "exit_at": "2026-07-09T20:00:00.000000Z",
+          "income": 179742.34773,
+          "net_pnl": 5168.07786,
+          "net_return": 0.0296038922,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-07-06T13:30:00.000000Z",
+            "interval_end": "2026-07-06T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 985.31,
+            "quantity": 177,
+            "fees": 174.39987
+          },
+          {
+            "interval_start": "2026-07-09T13:30:00.000000Z",
+            "interval_end": "2026-07-09T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 1016.51,
+            "quantity": 177,
+            "fees": 179.92227
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 145.9909000000007,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2026-07-17T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 337480.143,
+          "cycle_id": "beebd73e8baaf4b30297563a7a01c42b024faf6320a719f15023a4af79cd53ec:0",
+          "entry_at": "2026-07-17T13:30:00.000000Z",
+          "exit_at": "2026-07-24T20:00:00.000000Z",
+          "income": 367899.25248,
+          "net_pnl": 30419.10948,
+          "net_return": 0.090135998,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-07-17T13:30:00.000000Z",
+            "interval_end": "2026-07-17T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 822.525,
+            "quantity": 200,
+            "fees": 164.505
+          },
+          {
+            "interval_start": "2026-07-22T13:30:00.000000Z",
+            "interval_end": "2026-07-22T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 938.25,
+            "quantity": 184,
+            "fees": 172.638
+          },
+          {
+            "interval_start": "2026-07-24T13:30:00.000000Z",
+            "interval_end": "2026-07-24T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 959.03,
+            "quantity": 384,
+            "fees": 368.26752
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 346292.821875,
+          "cycle_id": "89e68bc848a3e082e004688624c65f831a0be1baa9bca03e52b432ba31370f9d:0",
+          "entry_at": "2026-07-17T13:30:00.000000Z",
+          "exit_at": "2026-07-24T20:00:00.000000Z",
+          "income": 377479.96218,
+          "net_pnl": 31187.140305,
+          "net_return": 0.0900600253,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-07-17T13:30:00.000000Z",
+            "interval_end": "2026-07-17T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 822.525,
+            "quantity": 205,
+            "fees": 168.617625
+          },
+          {
+            "interval_start": "2026-07-22T13:30:00.000000Z",
+            "interval_end": "2026-07-22T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 938.25,
+            "quantity": 189,
+            "fees": 177.32925
+          },
+          {
+            "interval_start": "2026-07-24T13:30:00.000000Z",
+            "interval_end": "2026-07-24T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 959.03,
+            "quantity": 394,
+            "fees": 377.85782
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 768.0308250000016,
+      "net_return_delta": -7.597269999999601e-05
+    },
+    {
+      "entry_at": "2026-07-28T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 173132.61966,
+          "cycle_id": "7c7d731a6ef21f7a2e02336539ef0bc4808afa38c9ba2be11b5df671735d4073:0",
+          "entry_at": "2026-07-28T13:30:00.000000Z",
+          "exit_at": "2026-07-31T20:00:00.000000Z",
+          "income": 189258.4521,
+          "net_pnl": 16125.83244,
+          "net_return": 0.0931415032,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-07-28T13:30:00.000000Z",
+            "interval_end": "2026-07-28T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 839.61,
+            "quantity": 206,
+            "fees": 172.95966
+          },
+          {
+            "interval_start": "2026-07-31T13:30:00.000000Z",
+            "interval_end": "2026-07-31T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 919.65,
+            "quantity": 206,
+            "fees": 189.4479
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 178175.31732,
+          "cycle_id": "a862a32c5d2d354c3e0e0f1f8c76132e96834c1415d76e234ffdf39cb1136553:0",
+          "entry_at": "2026-07-28T13:30:00.000000Z",
+          "exit_at": "2026-07-31T20:00:00.000000Z",
+          "income": 194770.8342,
+          "net_pnl": 16595.51688,
+          "net_return": 0.0931415032,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-07-28T13:30:00.000000Z",
+            "interval_end": "2026-07-28T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 839.61,
+            "quantity": 212,
+            "fees": 177.99732
+          },
+          {
+            "interval_start": "2026-07-31T13:30:00.000000Z",
+            "interval_end": "2026-07-31T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 919.65,
+            "quantity": 212,
+            "fees": 194.9658
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 469.6844399999991,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2026-08-10T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 145823.18751,
+          "cycle_id": "c0566e25f0ae4fda4bdbaf0de36a6263020e72fbc30aba1720ea124f842f03b4:0",
+          "entry_at": "2026-08-10T13:30:00.000000Z",
+          "exit_at": "2026-08-17T20:00:00.000000Z",
+          "income": 163762.2738,
+          "net_pnl": 17939.08629,
+          "net_return": 0.123019436,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-08-10T13:30:00.000000Z",
+            "interval_end": "2026-08-10T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 863.665,
+            "quantity": 82,
+            "fees": 70.82053
+          },
+          {
+            "interval_start": "2026-08-13T13:30:00.000000Z",
+            "interval_end": "2026-08-13T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 912.89,
+            "quantity": 82,
+            "fees": 74.85698
+          },
+          {
+            "interval_start": "2026-08-17T13:30:00.000000Z",
+            "interval_end": "2026-08-17T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 999.55,
+            "quantity": 164,
+            "fees": 163.9262
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 150244.379285,
+          "cycle_id": "6a5138a76c370bd396d2b4f15d3ea9c749d7fec83e1d1502f95caff9a578deb8:0",
+          "entry_at": "2026-08-10T13:30:00.000000Z",
+          "exit_at": "2026-08-17T20:00:00.000000Z",
+          "income": 168755.02605,
+          "net_pnl": 18510.646765,
+          "net_return": 0.1232035891,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-08-10T13:30:00.000000Z",
+            "interval_end": "2026-08-10T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 863.665,
+            "quantity": 85,
+            "fees": 73.411525
+          },
+          {
+            "interval_start": "2026-08-13T13:30:00.000000Z",
+            "interval_end": "2026-08-13T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 912.89,
+            "quantity": 84,
+            "fees": 76.68276
+          },
+          {
+            "interval_start": "2026-08-17T13:30:00.000000Z",
+            "interval_end": "2026-08-17T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 999.55,
+            "quantity": 169,
+            "fees": 168.92395
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 571.560475000002,
+      "net_return_delta": 0.00018415310000000074
+    },
+    {
+      "entry_at": "2026-08-20T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 202164.12216,
+          "cycle_id": "a48ed5979653f277eb9a5d9ac99abb2bf3d7744174f740f066aa7e363a01483f:0",
+          "entry_at": "2026-08-20T13:30:00.000000Z",
+          "exit_at": "2026-08-25T20:00:00.000000Z",
+          "income": 200457.9414,
+          "net_pnl": -1706.18076,
+          "net_return": -0.0084395824,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-08-20T13:30:00.000000Z",
+            "interval_end": "2026-08-20T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 935.01,
+            "quantity": 216,
+            "fees": 201.96216
+          },
+          {
+            "interval_start": "2026-08-25T13:30:00.000000Z",
+            "interval_end": "2026-08-25T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 928.975,
+            "quantity": 216,
+            "fees": 200.6586
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 207779.79222,
+          "cycle_id": "9719a8461800995cbf59a52e665d80ce5bc5a280d921d022e1d899ced0b5c63e:0",
+          "entry_at": "2026-08-20T13:30:00.000000Z",
+          "exit_at": "2026-08-25T20:00:00.000000Z",
+          "income": 206026.21755,
+          "net_pnl": -1753.57467,
+          "net_return": -0.0084395824,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-08-20T13:30:00.000000Z",
+            "interval_end": "2026-08-20T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 935.01,
+            "quantity": 222,
+            "fees": 207.57222
+          },
+          {
+            "interval_start": "2026-08-25T13:30:00.000000Z",
+            "interval_end": "2026-08-25T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 928.975,
+            "quantity": 222,
+            "fees": 206.23245
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -47.393910000000005,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2026-08-31T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 201381.42024,
+          "cycle_id": "1b07be4062a948ca3b119ca90dc2e96fdbe899eb0aa248003c23594e595d6c4d:0",
+          "entry_at": "2026-08-31T13:30:00.000000Z",
+          "exit_at": "2026-09-08T20:00:00.000000Z",
+          "income": 223638.5376,
+          "net_pnl": 22257.11736,
+          "net_return": 0.1105221988,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-08-31T13:30:00.000000Z",
+            "interval_end": "2026-08-31T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 931.39,
+            "quantity": 216,
+            "fees": 201.18024
+          },
+          {
+            "interval_start": "2026-09-08T13:30:00.000000Z",
+            "interval_end": "2026-09-08T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 1036.4,
+            "quantity": 216,
+            "fees": 223.8624
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 206975.34858,
+          "cycle_id": "5355f16eb6a0f02aa4c69aa59a54aeb0724368d5d704a9953384021b072181af:0",
+          "entry_at": "2026-08-31T13:30:00.000000Z",
+          "exit_at": "2026-09-08T20:00:00.000000Z",
+          "income": 229850.7192,
+          "net_pnl": 22875.37062,
+          "net_return": 0.1105221988,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-08-31T13:30:00.000000Z",
+            "interval_end": "2026-08-31T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 931.39,
+            "quantity": 222,
+            "fees": 206.76858
+          },
+          {
+            "interval_start": "2026-09-08T13:30:00.000000Z",
+            "interval_end": "2026-09-08T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 1036.4,
+            "quantity": 222,
+            "fees": 230.0808
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 618.2532600000013,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2026-09-14T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 74368.75446,
+          "cycle_id": "69ec197a078e6a2605b20ba9e1a63c3f97aefc037434db80e0666c9340ec79c7:0",
+          "entry_at": "2026-09-14T13:30:00.000000Z",
+          "exit_at": "2026-09-17T20:00:00.000000Z",
+          "income": 78196.05567,
+          "net_pnl": 3827.30121,
+          "net_return": 0.0514638337,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-09-14T13:30:00.000000Z",
+            "interval_end": "2026-09-14T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 906.03,
+            "quantity": 82,
+            "fees": 74.29446
+          },
+          {
+            "interval_start": "2026-09-17T13:30:00.000000Z",
+            "interval_end": "2026-09-17T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 954.565,
+            "quantity": 82,
+            "fees": 78.27433
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 76182.62652,
+          "cycle_id": "e82b1717adb440e6ef333a33c56b4d8606e5dae9f007a3a93aa0fbcfa883f06d:0",
+          "entry_at": "2026-09-14T13:30:00.000000Z",
+          "exit_at": "2026-09-17T20:00:00.000000Z",
+          "income": 80103.27654,
+          "net_pnl": 3920.65002,
+          "net_return": 0.0514638337,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-09-14T13:30:00.000000Z",
+            "interval_end": "2026-09-14T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 906.03,
+            "quantity": 84,
+            "fees": 76.10652
+          },
+          {
+            "interval_start": "2026-09-17T13:30:00.000000Z",
+            "interval_end": "2026-09-17T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 954.565,
+            "quantity": 84,
+            "fees": 80.18346
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": 93.34880999999996,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2026-10-06T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 79915.836,
+          "cycle_id": "8b86073e75a144e002d10d21a906b313833ef62c5b6ec152f72a736eac68a2c7:0",
+          "entry_at": "2026-10-06T13:30:00.000000Z",
+          "exit_at": "2026-10-09T20:00:00.000000Z",
+          "income": 78983.68725,
+          "net_pnl": -932.14875,
+          "net_return": -0.0116641306,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-10-06T13:30:00.000000Z",
+            "interval_end": "2026-10-06T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 1064.48,
+            "quantity": 75,
+            "fees": 79.836
+          },
+          {
+            "interval_start": "2026-10-09T13:30:00.000000Z",
+            "interval_end": "2026-10-09T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 1054.17,
+            "quantity": 75,
+            "fees": 79.06275
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 82046.92496,
+          "cycle_id": "c8847e2202d5547aca90815d9d0f73575f39ab2fa12a59f3322165a35ffb672f:0",
+          "entry_at": "2026-10-06T13:30:00.000000Z",
+          "exit_at": "2026-10-09T20:00:00.000000Z",
+          "income": 81089.91891,
+          "net_pnl": -957.00605,
+          "net_return": -0.0116641306,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-10-06T13:30:00.000000Z",
+            "interval_end": "2026-10-06T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 1064.48,
+            "quantity": 77,
+            "fees": 81.96496
+          },
+          {
+            "interval_start": "2026-10-09T13:30:00.000000Z",
+            "interval_end": "2026-10-09T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 1054.17,
+            "quantity": 77,
+            "fees": 81.17109
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -24.85730000000001,
+      "net_return_delta": 0.0
+    },
+    {
+      "entry_at": "2026-10-12T13:30:00.000000Z",
+      "original": {
+        "trade": {
+          "cost": 208717.06856,
+          "cycle_id": "96c60261d1f24cd8bceba610385f7c711eed894f7f51ec0c2cb46620e673d133:0",
+          "entry_at": "2026-10-12T13:30:00.000000Z",
+          "exit_at": "2026-10-15T20:00:00.000000Z",
+          "income": 181137.5124,
+          "net_pnl": -27579.55616,
+          "net_return": -0.1321384799,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-10-12T13:30:00.000000Z",
+            "interval_end": "2026-10-12T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 1002.445,
+            "quantity": 208,
+            "fees": 208.50856
+          },
+          {
+            "interval_start": "2026-10-15T13:30:00.000000Z",
+            "interval_end": "2026-10-15T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 871.575,
+            "quantity": 208,
+            "fees": 181.2876
+          }
+        ]
+      },
+      "margin": {
+        "trade": {
+          "cost": 214737.75323,
+          "cycle_id": "6b6aba85bb7e02ddddb787db6a728fc042082f99f608fbf28524f4d6760a6089:0",
+          "entry_at": "2026-10-12T13:30:00.000000Z",
+          "exit_at": "2026-10-15T20:00:00.000000Z",
+          "income": 186362.63295,
+          "net_pnl": -28375.12028,
+          "net_return": -0.1321384799,
+          "status": "CLOSED"
+        },
+        "fills": [
+          {
+            "interval_start": "2026-10-12T13:30:00.000000Z",
+            "interval_end": "2026-10-12T20:00:00.000000Z",
+            "side": "BUY",
+            "price": 1002.445,
+            "quantity": 214,
+            "fees": 214.52323
+          },
+          {
+            "interval_start": "2026-10-15T13:30:00.000000Z",
+            "interval_end": "2026-10-15T20:00:00.000000Z",
+            "side": "SELL",
+            "price": 871.575,
+            "quantity": 214,
+            "fees": 186.51705
+          }
+        ]
+      },
+      "exit_changed": false,
+      "buy_path_changed": false,
+      "net_pnl_delta": -795.5641199999991,
+      "net_return_delta": 0.0
+    }
+  ],
+  "removed_entry_cycles": [],
+  "new_entry_cycles": [
+    {
+      "trade": {
+        "cost": 18990.972,
+        "cycle_id": "7adf1906813942ebf8be0ae67d8b2ec761b77d95cf2dcc50a39cee53c47150ce:0",
+        "entry_at": "2024-07-09T13:30:00.000000Z",
+        "exit_at": "2024-07-12T20:00:00.000000Z",
+        "income": 18953.028,
+        "net_pnl": -37.944,
+        "net_return": -0.001998002,
+        "status": "CLOSED"
+      },
+      "fills": [
+        {
+          "interval_start": "2024-07-09T13:30:00.000000Z",
+          "interval_end": "2024-07-09T20:00:00.000000Z",
+          "side": "BUY",
+          "price": 131.75,
+          "quantity": 144,
+          "fees": 18.972
+        },
+        {
+          "interval_start": "2024-07-12T13:30:00.000000Z",
+          "interval_end": "2024-07-12T20:00:00.000000Z",
+          "side": "SELL",
+          "price": 131.75,
+          "quantity": 144,
+          "fees": 18.972
+        }
+      ]
+    }
+  ],
+  "interpretation": "Actual ledger comparisons only. Groups reconcile final wealth exactly but include downstream reinvestment and integer sizing, so grouped PnL is not an isolated causal counterfactual. Earlier exit may enable later entries. Terminal positions are zero in both accounts.",
+  "account_runs": 0
+}

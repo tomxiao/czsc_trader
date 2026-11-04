@@ -1,0 +1,3414 @@
+{
+  "status": "PASS",
+  "accounts": 86,
+  "experiments": [
+    "EX059_20261104"
+  ],
+  "baseline": {
+    "experiment": "EX056_20261104",
+    "candidate": "C8612",
+    "account_ref": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S018",
+        "experiment_id": "EX056_20261104"
+      },
+      "evidence_id": "0d4526325c8450085584e2dd5e2050f4699227ee292ec26d9d6d8c49e9100400.json",
+      "sha256": "0d4526325c8450085584e2dd5e2050f4699227ee292ec26d9d6d8c49e9100400",
+      "media_type": "application/json",
+      "name": "C8612",
+      "schema": "equity_research",
+      "schema_version": 4
+    }
+  },
+  "summary": {
+    "causal_decisions_checked": 82646,
+    "initial_entries": 8058,
+    "buy_orders": 12947,
+    "fees_checked": 19803,
+    "held_decisions_checked": 32232,
+    "sell_orders": 8058,
+    "cycles_closed": 8058,
+    "successful_adds": 3687,
+    "unfilled_entries": 688,
+    "unfilled_adds": 514
+  },
+  "controls": {
+    "EX059_20261104/C8900": {
+      "original": "EX056_20261104/C8612",
+      "fields": [
+        "fills",
+        "account_daily",
+        "trades",
+        "actions"
+      ],
+      "metrics": true,
+      "status": "EXACT_MATCH"
+    }
+  },
+  "checks": {
+    "EX059_20261104/C8900": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8901": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.25,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.125,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8902": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.25,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.125,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8903": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.25,
+        "earliest_add": 3,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.125,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8904": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.25,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.25,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8905": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.25,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.25,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8906": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.25,
+        "earliest_add": 3,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.25,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8907": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.25,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8908": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.25,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8909": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.25,
+        "earliest_add": 3,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8910": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.25,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.5,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8911": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.25,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.5,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8912": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.25,
+        "earliest_add": 3,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.5,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8913": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.3125,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.125,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8914": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.3125,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.125,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8915": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.3125,
+        "earliest_add": 3,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.125,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8916": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.3125,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.25,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8917": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.3125,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.25,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8918": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.3125,
+        "earliest_add": 3,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.25,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8919": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.3125,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8920": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.3125,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8921": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.3125,
+        "earliest_add": 3,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8922": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.3125,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.5,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8923": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.3125,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.5,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8924": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.3125,
+        "earliest_add": 3,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.5,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8925": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.125,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8926": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.125,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8927": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.125,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8928": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.25,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8929": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.25,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8930": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.25,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8931": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8932": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8933": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.5,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8934": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.5,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8935": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.5,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8936": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.4375,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.125,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8937": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.4375,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.125,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8938": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.4375,
+        "earliest_add": 3,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.125,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8939": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.4375,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.25,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8940": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.4375,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.25,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8941": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.4375,
+        "earliest_add": 3,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.25,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8942": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.4375,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8943": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.4375,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8944": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.4375,
+        "earliest_add": 3,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8945": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.4375,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.5,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8946": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.4375,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.5,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8947": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.4375,
+        "earliest_add": 3,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.5,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8948": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.5,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.125,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8949": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.5,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.125,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8950": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.5,
+        "earliest_add": 3,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.125,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8951": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.5,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.25,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8952": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.5,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.25,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8953": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.5,
+        "earliest_add": 3,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.25,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8954": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.5,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8955": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.5,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8956": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.5,
+        "earliest_add": 3,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8957": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.5,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.5,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8958": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.5,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.5,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8959": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.5,
+        "earliest_add": 3,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.5,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8960": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 0.5,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.25,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8961": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 0.5,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.25,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8962": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 0.5,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8963": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 0.5,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8964": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 0.75,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.25,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8965": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 0.75,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.25,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8966": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 0.75,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8967": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 0.75,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8968": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 0.875,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.25,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8969": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 0.875,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.25,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8970": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 0.875,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8971": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 0.875,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8972": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 0.25,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.25,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8973": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 0.375,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8974": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 0.5,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.5,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8975": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 0.625,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.625,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8976": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 0.75,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.75,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8977": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 1.0,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8978": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 0.25,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 1.0,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8979": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 0.375,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 1.0,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8980": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 0.5,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 1.0,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8981": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.0,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8982": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.75,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8983": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 1.0,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    },
+    "EX059_20261104/C8984": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 68,
+        "buy_orders": 112,
+        "fees_checked": 168,
+        "held_decisions_checked": 272,
+        "successful_adds": 32,
+        "sell_orders": 68,
+        "cycles_closed": 68,
+        "unfilled_entries": 8,
+        "unfilled_adds": 4
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.0,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "2": 32,
+        "1": 36
+      }
+    },
+    "EX059_20261104/C8985": {
+      "status": "PASS",
+      "checks": {
+        "causal_decisions_checked": 961,
+        "initial_entries": 94,
+        "buy_orders": 151,
+        "fees_checked": 231,
+        "held_decisions_checked": 376,
+        "sell_orders": 94,
+        "cycles_closed": 94,
+        "successful_adds": 43,
+        "unfilled_entries": 8,
+        "unfilled_adds": 6
+      },
+      "parameters": {
+        "beta_window": 60,
+        "entry_days": 2,
+        "exit_margin": 0.0,
+        "add_mu_margin": 0.0,
+        "add_sector_margin": 0.0,
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "initial_fraction": 0.625,
+        "max_hold": 5,
+        "other_budget": 0.75,
+        "review_after": 3
+      },
+      "history_size": 63,
+      "beta_range": [
+        0.6389762181035602,
+        1.8584942495604524
+      ],
+      "closed_cycle_buy_counts": {
+        "1": 51,
+        "2": 43
+      }
+    }
+  },
+  "account_runs": 0,
+  "scope": "Independent arithmetic audit of authenticated formal account inputs, decisions and ledger; no replay evaluation.",
+  "limitations": [
+    "This audit checks implementation, execution chronology and accounting, not predictive validity or out-of-sample robustness.",
+    "Entry budget is a limit-price and fee cash ceiling; it is not a continuously rebalanced equity fraction.",
+    "Repair thresholds use locked signal-day adjusted anchors, not purchase cost or proof of trend reversal.",
+    "The approved fixed MU execution contract has no split in this window; a different corporate-action contract is rejected."
+  ]
+}

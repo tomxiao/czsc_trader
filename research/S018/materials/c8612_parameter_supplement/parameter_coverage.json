@@ -1,0 +1,534 @@
+{
+  "parameters": {
+    "add_mode": {
+      "baseline": "repair_both",
+      "tested_values": [
+        "never",
+        "repair",
+        "repair_both",
+        "scheduled",
+        "weakness"
+      ],
+      "leader": "repair_both"
+    },
+    "common_budget": {
+      "baseline": 1.0,
+      "tested_values": [
+        0.25,
+        0.375,
+        0.5,
+        0.625,
+        0.75,
+        0.875,
+        1.0
+      ],
+      "leader": 1.0
+    },
+    "common_share": {
+      "baseline": 0.375,
+      "tested_values": [
+        0.0,
+        0.25,
+        0.3125,
+        0.375,
+        0.4375,
+        0.5,
+        0.75,
+        1.0
+      ],
+      "leader": 0.375
+    },
+    "earliest_add": {
+      "baseline": 3,
+      "tested_values": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "leader": 3
+    },
+    "initial_fraction": {
+      "baseline": 0.625,
+      "tested_values": [
+        0.25,
+        0.375,
+        0.5,
+        0.625,
+        0.75,
+        1.0
+      ],
+      "leader": 0.5
+    },
+    "max_hold": {
+      "baseline": 5,
+      "tested_values": [
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "leader": 5
+    },
+    "other_budget": {
+      "baseline": 0.375,
+      "tested_values": [
+        0.0,
+        0.125,
+        0.25,
+        0.375,
+        0.5,
+        0.625,
+        0.75,
+        1.0
+      ],
+      "leader": 0.375
+    },
+    "review_after": {
+      "baseline": 3,
+      "tested_values": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "leader": 3
+    },
+    "beta_window": {
+      "baseline": 60,
+      "tested_values": [
+        20,
+        30,
+        40,
+        50,
+        60,
+        90,
+        120
+      ],
+      "leader": 40
+    },
+    "entry_days": {
+      "baseline": 2,
+      "tested_values": [
+        1,
+        2,
+        3
+      ],
+      "leader": 2
+    },
+    "exit_margin": {
+      "baseline": 0.0,
+      "tested_values": [
+        -0.02,
+        -0.01,
+        -0.005,
+        0.0,
+        0.005,
+        0.01,
+        0.02
+      ],
+      "leader": 0.005
+    },
+    "add_mu_margin": {
+      "baseline": 0.0,
+      "tested_values": [
+        -0.01,
+        0.0,
+        0.005,
+        0.01,
+        0.015,
+        0.02
+      ],
+      "leader": 0.01
+    },
+    "add_sector_margin": {
+      "baseline": 0.0,
+      "tested_values": [
+        -0.01,
+        -0.005,
+        0.0,
+        0.005,
+        0.01,
+        0.02
+      ],
+      "leader": 0.0
+    }
+  },
+  "rounds": [
+    {
+      "number": 58,
+      "accounts": 74,
+      "passing_accounts": 18,
+      "best": "C8800",
+      "best_calmar": 5.071976633261885,
+      "audit_summary": {
+        "causal_decisions_checked": 71114,
+        "initial_entries": 6937,
+        "buy_orders": 11478,
+        "fees_checked": 17229,
+        "held_decisions_checked": 28295,
+        "sell_orders": 6937,
+        "cycles_closed": 6937,
+        "successful_adds": 3355,
+        "unfilled_entries": 643,
+        "unfilled_adds": 543
+      },
+      "report": {
+        "evidence_id": "d4fdde3fa8901a7cb5cf836ec822fa46ef2682edbf0a18121c08b86666536f33.json",
+        "experiment": {
+          "experiment_id": "EX058_20261104",
+          "strategy_id": "S018",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "experiment-report",
+        "schema": "experiment_report",
+        "schema_version": 1,
+        "sha256": "d4fdde3fa8901a7cb5cf836ec822fa46ef2682edbf0a18121c08b86666536f33",
+        "type": "EvidenceRef"
+      }
+    },
+    {
+      "number": 59,
+      "accounts": 86,
+      "passing_accounts": 82,
+      "best": "C8900",
+      "best_calmar": 5.071976633261885,
+      "audit_summary": {
+        "causal_decisions_checked": 82646,
+        "initial_entries": 8058,
+        "buy_orders": 12947,
+        "fees_checked": 19803,
+        "held_decisions_checked": 32232,
+        "sell_orders": 8058,
+        "cycles_closed": 8058,
+        "successful_adds": 3687,
+        "unfilled_entries": 688,
+        "unfilled_adds": 514
+      },
+      "report": {
+        "evidence_id": "6b1f5b6f21e7ed6ea54f3ae1b83e5b5943243e5a5a3c5cb739fc1d54c2cbdf8d.json",
+        "experiment": {
+          "experiment_id": "EX059_20261104",
+          "strategy_id": "S018",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "experiment-report",
+        "schema": "experiment_report",
+        "schema_version": 1,
+        "sha256": "6b1f5b6f21e7ed6ea54f3ae1b83e5b5943243e5a5a3c5cb739fc1d54c2cbdf8d",
+        "type": "EvidenceRef"
+      }
+    },
+    {
+      "number": 60,
+      "accounts": 45,
+      "passing_accounts": 15,
+      "best": "C9014",
+      "best_calmar": 5.145800861142888,
+      "audit_summary": {
+        "causal_decisions_checked": 43245,
+        "initial_entries": 4440,
+        "buy_orders": 7035,
+        "fees_checked": 10740,
+        "held_decisions_checked": 17280,
+        "sell_orders": 4425,
+        "cycles_closed": 4425,
+        "successful_adds": 1875,
+        "unfilled_entries": 510,
+        "unfilled_adds": 210
+      },
+      "report": {
+        "evidence_id": "da4a67d1dfec693be26eecc30e0d8283632775cd19bd355befb8843e5c9b0fcc.json",
+        "experiment": {
+          "experiment_id": "EX060_20261104",
+          "strategy_id": "S018",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "experiment-report",
+        "schema": "experiment_report",
+        "schema_version": 1,
+        "sha256": "da4a67d1dfec693be26eecc30e0d8283632775cd19bd355befb8843e5c9b0fcc",
+        "type": "EvidenceRef"
+      }
+    },
+    {
+      "number": 61,
+      "accounts": 81,
+      "passing_accounts": 65,
+      "best": "C9142",
+      "best_calmar": 5.15779564265525,
+      "audit_summary": {
+        "causal_decisions_checked": 77841,
+        "initial_entries": 7566,
+        "buy_orders": 11669,
+        "fees_checked": 18129,
+        "held_decisions_checked": 30264,
+        "sell_orders": 7566,
+        "cycles_closed": 7566,
+        "successful_adds": 2997,
+        "unfilled_entries": 680,
+        "unfilled_adds": 426
+      },
+      "report": {
+        "evidence_id": "12808feafc8912f8e98386b73b3ec988d3918111b8df29e73b022d534d65f35e.json",
+        "experiment": {
+          "experiment_id": "EX061_20261104",
+          "strategy_id": "S018",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "experiment-report",
+        "schema": "experiment_report",
+        "schema_version": 1,
+        "sha256": "12808feafc8912f8e98386b73b3ec988d3918111b8df29e73b022d534d65f35e",
+        "type": "EvidenceRef"
+      }
+    },
+    {
+      "number": 62,
+      "accounts": 81,
+      "passing_accounts": 81,
+      "best": "C9206",
+      "best_calmar": 5.2015653628484575,
+      "audit_summary": {
+        "causal_decisions_checked": 77841,
+        "initial_entries": 7641,
+        "buy_orders": 12384,
+        "fees_checked": 18792,
+        "held_decisions_checked": 30267,
+        "sell_orders": 7641,
+        "cycles_closed": 7641,
+        "successful_adds": 3510,
+        "unfilled_entries": 648,
+        "unfilled_adds": 585
+      },
+      "report": {
+        "evidence_id": "501d09a6843013a5fd3bf75025c61742540ae48111bcaab38ba4ad282322d5b4.json",
+        "experiment": {
+          "experiment_id": "EX062_20261104",
+          "strategy_id": "S018",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "experiment-report",
+        "schema": "experiment_report",
+        "schema_version": 1,
+        "sha256": "501d09a6843013a5fd3bf75025c61742540ae48111bcaab38ba4ad282322d5b4",
+        "type": "EvidenceRef"
+      }
+    },
+    {
+      "number": 63,
+      "accounts": 96,
+      "passing_accounts": 75,
+      "best": "C9380",
+      "best_calmar": 5.299781865829695,
+      "audit_summary": {
+        "causal_decisions_checked": 92256,
+        "initial_entries": 9054,
+        "buy_orders": 14127,
+        "fees_checked": 21811,
+        "held_decisions_checked": 36147,
+        "sell_orders": 9053,
+        "cycles_closed": 9053,
+        "successful_adds": 3704,
+        "unfilled_entries": 802,
+        "unfilled_adds": 567
+      },
+      "report": {
+        "evidence_id": "1b61ee053a91d49a359777856763e21e6a92900c1e1c37eda74d3c6300bd73d2.json",
+        "experiment": {
+          "experiment_id": "EX063_20261104",
+          "strategy_id": "S018",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "experiment-report",
+        "schema": "experiment_report",
+        "schema_version": 1,
+        "sha256": "1b61ee053a91d49a359777856763e21e6a92900c1e1c37eda74d3c6300bd73d2",
+        "type": "EvidenceRef"
+      }
+    }
+  ],
+  "leader": {
+    "experiment": 63,
+    "candidate_id": "C9380",
+    "config": {
+      "add_mode": "repair_both",
+      "add_mu_margin": 0.01,
+      "add_sector_margin": 0.0,
+      "beta_window": 40,
+      "common_budget": 1.0,
+      "common_share": 0.375,
+      "earliest_add": 3,
+      "entry_days": 2,
+      "exit_margin": 0.005,
+      "initial_fraction": 0.5,
+      "max_hold": 5,
+      "other_budget": 0.375,
+      "review_after": 3
+    },
+    "candidate": {
+      "annual": 0.45411631274346154,
+      "dd": 0.08568584976513338,
+      "calmar": 5.299781865829695,
+      "closed": 95,
+      "median": 6.0,
+      "coverage": 1.0,
+      "year_returns": {
+        "2023": 0.04396844450000015,
+        "2024": 0.08301369577267903,
+        "2025": 0.9468454981448442,
+        "2026": 0.8941647366388563
+      },
+      "october_return": -0.06572742136408227,
+      "invested_days": 373
+    },
+    "gates": {
+      "calmar": true,
+      "dd_absolute": true,
+      "dd_relative": true,
+      "median": true,
+      "coverage": true
+    },
+    "definition": {
+      "runtime_kind": "ACCOUNT_REPLAY",
+      "instrument": {
+        "market": "US",
+        "asset_class": "STOCK",
+        "symbol": "MU"
+      },
+      "execution_spec": {
+        "market": {
+          "rule_version": "US_EQUITY_V1"
+        },
+        "decision_clock": "daily",
+        "account": {
+          "currency": "USD",
+          "cash_availability": "IMMEDIATE_RESEARCH",
+          "allow_short": false,
+          "allow_negative_cash": false
+        },
+        "quantity_step": 1,
+        "price_tick": 0.01,
+        "buy_premium": 0.01,
+        "slippage_bp": 0.0,
+        "execution": "BAR_RANGE_V1",
+        "inclusive_touch": false,
+        "data_latency_seconds": 0
+      },
+      "warmup_bars": 63,
+      "entrypoint": "strategy:step",
+      "source_files": [
+        "strategy.py"
+      ],
+      "source_sha256": "300a09e221aafa8cb9cd5ba0a0cb1ad39bebb8ac1cb42c2162b40a999325cf1c",
+      "parameters_json": "{\"add_mode\":\"repair_both\",\"add_mu_margin\":0.01,\"add_sector_margin\":0.0,\"beta_window\":40,\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":3,\"entry_days\":2,\"exit_margin\":0.005,\"initial_fraction\":0.5,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+      "dependencies": [
+        {
+          "name": "numpy",
+          "version": "2.5.2"
+        },
+        {
+          "name": "pandas",
+          "version": "3.0.5"
+        }
+      ],
+      "contract_version": 4,
+      "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"add_mu_margin\":{\"type\":\"number\"},\"add_sector_margin\":{\"type\":\"number\"},\"beta_window\":{\"type\":\"integer\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"entry_days\":{\"type\":\"integer\"},\"exit_margin\":{\"type\":\"number\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+      "feedback_mode": "CONFIRMED_EXECUTION",
+      "analysis_price": "RAW",
+      "explanation_cases": [
+        "flat",
+        "long"
+      ],
+      "auxiliary_inputs": [
+        {
+          "name": "mu_hfq",
+          "instrument": {
+            "market": "US",
+            "asset_class": "STOCK",
+            "symbol": "MU"
+          },
+          "source": {
+            "provider": "futu",
+            "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+          },
+          "frequency": "daily",
+          "warmup_bars": 63,
+          "max_age_seconds": 604800,
+          "analysis_price": "HFQ"
+        },
+        {
+          "name": "soxx_hfq",
+          "instrument": {
+            "market": "US",
+            "asset_class": "ETF",
+            "symbol": "SOXX"
+          },
+          "source": {
+            "provider": "futu",
+            "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+          },
+          "frequency": "daily",
+          "warmup_bars": 63,
+          "max_age_seconds": 604800,
+          "analysis_price": "HFQ"
+        }
+      ],
+      "feature_graph": {
+        "nodes": [],
+        "outputs": [],
+        "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+      },
+      "state_schema": {
+        "account_fields": [],
+        "cycle_fields": [
+          {
+            "key": "anchor",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "sector_anchor",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "entry_budget",
+            "value_type": "float",
+            "nullable": false
+          }
+        ]
+      },
+      "computation": "STATEFUL_STEP"
+    },
+    "account_ref": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S018",
+        "experiment_id": "EX063_20261104"
+      },
+      "evidence_id": "89de59aa866223ba2e15c8265977372aaa72b887b5c2fedb2b1b8f3ff9ac8c38.json",
+      "sha256": "89de59aa866223ba2e15c8265977372aaa72b887b5c2fedb2b1b8f3ff9ac8c38",
+      "media_type": "application/json",
+      "name": "C9380",
+      "schema": "equity_research",
+      "schema_version": 4
+    }
+  },
+  "new_account_evaluations": 463,
+  "passing_account_occurrences": 336,
+  "limitations": [
+    "Declared domains and selected interactions, not exhaustive full Cartesian coverage or global optimization.",
+    "Same behavior and shared data are not independent trials.",
+    "Changed declaration history lengths can yield separate definition identities with the same economics."
+  ]
+}
