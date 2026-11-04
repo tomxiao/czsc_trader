@@ -1,6 +1,6 @@
 """Portable, explicitly versioned equity strategy source and decision contracts."""
 from dataclasses import asdict, dataclass, replace, field
-from datetime import datetime
+from datetime import date, datetime
 import math
 from pathlib import Path, PurePosixPath
 from hashlib import sha256
@@ -20,7 +20,8 @@ import pandas as pd
 
 from dataflows import (InstrumentId, MarketId, AssetClass, BarFrequency, PreparedDataRef,
                       SourceRef, EquityProduct, EquityQuery, EquityDataRequest, PriceAdjustment,
-                      TradingSession)
+                      TradingSession, EquitySession)
+from dataflows.equity_contracts import EquityParameters
 from .identity import CandidateContentIdentity, ImplementationDependency
 from .models import canonical_sha256
 from .signal_explanation import SignalExplanationSnapshot, SignalBasisSnapshot
@@ -161,8 +162,8 @@ class EquityAuxiliaryInput:
             raise ValueError('auxiliary inputs require supported equity instruments')
         if type(self.frequency) is not BarFrequency or self.frequency not in (BarFrequency.M30, BarFrequency.DAILY):
             raise ValueError('auxiliary frequency must be M30 or DAILY')
-        if self.analysis_price != 'RAW':
-            raise ValueError('auxiliary inputs require RAW prices')
+        if type(self.analysis_price) is not str or self.analysis_price not in ('RAW', 'HFQ'):
+            raise ValueError('auxiliary inputs require RAW or HFQ prices')
         if type(self.warmup_bars) is not int or self.warmup_bars < 1:
             raise ValueError('auxiliary warmup must be positive')
         if type(self.max_age_seconds) not in (int, float) or not math.isfinite(self.max_age_seconds) or self.max_age_seconds < 0:
@@ -175,7 +176,9 @@ class EquityAuxiliaryInput:
 
     def requests(self, start, end):
         return tuple(EquityDataRequest(self.instrument, self.source,
-                     EquityQuery(product, start, end, self.frequency, PriceAdjustment.NONE))
+                     EquityQuery(product, start, end, self.frequency,
+                         PriceAdjustment.BACKWARD if product is EquityProduct.BARS and self.analysis_price == 'HFQ'
+                         else PriceAdjustment.NONE))
                      for product in (EquityProduct.BARS, EquityProduct.SESSIONS))
 
     @classmethod
@@ -269,6 +272,7 @@ class EquityInputBinding:
     warmup_bars: int
     auxiliary_inputs: tuple[EquityAuxiliaryBinding, ...] = ()
     execution_input: ExecutionInputBinding | None = None
+    request_bindings: tuple[tuple[str, EquityParameters], ...] = ()
 
     def to_dict(self):
         result = asdict(self)
@@ -278,6 +282,12 @@ class EquityInputBinding:
             result.pop('auxiliary_inputs')
         if self.execution_input is None:
             result.pop('execution_input')
+        if not self.request_bindings:
+            result.pop('request_bindings')
+        else:
+            for _, parameters in result['request_bindings']:
+                parameters['query']['start'] = parameters['query']['start'].isoformat()
+                parameters['query']['end'] = parameters['query']['end'].isoformat()
         return result
 
     @property
@@ -295,6 +305,11 @@ class EquityInputBinding:
         if type(request) is not EquityDataRequest:
             raise TypeError('equity binding requires a typed request')
         p = request.parameters
+        if self.request_bindings:
+            matches = [key for key, parameters in self.request_bindings if parameters == p]
+            if len(matches) != 1:
+                raise ValueError('request has absent or shared roles; bind the complete request set')
+            return matches[0]
         execution = self.execution_input
         if execution is not None and (execution.input.instrument,execution.input.source,execution.input.frequency)==(p.instrument,p.source,p.query.frequency):
             if p.query.adjustment is not PriceAdjustment.NONE:
@@ -310,6 +325,17 @@ class EquityInputBinding:
         if p.instrument != self.instrument or p.query.product.name.lower() not in dict(self.content_identities):
             raise ValueError('request is absent from equity input binding')
         return p.query.product.name.lower()
+
+    def bind_requests(self, requests: tuple[EquityDataRequest, ...]) -> tuple[tuple[str, EquityDataRequest], ...]:
+        """Resolve logical roles, allowing one physical calendar to serve multiple roles."""
+        if type(requests) is not tuple or any(type(x) is not EquityDataRequest for x in requests):
+            raise TypeError('binding requires typed product requests')
+        if not self.request_bindings:
+            return tuple((self.request_key(request), request) for request in requests)
+        physical = {request.parameters: request for request in requests}
+        if set(physical) != {parameters for _, parameters in self.request_bindings}:
+            raise ValueError('requests differ from bound product selection')
+        return tuple((key, physical[parameters]) for key, parameters in self.request_bindings)
 
     @classmethod
     def from_dict(cls, value):
@@ -327,6 +353,20 @@ class EquityInputBinding:
         value['auxiliary_inputs'] = tuple(EquityAuxiliaryBinding.from_dict(x) for x in value.get('auxiliary_inputs', ()))
         if value.get('execution_input') is not None:
             value['execution_input'] = ExecutionInputBinding.from_dict(value['execution_input'])
+        bindings = []
+        for key, parameters in value.get('request_bindings', ()):
+            instrument = dict(parameters['instrument'])
+            instrument['market'] = MarketId(instrument['market'])
+            instrument['asset_class'] = AssetClass(instrument['asset_class'])
+            query = dict(parameters['query'])
+            for field_name, enum in (('product', EquityProduct), ('frequency', BarFrequency),
+                                     ('adjustment', PriceAdjustment), ('session', EquitySession)):
+                query[field_name] = enum(query[field_name])
+            for field_name in ('start', 'end'):
+                query[field_name] = date.fromisoformat(query[field_name])
+            bindings.append((key, EquityParameters(InstrumentId(**instrument),
+                SourceRef(**parameters['source']), EquityQuery(**query))))
+        value['request_bindings'] = tuple(bindings)
         return cls(**value)
 
     def __post_init__(self):
@@ -334,11 +374,11 @@ class EquityInputBinding:
             raise TypeError('typed auxiliary bindings required')
         if self.execution_input is not None and (type(self.execution_input) is not ExecutionInputBinding or self.execution_input.input.instrument!=self.instrument):
             raise ValueError('execution binding differs from traded instrument')
-        if self.execution_input is not None and any((x.input.instrument,x.input.source,x.input.frequency)==(self.execution_input.input.instrument,self.execution_input.input.source,self.execution_input.input.frequency) for x in self.auxiliary_inputs):
+        if self.execution_input is not None and any(x.input.analysis_price == 'RAW' and (x.input.instrument,x.input.source,x.input.frequency)==(self.execution_input.input.instrument,self.execution_input.input.source,self.execution_input.input.frequency) for x in self.auxiliary_inputs):
             raise ValueError('execution binding duplicates an auxiliary role')
         if len({x.input.name for x in self.auxiliary_inputs}) != len(self.auxiliary_inputs):
             raise ValueError('duplicate auxiliary alias')
-        products = [(x.input.instrument, x.input.source, x.input.frequency) for x in self.auxiliary_inputs]
+        products = [(x.input.instrument, x.input.source, x.input.frequency, x.input.analysis_price) for x in self.auxiliary_inputs]
         if len(set(products)) != len(products):
             raise ValueError('duplicate auxiliary product request')
         if type(self.prepared) is not PreparedDataRef or type(self.instrument) is not InstrumentId:
@@ -352,6 +392,36 @@ class EquityInputBinding:
             raise ValueError("equity binding requires all four product identities")
         if any(not re.fullmatch("[a-f0-9]{64}", v) for _, v in self.content_identities):
             raise ValueError("invalid data content fingerprint")
+        if type(self.request_bindings) is not tuple or any(type(item) is not tuple or len(item) != 2
+                or type(item[0]) is not str or type(item[1]) is not EquityParameters for item in self.request_bindings):
+            raise TypeError('request bindings require typed role and equity parameters')
+        if any(x.input.analysis_price != 'RAW' for x in self.auxiliary_inputs) and not self.request_bindings:
+            raise ValueError('adjusted observations require explicit request bindings')
+        if self.request_bindings:
+            roles = dict(self.request_bindings)
+            identities = self.expected_identities
+            primary_roles = dict(self.content_identities)
+            if len(roles) != len(self.request_bindings) or set(roles) != set(identities):
+                raise ValueError('request bindings must cover exact product roles')
+            for key, parameters in self.request_bindings:
+                query = parameters.query
+                if key in primary_roles:
+                    if (parameters.instrument != self.instrument or query.product.name.lower() != key
+                            or query.adjustment is not PriceAdjustment.NONE):
+                        raise ValueError('primary request binding must use traded RAW products')
+                else:
+                    declaration = (self.execution_input.input if key.startswith('execution:') else
+                        next(x.input for x in self.auxiliary_inputs if key.startswith(f'auxiliary:{x.input.name}:')))
+                    expected = {r.parameters for r in declaration.requests(query.start, query.end)
+                        if declaration.data_key(r.parameters.query.product) == key}
+                    if parameters not in expected:
+                        raise ValueError('request binding differs from declared observation or execution input')
+            by_request = {}
+            for key, parameters in self.request_bindings:
+                fingerprint = identities[key]
+                if parameters in by_request and by_request[parameters] != fingerprint:
+                    raise ValueError('shared physical product has inconsistent content identities')
+                by_request[parameters] = fingerprint
 
 
 @dataclass(frozen=True)
@@ -411,10 +481,12 @@ class EquityStrategyDefinition:
                 raise TypeError('execution input requires V4 and ExecutionInput')
             if self.execution_input.instrument!=self.instrument or self.execution_spec.decision_clock is not BarFrequency.DAILY:
                 raise ValueError('finer execution input requires same instrument DAILY strategy')
-            if any((x.instrument,x.source,x.frequency)==(self.execution_input.instrument,self.execution_input.source,self.execution_input.frequency) for x in self.auxiliary_inputs):
+            if any(x.analysis_price == 'RAW' and (x.instrument,x.source,x.frequency)==(self.execution_input.instrument,self.execution_input.source,self.execution_input.frequency) for x in self.auxiliary_inputs):
                 raise ValueError('execution quotation request duplicates an auxiliary role')
         if self.contract_version!=4 and any(x.instrument.market is not MarketId.US for x in self.auxiliary_inputs):
             raise ValueError('legacy auxiliary input contract supports US only')
+        if self.contract_version != 4 and any(x.analysis_price != 'RAW' for x in self.auxiliary_inputs):
+            raise ValueError('adjusted observations require V4')
 
         self.execution_spec.require_instrument(self.instrument)
         if type(self.session_context) is not bool:
@@ -425,10 +497,10 @@ class EquityStrategyDefinition:
             raise ValueError('auxiliary and session context currently require US market')
         if len({x.name for x in self.auxiliary_inputs}) != len(self.auxiliary_inputs):
             raise ValueError('duplicate auxiliary alias')
-        identities = [(x.instrument, x.source, x.frequency) for x in self.auxiliary_inputs]
+        identities = [(x.instrument, x.source, x.frequency, x.analysis_price) for x in self.auxiliary_inputs]
         if len(set(identities)) != len(identities):
             raise ValueError('duplicate auxiliary product request')
-        if any(x.instrument == self.instrument and x.frequency == self.execution_spec.decision_clock for x in self.auxiliary_inputs):
+        if any(x.analysis_price == 'RAW' and x.instrument == self.instrument and x.frequency == self.execution_spec.decision_clock for x in self.auxiliary_inputs):
             raise ValueError('auxiliary request duplicates the primary instrument frequency')
         if type(self.warmup_bars) is not int or self.warmup_bars < 1:
             raise ValueError("positive warmup required")

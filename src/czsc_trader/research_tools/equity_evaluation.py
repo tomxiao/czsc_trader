@@ -225,8 +225,11 @@ class EquityEvaluationResult:
 
 def _fetch_products(access, request):
     products, identities, calendars = {}, {}, {}
+    fetched = {}
     for name, query in request.request_items(access.execution_spec):
-        result = access.data.fetch(query, prepared=request.prepared)
+        if query.parameters not in fetched:
+            fetched[query.parameters] = access.data.fetch(query, prepared=request.prepared)
+        result = fetched[query.parameters]
         if not result.ready:
             raise ValueError(f"pinned equity product unavailable ({name}): {result.error}")
         products[name] = result.dataframe

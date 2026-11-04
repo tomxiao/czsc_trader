@@ -37,12 +37,11 @@ def replay_identity(replay):
 def _products(flows, replay):
     expected = replay.input_binding.expected_identities
     products, identities, calendars = {}, {}, {}
-    for query in replay.requests:
-        name = replay.input_binding.request_key(query)
+    for name, query in replay.input_binding.bind_requests(replay.requests):
         result = flows.fetch(query, prepared=replay.input_binding.prepared)
         if name in products or not result.ready or result.identity.content_sha256 != expected[name]:
             raise ValueError('inspection prepared input identity differs')
-        role = name.rsplit(':', 1)[0] if name.startswith('auxiliary:') else 'primary'
+        role = name.rsplit(':', 1)[0] if ':' in name else 'primary'
         calendar = result.identity.metadata['sessions']
         if role in calendars and calendars[role] != calendar:
             raise ValueError('inspection input calendars differ')
@@ -161,7 +160,7 @@ def _copy_inputs(flows, replay, workspace):
     products, identities = _products(flows, replay)
     # DFLS normalizes subclasses to DataRequest before invoking a provider;
     # EquityParameters retains the complete instrument/source/bounded query.
-    requests = {q.parameters: replay.input_binding.request_key(q) for q in replay.requests}
+    requests = {q.parameters: name for name, q in replay.input_binding.bind_requests(replay.requests)}
     def fetch(request):
         if request.parameters not in requests:
             raise ValueError('isolated equity request differs from authenticated input')

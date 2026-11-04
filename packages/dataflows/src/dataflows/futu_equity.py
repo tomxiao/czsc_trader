@@ -95,7 +95,7 @@ def futu_equity_bindings(*, source: SourceRef, quote_context, maximum_pages: int
         if p.query.product is not EquityProduct.BARS:
             raise DataContractError("unsupported Futu equity product")
         pages, key, keys, receipts = [], None, set(), []
-        autype = {PriceAdjustment.NONE: "None", PriceAdjustment.FORWARD: "QFQ", PriceAdjustment.BACKWARD: "HFQ"}[p.query.adjustment]
+        autype = {PriceAdjustment.NONE: "None", PriceAdjustment.FORWARD: "qfq", PriceAdjustment.BACKWARD: "hfq"}[p.query.adjustment]
         for index in range(maximum_pages):
             ret, frame, next_key = quote_context.request_history_kline(
                 code, start=start, end=end, ktype="K_30M" if p.query.frequency is BarFrequency.M30 else "K_DAY",

@@ -203,15 +203,13 @@ def validate_quality_metadata(metadata: Mapping[str, Any], request: DataRequest,
     return evaluate_quality(evidence, request)
 
 
-def verify_daily_sessions(
-    pro: Any, ts_code: str, daily: pd.DataFrame, *, start: str, end: str,
+def source_session_calendar(
+    pro: Any, ts_code: str, *, start: str, end: str,
     asset_type: str = "etf", market: str = "a_share",
 ) -> dict[str, Any]:
-    """Prove the denominator with source lifecycle and full exchange calendar."""
+    """Read source lifecycle and the full exchange calendar independently of bars."""
     from .history_repair import frame_content_sha256
 
-    if daily.empty and market != "a_share":
-        raise IncompleteDataError("daily reference is empty", symbol=ts_code)
     api = {"hk": "hk_basic", "us": "us_basic"}.get(market, "fund_basic" if asset_type == "etf" else "stock_basic")
     instrument = getattr(pro, api)(ts_code=ts_code, fields="ts_code,list_date")
     if instrument is None or len(instrument) != 1 or not {"ts_code", "list_date"}.issubset(instrument.columns):
@@ -241,6 +239,27 @@ def verify_daily_sessions(
     if not pd.DatetimeIndex(dates).sort_values().equals(pd.date_range(first, last)):
         raise IncompleteDataError("trading calendar does not cover the requested window", symbol=ts_code)
     expected = sorted(dates[flags.eq(1) & dates.ge(listed)].dt.strftime("%Y-%m-%d").tolist())
+    canonical = pd.DataFrame({"Date": dates.dt.strftime("%Y-%m-%d"), "is_open": flags.astype(int)}).sort_values("Date").reset_index(drop=True)
+    return {
+        "source": market + "_tradecal" if market in {"hk", "us"} else "trade_cal", "exchange": exchange,
+        "start_date": first.date().isoformat(), "end_date": last.date().isoformat(),
+        "listing_date": listed.date().isoformat(), "listing_source": api,
+        "verified_sessions": len(expected), "expected_dates": expected,
+        "calendar": canonical.to_dict("records"),
+        "calendar_sha256": frame_content_sha256(canonical),
+    }
+
+
+def verify_daily_sessions(
+    pro: Any, ts_code: str, daily: pd.DataFrame, *, start: str, end: str,
+    asset_type: str = "etf", market: str = "a_share",
+) -> dict[str, Any]:
+    """Prove the denominator with source lifecycle and full exchange calendar."""
+    if daily.empty and market != "a_share":
+        raise IncompleteDataError("daily reference is empty", symbol=ts_code)
+    coverage = source_session_calendar(pro, ts_code, start=start, end=end,
+                                       asset_type=asset_type, market=market)
+    expected = coverage["expected_dates"]
     actual = set(pd.to_datetime(daily.Date).dt.strftime("%Y-%m-%d"))
     closed = sorted(actual.difference(expected))
     if closed:
@@ -251,16 +270,8 @@ def verify_daily_sessions(
 
         suspended, proofs = suspension_dates(pro, ts_code, expected, actual)
         expected = [day for day in expected if day not in suspended]
-    canonical = pd.DataFrame({"Date": dates.dt.strftime("%Y-%m-%d"), "is_open": flags.astype(int)}).sort_values("Date").reset_index(drop=True)
-    return {
-        "source": market + "_tradecal" if market in {"hk", "us"} else "trade_cal", "exchange": exchange,
-        "start_date": first.date().isoformat(), "end_date": last.date().isoformat(),
-        "listing_date": listed.date().isoformat(), "listing_source": api,
-        "verified_sessions": len(expected), "expected_dates": expected,
-        "calendar": canonical.to_dict("records"),
-        "calendar_sha256": frame_content_sha256(canonical),
-        "suspended_dates": suspended, "suspension_evidence": proofs,
-    }
+    return {**coverage, "verified_sessions": len(expected), "expected_dates": expected,
+            "suspended_dates": suspended, "suspension_evidence": proofs}
 
 
 def build_quality_evidence(

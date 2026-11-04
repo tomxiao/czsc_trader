@@ -1045,6 +1045,16 @@ CN和US共用策略计算、回放编排、账户记账、独立数值审计及�
 细报价与主报价须为同一RAW单位且边界一致；普通订单仍使用主柱区间。该角色不能与同一辅助产品重名复用。
 细报价一次索引并按来源身份共享，候选使用其独立账本事实，买持基准不消费该执行专用产品。
 
+CN/US 均可通过 `auxiliary_inputs` 声明 `analysis_price="HFQ"` 的后复权研究观察，
+包括交易标的自身及另一标的；用 `ctx.auxiliary_histories[别名]` 读取。
+主行情、执行报价、账户估值、费用及公司行动继续采用 RAW，买持基准只依赖主输入。
+美股观察使用 DFLS Futu 复权 BARS 与独立 SESSIONS；A股股票／ETF观察使用
+`tushare_equity_observation_bindings`，接入现有后复权行情及交易日历，不将其替代 RAW 经济事件源。
+准备、证据与缓存同时绑定逻辑别名、来源、频率和复权方式；同一物理日历可供多个角色复用，
+修改别名不会误用旧别名快照。`EquityInputBinding.bind_requests` 提供角色到物理请求的完整映射。
+按来源 `AvailableDate` 执行可见性检查；供应商后复权不自动等于分红再投资总回报，
+含息方式、因子基准及历史修订限制仍由来源说明与研究证据解释。
+
 V4要求显式逐区间价格限制、可卖时点及余股清仓规则，延迟交收须有结算时间。
 来源准入见[DFLS](../../packages/dataflows/README.md#cnus版本化raw事实源)，执行语义见
 [TXE](../../packages/trading_execution_engine/README.md#跨市场raw账户-v4)。不能用一个供应商样本或复权因子

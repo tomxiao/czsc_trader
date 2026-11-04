@@ -113,7 +113,7 @@ def _benchmark_candidate(request):
 
 def _query_identity(request, specification):
     ref = request.prepared
-    return equity_hash(_json_value({"requests": [asdict(query) for query in request.requests(specification)],
+    return equity_hash(_json_value({"requests": [(role, asdict(query)) for role, query in request.request_items(specification)],
         "prepared": None if ref is None else {"space_id": str(ref.space_id),
             "preparation_id": str(ref.preparation_id), "manifest_sha256": ref.manifest_sha256}}))
 
@@ -158,7 +158,9 @@ def prepare_equity(access, request, *, execution):
         request = replace(request, prepared=prepared_ref)
         binding = EquityInputBinding(prepared_ref, request.candidate.instrument, spec.fingerprint,
             tuple((product.name.lower(), identities[product.name.lower()]["content_sha256"]) for product in EquityProduct),
-            request.candidate.warmup_bars, auxiliary_inputs=tuple(EquityAuxiliaryBinding(item,
+            request.candidate.warmup_bars,
+            request_bindings=tuple((role, query.parameters) for role, query in request.request_items(spec)),
+            auxiliary_inputs=tuple(EquityAuxiliaryBinding(item,
                 identities[item.data_key(EquityProduct.BARS)]["content_sha256"],
                 identities[item.data_key(EquityProduct.SESSIONS)]["content_sha256"])
                 for item in definition.auxiliary_inputs), **({'execution_input': ExecutionInputBinding(definition.execution_input,

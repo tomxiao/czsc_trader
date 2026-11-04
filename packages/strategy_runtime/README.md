@@ -38,7 +38,7 @@ CN/US共用策略计算、回放内核与计划契约；市场差异由 `Researc
 | --- | --- |
 | `computation` | 必须显式选择 `StrategyComputation.BATCH_HISTORY` 或 `STATEFUL_STEP` |
 | 决策时钟 | `BarFrequency.DAILY` 或 `M30`；两者都要求真实交易段、可用时间及完整网格 |
-| 输入 | RAW行情、公司行动、日历、逐区间交易规则；辅助行情可声明CN/US来源 |
+| 输入 | RAW执行行情、公司行动、日历、逐区间交易规则；辅助观察可声明CN/US的RAW或HFQ来源 |
 | 决策 | `AccountDecision`，目标比例为有限的0至1；支持显式订单、依赖腿和周期预算 |
 | 状态 | `StrategyStateSchema`及匹配的 `initial_account: StateRecord`；字段非空时必须声明初值 |
 | 成交反馈 | `AccountSnapshot`、`PositionFeedback`和已确认的 `RecognizedAccountEvent` |
@@ -167,6 +167,17 @@ outcome = run_replay(
 `prepared.with_graph(graph)` 共享这些不可变输入，不能改变候选声明的特征图。
 辅助行情仍需显式声明；`ctx.auxiliary_histories[name]` 提供完整可见 HistoryView，保留最新柱状态、
 warmup 和 max_age 检查。首版主特征图不隐式读取辅助别名，辅助指标由策略显式访问视图计算并承担相应成本。
+V4 的 `EquityAuxiliaryInput.analysis_price` 支持 `RAW` 或 `HFQ`（后复权）；默认仍为 `RAW`。
+`HFQ` 的 BARS 请求使用 `PriceAdjustment.BACKWARD`，SESSIONS 始终使用 `NONE`。
+允许同一交易标的、来源和频率另行声明 HFQ 观察，例如 `EquityAuxiliaryInput("adjusted", instrument,
+source, BarFrequency.DAILY, 20, 604800, analysis_price="HFQ")`。主 `analysis_price`、`ctx.history`、
+主特征图及执行专用报价仍为 RAW；后复权数值不作为成交、估值或公司行动记账价格。
+HFQ 仅声明供应商后复权口径，不等于分红再投资总回报；因子基准、含息方式及历史修订语义需结合来源元数据解释。
+可见性继续按 `AvailableDate` 加延迟裁剪，不将复权柱提前暴露，也不把可用时间检查当成供应商历史版本无前视的证明。
+V4 准备结果在 `EquityInputBinding.request_bindings` 固定逻辑角色和完整请求参数，
+`bind_requests(requests)` 可将同一物理日历展开到主行情和辅助观察角色，身份必须一致。
+单个请求存在多个角色时 `request_key` 拒绝猜测；读取完整输入应使用 `bind_requests`。
+旧 RAW 定义和无显式请求绑定的历史序列化保持兼容；V2 不接受 HFQ 辅助观察。
 session 上下文通过认证日历的精确执行区间索引选择，并核验日历可见时间。
 
 `ReplayOutcome` 返回原 TXE `execution_result`、最终 `state` 和 `statistics`。

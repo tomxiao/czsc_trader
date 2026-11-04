@@ -44,6 +44,8 @@ SRT产生无副作用的计划，PTE在采纳决策的同一事务中保存`Entr
 30 分钟历史构造输入；实际交易区间必须存在于准备日历。`EquityAdviceClient` 调用同一份 SRT 冻结策略定义，
 通过独立 `advice.equity.v1` 契约把计划交给正常 `AccountEngine`。下单复用 `PaperStore` 的资格、采纳、修订、
 资金预留与单写事务检查；`EquityExecution` 消费明确的渠道累计回报，不按历史价格推测成交。
+输入读取使用 `EquityInputBinding.bind_requests` 展开完整角色映射，支持物理日历在不同输入角色间复用，
+并分别核对内容身份和角色日历。历史 RAW 绑定保持可读；该映射兼容不代表 V4 研究账户已获得生产部署资格。
 
 `EquityPteInspectionProtocol` 保存逐步的决策、独立对账快照、渠道回报、公司行动、到账和重启场景。
 公开 `inspect_equity_release` 先校验最终发布包与隔离许可，再运行上述正常业务组件。

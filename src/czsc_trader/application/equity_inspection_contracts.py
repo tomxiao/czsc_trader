@@ -24,7 +24,7 @@ class EquityInspectionReplay:
             raise TypeError('equity inspection requires window and prepared product requests')
         if any(type(x) is not EquityDataRequest for x in self.requests):
             raise TypeError('equity inspection requests must be EquityDataRequest')
-        keys = tuple(self.input_binding.request_key(x) for x in self.requests)
+        keys = tuple(key for key, _ in self.input_binding.bind_requests(self.requests))
         if len(set(keys)) != len(keys) or set(keys) != set(self.input_binding.expected_identities):
             raise ValueError('equity inspection requires exact primary and auxiliary product coverage')
         for value in (self.initial_cash, self.one_way_cost):

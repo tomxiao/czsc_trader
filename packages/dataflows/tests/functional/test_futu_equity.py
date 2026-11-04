@@ -6,7 +6,8 @@ import pytest
 
 from dataflows import (AssetClass, EquityDataRequest, EquityProduct, EquityQuery, InstrumentId,
                        MarketId, SourceRef, futu_equity_bindings, UsEquityBarPolicy, TimeInterval,
-                       Dataflows, DataSpace, ProviderConfig, PreparePolicy, ProviderBinding)
+                       Dataflows, DataSpace, ProviderConfig, PreparePolicy, ProviderBinding, PriceAdjustment,
+                       BarFrequency)
 from dataflows.equity_data import validate_equity_frame
 from dataflows.errors import DataContractError, IncompleteDataError
 
@@ -24,25 +25,35 @@ class Quotes:
         return 0, self.action
 
     def request_history_kline(self, code, **kwargs):
+        assert kwargs["autype"] in {"None", "qfq", "hfq"}  # SDK values are case-sensitive.
         self.calls.append(kwargs)
         frame = pd.DataFrame({"code": code, "time_key": pd.date_range("2026-11-27 10:00", periods=7, freq="30min").astype(str),
                               "open": 10., "high": 11., "low": 9., "close": 10., "volume": 100., "turnover": 1000.})
+        if kwargs["ktype"] == "K_DAY":
+            frame = frame.iloc[:1].copy()
+            frame["time_key"] = "2026-11-27 00:00:00"
         return 0, frame, b"same" if self.repeat else None
 
 
-def request(product):
+def request(product, adjustment=PriceAdjustment.NONE, frequency=BarFrequency.M30):
     return EquityDataRequest(InstrumentId(MarketId.US, AssetClass.STOCK, "LITE"), SourceRef("futu", "test-v1"),
-                              EquityQuery(product, date(2026, 11, 27), date(2026, 11, 27)))
+                              EquityQuery(product, date(2026, 11, 27), date(2026, 11, 27), frequency, adjustment))
 
 
-def test_quote_adapter_half_day_timezone_and_unadjusted_request():
+@pytest.mark.parametrize("adjustment,autype", [(PriceAdjustment.NONE, "None"),
+                                              (PriceAdjustment.FORWARD, "qfq"),
+                                              (PriceAdjustment.BACKWARD, "hfq")])
+@pytest.mark.parametrize("frequency", list(BarFrequency))
+def test_quote_adapter_half_day_timezone_and_adjustment_request(adjustment, autype, frequency):
     quotes = Quotes()
-    req = request(EquityProduct.BARS)
+    req = request(EquityProduct.BARS, adjustment, frequency)
     bindings = futu_equity_bindings(source=req.parameters.source, quote_context=quotes)
     frame, metadata = bindings[req.parameters.provider_key].fetch(req)
     validate_equity_frame(frame, req, metadata)
-    assert len(frame) == 7 and frame.BarStart.iloc[0].hour == 14
-    assert quotes.calls[0]["autype"] == "None" and quotes.calls[0]["session"] == "RTH"
+    assert len(frame) == (7 if frequency is BarFrequency.M30 else 1) and frame.BarStart.iloc[0].hour == 14
+    assert frame.Date.iloc[-1].hour == 18  # 13:00 local half-day close.
+    assert quotes.calls[0]["autype"] == autype and quotes.calls[0]["session"] == "RTH"
+    assert metadata["adjustment"] == adjustment.value
 
 
 def test_quote_adapter_split_ratio_and_unsupported_cash_dividend():

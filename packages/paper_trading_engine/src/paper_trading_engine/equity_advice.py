@@ -31,12 +31,11 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
     products = {}
     calendars = {}
     metadata = {}
-    for request in requests:
-        name = binding.request_key(request)
+    for name, request in binding.bind_requests(requests):
         fetched = dataflows.fetch(request, prepared=binding.prepared)
         if not fetched.ready or name in products or fetched.identity.content_sha256 != identities.get(name):
             raise ValueError("equity preparation product identity differs")
-        role = name.rsplit(':', 1)[0] if name.startswith('auxiliary:') else 'primary'
+        role = name.rsplit(':', 1)[0] if ':' in name else 'primary'
         calendar = fetched.identity.metadata["sessions"]
         if role in calendars and calendars[role] != calendar:
             raise ValueError("equity preparation calendars differ")

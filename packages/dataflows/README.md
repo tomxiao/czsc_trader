@@ -329,6 +329,29 @@ frequencies=..., actions=...)`为两市场的V4账户提供精确来源绑定。
 供应商日线、分钟、涨跌停及分红接口可用性须与全历史覆盖、准确到账时点、送股可卖时间分别核验。
 供应商的分红日期不自动等于盘中到账时点；软件验收和单日样本取数不能证明某标的多年RAW研究数据已经就绪。
 
+### CN/US后复权研究观察
+
+研究观察与RAW账户执行分别准备。`EquityQuery`的`adjustment`进入请求及准备资产身份；
+行情使用`PriceAdjustment.BACKWARD`，对应日历仍使用`PriceAdjustment.NONE`。
+同一标的的RAW及HFQ行情可以并存；后复权行情不替代执行价格、公司行动或交易约束。
+
+- 美股：`futu_equity_bindings(source=..., quote_context=...)`使用SDK要求的大小写敏感参数
+  `None/qfq/hfq`分别请求原价/前复权/后复权；常规会话、半日市及分页契约保持一致。
+- A股股票及ETF：`tushare_equity_observation_bindings(source=..., env_file=...)`返回
+  `equity.bars`与`equity.sessions`的CN绑定，支持日线及30分钟。BARS只接受BACKWARD，
+  复用现有股票`adj_factor`、ETF `fund_adj`后复权计算、单位转换及行情质量检查；
+  SESSIONS独立读取上市日期与完整`trade_cal`，保留午间休市。该入口不提供RAW、行动或交易约束。
+
+将工厂结果加入`ProviderConfig(equity_bindings=...)`，随后使用普通`prepare/fetch`。
+A股`Date/BarStart`转换为带时区的实际收盘/开盘时刻，`AvailableDate`保留原适配器的可用时间：
+股票日线及ETF后复权行情按当日17:00，股票分钟线按柱结束；不会提前到当日开盘。
+元数据保留因子来源、因子哈希、发布时间约定及历史发布时间/修订未经验证的标记。
+日历缺失、行情不覆盖完整会话网格或源数据口径不符时失败，不填价格、不删除会话绕过缺口。
+
+供应商后复权计算定义由来源约定，HFQ并不自动等于分红再投资总收益指数；
+可用时间约束也不能证明供应商从未修订历史值。研究层负责选择来源和解释这些限制。
+原版本化RAW事实源契约保持不变；工程适配器测试不代替真实标的准备及研究验收。
+
 正式美股研究准备须一次明确行情、会话、公司行动、交易约束四个 `SourceRef`，并由
 `ProviderConfig(equity_bindings=...)` 提供精确 `ProviderKey` 映射。各来源声明同一独立交易日历；
 准备结果冻结来源修订、完整覆盖及内容身份，TDR 将其保存为 `EquityInputBinding`。
