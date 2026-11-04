@@ -1,0 +1,28 @@
+{
+  "configurations": 54,
+  "passed": [
+    "C8004"
+  ],
+  "objective": "net annualized return / maximum daily equity drawdown",
+  "all_original_gates_preserved": true,
+  "controls": {
+    "C8004": {
+      "original": "C7501",
+      "economic_rows_exact": [
+        "fills",
+        "account_daily",
+        "trades"
+      ],
+      "metrics_exact": true
+    },
+    "C8031": {
+      "original": "C7502",
+      "economic_rows_exact": [
+        "fills",
+        "account_daily",
+        "trades"
+      ],
+      "metrics_exact": true
+    }
+  }
+}
