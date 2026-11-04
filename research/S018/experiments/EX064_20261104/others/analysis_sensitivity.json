@@ -1,0 +1,3645 @@
+{
+  "schema": "s018-c9380-bounded-sensitivity-analysis/v1",
+  "source_results": "research/S018/experiments/EX064_20261104/others/recovery_01/results.json",
+  "source_results_sha256": "3ff0016482e93700a6ac7b8ad2e9d7d4f8e45ecfb5a82e675e45677c6a635ad5",
+  "point_set_sha256": "f4bf907157b335dd13880022c720526d53211aa241e4408e25d3dfa82902ad14",
+  "accounts": {
+    "center_standard": {
+      "annual": 0.45411631274346154,
+      "dd": 0.08568584976513338,
+      "calmar": 5.299781865829695,
+      "closed": 95,
+      "median": 6.0,
+      "coverage": 1.0
+    },
+    "buyhold_standard": {
+      "annual": 1.1195962552673357,
+      "dd": 0.5730512034565817,
+      "calmar": 1.953745578953599,
+      "closed": 0,
+      "median": 0.0,
+      "coverage": 0.0
+    },
+    "center_pressure": {
+      "annual": 0.4024553606007677,
+      "dd": 0.08686620896992336,
+      "calmar": 4.633048516484865,
+      "closed": 95,
+      "median": 6.0,
+      "coverage": 1.0
+    },
+    "buyhold_pressure": {
+      "annual": 1.1190347391155737,
+      "dd": 0.5730487911250425,
+      "calmar": 1.9527739285840218,
+      "closed": 0,
+      "median": 0.0,
+      "coverage": 0.0
+    }
+  },
+  "center_gates": {
+    "calmar": true,
+    "dd_relative": true,
+    "dd_absolute": true,
+    "median": true,
+    "coverage": true
+  },
+  "pressure_gates": {
+    "calmar": true,
+    "dd_relative": true,
+    "dd_absolute": true
+  },
+  "neighbor_count": 79,
+  "required_joint_passes": 65,
+  "joint_passes": 79,
+  "absolute_dd_passes": 79,
+  "neighborhood_pass": true,
+  "overall_scoped_checks_pass": true,
+  "quantiles": {
+    "calmar_q10": 4.967570406499513,
+    "dd_q90": 0.08830170922251986,
+    "calmar_min": 4.779317610710831,
+    "calmar_max": 5.336679832100359,
+    "dd_min": 0.07888707839458198,
+    "dd_max": 0.08840212587879626,
+    "worst_calmar_labels": [
+      "J21",
+      "J37"
+    ],
+    "worst_dd_labels": [
+      "J31",
+      "J47"
+    ]
+  },
+  "neighbor_checks": [
+    {
+      "label": "O01",
+      "candidate": {
+        "annual": 0.45411631274346154,
+        "dd": 0.08568584976513338,
+        "calmar": 5.299781865829695,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "O02",
+      "candidate": {
+        "annual": 0.45411631274346154,
+        "dd": 0.08568584976513338,
+        "calmar": 5.299781865829695,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "O03",
+      "candidate": {
+        "annual": 0.45411631274346154,
+        "dd": 0.08568584976513338,
+        "calmar": 5.299781865829695,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "O04",
+      "candidate": {
+        "annual": 0.45411631274346154,
+        "dd": 0.08568584976513338,
+        "calmar": 5.299781865829695,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "O05",
+      "candidate": {
+        "annual": 0.43056597591258794,
+        "dd": 0.08154043406308797,
+        "calmar": 5.280398379771419,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "O06",
+      "candidate": {
+        "annual": 0.45232558859831773,
+        "dd": 0.08554086814039596,
+        "calmar": 5.287830231696126,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "O07",
+      "candidate": {
+        "annual": 0.4562253451793641,
+        "dd": 0.08548861080913062,
+        "calmar": 5.336679832100359,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "O08",
+      "candidate": {
+        "annual": 0.44008327290481075,
+        "dd": 0.08280565425355801,
+        "calmar": 5.314652445800839,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "O09",
+      "candidate": {
+        "annual": 0.46829655331617737,
+        "dd": 0.08830131182499068,
+        "calmar": 5.303392935365678,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "O10",
+      "candidate": {
+        "annual": 0.45411631274346154,
+        "dd": 0.08568584976513338,
+        "calmar": 5.299781865829695,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "O11",
+      "candidate": {
+        "annual": 0.45411631274346154,
+        "dd": 0.08568584976513338,
+        "calmar": 5.299781865829695,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "O12",
+      "candidate": {
+        "annual": 0.45411631274346154,
+        "dd": 0.08568584976513338,
+        "calmar": 5.299781865829695,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "O13",
+      "candidate": {
+        "annual": 0.4487518361999807,
+        "dd": 0.08568857941087515,
+        "calmar": 5.237008703904682,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "O14",
+      "candidate": {
+        "annual": 0.4463788587547741,
+        "dd": 0.085469100511806,
+        "calmar": 5.222692833805066,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "O15",
+      "candidate": {
+        "annual": 0.45411631274346154,
+        "dd": 0.08568584976513338,
+        "calmar": 5.299781865829695,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J01",
+      "candidate": {
+        "annual": 0.4102249887148244,
+        "dd": 0.07901413079730757,
+        "calmar": 5.191792715750572,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J02",
+      "candidate": {
+        "annual": 0.4029300850527451,
+        "dd": 0.08140986855575538,
+        "calmar": 4.949401002616646,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J03",
+      "candidate": {
+        "annual": 0.43009845822085646,
+        "dd": 0.08402775197305035,
+        "calmar": 5.118528677987233,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J04",
+      "candidate": {
+        "annual": 0.4370086038166421,
+        "dd": 0.08408610791644977,
+        "calmar": 5.1971558042722785,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J05",
+      "candidate": {
+        "annual": 0.4194952802474936,
+        "dd": 0.07888707839458198,
+        "calmar": 5.317667846047457,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J06",
+      "candidate": {
+        "annual": 0.4118621531384743,
+        "dd": 0.08507275352655042,
+        "calmar": 4.841293317371418,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J07",
+      "candidate": {
+        "annual": 0.43905397683387304,
+        "dd": 0.08502338068033044,
+        "calmar": 5.163920480704258,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J08",
+      "candidate": {
+        "annual": 0.44594544484707965,
+        "dd": 0.08416293200885572,
+        "calmar": 5.298596831205415,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J09",
+      "candidate": {
+        "annual": 0.4381845506937636,
+        "dd": 0.08295084479188064,
+        "calmar": 5.282460375094984,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J10",
+      "candidate": {
+        "annual": 0.4299304716544996,
+        "dd": 0.08367803329124424,
+        "calmar": 5.137913198295567,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J11",
+      "candidate": {
+        "annual": 0.4583845895677374,
+        "dd": 0.08833741415990282,
+        "calmar": 5.189019782014431,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J12",
+      "candidate": {
+        "annual": 0.46605374521978926,
+        "dd": 0.08819003708502993,
+        "calmar": 5.28465301324724,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J13",
+      "candidate": {
+        "annual": 0.4365838451748807,
+        "dd": 0.08291743400864904,
+        "calmar": 5.2652840792123525,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J14",
+      "candidate": {
+        "annual": 0.4288214437301048,
+        "dd": 0.08732030873044605,
+        "calmar": 4.9109015985486,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J15",
+      "candidate": {
+        "annual": 0.45783202832459424,
+        "dd": 0.08823908240457345,
+        "calmar": 5.188540223315657,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J16",
+      "candidate": {
+        "annual": 0.4652324298795181,
+        "dd": 0.08834485876869536,
+        "calmar": 5.266095122723444,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J17",
+      "candidate": {
+        "annual": 0.4079757396129464,
+        "dd": 0.08140986855575538,
+        "calmar": 5.011379416901221,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J18",
+      "candidate": {
+        "annual": 0.415239193650488,
+        "dd": 0.07892674109106579,
+        "calmar": 5.261071062992255,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J19",
+      "candidate": {
+        "annual": 0.4418221314047457,
+        "dd": 0.08422980696857707,
+        "calmar": 5.245436827007958,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J20",
+      "candidate": {
+        "annual": 0.43485752736249994,
+        "dd": 0.08412692727682103,
+        "calmar": 5.169064667387579,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J21",
+      "candidate": {
+        "annual": 0.40658970912110437,
+        "dd": 0.08507275352655042,
+        "calmar": 4.779317610710831,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J22",
+      "candidate": {
+        "annual": 0.4145086718713371,
+        "dd": 0.0789794109155364,
+        "calmar": 5.2483130358446015,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J23",
+      "candidate": {
+        "annual": 0.4411617790181652,
+        "dd": 0.08409632528271671,
+        "calmar": 5.245910300302168,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J24",
+      "candidate": {
+        "annual": 0.43434816407309484,
+        "dd": 0.08502338068033044,
+        "calmar": 5.108573201836683,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J25",
+      "candidate": {
+        "annual": 0.4247161876901866,
+        "dd": 0.08367803329124424,
+        "calmar": 5.075599544888292,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J26",
+      "candidate": {
+        "annual": 0.4329019445922677,
+        "dd": 0.08289608556798944,
+        "calmar": 5.222224205474836,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J27",
+      "candidate": {
+        "annual": 0.46098173420691824,
+        "dd": 0.08820398196626078,
+        "calmar": 5.226314321991155,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J28",
+      "candidate": {
+        "annual": 0.4534865315786054,
+        "dd": 0.08830329881263654,
+        "calmar": 5.135555949510119,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J29",
+      "candidate": {
+        "annual": 0.4341664210248899,
+        "dd": 0.08732030873044605,
+        "calmar": 4.97211275747023,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J30",
+      "candidate": {
+        "annual": 0.44220925740111494,
+        "dd": 0.08292313286176056,
+        "calmar": 5.332761102240467,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J31",
+      "candidate": {
+        "annual": 0.47024505877296474,
+        "dd": 0.08840212587879626,
+        "calmar": 5.319386316769059,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J32",
+      "candidate": {
+        "annual": 0.4629767546816539,
+        "dd": 0.08820112359238919,
+        "calmar": 5.249102685145429,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J33",
+      "candidate": {
+        "annual": 0.4079757396129464,
+        "dd": 0.08140986855575538,
+        "calmar": 5.011379416901221,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J34",
+      "candidate": {
+        "annual": 0.415239193650488,
+        "dd": 0.07892674109106579,
+        "calmar": 5.261071062992255,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J35",
+      "candidate": {
+        "annual": 0.4418221314047457,
+        "dd": 0.08422980696857707,
+        "calmar": 5.245436827007958,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J36",
+      "candidate": {
+        "annual": 0.43485752736249994,
+        "dd": 0.08412692727682103,
+        "calmar": 5.169064667387579,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J37",
+      "candidate": {
+        "annual": 0.40658970912110437,
+        "dd": 0.08507275352655042,
+        "calmar": 4.779317610710831,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J38",
+      "candidate": {
+        "annual": 0.4145086718713371,
+        "dd": 0.0789794109155364,
+        "calmar": 5.2483130358446015,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J39",
+      "candidate": {
+        "annual": 0.4411617790181652,
+        "dd": 0.08409632528271671,
+        "calmar": 5.245910300302168,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J40",
+      "candidate": {
+        "annual": 0.43434816407309484,
+        "dd": 0.08502338068033044,
+        "calmar": 5.108573201836683,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J41",
+      "candidate": {
+        "annual": 0.4247161876901866,
+        "dd": 0.08367803329124424,
+        "calmar": 5.075599544888292,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J42",
+      "candidate": {
+        "annual": 0.4329019445922677,
+        "dd": 0.08289608556798944,
+        "calmar": 5.222224205474836,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J43",
+      "candidate": {
+        "annual": 0.46098173420691824,
+        "dd": 0.08820398196626078,
+        "calmar": 5.226314321991155,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J44",
+      "candidate": {
+        "annual": 0.4534865315786054,
+        "dd": 0.08830329881263654,
+        "calmar": 5.135555949510119,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J45",
+      "candidate": {
+        "annual": 0.4341664210248899,
+        "dd": 0.08732030873044605,
+        "calmar": 4.97211275747023,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J46",
+      "candidate": {
+        "annual": 0.44220925740111494,
+        "dd": 0.08292313286176056,
+        "calmar": 5.332761102240467,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J47",
+      "candidate": {
+        "annual": 0.47024505877296474,
+        "dd": 0.08840212587879626,
+        "calmar": 5.319386316769059,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J48",
+      "candidate": {
+        "annual": 0.4629767546816539,
+        "dd": 0.08820112359238919,
+        "calmar": 5.249102685145429,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J49",
+      "candidate": {
+        "annual": 0.4102249887148244,
+        "dd": 0.07901413079730757,
+        "calmar": 5.191792715750572,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J50",
+      "candidate": {
+        "annual": 0.4029300850527451,
+        "dd": 0.08140986855575538,
+        "calmar": 4.949401002616646,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J51",
+      "candidate": {
+        "annual": 0.43009845822085646,
+        "dd": 0.08402775197305035,
+        "calmar": 5.118528677987233,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J52",
+      "candidate": {
+        "annual": 0.4370086038166421,
+        "dd": 0.08408610791644977,
+        "calmar": 5.1971558042722785,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J53",
+      "candidate": {
+        "annual": 0.4194952802474936,
+        "dd": 0.07888707839458198,
+        "calmar": 5.317667846047457,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J54",
+      "candidate": {
+        "annual": 0.4118621531384743,
+        "dd": 0.08507275352655042,
+        "calmar": 4.841293317371418,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J55",
+      "candidate": {
+        "annual": 0.43905397683387304,
+        "dd": 0.08502338068033044,
+        "calmar": 5.163920480704258,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J56",
+      "candidate": {
+        "annual": 0.44594544484707965,
+        "dd": 0.08416293200885572,
+        "calmar": 5.298596831205415,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J57",
+      "candidate": {
+        "annual": 0.4381845506937636,
+        "dd": 0.08295084479188064,
+        "calmar": 5.282460375094984,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J58",
+      "candidate": {
+        "annual": 0.4299304716544996,
+        "dd": 0.08367803329124424,
+        "calmar": 5.137913198295567,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J59",
+      "candidate": {
+        "annual": 0.4583845895677374,
+        "dd": 0.08833741415990282,
+        "calmar": 5.189019782014431,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J60",
+      "candidate": {
+        "annual": 0.46605374521978926,
+        "dd": 0.08819003708502993,
+        "calmar": 5.28465301324724,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J61",
+      "candidate": {
+        "annual": 0.4365838451748807,
+        "dd": 0.08291743400864904,
+        "calmar": 5.2652840792123525,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J62",
+      "candidate": {
+        "annual": 0.4288214437301048,
+        "dd": 0.08732030873044605,
+        "calmar": 4.9109015985486,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J63",
+      "candidate": {
+        "annual": 0.45783202832459424,
+        "dd": 0.08823908240457345,
+        "calmar": 5.188540223315657,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    },
+    {
+      "label": "J64",
+      "candidate": {
+        "annual": 0.4652324298795181,
+        "dd": 0.08834485876869536,
+        "calmar": 5.266095122723444,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "gates": {
+        "calmar": true,
+        "dd_relative": true,
+        "dd_absolute": true
+      },
+      "joint_economic_pass": true
+    }
+  ],
+  "single_axis": [
+    {
+      "label": "O01",
+      "parameter": "beta_window",
+      "center_value": 40,
+      "value": 39,
+      "candidate": {
+        "annual": 0.45411631274346154,
+        "dd": 0.08568584976513338,
+        "calmar": 5.299781865829695,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "delta_calmar": 0.0,
+      "delta_dd": 0.0,
+      "delta_closed": 0,
+      "behavior": {
+        "center_fill_count": 230,
+        "fill_count": 230,
+        "decision_target_side_changed_days": 0,
+        "decision_with_sizing_changed_days": 0,
+        "fill_timing_side_price_changed_sessions": 0,
+        "fill_economic_changed_sessions": 0,
+        "fill_timing_changed_dates": [],
+        "decision_target_side_changed_dates": [],
+        "fills_economic_equal": true,
+        "daily_account_economic_equal": true,
+        "trades_economic_equal": true,
+        "first_fill_change": null
+      }
+    },
+    {
+      "label": "O02",
+      "parameter": "beta_window",
+      "center_value": 40,
+      "value": 41,
+      "candidate": {
+        "annual": 0.45411631274346154,
+        "dd": 0.08568584976513338,
+        "calmar": 5.299781865829695,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "delta_calmar": 0.0,
+      "delta_dd": 0.0,
+      "delta_closed": 0,
+      "behavior": {
+        "center_fill_count": 230,
+        "fill_count": 230,
+        "decision_target_side_changed_days": 0,
+        "decision_with_sizing_changed_days": 0,
+        "fill_timing_side_price_changed_sessions": 0,
+        "fill_economic_changed_sessions": 0,
+        "fill_timing_changed_dates": [],
+        "decision_target_side_changed_dates": [],
+        "fills_economic_equal": true,
+        "daily_account_economic_equal": true,
+        "trades_economic_equal": true,
+        "first_fill_change": null
+      }
+    },
+    {
+      "label": "O03",
+      "parameter": "common_share",
+      "center_value": 0.375,
+      "value": 0.35625,
+      "candidate": {
+        "annual": 0.45411631274346154,
+        "dd": 0.08568584976513338,
+        "calmar": 5.299781865829695,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "delta_calmar": 0.0,
+      "delta_dd": 0.0,
+      "delta_closed": 0,
+      "behavior": {
+        "center_fill_count": 230,
+        "fill_count": 230,
+        "decision_target_side_changed_days": 0,
+        "decision_with_sizing_changed_days": 0,
+        "fill_timing_side_price_changed_sessions": 0,
+        "fill_economic_changed_sessions": 0,
+        "fill_timing_changed_dates": [],
+        "decision_target_side_changed_dates": [],
+        "fills_economic_equal": true,
+        "daily_account_economic_equal": true,
+        "trades_economic_equal": true,
+        "first_fill_change": null
+      }
+    },
+    {
+      "label": "O04",
+      "parameter": "common_share",
+      "center_value": 0.375,
+      "value": 0.39375,
+      "candidate": {
+        "annual": 0.45411631274346154,
+        "dd": 0.08568584976513338,
+        "calmar": 5.299781865829695,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "delta_calmar": 0.0,
+      "delta_dd": 0.0,
+      "delta_closed": 0,
+      "behavior": {
+        "center_fill_count": 230,
+        "fill_count": 230,
+        "decision_target_side_changed_days": 0,
+        "decision_with_sizing_changed_days": 0,
+        "fill_timing_side_price_changed_sessions": 0,
+        "fill_economic_changed_sessions": 0,
+        "fill_timing_changed_dates": [],
+        "decision_target_side_changed_dates": [],
+        "fills_economic_equal": true,
+        "daily_account_economic_equal": true,
+        "trades_economic_equal": true,
+        "first_fill_change": null
+      }
+    },
+    {
+      "label": "O05",
+      "parameter": "common_budget",
+      "center_value": 1.0,
+      "value": 0.95,
+      "candidate": {
+        "annual": 0.43056597591258794,
+        "dd": 0.08154043406308797,
+        "calmar": 5.280398379771419,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "delta_calmar": -0.019383486058276667,
+      "delta_dd": -0.0041454157020454074,
+      "delta_closed": 0,
+      "behavior": {
+        "center_fill_count": 230,
+        "fill_count": 230,
+        "decision_target_side_changed_days": 0,
+        "decision_with_sizing_changed_days": 425,
+        "fill_timing_side_price_changed_sessions": 0,
+        "fill_economic_changed_sessions": 203,
+        "fill_timing_changed_dates": [],
+        "decision_target_side_changed_dates": [],
+        "fills_economic_equal": false,
+        "daily_account_economic_equal": false,
+        "trades_economic_equal": false,
+        "first_fill_change": {
+          "session": "2023-02-10T14:30:00.000000Z",
+          "center": [
+            {
+              "side": "BUY",
+              "price": 60.5,
+              "executed_at": "2023-02-10T14:30:00.000000Z",
+              "interval_start": "2023-02-10T14:30:00.000000Z",
+              "interval_end": "2023-02-10T21:00:00.000000Z",
+              "quantity": 818,
+              "fees": 49.489
+            }
+          ],
+          "perturbed": [
+            {
+              "side": "BUY",
+              "price": 60.5,
+              "executed_at": "2023-02-10T14:30:00.000000Z",
+              "interval_start": "2023-02-10T14:30:00.000000Z",
+              "interval_end": "2023-02-10T21:00:00.000000Z",
+              "quantity": 777,
+              "fees": 47.0085
+            }
+          ]
+        }
+      }
+    },
+    {
+      "label": "O06",
+      "parameter": "other_budget",
+      "center_value": 0.375,
+      "value": 0.35625,
+      "candidate": {
+        "annual": 0.45232558859831773,
+        "dd": 0.08554086814039596,
+        "calmar": 5.287830231696126,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "delta_calmar": -0.011951634133569478,
+      "delta_dd": -0.00014498162473741694,
+      "delta_closed": 0,
+      "behavior": {
+        "center_fill_count": 230,
+        "fill_count": 230,
+        "decision_target_side_changed_days": 0,
+        "decision_with_sizing_changed_days": 341,
+        "fill_timing_side_price_changed_sessions": 0,
+        "fill_economic_changed_sessions": 170,
+        "fill_timing_changed_dates": [],
+        "decision_target_side_changed_dates": [],
+        "fills_economic_equal": false,
+        "daily_account_economic_equal": false,
+        "trades_economic_equal": false,
+        "first_fill_change": {
+          "session": "2023-01-17T14:30:00.000000Z",
+          "center": [
+            {
+              "side": "BUY",
+              "price": 57.16,
+              "executed_at": "2023-01-17T14:30:00.000000Z",
+              "interval_start": "2023-01-17T14:30:00.000000Z",
+              "interval_end": "2023-01-17T21:00:00.000000Z",
+              "quantity": 325,
+              "fees": 18.577
+            }
+          ],
+          "perturbed": [
+            {
+              "side": "BUY",
+              "price": 57.16,
+              "executed_at": "2023-01-17T14:30:00.000000Z",
+              "interval_start": "2023-01-17T14:30:00.000000Z",
+              "interval_end": "2023-01-17T21:00:00.000000Z",
+              "quantity": 309,
+              "fees": 17.66244
+            }
+          ]
+        }
+      }
+    },
+    {
+      "label": "O07",
+      "parameter": "other_budget",
+      "center_value": 0.375,
+      "value": 0.39375,
+      "candidate": {
+        "annual": 0.4562253451793641,
+        "dd": 0.08548861080913062,
+        "calmar": 5.336679832100359,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "delta_calmar": 0.03689796627066322,
+      "delta_dd": -0.00019723895600276542,
+      "delta_closed": 0,
+      "behavior": {
+        "center_fill_count": 230,
+        "fill_count": 230,
+        "decision_target_side_changed_days": 0,
+        "decision_with_sizing_changed_days": 355,
+        "fill_timing_side_price_changed_sessions": 0,
+        "fill_economic_changed_sessions": 169,
+        "fill_timing_changed_dates": [],
+        "decision_target_side_changed_dates": [],
+        "fills_economic_equal": false,
+        "daily_account_economic_equal": false,
+        "trades_economic_equal": false,
+        "first_fill_change": {
+          "session": "2023-01-17T14:30:00.000000Z",
+          "center": [
+            {
+              "side": "BUY",
+              "price": 57.16,
+              "executed_at": "2023-01-17T14:30:00.000000Z",
+              "interval_start": "2023-01-17T14:30:00.000000Z",
+              "interval_end": "2023-01-17T21:00:00.000000Z",
+              "quantity": 325,
+              "fees": 18.577
+            }
+          ],
+          "perturbed": [
+            {
+              "side": "BUY",
+              "price": 57.16,
+              "executed_at": "2023-01-17T14:30:00.000000Z",
+              "interval_start": "2023-01-17T14:30:00.000000Z",
+              "interval_end": "2023-01-17T21:00:00.000000Z",
+              "quantity": 342,
+              "fees": 19.54872
+            }
+          ]
+        }
+      }
+    },
+    {
+      "label": "O08",
+      "parameter": "initial_fraction",
+      "center_value": 0.5,
+      "value": 0.475,
+      "candidate": {
+        "annual": 0.44008327290481075,
+        "dd": 0.08280565425355801,
+        "calmar": 5.314652445800839,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "delta_calmar": 0.014870579971143272,
+      "delta_dd": -0.0028801955115753675,
+      "delta_closed": 0,
+      "behavior": {
+        "center_fill_count": 230,
+        "fill_count": 230,
+        "decision_target_side_changed_days": 0,
+        "decision_with_sizing_changed_days": 476,
+        "fill_timing_side_price_changed_sessions": 0,
+        "fill_economic_changed_sessions": 230,
+        "fill_timing_changed_dates": [],
+        "decision_target_side_changed_dates": [],
+        "fills_economic_equal": false,
+        "daily_account_economic_equal": false,
+        "trades_economic_equal": false,
+        "first_fill_change": {
+          "session": "2023-01-17T14:30:00.000000Z",
+          "center": [
+            {
+              "side": "BUY",
+              "price": 57.16,
+              "executed_at": "2023-01-17T14:30:00.000000Z",
+              "interval_start": "2023-01-17T14:30:00.000000Z",
+              "interval_end": "2023-01-17T21:00:00.000000Z",
+              "quantity": 325,
+              "fees": 18.577
+            }
+          ],
+          "perturbed": [
+            {
+              "side": "BUY",
+              "price": 57.16,
+              "executed_at": "2023-01-17T14:30:00.000000Z",
+              "interval_start": "2023-01-17T14:30:00.000000Z",
+              "interval_end": "2023-01-17T21:00:00.000000Z",
+              "quantity": 309,
+              "fees": 17.66244
+            }
+          ]
+        }
+      }
+    },
+    {
+      "label": "O09",
+      "parameter": "initial_fraction",
+      "center_value": 0.5,
+      "value": 0.525,
+      "candidate": {
+        "annual": 0.46829655331617737,
+        "dd": 0.08830131182499068,
+        "calmar": 5.303392935365678,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "delta_calmar": 0.0036110695359825584,
+      "delta_dd": 0.0026154620598572986,
+      "delta_closed": 0,
+      "behavior": {
+        "center_fill_count": 230,
+        "fill_count": 230,
+        "decision_target_side_changed_days": 0,
+        "decision_with_sizing_changed_days": 476,
+        "fill_timing_side_price_changed_sessions": 0,
+        "fill_economic_changed_sessions": 230,
+        "fill_timing_changed_dates": [],
+        "decision_target_side_changed_dates": [],
+        "fills_economic_equal": false,
+        "daily_account_economic_equal": false,
+        "trades_economic_equal": false,
+        "first_fill_change": {
+          "session": "2023-01-17T14:30:00.000000Z",
+          "center": [
+            {
+              "side": "BUY",
+              "price": 57.16,
+              "executed_at": "2023-01-17T14:30:00.000000Z",
+              "interval_start": "2023-01-17T14:30:00.000000Z",
+              "interval_end": "2023-01-17T21:00:00.000000Z",
+              "quantity": 325,
+              "fees": 18.577
+            }
+          ],
+          "perturbed": [
+            {
+              "side": "BUY",
+              "price": 57.16,
+              "executed_at": "2023-01-17T14:30:00.000000Z",
+              "interval_start": "2023-01-17T14:30:00.000000Z",
+              "interval_end": "2023-01-17T21:00:00.000000Z",
+              "quantity": 342,
+              "fees": 19.54872
+            }
+          ]
+        }
+      }
+    },
+    {
+      "label": "O10",
+      "parameter": "exit_margin",
+      "center_value": 0.005,
+      "value": 0.00475,
+      "candidate": {
+        "annual": 0.45411631274346154,
+        "dd": 0.08568584976513338,
+        "calmar": 5.299781865829695,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "delta_calmar": 0.0,
+      "delta_dd": 0.0,
+      "delta_closed": 0,
+      "behavior": {
+        "center_fill_count": 230,
+        "fill_count": 230,
+        "decision_target_side_changed_days": 0,
+        "decision_with_sizing_changed_days": 0,
+        "fill_timing_side_price_changed_sessions": 0,
+        "fill_economic_changed_sessions": 0,
+        "fill_timing_changed_dates": [],
+        "decision_target_side_changed_dates": [],
+        "fills_economic_equal": true,
+        "daily_account_economic_equal": true,
+        "trades_economic_equal": true,
+        "first_fill_change": null
+      }
+    },
+    {
+      "label": "O11",
+      "parameter": "exit_margin",
+      "center_value": 0.005,
+      "value": 0.00525,
+      "candidate": {
+        "annual": 0.45411631274346154,
+        "dd": 0.08568584976513338,
+        "calmar": 5.299781865829695,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "delta_calmar": 0.0,
+      "delta_dd": 0.0,
+      "delta_closed": 0,
+      "behavior": {
+        "center_fill_count": 230,
+        "fill_count": 230,
+        "decision_target_side_changed_days": 0,
+        "decision_with_sizing_changed_days": 0,
+        "fill_timing_side_price_changed_sessions": 0,
+        "fill_economic_changed_sessions": 0,
+        "fill_timing_changed_dates": [],
+        "decision_target_side_changed_dates": [],
+        "fills_economic_equal": true,
+        "daily_account_economic_equal": true,
+        "trades_economic_equal": true,
+        "first_fill_change": null
+      }
+    },
+    {
+      "label": "O12",
+      "parameter": "add_mu_margin",
+      "center_value": 0.01,
+      "value": 0.0095,
+      "candidate": {
+        "annual": 0.45411631274346154,
+        "dd": 0.08568584976513338,
+        "calmar": 5.299781865829695,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "delta_calmar": 0.0,
+      "delta_dd": 0.0,
+      "delta_closed": 0,
+      "behavior": {
+        "center_fill_count": 230,
+        "fill_count": 230,
+        "decision_target_side_changed_days": 0,
+        "decision_with_sizing_changed_days": 0,
+        "fill_timing_side_price_changed_sessions": 0,
+        "fill_economic_changed_sessions": 0,
+        "fill_timing_changed_dates": [],
+        "decision_target_side_changed_dates": [],
+        "fills_economic_equal": true,
+        "daily_account_economic_equal": true,
+        "trades_economic_equal": true,
+        "first_fill_change": null
+      }
+    },
+    {
+      "label": "O13",
+      "parameter": "add_mu_margin",
+      "center_value": 0.01,
+      "value": 0.0105,
+      "candidate": {
+        "annual": 0.4487518361999807,
+        "dd": 0.08568857941087515,
+        "calmar": 5.237008703904682,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "delta_calmar": -0.06277316192501292,
+      "delta_dd": 2.7296457417724795e-06,
+      "delta_closed": 0,
+      "behavior": {
+        "center_fill_count": 230,
+        "fill_count": 230,
+        "decision_target_side_changed_days": 2,
+        "decision_with_sizing_changed_days": 54,
+        "fill_timing_side_price_changed_sessions": 2,
+        "fill_economic_changed_sessions": 26,
+        "fill_timing_changed_dates": [
+          "2026-05-21T13:30:00.000000Z",
+          "2026-05-22T13:30:00.000000Z"
+        ],
+        "decision_target_side_changed_dates": [
+          "2026-05-21T13:30:00.000000Z",
+          "2026-05-22T13:30:00.000000Z"
+        ],
+        "fills_economic_equal": false,
+        "daily_account_economic_equal": false,
+        "trades_economic_equal": false,
+        "first_fill_change": {
+          "session": "2026-05-21T13:30:00.000000Z",
+          "center": [
+            {
+              "side": "BUY",
+              "price": 736.36,
+              "executed_at": "2026-05-21T13:30:00.000000Z",
+              "interval_start": "2026-05-21T13:30:00.000000Z",
+              "interval_end": "2026-05-21T20:00:00.000000Z",
+              "quantity": 190,
+              "fees": 139.9084
+            }
+          ],
+          "perturbed": []
+        }
+      }
+    },
+    {
+      "label": "O14",
+      "parameter": "add_sector_margin",
+      "center_value": 0.0,
+      "value": -0.0005,
+      "candidate": {
+        "annual": 0.4463788587547741,
+        "dd": 0.085469100511806,
+        "calmar": 5.222692833805066,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "delta_calmar": -0.07708903202462913,
+      "delta_dd": -0.00021674925332737516,
+      "delta_closed": 0,
+      "behavior": {
+        "center_fill_count": 230,
+        "fill_count": 231,
+        "decision_target_side_changed_days": 1,
+        "decision_with_sizing_changed_days": 391,
+        "fill_timing_side_price_changed_sessions": 1,
+        "fill_economic_changed_sessions": 190,
+        "fill_timing_changed_dates": [
+          "2023-08-15T13:30:00.000000Z"
+        ],
+        "decision_target_side_changed_dates": [
+          "2023-08-15T13:30:00.000000Z"
+        ],
+        "fills_economic_equal": false,
+        "daily_account_economic_equal": false,
+        "trades_economic_equal": false,
+        "first_fill_change": {
+          "session": "2023-08-15T13:30:00.000000Z",
+          "center": [],
+          "perturbed": [
+            {
+              "side": "BUY",
+              "price": 67.59,
+              "executed_at": "2023-08-15T13:30:00.000000Z",
+              "interval_start": "2023-08-15T13:30:00.000000Z",
+              "interval_end": "2023-08-15T20:00:00.000000Z",
+              "quantity": 716,
+              "fees": 48.39444
+            }
+          ]
+        }
+      }
+    },
+    {
+      "label": "O15",
+      "parameter": "add_sector_margin",
+      "center_value": 0.0,
+      "value": 0.0005,
+      "candidate": {
+        "annual": 0.45411631274346154,
+        "dd": 0.08568584976513338,
+        "calmar": 5.299781865829695,
+        "closed": 95,
+        "median": 6.0,
+        "coverage": 1.0
+      },
+      "delta_calmar": 0.0,
+      "delta_dd": 0.0,
+      "delta_closed": 0,
+      "behavior": {
+        "center_fill_count": 230,
+        "fill_count": 230,
+        "decision_target_side_changed_days": 0,
+        "decision_with_sizing_changed_days": 0,
+        "fill_timing_side_price_changed_sessions": 0,
+        "fill_economic_changed_sessions": 0,
+        "fill_timing_changed_dates": [],
+        "decision_target_side_changed_dates": [],
+        "fills_economic_equal": true,
+        "daily_account_economic_equal": true,
+        "trades_economic_equal": true,
+        "first_fill_change": null
+      }
+    }
+  ],
+  "joint_main_effects": [
+    {
+      "parameters": [
+        "add_sector_margin"
+      ],
+      "interpretation": "high minus low",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.262820185011015,
+        "negative_mean": 5.062514007169012,
+        "difference": 0.20030617784200277
+      },
+      "dd": {
+        "positive_mean": 0.08357568964400956,
+        "negative_mean": 0.08539026798675164,
+        "difference": -0.001814578342742082
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "initial_fraction"
+      ],
+      "interpretation": "high minus low",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.212865887838757,
+        "negative_mean": 5.11246830434127,
+        "difference": 0.10039758349748684
+      },
+      "dd": {
+        "positive_mean": 0.0863124084659635,
+        "negative_mean": 0.08265354916479772,
+        "difference": 0.0036588593011657733
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "add_mu_margin"
+      ],
+      "interpretation": "high minus low",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.133094212186592,
+        "negative_mean": 5.192239979993435,
+        "difference": -0.059145767806843
+      },
+      "dd": {
+        "positive_mean": 0.084475800824887,
+        "negative_mean": 0.08449015680587421,
+        "difference": -1.4355980987215688e-05
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "common_budget"
+      ],
+      "interpretation": "high minus low",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.191120267246366,
+        "negative_mean": 5.134213924933661,
+        "difference": 0.05690634231270497
+      },
+      "dd": {
+        "positive_mean": 0.08624413149637153,
+        "negative_mean": 0.08272182613438968,
+        "difference": 0.0035223053619818506
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "other_budget"
+      ],
+      "interpretation": "high minus low",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.156736031840504,
+        "negative_mean": 5.168598160339523,
+        "difference": -0.011862128499019242
+      },
+      "dd": {
+        "positive_mean": 0.08499914937445052,
+        "negative_mean": 0.08396680825631068,
+        "difference": 0.0010323411181398373
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "exit_margin"
+      ],
+      "interpretation": "high minus low",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.163292237419536,
+        "negative_mean": 5.162041954760491,
+        "difference": 0.001250282659044366
+      },
+      "dd": {
+        "positive_mean": 0.08447781254259726,
+        "negative_mean": 0.08448814508816395,
+        "difference": -1.0332545566690832e-05
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "beta_window"
+      ],
+      "interpretation": "high minus low",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.162667096090013,
+        "negative_mean": 5.162667096090013,
+        "difference": 0.0
+      },
+      "dd": {
+        "positive_mean": 0.08448297881538061,
+        "negative_mean": 0.08448297881538061,
+        "difference": 0.0
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "common_share"
+      ],
+      "interpretation": "high minus low",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.162667096090013,
+        "negative_mean": 5.162667096090013,
+        "difference": 0.0
+      },
+      "dd": {
+        "positive_mean": 0.08448297881538061,
+        "negative_mean": 0.08448297881538061,
+        "difference": 0.0
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    }
+  ],
+  "joint_two_factor_interactions": [
+    {
+      "parameters": [
+        "initial_fraction",
+        "add_sector_margin"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.110091686520095,
+        "negative_mean": 5.215242505659932,
+        "difference": -0.10515081913983693
+      },
+      "dd": {
+        "positive_mean": 0.08529238150521086,
+        "negative_mean": 0.08367357612555035,
+        "difference": 0.0016188053796605123
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "other_budget",
+        "add_sector_margin"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.192529804621628,
+        "negative_mean": 5.132804387558399,
+        "difference": 0.059725417063229536
+      },
+      "dd": {
+        "positive_mean": 0.08398028087725012,
+        "negative_mean": 0.0849856767535111,
+        "difference": -0.0010053958762609727
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "other_budget",
+        "initial_fraction"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.185747917751031,
+        "negative_mean": 5.139586274428996,
+        "difference": 0.04616164332203443
+      },
+      "dd": {
+        "positive_mean": 0.08409105095243313,
+        "negative_mean": 0.08487490667832807,
+        "difference": -0.0007838557258949413
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "common_budget",
+        "add_sector_margin"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.146291057016838,
+        "negative_mean": 5.179043135163189,
+        "difference": -0.03275207814635106
+      },
+      "dd": {
+        "positive_mean": 0.08474969910651287,
+        "negative_mean": 0.08421625852424836,
+        "difference": 0.0005334405822645105
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "common_budget",
+        "initial_fraction"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.153681463934471,
+        "negative_mean": 5.171652728245556,
+        "difference": -0.0179712643110852
+      },
+      "dd": {
+        "positive_mean": 0.08468715800196172,
+        "negative_mean": 0.08427879962879949,
+        "difference": 0.0004083583731622348
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "exit_margin",
+        "add_mu_margin"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.1587252326773,
+        "negative_mean": 5.166608959502726,
+        "difference": -0.007883726825426152
+      },
+      "dd": {
+        "positive_mean": 0.08455775925675688,
+        "negative_mean": 0.08440819837400435,
+        "difference": 0.00014956088275253077
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "common_budget",
+        "other_budget"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.1655008787713115,
+        "negative_mean": 5.159833313408717,
+        "difference": 0.005667565362594829
+      },
+      "dd": {
+        "positive_mean": 0.08443122363190864,
+        "negative_mean": 0.08453473399885257,
+        "difference": -0.00010351036694393467
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "initial_fraction",
+        "add_mu_margin"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.16520829239702,
+        "negative_mean": 5.160125899783006,
+        "difference": 0.0050823926140139974
+      },
+      "dd": {
+        "positive_mean": 0.0844683468154999,
+        "negative_mean": 0.0844976108152613,
+        "difference": -2.926399976140026e-05
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "common_budget",
+        "exit_margin"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.163322546912338,
+        "negative_mean": 5.16201164526769,
+        "difference": 0.001310901644647977
+      },
+      "dd": {
+        "positive_mean": 0.08447612343056632,
+        "negative_mean": 0.08448983420019489,
+        "difference": -1.371076962856932e-05
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "other_budget",
+        "add_mu_margin"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.162120844714723,
+        "negative_mean": 5.1632133474653035,
+        "difference": -0.0010925027505805929
+      },
+      "dd": {
+        "positive_mean": 0.08449020172111092,
+        "negative_mean": 0.08447575590965029,
+        "difference": 1.4445811460636615e-05
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "exit_margin",
+        "add_sector_margin"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.163080541999543,
+        "negative_mean": 5.162253650180484,
+        "difference": 0.000826891819058595
+      },
+      "dd": {
+        "positive_mean": 0.08447611872107726,
+        "negative_mean": 0.08448983890968395,
+        "difference": -1.372018860669455e-05
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "other_budget",
+        "exit_margin"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.162260534784494,
+        "negative_mean": 5.163073657395533,
+        "difference": -0.0008131226110394962
+      },
+      "dd": {
+        "positive_mean": 0.08449248334928394,
+        "negative_mean": 0.08447347428147728,
+        "difference": 1.900906780666345e-05
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "add_mu_margin",
+        "add_sector_margin"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.162305993178846,
+        "negative_mean": 5.163028199001181,
+        "difference": -0.0007222058223348427
+      },
+      "dd": {
+        "positive_mean": 0.08448175906481528,
+        "negative_mean": 0.08448419856594593,
+        "difference": -2.4395011306438397e-06
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "common_budget",
+        "add_mu_margin"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.162434093455126,
+        "negative_mean": 5.162900098724901,
+        "difference": -0.00046600526977513823
+      },
+      "dd": {
+        "positive_mean": 0.08448391075331455,
+        "negative_mean": 0.08448204687744668,
+        "difference": 1.8638758678690692e-06
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "initial_fraction",
+        "exit_margin"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.162775726337758,
+        "negative_mean": 5.162558465842269,
+        "difference": 0.00021726049548842497
+      },
+      "dd": {
+        "positive_mean": 0.08448056988985145,
+        "negative_mean": 0.08448538774090976,
+        "difference": -4.81785105831134e-06
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "beta_window",
+        "common_share"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.162701504275471,
+        "negative_mean": 5.162632687904555,
+        "difference": 6.881637091638027e-05
+      },
+      "dd": {
+        "positive_mean": 0.08447887606833145,
+        "negative_mean": 0.08448708156242976,
+        "difference": -8.205494098315058e-06
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "beta_window",
+        "exit_margin"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.162667096090014,
+        "negative_mean": 5.162667096090013,
+        "difference": 8.881784197001252e-16
+      },
+      "dd": {
+        "positive_mean": 0.08448297881538061,
+        "negative_mean": 0.08448297881538061,
+        "difference": 0.0
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "beta_window",
+        "add_mu_margin"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.162667096090013,
+        "negative_mean": 5.162667096090014,
+        "difference": -8.881784197001252e-16
+      },
+      "dd": {
+        "positive_mean": 0.08448297881538061,
+        "negative_mean": 0.08448297881538061,
+        "difference": 0.0
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "common_share",
+        "other_budget"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.162667096090013,
+        "negative_mean": 5.162667096090014,
+        "difference": -8.881784197001252e-16
+      },
+      "dd": {
+        "positive_mean": 0.08448297881538061,
+        "negative_mean": 0.08448297881538061,
+        "difference": 0.0
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "common_share",
+        "add_sector_margin"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.162667096090013,
+        "negative_mean": 5.162667096090014,
+        "difference": -8.881784197001252e-16
+      },
+      "dd": {
+        "positive_mean": 0.08448297881538061,
+        "negative_mean": 0.08448297881538061,
+        "difference": 0.0
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "beta_window",
+        "common_budget"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.162667096090013,
+        "negative_mean": 5.162667096090013,
+        "difference": 0.0
+      },
+      "dd": {
+        "positive_mean": 0.08448297881538061,
+        "negative_mean": 0.08448297881538061,
+        "difference": 0.0
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "beta_window",
+        "other_budget"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.162667096090013,
+        "negative_mean": 5.162667096090013,
+        "difference": 0.0
+      },
+      "dd": {
+        "positive_mean": 0.08448297881538061,
+        "negative_mean": 0.08448297881538061,
+        "difference": 0.0
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "beta_window",
+        "initial_fraction"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.162667096090013,
+        "negative_mean": 5.162667096090013,
+        "difference": 0.0
+      },
+      "dd": {
+        "positive_mean": 0.08448297881538061,
+        "negative_mean": 0.08448297881538061,
+        "difference": 0.0
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "beta_window",
+        "add_sector_margin"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.162667096090014,
+        "negative_mean": 5.162667096090014,
+        "difference": 0.0
+      },
+      "dd": {
+        "positive_mean": 0.08448297881538061,
+        "negative_mean": 0.08448297881538061,
+        "difference": 0.0
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "common_share",
+        "common_budget"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.162667096090013,
+        "negative_mean": 5.162667096090013,
+        "difference": 0.0
+      },
+      "dd": {
+        "positive_mean": 0.08448297881538061,
+        "negative_mean": 0.08448297881538061,
+        "difference": 0.0
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "common_share",
+        "initial_fraction"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.162667096090013,
+        "negative_mean": 5.162667096090013,
+        "difference": 0.0
+      },
+      "dd": {
+        "positive_mean": 0.08448297881538061,
+        "negative_mean": 0.08448297881538061,
+        "difference": 0.0
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "common_share",
+        "exit_margin"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.162667096090014,
+        "negative_mean": 5.162667096090014,
+        "difference": 0.0
+      },
+      "dd": {
+        "positive_mean": 0.08448297881538061,
+        "negative_mean": 0.08448297881538061,
+        "difference": 0.0
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    },
+    {
+      "parameters": [
+        "common_share",
+        "add_mu_margin"
+      ],
+      "interpretation": "same-sign mean minus opposite-sign mean",
+      "positive_n": 32,
+      "negative_n": 32,
+      "calmar": {
+        "positive_mean": 5.162667096090013,
+        "negative_mean": 5.162667096090013,
+        "difference": 0.0
+      },
+      "dd": {
+        "positive_mean": 0.08448297881538061,
+        "negative_mean": 0.08448297881538061,
+        "difference": 0.0
+      },
+      "closed": {
+        "positive_mean": 95.0,
+        "negative_mean": 95.0,
+        "difference": 0.0
+      }
+    }
+  ],
+  "behavior_method": "Dates and economic decision/fill/account fields compared; cross-candidate identities removed. No one-buy/one-sell assumption.",
+  "initial_attempt": {
+    "status": "STOPPED",
+    "error": "AssertionError('Batch not fully successful; stop without implicit retry.')",
+    "batch_statuses": [
+      {
+        "label": "CENTER",
+        "status": "CANCELLED",
+        "error": "EvaluationError(code='CancelledError', message='task was not submitted: [WinError 5] 拒绝访问。')"
+      },
+      {
+        "label": "PRESSURE",
+        "status": "CANCELLED",
+        "error": "EvaluationError(code='CancelledError', message='task was not submitted: [WinError 5] 拒绝访问。')"
+      },
+      {
+        "label": "O01",
+        "status": "CANCELLED",
+        "error": "EvaluationError(code='CancelledError', message='task was not submitted: [WinError 5] 拒绝访问。')"
+      },
+      {
+        "label": "O02",
+        "status": "CANCELLED",
+        "error": "EvaluationError(code='CancelledError', message='task was not submitted: [WinError 5] 拒绝访问。')"
+      },
+      {
+        "label": "O03",
+        "status": "CANCELLED",
+        "error": "EvaluationError(code='CancelledError', message='task was not submitted: [WinError 5] 拒绝访问。')"
+      },
+      {
+        "label": "O04",
+        "status": "CANCELLED",
+        "error": "EvaluationError(code='CancelledError', message='task was not submitted: [WinError 5] 拒绝访问。')"
+      },
+      {
+        "label": "O05",
+        "status": "CANCELLED",
+        "error": "EvaluationError(code='CancelledError', message='task was not submitted: [WinError 5] 拒绝访问。')"
+      },
+      {
+        "label": "O06",
+        "status": "CANCELLED",
+        "error": "EvaluationError(code='CancelledError', message='task was not submitted: [WinError 5] 拒绝访问。')"
+      },
+      {
+        "label": "O07",
+        "status": "CANCELLED",
+        "error": "EvaluationError(code='CancelledError', message='task was not submitted: [WinError 5] 拒绝访问。')"
+      },
+      {
+        "label": "O08",
+        "status": "CANCELLED",
+        "error": "EvaluationError(code='CancelledError', message='task was not submitted: [WinError 5] 拒绝访问。')"
+      },
+      {
+        "label": "O09",
+        "status": "CANCELLED",
+        "error": "EvaluationError(code='CancelledError', message='task was not submitted: [WinError 5] 拒绝访问。')"
+      },
+      {
+        "label": "O10",
+        "status": "CANCELLED",
+        "error": "EvaluationError(code='CancelledError', message='task was not submitted: [WinError 5] 拒绝访问。')"
+      }
+    ],
+    "strategy_performance_failure": false
+  },
+  "execution_seconds": 191.3434486999904,
+  "workload": {
+    "input_snapshots": 1,
+    "candidate_runs": 81,
+    "benchmark_runs": 2,
+    "account_timings": [
+      {
+        "kind": "BENCHMARK",
+        "owner": "benchmark:1bd6a889158349863c1b0e778db70ced1a5198da8bfc93d9219bb84582215161",
+        "feature_seconds": 0.017735799963702448,
+        "replay_seconds": 0.9411151999956928,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "BENCHMARK",
+        "owner": "benchmark:2e558e0049e360683cc321e6019384f760e5eae93d2e3768cd7234aad298450e",
+        "feature_seconds": 0.018336499604629353,
+        "replay_seconds": 1.0088431000040146,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1000:7c560a7f0ef7b137123e2bd77857f80d3b7e9407e4ab2f4e83595346537eeb9c",
+        "feature_seconds": 0.0159599998005433,
+        "replay_seconds": 7.974397300000419,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1001:180c0a1ced6ca5e4f37a1f96720a38c9397c4a75e8d7f2f8ee90aea5edc6afa2",
+        "feature_seconds": 0.016326300115906633,
+        "replay_seconds": 7.990582300000824,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1002:ce8481b210f0ecfac7d63f0fbae2f2091356a935ac03e721190a0262cea1b38d",
+        "feature_seconds": 0.015218699991237372,
+        "replay_seconds": 7.991642299995874,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1003:8790faf6175ee04597f014a8bff64bbc6eb354ef73932929c0177b7d985c80ef",
+        "feature_seconds": 0.015573199998470955,
+        "replay_seconds": 8.016805599996587,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1004:f55a5e5efe9ebb8052620e87b2c0283519be75309f9e7088228b056cf58af6db",
+        "feature_seconds": 0.015631599657353945,
+        "replay_seconds": 7.961260200012475,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1005:c5acf2dc61f83f0f5c62a9e7a05d9449aeaf8a207f60ee8b6799b43d08bcd656",
+        "feature_seconds": 0.016157599820871837,
+        "replay_seconds": 7.967328400001861,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1006:c831ae1d8a370acabea0382d6256e9fb34907bfe120b7b369b25071366820444",
+        "feature_seconds": 0.015435900422744453,
+        "replay_seconds": 7.987043899993296,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1007:117ac313d1317e522fd452338ae0b9abd042ec2fc2233bc919e79a7a02280a3f",
+        "feature_seconds": 0.016631800011964515,
+        "replay_seconds": 8.085201599998982,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1008:24f75df2a90d2db4e30332e4ad7ec4eb16f48aa8cd44d368e438161b2a4a5033",
+        "feature_seconds": 0.017633199895499274,
+        "replay_seconds": 8.0906687000097,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1009:6c061f3d9ee5a37b420a9520dab39f006de7033a02464e6fc888c60db13001eb",
+        "feature_seconds": 0.016615000349702314,
+        "replay_seconds": 8.048439200007124,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1010:ffae861d962b7642a7c25a261b53386e36481ba34d7b0e199fd9a84b20440bdf",
+        "feature_seconds": 0.015403300101752393,
+        "replay_seconds": 8.060338199997204,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1011:e432e41cda734f82d331ebce4de47b06d630fafb3616651c5835b350d1f84c6f",
+        "feature_seconds": 0.015649000022676773,
+        "replay_seconds": 8.208353199996054,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1012:1ac52780a96d504f3362d5c24bb963c78d443c9ba4f34d7ec2c1a72165860c0c",
+        "feature_seconds": 0.014987100177677348,
+        "replay_seconds": 8.165079700003844,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1013:50d498ea4479205ccb2a0b4cf71185c5fc85fd1094132e27c7584269a20a9312",
+        "feature_seconds": 0.015672300054575317,
+        "replay_seconds": 8.293305099999998,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1014:7a5663135049d04f3e2b688735871c48abea35ee5096ea5463b5f9de5203905b",
+        "feature_seconds": 0.016111100383568555,
+        "replay_seconds": 8.165945700005977,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1015:a968f461c78ac6eb5f4c8fd8081e44dcb3c9093435afdfff9f7e533cd7d3ef6d",
+        "feature_seconds": 0.017450500061386265,
+        "replay_seconds": 8.296414500000537,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1016:dee4e9ef254e4bb29b82b49fc9ee0743167873ceeee08c4af37430eabf597d15",
+        "feature_seconds": 0.015224499962641858,
+        "replay_seconds": 8.283261999997194,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1017:2f586726c2d5127862fa3f819711580e3934867d70f2d66ad601f6e1d9b0e4eb",
+        "feature_seconds": 0.015546899812761694,
+        "replay_seconds": 8.283635600004345,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1018:061e883c210349e5e0301fab5fa6bc2cc818d96304882988c07c36a9774ec753",
+        "feature_seconds": 0.016241499921306968,
+        "replay_seconds": 8.351898099994287,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1019:03171784184e31e63624b8f280432e31a224835333309fb0952bfbd9d39b732d",
+        "feature_seconds": 0.017262300229049288,
+        "replay_seconds": 8.371327000000747,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1020:c598eec4cc406d1e6844df675c8926434374eb5e63c02ff1ebd063ef05d01aa7",
+        "feature_seconds": 0.016489500063471496,
+        "replay_seconds": 8.252407599997241,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1021:37a322ad7516231d4c23bd13cfbe8b0ab3ae73578c7b18d69539792094384cb6",
+        "feature_seconds": 0.016137099970364943,
+        "replay_seconds": 8.179001600001357,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1022:2dbcd3bd268388485e47f6707774ad8904ae6b9ed5216b102cbf946725e00845",
+        "feature_seconds": 0.016166900080861524,
+        "replay_seconds": 8.119262000007438,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1023:7cb04d3a2eabbf88d70bd16b64cfcf3f4a43f60484fec5a25d70f1f897a7fc44",
+        "feature_seconds": 0.015534899954218417,
+        "replay_seconds": 8.215532299989718,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1024:f24c4f0cf41261ca4fdb65d01e50090b5f71f2fd6feee7004c6e470f065cc274",
+        "feature_seconds": 0.01496070010762196,
+        "replay_seconds": 8.20086949999677,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1025:5fa77e5709cdcd64dc5be8866282539d8ad7f9931fab20e814b8a597d160b48f",
+        "feature_seconds": 0.015938600205117837,
+        "replay_seconds": 8.231685100006871,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1026:84b02af896226bd369724b64034ed143d088eb777bd082f8607dffd261f50588",
+        "feature_seconds": 0.016351299957023002,
+        "replay_seconds": 8.344871099994634,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1027:9fdd1fe2b5d61fd9904f045cd22fb4e24f2d6c7f651ef66288650b99eb245fa4",
+        "feature_seconds": 0.016578000082517974,
+        "replay_seconds": 8.32377320001251,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1028:aa4aa676f222d42900957d8e8a665687e927208befa5ee68567cf36e9a960a17",
+        "feature_seconds": 0.015776100059156306,
+        "replay_seconds": 8.25168919999851,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1029:d54a474949946d65ebb290235a36b4ff36c00732d9665428583142cb36cf5851",
+        "feature_seconds": 0.01610870030708611,
+        "replay_seconds": 8.264219100004993,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1030:f5eab41096cd6e373518d79d8cad9bf0f35662aedab499991268ac39052da14f",
+        "feature_seconds": 0.01641500010737218,
+        "replay_seconds": 8.328848100005416,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1031:7df263ccf669bccdf28759670667dfc0d460c1f4fdd2b12b50ec5487746d416d",
+        "feature_seconds": 0.017271399934543297,
+        "replay_seconds": 8.30673100000422,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1032:0228ce238e3f9563302f228f27654aca8b3d0802acfac7344d26b3a87f1bd318",
+        "feature_seconds": 0.016626300144707784,
+        "replay_seconds": 8.217310299995006,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1033:aa5acd588d522486ba3fa82873e6934854d7635e1adfd7b0511e56da18ea3f13",
+        "feature_seconds": 0.01632580006844364,
+        "replay_seconds": 8.11710079999466,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1034:206a0f8cd7bd1ea49f5025fe5d057051b1687487d153d05d55a6b299aa70d860",
+        "feature_seconds": 0.016914200023165904,
+        "replay_seconds": 8.351256599999033,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1035:54e4452ffeba0ebc8dbf833d244b41886cfae6a741d774334d765d2ffdf0a561",
+        "feature_seconds": 0.015994100031093694,
+        "replay_seconds": 8.447774500004016,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1036:155671751ad887cc79d13cbe4d0de0268849acd41f5f3dd36cb996033134cd77",
+        "feature_seconds": 0.015233499929308891,
+        "replay_seconds": 8.468688299995847,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1037:00ab954d905e94388fa20456d6873717ea4fd219d3fe5a1e1e37413512cffad1",
+        "feature_seconds": 0.015709499886725098,
+        "replay_seconds": 8.455056799997692,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1038:f283e87b2d84ff71034f44028b84438e90a606ac3f3e1c1569fffd49e5ab5ed1",
+        "feature_seconds": 0.016549299834878184,
+        "replay_seconds": 8.566436900000554,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1039:a36f0f7a605185e5d793c6a27ee95c1e5bfc48f4a5289cff69426db1a0b07a52",
+        "feature_seconds": 0.016671799894538708,
+        "replay_seconds": 8.650161099998513,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1040:088529db79e760468cdbe14fd9b4aa4a1a4d884df7095c868b95a8be031552da",
+        "feature_seconds": 0.016970900454907678,
+        "replay_seconds": 8.698790599999484,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1041:6dcf8356da3ccb7bbc98ca25815e3106e5bb97ca4c673954d8d5170cc43d2938",
+        "feature_seconds": 0.015829600248252973,
+        "replay_seconds": 8.647370300008333,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1042:40b133360cb5a9e7d60a08e266b5ff6c2266127952f6773b710142435ae99a75",
+        "feature_seconds": 0.015461700008017942,
+        "replay_seconds": 8.781898300003377,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1043:4fe68b4a071af3ae35749b36da5c216c2420014fb5abdf0d86170229e83c8f8c",
+        "feature_seconds": 0.017748599813785404,
+        "replay_seconds": 8.763295700002345,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1044:a182c6f5540356e23fbe9f86d0b12c3097cd29ef5e4bc8ea584608a57b4886c6",
+        "feature_seconds": 0.016718900325940922,
+        "replay_seconds": 8.850440099995467,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1045:e6f5d7418dbfbacb2e78cf087258b81fa272b2feb88edf317eda0cdb4472d347",
+        "feature_seconds": 0.01697319987579249,
+        "replay_seconds": 8.721541200007778,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1046:08f9606864acb158ebddf9c2ebace4944b29a20e18a45feea71c3b85afb7513d",
+        "feature_seconds": 0.015868099668296054,
+        "replay_seconds": 7.669087499991292,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1047:9e7ebcf68ddb1806b44878cc248f76927802f9cd369309b507358eef5fdd2e67",
+        "feature_seconds": 0.015190100064501166,
+        "replay_seconds": 7.726720600010594,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1048:932576a1bf869e44bc6e5c94d19ad1d537ef6b87acfbee7f0a0f60e0fad7fdc1",
+        "feature_seconds": 0.01425190013833344,
+        "replay_seconds": 7.721192500001052,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1049:5980c020c93c474179a53b329ad21b0368dc441550a40cf4277f56b5971a03e8",
+        "feature_seconds": 0.014928099975804798,
+        "replay_seconds": 7.7412209000031,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1050:3e789148eb561b45eb4c37fb139e30eef624fc0bedcb0a9aadb37f298550260c",
+        "feature_seconds": 0.016239499702351168,
+        "replay_seconds": 7.900128599998425,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1051:a0dc303574ab1d2eebcb802a1509b87c97a5bfff9f52b2aa526050aae85df45b",
+        "feature_seconds": 0.016467500201542862,
+        "replay_seconds": 7.888826700000209,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1052:f60958b985f89e76e7b7fd2b35daf72f6c597cb9d1afccdd373d50526b956aee",
+        "feature_seconds": 0.014428499940549955,
+        "replay_seconds": 7.79261599999154,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1053:c87a8606122863265a08b0f77e8e586d856dc66a008f776f325cd5aa19ee9c96",
+        "feature_seconds": 0.015785000170581043,
+        "replay_seconds": 7.866805500001647,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1054:8ce5be56b3b0c36514ef128d4a0e1c558990dfc05c3be558d03966ea53a72356",
+        "feature_seconds": 0.015167599951382726,
+        "replay_seconds": 7.882147399999667,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1055:bf557888c0112a560ac9bd9c1faca9a4da506e07b274eb9810ebd4090e9ffc6a",
+        "feature_seconds": 0.017270599913899787,
+        "replay_seconds": 7.848573400013265,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1056:37c9fc674a16b881b0405b1ac2e3ba293b3b75eb6e3d639b795fd37e47940515",
+        "feature_seconds": 0.01566050000838004,
+        "replay_seconds": 7.909818699990865,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1057:4b35ca2a35cb9df06c84905e75596c2a781aaf5d0450bfafe97875f4126f3650",
+        "feature_seconds": 0.015499900095164776,
+        "replay_seconds": 7.887433900003089,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1058:13d444ff1f750ad308a90782501230e07150e22fa5d44e1a33f262f69fb962c2",
+        "feature_seconds": 0.01641439995728433,
+        "replay_seconds": 8.3629299000022,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1059:8973a4c21c829171c6e27fd0e3aca5b3495062697ab301e139b70606d800e388",
+        "feature_seconds": 0.016702399967471138,
+        "replay_seconds": 8.389517000003252,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1060:568800762a1046148faea62343e713f1cfe337859312888a34c647f2cdcd359d",
+        "feature_seconds": 0.0162276997580193,
+        "replay_seconds": 8.371337599994149,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1061:00f79c15c283f302aecca64b69b08f3609c72ead0efd1fa1b7095827f0389ca8",
+        "feature_seconds": 0.01717190002091229,
+        "replay_seconds": 8.412166199996136,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1062:827cc6a5323e459936c220b24cf99498e80dababf420552144a8cf8026defa48",
+        "feature_seconds": 0.016291499967337586,
+        "replay_seconds": 8.425537200004328,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1063:a9812a530b4a146d5d71ad1001731803b16e85aa8555616c5e99239cefdb1fbc",
+        "feature_seconds": 0.016789100220194086,
+        "replay_seconds": 8.47913019999396,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1064:6401b821456f7418a1612def9fa91d540c0a55afef0959c803668cf6f4f9afaf",
+        "feature_seconds": 0.015779299748828635,
+        "replay_seconds": 8.323854400005075,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1065:909b45631ab6705cd415f8564b08bca33fb649a927ab6b8fc1194e9b5745f1cc",
+        "feature_seconds": 0.01572829991346225,
+        "replay_seconds": 8.300124899993534,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1066:aa957502da403d97dfa29041cb702391091826ad509351fc101bd4fb761a119e",
+        "feature_seconds": 0.016422199885710143,
+        "replay_seconds": 8.444488100009039,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1067:d202576e718721e497be59b29f16f4da04c8bf0bc5cabbd54a431afece1e6056",
+        "feature_seconds": 0.016980599975795485,
+        "replay_seconds": 8.412722099994426,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1068:7a50737bebe731c209d4397547b286f8511bc56692b6775d5aefceba3bc0812e",
+        "feature_seconds": 0.016665900169755332,
+        "replay_seconds": 8.219805899992934,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1069:4686ec787b0870a3c684c87aa755473ddfd6455019dd008a20558e2bdc775de5",
+        "feature_seconds": 0.01638810026634019,
+        "replay_seconds": 8.217930700004217,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1070:f1e4595668ea13248b7d19cd0fb4ce3ca84f4c0222f45855546695ae3d1a1c63",
+        "feature_seconds": 0.014071900135604665,
+        "replay_seconds": 7.238329100000556,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1071:4788f0041cf8b41eb8fbf1e29515675f82c14c902a0726f607e881eb9247779c",
+        "feature_seconds": 0.013815400103339925,
+        "replay_seconds": 7.331103500007885,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1072:e7547b6b23ede40c67d12547fbb22b84a157a2018fb2ce05dd8b686e3d0c0493",
+        "feature_seconds": 0.01327910010877531,
+        "replay_seconds": 7.3070238000073005,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1073:17dfc2dd85c5b612bfe58cc2480ca6fb363ecdd1b6bfe9421e4ba5ddb19628d8",
+        "feature_seconds": 0.014198299948475324,
+        "replay_seconds": 7.332249300001422,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1074:aa05af5f1cebae8adb2209b6d663e78afda598b66bc11743c5962a5f63260ab2",
+        "feature_seconds": 0.014172799958032556,
+        "replay_seconds": 7.480985099988175,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1075:745bbaa10e96aecc9bb9f30d0bb1a2d95501e721bb50dc92bc91fb2e036cf490",
+        "feature_seconds": 0.014650099852588028,
+        "replay_seconds": 7.442298599999049,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1076:669468d570f7a58a70ab6dd98ac55dc9274fe4d9bda593e038ebf379018be961",
+        "feature_seconds": 0.01396479994582478,
+        "replay_seconds": 7.354565100002219,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1077:58651060511b791c38cde4d4e7e168b56ae4e3cec1e2e3d5a4b5412a70a7121f",
+        "feature_seconds": 0.013492500191205181,
+        "replay_seconds": 7.3382392000057735,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C1078:d60b3778e8fa05bd05ac3611275fa7641221cb898273b6ed054e36e7c3deb610",
+        "feature_seconds": 0.014126199865131639,
+        "replay_seconds": 7.456880600002478,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C9380:186dffc6fe4df3aec1638030d7c0f65d594b6c9578593c39b5676796fe3c5d4a",
+        "feature_seconds": 0.03081959960400127,
+        "replay_seconds": 15.019111899993732,
+        "rows": 1922,
+        "decisions": 1922
+      }
+    ]
+  },
+  "full_stage4_complete": false,
+  "limitations": [
+    "Only declared 79-point set; not full Cartesian or continuous domain.",
+    "Short integer timing parameters and add_mode held fixed; known timing sensitivity remains.",
+    "Repeated development sample, not independent validation.",
+    "Resolution V separates low-order terms from each other but aliases some with higher-order effects.",
+    "Effect contrasts and quantiles are descriptive; no significance or future-success probability.",
+    "common_budget joint midpoint is .975, whereas actual center is boundary 1."
+  ]
+}

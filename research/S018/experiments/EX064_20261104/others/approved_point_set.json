@@ -1,0 +1,2148 @@
+{
+  "status": "PROPOSED_NOT_EXECUTED",
+  "candidate": "C9380",
+  "candidate_content_hash": "186dffc6fe4df3aec1638030d7c0f65d594b6c9578593c39b5676796fe3c5d4a",
+  "center": {
+    "add_mode": "repair_both",
+    "add_mu_margin": 0.01,
+    "add_sector_margin": 0,
+    "beta_window": 40,
+    "common_budget": 1,
+    "common_share": 0.375,
+    "earliest_add": 3,
+    "entry_days": 2,
+    "exit_margin": 0.005,
+    "initial_fraction": 0.5,
+    "max_hold": 5,
+    "other_budget": 0.375,
+    "review_after": 3
+  },
+  "axes": [
+    {
+      "letter": "A",
+      "parameter": "beta_window",
+      "low": 39,
+      "high": 41
+    },
+    {
+      "letter": "B",
+      "parameter": "common_share",
+      "low": 0.35625,
+      "high": 0.39375
+    },
+    {
+      "letter": "C",
+      "parameter": "common_budget",
+      "low": 0.95,
+      "high": 1
+    },
+    {
+      "letter": "D",
+      "parameter": "other_budget",
+      "low": 0.35625,
+      "high": 0.39375
+    },
+    {
+      "letter": "E",
+      "parameter": "initial_fraction",
+      "low": 0.475,
+      "high": 0.525
+    },
+    {
+      "letter": "F",
+      "parameter": "exit_margin",
+      "low": 0.00475,
+      "high": 0.00525
+    },
+    {
+      "letter": "G",
+      "parameter": "add_mu_margin",
+      "low": 0.0095,
+      "high": 0.0105
+    },
+    {
+      "letter": "H",
+      "parameter": "add_sector_margin",
+      "low": -0.0005,
+      "high": 0.0005
+    }
+  ],
+  "generator": "Enumerate A..F lexicographically with -1 before +1; G=A*B*C*D; H=A*B*E*F. Signs map to low/high.",
+  "points": [
+    {
+      "id": "O01",
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.01,
+        "add_sector_margin": 0,
+        "beta_window": 39,
+        "common_budget": 1,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.005,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "O02",
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.01,
+        "add_sector_margin": 0,
+        "beta_window": 41,
+        "common_budget": 1,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.005,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "O03",
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.01,
+        "add_sector_margin": 0,
+        "beta_window": 40,
+        "common_budget": 1,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.005,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "O04",
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.01,
+        "add_sector_margin": 0,
+        "beta_window": 40,
+        "common_budget": 1,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.005,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "O05",
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.01,
+        "add_sector_margin": 0,
+        "beta_window": 40,
+        "common_budget": 0.95,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.005,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "O06",
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.01,
+        "add_sector_margin": 0,
+        "beta_window": 40,
+        "common_budget": 1,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.005,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "O07",
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.01,
+        "add_sector_margin": 0,
+        "beta_window": 40,
+        "common_budget": 1,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.005,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "O08",
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.01,
+        "add_sector_margin": 0,
+        "beta_window": 40,
+        "common_budget": 1,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.005,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "O09",
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.01,
+        "add_sector_margin": 0,
+        "beta_window": 40,
+        "common_budget": 1,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.005,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "O10",
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.01,
+        "add_sector_margin": 0,
+        "beta_window": 40,
+        "common_budget": 1,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "O11",
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.01,
+        "add_sector_margin": 0,
+        "beta_window": 40,
+        "common_budget": 1,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "O12",
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": 0,
+        "beta_window": 40,
+        "common_budget": 1,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.005,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "O13",
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": 0,
+        "beta_window": 40,
+        "common_budget": 1,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.005,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "O14",
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.01,
+        "add_sector_margin": -0.0005,
+        "beta_window": 40,
+        "common_budget": 1,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.005,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "O15",
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.01,
+        "add_sector_margin": 0.0005,
+        "beta_window": 40,
+        "common_budget": 1,
+        "common_share": 0.375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.005,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J01",
+      "signs": [
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": 0.0005,
+        "beta_window": 39,
+        "common_budget": 0.95,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J02",
+      "signs": [
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        1,
+        1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": -0.0005,
+        "beta_window": 39,
+        "common_budget": 0.95,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J03",
+      "signs": [
+        -1,
+        -1,
+        -1,
+        -1,
+        1,
+        -1,
+        1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": -0.0005,
+        "beta_window": 39,
+        "common_budget": 0.95,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J04",
+      "signs": [
+        -1,
+        -1,
+        -1,
+        -1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": 0.0005,
+        "beta_window": 39,
+        "common_budget": 0.95,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J05",
+      "signs": [
+        -1,
+        -1,
+        -1,
+        1,
+        -1,
+        -1,
+        -1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": 0.0005,
+        "beta_window": 39,
+        "common_budget": 0.95,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J06",
+      "signs": [
+        -1,
+        -1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": -0.0005,
+        "beta_window": 39,
+        "common_budget": 0.95,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J07",
+      "signs": [
+        -1,
+        -1,
+        -1,
+        1,
+        1,
+        -1,
+        -1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": -0.0005,
+        "beta_window": 39,
+        "common_budget": 0.95,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J08",
+      "signs": [
+        -1,
+        -1,
+        -1,
+        1,
+        1,
+        1,
+        -1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": 0.0005,
+        "beta_window": 39,
+        "common_budget": 0.95,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J09",
+      "signs": [
+        -1,
+        -1,
+        1,
+        -1,
+        -1,
+        -1,
+        -1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": 0.0005,
+        "beta_window": 39,
+        "common_budget": 1,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J10",
+      "signs": [
+        -1,
+        -1,
+        1,
+        -1,
+        -1,
+        1,
+        -1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": -0.0005,
+        "beta_window": 39,
+        "common_budget": 1,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J11",
+      "signs": [
+        -1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        -1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": -0.0005,
+        "beta_window": 39,
+        "common_budget": 1,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J12",
+      "signs": [
+        -1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        -1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": 0.0005,
+        "beta_window": 39,
+        "common_budget": 1,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J13",
+      "signs": [
+        -1,
+        -1,
+        1,
+        1,
+        -1,
+        -1,
+        1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": 0.0005,
+        "beta_window": 39,
+        "common_budget": 1,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J14",
+      "signs": [
+        -1,
+        -1,
+        1,
+        1,
+        -1,
+        1,
+        1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": -0.0005,
+        "beta_window": 39,
+        "common_budget": 1,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J15",
+      "signs": [
+        -1,
+        -1,
+        1,
+        1,
+        1,
+        -1,
+        1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": -0.0005,
+        "beta_window": 39,
+        "common_budget": 1,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J16",
+      "signs": [
+        -1,
+        -1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": 0.0005,
+        "beta_window": 39,
+        "common_budget": 1,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J17",
+      "signs": [
+        -1,
+        1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": -0.0005,
+        "beta_window": 39,
+        "common_budget": 0.95,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J18",
+      "signs": [
+        -1,
+        1,
+        -1,
+        -1,
+        -1,
+        1,
+        -1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": 0.0005,
+        "beta_window": 39,
+        "common_budget": 0.95,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J19",
+      "signs": [
+        -1,
+        1,
+        -1,
+        -1,
+        1,
+        -1,
+        -1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": 0.0005,
+        "beta_window": 39,
+        "common_budget": 0.95,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J20",
+      "signs": [
+        -1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        -1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": -0.0005,
+        "beta_window": 39,
+        "common_budget": 0.95,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J21",
+      "signs": [
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        -1,
+        1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": -0.0005,
+        "beta_window": 39,
+        "common_budget": 0.95,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J22",
+      "signs": [
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": 0.0005,
+        "beta_window": 39,
+        "common_budget": 0.95,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J23",
+      "signs": [
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        -1,
+        1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": 0.0005,
+        "beta_window": 39,
+        "common_budget": 0.95,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J24",
+      "signs": [
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1,
+        1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": -0.0005,
+        "beta_window": 39,
+        "common_budget": 0.95,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J25",
+      "signs": [
+        -1,
+        1,
+        1,
+        -1,
+        -1,
+        -1,
+        1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": -0.0005,
+        "beta_window": 39,
+        "common_budget": 1,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J26",
+      "signs": [
+        -1,
+        1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": 0.0005,
+        "beta_window": 39,
+        "common_budget": 1,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J27",
+      "signs": [
+        -1,
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": 0.0005,
+        "beta_window": 39,
+        "common_budget": 1,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J28",
+      "signs": [
+        -1,
+        1,
+        1,
+        -1,
+        1,
+        1,
+        1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": -0.0005,
+        "beta_window": 39,
+        "common_budget": 1,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J29",
+      "signs": [
+        -1,
+        1,
+        1,
+        1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": -0.0005,
+        "beta_window": 39,
+        "common_budget": 1,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J30",
+      "signs": [
+        -1,
+        1,
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": 0.0005,
+        "beta_window": 39,
+        "common_budget": 1,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J31",
+      "signs": [
+        -1,
+        1,
+        1,
+        1,
+        1,
+        -1,
+        -1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": 0.0005,
+        "beta_window": 39,
+        "common_budget": 1,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J32",
+      "signs": [
+        -1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        -1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": -0.0005,
+        "beta_window": 39,
+        "common_budget": 1,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J33",
+      "signs": [
+        1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": -0.0005,
+        "beta_window": 41,
+        "common_budget": 0.95,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J34",
+      "signs": [
+        1,
+        -1,
+        -1,
+        -1,
+        -1,
+        1,
+        -1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": 0.0005,
+        "beta_window": 41,
+        "common_budget": 0.95,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J35",
+      "signs": [
+        1,
+        -1,
+        -1,
+        -1,
+        1,
+        -1,
+        -1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": 0.0005,
+        "beta_window": 41,
+        "common_budget": 0.95,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J36",
+      "signs": [
+        1,
+        -1,
+        -1,
+        -1,
+        1,
+        1,
+        -1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": -0.0005,
+        "beta_window": 41,
+        "common_budget": 0.95,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J37",
+      "signs": [
+        1,
+        -1,
+        -1,
+        1,
+        -1,
+        -1,
+        1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": -0.0005,
+        "beta_window": 41,
+        "common_budget": 0.95,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J38",
+      "signs": [
+        1,
+        -1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": 0.0005,
+        "beta_window": 41,
+        "common_budget": 0.95,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J39",
+      "signs": [
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        -1,
+        1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": 0.0005,
+        "beta_window": 41,
+        "common_budget": 0.95,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J40",
+      "signs": [
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1,
+        1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": -0.0005,
+        "beta_window": 41,
+        "common_budget": 0.95,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J41",
+      "signs": [
+        1,
+        -1,
+        1,
+        -1,
+        -1,
+        -1,
+        1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": -0.0005,
+        "beta_window": 41,
+        "common_budget": 1,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J42",
+      "signs": [
+        1,
+        -1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": 0.0005,
+        "beta_window": 41,
+        "common_budget": 1,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J43",
+      "signs": [
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": 0.0005,
+        "beta_window": 41,
+        "common_budget": 1,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J44",
+      "signs": [
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": -0.0005,
+        "beta_window": 41,
+        "common_budget": 1,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J45",
+      "signs": [
+        1,
+        -1,
+        1,
+        1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": -0.0005,
+        "beta_window": 41,
+        "common_budget": 1,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J46",
+      "signs": [
+        1,
+        -1,
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": 0.0005,
+        "beta_window": 41,
+        "common_budget": 1,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J47",
+      "signs": [
+        1,
+        -1,
+        1,
+        1,
+        1,
+        -1,
+        -1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": 0.0005,
+        "beta_window": 41,
+        "common_budget": 1,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J48",
+      "signs": [
+        1,
+        -1,
+        1,
+        1,
+        1,
+        1,
+        -1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": -0.0005,
+        "beta_window": 41,
+        "common_budget": 1,
+        "common_share": 0.35625,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J49",
+      "signs": [
+        1,
+        1,
+        -1,
+        -1,
+        -1,
+        -1,
+        1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": 0.0005,
+        "beta_window": 41,
+        "common_budget": 0.95,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J50",
+      "signs": [
+        1,
+        1,
+        -1,
+        -1,
+        -1,
+        1,
+        1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": -0.0005,
+        "beta_window": 41,
+        "common_budget": 0.95,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J51",
+      "signs": [
+        1,
+        1,
+        -1,
+        -1,
+        1,
+        -1,
+        1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": -0.0005,
+        "beta_window": 41,
+        "common_budget": 0.95,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J52",
+      "signs": [
+        1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": 0.0005,
+        "beta_window": 41,
+        "common_budget": 0.95,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J53",
+      "signs": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        -1,
+        -1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": 0.0005,
+        "beta_window": 41,
+        "common_budget": 0.95,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J54",
+      "signs": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": -0.0005,
+        "beta_window": 41,
+        "common_budget": 0.95,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J55",
+      "signs": [
+        1,
+        1,
+        -1,
+        1,
+        1,
+        -1,
+        -1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": -0.0005,
+        "beta_window": 41,
+        "common_budget": 0.95,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J56",
+      "signs": [
+        1,
+        1,
+        -1,
+        1,
+        1,
+        1,
+        -1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": 0.0005,
+        "beta_window": 41,
+        "common_budget": 0.95,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J57",
+      "signs": [
+        1,
+        1,
+        1,
+        -1,
+        -1,
+        -1,
+        -1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": 0.0005,
+        "beta_window": 41,
+        "common_budget": 1,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J58",
+      "signs": [
+        1,
+        1,
+        1,
+        -1,
+        -1,
+        1,
+        -1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": -0.0005,
+        "beta_window": 41,
+        "common_budget": 1,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J59",
+      "signs": [
+        1,
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        -1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": -0.0005,
+        "beta_window": 41,
+        "common_budget": 1,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J60",
+      "signs": [
+        1,
+        1,
+        1,
+        -1,
+        1,
+        1,
+        -1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0095,
+        "add_sector_margin": 0.0005,
+        "beta_window": 41,
+        "common_budget": 1,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.35625,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J61",
+      "signs": [
+        1,
+        1,
+        1,
+        1,
+        -1,
+        -1,
+        1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": 0.0005,
+        "beta_window": 41,
+        "common_budget": 1,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J62",
+      "signs": [
+        1,
+        1,
+        1,
+        1,
+        -1,
+        1,
+        1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": -0.0005,
+        "beta_window": 41,
+        "common_budget": 1,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.475,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J63",
+      "signs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        -1,
+        1,
+        -1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": -0.0005,
+        "beta_window": 41,
+        "common_budget": 1,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00475,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    },
+    {
+      "id": "J64",
+      "signs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "parameters": {
+        "add_mode": "repair_both",
+        "add_mu_margin": 0.0105,
+        "add_sector_margin": 0.0005,
+        "beta_window": 41,
+        "common_budget": 1,
+        "common_share": 0.39375,
+        "earliest_add": 3,
+        "entry_days": 2,
+        "exit_margin": 0.00525,
+        "initial_fraction": 0.525,
+        "max_hold": 5,
+        "other_budget": 0.39375,
+        "review_after": 3
+      }
+    }
+  ],
+  "validation": {
+    "single_points": 15,
+    "joint_points": 64,
+    "unique_points": 79,
+    "model_columns": 37,
+    "max_off_diagonal_gram": 0,
+    "required_joint_passes": 65
+  },
+  "budget": {
+    "strategy_accounts": 81,
+    "shared_benchmarks": 2,
+    "total_accounts": 83
+  }
+}
