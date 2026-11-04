@@ -1,0 +1,101 @@
+{
+  "number": 46,
+  "question": "行业卖压尚在时，MU相对抗跌能否成为独立入场依据，而非等待两连跌或事后行业反弹？",
+  "strategy_source": "research/S018/experiments/EX046_20261104/src/strategy.py",
+  "phase": 2,
+  "authorization": "30轮额度第13轮；不进入阶段三，不改变D或样本。",
+  "hypothesis": "在行业当日下跌时，MU当日收益高于事前beta对应的行业收益，可能反映个股卖压消化。收益应更多发生在近端，等待行业反弹可能太晚。",
+  "selection_history": "EX044/EX039已见标签的事后观察启发本轮。行业连跌相对抗跌71个三日事件均值2.036%；等待行业反弹相对抗跌108个事件次日均值-0.559%。未做独立验证，不把这些均值视为账户收益。",
+  "alternatives": [
+    "相对抗跌只是噪声或波动暴露，互补的相对走弱组并不更差",
+    "短期均值不能抵消持续下跌或信号供给不足",
+    "等待反弹减少下行风险但错过收益"
+  ],
+  "decision": "比较行业下跌全集、相对抗跌与互补走弱、持续行业卖压与反弹确认，按1日/3日/原信号线退出检验收益时效及账户价值；不因频率缺口放宽原目标。",
+  "fixed": {
+    "beta_window": 60,
+    "beta_information": "excludes latest two returns, same as EX045",
+    "relative_today": "mu log return - beta * soxx log return",
+    "position": "full_available_cash",
+    "workers": 4,
+    "seed": 17,
+    "execution": "original EX001 RAW with fees/actions",
+    "warmup": "2022-01-03",
+    "development": [
+      "2023-01-03",
+      "2026-10-30"
+    ]
+  },
+  "reuse": [
+    "EX045:C7501 HFQ C6300",
+    "EX045:C7504 HFQ fixed3",
+    "EX045:C7502 common-down signal-line"
+  ],
+  "configurations": [
+    {
+      "entry": "all",
+      "exit": "1"
+    },
+    {
+      "entry": "industry_down",
+      "exit": "1"
+    },
+    {
+      "entry": "industry_down",
+      "exit": "3"
+    },
+    {
+      "entry": "industry_down",
+      "exit": "signal_line"
+    },
+    {
+      "entry": "resist",
+      "exit": "1"
+    },
+    {
+      "entry": "resist",
+      "exit": "3"
+    },
+    {
+      "entry": "resist",
+      "exit": "signal_line"
+    },
+    {
+      "entry": "yield",
+      "exit": "1"
+    },
+    {
+      "entry": "yield",
+      "exit": "3"
+    },
+    {
+      "entry": "yield",
+      "exit": "signal_line"
+    },
+    {
+      "entry": "persistent_resist",
+      "exit": "1"
+    },
+    {
+      "entry": "persistent_resist",
+      "exit": "3"
+    },
+    {
+      "entry": "persistent_resist",
+      "exit": "signal_line"
+    },
+    {
+      "entry": "wait_rebound",
+      "exit": "1"
+    },
+    {
+      "entry": "wait_rebound",
+      "exit": "3"
+    },
+    {
+      "entry": "wait_rebound",
+      "exit": "signal_line"
+    }
+  ],
+  "source_sha256": "ca03196979a2799887d6c7b7737f1ad3b42a8fe3e4f840f1dcdf33daaf44a3b6"
+}

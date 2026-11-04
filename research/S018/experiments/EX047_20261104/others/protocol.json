@@ -1,0 +1,76 @@
+{
+  "number": 47,
+  "phase": 2,
+  "strategy_source": "research/S018/experiments/EX047_20261104/src/strategy.py",
+  "question": "共同卖压修复的持有理由，能否在个股相对转弱时及时证伪、在行业回到回落前位置时及时兑现，减少三天内盲持的损失？",
+  "authorization": "30轮额度第14轮；仍属机制研究，不进入阶段三。",
+  "hypothesis": "相对表现恶化意味着个股自身走弱，行业修复完成意味着共同卖压机会已兑现；这两种信息可能应当更新持仓而非仅作入场筛选。",
+  "alternatives": [
+    "短时相对噪声导致过早退出和反复入场",
+    "行业复位早于MU上涨兑现，退出会削去主要盈利",
+    "只改变暴露，未改善完整账户D"
+  ],
+  "decision": "各入口保留原信号线退出基线，加入第一天即检查的相对失效、行业兑现及两者组合，检验职责与交互；负面则停止把此信息当作实时持有依据。不宣称本轮能证明入场前已经识别上涨回调。",
+  "state_fields": [
+    "anchor",
+    "sector_anchor",
+    "sector_target",
+    "entry_beta"
+  ],
+  "fixed": {
+    "beta_window": 60,
+    "beta_during_position": "frozen at signal",
+    "failure": "log(MU/MU_signal)-entry_beta*log(SOXX/SOXX_signal)<0",
+    "repair": "SOXX>=max(SOXX signal-day and previous2 closes)",
+    "base_exit": "six sessions maximum or after3 MU<=signal; new tests start after first held session",
+    "allocation": "full_available_cash",
+    "workers": 4,
+    "seed": 17,
+    "sample": "original development and warmup",
+    "fee": 0.001
+  },
+  "reuse": [
+    "EX045:C7501 all two-down original exit",
+    "EX045:C7502 common-down original exit",
+    "EX046:C7612 persistent-resistance original exit"
+  ],
+  "configurations": [
+    {
+      "entry": "all",
+      "exit": "failure"
+    },
+    {
+      "entry": "all",
+      "exit": "repair"
+    },
+    {
+      "entry": "all",
+      "exit": "both"
+    },
+    {
+      "entry": "common",
+      "exit": "failure"
+    },
+    {
+      "entry": "common",
+      "exit": "repair"
+    },
+    {
+      "entry": "common",
+      "exit": "both"
+    },
+    {
+      "entry": "persistent_resist",
+      "exit": "failure"
+    },
+    {
+      "entry": "persistent_resist",
+      "exit": "repair"
+    },
+    {
+      "entry": "persistent_resist",
+      "exit": "both"
+    }
+  ],
+  "source_sha256": "45baf8ae74b1b9f0dbce31bec19c18f0bfb9be5f99455ea9d21f076eb2c8a404"
+}

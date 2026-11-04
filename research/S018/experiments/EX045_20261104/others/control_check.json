@@ -1,0 +1,11 @@
+{
+  "C6300_economic_comparison": {
+    "fills": true,
+    "account_daily": true,
+    "trades": true,
+    "actions": true
+  },
+  "metrics": "EXACT_MATCH",
+  "excluded_fields": "Only lineage fields ending _id; different candidate/input identities necessarily have distinct decision IDs.",
+  "postprocessing_note": "Initial run asserted full dictionary equality including decision_id after all 10 accounts were published. This collector compares all economic fields without recomputation."
+}

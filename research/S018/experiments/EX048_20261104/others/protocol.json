@@ -1,0 +1,58 @@
+{
+  "question": "EX045至47的粗分组与持有检验后，行业连续幅度信息是否仍有增量预测用途？",
+  "phase": 2,
+  "round": 15,
+  "remaining_after": 15,
+  "hypothesis": "回落的共同强度及行业背景可能与个股变化共同决定近期修复价值，简单符号分组会遗漏强度。",
+  "alternatives": [
+    "新增信息不改善均值预测或收益排序",
+    "收益排序仅限局部年份和短期限，不足以形成稳定入口"
+  ],
+  "models": {
+    "mean": [],
+    "mu_only": [
+      "mu_drift",
+      "range_state",
+      "mu_intraday",
+      "mu_gap",
+      "mu_yesterday"
+    ],
+    "sector_only": [
+      "sector_drift",
+      "common_today",
+      "common_yesterday"
+    ],
+    "joint": [
+      "mu_drift",
+      "range_state",
+      "mu_intraday",
+      "mu_gap",
+      "mu_yesterday",
+      "sector_drift",
+      "common_today",
+      "common_yesterday"
+    ]
+  },
+  "memories": [
+    "expanding",
+    "recent126"
+  ],
+  "horizons": [
+    1,
+    3,
+    6
+  ],
+  "ridge_alpha": 10,
+  "minimum_mature_events": 126,
+  "scaler": "fit training only",
+  "label": "EX039 formal CLOSED net returns, exit_date<=signal_date",
+  "selection_history": "已见开发池；模型类型/alpha/126记忆承接EX040/42，行业特征源于EX044至47；不搜索参数。",
+  "decision": "比较相同预测日期上的误差、正负预测分组及分年方向。只有行业信息体现可解释增量才进入正式账户，不把事件预测表注入策略，不增加研究硬门。",
+  "workers": 4,
+  "threads_each": 1,
+  "versions": {
+    "numpy": "2.5.2",
+    "pandas": "3.0.5",
+    "scikit-learn": "1.9.0"
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "number": 45,
+  "question": "行业共同下跌与MU自身走弱的区分，能否在完整账户中提高回落参与价值，且不依赖某一种退出规则？",
+  "strategy_source": ".tmp/s018_hfq/strategy45.py",
+  "phase": 2,
+  "authorization": "用户同意DEV交付后切回RSCH，继续30轮额度剩余19轮；本轮为第12轮。",
+  "hypothesis": "行业共同卖压导致的暂时回落可能具有更好的修复机会；个股特有走弱可能包含持续预期下修。beta仅用回落之前60日估计，比较两日共同项与相对项的负贡献。",
+  "alternatives": [
+    "差异只来自退出方式或少数行情路径",
+    "筛选降低频率和盈利机会，事件均值优势不能兑现为账户增益"
+  ],
+  "decision": "保留足以改善完整账户的行业信息；若互补组随期限反转或频率损失占主导，不把该门槛作为原型核心。不开参数搜索。",
+  "fixed": {
+    "beta_window": 60,
+    "development": [
+      "2023-01-03",
+      "2026-10-30"
+    ],
+    "warmup": "2022-01-03",
+    "fee_each_side": 0.001,
+    "raw_execution": "EX001 immutable inputs",
+    "observation": "MU/SOXX HFQ using approved EX044 source",
+    "position": "full available cash",
+    "seed": 17,
+    "workers": 4
+  },
+  "limits": "已见开发池；SOXX仅作观察；HFQ数学时点核验复用EX044；供应商历史发布时间为既定研究假设。",
+  "configurations": [
+    {
+      "entry": "raw_control",
+      "exit": "signal_line"
+    },
+    {
+      "entry": "all",
+      "exit": "signal_line"
+    },
+    {
+      "entry": "common",
+      "exit": "signal_line"
+    },
+    {
+      "entry": "relative",
+      "exit": "signal_line"
+    },
+    {
+      "entry": "all",
+      "exit": "3"
+    },
+    {
+      "entry": "common",
+      "exit": "3"
+    },
+    {
+      "entry": "relative",
+      "exit": "3"
+    },
+    {
+      "entry": "all",
+      "exit": "6"
+    },
+    {
+      "entry": "common",
+      "exit": "6"
+    },
+    {
+      "entry": "relative",
+      "exit": "6"
+    }
+  ],
+  "source_sha256": "3a70c1908aa51e664f9d2729cc9fa6e7d73f3630cda8940826c025e54712a94b"
+}

@@ -1,0 +1,159 @@
+{
+  "number": 49,
+  "phase": 2,
+  "strategy_source": "research/S018/experiments/EX049_20261104/src/strategy.py",
+  "question": "行业信息的一日收益排序能否形成可执行的逐日正预期仓位函数，避免固定三日盲持并满足原目标？",
+  "authorization": "30轮额度第16轮，仍阶段二机制与完整表达对照；不搜索参数、不进入阶段三。",
+  "hypothesis": "最近126个已成熟机会中的行业/个股信息可用于更新下一日持有预期；预期转负即时退出比固定等待更贴合一日信息的期限。",
+  "alternatives": [
+    "排序只在事后重叠标签中存在，账户现金路径不可兑现",
+    "新增行业信息没有优于MU自身或均值基线",
+    "日更预测造成频繁反复和尾部风险"
+  ],
+  "selection_history": "EX048一日recent126联合模型正预测351事件均值0.4703%、非正357事件-0.1923%；2024分组方向微反，MSE不改善。其余期限缺少依据，故只跟进此一日排序线索。已见开发池，不是独立验证。",
+  "dependencies": [
+    "numpy",
+    "pandas",
+    "scikit-learn"
+  ],
+  "fixed": {
+    "minimum_mature": 126,
+    "memory": "last126",
+    "ridge_alpha": 10,
+    "positive_threshold": 0,
+    "forecast_horizon": 1,
+    "feature_windows": [
+      20,
+      60
+    ],
+    "labels": "visible RAW strict-limit fill, next-session-open exit, 0.1% each fee, price-only training proxy; formal account includes dividends",
+    "maturity": "last two observations cannot have labels; only signals from2022-12-30",
+    "data": "approved MU/SOXX HFQ features, original RAW execution",
+    "workers": 4,
+    "seed": 17
+  },
+  "decision": "一次跑齐均值、MU自身、行业单独、联合模型；全部机会/两连跌入场；1日固定、原信号线、每天续评退出。若行业模型没有完整账户增量，结束这条建模路径，不按最优回测继续微调。",
+  "configurations": [
+    {
+      "model": "mean",
+      "entry": "all",
+      "exit": "1"
+    },
+    {
+      "model": "mean",
+      "entry": "all",
+      "exit": "signal_line"
+    },
+    {
+      "model": "mean",
+      "entry": "all",
+      "exit": "renew"
+    },
+    {
+      "model": "mean",
+      "entry": "two_down",
+      "exit": "1"
+    },
+    {
+      "model": "mean",
+      "entry": "two_down",
+      "exit": "signal_line"
+    },
+    {
+      "model": "mean",
+      "entry": "two_down",
+      "exit": "renew"
+    },
+    {
+      "model": "mu_only",
+      "entry": "all",
+      "exit": "1"
+    },
+    {
+      "model": "mu_only",
+      "entry": "all",
+      "exit": "signal_line"
+    },
+    {
+      "model": "mu_only",
+      "entry": "all",
+      "exit": "renew"
+    },
+    {
+      "model": "mu_only",
+      "entry": "two_down",
+      "exit": "1"
+    },
+    {
+      "model": "mu_only",
+      "entry": "two_down",
+      "exit": "signal_line"
+    },
+    {
+      "model": "mu_only",
+      "entry": "two_down",
+      "exit": "renew"
+    },
+    {
+      "model": "sector_only",
+      "entry": "all",
+      "exit": "1"
+    },
+    {
+      "model": "sector_only",
+      "entry": "all",
+      "exit": "signal_line"
+    },
+    {
+      "model": "sector_only",
+      "entry": "all",
+      "exit": "renew"
+    },
+    {
+      "model": "sector_only",
+      "entry": "two_down",
+      "exit": "1"
+    },
+    {
+      "model": "sector_only",
+      "entry": "two_down",
+      "exit": "signal_line"
+    },
+    {
+      "model": "sector_only",
+      "entry": "two_down",
+      "exit": "renew"
+    },
+    {
+      "model": "joint",
+      "entry": "all",
+      "exit": "1"
+    },
+    {
+      "model": "joint",
+      "entry": "all",
+      "exit": "signal_line"
+    },
+    {
+      "model": "joint",
+      "entry": "all",
+      "exit": "renew"
+    },
+    {
+      "model": "joint",
+      "entry": "two_down",
+      "exit": "1"
+    },
+    {
+      "model": "joint",
+      "entry": "two_down",
+      "exit": "signal_line"
+    },
+    {
+      "model": "joint",
+      "entry": "two_down",
+      "exit": "renew"
+    }
+  ],
+  "source_sha256": "59403c5c43242595feeeff4480d3273678312aae591e8986dd7f880c35625c41"
+}
