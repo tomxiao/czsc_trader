@@ -1,0 +1,53 @@
+{
+  "number": 34,
+  "question": "能否观察到回调已演变成持续走弱？分别检验从近10日收盘峰值回落达到背景振幅两倍、近五日四跌、五日最高价下移、低开且收盘低于前日低点。每项跑正反组，沿用 C6300 退出。",
+  "configurations": [
+    [
+      "stress",
+      "signal_line",
+      1.0
+    ],
+    [
+      "no_stress",
+      "signal_line",
+      1.0
+    ],
+    [
+      "serial_weakness",
+      "signal_line",
+      1.0
+    ],
+    [
+      "no_serial_weakness",
+      "signal_line",
+      1.0
+    ],
+    [
+      "lower_peaks",
+      "signal_line",
+      1.0
+    ],
+    [
+      "no_lower_peaks",
+      "signal_line",
+      1.0
+    ],
+    [
+      "downside_gap",
+      "signal_line",
+      1.0
+    ],
+    [
+      "no_downside_gap",
+      "signal_line",
+      1.0
+    ]
+  ],
+  "reuse": [
+    [
+      "EX025_20261104",
+      "C6300"
+    ]
+  ],
+  "stop": "十月只作诊断，必须同时核对原硬门和互补组。"
+}

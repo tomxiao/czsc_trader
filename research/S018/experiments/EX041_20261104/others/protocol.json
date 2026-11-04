@@ -1,0 +1,165 @@
+{
+  "number": 41,
+  "question": "一日条件收益信息能否改善正式账户的入场，而不是依赖两连跌与盲持三日的偶然配合？",
+  "configurations": [
+    [
+      "none",
+      "all",
+      "1"
+    ],
+    [
+      "none",
+      "all",
+      "signal_line"
+    ],
+    [
+      "none",
+      "two_down",
+      "1"
+    ],
+    [
+      "none",
+      "two_down",
+      "signal_line"
+    ],
+    [
+      "mean",
+      "all",
+      "1"
+    ],
+    [
+      "mean",
+      "all",
+      "signal_line"
+    ],
+    [
+      "mean",
+      "two_down",
+      "1"
+    ],
+    [
+      "mean",
+      "two_down",
+      "signal_line"
+    ],
+    [
+      "shock",
+      "all",
+      "1"
+    ],
+    [
+      "shock",
+      "all",
+      "signal_line"
+    ],
+    [
+      "shock",
+      "two_down",
+      "1"
+    ],
+    [
+      "shock",
+      "two_down",
+      "signal_line"
+    ],
+    [
+      "decomposition",
+      "all",
+      "1"
+    ],
+    [
+      "decomposition",
+      "all",
+      "signal_line"
+    ],
+    [
+      "decomposition",
+      "two_down",
+      "1"
+    ],
+    [
+      "decomposition",
+      "two_down",
+      "signal_line"
+    ]
+  ],
+  "reuse": [
+    [
+      "EX025_20261104",
+      "C6300"
+    ]
+  ],
+  "fit": "逐日从当前可见历史重建一日价格含费标签，已成熟成交样本>=126；2022只预热（2022-12-30信号对应2023-01-03买入）；标准化+Ridge alpha10，不搜索参数；所有对照包括none都采用同样126标签准备期。",
+  "target": "信号日t，按同平台日线区间成交口径在t+1开盘或限价买入，t+2开盘卖出，双侧0.1%；模型标签不含分红，正式账户仍含公司行动与应收。模型不是事后预测表。",
+  "interpretation": "一日预测只用于入场。固定一日是兑现期限；signal_line复用C6300持有表达，检验与短期入场信息的配合，不把一日预测解释为六日期望。none为同准备期无预测过滤，mean隔离时间均值过滤作用。",
+  "decision": "全开发池按原净卡玛及全部硬约束判断；观察同入口/退出中的模型增量及同模型的持有差异；不把年度或十月诊断新增为硬门。",
+  "authorization": "30轮额度第8轮，完成后剩余22轮；16个新账户，1既有引用；仅阶段二。",
+  "preflight": {
+    "formal_label_count": 835,
+    "matched_entry_prices": 835,
+    "price_vs_formal_differences": [
+      {
+        "signal_date": "2023-04-04",
+        "formal_minus_price_label": 0.002021913293949477
+      },
+      {
+        "signal_date": "2023-07-05",
+        "formal_minus_price_label": 0.0018836713528653905
+      },
+      {
+        "signal_date": "2023-10-04",
+        "formal_minus_price_label": 0.0016744660308513429
+      },
+      {
+        "signal_date": "2023-12-27",
+        "formal_minus_price_label": 0.0013243240744494136
+      },
+      {
+        "signal_date": "2025-03-27",
+        "formal_minus_price_label": 0.001269869778381394
+      },
+      {
+        "signal_date": "2025-07-02",
+        "formal_minus_price_label": 0.0009391793264898127
+      },
+      {
+        "signal_date": "2025-12-24",
+        "formal_minus_price_label": 0.00039678493390177955
+      },
+      {
+        "signal_date": "2026-03-26",
+        "formal_minus_price_label": 0.0004173982599408113
+      },
+      {
+        "signal_date": "2026-07-01",
+        "formal_minus_price_label": 0.00014387913032914978
+      },
+      {
+        "signal_date": "2024-03-26",
+        "formal_minus_price_label": 0.0009629934233976016
+      },
+      {
+        "signal_date": "2024-07-03",
+        "formal_minus_price_label": 0.000839680703154877
+      },
+      {
+        "signal_date": "2024-10-03",
+        "formal_minus_price_label": 0.0011172334851489727
+      },
+      {
+        "signal_date": "2024-12-26",
+        "formal_minus_price_label": 0.001290843972990896
+      },
+      {
+        "signal_date": "2025-10-01",
+        "formal_minus_price_label": 0.0006244774045548801
+      },
+      {
+        "signal_date": "2026-10-12",
+        "formal_minus_price_label": 0.00016042706997953919
+      }
+    ],
+    "prefix_checks": "PASS"
+  },
+  "source_sha256": "f77bd9af1c7527fcc9d65bbb6a7e9092abaa3f1394f697accca79708e683e9a8"
+}

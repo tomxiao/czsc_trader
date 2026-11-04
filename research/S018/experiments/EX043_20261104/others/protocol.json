@@ -1,0 +1,186 @@
+{
+  "number": 43,
+  "question": "近期学习的一日分解信息是否具有正式账户用途？在正确成交标签上比较近期与扩展训练，并复算EX041受影响对照。",
+  "configurations": [
+    [
+      "mean",
+      "expanding",
+      "all",
+      "1"
+    ],
+    [
+      "mean",
+      "expanding",
+      "all",
+      "signal_line"
+    ],
+    [
+      "mean",
+      "expanding",
+      "two_down",
+      "1"
+    ],
+    [
+      "mean",
+      "expanding",
+      "two_down",
+      "signal_line"
+    ],
+    [
+      "mean",
+      "recent126",
+      "all",
+      "1"
+    ],
+    [
+      "mean",
+      "recent126",
+      "all",
+      "signal_line"
+    ],
+    [
+      "mean",
+      "recent126",
+      "two_down",
+      "1"
+    ],
+    [
+      "mean",
+      "recent126",
+      "two_down",
+      "signal_line"
+    ],
+    [
+      "shock",
+      "expanding",
+      "all",
+      "1"
+    ],
+    [
+      "shock",
+      "expanding",
+      "all",
+      "signal_line"
+    ],
+    [
+      "shock",
+      "expanding",
+      "two_down",
+      "1"
+    ],
+    [
+      "shock",
+      "expanding",
+      "two_down",
+      "signal_line"
+    ],
+    [
+      "shock",
+      "recent126",
+      "all",
+      "1"
+    ],
+    [
+      "shock",
+      "recent126",
+      "all",
+      "signal_line"
+    ],
+    [
+      "shock",
+      "recent126",
+      "two_down",
+      "1"
+    ],
+    [
+      "shock",
+      "recent126",
+      "two_down",
+      "signal_line"
+    ],
+    [
+      "decomposition",
+      "expanding",
+      "all",
+      "1"
+    ],
+    [
+      "decomposition",
+      "expanding",
+      "all",
+      "signal_line"
+    ],
+    [
+      "decomposition",
+      "expanding",
+      "two_down",
+      "1"
+    ],
+    [
+      "decomposition",
+      "expanding",
+      "two_down",
+      "signal_line"
+    ],
+    [
+      "decomposition",
+      "recent126",
+      "all",
+      "1"
+    ],
+    [
+      "decomposition",
+      "recent126",
+      "all",
+      "signal_line"
+    ],
+    [
+      "decomposition",
+      "recent126",
+      "two_down",
+      "1"
+    ],
+    [
+      "decomposition",
+      "recent126",
+      "two_down",
+      "signal_line"
+    ]
+  ],
+  "reuse": [
+    [
+      "EX025_20261104",
+      "C6300"
+    ],
+    [
+      "EX041_20261104",
+      "C7200"
+    ],
+    [
+      "EX041_20261104",
+      "C7201"
+    ],
+    [
+      "EX041_20261104",
+      "C7202"
+    ],
+    [
+      "EX041_20261104",
+      "C7203"
+    ]
+  ],
+  "fit": "固定最近126个成熟成交机会与扩展历史比较。模型、变量、alpha10、零阈值、共同准备期均沿用EX041；所有行情来自当前历史前缀，无事后预测查询。",
+  "correction": "EX041代理标签在2024-05-03最低价等于限价时误判成交。实际V4交易调用以daily low作为intraday touch，inclusive_touch=False采用严格low<limit。修正后重算12个扩展训练账户，原16账户与源码不改。none四账户不依赖训练标签收益，126准备期早于差异日期，行为不受影响，复用作为控制。",
+  "account_contract": "模型仍为价格含双侧费标签（不含分红），正式账户含原公司行动。目标、开发池、仓位、费用、限价与时间不变。不将价格代理当作平台替代。",
+  "decision": "评价近期训练相对同入口/退出/模型的扩展训练增量，以及相比共同准备期none和全期C6300的差距。正式全期目标和硬门不变；单年和十月仅诊断。无新用途则停止扩展该模型族。",
+  "authorization": "30轮授权第10轮，完成剩余20轮；24新增账户，5既有引用，仅阶段二。",
+  "preflight": {
+    "mature_event_set": "835 exact match EX039",
+    "entry_prices": "835 exact within 1e-9",
+    "fee_price_labels": "835 exact within 1e-10",
+    "causal_prefix_features_and_labels": "PASS",
+    "recent_training_count": "126 after readiness",
+    "known_difference": "15 cash dividends excluded from model target, included in official account"
+  },
+  "source_sha256": "04475f6ab9d4b8b920d4e115bdeb347c58d28a585027c5bc39dbca1dd4bae0d0"
+}
