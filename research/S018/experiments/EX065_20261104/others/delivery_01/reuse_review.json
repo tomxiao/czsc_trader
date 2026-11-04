@@ -1,0 +1,80 @@
+{
+  "review_date": "2026-11-05",
+  "role": "RSCH",
+  "platform_fix_commit": "848672200",
+  "authorization": "切换RSCH，并继续",
+  "scope": [
+    "S018-C9380"
+  ],
+  "source_request": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S018",
+      "experiment_id": "EX065_20261104"
+    },
+    "evidence_id": "5fe0bd3a168d77da0c9fadcbc225215d2ce8e1612e6f2abd6d4d162818620304.json",
+    "sha256": "5fe0bd3a168d77da0c9fadcbc225215d2ce8e1612e6f2abd6d4d162818620304",
+    "media_type": "application/json",
+    "name": "retained-assessment-request",
+    "schema": null,
+    "schema_version": null
+  },
+  "request_sha256": "16b8821931d8817108a27672043e8d5e97365f1965c1f1d2197acabd81d9b73f",
+  "panel_sha256": "4dcc6c74136a7d8b48ce8f2a8c1ddf833dd1cca4bdb7d079b8df2a4d1f07070f",
+  "source_plan": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S018",
+      "experiment_id": "EX064_20261104"
+    },
+    "evidence_id": "7c88995e2f9d8e210bc0a6e89cedefc13c4a528f81a7d93320d3ef707f1ca50d.json",
+    "sha256": "7c88995e2f9d8e210bc0a6e89cedefc13c4a528f81a7d93320d3ef707f1ca50d",
+    "media_type": "application/json",
+    "name": "parameter-plan",
+    "schema": null,
+    "schema_version": null
+  },
+  "design_unchanged": true,
+  "reused_strategy_accounts": 81,
+  "reused_shared_buyhold_accounts": 2,
+  "new_account_replays": 0,
+  "new_search_points": 0,
+  "assessment_recalculations": 0,
+  "bootstrap_recalculations": 0,
+  "comparison_calculations": 1,
+  "reason": "DEV changed only comparison axis admissibility and semantic signatures. Original source, parameters, data, execution and assessment calculations are retained with their original identities. No old manifest is resumed under new engine identity.",
+  "candidate_acceptance": "PASSED",
+  "comparison_status": "RANKED",
+  "declared_points": 79,
+  "minimum_joint_passes": 65,
+  "joint_passes": 79,
+  "all_points_drawdown_limit_passed": true,
+  "unassessed_other_candidates": 492,
+  "stage5_authorized": false,
+  "family_diagnostics": [
+    {
+      "type": "FamilyDiagnostic",
+      "name": "PBO",
+      "status": "INSUFFICIENT_DATA",
+      "value": null,
+      "reason": "FAMILY_RETURN_MATRIX_NOT_SUPPLIED"
+    },
+    {
+      "type": "FamilyDiagnostic",
+      "name": "DSR_RAW",
+      "status": "INSUFFICIENT_DATA",
+      "value": null,
+      "reason": "FAMILY_RETURN_MATRIX_NOT_SUPPLIED"
+    },
+    {
+      "type": "FamilyDiagnostic",
+      "name": "DSR_EFFECTIVE",
+      "status": "INSUFFICIENT_DATA",
+      "value": null,
+      "reason": "FAMILY_RETURN_MATRIX_NOT_SUPPLIED"
+    }
+  ],
+  "prepare_seconds": 6.491847700002836
+}
