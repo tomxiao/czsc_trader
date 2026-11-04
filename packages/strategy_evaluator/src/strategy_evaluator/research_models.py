@@ -637,6 +637,7 @@ from .parameter_neighborhood import (  # noqa: E402
     ParameterNeighborhoodBinding, ParameterNeighborhoodDesign, DeclaredParameterPointSet,
     ParameterNeighborhoodProtocol, ParameterNeighborhoodContext, DeclaredParameterPointContext, StudyPurpose,
     RelativeChangeLimit, AbsoluteChangeLimit, BoundedLocalStep, RealDomain,
+    IntegerDomain, CategoricalDomain, ExplicitValues,
 )
 
 
@@ -1475,7 +1476,7 @@ class ZeroCenterAbsoluteLimit(ResearchRecord):
 
 @dataclass(frozen=True)
 class CommonNeighborhoodComparisonContract(ResearchRecord):
-    """Compare each complete legal continuous Cartesian neighborhood under one scale contract."""
+    """Compare legal numeric neighborhoods with fixed categorical structure under one scale."""
     relative_limit: RelativeChangeLimit
     zero_limits: tuple[ZeroCenterAbsoluteLimit, ...]
 
@@ -1495,9 +1496,18 @@ class CommonNeighborhoodComparisonContract(ResearchRecord):
     def _scale_signature(self, design):
         """Check the caller's axis contract, without traversing source points."""
         zero_limits = {x.name: x.limit for x in self.zero_limits}
+        signatures = []
         for axis in design.space.axes:
-            require(type(axis.domain) is RealDomain and axis.domain.quantum is None,
-                    "common comparison requires continuous real axes")
+            signature = (axis.name, axis.kind, axis.unit, axis.domain.to_dict(), axis.payload_path)
+            if type(axis.domain) is CategoricalDomain:
+                require(type(axis.rule) is ExplicitValues
+                        and all(value == axis.center for value in axis.rule.values),
+                        "common comparison requires fixed categorical axes")
+                signatures.append((*signature, axis.center))
+                continue
+            require(type(axis.domain) is IntegerDomain
+                    or (type(axis.domain) is RealDomain and axis.domain.quantum is None),
+                    "common comparison requires continuous real, integer or fixed categorical axes")
             require(type(axis.rule) is BoundedLocalStep,
                     "common comparison requires bounded local steps")
             if axis.center == 0.0:
@@ -1506,10 +1516,10 @@ class CommonNeighborhoodComparisonContract(ResearchRecord):
             else:
                 require(axis.rule.limit == self.relative_limit,
                         "nonzero axis differs from declared relative scale")
+            signatures.append(signature)
         return (
             design.protocol.method_sha256,
-            tuple((axis.name, axis.kind, axis.unit, axis.domain.to_dict(), axis.payload_path)
-                  for axis in design.space.axes),
+            tuple(signatures),
             design.space.mapping_sha256, design.space.feasibility_sha256,
         )
 

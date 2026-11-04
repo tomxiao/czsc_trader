@@ -608,6 +608,12 @@ ASSESSMENT schema 15显式使用`CandidatePerformanceAssessmentRequest`：中心
 不得据此宣称原笛卡尔邻域通过。不同实现身份、上下文或基准的结果不自动混用；源码变更后应创建新执行记录，
 由RSCH重新核定旧来源可用性及新增计算预算，不直接恢复旧manifest。
 
+共同尺度支持连续实数、整数及固定分类参数，A股与美股采用同一契约。整数仍遵守原域的步长、
+原点、边界及扰动限额；分类值必须固定，改变模式或坐标语义的候选不能据此混合比较。
+已有混合点集可沿用原请求、点编号及已计算面板完成比较与schema 15交付；发布不触发账户回放、
+SE评估或比较重算，历史研究来源是否继续适用由RSCH明确决定。完整尺度规则见
+[SE有限参数检验集](../../packages/strategy_evaluator/README.md#显式有限参数检验集)。
+
 `CandidateAssessmentDelivery.pending_decisions`及`CandidateInspectionDelivery.pending_decisions`均可为空元组，
 不因未冻结而强制新增待决事项；已填写事项仍须为非空文本。
 阶段四`validate_delivery`默认检查包完整性。显式`FULL`返回`UNSUPPORTED_SCOPE`。

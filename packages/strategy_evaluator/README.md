@@ -467,7 +467,14 @@ V4 `EquityAssessmentFacts`按实际市场时区、币种及交易日聚合，指
 
 Calmar比较通过`DeclaredPointSetComparisonContract(construction_sha256, source_scale)`明确共同构造和
 原坐标尺度，仍执行v8评估/v6排序。点集Q10/Q90仅描述所声明的离散检验集，不代表原全邻域分布。
-原完整邻域比较合同不接纳该类型。TDR参数计划直接支持声明集合，只准备实际点；
+`source_scale`及完整邻域比较使用的`CommonNeighborhoodComparisonContract`接纳连续`RealDomain`
+（无quantum）与`IntegerDomain`的`BoundedLocalStep`，非零中心沿用声明的相对限额，零中心必须
+显式提供同名绝对限额。整数保留原类型、边界、step及origin；最小合法步长超出限额时保持固定，
+不把整数转为连续参数。`CategoricalDomain`仅接纳所有`ExplicitValues`均等于中心的固定结构，
+固定分类值、域、单位及payload路径进入共同语义比较，不允许不同模式被视为同一邻域。
+其他离散域及带quantum的实数域仍不支持。连续参数原有尺度及序列化契约保持不变。
+混合类型支持同时适用于A股和美股；比较只检查声明的轴合同，不重建原笛卡尔网格或重算绩效。
+原完整邻域比较合同不接纳`DeclaredParameterPointSet`。TDR参数计划直接支持声明集合，只准备实际点；
 绑定保留原点编号，不读取或要求事前发布计划。正式交付使用TDR ASSESSMENT schema 15保存声明来源及数值，深入复核须显式发起；
 不同实现上下文不会因几何选择相同而自动成为可比或允许恢复的结果。
 
