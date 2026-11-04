@@ -6,10 +6,11 @@ import shutil
 import pytest
 
 from czsc_trader.application import (
-    CandidateRegistrationRequest, RepositoryContext, freeze_candidate, load_candidate,
+    CandidateRegistrationRequest, RepositoryContext, freeze_candidate,
     register_candidate,
 )
 from czsc_trader.research_tools import EvidenceRef, ExperimentRef
+from czsc_trader.application._inspection_candidate import _load_inspection_candidate
 from strategy_manager import freeze_contracts as f
 from strategy_runtime import StrategyCandidate
 from test_candidate_freeze import (
@@ -25,17 +26,17 @@ def test_new_registration_rejects_incomplete_runtime_contract_before_writes(
     payload = deepcopy(payload)
     if case == 'legacy_contract':
         payload['runtime']['contract_version'] = 1
-        message = 'contract version 2'
+        message = 'EquityStrategyCandidate'
     else:
         payload.pop('decision_feedback')
-        message = 'feedback declaration'
+        message = 'EquityStrategyCandidate'
     target = minimal_repo / '.tmp/source/strategy_runtime'
     shutil.copytree(source, target)
     candidate = StrategyCandidate('S900', 'C0001', payload, target)
     owner = ExperimentRef('S900', 'EX001_20261020')
     evidence = EvidenceRef(owner, 'a' * 64 + '.json', 'a' * 64,
                            'application/json', 'not-read-on-contract-failure')
-    with pytest.raises(ValueError, match=message):
+    with pytest.raises(TypeError, match=message):
         register_candidate(RepositoryContext.discover(minimal_repo),
                            CandidateRegistrationRequest(candidate, owner, (evidence,), ()))
     assert not (minimal_repo / 'research').exists()
@@ -56,7 +57,7 @@ def test_prior_passing_inspection_cannot_bypass_current_freeze_admission(
     context, report, source = inspected_candidate
     assert report.status is f.InspectionStatus.PASS
     operation = approve(context, report, source)
-    candidate = load_candidate(context, report.plan.origin.candidate)
+    candidate = _load_inspection_candidate(context, report.plan.origin.candidate)
     payload = dict(candidate.payload)
     if case == 'legacy_contract':
         payload['runtime'] = {**dict(payload['runtime']), 'contract_version': 1}
@@ -65,7 +66,7 @@ def test_prior_passing_inspection_cannot_bypass_current_freeze_admission(
         payload.pop('decision_feedback')
         message = 'feedback semantics'
     historical = replace(candidate, payload=payload)
-    monkeypatch.setattr(inspection_service, 'load_candidate', lambda *args: historical)
+    monkeypatch.setattr(inspection_service, '_load_inspection_candidate', lambda *args: historical)
     before = {path.relative_to(context.root).as_posix(): sha256(path.read_bytes()).hexdigest()
               for path in context.root.rglob('*') if path.is_file()}
     with pytest.raises(ValueError, match=message):
@@ -87,5 +88,5 @@ def test_committed_freeze_retry_precedes_current_candidate_admission(inspected_c
     def forbidden(*args):
         pytest.fail('a committed freeze must return its receipt without re-admitting the candidate')
 
-    monkeypatch.setattr(inspection_service, 'load_candidate', forbidden)
+    monkeypatch.setattr(inspection_service, '_load_inspection_candidate', forbidden)
     assert freeze_candidate(context, operation) == receipt

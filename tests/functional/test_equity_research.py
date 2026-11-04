@@ -27,8 +27,7 @@ def test_us_public_prepare_evaluate_publish_uses_current_contract(tmp_path):
         assert outcome.reference.schema_version == 4
         assert outcome.reference.resolve(context.repository.root).read_bytes() == result.content
     assert len(calls) == 4
-    with pytest.raises(TypeError, match="prepare.*evaluate_many"):
-        context.evaluation.evaluate(current_account_request(context, request))
+    assert not hasattr(context.evaluation, "evaluate")
     current = current_account_request(context,request)
     with pytest.raises(TypeError, match="session|Session|prepare"):
         run_backtest(context, current.candidate, current)

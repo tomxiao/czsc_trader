@@ -14,7 +14,7 @@ from strategy_runtime import EquityStrategyCandidate, EquityStrategyDefinition, 
 from strategy_runtime.inspection import InspectionRuntimePermit, InspectionStage
 from strategy_runtime.deployment import validate_release_package
 from strategy_manager import StrategyRegistry, freeze_contracts as f
-from .candidate_service import load_candidate
+from ._inspection_candidate import _load_inspection_candidate
 from .inspection_execution import Controller, Interrupted, equivalence_jobs, goal
 from .inspection_contracts import InspectionPublicationError
 
@@ -204,7 +204,7 @@ def inspect_equity_candidate(context, request, control, registration, selection)
         environment_ref = store.put_json(environment.to_dict())
         if request.protocol.pte.environment != environment:
             raise ValueError('equity inspection environment differs')
-        candidate = load_candidate(context, request.candidate)
+        candidate = _load_inspection_candidate(context, request.candidate)
         if type(candidate) is not EquityStrategyCandidate:
             raise ValueError('equity inspection requires formal equity candidate')
         for replay in request.replays:
@@ -252,7 +252,7 @@ def inspect_equity_candidate(context, request, control, registration, selection)
             'normal PTE business path capability coverage', (coverage,)))
         controller.stage = InspectionStage.FINALIZE
         controller.tick(force=True)
-        if load_candidate(context, request.candidate).content_identity != candidate.content_identity:
+        if _load_inspection_candidate(context, request.candidate).content_identity != candidate.content_identity:
             raise ValueError('candidate changed during inspection')
         final = validate_release_package(workspace / 'repository/strategies', verified.release.release_id)
         if final.package_sha256 != release.package_sha256 or describe_inspection_environment(context) != environment:

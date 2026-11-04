@@ -71,7 +71,7 @@ def test_installed_cli_exposes_supported_command_surface():
         assert expected in result.stdout
         if arguments == ('backtest', 'run', '--help'):
             assert "--outputs-root" in result.stdout
-            assert "--candidate-id" in result.stdout
+            assert "--candidate-id" not in result.stdout
         assert "--repo-root" not in result.stdout
 
 

@@ -1,5 +1,5 @@
 """Prototype handoffs preserve executable identities without candidate promotion."""
-from evaluation_seed_support import prepare_request
+from historical_evaluation_support import prepare_historical, evaluate_historical, publish_historical
 
 from dataclasses import replace
 import json
@@ -8,14 +8,12 @@ import pytest
 from strategy_manager import CandidateKey, ResearchState, StrategyRegistry
 
 from czsc_trader.application import (
-    assemble_delivery, validate_delivery, publish_evidence, update_research_intent,
+    assemble_delivery, validate_delivery, update_research_intent,
     ResearchIntentUpdate,
 )
 from czsc_trader.application.research_overview_service import get_research_overview
 from czsc_trader import research_tools as public
 from czsc_trader.research_tools import delivery as d
-from czsc_trader.research_tools.context import ExperimentRef
-from czsc_trader.research_tools.evidence import EvaluationEvidenceWrite
 from czsc_trader.research_tools.overview import ResearchOverview
 from test_research_contract_upgrade import managed_evaluation as managed_evaluation
 from test_research_delivery import attachment, content, published
@@ -84,10 +82,9 @@ def test_prototype_revision_and_overview_preserve_research_state(overview_contex
 
 def test_unregistered_prototype_authenticates_real_accounts_and_identity(managed_evaluation, monkeypatch):
     research, request = managed_evaluation
-    request = prepare_request(research, request)
-    result = research.evaluation.evaluate(request)
-    account = publish_evidence(research, EvaluationEvidenceWrite(
-        ExperimentRef("S900", request.experiment_id), "prototype-account", request, result))
+    request = prepare_historical(research, request)
+    result = evaluate_historical(research, request)
+    account = publish_historical(research, request, result)
     run = result.runs[0].identity
     ref = d.EvaluationEvidenceRef(account, tuple(x.identity.evaluation_id for x in result.runs))
     item = entry(research, identity=d.CandidateIdentityRef(run.candidate, run.content_sha256), evaluations=(ref,))

@@ -9,7 +9,6 @@ import shutil
 from dataflows import Dataflows, DataSpace, ProviderConfig
 from strategy_manager import StrategyVersion, StrategyManagerError
 from strategy_manager.write_lock import RegistryWriteLock
-from strategy_runtime import StrategyCandidate
 
 from czsc_trader.application import BacktestRequest, CommandResult, RepositoryContext
 from czsc_trader.application.backtest_service import _run_authenticated_backtest
@@ -48,9 +47,11 @@ def _save_reports(repository: RepositoryContext, output_root: Path, reference: s
 
 
 def run_independent_backtest(
-    repository: RepositoryContext, strategy: StrategyCandidate | StrategyVersion,
+    repository: RepositoryContext, strategy: StrategyVersion,
     request: BacktestRequest, output_root: Path,
 ) -> CommandResult:
+    if type(strategy) is not StrategyVersion:
+        raise TypeError("independent backtest requires a frozen StrategyVersion")
     evaluation = _run_authenticated_backtest(repository, strategy, request, _independent_data(repository))
     reference = evaluation.snapshot.identity.reference
     try:

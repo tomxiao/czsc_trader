@@ -1,133 +1,21 @@
 """Batch retention keeps account authentication and single-owner atomic writes."""
-from evaluation_seed_support import prepare_request
-from dataclasses import replace
-from concurrent.futures import CancelledError
-import json
-import os
-import pickle
-import shutil
 
 import pytest
 
 from czsc_trader.application import publish_evidence, publish_evidence_many
 from czsc_trader.application import evidence_service
 from czsc_trader.research_tools import (
-    EvaluationEvidenceWrite, ExecutionResources, ExperimentRef, MaterialEvidenceWrite,
+    MaterialEvidenceWrite,
     PublicationError, PublicationOutcome, PublicationStatus,
 )
-from czsc_trader.research_tools.evaluation import validate_evaluation_evidence
 from test_research_contract_upgrade import managed_evaluation as managed_evaluation
 
 
 @pytest.fixture
-def fresh_publication(managed_evaluation):
-    context, request = managed_evaluation
-    bound = prepare_request(context, request)
-    result = context.evaluation.evaluate(bound)
-    experiment = ExperimentRef(context.strategy_id, request.experiment_id)
-    return context, EvaluationEvidenceWrite(experiment, "synthetic-account", bound, result)
-
-
-@pytest.fixture
-def publication(request, tmp_path, frozen_seed_root):
-    """Reuse real account preparation; every publication gets private files and frames."""
-    from czsc_trader.research_tools._evaluation_workers import pack
-    from evaluation_seed_support import relocate_request, relocate_result, restored_context
-
-    seed = frozen_seed_root / "publication-account"
-    data = frozen_seed_root / "publication-account.pkl"
-    if not seed.exists():
-        context, account = request.getfixturevalue("fresh_publication")
-        data.write_bytes(pack(account))
-        shutil.copytree(context.repository.root, seed)
-    root = tmp_path / "publication-repo"
-    shutil.copytree(seed, root)
-    account = pickle.loads(data.read_bytes())
-    account = replace(account, result=relocate_result(account.result, account.request, root),
-                      request=relocate_request(account.request, root))
-    return restored_context(root), account
-
-
-def terminated_serializer(payload, native_threads):
-    os._exit(7)
-
-
-def cancelled_serializer(payload, native_threads):
-    raise CancelledError("synthetic cancellation")
-
-
-@pytest.mark.parametrize("workers", [1, 2])
-def test_batch_matches_single_bytes_and_only_parent_publishes(publication, monkeypatch, workers):
-    context, account = publication
-    single = publish_evidence(context, account)
-    expected = single.resolve(context.repository.root).read_bytes()
-    context.evaluation.resources = ExecutionResources(workers, 1)
-    # Retention must consume authenticated facts without loading strategy files.
-    shutil.rmtree(account.request.strategy.source_root)
-    owners = []
-    original = evidence_service._publish_bytes
-
-    def record_owner(*args):
-        owners.append(os.getpid())
-        return original(*args)
-
-    monkeypatch.setattr(evidence_service, "_publish_bytes", record_owner)
-    material = MaterialEvidenceWrite(account.experiment, "note", b"synthetic", "text/plain", "txt")
-    outcomes = publish_evidence_many(context, (account, material, account))
-    assert [item.index for item in outcomes] == [0, 1, 2]
-    assert all(item.status is PublicationStatus.PUBLISHED for item in outcomes)
-    assert owners == [os.getpid()] * 3
-    assert outcomes[0].reference == single == outcomes[2].reference
-    assert outcomes[0].reference.resolve(context.repository.root).read_bytes() == expected
-    validate_evaluation_evidence(json.loads(expected))
-    assert outcomes[1].reference.resolve(context.repository.root).read_bytes() == material.content
-    assert not list((context.repository.root / ".tmp/evidence-publication").iterdir())
-
-
-@pytest.mark.parametrize("workers", [1, 2])
-def test_partial_authentication_failure_is_an_item_result(publication, workers):
-    context, account = publication
-    context.evaluation.resources = ExecutionResources(workers, 1)
-    bad = replace(account, result=replace(account.result, result_hash="f" * 64))
-    outcomes = publish_evidence_many(context, (account, bad))
-    assert [item.status for item in outcomes] == [PublicationStatus.PUBLISHED, PublicationStatus.FAILED]
-    assert outcomes[1].error.code == "ValueError"
-    assert outcomes[1].reference is None
-    assert outcomes[0].reference.resolve(context.repository.root).is_file()
-    assert len(list((context.repository.root / "research/S900/assets/evidence").rglob("*.json"))) == 1
-
-
-@pytest.mark.parametrize("invalid", ["owner", "experiment", "repository", "data", "type"])
-def test_invalid_batch_rejects_all_items_before_writing(publication, invalid):
-    context, account = publication
-    if invalid == "owner":
-        bad = replace(account, experiment=ExperimentRef("S901", account.experiment.experiment_id))
-    elif invalid == "experiment":
-        bad = replace(account, experiment=ExperimentRef("S900", "EX002_20261007"))
-    elif invalid == "data":
-        bad = replace(account, request=replace(account.request, execution_data=None))
-    elif invalid == "repository":
-        bad = replace(account, request=replace(account.request, repository_root=context.repository.root / "foreign"))
-    else:
-        bad = object()
-    with pytest.raises((TypeError, ValueError)):
-        publish_evidence_many(context, (account, bad))
-    assert not (context.repository.root / "research/S900/assets/evidence").exists()
-
-
-def test_worker_loss_fails_without_serial_retry_or_formal_writes(publication, monkeypatch):
-    context, account = publication
-    context.evaluation.resources = ExecutionResources(2, 1)
-    monkeypatch.setattr(evidence_service, "_serialize_worker", terminated_serializer)
-
-    def no_retry(request):
-        pytest.fail("failed worker must not serialize in the parent")
-
-    monkeypatch.setattr(evidence_service, "_serialize_account", no_retry)
-    outcomes = publish_evidence_many(context, (account, account))
-    assert all(item.status is PublicationStatus.FAILED for item in outcomes)
-    assert all(item.error.code == "BrokenProcessPool" for item in outcomes)
-    assert not (context.repository.root / "research/S900/assets/evidence").exists()
+def publication(tmp_path):
+    from equity_test_support import setup_account_research
+    context, request, _, _ = setup_account_research(tmp_path)
+    return context, MaterialEvidenceWrite(request.experiment, 'material', b'{"fact": 1}', 'application/json', 'json')
 
 
 def test_post_install_exception_is_unknown_and_is_not_retried(publication, monkeypatch):
@@ -145,7 +33,7 @@ def test_post_install_exception_is_unknown_and_is_not_retried(publication, monke
     assert outcome.status is PublicationStatus.UNKNOWN and outcome.reference is None
     assert outcome.error.code == "OSError"
     assert calls == [1]
-    assert len(list((context.repository.root / "research/S900/assets/evidence").rglob("*.json"))) == 1
+    assert len(list(context.repository.root.glob("research/*/assets/evidence/**/*.json"))) == 1
 
 
 def test_pre_install_write_failure_is_failed(publication, monkeypatch):
@@ -157,22 +45,9 @@ def test_pre_install_write_failure_is_failed(publication, monkeypatch):
     monkeypatch.setattr(evidence_service, "_publish_bytes", fail)
     outcome = publish_evidence_many(context, (account,))[0]
     assert outcome.status is PublicationStatus.FAILED and outcome.error.code == "OSError"
-    assert not (context.repository.root / "research/S900/assets/evidence").exists()
+    assert not list(context.repository.root.glob("research/*/assets/evidence/**/*.json"))
 
 
-@pytest.mark.parametrize("workers", [1, 2])
-def test_cancelled_serialization_never_publishes(publication, monkeypatch, workers):
-    context, account = publication
-    context.evaluation.resources = ExecutionResources(workers, 1)
-    if workers == 1:
-        def cancel(request):
-            raise CancelledError("synthetic cancellation")
-        monkeypatch.setattr(evidence_service, "_serialize_account", cancel)
-    else:
-        monkeypatch.setattr(evidence_service, "_serialize_worker", cancelled_serializer)
-    outcome = publish_evidence_many(context, (account,))[0]
-    assert outcome.status is PublicationStatus.CANCELLED and outcome.error.code == "CancelledError"
-    assert not (context.repository.root / "research/S900/assets/evidence").exists()
 
 
 def test_unreadable_target_after_write_exception_is_unknown(publication, monkeypatch):

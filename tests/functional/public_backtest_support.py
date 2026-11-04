@@ -9,9 +9,10 @@ from dataflows import DataSpace
 from czsc_trader.research_tools.context import ResearchContext, ResearchBatchRef
 from czsc_trader.research_tools.evaluation_access import EvaluationAccess
 
+from historical_evaluation_support import EvaluationRequest
 from czsc_trader.application import RepositoryContext
 from czsc_trader.research_tools import (
-    EvaluationBenchmark, EvaluationCost, EvaluationRequest, EvaluationWindow, NextOpenBuyHold,
+    EvaluationBenchmark, EvaluationCost, EvaluationWindow, NextOpenBuyHold,
 )
 from test_candidate_runtime_execution import _install_candidate_dataflows
 

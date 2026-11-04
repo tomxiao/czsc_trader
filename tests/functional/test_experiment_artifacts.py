@@ -13,7 +13,7 @@ from czsc_trader.application import create_experiment, ExperimentRequest, publis
 from czsc_trader.application.experiment_artifact_service import validate_experiment
 from czsc_trader.research_tools.delivery import ValidationStatus
 from czsc_trader.research_tools.evidence import (
-    ExperimentOutcome, ExperimentReportWrite, MaterialEvidenceWrite, PublicationStatus,
+    EvidenceRef, ExperimentOutcome, ExperimentReportWrite, MaterialEvidenceWrite, PublicationStatus,
     managed_path,
 )
 from czsc_trader.research_tools.experiment_artifacts import (
@@ -86,8 +86,49 @@ def test_batch_preflight_and_report_parent_publication(report_case):
     assert outcomes[0].reference == outcomes[1].reference
     request.evidence[0].resolve(context.repository.root).write_bytes(b"tampered")
     assert check(context, experiment).issues[0].code == "INVALID_REPORT_PUBLICATION"
-    with pytest.raises(ValueError, match="content differs"):
+    # Ordinary publication preserves the declaration; only an explicit report
+    # check certifies the linked evidence contents.
+    assert publish_evidence(context, request) == outcomes[0].reference
+
+
+def test_report_publication_does_not_expand_linked_evidence_or_previous_report(report_case, monkeypatch):
+    context, experiment, path, request = report_case
+    first = publish_evidence(context, request)
+    paths = [managed_path(context.repository.root, ref.repository_path)
+             for ref in (*request.evidence, first)]
+    for target in paths:
+        target.unlink()
+    path.write_bytes(b"Second report retaining historical references.\n")
+    revised = replace(request, previous=first,
+                      expected_report_sha256=sha256(path.read_bytes()).hexdigest())
+
+    def forbid_read(*args, **kwargs):
+        raise AssertionError("publication must not read linked evidence")
+
+    with monkeypatch.context() as scoped:
+        scoped.setattr(EvidenceRef, "_read_verified", forbid_read)
+        second = publish_evidence(context, revised)
+    snapshot = ExperimentReportSnapshot.from_dict(json.loads(second._read_verified(context.repository.root)[1]))
+    assert snapshot.previous == first and snapshot.evidence == request.evidence
+    # The caller can separately request availability/content verification.
+    assert check(context, experiment).issues[0].code == "INVALID_REPORT_PUBLICATION"
+
+
+def test_report_draft_changed_during_publication_does_not_commit(report_case, monkeypatch):
+    from czsc_trader.application import evidence_service
+    context, _, path, request = report_case
+    original = evidence_service._publish_bytes
+
+    def change_draft(*args, **kwargs):
+        original(*args, **kwargs)
+        path.write_bytes(b"A concurrent draft edit.\n")
+
+    monkeypatch.setattr(evidence_service, "_publish_bytes", change_draft)
+    with pytest.raises(ReportPublicationError, match="expected digest") as caught:
         publish_evidence(context, request)
+    assert caught.value.phase == "COMMIT"
+    assert caught.value.reference is not None and caught.value.pointer_committed is False
+    assert not (path.parent / "report_ref.json").exists()
 
 
 def test_partial_report_commit_preserves_known_snapshot(report_case, monkeypatch):

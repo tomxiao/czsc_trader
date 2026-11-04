@@ -1,108 +1,115 @@
-"""Registration records identity; declared account evidence remains authenticated."""
-from evaluation_seed_support import prepare_request
-
+"""Candidate publication retains declared evidence without historical account authentication."""
 from dataclasses import replace
 import json
 
 import pytest
-from strategy_manager import ResearchState, StrategyFamily, StrategyRegistry
-from strategy_runtime import StrategyRuntime
-
-from czsc_trader.application import (
-    CandidateRegistrationRequest, assemble_delivery, load_candidate, publish_evidence,
-    register_candidate, validate_delivery,
-)
-from czsc_trader.research_tools import ExperimentRef, EvaluationEvidenceWrite, MaterialEvidenceWrite
-from czsc_trader.research_tools import delivery as d
-from test_research_contract_upgrade import managed_evaluation as managed_evaluation
-from test_research_delivery import content
+from dataflows import BarFrequency, MarketId
+from strategy_runtime import EquityStrategyCandidate
+from czsc_trader.application import CandidateRegistrationRequest, load_candidate, publish_evidence, register_candidate
+from czsc_trader.research_tools import MaterialEvidenceWrite
+from account_parity_support import setup_account
+from equity_test_support import setup_formal_equity
 
 
-@pytest.fixture
-def registration_input(managed_evaluation):
-    research, request = managed_evaluation
-    family = StrategyFamily(2, "S900", "Registration fixture", "ETF", {"hypothesis": "synthetic"},
-        ResearchState.RESEARCHING, "2026-10-01T00:00:00+00:00", "test", "2026-10-01T00:00:00+00:00")
-    StrategyRegistry(research.repository.research_registry_root).create_family(family, actor="test", reason="fixture")
-    experiment = ExperimentRef("S900", request.experiment_id)
-    material = publish_evidence(research, MaterialEvidenceWrite(
-        experiment, "rationale", b"Research rationale, not account facts.", "text/plain", "txt"))
-    return research, request, experiment, material
+def declared_support(context, request, **changes):
+    # A valid V4 envelope deliberately references absent account/input files.
+    # Registration checks its declaration; explicit account tools own those files.
+    document = {
+        "schema_version": 4,
+        "request": {"schema": "equity-research/v4", "candidate_definition": {"contract_version": 4},
+                    "candidate_id": request.candidate.candidate_id,
+                    "implementation_hash": request.candidate.implementation_hash,
+                    "experiment": request.experiment.to_dict()},
+        "input_ref": {"kind": "equity_input", "sha256": "a" * 64},
+        "candidate_ref": {"kind": "equity_account", "sha256": "b" * 64},
+        "benchmark_ref": {"kind": "equity_account", "sha256": "c" * 64},
+    }
+    document["request"].update(changes)
+    reference = publish_evidence(context, MaterialEvidenceWrite(request.experiment, "declared-account",
+        json.dumps(document).encode(), "application/json", "json"))
+    return replace(reference, schema="equity_research", schema_version=4)
 
 
-def account_support(research, request, experiment):
-    prepared = prepare_request(research, request)
-    result = research.evaluation.evaluate(prepared)
-    return publish_evidence(research, EvaluationEvidenceWrite(experiment, "account", prepared, result))
+@pytest.mark.parametrize("market", [MarketId.CN, MarketId.US])
+def test_registration_retains_declarations_without_loading_account_dependencies(tmp_path, monkeypatch, market):
+    context, request = setup_account(tmp_path, market, BarFrequency.DAILY, events=True)
+    evidence = declared_support(context, request)
+    from czsc_trader.application import equity_evidence_io
+    def forbidden(*args, **kwargs):
+        raise AssertionError("ordinary candidate registration must not authenticate historical accounts")
+    monkeypatch.setattr(equity_evidence_io, "materialize_equity_document", forbidden)
+    operation = CandidateRegistrationRequest(request.candidate, request.experiment, (evidence,), ())
+    record = register_candidate(context.repository, operation)
+    assert register_candidate(context.repository, operation) == record
+    assert len(record.origin.evidence) == 1
+    assert load_candidate(context.repository, record.key).content_identity.content_sha256 == record.content_sha256
+    # Loading an executable remains independent of former research material.
+    (context.repository.root / evidence.repository_path).unlink()
+    assert load_candidate(context.repository, record.key).content_identity.content_sha256 == record.content_sha256
 
 
-@pytest.mark.parametrize("mode", ["empty", "material", "account", "mixed"])
-def test_registration_accepts_optional_support_without_implying_delivery_readiness(registration_input, mode):
-    research, request, experiment, material = registration_input
-    evidence = (material,) if mode in ("material", "mixed") else ()
-    if mode in ("account", "mixed"):
-        evidence += (account_support(research, request, experiment),)
-    operation = CandidateRegistrationRequest(request.strategy, experiment, evidence, request.dependencies)
-    record = register_candidate(research.repository, operation)
-    assert register_candidate(research.repository, operation) == record
-    assert len(record.origin.evidence) == len(evidence)
-    assert record.schema_version == 3
-    loaded = load_candidate(research.repository, record.key)
-    assert StrategyRuntime().identify(loaded, dependencies=request.dependencies).content_sha256 == record.content_sha256
-    assert StrategyRegistry(research.repository.research_registry_root).get_candidate(
-        record.key, evidence_root=research.repository.research_root / "S900") == record
-    # Registration does not waive the separate account-evidence role in formal delivery.
-    entry = d.CandidateEntry(d.CandidateIdentityRef(record.key, record.content_sha256),
-                            "Synthetic mechanism", "Account evidence not attached", ())
-    definition = d.DeliveryDefinition(research.batch, d.DeliveryStage.CANDIDATES, 1)
-    with pytest.raises(d.DeliveryValidationError) as failed:
-        assemble_delivery(research.repository, definition,
-                          content(d.CandidateSet((entry,), (record.key,), (), "Synthetic handoff")))
-    assert failed.value.issues[0].code == "CANDIDATE_EVIDENCE"
-    if mode == "empty":
-        # Later account evidence can support delivery without rewriting the original registration.
-        account = account_support(research, request, experiment)
-        document = json.loads(account.resolve(research.repository.root).read_text(encoding="utf-8"))
-        evaluation = d.EvaluationEvidenceRef(account, tuple(
-            item["evaluation_id"] for item in document["assessment_evidence"]))
-        entry = replace(entry, evaluations=(evaluation,))
-        receipt = assemble_delivery(research.repository, definition,
-            content(d.CandidateSet((entry,), (record.key,), (), "Evaluated handoff"))).receipt
-        assert validate_delivery(research.repository, receipt.reference).status is d.ValidationStatus.PASS
-        assert StrategyRegistry(research.repository.research_registry_root).get_candidate_registration(record.key) == record
+@pytest.mark.parametrize("damage", ["digest", "candidate", "experiment", "schema", "duplicate"])
+def test_registration_rejects_direct_declaration_errors_before_publishing(tmp_path, damage):
+    context, request = setup_account(tmp_path, MarketId.US, BarFrequency.DAILY, events=True)
+    changes = {"candidate_id": "C0002"} if damage == "candidate" else {}
+    if damage == "experiment":
+        changes["experiment"] = {**request.experiment.to_dict(), "experiment_id": "EX002_20261028"}
+    evidence = declared_support(context, request, **changes)
+    if damage == "digest":
+        (context.repository.root / evidence.repository_path).write_bytes(b"tampered")
+    if damage == "schema":
+        evidence = replace(evidence, schema_version=3)
+    with pytest.raises(ValueError):
+        register_candidate(context.repository, CandidateRegistrationRequest(request.candidate,
+            request.experiment, (evidence, evidence) if damage == "duplicate" else (evidence,), ()))
+    assert not (context.repository.research_root / request.candidate.strategy_id / "assets/candidates").exists()
 
 
-@pytest.mark.parametrize("damage", ["material-hash", "account-identity", "account-ledger", "account-schema",
-                                    "duplicate", "duplicate-path", "foreign-batch"])
-def test_registration_rejects_invalid_declared_support_before_candidate_publication(registration_input, damage):
-    research, request, experiment, material = registration_input
-    evidence = (material,)
-    message = None
-    if damage == "material-hash":
-        material.resolve(research.repository.root).write_bytes(b"tampered")
-        message = "content differs"
-    elif damage.startswith("account-"):
-        account = account_support(research, request, experiment)
-        if damage == "account-identity":
-            request = replace(request, strategy=replace(request.strategy, candidate_id="C0002"))
-            evidence = (account,)
-            message = "differs from content identity"
-        elif damage == "account-schema":
-            evidence = (replace(material, schema="account_evaluation", schema_version=99),)
-            message = "account evaluation evidence"
-        else:
-            document = json.loads(account.resolve(research.repository.root).read_text(encoding="utf-8"))
-            document["runs"][0]["ledgers"]["account_daily"]["data"][0]["cash"] += 1.0
-            forged = publish_evidence(research, MaterialEvidenceWrite(
-                experiment, "forged-account", json.dumps(document).encode(), "application/json", "json"))
-            evidence = (replace(forged, schema=account.schema, schema_version=account.schema_version),)
-    elif damage in ("duplicate", "duplicate-path"):
-        evidence = (material, material if damage == "duplicate" else replace(material, name="renamed"))
-        message = "unique"
-    else:
-        evidence = (replace(material, experiment=ExperimentRef("S901", experiment.experiment_id)),)
-        message = "another research batch"
-    with pytest.raises(ValueError, match=message):
-        register_candidate(research.repository,
-            CandidateRegistrationRequest(request.strategy, experiment, evidence, request.dependencies))
-    assert not (research.repository.research_root / "S900/assets/candidates").exists()
+def test_legacy_candidate_registration_is_retired(tmp_path):
+    context, request, _, _ = setup_formal_equity(tmp_path)
+    with pytest.raises(ValueError, match="account contract 4"):
+        CandidateRegistrationRequest(request.candidate, request.experiment, (), ())
+    with pytest.raises(TypeError, match="EquityStrategyCandidate"):
+        CandidateRegistrationRequest(object(), request.experiment, (), ())
+
+
+def test_historical_candidate_loading_is_private_to_explicit_inspection(tmp_path):
+    from historical_candidate_support import seed_historical_candidate
+    from czsc_trader.application._inspection_candidate import _load_inspection_candidate
+
+    context, request, _, _ = setup_formal_equity(tmp_path)
+    record = seed_historical_candidate(context.repository, request.candidate, request.experiment)
+    with pytest.raises(ValueError, match="account contract 4"):
+        load_candidate(context.repository, record.key)
+    historical = _load_inspection_candidate(context.repository, record.key)
+    assert historical.definition.contract_version == 2
+    assert historical.content_identity.content_sha256 == record.content_sha256
+
+
+def test_registration_does_not_admit_runtime_but_loading_does_once(tmp_path, monkeypatch):
+    context, request = setup_account(tmp_path, MarketId.US, BarFrequency.DAILY, events=True)
+    original = EquityStrategyCandidate.verify
+    calls = []
+    def verify(candidate):
+        calls.append(candidate.source_root)
+        return original(candidate)
+    monkeypatch.setattr(EquityStrategyCandidate, "verify", verify)
+    record = register_candidate(context.repository, CandidateRegistrationRequest(request.candidate,
+        request.experiment, (), ()))
+    assert calls == []
+    load_candidate(context.repository, record.key)
+    assert len(calls) == 1
+    def wrong_environment(candidate):
+        raise ValueError("equity dependency version differs: synthetic")
+    monkeypatch.setattr(EquityStrategyCandidate, "verify", wrong_environment)
+    with pytest.raises(ValueError, match="dependency version differs"):
+        load_candidate(context.repository, record.key)
+
+
+def test_snapshot_source_mutation_is_rejected(tmp_path):
+    context, request = setup_account(tmp_path, MarketId.US, BarFrequency.DAILY, events=True)
+    source = request.candidate.source_root / request.candidate.definition.source_files[0]
+    source.write_bytes(b"changed")
+    with pytest.raises(ValueError, match="source closure changed"):
+        register_candidate(context.repository, CandidateRegistrationRequest(request.candidate,
+            request.experiment, (), ()))

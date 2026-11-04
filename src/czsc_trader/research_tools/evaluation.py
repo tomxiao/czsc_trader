@@ -1,47 +1,40 @@
-"""Shared research-evaluation Harness driven by SRT, TXE and SE contracts."""
+"""Shared evaluation metadata and explicit historical audit/review adapters.
+
+Ordinary account computation and publication use the V4 session chain.
+"""
 
 from __future__ import annotations
 
-from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field, replace
 from datetime import date
 from hashlib import sha256
 from math import isfinite
 from pathlib import Path, PureWindowsPath
-import platform
-from importlib import metadata
 import re
-import json
-from typing import Any, Mapping
-from types import MappingProxyType
+from typing import Any
 
 import numpy as np
 import pandas as pd
 from dataflows import Dataflows
 from strategy_evaluator import EvaluationProtocol, MetricObservation, MetricStatus
 from strategy_runtime import (
-    StrategyCandidate, StrategyRuntime, StrategyInputBinding,
-    canonical_sha256, ImplementationDependency,
-    ExecutionPriceBasis, ExecutionPricing,
+    StrategyCandidate, StrategyRuntime, canonical_sha256, ExecutionPriceBasis, ExecutionPricing,
 )
 from strategy_manager import CandidateKey, CandidateDerivation, CandidateDerivationKind
 from .parameter_evaluation import ParameterEvaluationBinding
-from strategy_runtime.implementation_identity import implementation_sha256
 from trading_execution_engine import ExecutionResult, MarketExecutionRules
 
 from ..backtesting.execution_data import (
     BacktestExecutionData,
     _prepare_backtest_execution_data,
-    _require_execution_frequencies,
-    _require_market_rules,
 )
-from ..backtesting.benchmarks import BuyHoldReplay, BenchmarkReplayScope, replay_buyhold
+from ..backtesting.benchmarks import BuyHoldReplay
 from ..backtesting.benchmark_contracts import EvaluationBenchmark
 from ..backtesting.models import StrategyIdentity, StrategySnapshot
 from ..backtesting.signal_replay import SignalReplay
 from ..backtesting.srt_bridge import (
     build_srt_signal_replay, execution_intraday_frequencies, load_srt_strategy,
-    replay_srt_account, prepare_srt_input_binding,
+    replay_srt_account,
 )
 
 METRIC_SEMANTICS_VERSION = "candidate-srt-txe-v5-market-limits"
@@ -101,57 +94,6 @@ class EvaluationCost:
             raise ValueError("invalid evaluation measurement tier")
 
 
-@dataclass(frozen=True)
-class EvaluationRequest:
-    """Complete researcher-owned input contract for one executable strategy."""
-
-    repository_root: Path
-    experiment_id: str
-    strategy: StrategyCandidate
-    runtime_binding: Mapping[str, object]
-    symbol: str
-    asset_type: str
-    windows: tuple[EvaluationWindow, ...]
-    data_cutoff: date
-    initial_cash: float
-    costs: tuple[EvaluationCost, ...]
-    execution_data: BacktestExecutionData | None = None
-    benchmark: EvaluationBenchmark = field(kw_only=True)
-    frequency_window_days: int = 60
-    execution_mode: str = "FULL"
-    lineage: EvaluationLineage | None = None
-    dependencies: tuple[ImplementationDependency, ...] = ()
-    input_bindings: Mapping[str, StrategyInputBinding] = field(default_factory=dict)
-    price_basis: ExecutionPriceBasis = ExecutionPriceBasis.HFQ_RESEARCH
-
-    def __post_init__(self):
-        if not isinstance(self.price_basis, ExecutionPriceBasis):
-            raise TypeError("price_basis requires ExecutionPriceBasis")
-        if type(self.data_cutoff) is not date:
-            raise TypeError("data_cutoff must be a date")
-        if not isinstance(self.strategy, StrategyCandidate):
-            raise TypeError("strategy must be StrategyCandidate")
-        if not isinstance(self.runtime_binding, Mapping):
-            raise TypeError("runtime_binding must be a mapping")
-        if not isinstance(self.windows, tuple) or not all(isinstance(item, EvaluationWindow) for item in self.windows):
-            raise TypeError("windows must be a tuple of EvaluationWindow")
-        if not isinstance(self.costs, tuple) or not all(isinstance(item, EvaluationCost) for item in self.costs):
-            raise TypeError("costs must be a tuple of EvaluationCost")
-        if isinstance(self.initial_cash, bool) or not isfinite(self.initial_cash) or self.initial_cash <= 0:
-            raise ValueError("initial_cash must be positive and finite")
-        if not isinstance(self.dependencies, tuple) or not all(isinstance(item, ImplementationDependency) for item in self.dependencies):
-            raise TypeError("dependencies must contain ImplementationDependency")
-        if self.lineage is not None and not isinstance(self.lineage, EvaluationLineage):
-            raise TypeError("lineage must be EvaluationLineage")
-        if not isinstance(self.input_bindings, Mapping) or any(
-            not isinstance(name, str) or not isinstance(binding, StrategyInputBinding)
-            for name, binding in self.input_bindings.items()
-        ):
-            raise TypeError("input_bindings must map window IDs to StrategyInputBinding")
-        if self.input_bindings and set(self.input_bindings) != {item.window_id for item in self.windows}:
-            raise ValueError("input_bindings must cover every evaluation window")
-        object.__setattr__(self, "input_bindings", MappingProxyType(dict(self.input_bindings)))
-        _validate_costs(self.costs)
 
 
 @dataclass(frozen=True, slots=True)
@@ -209,22 +151,6 @@ class EvaluationRun:
     identity: EvaluationIdentity | None = None
 
 
-@dataclass(frozen=True)
-class EvaluationResult:
-    """Complete, non-governance result returned by the research Harness."""
-
-    runs: tuple[EvaluationRun, ...]
-    request_hash: str = ""
-    strategy_identity: str = ""
-    runtime_binding_hash: str = ""
-    data_identity: str = ""
-    result_hash: str = ""
-    execution_mode: str = "FULL"
-    execution_data: BacktestExecutionData | None = field(default=None, repr=False, compare=False)
-
-    @property
-    def observations(self) -> tuple[MetricObservation, ...]:
-        return tuple(item.observation for item in self.runs)
 
 
 def _prepare_evaluation_workspace(
@@ -434,354 +360,18 @@ def _frame_hash(frame: pd.DataFrame) -> str:
     return sha256(payload.encode("utf-8")).hexdigest()
 
 
-def _validate_execution_result(
-    result: ExecutionResult,
-    execution_data: BacktestExecutionData,
-    start: pd.Timestamp,
-    end: pd.Timestamp,
-) -> None:
-    account = result.account_daily
-    required = {
-        "date", "cash_before", "quantity_before", "cash", "quantity", "close", "equity",
-    }
-    if not required.issubset(account.columns) or account.empty:
-        raise ValueError("TXE account ledger is incomplete")
-    dates = pd.DatetimeIndex(pd.to_datetime(account["date"])).normalize()
-    sessions = pd.DatetimeIndex(execution_data.evaluation_sessions).normalize()
-    expected = sessions[(sessions >= start) & (sessions <= end)]
-    if dates.has_duplicates or not dates.is_monotonic_increasing or not dates.equals(expected):
-        raise ValueError("TXE account ledger does not cover the evaluation sessions exactly")
-    numeric = account[["cash_before", "quantity_before", "cash", "quantity", "close", "equity"]].astype(float)
-    if not np.isfinite(numeric.to_numpy()).all():
-        raise ValueError("TXE account ledger contains non-finite values")
-    recomputed = numeric["cash"] + numeric["quantity"] * numeric["close"]
-    if not np.allclose(recomputed, numeric["equity"], rtol=0.0, atol=1e-8):
-        raise ValueError("TXE account equity does not reconcile to cash and holdings")
-    if len(account) > 1:
-        if not np.allclose(
-            numeric["cash_before"].iloc[1:], numeric["cash"].iloc[:-1],
-            rtol=0.0, atol=1e-8,
-        ):
-            raise ValueError("TXE cash ledger is not continuous")
-        if not np.array_equal(
-            numeric["quantity_before"].iloc[1:].to_numpy(),
-            numeric["quantity"].iloc[:-1].to_numpy(),
-        ):
-            raise ValueError("TXE holdings ledger is not continuous")
-    orders = result.orders
-    if not orders.empty:
-        if orders["order_id"].duplicated().any():
-            raise ValueError("TXE order ledger contains duplicate identities")
-        signal_dates = pd.to_datetime(orders["signal_date"]).dt.normalize()
-        execution_dates = pd.to_datetime(orders["execution_date"]).dt.normalize()
-        if execution_dates.lt(signal_dates).any():
-            raise ValueError("TXE order precedes its strategy signal")
-    fills = result.fills
-    if not fills.empty:
-        if fills["fill_id"].duplicated().any():
-            raise ValueError("TXE fill ledger contains duplicate identities")
-        if (fills["fees"].astype(float) < 0).any():
-            raise ValueError("TXE fill ledger contains negative fees")
-        if not set(fills["order_id"]).issubset(set(orders["order_id"])):
-            raise ValueError("TXE fills reference unknown orders")
 
 
-def _validate_buyhold(
-    benchmark: BuyHoldReplay,
-    execution_data: BacktestExecutionData,
-    start: pd.Timestamp,
-    end: pd.Timestamp,
-) -> None:
-    account = benchmark.account_daily
-    if account.empty or not {"date", "equity"}.issubset(account.columns):
-        raise ValueError("BuyHold account ledger is incomplete")
-    dates = pd.DatetimeIndex(pd.to_datetime(account["date"])).normalize()
-    sessions = pd.DatetimeIndex(execution_data.evaluation_sessions).normalize()
-    expected = sessions[(sessions >= start) & (sessions <= end)]
-    if not dates.equals(expected):
-        raise ValueError("BuyHold ledger does not use the strategy evaluation sessions")
-    if not np.isfinite(account["equity"].astype(float).to_numpy()).all():
-        raise ValueError("BuyHold ledger contains non-finite equity")
-    if benchmark.execution is not None:
-        _validate_execution_result(benchmark.execution, execution_data, start, end)
 
 
-def _evaluate_prepared(
-    context,
-    workspace,
-    replays,
-    candidate_ids,
-    costs,
-    *,
-    include_buyhold,
-    benchmark=None,
-    benchmark_scope: BenchmarkReplayScope | None = None,
-):
-    scope = BenchmarkReplayScope() if benchmark_scope is None else benchmark_scope
-    if type(scope) is not BenchmarkReplayScope:
-        raise TypeError("benchmark_scope requires BenchmarkReplayScope")
-    tasks = tuple(
-        (key, window, scenario, prepared, fee, measurement_tier)
-        for key in candidate_ids
-        for scenario, (fee, measurement_tier) in costs.items()
-        for window, prepared in replays[key].items()
-    )
-
-    def compute(task):
-        key, window, scenario, prepared, fee, measurement_tier = task
-        signals, execution = _execute_candidate_replay(context, workspace, prepared, fee)
-        _validate_execution_result(
-            execution,
-            workspace.execution_data,
-            signals.evaluation_start,
-            signals.evaluation_end,
-        )
-        observation = _observation(
-            context,
-            key,
-            window,
-            measurement_tier,
-            scenario,
-            execution,
-            workspace.execution_data,
-        )
-        buyhold = (
-            scope.replay(
-                signals, workspace.execution_data, context.init_cash,
-                benchmark=benchmark, calculate=replay_buyhold,
-            )
-            if include_buyhold
-            else None
-        )
-        if buyhold is not None:
-            _validate_buyhold(
-                buyhold,
-                workspace.execution_data,
-                signals.evaluation_start,
-                signals.evaluation_end,
-            )
-        return EvaluationRun(
-            key, window, scenario, signals, execution, observation, buyhold
-        )
-
-    if context.workers == 1 or len(tasks) < 2:
-        return tuple(map(compute, tasks))
-    with ThreadPoolExecutor(max_workers=min(context.workers, len(tasks))) as executor:
-        return tuple(executor.map(compute, tasks))
 
 
-def _evaluate_runs(context, protocol, candidates, candidate_ids, costs):
-    if type(context.workers) is not int or context.workers < 1:
-        raise ValueError("evaluation workers must be a positive integer")
-    _validate_costs(costs)
-    workspace, replays = _prepare_candidate_replays(context, protocol, candidates, candidate_ids)
-    runs = _evaluate_prepared(
-        context, workspace, replays, candidate_ids,
-        {item.scenario_id: (item.one_way_cost, item.measurement_tier) for item in costs},
-        include_buyhold=False,
-    )
-    return EvaluationResult(runs)
 
 
-def _validate_costs(costs: tuple[EvaluationCost, ...]) -> None:
-    if not isinstance(costs, tuple) or not costs or any(
-        not isinstance(item, EvaluationCost) for item in costs
-    ):
-        raise TypeError("evaluation costs require a non-empty tuple of EvaluationCost")
-    if len({item.scenario_id for item in costs}) != len(costs):
-        raise ValueError("evaluation cost scenario identities must be unique")
 
 
-def _request_contract(request: EvaluationRequest, *, require_execution: bool = True) -> tuple[dict[str, object], str]:
-    if not isinstance(request, EvaluationRequest):
-        raise TypeError("research evaluation requires an EvaluationRequest")
-    if request.lineage is not None and request.lineage.parameter_binding is not None:
-        from strategy_evaluator import ParameterNeighborhoodBinding
-        if type(request.lineage.parameter_binding.point) is not ParameterNeighborhoodBinding:
-            raise ValueError("legacy parameter bindings are historical read-only")
-    root = Path(request.repository_root).resolve()
-    if not root.is_dir():
-        raise ValueError("evaluation repository root is unavailable")
-    if not request.experiment_id or Path(request.experiment_id).name != request.experiment_id:
-        raise ValueError("evaluation experiment_id must be one path component")
-    candidate = request.strategy
-    if not isinstance(candidate, StrategyCandidate) or candidate.source_root is None:
-        raise ValueError("evaluation requires a sourced StrategyCandidate")
-    try:
-        candidate.source_root.relative_to(root)
-    except ValueError as exc:
-        raise ValueError("strategy runtime root must stay inside the repository") from exc
-    binding = request.runtime_binding
-    required_binding = {"candidate_id", "source_files", "implementation_sha256"}
-    if not isinstance(binding, Mapping) or not required_binding.issubset(binding):
-        raise ValueError("runtime binding is incomplete")
-    if binding["candidate_id"] != candidate.reference_id:
-        raise ValueError("runtime binding belongs to another strategy candidate")
-    source_files = binding["source_files"]
-    if (
-        not isinstance(source_files, list | tuple)
-        or not source_files
-        or any(not isinstance(item, str) or not item for item in source_files)
-        or len(source_files) != len(set(source_files))
-    ):
-        raise ValueError("runtime binding source_files are invalid")
-    descriptor = candidate.payload.get("runtime")
-    if not isinstance(descriptor, Mapping):
-        raise ValueError("strategy payload has no runtime descriptor")
-    if tuple(descriptor.get("source_files", ())) != tuple(source_files):
-        raise ValueError("strategy payload and runtime binding source files differ")
-    actual_source_hash = implementation_sha256(
-        tuple(source_files), source_root=candidate.source_root
-    )
-    if (
-        binding["implementation_sha256"] != actual_source_hash
-        or descriptor.get("source_sha256") != actual_source_hash
-    ):
-        raise ValueError("strategy source closure differs from the runtime binding")
-    binding_hash = canonical_sha256(binding)
-    identity = StrategyRuntime().identify(candidate, dependencies=request.dependencies)
-
-    symbol = request.symbol.upper()
-    asset_type = request.asset_type.lower()
-    if request.symbol != symbol or asset_type not in {"stock", "etf"}:
-        raise ValueError("evaluation symbol or asset_type is not normalized")
-    data = request.execution_data
-    if data is None and require_execution:
-        raise ValueError("evaluation requires prepared BacktestExecutionData")
-    if data is not None:
-        if not isinstance(data, BacktestExecutionData):
-            raise ValueError("evaluation requires prepared BacktestExecutionData")
-        _require_market_rules(data)
-        if data.pricing.basis is not request.price_basis:
-            raise ValueError("execution data price and quantity units differ from request")
-        if data.pricing.anchor_date is not None and any(data.pricing.anchor_date >= w.start for w in request.windows):
-            raise ValueError("HFQ anchor must precede every evaluation window")
-        required_frequencies = set(execution_intraday_frequencies(StrategyRuntime().describe(candidate)))
-        _require_execution_frequencies(data, tuple(sorted(required_frequencies)))
-        if (data.symbol, data.asset_type, data.cutoff) != (
-            symbol,
-            asset_type,
-            request.data_cutoff,
-        ):
-            raise ValueError("execution data identity differs from the evaluation contract")
-        if re.fullmatch(r"[0-9a-f]{64}", data.fingerprint) is None:
-            raise ValueError("execution data fingerprint must be lowercase SHA-256")
-        adjusted_sessions = pd.DatetimeIndex(
-            pd.to_datetime(pd.DataFrame(data.adjusted_daily, copy=False)["dt"])
-        ).normalize()
-        execution_sessions = pd.DatetimeIndex(
-            pd.to_datetime(pd.DataFrame(data.execution_daily, copy=False)["dt"])
-        ).normalize()
-        if (
-            adjusted_sessions.empty
-            or adjusted_sessions.has_duplicates
-            or not adjusted_sessions.is_monotonic_increasing
-            or execution_sessions.empty
-            or execution_sessions.has_duplicates
-            or not execution_sessions.is_monotonic_increasing
-        ):
-            raise ValueError("adjusted and execution market calendars differ")
-        common_start = max(adjusted_sessions[0], execution_sessions[0])
-        if not adjusted_sessions[adjusted_sessions >= common_start].equals(
-            execution_sessions[execution_sessions >= common_start]
-        ):
-            raise ValueError("adjusted and execution market calendars differ")
-        requested_sessions = pd.DatetimeIndex(data.evaluation_sessions).normalize()
-        tradable_sessions = requested_sessions.difference(pd.to_datetime(data.market_rules.suspended_sessions))
-        if (
-            requested_sessions.empty
-            or requested_sessions.has_duplicates
-            or not requested_sessions.is_monotonic_increasing
-            or requested_sessions[-1].date() != request.data_cutoff
-            or not tradable_sessions.isin(execution_sessions).all()
-            or not tradable_sessions.isin(adjusted_sessions).all()
-        ):
-            raise ValueError("execution evaluation sessions are incomplete")
-    if not np.isfinite(float(request.initial_cash)) or request.initial_cash <= 0:
-        raise ValueError("evaluation initial_cash must be positive and finite")
-    if request.execution_mode != "FULL":
-        raise ValueError("only FULL execution is allowed until equivalence is validated")
-    if type(request.frequency_window_days) is not int or request.frequency_window_days < 1:
-        raise ValueError("frequency_window_days must be a positive integer")
-    if type(request.benchmark) is not EvaluationBenchmark:
-        raise TypeError("evaluation requires an explicit EvaluationBenchmark")
-
-    if not request.windows:
-        raise ValueError("evaluation windows must not be empty")
-    window_ids = [item.window_id for item in request.windows]
-    if (
-        any(not name or Path(name).name != name or "/" in name or "\\" in name for name in window_ids)
-        or len(window_ids) != len(set(window_ids))
-    ):
-        raise ValueError("evaluation window identities must be nonblank and unique")
-    if any(item.end > request.data_cutoff for item in request.windows):
-        raise ValueError("evaluation window violates cutoff")
-    if data is not None:
-        sessions = requested_sessions
-        for item in request.windows:
-            start, end = pd.Timestamp(item.start), pd.Timestamp(item.end)
-            if start > end or start not in sessions or end not in sessions:
-                raise ValueError(f"evaluation window is not bounded by trading sessions: {item.window_id}")
-            if end.date() > request.data_cutoff or not (execution_sessions < start).any():
-                raise ValueError(f"evaluation window violates cutoff or warmup: {item.window_id}")
-
-    _validate_costs(request.costs)
-
-    return _request_identity_payload(request, identity.content_sha256, binding_hash), binding_hash
 
 
-def _request_identity_payload(
-    request: EvaluationRequest, content_sha256: str, binding_hash: str,
-) -> dict[str, object]:
-    """Project already authenticated request values without loading mutable source files."""
-    return {
-        "schema_version": 7,
-        "content_sha256": content_sha256,
-        "lineage": None if request.lineage is None else request.lineage.derivation.to_dict(),
-        "parameter_binding": None if request.lineage is None or request.lineage.parameter_binding is None
-        else request.lineage.parameter_binding.to_dict(),
-        "input_bindings": {name: item.to_dict() for name, item in request.input_bindings.items()},
-        "nonparameter_context_sha256": canonical_sha256({
-            "payload": {key: value for key, value in request.strategy.payload.items() if key != "parameters"},
-            "runtime_binding": {key: value for key, value in request.runtime_binding.items() if key != "candidate_id"},
-            "dependencies": [{"name": item.name, "version": item.version} for item in sorted(request.dependencies)],
-            "symbol": request.symbol, "asset_type": request.asset_type.lower(),
-            "windows": [{"id": x.window_id, "start": x.start.isoformat(), "end": x.end.isoformat()}
-                        for x in request.windows],
-            "cutoff": request.data_cutoff.isoformat(), "cash": request.initial_cash,
-            "costs": [{"id": x.scenario_id, "cost": x.one_way_cost, "tier": x.measurement_tier}
-                      for x in request.costs],
-            "data": None if request.execution_data is None else request.execution_data.fingerprint,
-            "price_basis": request.price_basis.value, "benchmark": request.benchmark.to_dict(),
-            "frequency_window_days": request.frequency_window_days, "mode": request.execution_mode,
-            "metric_version": METRIC_SEMANTICS_VERSION,
-        }),
-        "experiment_id": request.experiment_id,
-        "strategy_reference": request.strategy.reference_id,
-        "strategy_identity": request.strategy.runtime_identity_sha256,
-        "runtime_binding_hash": binding_hash,
-        "symbol": request.symbol,
-        "asset_type": request.asset_type.lower(),
-        "windows": [
-            {"window_id": x.window_id, "start": x.start.isoformat(), "end": x.end.isoformat()}
-            for x in request.windows
-        ],
-        "data_cutoff": request.data_cutoff.isoformat(),
-        "initial_cash": request.initial_cash,
-        "costs": [
-            {"scenario_id": x.scenario_id, "one_way_cost": x.one_way_cost,
-             "measurement_tier": x.measurement_tier}
-            for x in request.costs
-        ],
-        "data_identity": None if request.execution_data is None else request.execution_data.fingerprint,
-        "price_basis": request.price_basis.value,
-        "pricing": None if request.execution_data is None else request.execution_data.pricing.to_dict(),
-        "market_rules": None if request.execution_data is None else request.execution_data.market_rules.to_dict(),
-        "benchmark": request.benchmark.to_dict(),
-        "frequency_window_days": request.frequency_window_days,
-        "execution_mode": request.execution_mode,
-        "metric_semantics_version": METRIC_SEMANTICS_VERSION,
-    }
 
 
 def _evaluation_result_hash(request_hash: str, runs: tuple[EvaluationRun, ...]) -> str:
@@ -828,284 +418,17 @@ def _evaluation_result_hash(request_hash: str, runs: tuple[EvaluationRun, ...]) 
     return canonical_sha256({"request_hash": request_hash, "runs": evidence})
 
 
-def _prepare_evaluation_inputs(request: EvaluationRequest, *, dataflows: Dataflows) -> EvaluationRequest:
-    """Resolve all window inputs in the owning process before worker dispatch."""
-    return _bind_evaluation_inputs(request, dataflows=dataflows)
-
-
-def _bind_evaluation_inputs(request: EvaluationRequest, *, dataflows) -> EvaluationRequest:
-    _request_contract(request, require_execution=False)
-    if request.input_bindings:
-        if request.execution_data is None:
-            raise ValueError("bound evaluation requires its original execution data")
-        return request
-    if not isinstance(dataflows, Dataflows):
-        raise TypeError("evaluation requires host-supplied Dataflows")
-    if request.execution_data is None:
-        definition = StrategyRuntime().describe(request.strategy)
-        frequencies = set(execution_intraday_frequencies(definition))
-        request = replace(request, execution_data=_prepare_backtest_execution_data(
-            repository_root=Path(request.repository_root), symbol=request.symbol,
-            asset_type=request.asset_type, start=min(item.start for item in request.windows),
-            end=request.data_cutoff, intraday_frequencies=tuple(sorted(frequencies)),
-            dataflows=dataflows,
-            price_basis=request.price_basis,
-        ))
-    _request_contract(request)
-    snapshot = StrategySnapshot(
-        StrategyIdentity("CANDIDATE", request.strategy.reference_id, "research_evaluation"),
-        request.strategy.runtime_identity_sha256,
-        canonical_sha256(request.strategy.payload), dict(request.strategy.payload),
-        runtime_root=request.strategy.source_root,
-    )
-    bindings = {
-        window.window_id: prepare_srt_input_binding(
-            snapshot=snapshot, execution_data=request.execution_data,
-            start=pd.Timestamp(window.start), end=pd.Timestamp(window.end),
-            repository_root=Path(request.repository_root).resolve(), dataflows=dataflows,
-        )
-        for window in request.windows
-    }
-    return replace(request, input_bindings=bindings)
-
-
-def _evaluate_strategy(request: EvaluationRequest, *, dataflows: Dataflows, workers: int = 1,
-                       benchmark_scope: BenchmarkReplayScope | None = None,
-                       prepared_contract: bytes | None = None) -> EvaluationResult:
-    """Evaluate one strategy without candidate admission, ranking or governance writes."""
-
-    if prepared_contract is None:
-        request = _prepare_evaluation_inputs(request, dataflows=dataflows)
-        contract, binding_hash = _request_contract(request)
-    else:
-        from .account_preparation import _read
-        if type(prepared_contract) is not bytes or not request.input_bindings or request.execution_data is None:
-            raise TypeError("prepared computation requires immutable contract and pinned inputs")
-        contract = _read(prepared_contract)
-        binding_hash = contract["runtime_binding_hash"]
-        actual = _request_identity_payload(request, contract["content_sha256"], binding_hash)
-        if canonical_sha256(actual) != canonical_sha256(contract):
-            raise ValueError("worker request differs from its authenticated preparation")
-    request_hash = canonical_sha256(contract)
-    periods = tuple(
-        (
-            item.window_id,
-            (pd.Timestamp(item.start), pd.Timestamp(item.end)),
-        )
-        for item in request.windows
-    )
-    context = _CandidateEvaluationContext(
-        repository=type(
-            "EvaluationRepository",
-            (),
-            {"root": Path(request.repository_root).resolve()},
-        )(),
-        symbol=request.symbol,
-        asset_type=request.asset_type,
-        periods=periods,
-        fee_rate=request.costs[0].one_way_cost,
-        init_cash=request.initial_cash,
-        workers=workers,
-        frequency_window_days=request.frequency_window_days,
-        family_id=request.strategy.strategy_family_id,
-        _dataflows=dataflows,
-    )
-    snapshot = StrategySnapshot(
-        StrategyIdentity("CANDIDATE", request.strategy.reference_id, "research_evaluation"),
-        request.strategy.runtime_identity_sha256,
-        canonical_sha256(request.strategy.payload),
-        dict(request.strategy.payload),
-        runtime_root=request.strategy.source_root,
-    )
-    workspace = _EvaluationWorkspace(request.execution_data, dict(periods))
-    replays = {
-        request.strategy.candidate_id: {
-            name: build_srt_signal_replay(
-                snapshot=snapshot,
-                execution_data=request.execution_data,
-                start=start,
-                end=end,
-                repository_root=Path(request.repository_root).resolve(),
-                dataflows=context._dataflows,
-                input_binding=request.input_bindings[name],
-            )
-            for name, (start, end) in periods
-        }
-    }
-    runs = _evaluate_prepared(
-        context,
-        workspace,
-        replays,
-        (request.strategy.candidate_id,),
-        {
-            item.scenario_id: (item.one_way_cost, item.measurement_tier)
-            for item in request.costs
-        },
-        include_buyhold=True,
-        benchmark=request.benchmark,
-        benchmark_scope=benchmark_scope,
-    )
-    environment = canonical_sha256({
-        "python": platform.python_version(), "platform": platform.platform(),
-        "numpy": np.__version__, "pandas": pd.__version__,
-        "implementation": implementation_sha256(("models.py", "runtime.py", "identity.py", "loader.py",
-            "strategy.py", "prepared_store.py", "replay_kernel.py", "replay_contracts.py", "replay_adapters.py"), source_root=Path(__import__("strategy_runtime").__file__).parent),
-        "evaluator": sha256(Path(__file__).read_bytes()).hexdigest(),
-        "benchmark_source": {
-            name: sha256((Path(__file__).parents[1] / "backtesting" / name).read_bytes()).hexdigest()
-            for name in ("benchmark_contracts.py", "benchmarks.py", "_limit_buyhold.py")
-        },
-        "srt_execution_source": {
-            name: sha256((Path(__import__("strategy_runtime").__file__).parent / name).read_bytes()).hexdigest()
-            for name in ("execution_planner.py", "execution_rules.py", "contracts.py", "entry_cycle.py")
-        },
-        "packages": {
-            name: metadata.version(name) for name in (
-                "czsc-dataflows", "czsc-strategy-runtime", "czsc-strategy-evaluator",
-                "czsc-trading-execution-engine", "threadpoolctl",
-            )
-        },
-        "txe_source": {
-            path.relative_to(Path(__import__("trading_execution_engine").__file__).parent).as_posix(): sha256(path.read_bytes()).hexdigest()
-            for path in sorted(Path(__import__("trading_execution_engine").__file__).parent.rglob("*.py"))
-        },
-    })
-    windows_by_id = {item.window_id: item for item in request.windows}
-    costs_by_id = {item.scenario_id: item for item in request.costs}
-    identified = []
-    for run in runs:
-        window = windows_by_id[run.window_id]
-        cost = costs_by_id[run.scenario_id]
-        protocol_hash = canonical_sha256({
-            "window_id": run.window_id, "scenario_id": run.scenario_id,
-            "start": window.start.isoformat(), "end": window.end.isoformat(),
-            "initial_cash": request.initial_cash, "cost": cost.one_way_cost,
-            "tier": cost.measurement_tier, "benchmark": request.benchmark.to_dict(),
-            "frequency_window_days": request.frequency_window_days,
-            "metric_version": METRIC_SEMANTICS_VERSION, "execution_mode": request.execution_mode,
-            "pricing": request.execution_data.pricing.to_dict(),
-        })
-        identity = EvaluationIdentity(
-            CandidateKey(request.strategy.strategy_family_id, request.strategy.candidate_id),
-            contract["content_sha256"],
-            canonical_sha256({"execution": request.execution_data.fingerprint, "signal": run.signals.data_identity}),
-            protocol_hash, environment,
-        )
-        identified.append(replace(run, identity=identity))
-    runs = tuple(identified)
-    result_hash = _evaluation_result_hash(request_hash, runs)
-    return EvaluationResult(
-        runs=runs,
-        request_hash=request_hash,
-        strategy_identity=request.strategy.runtime_identity_sha256,
-        runtime_binding_hash=binding_hash,
-        data_identity=request.execution_data.fingerprint,
-        result_hash=result_hash,
-        execution_mode=request.execution_mode,
-        execution_data=request.execution_data,
-    )
-
-
-def _evaluate_candidate_payloads(context, protocol, candidates, candidate_ids, costs):
-    """Produce candidate observations for internal review and audit workflows."""
-    return _evaluate_runs(context, protocol, candidates, candidate_ids, costs).observations
-
-
-def _signal_table(value):
-    table = json.loads(
-        value.to_json(orient="table", date_format="iso", date_unit="ns", index=False)
-    )
-    # pandas JSON limits doubles to 15 digits. Keep Python float values so the
-    # enclosing JSON writer preserves the full binary64 round-trip precision.
-    for encoded, original in zip(table["data"], value.to_dict(orient="records")):
-        for name, cell in original.items():
-            if isinstance(cell, float) and isfinite(cell):
-                encoded[name] = cell
-    return table
 
 
 
-def serialize_evaluation_evidence(request: EvaluationRequest, result: EvaluationResult) -> dict:
-    """Project authenticated account facts only when their retention is requested."""
-    from .assessment import _assessment_with_replays
 
-    if type(request) is not EvaluationRequest or type(result) is not EvaluationResult:
-        raise TypeError("evidence requires EvaluationRequest and EvaluationResult")
-    if request.execution_data is None:
-        request = replace(request, execution_data=result.execution_data)
-    if not request.input_bindings:
-        bindings = {
-            run.window_id: StrategyInputBinding.from_mapping(run.signals.support_data["input_binding"])
-            for run in result.runs
-        }
-        request = replace(request, input_bindings=bindings)
-    evaluated = _assessment_with_replays(
-        request, result,
-    )
 
-    def frame(value):
-        table = _signal_table(value)
-        table["dtypes"] = {name: str(dtype) for name, dtype in value.dtypes.items()}
-        return table
 
-    runs = []
-    assessment = []
-    for run, (evidence, replay) in zip(result.runs, evaluated, strict=True):
-        assessment.append(evidence)
-        item = {
-            "identity": run.identity.to_dict(),
-            "replay_evidence": replay.to_dict(),
-            "window_id": run.window_id,
-            "scenario_id": run.scenario_id,
-            "candidate_id": run.candidate_id,
-            "signals": _signal_table(run.signals.decisions),
-            "signal_dtypes": {
-                name: str(dtype) for name, dtype in run.signals.decisions.dtypes.items()
-            },
-            "signal_data_identity": run.signals.data_identity,
-            "signal_support": run.signals.support_data,
-            "signal_window": {
-                "calculation_start": run.signals.calculation_start.isoformat(),
-                "evaluation_start": run.signals.evaluation_start.isoformat(),
-                "evaluation_end": run.signals.evaluation_end.isoformat(),
-            },
-            "observation": run.observation.to_dict(),
-            "ledgers": {
-                name: frame(getattr(run.execution, name))
-                for name in ("decisions", "orders", "fills", "account_daily", "trades")
-            },
-            "buyhold": None
-            if run.buyhold is None
-            else {
-                "account_daily": frame(run.buyhold.account_daily),
-                "orders": frame(run.buyhold.orders),
-                "attempts": frame(run.buyhold.attempts),
-                "fills": frame(run.buyhold.fills),
-                "metrics": run.buyhold.metrics,
-                "benchmark": run.buyhold.benchmark.to_dict(),
-                "execution": None if run.buyhold.execution is None else {
-                    name: frame(getattr(run.buyhold.execution, name))
-                    for name in ("decisions", "orders", "fills", "account_daily", "trades")
-                },
-            },
-        }
-        runs.append(item)
-    return {
-            "schema_version": 8,
-            "source_kind": "published_result",
-            "request_identity": _request_identity_payload(
-                request, result.runs[0].identity.content_sha256, result.runtime_binding_hash
-            ),
-            "request_hash": result.request_hash,
-            "strategy_identity": result.strategy_identity,
-            "runtime_binding_hash": result.runtime_binding_hash,
-            "data_identity": result.data_identity,
-            "execution_mode": result.execution_mode,
-            "input_bindings": {name: binding.to_dict() for name, binding in request.input_bindings.items()},
-            "result_hash": result.result_hash,
-            "runs": runs,
-            "assessment_evidence": [item.to_dict() for item in assessment],
-    }
+
+
+
+
+
 
 
 def _evidence_frame(value: dict, *, dtypes: dict | None = None) -> pd.DataFrame:

@@ -93,6 +93,17 @@ class CandidateEvidence(_Record):
         _hash(self.sha256)
 
     def resolve(self, root: Path) -> Path:
+        return self._read_verified(root)[0]
+
+    def _read_verified(self, root: Path) -> tuple[Path, bytes]:
+        path = self._resolve_path(root)
+        data = path.read_bytes()
+        if sha256(data).hexdigest() != self.sha256:
+            raise ValidationError(f"candidate evidence hash differs: {self.path}")
+        return path, data
+
+    def _resolve_path(self, root: Path) -> Path:
+        """Resolve a local retained file without reading or authenticating its bytes."""
         root = Path(root).resolve()
         path = root
         for part in PurePosixPath(self.path).parts:
@@ -102,8 +113,6 @@ class CandidateEvidence(_Record):
         path = path.resolve()
         if not path.is_relative_to(root) or not path.is_file():
             raise ValidationError("candidate evidence is missing or escapes its root")
-        if sha256(path.read_bytes()).hexdigest() != self.sha256:
-            raise ValidationError(f"candidate evidence hash differs: {self.path}")
         return path
 
 
@@ -259,11 +268,17 @@ class CandidateRegistration(_Record):
 
 
 def validate_registration_files(record: CandidateRegistration, root: Path) -> None:
-    for ref in (record.payload, *record.origin.evidence, *record.source_files):
+    """Explicitly verify retained implementation and all historical attachments."""
+    _validate_candidate_snapshot(record, root)
+    for ref in record.origin.evidence:
         ref.resolve(root)
     if record.derivation:
         record.derivation.evidence.resolve(root)
-    payload = json.loads(record.payload.resolve(root).read_text(encoding="utf-8"))
+
+
+def _validate_candidate_snapshot(record: CandidateRegistration, root: Path) -> None:
+    """Check only the payload/source snapshot being registered, each file once."""
+    payload = json.loads(record.payload._read_verified(root)[1])
     if not isinstance(payload, dict) or not isinstance(payload.get("runtime"), dict):
         raise ValidationError("registered payload lacks runtime descriptor")
     descriptor = payload["runtime"]
@@ -281,7 +296,7 @@ def validate_registration_files(record: CandidateRegistration, root: Path) -> No
     for name in sorted(by_name):
         digest.update(name.encode("utf-8"))
         digest.update(b"\0")
-        digest.update(by_name[name].resolve(root).read_bytes())
+        digest.update(by_name[name]._read_verified(root)[1])
         digest.update(b"\0")
     if (
         digest.hexdigest() != record.source_sha256

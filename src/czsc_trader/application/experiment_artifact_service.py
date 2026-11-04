@@ -61,10 +61,6 @@ def _read_report(root, reference):
     snapshot = ExperimentReportSnapshot.from_dict(_strict_json(data))
     if reference.schema != "experiment_report" or reference.schema_version != 1 or snapshot.experiment != reference.experiment:
         raise ValueError("report snapshot identity differs")
-    for source in snapshot.evidence:
-        source.resolve(root)
-    if snapshot.previous is not None:
-        snapshot.previous.resolve(root)
     return snapshot
 
 
@@ -77,10 +73,6 @@ def _validate_report_request(root, request):
     text = data.decode("utf-8")
     if not text.strip():
         raise ValueError("root report must be nonempty")
-    for reference in request.evidence:
-        reference.resolve(root)
-    if request.previous is not None:
-        _read_report(root, request.previous)
     return data
 
 
@@ -192,6 +184,12 @@ def validate_experiment(repository: RepositoryContext,
                 issues.append(ExperimentIssue("REPORT_UNPUBLISHED", "experiment has no published report"))
             else:
                 snapshot = _read_report(root, report)
+                # Related evidence verification belongs to this explicitly
+                # requested check, never to ordinary report publication.
+                for reference in snapshot.evidence:
+                    reference._read_verified(root)
+                if snapshot.previous is not None:
+                    snapshot.previous._read_verified(root)
                 source = managed_path(root, f"{request.experiment.repository_path}/report.md")
                 if sha256(source.read_bytes()).hexdigest() != snapshot.report_sha256:
                     issues.append(ExperimentIssue("REPORT_MODIFIED", "root report contains unpublished changes"))

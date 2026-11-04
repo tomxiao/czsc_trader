@@ -143,7 +143,9 @@ def _check_equity_delivery(research, request, plan, plan_ref, children, executio
         def forbidden(*args, **kwargs):
             raise AssertionError("publication must not certify accounts, recurse or recompute")
         with monkeypatch.context() as storage_only:
-            for name in ("_read_delivery", "_certify_account"):
+            # Local storage validation is allowed, including an idempotent retry.
+            # Research content certification and historical expansion are not.
+            for name in ("_validate_content", "_certify_account"):
                 storage_only.setattr(delivery_service, name, forbidden)
             assembled = assemble_delivery(context, definition, content(payload))
             assert assemble_delivery(context, definition, content(payload)).receipt == assembled.receipt

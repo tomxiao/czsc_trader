@@ -47,6 +47,7 @@ from .candidates import (
     CandidateRegistration,
     CandidateIdentityConflict,
     validate_registration_files,
+    _validate_candidate_snapshot,
     _registration_evidence_root,
 )
 
@@ -100,7 +101,7 @@ class StrategyRegistry:
         if record.schema_version != 3:
             raise ValidationError("new candidate registrations require schema 3")
         self.get_family(record.key.strategy_id)
-        validate_registration_files(
+        _validate_candidate_snapshot(
             record, _registration_evidence_root(evidence_root)
         )
         path = (
@@ -109,7 +110,7 @@ class StrategyRegistry:
             / f"{record.key.candidate_id}.json"
         )
         if path.exists():
-            existing = self.get_candidate(record.key, evidence_root=evidence_root)
+            existing = self.get_candidate_registration(record.key)
             if existing.record_sha256 != record.record_sha256:
                 raise CandidateIdentityConflict(
                     "candidate key is already bound to different content"

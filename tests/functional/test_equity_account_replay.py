@@ -188,8 +188,7 @@ def test_account_requires_explicit_owned_session(tmp_path):
         context.evaluation.prepare(request)
     with pytest.raises(TypeError, match="explicit ResearchExecutionSession"):
         prepare_equity(context.evaluation, request, execution=None)
-    with pytest.raises(TypeError, match="evaluate_many"):
-        context.evaluation.evaluate(request)
+    assert not hasattr(context.evaluation, "evaluate")
     with pytest.raises(TypeError, match="session-owned"):
         context.evaluation.evaluate_many((request,))
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:

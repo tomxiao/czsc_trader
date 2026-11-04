@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from strategy_manager import StrategyRegistry, StrategyVersion, canonical_sha256
-from strategy_runtime import StrategyCandidate
+from strategy_manager import StrategyRegistry, StrategyVersion
 from dataflows import Dataflows
 
 from czsc_trader.backtesting import (
     BacktestRequest,
-    resolve_candidate_snapshot,
     resolve_registered_strategy,
 )
 from czsc_trader.backtesting.service import _run_backtest, BacktestEvaluation
@@ -22,63 +20,47 @@ from .runtime_acceptance import _plain
 
 def run_backtest(
     context: ResearchContext,
-    strategy: StrategyCandidate | StrategyVersion,
+    strategy: StrategyVersion,
     request: BacktestRequest,
 ) -> BacktestEvaluation:
-    """Replay a candidate or an authenticated frozen version through one engine.
+    """Explicitly backtest an existing frozen version without publishing reports.
 
-    Returns audited candidate or frozen-version accounts without storing reports.
-    This operation does not register, freeze or deploy the supplied strategy.
+    Research candidates use the V4 execution session for either market.
     """
     if not isinstance(context, ResearchContext):
         raise TypeError("backtest requires ResearchContext")
     from strategy_runtime.equity_definition import EquityStrategyCandidate
     from ..research_tools.equity_evaluation import EquityEvaluationRequest
     if type(strategy) in (EquityStrategyCandidate,) or type(request) is EquityEvaluationRequest:
-        raise TypeError("US equity replay requires ResearchExecutionSession, prepare and evaluate_many with session-owned V4 requests")
+        raise TypeError("Research account replay requires ResearchExecutionSession, prepare and evaluate_many with session-owned V4 requests")
     if context.execution_spec is not None:
         raise ValueError("explicit equity context cannot execute an exchange-bound legacy request")
-    if not isinstance(strategy, (StrategyCandidate, StrategyVersion)):
-        raise TypeError("backtest strategy must be StrategyCandidate or StrategyVersion")
+    if type(strategy) is not StrategyVersion:
+        raise TypeError("run_backtest requires a frozen StrategyVersion; candidates use V4 prepare/evaluate_many")
     if not isinstance(request, BacktestRequest):
         raise TypeError("backtest request must be BacktestRequest")
-    batch_id = strategy.strategy_family_id if isinstance(strategy, StrategyCandidate) else strategy.strategy_id
-    if batch_id != context.strategy_id:
+    if strategy.strategy_id != context.strategy_id:
         raise ExecutionError("backtest_failed", "backtest strategy belongs to another research batch",
-                             context={"strategy": strategy.reference_id if isinstance(strategy, StrategyCandidate)
-                                      else strategy.release_id, "symbol": request.symbol})
+                             context={"strategy": strategy.release_id, "symbol": request.symbol})
     return _run_authenticated_backtest(context.repository, strategy, request, context.data)
 
 
 def _run_authenticated_backtest(
     repository: RepositoryContext,
-    strategy: StrategyCandidate | StrategyVersion,
+    strategy: StrategyVersion,
     request: BacktestRequest,
     dataflows: Dataflows,
 ) -> BacktestEvaluation:
     """Shared calculation and identity checks for research and independent runs."""
-    reference = (
-        strategy.reference_id if isinstance(strategy, StrategyCandidate) else strategy.release_id
-    )
+    if type(strategy) is not StrategyVersion:
+        raise TypeError("authenticated backtest requires a frozen StrategyVersion")
+    reference = strategy.release_id
     try:
-        if isinstance(strategy, StrategyCandidate):
-            payload = _plain(strategy.payload)
-            snapshot = resolve_candidate_snapshot(
-                repository,
-                strategy.reference_id,
-                payload,
-                canonical_sha256(payload),
-                f"candidate:{strategy.reference_id}",
-                runtime_root=strategy.source_root,
-            )
-        else:
-            stored = StrategyRegistry(repository.strategy_root).get_version(
-                strategy.strategy_id,
-                strategy.version,
-            )
-            if stored.to_dict() != strategy.to_dict():
-                raise ValueError("backtest version differs from the frozen registry record")
-            snapshot = resolve_registered_strategy(repository, strategy.strategy_id, strategy.version)
+        stored = StrategyRegistry(repository.strategy_root).get_version(
+            strategy.strategy_id, strategy.version)
+        if stored.to_dict() != strategy.to_dict():
+            raise ValueError("backtest version differs from the frozen registry record")
+        snapshot = resolve_registered_strategy(repository, strategy.strategy_id, strategy.version)
         summary = _run_backtest(
             snapshot=snapshot,
             request=request,

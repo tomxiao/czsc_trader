@@ -1,5 +1,5 @@
 """Public account diagnosis authenticates retained accounts without executing them."""
-from evaluation_seed_support import prepare_request
+from historical_evaluation_support import prepare_historical, evaluate_historical, publish_historical
 
 from dataclasses import replace
 from datetime import date
@@ -19,9 +19,18 @@ from czsc_trader.research_tools.account_diagnosis import (
     DecisionPopulationRef,
 )
 from czsc_trader.research_tools.evaluation import EvaluationWindow
-from czsc_trader.research_tools.evidence import EvaluationEvidenceWrite, MaterialEvidenceWrite
+from czsc_trader.research_tools.evidence import MaterialEvidenceWrite
 from strategy_evaluator.account_diagnosis import AccountDiagnosisStatus
 from public_backtest_support import request_for_prices
+
+
+def _prepare_diagnosis_fixture(context, request):
+    from czsc_trader.backtesting.execution_data import _prepare_backtest_execution_data
+    window, = request.windows
+    data = _prepare_backtest_execution_data(repository_root=context.repository.root,
+        symbol=request.symbol, asset_type=request.asset_type, start=window.start, end=window.end,
+        dataflows=context.data, price_basis=request.price_basis)
+    return prepare_historical(context, replace(request, execution_data=data))
 
 
 @pytest.fixture
@@ -45,11 +54,9 @@ def fresh_retained_account(candidate_payload, tmp_path, monkeypatch):
     experiment = create_experiment(
         context, ExperimentRequest("Diagnosis", "Accounting", days[-1].date())
     )
-    request = prepare_request(context, replace(request, experiment_id=experiment.experiment_id))
-    result = context.evaluation.evaluate(request)
-    evidence = publish_evidence(
-        context, EvaluationEvidenceWrite(experiment, "account", request, result)
-    )
+    request = _prepare_diagnosis_fixture(context, replace(request, experiment_id=experiment.experiment_id))
+    result = evaluate_historical(context, request)
+    evidence = publish_historical(context, request, result)
     return context, request, result, evidence
 
 
@@ -81,7 +88,7 @@ def test_authenticated_hfq_account_decomposes_daily_years_and_inherited_window(
     reference = AccountRunRef(evidence, run.identity)
     # A replay attempt would be a contract violation. Diagnosis reads saved facts only.
     monkeypatch.setattr(
-        type(context.evaluation), "evaluate", lambda *a, **k: pytest.fail("unexpected replay")
+        type(context.evaluation), "evaluate_many", lambda *a, **k: pytest.fail("unexpected replay")
     )
     diagnosis = diagnose_accounts(
         context.repository, AccountDiagnosisRequest(reference, None, request.windows[0])
@@ -183,10 +190,8 @@ def test_pair_comparison_preserves_ids_and_rejects_different_costs(retained_acco
     assert all(p.equity_difference == 0 for p in identical.daily_paths)
     assert all(p.baseline_cycle_id == p.alternative_cycle_id for p in identical.path_comparison)
     other_request = replace(request, costs=(replace(request.costs[0], one_way_cost=0.002),))
-    other_result = context.evaluation.evaluate(other_request)
-    other_evidence = publish_evidence(
-        context, EvaluationEvidenceWrite(evidence.experiment, "other", other_request, other_result)
-    )
+    other_result = evaluate_historical(context, other_request)
+    other_evidence = publish_historical(context, other_request, other_result)
     other = AccountRunRef(other_evidence, other_result.runs[0].identity)
     mismatch = diagnose_accounts(
         context.repository, AccountDiagnosisRequest(reference, other, request.windows[0])
@@ -252,15 +257,13 @@ def test_target_without_actual_order_is_not_counted_as_buy_intent(
     experiment = create_experiment(
         context, ExperimentRequest("No-order", "Cash too small", days[-1].date())
     )
-    request = prepare_request(context, replace(request, experiment_id=experiment.experiment_id))
-    result = context.evaluation.evaluate(request)
+    request = _prepare_diagnosis_fixture(context, replace(request, experiment_id=experiment.experiment_id))
+    result = evaluate_historical(context, request)
     run = result.runs[0]
     assert run.execution.orders.empty
     assert run.execution.fills.empty
     assert run.execution.decisions.target_position.eq(1).any()
-    evidence = publish_evidence(
-        context, EvaluationEvidenceWrite(experiment, "small-account", request, result)
-    )
+    evidence = publish_historical(context, request, result)
     payload = {
         "schema_version": 1,
         "population_id": "all-unknown",

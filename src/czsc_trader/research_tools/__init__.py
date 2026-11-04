@@ -78,15 +78,11 @@ from .evidence import (
 )
 
 from .evaluation import (
-    METRIC_SEMANTICS_VERSION,
     BuyHoldReplay,
     EvaluationBenchmark,
     EvaluationCost,
-    EvaluationRequest,
     EvaluationIdentity,
     EvaluationLineage,
-    EvaluationResult,
-    EvaluationRun,
     EvaluationWindow,
 )
 
@@ -215,15 +211,11 @@ __all__ = [
     'PublicationStatus',
     'PublicationError',
     'PublicationOutcome',
-    'METRIC_SEMANTICS_VERSION',
     'BuyHoldReplay',
     'EvaluationBenchmark',
     'EvaluationCost',
-    'EvaluationRequest',
     'EvaluationIdentity',
     'EvaluationLineage',
-    'EvaluationResult',
-    'EvaluationRun',
     'EvaluationWindow',
     'ExecutionResources',
     'EvaluationStatus',

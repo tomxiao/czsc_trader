@@ -50,7 +50,9 @@ record = registry.get_candidate(record.key, evidence_root=evidence_root)
 序列化记录须包含上述两个版本字段，旧schema 1/2登记明确拒绝，不自动迁移。
 研究员通过TDR的`register_candidate/load_candidate`使用上述能力。TDR将载荷和源码快照保存到
 `research/<策略ID>/assets/candidates/<候选ID>/`，登记可不附证据，也可引用同批次显式发布的普通材料与账户评价。
-SM核验引用文件完整性；TDR对声明为账户评价的材料额外核验账户事实及候选身份。登记不表示研究结论成立或交付就绪，
+SM普通登记只读取并核对本次载荷及源码快照，单次操作复用捕获的文件字节；来源和派生附件作为声明留存，不自动认证其内容。
+显式`get_candidate`仍核验全部留存引用；`get_candidate_registration`只读取登记元数据。
+TDR新登记仅支持V4候选，核对直接账户结果头的身份，不展开账户依赖、不独立审计或重算指标。登记不表示研究结论成立或交付就绪，
 正式`CANDIDATES`交付仍由TDR要求每个条目关联真实账户评价。登记schema与身份算法保持不变，历史记录不改写。
 阶段五运行加载只核对登记元数据、载荷、源码及依赖；来源研究引用作为元数据保留，不要求阶段一至四档案可读。
 

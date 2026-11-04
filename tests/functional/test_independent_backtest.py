@@ -9,9 +9,8 @@ import re
 import pandas as pd
 import pytest
 from dataflows import DataSpace
-from strategy_manager import CandidateKey
 
-from czsc_trader.application import BacktestRequest, load_candidate, run_backtest
+from czsc_trader.application import BacktestRequest, run_backtest
 from czsc_trader.cli.main import main
 from public_backtest_support import assert_public_charts, research_context
 from test_backtest import execution_flows
@@ -32,17 +31,11 @@ def _research_files(root):
             for path in (root / "research").rglob("*") if path.is_file()}
 
 
-@pytest.mark.parametrize("kind", ["candidate", "frozen"])
 def test_cli_accounts_match_research_api_and_keep_historical_output_layout(
-    kind, request, monkeypatch, capsys,
+    current_frozen, monkeypatch, capsys,
 ):
-    if kind == "candidate":
-        repository = request.getfixturevalue("inspection")[0]
-        strategy = load_candidate(repository, CandidateKey("S900", "C0001"))
-        selector, reference = ["--candidate-id", "C0001"], "S900-C0001"
-    else:
-        repository, strategy = request.getfixturevalue("current_frozen")
-        selector, reference = ["--strategy-version", "v1"], "S900-v1"
+    repository, strategy = current_frozen
+    selector, reference = ["--strategy-version", "v1"], "S900-v1"
     flows = execution_flows(repository.root, space=DataSpace(Path("data/backtest")))
     monkeypatch.setattr("czsc_trader.cli.backtest._independent_data", lambda _: flows)
     monkeypatch.chdir(repository.root)
@@ -90,14 +83,15 @@ def test_cli_accounts_match_research_api_and_keep_historical_output_layout(
 
 
 @pytest.mark.parametrize("selector", [[], ["--candidate-id", "C0001", "--strategy-version", "v1"],
-                                       ["--candidate-id", "invalid"]])
-def test_cli_rejects_missing_ambiguous_or_invalid_subject_without_output(
+                                       ["--candidate-id", "C0001"], ["--candidate-id", "invalid"]])
+def test_cli_rejects_missing_or_retired_subject_without_output(
     selector, minimal_repo, monkeypatch, capsys,
 ):
     monkeypatch.chdir(minimal_repo)
     assert main(_arguments(selector)) != 0
     result = json.loads(capsys.readouterr().out)
     assert result["status"] == "FAIL" and result["artifacts"] == {}
+    assert result["error"]["code"] == "invalid_arguments"
     assert not (minimal_repo / "outputs").exists()
     assert not (minimal_repo / "data").exists()
 

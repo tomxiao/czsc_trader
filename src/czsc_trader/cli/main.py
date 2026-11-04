@@ -41,9 +41,9 @@ def _context(args: argparse.Namespace) -> RepositoryContext:
 
 
 def _backtest_run(args: argparse.Namespace):
-    from strategy_manager import StrategyRegistry, StrategyManagerError, CandidateKey
+    from strategy_manager import StrategyRegistry, StrategyManagerError
     from strategy_runtime import ExecutionPriceBasis
-    from czsc_trader.application import BacktestRequest, load_candidate
+    from czsc_trader.application import BacktestRequest
     from czsc_trader.application.errors import ValidationError
     from .backtest import run_independent_backtest
 
@@ -54,9 +54,7 @@ def _backtest_run(args: argparse.Namespace):
     except (TypeError, ValueError) as exc:
         raise ValidationError("backtest_request_invalid", str(exc)) from exc
     try:
-        strategy = (load_candidate(context, CandidateKey(args.strategy, args.candidate_id))
-                    if args.candidate_id is not None else
-                    StrategyRegistry(context.strategy_root).get_version(args.strategy, args.strategy_version))
+        strategy = StrategyRegistry(context.strategy_root).get_version(args.strategy, args.strategy_version)
     except (StrategyManagerError, ValueError, OSError) as exc:
         raise ValidationError("backtest_strategy_invalid", str(exc)) from exc
     output_root = Path(args.outputs_root)
@@ -73,11 +71,9 @@ def build_parser() -> argparse.ArgumentParser:
     backtest_actions = backtest.add_subparsers(
         dest="action", required=True, parser_class=CommandParser
     )
-    backtest_run = backtest_actions.add_parser("run", help="run an independent backtest and save reports")
+    backtest_run = backtest_actions.add_parser("run", help="backtest a frozen version and save reports")
     backtest_run.add_argument("--strategy", required=True)
-    selection = backtest_run.add_mutually_exclusive_group(required=True)
-    selection.add_argument("--strategy-version", help="registered frozen version, for example v1")
-    selection.add_argument("--candidate-id", help="registered candidate, for example C0621")
+    backtest_run.add_argument("--strategy-version", required=True, help="registered frozen version, for example v1")
     backtest_run.add_argument("--outputs-root", default="outputs", help="output root, relative to repository by default")
     backtest_run.add_argument("--symbol", required=True)
     backtest_run.add_argument("--asset", required=True, choices=("stock", "etf"))

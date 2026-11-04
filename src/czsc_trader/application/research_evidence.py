@@ -175,13 +175,13 @@ def validate_migration_selection(context, subject):
     from strategy_manager import StrategyRegistry
     from strategy_runtime import StrategyRuntime, RuntimeBinding, ImplementationDependency
     from ..research_tools.evidence import EvidenceRef
-    from .candidate_service import load_candidate
+    from ._inspection_candidate import _load_inspection_candidate
     from .runtime_acceptance import prospective_release
     from .runtime_migration import validate_frozen_runtime_migration, validate_frozen_observation_upgrade, _migration_original
 
     if type(subject) not in (f.FrozenMigrationSelectionSubject, f.FrozenObservationUpgradeSelectionSubject):
         raise TypeError("migration selection must be typed")
-    candidate = load_candidate(context, subject.candidate)
+    candidate = _load_inspection_candidate(context, subject.candidate)
     observation_upgrade = type(subject) is f.FrozenObservationUpgradeSelectionSubject
     validator = validate_frozen_observation_upgrade if observation_upgrade else validate_frozen_runtime_migration
     after = validator(context, subject.original, candidate)

@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING
 from ._records import _Record, _hash, _path, _text
 from .context import ExperimentRef
 if TYPE_CHECKING:
-    from .evaluation import EvaluationRequest, EvaluationResult
     from .equity_evaluation import EquityEvaluationResult
     from .equity_replay import PreparedAccountEvaluation
 
@@ -80,6 +79,7 @@ class EvidenceRef(_Record):
         return f"research/{self.experiment.strategy_id}/assets/evidence/{self.experiment.experiment_id}/{self.evidence_id}"
 
     def resolve(self, repository_root: Path) -> Path:
+        """Return the path after explicitly verifying the referenced content."""
         return self._read_verified(repository_root)[0]
 
     def _read_verified(self, repository_root: Path) -> tuple[Path, bytes]:
@@ -121,28 +121,22 @@ class MaterialEvidenceWrite(_Record):
 class EvaluationEvidenceWrite:
     experiment: ExperimentRef
     name: str
-    request: EvaluationRequest | PreparedAccountEvaluation
-    result: EvaluationResult | EquityEvaluationResult
+    request: PreparedAccountEvaluation
+    result: EquityEvaluationResult
 
     def __post_init__(self):
-        from .evaluation import EvaluationRequest, EvaluationResult
         from .equity_evaluation import EquityEvaluationResult
         from .equity_replay import PreparedAccountEvaluation
 
         _name(self.name)
-        if type(self.request) is PreparedAccountEvaluation:
-            expected = EvaluationResult if type(self.request.request) is EvaluationRequest else EquityEvaluationResult
-            if type(self.experiment) is not ExperimentRef or type(self.result) is not expected:
-                raise TypeError("equity publication requires experiment and equity result")
-            if self.request.experiment != self.experiment:
-                raise ValueError("equity publication belongs to another experiment")
-            return
         for value, expected in (
-            (self.experiment, ExperimentRef), (self.request, EvaluationRequest),
-            (self.result, EvaluationResult),
+            (self.experiment, ExperimentRef), (self.request, PreparedAccountEvaluation),
+            (self.result, EquityEvaluationResult),
         ):
             if type(value) is not expected:
                 raise TypeError(f"evaluation publication requires {expected.__name__}")
+        if self.request.experiment != self.experiment:
+            raise ValueError("equity publication belongs to another experiment")
 
 
 class ExperimentOutcome(StrEnum):

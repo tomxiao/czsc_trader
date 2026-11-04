@@ -13,9 +13,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from strategy_manager.write_lock import RegistryWriteLock
-from strategy_runtime import canonical_sha256
 
-from ._evaluation_codec import decode, encode
 from ._records import _hash, _path
 from .context import ExperimentRef
 from .evidence import EvidenceRef, managed_path
@@ -130,44 +128,7 @@ class CheckpointStore:
         finally:
             temporary.unlink(missing_ok=True)
 
-    def save_result(self, request_hash: str, result):
-        from .evaluation import EvaluationResult, _evaluation_result_hash
 
-        _hash(request_hash)
-        if type(result) is not EvaluationResult or result.request_hash != request_hash:
-            raise CheckpointIntegrityError("checkpoint result request identity differs")
-        if _evaluation_result_hash(request_hash, result.runs) != result.result_hash:
-            raise CheckpointIntegrityError("checkpoint result numeric hash differs")
-        self._write(f"results/{request_hash}.json", encode(result))
-
-    def load_result(self, request, request_hash: str, *, contract: dict):
-        from .evaluation import EvaluationResult, _evaluation_result_hash, _request_identity_payload
-
-        _hash(request_hash)
-        binding_hash = contract["runtime_binding_hash"]
-        current = _request_identity_payload(request, contract["content_sha256"], binding_hash)
-        if current != contract or canonical_sha256(contract) != request_hash:
-            raise CheckpointIntegrityError("prepared request differs from checkpoint lookup identity")
-        if (Path(request.repository_root).resolve() != self.repository_root
-                or request.experiment_id != self.experiment.experiment_id
-                or request.strategy.strategy_family_id != self.experiment.strategy_id):
-            raise CheckpointIntegrityError("prepared request belongs to another checkpoint experiment")
-        payload = self._read(f"results/{request_hash}.json")
-        if payload is None:
-            return None
-        try:
-            result = decode(payload, request)
-            if type(result) is not EvaluationResult or (
-                result.request_hash, result.strategy_identity, result.runtime_binding_hash,
-                result.data_identity, result.execution_mode,
-            ) != (request_hash, request.strategy.runtime_identity_sha256, binding_hash,
-                  request.execution_data.fingerprint, request.execution_mode):
-                raise CheckpointIntegrityError("checkpoint result metadata differs from prepared request")
-            if _evaluation_result_hash(request_hash, result.runs) != result.result_hash:
-                raise CheckpointIntegrityError("checkpoint result numeric hash differs")
-            return result
-        except (TypeError, KeyError, ValueError, AttributeError) as exc:
-            raise CheckpointIntegrityError(f"cannot restore checkpoint result: {exc}") from exc
 
     def save_equity_result(self, request_hash, result):
         from ._equity_checkpoint import encode_result

@@ -92,12 +92,12 @@ def test_execution_frame_cannot_disagree_with_admitted_dfls_asset(inspection):
 @pytest.mark.parametrize("version", ["strategy_observation.v2", "strategy_observation.v4"])
 def test_technical_replay_rejects_identically_unavailable_observations(inspection, monkeypatch, version):
     from strategy_runtime import ObservationUnavailable
-    from czsc_trader.application.candidate_service import load_candidate
+    from czsc_trader.application._inspection_candidate import _load_inspection_candidate
     from czsc_trader.application.inspection_replay import _run
     from czsc_trader.backtesting import observation as observation_module
 
     context, request, _ = inspection
-    candidate = load_candidate(context, request.candidate)
+    candidate = _load_inspection_candidate(context, request.candidate)
     original = observation_module.observe_execution_plan
     calls = []
 

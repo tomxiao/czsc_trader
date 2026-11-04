@@ -1,5 +1,5 @@
 """Historical contracts remain readable without permitting relabelled new writes."""
-from evaluation_seed_support import prepare_request
+from historical_evaluation_support import prepare_historical, evaluate_historical, serialize_evaluation_evidence
 from dataclasses import replace
 import json
 from hashlib import sha256
@@ -153,13 +153,13 @@ def account_schema_bytes(request, frozen_seed_root):
     """Synthetic legacy encoding, never a legacy publication or historical edit."""
     from copy import deepcopy
     from strategy_runtime import canonical_sha256
-    from czsc_trader.research_tools.evaluation import serialize_evaluation_evidence, _evaluation_result_hash
+    from czsc_trader.research_tools.evaluation import _evaluation_result_hash
 
     seed = frozen_seed_root / "historical-account-schemas.json"
     if not seed.exists():
         context, evaluation = request.getfixturevalue("fresh_managed_evaluation")
-        prepared = prepare_request(context, evaluation)
-        result = context.evaluation.evaluate(prepared)
+        prepared = prepare_historical(context, evaluation)
+        result = evaluate_historical(context, prepared)
         current = serialize_evaluation_evidence(prepared, result)
         assert (current["schema_version"], current["request_identity"]["schema_version"]) == (8, 7)
         validate_evaluation_evidence(current)

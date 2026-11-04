@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from dataclasses import replace
 from pathlib import Path
 
 import pandas as pd
@@ -194,59 +193,6 @@ def _execution_data(flows, root, sessions):
     )
 
 
-def test_tdr_candidate_replay_uses_srt_prepared_data_and_txe_without_rule_parser(candidate_payload, tmp_path, monkeypatch):
-    from czsc_trader.application import BacktestRequest, RepositoryContext, run_backtest
-    from czsc_trader.application.errors import ExecutionError
-    from dataflows import canonical_frame_sha256
-
-    payload, package = candidate_payload
-    payload["rule"] = {"entry_threshold": 0.5, "exit_threshold": 0.5}
-    candidate = StrategyCandidate("S001", "C0001", payload, package)
-    sessions = pd.bdate_range("2026-09-14", periods=5)
-    inputs = pd.DataFrame({"Date": sessions, "Flow": [.1, .8, .2, .9, 0.]})
-    daily = pd.DataFrame({"dt": sessions, "open": 1., "close": 1., "high": 1., "low": 1., "vol": 1000., "amount": 1000.})
-    flows = _install_candidate_dataflows(monkeypatch, inputs, daily, base_dir=tmp_path,
-        space=DataSpace(Path("research/S001/assets/data")))
-    execution_data = _execution_data(flows, tmp_path, sessions)
-    execution_frames = (
-        ("execution_daily", execution_data.execution_daily),
-        ("execution_30m", execution_data.execution_intraday),
-    )
-    originals = []
-    for _, frame in execution_frames:
-        assert frame.attrs["daily_session_coverage"]["expected_dates"]
-        assert frame.attrs["ohlcv_quality_evidence"]["sessions"]
-        originals.append((deepcopy(frame.attrs), canonical_frame_sha256(frame)))
-    (tmp_path / "pyproject.toml").write_text("[project]\nname='test-replay'\n", encoding="utf-8")
-    (tmp_path / "src/czsc_trader").mkdir(parents=True)
-    repository = RepositoryContext.discover(tmp_path)
-    from czsc_trader.research_tools.context import ResearchContext, ResearchBatchRef
-    from czsc_trader.research_tools.evaluation_access import EvaluationAccess
-    context = ResearchContext(ResearchBatchRef("S001"), repository, flows, StrategyRuntime(dataflows=flows), EvaluationAccess(dataflows=flows, strategy_id="S001"))
-    # Only the external procurement boundary is replaced; the public API parses,
-    # prepares, executes, audits and publishes the actual candidate replay.
-    monkeypatch.setattr("czsc_trader.backtesting.service._prepare_backtest_execution_data", lambda **kwargs: execution_data)
-    request = BacktestRequest("588080.SH", "etf", sessions[1].date(), sessions[-1].date(), 100_000, 100)
-    result = run_backtest(context, candidate, request)
-    from czsc_trader.application import BacktestEvaluation
-    assert type(result) is BacktestEvaluation
-    assert result.manifest["audit"]["status"] == "PASS"
-    assert result.manifest["application"]["runtime_engine"] == "srt"
-    _, direct = _execute(candidate, tmp_path / "direct", monkeypatch)
-    assert result.result.account_daily["equity"].tolist() == pytest.approx(direct.account_daily["equity"].tolist())
-    assert len(direct.fills) == 3
-    assert not list((tmp_path / "research/S001").rglob("account_daily.csv"))
-    for (_, frame), (attrs, digest) in zip(execution_frames, originals):
-        assert frame.attrs == attrs
-        assert canonical_frame_sha256(frame) == digest
-    assert not repository.strategy_root.exists()
-    # Refuse a real stale procurement result at the public business boundary.
-    with pytest.raises(ExecutionError, match="exceeds the published cutoff"):
-        run_backtest(context, candidate, replace(request, end=(sessions[-1] + pd.offsets.BDay()).date()))
-    changed = deepcopy(payload)
-    changed["runtime"]["source_sha256"] = "0" * 64
-    with pytest.raises(ExecutionError, match="source hash differs"):
-        run_backtest(context, StrategyCandidate("S001", "C0001", changed, package), request)
 
 
 def _execute(
@@ -294,82 +240,22 @@ def _execute(
 
 
 
-def test_candidate_evaluation_and_se_use_identical_txe_ledgers(managed_evaluation, monkeypatch):
-    import shutil
-    from czsc_trader.research_tools import EvaluationCost, build_assessment_evidence, ResearchContext, ResearchBatchRef
-    from czsc_trader.research_tools.evaluation_access import EvaluationAccess
-    from czsc_trader.application import RepositoryContext
-    from strategy_evaluator import assess_candidates, ResearchMetric
-    from test_assessment_delivery import assessment_request
-
-    previous, request = managed_evaluation
-    root = request.repository_root / "retry-ledger"
-    experiment_path = Path("research/S900/experiments") / request.experiment_id
-    shutil.copytree(previous.repository.root / experiment_path, root / experiment_path)
-    package = root / "runtime/strategy_runtime"
-    shutil.copytree(request.strategy.source_root, package)
-    candidate = replace(request.strategy, source_root=package)
-    sessions = pd.bdate_range("2026-09-14", periods=6)
-    daily = pd.DataFrame({"dt": sessions, "open": 1., "close": 1.})
-    daily.loc[2, ["open", "close"]] = 1.1  # Entire day stays above the buy limit; retry next session.
-    inputs = pd.DataFrame({"Date": sessions, "Flow": [.1, .8, .8, .1, 0., 0.]})
-    flows = _install_candidate_dataflows(monkeypatch, inputs, daily, base_dir=root,
-        space=DataSpace(Path("research/S900/assets/data")))
-    data = _execution_data(flows, root, sessions)
-    (root / "src/czsc_trader").mkdir(parents=True)
-    (root / "pyproject.toml").write_text("")
-    context = ResearchContext(ResearchBatchRef("S900"), RepositoryContext.discover(root), flows,
-        StrategyRuntime(dataflows=flows), EvaluationAccess(dataflows=flows, strategy_id="S900"))
-    request = replace(request, repository_root=root, strategy=candidate, execution_data=data,
-        input_bindings={}, frequency_window_days=3)
-    result = context.evaluation.evaluate(request)
-    run = result.runs[0]
-    assert [value for value in run.execution.orders["status"]] == ["UNFILLED", "FILLED", "FILLED"]
-    assert len(run.execution.fills) == 2 and run.observation.closed_trades == 1
-    assert run.signals.data_identity and result.data_identity == data.fingerprint
-    assert run.observation is result.observations[0]
-    assert run.buyhold is not None and not run.buyhold.account_daily.empty
-    assert set(run.buyhold.metrics) >= {"calmar", "max_drawdown", "return"}
-    assert len(result.request_hash) == len(result.result_hash) == 64
-    assert result.strategy_identity == request.strategy.runtime_identity_sha256
-    evidence = build_assessment_evidence(request, result)
-    panel = assess_candidates(assessment_request(evidence))
-    equity = run.execution.account_daily["equity"]
-    expected = float(equity.div(equity.cummax().clip(lower=request.initial_cash)).sub(1.).min())
-    assert run.observation.max_drawdown == pytest.approx(expected)
-    observed = next(item for item in panel.rows[0].diagnostics if item.metric is ResearchMetric.DRAWDOWN_MAGNITUDE)
-    assert observed.value == pytest.approx(abs(expected))
-    assert len(evidence[0].fills) == len(run.execution.fills)
-    for fact, actual in zip(evidence[0].account, run.execution.account_daily.itertuples()):
-        assert fact.equity == pytest.approx(actual.equity)
-        assert fact.cash == pytest.approx(actual.cash)
-    flexible = context.evaluation.evaluate(replace(request, costs=(
-        EvaluationCost("custom_high", .002, "FORMAL"), EvaluationCost("custom_low", .0005, "SCREENING"),
-        EvaluationCost("standard", .001, "STRESS"))))
-    assert [(item.scenario_id, item.observation.measurement_tier) for item in flexible.runs] == [
-        ("custom_high", "FORMAL"), ("custom_low", "SCREENING"), ("standard", "STRESS")]
-    assert flexible.runs[0].observation.cost_drag > flexible.runs[1].observation.cost_drag
-    assert flexible.runs[0].observation.total_return < run.observation.total_return
-    assert flexible.runs[2].observation.total_return == pytest.approx(run.observation.total_return)
-    with pytest.raises(ValueError, match="only FULL execution"):
-        context.evaluation.evaluate(replace(request, execution_mode="ACCELERATED"))
-    with pytest.raises(ValueError, match="binding belongs to another"):
-        context.evaluation.evaluate(replace(request, runtime_binding={**request.runtime_binding, "candidate_id": "S900-C0999"}))
-    with pytest.raises(ValueError, match="scenario identities must be unique"):
-        context.evaluation.evaluate(replace(request, costs=(EvaluationCost("same", .001), EvaluationCost("same", .002))))
-    with pytest.raises(ValueError, match="finite"):
-        EvaluationCost("fee_xnan", float("nan"))
-    for name in ("", "../escape", "NUL", "trailing.", "bad\nname"):
-        with pytest.raises(ValueError, match="scenario_id"):
-            EvaluationCost(name, .001)
-    for fee in (-.001, 1., True):
-        with pytest.raises(ValueError, match="cost"):
-            EvaluationCost("valid", fee)
-    with pytest.raises(ValueError, match="tier"):
-        EvaluationCost("valid", .001, "UNKNOWN")
 
 
 @pytest.fixture
 def managed_evaluation(request, tmp_path, frozen_seed_root, monkeypatch):
     from test_research_contract_upgrade import managed_evaluation as prepare_managed
     return prepare_managed.__wrapped__(request, tmp_path, frozen_seed_root, monkeypatch)
+
+
+def test_retired_candidate_backtest_rejected_before_execution(managed_evaluation, monkeypatch):
+    from czsc_trader.application import run_backtest, BacktestRequest
+    from czsc_trader.application import backtest_service
+    context, request = managed_evaluation
+    def forbidden(*args, **kwargs):
+        raise AssertionError('retired candidate backtest must not compute')
+    monkeypatch.setattr(backtest_service, '_run_backtest', forbidden)
+    window = request.windows[0]
+    with pytest.raises(TypeError, match='frozen StrategyVersion'):
+        run_backtest(context, request.strategy, BacktestRequest(request.symbol, request.asset_type,
+            window.start, window.end, request.initial_cash, 100))

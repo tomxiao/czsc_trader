@@ -17,7 +17,8 @@ from strategy_runtime.inspection import (InspectionControl, InspectionStage,
                                          InspectionEnvironment, collect_inspection_environment)
 from paper_trading_engine.inspection import PteReleaseInspectionRequest, inspect_release
 from .context import RepositoryContext
-from .candidate_service import load_candidate, _registered_root
+from .candidate_service import _registered_root
+from ._inspection_candidate import _load_inspection_candidate
 from .research_evidence import (record_decision, read_decision, validate_inspection, validate_approval,
     build_version_from_plan, validate_migration_selection, validate_migration_target, validate_migration_files)
 from .inspection_contracts import CandidateInspectionRequest, InspectionPublicationError, InspectionInputError
@@ -114,7 +115,7 @@ def _copy_plan(context, request, registration, store, origin):
                   for ref in registration.source_files)
     files += tuple(f.FreezeFile(item.path, store.put(item.source.resolve(context.root).read_bytes()))
                    for item in request.additional_files)
-    definition = StrategyRuntime().describe(load_candidate(context, registration.key))
+    definition = StrategyRuntime().describe(_load_inspection_candidate(context, registration.key))
     from strategy_runtime.equity_definition import EquityStrategyDefinition
     if type(definition) is EquityStrategyDefinition:
         binding = RuntimeBindingSpec(tuple(x.path.removeprefix(prefix) for x in registration.source_files),
@@ -219,7 +220,7 @@ def inspect_candidate(context: RepositoryContext, request: CandidateInspectionRe
                 or expected.srt_contract_version != environment.srt_contract_version):
             raise Interrupted(f.InspectionReason.ENVIRONMENT_MISMATCH, "requested runtime environment differs")
         failure_reason = f.InspectionReason.CONTENT_MISMATCH
-        candidate = load_candidate(context, request.candidate)
+        candidate = _load_inspection_candidate(context, request.candidate)
         definition = request.research.runtime.describe(candidate)
         identity = StrategyIdentity(definition.strategy_family_id, definition.release_id,
             definition.release_hash, definition.runtime_sha256, definition.tradable_symbol)
@@ -308,7 +309,7 @@ def inspect_candidate(context: RepositoryContext, request: CandidateInspectionRe
         controller.stage = InspectionStage.FINALIZE
         if control.timeout_seconds is not None and time.monotonic() - controller.started >= control.timeout_seconds:
             raise Interrupted(f.InspectionReason.RESOURCE_LIMIT, "inspection total deadline exceeded after evidence collection")
-        load_candidate(context, request.candidate)
+        _load_inspection_candidate(context, request.candidate)
         if StrategyRegistry(context.research_registry_root).get_candidate_registration(request.candidate) != registration:
             raise Interrupted(f.InspectionReason.CONTENT_MISMATCH, "candidate registration changed during inspection")
         final_package = validate_release_package(workspace / "repository/strategies", verified.release.release_id)
@@ -358,7 +359,7 @@ def freeze_candidate(context: RepositoryContext, request: f.FreezeCandidateReque
     selection = read_decision(context.root, report.selection)
     if isinstance(selection.subject, f.FrozenMigrationSelectionSubject) and plan.version == selection.subject.original.version:
         raise ValueError("same-version migration requires the explicit runtime upgrade API")
-    candidate = load_candidate(context, plan.origin.candidate)
+    candidate = _load_inspection_candidate(context, plan.origin.candidate)
     if candidate.payload["runtime"].get("contract_version") != 2:
         raise ValueError("freeze requires implementation contract version 2")
     if (candidate.payload.get("runtime", {}).get("kind") != "US_EQUITY"

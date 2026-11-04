@@ -166,3 +166,29 @@ def test_registration_metadata_query_authenticates_the_envelope(persisted_candid
     path.write_text(json.dumps(raw), encoding="utf-8")
     with pytest.raises(RegistryError, match="identity differs"):
         registry.get_candidate_registration(record.key)
+
+
+def test_registration_does_not_authenticate_historical_attachments(persisted_candidate):
+    registry, root, record = persisted_candidate
+    (root / record.origin.evidence[0].path).unlink()
+    assert registry.register_candidate(record, evidence_root=root) == record
+    assert registry.register_candidate(record, evidence_root=root) == record
+    # The explicitly deep retained-file getter keeps its inspection/freeze contract.
+    with pytest.raises(ValidationError, match="missing"):
+        registry.get_candidate(record.key, evidence_root=root)
+
+
+def test_registration_reads_each_snapshot_file_once(persisted_candidate, monkeypatch):
+    from pathlib import Path
+
+    registry, root, record = persisted_candidate
+    observed = []
+    read = Path.read_bytes
+    def counted(path):
+        observed.append(path)
+        return read(path)
+    monkeypatch.setattr(Path, "read_bytes", counted)
+    registry.register_candidate(record, evidence_root=root)
+    assert observed.count(root / record.payload.path) == 1
+    assert observed.count(root / record.source_files[0].path) == 1
+    assert root / record.origin.evidence[0].path not in observed

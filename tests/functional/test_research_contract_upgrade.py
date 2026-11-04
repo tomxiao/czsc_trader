@@ -1,7 +1,4 @@
 """Account evaluation contracts independent of experimental process tracking."""
-from evaluation_seed_support import prepare_request
-from copy import deepcopy
-from dataclasses import replace
 from pathlib import Path
 import json
 import pickle
@@ -9,15 +6,16 @@ import shutil
 
 import pandas as pd
 import pytest
-from dataflows import DataSpace, Dataflows, ProviderConfig
+from dataflows import DataSpace
 from strategy_runtime import StrategyCandidate, StrategyRuntime
 
 from czsc_trader.application.context import RepositoryContext
 from czsc_trader.backtesting.execution_data import _prepare_backtest_execution_data
 from czsc_trader.research_tools.context import ResearchBatchRef, ResearchContext, ExperimentRef
+from historical_evaluation_support import EvaluationRequest
 from czsc_trader.research_tools.evaluation import (
-    EvaluationRequest, EvaluationWindow,
-    EvaluationCost, serialize_evaluation_evidence, validate_evaluation_evidence,
+    EvaluationWindow,
+    EvaluationCost,
 )
 from czsc_trader.research_tools.evaluation_access import EvaluationAccess
 from czsc_trader.backtesting.benchmark_contracts import EvaluationBenchmark, NextOpenBuyHold
@@ -92,46 +90,3 @@ def _evaluation_fixture(candidate_payload, tmp_path, monkeypatch, *, prepared):
         sessions[-1].date(), 100_000, (EvaluationCost("standard", .001),), data,
         benchmark=EvaluationBenchmark(NextOpenBuyHold(100)))
     return context, request
-
-
-def test_repeated_account_computation_is_reusable_without_process_records(managed_evaluation):
-    context, request = managed_evaluation
-    one = context.evaluation.evaluate(request)
-    two = context.evaluation.evaluate(request)
-    assert one.result_hash == two.result_hash
-    assert not hasattr(one, "attempt_id")
-    assert not list(context.repository.root.rglob("execution_receipt.json"))
-    assert not list(context.repository.root.rglob("record.json"))
-    assert not (context.repository.root / "data/backtest").exists()
-
-
-def test_preparation_uses_only_batch_data_space(unprepared_evaluation):
-    context, request = unprepared_evaluation
-    bound = prepare_request(context, request)
-    assert bound.execution_data.prepared.space_id == context.data.binding.space_id
-    assert all(binding.prepared.space_id == context.data.binding.space_id
-               for binding in bound.input_bindings.values())
-    result = context.evaluation.evaluate(bound)
-    assert result.request_hash
-    foreign = Dataflows(base_dir=context.repository.root, space=DataSpace(Path("research/S901/assets/data")),
-                        providers=ProviderConfig(bindings={}))
-    foreign_ref = replace(bound.execution_data.prepared, space_id=foreign.binding.space_id)
-    foreign_request = replace(bound, execution_data=replace(bound.execution_data, prepared=foreign_ref))
-    with pytest.raises(ValueError, match="another data space"):
-        prepare_request(context, foreign_request)
-
-
-def test_published_account_evidence_authenticates_result_and_ledgers(managed_evaluation):
-    context, request = managed_evaluation
-    request = prepare_request(context, request)
-    result = context.evaluation.evaluate(request)
-    payload = serialize_evaluation_evidence(request, result)
-    validate_evaluation_evidence(payload)
-    encoded = json.loads(json.dumps(payload))
-    validate_evaluation_evidence(encoded)
-    changed = deepcopy(encoded)
-    changed["runs"][0]["ledgers"]["account_daily"]["data"][-1]["equity"] += 1
-    with pytest.raises(ValueError, match="differs"):
-        validate_evaluation_evidence(changed)
-    with pytest.raises(ValueError, match="identity differs"):
-        serialize_evaluation_evidence(replace(request, initial_cash=200_000), result)
