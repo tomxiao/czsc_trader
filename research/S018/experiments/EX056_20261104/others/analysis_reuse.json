@@ -1,0 +1,121 @@
+{
+  "status": "PASS",
+  "source_bytes_sha256": "c8961046d36ea0e9d49a209e3e361a9ee4f743c99249b6a4607cf513539afd38",
+  "source_identity": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+  "configurations": 34,
+  "passed_original_gates": 34,
+  "reused": [
+    {
+      "candidate": "C8504",
+      "configuration_exact": true,
+      "source_exact": true,
+      "account_ref_verified": true,
+      "metrics_present": true
+    },
+    {
+      "candidate": "C8505",
+      "configuration_exact": true,
+      "source_exact": true,
+      "account_ref_verified": true,
+      "metrics_present": true
+    },
+    {
+      "candidate": "C8510",
+      "configuration_exact": true,
+      "source_exact": true,
+      "account_ref_verified": true,
+      "metrics_present": true
+    },
+    {
+      "candidate": "C8511",
+      "configuration_exact": true,
+      "source_exact": true,
+      "account_ref_verified": true,
+      "metrics_present": true
+    },
+    {
+      "candidate": "C8516",
+      "configuration_exact": true,
+      "source_exact": true,
+      "account_ref_verified": true,
+      "metrics_present": true
+    },
+    {
+      "candidate": "C8517",
+      "configuration_exact": true,
+      "source_exact": true,
+      "account_ref_verified": true,
+      "metrics_present": true
+    }
+  ],
+  "equivalent_pairs": [
+    {
+      "mu_repair": "C8602",
+      "scheduled": "C8622",
+      "metrics_exact": true,
+      "economic_fields_exact": [
+        "fills",
+        "account_daily",
+        "trades",
+        "actions"
+      ]
+    },
+    {
+      "mu_repair": "C8603",
+      "scheduled": "C8623",
+      "metrics_exact": true,
+      "economic_fields_exact": [
+        "fills",
+        "account_daily",
+        "trades",
+        "actions"
+      ]
+    },
+    {
+      "mu_repair": "C8604",
+      "scheduled": "C8624",
+      "metrics_exact": true,
+      "economic_fields_exact": [
+        "fills",
+        "account_daily",
+        "trades",
+        "actions"
+      ]
+    },
+    {
+      "mu_repair": "C8605",
+      "scheduled": "C8625",
+      "metrics_exact": true,
+      "economic_fields_exact": [
+        "fills",
+        "account_daily",
+        "trades",
+        "actions"
+      ]
+    },
+    {
+      "mu_repair": "C8608",
+      "scheduled": "C8628",
+      "metrics_exact": true,
+      "economic_fields_exact": [
+        "fills",
+        "account_daily",
+        "trades",
+        "actions"
+      ]
+    },
+    {
+      "mu_repair": "C8609",
+      "scheduled": "C8629",
+      "metrics_exact": true,
+      "economic_fields_exact": [
+        "fills",
+        "account_daily",
+        "trades",
+        "actions"
+      ]
+    }
+  ],
+  "interpretation": "At held>=3, existing exit rule already requires MU price>anchor to remain held; MU-only repair is therefore redundant with scheduled adds. This is not independent confirmation information.",
+  "scope": "Read-only published evidence and source checks; no account re-evaluation."
+}

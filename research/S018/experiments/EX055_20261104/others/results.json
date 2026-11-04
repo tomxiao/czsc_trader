@@ -1,0 +1,4767 @@
+{
+  "accounts": {
+    "C8500": {
+      "config": {
+        "add_mode": "repair",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 1,
+        "initial_fraction": 0.25,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.39354610547339486,
+        "dd": 0.24268769151255665,
+        "calmar": 1.6216154310118065,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": -0.11953796403999994,
+          "2024": 0.029209718907367233,
+          "2025": 1.0135901857932192,
+          "2026": 0.9427637639309467
+        },
+        "october_return": -0.03884514717616361,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": false,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"repair\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":1,\"initial_fraction\":0.25,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "a7331979c2c5676336c3a7087730a6330ceeffab96d999c61493f0aae24309c1.json",
+        "sha256": "a7331979c2c5676336c3a7087730a6330ceeffab96d999c61493f0aae24309c1",
+        "media_type": "application/json",
+        "name": "C8500",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8501": {
+      "config": {
+        "add_mode": "repair",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 2,
+        "initial_fraction": 0.25,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.3453082703983239,
+        "dd": 0.19627050727471074,
+        "calmar": 1.7593487436959232,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": -0.1254488370400001,
+          "2024": 0.08970879186583214,
+          "2025": 0.8785586085115467,
+          "2026": 0.7311732485739109
+        },
+        "october_return": -0.03880710110021335,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": false,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"repair\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":2,\"initial_fraction\":0.25,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "7b14dbe06e7b251170e045b0c887ef2017dff80d1c28a5701712d909d7a899de.json",
+        "sha256": "7b14dbe06e7b251170e045b0c887ef2017dff80d1c28a5701712d909d7a899de",
+        "media_type": "application/json",
+        "name": "C8501",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8502": {
+      "config": {
+        "add_mode": "repair",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 1,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.495899931776671,
+        "dd": 0.17594537740356864,
+        "calmar": 2.818487982433421,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": -0.06180765730000104,
+          "2024": 0.06643737205914424,
+          "2025": 1.1937494486692728,
+          "2026": 1.1162900619978648
+        },
+        "october_return": -0.0697024426228493,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": false,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"repair\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":1,\"initial_fraction\":0.5,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "25f48e6732be8f61a53c5e2fed2656a93c6ae7538fc0bfee48be0b0ff4c94f1a.json",
+        "sha256": "25f48e6732be8f61a53c5e2fed2656a93c6ae7538fc0bfee48be0b0ff4c94f1a",
+        "media_type": "application/json",
+        "name": "C8502",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8503": {
+      "config": {
+        "add_mode": "repair",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 2,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.4626657345012968,
+        "dd": 0.15463967556788072,
+        "calmar": 2.9918954033126175,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": -0.06584884950000003,
+          "2024": 0.10932590791044583,
+          "2025": 1.095578220375296,
+          "2026": 0.9633570901641622
+        },
+        "october_return": -0.06960831436076831,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": true,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"repair\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":2,\"initial_fraction\":0.5,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "e2958e302b7fd537da102d0e3d2bf1894b69dc7ac5134cf8940b8e2b92af034d.json",
+        "sha256": "e2958e302b7fd537da102d0e3d2bf1894b69dc7ac5134cf8940b8e2b92af034d",
+        "media_type": "application/json",
+        "name": "C8503",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8504": {
+      "config": {
+        "add_mode": "repair",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 1,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.6014684067225098,
+        "dd": 0.14274562363449672,
+        "calmar": 4.21356810393419,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": -0.0017134845600000892,
+          "2024": 0.10349148256246243,
+          "2025": 1.383017926836518,
+          "2026": 1.2949736421199263
+        },
+        "october_return": -0.1004794142439317,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": true,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"repair\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":1,\"initial_fraction\":0.75,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "9b47035d8591c3cdaed0b96f3122515bb9c68cf3494f00318379c8c6846bd865.json",
+        "sha256": "9b47035d8591c3cdaed0b96f3122515bb9c68cf3494f00318379c8c6846bd865",
+        "media_type": "application/json",
+        "name": "C8504",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8505": {
+      "config": {
+        "add_mode": "repair",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 2,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.5842100827838288,
+        "dd": 0.12381821921286507,
+        "calmar": 4.718288524077947,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": -0.003800284709999935,
+          "2024": 0.1273048163310131,
+          "2025": 1.3273079939589558,
+          "2026": 1.2117843826217074
+        },
+        "october_return": -0.1003873010759938,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": true,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"repair\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":2,\"initial_fraction\":0.75,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "e6e77fb55474e366e698faeff51ff8570ed76bd952c0297fbc29943c564e295d.json",
+        "sha256": "e6e77fb55474e366e698faeff51ff8570ed76bd952c0297fbc29943c564e295d",
+        "media_type": "application/json",
+        "name": "C8505",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8506": {
+      "config": {
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 1,
+        "initial_fraction": 0.25,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.3636114925856393,
+        "dd": 0.17984115737563644,
+        "calmar": 2.0218480457516157,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": -0.06567617259000003,
+          "2024": 0.05776421880581761,
+          "2025": 0.6787761452193484,
+          "2026": 0.9668110957644971
+        },
+        "october_return": -0.032518209381223295,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": false,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"repair_both\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":1,\"initial_fraction\":0.25,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "8442b3bc4f840bb9a9dacea2bd636a349ae16fa442e546f46214be60f026036d.json",
+        "sha256": "8442b3bc4f840bb9a9dacea2bd636a349ae16fa442e546f46214be60f026036d",
+        "media_type": "application/json",
+        "name": "C8506",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8507": {
+      "config": {
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 2,
+        "initial_fraction": 0.25,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.31311860564835725,
+        "dd": 0.1424524894529613,
+        "calmar": 2.1980563965626656,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": -0.07794421788999994,
+          "2024": 0.13211133344367187,
+          "2025": 0.6784552176675842,
+          "2026": 0.6128541685093194
+        },
+        "october_return": -0.03283024767438214,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": false,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"repair_both\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":2,\"initial_fraction\":0.25,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "5a9b67fa0825de35437dc92d06d3908487c3bd435a22797610d565c482282722.json",
+        "sha256": "5a9b67fa0825de35437dc92d06d3908487c3bd435a22797610d565c482282722",
+        "media_type": "application/json",
+        "name": "C8507",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8508": {
+      "config": {
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 1,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.4752601291329521,
+        "dd": 0.13964769712611524,
+        "calmar": 3.4032793874412888,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": -0.024024058899999923,
+          "2024": 0.0860021342036339,
+          "2025": 0.9472246279005376,
+          "2026": 1.1344856588924466
+        },
+        "october_return": -0.06571398988529142,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": true,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"repair_both\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":1,\"initial_fraction\":0.5,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "12dc91e6a2022e578d85556364c2671fddea15f172468dcdc36322731473d188.json",
+        "sha256": "12dc91e6a2022e578d85556364c2671fddea15f172468dcdc36322731473d188",
+        "media_type": "application/json",
+        "name": "C8508",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8509": {
+      "config": {
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 2,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.4401981081474091,
+        "dd": 0.11846170706455006,
+        "calmar": 3.715952766977637,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": -0.0324346499999989,
+          "2024": 0.13851839637395025,
+          "2025": 0.9466655300832669,
+          "2026": 0.8742617473780971
+        },
+        "october_return": -0.06563682161131634,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": true,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"repair_both\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":2,\"initial_fraction\":0.5,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "8b1a8b0d9ae3d6aa2dbc2460cad90ee554603243fb575894e759af4fe14e6030.json",
+        "sha256": "8b1a8b0d9ae3d6aa2dbc2460cad90ee554603243fb575894e759af4fe14e6030",
+        "media_type": "application/json",
+        "name": "C8509",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8510": {
+      "config": {
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 1,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.5904497939221509,
+        "dd": 0.1427518639816603,
+        "calmar": 4.1361967364433685,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": 0.01844796769000001,
+          "2024": 0.1136505663657339,
+          "2025": 1.245843556362476,
+          "2026": 1.3037083452003264
+        },
+        "october_return": -0.09838703648615432,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": true,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"repair_both\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":1,\"initial_fraction\":0.75,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "7b753d1012c59587f669c9fc1703ea12ed909e1767bbae93aec21c79aa2617cc.json",
+        "sha256": "7b753d1012c59587f669c9fc1703ea12ed909e1767bbae93aec21c79aa2617cc",
+        "media_type": "application/json",
+        "name": "C8510",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8511": {
+      "config": {
+        "add_mode": "repair_both",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 2,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.5720866336172057,
+        "dd": 0.11289089923576368,
+        "calmar": 5.06760631273251,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": 0.014199435490000134,
+          "2024": 0.14180772018623156,
+          "2025": 1.2442079015499017,
+          "2026": 1.1601407619485746
+        },
+        "october_return": -0.09841984097980139,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": true,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"repair_both\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":2,\"initial_fraction\":0.75,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "5dc9a1a8534ef5406232511aab54e1b57655bf931f6337b28dfb92a15e770379.json",
+        "sha256": "5dc9a1a8534ef5406232511aab54e1b57655bf931f6337b28dfb92a15e770379",
+        "media_type": "application/json",
+        "name": "C8511",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8512": {
+      "config": {
+        "add_mode": "scheduled",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 1,
+        "initial_fraction": 0.25,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.5793962911169119,
+        "dd": 0.14210593154897266,
+        "calmar": 4.0772139825651115,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": 0.004272758850000891,
+          "2024": 0.11156188751778462,
+          "2025": 1.3528495280660442,
+          "2026": 1.175528632977096
+        },
+        "october_return": -0.07285347731814973,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": true,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"scheduled\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":1,\"initial_fraction\":0.25,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "d3cefabbd3f4e333d555a6ac19eb3543beaf4efe0efbc0123c0daee494cca047.json",
+        "sha256": "d3cefabbd3f4e333d555a6ac19eb3543beaf4efe0efbc0123c0daee494cca047",
+        "media_type": "application/json",
+        "name": "C8512",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8513": {
+      "config": {
+        "add_mode": "scheduled",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 2,
+        "initial_fraction": 0.25,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.4388421569850127,
+        "dd": 0.18981625156503723,
+        "calmar": 2.311931425084807,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": -0.026067134119998947,
+          "2024": 0.03227877051627637,
+          "2025": 1.042841543422588,
+          "2026": 0.9499398259103515
+        },
+        "october_return": -0.08962635836100175,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": false,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"scheduled\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":2,\"initial_fraction\":0.25,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "3e4dff6c8e2e6436c155fa23b8ad9e511e3dfb588e0c0a8e40a62aa19fbb4ac7.json",
+        "sha256": "3e4dff6c8e2e6436c155fa23b8ad9e511e3dfb588e0c0a8e40a62aa19fbb4ac7",
+        "media_type": "application/json",
+        "name": "C8513",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8514": {
+      "config": {
+        "add_mode": "scheduled",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 1,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.6264298555290082,
+        "dd": 0.14367688988190352,
+        "calmar": 4.359990364796368,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": 0.02400588541000004,
+          "2024": 0.12145281861266377,
+          "2025": 1.4366766622517342,
+          "2026": 1.2838255170572475
+        },
+        "october_return": -0.09318009858262555,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": true,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"scheduled\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":1,\"initial_fraction\":0.5,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "7f7b205358d1c4256167dfb942db01d800dbc604a2a42cd26909e1e62ebcdf59.json",
+        "sha256": "7f7b205358d1c4256167dfb942db01d800dbc604a2a42cd26909e1e62ebcdf59",
+        "media_type": "application/json",
+        "name": "C8514",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8515": {
+      "config": {
+        "add_mode": "scheduled",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 2,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.5285217936993276,
+        "dd": 0.14134466177919458,
+        "calmar": 3.739241277643526,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": 0.004156568249999992,
+          "2024": 0.06795261401209385,
+          "2025": 1.2154485699333821,
+          "2026": 1.1227718977412375
+        },
+        "october_return": -0.10429650455538131,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": true,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"scheduled\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":2,\"initial_fraction\":0.5,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "c6bddc64b06cc10b09d4ed4eb6c86eed506046b4f53b265efbceb2d824cf2bb1.json",
+        "sha256": "c6bddc64b06cc10b09d4ed4eb6c86eed506046b4f53b265efbceb2d824cf2bb1",
+        "media_type": "application/json",
+        "name": "C8515",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8516": {
+      "config": {
+        "add_mode": "scheduled",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 1,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.6720850332592476,
+        "dd": 0.14540319944214286,
+        "calmar": 4.62221626372586,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": 0.04344137629999989,
+          "2024": 0.1311844881907822,
+          "2025": 1.5171851905269165,
+          "2026": 1.3904370922188605
+        },
+        "october_return": -0.11329594541794097,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": true,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"scheduled\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":1,\"initial_fraction\":0.75,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "96fb4cedbc3e7dc8dcd92aa9f46edf3593486bffe1be19ad101fe5c2bcbc635f.json",
+        "sha256": "96fb4cedbc3e7dc8dcd92aa9f46edf3593486bffe1be19ad101fe5c2bcbc635f",
+        "media_type": "application/json",
+        "name": "C8516",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8517": {
+      "config": {
+        "add_mode": "scheduled",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 2,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.6180728870117949,
+        "dd": 0.1323529094797612,
+        "calmar": 4.669885153573506,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": 0.03345697679999993,
+          "2024": 0.10336498913555947,
+          "2025": 1.3922271659078058,
+          "2026": 1.2971983921107442
+        },
+        "october_return": -0.1188820652682051,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": true,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"scheduled\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":2,\"initial_fraction\":0.75,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "701615e6fee71c4638eb0c11afebb4f12cde5dae53537fd091ddf01a2d1bc639.json",
+        "sha256": "701615e6fee71c4638eb0c11afebb4f12cde5dae53537fd091ddf01a2d1bc639",
+        "media_type": "application/json",
+        "name": "C8517",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8518": {
+      "config": {
+        "add_mode": "weakness",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 1,
+        "initial_fraction": 0.25,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.3413596021861287,
+        "dd": 0.11964644352979736,
+        "calmar": 2.853069360988693,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": 0.05192295826000004,
+          "2024": -0.041263060807036345,
+          "2025": 0.6772911390519212,
+          "2026": 0.8117607499256108
+        },
+        "october_return": -0.07288906952182272,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": false,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"weakness\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":1,\"initial_fraction\":0.25,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "9965dc35cf30ee2c96fb657414b9623cb072418dbc7de53601473b2796d5786f.json",
+        "sha256": "9965dc35cf30ee2c96fb657414b9623cb072418dbc7de53601473b2796d5786f",
+        "media_type": "application/json",
+        "name": "C8518",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8519": {
+      "config": {
+        "add_mode": "weakness",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 2,
+        "initial_fraction": 0.25,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.24105205176972788,
+        "dd": 0.09837894409961156,
+        "calmar": 2.4502402823683043,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": 0.07817736893000005,
+          "2024": -0.015773976665711342,
+          "2025": 0.3881946507055387,
+          "2026": 0.546792247834244
+        },
+        "october_return": -0.08358623405162735,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": false,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"weakness\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":2,\"initial_fraction\":0.25,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "113acbdfa2c2ce4d6d614d9ed703f1f86714fd8fd1880b73e814816403302f2f.json",
+        "sha256": "113acbdfa2c2ce4d6d614d9ed703f1f86714fd8fd1880b73e814816403302f2f",
+        "media_type": "application/json",
+        "name": "C8519",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8520": {
+      "config": {
+        "add_mode": "weakness",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 1,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.4625025172202717,
+        "dd": 0.1294748819731124,
+        "calmar": 3.5721408675724295,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": 0.056849363600000036,
+          "2024": 0.017905339400063225,
+          "2025": 0.9511977430874741,
+          "2026": 1.030359262258802
+        },
+        "october_return": -0.0930754226071826,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": true,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"weakness\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":1,\"initial_fraction\":0.5,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "82e07643bb5cdc2d1648c1f2bc92170af1ad8067aea9212a3f1fc2de0b344aa7.json",
+        "sha256": "82e07643bb5cdc2d1648c1f2bc92170af1ad8067aea9212a3f1fc2de0b344aa7",
+        "media_type": "application/json",
+        "name": "C8520",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8521": {
+      "config": {
+        "add_mode": "weakness",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 2,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.38773541583292026,
+        "dd": 0.10364969231025734,
+        "calmar": 3.7408255363875242,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": 0.07508216664999989,
+          "2024": 0.035653669556662715,
+          "2025": 0.7203107927331971,
+          "2026": 0.8214709265065521
+        },
+        "october_return": -0.1001715282928175,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": true,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"weakness\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":2,\"initial_fraction\":0.5,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "c7e855a4f1d067d49c0435a6cbe68313789fb69fed723df346f234b338ae403c.json",
+        "sha256": "c7e855a4f1d067d49c0435a6cbe68313789fb69fed723df346f234b338ae403c",
+        "media_type": "application/json",
+        "name": "C8521",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8522": {
+      "config": {
+        "add_mode": "weakness",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 1,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.585987869216382,
+        "dd": 0.13858572528533364,
+        "calmar": 4.228342190437679,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": 0.060795803890000055,
+          "2024": 0.07817443322730111,
+          "2025": 1.2527730098987995,
+          "2026": 1.2532203990136153
+        },
+        "october_return": -0.11342260841724239,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": true,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"weakness\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":1,\"initial_fraction\":0.75,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "dee671ef5fa75c91e474d8c687bfb1e1c16e48105e1cd6af440fa97b42d5b22d.json",
+        "sha256": "dee671ef5fa75c91e474d8c687bfb1e1c16e48105e1cd6af440fa97b42d5b22d",
+        "media_type": "application/json",
+        "name": "C8522",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8523": {
+      "config": {
+        "add_mode": "weakness",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 2,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.5419006500660235,
+        "dd": 0.12214091048909237,
+        "calmar": 4.436684219039101,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": 0.07037414850000001,
+          "2024": 0.08704435655379705,
+          "2025": 1.1094719886722433,
+          "2026": 1.124197613223072
+        },
+        "october_return": -0.11699955047516164,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": true,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"weakness\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":2,\"initial_fraction\":0.75,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "12c3072158442b4cdef68506e91011217d4bbb3419ef9477132e2536210e38ef.json",
+        "sha256": "12c3072158442b4cdef68506e91011217d4bbb3419ef9477132e2536210e38ef",
+        "media_type": "application/json",
+        "name": "C8523",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8524": {
+      "config": {
+        "add_mode": "never",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 1,
+        "initial_fraction": 0.25,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.15424211033152124,
+        "dd": 0.03795342775979549,
+        "calmar": 4.063983661968781,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": 0.017606352710000106,
+          "2024": 0.03894178238811974,
+          "2025": 0.28513997785306255,
+          "2026": 0.2718835022738777
+        },
+        "october_return": -0.03223121787729144,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": true,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"never\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":1,\"initial_fraction\":0.25,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "58fe9f20477aae8ff9bf2f923b9e385f9ad52bf773b4f8944449a2227e4f3ed1.json",
+        "sha256": "58fe9f20477aae8ff9bf2f923b9e385f9ad52bf773b4f8944449a2227e4f3ed1",
+        "media_type": "application/json",
+        "name": "C8524",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8525": {
+      "config": {
+        "add_mode": "never",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 1,
+        "initial_fraction": 0.5,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.3231384986406989,
+        "dd": 0.07533183014833467,
+        "calmar": 4.289534689445513,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": 0.0341051079000001,
+          "2024": 0.07577304497134096,
+          "2025": 0.6339926309662614,
+          "2026": 0.600314846779388
+        },
+        "october_return": -0.06561505544298696,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": true,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"never\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":1,\"initial_fraction\":0.5,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "6052d5611cf9320f9369d8372dd901c135e1ddeeb688e56a139b6bec7082982d.json",
+        "sha256": "6052d5611cf9320f9369d8372dd901c135e1ddeeb688e56a139b6bec7082982d",
+        "media_type": "application/json",
+        "name": "C8525",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8526": {
+      "config": {
+        "add_mode": "never",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 1,
+        "initial_fraction": 0.75,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.5074091408806891,
+        "dd": 0.1124405730128093,
+        "calmar": 4.512687255897253,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": 0.04922847779000006,
+          "2024": 0.11063003450163045,
+          "2025": 1.057176601168055,
+          "2026": 0.9951336601269212
+        },
+        "october_return": -0.09845816793426299,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": true,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"never\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":1,\"initial_fraction\":0.75,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "d663d1de8c344a7a45f2775d11a0c5bc56c265d4f2a465ecd2626b6320dfbe78.json",
+        "sha256": "d663d1de8c344a7a45f2775d11a0c5bc56c265d4f2a465ecd2626b6320dfbe78",
+        "media_type": "application/json",
+        "name": "C8526",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    "C8527": {
+      "config": {
+        "add_mode": "never",
+        "common_budget": 1.0,
+        "common_share": 0.375,
+        "earliest_add": 1,
+        "initial_fraction": 1.0,
+        "max_hold": 5,
+        "other_budget": 0.375,
+        "review_after": 3
+      },
+      "candidate": {
+        "annual": 0.7061895579090112,
+        "dd": 0.1487354697553862,
+        "calmar": 4.747956617681222,
+        "closed": 94,
+        "median": 6.0,
+        "coverage": 1.0,
+        "year_returns": {
+          "2023": 0.06324089068000105,
+          "2024": 0.14303498430796435,
+          "2025": 1.564209103043852,
+          "2026": 1.4614417269427817
+        },
+        "october_return": -0.13121997469493052,
+        "invested_days": 376
+      },
+      "gates": {
+        "calmar": true,
+        "dd_absolute": true,
+        "dd_relative": true,
+        "median": true,
+        "coverage": true
+      },
+      "definition": {
+        "runtime_kind": "ACCOUNT_REPLAY",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "execution_spec": {
+          "market": {
+            "rule_version": "US_EQUITY_V1"
+          },
+          "decision_clock": "daily",
+          "account": {
+            "currency": "USD",
+            "cash_availability": "IMMEDIATE_RESEARCH",
+            "allow_short": false,
+            "allow_negative_cash": false
+          },
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "buy_premium": 0.01,
+          "slippage_bp": 0.0,
+          "execution": "BAR_RANGE_V1",
+          "inclusive_touch": false,
+          "data_latency_seconds": 0
+        },
+        "warmup_bars": 63,
+        "entrypoint": "strategy:step",
+        "source_files": [
+          "strategy.py"
+        ],
+        "source_sha256": "80b69ed2ff025d58fee08bac9b6806901a086d49cc8ff4376ec7f10e9ce41d31",
+        "parameters_json": "{\"add_mode\":\"never\",\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":1,\"initial_fraction\":1.0,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+        "dependencies": [
+          {
+            "name": "numpy",
+            "version": "2.5.2"
+          },
+          {
+            "name": "pandas",
+            "version": "3.0.5"
+          }
+        ],
+        "contract_version": 4,
+        "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+        "feedback_mode": "CONFIRMED_EXECUTION",
+        "analysis_price": "RAW",
+        "explanation_cases": [
+          "flat",
+          "long"
+        ],
+        "auxiliary_inputs": [
+          {
+            "name": "mu_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "STOCK",
+              "symbol": "MU"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          },
+          {
+            "name": "soxx_hfq",
+            "instrument": {
+              "market": "US",
+              "asset_class": "ETF",
+              "symbol": "SOXX"
+            },
+            "source": {
+              "provider": "futu",
+              "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+            },
+            "frequency": "daily",
+            "warmup_bars": 63,
+            "max_age_seconds": 604800,
+            "analysis_price": "HFQ"
+          }
+        ],
+        "feature_graph": {
+          "nodes": [],
+          "outputs": [],
+          "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+        },
+        "state_schema": {
+          "account_fields": [],
+          "cycle_fields": [
+            {
+              "key": "anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "sector_anchor",
+              "value_type": "float",
+              "nullable": false
+            },
+            {
+              "key": "entry_budget",
+              "value_type": "float",
+              "nullable": false
+            }
+          ]
+        },
+        "computation": "STATEFUL_STEP"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S018",
+          "experiment_id": "EX055_20261104"
+        },
+        "evidence_id": "91937423595da8758de182591f9e8faf61aab9c1c1c71c9e6ee9fe3fca3710ec.json",
+        "sha256": "91937423595da8758de182591f9e8faf61aab9c1c1c71c9e6ee9fe3fca3710ec",
+        "media_type": "application/json",
+        "name": "C8527",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    }
+  },
+  "benchmark": {
+    "annual": 1.1195962552673357,
+    "dd": 0.5730512034565817,
+    "calmar": 1.953745578953599,
+    "closed": 0,
+    "median": 0.0,
+    "coverage": 0.0,
+    "year_returns": {
+      "2023": 0.6981818986999999,
+      "2024": -0.00839062058717499,
+      "2025": 2.3705460169894574,
+      "2026": 2.091282387691735
+    },
+    "october_return": -0.15103539755623951,
+    "invested_days": 961
+  },
+  "workload": {
+    "input_snapshots": 1,
+    "candidate_runs": 28,
+    "benchmark_runs": 1,
+    "account_timings": [
+      {
+        "kind": "BENCHMARK",
+        "owner": "benchmark:41c3f088bb15a9e1f26c06661b21289d4ad0996375d265aab670de0af96eda13",
+        "feature_seconds": 0.009596100004273467,
+        "replay_seconds": 0.5641270999913104,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8500:8c5e2cb9bc129ecce3e1ec818371cad0530bbb26e913fbcc29a4cd9e905fe4b6",
+        "feature_seconds": 0.008101499945041724,
+        "replay_seconds": 4.019834099992295,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8501:6ff8c4813d45f55bdd98accbf6487a2619d027302168b463d1e1f50d85495116",
+        "feature_seconds": 0.007761400018353015,
+        "replay_seconds": 3.9285712000128115,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8502:31551a126214aadbc4454d92177e667d13b51a8e32f07e4515642ae0dcaab518",
+        "feature_seconds": 0.008373900069273077,
+        "replay_seconds": 3.9467549999972107,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8503:d538d77845bbc48ec87f7c508a73fd2dbca7fed3873b6b3c9dc6fe2f48d40319",
+        "feature_seconds": 0.008158900134731084,
+        "replay_seconds": 3.903807099995902,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8504:4b5ccbe0901506b1e11c9d3d9e2e0e1c840aa39aa0c9340179efbff738a67dbf",
+        "feature_seconds": 0.007528100031777285,
+        "replay_seconds": 3.8134763999987626,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8505:1dc9b964910466fd3bbf7978974f80fb1a44891e66ce7b2417fd355630a67f3b",
+        "feature_seconds": 0.007577299882541411,
+        "replay_seconds": 3.862679300000309,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8506:164bdbbdd2dc7d55f5ee8ab0b2be2e3281ea43bb2d346d174a690a5da2a9a73e",
+        "feature_seconds": 0.007588099790154956,
+        "replay_seconds": 3.8316266000038013,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8507:559a18b0a7b56bea1019dbefe368fa863dd102c0093650aa54e7534d214ea99a",
+        "feature_seconds": 0.00819820023025386,
+        "replay_seconds": 3.8488860000070417,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8508:9e72858031afa6fcf71b44048cd850c71c9f9ab55e590232cebccc3079d756b7",
+        "feature_seconds": 0.008065999994869344,
+        "replay_seconds": 4.200164300011238,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8509:9f9a1ca862a891570ebbc6b2f876a045cbf166bb8fd4c16260e2509d79f2a531",
+        "feature_seconds": 0.008061799759161659,
+        "replay_seconds": 4.236025300007896,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8510:fe29823df33f91c668592d2af8fa2f97986ccf372c5ac5c147e722e2df506df6",
+        "feature_seconds": 0.008482700082822703,
+        "replay_seconds": 4.2241068000003,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8511:40909da051e4a55bccd4f442bef0860282efd97f47017604d0bbd61d7e4b5a87",
+        "feature_seconds": 0.00876070000231266,
+        "replay_seconds": 4.287699000007706,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8512:1a18b226d364d3a062d563208684762e2e5352563d2592b8bebc07b5fa5d2e2e",
+        "feature_seconds": 0.008089399882010184,
+        "replay_seconds": 4.22662030000356,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8513:2ab2b6260b5ae1608b7fefd0a3897c9ce5e11714eed9c5e83704c192046aaab5",
+        "feature_seconds": 0.008102299994789064,
+        "replay_seconds": 4.254921400002786,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8514:146aca88061b3b98c9e51d2c892b9f8d729b3b60f9b336381d8ed0e6a5b6a844",
+        "feature_seconds": 0.008349700015969574,
+        "replay_seconds": 4.2363088999991305,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8515:b8e31a99ac55a306c1dcdc590d8cdaf460f2e6086a90f57c3c603df456cc25db",
+        "feature_seconds": 0.00856850019772537,
+        "replay_seconds": 4.284206800002721,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8516:3b2c40bc9424fad9221bd2cf2c187d93f89082089626d8576538fb63629db34e",
+        "feature_seconds": 0.0076172996778041124,
+        "replay_seconds": 3.8853489000030095,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8517:acb7a55fd88f0030a80c5f91fa1b70bccbd2bae6ba1e95d3d39e943dee44841e",
+        "feature_seconds": 0.007867399777751416,
+        "replay_seconds": 3.8946415999962483,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8518:0d7748d0de91579388abd21261727e7c280f4fe6edb025c1eb221241d97b4b79",
+        "feature_seconds": 0.007705099924351089,
+        "replay_seconds": 3.86208410000836,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8519:d874f3ac40c4d95d352afe40fe7e99d9755342fb2cec285781e39bafb259782b",
+        "feature_seconds": 0.007987800025148317,
+        "replay_seconds": 3.9328827999997884,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8520:c728ec932da760617e3c993ed282ec73355d642a5699ed860463112a9b664d64",
+        "feature_seconds": 0.007547700370196253,
+        "replay_seconds": 3.948958200009656,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8521:8c524f8737288b67372337749f2f5b63e8ce43f7b3ce2cf4e47c671ae3b4e760",
+        "feature_seconds": 0.007664900287636556,
+        "replay_seconds": 3.9735280000022613,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8522:7dcb4b4ac194658093daff6c5fc0b3d5ed654897fdec1b9b8b756b6c6fe5e2ec",
+        "feature_seconds": 0.007683400035602972,
+        "replay_seconds": 3.950460899999598,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8523:ac804272f2647e7014f70c228e3adac17a7214cc35f2712afd0bf91ec46737b9",
+        "feature_seconds": 0.008283099989057519,
+        "replay_seconds": 3.909674399998039,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8524:00efbfb29f6dd8541cc742ec752710f6f2e4a77ddc80fb1062b4baedd588444d",
+        "feature_seconds": 0.007732699988991953,
+        "replay_seconds": 4.069979199994123,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8525:5435f521a8d8e7632e49721d1f36494c1d99c95d480f0c19a1967584cf1f3d6d",
+        "feature_seconds": 0.007886800143751316,
+        "replay_seconds": 4.1045363000012,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8526:a4991b8d0460779b067ad34d44f864809f8e196536bf9e855492cba13db8f59d",
+        "feature_seconds": 0.008052099714404903,
+        "replay_seconds": 4.08431729998847,
+        "rows": 961,
+        "decisions": 961
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S018:C8527:5dbb528b97dcf165940df7ff820fcaf851af7c17b73d5e9b371ce03fbdaa543f",
+        "feature_seconds": 0.00828189993626438,
+        "replay_seconds": 4.0857892999920296,
+        "rows": 961,
+        "decisions": 961
+      }
+    ]
+  }
+}
