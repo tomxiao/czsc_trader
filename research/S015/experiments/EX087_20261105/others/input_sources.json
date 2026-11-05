@@ -1,0 +1,240 @@
+{
+  "inputs": {
+    "calendar": {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SZSE",
+        "start": "2024-09-09",
+        "end": "2026-10-21",
+        "required_cutoff": "2026-10-21",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "prepared": {
+        "space_id": "67b4df74-e6d9-4fa4-9200-b5694e5d7018",
+        "preparation_id": "63728ef9-ae1a-4075-80d7-2c6a55bb63d4",
+        "manifest_sha256": "9101439e2b62a0a5ff89a37e08fc6ef98baa0299acf592cd7bce1e006e02ca04"
+      }
+    },
+    "execution": {
+      "request": {
+        "dataset": "etf.unadjusted_daily",
+        "symbol": "159326.SZ",
+        "start": "2024-09-09",
+        "end": "2026-10-20",
+        "required_cutoff": "2026-10-20",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": 0,
+          "minimum_observations": 1,
+          "minimum_sessions": 21,
+          "observations_through": "2024-12-31"
+        }
+      },
+      "prepared": {
+        "space_id": "67b4df74-e6d9-4fa4-9200-b5694e5d7018",
+        "preparation_id": "63728ef9-ae1a-4075-80d7-2c6a55bb63d4",
+        "manifest_sha256": "9101439e2b62a0a5ff89a37e08fc6ef98baa0299acf592cd7bce1e006e02ca04"
+      }
+    },
+    "intraday": {
+      "request": {
+        "dataset": "etf.unadjusted_intraday",
+        "symbol": "159326.SZ",
+        "start": "2025-01-02",
+        "end": "2026-10-20",
+        "required_cutoff": "2026-10-20",
+        "frequency": "30m",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": 0,
+          "minimum_observations": 8,
+          "minimum_sessions": 0,
+          "observations_through": "2025-01-02"
+        }
+      },
+      "prepared": {
+        "space_id": "67b4df74-e6d9-4fa4-9200-b5694e5d7018",
+        "preparation_id": "63728ef9-ae1a-4075-80d7-2c6a55bb63d4",
+        "manifest_sha256": "9101439e2b62a0a5ff89a37e08fc6ef98baa0299acf592cd7bce1e006e02ca04"
+      }
+    },
+    "market": {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "159326.SZ",
+        "start": "2024-09-09",
+        "end": "2026-10-20",
+        "required_cutoff": "2026-10-20",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": 0,
+          "minimum_observations": 1,
+          "minimum_sessions": 21,
+          "observations_through": "2024-12-31"
+        }
+      },
+      "prepared": {
+        "space_id": "67b4df74-e6d9-4fa4-9200-b5694e5d7018",
+        "preparation_id": "63728ef9-ae1a-4075-80d7-2c6a55bb63d4",
+        "manifest_sha256": "9101439e2b62a0a5ff89a37e08fc6ef98baa0299acf592cd7bce1e006e02ca04"
+      }
+    },
+    "intraday_complete": {
+      "request": {
+        "dataset": "etf.unadjusted_intraday",
+        "symbol": "159326.SZ",
+        "start": "2024-09-09",
+        "end": "2026-10-21",
+        "required_cutoff": "2026-10-21",
+        "frequency": "30m",
+        "parameters": {},
+        "coverage": null
+      },
+      "prepared": {
+        "space_id": "67b4df74-e6d9-4fa4-9200-b5694e5d7018",
+        "preparation_id": "5217726d-91ef-474c-be74-3a0c6a0c843c",
+        "manifest_sha256": "7ec35e6614a1fb0b6b3d8242f4c4a8521e4e9b73f440aa71e0958d11f72aa002"
+      },
+      "composition": {
+        "preheat": "new preparation through 2024-12-31",
+        "original_signal_overlap": {
+          "request": {
+            "dataset": "etf.unadjusted_intraday",
+            "symbol": "159326.SZ",
+            "start": "2025-01-02",
+            "end": "2026-10-20",
+            "required_cutoff": "2026-10-20",
+            "frequency": "30m",
+            "parameters": {},
+            "coverage": {
+              "maximum_start_lag_days": 0,
+              "minimum_observations": 8,
+              "minimum_sessions": 0,
+              "observations_through": "2025-01-02"
+            }
+          },
+          "prepared": {
+            "space_id": "67b4df74-e6d9-4fa4-9200-b5694e5d7018",
+            "preparation_id": "63728ef9-ae1a-4075-80d7-2c6a55bb63d4",
+            "manifest_sha256": "9101439e2b62a0a5ff89a37e08fc6ef98baa0299acf592cd7bce1e006e02ca04"
+          }
+        },
+        "final_day": {
+          "space_id": "67b4df74-e6d9-4fa4-9200-b5694e5d7018",
+          "preparation_id": "2d53fde8-11d3-4adc-861f-d13e3f2157ff",
+          "manifest_sha256": "e901ff6cbcd165fc3ac057e806850ec49b6c7cf9fc52beefefb452616139e32c"
+        },
+        "unused_refreshed_overlap_max_differences": {
+          "Open": 0.0,
+          "High": 0.0,
+          "Low": 0.0,
+          "Close": 0.0,
+          "Volume": 28.0,
+          "Amount": 64.31399989128113
+        }
+      }
+    },
+    "raw_complete": {
+      "request": {
+        "dataset": "etf.unadjusted_daily",
+        "symbol": "159326.SZ",
+        "start": "2024-09-09",
+        "end": "2026-10-21",
+        "required_cutoff": "2026-10-21",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "prepared": {
+        "space_id": "67b4df74-e6d9-4fa4-9200-b5694e5d7018",
+        "preparation_id": "3e70cfb1-9f7b-4abd-879f-04612cd33970",
+        "manifest_sha256": "f8dbef68d3e717273d326076777f2848c9da59a1b215763299c4c7bd7dd6a227"
+      }
+    },
+    "hfq_complete": {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "159326.SZ",
+        "start": "2024-09-09",
+        "end": "2026-10-21",
+        "required_cutoff": "2026-10-21",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "prepared": {
+        "space_id": "67b4df74-e6d9-4fa4-9200-b5694e5d7018",
+        "preparation_id": "3e70cfb1-9f7b-4abd-879f-04612cd33970",
+        "manifest_sha256": "f8dbef68d3e717273d326076777f2848c9da59a1b215763299c4c7bd7dd6a227"
+      }
+    },
+    "limits_complete": {
+      "request": {
+        "dataset": "security.price_limits",
+        "symbol": "159326.SZ",
+        "start": "2024-09-09",
+        "end": "2026-10-21",
+        "required_cutoff": "2026-10-21",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "prepared": {
+        "space_id": "67b4df74-e6d9-4fa4-9200-b5694e5d7018",
+        "preparation_id": "3e70cfb1-9f7b-4abd-879f-04612cd33970",
+        "manifest_sha256": "f8dbef68d3e717273d326076777f2848c9da59a1b215763299c4c7bd7dd6a227"
+      }
+    },
+    "calendar_extended": {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SZSE",
+        "start": "2024-09-09",
+        "end": "2026-10-22",
+        "required_cutoff": "2026-10-22",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "prepared": {
+        "space_id": "67b4df74-e6d9-4fa4-9200-b5694e5d7018",
+        "preparation_id": "3e70cfb1-9f7b-4abd-879f-04612cd33970",
+        "manifest_sha256": "f8dbef68d3e717273d326076777f2848c9da59a1b215763299c4c7bd7dd6a227"
+      }
+    }
+  },
+  "old_accounts": {
+    "standard": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX082_20261025"
+      },
+      "evidence_id": "228ac057b75d756c3cb3bd307007ef467e8b7711892021ff59d9c689f4a3c1f5.json",
+      "sha256": "228ac057b75d756c3cb3bd307007ef467e8b7711892021ff59d9c689f4a3c1f5",
+      "media_type": "application/json",
+      "name": "standard",
+      "schema": "account_evaluation",
+      "schema_version": 8
+    },
+    "fee_x2": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S015",
+        "experiment_id": "EX082_20261025"
+      },
+      "evidence_id": "63eeab719caf4132da46ed7c684cb3f6a9d8360322a94c9bb92a401832621121.json",
+      "sha256": "63eeab719caf4132da46ed7c684cb3f6a9d8360322a94c9bb92a401832621121",
+      "media_type": "application/json",
+      "name": "fee_x2",
+      "schema": "account_evaluation",
+      "schema_version": 8
+    }
+  }
+}

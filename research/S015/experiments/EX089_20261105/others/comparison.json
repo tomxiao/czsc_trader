@@ -1,0 +1,154 @@
+{
+  "status": "ECONOMIC_EQUIVALENCE_WITHIN_FLOAT_PRECISION",
+  "absolute_numeric_tolerance": 1e-08,
+  "scope": "C9700 full434 standard and fee_x2; source identities/time precision intentionally differ.",
+  "accounts": [
+    {
+      "scenario": "STANDARD",
+      "old_source": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX082_20261025"
+        },
+        "evidence_id": "228ac057b75d756c3cb3bd307007ef467e8b7711892021ff59d9c689f4a3c1f5.json",
+        "sha256": "228ac057b75d756c3cb3bd307007ef467e8b7711892021ff59d9c689f4a3c1f5",
+        "media_type": "application/json",
+        "name": "standard",
+        "schema": "account_evaluation",
+        "schema_version": 8
+      },
+      "new_source": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX089_20261105"
+        },
+        "evidence_id": "620604fef0ebf8182d268e6f40c8eef3601ea6fdec4cda5d8f5f0c2afc5b033e.json",
+        "sha256": "620604fef0ebf8182d268e6f40c8eef3601ea6fdec4cda5d8f5f0c2afc5b033e",
+        "media_type": "application/json",
+        "name": "STANDARD",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "signal_count": 434,
+      "signal_difference_count": 0,
+      "fills": 108,
+      "max_fill_differences": {
+        "price": 0.0,
+        "quantity": 0.0,
+        "fees": 5.684341886080802e-14
+      },
+      "max_daily_account_differences": {
+        "cash": 5.820766091346741e-11,
+        "quantity": 0.0,
+        "close": 0.0,
+        "equity": 5.820766091346741e-11
+      },
+      "max_benchmark_equity_difference": 2.9103830456733704e-11,
+      "old": {
+        "return": 1.282494940999999,
+        "annual": 0.6147635214079166,
+        "drawdown": 0.054025648853157526,
+        "closed_cycles": 54,
+        "ending_equity": 228249.49409999992
+      },
+      "new": {
+        "return": 1.282494940999999,
+        "annual": 0.6147635214079166,
+        "drawdown": 0.05402564885315819,
+        "closed_cycles": 54,
+        "ending_equity": 228249.4940999999,
+        "rolling60_median": 7.0
+      }
+    },
+    {
+      "scenario": "FEE_X2",
+      "old_source": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX082_20261025"
+        },
+        "evidence_id": "63eeab719caf4132da46ed7c684cb3f6a9d8360322a94c9bb92a401832621121.json",
+        "sha256": "63eeab719caf4132da46ed7c684cb3f6a9d8360322a94c9bb92a401832621121",
+        "media_type": "application/json",
+        "name": "fee_x2",
+        "schema": "account_evaluation",
+        "schema_version": 8
+      },
+      "new_source": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX089_20261105"
+        },
+        "evidence_id": "ab05bf79dba87aa91cd14fa892565629eb78bf6b0737f714dcb44214270fbc2c.json",
+        "sha256": "ab05bf79dba87aa91cd14fa892565629eb78bf6b0737f714dcb44214270fbc2c",
+        "media_type": "application/json",
+        "name": "FEE_X2",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "signal_count": 434,
+      "signal_difference_count": 0,
+      "fills": 108,
+      "max_fill_differences": {
+        "price": 0.0,
+        "quantity": 0.0,
+        "fees": 1.1368683772161603e-13
+      },
+      "max_daily_account_differences": {
+        "cash": 5.820766091346741e-11,
+        "quantity": 0.0,
+        "close": 0.0,
+        "equity": 5.820766091346741e-11
+      },
+      "max_benchmark_equity_difference": 2.9103830456733704e-11,
+      "old": {
+        "return": 1.0516710160000025,
+        "annual": 0.5178324703987169,
+        "drawdown": 0.05588154328080319,
+        "closed_cycles": 54,
+        "ending_equity": 205167.10160000023
+      },
+      "new": {
+        "return": 1.051671016000002,
+        "annual": 0.5178324703987169,
+        "drawdown": 0.05588154328080319,
+        "closed_cycles": 54,
+        "ending_equity": 205167.1016000002,
+        "rolling60_median": 7.0
+      }
+    }
+  ],
+  "current_selection_reader": {
+    "status": "COMPLETE",
+    "facts": 4,
+    "stats": {
+      "type": "SelectionProjectionStats",
+      "source_bytes": 6011991,
+      "shared_bytes": 3475900,
+      "read_count": 4,
+      "decode_count": 4,
+      "read_seconds": 0.013718000001972541,
+      "decode_seconds": 0.1273388999979943,
+      "projection_seconds": 0.01495690000592731,
+      "total_seconds": 0.20159539999440312,
+      "projected_accounts": 2,
+      "projected_windows": 4,
+      "observation_points": 868,
+      "window_point_visits": 756,
+      "frequency_subwindows": 520
+    }
+  },
+  "limitations": [
+    "Only one financial configuration migrated; complete candidate universe and all stage-four checks remain pending.",
+    "Daily-close timestamps are explicit; old intrabar TIMESTAMP labels are replaced with V4 MODEL_BAR_OPEN/BAR_INTERVAL, not exact observed fill timestamps.",
+    "No production, frozen package or historical evidence modified."
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "accounts": [
+    {
+      "scenario": "STANDARD",
+      "reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX089_20261105"
+        },
+        "evidence_id": "620604fef0ebf8182d268e6f40c8eef3601ea6fdec4cda5d8f5f0c2afc5b033e.json",
+        "sha256": "620604fef0ebf8182d268e6f40c8eef3601ea6fdec4cda5d8f5f0c2afc5b033e",
+        "media_type": "application/json",
+        "name": "STANDARD",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    },
+    {
+      "scenario": "FEE_X2",
+      "reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX089_20261105"
+        },
+        "evidence_id": "ab05bf79dba87aa91cd14fa892565629eb78bf6b0737f714dcb44214270fbc2c.json",
+        "sha256": "ab05bf79dba87aa91cd14fa892565629eb78bf6b0737f714dcb44214270fbc2c",
+        "media_type": "application/json",
+        "name": "FEE_X2",
+        "schema": "equity_research",
+        "schema_version": 4
+      }
+    }
+  ],
+  "statistics": "EquityExecutionStatistics(input_snapshots=1, candidate_runs=2, benchmark_runs=2, account_timings=(EquityAccountTiming(kind='BENCHMARK', owner='benchmark:25b07e903136939ed09c73b6559727fed5de81480917330d9080d3ddca467097', feature_seconds=0.003883200290147215, replay_seconds=0.23313760000746697, rows=434, decisions=434), EquityAccountTiming(kind='BENCHMARK', owner='benchmark:2f4a03bf4deb04e0fdd9f19c3c29ad6d9884e0ff591f8befa860ec6f94a43692', feature_seconds=0.003669699828606099, replay_seconds=0.22605210001347587, rows=434, decisions=434), EquityAccountTiming(kind='CANDIDATE', owner='candidate:S015:C9802:99b1693ea8dc8c80f8e9fe15b2dc5d7b98f878fc9255ae1e48ea191685959951', feature_seconds=0.007761499990010634, replay_seconds=6.412731199990958, rows=868, decisions=868)))"
+}

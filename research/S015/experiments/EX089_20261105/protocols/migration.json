@@ -1,0 +1,14 @@
+{
+  "authorization": {"role": "RSCH", "user_confirmation": "执行", "approved_scope": "C9700样本账户迁移和新旧行为核对，使用现有接口，继而为新版阶段四准备；无平台修改、冻结或生产变更。"},
+  "parent_candidate": "S015-C9700",
+  "parent_content_sha256": "3f92791519e1f9422fef11bb5c9177db4d9d83e628ea5f5cba0ec684b9530d5f",
+  "sample_candidate": "S015-C9802",
+  "sample_content_sha256": "99b1693ea8dc8c80f8e9fe15b2dc5d7b98f878fc9255ae1e48ea191685959951",
+  "financial_parameters": {"center_kind": "median", "lookback": 3, "allocation": 1.0, "minimum_repair_space": 0.0017298986606429072},
+  "window": ["2025-01-02", "2026-10-21"],
+  "initial_cash": 100000,
+  "scenarios": [{"scenario": "STANDARD", "one_way_cost": 0.001}, {"scenario": "FEE_X2", "one_way_cost": 0.002}],
+  "price_roles": {"signals": "HFQ; RAW M30 centers transformed to the daily HFQ scale as in the parent", "execution_and_valuation": "RAW with explicit actions and CN constraints"},
+  "comparison": {"signal_date_and_target": "exact", "fill_date_side_quantity_price": "exact", "cash_equity_fees": "absolute error below 1e-8; report actual maxima", "benchmark": "same-window equity comparison"},
+  "scope_limitations": ["Full434 sample only; independent common415 accounts and remaining candidates are not yet migrated.", "No search or new financial configuration. Sample identity is not a frozen strategy or a new stage-four acceptance.", "V4 does not invent precise timestamps for intrabar fills; semantic timing changes are reported separately."]
+}
