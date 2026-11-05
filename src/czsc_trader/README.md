@@ -1073,3 +1073,61 @@ V4研究可运行不代表具备生产状态持久化、PTE部署或新的冻结
 
 真实研究启动前仍须由已授权批次固定标的、窗口、资金政策、统计口径，并核验四类来源的实际覆盖。
 软件合成夹具通过不替代真实数据准备，尤其不能证明历史交易约束或分红支付数据已经可用。
+
+### 10.8 选型稳定性：读取原账户的窗口事实
+
+`project_selection_window_facts(repository, request)`批量消费显式的 V4 `EvidenceRef`，
+返回选择／观察窗口的紧凑数值事实、来源绑定、失败明细和执行统计。
+支持 A股／美股、日线／M30；保持原账户持仓和公司行动后的权益，不从窗口起点重新建仓。
+预期观察点来自已保存的独立交易日历及决策频率；缺柱、陈旧估值按所属窗口报告不足，
+不会用全样本共同交集删日，也不会将逐柱回撤自动降为日末回撤。
+
+```python
+from czsc_trader.application import project_selection_window_facts
+from czsc_trader.research_tools import (
+    SelectionWindowSource, SelectionProjectionBudget, SelectionWindowFactsRequest,
+    SelectionStabilityEvidence, MaterialEvidenceWrite,
+)
+from strategy_evaluator import assess_selection_stability
+
+# plan、rule 由研究者显式声明，类型见 SE 的选型稳定性接口。
+request = SelectionWindowFactsRequest(
+    sources=tuple(SelectionWindowSource(candidate, ref) for candidate, ref in declared_sources),
+    plan=plan, frequency_window_days=60, minimum_closed_cycles=3,
+    budget=SelectionProjectionBudget(
+        max_window_facts=20000, max_source_bytes=2_000_000_000,
+        max_shared_bytes=500_000_000),
+)
+projection = project_selection_window_facts(repository, request)
+analysis = projection.analysis_request(rule)
+result = assess_selection_stability(analysis)
+evidence = SelectionStabilityEvidence(projection, analysis, result, plan.limitations)
+# 用既有 publish_evidence(context, MaterialEvidenceWrite(...)) 发布 JSON 字节，
+# 再将材料引用显式加入 DeliveryContent.evidence。
+```
+
+本项只衡量固定候选集合的回顾性选型稳定性，不训练策略、不运行策略回放、不生成拼接策略净值，
+不估计历史试验数量或选择偏差。净年化收益／净卡玛、标准硬条件、顺序排序与分箱由 SE 的强类型
+`SelectionRule`明确表达；不支持的压力、参数诊断、人工选择等规则明确拒绝。
+规则适用性和阈值由 RSCH 决定。前五项自检的接口、算法及既有结果保持原义。
+
+首版采用单进程流式读取：每个实际路径只读取／校验一次，共享输入及买持按内容身份只解析一次，
+候选重账本逐个消费后释放，重复窗口和共享买持的投影复用。事实预算包括候选与唯一买持账户的
+全部唯一窗口，字节预算在投影前检查；超额明确失败，不裁剪候选或窗口。
+`stats`区分读取、解码、投影与总耗时，并报告原始字节、读取／解码次数、窗口点访问量和频率子窗数。
+`shared_bytes`为共享来源的序列化字节，不能作为进程驻留内存上限。
+
+`SOURCE_FAILED`表示来源损坏、身份不一致或不支持的来源，仍保留其他成功投影供定位问题；
+`analysis_request`此时拒绝构造缩小候选集合的分析。合法账户中的局部覆盖不足则保留为窗口事实，
+由 SE 区分选型不足与观察不足；无候选达标、指标无法定义、完整并列均有独立语义。
+
+独立证据使用`selection-stability-evidence-v1`，不修改 schema 15 或
+`CandidateAssessmentDelivery`。默认 INTEGRITY 只验证所附材料字节及显式引用，不重算本项、前五项，
+不递归认证材料 JSON 中列出的来源。紧凑证据保留外部不可变账户引用；若需要原账完全便携，
+调用方须把全部账户引用也加入`DeliveryContent.evidence`，原有 V4 闭包复制成本另计。
+历史材料不迁移、不重签；RSCH 后续只需固定候选集合、规则、日历、窗口和预算再调用本接口。
+
+聚焦用例见 [双市场独立附证与交付](../../tests/functional/test_selection_stability_delivery.py)、
+[来源读取及预算](../../tests/functional/test_selection_source_reader.py)、
+[来源关联和窗口边界](../../tests/functional/test_selection_stability_service.py)；
+数值、时序与频率边界由 [SE](../../packages/strategy_evaluator/README.md)的纯计算测试覆盖。

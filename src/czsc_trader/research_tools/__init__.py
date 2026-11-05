@@ -145,7 +145,16 @@ from .delivery import (
     DeliveryValidationStats,
 )
 
+from .selection_stability import (
+    SelectionWindowSource, SelectionProjectionBudget, SelectionWindowFactsRequest,
+    SelectionProjectionStatus, SelectionSourceFailure, SelectionProjectionStats,
+    SelectionWindowFactsResult, SelectionStabilityEvidence,
+)
+
 __all__ = [
+    "SelectionWindowSource", "SelectionProjectionBudget", "SelectionWindowFactsRequest",
+    "SelectionProjectionStatus", "SelectionSourceFailure", "SelectionProjectionStats",
+    "SelectionWindowFactsResult", "SelectionStabilityEvidence",
     "EquitySources", "EquityEvaluationRequest", "EquityEvaluationResult",
     'EquityInputSnapshot', 'BenchmarkRunIdentity', 'PreparedAccountEvaluation', 'MaterializedEquity',
     'CheckpointMode', 'ExecutionCheckpointRequest', 'ExecutionPhase', 'ExecutionProgress',

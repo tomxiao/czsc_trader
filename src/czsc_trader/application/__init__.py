@@ -7,6 +7,7 @@ services. Every name resolves to the existing implementation, without wrappers.
 from importlib import import_module
 
 _EXPORTS = {
+    "project_selection_window_facts": "selection_stability_service",
     "open_research_execution": "execution_service",
     "get_research_overview": "research_overview_service",
     "diagnose_accounts": "account_diagnosis_service",

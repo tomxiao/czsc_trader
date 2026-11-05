@@ -42,6 +42,14 @@ def _read(content):
         parse_constant=lambda _: (_ for _ in ()).throw(ValueError("nonfinite equity evidence")))
 
 
+def primary_input_digest(value):
+    """Canonical primary identity from already decoded V4 input content."""
+    primary = {"schema": value["schema"],
+        "products": {key: value["products"][key] for key in ("bars", "sessions", "actions", "constraints")},
+        "data": {key: value["data"][key] for key in ("bars", "sessions", "actions", "constraints")}}
+    return sha256(_bytes(primary)).hexdigest()
+
+
 @dataclass(frozen=True, slots=True)
 class EquityInputSnapshot:
     artifact: EquityArtifact
@@ -53,10 +61,7 @@ class EquityInputSnapshot:
             raise TypeError("input snapshot requires an immutable input artifact")
         value = _read(self.artifact.content)
         object.__setattr__(self, "data_content", _bytes(value["data"]))
-        primary = {"schema": value["schema"],
-            "products": {key: value["products"][key] for key in ("bars", "sessions", "actions", "constraints")},
-            "data": {key: value["data"][key] for key in ("bars", "sessions", "actions", "constraints")}}
-        object.__setattr__(self, "primary_sha256", sha256(_bytes(primary)).hexdigest())
+        object.__setattr__(self, "primary_sha256", primary_input_digest(value))
 
     @property
     def sha256(self):
@@ -460,6 +465,37 @@ def validate_result_structure(payload, artifacts=()):
         raise ValueError("equity result artifact closure differs from references")
 
 
+def decoded_equity_runs(payload, inputs, candidate, benchmark, *, primary_sha256):
+    """Validate V4 dependency identities without re-decoding or account replay."""
+    if inputs.get("schema") != "equity-input/v1" or inputs["data"] != payload["data"]:
+        raise ValueError("equity input identity differs")
+    runs = {}
+    for name, key in (("candidate", "candidate_ref"), ("buy_hold", "benchmark_ref")):
+        account = candidate if name == "candidate" else benchmark
+        expected_input = (payload["input_ref"]["sha256"] if name == "candidate" else
+                          payload["benchmark_identity"]["input_snapshot_sha256"])
+        if account.get("schema") != "equity-account/v1" or account["input_sha256"] != expected_input:
+            raise ValueError("equity account input identity differs")
+        if name == "candidate":
+            expected_owner = {"kind": "CANDIDATE", "candidate": payload["evaluation_identity"]["candidate"],
+                "content_sha256": payload["request"]["content_sha256"]}
+        else:
+            identity = BenchmarkRunIdentity(_bytes(payload["benchmark_identity"]))
+            expected_owner = {"kind": "BENCHMARK", "run_identity": identity.to_dict(), "run_sha256": identity.sha256}
+            contract = identity.to_dict()
+            request = payload["request"]
+            if (contract["input_snapshot_sha256"] != primary_sha256
+                    or any(contract[name] != request[name] for name in
+                        ("instrument", "window", "history_start", "initial_cash", "fee_rate", "engine_sources", "python_version", "pandas_version"))
+                    or contract["definition"]["warmup_bars"] != request["warmup_bars"]
+                    or contract["definition"]["execution_spec"] != request["specification"]):
+                raise ValueError("equity benchmark economic identity differs from evaluation")
+        if account["owner"] != expected_owner:
+            raise ValueError("equity account owner differs")
+        runs[name] = account["run"]
+    return runs
+
+
 @dataclass(frozen=True, slots=True)
 class MaterializedEquity:
     source_content: bytes
@@ -482,33 +518,9 @@ class MaterializedEquity:
         payload = _read(self.source_content)
         documents = {item.sha256: _read(item.content) for item in self.artifacts}
         inputs = documents[payload["input_ref"]["sha256"]]
-        if inputs.get("schema") != "equity-input/v1" or inputs["data"] != payload["data"]:
-            raise ValueError("equity input identity differs")
-        runs = {}
-        for name, key in (("candidate", "candidate_ref"), ("buy_hold", "benchmark_ref")):
-            account = documents[payload[key]["sha256"]]
-            expected_input = (payload["input_ref"]["sha256"] if name == "candidate" else
-                              payload["benchmark_identity"]["input_snapshot_sha256"])
-            if account.get("schema") != "equity-account/v1" or account["input_sha256"] != expected_input:
-                raise ValueError("equity account input identity differs")
-            if name == "candidate":
-                expected_owner = {"kind": "CANDIDATE", "candidate": payload["evaluation_identity"]["candidate"],
-                    "content_sha256": payload["request"]["content_sha256"]}
-            else:
-                identity = BenchmarkRunIdentity(_bytes(payload["benchmark_identity"]))
-                expected_owner = {"kind": "BENCHMARK", "run_identity": identity.to_dict(), "run_sha256": identity.sha256}
-                contract = identity.to_dict()
-                request = payload["request"]
-                primary = EquityInputSnapshot(next(item for item in self.artifacts if item.kind == "equity_input"))
-                if (contract["input_snapshot_sha256"] != _primary_input_sha256(primary)
-                        or any(contract[name] != request[name] for name in
-                            ("instrument", "window", "history_start", "initial_cash", "fee_rate", "engine_sources", "python_version", "pandas_version"))
-                        or contract["definition"]["warmup_bars"] != request["warmup_bars"]
-                        or contract["definition"]["execution_spec"] != request["specification"]):
-                    raise ValueError("equity benchmark economic identity differs from evaluation")
-            if account["owner"] != expected_owner:
-                raise ValueError("equity account owner differs")
-            runs[name] = account["run"]
+        runs = decoded_equity_runs(payload, inputs,
+            documents[payload["candidate_ref"]["sha256"]], documents[payload["benchmark_ref"]["sha256"]],
+            primary_sha256=primary_input_digest(inputs))
         request = payload["request"]
         products = inputs["products"]
         payload.update(runs=runs, audit_inputs={"bars": products["bars"], "action_facts": products["actions"],

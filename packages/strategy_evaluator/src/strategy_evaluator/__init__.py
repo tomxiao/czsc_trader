@@ -1,3 +1,12 @@
+from .selection_models import (
+    AccountWindowFacts, EquityWindowProjectionRequest, SelectionAnalysisStatus,
+    SelectionCandidateCheck, SelectionCandidateSource, SelectionCandidateSummary,
+    SelectionDecision, SelectionDirection, SelectionDistribution, SelectionMetricOrder, SelectionNoFilter,
+    SelectionObservation, SelectionRule, SelectionStabilityRequest, SelectionStabilityResult,
+    SelectionStatus, SelectionWindow, SelectionWindowPair, SelectionWindowPlan,
+    UnsupportedSelectionRule, WindowCoverageStatus, WindowEquityPoint, WindowObservationTime,
+)
+from .selection_stability import assess_selection_stability, project_equity_windows
 from .models import (
     CandidateDescriptor,
     CandidateProfile,
@@ -409,4 +418,14 @@ __all__ += ["CalmarSelfCheckProtocol"]
 __all__ += [
     "AssessmentInputKind", "CandidatePerformanceAssessmentRequest", "ParameterPerformanceEvidence",
     "project_parameter_performance", "assessment_benchmark_fingerprint",
+]
+
+__all__ += [
+    "AccountWindowFacts", "EquityWindowProjectionRequest", "SelectionAnalysisStatus",
+    "SelectionCandidateCheck", "SelectionCandidateSource", "SelectionCandidateSummary",
+    "SelectionDecision", "SelectionDirection", "SelectionDistribution", "SelectionMetricOrder", "SelectionNoFilter",
+    "SelectionObservation", "SelectionRule", "SelectionStabilityRequest", "SelectionStabilityResult",
+    "SelectionStatus", "SelectionWindow", "SelectionWindowPair", "SelectionWindowPlan",
+    "UnsupportedSelectionRule", "WindowCoverageStatus", "WindowEquityPoint", "WindowObservationTime",
+    "assess_selection_stability", "project_equity_windows",
 ]
