@@ -6,13 +6,13 @@ import math
 
 from dataflows import BarFrequency, TimeInterval
 from .contracts import OrderSide, OrderType
-from .equity import DecisionPoint, ResearchExecutionSpec, equity_hash
+from .equity import ResearchExecutionSpec, equity_hash
 from .equity_replay import (PreparedReplay, CycleState, StateRecord, ReplayOutcome,
-    ReplayStatistics, ReplayFailure, _Visibility, _FeatureEvaluator)
+    ReplayStatistics, ReplayFailure)
 from .replay_contracts import (AccountExecutionPlan, ReplayOrder, ReplayPoint,
     ExecutionPrecision, StrategyComputation, AccountSnapshot)
 from .replay_kernel import run_account_replay
-from .account_strategy import (AccountStepContext, AccountStepResult, AccountDecision,
+from .account_strategy import (AccountDecision,
     BatchObservation, BatchAccountContext, SellRemainderPolicy, AccountStrategyState)
 
 
@@ -135,43 +135,18 @@ def run_account_v4(prepared, candidate, executor, *, start, end, fee_rate, initi
     if tuple((a,b) for _,a,b in ticks)!=tuple(expected_grid):
         raise ValueError('execution rows do not cover the declared clock grid')
 
+    from .account_planning import AccountDecisionEngine
     feature_start = perf_counter()
-    visibility = _Visibility(data)
-    evaluator = _FeatureEvaluator(data,prepared.graph,visibility)
-    auxiliary = {name:(_Visibility(item),item) for name,item in prepared._auxiliary}
+    engine = AccountDecisionEngine(candidate, prepared)
     feature_seconds = perf_counter()-feature_start
     decisions=rows=0
 
     def observation(tick):
         nonlocal feature_seconds
-        _,a,b=tick
-        visibility.advance(a)
-        if visibility.count<definition.warmup_bars:
-            raise ValueError('WARMUP_INSUFFICIENT: visible observed history')
-        current=visibility.row(0)
-        point=DecisionPoint(data.ends[current],a, TimeInterval(a,b))
-        views={}
-        for declaration in definition.auxiliary_inputs:
-            if declaration.name not in auxiliary:
-                raise ValueError('AUXILIARY_INPUT_UNAVAILABLE: '+declaration.name)
-            indexer,item=auxiliary[declaration.name]
-            indexer.advance(a)
-            if indexer.count<declaration.warmup_bars:
-                raise ValueError('AUXILIARY_WARMUP_INSUFFICIENT: '+declaration.name)
-            latest=indexer.row(0)
-            if not item.observed[indexer.latest_completed] or float(item.rows[latest]['Volume'])<=0:
-                raise ValueError('AUXILIARY_INPUT_UNAVAILABLE: '+declaration.name)
-            if (a-item.ends[latest]).total_seconds()>declaration.max_age_seconds:
-                raise ValueError('AUXILIARY_INPUT_STALE: '+declaration.name)
-            views[declaration.name]=indexer.history_view(a)
-        session,available=prepared._sessions[intervals[(a,b)]]
-        if available>a:
-            raise ValueError('session calendar is not yet available')
-        before=perf_counter()
-        features=evaluator.at(a)
-        history=visibility.history_view(a)
-        feature_seconds+=perf_counter()-before
-        return point,features,history,views,session,available,not data.observed[visibility.latest_completed]
+        before = perf_counter()
+        result = engine.observation(TimeInterval(tick[1], tick[2]))
+        feature_seconds += perf_counter()-before
+        return result
 
     batch={}
     batch_inputs={}
@@ -216,33 +191,16 @@ def run_account_v4(prepared, candidate, executor, *, start, end, fee_rate, initi
             return self.portfolio
         def decide(self,tick,portfolio):
             nonlocal decisions
-            point,features,history,views,session,available,suppressed=self.observation
-            if suppressed:
-                proposal=AccountStepResult(AccountDecision.from_facts(float(portfolio.quantity>0),'unobserved input',
-                    facts={'suppressed':True},next_watch='next observed bar'),state.account,
-                    state.cycle.values if state.cycle else None)
-                identity=equity_hash({'owner':owner,'point':repr(self.point),'revision':portfolio.revision,'suppressed':True})
-                self.proposal=proposal
-                return AccountExecutionPlan(identity,owner,self.point,portfolio.revision,portfolio.quantity,
-                    evidence={'signal_status':'SUPPRESSED_UNOBSERVED_BAR','target':float(portfolio.quantity>0),
-                              'sizing':'EXPLICIT_ORDERS', 'planning_mode':'EXPLICIT_ORDERS',
-                              'reference_price':float(history.last()['Close'])*portfolio.reference_price_scale,
-                              'specification_hash':spec.fingerprint, 'fee_rate':fee_rate})
-            if definition.computation is StrategyComputation.BATCH_HISTORY:
-                proposal=AccountStepResult(batch[tick[1]],state.account,StateRecord())
-            else:
-                ctx=AccountStepContext(point,portfolio,self.account,executor.position_feedback,
-                    definition.parameters,features,history,budget=executor.cycle_budget,events=self.events,auxiliary_histories=views,session=session if definition.session_context else None,session_available_at=available if definition.session_context else None)
-                proposal=candidate.account_step(ctx,state)
-            if (portfolio.quantity or proposal.decision.target or any(order.side is OrderSide.BUY for order in proposal.decision.orders)
-                    or any(leg.order.side is OrderSide.BUY for leg in proposal.decision.legs)) and proposal.cycle_values is None:
-                raise ValueError('holding/entry requires typed cycle state')
-            self.proposal=proposal
-            reference=float(history.last()['Close'])*portfolio.reference_price_scale
-            decisions+=1
-            return plan_account_decision(proposal.decision,self.point,self.account,reference,spec,
-                owner=owner,implementation=candidate.implementation_hash,fee_rate=fee_rate,
-                sell_remainder_policy=self.sell_policy)
+            result = engine._plan_observation(self.observation, portfolio, self.account, state,
+                executor.position_feedback, owner=owner, fee_rate=fee_rate,
+                sell_remainder_policy=self.sell_policy, budget=executor.cycle_budget,
+                events=self.events, next_event_cursor=self.next_event_cursor, binding=binding,
+                batch_decision=batch.get(tick[1]))
+            self.proposal = result.proposal
+            self.next_event_cursor = result.next_event_cursor
+            if not self.observation[-1]:
+                decisions += 1
+            return result.plan
         def execute(self,tick,plan):
             constraint=data.constraints[tick[0]]
             if constraint is None or constraint['AvailableDate']>tick[1]:

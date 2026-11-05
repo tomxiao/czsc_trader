@@ -76,8 +76,23 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
         known_days = set(sessions.SessionDate)
         trading_sessions = tuple(s for s in sessions_from_metadata(metadata['sessions'])
                                  if s.session_date.isoformat() in known_days)
+    replay, unlock, v4_constraint = None, None, None
+    if candidate.definition.contract_version == 4:
+        from strategy_runtime import PreparedReplay
+        replay = PreparedReplay.from_frames(bars, constraints, candidate.definition.feature_graph,
+            latency_seconds=candidate.definition.execution_spec.data_latency_seconds,
+            auxiliary_histories={item.name: products[item.data_key(EquityProduct.BARS)] for item in candidate.definition.auxiliary_inputs},
+            sessions=products['sessions'], trading_sessions=sessions_from_metadata(metadata['sessions']),
+            frequency=candidate.definition.execution_spec.decision_clock, timezone=candidate.instrument.timezone)
+        v4_constraint = {"SellRemainderPolicy": str(last.SellRemainderPolicy),
+            "PriceLimitPolicy": str(last.PriceLimitPolicy),
+            "PriceLimitLower": None if pd.isna(last.PriceLimitLower) else float(last.PriceLimitLower),
+            "PriceLimitUpper": None if pd.isna(last.PriceLimitUpper) else float(last.PriceLimitUpper)}
+        unlock = last.BuySellableAt.to_pydatetime() if hasattr(last.BuySellableAt, 'to_pydatetime') else last.BuySellableAt
+        if type(unlock) is not datetime or unlock.utcoffset() is None or unlock < interval.start:
+            raise ValueError('V4 prepared constraint lacks a valid BuySellableAt')
     return PreparedEquityDecision(candidate, binding, history, interval, fee_rate, scale, required,
-                                  auxiliary, sessions, trading_sessions)
+                                  auxiliary, sessions, trading_sessions, v4_replay=replay, buy_sellable_at=unlock, v4_constraint=v4_constraint)
 
 
 @dataclass(frozen=True)
@@ -92,6 +107,9 @@ class PreparedEquityDecision:
     auxiliary_histories: Mapping[str, pd.DataFrame] = field(default_factory=dict)
     sessions: pd.DataFrame | None = None
     trading_sessions: tuple[TradingSession, ...] = ()
+    v4_constraint: Mapping | None = None
+    v4_replay: object = None
+    buy_sellable_at: datetime | None = None
     history_sha256: str = field(init=False)
     decision_inputs_sha256: str = field(init=False)
 
@@ -135,13 +153,19 @@ class PreparedEquityDecision:
 
     def _decision_inputs_hash(self):
         from strategy_runtime import canonical_sha256
-        return canonical_sha256({
+        value = {
             'auxiliary': {key: frame.to_json(date_format='iso', date_unit='us') for key, frame in self.auxiliary_histories.items()},
             'sessions': None if self.sessions is None else self.sessions.to_json(date_format='iso', date_unit='us'),
             'calendar': [{'session_date': x.session_date.isoformat(), 'timezone': x.timezone,
                           'segments': [(s.start.isoformat(), s.end.isoformat()) for s in x.segments]}
                          for x in self.trading_sessions],
-        })
+        }
+        if self.candidate.definition.contract_version == 4:
+            value.update(
+                v4_constraint=None if self.v4_constraint is None else dict(self.v4_constraint),
+                v4_replay=None if self.v4_replay is None else self.v4_replay.identity,
+                buy_sellable_at=None if self.buy_sellable_at is None else self.buy_sellable_at.isoformat())
+        return canonical_sha256(value)
 
     @property
     def available_through(self):
@@ -199,8 +223,12 @@ class EquityAdviceClient:
         if any(e.get("kind") == "RECEIVABLE" and not e["paid"] and datetime.fromisoformat(e["pay_at"]) <= prepared.interval.start for e in events.values()):
             raise ValueError("due equity payments must be settled before decision")
         if (rules is None or rules.execution != candidate.definition.execution_spec or rules.instrument != candidate.instrument
-                or strategy_id != candidate.strategy_id or symbol != candidate.instrument.symbol or asset != "stock"):
+                or strategy_id != candidate.strategy_id or symbol != candidate.instrument.symbol or asset != candidate.instrument.asset_class.value.lower()):
             raise ValueError("equity candidate differs from account market binding")
+        if candidate.definition.contract_version == 4:
+            from .equity_v4_advice import account_decision
+            return account_decision(self.store, prepared, account, actual_quantity, available_cash,
+                trading_date, portfolio_revision, state_revision)
         cost = float(Decimal(account["average_cost"]) * actual_quantity)
         records = self.store._connection.execute("SELECT occurred_at,quantity_after FROM account_ledger WHERE account_id=? ORDER BY rowid", (account_id,)).fetchall()
         opened = None

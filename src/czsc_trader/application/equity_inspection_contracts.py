@@ -45,7 +45,7 @@ class EquityInspectionProtocol:
 
     def __post_init__(self):
         from paper_trading_engine.equity_inspection import EquityPteInspectionProtocol
-        if self.method_version != 'candidate-inspection-v2' or self.comparison != 'ECONOMIC_V1':
+        if self.method_version not in {'candidate-inspection-v2', 'candidate-inspection-v4'} or self.comparison != 'ECONOMIC_V1':
             raise ValueError('unsupported equity inspection protocol')
         if type(self.float_tolerance) not in (int, float) or self.float_tolerance != 0:
             raise ValueError('equity inspection requires exact deterministic replay (zero tolerance)')
@@ -54,4 +54,6 @@ class EquityInspectionProtocol:
 
     def to_dict(self):
         return {'method_version': self.method_version, 'comparison': self.comparison,
-                'float_tolerance': self.float_tolerance, 'runtime_kind': 'US_EQUITY', 'pte': self.pte.to_dict()}
+                'float_tolerance': self.float_tolerance,
+                'runtime_kind': 'ACCOUNT_REPLAY' if self.method_version == 'candidate-inspection-v4' else 'US_EQUITY',
+                'pte': self.pte.to_dict()}

@@ -234,6 +234,7 @@ class PaperStore(EquityEventStore):
                     raise ValueError("inspection database belongs to another permit")
                 if not rows:
                     self._connection.execute("INSERT INTO inspection_context VALUES(?,?,?,?,?)", expected)
+                self._connection.execute("CREATE TABLE IF NOT EXISTS equity_strategy_state (account_id TEXT PRIMARY KEY,payload TEXT NOT NULL)")
                 self._connection.execute(
                     "CREATE TABLE IF NOT EXISTS inspection_admissions (account_id TEXT PRIMARY KEY, release_id TEXT NOT NULL, release_hash TEXT NOT NULL, run_id TEXT NOT NULL)"
                 )
@@ -784,10 +785,10 @@ class PaperStore(EquityEventStore):
                     f"SELECT DISTINCT channel_id FROM {table} WHERE channel_id IS NOT NULL"
                 )
             )
-        from .equity_contracts import EQUITY_OFFLINE_CHANNEL_ID
+        from .equity_contracts import EQUITY_OFFLINE_CHANNELS
         supported = {LEGACY_FUTU_CHANNEL_ID, FUTU_SIMULATE_CN_CHANNEL_ID}
         if self._inspection_permit is not None:
-            supported.add(EQUITY_OFFLINE_CHANNEL_ID)
+            supported.update(EQUITY_OFFLINE_CHANNELS)
         unsupported = values - supported
         if unsupported:
             raise RuntimeError(
@@ -1017,9 +1018,9 @@ class PaperStore(EquityEventStore):
         from decimal import Decimal
         cash = Decimal(initial_cash).quantize(Decimal("0.0001"))
         self._require_account_channel(channel_id)
-        from .equity_contracts import EquityAccountRules, EQUITY_OFFLINE_CHANNEL_ID
-        if channel_id == EQUITY_OFFLINE_CHANNEL_ID:
-            if type(equity_rules) is not EquityAccountRules or symbol.upper() != equity_rules.instrument.symbol or asset_type != "stock":
+        from .equity_contracts import EquityAccountRules, EQUITY_OFFLINE_CHANNELS, equity_channel_id
+        if channel_id in EQUITY_OFFLINE_CHANNELS:
+            if type(equity_rules) is not EquityAccountRules or symbol.upper() != equity_rules.instrument.symbol or asset_type != equity_rules.instrument.asset_class.value.lower() or channel_id != equity_channel_id(equity_rules.instrument):
                 raise ValueError("US account requires matching explicit equity rules")
         elif equity_rules is not None:
             raise ValueError("CN account cannot carry US rules")
@@ -1109,33 +1110,41 @@ class PaperStore(EquityEventStore):
         return self.virtual_account(account_id)
 
     def _require_account_channel(self, channel_id):
-        from .equity_contracts import EQUITY_OFFLINE_CHANNEL_ID
-        if channel_id == EQUITY_OFFLINE_CHANNEL_ID:
+        from .equity_contracts import EQUITY_OFFLINE_CHANNELS
+        if channel_id in EQUITY_OFFLINE_CHANNELS:
             if getattr(self, "_inspection_permit", None) is None:
                 raise ValueError("US offline channel requires an isolated inspection permit")
             return channel_id
         return require_futu_simulate_cn(channel_id)
 
     def equity_account_rules(self, account_id):
-        from .equity_contracts import EquityAccountRules, EQUITY_OFFLINE_CHANNEL_ID
+        from .equity_contracts import EquityAccountRules, EQUITY_OFFLINE_CHANNELS, equity_channel_id
         account = self.virtual_account(account_id)
         self._require_account_channel(account["channel_id"])
         raw = account.get("equity_rules_json")
-        if account["channel_id"] == EQUITY_OFFLINE_CHANNEL_ID:
+        if account["channel_id"] in EQUITY_OFFLINE_CHANNELS:
             if raw is None:
                 raise ValueError("US account has no authenticated market rules")
             rules = EquityAccountRules.from_dict(json.loads(raw))
-            if rules.instrument.symbol != account["symbol"]:
+            if rules.instrument.symbol != account["symbol"] or account["channel_id"] != equity_channel_id(rules.instrument):
                 raise ValueError("US account symbol differs from market rules")
             return rules
         if raw is not None:
             raise ValueError("CN account contains foreign market rules")
         return None
 
-    def _validate_account_order_quantity(self, account_id, quantity):
+    def _validate_account_order_quantity(self, account_id, quantity, *, side=None, decision_id=None):
         rules = self.equity_account_rules(account_id)
         step = 100 if rules is None else rules.execution.quantity_step
-        if type(quantity) is not int or quantity <= 0 or quantity % step:
+        if type(quantity) is not int or quantity <= 0:
+            raise ValueError(f"intent quantity must use positive {step}-share lots")
+        if quantity % step:
+            if rules is not None and side == "SELL" and decision_id is not None:
+                payload = self.account_decision(account_id, decision_id)["payload"]
+                if (payload.get("contract_version") == "advice.equity.v4"
+                        and payload["v4_state_transition"]["sell_remainder_policy"] == "FULL_LIQUIDATION"
+                        and self.virtual_account(account_id)["quantity"] == quantity):
+                    return
             raise ValueError(f"intent quantity must use positive {step}-share lots")
 
     def create_channel_reconciliation_account(self, *, account_id: str = "futu-simulate-cn-reconciliation"):
@@ -1348,6 +1357,9 @@ class PaperStore(EquityEventStore):
         if row is None:
             raise KeyError(account_id)
         result = dict(row)
+        if getattr(self, "_inspection_permit", None) is not None:
+            state = self._connection.execute("SELECT payload FROM equity_strategy_state WHERE account_id=?", (account_id,)).fetchone()
+            result["account_v4_json"] = None if state is None else state[0]
         result["health"] = AccountHealth(result["health"])
         result.pop("legacy_status", None)
         result.pop("legacy_paused", None)
@@ -1730,7 +1742,7 @@ class PaperStore(EquityEventStore):
             ("SELL", "MARKET"),
         }:
             raise ValueError("buy intents must be LIMIT; sell intents must be LIMIT or MARKET")
-        self._validate_account_order_quantity(account_id, quantity)
+        self._validate_account_order_quantity(account_id, quantity, side=side, decision_id=decision_id)
         identity = f"{account_id}\0{decision_id}\0{order_sequence}".encode("utf-8")
         intent_id = "PTE-" + hashlib.sha256(identity).hexdigest()[:20].upper()
         now = _utc_now()
@@ -1947,7 +1959,7 @@ class PaperStore(EquityEventStore):
                     raise ValueError(
                         "plan buys must be LIMIT; plan sells must be LIMIT or MARKET"
                     )
-                self._validate_account_order_quantity(account_id, quantity)
+                self._validate_account_order_quantity(account_id, quantity, side=side, decision_id=decision_id)
                 if price <= 0:
                     raise ValueError("plan intent price must be positive")
                 if dependency_sequence is not None:
@@ -2095,7 +2107,7 @@ class PaperStore(EquityEventStore):
                 ("BUY", "LIMIT"), ("SELL", "LIMIT"), ("SELL", "MARKET"),
             }:
                 raise ValueError("buy intents must be LIMIT; sell intents must be LIMIT or MARKET")
-            self._validate_account_order_quantity(account_id, quantity)
+            self._validate_account_order_quantity(account_id, quantity, side=side, decision_id=decision_id)
             if price <= 0:
                 raise ValueError("intent price must be positive")
             normalized.append({
@@ -2155,8 +2167,8 @@ class PaperStore(EquityEventStore):
 
             buy_reserve = sum(
                 (
-                    Decimal(str(order["limit_price"])) * int(order["quantity"])
-                    * (Decimal("1") + fee)
+                    (Decimal(str(order["limit_price"])) * int(order["quantity"])
+                     * (Decimal("1") + fee)).quantize(Decimal("0.0001"))
                     for order in normalized if order["side"] == "BUY"
                 ),
                 Decimal("0"),
@@ -2322,7 +2334,8 @@ class PaperStore(EquityEventStore):
         ) or account["symbol"] != symbol.upper():
             raise ValueError("decision identity or effective session differs from account")
         if self.get_setting("channel_reconciliation_status") == "BLOCKED" or self.get_setting("futu_cash_reconciliation_status") == "BLOCKED":
-            raise ValueError("channel or cash reconciliation blocks execution")
+            from .equity_contracts import EquityReconciliationError
+            raise EquityReconciliationError("channel or cash reconciliation blocks execution")
         if submitting:
             from .trading_window import is_submission_window
             from datetime import timedelta
@@ -2342,7 +2355,8 @@ class PaperStore(EquityEventStore):
                 if require_equity_interval(interval, moment, rules) != valid_session:
                     raise ValueError("US decision session differs from interval")
             if any(self.get_setting(key) != "OK" for key in ("channel_reconciliation_status", "futu_cash_reconciliation_status")):
-                raise ValueError("successful channel and cash reconciliation required before submission")
+                from .equity_contracts import EquityReconciliationError
+                raise EquityReconciliationError("successful channel and cash reconciliation required before submission")
         return decision
 
     def _require_planned_orders(self, account_id, decision_id, requests, *, complete=False):
@@ -2397,6 +2411,10 @@ class PaperStore(EquityEventStore):
         from .contracts import _validate_cycle_decision, OrderSpec
 
         raw = account.get("entry_cycle_json")
+        if payload.get("contract_version") == "advice.equity.v4":
+            if raw is not None:
+                raise ValueError("legacy entry cycle requires explicit V4 migration")
+            return None
         current = None if raw is None else EntryCycleState.from_dict(json.loads(raw))
         if payload.get("capital_mode") != "signal_cash_fraction":
             if current is not None:
@@ -2438,6 +2456,17 @@ class PaperStore(EquityEventStore):
         """Release only after flat holdings and fully reconciled terminal orders."""
         account = self.virtual_account(account_id)
         raw = account.get("entry_cycle_json")
+        if account.get("account_v4_json") is not None and not account["quantity"]:
+            if any(row["status"] not in TERMINAL_INTENT_STATUSES for row in self.account_intents(account_id)):
+                return
+            for row in self._connection.execute("SELECT payload,cumulative_filled_quantity FROM orders WHERE account_id=?", (account_id,)):
+                report = json.loads(row["payload"])
+                if report.get("status") not in TERMINAL_ORDER_STATUSES or int(report.get("cumulative_filled_quantity", 0)) != int(row["cumulative_filled_quantity"]):
+                    return
+            from .equity_account_state import load_document, save_document
+            document = load_document(account)
+            document.update(budget=None, pending_cycle=None)
+            save_document(self, account_id, document)
         if raw is None or account["quantity"]:
             return
         state = EntryCycleState.from_dict(json.loads(raw))
@@ -2470,7 +2499,7 @@ class PaperStore(EquityEventStore):
         else:
             from dataflows import TimeInterval
             raw = payload.get("equity_execution_interval")
-            if payload.get("contract_version") != "advice.equity.v1" or not isinstance(raw, dict):
+            if payload.get("contract_version") not in {"advice.equity.v1", "advice.equity.v4"} or not isinstance(raw, dict):
                 raise ValueError("US decision requires an equity execution contract")
             interval = TimeInterval(datetime.fromisoformat(raw["start"]), datetime.fromisoformat(raw["end"]))
             observed = datetime.fromisoformat(str(payload.get("equity_observed_through")))
@@ -2507,6 +2536,9 @@ class PaperStore(EquityEventStore):
                     raise ValueError("terminal decision cannot become active again")
             else:
                 entry_cycle_json = self._entry_cycle_adoption(account, json.loads(encoded))
+                if payload.get("contract_version") == "advice.equity.v4":
+                    from .equity_account_state import adopt_v4_decision
+                    adopt_v4_decision(self, account, json.loads(encoded))
                 prior_decision = None
                 adopted = self._connection.execute(
                     "SELECT decision_id FROM decision_adoptions WHERE account_id=? AND valid_session=?",
@@ -2928,10 +2960,9 @@ class PaperStore(EquityEventStore):
             old_frozen = Decimal(account["frozen_cash"])
             if intent["side"] == "BUY":
                 fee_rate = Decimal(json.loads(intent["payload"]).get("fee_rate", "0.0005"))
-                remaining = max(0, int(intent["quantity"]) - filled)
-                release = (
-                    Decimal(intent["limit_price"]) * remaining * (Decimal("1") + fee_rate)
-                ).quantize(Decimal("0.0001"))
+                unit_reserve = Decimal(intent["limit_price"]) * (Decimal("1") + fee_rate)
+                release = ((unit_reserve * int(intent["quantity"])).quantize(Decimal("0.0001"))
+                           - (unit_reserve * filled).quantize(Decimal("0.0001")))
                 if release > old_frozen:
                     raise ValueError("account frozen cash is below the intent reservation")
                 self._connection.execute(
@@ -3095,7 +3126,8 @@ class PaperStore(EquityEventStore):
                 if intent["side"] == "SELL" and incremental_price < limit_price:
                     raise ValueError("sell fill price is below intent limit")
             fee_rate = Decimal(intent_payload.get("fee_rate", "0.0005"))
-            fee = (incremental_value * fee_rate).quantize(Decimal("0.0001"))
+            fee = ((avg * cumulative_quantity * fee_rate).quantize(Decimal("0.0001"))
+                   - (previous_avg * previous * fee_rate).quantize(Decimal("0.0001")))
             old_cash = Decimal(account["cash"])
             old_frozen = Decimal(account["frozen_cash"])
             old_quantity = int(account["quantity"])
@@ -3103,9 +3135,9 @@ class PaperStore(EquityEventStore):
             rules = self.equity_account_rules(str(order["account_id"]))
             receivable = Decimal(account["receivable"])
             if intent["side"] == "BUY":
-                reserved = (
-                    Decimal(intent["limit_price"]) * increment * (Decimal("1") + fee_rate)
-                ).quantize(Decimal("0.0001"))
+                unit_reserve = Decimal(intent["limit_price"]) * (Decimal("1") + fee_rate)
+                reserved = ((unit_reserve * cumulative_quantity).quantize(Decimal("0.0001"))
+                            - (unit_reserve * previous).quantize(Decimal("0.0001")))
                 if reserved > old_frozen:
                     raise ValueError("buy fill exceeds the account reservation")
                 cash = old_cash + reserved - incremental_value - fee
@@ -3173,7 +3205,8 @@ class PaperStore(EquityEventStore):
                 if intent["side"] == "BUY":
                     cycle = replace(cycle, buy_cost_including_fees=cycle.buy_cost_including_fees + incremental_value + fee)
                     cycle_json = json.dumps(cycle.to_dict(), sort_keys=True, separators=(",", ":"))
-            elif self.account_decision(order["account_id"], order["decision_id"])["payload"].get("capital_mode") == "signal_cash_fraction":
+            elif (self.account_decision(order["account_id"], order["decision_id"])["payload"].get("capital_mode") == "signal_cash_fraction"
+                  and self.account_decision(order["account_id"], order["decision_id"])["payload"].get("contract_version") != "advice.equity.v4"):
                 raise ValueError("entry-cycle fill has no active owning cycle")
             if intent_payload.get("role") == "CORE_SETUP":
                 # Earlier increments of this same setup order are already in
@@ -3209,6 +3242,9 @@ class PaperStore(EquityEventStore):
                     quantity, occurred_at,
                 ),
             )
+            from .equity_account_state import record_v4_fill
+            record_v4_fill(self, str(order["account_id"]), str(order["decision_id"]), fill_id,
+                           intent["side"], increment, incremental_value, fee, quantity, occurred_at)
             self._insert_audit_event(self._new_audit_event(
                 "ORDER_FILLED" if cumulative_quantity >= int(intent["quantity"])
                 else "ORDER_PARTIALLY_FILLED",

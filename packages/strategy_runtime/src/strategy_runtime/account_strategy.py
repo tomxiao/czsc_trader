@@ -59,6 +59,27 @@ class AccountStrategyState(StrategyState):
         if type(self.event_cursor) is not int or self.event_cursor<0:
             raise ValueError('account event cursor must be a nonnegative integer')
 
+    def to_dict(self):
+        return {'revision': self.revision, 'account': self.account.to_dict(),
+                'cycle': None if self.cycle is None else {
+                    'cycle_id': self.cycle.cycle_id, 'entry_at': self.cycle.entry_at.isoformat(),
+                    'values': self.cycle.values.to_dict()},
+                'binding': self.binding, 'event_cursor': self.event_cursor}
+
+    @classmethod
+    def from_dict(cls, value):
+        from .equity_replay import CycleState
+        if type(value) is not dict or set(value) != {'revision', 'account', 'cycle', 'binding', 'event_cursor'}:
+            raise ValueError('unsupported account strategy state')
+        cycle = value['cycle']
+        if cycle is not None:
+            if type(cycle) is not dict or set(cycle) != {'cycle_id', 'entry_at', 'values'}:
+                raise ValueError('unsupported account cycle state')
+            cycle = CycleState(cycle['cycle_id'], datetime.fromisoformat(cycle['entry_at']),
+                               StateRecord.from_dict(cycle['values']))
+        return cls(value['revision'], StateRecord.from_dict(value['account']), cycle,
+                   value['binding'], value['event_cursor'])
+
 
 class SellRemainderPolicy(StrEnum):
     STRICT_STEP = 'STRICT_STEP'

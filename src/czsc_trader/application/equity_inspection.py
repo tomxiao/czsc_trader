@@ -27,8 +27,8 @@ def _json(value):
     return json.loads(json.dumps(value, default=encode, allow_nan=False))
 
 
-def replay_identity(replay):
-    return {'runtime_kind': 'US_EQUITY', 'coordinate': replay.coordinate.to_dict(),
+def replay_identity(replay, runtime_kind='US_EQUITY'):
+    return {'runtime_kind': runtime_kind, 'coordinate': replay.coordinate.to_dict(),
         'input_binding': _json(replay.input_binding.to_dict()),
         'window': _json(asdict(replay.window)), 'initial_cash': replay.initial_cash,
         'one_way_cost': replay.one_way_cost, 'baseline': None if replay.baseline is None else replay.baseline.to_dict()}
@@ -58,8 +58,6 @@ def _records(frame):
 
 
 def replay_account(candidate, flows, replay):
-    from trading_execution_engine.frozen_equity import _FrozenEquityExecutor
-    from strategy_evaluator.frozen_equity import _audit_frozen_equity_account
     products, identities = _products(flows, replay)
     if candidate.execution_spec_hash != replay.input_binding.specification_hash or candidate.instrument != replay.input_binding.instrument:
         raise ValueError('technical replay market contract differs')
@@ -67,6 +65,13 @@ def replay_account(candidate, flows, replay):
         raise ValueError('technical replay warmup differs')
     if candidate.definition.auxiliary_inputs != tuple(x.input for x in replay.input_binding.auxiliary_inputs):
         raise ValueError('technical replay auxiliary contract differs')
+    execution = replay.input_binding.execution_input
+    if candidate.definition.execution_input != (None if execution is None else execution.input):
+        raise ValueError('technical replay execution input contract differs')
+    if candidate.definition.contract_version == 4:
+        return _replay_account_v4(candidate, replay, products, identities)
+    from trading_execution_engine.frozen_equity import _FrozenEquityExecutor
+    from strategy_evaluator.frozen_equity import _audit_frozen_equity_account
     specification = candidate.definition.execution_spec
     executor = _FrozenEquityExecutor(specification=specification, initial_cash=replay.initial_cash,
                                         fee_rate=replay.one_way_cost, actions=products['actions'])
@@ -89,6 +94,46 @@ def replay_account(candidate, flows, replay):
                   'input': replay_identity(replay)})
 
 
+def _replay_account_v4(candidate, replay, products, identities):
+    """Explicit technical replay uses the same authoritative V4 runtime and TXE."""
+    from strategy_runtime.equity_replay import PreparedReplay, run_replay
+    from trading_execution_engine import PortfolioHistoricalExecutor
+    definition = candidate.definition
+    spec = definition.execution_spec
+    prepared = PreparedReplay.from_frames(products['bars'], products['constraints'], definition.feature_graph,
+        latency_seconds=spec.data_latency_seconds, frequency=spec.decision_clock,
+        timezone=candidate.instrument.timezone, sessions=products['sessions'],
+        trading_sessions=sessions_from_metadata(identities['sessions']['metadata']),
+        auxiliary_histories={item.name: products[item.data_key(EquityProduct.BARS)] for item in definition.auxiliary_inputs})
+    from strategy_runtime import StrategyComputation, check_account_batch_consistency
+    batch_consistency = {'status': 'NOT_APPLICABLE'}
+    if definition.computation is StrategyComputation.BATCH_HISTORY:
+        checked = check_account_batch_consistency(candidate, prepared, start=replay.window.start, end=replay.window.end)
+        if not checked.consistent:
+            raise ValueError('batch decisions differ between historical and online contexts at: ' +
+                             ', '.join(point.isoformat() for point in checked.differing_points))
+        batch_consistency = {'status': 'PASS', 'checked_points': checked.checked_points}
+    executor = PortfolioHistoricalExecutor(specification=spec, initial_cash=replay.initial_cash,
+        fee_rate=replay.one_way_cost, actions=products['actions'], price_basis='RAW',
+        execution_bars=None if definition.execution_input is None else products['execution:bars'])
+    outcome = run_replay(prepared, candidate, executor, start=replay.window.start, end=replay.window.end,
+        fee_rate=replay.one_way_cost,
+        owner=f'candidate:{candidate.strategy_id}:{candidate.candidate_id}:{candidate.content_identity.content_sha256}')
+    account = outcome.execution_result
+    facts = {name: _records(getattr(account, attr)) for name, attr in (
+        ('decisions','decisions'), ('orders','orders'), ('fills','fills'), ('actions','corporate_action_entries'),
+        ('account_points','account_points'), ('account_daily','account_daily'), ('trades','trades'))}
+    state = outcome.state
+    final_state = {'revision': state.revision, 'account': state.account.to_dict(),
+        'cycle': None if state.cycle is None else {'cycle_id': state.cycle.cycle_id,
+            'entry_at': state.cycle.entry_at.isoformat(), 'values': state.cycle.values.to_dict()},
+        'binding': state.binding, 'event_cursor': state.event_cursor}
+    return _json({'facts': facts, 'final_state': final_state, 'batch_consistency': batch_consistency,
+        'source': {name: _records(frame) for name, frame in products.items()}, 'data': identities,
+        'definition': definition.to_dict(), 'content_sha256': candidate.content_identity.content_sha256,
+        'input': replay_identity(replay, 'ACCOUNT_REPLAY')})
+
+
 def compute_equity(base, space, candidate, verified, replay):
     flows = Dataflows(base_dir=base, space=space, providers=ProviderConfig(bindings={}))
     frozen = EquityStrategyCandidate(candidate.strategy_id, candidate.candidate_id,
@@ -96,7 +141,7 @@ def compute_equity(base, space, candidate, verified, replay):
     if frozen.content_identity != candidate.content_identity:
         raise ValueError('frozen equity source identity differs')
     left, right = replay_account(candidate, flows, replay), replay_account(frozen, flows, replay)
-    return {'runtime_kind': 'US_EQUITY', 'candidate': left, 'release': right,
+    return {'runtime_kind': candidate.payload['runtime']['kind'], 'candidate': left, 'release': right,
             'release_hash': verified.release.release_hash, 'package_hash': verified.package_sha256,
             'passed': left == right, 'baseline': {'status': 'NOT_REQUESTED'}}
 
@@ -189,9 +234,10 @@ def inspect_equity_candidate(context, request, control, registration, selection)
     controller = Controller(run_id, control, workspace)
     origin = f.CandidateOrigin(registration.key, registration.content_sha256, store.put_json(registration.to_dict()))
     protocol = store.put_json(_json(request.protocol.to_dict()))
-    normalized = {'schema_version': 2, 'runtime_kind': 'US_EQUITY', 'candidate': request.candidate.to_dict(),
+    runtime_kind = request.protocol.to_dict()['runtime_kind']
+    normalized = {'schema_version': 2, 'runtime_kind': runtime_kind, 'candidate': request.candidate.to_dict(),
         'selection': request.selection.to_dict(), 'experiment': request.experiment.to_dict(), 'target': request.target.to_dict(),
-        'protocol_sha256': protocol.sha256, 'replays': [replay_identity(x) for x in request.replays],
+        'protocol_sha256': protocol.sha256, 'replays': [replay_identity(x, runtime_kind) for x in request.replays],
         'additional_files': [x.to_dict() for x in request.additional_files], 'remaining_risks': list(request.remaining_risks),
         'data_kind': request.data_kind.value}
     request_ref = store.put_json(normalized)
@@ -207,7 +253,11 @@ def inspect_equity_candidate(context, request, control, registration, selection)
         candidate = _load_inspection_candidate(context, request.candidate)
         if type(candidate) is not EquityStrategyCandidate:
             raise ValueError('equity inspection requires formal equity candidate')
+        if candidate.payload['runtime']['kind'] != runtime_kind:
+            raise ValueError('equity inspection protocol differs from candidate contract')
         for replay in request.replays:
+            if candidate.definition.contract_version == 4 and replay.baseline is not None:
+                raise ValueError('V4 technical equivalence compares candidate and package; legacy evaluation baseline is unsupported')
             if pd.Timestamp(replay.window.end).tz_convert(candidate.instrument.timezone).date() > request.target.selection_data_cutoff:
                 raise ValueError('equity replay exceeds selection cutoff')
             if any(q.parameters.query.end > request.target.selection_data_cutoff for q in replay.requests):
@@ -228,8 +278,9 @@ def inspect_equity_candidate(context, request, control, registration, selection)
             passed = ok and facts.get('passed') is True
             behavior.append(f.InspectionCaseResult('replay-' + str(index),
                 f.InspectionStatus.PASS if passed else f.InspectionStatus.FAIL,
-                f.InspectionReason.OK if passed else f.InspectionReason.BEHAVIOR_DIFFERENCE,
-                'authenticated candidate/frozen equity account comparison', (store.put_json(facts),)))
+                f.InspectionReason.OK if passed else (f.InspectionReason.BEHAVIOR_DIFFERENCE if ok else f.InspectionReason.EXECUTION_ERROR),
+                'authenticated candidate/frozen equity account comparison' if ok else
+                    'technical replay failed: ' + str(facts.get('message', facts)), (store.put_json(facts),)))
         if jobs.interruption:
             raise jobs.interruption
         controller.stage = InspectionStage.PTE
@@ -280,7 +331,6 @@ def inspect_equity_candidate(context, request, control, registration, selection)
 
 def validate_pass_facts(root, report, normalized, protocol):
     from .research_evidence import _read
-    from strategy_evaluator.frozen_equity import _audit_frozen_equity_account
     from paper_trading_engine.equity_inspection import verify_equity_inspection_facts
     if len(report.behavior_equivalence.cases) != len(normalized['replays']):
         raise ValueError('equity replay coverage differs')
@@ -297,12 +347,22 @@ def validate_pass_facts(root, report, normalized, protocol):
         if definition.content_identity.content_sha256 != report.origin.content_sha256 or left['content_sha256'] != report.origin.content_sha256:
             raise ValueError('equity replay content differs')
         ledger, source = left['facts'], left['source']
-        audit = _audit_frozen_equity_account(initial_cash=replay['initial_cash'], specification=asdict(definition.execution_spec),
-            bars=source['bars'], action_facts=source['actions'], constraints=source['constraints'],
-            fee_rate=replay['one_way_cost'], decision_contract="FORMAL_V2",
-            **{k: ledger[k] for k in ('decisions','orders','fills','actions','account_points','trades')})
-        if _json(asdict(audit)) != left['metrics']:
-            raise ValueError('equity replay audit differs')
+        if definition.contract_version == 4:
+            if (normalized['runtime_kind'] != 'ACCOUNT_REPLAY' or facts.get('runtime_kind') != 'ACCOUNT_REPLAY'
+                    or 'final_state' not in left or left['final_state']['revision'] != len(ledger['account_points'])):
+                raise ValueError('V4 account state or contract coverage differs')
+            from strategy_runtime import StrategyComputation
+            expected_batch_status = ('PASS' if definition.computation is StrategyComputation.BATCH_HISTORY else 'NOT_APPLICABLE')
+            if left.get('batch_consistency', {}).get('status') != expected_batch_status:
+                raise ValueError('V4 historical/online batch consistency is missing')
+        else:
+            from strategy_evaluator.frozen_equity import _audit_frozen_equity_account
+            audit = _audit_frozen_equity_account(initial_cash=replay['initial_cash'], specification=asdict(definition.execution_spec),
+                bars=source['bars'], action_facts=source['actions'], constraints=source['constraints'],
+                fee_rate=replay['one_way_cost'], decision_contract="FORMAL_V2",
+                **{k: ledger[k] for k in ('decisions','orders','fills','actions','account_points','trades')})
+            if _json(asdict(audit)) != left['metrics']:
+                raise ValueError('equity replay audit differs')
         expected_times = [x['Date'] for x in source['bars'] if pd.Timestamp(x['BarStart']) >= pd.Timestamp(replay['window']['start'])
                           and pd.Timestamp(x['Date']) <= pd.Timestamp(replay['window']['end'])]
         if [x['time'] for x in ledger['account_points']] != expected_times:

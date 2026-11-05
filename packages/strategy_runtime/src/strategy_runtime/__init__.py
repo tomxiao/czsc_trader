@@ -98,6 +98,8 @@ from .account_strategy import (AccountDecision, AccountStepResult, AccountStepCo
     PositionCycle, PositionFeedback, BatchObservation, BatchAccountContext, SellRemainderPolicy,
     AccountStrategyState, RecognizedAccountEvent, RecognizedEventKind)
 from .account_replay import plan_account_decision
+from .account_planning import (AccountDecisionEngine, AccountDecisionProposal,
+    AccountBatchConsistency, check_account_batch_consistency)
 from .equity_definition import ExecutionInput, ExecutionInputBinding
 
 __all__ = [
@@ -215,6 +217,8 @@ __all__ += ['ReplayPoint', 'AccountSnapshot', 'ReplayOrder', 'ReplayLeg', 'Cycle
 
 __all__ += ['AccountDecision', 'AccountStepResult', 'AccountStepContext', 'PositionCycle',
     'PositionFeedback', 'BatchObservation', 'BatchAccountContext', 'SellRemainderPolicy', 'plan_account_decision',
-    'AccountStrategyState', 'RecognizedAccountEvent', 'RecognizedEventKind']
+    'AccountStrategyState', 'RecognizedAccountEvent', 'RecognizedEventKind',
+    'AccountDecisionEngine', 'AccountDecisionProposal',
+    'AccountBatchConsistency', 'check_account_batch_consistency']
 
 __all__ += ['ExecutionInput', 'ExecutionInputBinding']

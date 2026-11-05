@@ -120,7 +120,8 @@ def _copy_plan(context, request, registration, store, origin):
     if type(definition) is EquityStrategyDefinition:
         binding = RuntimeBindingSpec(tuple(x.path.removeprefix(prefix) for x in registration.source_files),
             definition.source_sha256, tuple(x.path for x in files),
-            canonical_sha256({"contract": "equity-decision-v2", "definition": definition.to_dict()}))
+            canonical_sha256({"contract": "equity-account-v4" if definition.contract_version == 4 else "equity-decision-v2",
+                              "definition": definition.to_dict()}))
     else:
         binding = RuntimeBindingSpec(tuple(x.path.removeprefix(prefix) for x in registration.source_files),
             definition.implementation.source_sha256, tuple(x.path for x in files), definition.observation.sha256)
@@ -360,9 +361,13 @@ def freeze_candidate(context: RepositoryContext, request: f.FreezeCandidateReque
     if isinstance(selection.subject, f.FrozenMigrationSelectionSubject) and plan.version == selection.subject.original.version:
         raise ValueError("same-version migration requires the explicit runtime upgrade API")
     candidate = _load_inspection_candidate(context, plan.origin.candidate)
-    if candidate.payload["runtime"].get("contract_version") != 2:
-        raise ValueError("freeze requires implementation contract version 2")
-    if (candidate.payload.get("runtime", {}).get("kind") != "US_EQUITY"
+    descriptor = candidate.payload["runtime"]
+    from strategy_runtime import EquityStrategyCandidate
+    if descriptor.get("contract_version") != 2 and not (
+            type(candidate) is EquityStrategyCandidate and descriptor.get("kind") == "ACCOUNT_REPLAY"
+            and candidate.definition.contract_version == 4):
+        raise ValueError("freeze requires implementation contract version 2 or native account contract 4")
+    if (descriptor.get("kind") not in {"US_EQUITY", "ACCOUNT_REPLAY"}
             and candidate.payload.get("decision_feedback", "UNDECLARED") == "UNDECLARED"):
         raise ValueError("freeze requires explicit decision feedback semantics")
     registered = StrategyRegistry(context.research_registry_root).get_candidate_registration(plan.origin.candidate)

@@ -358,8 +358,12 @@ def validate_inspection(root, reference):
             or normalized.get("selection") != report.selection.to_dict()
             or normalized.get("experiment") != {"type": "ExperimentRef", "strategy_id": report.owner.strategy_id, "experiment_id": report.owner.experiment_id}
             or normalized.get("data_kind") not in {"HISTORICAL", "SYNTHETIC"}
-            or protocol.get("method_version") != "candidate-inspection-v2" or protocol.get("comparison") != "ECONOMIC_V1"):
+            or protocol.get("method_version") not in {"candidate-inspection-v2", "candidate-inspection-v4"}
+            or protocol.get("comparison") != "ECONOMIC_V1"):
         raise ValueError("inspection request/protocol identity differs")
+    if protocol.get("method_version") == "candidate-inspection-v4" and (
+            protocol.get("runtime_kind") != "ACCOUNT_REPLAY" or normalized.get("runtime_kind") != "ACCOUNT_REPLAY"):
+        raise ValueError("account inspection method differs from runtime kind")
     origin, plan = report.origin, report.plan
     registration = CandidateRegistration.from_dict(_read(origin.registration.resolve(root)))
     if (registration.key != origin.candidate or registration.content_sha256 != origin.content_sha256
@@ -414,7 +418,7 @@ def validate_inspection(root, reference):
 
 def _validate_pass_facts(root, report, normalized, protocol):
     """Recheck saved deterministic results, without executing research or strategy code."""
-    if normalized.get('runtime_kind') == 'US_EQUITY':
+    if normalized.get('runtime_kind') in {'US_EQUITY', 'ACCOUNT_REPLAY'}:
         from .equity_inspection import validate_pass_facts
         return validate_pass_facts(root, report, normalized, protocol)
     from strategy_evaluator import ReplayEvidence, compare_ledgers, LedgerComparisonRequest, LedgerComparisonMode, LedgerComparisonStatus

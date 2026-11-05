@@ -1,4 +1,4 @@
-"""Explicit US account and channel contracts; no broker connection or inference."""
+"""Explicit CN/US account and channel contracts; no broker connection or inference."""
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from decimal import Decimal
@@ -9,6 +9,11 @@ from strategy_runtime import ResearchExecutionSpec
 
 
 EQUITY_OFFLINE_CHANNEL_ID = "equity_offline_us"
+EQUITY_OFFLINE_CN_CHANNEL_ID = "equity_offline_cn"
+EQUITY_OFFLINE_CHANNELS = frozenset((EQUITY_OFFLINE_CHANNEL_ID, EQUITY_OFFLINE_CN_CHANNEL_ID))
+
+def equity_channel_id(instrument):
+    return EQUITY_OFFLINE_CN_CHANNEL_ID if instrument.market is MarketId.CN else EQUITY_OFFLINE_CHANNEL_ID
 
 
 @dataclass(frozen=True, slots=True)
@@ -19,8 +24,8 @@ class EquityAccountRules:
     def __post_init__(self):
         if type(self.instrument) is not InstrumentId or type(self.execution) is not ResearchExecutionSpec:
             raise TypeError("equity account requires typed instrument and execution rules")
-        if self.instrument.market is not MarketId.US or self.instrument.asset_class is not AssetClass.STOCK:
-            raise ValueError("equity account admits US stocks only")
+        if self.instrument.market not in (MarketId.US, MarketId.CN) or self.instrument.asset_class not in (AssetClass.STOCK, AssetClass.ETF):
+            raise ValueError("equity account requires CN/US stock or ETF")
         self.execution.require_instrument(self.instrument)
 
     @property
@@ -32,7 +37,7 @@ class EquityAccountRules:
 
     @classmethod
     def from_dict(cls, value):
-        from strategy_runtime import (AccountPolicy, CashAvailabilityPolicy, ExecutionModel, UsEquitySpec)
+        from strategy_runtime import (AccountPolicy, CashAvailabilityPolicy, ExecutionModel, UsEquitySpec, CnEquitySpec)
         from dataflows import BarFrequency
         if type(value) is not dict or set(value) != {"schema_version", "instrument", "execution"} or value["schema_version"] != 1:
             raise ValueError("unsupported equity account rules")
@@ -40,7 +45,7 @@ class EquityAccountRules:
         instrument["market"] = MarketId(instrument["market"])
         instrument["asset_class"] = AssetClass(instrument["asset_class"])
         execution = dict(value["execution"])
-        execution["market"] = UsEquitySpec(**execution["market"])
+        execution["market"] = (CnEquitySpec if instrument["market"] is MarketId.CN else UsEquitySpec)(**execution["market"])
         execution["decision_clock"] = BarFrequency(execution["decision_clock"])
         account = dict(execution["account"])
         account["cash_availability"] = CashAvailabilityPolicy(account["cash_availability"])
@@ -73,9 +78,17 @@ class EquityOrderReport:
             raise ValueError("invalid settlement timestamp")
 
 
+class EquityExecutionWindowError(ValueError):
+    """A valid equity intent is outside its declared submission interval."""
+
+
+class EquityReconciliationError(ValueError):
+    """An independent channel/account reconciliation prevents execution."""
+
+
 def require_equity_interval(interval: TimeInterval, instant: datetime, rules: EquityAccountRules):
     if type(interval) is not TimeInterval or instant.utcoffset() is None:
         raise ValueError("equity execution requires an explicit aware interval")
     if not interval.start <= instant < interval.end:
-        raise ValueError("equity order is outside its execution interval")
+        raise EquityExecutionWindowError("equity order is outside its execution interval")
     return instant.astimezone(rules.timezone).date().isoformat()

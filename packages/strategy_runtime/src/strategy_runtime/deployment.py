@@ -143,7 +143,8 @@ def validate_release_package(strategy_root: Path, release_id: str) -> VerifiedRe
     binding = RuntimeBinding.from_dict(_read_object(binding_path))
     if binding.release_id != release_id or binding.release_hash != release.release_hash:
         raise RuntimeCompatibilityError("strategy runtime binding identity differs")
-    equity = release.payload.get("runtime", {}).get("kind") == "US_EQUITY"
+    runtime_kind = release.payload.get("runtime", {}).get("kind")
+    equity = runtime_kind in {"US_EQUITY", "ACCOUNT_REPLAY"}
     if not equity and not (source_root / "strategies").is_dir():
         raise RuntimeCompatibilityError("strategy release runtime root is invalid")
     descriptor = release.payload["runtime"]
@@ -158,12 +159,16 @@ def validate_release_package(strategy_root: Path, release_id: str) -> VerifiedRe
     if equity:
         from .equity_definition import EquityStrategyCandidate, EquityStrategyDefinition, equity_source_hash
         definition = EquityStrategyDefinition.from_dict(dict(release.payload["equity_definition"]))
-        if definition.contract_version != 2:
-            raise RuntimeCompatibilityError('account replay is historical research only; production state migration is not supported')
+        expected_version = 4 if runtime_kind == "ACCOUNT_REPLAY" else 2
+        if definition.contract_version != expected_version or descriptor.get("contract_version") != expected_version:
+            raise RuntimeCompatibilityError('equity runtime kind differs from its definition contract')
         candidate = EquityStrategyCandidate(family, str(frozen["source_candidate"]), definition, source_root)
         candidate.verify()
+        if canonical_sha256(candidate.payload) != canonical_sha256(dict(release.payload)):
+            raise RuntimeCompatibilityError('equity runtime payload differs from its definition')
         digest = equity_source_hash(source_root, binding.spec.source_files)
-        if canonical_sha256({"contract": "equity-decision-v2", "definition": definition.to_dict()}) != binding.spec.observation_sha256:
+        contract = "equity-account-v4" if expected_version == 4 else "equity-decision-v2"
+        if canonical_sha256({"contract": contract, "definition": definition.to_dict()}) != binding.spec.observation_sha256:
             raise RuntimeCompatibilityError("equity runtime binding differs from decision definition")
     else:
         digest = implementation_sha256(binding.spec.source_files, source_root=source_root)

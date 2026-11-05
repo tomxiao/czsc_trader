@@ -1,4 +1,4 @@
-"""Recorded channel scenarios exercising normal durable US account components."""
+"""Recorded channel scenarios exercising normal durable CN/US account components."""
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
@@ -7,7 +7,7 @@ import json
 from dataflows import TimeInterval
 from strategy_runtime.inspection import InspectionEnvironment
 from .inspection_contracts import Record, _case_id, _money, _time
-from .equity_contracts import EquityAccountRules, EquityOrderReport, EQUITY_OFFLINE_CHANNEL_ID
+from .equity_contracts import EquityAccountRules, EquityOrderReport, EQUITY_OFFLINE_CHANNEL_ID, equity_channel_id, EquityExecutionWindowError, EquityReconciliationError
 from .equity_advice import EquityAdviceClient, prepare_equity_decision
 from .equity_execution import EquityExecution
 from .broker import BrokerOrder, BrokerOrderRejectedError, BrokerSubmissionUncertainError
@@ -142,7 +142,7 @@ class _RecordedChannel:
 
 def _facts(store):
     account = store.virtual_account("equity")
-    return {"initial_cash": account["initial_cash"], "account": {k: account[k] for k in ("cash", "frozen_cash", "quantity", "average_cost", "receivable", "realized_pnl", "total_assets")},
+    return {"initial_cash": account["initial_cash"], "v4_state": account.get("account_v4_json"), "account": {k: account[k] for k in ("cash", "frozen_cash", "quantity", "average_cost", "receivable", "realized_pnl", "total_assets")},
             "decisions": store.account_decisions("equity"), "orders": store.account_orders("equity"),
             "intents": store.account_intents("equity"),
             "fills": [dict(r) for r in store._connection.execute("SELECT * FROM fills WHERE account_id='equity' ORDER BY rowid")],
@@ -158,8 +158,9 @@ def inspect_equity_release(*, candidate, dataflows, binding, requests, initial_c
     from strategy_runtime.deployment import validate_release_package
     verified = validate_release_package(permit.isolated_repository / "strategies", permit.release_id)
     permit.validate_release(verified.release.release_id, verified.release.release_hash)
+    from strategy_runtime import EquityStrategyDefinition
     if (verified.package_sha256 != permit.package_sha256 or candidate.source_root.resolve() != verified.source_root.resolve()
-            or candidate.definition.to_dict() != dict(verified.release.payload["equity_definition"])):
+            or candidate.definition != EquityStrategyDefinition.from_dict(dict(verified.release.payload["equity_definition"]))):
         raise ValueError("equity inspection candidate differs from authenticated frozen package")
     from time import monotonic
     started = monotonic()
@@ -185,13 +186,14 @@ def inspect_equity_release(*, candidate, dataflows, binding, requests, initial_c
             store.set_setting("futu_capital_pool", str(initial_cash))
             release_record = json.loads((permit.isolated_repository / "strategies" / candidate.strategy_id /
                 "versions" / (verified.release.version + ".json")).read_text(encoding="utf-8"))
-            store.create_virtual_account("equity", "Isolated US inspection", "inspection", permit.release_sha256,
-                initial_cash, symbol=candidate.instrument.symbol, asset_type="stock", strategy_id=candidate.strategy_id,
-                strategy_name_snapshot="Isolated US inspection", strategy_version=permit.release_id.split("-")[1],
+            store.create_virtual_account("equity", "Isolated equity inspection", "inspection", permit.release_sha256,
+                initial_cash, symbol=candidate.instrument.symbol, asset_type=candidate.instrument.asset_class.value.lower(), strategy_id=candidate.strategy_id,
+                strategy_name_snapshot="Isolated equity inspection", strategy_version=permit.release_id.split("-")[1],
                 release_hash=permit.release_sha256, qualification_snapshot="INSPECTION", selection_data_cutoff=release_record["selection_data_cutoff"],
-                channel_id=EQUITY_OFFLINE_CHANNEL_ID, equity_rules=EquityAccountRules(candidate.instrument, candidate.definition.execution_spec))
+                channel_id=equity_channel_id(candidate.instrument), equity_rules=EquityAccountRules(candidate.instrument, candidate.definition.execution_spec))
             store.set_virtual_paused("equity", False)
             channel = _RecordedChannel()
+            channel.channel_id = equity_channel_id(candidate.instrument)
             orders, reports = [], set()
             now = None
             for step in scenario.steps:
@@ -210,7 +212,7 @@ def inspect_equity_release(*, candidate, dataflows, binding, requests, initial_c
                     try:
                         execution.reconcile(cash=step.cash, quantity=step.quantity, account_id="equity")
                         observed.append({"kind": "RECONCILE", "status": "OK"})
-                    except ValueError:
+                    except EquityReconciliationError:
                         local_coverage.add("RECONCILIATION_BLOCKED")
                         observed.append({"kind": "RECONCILE", "status": "BLOCKED"})
                 elif type(step) is EquityPteDecision:
@@ -225,13 +227,12 @@ def inspect_equity_release(*, candidate, dataflows, binding, requests, initial_c
                         actual = "REJECTED"
                     except BrokerSubmissionUncertainError:
                         actual = "UNKNOWN"
-                    except ValueError:
-                        if not step.interval.start <= now < step.interval.end:
-                            actual = "EXPIRED"
-                        elif store._setting("channel_reconciliation_status") != "OK":
-                            actual = "RECONCILIATION_BLOCKED"
-                        else:
+                    except EquityExecutionWindowError:
+                        if now < step.interval.end:
                             raise
+                        actual = "EXPIRED"
+                    except EquityReconciliationError:
+                        actual = "RECONCILIATION_BLOCKED"
                     if actual != step.expected:
                         raise ValueError(f"expected {step.expected}, observed {actual}")
                     local_coverage.add(actual)

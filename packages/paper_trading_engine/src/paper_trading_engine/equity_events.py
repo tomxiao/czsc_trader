@@ -42,7 +42,7 @@ class EquityEventStore:
             quantity, cash = int(account["quantity"]), Decimal(account["cash"])
             cost, receivable = Decimal(account["average_cost"]), Decimal(account["receivable"])
             assets, realized = Decimal(account["total_assets"]), Decimal(account["realized_pnl"])
-            old_quantity, old_cash = quantity, cash
+            old_quantity, old_cash, old_receivable = quantity, cash, receivable
             if kind == "SPLIT":
                 from .broker import TERMINAL_INTENT_STATUSES
                 if any(x["status"] not in TERMINAL_INTENT_STATUSES for x in self.account_intents(account_id)):
@@ -67,6 +67,8 @@ class EquityEventStore:
                     receivable += amount
                 result = {"definition": definition, "kind": "RECEIVABLE", "amount": str(amount),
                           "pay_at": pay_at.isoformat(), "paid": pay_at == effective_at}
+            result.update(ledger_entry_id=str(uuid5(NAMESPACE_URL, f"equity-event:{account_id}:{event_id}")),
+                          recognized_kind=kind, receivable_delta=str(receivable-old_receivable))
             self._connection.execute("INSERT INTO equity_account_events VALUES(?,?,?)",
                                      (account_id, event_id, json.dumps(result, sort_keys=True)))
             self._connection.execute("UPDATE virtual_accounts SET quantity=?,cash=?,average_cost=?,receivable=?,"
@@ -74,6 +76,9 @@ class EquityEventStore:
                 (quantity, str(cash), str(cost), str(receivable), str(assets), str(realized), account_id))
             self._equity_ledger(account_id, event_id, kind, cash - old_cash, quantity - old_quantity,
                                 cash, quantity, effective_at)
+            from .equity_account_state import record_v4_action
+            record_v4_action(self, account_id, ratio=multiplier if kind == "SPLIT" else None,
+                             income_delta=amount if kind == "CASH_DIVIDEND" else Decimal(0))
             return True
 
     def settle_equity_receivables(self, account_id, *, at):
@@ -101,9 +106,18 @@ class EquityEventStore:
                     (json.dumps(event, sort_keys=True), account_id, row["event_id"]))
                 self._equity_ledger(account_id, row["event_id"] + ":payment", "EQUITY_PAYMENT", amount, 0,
                                     cash, int(account["quantity"]), datetime.fromisoformat(event["pay_at"]))
+                payment_id = row["event_id"] + ":payment"
+                payment = {"ledger_entry_id": str(uuid5(NAMESPACE_URL, f"equity-event:{account_id}:{payment_id}")),
+                    "recognized_kind": "DIVIDEND_PAYMENT" if "definition" in event else "SALE_SETTLEMENT",
+                    "receivable_delta": str(-amount)}
+                self._connection.execute("INSERT INTO equity_account_events VALUES(?,?,?)",
+                    (account_id, payment_id, json.dumps(payment, sort_keys=True)))
                 count += 1
             self._connection.execute("UPDATE virtual_accounts SET cash=?,receivable=? WHERE account_id=?",
                                      (str(cash), str(receivable), account_id))
+            if count:
+                from .equity_account_state import record_v4_action
+                record_v4_action(self, account_id)
             return count
 
     def _equity_ledger(self, account_id, event_id, kind, cash_delta, quantity_delta, cash, quantity, at):

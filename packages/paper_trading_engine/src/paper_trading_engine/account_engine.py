@@ -95,13 +95,18 @@ class AccountEngine:
             "entry_cycle_json": account.get("entry_cycle_json"),
             "active_intents": cls._replacement_intent_snapshot(intents),
         }
+        if account.get("account_v4_json") is not None:
+            facts["account_v4_json"] = account["account_v4_json"]
         encoded = json.dumps(facts, sort_keys=True, separators=(",", ":"))
         return int(sha256(encoded.encode("utf-8")).hexdigest()[:15], 16)
 
     @staticmethod
     def _state_revision(account) -> int:
+        facts = {"cycle_target": account.get("cycle_target"), "entry_cycle_json": account.get("entry_cycle_json")}
+        if account.get("account_v4_json") is not None:
+            facts["account_v4_json"] = account["account_v4_json"]
         encoded = json.dumps(
-            {"cycle_target": account.get("cycle_target"), "entry_cycle_json": account.get("entry_cycle_json")},
+            facts,
             sort_keys=True,
             separators=(",", ":"),
         )
