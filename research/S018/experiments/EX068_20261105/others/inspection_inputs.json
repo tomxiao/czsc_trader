@@ -1,0 +1,350 @@
+{
+  "source_account": "research/S018/assets/evidence/EX064_20261104/b2a1d6c30c1a1b0c65b633de3d8f6d6cd08cdf534214c397c4a66f6cfaf15d92.json",
+  "source_account_sha256": "b2a1d6c30c1a1b0c65b633de3d8f6d6cd08cdf534214c397c4a66f6cfaf15d92",
+  "binding": {
+    "prepared": {
+      "space_id": "4d977aa7-57e2-4961-9f16-d90e63decaac",
+      "preparation_id": "ced39d0a-d977-4541-9156-93a2e1700ab1",
+      "manifest_sha256": "86e346daaf0eb8e5d73d45ca41bbb7f55f4ee8089b1369444d338b73ee1fa523"
+    },
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "MU"
+    },
+    "specification_hash": "3d7aca6e0affd8be4c639cedb070ab621ad1b30ec24aa5966530fdc73be9a8bf",
+    "content_identities": [
+      [
+        "bars",
+        "0b0b1c85c4a38e3c32b8a208dd432da7e9f66e5bb85701e350b61d8ffa2fcbd4"
+      ],
+      [
+        "sessions",
+        "4455664424475f1a136651bcdf5e6a41b5f0fe8d3d10a9826e701110785f546a"
+      ],
+      [
+        "actions",
+        "7fe3d0542100a91efeb50206356c6189048d4808b7ac2c3455961ee48b9043ca"
+      ],
+      [
+        "constraints",
+        "013007f4aef8ac05e9b256f128ee5289d97734ad435bf32798cc7481a3911560"
+      ]
+    ],
+    "warmup_bars": 63,
+    "auxiliary_inputs": [
+      {
+        "input": {
+          "name": "mu_hfq",
+          "instrument": {
+            "market": "US",
+            "asset_class": "STOCK",
+            "symbol": "MU"
+          },
+          "source": {
+            "provider": "futu",
+            "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+          },
+          "frequency": "daily",
+          "warmup_bars": 63,
+          "max_age_seconds": 604800,
+          "analysis_price": "HFQ"
+        },
+        "bars_sha256": "764b9eb72c649f4567746cae302c50dc0800f7c695d598a7cb4a877bcab9d4ad",
+        "sessions_sha256": "4455664424475f1a136651bcdf5e6a41b5f0fe8d3d10a9826e701110785f546a"
+      },
+      {
+        "input": {
+          "name": "soxx_hfq",
+          "instrument": {
+            "market": "US",
+            "asset_class": "ETF",
+            "symbol": "SOXX"
+          },
+          "source": {
+            "provider": "futu",
+            "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+          },
+          "frequency": "daily",
+          "warmup_bars": 63,
+          "max_age_seconds": 604800,
+          "analysis_price": "HFQ"
+        },
+        "bars_sha256": "ec58fd321d91873c8169016990273a00831277b0a26e506e966b7f2c3fbd9149",
+        "sessions_sha256": "4455664424475f1a136651bcdf5e6a41b5f0fe8d3d10a9826e701110785f546a"
+      }
+    ],
+    "request_bindings": [
+      [
+        "bars",
+        {
+          "instrument": {
+            "market": "US",
+            "asset_class": "STOCK",
+            "symbol": "MU"
+          },
+          "source": {
+            "provider": "futu",
+            "revision": "s018-mu-daily-20261104"
+          },
+          "query": {
+            "product": "equity.bars",
+            "start": "2022-01-03",
+            "end": "2026-10-30",
+            "frequency": "daily",
+            "adjustment": "none",
+            "session": "REGULAR"
+          }
+        }
+      ],
+      [
+        "sessions",
+        {
+          "instrument": {
+            "market": "US",
+            "asset_class": "STOCK",
+            "symbol": "MU"
+          },
+          "source": {
+            "provider": "futu",
+            "revision": "s018-mu-daily-20261104"
+          },
+          "query": {
+            "product": "equity.sessions",
+            "start": "2022-01-03",
+            "end": "2026-10-30",
+            "frequency": "daily",
+            "adjustment": "none",
+            "session": "REGULAR"
+          }
+        }
+      ],
+      [
+        "actions",
+        {
+          "instrument": {
+            "market": "US",
+            "asset_class": "STOCK",
+            "symbol": "MU"
+          },
+          "source": {
+            "provider": "s018-mu-actions",
+            "revision": "futu-spglobal-crosscheck-v1"
+          },
+          "query": {
+            "product": "equity.actions",
+            "start": "2022-01-03",
+            "end": "2026-10-30",
+            "frequency": "daily",
+            "adjustment": "none",
+            "session": "REGULAR"
+          }
+        }
+      ],
+      [
+        "constraints",
+        {
+          "instrument": {
+            "market": "US",
+            "asset_class": "STOCK",
+            "symbol": "MU"
+          },
+          "source": {
+            "provider": "s018-mu-rules",
+            "revision": "daily-research-assumptions-v1"
+          },
+          "query": {
+            "product": "equity.constraints",
+            "start": "2022-01-03",
+            "end": "2026-10-30",
+            "frequency": "daily",
+            "adjustment": "none",
+            "session": "REGULAR"
+          }
+        }
+      ],
+      [
+        "auxiliary:mu_hfq:bars",
+        {
+          "instrument": {
+            "market": "US",
+            "asset_class": "STOCK",
+            "symbol": "MU"
+          },
+          "source": {
+            "provider": "futu",
+            "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+          },
+          "query": {
+            "product": "equity.bars",
+            "start": "2022-01-03",
+            "end": "2026-10-30",
+            "frequency": "daily",
+            "adjustment": "hfq",
+            "session": "REGULAR"
+          }
+        }
+      ],
+      [
+        "auxiliary:mu_hfq:sessions",
+        {
+          "instrument": {
+            "market": "US",
+            "asset_class": "STOCK",
+            "symbol": "MU"
+          },
+          "source": {
+            "provider": "futu",
+            "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+          },
+          "query": {
+            "product": "equity.sessions",
+            "start": "2022-01-03",
+            "end": "2026-10-30",
+            "frequency": "daily",
+            "adjustment": "none",
+            "session": "REGULAR"
+          }
+        }
+      ],
+      [
+        "auxiliary:soxx_hfq:bars",
+        {
+          "instrument": {
+            "market": "US",
+            "asset_class": "ETF",
+            "symbol": "SOXX"
+          },
+          "source": {
+            "provider": "futu",
+            "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+          },
+          "query": {
+            "product": "equity.bars",
+            "start": "2022-01-03",
+            "end": "2026-10-30",
+            "frequency": "daily",
+            "adjustment": "hfq",
+            "session": "REGULAR"
+          }
+        }
+      ],
+      [
+        "auxiliary:soxx_hfq:sessions",
+        {
+          "instrument": {
+            "market": "US",
+            "asset_class": "ETF",
+            "symbol": "SOXX"
+          },
+          "source": {
+            "provider": "futu",
+            "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+          },
+          "query": {
+            "product": "equity.sessions",
+            "start": "2022-01-03",
+            "end": "2026-10-30",
+            "frequency": "daily",
+            "adjustment": "none",
+            "session": "REGULAR"
+          }
+        }
+      ]
+    ]
+  },
+  "verified_inputs": [
+    {
+      "role": "bars",
+      "sha256": "0b0b1c85c4a38e3c32b8a208dd432da7e9f66e5bb85701e350b61d8ffa2fcbd4",
+      "rows": 1212
+    },
+    {
+      "role": "sessions",
+      "sha256": "4455664424475f1a136651bcdf5e6a41b5f0fe8d3d10a9826e701110785f546a",
+      "rows": 1212
+    },
+    {
+      "role": "actions",
+      "sha256": "7fe3d0542100a91efeb50206356c6189048d4808b7ac2c3455961ee48b9043ca",
+      "rows": 19
+    },
+    {
+      "role": "constraints",
+      "sha256": "013007f4aef8ac05e9b256f128ee5289d97734ad435bf32798cc7481a3911560",
+      "rows": 1212
+    },
+    {
+      "role": "auxiliary:mu_hfq:bars",
+      "sha256": "764b9eb72c649f4567746cae302c50dc0800f7c695d598a7cb4a877bcab9d4ad",
+      "rows": 1212
+    },
+    {
+      "role": "auxiliary:mu_hfq:sessions",
+      "sha256": "4455664424475f1a136651bcdf5e6a41b5f0fe8d3d10a9826e701110785f546a",
+      "rows": 1212
+    },
+    {
+      "role": "auxiliary:soxx_hfq:bars",
+      "sha256": "ec58fd321d91873c8169016990273a00831277b0a26e506e966b7f2c3fbd9149",
+      "rows": 1212
+    },
+    {
+      "role": "auxiliary:soxx_hfq:sessions",
+      "sha256": "4455664424475f1a136651bcdf5e6a41b5f0fe8d3d10a9826e701110785f546a",
+      "rows": 1212
+    }
+  ],
+  "channel_anchor": {
+    "account_sha256": "8b513fffe35c0ff9c1a67e9e98005914bf70bf9d1fab564b31662730f6a21257",
+    "order": {
+      "checkpoint": null,
+      "decision_id": "a1aa4763bfe386286fff37da5204796d0138fbc03b70469598323c089443726d",
+      "dependency_required_status": null,
+      "dependency_sequence": null,
+      "limit_price": 57.49,
+      "order_id": "a1aa4763bfe386286fff37da5204796d0138fbc03b70469598323c089443726d:0",
+      "order_type": "LIMIT",
+      "quantity": 325,
+      "quote_interval_end": "2023-01-17T21:00:00.000000Z",
+      "quote_interval_start": "2023-01-17T14:30:00.000000Z",
+      "quote_source": "DECISION_BAR",
+      "reason": "FILLED",
+      "sequence": 0,
+      "side": "BUY",
+      "status": "FILLED",
+      "valid_end": "2023-01-17T21:00:00.000000Z",
+      "valid_start": "2023-01-17T14:30:00.000000Z"
+    },
+    "fill": {
+      "account_revision": 9,
+      "cycle_id": "a1aa4763bfe386286fff37da5204796d0138fbc03b70469598323c089443726d:0",
+      "executed_at": "2023-01-17T14:30:00.000000Z",
+      "fees": 18.577,
+      "fill_id": "a1aa4763bfe386286fff37da5204796d0138fbc03b70469598323c089443726d:0",
+      "interval_end": "2023-01-17T21:00:00.000000Z",
+      "interval_start": "2023-01-17T14:30:00.000000Z",
+      "order_id": "a1aa4763bfe386286fff37da5204796d0138fbc03b70469598323c089443726d:0",
+      "price": 57.16,
+      "quantity": 325,
+      "quote_interval_end": "2023-01-17T21:00:00.000000Z",
+      "quote_interval_start": "2023-01-17T14:30:00.000000Z",
+      "quote_source": "DECISION_BAR",
+      "side": "BUY",
+      "time_precision": "MODEL_BAR_OPEN"
+    }
+  },
+  "planned_pte_coverage": [
+    "COMPLETED",
+    "PARTIAL",
+    "DUPLICATE",
+    "RESTART",
+    "REJECTED",
+    "UNKNOWN",
+    "EXPIRED",
+    "RECONCILIATION_BLOCKED"
+  ],
+  "money_quantum": "0.0001",
+  "continuous_cycle_fills": 5,
+  "note": "PTE录制回报来自原历史账户，以平台四位金额精度逐笔计费；补齐已知公司行动及到期支付，覆盖连续两周期含补仓；不代表券商真实成交。"
+}

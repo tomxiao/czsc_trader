@@ -1,0 +1,71 @@
+{
+  "behavior_status": "PASS",
+  "pte_status": "PASS",
+  "counts": {
+    "account_daily": 961,
+    "account_points": 961,
+    "actions": 30,
+    "decisions": 961,
+    "fills": 230,
+    "orders": 244,
+    "trades": 95
+  },
+  "scenario_statuses": [
+    {
+      "case_id": "historical-first-buy-partial-duplicate-restart",
+      "status": "PASS",
+      "code": "OK"
+    },
+    {
+      "case_id": "rejected",
+      "status": "PASS",
+      "code": "OK"
+    },
+    {
+      "case_id": "unknown",
+      "status": "PASS",
+      "code": "OK"
+    },
+    {
+      "case_id": "expired",
+      "status": "PASS",
+      "code": "OK"
+    },
+    {
+      "case_id": "reconciliation-blocked",
+      "status": "PASS",
+      "code": "OK"
+    },
+    {
+      "case_id": "recorded-two-cycles-with-add",
+      "status": "PASS",
+      "code": "OK"
+    }
+  ],
+  "coverage": {
+    "missing": [],
+    "observed": [
+      "CASH_DIVIDEND",
+      "COMPLETED",
+      "DUPLICATE",
+      "EXPIRED",
+      "NO_ORDER",
+      "PARTIAL",
+      "RECONCILIATION_BLOCKED",
+      "REJECTED",
+      "RESTART",
+      "SETTLEMENT",
+      "SUBMITTED",
+      "UNKNOWN"
+    ]
+  },
+  "continuous_cycle_fill_count": 5,
+  "measurements": {
+    "elapsed_seconds": 45.703999999997905,
+    "max_workers": 2,
+    "run_id": "inspection-92966b1bfbca4473afb3b46473d37b01",
+    "timeout_seconds": 240
+  },
+  "freeze": "NOT_EXECUTED",
+  "production": "NOT_TOUCHED"
+}
