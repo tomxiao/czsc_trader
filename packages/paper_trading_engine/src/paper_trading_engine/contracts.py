@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from datetime import date, time
+from datetime import date, datetime, time
 from decimal import Decimal, InvalidOperation
 import math
 import re
@@ -99,8 +99,8 @@ class PlanLegSpec:
     sequence: int
     role: str
     checkpoint: str
-    submit_after: time
-    submit_before: time
+    submit_after: time | datetime
+    submit_before: time | datetime
     dependency_sequence: int | None
     dependency_required_status: str | None
     order: OrderSpec

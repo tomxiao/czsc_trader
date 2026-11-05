@@ -15,7 +15,7 @@ import json
 from pathlib import Path
 from weakref import WeakValueDictionary, ref
 
-from dataflows import EquityProduct, PreparePolicy, TimeInterval
+from dataflows import EquityDataRequest, EquityProduct, PreparePolicy, TimeInterval
 from strategy_runtime.equity import ResearchExecutionSpec, equity_hash
 from strategy_runtime.equity_definition import EquityAuxiliaryBinding, EquityInputBinding, EquityStrategyCandidate, ExecutionInputBinding
 from strategy_evaluator.equity_metrics import summarize_equity_ledger
@@ -83,6 +83,7 @@ class _SessionState:
         self.engine_sources = None
         self.input_fact_hashes = {}
         self.replay_statistics = {}
+        self.observation_selections = {}
         self.candidate_runs = 0
         self.benchmark_runs = 0
 
@@ -140,6 +141,21 @@ def prepare_equity(access, request, *, execution):
         raise ValueError("equity request differs from its research context")
     request.candidate.verify()
     definition = request.candidate.definition
+    if definition.observation_inputs:
+        from strategy_runtime.observation_preparation import resolve_observation_requests
+        from zoneinfo import ZoneInfo
+        end = request.window.end.astimezone(ZoneInfo(request.candidate.instrument.timezone)).date()
+        selection = equity_hash({'declarations': [item.to_dict() for item in definition.observation_inputs],
+            'start': request.history_start.isoformat(), 'end': request.window.end.isoformat(),
+            'source_root': str(request.candidate.source_root)})
+        if selection not in state.observation_selections:
+            items = resolve_observation_requests(access.data, definition.observation_inputs,
+                request.history_start, end, source_root=request.candidate.source_root, as_of=request.window.end)
+            state.observation_selections[selection] = tuple(query for _, query in items)
+        queries = state.observation_selections[selection]
+        if request.observation_requests and request.observation_requests != queries:
+            raise ValueError('observation selections differ from declared calendar and interval')
+        request = replace(request, observation_requests=queries)
     if request.prepared is not None and request.prepared.space_id != access.data.binding.space_id:
         raise ValueError("prepared data belongs to another research space")
     query_identity = _query_identity(request, spec)
@@ -164,7 +180,9 @@ def prepare_equity(access, request, *, execution):
         binding = EquityInputBinding(prepared_ref, request.candidate.instrument, spec.fingerprint,
             tuple((product.name.lower(), identities[product.name.lower()]["content_sha256"]) for product in EquityProduct),
             request.candidate.warmup_bars,
-            request_bindings=tuple((role, query.parameters) for role, query in request.request_items(spec)),
+            request_bindings=tuple((role, query.parameters) for role, query in request.request_items(spec)
+                                   if type(query) is EquityDataRequest),
+            observation_bindings=_observation_bindings(definition, request.request_items(spec), identities),
             auxiliary_inputs=tuple(EquityAuxiliaryBinding(item,
                 identities[item.data_key(EquityProduct.BARS)]["content_sha256"],
                 identities[item.data_key(EquityProduct.SESSIONS)]["content_sha256"])
@@ -175,6 +193,7 @@ def prepare_equity(access, request, *, execution):
             raise ValueError("equity input identity differs from prepared assets")
         fact_key = (snapshot.sha256, request.initial_cash, request.fee_rate, spec.fingerprint,
                     equity_hash({"auxiliary": [asdict(item) for item in definition.auxiliary_inputs],
+                                 "observations": [item.to_dict() for item in definition.observation_inputs],
                                  "execution": None if definition.execution_input is None else asdict(definition.execution_input)}))
         if fact_key not in state.input_fact_hashes:
             state.input_fact_hashes[fact_key] = equity_hash(_audit_inputs(request, spec, state.products[snapshot.sha256]))
@@ -205,6 +224,13 @@ def prepare_equity(access, request, *, execution):
         return value
 
 
+def _observation_bindings(definition, request_items, identities):
+    from strategy_runtime.dataset_observations import DatasetObservationBinding
+    requests = dict(request_items)
+    return tuple(DatasetObservationBinding(item, requests[item.data_key()],
+        identities[item.data_key()]['content_sha256']) for item in definition.observation_inputs)
+
+
 def _require_prepared(state, value):
     if (type(value) is not PreparedAccountEvaluation or value.scope_token != state.token
             or state.prepared.get(id(value)) is not value):
@@ -216,6 +242,7 @@ def _replay(state, prepared, *, benchmark=False):
     candidate = _benchmark_candidate(prepared.request) if benchmark else prepared.candidate
     graph = candidate.definition.feature_graph
     context_key = equity_hash({"auxiliary": [asdict(x) for x in candidate.definition.auxiliary_inputs],
+                              "observations": [x.to_dict() for x in candidate.definition.observation_inputs],
                               "session": candidate.definition.session_context,
                               "contract_version": candidate.definition.contract_version})
     key = (prepared.snapshot.sha256, equity_hash(graph.to_dict()), candidate.definition.execution_spec.data_latency_seconds, context_key)
@@ -536,6 +563,9 @@ class MaterializedEquity:
                 for item in definition["auxiliary_inputs"]}
         if definition.get('execution_input') is not None:
             decision_inputs['execution'] = {'bars': products['execution:bars'], 'sessions': products['execution:sessions']}
+        if definition.get('observation_inputs'):
+            decision_inputs['observations'] = {item['name']: products['observation:' + item['name']]
+                                               for item in definition['observation_inputs']}
         if decision_inputs:
             payload["audit_inputs"]["decision_inputs"] = decision_inputs
         return payload

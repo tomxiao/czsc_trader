@@ -261,6 +261,14 @@ if not restored.ready:
 
 ## 7. 其他研究输入与时间边界
 
+原生 V4 通过 SRT `DatasetObservationInput` 复用本模块的 `DataRequest`、`prepare/fetch` 和时间契约。
+当前接入后复权 ETF 周线、成分权重、股票资金流、SHIBOR、指数指标、ETF 份额、全球指数及冻结种子。
+表格可以同日多行，继续使用产品发布的复合主键；不得用单值时间序列对齐器压掉成分记录。
+资金流请求的 `MoneyflowParameters.trading_dates` 由显式交易日历准备结果生成。
+日期型产品需在策略观察声明中明确可用时区及时间假设，不能将 `SOURCE_PERIOD_CLOSE` 当成当天午夜。
+冻结种子仍使用 `STRATEGY_FEATURE_EVIDENCE` 和哈希绑定的 `EvidenceParameters`；包内相对路径由准备层解析，
+不更改 DFLS 对外区间查询或数据质量要求。完整观察契约见 [SRT](../strategy_runtime/README.md)。
+
 非OHLCV数据按各自的字段、覆盖、时间和证据契约验收，上述99%／95%规则仅适用于OHLCV。
 
 - 宏观序列按数据集指定标的参数；例如SHIBOR、美国国债收益率等固定序列要求`symbol=None`。

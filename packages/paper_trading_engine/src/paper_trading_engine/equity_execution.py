@@ -3,7 +3,8 @@ from dataclasses import asdict
 from datetime import datetime
 from decimal import Decimal
 
-from .broker import BrokerOrderRejectedError, BrokerSubmissionUncertainError, OrderIntent, TERMINAL_ORDER_STATUSES
+from .broker import (BrokerOrderRejectedError, BrokerSubmissionUncertainError, OrderIntent,
+                     TERMINAL_ORDER_STATUSES, TERMINAL_INTENT_STATUSES)
 from .equity_contracts import EQUITY_OFFLINE_CHANNELS, EquityOrderReport, EquityReconciliationError
 from .lifecycle import IntentControlState
 from .order_reports import apply_order_report
@@ -35,10 +36,30 @@ class EquityExecution:
         if self.store.virtual_account(account_id)["channel_id"] != self.channel.channel_id:
             raise ValueError("equity account belongs to another channel")
         result = []
+        from .order_windows import planned_bounds, within_planned_window
+        moment = self.now()
+        for row in self.store.account_intents(account_id):
+            if row["status"] != "WAITING_DEPENDENCY":
+                continue
+            dependency = self.store.account_intent(str(row["payload"].get("dependency_intent_id")))
+            if dependency is None:
+                raise ValueError("plan dependency is missing")
+            if dependency["status"] == row["payload"].get("dependency_required_status"):
+                self.store.activate_dependency_intent(row["intent_id"])
+            elif dependency["status"] in TERMINAL_INTENT_STATUSES:
+                status = ("SKIPPED_DEPENDENCY" if dependency["payload"].get("termination_reason") == "NORMAL_UNFILLED"
+                          else "EXPIRED")
+                self.store.release_account_intent(row["intent_id"], status)
         for row in self.store.account_intents(account_id):
             if row["status"] != "PENDING_SUBMIT":
                 continue
-            if not self.store.claim_account_intent(row["intent_id"], moment=self.now()):
+            bounds = planned_bounds(row["payload"], row["valid_session"])
+            if bounds is not None and moment >= bounds[1]:
+                self.store.release_account_intent(row["intent_id"], "EXPIRED")
+                continue
+            if not within_planned_window(row["payload"], row["valid_session"], moment):
+                continue
+            if not self.store.claim_account_intent(row["intent_id"], moment=moment):
                 continue
             intent = OrderIntent(row["intent_id"], row["decision_id"], row["symbol"], row["side"],
                 row["quantity"], float(row["limit_price"]), row["payload"]["order_type"], "DAY", account_id)

@@ -6,6 +6,7 @@ rollback run through the real upgrade API without completed-inspection substitut
 
 import ast
 from dataclasses import replace
+from datetime import date
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -14,6 +15,7 @@ from types import SimpleNamespace
 
 import pytest
 from strategy_runtime import RuntimeCompatibilityError, StrategyCandidate, implementation_sha256
+from dataflows import Dataset, MarketId
 
 from czsc_trader.application import RepositoryContext, validate_release_package
 from czsc_trader.application import runtime_migration as m
@@ -69,6 +71,106 @@ def upgrade(current_frozen):
 
 def _bytes(root):
     return {p.relative_to(root).as_posix(): p.read_bytes() for p in root.rglob("*") if p.is_file()}
+
+
+def _with_seed(candidate):
+    from strategy_runtime.dataset_observations import DatasetObservationInput, FrozenDataAsset
+    path = candidate.source_root / 'assets/seed.csv'
+    path.parent.mkdir(exist_ok=True)
+    path.write_bytes(b'Date,score\n2026-10-12,1\n')
+    asset = FrozenDataAsset('assets/seed.csv', sha256(path.read_bytes()).hexdigest())
+    observation = DatasetObservationInput('seed', Dataset.STRATEGY_FEATURE_EVIDENCE,
+        symbol='S900-v1', history_start=date(2026, 10, 12), history_end=date(2026, 10, 12), asset=asset)
+    return replace(candidate, definition=replace(candidate.definition, observation_inputs=(observation,)))
+
+
+@pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
+def test_native_upgrade_preserves_history_and_resets_qualification(upgrade, market):
+    """Both market contracts cross the same legacy/native and native/native transaction."""
+    from test_equity_adjusted_observations import setup_adjusted
+    from strategy_runtime import EquityStrategyCandidate, equity_source_hash, load_strategy_deployment
+    context, request, original_version = upgrade
+    fixture = context.root / '.tmp/native-fixture'
+    fixture.mkdir()
+    _, native_request, _, _, _ = setup_adjusted(fixture, market)
+    candidate = _with_seed(replace(native_request.candidate, strategy_id='S900', candidate_id='C9877'))
+    if market is MarketId.US:
+        legacy_equity = replace(candidate, definition=replace(candidate.definition, contract_version=2,
+            feature_graph=None, state_schema=None, computation=None, auxiliary_inputs=(), observation_inputs=()))
+        with pytest.raises(ValueError, match='native account contract 4'):
+            replace(request, candidate=legacy_equity)
+    request = replace(request, candidate=candidate)
+    prepared = m.prepare_frozen_runtime_upgrade(context, request)
+    receipt = m.apply_frozen_runtime_upgrade(context, prepared)
+    assert m.apply_frozen_runtime_upgrade(context, prepared) == receipt
+    installed = load_strategy_deployment(context.strategy_root, 'S900-v1')
+    assert installed.release_hash == prepared.migrated.release_hash
+    assert installed.binding.spec.source_files == ('strategy.py',)
+    assert set(installed.install_files) == {'strategy.py', 'assets/seed.csv'}
+    assert (installed.source_root / 'assets/seed.csv').read_bytes() == (candidate.source_root / 'assets/seed.csv').read_bytes()
+    current = StrategyRegistry(context.strategy_root).get_version('S900', 'v1')
+    for field in ('source_experiment', 'source_candidate', 'selection_data_cutoff', 'forward_start', 'parent_version'):
+        assert getattr(current, field) == getattr(original_version, field)
+    assert current.strategy_payload['runtime']['kind'] == 'ACCOUNT_REPLAY'
+    assert current.strategy_payload['equity_definition']['instrument']['market'] == market.value
+    assert StrategyRegistry(context.strategy_root).current_qualification('S900', 'v1').value == 'RESEARCH'
+    from paper_trading_engine.srt_advice_client import _strategy_identity
+    from paper_trading_engine.errors import AdviceClientError
+    from strategy_runtime import StrategyRelease
+    with pytest.raises(AdviceClientError, match='not approved'):
+        _strategy_identity(context.root, StrategyRelease.from_mapping(current.to_dict()))
+    source = candidate.source_root / 'strategy.py'
+    source.write_bytes(source.read_bytes() + b'\n# native revision\n')
+    revised = EquityStrategyCandidate('S900', 'C9878', replace(candidate.definition,
+        source_sha256=equity_source_hash(candidate.source_root, candidate.definition.source_files)), candidate.source_root)
+    next_request = replace(request, original=prepared.migrated, candidate=revised,
+                           output_directory=context.root / '.tmp/prepared-native')
+    next_prepared = m.prepare_frozen_runtime_upgrade(context, next_request)
+    next_receipt = m.apply_frozen_runtime_upgrade(context, next_prepared)
+    assert next_receipt.original == prepared.migrated
+    assert m.apply_frozen_runtime_upgrade(context, next_prepared) == next_receipt
+    assert load_strategy_deployment(context.strategy_root, 'S900-v1').release_hash == next_prepared.migrated.release_hash
+
+
+def test_native_resources_register_and_share_the_first_freeze_package_builder(tmp_path):
+    """The registered closure and the first-freeze path both carry hash-pinned data."""
+    from test_equity_adjusted_observations import setup_adjusted
+    from czsc_trader.application import register_candidate, CandidateRegistrationRequest, load_candidate, FreezeTarget
+    from czsc_trader.application.inspection_service import _copy_plan, _package, _EvidenceStore
+    from strategy_runtime.deployment import validate_release_package as authenticate
+    from strategy_manager.candidates import _validate_candidate_snapshot
+    research, request, _, _, _ = setup_adjusted(tmp_path, MarketId.US)
+    candidate = _with_seed(request.candidate)
+    context = research.repository
+    registration = register_candidate(context, CandidateRegistrationRequest(candidate, request.experiment, (),
+                                                                              candidate.definition.dependencies))
+    loaded = load_candidate(context, candidate.key)
+    assert loaded.content_identity == candidate.content_identity
+    assert loaded.definition.source_sha256 == request.candidate.definition.source_sha256
+    assert {Path(ref.path).name for ref in registration.source_files} == {'strategy.py', 'seed.csv'}
+    root = context.research_root / candidate.strategy_id
+    without_resource = replace(registration, source_files=tuple(ref for ref in registration.source_files
+                                                               if not ref.path.endswith('.csv')))
+    with pytest.raises(ValidationError, match='manifest'):
+        _validate_candidate_snapshot(without_resource, root)
+    owner = f.ResearchEvidenceOwner(candidate.strategy_id, request.experiment.experiment_id)
+    store = _EvidenceStore(context, owner)
+    origin = f.CandidateOrigin(candidate.key, registration.content_sha256, store.put_json(registration.to_dict()))
+    target = FreezeTarget('v1', None, 'synthetic native resource package', date(2026, 10, 15), date(2026, 10, 16))
+    plan = _copy_plan(context, SimpleNamespace(additional_files=(), target=target), registration, store, origin)
+    isolated = tmp_path / '.tmp/material-repository'
+    _, verified = _package(context, plan, store, isolated)
+    assert verified.runtime_binding.spec.source_files == ('strategy.py',)
+    assert set(verified.runtime_binding.spec.install_files) == {'strategy.py', 'assets/seed.csv'}
+    from strategy_runtime import EquityStrategyCandidate
+    packed = EquityStrategyCandidate(candidate.strategy_id, candidate.candidate_id, candidate.definition, verified.source_root)
+    with packed.bind_replay() as invocation:
+        assert callable(invocation.function)
+    # Publication paths can change without changing the definition identity.
+    assert packed.content_identity == candidate.content_identity
+    (verified.source_root / 'assets/seed.csv').write_bytes(b'corrupt')
+    with pytest.raises(RuntimeCompatibilityError, match='package file differs'):
+        authenticate(isolated / 'strategies', 'S999-v1')
 
 
 def test_upgrade_prepares_then_preserves_history_archives_and_commits_idempotently(upgrade):

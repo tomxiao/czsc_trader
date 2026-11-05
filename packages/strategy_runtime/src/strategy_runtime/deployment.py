@@ -159,6 +159,8 @@ def validate_release_package(strategy_root: Path, release_id: str) -> VerifiedRe
     if equity:
         from .equity_definition import EquityStrategyCandidate, EquityStrategyDefinition, equity_source_hash
         definition = EquityStrategyDefinition.from_dict(dict(release.payload["equity_definition"]))
+        if not {asset.relative_path for asset in definition.frozen_assets}.issubset(binding.spec.install_files):
+            raise RuntimeCompatibilityError('strategy install files omit frozen data resources')
         expected_version = 4 if runtime_kind == "ACCOUNT_REPLAY" else 2
         if definition.contract_version != expected_version or descriptor.get("contract_version") != expected_version:
             raise RuntimeCompatibilityError('equity runtime kind differs from its definition contract')

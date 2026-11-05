@@ -236,11 +236,12 @@ class PreparedReplay:
     _calendar_intervals: tuple = ()
     identity: str = ''
     frequency: BarFrequency = BarFrequency.M30
+    _observations: tuple = ()
 
     @classmethod
     def from_frames(cls, bars, constraints, graph, *, latency_seconds=0,
                     auxiliary_histories=None, sessions=None, trading_sessions=(),
-                    frequency=BarFrequency.M30, timezone="America/New_York"):
+                    frequency=BarFrequency.M30, timezone="America/New_York", observation_tables=None):
         if type(graph) is not FeatureGraph or type(latency_seconds) is not int or latency_seconds < 0:
             raise TypeError('replay requires a typed graph and nonnegative integer latency')
         required = {'BarStart', 'Date', 'AvailableDate', 'Open', 'High', 'Low', 'Close', 'Volume', 'Amount'}
@@ -355,13 +356,23 @@ class PreparedReplay:
             'sessions': [{'day': item.session_date.isoformat(), 'timezone': item.timezone,
                           'segments': [(part.start, part.end) for part in item.segments],
                           'available': available} for item, available in calendars]})
-        return cls(data, graph, tuple(auxiliary), tuple(calendars), tuple(intervals), prepared_identity, frequency)
+        observations = ()
+        if observation_tables:
+            from .dataset_observations import PreparedObservationTable
+            if not isinstance(observation_tables, Mapping) or any(type(key) is not str or type(value) is not PreparedObservationTable
+                    for key, value in observation_tables.items()):
+                raise TypeError('replay observations require named prepared tables')
+            observations = tuple(sorted(observation_tables.items()))
+            prepared_identity = equity_hash({'history': prepared_identity,
+                'observations': [(name, item.content_sha256, item.primary_key, item.source_time_field,
+                                  item.source_timezone, item._available) for name, item in observations]})
+        return cls(data, graph, tuple(auxiliary), tuple(calendars), tuple(intervals), prepared_identity, frequency, observations)
 
     def with_graph(self, graph):
         if type(graph) is not FeatureGraph:
             raise TypeError('replay requires FeatureGraph')
         return PreparedReplay(self._data, graph, self._auxiliary, self._sessions,
-                              self._calendar_intervals, self.identity, self.frequency)
+                              self._calendar_intervals, self.identity, self.frequency, self._observations)
 
 
 class _Visibility:

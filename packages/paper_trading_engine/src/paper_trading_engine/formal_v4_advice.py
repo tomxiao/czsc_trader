@@ -15,7 +15,7 @@ import re
 from threading import RLock
 from zoneinfo import ZoneInfo
 
-from dataflows import BarFrequency, Dataflows, EquityDataRequest, TimeInterval, EquityProduct, PreparePolicy
+from dataflows import BarFrequency, Dataflows, DataRequest, EquityDataRequest, TimeInterval, EquityProduct, PreparePolicy
 from dataflows.equity_data import sessions_from_metadata
 from strategy_manager import Qualification, StrategyRegistry
 from strategy_runtime import StrategyRelease, canonical_sha256
@@ -44,9 +44,10 @@ class FormalV4Inputs:
             raise ValueError('formal V4 inputs require a finite model fee')
 
     @property
-    def requests(self) -> tuple[EquityDataRequest, ...]:
+    def requests(self) -> tuple[DataRequest, ...]:
         unique = dict.fromkeys(parameters for _, parameters in self.binding.request_bindings)
-        return tuple(EquityDataRequest(p.instrument, p.source, p.query) for p in unique)
+        return (tuple(EquityDataRequest(p.instrument, p.source, p.query) for p in unique)
+                + tuple(item.request for item in self.binding.observation_bindings))
 
     def to_dict(self):
         return dict(schema_version=1, release_hash=self.release_hash,
@@ -112,7 +113,8 @@ class FormalV4AdviceClient:
         inputs = FormalV4Inputs(expected_release_hash, binding, fee_rate)
         if (release.release_hash != expected_release_hash or binding.instrument != candidate.instrument
                 or binding.specification_hash != candidate.execution_spec_hash
-                or binding.warmup_bars != candidate.warmup_bars):
+                or binding.warmup_bars != candidate.warmup_bars
+                or tuple(item.input for item in binding.observation_bindings) != candidate.definition.observation_inputs):
             raise ValueError('formal V4 input identity differs from account release')
         binding.bind_requests(inputs.requests)
         path = self._path(account_id)
@@ -214,7 +216,7 @@ class FormalV4AdviceClient:
             self._save_interval(path, inputs)
             return inputs
 
-    def _forward_inputs(self, account_id, recipe, interval):
+    def _forward_inputs(self, account_id, recipe, interval, *, candidate=None):
         path = self._interval_path(account_id, recipe.release_hash, interval)
         with self._lock:
             existing = self._existing_interval(account_id, path, interval)
@@ -236,18 +238,35 @@ class FormalV4AdviceClient:
                     day = max(completed)
                 items.append((role, replace(parameters, query=replace(parameters.query, end=day))))
             requests = tuple(EquityDataRequest(p.instrument, p.source, p.query) for p in dict.fromkeys(p for _, p in items))
+            from strategy_runtime.observation_preparation import (resolve_observation_requests,
+                observation_forward_end, request_selection)
+            from strategy_runtime.dataset_observations import DatasetObservationBinding
+            observation_items = []
+            if recipe.binding.observation_bindings:
+                if candidate is None:
+                    _, _, candidate = self._account_release(account_id)
+                for bound in recipe.binding.observation_bindings:
+                    end = observation_forward_end(bound.input, interval.start,
+                        default_timezone=candidate.instrument.timezone)
+                    observation_items.extend(resolve_observation_requests(self.dataflows, (bound.input,),
+                        date.fromisoformat(bound.request.start), end, source_root=candidate.source_root,
+                        as_of=interval.start))
+            requests += tuple(query for _, query in observation_items)
             result = self.dataflows.prepare(requests, policy=PreparePolicy.REUSE)
             if not result.ready:
                 raise ValueError('forward V4 input preparation is incomplete: ' + '; '.join(str(x.error) for x in result.items if not x.ready))
-            identities = {item.request.parameters: item.identity.content_sha256 for item in result.items}
-            hashes = {role: identities[p] for role, p in items}
+            identities = {request_selection(item.request): item.identity.content_sha256 for item in result.items}
+            hashes = {role: identities[request_selection(EquityDataRequest(p.instrument, p.source, p.query))] for role, p in items}
             binding = replace(recipe.binding, prepared=result.reference, request_bindings=tuple(items),
                 content_identities=tuple((product.name.lower(), hashes[product.name.lower()]) for product in EquityProduct),
                 auxiliary_inputs=tuple(EquityAuxiliaryBinding(item.input,
                     hashes[item.input.data_key(EquityProduct.BARS)], hashes[item.input.data_key(EquityProduct.SESSIONS)])
                     for item in recipe.binding.auxiliary_inputs),
                 execution_input=None if recipe.binding.execution_input is None else ExecutionInputBinding(
-                    recipe.binding.execution_input.input, hashes['execution:bars'], hashes['execution:sessions']))
+                    recipe.binding.execution_input.input, hashes['execution:bars'], hashes['execution:sessions']),
+                observation_bindings=tuple(DatasetObservationBinding(bound.input, query,
+                    identities[request_selection(query)]) for bound, (_, query) in zip(
+                        recipe.binding.observation_bindings, observation_items, strict=True)))
             value = FormalV4Inputs(recipe.release_hash, binding, recipe.fee_rate)
             self._save_interval(path, value)
             return value
@@ -260,7 +279,7 @@ class FormalV4AdviceClient:
             raise ValueError('formal V4 interval is not currently executable')
         _, release, candidate = self._account_release(account_id)
         recipe = self.recipe(account_id)
-        inputs = self._pinned_inputs(account_id, interval) if recipe is None else self._forward_inputs(account_id, recipe, interval)
+        inputs = self._pinned_inputs(account_id, interval) if recipe is None else self._forward_inputs(account_id, recipe, interval, candidate=candidate)
         if inputs.release_hash != release.release_hash:
             raise ValueError('formal V4 prepared inputs belong to another release')
         return prepare_equity_decision(self.dataflows, candidate, inputs.binding, inputs.requests,

@@ -114,6 +114,12 @@ class ChannelExecution:
         start, end = (datetime.fromisoformat(value[key]) for key in ('start', 'end'))
         if start.utcoffset() is None or end.utcoffset() is None or start >= end:
             raise PaperTradingSafetyError('decision execution interval must be explicit and aware')
+        from .order_windows import planned_bounds
+        bounds = planned_bounds(intent['payload'], intent['valid_session'], zone=self.zone)
+        if bounds is not None:
+            start, end = max(start, bounds[0]), min(end, bounds[1])
+            if start >= end:
+                raise PaperTradingSafetyError('plan leg does not overlap its execution interval')
         return start, end
 
     def _submission_window(self, intent, moment):
@@ -257,10 +263,13 @@ class ChannelExecution:
                 details={"reason": "transient_order_state_resolved"},
             )
 
-    @staticmethod
-    def _planned_clock(intent, field: str) -> time | None:
+    def _planned_clock(self, intent, field: str) -> time | None:
         value = intent["payload"].get(field)
-        return None if value is None else time.fromisoformat(str(value))
+        if value is None:
+            return None
+        if "-" in str(value)[:10]:
+            return datetime.fromisoformat(str(value)).astimezone(self.zone).time().replace(tzinfo=None)
+        return time.fromisoformat(str(value))
 
     def _expire_planned_intent(self, intent, message: str) -> None:
         self.store.release_account_intent(

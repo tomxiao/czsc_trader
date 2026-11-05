@@ -711,7 +711,7 @@ TDR负责升级的可追溯、审计和发布事务完整性。是否沿用策�
 | 字段 | 类型及含义 |
 | --- | --- |
 | `original` | `FrozenVersionReference`；被替换版本的精确发布和包身份 |
-| `candidate` | `StrategyCandidate`；同一策略族的新实现及其payload、源码身份，不要求先登记研究候选 |
+| `candidate` | `StrategyCandidate` 或原生 V4 `EquityStrategyCandidate`；同一策略族的新实现，不要求先登记研究候选；不接收旧 `US_EQUITY` 合同 |
 | `confirmation` | `ResearchEvidenceRef`；真实升级授权的材料引用，调用方负责如实提交 |
 | `change_summary` | 非空字符串；修改目的、范围和影响声明，原样保存 |
 | `operator` | 非空字符串；调用方声明的执行者，用于审计，不表示平台完成身份认证 |
@@ -735,9 +735,12 @@ TDR负责升级的可追溯、审计和发布事务完整性。是否沿用策�
 新写入仅使用schema 2升级计划；既有schema 1升级归档只读核对完整性，保留原字节与结论，不恢复
 旧升级写入流程。首次冻结和独立技术检验沿用各自契约。新发布身份的资格为`RESEARCH`，不自动
 继承旧身份资格；PTE账户改绑、资格授予和生产生效另行授权，升级接口不操作生产账户。
+已有本地 `strategies/deployments/` 安装描述随冻结包同步到新身份，这不授予新身份交易资格。
+原生 V4 首次冻结和升级共用材料构建；声明的数据资源与代码一起封包，资源进入安装清单，
+`source_files/source_sha256` 仍只表示 Python 实现。原选型历史保持，新实现来源保存在升级审计链。
 既有专用迁移、观察源码校验器不参与此升级入口；调用方主动使用时，其结果属于相应诊断材料。
 
-以下示例假定`repository`、`original: FrozenVersionReference`、`candidate: StrategyCandidate`及
+以下示例假定`repository`、`original: FrozenVersionReference`、上述任一受支持类型的`candidate`及
 `confirmation: ResearchEvidenceRef`已准备，授权引用对应真实用户决定。研究员先完成本次约定的验证，
 再将所选验证报告作为`evidence`关联；空元组表示未附验证材料，不表示验证通过。
 
@@ -837,6 +840,23 @@ CN/US 均可通过 `auxiliary_inputs` 声明 `analysis_price="HFQ"` 的后复权
 修改别名不会误用旧别名快照。`EquityInputBinding.bind_requests` 提供角色到物理请求的完整映射。
 按来源 `AvailableDate` 执行可见性检查；供应商后复权不自动等于分红再投资总回报，
 含息方式、因子基准及历史修订限制仍由来源说明与研究证据解释。
+
+V4 的非行情及周线观察通过 `observation_inputs: tuple[DatasetObservationInput, ...]` 声明，
+使用既有 DFLS 产品，不将指数伪装成股票，也不将成分权重或资金流拼成 OHLCV。
+`EquityInputBinding.observation_bindings` 保存完整请求和内容身份，原行情 `request_bindings` 格式保持。
+`prepare(..., execution=session)` 解析资金流交易日历、准备数据表并构建可见时间索引；
+`evaluate_many`、技术检验与 PTE 使用相同只读表视图，策略通过 `ctx.observations[name]` 读取。
+日期型来源须声明 `ObservationAvailability` 的时区、可用时间和必要日偏移，不默认视为当天午夜可用；
+平台按可用时间裁剪，策略仍须保留严格前日快照、滞后和信号计时等金融规则。
+
+冻结种子用 `FrozenDataAsset(relative_path, sha256)` 声明，配合固定历史边界进入资源清单；
+准备层经 DFLS `STRATEGY_FEATURE_EVIDENCE` 读取已认证资源，策略不直接读取研究目录。
+有资源的候选注册快照按完整内容身份隔离，部署根目录不进入策略定义身份。静态种子不随前瞻日延长。
+请求按完整选择身份去重，表格身份进入输入快照、worker 与恢复依赖，买持仍只依赖主交易输入。
+
+逐步策略显式设置 `planning_context=True` 时，`ctx.planning` 提供本次运行的预算费率和执行规范，
+可配合 `CycleBudget` 保留含费周期目标及部分成交补买。实际成交费用继续由执行层记账。
+默认不开启且不序列化新增空声明，已有 S018 原生定义身份保持；普通准备、升级不会隐式复算历史等价性。
 
 V4要求显式逐区间价格限制、可卖时点及余股清仓规则，延迟交收须有结算时间。
 来源准入见[DFLS](../../packages/dataflows/README.md#cnus版本化raw事实源)，执行语义见

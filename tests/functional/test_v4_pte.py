@@ -360,7 +360,7 @@ def test_rejected_flat_entry_releases_pending_budget_without_creating_cycle(tmp_
     store.close()
 
 
-def test_dependency_leg_plan_is_explicitly_rejected_without_adoption(tmp_path):
+def test_dependency_leg_cannot_reserve_unconfirmed_future_holdings(tmp_path):
     context,request,products,store,_,_=native_account(tmp_path,MarketId.US)
     request=replace_strategy(request,"from strategy_runtime import AccountDecision,AccountStepResult,StateRecord,ReplayOrder,ReplayLeg\n"
         "from strategy_runtime.contracts import OrderSide,OrderType\n"
@@ -371,7 +371,7 @@ def test_dependency_leg_plan_is_explicitly_rejected_without_adoption(tmp_path):
         "    return AccountStepResult(AccountDecision.from_facts(0,'legs',facts={'fixture':1},next_watch='next',legs=legs),cycle_values=StateRecord())\n")
     prepared=prepared_at(context,request,products)
     before=store.virtual_account('native')
-    with pytest.raises(ValueError,match='dependency legs are not supported'):
+    with pytest.raises(ValueError,match='sell legs exceed confirmed sellable'):
         AccountEngine(store,EquityAdviceClient(store),now=lambda:prepared.interval.start).refresh_account('native',prepared=prepared)
     assert store.virtual_account('native')==before
     assert not store.account_decisions('native')

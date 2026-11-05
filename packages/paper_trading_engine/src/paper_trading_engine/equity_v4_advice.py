@@ -74,7 +74,17 @@ def account_decision(store, prepared, account, actual_quantity, available_cash, 
         next_event_cursor=cursor)
     proposal, plan = result.proposal, result.plan
     if plan.legs:
-        raise ValueError("PTE V4 dependency legs are not supported by this recorded execution contract")
+        if tuple(leg.sequence for leg in plan.legs) != tuple(range(len(plan.legs))):
+            raise ValueError("V4 leg sequences must be contiguous")
+        for leg in plan.legs:
+            if not prepared.interval.start <= leg.submit_after < leg.submit_before <= prepared.interval.end:
+                raise ValueError("V4 leg is outside its declared execution interval")
+            if leg.dependency_sequence is not None and leg.dependency_required_status != "FILLED_ALL":
+                raise ValueError("V4 dependent legs require confirmed complete execution")
+        # Reserve existing inventory and cash. Future entry fills do not finance
+        # an exit at adoption; this preserves core-position rotation semantics.
+        if sum(leg.order.quantity for leg in plan.legs if leg.order.side.value == "SELL") > snapshot.sellable_quantity:
+            raise ValueError("V4 plan sell legs exceed confirmed sellable holdings")
     if plan.orders and len({order.side for order in plan.orders}) > 1:
         raise ValueError("V4 mixed-side orders require supported dependency execution")
     prior_budget = budget_from_dict(document["budget"])
@@ -140,7 +150,8 @@ def account_decision(store, prepared, account, actual_quantity, available_cash, 
     budget = budget_from_dict(after["budget"])
     if plan.capital_mode == "signal_cash_fraction" and budget is not None and exact_estimate > budget.cash_budget-budget.buy_cost_including_fees:
         raise ValueError("V4 orders exceed remaining cycle budget")
-    action = ("BUY" if any(order.side == "BUY" for order in all_orders) else "SELL") if all_orders else ("HOLD" if actual_quantity else "WAIT")
+    sides = {order.side for order in all_orders}
+    action = ("ROTATE" if len(sides) > 1 else "BUY" if "BUY" in sides else "SELL") if all_orders else ("HOLD" if actual_quantity else "WAIT")
     return AdviceDecision("advice.equity.v4", plan.plan_identity, candidate.instrument.symbol,
         prepared.available_through, trading_date, actual_quantity, plan.target_quantity, plan.target_quantity,
         plan.target_quantity-actual_quantity, action,

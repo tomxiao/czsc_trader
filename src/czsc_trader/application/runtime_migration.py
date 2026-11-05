@@ -24,13 +24,14 @@ from strategy_manager import freeze_contracts as f
 from strategy_manager.freeze_contracts import FrozenVersionReference
 from strategy_manager.write_lock import RegistryWriteLock
 from strategy_runtime import (
-    DecisionFeedback, RuntimeBinding, RuntimeBindingSpec, RuntimeDefinition, StrategyCandidate,
-    StrategyDefinition, StrategyRuntime, implementation_sha256,
+    DecisionFeedback, RuntimeBinding, RuntimeDefinition, StrategyCandidate,
+    StrategyDefinition, StrategyRuntime, implementation_sha256, EquityStrategyCandidate, EquityStrategyDefinition,
 )
 
 from .context import RepositoryContext
 from .runtime_acceptance import prospective_release
 from .strategy_runtime_service import validate_release_package
+from ._frozen_materials import candidate_install_files, candidate_binding_spec, package_manifest
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -364,7 +365,7 @@ def validate_frozen_observation_upgrade(
 @dataclass(frozen=True, slots=True)
 class FrozenRuntimeUpgradeRequest:
     original: FrozenVersionReference
-    candidate: StrategyCandidate
+    candidate: StrategyCandidate | EquityStrategyCandidate
     confirmation: f.ResearchEvidenceRef
     change_summary: str
     operator: str
@@ -372,11 +373,15 @@ class FrozenRuntimeUpgradeRequest:
     output_directory: Path
 
     def __post_init__(self):
-        for name, kind in (("original", FrozenVersionReference), ("candidate", StrategyCandidate),
+        for name, kind in (("original", FrozenVersionReference),
                            ("confirmation", f.ResearchEvidenceRef),
                            ("output_directory", Path)):
             if not isinstance(getattr(self, name), kind):
                 raise TypeError(f"{name} requires {kind.__name__}")
+        if not isinstance(self.candidate, (StrategyCandidate, EquityStrategyCandidate)):
+            raise TypeError('candidate requires StrategyCandidate or native EquityStrategyCandidate')
+        if isinstance(self.candidate, EquityStrategyCandidate) and self.candidate.definition.contract_version != 4:
+            raise ValueError('equity runtime upgrades require native account contract 4')
         if self.original.strategy_id != self.candidate.strategy_family_id:
             raise ValueError("upgrade source and candidate family differ")
         for name in ("change_summary", "operator"):
@@ -563,14 +568,13 @@ def _upgrade_inputs(context, request):
 
 def _upgrade_materials(candidate, stored):
     """Build package bytes from one explicit source closure, without inspection."""
-    definition = StrategyRuntime().describe(candidate)
     payload = json.loads(json.dumps(dict(candidate.payload), default=dict))
     version = replace(stored, strategy_payload=payload,
                       release_hash="0" * 64)
     version = replace(version, release_hash=canonical_sha256(version.release_payload()))
-    names = tuple(candidate.payload["runtime"]["source_files"])
-    binding = RuntimeBinding(version.release_id, version.release_hash,
-        RuntimeBindingSpec(names, definition.implementation.source_sha256, names, definition.observation.sha256))
+    names = candidate_install_files(candidate)
+    spec = candidate_binding_spec(candidate)
+    binding = RuntimeBinding(version.release_id, version.release_hash, spec)
     files = {"runtime_binding.json": _upgrade_json(binding.to_dict())}
     for name in names:
         path = candidate.source_root / name
@@ -579,19 +583,19 @@ def _upgrade_materials(candidate, stored):
         files[f"src/strategy_runtime/{name}"] = path.read_bytes()
     # Recheck after reading: the loaded declaration and copied implementation
     # must describe the same source bytes.
-    if implementation_sha256(names, source_root=candidate.source_root) != definition.implementation.source_sha256:
-        raise ValueError("upgrade candidate changed during preparation")
+    if isinstance(candidate, EquityStrategyCandidate):
+        candidate.verify()
+        content_identity = candidate.content_identity
+    else:
+        if implementation_sha256(spec.source_files, source_root=candidate.source_root) != spec.implementation_sha256:
+            raise ValueError("upgrade candidate changed during preparation")
+        content_identity = StrategyRuntime().identify(candidate, dependencies=())
     identity = {"candidate": CandidateKey(candidate.strategy_family_id, candidate.candidate_id).to_dict(),
                 "payload_sha256": canonical_sha256(payload),
-                "content_sha256": StrategyRuntime().identify(candidate, dependencies=()).content_sha256,
-                "source_sha256": definition.implementation.source_sha256}
-    manifest = {"schema_version": 1, "strategy_version_id": version.release_id,
-        "strategy_version_hash": version.release_hash,
-        "source_candidate_id": f"{version.strategy_id}-{version.source_candidate}",
-        "candidate_package_hash": canonical_sha256(identity), "runtime_root": "src/strategy_runtime",
-        "runtime_binding": "runtime_binding.json",
-        "files": {name: sha256(data).hexdigest() for name, data in files.items()}}
-    manifest["package_hash"] = canonical_sha256(manifest)
+                "content_sha256": content_identity.content_sha256,
+                "source_sha256": spec.implementation_sha256}
+    manifest = package_manifest(version, canonical_sha256(identity),
+                                {name: sha256(data).hexdigest() for name, data in files.items()})
     files["release_manifest.json"] = _upgrade_json(manifest)
     return version, manifest, files, identity
 
@@ -704,8 +708,12 @@ def apply_frozen_runtime_upgrade(
     reference = f"{family}-{number}"
     staged_version = stage / family / "versions" / f"{number}.json"
     staged_payload = json.loads(staged_version.read_bytes())["strategy_payload"]
-    candidate = StrategyCandidate(family, plan["candidate"]["candidate_id"], staged_payload,
-                                 stage / family / "releases" / number / "src/strategy_runtime")
+    source = stage / family / "releases" / number / "src/strategy_runtime"
+    if staged_payload['runtime'].get('kind') == 'ACCOUNT_REPLAY':
+        candidate = EquityStrategyCandidate(family, plan['candidate']['candidate_id'],
+            EquityStrategyDefinition.from_dict(staged_payload['equity_definition']), source)
+    else:
+        candidate = StrategyCandidate(family, plan["candidate"]["candidate_id"], staged_payload, source)
     if plan["candidate"]["strategy_id"] != family:
         raise ValueError("upgrade candidate family differs from preparation")
     request = FrozenRuntimeUpgradeRequest(prepared.original, candidate,

@@ -158,7 +158,7 @@ def run_account_v4(prepared, candidate, executor, *, start, end, fee_rate, initi
             batch_inputs[tick[1]] = current
             point,features,history,views,session,available,suppressed = current
             if not suppressed:
-                observations.append(BatchObservation(point,features,history,views,session if definition.session_context else None,available if definition.session_context else None))
+                observations.append(BatchObservation(point,features,history,views,session if definition.session_context else None,available if definition.session_context else None,engine.table_views(point.decision_at)))
                 batch_ticks.append(tick[1])
         outputs=candidate.calculate_account_batch(BatchAccountContext(tuple(observations),definition.parameters))
         batch=dict(zip(batch_ticks,outputs,strict=True))

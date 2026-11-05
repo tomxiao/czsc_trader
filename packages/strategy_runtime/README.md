@@ -1,5 +1,39 @@
 # 策略运行时（Strategy Runtime，SRT）
 
+## V4 数据表观察与规划上下文
+
+`EquityStrategyDefinition.observation_inputs` 声明 `DatasetObservationInput`，用于现有 DFLS 周线、
+指数、成分权重、资金流、宏观、ETF份额及冻结种子产品。它与 `auxiliary_inputs` 行情及
+`execution_input` 执行报价分开；指数不伪装成股票，成分面板不伪造 OHLCV。
+声明包含产品、标的、频率、覆盖要求、可选固定历史边界和发布时间假设。
+`DatasetObservationBinding(input, request, content_sha256)` 保存精确请求与数据身份，放入
+`EquityInputBinding.observation_bindings`；原股票 `request_bindings` 编码保持不变。
+显式请求可在抓取前调用 `input.validate_request(request)`；同一物理请求不能绑定不同内容指纹。
+
+`PreparedObservationTable.from_frame(frame, identity, declaration=...)` 读取 DFLS 时间契约和复合主键，
+允许同日多只证券，拒绝重复键、缺少时间及源时间晚于可用时间。
+日期型、无时区的可用时间必须显式声明 `ObservationAvailability(timezone, available_time, day_offset)`，
+不能默认日期午夜已知；声明属于研究输入假设，不把它描述成已核实的供应商发布时间。
+带时区的可用时间按原值保留。平台通过 `TableHistoryView` 只提供当前决策时刻已可得的只读行；
+`to_frame()` 返回独立副本。`minimum_observations` 按行数，`minimum_sessions` 按源日期数核对；
+可选 `max_staleness_days` 明确约束最新源日期。
+S003 的严格前日快照、SPX 对齐及既有填充规则仍由策略表达。
+
+`PreparedReplay.from_frames(..., observation_tables={alias: prepared_table})` 接入相同回放内核；
+状态策略读 `AccountStepContext.observations`，批量策略读每个 `BatchObservation.observations`。
+准备阶段构建时间索引，视图复用不可变行；相同决策时点复用视图。
+
+冻结 CSV 用 `FrozenDataAsset(relative_path, sha256)` 声明，定义通过 `frozen_assets` 汇总；
+资源相对候选源根目录，路径必须在包内且不能经过链接。资源进入候选定义和发布清单，
+声明同时拒绝大小写不同但在 Windows 上指向同一文件的资源路径。
+不加入只允许 Python 的 `source_files`，也不改变 `source_sha256` 的代码闭包含义。
+冻结种子必须声明固定起止日期；准备层通过现有 DFLS evidence 产品读取，策略不得自行读磁盘。
+
+`planning_context=True` 仅适用于 `STATEFUL_STEP`。此时 `ctx.planning` 是
+`AccountPlanningContext(fee_rate, execution_spec)`，由运行环境提供本次预算费率及执行规范，
+用于保持含费周期目标和补单规则；实际成交费用仍由执行报告记账。
+未声明时 `ctx.planning is None`。新增字段为空或关闭时不序列化，已有 S018 定义和内容身份不变。
+
 ## 共用账户回放内核
 
 `replay_kernel.run_account_replay(points, driver)` 是批量历史策略和显式状态策略共用的逐步运行器。
@@ -586,9 +620,11 @@ SRT物化版本化观察事实；新解释使用`strategy_observation.v4`，旧v
 TDR和PTE通过共享图表组件渲染回测及前瞻图，冻结包不绑定策略绘图代码。
 
 同版本升级由TDR的`prepare_frozen_runtime_upgrade`和`apply_frozen_runtime_upgrade`组织。
-输入为强类型`StrategyCandidate`，不强制先登记候选或取得技术检验PASS；SRT负责生成及校验新包的
-源码闭包、运行绑定和观察身份。TDR归档旧包、授权与验证材料并记录提交事实，不裁决研究结论。
-升级回执`COMMITTED`不授予PTE资格；新发布哈希的准入、部署及账户改绑另行处理。
+输入为强类型`StrategyCandidate`或原生V4的`EquityStrategyCandidate`，不强制先登记候选或取得技术检验PASS；
+SRT负责校验源码闭包、独立声明的数据资源、运行绑定和观察身份。首次冻结与同版本升级共用材料构建规则。
+数据资源纳入`install_files`及发布清单，Python源码哈希仍只覆盖`source_files`。
+TDR归档旧包、授权与验证材料并记录提交事实，不裁决研究结论。升级同步已有本地安装记录的精确哈希，
+但`COMMITTED`不授予PTE资格、不修改生产账户；新发布哈希的准入、部署及账户改绑另行处理。
 
 冻结版本的可用性以当前治理事实和TDR `strategy_info` API查询为准，不以本说明中的历史版本清单判断。
 

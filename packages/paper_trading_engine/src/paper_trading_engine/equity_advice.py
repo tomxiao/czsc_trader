@@ -59,20 +59,30 @@ class PreparedEquityAction:
 def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *, fee_rate, live=False):
     """Read pinned products and authenticate their identities before a normal PTE decision."""
     import pandas as pd
+    from strategy_runtime.dataset_observations import PreparedObservationTable
     if type(binding) is not EquityInputBinding or type(candidate) is not EquityStrategyCandidate:
         raise TypeError("equity preparation requires typed candidate and binding")
     if (binding.instrument != candidate.instrument or binding.specification_hash != candidate.execution_spec_hash
             or binding.warmup_bars != candidate.warmup_bars
-            or tuple(x.input for x in binding.auxiliary_inputs) != candidate.definition.auxiliary_inputs):
+            or tuple(x.input for x in binding.auxiliary_inputs) != candidate.definition.auxiliary_inputs
+            or tuple(x.input for x in binding.observation_bindings) != candidate.definition.observation_inputs):
         raise ValueError("equity preparation differs from candidate contract")
     identities = binding.expected_identities
     products = {}
     calendars = {}
     metadata = {}
+    observations = {}
     for name, request in binding.bind_requests(requests):
         fetched = dataflows.fetch(request, prepared=binding.prepared)
         if not fetched.ready or name in products or fetched.identity.content_sha256 != identities.get(name):
             raise ValueError("equity preparation product identity differs")
+        metadata[name] = fetched.identity.metadata
+        products[name] = fetched.dataframe
+        if name.startswith('observation:'):
+            declaration = next(item for item in candidate.definition.observation_inputs if item.data_key() == name)
+            observations[declaration.name] = PreparedObservationTable.from_frame(
+                fetched.dataframe, fetched.identity, declaration=declaration)
+            continue
         role = name.rsplit(':', 1)[0] if ':' in name else 'primary'
         calendar = fetched.identity.metadata["sessions"]
         if live:
@@ -154,6 +164,7 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
         replay = PreparedReplay.from_frames(history if live else bars, constraints, candidate.definition.feature_graph,
             latency_seconds=candidate.definition.execution_spec.data_latency_seconds,
             auxiliary_histories={item.name: products[item.data_key(EquityProduct.BARS)] for item in candidate.definition.auxiliary_inputs},
+            observation_tables=observations,
             sessions=products['sessions'], trading_sessions=sessions_from_metadata(metadata['sessions']),
             frequency=candidate.definition.execution_spec.decision_clock, timezone=candidate.instrument.timezone)
         v4_constraint = {"SellRemainderPolicy": str(last.SellRemainderPolicy),

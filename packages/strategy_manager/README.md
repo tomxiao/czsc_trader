@@ -4,6 +4,11 @@ SM提供研究登记、冻结发布及生命周期所需的强类型契约和存
 研究员从[公共导出](src/strategy_manager/__init__.py)导入契约，经[TDR业务API](../../src/czsc_trader/README.md)
 执行登记、决定留痕和冻结；SM存储API供平台实现使用。
 
+原生V4候选可声明包内冻结数据资源。登记快照的`source_files`保留完整安装文件证据，
+运行描述的`source_files/source_sha256`仍仅表示Python源码闭包；资源路径及哈希来自
+`equity_definition.observation_inputs[*].asset`，SM检查声明与实际快照精确匹配。
+同版本升级保留原选型历史，改变内容身份后，旧发布哈希的资格事件不会授予新内容资格。
+
 ## 公共契约与API
 
 | 工作 | 强类型契约 | 平台存储API |

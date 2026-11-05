@@ -6,11 +6,11 @@ import shutil
 import time
 from uuid import uuid4
 
-from strategy_manager import StrategyRegistry, StrategyVersion, canonical_sha256
+from strategy_manager import StrategyRegistry, StrategyVersion
 from strategy_manager import freeze_contracts as f
 from strategy_manager.freeze_store import FreezeVersionRequest
 from strategy_manager.write_lock import RegistryWriteLock
-from strategy_runtime import StrategyRuntime, RuntimeBinding, RuntimeBindingSpec
+from strategy_runtime import RuntimeBinding, RuntimeBindingSpec
 from strategy_runtime.contracts import StrategyIdentity
 from strategy_runtime.deployment import validate_release_package
 from strategy_runtime.inspection import (InspectionControl, InspectionStage,
@@ -19,6 +19,7 @@ from paper_trading_engine.inspection import PteReleaseInspectionRequest, inspect
 from .context import RepositoryContext
 from .candidate_service import _registered_root
 from ._inspection_candidate import _load_inspection_candidate
+from ._frozen_materials import candidate_binding_spec, package_manifest
 from .research_evidence import (record_decision, read_decision, validate_inspection, validate_approval,
     build_version_from_plan, validate_migration_selection, validate_migration_target, validate_migration_files)
 from .inspection_contracts import CandidateInspectionRequest, InspectionPublicationError, InspectionInputError
@@ -115,16 +116,8 @@ def _copy_plan(context, request, registration, store, origin):
                   for ref in registration.source_files)
     files += tuple(f.FreezeFile(item.path, store.put(item.source.resolve(context.root).read_bytes()))
                    for item in request.additional_files)
-    definition = StrategyRuntime().describe(_load_inspection_candidate(context, registration.key))
-    from strategy_runtime.equity_definition import EquityStrategyDefinition
-    if type(definition) is EquityStrategyDefinition:
-        binding = RuntimeBindingSpec(tuple(x.path.removeprefix(prefix) for x in registration.source_files),
-            definition.source_sha256, tuple(x.path for x in files),
-            canonical_sha256({"contract": "equity-account-v4" if definition.contract_version == 4 else "equity-decision-v2",
-                              "definition": definition.to_dict()}))
-    else:
-        binding = RuntimeBindingSpec(tuple(x.path.removeprefix(prefix) for x in registration.source_files),
-            definition.implementation.source_sha256, tuple(x.path for x in files), definition.observation.sha256)
+    candidate = _load_inspection_candidate(context, registration.key)
+    binding = candidate_binding_spec(candidate, tuple(x.path for x in files))
     target = request.target
     return f.FreezePlan(origin, target.version, target.parent_version, target.change_summary,
         registration.origin.experiment_id, target.selection_data_cutoff, target.forward_start,
@@ -145,12 +138,7 @@ def _package(context, plan, store, repository, selection_subject=None):
     (package / "runtime_binding.json").write_bytes(_bytes(binding.to_dict()))
     files = tuple(f.FreezeFile(p.relative_to(package).as_posix(), store.put(p.read_bytes()))
                   for p in sorted(package.rglob("*")) if p.is_file())
-    manifest = {"schema_version": 1, "strategy_version_id": version.release_id,
-        "strategy_version_hash": version.release_hash,
-        "source_candidate_id": f"{version.strategy_id}-{version.source_candidate}",
-        "candidate_package_hash": plan.sha256, "runtime_root": "src/strategy_runtime",
-        "runtime_binding": "runtime_binding.json", "files": {x.path: x.source.sha256 for x in files}}
-    manifest["package_hash"] = canonical_sha256(manifest)
+    manifest = package_manifest(version, plan.sha256, {x.path: x.source.sha256 for x in files})
     (package / "release_manifest.json").write_bytes(_bytes(manifest))
     (root / "versions").mkdir()
     (root / "versions" / f"{version.version}.json").write_bytes(_bytes(version.to_dict()))

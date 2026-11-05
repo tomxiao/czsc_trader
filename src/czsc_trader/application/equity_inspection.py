@@ -9,6 +9,7 @@ from uuid import uuid4
 
 import pandas as pd
 from dataflows import Dataflows, DataSpace, ProviderConfig, ProviderKey, ProviderBinding, PreparePolicy, EquityProduct
+from dataflows.equity_contracts import EquityParameters
 from dataflows.equity_data import sessions_from_metadata
 from strategy_runtime import EquityStrategyCandidate, EquityStrategyDefinition, StrategyRuntime, canonical_sha256
 from strategy_runtime.inspection import InspectionRuntimePermit, InspectionStage
@@ -35,19 +36,23 @@ def replay_identity(replay, runtime_kind='US_EQUITY'):
 
 
 def _products(flows, replay):
+    from strategy_runtime.observation_preparation import observation_identity
     expected = replay.input_binding.expected_identities
     products, identities, calendars = {}, {}, {}
     for name, query in replay.input_binding.bind_requests(replay.requests):
         result = flows.fetch(query, prepared=replay.input_binding.prepared)
         if name in products or not result.ready or result.identity.content_sha256 != expected[name]:
             raise ValueError('inspection prepared input identity differs')
+        products[name] = result.dataframe
+        identities[name] = {'content_sha256': result.identity.content_sha256, 'metadata': dict(result.identity.metadata)}
+        if name.startswith('observation:'):
+            identities[name]['observation_identity'] = observation_identity(result.identity)
+            continue
         role = name.rsplit(':', 1)[0] if ':' in name else 'primary'
         calendar = result.identity.metadata['sessions']
         if role in calendars and calendars[role] != calendar:
             raise ValueError('inspection input calendars differ')
         calendars[role] = calendar
-        products[name] = result.dataframe
-        identities[name] = {'content_sha256': result.identity.content_sha256, 'metadata': dict(result.identity.metadata)}
     if set(products) != set(expected):
         raise ValueError('inspection product coverage differs')
     return products, identities
@@ -65,6 +70,8 @@ def replay_account(candidate, flows, replay):
         raise ValueError('technical replay warmup differs')
     if candidate.definition.auxiliary_inputs != tuple(x.input for x in replay.input_binding.auxiliary_inputs):
         raise ValueError('technical replay auxiliary contract differs')
+    if candidate.definition.observation_inputs != tuple(x.input for x in replay.input_binding.observation_bindings):
+        raise ValueError('technical replay observation contract differs')
     execution = replay.input_binding.execution_input
     if candidate.definition.execution_input != (None if execution is None else execution.input):
         raise ValueError('technical replay execution input contract differs')
@@ -98,13 +105,15 @@ def _replay_account_v4(candidate, replay, products, identities):
     """Explicit technical replay uses the same authoritative V4 runtime and TXE."""
     from strategy_runtime.equity_replay import PreparedReplay, run_replay
     from trading_execution_engine import PortfolioHistoricalExecutor
+    from strategy_runtime.observation_preparation import prepare_observation_tables
     definition = candidate.definition
     spec = definition.execution_spec
     prepared = PreparedReplay.from_frames(products['bars'], products['constraints'], definition.feature_graph,
         latency_seconds=spec.data_latency_seconds, frequency=spec.decision_clock,
         timezone=candidate.instrument.timezone, sessions=products['sessions'],
         trading_sessions=sessions_from_metadata(identities['sessions']['metadata']),
-        auxiliary_histories={item.name: products[item.data_key(EquityProduct.BARS)] for item in definition.auxiliary_inputs})
+        auxiliary_histories={item.name: products[item.data_key(EquityProduct.BARS)] for item in definition.auxiliary_inputs},
+        observation_tables=prepare_observation_tables(definition.observation_inputs, products, identities))
     from strategy_runtime import StrategyComputation, check_account_batch_consistency
     batch_consistency = {'status': 'NOT_APPLICABLE'}
     if definition.computation is StrategyComputation.BATCH_HISTORY:
@@ -202,19 +211,26 @@ def _baseline_matches(payload, replay, account, content_hash, candidate_key):
 
 
 def _copy_inputs(flows, replay, workspace):
+    def source_selection(query):
+        # DFLS strips consumer coverage/cutoff before calling the provider.
+        return (query.dataset, query.symbol, query.start, query.end, query.frequency, query.parameters)
     products, identities = _products(flows, replay)
     # DFLS normalizes subclasses to DataRequest before invoking a provider;
     # EquityParameters retains the complete instrument/source/bounded query.
-    requests = {q.parameters: name for name, q in replay.input_binding.bind_requests(replay.requests)}
+    requests = {source_selection(q): name for name, q in replay.input_binding.bind_requests(replay.requests)}
     def fetch(request):
-        if request.parameters not in requests:
+        key = source_selection(request)
+        if key not in requests:
             raise ValueError('isolated equity request differs from authenticated input')
-        name = requests[request.parameters]
+        name = requests[key]
         return products[name].copy(deep=True), dict(identities[name]['metadata'])
     bindings = {ProviderKey(q.parameters.query.product, q.parameters.instrument.market, q.parameters.source):
-                ProviderBinding(q.parameters.source.provider, q.parameters.source.revision, fetch) for q in replay.requests}
+                ProviderBinding(q.parameters.source.provider, q.parameters.source.revision, fetch) for q in replay.requests
+                if type(q.parameters) is EquityParameters}
+    observations = {q.dataset: ProviderBinding('inspection', 'v1', fetch) for q in replay.requests
+                    if type(q.parameters) is not EquityParameters}
     target = Dataflows(base_dir=workspace, space=DataSpace(Path('inputs/equity/data')),
-                      providers=ProviderConfig(equity_bindings=bindings))
+                      providers=ProviderConfig(equity_bindings=bindings, bindings=observations))
     prepared = target.prepare(replay.requests, policy=PreparePolicy.REFRESH)
     if not prepared.ready:
         raise ValueError('isolated equity preparation failed: ' + '; '.join(
@@ -260,7 +276,8 @@ def inspect_equity_candidate(context, request, control, registration, selection)
                 raise ValueError('V4 technical equivalence compares candidate and package; legacy evaluation baseline is unsupported')
             if pd.Timestamp(replay.window.end).tz_convert(candidate.instrument.timezone).date() > request.target.selection_data_cutoff:
                 raise ValueError('equity replay exceeds selection cutoff')
-            if any(q.parameters.query.end > request.target.selection_data_cutoff for q in replay.requests):
+            if any((q.parameters.query.end if type(q.parameters) is EquityParameters else pd.Timestamp(q.end).date())
+                   > request.target.selection_data_cutoff for q in replay.requests):
                 raise ValueError('equity technical inputs exceed selection cutoff')
             _products(request.research.data, replay)
         plan = _copy_plan(context, request, registration, store, origin)

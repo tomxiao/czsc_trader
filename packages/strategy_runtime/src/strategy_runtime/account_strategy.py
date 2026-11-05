@@ -8,9 +8,10 @@ from enum import StrEnum
 from dataflows import TimeInterval, TradingSession
 from .signal_explanation import SignalExplanationSnapshot
 from .replay_contracts import AccountSnapshot, ReplayOrder, ReplayLeg, CycleBudget
-from .equity import EquityPortfolio, DecisionPoint
+from .equity import EquityPortfolio, DecisionPoint, ResearchExecutionSpec
 from .equity_replay import StateRecord, StrategyState
 from .equity_features import FeatureView, HistoryView
+from .dataset_observations import TableHistoryView
 
 
 class RecognizedEventKind(StrEnum):
@@ -177,6 +178,26 @@ class AccountStepResult:
 
 
 @dataclass(frozen=True, slots=True)
+class AccountPlanningContext:
+    fee_rate: float
+    execution_spec: ResearchExecutionSpec
+
+    def __post_init__(self):
+        if type(self.fee_rate) not in (float, int) or not math.isfinite(self.fee_rate) or not 0 <= self.fee_rate < 1:
+            raise ValueError('planning fee must be finite in [0,1)')
+        if type(self.execution_spec) is not ResearchExecutionSpec:
+            raise TypeError('planning requires a typed execution specification')
+
+
+def _observation_views(values, when):
+    from types import MappingProxyType
+    if not isinstance(values, Mapping) or any(type(name) is not str or type(view) is not TableHistoryView or view.as_of != when
+                                            for name, view in values.items()):
+        raise ValueError('table observations must belong to current decision')
+    return MappingProxyType(dict(values))
+
+
+@dataclass(frozen=True, slots=True)
 class AccountStepContext:
     point: DecisionPoint
     portfolio: EquityPortfolio
@@ -190,10 +211,15 @@ class AccountStepContext:
     auxiliary_histories: Mapping = field(default_factory=dict)
     session: TradingSession | None = None
     session_available_at: datetime | None = None
+    observations: Mapping[str, TableHistoryView] = field(default_factory=dict)
+    planning: AccountPlanningContext | None = None
 
     def __post_init__(self):
         from .equity_definition import _freeze
         from types import MappingProxyType
+        object.__setattr__(self, 'observations', _observation_views(self.observations, self.point.decision_at))
+        if self.planning is not None and type(self.planning) is not AccountPlanningContext:
+            raise TypeError('planning requires AccountPlanningContext')
         if type(self.point) is not DecisionPoint or type(self.portfolio) is not EquityPortfolio:
             raise TypeError('account step requires confirmed portfolio and point')
         if type(self.account) is not AccountSnapshot or type(self.position) is not PositionFeedback:
@@ -235,8 +261,10 @@ class BatchObservation:
     auxiliary_histories: Mapping = field(default_factory=dict)
     session: TradingSession | None = None
     session_available_at: datetime | None = None
+    observations: Mapping[str, TableHistoryView] = field(default_factory=dict)
 
     def __post_init__(self):
+        object.__setattr__(self, 'observations', _observation_views(self.observations, self.point.decision_at))
         if type(self.point) is not DecisionPoint or type(self.features) is not FeatureView or type(self.history) is not HistoryView:
             raise TypeError('batch observations require typed causal views')
         if self.features.as_of != self.point.decision_at or self.history.as_of != self.point.decision_at:

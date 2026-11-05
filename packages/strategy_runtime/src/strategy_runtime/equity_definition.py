@@ -24,6 +24,7 @@ from dataflows import (InstrumentId, MarketId, AssetClass, BarFrequency, Prepare
 from dataflows.equity_contracts import EquityParameters
 from .identity import CandidateContentIdentity, ImplementationDependency
 from .models import canonical_sha256
+from .dataset_observations import DatasetObservationInput, DatasetObservationBinding
 from .signal_explanation import SignalExplanationSnapshot, SignalBasisSnapshot
 from .equity import (ResearchExecutionSpec, UsEquitySpec, CnEquitySpec, AccountPolicy,
                      CashAvailabilityPolicy, ExecutionModel, EquityPortfolio, DecisionPoint)
@@ -273,9 +274,14 @@ class EquityInputBinding:
     auxiliary_inputs: tuple[EquityAuxiliaryBinding, ...] = ()
     execution_input: ExecutionInputBinding | None = None
     request_bindings: tuple[tuple[str, EquityParameters], ...] = ()
+    observation_bindings: tuple[DatasetObservationBinding, ...] = ()
 
     def to_dict(self):
         result = asdict(self)
+        if self.observation_bindings:
+            result['observation_bindings'] = [item.to_dict() for item in self.observation_bindings]
+        else:
+            result.pop('observation_bindings')
         result['prepared']['space_id'] = str(self.prepared.space_id)
         result['prepared']['preparation_id'] = str(self.prepared.preparation_id)
         if not self.auxiliary_inputs:
@@ -293,6 +299,7 @@ class EquityInputBinding:
     @property
     def expected_identities(self):
         result = dict(self.content_identities)
+        result.update((item.input.data_key(), item.content_sha256) for item in self.observation_bindings)
         for binding in self.auxiliary_inputs:
             result[binding.input.data_key(EquityProduct.BARS)] = binding.bars_sha256
             result[binding.input.data_key(EquityProduct.SESSIONS)] = binding.sessions_sha256
@@ -302,6 +309,11 @@ class EquityInputBinding:
         return MappingProxyType(result)
 
     def request_key(self, request: EquityDataRequest) -> str:
+        matches = [item.input.data_key() for item in self.observation_bindings if item.request == request]
+        if matches:
+            if len(matches) != 1:
+                raise ValueError('request has shared observation roles; bind the complete request set')
+            return matches[0]
         if type(request) is not EquityDataRequest:
             raise TypeError('equity binding requires a typed request')
         p = request.parameters
@@ -328,6 +340,16 @@ class EquityInputBinding:
 
     def bind_requests(self, requests: tuple[EquityDataRequest, ...]) -> tuple[tuple[str, EquityDataRequest], ...]:
         """Resolve logical roles, allowing one physical calendar to serve multiple roles."""
+        if self.observation_bindings:
+            from dataflows import DataRequest
+            if type(requests) is not tuple or any(not isinstance(x, DataRequest) for x in requests):
+                raise TypeError('binding requires typed product requests')
+            observation_requests = tuple(item.request for item in self.observation_bindings)
+            if any(request not in requests for request in observation_requests):
+                raise ValueError('requests omit declared observations')
+            equity_requests = tuple(item for item in requests if item not in observation_requests)
+            base = replace(self, observation_bindings=()).bind_requests(equity_requests)
+            return base + tuple((item.input.data_key(), item.request) for item in self.observation_bindings)
         if type(requests) is not tuple or any(type(x) is not EquityDataRequest for x in requests):
             raise TypeError('binding requires typed product requests')
         if not self.request_bindings:
@@ -367,9 +389,19 @@ class EquityInputBinding:
             bindings.append((key, EquityParameters(InstrumentId(**instrument),
                 SourceRef(**parameters['source']), EquityQuery(**query))))
         value['request_bindings'] = tuple(bindings)
+        value['observation_bindings'] = tuple(DatasetObservationBinding.from_dict(x) for x in value.get('observation_bindings', ()))
         return cls(**value)
 
     def __post_init__(self):
+        if type(self.observation_bindings) is not tuple or any(type(x) is not DatasetObservationBinding for x in self.observation_bindings):
+            raise TypeError('observation bindings require typed entries')
+        if len({x.input.name for x in self.observation_bindings}) != len(self.observation_bindings):
+            raise ValueError('duplicate observation alias')
+        observation_identities = {}
+        for item in self.observation_bindings:
+            previous = observation_identities.setdefault(item.request, item.content_sha256)
+            if previous != item.content_sha256:
+                raise ValueError('shared observation request has inconsistent content identities')
         if type(self.auxiliary_inputs) is not tuple or any(type(x) is not EquityAuxiliaryBinding for x in self.auxiliary_inputs):
             raise TypeError('typed auxiliary bindings required')
         if self.execution_input is not None and (type(self.execution_input) is not ExecutionInputBinding or self.execution_input.input.instrument!=self.instrument):
@@ -399,7 +431,7 @@ class EquityInputBinding:
             raise ValueError('adjusted observations require explicit request bindings')
         if self.request_bindings:
             roles = dict(self.request_bindings)
-            identities = self.expected_identities
+            identities = {key: value for key, value in self.expected_identities.items() if not key.startswith('observation:')}
             primary_roles = dict(self.content_identities)
             if len(roles) != len(self.request_bindings) or set(roles) != set(identities):
                 raise ValueError('request bindings must cover exact product roles')
@@ -446,9 +478,20 @@ class EquityStrategyDefinition:
     computation: object | None = None
     execution_input: ExecutionInput | None = None
     initial_account: object | None = None
+    observation_inputs: tuple[DatasetObservationInput, ...] = ()
+    planning_context: bool = False
 
     def __post_init__(self):
         import re
+        if type(self.observation_inputs) is not tuple or any(type(x) is not DatasetObservationInput for x in self.observation_inputs):
+            raise TypeError('definition requires typed observation inputs')
+        if len({x.name for x in self.observation_inputs}) != len(self.observation_inputs):
+            raise ValueError('duplicate observation alias')
+        if type(self.planning_context) is not bool:
+            raise TypeError('planning context declaration requires bool')
+        if self.contract_version != 4 and (self.observation_inputs or self.planning_context):
+            raise ValueError('dataset observations and planning context require V4')
+        self.frozen_assets
         if type(self.contract_version) is not int or self.contract_version not in (2, 4) or type(self.execution_spec) is not ResearchExecutionSpec:
             raise ValueError("unsupported equity definition contract")
         if self.contract_version == 4:
@@ -461,6 +504,8 @@ class EquityStrategyDefinition:
         elif self.feature_graph is not None or self.state_schema is not None:
             raise ValueError('equity V2 cannot declare account replay features or state')
         from .replay_contracts import StrategyComputation
+        if self.planning_context and self.computation is not StrategyComputation.STATEFUL_STEP:
+            raise ValueError('planning context requires STATEFUL_STEP')
         from dataflows import BarFrequency
         if self.contract_version == 4:
             if type(self.computation) is not StrategyComputation:
@@ -559,11 +604,32 @@ class EquityStrategyDefinition:
                                         canonical_sha256([asdict(x) for x in self.dependencies]))
 
     @property
+    def frozen_assets(self):
+        assets = {}
+        paths = {}
+        for item in self.observation_inputs:
+            if item.asset is None:
+                continue
+            previous_path = paths.setdefault(item.asset.relative_path.casefold(), item.asset.relative_path)
+            if previous_path != item.asset.relative_path:
+                raise ValueError('frozen asset paths conflict on case-insensitive filesystems')
+            existing = assets.setdefault(item.asset.relative_path, item.asset)
+            if existing != item.asset:
+                raise ValueError('frozen asset path has conflicting identities')
+        return tuple(assets[key] for key in sorted(assets))
+
+    @property
     def parameters(self):
         return _freeze(json.loads(self.parameters_json))
 
     def to_dict(self):
         result = {"runtime_kind": "ACCOUNT_REPLAY" if self.contract_version == 4 else "US_EQUITY", **asdict(self)}
+        if self.observation_inputs:
+            result['observation_inputs'] = [item.to_dict() for item in self.observation_inputs]
+        else:
+            result.pop('observation_inputs')
+        if not self.planning_context:
+            result.pop('planning_context')
         if self.contract_version != 4:
             result.pop("computation")
         else:
@@ -599,6 +665,7 @@ class EquityStrategyDefinition:
         value['source_files'] = tuple(value['source_files'])
         value['dependencies'] = tuple(ImplementationDependency(**x) for x in value['dependencies'])
         value['auxiliary_inputs'] = tuple(EquityAuxiliaryInput.from_dict(x) for x in value.get('auxiliary_inputs', ()))
+        value['observation_inputs'] = tuple(DatasetObservationInput.from_dict(x) for x in value.get('observation_inputs', ()))
         if value.get('contract_version', 2) == 4:
             from .equity_features import FeatureGraph
             from .equity_replay import StrategyStateSchema
@@ -666,6 +733,8 @@ class EquityStrategyCandidate:
                 'equity_definition': self.definition.to_dict()}
 
     def verify(self):
+        for asset in self.definition.frozen_assets:
+            asset.resolve(self.source_root)
         if equity_source_hash(self.source_root, self.definition.source_files) != self.definition.source_sha256:
             raise ValueError('equity source closure changed')
         for dep in self.definition.dependencies:

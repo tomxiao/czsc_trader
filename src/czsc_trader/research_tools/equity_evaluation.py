@@ -12,7 +12,7 @@ from hashlib import sha256
 import platform
 
 import pandas as pd
-from dataflows import (EquityDataRequest, EquityProduct, EquityQuery, PreparedDataRef, SourceRef, TimeInterval)
+from dataflows import (DataRequest, EquityDataRequest, EquityProduct, EquityQuery, PreparedDataRef, SourceRef, TimeInterval)
 from strategy_runtime.equity import equity_hash
 from strategy_runtime.runtime import StrategyRuntime
 from strategy_runtime.equity_definition import EquityStrategyCandidate, EquityInputBinding
@@ -57,6 +57,7 @@ class EquityEvaluationRequest:
     lineage: object | None = field(default=None, kw_only=True)
     input_binding: EquityInputBinding | None = field(default=None, kw_only=True)
     audit_inputs_sha256: str | None = field(default=None, kw_only=True)
+    observation_requests: tuple[DataRequest, ...] = field(default=(), kw_only=True)
 
     def __post_init__(self):
         import math
@@ -92,6 +93,12 @@ class EquityEvaluationRequest:
             raise TypeError("prepared requires PreparedDataRef")
         if self.input_binding is not None and (type(self.input_binding) is not EquityInputBinding or self.input_binding.prepared != self.prepared):
             raise ValueError("equity input binding differs from prepared data")
+        if type(self.observation_requests) is not tuple or any(type(x) is not DataRequest for x in self.observation_requests):
+            raise TypeError('observation requests require typed DFLS selections')
+        if self.observation_requests and len(self.observation_requests) != len(self.candidate.definition.observation_inputs):
+            raise ValueError('observation requests differ from declared inputs')
+        for item, query in zip(self.candidate.definition.observation_inputs, self.observation_requests):
+            item.validate_request(query)
 
     def requests(self, specification):
         return tuple(query for _, query in self.request_items(specification))
@@ -111,11 +118,16 @@ class EquityEvaluationRequest:
             item = self.candidate.definition.execution_input
             execution = tuple((item.data_key(query.parameters.query.product), query)
                 for query in item.requests(pd.Timestamp(self.window.start).tz_convert(self.candidate.instrument.timezone).date(), end))
-        return primary + auxiliary + execution
+        observations = tuple((item.data_key(), query) for item, query in zip(
+            self.candidate.definition.observation_inputs, self.observation_requests, strict=True)) if self.observation_requests else tuple(
+                (item.data_key(), item.request(self.history_start, end, source_root=self.candidate.source_root))
+                for item in self.candidate.definition.observation_inputs)
+        return primary + auxiliary + execution + observations
 
     def identity(self, specification):
         from strategy_runtime import (equity_features, equity_replay as srt_replay, equity_buy_hold_v4,
-            equity_source_runtime, replay_kernel, replay_contracts, account_strategy, account_replay)
+            equity_source_runtime, replay_kernel, replay_contracts, account_strategy, account_replay,
+            dataset_observations, observation_preparation, account_planning)
         from strategy_evaluator import equity_assessment as se_assessment
         from . import equity_replay, equity_assessment, parameter_evaluation, account_preparation
         from trading_execution_engine import accounting, portfolio
@@ -124,7 +136,8 @@ class EquityEvaluationRequest:
             for item in (EquityEvaluationRequest, EquityStrategyCandidate, StrategyRuntime,
                 PortfolioHistoricalExecutor, resolve_fill, summarize_equity_ledger)}
         for module in (equity_features, srt_replay, equity_buy_hold_v4, equity_source_runtime,
-                replay_kernel, replay_contracts, account_strategy, account_replay, se_assessment,
+                replay_kernel, replay_contracts, account_strategy, account_replay, dataset_observations,
+                observation_preparation, account_planning, se_assessment,
                 equity_replay, equity_assessment, parameter_evaluation, account_preparation, accounting,
                 portfolio, account_ledger):
             engine_sources[module.__name__] = sha256(Path(module.__file__).read_bytes()).hexdigest()
@@ -224,17 +237,22 @@ class EquityEvaluationResult:
 
 
 def _fetch_products(access, request):
+    from strategy_runtime.observation_preparation import request_selection, observation_identity
     products, identities, calendars = {}, {}, {}
     fetched = {}
     for name, query in request.request_items(access.execution_spec):
-        if query.parameters not in fetched:
-            fetched[query.parameters] = access.data.fetch(query, prepared=request.prepared)
-        result = fetched[query.parameters]
+        selection = request_selection(query)
+        if selection not in fetched:
+            fetched[selection] = access.data.fetch(query, prepared=request.prepared)
+        result = fetched[selection]
         if not result.ready:
             raise ValueError(f"pinned equity product unavailable ({name}): {result.error}")
         products[name] = result.dataframe
         identities[name] = {"content_sha256": result.identity.content_sha256,
                             "metadata": dict(result.identity.metadata)}
+        if name.startswith('observation:'):
+            identities[name]['observation_identity'] = observation_identity(result.identity)
+            continue
         # Each observation instrument owns its calendar. A daily auxiliary may
         # have a different set of sessions from the traded instrument.
         group = name.rsplit(":", 1)[0] if name.startswith(("auxiliary:", "execution:")) else "primary"
@@ -261,18 +279,24 @@ def _audit_inputs(request, specification, products):
         item = definition.execution_input
         decision_inputs['execution'] = {'bars': _records(products[item.data_key(EquityProduct.BARS)]),
             'sessions': _records(products[item.data_key(EquityProduct.SESSIONS)])}
+    if definition.observation_inputs:
+        decision_inputs['observations'] = {item.name: _records(products[item.data_key()])
+                                          for item in definition.observation_inputs}
     if decision_inputs:
         inputs["decision_inputs"] = decision_inputs
     return inputs
 
 
 def _runtime_inputs(definition, products, identities):
+    from strategy_runtime.observation_preparation import prepare_observation_tables
     kwargs = {}
     if definition.auxiliary_inputs:
         kwargs["auxiliary_histories"] = {item.name: products[item.data_key(EquityProduct.BARS)]
                                          for item in definition.auxiliary_inputs}
     kwargs["sessions"] = products["sessions"]
     kwargs["trading_sessions"] = sessions_from_metadata(identities["sessions"]["metadata"])
+    if definition.observation_inputs:
+        kwargs['observation_tables'] = prepare_observation_tables(definition.observation_inputs, products, identities)
     return kwargs
 
 
@@ -314,6 +338,8 @@ def _data_quality(bars, run, *, timezone="America/New_York", execution_bars=None
 
 def _json_value(value):
     def encode(item):
+        if isinstance(item, Path):
+            return str(item)
         if hasattr(item, "isoformat"):
             return item.isoformat()
         raise TypeError(f"unserializable equity evidence: {type(item)}")

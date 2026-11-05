@@ -13,7 +13,7 @@ from dataflows import BarFrequency, TimeInterval
 from .account_replay import plan_account_decision
 from .account_strategy import (AccountDecision, AccountStepContext, AccountStepResult,
     AccountStrategyState, BatchAccountContext, BatchObservation, PositionFeedback,
-    SellRemainderPolicy)
+    SellRemainderPolicy, AccountPlanningContext)
 from .contracts import OrderSide
 from .equity import DecisionPoint, EquityPortfolio, equity_hash
 from .equity_definition import EquityStrategyCandidate
@@ -77,7 +77,8 @@ def check_account_batch_consistency(candidate, prepared, *, start, end):
         if not suppressed:
             observations.append(BatchObservation(point, features, history, views,
                 session if candidate.definition.session_context else None,
-                available if candidate.definition.session_context else None))
+                available if candidate.definition.session_context else None,
+                engine.table_views(point.decision_at)))
     from .equity_source_runtime import active_invocation
     scope = nullcontext() if active_invocation(candidate) is not None else candidate.bind_replay()
     with scope:
@@ -114,6 +115,10 @@ class AccountDecisionEngine:
         self._visibility = _Visibility(prepared._data)
         self._features = _FeatureEvaluator(prepared._data, prepared.graph, self._visibility)
         self._auxiliary = {name: (_Visibility(data), data) for name, data in prepared._auxiliary}
+        self._tables = dict(prepared._observations)
+        self._table_cache = None
+        if set(self._tables) != {item.name for item in definition.observation_inputs}:
+            raise ValueError('prepared table observations differ from declaration')
         self._intervals = dict(prepared._calendar_intervals)
         self._rows = dict(zip(zip(prepared._data.starts, prepared._data.ends), range(len(prepared._data.rows)), strict=True))
         self._observed_at = None
@@ -130,6 +135,27 @@ class AccountDecisionEngine:
                     or value.get('PriceTick') != spec.price_tick):
                 raise ValueError('live constraint differs from available trading rules')
             self._live_constraint = value
+
+    def table_views(self, when):
+        import pandas as pd
+        from types import MappingProxyType
+        if self._table_cache is not None and self._table_cache[0] == when:
+            return self._table_cache[1]
+        views = {}
+        for declaration in self.candidate.definition.observation_inputs:
+            view = self._tables[declaration.name].view(when)
+            if (view.observation_count < declaration.coverage.minimum_observations
+                    or view.session_count < declaration.coverage.minimum_sessions):
+                raise ValueError('OBSERVATION_WARMUP_INSUFFICIENT: ' + declaration.name)
+            if declaration.max_staleness_days is not None:
+                latest = max(pd.Timestamp(row[view.source_time_field]).date() for row in view.rows)
+                zone = self._tables[declaration.name].source_timezone
+                if (pd.Timestamp(when).tz_convert(zone).date() - latest).days > declaration.max_staleness_days:
+                    raise ValueError('OBSERVATION_INPUT_STALE: ' + declaration.name)
+            views[declaration.name] = view
+        result = MappingProxyType(views)
+        self._table_cache = (when, result)
+        return result
 
     def state_binding(self, owner, fee_rate):
         if type(owner) is not str or not owner:
@@ -226,7 +252,9 @@ class AccountDecisionEngine:
         context = AccountStepContext(point, portfolio, account, position, definition.parameters,
             features, history, budget=budget, events=events, auxiliary_histories=views,
             session=session if definition.session_context else None,
-            session_available_at=available if definition.session_context else None)
+            session_available_at=available if definition.session_context else None,
+            observations=self.table_views(point.decision_at),
+            planning=AccountPlanningContext(fee_rate, spec) if definition.planning_context else None)
         cursor = state.event_cursor + len(events) if next_event_cursor is None else next_event_cursor
         if type(cursor) is not int or cursor < state.event_cursor + len(events):
             raise ValueError('recognized account event cursor cannot regress')
@@ -250,7 +278,7 @@ class AccountDecisionEngine:
                 if batch_decision is None:
                     batch_decision, = self.candidate.calculate_account_batch(BatchAccountContext((
                         BatchObservation(point, features, history, views, context.session,
-                                         context.session_available_at),), definition.parameters))
+                                         context.session_available_at, context.observations),), definition.parameters))
                 proposal = AccountStepResult(batch_decision, state.account, StateRecord())
             else:
                 proposal = self.candidate.account_step(context, state)

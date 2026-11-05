@@ -202,6 +202,9 @@ from .equity_features import (BarField, RawField, Lag, TrueRange, Mean, SameLoca
 from .equity_replay import (StateValueType, StateField, StateRecord, StrategyStateSchema,
     CycleState, StrategyState, PreparedReplay, ReplayOutcome,
     ReplayStatistics, ReplayFailure, run_replay)
+from .dataset_observations import (DatasetObservationInput, DatasetObservationBinding,
+    FrozenDataAsset, ObservationAvailability, PreparedObservationTable, TableHistoryView)
+from .account_strategy import AccountPlanningContext
 
 __all__ += ["EquityStrategyCandidate", "EquityStrategyDefinition", "EquityDecision", "EquityDecisionContext",
             "EquityInputBinding", "EquityAuxiliaryInput", "EquityAuxiliaryBinding", "equity_source_hash", "execution_spec_from_dict",
@@ -222,3 +225,6 @@ __all__ += ['AccountDecision', 'AccountStepResult', 'AccountStepContext', 'Posit
     'AccountBatchConsistency', 'check_account_batch_consistency']
 
 __all__ += ['ExecutionInput', 'ExecutionInputBinding']
+
+__all__ += ['DatasetObservationInput', 'DatasetObservationBinding', 'FrozenDataAsset',
+            'ObservationAvailability', 'PreparedObservationTable', 'TableHistoryView', 'AccountPlanningContext']

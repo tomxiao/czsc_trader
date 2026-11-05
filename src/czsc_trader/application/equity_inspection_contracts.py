@@ -1,7 +1,7 @@
 """Explicit US equity inputs for the shared technical-inspection lifecycle."""
 from dataclasses import dataclass
 import math
-from dataflows import EquityDataRequest, TimeInterval
+from dataflows import DataRequest, TimeInterval
 from strategy_runtime import EquityInputBinding
 from strategy_manager import freeze_contracts as f
 from ..research_tools.delivery import EvaluationEvidenceRef
@@ -11,7 +11,7 @@ from ..research_tools.delivery import EvaluationEvidenceRef
 class EquityInspectionReplay:
     coordinate: f.InspectionCoordinate
     input_binding: EquityInputBinding
-    requests: tuple[EquityDataRequest, ...]
+    requests: tuple[DataRequest, ...]
     window: TimeInterval
     initial_cash: float
     one_way_cost: float
@@ -22,8 +22,8 @@ class EquityInspectionReplay:
             raise TypeError('equity inspection requires typed coordinate and input binding')
         if type(self.window) is not TimeInterval or type(self.requests) is not tuple:
             raise TypeError('equity inspection requires window and prepared product requests')
-        if any(type(x) is not EquityDataRequest for x in self.requests):
-            raise TypeError('equity inspection requests must be EquityDataRequest')
+        if any(not isinstance(x, DataRequest) for x in self.requests):
+            raise TypeError('equity inspection requests must be typed DataRequest')
         keys = tuple(key for key, _ in self.input_binding.bind_requests(self.requests))
         if len(set(keys)) != len(keys) or set(keys) != set(self.input_binding.expected_identities):
             raise ValueError('equity inspection requires exact primary and auxiliary product coverage')

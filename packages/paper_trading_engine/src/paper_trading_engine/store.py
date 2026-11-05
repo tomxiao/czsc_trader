@@ -2445,9 +2445,11 @@ class PaperStore(ChannelAccountStore, EquityEventStore):
             legs = decision["payload"].get("plan_legs") or []
             if legs:
                 leg = legs[sequence]
-                for key in ("submit_after", "submit_before", "dependency_sequence"):
-                    if str(request.get(key)) != str(leg.get(key)):
-                        raise ValueError("intent execution window or dependency differs from immutable plan")
+                from .order_windows import planned_bounds
+                if (planned_bounds(request, decision["valid_session"]) != planned_bounds(leg, decision["valid_session"])
+                        or request.get("dependency_sequence") != leg.get("dependency_sequence")
+                        or request.get("dependency_required_status") != leg.get("dependency_required_status")):
+                    raise ValueError("intent execution window or dependency differs from immutable plan")
 
     def _require_execution_portfolio(self, account_id, decision_id, *, creating=False):
         from decimal import Decimal
@@ -2787,12 +2789,12 @@ class PaperStore(ChannelAccountStore, EquityEventStore):
                 "order_type": row["payload"].get("order_type", "LIMIT"), "limit_price": row["limit_price"],
                 "submit_after": row["payload"].get("submit_after"), "submit_before": row["payload"].get("submit_before"),
                 "dependency_sequence": legs[row["order_sequence"]].get("dependency_sequence") if legs else None,
+                "dependency_required_status": row["payload"].get("dependency_required_status"),
             }])
             self._require_execution_portfolio(row["account_id"], row["decision_id"])
-            from datetime import time, timedelta
-            clock = moment.astimezone(timezone(timedelta(hours=8))).time().replace(tzinfo=None)
+            from .order_windows import within_planned_window
             payload = row["payload"]
-            if (payload.get("submit_after") and clock < time.fromisoformat(payload["submit_after"])) or (payload.get("submit_before") and clock > time.fromisoformat(payload["submit_before"])):
+            if not within_planned_window(payload, row["valid_session"], moment):
                 raise ValueError("plan leg is outside its submission window")
             self._connection.execute("UPDATE intents SET status='SUBMITTING',updated_at=? WHERE intent_id=?", (_utc_now(), intent_id))
             self._refresh_decision_state(row["account_id"], row["decision_id"])
@@ -2817,6 +2819,14 @@ class PaperStore(ChannelAccountStore, EquityEventStore):
     def activate_dependency_intent(self, intent_id: str) -> bool:
         self._check_owned("intent", intent_id)
         with self._lock, self._write_context(False):
+            intent = self.account_intent(intent_id)
+            if intent is None or intent["status"] != "WAITING_DEPENDENCY":
+                return False
+            dependency = self.account_intent(str(intent["payload"].get("dependency_intent_id")))
+            if dependency is None or (dependency["account_id"], dependency["decision_id"]) != (intent["account_id"], intent["decision_id"]):
+                raise ValueError("plan dependency differs from owning account decision")
+            if dependency["status"] != intent["payload"].get("dependency_required_status"):
+                return False
             changed = self._connection.execute(
                 "UPDATE intents SET status='PENDING_SUBMIT',updated_at=? "
                 "WHERE intent_id=? AND status='WAITING_DEPENDENCY'",

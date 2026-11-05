@@ -288,12 +288,24 @@ def _validate_candidate_snapshot(record: CandidateRegistration, root: Path) -> N
         for item in record.source_files
         if item.path.startswith(prefix)
     }
-    if len(by_name) != len(record.source_files) or set(by_name) != set(
-        descriptor.get("source_files", ())
-    ):
+    sources = set(descriptor.get('source_files', ()))
+    assets = {}
+    if descriptor.get('kind') == 'ACCOUNT_REPLAY':
+        for observation in payload.get('equity_definition', {}).get('observation_inputs', ()):
+            asset = observation.get('asset')
+            if asset is None:
+                continue
+            if type(asset) is not dict or set(asset) != {'relative_path', 'sha256'}:
+                raise ValidationError('registered data resource declaration differs')
+            name, fingerprint = asset['relative_path'], asset['sha256']
+            CandidateEvidence(name, fingerprint)
+            if name in sources or (name in assets and assets[name] != fingerprint):
+                raise ValidationError('registered data resource conflicts with source manifest')
+            assets[name] = fingerprint
+    if len(by_name) != len(record.source_files) or set(by_name) != sources | set(assets):
         raise ValidationError("registered source manifest differs from runtime descriptor")
     digest = sha256()
-    for name in sorted(by_name):
+    for name in sorted(sources):
         digest.update(name.encode("utf-8"))
         digest.update(b"\0")
         digest.update(by_name[name]._read_verified(root)[1])
@@ -303,6 +315,10 @@ def _validate_candidate_snapshot(record: CandidateRegistration, root: Path) -> N
         or descriptor.get("source_sha256") != record.source_sha256
     ):
         raise ValidationError("registered source closure hash differs")
+    for name, fingerprint in assets.items():
+        if by_name[name].sha256 != fingerprint:
+            raise ValidationError('registered data resource hash differs from declaration')
+        by_name[name]._read_verified(root)
 
 
 def _registration_evidence_root(evidence_root: Path) -> Path:

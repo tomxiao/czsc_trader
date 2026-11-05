@@ -14,6 +14,7 @@ from strategy_manager import (
 from .context import RepositoryContext
 from ..research_tools.context import ExperimentRef
 from ..research_tools.evidence import EvidenceRef
+from ._frozen_materials import candidate_install_files
 
 
 @dataclass(frozen=True, slots=True)
@@ -70,7 +71,8 @@ def load_candidate(context: RepositoryContext, key: CandidateKey) -> EquityStrat
     definition = EquityStrategyDefinition.from_dict(payload['equity_definition'])
     if definition.contract_version != 4:
         raise ValueError("research candidate loading requires account contract 4")
-    expected_sources = {f"{record.source_root}/{name}" for name in definition.source_files}
+    install_files = (*definition.source_files, *(asset.relative_path for asset in definition.frozen_assets))
+    expected_sources = {f"{record.source_root}/{name}" for name in install_files}
     if {ref.path for ref in record.source_files} != expected_sources:
         raise ValueError("registered equity source manifest differs")
     for reference in record.source_files:
@@ -113,6 +115,12 @@ def register_candidate(context: RepositoryContext, request: CandidateRegistratio
         source_digest.update(b"\0")
     if source_digest.hexdigest() != identity.source_sha256:
         raise ValueError("equity source closure changed")
+    for asset in candidate.definition.frozen_assets:
+        path = asset.resolve(candidate.source_root)
+        data = path.read_bytes()
+        if sha256(data).hexdigest() != asset.sha256:
+            raise ValueError('candidate data resource changed during publication')
+        source_bytes[asset.relative_path] = data
     root = context.research_root / candidate.strategy_id
     experiment = request.experiment.resolve(context.root)
     if not experiment.is_dir():
@@ -142,9 +150,10 @@ def register_candidate(context: RepositoryContext, request: CandidateRegistratio
     prefix = f'assets/candidates/{candidate.candidate_id}'
     payload_data = json.dumps(candidate.payload, sort_keys=True, separators=(',', ':'), allow_nan=False).encode()
     payload = _publish(root, f'{prefix}/payload/{sha256(payload_data).hexdigest()}.json', payload_data, context.root)
-    source_prefix = f'{prefix}/source/{identity.source_sha256}/strategy_runtime'
+    snapshot_identity = identity.content_sha256 if candidate.definition.frozen_assets else identity.source_sha256
+    source_prefix = f'{prefix}/source/{snapshot_identity}/strategy_runtime'
     sources = tuple(_publish(root, f'{source_prefix}/{name}', source_bytes[name], context.root)
-                    for name in candidate.definition.source_files)
+                    for name in candidate_install_files(candidate))
     origin = CandidateRegistrationOrigin(request.experiment.experiment_id, tuple(
         CandidateEvidence(Path(ref.repository_path).relative_to(Path(f'research/{candidate.strategy_id}')).as_posix(), ref.sha256)
         for ref in request.evidence))

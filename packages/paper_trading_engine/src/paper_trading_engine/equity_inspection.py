@@ -254,7 +254,7 @@ def inspect_equity_release(*, candidate, dataflows, binding, requests, initial_c
                     observed.append({"kind": "REPORT", "channel_order_id": report.channel_order_id, **step.to_dict()})
                 elif type(step) is EquityPteAction:
                     from dataclasses import asdict
-                    action_query, = (q for q in requests if q.parameters.query.product.name == "ACTIONS")
+                    action_query, = (q for role, q in binding.bind_requests(requests) if role == 'actions')
                     source = dataflows.fetch(action_query, prepared=binding.prepared)
                     if source.identity.content_sha256 != dict(binding.content_identities)["actions"] or step.source_sha256 != source.identity.content_sha256:
                         raise ValueError("equity action source differs from pinned input")
