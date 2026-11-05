@@ -358,14 +358,16 @@ class PreparedReplay:
                           'available': available} for item, available in calendars]})
         observations = ()
         if observation_tables:
-            from .dataset_observations import PreparedObservationTable
-            if not isinstance(observation_tables, Mapping) or any(type(key) is not str or type(value) is not PreparedObservationTable
+            from .dataset_observations import PreparedObservationTable, InactiveObservationTable
+            if not isinstance(observation_tables, Mapping) or any(type(key) is not str or type(value) not in (PreparedObservationTable, InactiveObservationTable)
                     for key, value in observation_tables.items()):
                 raise TypeError('replay observations require named prepared tables')
             observations = tuple(sorted(observation_tables.items()))
             prepared_identity = equity_hash({'history': prepared_identity,
-                'observations': [(name, item.content_sha256, item.primary_key, item.source_time_field,
-                                  item.source_timezone, item._available) for name, item in observations]})
+                'observations': [(name, item.binding.to_dict()) if type(item) is InactiveObservationTable else
+                    (name, item.content_sha256, item.primary_key, item.source_time_field,
+                     item.source_timezone, item._available, *((item._inactive_before,) if item._inactive_before is not None else ()))
+                    for name, item in observations]})
         return cls(data, graph, tuple(auxiliary), tuple(calendars), tuple(intervals), prepared_identity, frequency, observations)
 
     def with_graph(self, graph):

@@ -66,6 +66,32 @@ def test_formal_equity_rejects_undeclared_import_and_future_history(tmp_path):
             source_sha256=equity_source_hash(tmp_path, value.definition.source_files)))
 
 
+def test_initial_state_frozen_containers_preserve_identity_and_strict_values(tmp_path):
+    from strategy_runtime import StateRecord, StrategyComputation
+    from strategy_runtime.equity_definition import _freeze
+    from strategy_runtime.equity_features import FeatureGraph
+    from strategy_runtime.equity_replay import StrategyStateSchema, StateField, StateValueType
+    base = candidate(tmp_path)
+    definition = replace(base.definition, contract_version=4,
+        computation=StrategyComputation.STATEFUL_STEP, feature_graph=FeatureGraph(),
+        state_schema=StrategyStateSchema((StateField('counter', StateValueType.INT),
+            StateField('at', StateValueType.DATETIME), StateField('optional', StateValueType.STR, True))),
+        initial_account=StateRecord((('counter', -1), ('at', datetime(2026, 1, 1, tzinfo=timezone.utc)), ('optional', None))))
+    payload = _freeze(definition.to_dict())
+    restored = EquityStrategyDefinition.from_dict(payload)
+    assert restored == definition and restored.content_identity == definition.content_identity
+    with pytest.raises(ValueError, match='state record requires values'):
+        StateRecord.from_dict(payload['initial_account'])
+    invalid = definition.to_dict()
+    invalid['initial_account']['values'][0][1] = True
+    with pytest.raises(TypeError, match='state field type differs'):
+        EquityStrategyDefinition.from_dict(_freeze(invalid))
+    invalid = definition.to_dict()
+    invalid['initial_account']['values'].append(['counter', 2])
+    with pytest.raises(ValueError, match='state keys must be unique'):
+        EquityStrategyDefinition.from_dict(_freeze(invalid))
+
+
 def test_formal_decision_observes_split_before_planning(tmp_path):
     from trading_execution_engine.frozen_equity import _FrozenEquityExecutor
     value = candidate(tmp_path)

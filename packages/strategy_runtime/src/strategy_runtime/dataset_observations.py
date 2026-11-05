@@ -7,7 +7,9 @@ from __future__ import annotations
 
 from bisect import bisect_right
 from dataclasses import asdict, dataclass, field
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
+from enum import StrEnum
+from collections.abc import Mapping
 from hashlib import sha256
 from pathlib import Path, PurePosixPath
 import re
@@ -83,6 +85,7 @@ class DatasetObservationInput:
     calendar: str = 'SSE'
     availability: ObservationAvailability | None = None
     max_staleness_days: int | None = None
+    required_from: date | None = None
 
     def __post_init__(self):
         if type(self.name) is not str or not re.fullmatch('[A-Za-z][A-Za-z0-9_]*', self.name):
@@ -93,6 +96,12 @@ class DatasetObservationInput:
             raise TypeError('observation requires typed coverage')
         if self.availability is not None and type(self.availability) is not ObservationAvailability:
             raise TypeError('observation requires typed availability')
+        if self.required_from is not None:
+            if type(self.required_from) is not date:
+                raise TypeError('observation required-from requires a date')
+            if (type(self.history_start) is not date or self.required_from < self.history_start
+                    or self.history_end is not None or self.asset is not None or self.availability is None):
+                raise ValueError('required-from requires a dynamic history start no later than activation and explicit availability')
         if self.max_staleness_days is not None and (type(self.max_staleness_days) is not int or self.max_staleness_days < 0):
             raise ValueError('observation staleness must be nonnegative days')
         for stamp in (self.history_start, self.history_end):
@@ -116,6 +125,17 @@ class DatasetObservationInput:
     def data_key(self):
         return 'observation:' + self.name
 
+    @property
+    def activation_at(self):
+        if self.required_from is None:
+            return None
+        policy = self.availability
+        return datetime.combine(self.required_from + timedelta(days=policy.day_offset),
+            time.fromisoformat(policy.available_time), ZoneInfo(policy.timezone))
+
+    def inactive_on(self, end):
+        return self.required_from is not None and end < self.required_from
+
     def bounds(self, start: date, end: date):
         if type(start) is not date or type(end) is not date or start > end:
             raise ValueError('observation request requires ordered dates')
@@ -126,7 +146,9 @@ class DatasetObservationInput:
         return lower, upper
 
     def request(self, start: date, end: date, *, source_root: Path,
-                trading_dates: tuple[str, ...] = ()) -> DataRequest:
+                trading_dates: tuple[str, ...] = ()) -> DataRequest | None:
+        if self.inactive_on(end):
+            return None
         lower, upper = self.bounds(start, end)
         parameters = NoParameters()
         if self.asset is not None:
@@ -156,9 +178,12 @@ class DatasetObservationInput:
 
     def to_dict(self):
         value = asdict(self)
+        if self.required_from is None:
+            value.pop('required_from')
         value['dataset'] = self.dataset.value
-        for key in ('history_start', 'history_end'):
-            value[key] = getattr(self, key).isoformat() if getattr(self, key) else None
+        for key in ('history_start', 'history_end', 'required_from'):
+            if key in value:
+                value[key] = getattr(self, key).isoformat() if getattr(self, key) else None
         return value
 
     @classmethod
@@ -166,7 +191,7 @@ class DatasetObservationInput:
         value = dict(value)
         value['dataset'] = Dataset(value['dataset'])
         value['coverage'] = DataCoverageRequirement(**value['coverage'])
-        for key in ('history_start', 'history_end'):
+        for key in ('history_start', 'history_end', 'required_from'):
             if value.get(key) is not None:
                 value[key] = date.fromisoformat(value[key])
         if value.get('asset') is not None:
@@ -202,26 +227,44 @@ def observation_request_from_dict(value):
 @dataclass(frozen=True, slots=True)
 class DatasetObservationBinding:
     input: DatasetObservationInput
-    request: DataRequest
-    content_sha256: str
+    request: DataRequest | None
+    content_sha256: str | None
+    inactive_through: date | None = None
 
     def __post_init__(self):
-        if type(self.input) is not DatasetObservationInput or type(self.request) is not DataRequest:
+        if type(self.input) is not DatasetObservationInput:
+            raise TypeError('observation binding requires typed input')
+        if self.inactive_through is not None:
+            if (type(self.inactive_through) is not date or not self.input.inactive_on(self.inactive_through)
+                    or self.request is not None or self.content_sha256 is not None):
+                raise ValueError('inactive binding requires an unstarted declaration without physical data')
+            return
+        if type(self.request) is not DataRequest:
             raise TypeError('observation binding requires typed input and request')
-        if not re.fullmatch('[a-f0-9]{64}', self.content_sha256):
+        if type(self.content_sha256) is not str or not re.fullmatch('[a-f0-9]{64}', self.content_sha256):
             raise ValueError('observation binding requires content SHA-256')
         self.input.validate_request(self.request)
 
     def to_dict(self):
+        if self.inactive_through is not None:
+            return {'input': self.input.to_dict(), 'inactive_through': self.inactive_through.isoformat()}
         return {'input': self.input.to_dict(), 'request': observation_request_to_dict(self.request),
                 'content_sha256': self.content_sha256}
 
     @classmethod
     def from_dict(cls, value):
-        if type(value) is not dict or set(value) != {'input', 'request', 'content_sha256'}:
+        if isinstance(value, Mapping) and set(value) == {'input', 'inactive_through'}:
+            return cls(DatasetObservationInput.from_dict(value['input']), None, None,
+                       date.fromisoformat(value['inactive_through']))
+        if not isinstance(value, Mapping) or set(value) != {'input', 'request', 'content_sha256'}:
             raise ValueError('unsupported observation binding')
         return cls(DatasetObservationInput.from_dict(value['input']),
                    observation_request_from_dict(value['request']), value['content_sha256'])
+
+
+class TableObservationStatus(StrEnum):
+    ACTIVE = 'ACTIVE'
+    INACTIVE = 'INACTIVE'
 
 
 @dataclass(frozen=True, slots=True)
@@ -231,10 +274,13 @@ class TableHistoryView:
     rows: tuple
     columns: tuple[str, ...]
     source_time_field: str = 'Date'
+    status: TableObservationStatus = TableObservationStatus.ACTIVE
 
     def __post_init__(self):
         if type(self.as_of) is not datetime or self.as_of.utcoffset() is None:
             raise ValueError('observation view requires aware time')
+        if type(self.status) is not TableObservationStatus or (self.status is TableObservationStatus.INACTIVE and self.rows):
+            raise ValueError('inactive observations must have no rows')
         from .equity_replay import _Row
         object.__setattr__(self, 'rows', tuple(row if type(row) is _Row else _Row(dict(row)) for row in self.rows))
 
@@ -264,6 +310,7 @@ class PreparedObservationTable:
     source_time_field: str = 'Date'
     _monotonic_availability: bool = False
     source_timezone: str = 'UTC'
+    _inactive_before: datetime | None = None
 
     def __post_init__(self):
         if not re.fullmatch('[a-f0-9]{64}', self.content_sha256):
@@ -281,7 +328,7 @@ class PreparedObservationTable:
             raise ValueError('observation table is empty')
         temporal = identity.temporal_contract
         source, available = temporal.source_time_field, temporal.availability_time_field
-        primary = tuple(identity.metadata.get('primary_key', ()))
+        primary = identity.primary_key
         if not primary or not set((*primary, source, available)).issubset(frame.columns):
             raise ValueError('observation requires declared primary key and time columns')
         if frame[list(primary)].isna().any().any() or frame.duplicated(list(primary)).any():
@@ -321,11 +368,31 @@ class PreparedObservationTable:
         times = tuple(stamps.array.to_pydatetime())
         order = tuple(sorted(range(len(rows)), key=lambda i: (times[i], i)))
         return cls(identity.content_sha256, tuple(frame.columns), primary, tuple(rows),
-                   tuple(times[i] for i in order), order, source, order == tuple(range(len(rows))), str(source_times.dt.tz))
+                   tuple(times[i] for i in order), order, source, order == tuple(range(len(rows))), str(source_times.dt.tz),
+                   declaration.activation_at if declaration is not None else None)
 
     def view(self, when):
         if type(when) is not datetime or when.utcoffset() is None:
             raise ValueError('observation cutoff requires aware time')
+        if self._inactive_before is not None and when < self._inactive_before:
+            return TableHistoryView(when, (), self.columns, self.source_time_field, TableObservationStatus.INACTIVE)
         count = bisect_right(self._available, when)
         positions = self._order[:count] if self._monotonic_availability else sorted(self._order[:count])
         return TableHistoryView(when, tuple(self._rows[i] for i in positions), self.columns, self.source_time_field)
+
+
+@dataclass(frozen=True, slots=True)
+class InactiveObservationTable:
+    """Declared absence before activation; contains no synthetic data identity."""
+    binding: DatasetObservationBinding
+
+    def __post_init__(self):
+        if type(self.binding) is not DatasetObservationBinding or self.binding.inactive_through is None:
+            raise ValueError('inactive table requires an explicit inactive binding')
+
+    def view(self, when):
+        if type(when) is not datetime or when.utcoffset() is None:
+            raise ValueError('observation cutoff requires aware time')
+        if when >= self.binding.input.activation_at:
+            raise ValueError('OBSERVATION_ACTIVATED_REQUIRES_PREPARATION: ' + self.binding.input.name)
+        return TableHistoryView(when, (), (), status=TableObservationStatus.INACTIVE)

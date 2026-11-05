@@ -113,7 +113,8 @@ def _replay_account_v4(candidate, replay, products, identities):
         timezone=candidate.instrument.timezone, sessions=products['sessions'],
         trading_sessions=sessions_from_metadata(identities['sessions']['metadata']),
         auxiliary_histories={item.name: products[item.data_key(EquityProduct.BARS)] for item in definition.auxiliary_inputs},
-        observation_tables=prepare_observation_tables(definition.observation_inputs, products, identities))
+        observation_tables=prepare_observation_tables(definition.observation_inputs, products, identities,
+            bindings=replay.input_binding.observation_bindings))
     from strategy_runtime import StrategyComputation, check_account_batch_consistency
     batch_consistency = {'status': 'NOT_APPLICABLE'}
     if definition.computation is StrategyComputation.BATCH_HISTORY:

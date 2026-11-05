@@ -125,7 +125,7 @@ def step(ctx, state):
         opening=ctx.point.execution_interval.start
         checkpoint=datetime.combine(opening.astimezone(ZoneInfo(ctx.session.timezone)).date(),time(11,30),tzinfo=ZoneInfo(ctx.session.timezone))
         legs=(ReplayLeg(0,ReplayOrder(OrderSide.SELL,100,OrderType.MARKET),'OPEN',opening,opening+timedelta(minutes=1)),
-              ReplayLeg(1,ReplayOrder(OrderSide.BUY,100,OrderType.MARKET),'11:30_CLOSE',checkpoint-timedelta(minutes=1),checkpoint,0,'FILLED'))
+              ReplayLeg(1,ReplayOrder(OrderSide.BUY,100,OrderType.MARKET),'11:30_CLOSE',checkpoint-timedelta(minutes=1),checkpoint,0,'FILLED_ALL'))
         decision=AccountDecision.from_facts(1.,'confirmed sell then buy',facts={'q':ctx.account.quantity},next_watch='next day',legs=legs)
     else:
         decision=AccountDecision.from_facts(1.,'wait',facts={'q':ctx.account.quantity},next_watch='next day',capital_mode='full_available_cash')

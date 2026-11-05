@@ -123,7 +123,7 @@ def test_dependency_legs_use_real_open_and_close_and_no_price_path_invention(mar
     executor,stamp,_=setup(market)
     end=stamp+timedelta(minutes=30)
     legs=(ReplayLeg(0,order(OrderSide.BUY,100),'OPEN',stamp,end),
-          ReplayLeg(1,order(OrderSide.SELL,100),'CLOSE',stamp,end,0,'FILLED'))
+          ReplayLeg(1,order(OrderSide.SELL,100),'CLOSE',stamp,end,0,'FILLED_ALL'))
     bar,dated=facts(stamp,close=11.)
     executor.execute_account_plan(plan(executor,stamp,legs=legs),bar,constraint=dated)
     assert executor.quantity==0
@@ -136,6 +136,26 @@ def test_dependency_legs_use_real_open_and_close_and_no_price_path_invention(mar
     with pytest.raises(ValueError,match='CHECKPOINT_DATA_UNAVAILABLE'):
         executor.execute_account_plan(plan(executor,at,legs=(leg,)),bar,constraint=dated)
     assert executor.revision==1 and len(executor.rows['fills'])==2
+
+
+@pytest.mark.parametrize('market',[MarketId.CN,MarketId.US])
+def test_expired_entry_does_not_satisfy_complete_fill_dependency(market):
+    executor,stamp,_=setup(market)
+    end=stamp+timedelta(minutes=30)
+    legs=(ReplayLeg(0,order(OrderSide.BUY,100,9.),'OPEN',stamp,end),
+          ReplayLeg(1,order(OrderSide.SELL,100),'CLOSE',stamp,end,0,'FILLED_ALL'))
+    bar,dated=facts(stamp)
+    executor.execute_account_plan(plan(executor,stamp,legs=legs),bar,constraint=dated)
+    assert executor.quantity==0 and not executor.rows['fills']
+    assert [row['status'] for row in executor.rows['orders']]==['EXPIRED','EXPIRED']
+    assert executor.rows['orders'][1]['reason']=='DEPENDENCY_NOT_FILLED'
+
+
+@pytest.mark.parametrize('condition',['FILLED','FILLED_PART','CANCELLED_ALL','EXPIRED','UNKNOWN'])
+def test_dependency_contract_rejects_any_condition_other_than_complete_fill(condition):
+    _,stamp,_=setup(MarketId.US)
+    with pytest.raises(ValueError,match='FILLED_ALL'):
+        ReplayLeg(1,order(OrderSide.SELL,100),'CLOSE',stamp,stamp+timedelta(minutes=30),0,condition)
 
 
 @pytest.mark.parametrize('market',[MarketId.CN,MarketId.US])
@@ -169,7 +189,7 @@ def test_later_leg_failure_keeps_confirmed_prefix_and_blocks_successful_finaliza
     executor,stamp,_=setup(MarketId.US,cash_policy=CashAvailabilityPolicy.SETTLED_ONLY)
     end=stamp+timedelta(minutes=30)
     legs=(ReplayLeg(0,order(OrderSide.BUY,100),'OPEN',stamp,end),
-          ReplayLeg(1,order(OrderSide.SELL,100),'CLOSE',stamp,end,0,'FILLED'))
+          ReplayLeg(1,order(OrderSide.SELL,100),'CLOSE',stamp,end,0,'FILLED_ALL'))
     bar,dated=facts(stamp)
     dated['SettlementAt']=None
     with pytest.raises(ValueError,match='settlement'):
@@ -278,7 +298,7 @@ def test_dependency_cannot_use_a_future_close_fill_to_sell_at_earlier_open():
     executor,stamp,_=setup(MarketId.US)
     end=stamp+timedelta(minutes=30)
     legs=(ReplayLeg(0,order(OrderSide.BUY,100),'CLOSE',stamp,end),
-          ReplayLeg(1,order(OrderSide.SELL,100),'OPEN',stamp,end,0,'FILLED'))
+          ReplayLeg(1,order(OrderSide.SELL,100),'OPEN',stamp,end,0,'FILLED_ALL'))
     bar,dated=facts(stamp)
     with pytest.raises(ValueError,match='reverses'):
         executor.execute_account_plan(plan(executor,stamp,legs=legs),bar,constraint=dated)
@@ -299,8 +319,8 @@ def test_daily_plan_uses_real_intraday_checkpoints_and_volume_per_quote_bar(mark
         initial_cash=10000.,fee_rate=.001,actions=executor.actions,price_basis='RAW',execution_bars=pd.DataFrame(rows))
     point=ReplayPoint(stamp-timedelta(minutes=30),stamp,stamp,close,stamp.date().isoformat(),ExecutionPrecision.BAR_INTERVAL)
     legs=(ReplayLeg(0,order(OrderSide.BUY,100),'OPEN',stamp,close),
-        ReplayLeg(1,order(OrderSide.SELL,100),'11:30_CLOSE',stamp,close,0,'FILLED'),
-        ReplayLeg(2,order(OrderSide.BUY,100),'CLOSE',stamp,close,1,'FILLED'))
+        ReplayLeg(1,order(OrderSide.SELL,100),'11:30_CLOSE',stamp,close,0,'FILLED_ALL'),
+        ReplayLeg(2,order(OrderSide.BUY,100),'CLOSE',stamp,close,1,'FILLED_ALL'))
     proposal=AccountExecutionPlan('f'*64,'fixture',point,0,100,legs=legs,
         evidence={'sizing':'EXPLICIT_ORDERS','target':.1,'reference_price':10.,
             'specification_hash':executor.spec.fingerprint,'fee_rate':.001})
@@ -324,7 +344,7 @@ def test_two_checkpoint_legs_cannot_each_consume_the_whole_same_execution_bar(ma
     executor=PortfolioHistoricalExecutor(specification=executor.spec,initial_cash=10000.,fee_rate=.001,
         actions=executor.actions,price_basis='RAW',execution_bars=pd.DataFrame([bar]))
     legs=(ReplayLeg(0,order(OrderSide.BUY,100),'OPEN',stamp,end),
-          ReplayLeg(1,order(OrderSide.SELL,100),'CLOSE',stamp,end,0,'FILLED'))
+          ReplayLeg(1,order(OrderSide.SELL,100),'CLOSE',stamp,end,0,'FILLED_ALL'))
     executor.execute_account_plan(plan(executor,stamp,legs=legs),bar,constraint=dated)
     assert executor.quantity==100 and len(executor.rows['fills'])==1
     assert executor.rows['orders'][-1]['reason']=='INSUFFICIENT_BAR_VOLUME'

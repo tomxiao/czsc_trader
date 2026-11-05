@@ -139,11 +139,15 @@ class AccountDecisionEngine:
     def table_views(self, when):
         import pandas as pd
         from types import MappingProxyType
+        from .dataset_observations import TableObservationStatus
         if self._table_cache is not None and self._table_cache[0] == when:
             return self._table_cache[1]
         views = {}
         for declaration in self.candidate.definition.observation_inputs:
             view = self._tables[declaration.name].view(when)
+            if view.status is TableObservationStatus.INACTIVE:
+                views[declaration.name] = view
+                continue
             if (view.observation_count < declaration.coverage.minimum_observations
                     or view.session_count < declaration.coverage.minimum_sessions):
                 raise ValueError('OBSERVATION_WARMUP_INSUFFICIENT: ' + declaration.name)

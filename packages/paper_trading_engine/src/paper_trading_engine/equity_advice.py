@@ -59,7 +59,7 @@ class PreparedEquityAction:
 def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *, fee_rate, live=False):
     """Read pinned products and authenticate their identities before a normal PTE decision."""
     import pandas as pd
-    from strategy_runtime.dataset_observations import PreparedObservationTable
+    from strategy_runtime.dataset_observations import PreparedObservationTable, InactiveObservationTable
     if type(binding) is not EquityInputBinding or type(candidate) is not EquityStrategyCandidate:
         raise TypeError("equity preparation requires typed candidate and binding")
     if (binding.instrument != candidate.instrument or binding.specification_hash != candidate.execution_spec_hash
@@ -71,7 +71,8 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
     products = {}
     calendars = {}
     metadata = {}
-    observations = {}
+    observations = {item.input.name: InactiveObservationTable(item) for item in binding.observation_bindings
+                    if item.inactive_through is not None}
     for name, request in binding.bind_requests(requests):
         fetched = dataflows.fetch(request, prepared=binding.prepared)
         if not fetched.ready or name in products or fetched.identity.content_sha256 != identities.get(name):

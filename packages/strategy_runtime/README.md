@@ -12,12 +12,23 @@
 
 `PreparedObservationTable.from_frame(frame, identity, declaration=...)` 读取 DFLS 时间契约和复合主键，
 允许同日多只证券，拒绝重复键、缺少时间及源时间晚于可用时间。
+主键通过 `DataIdentity.primary_key` 的 DFLS 产品契约取得，包含旧元数据未显式记录主键的
+正式 ETF 行情等产品；不改写历史身份。权重使用 `Date + ConstituentSymbol`，资金流使用
+`Date + Symbol`，不能退化成仅按日期去重；未知产品或声明冲突明确报错。
 日期型、无时区的可用时间必须显式声明 `ObservationAvailability(timezone, available_time, day_offset)`，
 不能默认日期午夜已知；声明属于研究输入假设，不把它描述成已核实的供应商发布时间。
 带时区的可用时间按原值保留。平台通过 `TableHistoryView` 只提供当前决策时刻已可得的只读行；
 `to_frame()` 返回独立副本。`minimum_observations` 按行数，`minimum_sessions` 按源日期数核对；
 可选 `max_staleness_days` 明确约束最新源日期。
 S003 的严格前日快照、SPX 对齐及既有填充规则仍由策略表达。
+
+动态观察可显式声明 `required_from: date`，将开始必需的源日期与 `history_start` 读取起点分开；
+前者不得早于后者，须同时声明发布时间，且不能用于固定区间或冻结资源。未声明时仍全程严格要求数据，
+默认字段不序列化，已有定义身份保持。激活时刻为 `required_from + day_offset` 当天的声明发布时间。
+激活前 `TableHistoryView.status=INACTIVE` 且无行，不执行最少行数和陈旧度检查；激活后为 `ACTIVE`，
+正常覆盖检查恢复，缺数据明确失败。准备截止源日期早于 `required_from` 时完全不请求该产品或其日历，
+绑定只记录声明和 `inactive_through`，没有伪造的请求、内容哈希或 DataIdentity。跨越激活日准备时从
+`history_start` 读取预热历史，但在早期决策视图中仍保持 INACTIVE；策略自行选择种子与增量分支。
 
 `PreparedReplay.from_frames(..., observation_tables={alias: prepared_table})` 接入相同回放内核；
 状态策略读 `AccountStepContext.observations`，批量策略读每个 `BatchObservation.observations`。
@@ -93,6 +104,8 @@ V4的 `feedback_mode`固定为 `CONFIRMED_EXECUTION`；旧V2闭合周期模式�
 `capital_mode`支持 `target_equity_fraction`、`full_available_cash`及 `signal_cash_fraction`。
 比例模式允许加减仓；全现金模式持仓后目标1表示继续持有，不因股息或剩余现金自动追加投资。
 显式 `ReplayOrder`数量与目标比例分别留证；`ReplayLeg`声明真实检查点、提交区间及前腿所需结果。
+原生依赖条件统一为 `FILLED_ALL`，只表示前腿全部确认成交；`FILLED`账本状态、部分成交、撤销、
+过期及未知均不能作为依赖条件传入。历史研究模型和PTE分别以实际执行事实判定完整成交。
 周期预算以Decimal保留，不能中途重写已锁定预算；可卖数量、整手、余股清仓及价格限制由TXE逐步执行。
 
 日线策略若需开盘、11:30等盘中检查点，声明
@@ -164,6 +177,8 @@ DataFrame 物化本身包含遍历和复制成本，频繁导出完整历史仍�
 `StateField(key, StateValueType, nullable=False)` 声明严格字段类型；BOOL、INT、FLOAT、STR、DATETIME
 不相互隐式转换，浮点必须有限、时间必须带时区。`StrategyStateSchema(account_fields=(), cycle_fields=())`
 覆盖全部字段；`StateRecord(values=((key, value), ...))` 是不可变标量记录，不接受任意对象或隐式附加字段。
+`EquityStrategyDefinition.from_dict` 在定义边界还原冻结包中 `initial_account` 的不可变 JSON 容器，
+保留日期、标量类型及内容身份；独立 `StateRecord.from_dict` 仍严格校验 JSON 结构和字段类型。
 账户字段非空时，调用方必须明确提供符合 schema 的初始账户记录。
 
 ```python

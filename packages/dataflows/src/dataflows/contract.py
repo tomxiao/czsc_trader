@@ -480,6 +480,36 @@ class DataError:
         object.__setattr__(self, "context", MappingProxyType(dict(self.context)))
 
 
+_TABLE_PRIMARY_KEYS = {
+    Dataset.ETF_OHLCV.value: ("Date",),
+    Dataset.INDEX_CONSTITUENT_WEIGHT.value: ("Date", "ConstituentSymbol"),
+    Dataset.STOCK_MONEYFLOW.value: ("Date", "Symbol"),
+    Dataset.STRATEGY_FEATURE_EVIDENCE.value: ("Date",),
+    Dataset.SHIBOR_DAILY.value: ("Date",),
+    Dataset.INDEX_DAILY_BASIC.value: ("Date",),
+    Dataset.ETF_SHARE_SIZE.value: ("Date",),
+    Dataset.GLOBAL_INDEX_DAILY.value: ("Date",),
+    Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY.value: ("Date",),
+}
+
+
+def _dataset_primary_key(dataset: str, metadata: Mapping[str, Any]) -> tuple[str, ...]:
+    expected = _TABLE_PRIMARY_KEYS.get(str(dataset))
+    if "primary_key" not in metadata:
+        if expected is None:
+            raise ValueError("data product has no declared primary key")
+        return expected
+    declared = metadata["primary_key"]
+    if (type(declared) not in (tuple, list) or not declared
+            or any(type(name) is not str or not name.strip() or name != name.strip() for name in declared)
+            or len(set(declared)) != len(declared)):
+        raise ValueError("data product primary key must name unique nonempty columns")
+    result = tuple(declared)
+    if expected is not None and result != expected:
+        raise ValueError("data product primary key differs from its dataset contract")
+    return result
+
+
 @dataclass(frozen=True, slots=True)
 class DataIdentity:
     """Identity and lineage of a successfully published dataframe."""
@@ -516,6 +546,16 @@ class DataIdentity:
             available_at=self.metadata["available_at"],
             request_range_policy=RequestRangePolicy(self.metadata["request_range_policy"]),
         )
+
+    @property
+    def primary_key(self) -> tuple[str, ...]:
+        """Product row identity, including immutable publications predating key metadata.
+
+        Known table products have a fixed schema, independent of the provider.
+        Reading that schema does not add metadata or re-sign a historical asset.
+        Other products must carry their own explicit key declaration.
+        """
+        return _dataset_primary_key(self.dataset, self.metadata)
 
 
 @dataclass(frozen=True, slots=True)

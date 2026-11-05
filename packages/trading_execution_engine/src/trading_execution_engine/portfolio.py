@@ -475,7 +475,7 @@ class PortfolioHistoricalExecutor(_EquityAccount):
             if projected < 0:
                 raise ValueError('plan requests a short position')
             if leg is not None:
-                if leg.dependency_required_status not in (None, "FILLED", "EXPIRED"):
+                if leg.dependency_required_status not in (None, "FILLED_ALL"):
                     raise ValueError("unsupported execution dependency status")
                 checkpoint_quote = self._checkpoint(leg,plan.point,quote,status,blocked)
                 checkpoint_stamp = checkpoint_quote.stamp
@@ -588,7 +588,9 @@ class PortfolioHistoricalExecutor(_EquityAccount):
                 'dependency_sequence': None if leg is None else leg.dependency_sequence,
                 'dependency_required_status': None if leg is None else leg.dependency_required_status}
             self.rows['orders'].append(row)
-            outcomes[number] = row['status']
+            # Historical orders are all-or-none; their ledger status remains
+            # FILLED while the common dependency condition names complete fill.
+            outcomes[number] = 'FILLED_ALL' if price is not None else row['status']
             if price is not None:
                 self._post_position_fill(plan, order, identity, price, fill_interval, unlock, constraint,
                     precision, (touch_at if leg is not None else point.execution_start if precision == 'MODEL_BAR_OPEN' else point.execution_end), source)

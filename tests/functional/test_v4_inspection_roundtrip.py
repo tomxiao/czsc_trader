@@ -22,8 +22,20 @@ from test_equity_adjusted_observations import setup_adjusted
 from test_equity_inspection_roundtrip import seed_registered_frozen_candidate
 
 
-def native_fixture(tmp_path, market, computation=StrategyComputation.STATEFUL_STEP):
+def native_fixture(tmp_path, market, computation=StrategyComputation.STATEFUL_STEP, *, initial_state=False):
     context, request, products, _, _ = setup_adjusted(tmp_path, market, computation)
+    if initial_state:
+        from strategy_runtime import equity_source_hash, StateRecord
+        from strategy_runtime.equity_replay import StrategyStateSchema, StateField, StateValueType
+        source = request.candidate.source_root / 'strategy.py'
+        source.write_text(source.read_text().replace('AccountStepResult(decision(ctx), cycle_values=',
+            'AccountStepResult(decision(ctx), account=state.account, cycle_values='))
+        initial = StateRecord((('locked', -1), ('held', False), ('since', request.window.start)))
+        schema = StrategyStateSchema((StateField('locked', StateValueType.INT),
+            StateField('held', StateValueType.BOOL), StateField('since', StateValueType.DATETIME)))
+        definition = replace(request.candidate.definition, initial_account=initial, state_schema=schema,
+            source_sha256=equity_source_hash(source.parent, ('strategy.py',)))
+        request = replace(request, candidate=replace(request.candidate, definition=definition))
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:
         request = context.evaluation.prepare(request, execution=execution).request
     replay = EquityInspectionReplay(f.InspectionCoordinate('main', 'standard'), request.input_binding,
@@ -120,7 +132,7 @@ def freeze_native_inspection(repository, inspection, source):
 
 @pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
 def test_native_dual_market_inspection_freezes_exact_v4_package(tmp_path, market):
-    context, request, products, replay = native_fixture(tmp_path, market)
+    context, request, products, replay = native_fixture(tmp_path, market, initial_state=True)
     repository = context.repository
     inspection, source = native_inspection_request(tmp_path, context, request, products, replay)
     wrong = replace(inspection, protocol=replace(inspection.protocol, method_version='candidate-inspection-v2'))
@@ -135,4 +147,8 @@ def test_native_dual_market_inspection_freezes_exact_v4_package(tmp_path, market
     assert package.package_sha256 == report.release.package_sha256
     assert package.release.payload['runtime']['kind'] == 'ACCOUNT_REPLAY'
     assert package.release.payload['runtime']['contract_version'] == 4
+    from strategy_runtime import EquityStrategyDefinition
+    restored = EquityStrategyDefinition.from_dict(package.release.payload['equity_definition'])
+    assert restored.initial_account == request.candidate.definition.initial_account
+    assert restored.content_identity == request.candidate.definition.content_identity
     assert json.loads((package.source_root.parent.parent/'runtime_binding.json').read_text())['observation_sha256']

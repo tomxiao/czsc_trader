@@ -57,7 +57,7 @@ class EquityEvaluationRequest:
     lineage: object | None = field(default=None, kw_only=True)
     input_binding: EquityInputBinding | None = field(default=None, kw_only=True)
     audit_inputs_sha256: str | None = field(default=None, kw_only=True)
-    observation_requests: tuple[DataRequest, ...] = field(default=(), kw_only=True)
+    observation_requests: tuple[DataRequest | None, ...] = field(default=(), kw_only=True)
 
     def __post_init__(self):
         import math
@@ -93,12 +93,17 @@ class EquityEvaluationRequest:
             raise TypeError("prepared requires PreparedDataRef")
         if self.input_binding is not None and (type(self.input_binding) is not EquityInputBinding or self.input_binding.prepared != self.prepared):
             raise ValueError("equity input binding differs from prepared data")
-        if type(self.observation_requests) is not tuple or any(type(x) is not DataRequest for x in self.observation_requests):
+        if type(self.observation_requests) is not tuple or any(x is not None and type(x) is not DataRequest for x in self.observation_requests):
             raise TypeError('observation requests require typed DFLS selections')
         if self.observation_requests and len(self.observation_requests) != len(self.candidate.definition.observation_inputs):
             raise ValueError('observation requests differ from declared inputs')
         for item, query in zip(self.candidate.definition.observation_inputs, self.observation_requests):
-            item.validate_request(query)
+            if query is None:
+                end = pd.Timestamp(self.window.end).tz_convert(self.candidate.instrument.timezone).date()
+                if not item.inactive_on(end):
+                    raise ValueError('missing request for an active observation')
+            else:
+                item.validate_request(query)
 
     def requests(self, specification):
         return tuple(query for _, query in self.request_items(specification))
@@ -122,7 +127,7 @@ class EquityEvaluationRequest:
             self.candidate.definition.observation_inputs, self.observation_requests, strict=True)) if self.observation_requests else tuple(
                 (item.data_key(), item.request(self.history_start, end, source_root=self.candidate.source_root))
                 for item in self.candidate.definition.observation_inputs)
-        return primary + auxiliary + execution + observations
+        return primary + auxiliary + execution + tuple((key, query) for key, query in observations if query is not None)
 
     def identity(self, specification):
         from strategy_runtime import (equity_features, equity_replay as srt_replay, equity_buy_hold_v4,
@@ -280,14 +285,15 @@ def _audit_inputs(request, specification, products):
         decision_inputs['execution'] = {'bars': _records(products[item.data_key(EquityProduct.BARS)]),
             'sessions': _records(products[item.data_key(EquityProduct.SESSIONS)])}
     if definition.observation_inputs:
-        decision_inputs['observations'] = {item.name: _records(products[item.data_key()])
+        decision_inputs['observations'] = {item.name: _records(products[item.data_key()]) if item.data_key() in products else
+            {'status': 'INACTIVE', 'activation_at': item.activation_at.isoformat()}
                                           for item in definition.observation_inputs}
     if decision_inputs:
         inputs["decision_inputs"] = decision_inputs
     return inputs
 
 
-def _runtime_inputs(definition, products, identities):
+def _runtime_inputs(definition, products, identities, *, observation_bindings=()):
     from strategy_runtime.observation_preparation import prepare_observation_tables
     kwargs = {}
     if definition.auxiliary_inputs:
@@ -296,7 +302,8 @@ def _runtime_inputs(definition, products, identities):
     kwargs["sessions"] = products["sessions"]
     kwargs["trading_sessions"] = sessions_from_metadata(identities["sessions"]["metadata"])
     if definition.observation_inputs:
-        kwargs['observation_tables'] = prepare_observation_tables(definition.observation_inputs, products, identities)
+        kwargs['observation_tables'] = prepare_observation_tables(definition.observation_inputs, products, identities,
+                                                                bindings=observation_bindings)
     return kwargs
 
 

@@ -18,6 +18,8 @@ def resolve_observation_requests(dataflows, declarations, start, end, *, source_
     calendar_requests = {}
     keys = {}
     for item in declarations:
+        if item.inactive_on(end):
+            continue
         if item.dataset is Dataset.STOCK_MONEYFLOW or item.frequency == 'weekly':
             first, last = item.bounds(start, end)
             if item.frequency == 'weekly':
@@ -46,6 +48,9 @@ def resolve_observation_requests(dataflows, declarations, start, end, *, source_
                 raise ValueError('observation trading calendar has no open dates')
     result = []
     for item in declarations:
+        if item.inactive_on(end):
+            result.append((item.data_key(), None))
+            continue
         cutoff = end
         dates = calendars.get(keys.get(item.name), ())
         if item.frequency == 'weekly':
@@ -91,8 +96,16 @@ def observation_identity(identity):
             for name in DataIdentity.__dataclass_fields__}
 
 
-def prepare_observation_tables(declarations, products, identities):
-    from .dataset_observations import PreparedObservationTable
-    return {item.name: PreparedObservationTable.from_frame(products[item.data_key()],
-        DataIdentity(**identities[item.data_key()]['observation_identity']), declaration=item)
-        for item in declarations}
+def prepare_observation_tables(declarations, products, identities, *, bindings=()):
+    from .dataset_observations import PreparedObservationTable, InactiveObservationTable
+    inactive = {item.input.name: item for item in bindings if item.inactive_through is not None}
+    tables = {}
+    for item in declarations:
+        if item.name in inactive:
+            if inactive[item.name].input != item or item.data_key() in products or item.data_key() in identities:
+                raise ValueError('inactive observation has physical data or a different declaration')
+            tables[item.name] = InactiveObservationTable(inactive[item.name])
+        else:
+            tables[item.name] = PreparedObservationTable.from_frame(products[item.data_key()],
+                DataIdentity(**identities[item.data_key()]['observation_identity']), declaration=item)
+    return tables

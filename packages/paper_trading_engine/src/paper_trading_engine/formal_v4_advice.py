@@ -47,7 +47,7 @@ class FormalV4Inputs:
     def requests(self) -> tuple[DataRequest, ...]:
         unique = dict.fromkeys(parameters for _, parameters in self.binding.request_bindings)
         return (tuple(EquityDataRequest(p.instrument, p.source, p.query) for p in unique)
-                + tuple(item.request for item in self.binding.observation_bindings))
+                + tuple(item.request for item in self.binding.observation_bindings if item.request is not None))
 
     def to_dict(self):
         return dict(schema_version=1, release_hash=self.release_hash,
@@ -242,16 +242,19 @@ class FormalV4AdviceClient:
                 observation_forward_end, request_selection)
             from strategy_runtime.dataset_observations import DatasetObservationBinding
             observation_items = []
+            observation_ends = {}
             if recipe.binding.observation_bindings:
                 if candidate is None:
                     _, _, candidate = self._account_release(account_id)
                 for bound in recipe.binding.observation_bindings:
                     end = observation_forward_end(bound.input, interval.start,
                         default_timezone=candidate.instrument.timezone)
+                    observation_ends[bound.input.name] = end
                     observation_items.extend(resolve_observation_requests(self.dataflows, (bound.input,),
-                        date.fromisoformat(bound.request.start), end, source_root=candidate.source_root,
+                        date.fromisoformat(bound.request.start) if bound.request is not None else bound.input.history_start,
+                        end, source_root=candidate.source_root,
                         as_of=interval.start))
-            requests += tuple(query for _, query in observation_items)
+            requests += tuple(query for _, query in observation_items if query is not None)
             result = self.dataflows.prepare(requests, policy=PreparePolicy.REUSE)
             if not result.ready:
                 raise ValueError('forward V4 input preparation is incomplete: ' + '; '.join(str(x.error) for x in result.items if not x.ready))
@@ -264,7 +267,8 @@ class FormalV4AdviceClient:
                     for item in recipe.binding.auxiliary_inputs),
                 execution_input=None if recipe.binding.execution_input is None else ExecutionInputBinding(
                     recipe.binding.execution_input.input, hashes['execution:bars'], hashes['execution:sessions']),
-                observation_bindings=tuple(DatasetObservationBinding(bound.input, query,
+                observation_bindings=tuple(DatasetObservationBinding(bound.input, None, None, observation_ends[bound.input.name])
+                    if query is None else DatasetObservationBinding(bound.input, query,
                     identities[request_selection(query)]) for bound, (_, query) in zip(
                         recipe.binding.observation_bindings, observation_items, strict=True)))
             value = FormalV4Inputs(recipe.release_hash, binding, recipe.fee_rate)

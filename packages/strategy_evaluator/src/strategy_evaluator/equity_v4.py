@@ -558,7 +558,7 @@ def audit_account_v4(
                 and (
                     leg["dependency_sequence"]
                     not in [item[0] for item in sequence if item[0] < number]
-                    or leg["dependency_required_status"] not in {"FILLED", "EXPIRED"}
+                    or leg["dependency_required_status"] != "FILLED_ALL"
                 )
             ):
                 raise ValueError("v4 invalid execution dependency")
@@ -823,7 +823,7 @@ def audit_account_v4(
                 raise ValueError(
                     "v4 order status or reason differs from independent execution facts"
                 )
-            statuses[number] = expected_status
+            statuses[number] = "FILLED_ALL" if price is not None else expected_status
             if price is None:
                 continue
             fill = fill_map[identity]

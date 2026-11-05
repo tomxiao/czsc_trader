@@ -32,7 +32,7 @@ def step(ctx,state):
 
 
 @pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
-@pytest.mark.parametrize('entry_outcome', ['complete', 'partial', 'unfilled'])
+@pytest.mark.parametrize('entry_outcome', ['complete', 'partial', 'unfilled', 'cancelled_part', 'failed', 'unknown'])
 def test_native_rotation_waits_for_full_entry_and_survives_restart(tmp_path, market, entry_outcome):
     context, request, products, store, permit, channel = native_account(tmp_path, market)
     request = replace_strategy(request, STRATEGY)
@@ -59,8 +59,13 @@ def test_native_rotation_waits_for_full_entry_and_survives_restart(tmp_path, mar
         assert store.account_intent(legs[1]['intent_id'])['status'] == 'PENDING_SUBMIT'
     elif entry_outcome == 'partial':
         execution.apply_report(EquityOrderReport(entry, 100, Decimal('10'), clock+timedelta(minutes=1), 'FILLED_PART'))
-    else:
+    elif entry_outcome == 'unfilled':
         execution.apply_report(EquityOrderReport(entry, 0, Decimal('0'), clock+timedelta(minutes=1), 'CANCELLED_ALL'))
+    elif entry_outcome == 'cancelled_part':
+        execution.apply_report(EquityOrderReport(entry, 100, Decimal('10'), clock+timedelta(minutes=1), 'CANCELLED_PART'))
+    elif entry_outcome == 'failed':
+        execution.apply_report(EquityOrderReport(entry, 0, Decimal('0'), clock+timedelta(minutes=1), 'FAILED'))
+    # Unknown means the submitted order has no conclusive channel report.
     path = store.path
     store.close()
     store = PaperStore(path, inspection_permit=permit)
@@ -78,8 +83,32 @@ def test_native_rotation_waits_for_full_entry_and_survives_restart(tmp_path, mar
     else:
         assert orders == ()
         status = store.account_intent(legs[1]['intent_id'])['status']
-        assert status == ('WAITING_DEPENDENCY' if entry_outcome == 'partial' else 'EXPIRED')
-        assert store.virtual_account('native')['quantity'] == (300 if entry_outcome == 'partial' else 200)
+        assert status == ('WAITING_DEPENDENCY' if entry_outcome in ('partial', 'unknown') else 'EXPIRED')
+        assert store.virtual_account('native')['quantity'] == (300 if entry_outcome in ('partial', 'cancelled_part') else 200)
+    assert not store.account_invariant_violations()
+    store.close()
+
+
+@pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
+def test_unsubmitted_entry_expiry_cannot_activate_dependent_exit(tmp_path, market):
+    context, request, products, store, _, channel = native_account(tmp_path, market)
+    request = replace_strategy(request, STRATEGY)
+    first = prepared_at(context, request, products)
+    AccountEngine(store, EquityAdviceClient(store), now=lambda:first.interval.start).refresh_account('native', prepared=first)
+    execution = EquityExecution(store, channel, now=lambda:first.interval.start)
+    execution.reconcile(cash=Decimal(str(request.initial_cash)), quantity=0, account_id='native')
+    core, = execution.submit_pending('native')
+    execution.apply_report(EquityOrderReport(core, 200, Decimal('10'), first.interval.start+timedelta(minutes=1), 'FILLED_ALL'))
+    second = prepared_at(context, request, products, 1)
+    AccountEngine(store, EquityAdviceClient(store), now=lambda:second.interval.start).refresh_account('native', prepared=second)
+    clock = second.interval.start+timedelta(minutes=10)
+    execution = EquityExecution(store, channel, now=lambda:clock)
+    assert execution.submit_pending('native') == ()
+    assert execution.submit_pending('native') == ()
+    legs = store.account_intents('native')[-2:]
+    assert [row['status'] for row in legs] == ['EXPIRED', 'EXPIRED']
+    assert not store.activate_dependency_intent(legs[1]['intent_id'])
+    assert store.virtual_account('native')['quantity'] == 200
     assert not store.account_invariant_violations()
     store.close()
 

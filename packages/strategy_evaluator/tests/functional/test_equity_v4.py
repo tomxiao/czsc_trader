@@ -252,8 +252,8 @@ def ledger(market=MarketId.US, *, variant="scaling"):
     elif variant == "checkpoints":
         legs = (
             ReplayLeg(0, order(OrderSide.BUY, 100), "OPEN", origin, closing),
-            ReplayLeg(1, order(OrderSide.BUY, 100), "11:30_CLOSE", origin, closing, 0, "FILLED"),
-            ReplayLeg(2, order(OrderSide.SELL, 200), "CLOSE", origin, closing, 1, "FILLED"),
+            ReplayLeg(1, order(OrderSide.BUY, 100), "11:30_CLOSE", origin, closing, 0, "FILLED_ALL"),
+            ReplayLeg(2, order(OrderSide.SELL, 200), "CLOSE", origin, closing, 1, "FILLED_ALL"),
         )
         run(origin, legs=legs)
     elif variant == "midpayment":
@@ -277,7 +277,7 @@ def ledger(market=MarketId.US, *, variant="scaling"):
         end = origin + timedelta(minutes=30)
         legs = (
             ReplayLeg(0, order(OrderSide.BUY, 100), "OPEN", origin, end),
-            ReplayLeg(1, order(OrderSide.SELL, 100), "CLOSE", origin, end, 0, "FILLED"),
+            ReplayLeg(1, order(OrderSide.SELL, 100), "CLOSE", origin, end, 0, "FILLED_ALL"),
         )
         run(origin, legs=legs)
     elif variant == "volume":

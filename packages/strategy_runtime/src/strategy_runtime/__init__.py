@@ -203,7 +203,7 @@ from .equity_replay import (StateValueType, StateField, StateRecord, StrategySta
     CycleState, StrategyState, PreparedReplay, ReplayOutcome,
     ReplayStatistics, ReplayFailure, run_replay)
 from .dataset_observations import (DatasetObservationInput, DatasetObservationBinding,
-    FrozenDataAsset, ObservationAvailability, PreparedObservationTable, TableHistoryView)
+    FrozenDataAsset, ObservationAvailability, PreparedObservationTable, TableHistoryView, TableObservationStatus)
 from .account_strategy import AccountPlanningContext
 
 __all__ += ["EquityStrategyCandidate", "EquityStrategyDefinition", "EquityDecision", "EquityDecisionContext",
@@ -227,4 +227,4 @@ __all__ += ['AccountDecision', 'AccountStepResult', 'AccountStepContext', 'Posit
 __all__ += ['ExecutionInput', 'ExecutionInputBinding']
 
 __all__ += ['DatasetObservationInput', 'DatasetObservationBinding', 'FrozenDataAsset',
-            'ObservationAvailability', 'PreparedObservationTable', 'TableHistoryView', 'AccountPlanningContext']
+            'ObservationAvailability', 'PreparedObservationTable', 'TableHistoryView', 'TableObservationStatus', 'AccountPlanningContext']

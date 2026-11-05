@@ -844,10 +844,21 @@ CN/US 均可通过 `auxiliary_inputs` 声明 `analysis_price="HFQ"` 的后复权
 V4 的非行情及周线观察通过 `observation_inputs: tuple[DatasetObservationInput, ...]` 声明，
 使用既有 DFLS 产品，不将指数伪装成股票，也不将成分权重或资金流拼成 OHLCV。
 `EquityInputBinding.observation_bindings` 保存完整请求和内容身份，原行情 `request_bindings` 格式保持。
+`EquityEvaluationRequest.observation_requests` 可显式选择各观察输入独立的预热区间，
+例如主 RAW 仅准备账户所需区间，而 ETF 信号表读取此前 300 个交易日；不改变策略定义或主 RAW 起点。
+准备仍核对产品、覆盖要求、固定边界、真实资金流交易日及完整周线；动态截止不得超过评价结束日，
+已启用输入不能通过较早截止或空请求跳过。各显式选择进入会话缓存及输入身份，不能串用预热数据。
+固定冻结种子仍按已声明边界载入，并由原有可用时刻过滤规则控制早期可见性。
 `prepare(..., execution=session)` 解析资金流交易日历、准备数据表并构建可见时间索引；
 `evaluate_many`、技术检验与 PTE 使用相同只读表视图，策略通过 `ctx.observations[name]` 读取。
 日期型来源须声明 `ObservationAvailability` 的时区、可用时间和必要日偏移，不默认视为当天午夜可用；
 平台按可用时间裁剪，策略仍须保留严格前日快照、滞后和信号计时等金融规则。
+
+种子期暂不启用的动态输入使用可选 `required_from`，与预热读取起点 `history_start` 分开；
+启用时刻包含 `ObservationAvailability` 的日期偏移和发布时间。全期早于启用日期时不请求该产品
+及其日历，绑定和审计记录显式 INACTIVE，无虚构数据身份；跨启用日仍读取完整预热区间，早期视图为空。
+启用后恢复既有严格覆盖检查，缺失明确失败；研究、隔离检验和 PTE 自动配方共用这一契约。
+未声明时不改变既有输入行为或定义身份。
 
 冻结种子用 `FrozenDataAsset(relative_path, sha256)` 声明，配合固定历史边界进入资源清单；
 准备层经 DFLS `STRATEGY_FEATURE_EVIDENCE` 读取已认证资源，策略不直接读取研究目录。

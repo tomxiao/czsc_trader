@@ -299,7 +299,7 @@ class EquityInputBinding:
     @property
     def expected_identities(self):
         result = dict(self.content_identities)
-        result.update((item.input.data_key(), item.content_sha256) for item in self.observation_bindings)
+        result.update((item.input.data_key(), item.content_sha256) for item in self.observation_bindings if item.request is not None)
         for binding in self.auxiliary_inputs:
             result[binding.input.data_key(EquityProduct.BARS)] = binding.bars_sha256
             result[binding.input.data_key(EquityProduct.SESSIONS)] = binding.sessions_sha256
@@ -344,12 +344,12 @@ class EquityInputBinding:
             from dataflows import DataRequest
             if type(requests) is not tuple or any(not isinstance(x, DataRequest) for x in requests):
                 raise TypeError('binding requires typed product requests')
-            observation_requests = tuple(item.request for item in self.observation_bindings)
+            observation_requests = tuple(item.request for item in self.observation_bindings if item.request is not None)
             if any(request not in requests for request in observation_requests):
                 raise ValueError('requests omit declared observations')
             equity_requests = tuple(item for item in requests if item not in observation_requests)
             base = replace(self, observation_bindings=()).bind_requests(equity_requests)
-            return base + tuple((item.input.data_key(), item.request) for item in self.observation_bindings)
+            return base + tuple((item.input.data_key(), item.request) for item in self.observation_bindings if item.request is not None)
         if type(requests) is not tuple or any(type(x) is not EquityDataRequest for x in requests):
             raise TypeError('binding requires typed product requests')
         if not self.request_bindings:
@@ -399,6 +399,8 @@ class EquityInputBinding:
             raise ValueError('duplicate observation alias')
         observation_identities = {}
         for item in self.observation_bindings:
+            if item.request is None:
+                continue
             previous = observation_identities.setdefault(item.request, item.content_sha256)
             if previous != item.content_sha256:
                 raise ValueError('shared observation request has inconsistent content identities')
@@ -675,7 +677,16 @@ class EquityStrategyDefinition:
             value['execution_input'] = ExecutionInput.from_dict(value['execution_input'])
         if value.get('initial_account') is not None:
             from .equity_replay import StateRecord
-            value['initial_account'] = StateRecord.from_dict(value['initial_account'])
+            # Frozen releases use immutable mappings/tuples for JSON containers.
+            # Restore only that representation at the definition boundary; the
+            # standalone StateRecord JSON decoder remains strict.
+            def json_containers(item):
+                if isinstance(item, Mapping):
+                    return {key: json_containers(val) for key, val in item.items()}
+                if isinstance(item, (tuple, list)):
+                    return [json_containers(val) for val in item]
+                return item
+            value['initial_account'] = StateRecord.from_dict(json_containers(value['initial_account']))
         if value.get('contract_version') == 4:
             from .replay_contracts import StrategyComputation
             value['computation'] = StrategyComputation(value['computation'])

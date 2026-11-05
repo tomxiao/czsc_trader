@@ -57,12 +57,41 @@ def test_ready_result_has_stable_identity_and_detached_data(flow_factory, publis
     assert first.identity.metadata["source_calendar"] == "SOURCE_NATIVE"
     assert first.identity.metadata["available_at"] == "SOURCE_PERIOD_CLOSE"
     assert first.identity.metadata["request_range_policy"] == "EXACT"
+    assert first.identity.metadata["primary_key"] == ["Date"]
+    assert first.identity.primary_key == ("Date",)
     assert first.identity.temporal_contract == DataTemporalContract(
         "Date", "Date", "SOURCE_NATIVE", "SOURCE_PERIOD_CLOSE", "EXACT",
     )
     assert first.identity.content_sha256 == second.identity.content_sha256
     first.dataframe.loc[0, "Close"] = 99
     assert source.loc[0, "Close"] == 1.1
+
+
+@pytest.mark.parametrize("key", [[], "Date", ["Date", "Date"], ["Date", "Symbol"], None])
+def test_table_publication_rejects_invalid_product_primary_key(flow_factory, publish_data, key):
+    frame = pd.DataFrame({"Date": ["2026-09-15"], "OvernightRate": [1.0]})
+    flows = flow_factory({Dataset.SHIBOR_DAILY: lambda _: (frame, {"primary_key": key})})
+    result = publish_data(flows, DataRequest(Dataset.SHIBOR_DAILY, None, "2026-09-15", "2026-09-15", None))
+    assert result.status is DataStatus.FAILED
+    assert "primary key" in result.error.message
+
+
+@pytest.mark.parametrize('dataset,symbol,column,frequency', [
+    (Dataset.INDEX_CONSTITUENT_WEIGHT, '000905.SH', 'ConstituentSymbol', 'snapshot'),
+    (Dataset.STOCK_MONEYFLOW, '600000.SH', 'Symbol', 'daily'),
+])
+def test_retained_panel_without_key_metadata_uses_exact_product_contract(dataset, symbol, column, frequency):
+    from dataflows.facade import _date_bounds
+    from dataflows.errors import DataContractError
+    frame = pd.DataFrame({'Date': ['2026-09-15'] * 2, column: ['600000.SH', '600001.SH']})
+    request = DataRequest(dataset, symbol, '2026-09-15', '2026-09-15', None, frequency=frequency)
+    metadata = {}
+    assert _date_bounds(frame, request, metadata) == ('2026-09-15T00:00:00', '2026-09-15T00:00:00')
+    assert metadata == {}
+    with pytest.raises(DataContractError, match='duplicate primary keys'):
+        _date_bounds(pd.concat([frame, frame.iloc[[0]]]), request, metadata)
+    with pytest.raises(DataContractError, match='missing primary-key values'):
+        _date_bounds(frame.assign(**{column: None}), request, metadata)
 
 
 @pytest.mark.parametrize("field", ["source_time_field", "availability_time_field"])

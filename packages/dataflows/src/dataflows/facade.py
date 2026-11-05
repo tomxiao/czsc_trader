@@ -33,6 +33,7 @@ from .contract import (
     DataSpace, DataSpaceBinding, PreparePolicy, PrepareStatus, PreparedDataRef,
     PrepareResult, ItemPrepareResult, ProviderConfig, ProviderBinding,
     PcfParameters, MoneyflowParameters,
+    _TABLE_PRIMARY_KEYS, _dataset_primary_key,
 )
 from .errors import (
     DataContractError,
@@ -90,6 +91,11 @@ def _lineage_metadata(
     """Add and validate stable source-time semantics to every READY publication."""
 
     result = dict(metadata)
+    if str(request.dataset) in _TABLE_PRIMARY_KEYS:
+        try:
+            result["primary_key"] = list(_dataset_primary_key(str(request.dataset), result))
+        except ValueError as exc:
+            raise DataContractError(str(exc)) from exc
     source_time_field = str(result.get("source_time_field", "Date")).strip()
     if not source_time_field or source_time_field not in dataframe.columns:
         raise DataContractError(
@@ -917,13 +923,18 @@ def _date_bounds(
     timestamps = pd.to_datetime(dataframe["Date"], errors="coerce")
     if timestamps.isna().any():
         raise DataContractError("published dataframe contains invalid Date values")
-    primary_key = list(metadata.get("primary_key", ["Date"]))
+    try:
+        primary_key = list(_dataset_primary_key(str(request.dataset), metadata)) if str(request.dataset) in _TABLE_PRIMARY_KEYS else list(metadata.get("primary_key", ["Date"]))
+    except ValueError as exc:
+        raise DataContractError(str(exc)) from exc
     missing_key = sorted(set(primary_key).difference(dataframe.columns))
     if missing_key:
         raise DataContractError(
             "published dataframe is missing primary-key columns",
             missing_fields=missing_key,
         )
+    if dataframe[primary_key].isna().any().any():
+        raise DataContractError("published dataframe contains missing primary-key values")
     if dataframe.duplicated(primary_key).any():
         raise DataContractError(
             "published dataframe contains duplicate primary keys",

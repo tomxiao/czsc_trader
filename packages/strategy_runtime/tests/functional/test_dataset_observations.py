@@ -21,17 +21,17 @@ def identity(dataset=Dataset.INDEX_CONSTITUENT_WEIGHT, symbol='000905.SH', *, av
     return DataIdentity(dataset.value, 'fixture', symbol, '2026-01-01', '2026-01-03', 'a' * 64,
         dict(source_time_field='Date', availability_time_field=available,
              source_calendar='SSE', available_at='EXPLICIT', request_range_policy='EXACT',
-             primary_key=['Date', 'Code']))
+             primary_key=['Date', 'ConstituentSymbol'] if dataset is Dataset.INDEX_CONSTITUENT_WEIGHT else ['Date']))
 
 
 def test_panel_visibility_keeps_same_day_rows_and_delayed_publication():
     frame = pd.DataFrame({'Date': pd.to_datetime(['2026-01-01', '2026-01-01', '2026-01-02'], utc=True),
         'AvailableDate': pd.to_datetime(['2026-01-02', '2026-01-03', '2026-01-02'], utc=True),
-        'Code': ['A', 'B', 'A'], 'Weight': [1., 2., 3.]})
+        'ConstituentSymbol': ['A', 'B', 'A'], 'Weight': [1., 2., 3.]})
     table = PreparedObservationTable.from_frame(frame, identity())
     table = pickle.loads(pickle.dumps(table))
     view = table.view(datetime(2026, 1, 2, tzinfo=timezone.utc))
-    assert [(row['Code'], row['Weight']) for row in view.rows] == [('A', 1.), ('A', 3.)]
+    assert [(row['ConstituentSymbol'], row['Weight']) for row in view.rows] == [('A', 1.), ('A', 3.)]
     assert view.observation_count == 2
     assert len(table.view(datetime(2026, 1, 3, tzinfo=timezone.utc))) == 3
     assert table.view(datetime(2026, 1, 3, tzinfo=timezone.utc)).session_count == 2
@@ -57,6 +57,57 @@ def test_date_only_publication_requires_explicit_local_close():
     table = PreparedObservationTable.from_frame(frame, value, declaration=declaration)
     assert not table.view(datetime(2026, 11, 2, 20, 59, tzinfo=timezone.utc)).rows
     assert len(table.view(datetime(2026, 11, 2, 21, tzinfo=timezone.utc))) == 1
+
+
+@pytest.mark.parametrize('dataset,key', [
+    (Dataset.ETF_OHLCV, ('Date',)),
+    (Dataset.INDEX_CONSTITUENT_WEIGHT, ('Date', 'ConstituentSymbol')),
+    (Dataset.STOCK_MONEYFLOW, ('Date', 'Symbol')),
+    (Dataset.STRATEGY_FEATURE_EVIDENCE, ('Date',)),
+    (Dataset.SHIBOR_DAILY, ('Date',)),
+    (Dataset.INDEX_DAILY_BASIC, ('Date',)),
+    (Dataset.ETF_SHARE_SIZE, ('Date',)),
+    (Dataset.GLOBAL_INDEX_DAILY, ('Date',)),
+    (Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY, ('Date',)),
+])
+def test_published_product_keys_cover_real_table_shapes_without_rewriting_old_metadata(dataset, key):
+    days = ['2026-01-01', '2026-01-01'] if len(key) == 2 else ['2026-01-01', '2026-01-02']
+    frame = pd.DataFrame({'Date': pd.to_datetime(days, utc=True),
+        'AvailableDate': pd.to_datetime(['2026-01-02', '2026-01-02'], utc=True)})
+    if len(key) == 2:
+        frame[key[1]] = ['600000.SH', '600001.SH']
+    if dataset is Dataset.ETF_OHLCV:
+        frame = frame.assign(Open=1., High=2., Low=.5, Close=1., Volume=100., Amount=100.)
+    raw = dict(source_time_field='Date', availability_time_field='AvailableDate',
+        source_calendar='SOURCE_NATIVE', available_at='source publication', request_range_policy='EXACT',
+        data_contract_version=1)
+    value = DataIdentity(dataset.value, 'old-tushare-publication', None,
+        '2026-01-01', '2026-01-02', 'a' * 64, raw)
+    before = json.dumps(dict(value.metadata), sort_keys=True)
+    assert value.primary_key == key
+    table = PreparedObservationTable.from_frame(frame, value)
+    assert table.primary_key == key
+    assert len(pickle.loads(pickle.dumps(table)).view(datetime(2026, 1, 3, tzinfo=timezone.utc))) == 2
+    assert json.dumps(dict(value.metadata), sort_keys=True) == before
+    assert 'primary_key' not in value.metadata
+    with pytest.raises(ValueError, match='duplicated'):
+        PreparedObservationTable.from_frame(pd.concat([frame, frame.iloc[[0]]]), value)
+    with pytest.raises(ValueError, match='missing'):
+        PreparedObservationTable.from_frame(frame.assign(**{key[-1]: None}), value)
+    with pytest.raises(ValueError, match='key and time columns'):
+        PreparedObservationTable.from_frame(frame.drop(columns=key[-1]), value)
+
+
+def test_unknown_or_conflicting_product_key_is_not_inferred_from_columns():
+    metadata = dict(source_time_field='Date', availability_time_field='Date', source_calendar='SSE',
+                    available_at='source close', request_range_policy='EXACT')
+    unknown = DataIdentity('unknown.product', 'fixture', None, '2026-01-01', '2026-01-02', 'a' * 64, metadata)
+    with pytest.raises(ValueError, match='no declared primary key'):
+        _ = unknown.primary_key
+    conflicting = DataIdentity(Dataset.INDEX_CONSTITUENT_WEIGHT.value, 'fixture', '000905.SH',
+        '2026-01-01', '2026-01-02', 'a' * 64, {**metadata, 'primary_key': ['Date']})
+    with pytest.raises(ValueError, match='dataset contract'):
+        _ = conflicting.primary_key
 
 
 def test_moneyflow_dates_and_fixed_seed_request_roundtrip(tmp_path):
@@ -138,7 +189,7 @@ def step(ctx, state):
         observation_inputs=(declaration,), planning_context=True))
     stamp = p._data.ends[0]
     frame = pd.DataFrame({'Date': [stamp, stamp], 'AvailableDate': [stamp, stamp],
-                          'Code': ['A', 'B'], 'Weight': [1., 2.]})
+                          'ConstituentSymbol': ['A', 'B'], 'Weight': [1., 2.]})
     table = PreparedObservationTable.from_frame(frame, identity(), declaration=declaration)
     p = PreparedReplay.from_frames(bars, constraints, c.definition.feature_graph,
         sessions=session_frame, trading_sessions=sessions, frequency=BarFrequency.DAILY,

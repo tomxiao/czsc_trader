@@ -9,6 +9,7 @@ from contextlib import closing
 from concurrent.futures import CancelledError
 from concurrent.futures.process import BrokenProcessPool
 from dataclasses import asdict, dataclass, field, replace
+from datetime import date
 from hashlib import sha256
 import inspect
 import json
@@ -143,15 +144,41 @@ def prepare_equity(access, request, *, execution):
     definition = request.candidate.definition
     if definition.observation_inputs:
         from strategy_runtime.observation_preparation import resolve_observation_requests
+        from strategy_runtime.dataset_observations import observation_request_to_dict
         from zoneinfo import ZoneInfo
         end = request.window.end.astimezone(ZoneInfo(request.candidate.instrument.timezone)).date()
         selection = equity_hash({'declarations': [item.to_dict() for item in definition.observation_inputs],
             'start': request.history_start.isoformat(), 'end': request.window.end.isoformat(),
-            'source_root': str(request.candidate.source_root)})
+            'source_root': str(request.candidate.source_root),
+            'explicit': [observation_request_to_dict(query) if query is not None else None
+                         for query in request.observation_requests]})
         if selection not in state.observation_selections:
-            items = resolve_observation_requests(access.data, definition.observation_inputs,
-                request.history_start, end, source_root=request.candidate.source_root, as_of=request.window.end)
-            state.observation_selections[selection] = tuple(query for _, query in items)
+            if request.observation_requests:
+                queries = []
+                for item, query in zip(definition.observation_inputs, request.observation_requests):
+                    if item.inactive_on(end):
+                        if query is not None:
+                            raise ValueError('inactive observation cannot select physical data')
+                        queries.append(None)
+                        continue
+                    if query is None:
+                        raise ValueError('missing request for an active observation')
+                    item.validate_request(query)
+                    first, last = date.fromisoformat(query.start), date.fromisoformat(query.end)
+                    if item.history_end is None and last > end:
+                        raise ValueError('observation selection exceeds evaluation end')
+                    if item.inactive_on(last):
+                        raise ValueError('active observation selection ends before required-from')
+                    (_, resolved), = resolve_observation_requests(access.data, (item,), first, last,
+                        source_root=request.candidate.source_root, as_of=request.window.end)
+                    if resolved != query:
+                        raise ValueError('observation selections differ from declared calendar and interval')
+                    queries.append(resolved)
+                state.observation_selections[selection] = tuple(queries)
+            else:
+                items = resolve_observation_requests(access.data, definition.observation_inputs,
+                    request.history_start, end, source_root=request.candidate.source_root, as_of=request.window.end)
+                state.observation_selections[selection] = tuple(query for _, query in items)
         queries = state.observation_selections[selection]
         if request.observation_requests and request.observation_requests != queries:
             raise ValueError('observation selections differ from declared calendar and interval')
@@ -182,7 +209,8 @@ def prepare_equity(access, request, *, execution):
             request.candidate.warmup_bars,
             request_bindings=tuple((role, query.parameters) for role, query in request.request_items(spec)
                                    if type(query) is EquityDataRequest),
-            observation_bindings=_observation_bindings(definition, request.request_items(spec), identities),
+            observation_bindings=_observation_bindings(definition, request.request_items(spec), identities,
+                end if definition.observation_inputs else None),
             auxiliary_inputs=tuple(EquityAuxiliaryBinding(item,
                 identities[item.data_key(EquityProduct.BARS)]["content_sha256"],
                 identities[item.data_key(EquityProduct.SESSIONS)]["content_sha256"])
@@ -224,11 +252,12 @@ def prepare_equity(access, request, *, execution):
         return value
 
 
-def _observation_bindings(definition, request_items, identities):
+def _observation_bindings(definition, request_items, identities, end):
     from strategy_runtime.dataset_observations import DatasetObservationBinding
     requests = dict(request_items)
-    return tuple(DatasetObservationBinding(item, requests[item.data_key()],
-        identities[item.data_key()]['content_sha256']) for item in definition.observation_inputs)
+    return tuple(DatasetObservationBinding(item, None, None, end) if item.data_key() not in requests else
+        DatasetObservationBinding(item, requests[item.data_key()], identities[item.data_key()]['content_sha256'])
+        for item in definition.observation_inputs)
 
 
 def _require_prepared(state, value):
@@ -253,7 +282,8 @@ def _replay(state, prepared, *, benchmark=False):
         state.replays[key] = (base.with_graph(graph) if base is not None else PreparedReplay.from_frames(
             products["bars"], products["constraints"], graph, latency_seconds=key[2],
             frequency=candidate.definition.execution_spec.decision_clock, timezone=candidate.instrument.timezone,
-            **_runtime_inputs(candidate.definition, products, identities)))
+            **_runtime_inputs(candidate.definition, products, identities,
+                observation_bindings=prepared.request.input_binding.observation_bindings)))
     return candidate, state.replays[key]
 
 
@@ -564,7 +594,9 @@ class MaterializedEquity:
         if definition.get('execution_input') is not None:
             decision_inputs['execution'] = {'bars': products['execution:bars'], 'sessions': products['execution:sessions']}
         if definition.get('observation_inputs'):
-            decision_inputs['observations'] = {item['name']: products['observation:' + item['name']]
+            from strategy_runtime.dataset_observations import DatasetObservationInput
+            decision_inputs['observations'] = {item['name']: products['observation:' + item['name']] if 'observation:' + item['name'] in products else
+                {'status': 'INACTIVE', 'activation_at': DatasetObservationInput.from_dict(item).activation_at.isoformat()}
                                                for item in definition['observation_inputs']}
         if decision_inputs:
             payload["audit_inputs"]["decision_inputs"] = decision_inputs

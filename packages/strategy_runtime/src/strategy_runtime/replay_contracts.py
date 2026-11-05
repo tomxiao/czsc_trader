@@ -138,8 +138,8 @@ class ReplayLeg:
             _quantity(self.dependency_sequence, "leg dependency")
             if (self.dependency_sequence >= self.sequence
                     or type(self.dependency_required_status) is not str
-                    or not self.dependency_required_status.strip()):
-                raise ValueError("leg dependency must name an earlier confirmed leg")
+                    or self.dependency_required_status != "FILLED_ALL"):
+                raise ValueError("leg dependency requires FILLED_ALL from an earlier confirmed leg")
 
 
 @dataclass(frozen=True, slots=True)
