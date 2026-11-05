@@ -1,0 +1,164 @@
+{
+  "candidate": {
+    "strategy_id": "S018",
+    "candidate_id": "C9380"
+  },
+  "definition": {
+    "runtime_kind": "ACCOUNT_REPLAY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "MU"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "daily",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 63,
+    "entrypoint": "strategy:step",
+    "source_files": [
+      "strategy.py"
+    ],
+    "source_sha256": "300a09e221aafa8cb9cd5ba0a0cb1ad39bebb8ac1cb42c2162b40a999325cf1c",
+    "parameters_json": "{\"add_mode\":\"repair_both\",\"add_mu_margin\":0.01,\"add_sector_margin\":0.0,\"beta_window\":40,\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":3,\"entry_days\":2,\"exit_margin\":0.005,\"initial_fraction\":0.5,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+    "dependencies": [
+      {
+        "name": "numpy",
+        "version": "2.5.2"
+      },
+      {
+        "name": "pandas",
+        "version": "3.0.5"
+      }
+    ],
+    "contract_version": 4,
+    "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"add_mu_margin\":{\"type\":\"number\"},\"add_sector_margin\":{\"type\":\"number\"},\"beta_window\":{\"type\":\"integer\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"entry_days\":{\"type\":\"integer\"},\"exit_margin\":{\"type\":\"number\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "auxiliary_inputs": [
+      {
+        "name": "mu_hfq",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+        },
+        "frequency": "daily",
+        "warmup_bars": 63,
+        "max_age_seconds": 604800,
+        "analysis_price": "HFQ"
+      },
+      {
+        "name": "soxx_hfq",
+        "instrument": {
+          "market": "US",
+          "asset_class": "ETF",
+          "symbol": "SOXX"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+        },
+        "frequency": "daily",
+        "warmup_bars": 63,
+        "max_age_seconds": 604800,
+        "analysis_price": "HFQ"
+      }
+    ],
+    "feature_graph": {
+      "nodes": [],
+      "outputs": [],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [],
+      "cycle_fields": [
+        {
+          "key": "anchor",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "sector_anchor",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "entry_budget",
+          "value_type": "float",
+          "nullable": false
+        }
+      ]
+    },
+    "computation": "STATEFUL_STEP"
+  },
+  "target": {
+    "version": "v1",
+    "parent_version": null,
+    "change_summary": "S018 C9380原生V4首次阶段五技术检验",
+    "selection_data_cutoff": "2026-10-30",
+    "forward_start": "2026-11-06"
+  },
+  "data_kind": "HISTORICAL",
+  "max_workers": 2,
+  "timeout_seconds": 180,
+  "baseline": "NOT_REQUESTED",
+  "source_deliveries": {
+    "CANDIDATES": {
+      "path": "research/S018/deliveries/CANDIDATES/3/receipt.json",
+      "file_sha256": "309b89860729f2c6534b359a36eead982c8cc146efa172293569ace480d4426e",
+      "reference": {
+        "batch": {
+          "strategy_id": "S018",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "7e1c6aaa2638cf1600afaeda3187600b955015b88287b76572a5d666732979ea",
+        "revision": 3,
+        "stage": "CANDIDATES",
+        "type": "DeliveryReference"
+      }
+    },
+    "ASSESSMENT": {
+      "path": "research/S018/deliveries/ASSESSMENT/2/receipt.json",
+      "file_sha256": "a5465a719d8d24ab4a98f5781ad7edd91403bf885b92943c46ec5d50fe582444",
+      "reference": {
+        "batch": {
+          "strategy_id": "S018",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "15bf59b4fc8eb863b702dca65adb11d560e2aa0fbc96b3ee0d0519f7a24274aa",
+        "revision": 2,
+        "stage": "ASSESSMENT",
+        "type": "DeliveryReference"
+      }
+    }
+  },
+  "remaining_risks": [
+    "V4原生发布与PTE能力须实际验证；不得降级到V2。",
+    "forward_start仅冻结计划元数据，不构成生产部署或启动授权。",
+    "PTE为隔离录制通道检验，历史输入与模拟通道报告的用途已分别说明。"
+  ]
+}
