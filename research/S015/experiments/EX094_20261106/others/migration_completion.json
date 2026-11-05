@@ -1,0 +1,175 @@
+{
+  "status": "PASS",
+  "candidate": {
+    "type": "CandidateOrigin",
+    "candidate": {
+      "type": "CandidateKey",
+      "strategy_id": "S015",
+      "candidate_id": "C9901"
+    },
+    "content_sha256": "288a3331a060652d9d31c2495b37302041aa30f506c6fdbdb372682b4cafd9d5",
+    "registration": {
+      "type": "ResearchEvidenceRef",
+      "owner": {
+        "type": "ResearchEvidenceOwner",
+        "strategy_id": "S015",
+        "experiment_id": "EX094_20261106"
+      },
+      "path": "inspection/70c78bb45564a8dc610f60eaf684d0a2bc18f7d3ff1bac6ca91d56467ccdda19",
+      "sha256": "70c78bb45564a8dc610f60eaf684d0a2bc18f7d3ff1bac6ca91d56467ccdda19"
+    }
+  },
+  "account_evidence_reused": true,
+  "candidate_payload_matches_last_account": true,
+  "comparison": [
+    {
+      "scenario": "STANDARD",
+      "status": "PASS",
+      "old_reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX082_20261025"
+        },
+        "evidence_id": "228ac057b75d756c3cb3bd307007ef467e8b7711892021ff59d9c689f4a3c1f5.json",
+        "sha256": "228ac057b75d756c3cb3bd307007ef467e8b7711892021ff59d9c689f4a3c1f5",
+        "media_type": "application/json",
+        "name": "standard",
+        "schema": "account_evaluation",
+        "schema_version": 8
+      },
+      "new_reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX094_20261106"
+        },
+        "evidence_id": "96bf7af6e8a1360d8145c962991de1f3749824daf58fbe2a12685233867e9a55.json",
+        "sha256": "96bf7af6e8a1360d8145c962991de1f3749824daf58fbe2a12685233867e9a55",
+        "media_type": "application/json",
+        "name": "migration-STANDARD",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "mismatches": [],
+      "old_fills": 108,
+      "new_fills": 108,
+      "old_sessions": 434,
+      "new_sessions": 434,
+      "max_fill_difference": {
+        "price": 0.0,
+        "quantity": 0.0,
+        "fees": 5.684341886080802e-14
+      },
+      "max_daily_difference": {
+        "cash": 5.820766091346741e-11,
+        "quantity": 0.0,
+        "close": 0.0,
+        "equity": 5.820766091346741e-11
+      }
+    },
+    {
+      "scenario": "FEE_X2",
+      "status": "PASS",
+      "old_reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX082_20261025"
+        },
+        "evidence_id": "63eeab719caf4132da46ed7c684cb3f6a9d8360322a94c9bb92a401832621121.json",
+        "sha256": "63eeab719caf4132da46ed7c684cb3f6a9d8360322a94c9bb92a401832621121",
+        "media_type": "application/json",
+        "name": "fee_x2",
+        "schema": "account_evaluation",
+        "schema_version": 8
+      },
+      "new_reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX094_20261106"
+        },
+        "evidence_id": "b8d140078bbfe64d9f7d52d73949592e8926a01d3560755ba51edf333878904e.json",
+        "sha256": "b8d140078bbfe64d9f7d52d73949592e8926a01d3560755ba51edf333878904e",
+        "media_type": "application/json",
+        "name": "migration-FEE_X2",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "mismatches": [],
+      "old_fills": 108,
+      "new_fills": 108,
+      "old_sessions": 434,
+      "new_sessions": 434,
+      "max_fill_difference": {
+        "price": 0.0,
+        "quantity": 0.0,
+        "fees": 1.1368683772161603e-13
+      },
+      "max_daily_difference": {
+        "cash": 5.820766091346741e-11,
+        "quantity": 0.0,
+        "close": 0.0,
+        "equity": 5.820766091346741e-11
+      }
+    }
+  ],
+  "signal_comparison": {
+    "status": "PASS",
+    "prefix_decisions": 434,
+    "first_signal": "2024-12-31",
+    "last_checked": "2026-10-20",
+    "max_absolute_difference": 0.0,
+    "reference": "exact current frozen source pure functions",
+    "scope": "all signal fields and signal-clock state; execution checked separately"
+  },
+  "technical": {
+    "type": "ResearchEvidenceRef",
+    "owner": {
+      "type": "ResearchEvidenceOwner",
+      "strategy_id": "S015",
+      "experiment_id": "EX094_20261106"
+    },
+    "path": "inspection/87b639b57b5dc824b993bc48f079cfbde507e7e024b363c5bcd6fe251a42f2bc",
+    "sha256": "87b639b57b5dc824b993bc48f079cfbde507e7e024b363c5bcd6fe251a42f2bc"
+  },
+  "source_matrix": [
+    {
+      "role": "signal_daily",
+      "source": "s015-saved-tushare-observations",
+      "revision": "ex087-v1",
+      "vendor": "Tushare",
+      "product": "BARS DAILY HFQ + SESSIONS",
+      "verified_start": "2024-09-09",
+      "verified_end": "2026-10-21"
+    },
+    {
+      "role": "signal_intraday",
+      "source": "s015-saved-tushare-observations",
+      "revision": "ex087-v1",
+      "vendor": "Tushare",
+      "product": "BARS M30 RAW + SESSIONS",
+      "verified_start": "2025-01-02",
+      "verified_end": "2026-10-21"
+    },
+    {
+      "role": "execution",
+      "source": "s015-saved-tushare-raw",
+      "revision": "ex087-v1",
+      "vendor": "Tushare retained OHLCV/trade calendar/limits and authenticated no-action receipt",
+      "product": "BARS DAILY RAW + SESSIONS + ACTIONS + CONSTRAINTS",
+      "verified_start": "2024-09-09",
+      "verified_end": "2026-10-21"
+    }
+  ],
+  "remaining_risks": [
+    "冻结辅助行情 SourceRef 固定为 s015-saved-tushare-observations/ex087-v1；当前 ProviderConfig 仅接入 Tushare 留存历史。后续不能直接改换 SourceRef，须为该逻辑来源配置符合相同价格、时间和覆盖合同的持续供数实现，并验证日历、交易约束、公司行动和观察数据；该接续尚未实现，是生产发布及重绑的前置项。当前 PASS 只证明留存区间上的等价性与隔离 PTE 运行，不代表生产已适配。"
+  ],
+  "frozen_apply": "NOT_PERFORMED",
+  "production": "NOT_TOUCHED"
+}

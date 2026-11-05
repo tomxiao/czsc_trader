@@ -1,0 +1,180 @@
+{
+  "runtime": {
+    "kind": "ACCOUNT_REPLAY",
+    "contract_version": 4,
+    "source_files": [
+      "cycle_planner.py",
+      "signal_math.py",
+      "strategy.py"
+    ],
+    "source_sha256": "3495bc3a5b2bf835e594cce69d8d77b911dce5be68fc6d93c888431769aa5b6f"
+  },
+  "equity_definition": {
+    "runtime_kind": "ACCOUNT_REPLAY",
+    "instrument": {
+      "market": "CN",
+      "asset_class": "ETF",
+      "symbol": "159326.SZ"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "CN_EQUITY_V1"
+      },
+      "decision_clock": "daily",
+      "account": {
+        "currency": "CNY",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 100,
+      "price_tick": 0.001,
+      "buy_premium": 0.003,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 20,
+    "entrypoint": "strategy:step",
+    "source_files": [
+      "cycle_planner.py",
+      "signal_math.py",
+      "strategy.py"
+    ],
+    "source_sha256": "3495bc3a5b2bf835e594cce69d8d77b911dce5be68fc6d93c888431769aa5b6f",
+    "parameters_json": "{\"entry\":0.325,\"exit\":0.025,\"lookback\":130,\"max_days\":2,\"premium\":0.003,\"spx_weight\":0.05,\"tail_weight\":0.575}",
+    "dependencies": [
+      {
+        "name": "numpy",
+        "version": "2.5.2"
+      },
+      {
+        "name": "pandas",
+        "version": "3.0.5"
+      }
+    ],
+    "contract_version": 4,
+    "parameter_schema_json": "{\"entry\":{\"type\":\"number\"},\"exit\":{\"type\":\"number\"},\"lookback\":{\"type\":\"integer\"},\"max_days\":{\"type\":\"integer\"},\"premium\":{\"type\":\"number\"},\"spx_weight\":{\"type\":\"number\"},\"tail_weight\":{\"type\":\"number\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "auxiliary_inputs": [
+      {
+        "name": "hfq",
+        "instrument": {
+          "market": "CN",
+          "asset_class": "ETF",
+          "symbol": "159326.SZ"
+        },
+        "source": {
+          "provider": "s011-retained-tushare-observations",
+          "revision": "ex087-v1"
+        },
+        "frequency": "daily",
+        "warmup_bars": 20,
+        "max_age_seconds": 1296000,
+        "analysis_price": "HFQ"
+      },
+      {
+        "name": "intraday",
+        "instrument": {
+          "market": "CN",
+          "asset_class": "ETF",
+          "symbol": "159326.SZ"
+        },
+        "source": {
+          "provider": "s011-retained-tushare-observations",
+          "revision": "ex087-v1"
+        },
+        "frequency": "30m",
+        "warmup_bars": 160,
+        "max_age_seconds": 1296000,
+        "analysis_price": "HFQ"
+      }
+    ],
+    "feature_graph": {
+      "nodes": [],
+      "outputs": [],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [
+        {
+          "key": "locked_quantity",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "had_position",
+          "value_type": "bool",
+          "nullable": false
+        }
+      ],
+      "cycle_fields": []
+    },
+    "computation": "STATEFUL_STEP",
+    "initial_account": {
+      "values": [
+        [
+          "locked_quantity",
+          -1
+        ],
+        [
+          "had_position",
+          false
+        ]
+      ]
+    },
+    "observation_inputs": [
+      {
+        "name": "market",
+        "dataset": "index.domestic_close_turnover_daily",
+        "symbol": "000300.SH",
+        "frequency": "daily",
+        "history_start": "2024-12-26",
+        "history_end": null,
+        "coverage": {
+          "maximum_start_lag_days": 0,
+          "minimum_observations": 1,
+          "minimum_sessions": 21,
+          "observations_through": null
+        },
+        "asset": null,
+        "calendar": "SSE",
+        "availability": {
+          "timezone": "Asia/Shanghai",
+          "available_time": "17:00",
+          "day_offset": 0
+        },
+        "max_staleness_days": 15
+      },
+      {
+        "name": "spx",
+        "dataset": "index.global_daily",
+        "symbol": "SPX",
+        "frequency": "daily",
+        "history_start": "2024-12-16",
+        "history_end": null,
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 1,
+          "minimum_sessions": 30,
+          "observations_through": null
+        },
+        "asset": null,
+        "calendar": "SSE",
+        "availability": {
+          "timezone": "America/New_York",
+          "available_time": "17:00",
+          "day_offset": 0
+        },
+        "max_staleness_days": 10
+      }
+    ],
+    "planning_context": true
+  }
+}

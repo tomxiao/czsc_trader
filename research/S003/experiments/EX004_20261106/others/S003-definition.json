@@ -1,0 +1,163 @@
+{
+  "runtime_kind": "ACCOUNT_REPLAY",
+  "instrument": {
+    "market": "CN",
+    "asset_class": "ETF",
+    "symbol": "510500.SH"
+  },
+  "execution_spec": {
+    "market": {
+      "rule_version": "CN_EQUITY_V1"
+    },
+    "decision_clock": "daily",
+    "account": {
+      "currency": "CNY",
+      "cash_availability": "IMMEDIATE_RESEARCH",
+      "allow_short": false,
+      "allow_negative_cash": false
+    },
+    "quantity_step": 100,
+    "price_tick": 0.001,
+    "buy_premium": 0.1,
+    "slippage_bp": 0.0,
+    "execution": "BAR_RANGE_V1",
+    "inclusive_touch": false,
+    "data_latency_seconds": 0
+  },
+  "warmup_bars": 1,
+  "entrypoint": "strategy:step",
+  "source_files": [
+    "signals.py",
+    "strategy.py"
+  ],
+  "source_sha256": "268ae85c19a171279321f84e85e12763c7e3c25ac80c6d11217c408074e00c10",
+  "parameters_json": "{\"candidate_source\":{\"candidate_hash\":\"1d6736f816d652c59d43dd22491c567e65100eaddfa3d20575531ca5a124f741\",\"candidate_id\":\"S003-C001\",\"definition\":\"experiments/S003/20260911_S003_EX53/candidate_payload.json\",\"runtime_contract\":\"experiments/S003/20260911_S003_EX56/candidate_payload.json\"},\"rule\":{\"data_source\":{\"format\":\"S003_CONSTITUENT_MONEYFLOW_SEED_V1\",\"package\":\"strategy_runtime\",\"path\":\"resources/s003_v1_seed.csv.gz\",\"sha256\":\"6a60c143617fcf6597ccd475782849763cb413e4cf47b7c45199f720c988d86c\"},\"execution\":{\"core_fraction\":0.5,\"entry_checkpoint\":\"OPEN\",\"event_fraction\":0.5,\"exit_checkpoint\":\"11:30_CLOSE\",\"lot_size\":100,\"maximum_events_per_day\":1,\"one_way_cost\":0.00012,\"t_plus_one_inventory_rotation\":true},\"feature\":{\"comparison\":\"GREATER_THAN_OR_EQUAL\",\"minimum_observed_weight_ratio\":0.95,\"threshold_excludes_current_session\":true,\"threshold_lookback_sessions\":60,\"threshold_quantile\":0.8},\"symbol\":\"510500.SH\"},\"strategy_kind\":\"constituent_moneyflow_intraday_overlay\",\"symbol\":\"510500.SH\"}",
+  "dependencies": [
+    {
+      "name": "numpy",
+      "version": "2.5.2"
+    },
+    {
+      "name": "pandas",
+      "version": "3.0.5"
+    }
+  ],
+  "contract_version": 4,
+  "parameter_schema_json": "{\"candidate_source\":{\"type\":\"object\"},\"rule\":{\"type\":\"object\"},\"strategy_kind\":{\"type\":\"string\"},\"symbol\":{\"type\":\"string\"}}",
+  "feedback_mode": "CONFIRMED_EXECUTION",
+  "analysis_price": "RAW",
+  "explanation_cases": [
+    "flat",
+    "long"
+  ],
+  "feature_graph": {
+    "nodes": [],
+    "outputs": [],
+    "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+  },
+  "state_schema": {
+    "account_fields": [
+      {
+        "key": "core_quantity",
+        "value_type": "int",
+        "nullable": false
+      }
+    ],
+    "cycle_fields": []
+  },
+  "computation": "STATEFUL_STEP",
+  "execution_input": {
+    "instrument": {
+      "market": "CN",
+      "asset_class": "ETF",
+      "symbol": "510500.SH"
+    },
+    "source": {
+      "provider": "tushare-reviewed-raw",
+      "revision": "s003-20261106"
+    },
+    "frequency": "30m"
+  },
+  "initial_account": {
+    "values": [
+      [
+        "core_quantity",
+        0
+      ]
+    ]
+  },
+  "observation_inputs": [
+    {
+      "name": "constituent_moneyflow_seed",
+      "dataset": "strategy.feature_evidence",
+      "symbol": "S003-v1",
+      "frequency": "daily",
+      "history_start": "2021-01-04",
+      "history_end": "2026-09-08",
+      "coverage": {
+        "maximum_start_lag_days": null,
+        "minimum_observations": 1,
+        "minimum_sessions": 0,
+        "observations_through": null
+      },
+      "asset": {
+        "relative_path": "seed.csv",
+        "sha256": "d00c512c15c557c01212533a2f98bdf0a7e49f94cdee5c8eb3637e98b717178f"
+      },
+      "calendar": "SSE",
+      "availability": {
+        "timezone": "Asia/Shanghai",
+        "available_time": "15:00",
+        "day_offset": 0
+      },
+      "max_staleness_days": null
+    },
+    {
+      "name": "incremental_constituent_weights",
+      "dataset": "index.constituent_weight",
+      "symbol": "000905.SH",
+      "frequency": "snapshot",
+      "history_start": "2025-09-04",
+      "history_end": null,
+      "coverage": {
+        "maximum_start_lag_days": null,
+        "minimum_observations": 1,
+        "minimum_sessions": 0,
+        "observations_through": null
+      },
+      "asset": null,
+      "calendar": "SSE",
+      "availability": {
+        "timezone": "Asia/Shanghai",
+        "available_time": "15:00",
+        "day_offset": 0
+      },
+      "max_staleness_days": null,
+      "required_from": "2026-09-09"
+    },
+    {
+      "name": "incremental_constituent_moneyflow",
+      "dataset": "stock.moneyflow",
+      "symbol": null,
+      "frequency": "daily",
+      "history_start": "2026-09-09",
+      "history_end": null,
+      "coverage": {
+        "maximum_start_lag_days": null,
+        "minimum_observations": 1,
+        "minimum_sessions": 0,
+        "observations_through": null
+      },
+      "asset": null,
+      "calendar": "SSE",
+      "availability": {
+        "timezone": "Asia/Shanghai",
+        "available_time": "15:00",
+        "day_offset": 0
+      },
+      "max_staleness_days": null,
+      "required_from": "2026-09-09"
+    }
+  ],
+  "planning_context": true
+}

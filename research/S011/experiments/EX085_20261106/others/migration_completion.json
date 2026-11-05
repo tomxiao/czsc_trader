@@ -1,0 +1,163 @@
+{
+  "status": "PASS",
+  "candidate": {
+    "type": "CandidateOrigin",
+    "candidate": {
+      "type": "CandidateKey",
+      "strategy_id": "S011",
+      "candidate_id": "C9951"
+    },
+    "content_sha256": "b7e73a7d9f8c2d394e773a387d69339e51f23a6eb56f053ed8c7cbc3d231779e",
+    "registration": {
+      "type": "ResearchEvidenceRef",
+      "owner": {
+        "type": "ResearchEvidenceOwner",
+        "strategy_id": "S011",
+        "experiment_id": "EX085_20261106"
+      },
+      "path": "inspection/51de2fba3005f3095694c7aa858d6bcf9fdfbbe5c0d3102af7175e21a22de752",
+      "sha256": "51de2fba3005f3095694c7aa858d6bcf9fdfbbe5c0d3102af7175e21a22de752"
+    }
+  },
+  "account_evidence_reused": true,
+  "candidate_payload_matches_last_account": true,
+  "comparison": [
+    {
+      "status": "PASS",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S011",
+        "experiment_id": "EX085_20261106"
+      },
+      "old_references": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S011",
+            "experiment_id": "EX084_20261026"
+          },
+          "evidence_id": "14727e363985e21c61e24f8807b129e476fc82c91c3e03469507f5f4d22a4fc0.csv",
+          "sha256": "14727e363985e21c61e24f8807b129e476fc82c91c3e03469507f5f4d22a4fc0",
+          "media_type": "text/csv",
+          "name": "new_CONTINUOUS_account_daily",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S011",
+            "experiment_id": "EX084_20261026"
+          },
+          "evidence_id": "678e1f4c87dfca0bf55a04e9328f8bf3ee10407940b2356690220b3d5244e5fb.csv",
+          "sha256": "678e1f4c87dfca0bf55a04e9328f8bf3ee10407940b2356690220b3d5244e5fb",
+          "media_type": "text/csv",
+          "name": "new_CONTINUOUS_fills",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "new_reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S011",
+          "experiment_id": "EX085_20261106"
+        },
+        "evidence_id": "2746d5d3b5a3544df27fdd04e94b28263cb521da8c0fdacf230931e2936d8d6b.json",
+        "sha256": "2746d5d3b5a3544df27fdd04e94b28263cb521da8c0fdacf230931e2936d8d6b",
+        "media_type": "application/json",
+        "name": "migration-STANDARD",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "mismatches": [],
+      "old_fills": 80,
+      "new_fills": 80,
+      "old_sessions": 405,
+      "new_sessions": 405,
+      "max_fill_difference": {
+        "price": 0.0,
+        "quantity": 0.0,
+        "fees": 5.684341886080802e-14
+      },
+      "max_daily_difference": {
+        "cash": 8.731149137020111e-11,
+        "quantity": 0.0,
+        "close": 0.0,
+        "equity": 8.731149137020111e-11
+      }
+    }
+  ],
+  "signal_comparison": {
+    "status": "PASS",
+    "prefix_decisions": 405,
+    "first_signal": "2025-02-05",
+    "last_checked": "2026-09-29",
+    "max_absolute_difference": 0.0,
+    "reference": "exact current frozen source pure functions",
+    "scope": "all signal fields and signal-clock state; execution checked separately"
+  },
+  "technical": {
+    "type": "ResearchEvidenceRef",
+    "owner": {
+      "type": "ResearchEvidenceOwner",
+      "strategy_id": "S011",
+      "experiment_id": "EX085_20261106"
+    },
+    "path": "inspection/005f7b36ffd873bef4f6acfd85234ef4f3f7472f135a5f70ec8ff6fdf6cb7360",
+    "sha256": "005f7b36ffd873bef4f6acfd85234ef4f3f7472f135a5f70ec8ff6fdf6cb7360"
+  },
+  "source_matrix": [
+    {
+      "role": "signal_daily",
+      "source": "s011-retained-tushare-observations",
+      "revision": "ex087-v1",
+      "vendor": "Tushare",
+      "product": "BARS DAILY HFQ + SESSIONS",
+      "verified_start": "2024-12-26",
+      "verified_end": "2026-09-30"
+    },
+    {
+      "role": "signal_intraday",
+      "source": "s011-retained-tushare-observations",
+      "revision": "ex087-v1",
+      "vendor": "Tushare",
+      "product": "BARS M30 HFQ + SESSIONS",
+      "verified_start": "2024-12-26",
+      "verified_end": "2026-09-30"
+    },
+    {
+      "role": "execution",
+      "source": "s011-retained-tushare-raw",
+      "revision": "ex087-v1",
+      "vendor": "Tushare retained OHLCV/trade calendar/limits and authenticated no-action receipt",
+      "product": "BARS DAILY RAW + SESSIONS + ACTIONS + CONSTRAINTS",
+      "verified_start": "2024-09-09",
+      "verified_end": "2026-09-30"
+    },
+    {
+      "role": "market",
+      "dataset": "DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY",
+      "symbol": "000300.SH",
+      "vendor": "Tushare",
+      "verified_start": "2024-12-26",
+      "verified_end": "2026-09-30"
+    },
+    {
+      "role": "spx",
+      "dataset": "GLOBAL_INDEX_DAILY",
+      "symbol": "SPX",
+      "vendor": "Tushare",
+      "verified_start": "2024-12-16",
+      "verified_end": "2026-09-30"
+    }
+  ],
+  "remaining_risks": [
+    "冻结辅助行情 SourceRef 固定为 s011-retained-tushare-observations/ex087-v1；当前 ProviderConfig 仅接入 Tushare 留存历史。后续不能直接改换 SourceRef，须为该逻辑来源配置符合相同价格、时间和覆盖合同的持续供数实现，并验证日历、交易约束、公司行动和观察数据；该接续尚未实现，是生产发布及重绑的前置项。当前 PASS 只证明留存区间上的等价性与隔离 PTE 运行，不代表生产已适配。"
+  ],
+  "frozen_apply": "NOT_PERFORMED",
+  "production": "NOT_TOUCHED"
+}

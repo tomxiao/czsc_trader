@@ -1,0 +1,35 @@
+{
+  "recorded_at": "2026-11-05T18:22:28.221187+00:00",
+  "actor": "RSCH",
+  "user_instructions": [
+    "已冻结策略实现统一原地升级，适配当前PTE版本，并做等价性验证",
+    "沿用 codex/dev-pte-multichannel-refactor",
+    "继续"
+  ],
+  "interpretation": "Continue the authorized frozen implementation migration and equivalence verification after DEV delivery; local same-version publication only.",
+  "original": {
+    "type": "FrozenVersionReference",
+    "strategy_id": "S011",
+    "version": "v1",
+    "release_hash": "eb8a23d56de5c13079f125fd3ac09b520aaf8925c71e729709189c3f99a7b7d9",
+    "package_hash": "5355ca9811805fdb72a9b1ea2778c30d42eb3f493220b2e9fd2e8c6c5882b6d7"
+  },
+  "candidate": {
+    "strategy_id": "S011",
+    "candidate_id": "C9951"
+  },
+  "content_identity": {
+    "content_sha256": "b7e73a7d9f8c2d394e773a387d69339e51f23a6eb56f053ed8c7cbc3d231779e",
+    "source_sha256": "3495bc3a5b2bf835e594cce69d8d77b911dce5be68fc6d93c888431769aa5b6f",
+    "dependency_sha256": "5cf218acedbbdd3ae42ccc0211967e59a50a5827079268aa71c51876099ff20d",
+    "schema_version": 2
+  },
+  "excluded": [
+    "production writes",
+    "PTE account rebinding",
+    "qualification grants",
+    "merge",
+    "push",
+    "tag"
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "status": "PASS",
+  "candidate": "C9901",
+  "content_sha256": "80b00d0b4c6ff5386ac30fd9c14cc7362870647eb202682fe7696067f351f31b",
+  "final_upgrade_identity_tested": true,
+  "definition_observation_history_start": null,
+  "explicit_observation_start": "2025-03-05",
+  "default_dfls_observation_provider": true,
+  "daily_rows": 31,
+  "fills": 2,
+  "max_daily_differences": {
+    "cash": 1.1937117960769683e-12,
+    "quantity": 0.0,
+    "close": 0.0,
+    "equity": 0.0
+  },
+  "max_fill_differences": {
+    "quantity": 0.0,
+    "price": 0.0,
+    "fees": 0.0
+  },
+  "evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S002",
+      "experiment_id": "EX004_20261106"
+    },
+    "evidence_id": "15a3b6bdd823c82e3cf6683085d8e1722eded732564e6f0bf9f98ef1c1fccf7f.json",
+    "sha256": "15a3b6bdd823c82e3cf6683085d8e1722eded732564e6f0bf9f98ef1c1fccf7f",
+    "media_type": "application/json",
+    "name": "s002-native-final-matched",
+    "schema": "equity_research",
+    "schema_version": 4
+  },
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S002",
+    "experiment_id": "EX004_20261106"
+  },
+  "orders": {
+    "rows": 3,
+    "execution_dates_side_quantity_type_limit_buy": "EXACT",
+    "status_mapping": {
+      "UNFILLED": "EXPIRED",
+      "FILLED": "FILLED"
+    },
+    "market_sell_limit": "Legacy stored reference 8.037 is informational; native MARKET has no limit, same market-open fill 7.993",
+    "unfilled_order": "2026-08-04 BUY 13400 LIMIT 7.42; not crossed in both accounts"
+  }
+}

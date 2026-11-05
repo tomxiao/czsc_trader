@@ -1,0 +1,352 @@
+{
+  "prepared": {
+    "space_id": "f7b75cd7-67f7-4e4d-b483-2434baaa9e39",
+    "preparation_id": "12262449-f9c2-4558-983e-9bb851acf947",
+    "manifest_sha256": "a7f07790d7522d50c71311e73a627dc523828e7561da21a78f781d1aed69aa8a"
+  },
+  "instrument": {
+    "market": "CN",
+    "asset_class": "ETF",
+    "symbol": "510500.SH"
+  },
+  "specification_hash": "8502fd1470813af0d4bb7cadec4322fd8bead2035029e094a2d958cb9f9514e8",
+  "content_identities": [
+    [
+      "bars",
+      "edb8504373f5e1734546af8fbe2266cfe0c3e4ca1a6a951c0f9c94b7ced2c822"
+    ],
+    [
+      "actions",
+      "77147341c901fbd2a9bf70cd5a2b065b142414c3ca83d3a177bbf935ff1c8f0f"
+    ],
+    [
+      "constraints",
+      "81d0c3263d46dedb2b01f90d78149b83ff1ba09d5e42e29553cd18604bf90082"
+    ],
+    [
+      "sessions",
+      "ba2afa2cc11f56b76771fa43aedb4f13b12408ef038489ec84bcbc4569ce8124"
+    ]
+  ],
+  "warmup_bars": 1,
+  "execution_input": {
+    "input": {
+      "instrument": {
+        "market": "CN",
+        "asset_class": "ETF",
+        "symbol": "510500.SH"
+      },
+      "source": {
+        "provider": "tushare-reviewed-raw",
+        "revision": "s003-20261106"
+      },
+      "frequency": "30m"
+    },
+    "bars_sha256": "ed824f52b2b825bf367bc12df47aa14bc6ebaf884d473fe38b1b4d5e74d07b96",
+    "sessions_sha256": "ba2afa2cc11f56b76771fa43aedb4f13b12408ef038489ec84bcbc4569ce8124"
+  },
+  "request_bindings": [
+    [
+      "bars",
+      {
+        "instrument": {
+          "market": "CN",
+          "asset_class": "ETF",
+          "symbol": "510500.SH"
+        },
+        "source": {
+          "provider": "tushare-reviewed-raw",
+          "revision": "s003-20261106"
+        },
+        "query": {
+          "product": "equity.bars",
+          "start": "2026-08-01",
+          "end": "2026-11-05",
+          "frequency": "daily",
+          "adjustment": "none",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "sessions",
+      {
+        "instrument": {
+          "market": "CN",
+          "asset_class": "ETF",
+          "symbol": "510500.SH"
+        },
+        "source": {
+          "provider": "tushare-reviewed-raw",
+          "revision": "s003-20261106"
+        },
+        "query": {
+          "product": "equity.sessions",
+          "start": "2026-08-01",
+          "end": "2026-11-05",
+          "frequency": "daily",
+          "adjustment": "none",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "actions",
+      {
+        "instrument": {
+          "market": "CN",
+          "asset_class": "ETF",
+          "symbol": "510500.SH"
+        },
+        "source": {
+          "provider": "tushare-reviewed-raw",
+          "revision": "s003-20261106"
+        },
+        "query": {
+          "product": "equity.actions",
+          "start": "2026-08-01",
+          "end": "2026-11-05",
+          "frequency": "daily",
+          "adjustment": "none",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "constraints",
+      {
+        "instrument": {
+          "market": "CN",
+          "asset_class": "ETF",
+          "symbol": "510500.SH"
+        },
+        "source": {
+          "provider": "tushare-reviewed-raw",
+          "revision": "s003-20261106"
+        },
+        "query": {
+          "product": "equity.constraints",
+          "start": "2026-08-01",
+          "end": "2026-11-05",
+          "frequency": "daily",
+          "adjustment": "none",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "execution:bars",
+      {
+        "instrument": {
+          "market": "CN",
+          "asset_class": "ETF",
+          "symbol": "510500.SH"
+        },
+        "source": {
+          "provider": "tushare-reviewed-raw",
+          "revision": "s003-20261106"
+        },
+        "query": {
+          "product": "equity.bars",
+          "start": "2026-08-01",
+          "end": "2026-11-05",
+          "frequency": "30m",
+          "adjustment": "none",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "execution:sessions",
+      {
+        "instrument": {
+          "market": "CN",
+          "asset_class": "ETF",
+          "symbol": "510500.SH"
+        },
+        "source": {
+          "provider": "tushare-reviewed-raw",
+          "revision": "s003-20261106"
+        },
+        "query": {
+          "product": "equity.sessions",
+          "start": "2026-08-01",
+          "end": "2026-11-05",
+          "frequency": "30m",
+          "adjustment": "none",
+          "session": "REGULAR"
+        }
+      }
+    ]
+  ],
+  "observation_bindings": [
+    {
+      "input": {
+        "name": "constituent_moneyflow_seed",
+        "dataset": "strategy.feature_evidence",
+        "symbol": "S003-v1",
+        "frequency": "daily",
+        "history_start": "2021-01-04",
+        "history_end": "2026-09-08",
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 1,
+          "minimum_sessions": 0,
+          "observations_through": null
+        },
+        "asset": {
+          "relative_path": "seed.csv",
+          "sha256": "d00c512c15c557c01212533a2f98bdf0a7e49f94cdee5c8eb3637e98b717178f"
+        },
+        "calendar": "SSE",
+        "availability": {
+          "timezone": "Asia/Shanghai",
+          "available_time": "15:00",
+          "day_offset": 0
+        },
+        "max_staleness_days": null
+      },
+      "request": {
+        "dataset": "strategy.feature_evidence",
+        "symbol": "S003-v1",
+        "start": "2021-01-04",
+        "end": "2026-09-08",
+        "required_cutoff": null,
+        "frequency": "daily",
+        "parameters": {
+          "repository_root": "D:\\CodeBase\\czsc_trader\\research\\S003\\runtime_upgrade_v4",
+          "source_path": "seed.csv",
+          "source_sha256": "d00c512c15c557c01212533a2f98bdf0a7e49f94cdee5c8eb3637e98b717178f"
+        },
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 1,
+          "minimum_sessions": 0,
+          "observations_through": null
+        }
+      },
+      "content_sha256": "f5c71dd050bc415b2e99b2f614664b5306cdffc2b8cce51db97b18da7f30be9d"
+    },
+    {
+      "input": {
+        "name": "incremental_constituent_weights",
+        "dataset": "index.constituent_weight",
+        "symbol": "000905.SH",
+        "frequency": "snapshot",
+        "history_start": "2025-09-04",
+        "history_end": null,
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 1,
+          "minimum_sessions": 0,
+          "observations_through": null
+        },
+        "asset": null,
+        "calendar": "SSE",
+        "availability": {
+          "timezone": "Asia/Shanghai",
+          "available_time": "15:00",
+          "day_offset": 0
+        },
+        "max_staleness_days": null,
+        "required_from": "2026-09-09"
+      },
+      "request": {
+        "dataset": "index.constituent_weight",
+        "symbol": "000905.SH",
+        "start": "2025-09-04",
+        "end": "2026-11-05",
+        "required_cutoff": null,
+        "frequency": "snapshot",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 1,
+          "minimum_sessions": 0,
+          "observations_through": null
+        }
+      },
+      "content_sha256": "b865383d138187a2da2861ff198ed07e1dec51679f086cb942db4013c56451ac"
+    },
+    {
+      "input": {
+        "name": "incremental_constituent_moneyflow",
+        "dataset": "stock.moneyflow",
+        "symbol": null,
+        "frequency": "daily",
+        "history_start": "2026-09-09",
+        "history_end": null,
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 1,
+          "minimum_sessions": 0,
+          "observations_through": null
+        },
+        "asset": null,
+        "calendar": "SSE",
+        "availability": {
+          "timezone": "Asia/Shanghai",
+          "available_time": "15:00",
+          "day_offset": 0
+        },
+        "max_staleness_days": null,
+        "required_from": "2026-09-09"
+      },
+      "request": {
+        "dataset": "stock.moneyflow",
+        "symbol": null,
+        "start": "2026-09-09",
+        "end": "2026-11-05",
+        "required_cutoff": null,
+        "frequency": "daily",
+        "parameters": {
+          "trading_dates": [
+            "2026-09-09",
+            "2026-09-10",
+            "2026-09-11",
+            "2026-09-14",
+            "2026-09-15",
+            "2026-09-16",
+            "2026-09-17",
+            "2026-09-18",
+            "2026-09-21",
+            "2026-09-22",
+            "2026-09-23",
+            "2026-09-24",
+            "2026-09-28",
+            "2026-09-29",
+            "2026-09-30",
+            "2026-10-08",
+            "2026-10-09",
+            "2026-10-12",
+            "2026-10-13",
+            "2026-10-14",
+            "2026-10-15",
+            "2026-10-16",
+            "2026-10-19",
+            "2026-10-20",
+            "2026-10-21",
+            "2026-10-22",
+            "2026-10-23",
+            "2026-10-26",
+            "2026-10-27",
+            "2026-10-28",
+            "2026-10-29",
+            "2026-10-30",
+            "2026-11-02",
+            "2026-11-03",
+            "2026-11-04",
+            "2026-11-05"
+          ]
+        },
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 1,
+          "minimum_sessions": 0,
+          "observations_through": null
+        }
+      },
+      "content_sha256": "e4b50f65b5b143421bb2d65d8d4e4a2f9865eaf9c8bc4de4674aa9eb31e5ca0e"
+    }
+  ]
+}

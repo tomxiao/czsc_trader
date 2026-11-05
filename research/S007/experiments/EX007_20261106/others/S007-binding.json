@@ -1,0 +1,401 @@
+{
+  "prepared": {
+    "space_id": "f7b75cd7-67f7-4e4d-b483-2434baaa9e39",
+    "preparation_id": "1bbcfba2-03fd-4d6b-9b8c-649ecabf0519",
+    "manifest_sha256": "d191792b3a0e26e0b314f4204419e7cc9ebc823400ccc02ab1f0d1df824ceb31"
+  },
+  "instrument": {
+    "market": "CN",
+    "asset_class": "ETF",
+    "symbol": "588080.SH"
+  },
+  "specification_hash": "f8ee0c7461eb6e5f3754cef09a3ad9c2dae277e52a3eb1fbfe10cece5b7f0322",
+  "content_identities": [
+    [
+      "bars",
+      "0f24033cae0fc99ebbdb37ede5a8d1df0446d82e6f3da3f4664f7d35b0cf431d"
+    ],
+    [
+      "actions",
+      "c4cbffa663948204f72e5426c1ac79a70cbf03a05a7b01c5a93dd6357e2df24b"
+    ],
+    [
+      "constraints",
+      "e1a38705052c1708890a31d4d29ada732cc8cb37722c4c0f447ab45a76114a40"
+    ],
+    [
+      "sessions",
+      "ba2afa2cc11f56b76771fa43aedb4f13b12408ef038489ec84bcbc4569ce8124"
+    ]
+  ],
+  "warmup_bars": 1,
+  "auxiliary_inputs": [
+    {
+      "input": {
+        "name": "adjusted_daily",
+        "instrument": {
+          "market": "CN",
+          "asset_class": "ETF",
+          "symbol": "588080.SH"
+        },
+        "source": {
+          "provider": "tushare",
+          "revision": "native-v4-observation-20261106"
+        },
+        "frequency": "daily",
+        "warmup_bars": 21,
+        "max_age_seconds": 1296000,
+        "analysis_price": "HFQ"
+      },
+      "bars_sha256": "483aefae3ae732ab264e971b35e6d993a38c5dff8a62fdf6f9f18600eef3fee5",
+      "sessions_sha256": "ba2afa2cc11f56b76771fa43aedb4f13b12408ef038489ec84bcbc4569ce8124"
+    }
+  ],
+  "request_bindings": [
+    [
+      "bars",
+      {
+        "instrument": {
+          "market": "CN",
+          "asset_class": "ETF",
+          "symbol": "588080.SH"
+        },
+        "source": {
+          "provider": "tushare-reviewed-raw",
+          "revision": "s007-20261106"
+        },
+        "query": {
+          "product": "equity.bars",
+          "start": "2026-08-01",
+          "end": "2026-11-05",
+          "frequency": "daily",
+          "adjustment": "none",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "sessions",
+      {
+        "instrument": {
+          "market": "CN",
+          "asset_class": "ETF",
+          "symbol": "588080.SH"
+        },
+        "source": {
+          "provider": "tushare-reviewed-raw",
+          "revision": "s007-20261106"
+        },
+        "query": {
+          "product": "equity.sessions",
+          "start": "2026-08-01",
+          "end": "2026-11-05",
+          "frequency": "daily",
+          "adjustment": "none",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "actions",
+      {
+        "instrument": {
+          "market": "CN",
+          "asset_class": "ETF",
+          "symbol": "588080.SH"
+        },
+        "source": {
+          "provider": "tushare-reviewed-raw",
+          "revision": "s007-20261106"
+        },
+        "query": {
+          "product": "equity.actions",
+          "start": "2026-08-01",
+          "end": "2026-11-05",
+          "frequency": "daily",
+          "adjustment": "none",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "constraints",
+      {
+        "instrument": {
+          "market": "CN",
+          "asset_class": "ETF",
+          "symbol": "588080.SH"
+        },
+        "source": {
+          "provider": "tushare-reviewed-raw",
+          "revision": "s007-20261106"
+        },
+        "query": {
+          "product": "equity.constraints",
+          "start": "2026-08-01",
+          "end": "2026-11-05",
+          "frequency": "daily",
+          "adjustment": "none",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "auxiliary:adjusted_daily:bars",
+      {
+        "instrument": {
+          "market": "CN",
+          "asset_class": "ETF",
+          "symbol": "588080.SH"
+        },
+        "source": {
+          "provider": "tushare",
+          "revision": "native-v4-observation-20261106"
+        },
+        "query": {
+          "product": "equity.bars",
+          "start": "2026-08-01",
+          "end": "2026-11-05",
+          "frequency": "daily",
+          "adjustment": "hfq",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "auxiliary:adjusted_daily:sessions",
+      {
+        "instrument": {
+          "market": "CN",
+          "asset_class": "ETF",
+          "symbol": "588080.SH"
+        },
+        "source": {
+          "provider": "tushare",
+          "revision": "native-v4-observation-20261106"
+        },
+        "query": {
+          "product": "equity.sessions",
+          "start": "2026-08-01",
+          "end": "2026-11-05",
+          "frequency": "daily",
+          "adjustment": "none",
+          "session": "REGULAR"
+        }
+      }
+    ]
+  ],
+  "observation_bindings": [
+    {
+      "input": {
+        "name": "feature_seed",
+        "dataset": "strategy.feature_evidence",
+        "symbol": "S007-v1",
+        "frequency": "daily",
+        "history_start": "2021-01-04",
+        "history_end": "2026-09-02",
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 1,
+          "minimum_sessions": 0,
+          "observations_through": null
+        },
+        "asset": {
+          "relative_path": "seed.csv",
+          "sha256": "5dec76c04d3ab7cf316fe4653b79515ad788a6fd3350a2c733d8251175a0a72a"
+        },
+        "calendar": "SSE",
+        "availability": {
+          "timezone": "Asia/Shanghai",
+          "available_time": "15:00",
+          "day_offset": 0
+        },
+        "max_staleness_days": null
+      },
+      "request": {
+        "dataset": "strategy.feature_evidence",
+        "symbol": "S007-v1",
+        "start": "2021-01-04",
+        "end": "2026-09-02",
+        "required_cutoff": null,
+        "frequency": "daily",
+        "parameters": {
+          "repository_root": "D:\\CodeBase\\czsc_trader\\research\\S007\\runtime_upgrade_v4",
+          "source_path": "seed.csv",
+          "source_sha256": "5dec76c04d3ab7cf316fe4653b79515ad788a6fd3350a2c733d8251175a0a72a"
+        },
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 1,
+          "minimum_sessions": 0,
+          "observations_through": null
+        }
+      },
+      "content_sha256": "a200b0f5768e0e9cdc6e6f384965f77014427ca81933fe7a3c113d4f3fd91a5c"
+    },
+    {
+      "input": {
+        "name": "incremental_shibor_daily",
+        "dataset": "macro.shibor_daily",
+        "symbol": null,
+        "frequency": "daily",
+        "history_start": "2026-08-01",
+        "history_end": null,
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 1,
+          "minimum_sessions": 0,
+          "observations_through": null
+        },
+        "asset": null,
+        "calendar": "SSE",
+        "availability": {
+          "timezone": "Asia/Shanghai",
+          "available_time": "15:00",
+          "day_offset": 0
+        },
+        "max_staleness_days": null,
+        "required_from": "2026-09-03"
+      },
+      "request": {
+        "dataset": "macro.shibor_daily",
+        "symbol": null,
+        "start": "2026-08-01",
+        "end": "2026-11-05",
+        "required_cutoff": null,
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 1,
+          "minimum_sessions": 0,
+          "observations_through": null
+        }
+      },
+      "content_sha256": "8716f2090ac563ba84d89b264bdf3aa68b5e1c0e0165cf442df8e5e2bd5d9700"
+    },
+    {
+      "input": {
+        "name": "incremental_chinext_daily_basic",
+        "dataset": "index.daily_basic",
+        "symbol": "399006.SZ",
+        "frequency": "daily",
+        "history_start": "2026-08-01",
+        "history_end": null,
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 1,
+          "minimum_sessions": 0,
+          "observations_through": null
+        },
+        "asset": null,
+        "calendar": "SSE",
+        "availability": {
+          "timezone": "Asia/Shanghai",
+          "available_time": "15:00",
+          "day_offset": 0
+        },
+        "max_staleness_days": null,
+        "required_from": "2026-09-03"
+      },
+      "request": {
+        "dataset": "index.daily_basic",
+        "symbol": "399006.SZ",
+        "start": "2026-08-01",
+        "end": "2026-11-05",
+        "required_cutoff": null,
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 1,
+          "minimum_sessions": 0,
+          "observations_through": null
+        }
+      },
+      "content_sha256": "3faaf7a1307786642a327d03a65d1099ef18d26be3c3b873345871e007a90ff6"
+    },
+    {
+      "input": {
+        "name": "incremental_etf_share_size",
+        "dataset": "etf.share_size",
+        "symbol": "588080.SH",
+        "frequency": "daily",
+        "history_start": "2026-08-01",
+        "history_end": null,
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 1,
+          "minimum_sessions": 0,
+          "observations_through": null
+        },
+        "asset": null,
+        "calendar": "SSE",
+        "availability": {
+          "timezone": "Asia/Shanghai",
+          "available_time": "15:00",
+          "day_offset": 0
+        },
+        "max_staleness_days": null,
+        "required_from": "2026-09-03"
+      },
+      "request": {
+        "dataset": "etf.share_size",
+        "symbol": "588080.SH",
+        "start": "2026-08-01",
+        "end": "2026-11-05",
+        "required_cutoff": null,
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 1,
+          "minimum_sessions": 0,
+          "observations_through": null
+        }
+      },
+      "content_sha256": "c498b8fc0160c8ff51113268de79aca52bac0108dd2ffcd1775873a05ea033d0"
+    },
+    {
+      "input": {
+        "name": "incremental_spx_daily",
+        "dataset": "index.global_daily",
+        "symbol": "SPX",
+        "frequency": "daily",
+        "history_start": "2026-07-25",
+        "history_end": null,
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 1,
+          "minimum_sessions": 0,
+          "observations_through": null
+        },
+        "asset": null,
+        "calendar": "SSE",
+        "availability": {
+          "timezone": "America/New_York",
+          "available_time": "16:00",
+          "day_offset": 0
+        },
+        "max_staleness_days": null,
+        "required_from": "2026-09-03"
+      },
+      "request": {
+        "dataset": "index.global_daily",
+        "symbol": "SPX",
+        "start": "2026-07-25",
+        "end": "2026-11-05",
+        "required_cutoff": null,
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 1,
+          "minimum_sessions": 0,
+          "observations_through": null
+        }
+      },
+      "content_sha256": "f9ea43ad694a050d4738084852000ef3cb8a60d4562226680f3763fe20ed63b0"
+    }
+  ]
+}
