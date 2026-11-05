@@ -232,8 +232,14 @@ def test_constituent_weight_snapshots_prepare_and_restore_offline(tmp_path, monk
     from dataflows import Dataflows, DataSpace, PreparePolicy, ProviderConfig
     from dataflows import tushare_strategy_data
 
+    # The cross-year production regression belongs to this public prepare/fetch
+    # scenario, so it does not need a second direct-provider success traversal.
+    dates = ['2025-09-30', '2025-10-31', '2025-11-28', '2025-12-31',
+             '2026-01-30', '2026-02-27', '2026-03-31', '2026-04-30',
+             '2026-05-29', '2026-06-30', '2026-07-31', '2026-08-31',
+             '2026-09-30', '2026-10-30']
     frame = pd.DataFrame([{'Date':pd.Timestamp(day), 'ConstituentSymbol':f'{i:06d}.SZ', 'Weight':.2}
-                          for day in ('2026-08-31','2026-09-30') for i in range(500)])
+                          for day in dates for i in range(500)])
     calls = []
 
     class WeightPro:
@@ -248,12 +254,12 @@ def test_constituent_weight_snapshots_prepare_and_restore_offline(tmp_path, monk
 
     monkeypatch.setattr(tushare_strategy_data, "get_tushare_pro", lambda _: WeightPro())
     request = DataRequest(Dataset.INDEX_CONSTITUENT_WEIGHT, "000905.SH",
-                          "2026-08-01", "2026-09-30", None, frequency="snapshot")
+                          "2025-09-04", "2026-11-05", None, frequency="snapshot")
     flows = Dataflows(base_dir=tmp_path, space=DataSpace(Path("market")), providers=ProviderConfig())
     prepared = flows.prepare((request,), policy=PreparePolicy.REUSE)
     assert prepared.ready
     assert calls == [{"index_code": "000905.SH", "trade_date": day,
-                      "fields": "index_code,con_code,trade_date,weight"} for day in ('20260831','20260930')]
+                      "fields": "index_code,con_code,trade_date,weight"} for day in (value.replace('-', '') for value in dates)]
     offline = Dataflows(base_dir=tmp_path, space=DataSpace(Path("market")), providers=ProviderConfig({}))
     result = offline.fetch(request, prepared=prepared.reference)
     assert result.ready
@@ -262,7 +268,10 @@ def test_constituent_weight_snapshots_prepare_and_restore_offline(tmp_path, monk
     assert result.identity.source == "tushare"
     assert result.identity.metadata["primary_key"] == ["Date", "ConstituentSymbol"]
     assert result.identity.metadata["frequency"] == "snapshot"
-    assert len(calls) == 2
+    assert result.identity.metadata['expected_snapshot_dates'] == dates
+    assert len(result.dataframe) == 7000
+    assert result.dataframe.groupby('Date').ConstituentSymbol.nunique().eq(500).all()
+    assert len(calls) == 14  # Offline restore must not reacquire any source.
 
 
 @pytest.mark.parametrize("dataset,frequency", [

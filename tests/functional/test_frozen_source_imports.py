@@ -48,18 +48,27 @@ def test_frozen_source_imports_without_closure_aliases(registered_release, monke
 
 
 def test_frozen_source_keeps_authenticated_runtime_loading(loaded_release):
-    registered_release, deployment, _, runtime = loaded_release
+    registered_release, deployment, actual, runtime = loaded_release
     context = RepositoryContext.discover(ROOT)
     stored = StrategyRegistry(context.strategy_root).get_version(
         registered_release.strategy_id, registered_release.version,
     )
     manifest, binding, source = validate_release_package(context, stored.release_id)
-    definition = runtime.describe(
-        StrategyRelease.from_mapping(stored.to_dict()),
-        source_root=deployment.source_root,
-        runtime_binding=deployment.binding,
-    )
-    assert definition.release_hash == stored.release_hash == deployment.release_hash
-    assert definition.implementation.source_sha256 == binding["implementation_sha256"]
+    from strategy_runtime.equity_definition import EquityStrategyCandidate
+    if isinstance(actual, EquityStrategyCandidate):
+        # The native V4 entrypoint must load through its authenticated closure,
+        # without manufacturing a legacy SRT package or deployment permission.
+        with actual.bind_replay() as invocation:
+            assert callable(invocation.function)
+        assert actual.definition.source_sha256 == binding['implementation_sha256']
+        assert stored.release_hash == deployment.release_hash
+    else:
+        definition = runtime.describe(
+            StrategyRelease.from_mapping(stored.to_dict()),
+            source_root=deployment.source_root,
+            runtime_binding=deployment.binding,
+        )
+        assert definition.release_hash == stored.release_hash == deployment.release_hash
+        assert definition.implementation.source_sha256 == binding["implementation_sha256"]
     assert manifest["package_hash"] == deployment.package_hash
     assert source.relative_to(context.strategy_root) == deployment.source_root.relative_to(deployment.strategy_root)

@@ -1,13 +1,38 @@
 """Recorded strategy explanations survive public backtest and chart projection."""
 import ast
 import json
+import shutil
+from datetime import date
 from dataclasses import replace
 
-import pandas as pd
 import pytest
 from strategy_runtime import implementation_sha256, ObservationUnavailable
 from czsc_trader.application import BacktestRequest, run_backtest
-from public_backtest_support import request_for_prices, chart_payload, render_output
+from public_backtest_support import research_context, chart_payload, render_output
+from test_backtest import execution_flows
+from test_current_contracts import current_frozen as current_frozen, inspection as inspection, completed as completed, managed_evaluation as managed_evaluation
+
+
+def frozen_observation_revision(current_frozen, author):
+    """Use the actual observation-only upgrade transaction on a private frozen copy."""
+    from strategy_manager import StrategyRegistry, freeze_contracts as f
+    from strategy_runtime import StrategyCandidate
+    from czsc_trader.application import validate_release_package, runtime_migration as m
+    from test_frozen_runtime_upgrade import _audit_ref
+    repository, stored = current_frozen
+    manifest, _, source = validate_release_package(repository, stored.release_id)
+    original = f.FrozenVersionReference(stored.strategy_id, stored.version, stored.release_hash, manifest['package_hash'])
+    target = repository.root / '.tmp/observation-revision-source/strategy_runtime'
+    shutil.copytree(source, target)
+    payload = json.loads(json.dumps(dict(stored.strategy_payload), default=dict))
+    author((payload, target))
+    candidate = StrategyCandidate(stored.strategy_id, 'C9877', payload, target)
+    authorization = _audit_ref(repository, {'authorization':'Synthetic observation-only frozen revision'})
+    request = m.FrozenRuntimeUpgradeRequest(original, candidate, authorization,
+        'Synthetic chart observation contract', 'synthetic-researcher', (), repository.root / '.tmp/observation-revision')
+    prepared = m.prepare_frozen_runtime_upgrade(repository, request)
+    assert m.apply_frozen_runtime_upgrade(repository, prepared).status.value == 'COMMITTED'
+    return repository, StrategyRegistry(repository.strategy_root).get_version(stored.strategy_id, stored.version)
 
 
 def _author_explanation(candidate_payload):
@@ -46,11 +71,9 @@ def observation_history(self, inputs, context, history):
 
 
 @pytest.mark.parametrize('failure', [False, True])
-def test_recorded_explanation_and_failure_survive_backtest(candidate_payload, tmp_path, monkeypatch, failure):
-    _author_explanation(candidate_payload)
-    days = pd.bdate_range('2026-08-17', periods=23)
-    prices = pd.DataFrame({'dt': days, 'open': 1., 'close': 1.})
-    context, request, _ = request_for_prices(candidate_payload, tmp_path, monkeypatch, prices, start_index=20)
+def test_recorded_explanation_and_failure_survive_backtest(current_frozen, monkeypatch, failure):
+    repository, version = frozen_observation_revision(current_frozen, _author_explanation)
+    context = research_context(repository, execution_flows(repository.root))
     if failure:
         import czsc_trader.backtesting.observation as recorder
         original = recorder.observe_execution_plan
@@ -58,8 +81,8 @@ def test_recorded_explanation_and_failure_survive_backtest(candidate_payload, tm
             original(definition, plan)  # preserve real identity validation
             return ObservationUnavailable('Injected observation-only failure', 'strategy_observation.v4')
         monkeypatch.setattr(recorder, 'observe_execution_plan', unavailable)
-    result = run_backtest(context, request.strategy, BacktestRequest(
-        '588080.SH', 'etf', days[20].date(), days[-1].date(), 100000, 100))
+    result = run_backtest(context, version, BacktestRequest(
+        '588080.SH', 'etf', date(2026,9,15), date(2026,9,21), 100000, 100))
     assert result.manifest['audit']['status'] == 'PASS'
     output = render_output(result, context.repository.root)
     html = (output / 'chart.html').read_text(encoding='utf-8')

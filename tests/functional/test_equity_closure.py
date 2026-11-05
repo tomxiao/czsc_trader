@@ -22,7 +22,7 @@ def terminate_equity_worker(*args):
     os._exit(7)
 
 
-def test_equity_formal_requires_explicit_semantics_and_rejects_tampered_results(tmp_path):
+def test_equity_projection_keeps_explicit_semantics_and_audit_detects_tampering(tmp_path):
     context, request, _, _ = setup_formal_equity(tmp_path)
     request = current_account_request(context,request)
     with pytest.raises(ValueError, match="explicit drawdown"):
@@ -30,7 +30,19 @@ def test_equity_formal_requires_explicit_semantics_and_rejects_tampered_results(
     with account_research(context, request) as (_, result, _, _):
         pass
     from czsc_trader.research_tools.equity_evaluation import EquityArtifact, EquityEvaluationResult
-    from czsc_trader.research_tools.equity_replay import build_equity_assessment
+    from czsc_trader.research_tools.equity_replay import build_equity_assessment, materialize_equity
+    from strategy_evaluator.equity import audit_equity_account
+
+    def audit(value):
+        payload = materialize_equity(value).payload
+        inputs = {name: payload['audit_inputs'][name] for name in (
+            'initial_cash', 'specification', 'bars', 'action_facts', 'constraints', 'fee_rate')}
+        run = {name: payload['runs']['candidate'][name] for name in (
+            'decisions', 'orders', 'fills', 'actions', 'account_points', 'trades')}
+        return audit_equity_account(**inputs, **run, account_contract=4, decision_contract='FORMAL_V4')
+
+    baseline, = build_equity_assessment(result)
+    assert audit(result).observations > 0
     envelope=result.payload
     artifacts=list(result.artifacts)
     index=next(i for i,item in enumerate(artifacts) if item.sha256==envelope['candidate_ref']['sha256'])
@@ -39,8 +51,12 @@ def test_equity_formal_requires_explicit_semantics_and_rejects_tampered_results(
     artifacts[index]=EquityArtifact(artifacts[index].kind,json.dumps(value,sort_keys=True,separators=(',',':')).encode())
     envelope['candidate_ref']['sha256']=artifacts[index].sha256
     altered=EquityEvaluationResult(result.request_hash,json.dumps(envelope,sort_keys=True,separators=(',',':')).encode(),tuple(artifacts))
-    with pytest.raises(ValueError,match='receivable'):
-        build_equity_assessment(altered)
+    # Projection consumes saved observations, while numerical certification is
+    # an explicit request. A coherent content hash does not certify accounting.
+    projected, = build_equity_assessment(altered)
+    assert projected.account == baseline.account and projected.equity == baseline.equity
+    with pytest.raises(ValueError, match='^equity audit mismatch: v4 account receivable$'):
+        audit(altered)
     assert EvaluationBenchmark.from_dict(json.loads(json.dumps(request.benchmark.to_dict()))) == request.benchmark
     from czsc_trader.research_tools.equity_evaluation import EquityEvaluationResult
     for content in (b'{"x":1,"x":2}', b'{"x":NaN}'):
@@ -158,9 +174,11 @@ def test_equity_worker_death_is_unknown_and_does_not_restart_pool(tmp_path, monk
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:
         prepared = context.evaluation.prepare(request, execution=execution)
         outcomes = context.evaluation.evaluate_many((prepared, prepared), execution=execution)
-        # First candidate and shared benchmark were submitted; the second
-        # candidate is explicitly cancelled before submission after pool death.
-        assert [x.status.value for x in outcomes] == ["UNKNOWN", "CANCELLED"]
+        # Identical prepared handles share one candidate and one benchmark task.
+        # Both callers inherit the same unknown result after actual pool death.
+        assert [x.status.value for x in outcomes] == ["UNKNOWN", "UNKNOWN"]
+        assert outcomes[0].request_hash == outcomes[1].request_hash
+        assert all(item.result is None and item.error.code == 'BrokenProcessPool' for item in outcomes)
         assert execution.stats.pool_starts == 1
         with pytest.raises(BrokenProcessPool):
             prepared = context.evaluation.prepare(request, execution=execution)

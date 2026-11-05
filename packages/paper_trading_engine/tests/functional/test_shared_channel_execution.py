@@ -106,6 +106,8 @@ def live_us(tmp_path):
 
 def test_us_partial_repeat_and_restart_preserve_cumulative_notional(live_us):
     _, store, broker, engine, _ = live_us
+    # The same US session is supplied in Beijing time, without a Shanghai gate.
+    engine.now = lambda: datetime.fromisoformat('2026-11-05T22:30:00+08:00')
     engine.submit_pending()
     broker.fill(1, '99.1234', status='FILLED_PART')
     engine.refresh_orders()
@@ -173,14 +175,6 @@ def test_us_cash_difference_without_policy_remains_blocked(live_us):
     with pytest.raises(ChannelReconciliationError):
         engine.refresh_orders()
     assert store.get_setting('futu_cash_reconciliation_status') == 'UNATTRIBUTED'
-
-
-def test_us_execution_does_not_use_shanghai_clock(live_us):
-    _, _, broker, engine, _ = live_us
-    # Beijing 22:30 corresponds to the prepared US 09:30 execution interval.
-    engine.now = lambda: datetime.fromisoformat('2026-11-05T22:30:00+08:00')
-    engine.submit_pending()
-    assert broker.submissions == 1
 
 
 def test_us_missing_interval_blocks_before_submission(live_us, monkeypatch):

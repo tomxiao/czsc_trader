@@ -550,22 +550,27 @@ def test_v4_marker_is_a_strict_integer_in_numeric_and_serialized_contracts(base_
     ],
 )
 def test_assessment_rejects_legacy_cn_or_mismatched_candidate_benchmark_contracts(
-    base_ledger, market, contracts
+    market, contracts
 ):
-    candidate, benchmark = deepcopy(base_ledger), deepcopy(base_ledger)
-    for rows, contract in zip((candidate, benchmark), contracts):
-        if contract is not None:
-            rows["account_contract"] = contract
+    source = {**ledger(MarketId(market)), "account_contract": 4}
     facts = SimpleNamespace(
         market=market,
         timezone="Asia/Shanghai" if market == "CN" else "America/New_York",
         currency="CNY" if market == "CN" else "USD",
         drawdown_basis="BAR_CLOSE",
         concentration_basis="MAX_SINGLE",
-        candidate_ledger=canonical_ledger(candidate),
-        benchmark_ledger=canonical_ledger(benchmark),
+        candidate_ledger=canonical_ledger(source),
+        benchmark_ledger=canonical_ledger(source),
     )
-    with pytest.raises(ValidationError, match="contracts"):
+    # Establish a complete, market-correct baseline before changing only the
+    # contract markers. Omitting the field would exercise schema rejection.
+    assert validate_equity_facts(facts) is None
+    candidate, benchmark = deepcopy(source), deepcopy(source)
+    for rows, contract in zip((candidate, benchmark), contracts):
+        rows["account_contract"] = contract
+    facts.candidate_ledger = canonical_ledger(candidate)
+    facts.benchmark_ledger = canonical_ledger(benchmark)
+    with pytest.raises(ValidationError, match="^unknown account ledger contract$"):
         validate_equity_facts(facts)
 
 

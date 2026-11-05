@@ -509,6 +509,18 @@ def prepared_delivery(request, tmp_path, frozen_seed_root):
     return _prepared_delivery_copy(request, tmp_path, frozen_seed_root)
 
 
+def test_stage4_corrupt_direct_predecessor_fails_without_publication(prepared_delivery):
+    """Keep stage-four storage faults with their real shared preparation seed."""
+    repository, definition, value = prepared_delivery
+    from czsc_trader.application.delivery_service import _delivery_path
+    predecessor = definition.predecessors[0]
+    (_delivery_path(repository, predecessor) / 'receipt.json').write_bytes(b'{')
+    with pytest.raises(d.DeliveryValidationError) as caught:
+        assemble_delivery(repository, definition, value)
+    assert caught.value.issues[0].code == 'ASSEMBLY_FAILED'
+    assert not (repository.research_root / 'S900/deliveries/ASSESSMENT/1').exists()
+
+
 @pytest.fixture
 def prepared_acceptance_delivery(request, tmp_path, frozen_seed_root):
     return _prepared_delivery_copy(request, tmp_path, frozen_seed_root, acceptance_targets())

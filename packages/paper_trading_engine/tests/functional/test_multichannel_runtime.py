@@ -45,14 +45,14 @@ def test_cli_rejects_changed_fee_policy_atomically(tmp_path, capsys):
     payload['fee_policy']['max_fixed_fee_per_order'] = '500'
     path.write_text(json.dumps(payload))
     assert main(args) != 0
-    with pytest.raises(KeyError):
-        store = PaperStore(tmp_path/'db')
-        try:
-            scoped = store.scope('us-test')
-            assert json.loads(scoped.get_setting('fee_reconciliation_policy'))['max_fixed_fee_per_order'] == '5'
+    store = PaperStore(tmp_path/'db')
+    try:
+        scoped = store.scope('us-test')
+        assert json.loads(scoped.get_setting('fee_reconciliation_policy'))['max_fixed_fee_per_order'] == '5'
+        with pytest.raises(KeyError):
             store.scope('unregistered')
-        finally:
-            store.close()
+    finally:
+        store.close()
 
 
 def test_runtime_keeps_console_on_original_cn_scope(tmp_path):

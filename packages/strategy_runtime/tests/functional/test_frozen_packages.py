@@ -33,6 +33,19 @@ pytestmark = pytest.mark.release_acceptance
 def test_real_package_behavior_is_independent_of_candidate_or_release_identity(loaded_release):
     record, deployment, release, _ = loaded_release
     family, _ = record.release_id.split("-")
+    from strategy_runtime.equity_definition import EquityStrategyCandidate
+    if isinstance(release, EquityStrategyCandidate):
+        candidate = EquityStrategyCandidate(family, 'C0001', release.definition, deployment.source_root)
+        assert candidate.content_identity == release.content_identity
+        from strategy_runtime import canonical_sha256
+        assert canonical_sha256(candidate.payload) == canonical_sha256(record.strategy_payload)
+        assert candidate.candidate_id != release.candidate_id == record.source_candidate
+        assert candidate.definition.contract_version == 4
+        assert record.schema_version == 5
+        assert record.release_hash == deployment.release_hash
+        assert not {'origin', 'governance', 'governance_hash'} & record.to_dict().keys()
+        assert not any(name.startswith('charts/') for name in deployment.install_files)
+        return
     candidate = StrategyRuntime().describe(
         StrategyCandidate(family, "C0001", record.strategy_payload, deployment.source_root)
     )
@@ -94,6 +107,22 @@ def test_s007_declares_segmented_requests_for_the_full_2026_backtest_window(tmp_
 
 def test_current_observation_uses_declared_fields_and_current_identity(loaded_release):
     _, _, actual, _ = loaded_release
+    from strategy_runtime.equity_definition import EquityStrategyCandidate
+    if isinstance(actual, EquityStrategyCandidate):
+        from strategy_runtime.account_strategy import AccountDecision
+        from strategy_runtime.signal_explanation import SignalExplanationSnapshot
+        # Native V4 declares target explanation cases instead of legacy panels.
+        # Materialize all declared cases with explicit recorded facts, as below.
+        observed = []
+        for target in (0., 1.):
+            decision = AccountDecision.from_facts(target, 'Synthetic declared target',
+                facts={'symbol': actual.instrument.symbol, 'target': target}, next_watch='Next declared decision')
+            explanation = SignalExplanationSnapshot.from_dict(decision.explanation.to_dict())
+            assert explanation == decision.explanation
+            assert explanation.state_key == 'target' and explanation.basis
+            observed.append(explanation.case_key)
+        assert tuple(observed) == actual.definition.explanation_cases
+        return
     _, template = observed_plan()
     strategy = StrategyIdentity(actual.strategy_family_id, actual.release_id, actual.release_hash,
                                 actual.runtime_sha256, actual.tradable_symbol)

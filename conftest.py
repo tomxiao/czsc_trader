@@ -89,7 +89,13 @@ def loaded_release(registered_release, frozen_seed_root):
         deployment = load_inspection_deployment(isolated, release_id, permit)
         runtime = StrategyRuntime(strategy_root=isolated, inspection_permit=permit)
         assert not (isolated / "deployments").exists()
-    actual = runtime.describe(StrategyRelease.from_mapping(registered_release.to_dict()))
+    release = StrategyRelease.from_mapping(registered_release.to_dict())
+    if release.payload['runtime'].get('kind') == 'ACCOUNT_REPLAY':
+        from strategy_runtime.equity_definition import EquityStrategyCandidate, EquityStrategyDefinition
+        actual = EquityStrategyCandidate(registered_release.strategy_id, registered_release.source_candidate,
+            EquityStrategyDefinition.from_dict(dict(release.payload['equity_definition'])), deployment.source_root)
+    else:
+        actual = runtime.describe(release)
     return registered_release, deployment, actual, runtime
 
 

@@ -22,16 +22,16 @@ def test_real_frozen_versions_expose_installed_fees_only_after_deployment(loaded
 
     registered_release, _, definition, _ = loaded_release
     context = RepositoryContext.discover(Path(__file__).resolve().parents[2])
-    policy = definition.execution
-    expected_fee = (policy.settings["capital"]["fee_rate"]
-                    if policy.policy_type == "FROZEN_RULE" else policy.settings["one_way_cost"])
-    assert 0 <= expected_fee < 1
     if not (context.strategy_root / "deployments" / f"{registered_release.release_id}.json").exists():
         with pytest.raises(ValidationError, match="cannot read strategy deployment file") as failed:
             strategy_info(context, registered_release.release_id)
         assert failed.value.code == "strategy_info_failed"
         assert failed.value.context["strategy_version_id"] == registered_release.release_id
         return
+    policy = definition.execution
+    expected_fee = (policy.settings["capital"]["fee_rate"]
+                    if policy.policy_type == "FROZEN_RULE" else policy.settings["one_way_cost"])
+    assert 0 <= expected_fee < 1
     result = strategy_info(context, registered_release.release_id)
     assert result.status == "PASS"
     assert result.result["strategy_version_id"] == registered_release.release_id

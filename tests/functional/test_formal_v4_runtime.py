@@ -17,8 +17,7 @@ from paper_trading_engine.channel import ChannelAccountConfig, FUTU_SIMULATE_CN_
 from paper_trading_engine.equity_contracts import EquityAccountRules
 from paper_trading_engine.formal_v4_advice import FormalV4AdviceClient, FormalV4ScheduleProvider, FormalV4Inputs
 from paper_trading_engine.store import PaperStore
-from test_v4_inspection_roundtrip import native_fixture
-from test_v4_inspection_roundtrip import test_native_dual_market_inspection_freezes_exact_v4_package as _freeze_fixture
+from test_v4_inspection_roundtrip import native_fixture, native_inspection_request, freeze_native_inspection
 from test_equity_adjusted_observations import setup_adjusted
 
 
@@ -40,8 +39,8 @@ def formal_v4(tmp_path, request):
         return result
     with patch('test_v4_inspection_roundtrip.setup_adjusted', side_effect=action_fixture):
         context, evaluation, products, replay = native_fixture(tmp_path, market)
-    with patch('test_v4_inspection_roundtrip.native_fixture', return_value=(context, evaluation, products, replay)):
-        _freeze_fixture(tmp_path, market)
+    inspection, source = native_inspection_request(tmp_path, context, evaluation, products, replay)
+    freeze_native_inspection(context.repository, inspection, source)
     repository = context.repository
     assert deploy_strategy(repository, 'S999-v1').status == 'PASS'
     registry = StrategyRegistry(repository.strategy_root)

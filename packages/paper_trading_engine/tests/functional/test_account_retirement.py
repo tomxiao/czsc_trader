@@ -1,5 +1,6 @@
 from dataclasses import asdict, replace
 from decimal import Decimal
+from functools import partial
 import json
 import shutil
 from threading import Thread
@@ -167,8 +168,14 @@ def test_retirement_contract_rejects_invalid_input(field, value):
         AccountRetirementRequest(**values)
 
 
-def test_retirement_http_requires_control_token_and_cli_uses_public_endpoint(setup, capsys):
+def test_retirement_http_requires_control_token_and_cli_uses_public_endpoint(setup, capsys, monkeypatch):
+    from paper_trading_engine import cli
+
     store, broker, execution, request = setup
+    # This verifies the real HTTP/token/ledger chain, not a three-second latency SLA.
+    # Parallel regression lanes contend for WAL fsync; retain a bounded test deadline
+    # while leaving the production client default and the request path unchanged.
+    monkeypatch.setattr(cli, '_read_json', partial(cli._read_json, timeout=30.0))
     store.set_setting("control_token", "test-token")
     operations = SimpleNamespace(retire_account=execution.retire_account, store=store,
                                  channel=execution, virtual=SimpleNamespace())
@@ -180,8 +187,10 @@ def test_retirement_http_requires_control_token_and_cli_uses_public_endpoint(set
         url = f"http://127.0.0.1:{port}/api/virtual-accounts/one/retire"
         body = {"expected_release_hash": request.expected_release_hash, "actor": "test", "reason": "stop"}
         with pytest.raises(HTTPError) as caught:
-            urlopen(Request(url, data=json.dumps(body).encode(), headers={"Content-Type": "application/json"}))
+            urlopen(Request(url, data=json.dumps(body).encode(), headers={"Content-Type": "application/json"}), timeout=30)
         assert caught.value.code == 403
+        assert store.virtual_account("one")["run_state"] == "PAUSED"
+        assert store._connection.execute("SELECT COUNT(*) FROM account_retirements").fetchone()[0] == 0
         assert pte_main([
             "control", "retire-account", "--repo-root", str(store.path.parent),
             "--database", str(store.path), "--port", str(port), "--account-id", "one",

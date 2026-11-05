@@ -1,68 +1,25 @@
-"""Closed-trade metric semantics through public, actual SRT/TXE evaluation."""
-import pandas as pd
-import pytest
+"""Frozen replay metrics reach the report unchanged; SE owns the numeric matrix."""
+from datetime import date
 import json
-from strategy_runtime import implementation_sha256
+
 from czsc_trader.application import BacktestRequest, run_backtest
-from public_backtest_support import request_for_prices, render_output
+from public_backtest_support import research_context, render_output, assert_public_charts
+from test_backtest import execution_flows
+from test_current_contracts import current_frozen as current_frozen, inspection as inspection, completed as completed, managed_evaluation as managed_evaluation
 
 
-def test_mixed_closed_trades_publish_win_rate_and_open_tail(candidate_payload, tmp_path, monkeypatch):
-    returns = [.1, -.1, 0.]
-    payload, source = candidate_payload
-    path = source / "strategies/candidate_fixture.py"
-    path.write_text(path.read_text(encoding="utf-8").replace('"fee_rate": 0.001', '"fee_rate": 0.0'), encoding="utf-8", newline="\n")
-    payload["runtime"]["source_sha256"] = implementation_sha256(payload["runtime"]["source_files"], source_root=source)
-    payload["parameters"]["entry_order_type"] = "MARKET"
-    days = pd.bdate_range("2026-01-05", periods=2 * len(returns) + 21)
-    opens = [10.] * len(days)
-    for index, trade_return in enumerate(returns):
-        opens[2 * index + 21] = 10. * (1 + trade_return)
-    prices = pd.DataFrame({"dt": days, "open": opens, "close": 10.})
-    flow = [.1] * 19 + [.8, .1] * (len(returns) + 1)
-    context, request, _ = request_for_prices(candidate_payload, tmp_path, monkeypatch, prices, start_index=20, flow=flow, cost=0.)
-    result = run_backtest(context, request.strategy, BacktestRequest("588080.SH", "etf", days[20].date(), days[-1].date(), 100000, 100))
-    assert result.manifest["audit"]["status"] == "PASS"
-    output = render_output(result, context.repository.root)
-    trades = pd.read_csv(output / "trades.csv")
-    closed = trades.loc[trades.status.eq("CLOSED")]
-    assert len(closed) == len(returns)
-    assert len(trades.loc[trades.status.eq("OPEN")]) == 1
-    assert closed.net_return.tolist() == pytest.approx(returns)
-    manifest = json.loads((output / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["strategy"]["kind"] == "CANDIDATE"
-    assert manifest["strategy"]["reference"] == result.snapshot.identity.reference == request.strategy.reference_id
-    assert manifest["strategy"]["source_hash"] == request.strategy.runtime_identity_sha256
-    assert manifest["audit"]["status"] == result.manifest["audit"]["status"] == "PASS"
-    assert result.metrics["strategy"]["metrics"]["win_rate"] == 1 / 3
-    published = json.loads((output / "metrics.json").read_text(encoding="utf-8"))
-    assert published["strategy"] == result.metrics["strategy"]
-
-
-def test_benchmark_win_rate_uses_net_costs_and_ignores_open_tail(candidate_payload, tmp_path, monkeypatch):
-    import numpy as np
-    payload, source = candidate_payload
-    path = source / "strategies/candidate_fixture.py"
-    path.write_text(path.read_text(encoding="utf-8").replace('"fee_rate": 0.001', '"fee_rate": 0.1'), encoding="utf-8", newline="\n")
-    payload["runtime"]["source_sha256"] = implementation_sha256(payload["runtime"]["source_files"], source_root=source)
-    close = np.r_[np.full(20, 10.), np.tile(np.r_[np.linspace(10, 13, 20), np.linspace(13, 10, 20)], 3), np.linspace(10, 13, 20)]
-    days = pd.bdate_range("2026-01-05", periods=len(close))
-    prices = pd.DataFrame({"dt": days, "open": close, "close": close})
-    context, request, _ = request_for_prices(candidate_payload, tmp_path, monkeypatch, prices, start_index=20)
-    result = run_backtest(context, request.strategy, BacktestRequest("588080.SH", "etf", days[20].date(), days[-1].date(), 100000, 100))
-    assert result.manifest["audit"]["status"] == "PASS"
-    output = render_output(result, context.repository.root)
-    orders = pd.read_csv(output / "ma_orders.csv")
-    trades = pd.read_csv(output / "ma_trades.csv")
-    assert len(trades) == 3 and len(orders) == 7
-    assert orders.iloc[-1].side == "BUY"
-    buys, sells = orders.iloc[:-1:2].reset_index(drop=True), orders.iloc[1::2].reset_index(drop=True)
-    assert sells.price.gt(buys.price).all()
-    net = (sells["size"] * sells.price - sells.fees) / (buys["size"] * buys.price + buys.fees) - 1
-    assert net.lt(0).all()
-    assert trades.net_return.tolist() == pytest.approx(net.tolist())
-    assert result.metrics["benchmarks"]["ma5_ma20"]["metrics"]["closed_trades"] == 3
-    assert result.metrics["benchmarks"]["ma5_ma20"]["metrics"]["win_rate"] == 0.
-    manifest = json.loads((output / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["strategy"]["source_hash"] == request.strategy.runtime_identity_sha256
-    assert manifest["audit"]["benchmarks"]["ma5_ma20"]["status"] == "PASS"
+def test_frozen_backtest_publishes_audited_trade_metrics_without_changing_identity(current_frozen):
+    repository, version = current_frozen
+    context = research_context(repository, execution_flows(repository.root))
+    result = run_backtest(context, version, BacktestRequest(
+        '588080.SH', 'etf', date(2026,9,15), date(2026,9,21), 100000, 100))
+    assert result.manifest['audit']['status'] == 'PASS'
+    output = render_output(result, repository.root)
+    published = json.loads((output/'metrics.json').read_text(encoding='utf-8'))
+    assert published == result.metrics
+    manifest = json.loads((output/'manifest.json').read_text(encoding='utf-8'))
+    assert manifest['strategy']['kind'] == 'REGISTERED'
+    assert manifest['strategy']['reference'] == result.snapshot.identity.reference == version.release_id
+    assert manifest['strategy']['source_hash'] == result.snapshot.source_hash
+    assert manifest['audit'] == result.manifest['audit']
+    assert_public_charts(output)

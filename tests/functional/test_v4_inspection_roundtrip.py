@@ -88,9 +88,8 @@ def test_native_technical_replay_rejects_batch_that_changes_in_online_context(tm
         replay_account(candidate, context.data, replay)
 
 
-@pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
-def test_native_dual_market_inspection_freezes_exact_v4_package(tmp_path, market):
-    context, request, products, replay = native_fixture(tmp_path, market)
+def native_inspection_request(tmp_path, context, request, products, replay):
+    """Prepare real synthetic admission inputs without running another test."""
     seed_registered_frozen_candidate(context, request)
     repository = context.repository
     registration = StrategyRegistry(repository.research_registry_root).get_candidate_registration(request.candidate.key)
@@ -104,19 +103,33 @@ def test_native_dual_market_inspection_freezes_exact_v4_package(tmp_path, market
     inspection = CandidateInspectionRequest(registration.key, selection, context, request.experiment,
         FreezeTarget('v1', None, 'native V4 synthetic package', date(2026,10,15), date(2026,10,16)),
         protocol, (replay,), InspectionDataKind.SYNTHETIC)
-    wrong = replace(inspection, protocol=replace(protocol, method_version='candidate-inspection-v2'))
-    rejected = inspect_candidate(repository, wrong, control=InspectionControl(max_workers=1))
-    assert rejected.status is f.InspectionStatus.FAIL and rejected.release is None
-    assert 'protocol differs' in rejected.behavior_equivalence.cases[0].summary
-    assert validate_inspection(tmp_path, rejected.reference) == rejected
+    return inspection, source
+
+
+def freeze_native_inspection(repository, inspection, source):
+    """Run the real inspection and commit once; callers own lifecycle assertions."""
     report = inspect_candidate(repository, inspection, control=InspectionControl(max_workers=1, timeout_seconds=90))
     assert report.status is f.InspectionStatus.PASS, [(x.case_id,x.summary) for g in (report.behavior_equivalence,report.pte_runtime) for x in g.cases]
-    assert validate_inspection(tmp_path, report.reference) == report
     approval = record_research_decision(repository, f.ResearchDecision('native-freeze', 'S999', f.DecisionAction.APPROVE,
         f.FreezeSubject(report.origin.candidate, report.origin.content_sha256, report.reference, report.plan.sha256, 'v1'), source, 'approve exact synthetic package'))
     operation = f.FreezeCandidateRequest(f.FreezeRequestId('S999','native-fixture'), report.reference, approval)
     receipt = freeze_candidate(repository, operation)
     assert receipt.status is f.FreezeStatus.COMMITTED
+    return report, operation, receipt
+
+
+@pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
+def test_native_dual_market_inspection_freezes_exact_v4_package(tmp_path, market):
+    context, request, products, replay = native_fixture(tmp_path, market)
+    repository = context.repository
+    inspection, source = native_inspection_request(tmp_path, context, request, products, replay)
+    wrong = replace(inspection, protocol=replace(inspection.protocol, method_version='candidate-inspection-v2'))
+    rejected = inspect_candidate(repository, wrong, control=InspectionControl(max_workers=1))
+    assert rejected.status is f.InspectionStatus.FAIL and rejected.release is None
+    assert 'protocol differs' in rejected.behavior_equivalence.cases[0].summary
+    assert validate_inspection(tmp_path, rejected.reference) == rejected
+    report, operation, receipt = freeze_native_inspection(repository, inspection, source)
+    assert validate_inspection(tmp_path, report.reference) == report
     assert get_freeze_result(repository, operation.request_id) == receipt == freeze_candidate(repository, operation)
     package = validate_release_package(repository.strategy_root, 'S999-v1')
     assert package.package_sha256 == report.release.package_sha256

@@ -22,6 +22,7 @@ ROOT = Path(__file__).resolve().parents[2]
 PUBLIC_API = {
     "open_research_execution",
     "get_research_overview", "diagnose_accounts", "validate_experiment",
+    "project_selection_window_facts",
     "FrozenRuntimeMigrationRequest", "PreparedFrozenRuntimeMigration",
     "prepare_frozen_runtime_migration", "validate_frozen_runtime_migration",
     "validate_frozen_observation_upgrade",

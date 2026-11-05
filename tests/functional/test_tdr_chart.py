@@ -1,14 +1,18 @@
 """Public backtest HTML safety and observation-to-ledger identity."""
 from dataclasses import replace
+from datetime import date
 import re
 import pandas as pd
 import pytest
 from strategy_runtime import implementation_sha256
 from czsc_trader.application import BacktestRequest, run_backtest
-from public_backtest_support import request_for_prices, assert_public_charts, chart_payload, render_output
+from public_backtest_support import research_context, assert_public_charts, chart_payload, render_output
+from test_backtest import execution_flows
+from test_tdr_explanation import frozen_observation_revision
+from test_current_contracts import current_frozen as current_frozen, inspection as inspection, completed as completed, managed_evaluation as managed_evaluation
 
 
-def test_backtest_chart_escapes_permitted_observation_text(candidate_payload, tmp_path, monkeypatch):
+def _author_untrusted_label(candidate_payload):
     payload, source = candidate_payload
     path = source / "strategies/candidate_fixture.py"
     text = path.read_text(encoding="utf-8")
@@ -19,12 +23,14 @@ def test_backtest_chart_escapes_permitted_observation_text(candidate_payload, tm
     assert untrusted in text
     path.write_text(text, encoding="utf-8", newline="\n")
     payload["runtime"]["source_sha256"] = implementation_sha256(payload["runtime"]["source_files"], source_root=source)
-    days = pd.bdate_range("2026-08-17", periods=23)
-    prices = pd.DataFrame({"dt": days, "open": 1., "close": 1.})
-    context, request, _ = request_for_prices(candidate_payload, tmp_path, monkeypatch, prices, start_index=20)
-    result = run_backtest(context, request.strategy, BacktestRequest(
-        "588080.SH", "etf", days[20].date(), days[-1].date(), 100000, 100,
-    ))
+
+
+def test_backtest_chart_escapes_permitted_observation_text(current_frozen):
+    untrusted = "</script><script>alert(1)</script>"
+    repository, version = frozen_observation_revision(current_frozen, _author_untrusted_label)
+    context = research_context(repository, execution_flows(repository.root))
+    result = run_backtest(context, version, BacktestRequest(
+        "588080.SH", "etf", date(2026,9,15), date(2026,9,21), 100000, 100))
     assert result.manifest["audit"]["status"] == "PASS"
     output = render_output(result, context.repository.root)
     html = (output / "chart.html").read_text(encoding="utf-8")
@@ -34,11 +40,10 @@ def test_backtest_chart_escapes_permitted_observation_text(candidate_payload, tm
 
 
 @pytest.mark.parametrize("mismatch", ["strategy", "target"])
-def test_backtest_rejects_observations_that_differ_from_audited_decisions(candidate_payload, tmp_path, monkeypatch, mismatch):
+def test_backtest_rejects_observations_that_differ_from_audited_decisions(current_frozen, monkeypatch, mismatch):
     from czsc_trader.backtesting.service import replay_srt_account
-    days = pd.bdate_range("2026-08-17", periods=23)
-    prices = pd.DataFrame({"dt": days, "open": 1., "close": 1.})
-    context, request, _ = request_for_prices(candidate_payload, tmp_path, monkeypatch, prices, start_index=20)
+    repository, version = current_frozen
+    context = research_context(repository, execution_flows(repository.root))
     def altered(**kwargs):
         replay = replay_srt_account(**kwargs)
         first = replay.observations[0]
@@ -48,23 +53,22 @@ def test_backtest_rejects_observations_that_differ_from_audited_decisions(candid
             first = replace(first, target_position=1. - first.target_position)
         return replace(replay, observations=(first, *replay.observations[1:]))
     monkeypatch.setattr("czsc_trader.backtesting.service.replay_srt_account", altered)
-    result = run_backtest(context, request.strategy, BacktestRequest(
-        "588080.SH", "etf", days[20].date(), days[-1].date(), 100000, 100))
+    result = run_backtest(context, version, BacktestRequest(
+        "588080.SH", "etf", date(2026,9,15), date(2026,9,21), 100000, 100))
     with pytest.raises(ValueError, match="chart observation"):
         render_output(result, context.repository.root)
     assert not (context.repository.root / "outputs").exists()
 
 
-def test_chart_projection_does_not_copy_or_change_source_metadata(candidate_payload, tmp_path, monkeypatch):
+def test_chart_projection_does_not_copy_or_change_source_metadata(current_frozen):
     class SourceEvidence:
         def __deepcopy__(self, memo):
             raise AssertionError("chart must not deepcopy source evidence")
 
-    days = pd.bdate_range("2026-08-17", periods=23)
-    prices = pd.DataFrame({"dt": days, "open": 1., "close": 1.})
-    context, request, _ = request_for_prices(candidate_payload, tmp_path, monkeypatch, prices, start_index=20)
-    result = run_backtest(context, request.strategy, BacktestRequest(
-        "588080.SH", "etf", days[20].date(), days[-1].date(), 100000, 100))
+    repository, version = current_frozen
+    context = research_context(repository, execution_flows(repository.root))
+    result = run_backtest(context, version, BacktestRequest(
+        "588080.SH", "etf", date(2026,9,15), date(2026,9,21), 100000, 100))
     original = pd.DataFrame(result.execution_data.adjusted_daily, copy=True)
     evidence = SourceEvidence()
     result.execution_data.adjusted_daily.attrs["quality"] = evidence

@@ -61,11 +61,7 @@ def test_explicit_us_interval_runs_without_shanghai_daily_gate(month, day, expec
     assert store.get_setting("last_account_schedule_task:us") == task.task_id
 
 
-def test_schedule_preserves_dst_and_early_close_intervals():
-    before = datetime(2026, 10, 30, 9, 30, tzinfo=NY)
-    after = datetime(2026, 11, 2, 9, 30, tzinfo=NY)
-    assert before.astimezone(timezone.utc).hour == 13
-    assert after.astimezone(timezone.utc).hour == 14
+def test_schedule_rejects_submission_at_early_close():
     start = datetime(2026, 11, 27, 12, 30, tzinfo=NY)
     task = ScheduledDecision("us-early-close", TimeInterval(start, start + timedelta(minutes=30)), start)
     assert task.submit_before.astimezone(NY).hour == 13

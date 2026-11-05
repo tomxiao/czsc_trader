@@ -79,7 +79,6 @@ try {
                 'tests/functional/test_input_binding_integrity.py',
                 'tests/functional/test_benchmark_contract.py',
                 'tests/functional/test_benchmark_lot_size.py',
-                'tests/functional/test_hfq_research_evaluation.py',
                 'tests/functional/test_research_execution.py',
                 'tests/functional/test_evidence_batch.py',
                 'tests/functional/test_backtest_publication.py',

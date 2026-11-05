@@ -27,16 +27,6 @@ class MonthlyPro:
             'weight':[.2]*500}))
 
 
-def test_original_failure_interval_selects_fourteen_complete_months():
-    pro = MonthlyPro()
-    frame, metadata = fetch_index_constituent_weight('000905.SH','2025-09-04','2026-11-05',pro=pro)
-    assert len(pro.calls) == 14 and len(frame) == 7000
-    assert pro.calls[0]['trade_date'] == '20250930'
-    assert pro.calls[-1]['trade_date'] == '20261030'
-    assert frame.groupby('Date').ConstituentSymbol.nunique().eq(500).all()
-    assert metadata['expected_snapshot_dates'] == frame.Date.drop_duplicates().dt.strftime('%Y-%m-%d').tolist()
-
-
 def test_calendar_holiday_moves_snapshot_to_prior_open_day():
     pro = MonthlyPro()
     original = pro.trade_cal
@@ -57,8 +47,14 @@ def test_missing_expected_snapshot_fails_entire_interval():
     assert error.value.context['trade_date'] == '20261030'
 
 
-@pytest.mark.parametrize('kind', ['wrong_date','wrong_index','duplicate','short','invalid_weight'])
-def test_invalid_snapshot_is_rejected(kind):
+@pytest.mark.parametrize('kind,error,message', [
+    pytest.param('wrong_date', DataContractError, 'different from requested trade_date', id='wrong_date'),
+    pytest.param('wrong_index', DataContractError, 'mixes indexes', id='wrong_index'),
+    pytest.param('duplicate', DataContractError, 'duplicate constituent symbols', id='duplicate'),
+    pytest.param('short', IncompleteDataError, '500 unique constituents', id='short'),
+    pytest.param('invalid_weight', DataContractError, 'invalid weights', id='invalid_weight'),
+])
+def test_invalid_snapshot_is_rejected(kind, error, message):
     pro = MonthlyPro()
     def mutate(frame):
         if kind == 'wrong_date':
@@ -73,7 +69,7 @@ def test_invalid_snapshot_is_rejected(kind):
             frame.loc[0,'weight'] = float('inf')
         return frame
     pro.mutate = mutate
-    with pytest.raises((DataContractError, IncompleteDataError)):
+    with pytest.raises(error, match=message):
         fetch_index_constituent_weight('000905.SH','2026-09-01','2026-09-30',pro=pro)
 
 

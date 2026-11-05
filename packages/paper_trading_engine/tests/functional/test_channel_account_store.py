@@ -40,23 +40,12 @@ def partitions(tmp_path):
     root = PaperStore(tmp_path / "partition.db")
     root.register_channel_account(_config(DEFAULT_CHANNEL_ACCOUNT, broker=7,
         channel=FUTU_SIMULATE_CN_CHANNEL_ID), capital=Decimal("1000000"))
-    root.register_channel_account(_config(), capital=Decimal("20000"))
-    cn, us = root.scope(DEFAULT_CHANNEL_ACCOUNT), root.scope("us-primary")
+    us = root.register_channel_account(_config(), capital=Decimal("20000"))
+    cn = root.scope(DEFAULT_CHANNEL_ACCOUNT)
     _account(cn, "cn-strategy")
     _account(us, "us-strategy", us=True, capital="2000")
     try:
         yield root, cn, us
-    finally:
-        root.close()
-
-
-def test_registered_scope_can_write_after_registration_transaction(tmp_path):
-    root = PaperStore(tmp_path / "registration.db")
-    try:
-        us = root.register_channel_account(_config(), capital=Decimal("20000"))
-        us.set_setting("channel_reconciliation_status", "OK")
-        assert us.get_setting("channel_reconciliation_status") == "OK"
-        assert not root._connection.in_transaction
     finally:
         root.close()
 
@@ -72,6 +61,8 @@ def test_partition_balances_settings_snapshots_and_reopen(partitions):
     us.set_paused(False)
     cn.set_setting("channel_reconciliation_status", "BLOCKED")
     us.set_setting("channel_reconciliation_status", "OK")
+    assert us.get_setting("channel_reconciliation_status") == "OK"
+    assert not root._connection.in_transaction
     cn.save_snapshot({"currency": "CNY"})
     us.save_snapshot({"currency": "USD"})
     assert cn.is_paused() and not us.is_paused()
@@ -206,22 +197,6 @@ def test_external_identity_and_capital_cannot_silently_change(partitions):
         root.register_channel_account(_config("us-duplicate"), capital=Decimal("20000"))
 
 
-def test_legacy_default_account_survives_partition_registration(tmp_path):
-    root = PaperStore(tmp_path / "legacy.db")
-    try:
-        _account(root, "legacy")
-        root.set_setting("channel_reconciliation_status", "OK")
-        old = root.virtual_account("legacy")
-        cn = root.scope(DEFAULT_CHANNEL_ACCOUNT)
-        assert cn.virtual_account("legacy") == old
-        assert cn.get_setting("channel_reconciliation_status") == "OK"
-        root.register_channel_account(_config(), capital=Decimal("20000"))
-        assert cn.virtual_account("legacy") == old
-        assert cn.capital_pool_balance().unallocated_cash == Decimal("999000")
-    finally:
-        root.close()
-
-
 def test_unscoped_capital_cannot_mix_currencies(partitions):
     root, _, _ = partitions
     with pytest.raises(ValueError, match="scope|channel"):
@@ -269,6 +244,7 @@ def test_schema7_migration_preserves_legacy_balances_and_events(tmp_path):
     path = tmp_path / "schema7.db"
     root = PaperStore(path)
     original = _account(root, "legacy")
+    root.set_setting("channel_reconciliation_status", "OK")
     root.save_snapshot({"cash": "1000.0000"})
     event_ids = [row["event_id"] for row in root.query_audit_events()]
     root.close()
@@ -288,6 +264,10 @@ def test_schema7_migration_preserves_legacy_balances_and_events(tmp_path):
         assert [row["event_id"] for row in scope.query_audit_events()] == event_ids
         assert scope.latest_snapshot() == {"cash": "1000.0000"}
         assert migrated.get_setting("runtime_database_schema_version") == "8"
+        assert scope.get_setting("channel_reconciliation_status") == "OK"
+        migrated.register_channel_account(_config(), capital=Decimal("20000"))
+        assert scope.virtual_account("legacy") == original
+        assert scope.capital_pool_balance().unallocated_cash == Decimal("999000")
     finally:
         migrated.close()
 

@@ -2,7 +2,6 @@ from dataclasses import replace
 from datetime import date
 
 import pytest
-from strategy_runtime import StrategyCandidate
 
 from czsc_trader.application import BacktestRequest, run_backtest
 from czsc_trader.application.errors import ExecutionError
@@ -37,17 +36,14 @@ def test_backtest_requires_explicit_lot_size():
             build_parser().parse_args([*args, "--lot-size", invalid])
 
 
-def test_lot_size_conflict_fails_before_data_access(candidate_payload, minimal_repo, monkeypatch):
-    from czsc_trader.application import RepositoryContext
-    payload, source = candidate_payload
-    candidate = StrategyCandidate("S900", "C0001", payload, source)
-    repository = RepositoryContext.discover(minimal_repo, explicit_root=minimal_repo)
-    context = research_context(repository, Dataflows(base_dir=minimal_repo, space=DataSpace(Path("research/S900/assets/data")), providers=ProviderConfig(bindings={})))
+def test_lot_size_conflict_fails_before_data_access(current_frozen, monkeypatch):
+    repository, version = current_frozen
+    context = research_context(repository, Dataflows(base_dir=repository.root, space=DataSpace(Path("research/S900/assets/data")), providers=ProviderConfig(bindings={})))
     def forbidden(**kwargs):
         pytest.fail("conflicting lot_size must fail before fetching data")
     monkeypatch.setattr("czsc_trader.backtesting.service._prepare_backtest_execution_data", forbidden)
     with pytest.raises(ExecutionError, match="lot_size differs"):
-        run_backtest(context, candidate, BacktestRequest(
+        run_backtest(context, version, BacktestRequest(
             "588080.SH", "etf", date(2026, 9, 14), date(2026, 9, 21), 100000, 1,
         ))
     assert not (context.repository.root / "outputs").exists()
@@ -68,13 +64,9 @@ def test_backtest_rejects_tampered_version_before_data_access(current_frozen, mo
     assert not (context.repository.root / "outputs").exists()
 
 
-def test_backtest_public_api_rejects_unsupported_arguments(candidate_payload, minimal_repo, monkeypatch):
-    from czsc_trader.application import RepositoryContext
-
-    payload, source = candidate_payload
-    candidate = StrategyCandidate("S900", "C0001", payload, source)
-    repository = RepositoryContext.discover(minimal_repo, explicit_root=minimal_repo)
-    context = research_context(repository, Dataflows(base_dir=minimal_repo, space=DataSpace(Path("research/S900/assets/data")), providers=ProviderConfig(bindings={})))
+def test_backtest_public_api_rejects_unsupported_arguments(current_frozen, monkeypatch):
+    repository, version = current_frozen
+    context = research_context(repository, Dataflows(base_dir=repository.root, space=DataSpace(Path("research/S900/assets/data")), providers=ProviderConfig(bindings={})))
     request = BacktestRequest("588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 21), 100000, 100)
 
     def forbidden(*args, **kwargs):
@@ -82,13 +74,13 @@ def test_backtest_public_api_rejects_unsupported_arguments(candidate_payload, mi
 
     monkeypatch.setattr(Dataflows, "prepare", forbidden)
     with pytest.raises(TypeError, match="dataflows"):
-        run_backtest(context, candidate, request, dataflows=object())
+        run_backtest(context, version, request, dataflows=object())
     with pytest.raises(TypeError, match="chart_descriptor"):
-        run_backtest(context, candidate, request, chart_descriptor={})
-    with pytest.raises(TypeError, match="strategy"):
+        run_backtest(context, version, request, chart_descriptor={})
+    with pytest.raises(TypeError, match="frozen StrategyVersion"):
         run_backtest(context, "S001-v1", request)
     with pytest.raises(TypeError, match="request"):
-        run_backtest(context, candidate, {})
+        run_backtest(context, version, {})
     assert not (context.repository.root / "outputs").exists()
 
 
@@ -138,15 +130,13 @@ def test_backtest_request_rejects_invalid_market_window_and_capital(kwargs):
         BacktestRequest(**values)
 
 
-def test_backtest_rejects_another_batch_before_data_access(candidate_payload, minimal_repo, monkeypatch):
-    from czsc_trader.application import RepositoryContext
-    payload, source = candidate_payload
-    repository = RepositoryContext.discover(minimal_repo)
-    context = research_context(repository, Dataflows(base_dir=minimal_repo,
-        space=DataSpace(Path("research/S900/assets/data")), providers=ProviderConfig(bindings={})))
+def test_backtest_rejects_another_batch_before_data_access(current_frozen, monkeypatch):
+    repository, version = current_frozen
+    context = research_context(repository, Dataflows(base_dir=repository.root,
+        space=DataSpace(Path("research/S901/assets/data")), providers=ProviderConfig(bindings={})), strategy_id='S901')
     def forbidden(*args, **kwargs):
         pytest.fail("foreign batch must fail before data preparation")
     monkeypatch.setattr(Dataflows, "prepare", forbidden)
     with pytest.raises(ExecutionError, match="another research batch"):
-        run_backtest(context, StrategyCandidate("S901", "C0001", payload, source),
+        run_backtest(context, version,
             BacktestRequest("588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 21), 100_000, 100))

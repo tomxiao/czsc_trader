@@ -6,7 +6,6 @@ from czsc_trader.research_tools import delivery as d
 from czsc_trader.research_tools.evidence import MaterialEvidenceWrite
 from czsc_trader.research_tools.context import ExperimentRef
 from test_research_delivery import content, attachment, context as context
-from test_assessment_delivery import prepared_delivery as prepared_delivery
 
 
 def test_evidence_publication_is_explicit_idempotent_and_batch_scoped(context):
@@ -45,14 +44,3 @@ def test_stage4_requires_its_typed_payload_before_storage(context):
     with pytest.raises(TypeError, match="CandidateAssessmentDelivery"):
         assemble_delivery(context.repository, definition, content())
     assert not (context.repository.research_root / "S900/deliveries/ASSESSMENT/1").exists()
-
-
-def test_stage4_corrupt_direct_predecessor_fails_without_publication(prepared_delivery):
-    repository, definition, value = prepared_delivery
-    from czsc_trader.application.delivery_service import _delivery_path
-    predecessor = definition.predecessors[0]
-    (_delivery_path(repository, predecessor) / "receipt.json").write_bytes(b"{")
-    with pytest.raises(d.DeliveryValidationError) as caught:
-        assemble_delivery(repository, definition, value)
-    assert caught.value.issues[0].code == "ASSEMBLY_FAILED"
-    assert not (repository.research_root / "S900/deliveries/ASSESSMENT/1").exists()
