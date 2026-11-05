@@ -1,0 +1,115 @@
+{
+  "type": "SelectionRule",
+  "version": "S015-native-v4-annual-return-diagnostic-v1",
+  "source_sha256": "a47de14201ed55c2f1a8f24bf8030e6087128910cc5d1fb991c3e9063178b091",
+  "targets": {
+    "type": "ResearchTargets",
+    "requirements": [
+      {
+        "type": "ResearchTarget",
+        "target_id": "center-positive",
+        "metric": "NET_ANNUAL_RETURN",
+        "lower": {
+          "type": "BenchmarkBound",
+          "multiplier": 1.5,
+          "inclusive": true
+        },
+        "upper": null,
+        "when": {
+          "type": "BenchmarkCondition",
+          "metric": "NET_ANNUAL_RETURN",
+          "operator": "GT",
+          "value": 0.0
+        },
+        "scope": "STANDARD",
+        "one_way_cost": 0.001
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "center-nonpositive",
+        "metric": "NET_ANNUAL_RETURN",
+        "lower": {
+          "type": "ConstantBound",
+          "value": 0.0,
+          "inclusive": false
+        },
+        "upper": null,
+        "when": {
+          "type": "BenchmarkCondition",
+          "metric": "NET_ANNUAL_RETURN",
+          "operator": "LE",
+          "value": 0.0
+        },
+        "scope": "STANDARD",
+        "one_way_cost": 0.001
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "center-relative-dd",
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "lower": null,
+        "upper": {
+          "type": "BenchmarkBound",
+          "multiplier": 0.8,
+          "inclusive": true
+        },
+        "when": null,
+        "scope": "STANDARD",
+        "one_way_cost": 0.001
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "center-cap",
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "lower": null,
+        "upper": {
+          "type": "ConstantBound",
+          "value": 0.25,
+          "inclusive": true
+        },
+        "when": null,
+        "scope": "STANDARD",
+        "one_way_cost": 0.001
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "median",
+        "metric": "FREQUENCY_MEDIAN",
+        "lower": {
+          "type": "ConstantBound",
+          "value": 6.0,
+          "inclusive": true
+        },
+        "upper": null,
+        "when": null,
+        "scope": "STANDARD",
+        "one_way_cost": 0.001
+      },
+      {
+        "type": "FrequencyCoverageTarget",
+        "target_id": "coverage",
+        "window_days": 60,
+        "minimum_closed_cycles": 3,
+        "minimum_numerator": 9,
+        "minimum_denominator": 10
+      }
+    ],
+    "frequency_window_days": 60
+  },
+  "order": [
+    {
+      "type": "SelectionMetricOrder",
+      "metric": "NET_ANNUAL_RETURN",
+      "direction": "MAXIMIZE",
+      "bin_spec": null
+    },
+    {
+      "type": "SelectionMetricOrder",
+      "metric": "DRAWDOWN_MAGNITUDE",
+      "direction": "MINIMIZE",
+      "bin_spec": null
+    }
+  ],
+  "frequency_window_days": 60,
+  "minimum_closed_cycles": 3
+}

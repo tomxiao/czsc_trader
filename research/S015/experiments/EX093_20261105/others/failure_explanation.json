@@ -1,0 +1,133 @@
+{
+  "windows": [
+    {
+      "pair": "P1",
+      "center_failures": [
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-positive",
+            "metric": "NET_ANNUAL_RETURN",
+            "lower": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.5,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "NET_ANNUAL_RETURN",
+              "operator": "GT",
+              "value": 0.0
+            },
+            "scope": "STANDARD",
+            "one_way_cost": 0.001
+          },
+          "observed": 0.7713656329999987,
+          "status": "FAILED",
+          "reason": "TARGET_NOT_MET",
+          "resolved_lower": 1.0886202414818893,
+          "resolved_upper": null,
+          "condition_observed": 0.7257468276545929,
+          "evaluation_ids": [
+            "e78dec53cfcb8d60c331227f66f7d35ed99383f8075ef3f4edcded288c9f5c83",
+            "8d1661eec9c05191947307af9ca5cb0bfa5124dbbe6a5b61b3e45f81b2dc9bf6"
+          ]
+        }
+      ],
+      "all_candidates_failure_counts": {
+        "center-positive": 164,
+        "median": 85,
+        "coverage": 83,
+        "center-relative-dd": 9
+      }
+    },
+    {
+      "pair": "P2",
+      "center_failures": [
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-positive",
+            "metric": "NET_ANNUAL_RETURN",
+            "lower": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.5,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "NET_ANNUAL_RETURN",
+              "operator": "GT",
+              "value": 0.0
+            },
+            "scope": "STANDARD",
+            "one_way_cost": 0.001
+          },
+          "observed": 0.8997010275239901,
+          "status": "FAILED",
+          "reason": "TARGET_NOT_MET",
+          "resolved_lower": 1.4764043063683296,
+          "resolved_upper": null,
+          "condition_observed": 0.9842695375788864,
+          "evaluation_ids": [
+            "e78dec53cfcb8d60c331227f66f7d35ed99383f8075ef3f4edcded288c9f5c83",
+            "8d1661eec9c05191947307af9ca5cb0bfa5124dbbe6a5b61b3e45f81b2dc9bf6"
+          ]
+        }
+      ],
+      "all_candidates_failure_counts": {
+        "center-positive": 164,
+        "median": 79,
+        "coverage": 81,
+        "center-relative-dd": 2
+      }
+    },
+    {
+      "pair": "P3",
+      "center_failures": [],
+      "all_candidates_failure_counts": {
+        "center-positive": 112,
+        "median": 75,
+        "coverage": 68
+      }
+    }
+  ],
+  "winner_observation_failures": [
+    {
+      "pair": "P3",
+      "candidate": "S015-C9877",
+      "failures": [
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "median",
+            "metric": "FREQUENCY_MEDIAN",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 6.0,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": 0.001
+          },
+          "observed": 3.0,
+          "status": "FAILED",
+          "reason": "TARGET_NOT_MET",
+          "resolved_lower": 6.0,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "a6ec94b37fbe22992da54b284d870ec6d2f18e012c72a1e47a6b45a8159e6988"
+          ]
+        }
+      ]
+    }
+  ]
+}

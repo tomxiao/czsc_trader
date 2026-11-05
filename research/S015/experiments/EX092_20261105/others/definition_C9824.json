@@ -1,0 +1,143 @@
+{
+  "runtime": {
+    "kind": "ACCOUNT_REPLAY",
+    "contract_version": 4,
+    "source_files": [
+      "strategy.py"
+    ],
+    "source_sha256": "654dcc944cac51886b313e36be3fd31b979fd55cbf05fed0bd896a48b13b1ced"
+  },
+  "equity_definition": {
+    "runtime_kind": "ACCOUNT_REPLAY",
+    "instrument": {
+      "market": "CN",
+      "asset_class": "ETF",
+      "symbol": "159326.SZ"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "CN_EQUITY_V1"
+      },
+      "decision_clock": "daily",
+      "account": {
+        "currency": "CNY",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 100,
+      "price_tick": 0.001,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 75,
+    "entrypoint": "strategy:step",
+    "source_files": [
+      "strategy.py"
+    ],
+    "source_sha256": "654dcc944cac51886b313e36be3fd31b979fd55cbf05fed0bd896a48b13b1ced",
+    "parameters_json": "{\"allocation\":0.95,\"center_kind\":\"median\",\"lookback\":3,\"minimum_repair_space\":0.0016434037276107619}",
+    "dependencies": [
+      {
+        "name": "numpy",
+        "version": "2.5.2"
+      }
+    ],
+    "contract_version": 4,
+    "parameter_schema_json": "{\"allocation\":{\"type\":\"number\"},\"center_kind\":{\"type\":\"string\"},\"lookback\":{\"type\":\"integer\"},\"minimum_repair_space\":{\"type\":\"number\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "auxiliary_inputs": [
+      {
+        "name": "hfq",
+        "instrument": {
+          "market": "CN",
+          "asset_class": "ETF",
+          "symbol": "159326.SZ"
+        },
+        "source": {
+          "provider": "s015-saved-tushare-observations",
+          "revision": "ex087-v1"
+        },
+        "frequency": "daily",
+        "warmup_bars": 1,
+        "max_age_seconds": 6480000,
+        "analysis_price": "HFQ"
+      },
+      {
+        "name": "intraday",
+        "instrument": {
+          "market": "CN",
+          "asset_class": "ETF",
+          "symbol": "159326.SZ"
+        },
+        "source": {
+          "provider": "s015-saved-tushare-observations",
+          "revision": "ex087-v1"
+        },
+        "frequency": "30m",
+        "warmup_bars": 1,
+        "max_age_seconds": 6480000,
+        "analysis_price": "RAW"
+      }
+    ],
+    "feature_graph": {
+      "nodes": [],
+      "outputs": [],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [
+        {
+          "key": "active",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "repair_target",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "invalidation_origin",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "initialized",
+          "value_type": "bool",
+          "nullable": false
+        }
+      ],
+      "cycle_fields": []
+    },
+    "computation": "STATEFUL_STEP",
+    "initial_account": {
+      "values": [
+        [
+          "active",
+          false
+        ],
+        [
+          "repair_target",
+          0.0
+        ],
+        [
+          "invalidation_origin",
+          0.0
+        ],
+        [
+          "initialized",
+          false
+        ]
+      ]
+    }
+  }
+}
