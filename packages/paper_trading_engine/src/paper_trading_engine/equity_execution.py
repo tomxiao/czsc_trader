@@ -6,6 +6,7 @@ from decimal import Decimal
 from .broker import BrokerOrderRejectedError, BrokerSubmissionUncertainError, OrderIntent, TERMINAL_ORDER_STATUSES
 from .equity_contracts import EQUITY_OFFLINE_CHANNELS, EquityOrderReport, EquityReconciliationError
 from .lifecycle import IntentControlState
+from .order_reports import apply_order_report
 
 
 class EquityExecution:
@@ -73,22 +74,9 @@ class EquityExecution:
         start, end = (datetime.fromisoformat(interval[k]) for k in ("start","end"))
         if report.occurred_at < start or (report.cumulative_quantity > previous and report.occurred_at >= end):
             raise ValueError("equity fill event is outside its order interval")
-        if report.cumulative_quantity < previous:
-            raise ValueError("equity cumulative report cannot decrease")
-        if report.cumulative_quantity == previous and previous and report.average_price != Decimal(str(order["average_fill_price"])):
-            raise ValueError("same cumulative equity fill carries different price")
-        if report.status == "FILLED_ALL" and report.cumulative_quantity != int(order["quantity"]):
-            raise ValueError("fully filled status differs from ordered quantity")
-        if report.status == "FILLED_PART" and not 0 < report.cumulative_quantity < int(order["quantity"]):
-            raise ValueError("partial status requires a strict partial quantity")
-        with self.store.atomic_decision_update():
-            fill = self.store.apply_fill_increment(report.channel_order_id,
-                cumulative_quantity=report.cumulative_quantity, average_price=report.average_price,
-                occurred_at=report.occurred_at.isoformat(),
-                settlement_at=None if report.settlement_at is None else report.settlement_at.isoformat())
-            payload = dict(self.store.account_order(report.channel_order_id))
-            payload.update(status=report.status, cumulative_filled_quantity=report.cumulative_quantity,
-                           average_fill_price=str(report.average_price), updated_at=report.occurred_at.isoformat(),
-                           equity_report_at=report.occurred_at.isoformat())
-            self.store.update_channel_order_report(report.channel_order_id, payload)
-        return fill
+        payload = dict(order)
+        payload.update(status=report.status, cumulative_filled_quantity=report.cumulative_quantity,
+                       average_fill_price=str(report.average_price), updated_at=report.occurred_at.isoformat(),
+                       equity_report_at=report.occurred_at.isoformat())
+        return apply_order_report(self.store, payload, occurred_at=report.occurred_at.isoformat(),
+            settlement_at=None if report.settlement_at is None else report.settlement_at.isoformat())

@@ -88,11 +88,15 @@ def deploy_strategy(context: RepositoryContext, reference: str) -> CommandResult
         registry = StrategyRegistry(context.strategy_root)
         strategy_id, version = _version_parts(reference)
         release = prospective_release(registry.get_version(strategy_id, version))
-        definition = StrategyRuntime().describe(
-            release,
-            source_root=source_root,
-            runtime_binding=RuntimeBinding.from_dict(binding),
-        )
+        native_v4 = release.payload.get('runtime', {}).get('kind') == 'ACCOUNT_REPLAY'
+        if native_v4:
+            from strategy_runtime.equity_definition import EquityStrategyDefinition
+            definition = EquityStrategyDefinition.from_dict(dict(release.payload['equity_definition']))
+            runtime_hash = RuntimeBinding.from_dict(binding).spec.implementation_sha256
+        else:
+            definition = StrategyRuntime().describe(
+                release, source_root=source_root, runtime_binding=RuntimeBinding.from_dict(binding))
+            runtime_hash = definition.runtime_sha256
         receipt_payload = {
             "schema_version": 1,
             "strategy_version_id": reference,
@@ -111,7 +115,8 @@ def deploy_strategy(context: RepositoryContext, reference: str) -> CommandResult
             _write_object(receipt_path, receipt)
             created_receipt = True
         deployment = load_strategy_deployment(context.strategy_root, reference)
-        StrategyRuntime(context.strategy_root).describe(release)
+        if not native_v4:
+            StrategyRuntime(context.strategy_root).describe(release)
     except Exception as exc:
         if created_receipt and receipt_path is not None:
             receipt_path.unlink(missing_ok=True)
@@ -128,7 +133,7 @@ def deploy_strategy(context: RepositoryContext, reference: str) -> CommandResult
         {
             "strategy_version_id": reference,
             "deployment_state": "SRT_DEPLOYED",
-            "runtime_hash": definition.runtime_sha256,
+            "runtime_hash": runtime_hash,
             "receipt_hash": deployment.receipt_hash,
         },
     )

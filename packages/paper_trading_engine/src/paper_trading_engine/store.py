@@ -28,6 +28,7 @@ from .lifecycle import (AccountHealth, RunState, DecisionState, IntentControlSta
                         validate_transition, planned_orders, execution_state)
 from .account_binding import AccountBindingUpdate, AccountStrategyBinding
 from .equity_events import EquityEventStore
+from .channel_accounts import ChannelAccountStore, DEFAULT_CHANNEL_ACCOUNT
 from .account_retirement import (
     AccountRetirementRequest, AccountRetirementResult, AccountRetirementStatus, CapitalPoolBalance,
 )
@@ -48,8 +49,8 @@ from .channel import (
 
 
 DEFAULT_FUTU_CAPITAL_POOL = "1000000.0000"
-RUNTIME_DATABASE_SCHEMA_VERSION = 7
-RUNTIME_DATABASE_COMPATIBLE_VERSIONS = (1, 2, 3, 4, 5, 6, 7)
+RUNTIME_DATABASE_SCHEMA_VERSION = 8
+RUNTIME_DATABASE_COMPATIBLE_VERSIONS = (1, 2, 3, 4, 5, 6, 7, 8)
 
 
 def _utc_now() -> str:
@@ -174,7 +175,9 @@ def backup_runtime_database(path: Path, *, retention: int = 1) -> Path | None:
     return destination_path
 
 
-class PaperStore(EquityEventStore):
+
+
+class PaperStore(ChannelAccountStore, EquityEventStore):
     @classmethod
     def open_readonly(cls, path: Path) -> "PaperStore":
         """Read a consistent current-schema snapshot without creating or migrating it."""
@@ -246,7 +249,7 @@ class PaperStore(EquityEventStore):
         stored_schema = self._connection.execute(
             "SELECT value FROM settings WHERE key='runtime_database_schema_version'"
         ).fetchone()
-        if stored_schema is not None and int(stored_schema[0]) in {3, 4, 5, 6, 7}:
+        if stored_schema is not None and int(stored_schema[0]) in {3, 4, 5, 6, 7, 8}:
             self._initialize_lifecycle()
             return
         self._connection.executescript(
@@ -447,15 +450,19 @@ class PaperStore(EquityEventStore):
         self._ensure_column("virtual_accounts", "qualification_snapshot", "TEXT")
         self._ensure_column("virtual_accounts", "channel_id", "TEXT NOT NULL DEFAULT 'futu_simulate_cn'")
         self._ensure_column("virtual_accounts", "account_type", "TEXT NOT NULL DEFAULT 'STRATEGY'")
-        self._ensure_column("decisions", "status", "TEXT NOT NULL DEFAULT 'ACTIVE'")
+        migrated_lifecycle = "legacy_status" in {r[1] for r in self._connection.execute("PRAGMA table_info(decisions)")}
+        if not migrated_lifecycle:
+            self._ensure_column("decisions", "status", "TEXT NOT NULL DEFAULT 'ACTIVE'")
         self._ensure_column("decisions", "superseded_by", "TEXT")
         self._ensure_column("decisions", "superseded_at", "TEXT")
         self._connection.execute("DROP INDEX IF EXISTS uq_decisions_account_signal_date")
-        self._connection.execute(
-            "CREATE UNIQUE INDEX IF NOT EXISTS uq_decisions_active_signal_date "
-            "ON decisions(account_id,signal_date) WHERE status='ACTIVE'"
-        )
-        self._ensure_column("virtual_accounts", "status", "TEXT NOT NULL DEFAULT 'RUNNING'")
+        self._connection.execute("DROP INDEX IF EXISTS uq_decisions_active_signal_date")
+        if not migrated_lifecycle:
+            self._connection.execute(
+                "CREATE UNIQUE INDEX IF NOT EXISTS uq_decisions_active_signal_date "
+                "ON decisions(account_id,signal_date) WHERE status='ACTIVE'")
+        if not migrated_lifecycle:
+            self._ensure_column("virtual_accounts", "status", "TEXT NOT NULL DEFAULT 'RUNNING'")
         self._ensure_column("fills", "realized_pnl", "TEXT NOT NULL DEFAULT '0.0000'")
         self._ensure_column("orders", "created_at", "TEXT")
         self._ensure_column("intents", "attention_required", "INTEGER NOT NULL DEFAULT 0")
@@ -488,6 +495,7 @@ class PaperStore(EquityEventStore):
             "decision_id", "order_id",
         ):
             self._ensure_column("events", column, "TEXT")
+        self._initialize_channel_accounts()
         self._migrate_audit_events()
         self._migrate_futu_channel_scope()
         if account_schema_migrated:
@@ -579,6 +587,8 @@ class PaperStore(EquityEventStore):
             now = _utc_now()
             migrate_lifecycle(self._connection, now)
             migrate_account_health(self._connection, now)
+            self._initialize_channel_accounts()
+            self._connection.execute("DROP INDEX IF EXISTS uq_decisions_active_signal_date")
             self._ensure_column("virtual_accounts", "entry_cycle_json", "TEXT")
             self._ensure_column("virtual_accounts", "equity_rules_json", "TEXT")
             self._ensure_column("virtual_accounts", "receivable", "TEXT NOT NULL DEFAULT '0.0000'")
@@ -786,7 +796,8 @@ class PaperStore(EquityEventStore):
                 )
             )
         from .equity_contracts import EQUITY_OFFLINE_CHANNELS
-        supported = {LEGACY_FUTU_CHANNEL_ID, FUTU_SIMULATE_CN_CHANNEL_ID}
+        from .channel import FUTU_US_SIM_CHANNEL_ID
+        supported = {LEGACY_FUTU_CHANNEL_ID, FUTU_SIMULATE_CN_CHANNEL_ID, FUTU_US_SIM_CHANNEL_ID}
         if self._inspection_permit is not None:
             supported.update(EQUITY_OFFLINE_CHANNELS)
         unsupported = values - supported
@@ -973,16 +984,20 @@ class PaperStore(EquityEventStore):
             self._connection.execute(f"ALTER TABLE {table} ADD COLUMN {column} {declaration}")
 
     def close(self) -> None:
+        if hasattr(self, "_scope_parent"):
+            return
         with self._lock:
             self._connection.close()
 
     def _setting(self, key: str) -> str | None:
+        key = self._setting_key(key)
         row = self._connection.execute(
             "SELECT value FROM settings WHERE key = ?", (key,)
         ).fetchone()
         return None if row is None else str(row["value"])
 
     def set_setting(self, key: str, value: str) -> None:
+        key = self._setting_key(key)
         with self._lock, self._write_context(False):
             self._connection.execute(
                 "INSERT INTO settings(key, value) VALUES(?, ?) "
@@ -1013,14 +1028,21 @@ class PaperStore(EquityEventStore):
         *, symbol="588080.SH", asset_type="etf", strategy_id=None,
         strategy_name_snapshot=None, strategy_version=None, release_hash=None,
         qualification_snapshot=None, selection_data_cutoff=None,
-        channel_id=FUTU_SIMULATE_CN_CHANNEL_ID, equity_rules=None,
+        channel_id=None, equity_rules=None,
     ):
+        self._check_owned("account", account_id)
         from decimal import Decimal
         cash = Decimal(initial_cash).quantize(Decimal("0.0001"))
+        if channel_id is None:
+            channel_id = self.execution_channel_id
         self._require_account_channel(channel_id)
+        if self.channel_account_id is not None and self._scope_market == "US" and equity_rules is None:
+            raise ValueError("US account requires explicit equity rules")
         from .equity_contracts import EquityAccountRules, EQUITY_OFFLINE_CHANNELS, equity_channel_id
-        if channel_id in EQUITY_OFFLINE_CHANNELS:
-            if type(equity_rules) is not EquityAccountRules or symbol.upper() != equity_rules.instrument.symbol or asset_type != equity_rules.instrument.asset_class.value.lower() or channel_id != equity_channel_id(equity_rules.instrument):
+        if channel_id in EQUITY_OFFLINE_CHANNELS or equity_rules is not None:
+            if type(equity_rules) is not EquityAccountRules or symbol.upper() != equity_rules.instrument.symbol or asset_type != equity_rules.instrument.asset_class.value.lower() or (channel_id in EQUITY_OFFLINE_CHANNELS and channel_id != equity_channel_id(equity_rules.instrument)):
+                raise ValueError("account requires matching explicit equity rules")
+            if self.channel_account_id is not None and (equity_rules.instrument.market.value != self._scope_market or equity_rules.execution.account.currency != self._scope_currency):
                 raise ValueError("US account requires matching explicit equity rules")
         elif equity_rules is not None:
             raise ValueError("CN account cannot carry US rules")
@@ -1065,7 +1087,7 @@ class PaperStore(EquityEventStore):
             raise ValueError("selection_data_cutoff must be a nonempty ISO date") from exc
         now = _utc_now()
         with self.atomic_decision_update():
-            if self._connection.execute("SELECT 1 FROM virtual_accounts WHERE channel_id<>? LIMIT 1", (channel_id,)).fetchone():
+            if self.channel_account_id is None and self._connection.execute("SELECT 1 FROM virtual_accounts WHERE channel_id<>? LIMIT 1", (channel_id,)).fetchone():
                 raise ValueError("one account database cannot mix market channels or capital currencies")
             if getattr(self, "_inspection_permit", None) is not None:
                 permit = self._inspection_permit
@@ -1086,6 +1108,7 @@ class PaperStore(EquityEventStore):
                     channel_id, STRATEGY_ACCOUNT_TYPE, RunState.PAUSED, AccountHealth.OK, now, now,
                 ),
             )
+            self._connection.execute("UPDATE virtual_accounts SET channel_account_id=? WHERE account_id=?", (self.channel_account_id or DEFAULT_CHANNEL_ACCOUNT, account_id))
             if equity_rules is not None:
                 self._connection.execute("UPDATE virtual_accounts SET equity_rules_json=? WHERE account_id=?",
                     (json.dumps(equity_rules.to_dict(), sort_keys=True), account_id))
@@ -1115,18 +1138,25 @@ class PaperStore(EquityEventStore):
             if getattr(self, "_inspection_permit", None) is None:
                 raise ValueError("US offline channel requires an isolated inspection permit")
             return channel_id
+        if self.channel_account_id is not None:
+            if channel_id != self.execution_channel_id:
+                raise ValueError("channel differs from bound channel account")
+            return channel_id
         return require_futu_simulate_cn(channel_id)
 
     def equity_account_rules(self, account_id):
+        self._check_owned("account", account_id)
         from .equity_contracts import EquityAccountRules, EQUITY_OFFLINE_CHANNELS, equity_channel_id
         account = self.virtual_account(account_id)
         self._require_account_channel(account["channel_id"])
         raw = account.get("equity_rules_json")
-        if account["channel_id"] in EQUITY_OFFLINE_CHANNELS:
+        if account["channel_id"] in EQUITY_OFFLINE_CHANNELS or raw is not None:
             if raw is None:
                 raise ValueError("US account has no authenticated market rules")
             rules = EquityAccountRules.from_dict(json.loads(raw))
-            if rules.instrument.symbol != account["symbol"] or account["channel_id"] != equity_channel_id(rules.instrument):
+            if rules.instrument.symbol != account["symbol"] or (account["channel_id"] in EQUITY_OFFLINE_CHANNELS and account["channel_id"] != equity_channel_id(rules.instrument)):
+                raise ValueError("account symbol differs from market rules")
+            if self.channel_account_id is not None and rules.instrument.market.value != self._scope_market:
                 raise ValueError("US account symbol differs from market rules")
             return rules
         if raw is not None:
@@ -1151,12 +1181,14 @@ class PaperStore(EquityEventStore):
         """Create the zero-balance system ledger for verified channel fee variance."""
         from decimal import Decimal
 
-        require_futu_simulate_cn(FUTU_SIMULATE_CN_CHANNEL_ID)
+        channel_id = self.execution_channel_id
+        if self.channel_account_id not in (None, DEFAULT_CHANNEL_ACCOUNT) and account_id == "futu-simulate-cn-reconciliation":
+            account_id = self.channel_account_id + "-reconciliation"
         baseline = hashlib.sha256(b"futu_simulate_cn:channel_reconciliation.v1").hexdigest()
         with self._lock, self._write_context(False):
             existing = self._connection.execute(
-                "SELECT * FROM virtual_accounts WHERE channel_id=? AND account_type=?",
-                (FUTU_SIMULATE_CN_CHANNEL_ID, CHANNEL_RECONCILIATION_ACCOUNT_TYPE),
+                "SELECT * FROM virtual_accounts WHERE channel_id=? AND account_type=? AND channel_account_id=?",
+                (channel_id, CHANNEL_RECONCILIATION_ACCOUNT_TYPE, self.channel_account_id or DEFAULT_CHANNEL_ACCOUNT),
             ).fetchone()
             if existing is not None:
                 if Decimal(existing["initial_cash"]) != 0:
@@ -1167,14 +1199,15 @@ class PaperStore(EquityEventStore):
                 "INSERT INTO virtual_accounts(account_id,name,baseline_version,baseline_sha256,"
                 "symbol,asset_type,initial_cash,cash,total_assets,channel_id,account_type,run_state,health,"
                 "created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                (account_id, "Futu模拟盘CN渠道平账账户", "channel_reconciliation.v1", baseline,
-                 "CASH.CN", "cash", "0.0000", "0.0000", "0.0000",
-                 FUTU_SIMULATE_CN_CHANNEL_ID, CHANNEL_RECONCILIATION_ACCOUNT_TYPE, None, AccountHealth.OK, now, now),
+                (account_id, f"{channel_id}渠道平账账户", "channel_reconciliation.v1", baseline,
+                 "CASH." + getattr(self, "_scope_currency", "CNY"), "cash", "0.0000", "0.0000", "0.0000",
+                 channel_id, CHANNEL_RECONCILIATION_ACCOUNT_TYPE, None, AccountHealth.OK, now, now),
             )
+            self._connection.execute("UPDATE virtual_accounts SET channel_account_id=? WHERE account_id=?", (self.channel_account_id or DEFAULT_CHANNEL_ACCOUNT, account_id))
             self._insert_audit_event(self._new_audit_event(
                 "CHANNEL_RECONCILIATION_ACCOUNT_CREATED", source="account_registry",
                 actor_type="OPERATOR", correlation_id=f"channel-reconciliation:{account_id}",
-                account_id=account_id, channel=FUTU_SIMULATE_CN_CHANNEL_ID,
+                account_id=account_id, channel=channel_id,
                 details={"initial_balance": "0.0000", "account_type": CHANNEL_RECONCILIATION_ACCOUNT_TYPE},
             ))
         return self.virtual_account(account_id)
@@ -1183,6 +1216,7 @@ class PaperStore(EquityEventStore):
         self, account_id: str, release_hash: str, selection_data_cutoff: str,
     ) -> bool:
         """Fill a legacy account cutoff once, only for an identical strategy release."""
+        self._check_owned("account", account_id)
         try:
             cutoff = date.fromisoformat(str(selection_data_cutoff)).isoformat()
         except (TypeError, ValueError) as exc:
@@ -1199,6 +1233,7 @@ class PaperStore(EquityEventStore):
         self, account_id: str, release_hash: str, strategy_name: str,
     ) -> bool:
         """Synchronize mutable display metadata while preserving release identity."""
+        self._check_owned("account", account_id)
         normalized_name = str(strategy_name).strip()
         if not normalized_name:
             raise ValueError("strategy name is required")
@@ -1234,6 +1269,8 @@ class PaperStore(EquityEventStore):
 
     def rename_virtual_account(self, old_account_id: str, account_id: str, name: str):
         """Atomically migrate a runtime account identity without losing its ledger."""
+        self._check_owned("account", account_id)
+        self._check_owned("account", old_account_id)
         if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}", str(account_id)) is None:
             raise ValueError("account id must use 1-64 letters, digits, dots, underscores or hyphens")
         if not str(name).strip():
@@ -1308,6 +1345,7 @@ class PaperStore(EquityEventStore):
         self, account_id: str, *, expected_initial_cash, new_initial_cash,
     ):
         """Change capital only when an account has never entered its trading lifecycle."""
+        self._check_owned("account", account_id)
         from decimal import Decimal
 
         expected = Decimal(expected_initial_cash).quantize(Decimal("0.0001"))
@@ -1350,6 +1388,7 @@ class PaperStore(EquityEventStore):
         return self.virtual_account(account_id)
 
     def virtual_account(self, account_id: str):
+        self._check_owned("account", account_id)
         with self._lock:
             row = self._connection.execute(
                 "SELECT * FROM virtual_accounts WHERE account_id=?", (account_id,)
@@ -1357,7 +1396,7 @@ class PaperStore(EquityEventStore):
         if row is None:
             raise KeyError(account_id)
         result = dict(row)
-        if getattr(self, "_inspection_permit", None) is not None:
+        if getattr(self, "_inspection_permit", None) is not None or result["equity_rules_json"] is not None:
             state = self._connection.execute("SELECT payload FROM equity_strategy_state WHERE account_id=?", (account_id,)).fetchone()
             result["account_v4_json"] = None if state is None else state[0]
         result["health"] = AccountHealth(result["health"])
@@ -1370,7 +1409,7 @@ class PaperStore(EquityEventStore):
             rows = self._connection.execute(
                 "SELECT * FROM virtual_accounts ORDER BY created_at, account_id"
             ).fetchall()
-        return [self.virtual_account(row["account_id"]) for row in rows]
+        return [self.virtual_account(row["account_id"]) for row in self._scoped_rows(rows)]
 
     def strategy_virtual_accounts(self):
         return [
@@ -1380,15 +1419,15 @@ class PaperStore(EquityEventStore):
 
     def capital_pool_balance(self) -> CapitalPoolBalance:
         from decimal import Decimal
-
+        if self.channel_account_id is None and self._connection.execute("SELECT COUNT(*) FROM channel_accounts").fetchone()[0] > 1:
+            raise ValueError("capital accounting requires an explicit channel account scope")
         with self._lock:
             registered = Decimal(self._setting("futu_capital_pool"))
-            allocated = sum((Decimal(row[0]) for row in self._connection.execute(
-                "SELECT initial_cash FROM virtual_accounts WHERE (run_state IS NULL OR run_state<>'RETIRED')"
-            )), Decimal("0"))
-            recovered = sum((Decimal(row[1]) - Decimal(row[0]) for row in self._connection.execute(
-                "SELECT initial_cash,released_cash FROM account_retirements"
-            )), Decimal("0"))
+            clause, values = self._scope_clause()
+            allocated = sum((Decimal(r[0]) for r in self._connection.execute(
+                f"SELECT initial_cash FROM virtual_accounts WHERE (run_state IS NULL OR run_state<>'RETIRED') AND {clause}", values)), Decimal("0"))
+            recovered = sum((Decimal(r[1])-Decimal(r[0]) for r in self._connection.execute(
+                f"SELECT initial_cash,released_cash FROM account_retirements WHERE {clause}", values)), Decimal("0"))
         return CapitalPoolBalance(registered, allocated, recovered)
 
     def _retirement_cash(self, account_id: str) -> str | None:
@@ -1460,16 +1499,18 @@ class PaperStore(EquityEventStore):
             ).fetchone()[0]
         return AccountRetirementResult(AccountRetirementStatus.RETIRED, request.account_id, cash, remaining)
 
-    def channel_reconciliation_account(self, channel_id: str = FUTU_SIMULATE_CN_CHANNEL_ID):
-        require_futu_simulate_cn(channel_id)
+    def channel_reconciliation_account(self, channel_id: str | None = None):
+        channel_id = self.execution_channel_id if channel_id is None else channel_id
+        self._require_account_channel(channel_id)
         with self._lock:
             row = self._connection.execute(
-                "SELECT * FROM virtual_accounts WHERE channel_id=? AND account_type=?",
-                (channel_id, CHANNEL_RECONCILIATION_ACCOUNT_TYPE),
+                "SELECT * FROM virtual_accounts WHERE channel_id=? AND account_type=? AND channel_account_id=?",
+                (channel_id, CHANNEL_RECONCILIATION_ACCOUNT_TYPE, self.channel_account_id or DEFAULT_CHANNEL_ACCOUNT),
             ).fetchone()
         return None if row is None else self.virtual_account(row["account_id"])
 
     def set_virtual_paused(self, account_id: str, paused: bool):
+        self._check_owned("account", account_id)
         if type(paused) is not bool:
             raise TypeError("pause requires a boolean")
         target = RunState.PAUSED if paused else RunState.RUNNING
@@ -1503,6 +1544,7 @@ class PaperStore(EquityEventStore):
         return self.virtual_account(account_id)
 
     def set_virtual_health(self, account_id: str, health: AccountHealth, error: str | None = None):
+        self._check_owned("account", account_id)
         if type(health) is not AccountHealth:
             raise TypeError("account health requires an AccountHealth value")
         with self._lock, self._write_context(False):
@@ -1544,11 +1586,15 @@ class PaperStore(EquityEventStore):
         )
 
     def _insert_audit_event(self, event: AuditEvent) -> None:
+        self._check_owned("account", event.account_id)
+        self._check_owned("order", event.order_id)
+        if self.channel_account_id is not None and event.channel not in (None, self.execution_channel_id):
+            raise ValueError("audit channel differs from owning channel account")
         self._connection.execute(
             "INSERT INTO events(created_at,event_type,payload,event_id,occurred_at,category,"
             "severity,outcome,source,correlation_id,actor_type,actor_id,schema_version,account_id,"
-            "strategy_id,strategy_version,release_hash,symbol,channel,decision_id,order_id) "
-            "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "strategy_id,strategy_version,release_hash,symbol,channel,decision_id,order_id,channel_account_id) "
+            "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (
                 event.occurred_at, event.event_type,
                 json.dumps(event.details, ensure_ascii=False, default=str),
@@ -1556,7 +1602,7 @@ class PaperStore(EquityEventStore):
                 event.outcome.value, event.source, event.correlation_id, event.actor_type,
                 event.actor_id, event.schema_version, event.account_id, event.strategy_id,
                 event.strategy_version, event.release_hash, event.symbol, event.channel,
-                event.decision_id, event.order_id,
+                event.decision_id, event.order_id, self.channel_account_id or DEFAULT_CHANNEL_ACCOUNT,
             ),
         )
 
@@ -1614,6 +1660,7 @@ class PaperStore(EquityEventStore):
             "release_hash": row["release_hash"],
             "symbol": row["symbol"],
             "channel": row["channel"],
+            "channel_account_id": row["channel_account_id"],
             "decision_id": row["decision_id"],
             "order_id": row["order_id"],
             "details": details,
@@ -1625,6 +1672,7 @@ class PaperStore(EquityEventStore):
         account_id=None, strategy_id=None, channel=None, decision_id=None, order_id=None,
         correlation_id=None, before_id=None, limit=50,
     ) -> list[dict[str, Any]]:
+        self._check_owned("account", account_id)
         limit = int(limit)
         if not 1 <= limit <= 200:
             raise ValueError("audit event limit must be between 1 and 200")
@@ -1635,6 +1683,9 @@ class PaperStore(EquityEventStore):
             "correlation_id": correlation_id,
         }
         clauses, values = [], []
+        if self.channel_account_id is not None:
+            clauses.append("channel_account_id=?")
+            values.append(self.channel_account_id)
         for column, value in filters.items():
             if value is not None:
                 clauses.append(f"{column}=?")
@@ -1656,6 +1707,7 @@ class PaperStore(EquityEventStore):
         correlation_id=None,
     ) -> dict[str, int]:
         """Count every matching event by category, independent of page size."""
+        self._check_owned("account", account_id)
         filters = {
             "event_type": event_type, "severity": severity, "outcome": outcome,
             "account_id": account_id, "strategy_id": strategy_id, "channel": channel,
@@ -1663,6 +1715,9 @@ class PaperStore(EquityEventStore):
             "correlation_id": correlation_id,
         }
         clauses, values = [], []
+        if self.channel_account_id is not None:
+            clauses.append("channel_account_id=?")
+            values.append(self.channel_account_id)
         for column, value in filters.items():
             if value is not None:
                 clauses.append(f"{column}=?")
@@ -1682,9 +1737,13 @@ class PaperStore(EquityEventStore):
         decision_id: str | None = None, channel: str | None = None,
         channel_is_null: bool = False,
     ) -> bool:
+        self._check_owned("account", account_id)
         filters = {"event_type": event_type, "account_id": account_id,
                    "decision_id": decision_id, "channel": channel}
         clauses, values = [], []
+        if self.channel_account_id is not None:
+            clauses.append("channel_account_id=?")
+            values.append(self.channel_account_id)
         for column, value in filters.items():
             if value is not None:
                 clauses.append(f"{column}=?")
@@ -1701,6 +1760,7 @@ class PaperStore(EquityEventStore):
         return self.query_audit_events(limit=limit)
 
     def set_operation_failure(self, operation: str, payload: dict[str, object]) -> None:
+        operation = self._setting_key(operation)
         with self._lock, self._write_context(False):
             self._connection.execute(
                 "INSERT INTO operation_failures(operation,payload,updated_at) VALUES(?,?,?) "
@@ -1709,6 +1769,7 @@ class PaperStore(EquityEventStore):
             )
 
     def clear_operation_failure(self, operation: str) -> None:
+        operation = self._setting_key(operation)
         with self._lock, self._write_context(False):
             self._connection.execute("DELETE FROM operation_failures WHERE operation=?", (operation,))
 
@@ -1717,8 +1778,10 @@ class PaperStore(EquityEventStore):
             rows = self._connection.execute(
                 "SELECT operation,payload,updated_at FROM operation_failures ORDER BY operation"
             ).fetchall()
+        prefix = "" if self.channel_account_id in (None, DEFAULT_CHANNEL_ACCOUNT) else f"channel:{self.channel_account_id}:"
+        rows = [r for r in rows if (r["operation"].startswith(prefix) if prefix else not r["operation"].startswith("channel:"))]
         return [
-            {"operation": row["operation"], **json.loads(row["payload"]), "updated_at": row["updated_at"]}
+            {"operation": row["operation"][len(prefix):], **json.loads(row["payload"]), "updated_at": row["updated_at"]}
             for row in rows
         ]
 
@@ -1728,6 +1791,7 @@ class PaperStore(EquityEventStore):
         fee_rate="0.0005", order_type=None, audit_event: AuditEvent | None = None,
     ) -> dict[str, Any]:
         """Persist one idempotent account order intent and reserve its cash."""
+        self._check_owned("account", account_id)
         from decimal import Decimal
 
         side = str(side).upper()
@@ -1859,6 +1923,7 @@ class PaperStore(EquityEventStore):
         audit_events: list[AuditEvent] | None = None, _in_transaction: bool = False,
     ) -> list[dict[str, Any]]:
         """Atomically persist every leg of one durable dependent execution plan."""
+        self._check_owned("account", account_id)
         from decimal import Decimal
 
         if not legs:
@@ -2082,6 +2147,7 @@ class PaperStore(EquityEventStore):
         audit_events: list[AuditEvent] | None = None, _in_transaction: bool = False,
     ) -> list[dict[str, Any]]:
         """Atomically persist every immediate order split from one decision."""
+        self._check_owned("account", account_id)
         from decimal import Decimal
 
         if not orders:
@@ -2486,6 +2552,7 @@ class PaperStore(EquityEventStore):
     def save_account_decision(
         self, account_id: str, payload: dict[str, object], *, _in_transaction: bool = False,
     ) -> dict[str, Any]:
+        self._check_owned("account", account_id)
         decision_id = str(payload["decision_id"])
         if not any(key in payload for key in ("plan_legs", "orders", "order")):
             raise ValueError("decision requires explicit immutable order-plan evidence")
@@ -2581,6 +2648,7 @@ class PaperStore(EquityEventStore):
 
     def supersede_account_decision(self, account_id: str, decision_id: str, superseded_by: str,
                                    *, audit_event: AuditEvent | None = None, _in_transaction=False):
+        self._check_owned("account", account_id)
         if decision_id == superseded_by or not superseded_by:
             raise ValueError("a decision requires a distinct replacement")
         with self._lock, self._write_context(_in_transaction):
@@ -2594,6 +2662,7 @@ class PaperStore(EquityEventStore):
         return self.account_decision(account_id, decision_id)
 
     def account_decision(self, account_id: str, decision_id: str) -> dict[str, Any]:
+        self._check_owned("account", account_id)
         with self._lock:
             row = self._connection.execute("SELECT * FROM decisions WHERE account_id=? AND decision_id=?", (account_id, decision_id)).fetchone()
             if row is None:
@@ -2617,11 +2686,15 @@ class PaperStore(EquityEventStore):
             return result
 
     def account_decisions(self, account_id: str | None = None) -> list[dict[str, Any]]:
+        self._check_owned("account", account_id)
         sql = "SELECT account_id,decision_id FROM decisions"
         values = ()
         if account_id is not None:
             sql += " WHERE account_id=?"
             values = (account_id,)
+        clause, scope_values = self._scope_clause()
+        sql += (" AND " if " WHERE " in sql else " WHERE ") + clause
+        values = (*values, *scope_values)
         sql += " ORDER BY generated_at DESC,decision_id"
         with self._lock:
             keys = [tuple(row) for row in self._connection.execute(sql, values).fetchall()]
@@ -2636,6 +2709,11 @@ class PaperStore(EquityEventStore):
         with self._lock, self._write_context(False):
             for row in self.account_decisions():
                 if row["status"] != DecisionState.PENDING or self.account_intents(row["account_id"], row["decision_id"]):
+                    continue
+                interval = row["payload"].get("equity_execution_interval")
+                if interval is not None:
+                    if moment >= datetime.fromisoformat(interval["end"]):
+                        self._transition_decision(row["account_id"], row["decision_id"], DecisionState.INCOMPLETE, "EXECUTION_WINDOW_PASSED")
                     continue
                 past = row["valid_session"] < local.date().isoformat()
                 legs = row["payload"].get("plan_legs") or []
@@ -2653,6 +2731,7 @@ class PaperStore(EquityEventStore):
         return result
 
     def account_intent(self, intent_id: str) -> dict[str, Any] | None:
+        self._check_owned("intent", intent_id)
         with self._lock:
             row = self._connection.execute(
                 "SELECT * FROM intents WHERE intent_id=?", (intent_id,)
@@ -2660,6 +2739,7 @@ class PaperStore(EquityEventStore):
         return None if row is None else self._account_intent_row(row)
 
     def update_account_intent_status(self, intent_id: str, status: IntentControlState) -> dict[str, Any]:
+        self._check_owned("intent", intent_id)
         from .broker import ACTIVE_ORDER_STATUSES
         if type(status) is not IntentControlState:
             raise TypeError("local intent control requires IntentControlState")
@@ -2688,6 +2768,7 @@ class PaperStore(EquityEventStore):
 
     def claim_account_intent(self, intent_id: str, *, moment: datetime) -> bool:
         """Recheck the adopted plan and grant one submitter ownership atomically."""
+        self._check_owned("intent", intent_id)
         with self._lock, self._write_context(False):
             row = self.account_intent(intent_id)
             if row is None:
@@ -2723,7 +2804,7 @@ class PaperStore(EquityEventStore):
                 "SELECT * FROM intents WHERE status='PENDING_SUBMIT' "
                 "ORDER BY account_id,decision_id,order_sequence"
             ).fetchall()
-        return [self._account_intent_row(row) for row in rows]
+        return [self._account_intent_row(row) for row in self._scoped_rows(rows)]
 
     def waiting_dependency_intents(self) -> list[dict[str, Any]]:
         with self._lock:
@@ -2731,9 +2812,10 @@ class PaperStore(EquityEventStore):
                 "SELECT * FROM intents WHERE status='WAITING_DEPENDENCY' "
                 "ORDER BY account_id,decision_id,order_sequence"
             ).fetchall()
-        return [self._account_intent_row(row) for row in rows]
+        return [self._account_intent_row(row) for row in self._scoped_rows(rows)]
 
     def activate_dependency_intent(self, intent_id: str) -> bool:
+        self._check_owned("intent", intent_id)
         with self._lock, self._write_context(False):
             changed = self._connection.execute(
                 "UPDATE intents SET status='PENDING_SUBMIT',updated_at=? "
@@ -2745,6 +2827,7 @@ class PaperStore(EquityEventStore):
     def unresolved_account_intents(
         self, account_id: str | None = None,
     ) -> list[dict[str, Any]]:
+        self._check_owned("account", account_id)
         placeholders = ",".join("?" for _ in UNRESOLVED_INTENT_STATUSES)
         values: list[object] = list(sorted(UNRESOLVED_INTENT_STATUSES))
         sql = f"SELECT * FROM intents WHERE status IN ({placeholders})"
@@ -2754,11 +2837,12 @@ class PaperStore(EquityEventStore):
         sql += " ORDER BY updated_at"
         with self._lock:
             rows = self._connection.execute(sql, values).fetchall()
-        return [self._account_intent_row(row) for row in rows]
+        return [self._account_intent_row(row) for row in self._scoped_rows(rows)]
 
     def attention_account_intents(
         self, account_id: str | None = None,
     ) -> list[dict[str, Any]]:
+        self._check_owned("account", account_id)
         sql = "SELECT * FROM intents WHERE attention_required=1"
         values: tuple[object, ...] = ()
         if account_id is not None:
@@ -2767,9 +2851,10 @@ class PaperStore(EquityEventStore):
         sql += " ORDER BY updated_at"
         with self._lock:
             rows = self._connection.execute(sql, values).fetchall()
-        return [self._account_intent_row(row) for row in rows]
+        return [self._account_intent_row(row) for row in self._scoped_rows(rows)]
 
     def require_account_intent_attention(self, intent_id: str, reason: str) -> dict[str, Any]:
+        self._check_owned("intent", intent_id)
         if not str(reason).strip():
             raise ValueError("intent attention reason is required")
         with self._lock, self._write_context(False):
@@ -2787,6 +2872,7 @@ class PaperStore(EquityEventStore):
     def resolve_account_intent_attention(
         self, intent_id: str, resolution_note: str,
     ) -> dict[str, Any]:
+        self._check_owned("intent", intent_id)
         if not str(resolution_note).strip():
             raise ValueError("intent resolution note is required")
         now = _utc_now()
@@ -2810,6 +2896,7 @@ class PaperStore(EquityEventStore):
         return result
 
     def account_intents(self, account_id: str | None = None, decision_id: str | None = None) -> list[dict[str, Any]]:
+        self._check_owned("account", account_id)
         sql = "SELECT * FROM intents"
         values: tuple[object, ...] = ()
         if account_id is not None:
@@ -2823,12 +2910,14 @@ class PaperStore(EquityEventStore):
         sql += " ORDER BY created_at,order_sequence"
         with self._lock:
             rows = self._connection.execute(sql, values).fetchall()
-        return [self._account_intent_row(row) for row in rows]
+        return [self._account_intent_row(row) for row in self._scoped_rows(rows)]
 
     def bind_channel_order(
         self, intent_id: str, channel_order_id: str, payload: dict[str, object],
         audit_event: AuditEvent | None = None,
     ) -> dict[str, Any]:
+        self._check_owned("intent", intent_id)
+        self._check_owned("order", channel_order_id)
         now = _utc_now()
         initial_payload = dict(payload)
         initial_payload["cumulative_filled_quantity"] = 0
@@ -2931,6 +3020,7 @@ class PaperStore(EquityEventStore):
         audit_event: AuditEvent | None = None, _in_transaction: bool = False,
     ) -> dict[str, Any]:
         """Release the unfilled BUY reservation once and terminate an intent."""
+        self._check_owned("intent", intent_id)
         from decimal import Decimal
 
         if status not in TERMINAL_INTENT_STATUSES:
@@ -3012,6 +3102,7 @@ class PaperStore(EquityEventStore):
         self, channel_order_id: str, payload: dict[str, object],
     ) -> dict[str, Any]:
         """Persist the latest Futu order state, then release any unused reservation."""
+        self._check_owned("order", channel_order_id)
         status = str(payload.get("status", "UNKNOWN"))
         now = _utc_now()
         with self._lock, self._write_context(False):
@@ -3049,6 +3140,7 @@ class PaperStore(EquityEventStore):
         return self.account_order(channel_order_id)
 
     def account_order(self, channel_order_id: str) -> dict[str, Any]:
+        self._check_owned("order", channel_order_id)
         with self._lock:
             row = self._connection.execute(
                 "SELECT * FROM orders WHERE channel_order_id=?", (channel_order_id,)
@@ -3064,11 +3156,15 @@ class PaperStore(EquityEventStore):
         return result
 
     def account_orders(self, account_id: str | None = None) -> list[dict[str, Any]]:
+        self._check_owned("account", account_id)
         sql = "SELECT channel_order_id FROM orders"
         values: tuple[object, ...] = ()
         if account_id is not None:
             sql += " WHERE account_id=?"
             values = (account_id,)
+        clause, scope_values = self._scope_clause()
+        sql += (" AND " if " WHERE " in sql else " WHERE ") + clause
+        values = (*values, *scope_values)
         sql += " ORDER BY updated_at DESC"
         with self._lock:
             ids = [row[0] for row in self._connection.execute(sql, values).fetchall()]
@@ -3079,6 +3175,7 @@ class PaperStore(EquityEventStore):
         average_price, occurred_at: str, settlement_at: str | None = None,
     ) -> dict[str, Any] | None:
         """Commit the new cumulative Futu fill, ledger and audit event atomically."""
+        self._check_owned("order", channel_order_id)
         from decimal import Decimal
 
         if isinstance(cumulative_quantity, bool) or not isinstance(cumulative_quantity, int):
@@ -3261,6 +3358,7 @@ class PaperStore(EquityEventStore):
         return self.account_fill(fill_id)
 
     def account_fill(self, fill_id: str) -> dict[str, Any]:
+        self._check_owned("fill", fill_id)
         with self._lock:
             row = self._connection.execute(
                 "SELECT * FROM fills WHERE fill_id=?", (fill_id,)
@@ -3270,11 +3368,15 @@ class PaperStore(EquityEventStore):
         return dict(row)
 
     def account_fills(self, account_id: str | None = None) -> list[dict[str, Any]]:
+        self._check_owned("account", account_id)
         sql = "SELECT * FROM fills"
         values: tuple[object, ...] = ()
         if account_id is not None:
             sql += " WHERE account_id=?"
             values = (account_id,)
+        clause, scope_values = self._scope_clause()
+        sql += (" AND " if " WHERE " in sql else " WHERE ") + clause
+        values = (*values, *scope_values)
         sql += " ORDER BY occurred_at DESC"
         with self._lock:
             return [dict(row) for row in self._connection.execute(sql, values).fetchall()]
@@ -3288,7 +3390,7 @@ class PaperStore(EquityEventStore):
                 "SELECT rowid AS fill_rowid,* FROM fills WHERE rowid>? ORDER BY rowid",
                 (rowid,),
             ).fetchall()
-        return [dict(row) for row in rows]
+        return [dict(row) for row in self._scoped_rows(rows)]
 
     def apply_broker_fee_reconciliation(
         self, account_id: str, adjustment, *, reference: str,
@@ -3296,6 +3398,7 @@ class PaperStore(EquityEventStore):
         realized_fill_id: str | None = None,
     ) -> dict[str, Any]:
         """Apply one idempotent broker-cash fee correction to an owning account."""
+        self._check_owned("account", account_id)
         from decimal import Decimal
 
         amount = Decimal(str(adjustment)).quantize(Decimal("0.0001"))
@@ -3393,12 +3496,12 @@ class PaperStore(EquityEventStore):
             raise ValueError("channel fee variance must be finite and non-zero")
         if event.event_type != "CHANNEL_FEE_VARIANCE_RECONCILED":
             raise ValueError("channel fee variance audit event is invalid")
-        account = self.channel_reconciliation_account(FUTU_SIMULATE_CN_CHANNEL_ID)
+        account = self.channel_reconciliation_account(self.execution_channel_id)
         if account is None:
             raise ValueError("channel reconciliation account has not been initialized")
         if event.account_id != account["account_id"]:
             raise ValueError("channel fee variance audit account does not match")
-        ledger_id = str(uuid5(NAMESPACE_URL, f"pte-channel-fee-variance:{reference}"))
+        ledger_id = str(uuid5(NAMESPACE_URL, f"pte-channel-fee-variance:{self.channel_account_id or DEFAULT_CHANNEL_ACCOUNT}:{reference}"))
         with self._lock, self._write_context(False):
             existing = self._connection.execute(
                 "SELECT 1 FROM account_ledger WHERE ledger_entry_id=?", (ledger_id,)
@@ -3431,7 +3534,7 @@ class PaperStore(EquityEventStore):
                 "SELECT account_id,initial_cash,cash,frozen_cash,quantity FROM virtual_accounts "
                 "WHERE (run_state IS NULL OR run_state!='RETIRED') ORDER BY account_id"
             ).fetchall()
-            for account in accounts:
+            for account in self._scoped_rows(accounts):
                 entries = self._connection.execute(
                     "SELECT cash_delta,frozen_cash_delta,quantity_delta "
                     "FROM account_ledger WHERE account_id=?",
@@ -3474,6 +3577,8 @@ class PaperStore(EquityEventStore):
         self, account_id: str, intent_id: str, audit_event: AuditEvent,
     ) -> dict[str, object]:
         """Append one missing release entry after proving the account was already unfrozen."""
+        self._check_owned("account", account_id)
+        self._check_owned("intent", intent_id)
         from decimal import Decimal
 
         with self._lock, self._write_context(False):
@@ -3560,6 +3665,7 @@ class PaperStore(EquityEventStore):
         }
 
     def account_snapshots(self, account_id: str) -> list[dict[str, Any]]:
+        self._check_owned("account", account_id)
         with self._lock:
             rows = self._connection.execute(
                 "SELECT session,payload,created_at FROM account_snapshots "
@@ -3575,6 +3681,7 @@ class PaperStore(EquityEventStore):
         self, account_id: str, session: str, payload: dict[str, object],
         *, _in_transaction: bool = False,
     ) -> None:
+        self._check_owned("account", account_id)
         now = _utc_now()
         with self._lock, self._write_context(_in_transaction):
             if self._connection.execute(
@@ -3595,18 +3702,20 @@ class PaperStore(EquityEventStore):
     def save_snapshot(self, payload: dict[str, object]) -> None:
         with self._lock, self._write_context(False):
             self._connection.execute(
-                "INSERT INTO snapshots(created_at, payload) VALUES(?, ?)",
-                (_utc_now(), json.dumps(payload, ensure_ascii=False, default=str)),
+                "INSERT INTO snapshots(created_at, payload, channel_account_id) VALUES(?, ?, ?)",
+                (_utc_now(), json.dumps(payload, ensure_ascii=False, default=str), self.channel_account_id or DEFAULT_CHANNEL_ACCOUNT),
             )
 
     def latest_snapshot(self) -> dict[str, Any] | None:
         with self._lock:
             row = self._connection.execute(
-                "SELECT payload FROM snapshots ORDER BY id DESC LIMIT 1"
+                "SELECT payload FROM snapshots WHERE channel_account_id=? ORDER BY id DESC LIMIT 1",
+                (self.channel_account_id or DEFAULT_CHANNEL_ACCOUNT,)
             ).fetchone()
         return None if row is None else json.loads(row["payload"])
 
     def save_cancel_token(self, token: str, channel_order_id: str, expires_at: str) -> None:
+        self._check_owned("order", channel_order_id)
         with self._lock, self._write_context(False):
             self._connection.execute(
                 "INSERT INTO cancel_tokens(token, channel_order_id, expires_at) VALUES(?, ?, ?)",
@@ -3614,6 +3723,7 @@ class PaperStore(EquityEventStore):
             )
 
     def consume_cancel_token(self, token: str, channel_order_id: str, now: str) -> str:
+        self._check_owned("order", channel_order_id)
         with self._lock, self._write_context(False):
             row = self._connection.execute(
                 "SELECT channel_order_id, expires_at, used_at FROM cancel_tokens WHERE token=?",

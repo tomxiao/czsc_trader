@@ -93,7 +93,10 @@ def validate_document(value):
 def save_document(store, account_id, value):
     validate_document(value)
     if getattr(store, "_inspection_permit", None) is None:
-        raise ValueError("V4 account activation requires an isolated inspection permit")
+        account = store.virtual_account(account_id)
+        if (store.equity_account_rules(account_id) is None
+                or account['qualification_snapshot'] not in ('PAPER_READY', 'LIVE_READY')):
+            raise ValueError('V4 account activation requires an admitted equity account')
     if not store._connection.in_transaction:
         raise RuntimeError("V4 state update requires the account transaction")
     store._connection.execute("INSERT INTO equity_strategy_state(account_id,payload) VALUES(?,?) "

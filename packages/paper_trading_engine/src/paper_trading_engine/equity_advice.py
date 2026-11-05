@@ -1,7 +1,7 @@
 """US SRT adapter consumed by the normal AccountEngine and PaperStore."""
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from collections.abc import Mapping
 from datetime import datetime
 from decimal import Decimal
@@ -18,7 +18,45 @@ if TYPE_CHECKING:
     import pandas as pd
 
 
-def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *, fee_rate):
+@dataclass(frozen=True, slots=True)
+class PreparedEquityAction:
+    """One source-bound economic event, independent of publication window size."""
+    event_id: str
+    kind: str
+    effective_at: datetime
+    available_at: datetime
+    source_sha256: str
+    ratio: Decimal | None = None
+    cash_per_share: Decimal | None = None
+    pay_at: datetime | None = None
+
+    def __post_init__(self):
+        import re
+        if (type(self.event_id) is not str or not self.event_id
+                or self.kind not in {'SPLIT', 'CASH_DIVIDEND'}
+                or re.fullmatch('[0-9a-f]{64}', self.source_sha256) is None):
+            raise ValueError('prepared action requires a known event and source identity')
+        if any(type(value) is not datetime or value.utcoffset() is None
+               for value in (self.effective_at, self.available_at)):
+            raise ValueError('prepared action requires aware timestamps')
+        if self.available_at > self.effective_at:
+            raise ValueError('prepared action was unavailable at its effective time')
+        if self.kind == 'SPLIT':
+            if (type(self.ratio) is not Decimal or not self.ratio.is_finite() or self.ratio <= 0
+                    or self.cash_per_share is not None or self.pay_at is not None):
+                raise ValueError('prepared split requires a positive ratio')
+        elif (type(self.cash_per_share) is not Decimal or not self.cash_per_share.is_finite()
+                or self.cash_per_share < 0 or self.ratio is not None
+                or type(self.pay_at) is not datetime or self.pay_at.utcoffset() is None
+                or self.pay_at < self.effective_at):
+            raise ValueError('prepared dividend requires its amount and payment time')
+
+    def identity_facts(self):
+        return {key: value.isoformat() if isinstance(value, datetime) else str(value)
+                if isinstance(value, Decimal) else value for key, value in asdict(self).items()}
+
+
+def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *, fee_rate, live=False):
     """Read pinned products and authenticate their identities before a normal PTE decision."""
     import pandas as pd
     if type(binding) is not EquityInputBinding or type(candidate) is not EquityStrategyCandidate:
@@ -37,15 +75,27 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
             raise ValueError("equity preparation product identity differs")
         role = name.rsplit(':', 1)[0] if ':' in name else 'primary'
         calendar = fetched.identity.metadata["sessions"]
-        if role in calendars and calendars[role] != calendar:
-            raise ValueError("equity preparation calendars differ")
-        calendars[role] = calendar
+        if live:
+            # Forward prices end at the last completed session; dated constraints
+            # and calendars may include today's uncompleted execution session.
+            observed_calendar = {row['session_date']: row for row in calendar}
+            previous_calendar = calendars.setdefault(role, {})
+            if any(previous_calendar[day] != observed_calendar[day]
+                   for day in previous_calendar.keys() & observed_calendar.keys()):
+                raise ValueError('equity preparation calendars differ')
+            previous_calendar.update(observed_calendar)
+        else:
+            if role in calendars and calendars[role] != calendar:
+                raise ValueError("equity preparation calendars differ")
+            calendars[role] = calendar
         metadata[name] = fetched.identity.metadata
         products[name] = fetched.dataframe
     if set(products) != set(identities):
         raise ValueError("equity preparation lacks required products")
     bars = products["bars"]
-    if len(bars.loc[(bars.BarStart == interval.start) & (bars.Date == interval.end)]) != 1:
+    if live and candidate.definition.contract_version != 4:
+        raise ValueError('live interval preparation requires native V4')
+    if not live and len(bars.loc[(bars.BarStart == interval.start) & (bars.Date == interval.end)]) != 1:
         raise ValueError("decision interval absent from prepared market calendar")
     delay = pd.Timedelta(seconds=candidate.definition.execution_spec.data_latency_seconds)
     history = bars.loc[(bars.Date <= interval.start) & (bars.AvailableDate + delay <= interval.start)].copy(deep=True)
@@ -65,6 +115,28 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
             scale /= float(row.Ratio)
     required = tuple((str(row.EventId), identities["actions"]) for row in actions.itertuples()
                      if row.Kind != "NONE" and row.Date <= interval.start and row.AvailableDate <= interval.start)
+    live_actions = ()
+    if live:
+        from strategy_runtime import canonical_sha256
+        action_request = next(request for role, request in binding.bind_requests(requests) if role == 'actions')
+        source = {'instrument': asdict(action_request.parameters.instrument),
+                  'source': asdict(action_request.parameters.source), 'schema_version': 1}
+        records = []
+        for row in actions.itertuples():
+            if row.Kind == 'NONE' or row.Date > interval.start or row.AvailableDate > interval.start:
+                continue
+            def stamp(value):
+                return value.to_pydatetime() if hasattr(value, 'to_pydatetime') else value
+            facts = dict(event_id=str(row.EventId), kind=str(row.Kind),
+                effective_at=stamp(row.Date), available_at=stamp(row.AvailableDate),
+                ratio=Decimal(str(row.Ratio)) if row.Kind == 'SPLIT' else None,
+                cash_per_share=Decimal(str(row.CashPerShare)) if row.Kind == 'CASH_DIVIDEND' else None,
+                pay_at=stamp(row.PayAt) if row.Kind == 'CASH_DIVIDEND' else None)
+            encoded = {key: value.isoformat() if isinstance(value, datetime) else str(value)
+                       if isinstance(value, Decimal) else value for key, value in facts.items()}
+            records.append(PreparedEquityAction(**facts, source_sha256=canonical_sha256({**source, 'event': encoded})))
+        live_actions = tuple(sorted(records, key=lambda item: (item.effective_at, item.event_id)))
+        required = tuple((item.event_id, item.source_sha256) for item in live_actions)
     auxiliary = {}
     for item in candidate.definition.auxiliary_inputs:
         frame = products[item.data_key(EquityProduct.BARS)]
@@ -79,7 +151,7 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
     replay, unlock, v4_constraint = None, None, None
     if candidate.definition.contract_version == 4:
         from strategy_runtime import PreparedReplay
-        replay = PreparedReplay.from_frames(bars, constraints, candidate.definition.feature_graph,
+        replay = PreparedReplay.from_frames(history if live else bars, constraints, candidate.definition.feature_graph,
             latency_seconds=candidate.definition.execution_spec.data_latency_seconds,
             auxiliary_histories={item.name: products[item.data_key(EquityProduct.BARS)] for item in candidate.definition.auxiliary_inputs},
             sessions=products['sessions'], trading_sessions=sessions_from_metadata(metadata['sessions']),
@@ -88,11 +160,16 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
             "PriceLimitPolicy": str(last.PriceLimitPolicy),
             "PriceLimitLower": None if pd.isna(last.PriceLimitLower) else float(last.PriceLimitLower),
             "PriceLimitUpper": None if pd.isna(last.PriceLimitUpper) else float(last.PriceLimitUpper)}
+        if live:
+            v4_constraint.update(Date=interval.start.isoformat(),
+                AvailableDate=last.AvailableDate.isoformat(), Tradable=bool(last.Tradable),
+                QuantityStep=int(last.QuantityStep), PriceTick=float(last.PriceTick))
         unlock = last.BuySellableAt.to_pydatetime() if hasattr(last.BuySellableAt, 'to_pydatetime') else last.BuySellableAt
         if type(unlock) is not datetime or unlock.utcoffset() is None or unlock < interval.start:
             raise ValueError('V4 prepared constraint lacks a valid BuySellableAt')
     return PreparedEquityDecision(candidate, binding, history, interval, fee_rate, scale, required,
-                                  auxiliary, sessions, trading_sessions, v4_replay=replay, buy_sellable_at=unlock, v4_constraint=v4_constraint)
+                                  auxiliary, sessions, trading_sessions, v4_replay=replay, buy_sellable_at=unlock,
+                                  v4_constraint=v4_constraint, live_interval=live, live_actions=live_actions)
 
 
 @dataclass(frozen=True)
@@ -110,10 +187,17 @@ class PreparedEquityDecision:
     v4_constraint: Mapping | None = None
     v4_replay: object = None
     buy_sellable_at: datetime | None = None
+    live_interval: bool = False
+    live_actions: tuple[PreparedEquityAction, ...] = ()
     history_sha256: str = field(init=False)
     decision_inputs_sha256: str = field(init=False)
 
     def __post_init__(self):
+        if type(self.live_interval) is not bool:
+            raise TypeError('prepared live interval mode must be boolean')
+        if (type(self.live_actions) is not tuple or any(type(item) is not PreparedEquityAction for item in self.live_actions)
+                or self.live_actions and not self.live_interval):
+            raise TypeError('prepared live actions require immutable typed records and live mode')
         if type(self.candidate) is not EquityStrategyCandidate or type(self.binding) is not EquityInputBinding or type(self.interval) is not TimeInterval:
             raise TypeError("prepared equity decision requires typed candidate/input/interval")
         import pandas as pd
@@ -165,6 +249,9 @@ class PreparedEquityDecision:
                 v4_constraint=None if self.v4_constraint is None else dict(self.v4_constraint),
                 v4_replay=None if self.v4_replay is None else self.v4_replay.identity,
                 buy_sellable_at=None if self.buy_sellable_at is None else self.buy_sellable_at.isoformat())
+            if self.live_interval:
+                value['live_interval'] = True
+                value['live_actions'] = [item.identity_facts() for item in self.live_actions]
         return canonical_sha256(value)
 
     @property

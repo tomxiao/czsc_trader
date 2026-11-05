@@ -6,6 +6,7 @@ Prepared market inputs never form part of a durable account's state binding.
 from contextlib import nullcontext
 from dataclasses import dataclass
 from datetime import datetime
+from collections.abc import Mapping
 
 from dataflows import BarFrequency, TimeInterval
 
@@ -97,7 +98,7 @@ class AccountDecisionEngine:
     accepting implementations that depend on a sequence of batch observations.
     """
 
-    def __init__(self, candidate, prepared):
+    def __init__(self, candidate, prepared, *, live_constraint=None):
         if type(candidate) is not EquityStrategyCandidate or type(prepared) is not PreparedReplay:
             raise TypeError('account planning requires typed candidate and prepared inputs')
         definition, spec = candidate.definition, candidate.definition.execution_spec
@@ -116,6 +117,19 @@ class AccountDecisionEngine:
         self._intervals = dict(prepared._calendar_intervals)
         self._rows = dict(zip(zip(prepared._data.starts, prepared._data.ends), range(len(prepared._data.rows)), strict=True))
         self._observed_at = None
+        self._live_constraint = None
+        if live_constraint is not None:
+            if not isinstance(live_constraint, Mapping):
+                raise TypeError('live planning requires a dated constraint mapping')
+            value = dict(live_constraint)
+            if any(type(value.get(key)) is not datetime or value[key].utcoffset() is None
+                   for key in ('Date', 'AvailableDate')):
+                raise ValueError('live constraint timestamps must be aware')
+            if (value['AvailableDate'] > value['Date'] or value.get('Tradable') is not True
+                    or value.get('QuantityStep') != spec.quantity_step
+                    or value.get('PriceTick') != spec.price_tick):
+                raise ValueError('live constraint differs from available trading rules')
+            self._live_constraint = value
 
     def state_binding(self, owner, fee_rate):
         if type(owner) is not str or not owner:
@@ -131,7 +145,8 @@ class AccountDecisionEngine:
         if type(interval) is not TimeInterval:
             raise TypeError('account observation requires TimeInterval')
         key = interval.start, interval.end
-        if key not in self._intervals or key not in self._rows:
+        live = self._live_constraint is not None and self._live_constraint['Date'] == interval.start
+        if key not in self._intervals or (key not in self._rows and not live):
             raise ValueError('execution interval absent from declared calendar or input grid')
         if self._observed_at is not None and interval.start < self._observed_at:
             raise ValueError('account observations must be requested in causal time order')
@@ -166,7 +181,10 @@ class AccountDecisionEngine:
     def plan(self, interval, portfolio, account, state, position, *, owner, fee_rate,
              budget=None, events=(), next_event_cursor=None, binding=None):
         observation = self.observation(interval)
-        constraint = self.prepared._data.constraints[self._rows[(interval.start, interval.end)]]
+        if self._live_constraint is not None and self._live_constraint['Date'] == interval.start:
+            constraint = self._live_constraint
+        else:
+            constraint = self.prepared._data.constraints[self._rows[(interval.start, interval.end)]]
         if constraint is None or constraint['AvailableDate'] > interval.start:
             raise ValueError('trading constraint unavailable at decision')
         return self._plan_observation(observation, portfolio, account, state, position,

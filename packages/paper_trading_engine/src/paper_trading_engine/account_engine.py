@@ -13,7 +13,6 @@ from strategy_runtime import EntryCycleState
 
 from .audit import AuditRecorder
 from .broker import IntentTerminationReason, TERMINAL_INTENT_STATUSES
-from .channel import FUTU_SIMULATE_CN_CHANNEL_ID
 from .store import PaperStore
 from .lifecycle import AccountHealth
 
@@ -446,7 +445,7 @@ class AccountEngine:
                             account_id=account_id, strategy_id=account["strategy_id"],
                             strategy_version=account["strategy_version"],
                             release_hash=account["release_hash"], symbol=account["symbol"],
-                            channel=FUTU_SIMULATE_CN_CHANNEL_ID,
+                            channel=self.store.virtual_account(account_id)["channel_id"],
                             decision_id=str(previous_decision_id),
                             correlation_id=decision.decision_id,
                             details={
@@ -584,7 +583,7 @@ class AccountEngine:
                 for leg in decision.plan_legs:
                     order = leg.order
                     plan_events.append(self.audit.build(
-                        "ORDER_INTENT_CREATED", source="account_engine", channel=FUTU_SIMULATE_CN_CHANNEL_ID,
+                        "ORDER_INTENT_CREATED", source="account_engine", channel=self.store.virtual_account(account_id)["channel_id"],
                         **scope,
                         details={
                             "side": order.side,
@@ -637,7 +636,7 @@ class AccountEngine:
                     })
                     immediate_events.append(self.audit.build(
                         "ORDER_INTENT_CREATED", source="account_engine",
-                        channel=FUTU_SIMULATE_CN_CHANNEL_ID, **scope,
+                        channel=self.store.virtual_account(account_id)["channel_id"], **scope,
                         details={
                             "side": order.side, "quantity": order.quantity,
                             "order_type": order.order_type,

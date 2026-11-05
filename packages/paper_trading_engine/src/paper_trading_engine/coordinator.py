@@ -22,7 +22,9 @@ class UnavailableExecution:
 
     def status(self):
         return {
-            "environment": "SIMULATE", "market": "CN", "symbol": self.symbol,
+            "environment": "SIMULATE", "market": getattr(self.store, "_scope_market", "CN"), "symbol": self.symbol,
+            "channel_account_id": self.store.channel_account_id,
+            "currency": getattr(self.store, "_scope_currency", "CNY"),
             "account": None, "positions": [], "orders": self.store.account_orders(),
             "paused": self.store.is_paused(),
             "reconciliation_status": "UNAVAILABLE", "alerts": ["CHANNEL_UNAVAILABLE"],
@@ -92,7 +94,9 @@ class ReconnectableExecution:
         if self._delegate is not None:
             return self._delegate.status()
         return {
-            "environment": "SIMULATE", "market": "CN", "symbol": self.symbol,
+            "environment": "SIMULATE", "market": getattr(self.store, "_scope_market", "CN"), "symbol": self.symbol,
+            "channel_account_id": self.store.channel_account_id,
+            "currency": getattr(self.store, "_scope_currency", "CNY"),
             "account": None, "positions": [], "orders": self.store.account_orders(),
             "paused": self.store.is_paused(),
             "reconciliation_status": "UNAVAILABLE", "alerts": ["CHANNEL_UNAVAILABLE"],

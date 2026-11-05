@@ -116,6 +116,18 @@ def build_parser() -> argparse.ArgumentParser:
     serve.add_argument(
         "--data-prepare-time", default="20:30",
     )
+    channel = actions.add_parser("channel")
+    channel_actions = channel.add_subparsers(dest="channel_action", required=True)
+    for operation in ("list", "status", "register", "create-v4", "bind-inputs", "bind-recipe", "pause", "resume", "pause-account", "resume-account"):
+        leaf = channel_actions.add_parser(operation)
+        _common(leaf)
+        leaf.set_defaults(definition=None)
+        if operation not in {"list", "register"}:
+            leaf.add_argument("--channel-account-id", required=True)
+        if operation in {"register", "create-v4", "bind-inputs", "bind-recipe"}:
+            leaf.add_argument("--definition", required=True, type=Path)
+        if operation in {"pause-account", "resume-account"}:
+            leaf.add_argument("--account-id", required=True)
     account = actions.add_parser("account")
     account_actions = account.add_subparsers(dest="account_action", required=True)
     for name in ("list", "pause", "resume"):
@@ -207,6 +219,13 @@ def build_engine(args: argparse.Namespace):
     dataflows = create_dataflows(
         data_dir=args.data_dir, space=args.data_space, config_root=args.config_root,
     )
+    if any(row["config_json"] is not None for row in store.channel_accounts()):
+        from .multichannel_runtime import build_multichannel_runtime
+        try:
+            return build_multichannel_runtime(args, store, dataflows)
+        except BaseException:
+            store.close()
+            raise
     advice = SrtAdviceClient(
         repo_root=args.repo_root,
         data_dir=args.data_dir,
@@ -616,7 +635,9 @@ def _run_account_command(args: argparse.Namespace) -> dict[str, object] | list[d
 
 
 def _run_writable_account_command(args: argparse.Namespace) -> dict[str, object]:
-    store = PaperStore(args.database)
+    root_store = PaperStore(args.database)
+    from .channel_accounts import DEFAULT_CHANNEL_ACCOUNT
+    store = root_store.scope(DEFAULT_CHANNEL_ACCOUNT)
     try:
         if args.account_action in {"pause", "resume"}:
             paused = args.account_action == "pause"
@@ -669,7 +690,7 @@ def _run_writable_account_command(args: argparse.Namespace) -> dict[str, object]
         )
         return created
     finally:
-        store.close()
+        root_store.close()
 
 
 def _write(payload: dict[str, object]) -> None:
@@ -687,6 +708,11 @@ def main(
     runtime_lock = None
     close_engine = True
     try:
+        if args.action == "channel":
+            from .channel_cli import run_channel_command
+            result = run_channel_command(args)
+            _write({"status": "PASS", "command": f"pte.channel.{args.channel_action}", "result": result})
+            return 0
         if args.action == "performance":
             from .performance_export import export_performance
 
@@ -750,7 +776,7 @@ def main(
         engine_startup_ms = round((time.perf_counter() - stage_started) * 1000, 1)
         stage_started = time.perf_counter()
         server = create_server(
-            engine, host=args.host, port=args.port, control_token=control_token,
+            getattr(engine, "console_view", engine), host=args.host, port=args.port, control_token=control_token,
             restart_callback=graceful_restart, instance_id=instance_id,
         )
         web_server_ms = round((time.perf_counter() - stage_started) * 1000, 1)
@@ -767,6 +793,8 @@ def main(
             audit=audit,
             initial_observation_at=initial_observation_at,
             account_chart=engine.account_chart,
+            schedule_provider=getattr(engine, "schedule_provider", None),
+            channel_operations=getattr(engine, "channel_operations", None),
         )
         worker = Thread(target=scheduler.run, args=(stopped,), name="pte-scheduler", daemon=True)
         worker.start()

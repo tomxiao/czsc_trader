@@ -1,6 +1,7 @@
 """Broker-neutral values used by the Futu execution adapter."""
 
 from dataclasses import dataclass
+from decimal import Decimal
 from enum import StrEnum
 
 
@@ -60,12 +61,15 @@ class BrokerAccount:
     total_assets: float
     frozen_cash: float
     market_value: float = 0.0
+    currency: str = ""
+    channel_account_id: str = ""
 
 
 @dataclass(frozen=True)
 class BrokerPosition:
     symbol: str
     quantity: int
+    sellable_quantity: int | None = None
 
 
 @dataclass(frozen=True)
@@ -83,6 +87,10 @@ class BrokerOrder:
     created_at: str = ""
     updated_at: str = ""
     order_type: str = "LIMIT"
+    session: str = "RTH"
+    channel_account_id: str = ""
+    cumulative_notional: Decimal | None = None
+    broker_order_id: str = ""
 
 
 @dataclass(frozen=True)
@@ -96,6 +104,8 @@ class OrderIntent:
     order_type: str = "LIMIT"
     time_in_force: str = "DAY"
     account_id: str | None = None
+    session: str = "RTH"
+    channel_account_id: str = ""
 
 
 @dataclass(frozen=True)

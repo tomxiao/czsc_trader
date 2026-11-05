@@ -61,7 +61,12 @@ def account_decision(store, prepared, account, actual_quantity, available_cash, 
     snapshot = AccountSnapshot(candidate.instrument, rules.execution.account.currency, prepared.interval.start,
         state.revision, Decimal(account["cash"])+Decimal(account["frozen_cash"]), Decimal(str(available_cash)),
         Decimal(account["receivable"]), actual_quantity, actual_quantity-locked)
-    engine = AccountDecisionEngine(candidate, prepared.v4_replay)
+    live_constraint = None
+    if prepared.live_interval:
+        live_constraint = dict(prepared.v4_constraint)
+        for key in ('Date', 'AvailableDate'):
+            live_constraint[key] = datetime.fromisoformat(live_constraint[key])
+    engine = AccountDecisionEngine(candidate, prepared.v4_replay, live_constraint=live_constraint)
     events, cursor = recognized_events(store, account["account_id"], state.event_cursor, prepared.interval.start)
     owner = account["account_id"] + ":" + account["release_hash"]
     result = engine.plan(prepared.interval, portfolio, snapshot, state, feedback, owner=owner,

@@ -7,6 +7,7 @@ import math
 import re
 
 from strategy_manager import Qualification
+from dataflows import InstrumentId, MarketId, AssetClass
 from strategy_runtime.inspection import InspectionRuntimePermit
 
 
@@ -21,17 +22,24 @@ class AccountStrategyBinding:
     symbol: str
     fee_rate: float
     inspection_permit: InspectionRuntimePermit | None = field(default=None, kw_only=True, repr=False, compare=False)
+    instrument: InstrumentId | None = field(default=None, kw_only=True)
 
     def __post_init__(self) -> None:
         for name, pattern in (
             ("strategy_id", r"S[0-9]{3}"),
             ("version", r"v[1-9][0-9]*"),
             ("release_hash", r"[0-9a-f]{64}"),
-            ("symbol", r"[0-9]{6}\.(SH|SZ)"),
         ):
             value = getattr(self, name)
             if type(value) is not str or re.fullmatch(pattern, value) is None:
                 raise ValueError(f"invalid account binding {name}")
+        if self.instrument is None:
+            if type(self.symbol) is not str or re.fullmatch(r"[0-9]{6}\.(SH|SZ)", self.symbol) is None:
+                raise ValueError('invalid account binding symbol')
+        elif (type(self.instrument) is not InstrumentId or self.instrument.symbol != self.symbol
+              or self.instrument.market not in (MarketId.CN, MarketId.US)
+              or self.instrument.asset_class not in (AssetClass.STOCK, AssetClass.ETF)):
+            raise ValueError('account binding differs from typed equity instrument')
         if type(self.name) is not str or not self.name.strip():
             raise ValueError("account binding requires a name")
         if self.inspection_permit is not None:

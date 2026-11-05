@@ -1,0 +1,347 @@
+"""Qualified frozen V4 strategies in the normal durable PTE account lifecycle.
+
+Inputs are explicit pinned DFLS publications. An existing decision interval never
+silently fetches replacement inputs. Current constraints and known calendars may
+extend beyond completed historical prices; no future OHLCV row is fabricated.
+"""
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass, replace
+from datetime import date, datetime
+import json
+import math
+from pathlib import Path
+import re
+from threading import RLock
+from zoneinfo import ZoneInfo
+
+from dataflows import BarFrequency, Dataflows, EquityDataRequest, TimeInterval, EquityProduct, PreparePolicy
+from dataflows.equity_data import sessions_from_metadata
+from strategy_manager import Qualification, StrategyRegistry
+from strategy_runtime import StrategyRelease, canonical_sha256
+from strategy_runtime.deployment import load_strategy_deployment
+from strategy_runtime.equity_definition import EquityInputBinding, EquityStrategyCandidate, EquityStrategyDefinition
+from strategy_runtime.equity_definition import EquityAuxiliaryBinding, ExecutionInputBinding
+
+from .account_binding import AccountStrategyBinding
+from .equity_advice import EquityAdviceClient, PreparedEquityDecision, prepare_equity_decision
+from .srt_advice_client import _strategy_identity
+from .trading_window import ScheduledDecision
+
+
+@dataclass(frozen=True, slots=True)
+class FormalV4Inputs:
+    release_hash: str
+    binding: EquityInputBinding
+    fee_rate: float
+
+    def __post_init__(self):
+        if type(self.release_hash) is not str or re.fullmatch('[0-9a-f]{64}', self.release_hash) is None:
+            raise ValueError('V4 inputs require the exact release hash')
+        if type(self.binding) is not EquityInputBinding or not self.binding.request_bindings:
+            raise ValueError('formal V4 inputs require explicit request roles')
+        if type(self.fee_rate) not in (float, int) or not math.isfinite(self.fee_rate) or not 0 <= self.fee_rate < 1:
+            raise ValueError('formal V4 inputs require a finite model fee')
+
+    @property
+    def requests(self) -> tuple[EquityDataRequest, ...]:
+        unique = dict.fromkeys(parameters for _, parameters in self.binding.request_bindings)
+        return tuple(EquityDataRequest(p.instrument, p.source, p.query) for p in unique)
+
+    def to_dict(self):
+        return dict(schema_version=1, release_hash=self.release_hash,
+                    binding=self.binding.to_dict(), fee_rate=self.fee_rate)
+
+    @classmethod
+    def from_dict(cls, value):
+        if (type(value) is not dict or set(value) != {'schema_version', 'release_hash', 'binding', 'fee_rate'}
+                or type(value['schema_version']) is not int or value['schema_version'] != 1):
+            raise ValueError('unsupported formal V4 input contract')
+        return cls(value['release_hash'], EquityInputBinding.from_dict(value['binding']), value['fee_rate'])
+
+
+class FormalV4AdviceClient:
+    def __init__(self, *, repo_root: Path | str, store, dataflows: Dataflows, data_dir: Path | str):
+        self.repo_root = Path(repo_root).resolve()
+        self.store, self.dataflows = store, dataflows
+        self.data_dir = Path(data_dir).resolve()
+        self._lock = RLock()
+        self._calendars = {}
+
+    def _path(self, account_id):
+        if type(account_id) is not str or re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]*', account_id) is None:
+            raise ValueError('invalid formal V4 account id')
+        return self.data_dir / 'v4-inputs' / (account_id + '.json')
+
+    def load_release(self, strategy_id, strategy_version):
+        release_id = f'{strategy_id}-{strategy_version}'
+        deployment = load_strategy_deployment(self.repo_root / 'strategies', release_id)
+        raw = json.loads((self.repo_root / 'strategies' / strategy_id / 'versions' / f'{strategy_version}.json').read_text(encoding='utf-8'))
+        release = StrategyRelease.from_mapping(raw)
+        if release.release_hash != deployment.release_hash or release.payload['runtime']['kind'] != 'ACCOUNT_REPLAY':
+            raise ValueError('formal V4 deployment differs from native release')
+        identity = _strategy_identity(self.repo_root, release)
+        definition = EquityStrategyDefinition.from_dict(dict(release.payload['equity_definition']))
+        candidate = EquityStrategyCandidate(strategy_id, raw['source_candidate'], definition, deployment.source_root)
+        if definition.contract_version != 4:
+            raise ValueError('formal V4 requires the account contract')
+        return release, candidate, identity
+
+    def validate_account_binding(self, *, strategy_id: str, strategy_version: str,
+                                 symbol: str, asset: str, fee_rate: float) -> AccountStrategyBinding:
+        release, candidate, identity = self.load_release(strategy_id, strategy_version)
+        if (symbol != candidate.instrument.symbol or asset != candidate.instrument.asset_class.value.lower()):
+            raise ValueError('V4 account instrument differs from frozen strategy')
+        version = StrategyRegistry(self.repo_root / 'strategies').get_version(strategy_id, strategy_version)
+        return AccountStrategyBinding(strategy_id, strategy_version, release.release_hash, identity['name'],
+            Qualification(identity['qualification']), date.fromisoformat(version.selection_data_cutoff), symbol,
+            fee_rate, instrument=candidate.instrument)
+
+    def _account_release(self, account_id):
+        account = self.store.virtual_account(account_id)
+        release, candidate, _ = self.load_release(account['strategy_id'], account['strategy_version'])
+        rules = self.store.equity_account_rules(account_id)
+        if (account['release_hash'] != release.release_hash or rules is None
+                or rules.instrument != candidate.instrument or rules.execution != candidate.definition.execution_spec):
+            raise ValueError('formal V4 account differs from qualified release and execution rules')
+        return account, release, candidate
+
+    def register_inputs(self, account_id: str, binding: EquityInputBinding, *,
+                        expected_release_hash: str, fee_rate: float) -> str:
+        _, release, candidate = self._account_release(account_id)
+        inputs = FormalV4Inputs(expected_release_hash, binding, fee_rate)
+        if (release.release_hash != expected_release_hash or binding.instrument != candidate.instrument
+                or binding.specification_hash != candidate.execution_spec_hash
+                or binding.warmup_bars != candidate.warmup_bars):
+            raise ValueError('formal V4 input identity differs from account release')
+        binding.bind_requests(inputs.requests)
+        path = self._path(account_id)
+        value = inputs.to_dict()
+        payload = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(',', ':'))
+        identity = canonical_sha256(value)
+        with self._lock:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            archive = path.parent / 'records' / (identity + '.json')
+            archive.parent.mkdir(exist_ok=True)
+            if archive.exists():
+                if archive.read_text(encoding='utf-8') != payload:
+                    raise ValueError('immutable V4 input record differs from its identity')
+            else:
+                with archive.open('x', encoding='utf-8') as handle:
+                    handle.write(payload)
+            temporary = path.with_suffix('.pending')
+            temporary.write_text(payload, encoding='utf-8')
+            temporary.replace(path)
+        return identity
+
+    def inputs(self, account_id: str) -> FormalV4Inputs:
+        return FormalV4Inputs.from_dict(json.loads(self._path(account_id).read_text(encoding='utf-8')))
+
+    def register_recipe(self, account_id: str, inputs: FormalV4Inputs) -> str:
+        """Declare automatic DAILY preparation using explicit source/role/range inputs."""
+        if type(inputs) is not FormalV4Inputs:
+            raise TypeError('forward preparation requires FormalV4Inputs')
+        _, _, candidate = self._account_release(account_id)
+        if candidate.definition.execution_spec.decision_clock is not BarFrequency.DAILY:
+            raise ValueError('automatic live M30 requires a DFLS partial-session product; only DAILY is supported')
+        identity = self.register_inputs(account_id, inputs.binding,
+            expected_release_hash=inputs.release_hash, fee_rate=inputs.fee_rate)
+        path = self._path(account_id).with_suffix('.recipe.json')
+        payload = {'schema_version': 1, 'kind': 'DAILY_FORWARD_V1', 'inputs': inputs.to_dict()}
+        temporary = path.with_suffix('.pending')
+        with self._lock:
+            temporary.write_text(json.dumps(payload, sort_keys=True), encoding='utf-8')
+            temporary.replace(path)
+        return identity
+
+    def recipe(self, account_id: str) -> FormalV4Inputs | None:
+        path = self._path(account_id).with_suffix('.recipe.json')
+        if not path.exists():
+            return None
+        value = json.loads(path.read_text(encoding='utf-8'))
+        if (set(value) != {'schema_version', 'kind', 'inputs'} or type(value['schema_version']) is not int
+                or value['schema_version'] != 1 or value['kind'] != 'DAILY_FORWARD_V1'):
+            raise ValueError('unsupported V4 forward recipe')
+        return FormalV4Inputs.from_dict(value['inputs'])
+
+    def _calendar_products(self, recipe, point):
+        """Only independently available calendars; never current-day OHLCV."""
+        items = tuple((role, replace(parameters, query=replace(parameters.query,
+            end=point.astimezone(ZoneInfo(parameters.instrument.timezone)).date())))
+            for role, parameters in recipe.binding.request_bindings
+            if parameters.query.product is EquityProduct.SESSIONS)
+        key = canonical_sha256({'recipe': recipe.to_dict(), 'days': [(role, p.query.end.isoformat()) for role, p in items]})
+        if key not in self._calendars:
+            requests = tuple(EquityDataRequest(p.instrument, p.source, p.query) for p in dict.fromkeys(p for _, p in items))
+            result = self.dataflows.prepare(requests, policy=PreparePolicy.REUSE)
+            if not result.ready:
+                raise ValueError('forward V4 calendar preparation is incomplete')
+            by_parameters = {request.parameters: self.dataflows.fetch(request, prepared=result.reference) for request in requests}
+            if any(not fetched.ready for fetched in by_parameters.values()):
+                raise ValueError('forward V4 prepared calendar is unavailable')
+            self._calendars[key] = {role: by_parameters[p] for role, p in items}
+        return self._calendars[key]
+
+    def _interval_path(self, account_id, release_hash, interval):
+        identity = canonical_sha256({'account_id': account_id, 'release_hash': release_hash,
+            'start': interval.start.isoformat(), 'end': interval.end.isoformat()})
+        return self._path(account_id).parent / 'intervals' / (identity + '.json')
+
+    def _existing_interval(self, account_id, path, interval):
+        if path.exists():
+            return FormalV4Inputs.from_dict(json.loads(path.read_text(encoding='utf-8')))
+        account = self.store.virtual_account(account_id)
+        adopted = json.loads(account['last_decision_payload']) if account['last_decision_payload'] else {}
+        expected = {'start': interval.start.isoformat(), 'end': interval.end.isoformat()}
+        if adopted.get('equity_execution_interval') == expected:
+            raise ValueError('adopted interval input record is missing; automatic replacement is forbidden')
+        return None
+
+    @staticmethod
+    def _save_interval(path, inputs):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = path.with_suffix('.pending')
+        temporary.write_text(json.dumps(inputs.to_dict(), sort_keys=True), encoding='utf-8')
+        temporary.replace(path)
+
+    def _pinned_inputs(self, account_id, interval):
+        inputs = self.inputs(account_id)
+        path = self._interval_path(account_id, inputs.release_hash, interval)
+        with self._lock:
+            existing = self._existing_interval(account_id, path, interval)
+            if existing is not None:
+                return existing
+            self._save_interval(path, inputs)
+            return inputs
+
+    def _forward_inputs(self, account_id, recipe, interval):
+        path = self._interval_path(account_id, recipe.release_hash, interval)
+        with self._lock:
+            existing = self._existing_interval(account_id, path, interval)
+            if existing is not None:
+                return existing
+            calendars = self._calendar_products(recipe, interval.start)
+            items = []
+            for role, parameters in recipe.binding.request_bindings:
+                day = interval.start.astimezone(ZoneInfo(parameters.instrument.timezone)).date()
+                if parameters.query.product is EquityProduct.BARS:
+                    calendar_key = role.rsplit(':', 1)[0] + ':sessions' if ':' in role else 'sessions'
+                    calendar = calendars[calendar_key]
+                    availability = {str(row.SessionDate): row.AvailableDate for row in calendar.dataframe.itertuples()}
+                    completed = [s.session_date for s in sessions_from_metadata(calendar.identity.metadata)
+                                 if s.segments[-1].end <= interval.start
+                                 and availability[s.session_date.isoformat()] <= interval.start]
+                    if not completed:
+                        raise ValueError('forward V4 inputs have no completed historical session')
+                    day = max(completed)
+                items.append((role, replace(parameters, query=replace(parameters.query, end=day))))
+            requests = tuple(EquityDataRequest(p.instrument, p.source, p.query) for p in dict.fromkeys(p for _, p in items))
+            result = self.dataflows.prepare(requests, policy=PreparePolicy.REUSE)
+            if not result.ready:
+                raise ValueError('forward V4 input preparation is incomplete: ' + '; '.join(str(x.error) for x in result.items if not x.ready))
+            identities = {item.request.parameters: item.identity.content_sha256 for item in result.items}
+            hashes = {role: identities[p] for role, p in items}
+            binding = replace(recipe.binding, prepared=result.reference, request_bindings=tuple(items),
+                content_identities=tuple((product.name.lower(), hashes[product.name.lower()]) for product in EquityProduct),
+                auxiliary_inputs=tuple(EquityAuxiliaryBinding(item.input,
+                    hashes[item.input.data_key(EquityProduct.BARS)], hashes[item.input.data_key(EquityProduct.SESSIONS)])
+                    for item in recipe.binding.auxiliary_inputs),
+                execution_input=None if recipe.binding.execution_input is None else ExecutionInputBinding(
+                    recipe.binding.execution_input.input, hashes['execution:bars'], hashes['execution:sessions']))
+            value = FormalV4Inputs(recipe.release_hash, binding, recipe.fee_rate)
+            self._save_interval(path, value)
+            return value
+
+    def prepare_interval(self, account_id: str, interval: TimeInterval, *,
+                         observed_at: datetime) -> PreparedEquityDecision:
+        if type(interval) is not TimeInterval or type(observed_at) is not datetime or observed_at.utcoffset() is None:
+            raise TypeError('formal V4 preparation requires an interval and aware observation time')
+        if not interval.start <= observed_at < interval.end:
+            raise ValueError('formal V4 interval is not currently executable')
+        _, release, candidate = self._account_release(account_id)
+        recipe = self.recipe(account_id)
+        inputs = self._pinned_inputs(account_id, interval) if recipe is None else self._forward_inputs(account_id, recipe, interval)
+        if inputs.release_hash != release.release_hash:
+            raise ValueError('formal V4 prepared inputs belong to another release')
+        return prepare_equity_decision(self.dataflows, candidate, inputs.binding, inputs.requests,
+                                       interval, fee_rate=inputs.fee_rate, live=True)
+
+    def get_decision(self, *args, **kwargs):
+        _, release, candidate = self._account_release(kwargs['account_id'])
+        prepared = kwargs['prepared']
+        inputs = FormalV4Inputs.from_dict(json.loads(self._interval_path(
+            kwargs['account_id'], release.release_hash, prepared.interval).read_text(encoding='utf-8')))
+        if (not prepared.live_interval or prepared.candidate != candidate
+                or inputs.release_hash != release.release_hash or inputs.binding != prepared.binding
+                or inputs.fee_rate != prepared.fee_rate):
+            raise ValueError('formal V4 proposal differs from loaded deployment')
+        return EquityAdviceClient(self.store).get_decision(*args, **kwargs)
+
+    def apply_account_events(self, account_id: str, prepared: PreparedEquityDecision) -> None:
+        """Recognize only pinned, effective events before planning the current account."""
+        if (type(prepared) is not PreparedEquityDecision or not prepared.live_interval
+                or prepared._decision_inputs_hash() != prepared.decision_inputs_sha256):
+            raise ValueError('formal account events require unchanged prepared live inputs')
+        _, release, candidate = self._account_release(account_id)
+        if prepared.candidate != candidate:
+            raise ValueError('formal account events differ from loaded deployment')
+        inputs = FormalV4Inputs.from_dict(json.loads(self._interval_path(
+            account_id, release.release_hash, prepared.interval).read_text(encoding='utf-8')))
+        if inputs.binding != prepared.binding or inputs.fee_rate != prepared.fee_rate:
+            raise ValueError('formal account events differ from archived interval inputs')
+        for action in prepared.live_actions:
+            if action.effective_at > prepared.interval.start or action.available_at > prepared.interval.start:
+                raise ValueError('formal account event is unavailable at the decision')
+            self.store.apply_equity_event(account_id, **asdict(action))
+        self.store.settle_equity_receivables(account_id, at=prepared.interval.start)
+
+
+class FormalV4ScheduleProvider:
+    """Resolve the current interval from pinned calendar and constraint facts."""
+    def __init__(self, client, accounts):
+        self.client, self.accounts = client, accounts
+
+    def due_decision(self, account: dict, observed_at: datetime) -> ScheduledDecision | None:
+        if type(observed_at) is not datetime or observed_at.utcoffset() is None:
+            raise TypeError('V4 schedule requires an aware observation time')
+        recipe = self.client.recipe(account['account_id'])
+        inputs = self.client.inputs(account['account_id']) if recipe is None else recipe
+        rules = self.client.store.equity_account_rules(account['account_id'])
+        if rules is None or inputs.release_hash != account['release_hash']:
+            raise ValueError('V4 schedule input identity differs from account')
+        if recipe is None:
+            request = next(request for role, request in inputs.binding.bind_requests(inputs.requests) if role == 'sessions')
+            fetched = self.client.dataflows.fetch(request, prepared=inputs.binding.prepared)
+        else:
+            fetched = self.client._calendar_products(recipe, observed_at)['sessions']
+        if not fetched.ready or (recipe is None and fetched.identity.content_sha256 != inputs.binding.expected_identities['sessions']):
+            raise ValueError('V4 schedule calendar is unavailable or changed')
+        availability = {str(row.SessionDate): row.AvailableDate for row in fetched.dataframe.itertuples()}
+        for session in sessions_from_metadata(fetched.identity.metadata):
+            if availability[session.session_date.isoformat()] > observed_at:
+                continue
+            periods = ((TimeInterval(session.segments[0].start, session.segments[-1].end),)
+                       if rules.execution.decision_clock is BarFrequency.DAILY
+                       else session.bars(rules.execution.decision_clock))
+            for interval in periods:
+                if interval.start <= observed_at < interval.end and availability[session.session_date.isoformat()] <= interval.start:
+                    task_id = canonical_sha256({'account_id': account['account_id'], 'release_hash': account['release_hash'],
+                                                'start': interval.start.isoformat(), 'end': interval.end.isoformat()})
+                    return ScheduledDecision(task_id, interval, interval.start)
+        return None
+
+    def run_scheduled(self, account_id: str, task: ScheduledDecision, observed_at: datetime) -> None:
+        prepared = self.client.prepare_interval(account_id, task.interval, observed_at=observed_at)
+        self.client.apply_account_events(account_id, prepared)
+        from .audit import AuditRecorder
+        AuditRecorder(self.client.store).record('MARKET_DATA_PREPARED', source='formal_v4',
+            actor_type='SCHEDULER', account_id=account_id, correlation_id=task.task_id,
+            details={'prepared_data_reference': prepared.data_reference,
+                     'data_identity': prepared.data_identity,
+                     'interval': {'start': task.interval.start.isoformat(), 'end': task.interval.end.isoformat()}})
+        self.accounts.refresh_account(account_id, prepared=prepared)
+        account = self.client.store.virtual_account(account_id)
+        adopted = json.loads(account['last_decision_payload']) if account['last_decision_payload'] else {}
+        expected = {'start': task.interval.start.isoformat(), 'end': task.interval.end.isoformat()}
+        if adopted.get('equity_execution_interval') != expected:
+            raise RuntimeError('scheduled V4 decision was not adopted; retry after active order reconciliation')

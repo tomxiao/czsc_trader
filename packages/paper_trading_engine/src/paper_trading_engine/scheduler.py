@@ -3,13 +3,46 @@
 from __future__ import annotations
 
 from datetime import datetime, time, timedelta, timezone
+import math
 from threading import Event, RLock, Thread
 from time import monotonic
+from typing import Protocol
+from collections.abc import Mapping
 
 from .audit import AuditRecorder
 from .account_chart import AccountChartService
 from .chart_market_data import CHART_UPDATE_TIME
-from .trading_window import SHANGHAI, shanghai_now
+from .trading_window import SHANGHAI, ScheduledDecision
+
+
+class AccountScheduleProvider(Protocol):
+    """Resolve actual calendar intervals and execute an account's due decision."""
+
+    def due_decision(self, account: dict[str, object], observed_at: datetime) -> ScheduledDecision | None:
+        ...
+
+    def run_scheduled(self, account_id: str, task: ScheduledDecision, observed_at: datetime):
+        ...
+
+
+class ChannelOperations(Protocol):
+    """The two independently retried polling operations of a channel account."""
+
+    def refresh_account(self):
+        ...
+
+    def refresh_orders(self):
+        ...
+
+
+def _utc(moment: datetime, *, allow_legacy_naive: bool = False) -> datetime:
+    if type(moment) is not datetime:
+        raise TypeError("scheduler clock must be a datetime")
+    if moment.utcoffset() is None:
+        if not allow_legacy_naive:
+            raise ValueError("scheduler clock must be timezone-aware")
+        moment = moment.replace(tzinfo=SHANGHAI)
+    return moment.astimezone(timezone.utc)
 
 
 class RuntimeScheduler:
@@ -26,31 +59,56 @@ class RuntimeScheduler:
         audit: AuditRecorder | None = None,
         initial_observation_at: datetime | None = None,
         account_chart: AccountChartService | None = None,
+        schedule_provider: AccountScheduleProvider | None = None,
+        max_account_workers: int = 4,
+        channel_operations: Mapping[str, ChannelOperations] | None = None,
     ) -> None:
         self.engine = engine
         self.strategy_cycle = strategy_cycle
         self.store = store
         self.account_chart = account_chart
+        self.schedule_provider = schedule_provider
+        self.channel_operations = dict(channel_operations or {})
+        if any(type(key) is not str or not key.strip() for key in self.channel_operations):
+            raise ValueError("scheduled channels require explicit account identities")
+        if any(not callable(getattr(operation, method, None))
+               for operation in self.channel_operations.values()
+               for method in ("refresh_account", "refresh_orders")):
+            raise TypeError("scheduled channels must provide account and order refresh operations")
+        if type(max_account_workers) is not int or max_account_workers < 1:
+            raise ValueError("max_account_workers must be a positive integer")
+        self.max_account_workers = max_account_workers
         self.order_interval = float(order_interval)
         self.account_interval = float(account_interval)
         self.data_prepare_interval = float(data_prepare_interval)
+        if not all(math.isfinite(value) and value > 0 for value in (
+            self.order_interval, self.account_interval, self.data_prepare_interval,
+        )):
+            raise ValueError("scheduler intervals must be positive and finite")
         self.preparation_time = time.fromisoformat(preparation_time)
         self.audit = audit or (
             AuditRecorder(store) if hasattr(store, "append_audit_event") else None
         )
-        self._last_order = initial_observation_at
-        self._last_account = initial_observation_at
-        self._last_heartbeat = initial_observation_at
+        initial = None if initial_observation_at is None else self._clock(initial_observation_at)
+        self._last_order = initial
+        self._last_account = initial
+        self._last_heartbeat = initial
         self._last_data_check: datetime | None = None
         self._last_chart_check: datetime | None = None
         self._daily_thread: Thread | None = None
         self._account_workers: dict[str, Thread] = {}
+        self._schedule_lock = RLock()
+        self._last_dispatched_account: str | None = None
+        self._stopping = Event()
         self._failure_lock = RLock()
         self.shutdown_clean = True
         self._failures = self._restore_failures()
         self._retry_delays = (5, 15, 30, 60, 300)
         self.store.set_setting("scheduler_started_at", datetime.now(timezone.utc).isoformat())
         self.store.set_setting("scheduler_heartbeat_at", datetime.now(timezone.utc).isoformat())
+
+    def _clock(self, moment: datetime) -> datetime:
+        return _utc(moment, allow_legacy_naive=self.schedule_provider is None)
 
     def _restore_failures(self) -> dict[str, dict[str, object]]:
         load = getattr(self.store, "operation_failures", None)
@@ -62,9 +120,9 @@ class RuntimeScheduler:
                 restored[str(item["operation"])] = {
                     "fingerprint": str(item["fingerprint"]),
                     "count": int(item["failure_count"]),
-                    "first_at": datetime.fromisoformat(str(item["first_at"])),
-                    "last_at": datetime.fromisoformat(str(item["last_at"])),
-                    "next_retry": datetime.fromisoformat(str(item["next_retry"])),
+                    "first_at": _utc(datetime.fromisoformat(str(item["first_at"])), allow_legacy_naive=True),
+                    "last_at": _utc(datetime.fromisoformat(str(item["last_at"])), allow_legacy_naive=True),
+                    "next_retry": _utc(datetime.fromisoformat(str(item["next_retry"])), allow_legacy_naive=True),
                 }
             except (KeyError, TypeError, ValueError) as exc:
                 operation = (
@@ -163,12 +221,21 @@ class RuntimeScheduler:
             self._last_heartbeat = now
 
     def tick_fast(self, now: datetime) -> None:
+        now = self._clock(now)
         self._heartbeat(now)
         if self._due(self._last_account, now, self.account_interval):
-            self._guard("account", now, self.engine.refresh_account)
+            if self.channel_operations:
+                for channel_id, operations in self.channel_operations.items():
+                    self._guard(f"account:{channel_id}", now, operations.refresh_account)
+            else:
+                self._guard("account", now, self.engine.refresh_account)
             self._last_account = now
         if self._due(self._last_order, now, self.order_interval):
-            self._guard("orders", now, self.engine.refresh_orders)
+            if self.channel_operations:
+                for channel_id, operations in self.channel_operations.items():
+                    self._guard(f"orders:{channel_id}", now, operations.refresh_orders)
+            else:
+                self._guard("orders", now, self.engine.refresh_orders)
             self._last_order = now
 
     def _account_cycle(
@@ -182,15 +249,45 @@ class RuntimeScheduler:
             ),
         )
 
+    def _scheduled_account_cycle(self, account: dict[str, object], now: datetime) -> None:
+        account_id = str(account["account_id"])
+
+        def perform():
+            task = self.schedule_provider.due_decision(account, now)
+            if task is None:
+                return
+            if type(task) is not ScheduledDecision:
+                raise TypeError("schedule provider must return ScheduledDecision or None")
+            if not task.decision_at <= now < task.submit_before:
+                raise ValueError("schedule provider returned a decision outside its valid window")
+            key = f"last_account_schedule_task:{account_id}"
+            if self.store.get_setting(key) == task.task_id:
+                return
+            previous = self.store.get_setting(f"last_account_schedule_at:{account_id}")
+            if previous is not None and task.decision_at < _utc(datetime.fromisoformat(previous)):
+                raise ValueError("scheduled decision cannot move backwards")
+            self.schedule_provider.run_scheduled(account_id, task, now)
+            self.store.set_setting(key, task.task_id)
+            self.store.set_setting(f"last_account_schedule_at:{account_id}", _utc(task.decision_at).isoformat())
+
+        self._guard(f"account_strategy_cycle:{account_id}", now, perform)
+
     def tick_daily(self, now: datetime) -> None:
-        local_now = now if now.tzinfo is None else now.astimezone(SHANGHAI)
+        now = self._clock(now)
+        with self._schedule_lock:
+            self._tick_accounts(now)
+
+    def _tick_accounts(self, now: datetime) -> None:
+        if self._stopping.is_set():
+            return
+        local_now = now.astimezone(SHANGHAI)
         if (self.account_chart is not None
                 and local_now.time().replace(tzinfo=None) >= CHART_UPDATE_TIME
                 and self._due(self._last_chart_check, now, self.data_prepare_interval)):
             self._guard("account_charts", now, lambda: self.account_chart.refresh_daily(now))
             self._last_chart_check = now
         if (
-            local_now.time().replace(tzinfo=None) < self.preparation_time
+            (self.schedule_provider is None and local_now.time().replace(tzinfo=None) < self.preparation_time)
             or not self._due(self._last_data_check, now, self.data_prepare_interval)
         ):
             return
@@ -199,27 +296,36 @@ class RuntimeScheduler:
                 worker.join()
                 self._account_workers.pop(account_id, None)
         signal_date = local_now.date()
-        for account in self.store.strategy_virtual_accounts():
+        accounts = self.store.strategy_virtual_accounts()
+        identities = [str(account["account_id"]) for account in accounts]
+        if self._last_dispatched_account in identities:
+            offset = identities.index(self._last_dispatched_account) + 1
+            accounts = accounts[offset:] + accounts[:offset]
+        for account in accounts:
+            if len(self._account_workers) >= self.max_account_workers:
+                break
             if account.get("run_state") == "RETIRED":
                 continue
             account_id = str(account["account_id"])
             if account_id in self._account_workers:
                 continue
-            if self.store.get_setting(
-                f"last_account_decision_date:{account_id}"
-            ) == signal_date.isoformat():
-                continue
-            if self.store.get_setting(
-                f"last_account_schedule_skip_date:{account_id}"
-            ) == signal_date.isoformat():
-                continue
+            if self.schedule_provider is None:
+                if self.store.get_setting(
+                    f"last_account_decision_date:{account_id}"
+                ) == signal_date.isoformat():
+                    continue
+                if self.store.get_setting(
+                    f"last_account_schedule_skip_date:{account_id}"
+                ) == signal_date.isoformat():
+                    continue
             worker = Thread(
-                target=self._account_cycle,
-                args=(account_id, signal_date, now),
+                target=self._account_cycle if self.schedule_provider is None else self._scheduled_account_cycle,
+                args=(account_id, signal_date, now) if self.schedule_provider is None else (account, now),
                 name=f"pte-strategy-{account_id}",
                 daemon=True,
             )
             self._account_workers[account_id] = worker
+            self._last_dispatched_account = account_id
             worker.start()
         self._last_data_check = now
 
@@ -227,7 +333,7 @@ class RuntimeScheduler:
         def run_daily() -> None:
             while not stopped.is_set():
                 try:
-                    self.tick_daily(shanghai_now())
+                    self.tick_daily(datetime.now(timezone.utc))
                 except Exception as exc:
                     self._record_cycle_failure(exc, "daily")
                 stopped.wait(0.5)
@@ -238,10 +344,11 @@ class RuntimeScheduler:
         self._daily_thread.start()
         while not stopped.is_set():
             try:
-                self.tick_fast(shanghai_now())
+                self.tick_fast(datetime.now(timezone.utc))
             except Exception as exc:
                 self._record_cycle_failure(exc, "fast")
             stopped.wait(0.5)
+        self._stopping.set()
         self._daily_thread.join(timeout=25.0)
         deadline = monotonic() + 25.0
         for worker in tuple(self._account_workers.values()):
