@@ -1,60 +1,42 @@
-# S018/C9380 阶段五：技术通过，等待精确冻结批准
+# S018/C9380 阶段五完成：已冻结 S018-v1
 
-Status: TECHNICAL_PASS_AWAITING_FREEZE_APPROVAL
+Status: COMPLETE_FROZEN
 
 ## 结论
 
-在平台提交 `57f925496` 上，固定 C9380 的定义、参数及执行合同，正式调用公开 `inspect_candidate`，候选与最终格式包行为等价、隔离 PTE 运行两个目标均为 **PASS**。已形成可供批准的 S018-v1 精确冻结计划；尚未执行冻结，阶段五待用户批准后完成冻结事务及收口。
+用户在精确计划呈现后明确回复“同意冻结”。RSCH 记录该批准，按原技术检验通过的计划提交同一发布包，冻结事务返回 **COMMITTED**，随后通过同一请求查询核对真实回执，并校验冻结包与受检包身份完全一致。**S018/C9380 阶段五目标已达成。**
 
-本次为 EX067 原生 V4 能力缺口修复后的新实验；[原失败报告](../EX067_20261105/report.md)与 INSPECTION/1 保留。阶段四 [ASSESSMENT/2](../../deliveries/ASSESSMENT/2/report.md)、C9380 参数、候选登记及历史资格不变。本次没有搜索或重新选优。
+正式版本为 **S018-v1**，原生 V4（ACCOUNT_REPLAY），初始资格 **RESEARCH**。本次是研究版本冻结，未部署、未绑定账户、未升级生产代码或启动交易。前瞻起始日 2026-11-06 仍是已批准版本元数据，不代表生产生效日期。
 
-## 固定输入与检验范围
+## 批准、冻结及核验
 
-- 复用 EX064 中心账户已准备的 8 个数据角色，逐项核对内容哈希，未访问新行情或供应商。
-- 开发窗口仍为 2023-01-03 至 2026-10-30。MU/SOXX 后复权辅助价格用于策略观察；MU 未复权价格用于报价、成交和账户估值，公司行动进入真实数量及现金/应收账。
-- 每侧费用仍为成交额 0.1%。PTE 金额预期采用四位小数及累计费用差额，修正原协议的金额精度；没有更改费率。
-- 原有 5 个场景补齐决策前已知且生效的公司行动和到期支付；增加连续两周期、包含补仓和退出的场景，逐次成交后重启，保留无订单决策日。
-- PTE 回报由既有历史模型成交录制并注入，属于隔离合成通道事实，不是券商真实成交或独立前瞻业绩。
-- 使用最多 2 个工作进程、240 秒总预算；本次实际 45.70 秒。
-
-协议见 [inspection_protocol.json](protocols/inspection_protocol.json)，输入见 [inspection_inputs.json](others/inspection_inputs.json)，精确合同见 [inspection_scope.json](protocols/inspection_scope.json)。
-
-## 技术结果
-
-行为等价覆盖 961 个决策点、244 个订单、230 笔成交及 95 个闭合周期，候选与最终格式包的观察、决策、订单、成交、公司行动、账户和最终策略状态精确一致，容差为 0。该结论是技术实现等价，不是新增经济验收。
-
-| PTE 场景 | 结果 |
+| 项目 | 结果 |
 | --- | --- |
-| historical-first-buy-partial-duplicate-restart | PASS |
-| rejected | PASS |
-| unknown | PASS |
-| expired | PASS |
-| reconciliation-blocked | PASS |
-| recorded-two-cycles-with-add | PASS |
+| 用户批准 | 同意冻结；见 [批准原文及精确对象](protocols/freeze_01/user_approval.json) |
+| 冻结请求 | `S018-C9380-v1-native-20261105` |
+| 事务状态 | COMMITTED |
+| 候选内容 | `186dffc6fe4df3aec1638030d7c0f65d594b6c9578593c39b5676796fe3c5d4a` |
+| 技术检验报告 | `db4744d3c893c2570a211e16c398394bda693d3481f6996984286cbd6633b41c` |
+| 获批计划 | `2b1a664203176f58f82dd4c106ef90c08fe6f3a8dce4aaae5e855819c8ae7030` |
+| 版本哈希 | `3157c3cc7744a24a77f5119cfd4b8ed60e557854f14f62bbf78677f845fb7772` |
+| 发布包哈希 | `994d23f4a7c12f1963c0d006c3f92f8062bd9b3ab5f25bbda860aa8c47f28e7e` |
 
-标准覆盖项无缺失，连续两周期场景实际覆盖 5 笔成交及状态恢复。完整结果见 [technical_summary.json](others/technical_summary.json)、[inspection_report.json](others/inspection_report.json)及 [inspection_validation.json](others/inspection_validation.json)。
+[事务回执](others/freeze_01/receipt.json)、[包核验结果](others/freeze_01/verification.json)、[批准决定引用](others/freeze_01/approval_reference.json)和[实际请求](others/freeze_01/request.json)保留完整关联；没有更换候选、参数或包内容。
 
-## 待批准的精确冻结计划
+实际版本见 [v1.json](../../../../strategies/S018/versions/v1.json)，包清单见 [release_manifest.json](../../../../strategies/S018/releases/v1/release_manifest.json)。源实验 EX063 是候选产生来源，EX068 是本次技术检验及冻结事务来源，二者职责不同。
 
-拟首次冻结为 **S018-v1**，无父版本，初始资格为 RESEARCH。选型数据截止日为 2026-10-30，计划元数据中的前瞻起始日为 2026-11-06；该日期不代表生产启动承诺。
+## 沿用的技术证据
 
-| 身份 | SHA256 |
-| --- | --- |
-| 候选 C9380 内容 | `186dffc6fe4df3aec1638030d7c0f65d594b6c9578593c39b5676796fe3c5d4a` |
-| 候选登记 | `55b0f366422789959d822913acd2718884dbb1ce37e04983e6fcfcf60da10970` |
-| 本次技术检验报告 | `db4744d3c893c2570a211e16c398394bda693d3481f6996984286cbd6633b41c` |
-| 精确冻结计划 | `2b1a664203176f58f82dd4c106ef90c08fe6f3a8dce4aaae5e855819c8ae7030` |
-| 待冻结发布版本 | `3157c3cc7744a24a77f5119cfd4b8ed60e557854f14f62bbf78677f845fb7772` |
-| 待冻结包 | `994d23f4a7c12f1963c0d006c3f92f8062bd9b3ab5f25bbda860aa8c47f28e7e` |
+本次冻结复用已经完成的正式技术检验，不重跑策略：候选及最终格式包在原窗口的 961 个决策点、244 个订单、230 笔成交、95 个闭合周期及最终策略状态精确一致；6 个隔离 PTE 场景全部 PASS，覆盖部分成交、重复回报、重启、拒单、结果未知、过期、对账阻断及连续两周期补仓/退出。
 
-[freeze_approval_plan.json](protocols/freeze_approval_plan.json)完整列出待批准对象、计划、运行绑定和包内文件。批准后只提交检验保存的同一发布字节，并核对真实 COMMITTED 回执；当前没有生成正式冻结版本。
+MU/SOXX 后复权辅助价格用于信号观察，MU 未复权价格用于报价、成交和估值；每侧 0.1% 费用及公司行动合同保持不变。全部正式技术输入和场景见 [原技术检验交付](../../deliveries/INSPECTION/2/report.md)。PTE 录制回报仍是隔离合成通道事实，不是券商真实成交。
 
-## 剩余边界与下一步
+## 历史保留、边界与下一步
 
-技术检验仅覆盖已声明历史窗口与 6 个隔离场景。阶段四披露的开发样本复用、时点可得性及跨时期稳定性限制保持，不能将技术 PASS 解释为未来收益保证。
+- [INSPECTION/1](../../deliveries/INSPECTION/1/report.md)保留原平台阻断事实；[INSPECTION/2](../../deliveries/INSPECTION/2/report.md)保留通过检验但等待批准时的原报告及精确计划；本次新增 INSPECTION/3，状态 COMPLETE，无待决定的冻结事项。
+- 本实验研究报告显式引用前一报告版本，旧材料和证据不覆盖；阶段四 ASSESSMENT/2 及候选资格不变，没有新增搜索或经济验收。
+- 独立前瞻业绩与阶段四披露的样本复用、时点可得性、跨时期稳定性限制保持。技术通过及冻结不意味着未来经济表现已验证。
+- 当前 V4 隔离路径支持限价买入及限价/市价卖出。市价买入和带前置依赖的订单明确拒绝，C9380 不使用这些表达。
+- 富途美股模拟通道、旧冻结策略原地升级及生产停机升级/重绑/部署仍是后续独立事项。本次不更新生产配置或账户。
 
-当前检验执行支持限价买入及限价/市价卖出；市价买入、带前置依赖的订单明确拒绝，C9380 不使用这两类表达。富途美股模拟通道、旧冻结策略原地升级、生产版本升级及账户绑定仍是后续独立实施事项，本次未部署或修改生产。
-
-根据 [RSCH 指南第 3.5 节](../../../RSCH_AGENT.md#35-阶段五技术检验与获批冻结)：“冻结必须具备完整计划、通过检查，并取得用户对候选、内容、检验报告、计划及版本的精确批准。”本轮“同意”授权继续正式阶段五检验，发生于上述新报告与计划生成之前；因此下一步呈请用户批准本计划冻结为 S018-v1。
-
-本次技术检验目标已达成；阶段五等待精确冻结批准。正式交付 INSPECTION/2 标记 PARTIAL，待冻结项明确列出，原交付保留。
+建议下一步由 DEV 推进第 2 项富途美股模拟交易渠道，使后续生产维护与部署具备渠道条件；具体实施和生产变更分别按授权执行。
