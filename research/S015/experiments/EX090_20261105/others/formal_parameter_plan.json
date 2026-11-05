@@ -1,0 +1,367 @@
+{
+  "type": "ParameterEvaluationPlan",
+  "design": {
+    "type": "ParameterNeighborhoodDesign",
+    "center": {
+      "type": "AssessmentCandidate",
+      "candidate_id": "S015-C9810",
+      "content_sha256": "bb4f4215ca3a18298177c4af1507bd8d360b51c36c989f06774970a1f2ed4757"
+    },
+    "protocol": {
+      "type": "ParameterNeighborhoodProtocol",
+      "purpose": "LOCAL_SENSITIVITY",
+      "max_combinations": 10000,
+      "quantile_method": "LINEAR",
+      "version": "parameter-cartesian-neighborhood-v2"
+    },
+    "space": {
+      "type": "ParameterNeighborhoodSpace",
+      "axes": [
+        {
+          "type": "ParameterAxis",
+          "name": "center_kind",
+          "center": "median",
+          "domain": {
+            "type": "CategoricalDomain",
+            "values": [
+              "mean",
+              "median"
+            ]
+          },
+          "rule": {
+            "type": "ExplicitValues",
+            "values": [
+              "median"
+            ]
+          },
+          "payload_path": [
+            "center_kind"
+          ],
+          "unit": "definition"
+        },
+        {
+          "type": "ParameterAxis",
+          "name": "lookback",
+          "center": 3,
+          "domain": {
+            "type": "IntegerDomain",
+            "lower": 1,
+            "upper": 30,
+            "step": 1,
+            "origin": 0
+          },
+          "rule": {
+            "type": "BoundedLocalStep",
+            "limit": {
+              "type": "RelativeChangeLimit",
+              "fraction": 0.05
+            }
+          },
+          "payload_path": [
+            "lookback"
+          ],
+          "unit": "sessions"
+        },
+        {
+          "type": "ParameterAxis",
+          "name": "allocation",
+          "center": 1.0,
+          "domain": {
+            "type": "RealDomain",
+            "lower": 0.0,
+            "upper": 1.0,
+            "lower_closed": false,
+            "upper_closed": true,
+            "quantum": null,
+            "origin": 0.0
+          },
+          "rule": {
+            "type": "BoundedLocalStep",
+            "limit": {
+              "type": "RelativeChangeLimit",
+              "fraction": 0.05
+            }
+          },
+          "payload_path": [
+            "allocation"
+          ],
+          "unit": "fraction"
+        },
+        {
+          "type": "ParameterAxis",
+          "name": "minimum_repair_space",
+          "center": 0.0017298986606429072,
+          "domain": {
+            "type": "RealDomain",
+            "lower": 0.0,
+            "upper": 0.05,
+            "lower_closed": true,
+            "upper_closed": true,
+            "quantum": null,
+            "origin": 0.0
+          },
+          "rule": {
+            "type": "BoundedLocalStep",
+            "limit": {
+              "type": "RelativeChangeLimit",
+              "fraction": 0.05
+            }
+          },
+          "payload_path": [
+            "minimum_repair_space"
+          ],
+          "unit": "price_ratio"
+        }
+      ],
+      "mapping_sha256": "b59a577f26d0f71353b52ad76b62932f184edb21bf5592e32a351ce8a75bb566",
+      "feasibility_sha256": "e47df6314733840f27b82ce630b546e4e052852f9e5093ad199bc8a7f5b47f9c"
+    },
+    "points": [
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 0,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "center_kind",
+            "value": "median"
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "minimum_repair_space",
+            "value": 0.0016434037276107619
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 1,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "center_kind",
+            "value": "median"
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 1.0
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "minimum_repair_space",
+            "value": 0.0018163935936750524
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 2,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "center_kind",
+            "value": "median"
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "minimum_repair_space",
+            "value": 0.0017298986606429072
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 3,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "center_kind",
+            "value": "median"
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "minimum_repair_space",
+            "value": 0.0016434037276107619
+          }
+        ]
+      },
+      {
+        "type": "ParameterNeighborhoodPoint",
+        "index": 4,
+        "values": [
+          {
+            "type": "NamedParameterValue",
+            "name": "center_kind",
+            "value": "median"
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "lookback",
+            "value": 3
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "allocation",
+            "value": 0.95
+          },
+          {
+            "type": "NamedParameterValue",
+            "name": "minimum_repair_space",
+            "value": 0.0018163935936750524
+          }
+        ]
+      }
+    ],
+    "generated_combinations": 12,
+    "rejections": [
+      {
+        "type": "NeighborhoodRejection",
+        "reason": "DUPLICATE",
+        "count": 6
+      },
+      {
+        "type": "NeighborhoodRejection",
+        "reason": "CENTER",
+        "count": 1
+      }
+    ],
+    "constraint_exclusions": []
+  },
+  "center": {
+    "type": "ParameterEvaluationCandidate",
+    "candidate": {
+      "type": "AssessmentCandidate",
+      "candidate_id": "S015-C9810",
+      "content_sha256": "bb4f4215ca3a18298177c4af1507bd8d360b51c36c989f06774970a1f2ed4757"
+    },
+    "runtime_identity_sha256": "bb4f4215ca3a18298177c4af1507bd8d360b51c36c989f06774970a1f2ed4757",
+    "payload_json": "{\"equity_definition\":{\"analysis_price\":\"RAW\",\"auxiliary_inputs\":[{\"analysis_price\":\"HFQ\",\"frequency\":\"daily\",\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"max_age_seconds\":6480000,\"name\":\"hfq\",\"source\":{\"provider\":\"s015-saved-tushare-observations\",\"revision\":\"ex087-v1\"},\"warmup_bars\":1},{\"analysis_price\":\"RAW\",\"frequency\":\"30m\",\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"max_age_seconds\":6480000,\"name\":\"intraday\",\"source\":{\"provider\":\"s015-saved-tushare-observations\",\"revision\":\"ex087-v1\"},\"warmup_bars\":1}],\"computation\":\"STATEFUL_STEP\",\"contract_version\":4,\"dependencies\":[{\"name\":\"numpy\",\"version\":\"2.5.2\"}],\"entrypoint\":\"strategy:step\",\"execution_spec\":{\"account\":{\"allow_negative_cash\":false,\"allow_short\":false,\"cash_availability\":\"IMMEDIATE_RESEARCH\",\"currency\":\"CNY\"},\"buy_premium\":0.01,\"data_latency_seconds\":0,\"decision_clock\":\"daily\",\"execution\":\"BAR_RANGE_V1\",\"inclusive_touch\":false,\"market\":{\"rule_version\":\"CN_EQUITY_V1\"},\"price_tick\":0.001,\"quantity_step\":100,\"slippage_bp\":0.0},\"explanation_cases\":[\"flat\",\"long\"],\"feature_graph\":{\"nodes\":[],\"numeric_semantics\":\"FLOAT64_CHRONOLOGICAL_V1\",\"outputs\":[]},\"feedback_mode\":\"CONFIRMED_EXECUTION\",\"initial_account\":{\"values\":[[\"active\",false],[\"repair_target\",0.0],[\"invalidation_origin\",0.0],[\"initialized\",false]]},\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"parameter_schema_json\":\"{\\\"allocation\\\":{\\\"type\\\":\\\"number\\\"},\\\"center_kind\\\":{\\\"type\\\":\\\"string\\\"},\\\"lookback\\\":{\\\"type\\\":\\\"integer\\\"},\\\"minimum_repair_space\\\":{\\\"type\\\":\\\"number\\\"}}\",\"parameters_json\":\"{\\\"allocation\\\":1.0,\\\"center_kind\\\":\\\"median\\\",\\\"lookback\\\":3,\\\"minimum_repair_space\\\":0.0017298986606429072}\",\"runtime_kind\":\"ACCOUNT_REPLAY\",\"source_files\":[\"strategy.py\"],\"source_sha256\":\"aa6ca0f992443bab476e9af4491ca71843f781240dd96306a807da75ebad4be4\",\"state_schema\":{\"account_fields\":[{\"key\":\"active\",\"nullable\":false,\"value_type\":\"bool\"},{\"key\":\"repair_target\",\"nullable\":false,\"value_type\":\"float\"},{\"key\":\"invalidation_origin\",\"nullable\":false,\"value_type\":\"float\"},{\"key\":\"initialized\",\"nullable\":false,\"value_type\":\"bool\"}],\"cycle_fields\":[]},\"warmup_bars\":75},\"runtime\":{\"contract_version\":4,\"kind\":\"ACCOUNT_REPLAY\",\"source_files\":[\"strategy.py\"],\"source_sha256\":\"aa6ca0f992443bab476e9af4491ca71843f781240dd96306a807da75ebad4be4\"}}"
+  },
+  "center_request_sha256": "9e6d7d6cbf36447df98f524501874da25a750bd78abcd4197176701e47676cc0",
+  "nonparameter_context_sha256": "a95205fcbdd2375f3e9ad2419815c3bf3d9e2e126356df119a9708747d53a45c",
+  "children": [
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C9811",
+        "content_sha256": "6057faf2d17d1b20ffe9504130d4046a988c1fc0fe0c12f4f1002dfe71b4b494"
+      },
+      "runtime_identity_sha256": "6057faf2d17d1b20ffe9504130d4046a988c1fc0fe0c12f4f1002dfe71b4b494",
+      "payload_json": "{\"equity_definition\":{\"analysis_price\":\"RAW\",\"auxiliary_inputs\":[{\"analysis_price\":\"HFQ\",\"frequency\":\"daily\",\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"max_age_seconds\":6480000,\"name\":\"hfq\",\"source\":{\"provider\":\"s015-saved-tushare-observations\",\"revision\":\"ex087-v1\"},\"warmup_bars\":1},{\"analysis_price\":\"RAW\",\"frequency\":\"30m\",\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"max_age_seconds\":6480000,\"name\":\"intraday\",\"source\":{\"provider\":\"s015-saved-tushare-observations\",\"revision\":\"ex087-v1\"},\"warmup_bars\":1}],\"computation\":\"STATEFUL_STEP\",\"contract_version\":4,\"dependencies\":[{\"name\":\"numpy\",\"version\":\"2.5.2\"}],\"entrypoint\":\"strategy:step\",\"execution_spec\":{\"account\":{\"allow_negative_cash\":false,\"allow_short\":false,\"cash_availability\":\"IMMEDIATE_RESEARCH\",\"currency\":\"CNY\"},\"buy_premium\":0.01,\"data_latency_seconds\":0,\"decision_clock\":\"daily\",\"execution\":\"BAR_RANGE_V1\",\"inclusive_touch\":false,\"market\":{\"rule_version\":\"CN_EQUITY_V1\"},\"price_tick\":0.001,\"quantity_step\":100,\"slippage_bp\":0.0},\"explanation_cases\":[\"flat\",\"long\"],\"feature_graph\":{\"nodes\":[],\"numeric_semantics\":\"FLOAT64_CHRONOLOGICAL_V1\",\"outputs\":[]},\"feedback_mode\":\"CONFIRMED_EXECUTION\",\"initial_account\":{\"values\":[[\"active\",false],[\"repair_target\",0.0],[\"invalidation_origin\",0.0],[\"initialized\",false]]},\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"parameter_schema_json\":\"{\\\"allocation\\\":{\\\"type\\\":\\\"number\\\"},\\\"center_kind\\\":{\\\"type\\\":\\\"string\\\"},\\\"lookback\\\":{\\\"type\\\":\\\"integer\\\"},\\\"minimum_repair_space\\\":{\\\"type\\\":\\\"number\\\"}}\",\"parameters_json\":\"{\\\"allocation\\\":1.0,\\\"center_kind\\\":\\\"median\\\",\\\"lookback\\\":3,\\\"minimum_repair_space\\\":0.0016434037276107619}\",\"runtime_kind\":\"ACCOUNT_REPLAY\",\"source_files\":[\"strategy.py\"],\"source_sha256\":\"aa6ca0f992443bab476e9af4491ca71843f781240dd96306a807da75ebad4be4\",\"state_schema\":{\"account_fields\":[{\"key\":\"active\",\"nullable\":false,\"value_type\":\"bool\"},{\"key\":\"repair_target\",\"nullable\":false,\"value_type\":\"float\"},{\"key\":\"invalidation_origin\",\"nullable\":false,\"value_type\":\"float\"},{\"key\":\"initialized\",\"nullable\":false,\"value_type\":\"bool\"}],\"cycle_fields\":[]},\"warmup_bars\":75},\"runtime\":{\"contract_version\":4,\"kind\":\"ACCOUNT_REPLAY\",\"source_files\":[\"strategy.py\"],\"source_sha256\":\"aa6ca0f992443bab476e9af4491ca71843f781240dd96306a807da75ebad4be4\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C9812",
+        "content_sha256": "2fca54a7dd3d29f637695575492465aa143b3547f9720ba22ce912bc8f7b8133"
+      },
+      "runtime_identity_sha256": "2fca54a7dd3d29f637695575492465aa143b3547f9720ba22ce912bc8f7b8133",
+      "payload_json": "{\"equity_definition\":{\"analysis_price\":\"RAW\",\"auxiliary_inputs\":[{\"analysis_price\":\"HFQ\",\"frequency\":\"daily\",\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"max_age_seconds\":6480000,\"name\":\"hfq\",\"source\":{\"provider\":\"s015-saved-tushare-observations\",\"revision\":\"ex087-v1\"},\"warmup_bars\":1},{\"analysis_price\":\"RAW\",\"frequency\":\"30m\",\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"max_age_seconds\":6480000,\"name\":\"intraday\",\"source\":{\"provider\":\"s015-saved-tushare-observations\",\"revision\":\"ex087-v1\"},\"warmup_bars\":1}],\"computation\":\"STATEFUL_STEP\",\"contract_version\":4,\"dependencies\":[{\"name\":\"numpy\",\"version\":\"2.5.2\"}],\"entrypoint\":\"strategy:step\",\"execution_spec\":{\"account\":{\"allow_negative_cash\":false,\"allow_short\":false,\"cash_availability\":\"IMMEDIATE_RESEARCH\",\"currency\":\"CNY\"},\"buy_premium\":0.01,\"data_latency_seconds\":0,\"decision_clock\":\"daily\",\"execution\":\"BAR_RANGE_V1\",\"inclusive_touch\":false,\"market\":{\"rule_version\":\"CN_EQUITY_V1\"},\"price_tick\":0.001,\"quantity_step\":100,\"slippage_bp\":0.0},\"explanation_cases\":[\"flat\",\"long\"],\"feature_graph\":{\"nodes\":[],\"numeric_semantics\":\"FLOAT64_CHRONOLOGICAL_V1\",\"outputs\":[]},\"feedback_mode\":\"CONFIRMED_EXECUTION\",\"initial_account\":{\"values\":[[\"active\",false],[\"repair_target\",0.0],[\"invalidation_origin\",0.0],[\"initialized\",false]]},\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"parameter_schema_json\":\"{\\\"allocation\\\":{\\\"type\\\":\\\"number\\\"},\\\"center_kind\\\":{\\\"type\\\":\\\"string\\\"},\\\"lookback\\\":{\\\"type\\\":\\\"integer\\\"},\\\"minimum_repair_space\\\":{\\\"type\\\":\\\"number\\\"}}\",\"parameters_json\":\"{\\\"allocation\\\":1.0,\\\"center_kind\\\":\\\"median\\\",\\\"lookback\\\":3,\\\"minimum_repair_space\\\":0.0018163935936750524}\",\"runtime_kind\":\"ACCOUNT_REPLAY\",\"source_files\":[\"strategy.py\"],\"source_sha256\":\"aa6ca0f992443bab476e9af4491ca71843f781240dd96306a807da75ebad4be4\",\"state_schema\":{\"account_fields\":[{\"key\":\"active\",\"nullable\":false,\"value_type\":\"bool\"},{\"key\":\"repair_target\",\"nullable\":false,\"value_type\":\"float\"},{\"key\":\"invalidation_origin\",\"nullable\":false,\"value_type\":\"float\"},{\"key\":\"initialized\",\"nullable\":false,\"value_type\":\"bool\"}],\"cycle_fields\":[]},\"warmup_bars\":75},\"runtime\":{\"contract_version\":4,\"kind\":\"ACCOUNT_REPLAY\",\"source_files\":[\"strategy.py\"],\"source_sha256\":\"aa6ca0f992443bab476e9af4491ca71843f781240dd96306a807da75ebad4be4\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C9813",
+        "content_sha256": "b3a52337da152836caa7c9b888e1d2dea0fdf98c2593a813a03b2a1e07fb8245"
+      },
+      "runtime_identity_sha256": "b3a52337da152836caa7c9b888e1d2dea0fdf98c2593a813a03b2a1e07fb8245",
+      "payload_json": "{\"equity_definition\":{\"analysis_price\":\"RAW\",\"auxiliary_inputs\":[{\"analysis_price\":\"HFQ\",\"frequency\":\"daily\",\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"max_age_seconds\":6480000,\"name\":\"hfq\",\"source\":{\"provider\":\"s015-saved-tushare-observations\",\"revision\":\"ex087-v1\"},\"warmup_bars\":1},{\"analysis_price\":\"RAW\",\"frequency\":\"30m\",\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"max_age_seconds\":6480000,\"name\":\"intraday\",\"source\":{\"provider\":\"s015-saved-tushare-observations\",\"revision\":\"ex087-v1\"},\"warmup_bars\":1}],\"computation\":\"STATEFUL_STEP\",\"contract_version\":4,\"dependencies\":[{\"name\":\"numpy\",\"version\":\"2.5.2\"}],\"entrypoint\":\"strategy:step\",\"execution_spec\":{\"account\":{\"allow_negative_cash\":false,\"allow_short\":false,\"cash_availability\":\"IMMEDIATE_RESEARCH\",\"currency\":\"CNY\"},\"buy_premium\":0.01,\"data_latency_seconds\":0,\"decision_clock\":\"daily\",\"execution\":\"BAR_RANGE_V1\",\"inclusive_touch\":false,\"market\":{\"rule_version\":\"CN_EQUITY_V1\"},\"price_tick\":0.001,\"quantity_step\":100,\"slippage_bp\":0.0},\"explanation_cases\":[\"flat\",\"long\"],\"feature_graph\":{\"nodes\":[],\"numeric_semantics\":\"FLOAT64_CHRONOLOGICAL_V1\",\"outputs\":[]},\"feedback_mode\":\"CONFIRMED_EXECUTION\",\"initial_account\":{\"values\":[[\"active\",false],[\"repair_target\",0.0],[\"invalidation_origin\",0.0],[\"initialized\",false]]},\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"parameter_schema_json\":\"{\\\"allocation\\\":{\\\"type\\\":\\\"number\\\"},\\\"center_kind\\\":{\\\"type\\\":\\\"string\\\"},\\\"lookback\\\":{\\\"type\\\":\\\"integer\\\"},\\\"minimum_repair_space\\\":{\\\"type\\\":\\\"number\\\"}}\",\"parameters_json\":\"{\\\"allocation\\\":0.95,\\\"center_kind\\\":\\\"median\\\",\\\"lookback\\\":3,\\\"minimum_repair_space\\\":0.0017298986606429072}\",\"runtime_kind\":\"ACCOUNT_REPLAY\",\"source_files\":[\"strategy.py\"],\"source_sha256\":\"aa6ca0f992443bab476e9af4491ca71843f781240dd96306a807da75ebad4be4\",\"state_schema\":{\"account_fields\":[{\"key\":\"active\",\"nullable\":false,\"value_type\":\"bool\"},{\"key\":\"repair_target\",\"nullable\":false,\"value_type\":\"float\"},{\"key\":\"invalidation_origin\",\"nullable\":false,\"value_type\":\"float\"},{\"key\":\"initialized\",\"nullable\":false,\"value_type\":\"bool\"}],\"cycle_fields\":[]},\"warmup_bars\":75},\"runtime\":{\"contract_version\":4,\"kind\":\"ACCOUNT_REPLAY\",\"source_files\":[\"strategy.py\"],\"source_sha256\":\"aa6ca0f992443bab476e9af4491ca71843f781240dd96306a807da75ebad4be4\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C9814",
+        "content_sha256": "4518b9d5e996053eee3f94d81caa54a136f69f912948ab803f19186983e2e467"
+      },
+      "runtime_identity_sha256": "4518b9d5e996053eee3f94d81caa54a136f69f912948ab803f19186983e2e467",
+      "payload_json": "{\"equity_definition\":{\"analysis_price\":\"RAW\",\"auxiliary_inputs\":[{\"analysis_price\":\"HFQ\",\"frequency\":\"daily\",\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"max_age_seconds\":6480000,\"name\":\"hfq\",\"source\":{\"provider\":\"s015-saved-tushare-observations\",\"revision\":\"ex087-v1\"},\"warmup_bars\":1},{\"analysis_price\":\"RAW\",\"frequency\":\"30m\",\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"max_age_seconds\":6480000,\"name\":\"intraday\",\"source\":{\"provider\":\"s015-saved-tushare-observations\",\"revision\":\"ex087-v1\"},\"warmup_bars\":1}],\"computation\":\"STATEFUL_STEP\",\"contract_version\":4,\"dependencies\":[{\"name\":\"numpy\",\"version\":\"2.5.2\"}],\"entrypoint\":\"strategy:step\",\"execution_spec\":{\"account\":{\"allow_negative_cash\":false,\"allow_short\":false,\"cash_availability\":\"IMMEDIATE_RESEARCH\",\"currency\":\"CNY\"},\"buy_premium\":0.01,\"data_latency_seconds\":0,\"decision_clock\":\"daily\",\"execution\":\"BAR_RANGE_V1\",\"inclusive_touch\":false,\"market\":{\"rule_version\":\"CN_EQUITY_V1\"},\"price_tick\":0.001,\"quantity_step\":100,\"slippage_bp\":0.0},\"explanation_cases\":[\"flat\",\"long\"],\"feature_graph\":{\"nodes\":[],\"numeric_semantics\":\"FLOAT64_CHRONOLOGICAL_V1\",\"outputs\":[]},\"feedback_mode\":\"CONFIRMED_EXECUTION\",\"initial_account\":{\"values\":[[\"active\",false],[\"repair_target\",0.0],[\"invalidation_origin\",0.0],[\"initialized\",false]]},\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"parameter_schema_json\":\"{\\\"allocation\\\":{\\\"type\\\":\\\"number\\\"},\\\"center_kind\\\":{\\\"type\\\":\\\"string\\\"},\\\"lookback\\\":{\\\"type\\\":\\\"integer\\\"},\\\"minimum_repair_space\\\":{\\\"type\\\":\\\"number\\\"}}\",\"parameters_json\":\"{\\\"allocation\\\":0.95,\\\"center_kind\\\":\\\"median\\\",\\\"lookback\\\":3,\\\"minimum_repair_space\\\":0.0016434037276107619}\",\"runtime_kind\":\"ACCOUNT_REPLAY\",\"source_files\":[\"strategy.py\"],\"source_sha256\":\"aa6ca0f992443bab476e9af4491ca71843f781240dd96306a807da75ebad4be4\",\"state_schema\":{\"account_fields\":[{\"key\":\"active\",\"nullable\":false,\"value_type\":\"bool\"},{\"key\":\"repair_target\",\"nullable\":false,\"value_type\":\"float\"},{\"key\":\"invalidation_origin\",\"nullable\":false,\"value_type\":\"float\"},{\"key\":\"initialized\",\"nullable\":false,\"value_type\":\"bool\"}],\"cycle_fields\":[]},\"warmup_bars\":75},\"runtime\":{\"contract_version\":4,\"kind\":\"ACCOUNT_REPLAY\",\"source_files\":[\"strategy.py\"],\"source_sha256\":\"aa6ca0f992443bab476e9af4491ca71843f781240dd96306a807da75ebad4be4\"}}"
+    },
+    {
+      "type": "ParameterEvaluationCandidate",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S015-C9815",
+        "content_sha256": "68949a7376b666a8d5b60d470e0dbdbffa690dbc71461349397a407b6c951da5"
+      },
+      "runtime_identity_sha256": "68949a7376b666a8d5b60d470e0dbdbffa690dbc71461349397a407b6c951da5",
+      "payload_json": "{\"equity_definition\":{\"analysis_price\":\"RAW\",\"auxiliary_inputs\":[{\"analysis_price\":\"HFQ\",\"frequency\":\"daily\",\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"max_age_seconds\":6480000,\"name\":\"hfq\",\"source\":{\"provider\":\"s015-saved-tushare-observations\",\"revision\":\"ex087-v1\"},\"warmup_bars\":1},{\"analysis_price\":\"RAW\",\"frequency\":\"30m\",\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"max_age_seconds\":6480000,\"name\":\"intraday\",\"source\":{\"provider\":\"s015-saved-tushare-observations\",\"revision\":\"ex087-v1\"},\"warmup_bars\":1}],\"computation\":\"STATEFUL_STEP\",\"contract_version\":4,\"dependencies\":[{\"name\":\"numpy\",\"version\":\"2.5.2\"}],\"entrypoint\":\"strategy:step\",\"execution_spec\":{\"account\":{\"allow_negative_cash\":false,\"allow_short\":false,\"cash_availability\":\"IMMEDIATE_RESEARCH\",\"currency\":\"CNY\"},\"buy_premium\":0.01,\"data_latency_seconds\":0,\"decision_clock\":\"daily\",\"execution\":\"BAR_RANGE_V1\",\"inclusive_touch\":false,\"market\":{\"rule_version\":\"CN_EQUITY_V1\"},\"price_tick\":0.001,\"quantity_step\":100,\"slippage_bp\":0.0},\"explanation_cases\":[\"flat\",\"long\"],\"feature_graph\":{\"nodes\":[],\"numeric_semantics\":\"FLOAT64_CHRONOLOGICAL_V1\",\"outputs\":[]},\"feedback_mode\":\"CONFIRMED_EXECUTION\",\"initial_account\":{\"values\":[[\"active\",false],[\"repair_target\",0.0],[\"invalidation_origin\",0.0],[\"initialized\",false]]},\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"parameter_schema_json\":\"{\\\"allocation\\\":{\\\"type\\\":\\\"number\\\"},\\\"center_kind\\\":{\\\"type\\\":\\\"string\\\"},\\\"lookback\\\":{\\\"type\\\":\\\"integer\\\"},\\\"minimum_repair_space\\\":{\\\"type\\\":\\\"number\\\"}}\",\"parameters_json\":\"{\\\"allocation\\\":0.95,\\\"center_kind\\\":\\\"median\\\",\\\"lookback\\\":3,\\\"minimum_repair_space\\\":0.0018163935936750524}\",\"runtime_kind\":\"ACCOUNT_REPLAY\",\"source_files\":[\"strategy.py\"],\"source_sha256\":\"aa6ca0f992443bab476e9af4491ca71843f781240dd96306a807da75ebad4be4\",\"state_schema\":{\"account_fields\":[{\"key\":\"active\",\"nullable\":false,\"value_type\":\"bool\"},{\"key\":\"repair_target\",\"nullable\":false,\"value_type\":\"float\"},{\"key\":\"invalidation_origin\",\"nullable\":false,\"value_type\":\"float\"},{\"key\":\"initialized\",\"nullable\":false,\"value_type\":\"bool\"}],\"cycle_fields\":[]},\"warmup_bars\":75},\"runtime\":{\"contract_version\":4,\"kind\":\"ACCOUNT_REPLAY\",\"source_files\":[\"strategy.py\"],\"source_sha256\":\"aa6ca0f992443bab476e9af4491ca71843f781240dd96306a807da75ebad4be4\"}}"
+    }
+  ],
+  "mapping_evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX090_20261105"
+    },
+    "evidence_id": "b59a577f26d0f71353b52ad76b62932f184edb21bf5592e32a351ce8a75bb566.json",
+    "sha256": "b59a577f26d0f71353b52ad76b62932f184edb21bf5592e32a351ce8a75bb566",
+    "media_type": "application/json",
+    "name": "formal-parameter-mapping",
+    "schema": null,
+    "schema_version": null
+  },
+  "feasibility_evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S015",
+      "experiment_id": "EX090_20261105"
+    },
+    "evidence_id": "e47df6314733840f27b82ce630b546e4e052852f9e5093ad199bc8a7f5b47f9c.json",
+    "sha256": "e47df6314733840f27b82ce630b546e4e052852f9e5093ad199bc8a7f5b47f9c",
+    "media_type": "application/json",
+    "name": "formal-parameter-feasibility",
+    "schema": null,
+    "schema_version": null
+  },
+  "center_inputs": [
+    {
+      "type": "ParameterEvaluationInput",
+      "window_id": "full",
+      "binding_json": "{\"binding\":{\"auxiliary_inputs\":[{\"bars_sha256\":\"2f09a7e4542aa367d33c82902e030ec8c5871ff01716a56ea036f99be2e21f6b\",\"input\":{\"analysis_price\":\"HFQ\",\"frequency\":\"daily\",\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"max_age_seconds\":6480000,\"name\":\"hfq\",\"source\":{\"provider\":\"s015-saved-tushare-observations\",\"revision\":\"ex087-v1\"},\"warmup_bars\":1},\"sessions_sha256\":\"75c60a89aae73ed09aa65781aae5dfd6dceb6c84d9e4264e667fa10c637fcc80\"},{\"bars_sha256\":\"0f191e0ff166c7977c9740713981bcccc4b41592335c4227dc239a2a2f0817d1\",\"input\":{\"analysis_price\":\"RAW\",\"frequency\":\"30m\",\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"max_age_seconds\":6480000,\"name\":\"intraday\",\"source\":{\"provider\":\"s015-saved-tushare-observations\",\"revision\":\"ex087-v1\"},\"warmup_bars\":1},\"sessions_sha256\":\"75c60a89aae73ed09aa65781aae5dfd6dceb6c84d9e4264e667fa10c637fcc80\"}],\"content_identities\":[[\"bars\",\"fccc273c25d02ee278bb3ab9730013672e35bfd8269ef251876a06093b54ccf3\"],[\"sessions\",\"75c60a89aae73ed09aa65781aae5dfd6dceb6c84d9e4264e667fa10c637fcc80\"],[\"actions\",\"31084c907f820853b40b66f6ae7cd0a5093e0947feb9dd34e89425bd3c38cca7\"],[\"constraints\",\"1890b78da7c9e6cd743b8122c206a6f860ff96e3e4f1d261bdda4e2ec5a81fd4\"]],\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"prepared\":{\"manifest_sha256\":\"27f2c8731a12fefaade312a31851b43decbfdf4d3aede9a7b54b912d3924fac5\",\"preparation_id\":\"4ffdeef1-e8fd-4598-9c95-351314c9708c\",\"space_id\":\"67b4df74-e6d9-4fa4-9200-b5694e5d7018\"},\"request_bindings\":[[\"bars\",{\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"query\":{\"adjustment\":\"none\",\"end\":\"2026-10-21\",\"frequency\":\"daily\",\"product\":\"equity.bars\",\"session\":\"REGULAR\",\"start\":\"2024-09-09\"},\"source\":{\"provider\":\"s015-saved-tushare-raw\",\"revision\":\"ex087-v1\"}}],[\"sessions\",{\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"query\":{\"adjustment\":\"none\",\"end\":\"2026-10-21\",\"frequency\":\"daily\",\"product\":\"equity.sessions\",\"session\":\"REGULAR\",\"start\":\"2024-09-09\"},\"source\":{\"provider\":\"s015-saved-tushare-raw\",\"revision\":\"ex087-v1\"}}],[\"actions\",{\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"query\":{\"adjustment\":\"none\",\"end\":\"2026-10-21\",\"frequency\":\"daily\",\"product\":\"equity.actions\",\"session\":\"REGULAR\",\"start\":\"2024-09-09\"},\"source\":{\"provider\":\"s015-saved-tushare-raw\",\"revision\":\"ex087-v1\"}}],[\"constraints\",{\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"query\":{\"adjustment\":\"none\",\"end\":\"2026-10-21\",\"frequency\":\"daily\",\"product\":\"equity.constraints\",\"session\":\"REGULAR\",\"start\":\"2024-09-09\"},\"source\":{\"provider\":\"s015-saved-tushare-raw\",\"revision\":\"ex087-v1\"}}],[\"auxiliary:hfq:bars\",{\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"query\":{\"adjustment\":\"hfq\",\"end\":\"2026-10-21\",\"frequency\":\"daily\",\"product\":\"equity.bars\",\"session\":\"REGULAR\",\"start\":\"2024-09-09\"},\"source\":{\"provider\":\"s015-saved-tushare-observations\",\"revision\":\"ex087-v1\"}}],[\"auxiliary:hfq:sessions\",{\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"query\":{\"adjustment\":\"none\",\"end\":\"2026-10-21\",\"frequency\":\"daily\",\"product\":\"equity.sessions\",\"session\":\"REGULAR\",\"start\":\"2024-09-09\"},\"source\":{\"provider\":\"s015-saved-tushare-observations\",\"revision\":\"ex087-v1\"}}],[\"auxiliary:intraday:bars\",{\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"query\":{\"adjustment\":\"none\",\"end\":\"2026-10-21\",\"frequency\":\"30m\",\"product\":\"equity.bars\",\"session\":\"REGULAR\",\"start\":\"2024-09-09\"},\"source\":{\"provider\":\"s015-saved-tushare-observations\",\"revision\":\"ex087-v1\"}}],[\"auxiliary:intraday:sessions\",{\"instrument\":{\"asset_class\":\"ETF\",\"market\":\"CN\",\"symbol\":\"159326.SZ\"},\"query\":{\"adjustment\":\"none\",\"end\":\"2026-10-21\",\"frequency\":\"30m\",\"product\":\"equity.sessions\",\"session\":\"REGULAR\",\"start\":\"2024-09-09\"},\"source\":{\"provider\":\"s015-saved-tushare-observations\",\"revision\":\"ex087-v1\"}}]],\"specification_hash\":\"446e52b53c409363e1c5c092c96b46cebc28bde4f7bb93914594bf08110e428f\",\"warmup_bars\":75},\"kind\":\"ACCOUNT_REPLAY\"}"
+    }
+  ],
+  "execution_contract_json": "{\"policy\":{\"policy_type\":\"ACCOUNT_REPLAY\",\"settings\":{\"account\":{\"allow_negative_cash\":false,\"allow_short\":false,\"cash_availability\":\"IMMEDIATE_RESEARCH\",\"currency\":\"CNY\"},\"buy_premium\":0.01,\"data_latency_seconds\":0,\"decision_clock\":\"daily\",\"execution\":\"BAR_RANGE_V1\",\"inclusive_touch\":false,\"market\":{\"rule_version\":\"CN_EQUITY_V1\"},\"price_tick\":0.001,\"quantity_step\":100,\"slippage_bp\":0.0}}}",
+  "schema_version": 4
+}

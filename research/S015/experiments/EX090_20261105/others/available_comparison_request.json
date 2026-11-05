@@ -1,0 +1,1028 @@
+{
+  "type": "CandidateComparisonRequest",
+  "candidates": [
+    {
+      "type": "AssessmentCandidate",
+      "candidate_id": "S015-C9810",
+      "content_sha256": "bb4f4215ca3a18298177c4af1507bd8d360b51c36c989f06774970a1f2ed4757"
+    }
+  ],
+  "targets": {
+    "type": "ResearchTargets",
+    "requirements": [
+      {
+        "type": "ResearchTarget",
+        "target_id": "center-positive",
+        "metric": "NET_ANNUAL_RETURN",
+        "lower": {
+          "type": "BenchmarkBound",
+          "multiplier": 1.5,
+          "inclusive": true
+        },
+        "upper": null,
+        "when": {
+          "type": "BenchmarkCondition",
+          "metric": "NET_ANNUAL_RETURN",
+          "operator": "GT",
+          "value": 0.0
+        },
+        "scope": "STANDARD",
+        "one_way_cost": 0.001
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "center-nonpositive",
+        "metric": "NET_ANNUAL_RETURN",
+        "lower": {
+          "type": "ConstantBound",
+          "value": 0.0,
+          "inclusive": false
+        },
+        "upper": null,
+        "when": {
+          "type": "BenchmarkCondition",
+          "metric": "NET_ANNUAL_RETURN",
+          "operator": "LE",
+          "value": 0.0
+        },
+        "scope": "STANDARD",
+        "one_way_cost": 0.001
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "center-relative-dd",
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "lower": null,
+        "upper": {
+          "type": "BenchmarkBound",
+          "multiplier": 0.8,
+          "inclusive": true
+        },
+        "when": null,
+        "scope": "STANDARD",
+        "one_way_cost": 0.001
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "center-cap",
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "lower": null,
+        "upper": {
+          "type": "ConstantBound",
+          "value": 0.25,
+          "inclusive": true
+        },
+        "when": null,
+        "scope": "STANDARD",
+        "one_way_cost": 0.001
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "median",
+        "metric": "FREQUENCY_MEDIAN",
+        "lower": {
+          "type": "ConstantBound",
+          "value": 6.0,
+          "inclusive": true
+        },
+        "upper": null,
+        "when": null,
+        "scope": "STANDARD",
+        "one_way_cost": 0.001
+      },
+      {
+        "type": "FrequencyCoverageTarget",
+        "target_id": "coverage",
+        "window_days": 60,
+        "minimum_closed_cycles": 3,
+        "minimum_numerator": 9,
+        "minimum_denominator": 10
+      },
+      {
+        "type": "ParameterNeighborhoodTarget",
+        "target_id": "parameters",
+        "minimum_numerator": 13,
+        "minimum_denominator": 16,
+        "joint_targets": [
+          {
+            "type": "ResearchTarget",
+            "target_id": "point-positive",
+            "metric": "NET_ANNUAL_RETURN",
+            "lower": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.25,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "NET_ANNUAL_RETURN",
+              "operator": "GT",
+              "value": 0.0
+            },
+            "scope": "STANDARD",
+            "one_way_cost": 0.001
+          },
+          {
+            "type": "ResearchTarget",
+            "target_id": "point-nonpositive",
+            "metric": "NET_ANNUAL_RETURN",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 0.0,
+              "inclusive": false
+            },
+            "upper": null,
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "NET_ANNUAL_RETURN",
+              "operator": "LE",
+              "value": 0.0
+            },
+            "scope": "STANDARD",
+            "one_way_cost": 0.001
+          },
+          {
+            "type": "ResearchTarget",
+            "target_id": "point-relative-dd",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "BenchmarkBound",
+              "multiplier": 0.9,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": 0.001
+          }
+        ],
+        "all_point_targets": [
+          {
+            "type": "ResearchTarget",
+            "target_id": "point-cap",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.25,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": 0.001
+          }
+        ]
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "stress-profit",
+        "metric": "NET_ANNUAL_RETURN",
+        "lower": {
+          "type": "ConstantBound",
+          "value": 0.0,
+          "inclusive": false
+        },
+        "upper": null,
+        "when": null,
+        "scope": "STRESS",
+        "one_way_cost": 0.002
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "stress-excess",
+        "metric": "NET_ANNUAL_RETURN",
+        "lower": {
+          "type": "BenchmarkBound",
+          "multiplier": 1.0,
+          "inclusive": false
+        },
+        "upper": null,
+        "when": null,
+        "scope": "STRESS",
+        "one_way_cost": 0.002
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "stress-dd-positive",
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "lower": null,
+        "upper": {
+          "type": "BenchmarkBound",
+          "multiplier": 1.0,
+          "inclusive": false
+        },
+        "when": {
+          "type": "BenchmarkCondition",
+          "metric": "DRAWDOWN_MAGNITUDE",
+          "operator": "GT",
+          "value": 0.0
+        },
+        "scope": "STRESS",
+        "one_way_cost": 0.002
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "stress-dd-zero",
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "lower": null,
+        "upper": {
+          "type": "ConstantBound",
+          "value": 0.0,
+          "inclusive": true
+        },
+        "when": {
+          "type": "BenchmarkCondition",
+          "metric": "DRAWDOWN_MAGNITUDE",
+          "operator": "LE",
+          "value": 0.0
+        },
+        "scope": "STRESS",
+        "one_way_cost": 0.002
+      },
+      {
+        "type": "ResearchTarget",
+        "target_id": "stress-cap",
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "lower": null,
+        "upper": {
+          "type": "ConstantBound",
+          "value": 0.25,
+          "inclusive": true
+        },
+        "when": null,
+        "scope": "STRESS",
+        "one_way_cost": 0.002
+      }
+    ],
+    "frequency_window_days": 60
+  },
+  "panel": {
+    "type": "AssessmentPanel",
+    "request_sha256": "dc2e022e046a985a73a1f77f67fbd2bb26cc675df1d70a2f2cb7e36474adc253",
+    "protocol_sha256": "14432db61fae900c2bd72de34fa2aa22182c4a23aeddb4c4d90c0e05aedb6c54",
+    "rows": [
+      {
+        "type": "CandidateAssessment",
+        "candidate": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S015-C9810",
+          "content_sha256": "bb4f4215ca3a18298177c4af1507bd8d360b51c36c989f06774970a1f2ed4757"
+        },
+        "context_sha256": "817eac889903c6c0eb20b81e96a3401ee175a0d6ec9f638378ef7663eb92fea5",
+        "metric_version": "equity-assessment-v4:SESSION_CLOSE:TOP_DECILE",
+        "frequency_window_days": 60,
+        "baseline_scenario": {
+          "type": "EvaluationScenarioContext",
+          "one_way_cost": 0.001,
+          "measurement_tier": "FORMAL",
+          "benchmark_id": "BuyHold",
+          "benchmark_kind": "BUYHOLD",
+          "benchmark_contract_sha256": "d5ca652bdcc26e73767b171330e577738a39ae709be037d5cdb6391f4dbc8ce1"
+        },
+        "stress_scenario": null,
+        "diagnostics": [
+          {
+            "type": "DiagnosticValue",
+            "metric": "FREQUENCY_COVERAGE",
+            "unit": "RATIO",
+            "status": "AVAILABLE",
+            "value": 1.0,
+            "reason": null,
+            "evaluation_ids": [
+              "8e2aa5298566ff1e78f79793895b162eb38814e02da7b80e07128aaeefce541b"
+            ]
+          },
+          {
+            "type": "DiagnosticValue",
+            "metric": "FULL_SAMPLE_FREQUENCY",
+            "unit": "CLOSED_CYCLES_PER_WINDOW",
+            "status": "AVAILABLE",
+            "value": 7.465437788018433,
+            "reason": null,
+            "evaluation_ids": [
+              "8e2aa5298566ff1e78f79793895b162eb38814e02da7b80e07128aaeefce541b"
+            ]
+          },
+          {
+            "type": "DiagnosticValue",
+            "metric": "BENCHMARK_POSITIVE_YEAR_FREQUENCY",
+            "unit": "CLOSED_CYCLES_PER_WINDOW",
+            "status": "AVAILABLE",
+            "value": 7.407407407407407,
+            "reason": null,
+            "evaluation_ids": [
+              "8e2aa5298566ff1e78f79793895b162eb38814e02da7b80e07128aaeefce541b"
+            ]
+          },
+          {
+            "type": "DiagnosticValue",
+            "metric": "NET_ANNUAL_RETURN",
+            "unit": "RATIO",
+            "status": "AVAILABLE",
+            "value": 0.6147635214079166,
+            "reason": null,
+            "evaluation_ids": [
+              "8e2aa5298566ff1e78f79793895b162eb38814e02da7b80e07128aaeefce541b"
+            ]
+          },
+          {
+            "type": "DiagnosticValue",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "unit": "RATIO",
+            "status": "AVAILABLE",
+            "value": 0.05402564885315819,
+            "reason": null,
+            "evaluation_ids": [
+              "8e2aa5298566ff1e78f79793895b162eb38814e02da7b80e07128aaeefce541b"
+            ]
+          },
+          {
+            "type": "DiagnosticValue",
+            "metric": "FREQUENCY_MEDIAN",
+            "unit": "CLOSED_CYCLES_PER_WINDOW",
+            "status": "AVAILABLE",
+            "value": 7.0,
+            "reason": null,
+            "evaluation_ids": [
+              "8e2aa5298566ff1e78f79793895b162eb38814e02da7b80e07128aaeefce541b"
+            ]
+          },
+          {
+            "type": "DiagnosticValue",
+            "metric": "FREQUENCY_Q10",
+            "unit": "CLOSED_CYCLES_PER_WINDOW",
+            "status": "AVAILABLE",
+            "value": 6.0,
+            "reason": null,
+            "evaluation_ids": [
+              "8e2aa5298566ff1e78f79793895b162eb38814e02da7b80e07128aaeefce541b"
+            ]
+          },
+          {
+            "type": "DiagnosticValue",
+            "metric": "PARAMETER_RETURN_DEGRADATION",
+            "unit": "RATIO",
+            "status": "INSUFFICIENT_DATA",
+            "value": null,
+            "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+            "evaluation_ids": [
+              "8e2aa5298566ff1e78f79793895b162eb38814e02da7b80e07128aaeefce541b"
+            ]
+          },
+          {
+            "type": "DiagnosticValue",
+            "metric": "PARAMETER_DRAWDOWN_DEGRADATION",
+            "unit": "RATIO",
+            "status": "INSUFFICIENT_DATA",
+            "value": null,
+            "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+            "evaluation_ids": [
+              "8e2aa5298566ff1e78f79793895b162eb38814e02da7b80e07128aaeefce541b"
+            ]
+          },
+          {
+            "type": "DiagnosticValue",
+            "metric": "PARAMETER_RETURN_Q10",
+            "unit": "RATIO",
+            "status": "INSUFFICIENT_DATA",
+            "value": null,
+            "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+            "evaluation_ids": [
+              "8e2aa5298566ff1e78f79793895b162eb38814e02da7b80e07128aaeefce541b"
+            ]
+          },
+          {
+            "type": "DiagnosticValue",
+            "metric": "PARAMETER_DRAWDOWN_Q90",
+            "unit": "RATIO",
+            "status": "INSUFFICIENT_DATA",
+            "value": null,
+            "reason": "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+            "evaluation_ids": [
+              "8e2aa5298566ff1e78f79793895b162eb38814e02da7b80e07128aaeefce541b"
+            ]
+          },
+          {
+            "type": "DiagnosticValue",
+            "metric": "ROLLING_EXCESS_Q10",
+            "unit": "RATIO",
+            "status": "AVAILABLE",
+            "value": -0.031188595486320157,
+            "reason": null,
+            "evaluation_ids": [
+              "8e2aa5298566ff1e78f79793895b162eb38814e02da7b80e07128aaeefce541b"
+            ]
+          },
+          {
+            "type": "DiagnosticValue",
+            "metric": "STRESS_ANNUAL_LOSS",
+            "unit": "RATIO",
+            "status": "INSUFFICIENT_DATA",
+            "value": null,
+            "reason": "MISSING_OR_INCOMPARABLE_STRESS",
+            "evaluation_ids": [
+              "8e2aa5298566ff1e78f79793895b162eb38814e02da7b80e07128aaeefce541b"
+            ]
+          },
+          {
+            "type": "DiagnosticValue",
+            "metric": "PROFIT_CONCENTRATION",
+            "unit": "RATIO",
+            "status": "AVAILABLE",
+            "value": 0.3306537831996926,
+            "reason": null,
+            "evaluation_ids": [
+              "8e2aa5298566ff1e78f79793895b162eb38814e02da7b80e07128aaeefce541b"
+            ]
+          }
+        ],
+        "uncertainty": {
+          "type": "UncertaintyInterval",
+          "status": "AVAILABLE",
+          "lower_95": -0.11306639638634396,
+          "upper_95": 0.9617683316695453,
+          "reason": null
+        },
+        "coverage_gaps": [
+          "INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS",
+          "MISSING_OR_INCOMPARABLE_STRESS"
+        ],
+        "behavior_sha256": "4f0b42ae01f4f4ae73928a379753b08ec66a82578a7d7b334fca1d14be3d583b",
+        "benchmark": {
+          "type": "BenchmarkAssessment",
+          "diagnostics": [
+            {
+              "type": "DiagnosticValue",
+              "metric": "NET_ANNUAL_RETURN",
+              "unit": "RATIO",
+              "status": "AVAILABLE",
+              "value": 0.16938742022084918,
+              "reason": null,
+              "evaluation_ids": [
+                "8e2aa5298566ff1e78f79793895b162eb38814e02da7b80e07128aaeefce541b"
+              ]
+            },
+            {
+              "type": "DiagnosticValue",
+              "metric": "DRAWDOWN_MAGNITUDE",
+              "unit": "RATIO",
+              "status": "AVAILABLE",
+              "value": 0.36289990457799626,
+              "reason": null,
+              "evaluation_ids": [
+                "8e2aa5298566ff1e78f79793895b162eb38814e02da7b80e07128aaeefce541b"
+              ]
+            }
+          ]
+        },
+        "parameter_context": null,
+        "frequency_coverage": {
+          "type": "FrequencyCoverageFacts",
+          "window_days": 60,
+          "minimum_closed_cycles": 3,
+          "total_windows": 375,
+          "covered_windows": 375,
+          "evaluation_ids": [
+            "8e2aa5298566ff1e78f79793895b162eb38814e02da7b80e07128aaeefce541b"
+          ]
+        },
+        "parameter_performances": [],
+        "stress_performance": null
+      }
+    ],
+    "family_diagnostics": [
+      {
+        "type": "FamilyDiagnostic",
+        "name": "PBO",
+        "status": "INSUFFICIENT_DATA",
+        "value": null,
+        "reason": "FAMILY_RETURN_MATRIX_NOT_SUPPLIED"
+      },
+      {
+        "type": "FamilyDiagnostic",
+        "name": "DSR_RAW",
+        "status": "INSUFFICIENT_DATA",
+        "value": null,
+        "reason": "FAMILY_RETURN_MATRIX_NOT_SUPPLIED"
+      },
+      {
+        "type": "FamilyDiagnostic",
+        "name": "DSR_EFFECTIVE",
+        "status": "INSUFFICIENT_DATA",
+        "value": null,
+        "reason": "FAMILY_RETURN_MATRIX_NOT_SUPPLIED"
+      }
+    ],
+    "family_limitations": [],
+    "formula_version": "research-assessment-v7"
+  },
+  "policy": {
+    "type": "ComparisonPolicy",
+    "version": "S015-EX080-price-repair-stage4-v1",
+    "bins": [
+      {
+        "type": "MetricBinSpec",
+        "metric": "NET_ANNUAL_RETURN",
+        "resolution": 0.001,
+        "origin": 0.0,
+        "rounding": "FLOOR"
+      },
+      {
+        "type": "MetricBinSpec",
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "resolution": 0.001,
+        "origin": 0.0,
+        "rounding": "FLOOR"
+      },
+      {
+        "type": "MetricBinSpec",
+        "metric": "PARAMETER_RETURN_Q10",
+        "resolution": 0.001,
+        "origin": 0.0,
+        "rounding": "FLOOR"
+      },
+      {
+        "type": "MetricBinSpec",
+        "metric": "PARAMETER_DRAWDOWN_Q90",
+        "resolution": 0.001,
+        "origin": 0.0,
+        "rounding": "FLOOR"
+      },
+      {
+        "type": "MetricBinSpec",
+        "metric": "ROLLING_EXCESS_Q10",
+        "resolution": 0.001,
+        "origin": 0.0,
+        "rounding": "FLOOR"
+      },
+      {
+        "type": "MetricBinSpec",
+        "metric": "STRESS_ANNUAL_LOSS",
+        "resolution": 0.001,
+        "origin": 0.0,
+        "rounding": "FLOOR"
+      },
+      {
+        "type": "MetricBinSpec",
+        "metric": "PROFIT_CONCENTRATION",
+        "resolution": 0.01,
+        "origin": 0.0,
+        "rounding": "FLOOR"
+      },
+      {
+        "type": "MetricBinSpec",
+        "metric": "FREQUENCY_MEDIAN",
+        "resolution": 1.0,
+        "origin": 0.0,
+        "rounding": "FLOOR"
+      }
+    ],
+    "pareto_basis": "RAW",
+    "missing_evidence_policy": "REQUIRE_COMPLETE",
+    "sensitivities": [
+      {
+        "type": "ComparisonVariant",
+        "name": "bins_half",
+        "bins": [
+          {
+            "type": "MetricBinSpec",
+            "metric": "NET_ANNUAL_RETURN",
+            "resolution": 0.0005,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "resolution": 0.0005,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "PARAMETER_RETURN_Q10",
+            "resolution": 0.0005,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "PARAMETER_DRAWDOWN_Q90",
+            "resolution": 0.0005,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "ROLLING_EXCESS_Q10",
+            "resolution": 0.0005,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "STRESS_ANNUAL_LOSS",
+            "resolution": 0.0005,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "PROFIT_CONCENTRATION",
+            "resolution": 0.005,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "FREQUENCY_MEDIAN",
+            "resolution": 0.5,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          }
+        ],
+        "adjacent_swap": null
+      },
+      {
+        "type": "ComparisonVariant",
+        "name": "bins_double",
+        "bins": [
+          {
+            "type": "MetricBinSpec",
+            "metric": "NET_ANNUAL_RETURN",
+            "resolution": 0.002,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "resolution": 0.002,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "PARAMETER_RETURN_Q10",
+            "resolution": 0.002,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "PARAMETER_DRAWDOWN_Q90",
+            "resolution": 0.002,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "ROLLING_EXCESS_Q10",
+            "resolution": 0.002,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "STRESS_ANNUAL_LOSS",
+            "resolution": 0.002,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "PROFIT_CONCENTRATION",
+            "resolution": 0.02,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "FREQUENCY_MEDIAN",
+            "resolution": 2.0,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          }
+        ],
+        "adjacent_swap": null
+      },
+      {
+        "type": "ComparisonVariant",
+        "name": "adjacent_swap_0",
+        "bins": [
+          {
+            "type": "MetricBinSpec",
+            "metric": "NET_ANNUAL_RETURN",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "PARAMETER_RETURN_Q10",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "PARAMETER_DRAWDOWN_Q90",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "ROLLING_EXCESS_Q10",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "STRESS_ANNUAL_LOSS",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "PROFIT_CONCENTRATION",
+            "resolution": 0.01,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "FREQUENCY_MEDIAN",
+            "resolution": 1.0,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          }
+        ],
+        "adjacent_swap": 0
+      },
+      {
+        "type": "ComparisonVariant",
+        "name": "adjacent_swap_1",
+        "bins": [
+          {
+            "type": "MetricBinSpec",
+            "metric": "NET_ANNUAL_RETURN",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "PARAMETER_RETURN_Q10",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "PARAMETER_DRAWDOWN_Q90",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "ROLLING_EXCESS_Q10",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "STRESS_ANNUAL_LOSS",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "PROFIT_CONCENTRATION",
+            "resolution": 0.01,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "FREQUENCY_MEDIAN",
+            "resolution": 1.0,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          }
+        ],
+        "adjacent_swap": 1
+      },
+      {
+        "type": "ComparisonVariant",
+        "name": "adjacent_swap_2",
+        "bins": [
+          {
+            "type": "MetricBinSpec",
+            "metric": "NET_ANNUAL_RETURN",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "PARAMETER_RETURN_Q10",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "PARAMETER_DRAWDOWN_Q90",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "ROLLING_EXCESS_Q10",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "STRESS_ANNUAL_LOSS",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "PROFIT_CONCENTRATION",
+            "resolution": 0.01,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "FREQUENCY_MEDIAN",
+            "resolution": 1.0,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          }
+        ],
+        "adjacent_swap": 2
+      },
+      {
+        "type": "ComparisonVariant",
+        "name": "adjacent_swap_3",
+        "bins": [
+          {
+            "type": "MetricBinSpec",
+            "metric": "NET_ANNUAL_RETURN",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "PARAMETER_RETURN_Q10",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "PARAMETER_DRAWDOWN_Q90",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "ROLLING_EXCESS_Q10",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "STRESS_ANNUAL_LOSS",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "PROFIT_CONCENTRATION",
+            "resolution": 0.01,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "FREQUENCY_MEDIAN",
+            "resolution": 1.0,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          }
+        ],
+        "adjacent_swap": 3
+      },
+      {
+        "type": "ComparisonVariant",
+        "name": "adjacent_swap_4",
+        "bins": [
+          {
+            "type": "MetricBinSpec",
+            "metric": "NET_ANNUAL_RETURN",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "PARAMETER_RETURN_Q10",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "PARAMETER_DRAWDOWN_Q90",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "ROLLING_EXCESS_Q10",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "STRESS_ANNUAL_LOSS",
+            "resolution": 0.001,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "PROFIT_CONCENTRATION",
+            "resolution": 0.01,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          },
+          {
+            "type": "MetricBinSpec",
+            "metric": "FREQUENCY_MEDIAN",
+            "resolution": 1.0,
+            "origin": 0.0,
+            "rounding": "FLOOR"
+          }
+        ],
+        "adjacent_swap": 4
+      }
+    ],
+    "formula_version": "research-ranking-v4"
+  }
+}

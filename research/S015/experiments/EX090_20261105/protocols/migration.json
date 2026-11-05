@@ -1,0 +1,26 @@
+{
+  "purpose": "Immutable standard-fee economic-account migration, not general frozen-strategy compatibility certification",
+  "identity_scope": "C9810 center full434 and independently opened common415; C9811-C9815 original five parameter points",
+  "fee_rate": 0.001,
+  "initial_cash": 100000,
+  "initial_quantity": 0,
+  "account_limit": 7,
+  "concentration_basis": "TOP_DECILE",
+  "drawdown_basis": "SESSION_CLOSE",
+  "warmup": "Signal intentions only from 2024-12-31 through day preceding first signal; no pre-window financial execution",
+  "ordering": "Center434 then common415; stop on first mismatch before five points",
+  "absolute_tolerance": 1e-08,
+  "comparisons": [
+    "complete signal dates and targets",
+    "fill dates sides prices quantities fees",
+    "daily cash quantity close equity",
+    "benchmark daily equity"
+  ],
+  "source": "EX087 saved provider and original replenishment-capable step budget; EX089 provider implementation",
+  "limitations": [
+    "STANDARD fee only. Fee-X2 not requested.",
+    "Finite seven-account equivalence only, not all possible paths.",
+    "Parameter source mapping saved; no new formal derivation/parameter-plan lineage fabricated.",
+    "Old intrabar exact fill-time claims replaced with V4 MODEL_BAR_OPEN/BAR_INTERVAL timing; economic date is compared."
+  ]
+}
