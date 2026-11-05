@@ -16,6 +16,7 @@ import pandas as pd
 from . import _csi500_effective_dates
 from ._csi500_daily_patches import PATCHES as DAILY_PATCHES
 from ._index_change_patch import _IndexChangePatch
+from ._index_weight_snapshots import fetch_weight_snapshot, monthly_snapshot_calendar
 from .contract import DataRequest, Dataset
 from .errors import DataContractError, EmptyDataError, IncompleteDataError
 from .index_constituent_changes import PATCHES
@@ -177,55 +178,32 @@ def fetch_index_constituents_daily(
     client = get_tushare_pro(env_file) if pro is None else pro
     start = pd.Timestamp(request.start).to_period("M") - 1
     end = pd.Timestamp(request.end).to_period("M")
+    calendar, open_days, snapshot_dates = monthly_snapshot_calendar(
+        client, start.start_time, end.end_time.normalize())
+    calendar_observed = _now()
+    for event in catalog["events"]:
+        effective_day = pd.Timestamp(event["first_session"])
+        if start.start_time <= effective_day <= end.end_time and effective_day not in open_days:
+            raise DataContractError("official first effective session is not an SSE trading session")
     snapshots, source_queries, missing_months = [], [], []
-    for month in pd.period_range(start, end, freq="M"):
+    for day in snapshot_dates:
+        month = day.to_period("M")
         first, last = month.start_time.strftime("%Y%m%d"), month.end_time.strftime("%Y%m%d")
-        raw = client.index_weight(index_code=request.symbol, start_date=first, end_date=last,
-                                  fields="index_code,con_code,trade_date")
+        raw = fetch_weight_snapshot(client, request.symbol, day, include_weight=False, allow_missing=True)
         observed = _now()
-        if not isinstance(raw, pd.DataFrame):
-            raise DataContractError("index_weight did not return a dataframe")
-        columns = ["index_code", "con_code", "trade_date"]
-        if not raw.empty and (not set(columns).issubset(raw.columns)
-                              or raw["index_code"].ne(request.symbol).any()):
-            raise DataContractError("index_weight response is missing its identity or mixes indexes")
-        raw = raw.reindex(columns=columns)
         digest = _frame_hash(raw)
         source_queries.append({"api": "index_weight", "start_date": first, "end_date": last,
+                               "index_code": request.symbol, "trade_date": day.strftime("%Y%m%d"),
                                "sha256": digest, "observed_at_utc": observed, "rows": len(raw)})
         if raw.empty:
             missing_months.append(str(month))
             continue
-        if len(raw) >= 4000:
-            raise IncompleteDataError("index_weight monthly response may be truncated", month=str(month))
         dates = pd.to_datetime(raw["trade_date"], format="%Y%m%d", errors="coerce")
-        if dates.isna().any() or dates.dt.to_period("M").ne(month).any():
-            raise DataContractError("index_weight returned dates outside the requested month")
         snapshots.append(pd.DataFrame({"Date": dates, "ConstituentSymbol": raw["con_code"],
                                         "ObservedAt": observed, "SnapshotSha256": digest}))
     if not snapshots:
         raise IncompleteDataError("no monthly membership anchor exists for the requested interval")
     snapshot_frame = pd.concat(snapshots, ignore_index=True)
-    calendar = client.trade_cal(exchange="SSE", start_date=start.start_time.strftime("%Y%m%d"),
-                                end_date=end.end_time.strftime("%Y%m%d"),
-                                fields="exchange,cal_date,is_open,pretrade_date")
-    calendar_observed = _now()
-    if not isinstance(calendar, pd.DataFrame) or not {"cal_date", "is_open", "exchange"}.issubset(calendar.columns):
-        raise IncompleteDataError("a complete SSE calendar is required for daily membership")
-    calendar_dates = pd.to_datetime(calendar["cal_date"], format="%Y%m%d", errors="coerce")
-    expected_days = pd.date_range(start.start_time, end.end_time.normalize())
-    if (calendar_dates.isna().any() or calendar_dates.duplicated().any()
-            or not pd.DatetimeIndex(calendar_dates).sort_values().equals(expected_days)
-            or calendar["exchange"].ne("SSE").any()
-            or not calendar["is_open"].isin([0, 1]).all()):
-        raise IncompleteDataError("SSE calendar is incomplete or ambiguous")
-    open_days = pd.DatetimeIndex(calendar_dates.loc[calendar["is_open"].eq(1)]).sort_values()
-    for event in catalog["events"]:
-        effective_day = pd.Timestamp(event["first_session"])
-        if expected_days[0] <= effective_day <= expected_days[-1] and effective_day not in open_days:
-            raise DataContractError("official first effective session is not an SSE trading session")
-    if not snapshot_frame.Date.isin(open_days).all():
-        raise DataContractError("monthly snapshot date is not an SSE trading session")
     sessions = open_days[(open_days >= request.start) & (open_days <= request.end)]
     if sessions.empty:
         raise EmptyDataError("requested interval contains no SSE trading session")
@@ -251,6 +229,7 @@ def fetch_index_constituents_daily(
     metadata = {**_metadata(catalog), **reconstruction, "vendor": "dfls", "frequency": "daily",
                 "primary_key": ["Date", "ConstituentSymbol"], "available_at": _AVAILABILITY,
                 "expected_sessions": sessions.strftime("%Y-%m-%d").tolist(),
+                "snapshot_query_contract": "MONTH_END_TRADE_DATE_V1",
                 "snapshot_queries": source_queries, "missing_snapshot_months": missing_months,
                 "calendar_sha256": _frame_hash(calendar), "calendar_observed_at_utc": calendar_observed}
     return frame, metadata
@@ -287,6 +266,9 @@ def validate_index_membership(frame: pd.DataFrame, request: DataRequest, metadat
                         for month in months]
     if not isinstance(queries, list) or len(queries) != len(expected_queries):
         raise DataContractError("daily membership monthly source queries are incomplete")
+    query_contract = metadata.get('snapshot_query_contract')
+    if query_contract not in (None, 'MONTH_END_TRADE_DATE_V1'):
+        raise DataContractError('unsupported daily membership snapshot query contract')
     for query, (first, last) in zip(queries, expected_queries):
         if (not isinstance(query, Mapping) or query.get("api") != "index_weight"
                 or query.get("start_date") != first or query.get("end_date") != last
@@ -295,6 +277,15 @@ def validate_index_membership(frame: pd.DataFrame, request: DataRequest, metadat
                 or re.fullmatch(r"[0-9a-f]{64}", query["sha256"]) is None):
             raise DataContractError("daily membership monthly query identity is invalid")
         _observed_at(query.get("observed_at_utc"))
+        if query_contract is not None or 'trade_date' in query or 'index_code' in query:
+            target = query.get('trade_date')
+            if (query.get('index_code') != request.symbol or type(target) is not str
+                    or re.fullmatch(r'\d{8}', target) is None or not first <= target <= last
+                    or query['rows'] not in (0, 500)):
+                raise DataContractError('daily membership snapshot query identity is invalid')
+            stamp = pd.to_datetime(target, format='%Y%m%d', errors='coerce')
+            if pd.isna(stamp) or stamp.weekday() >= 5:
+                raise DataContractError('daily membership snapshot trade_date is invalid')
     if (not isinstance(metadata.get("calendar_sha256"), str)
             or re.fullmatch(r"[0-9a-f]{64}", metadata["calendar_sha256"]) is None):
         raise DataContractError("daily membership calendar source hash is invalid")
@@ -309,7 +300,8 @@ def validate_index_membership(frame: pd.DataFrame, request: DataRequest, metadat
             raise DataContractError("membership snapshot source date must be a calendar date")
         compact = timestamp.strftime("%Y%m%d")
         if not any(query["sha256"] == digest and query["start_date"] <= compact <= query["end_date"]
-                   and query["rows"] >= 500 for query in queries):
+                   and query["rows"] >= 500 and ('trade_date' not in query or query['trade_date'] == compact)
+                   for query in queries):
             raise DataContractError("membership snapshot does not match a captured monthly query")
         return timestamp
 

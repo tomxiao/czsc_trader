@@ -1107,13 +1107,14 @@ def fetch_index_constituent_weight(
     env_file: str | Path | None = None,
     pro: object | None = None,
 ) -> tuple[pd.DataFrame, dict[str, Any]]:
+    from ._index_weight_snapshots import monthly_snapshot_calendar, fetch_weight_snapshot
+    client = _client(pro, env_file)
+    _, _, dates = monthly_snapshot_calendar(client, start_date, end_date)
+    if not dates:
+        raise EmptyDataError('requested interval contains no month-end trading snapshot')
+    frames = [fetch_weight_snapshot(client, symbol, day) for day in dates]
     dataframe = _canonicalize(
-        _client(pro, env_file).index_weight(
-            index_code=symbol,
-            start_date=start_date.replace("-", ""),
-            end_date=end_date.replace("-", ""),
-            fields="index_code,con_code,trade_date,weight",
-        ),
+        pd.concat(frames, ignore_index=True),
         dataset=f"index constituent weight {symbol}",
         date_column="trade_date",
         columns={"con_code": "ConstituentSymbol", "weight": "Weight"},
@@ -1124,6 +1125,10 @@ def fetch_index_constituent_weight(
         "vendor_symbol": symbol,
         "frequency": "snapshot",
         "primary_key": ["Date", "ConstituentSymbol"],
+        "snapshot_rule": "last_exchange_trading_day_of_complete_calendar_month_within_interval",
+        "expected_snapshot_dates": [day.strftime('%Y-%m-%d') for day in dates],
+        "source_queries": [{"api": "index_weight", "index_code": symbol,
+                            "trade_date": day.strftime('%Y%m%d')} for day in dates],
     }
 
 

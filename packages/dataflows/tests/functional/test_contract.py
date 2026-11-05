@@ -232,17 +232,19 @@ def test_constituent_weight_snapshots_prepare_and_restore_offline(tmp_path, monk
     from dataflows import Dataflows, DataSpace, PreparePolicy, ProviderConfig
     from dataflows import tushare_strategy_data
 
-    frame = pd.DataFrame({
-        "Date": pd.to_datetime(["2026-08-31", "2026-08-31", "2026-09-15"]),
-        "ConstituentSymbol": ["000001.SZ", "600000.SH", "000001.SZ"],
-        "Weight": [1.2, 2.3, 1.5],
-    })
+    frame = pd.DataFrame([{'Date':pd.Timestamp(day), 'ConstituentSymbol':f'{i:06d}.SZ', 'Weight':.2}
+                          for day in ('2026-08-31','2026-09-30') for i in range(500)])
     calls = []
 
     class WeightPro:
+        def trade_cal(self, **kwargs):
+            days = pd.date_range(kwargs['start_date'],kwargs['end_date'])
+            return pd.DataFrame({'exchange':'SSE', 'cal_date':days.strftime('%Y%m%d'), 'is_open':(days.dayofweek < 5).astype(int)})
+
         def index_weight(self, **kwargs):
             calls.append(kwargs)
-            return frame.rename(columns={"Date": "trade_date", "ConstituentSymbol": "con_code", "Weight": "weight"})
+            return frame.loc[frame.Date.eq(pd.Timestamp(kwargs['trade_date']))].assign(index_code='000905.SH').rename(
+                columns={"Date": "trade_date", "ConstituentSymbol": "con_code", "Weight": "weight"})
 
     monkeypatch.setattr(tushare_strategy_data, "get_tushare_pro", lambda _: WeightPro())
     request = DataRequest(Dataset.INDEX_CONSTITUENT_WEIGHT, "000905.SH",
@@ -250,8 +252,8 @@ def test_constituent_weight_snapshots_prepare_and_restore_offline(tmp_path, monk
     flows = Dataflows(base_dir=tmp_path, space=DataSpace(Path("market")), providers=ProviderConfig())
     prepared = flows.prepare((request,), policy=PreparePolicy.REUSE)
     assert prepared.ready
-    assert calls == [{"index_code": "000905.SH", "start_date": "20260801", "end_date": "20260930",
-                      "fields": "index_code,con_code,trade_date,weight"}]
+    assert calls == [{"index_code": "000905.SH", "trade_date": day,
+                      "fields": "index_code,con_code,trade_date,weight"} for day in ('20260831','20260930')]
     offline = Dataflows(base_dir=tmp_path, space=DataSpace(Path("market")), providers=ProviderConfig({}))
     result = offline.fetch(request, prepared=prepared.reference)
     assert result.ready
@@ -260,7 +262,7 @@ def test_constituent_weight_snapshots_prepare_and_restore_offline(tmp_path, monk
     assert result.identity.source == "tushare"
     assert result.identity.metadata["primary_key"] == ["Date", "ConstituentSymbol"]
     assert result.identity.metadata["frequency"] == "snapshot"
-    assert len(calls) == 1
+    assert len(calls) == 2
 
 
 @pytest.mark.parametrize("dataset,frequency", [

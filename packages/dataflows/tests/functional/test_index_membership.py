@@ -1,6 +1,7 @@
 """Public daily membership reconstruction keeps source and event boundaries."""
 
 from dataclasses import replace
+from copy import deepcopy
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -49,13 +50,15 @@ class _Pro:
         self.weight_calls = []
         self.calendar_calls = []
         self.drop_calendar_day = False
+        self.closed_days = set()
 
     def index_weight(self, **kwargs):
         self.weight_calls.append(kwargs)
-        first, last = pd.Timestamp(kwargs["start_date"]), pd.Timestamp(kwargs["end_date"])
+        assert 'start_date' not in kwargs and 'end_date' not in kwargs
+        target = pd.Timestamp(kwargs["trade_date"])
         rows = [{"index_code": "000905.SH", "con_code": symbol,
                  "trade_date": pd.Timestamp(day).strftime("%Y%m%d"), "weight": 0.2}
-                for day, members in self.snapshots.items() if first <= pd.Timestamp(day) <= last
+                for day, members in self.snapshots.items() if pd.Timestamp(day) == target
                 for symbol in members]
         return pd.DataFrame(rows, columns=["index_code", "con_code", "trade_date", "weight"])[
             kwargs["fields"].split(",")]
@@ -64,7 +67,7 @@ class _Pro:
         self.calendar_calls.append(kwargs)
         days = pd.date_range(pd.Timestamp(kwargs["start_date"]), pd.Timestamp(kwargs["end_date"]))
         rows = [{"exchange": "SSE", "cal_date": day.strftime("%Y%m%d"),
-                 "is_open": int(day.weekday() < 5),
+                 "is_open": int(day.weekday() < 5 and day.strftime('%Y%m%d') not in self.closed_days),
                  "pretrade_date": (day - pd.offsets.BDay()).strftime("%Y%m%d")}
                 for day in days]
         frame = pd.DataFrame(rows)
@@ -148,15 +151,61 @@ def test_actual_effective_session_switches_and_offline_fetch_keeps_evidence(memb
     assert event_result.ready, event_result.error
     assert event_result.dataframe.Date.tolist() == [pd.Timestamp("2020-01-13")]
     assert len(pro.weight_calls) == 2 and len(pro.calendar_calls) == 1
+    assert [call['trade_date'] for call in pro.weight_calls] == ['20191231', '20200131']
+    assert [query['trade_date'] for query in metadata['snapshot_queries']] == ['20191231', '20200131']
+    assert all(query['index_code'] == '000905.SH' for query in metadata['snapshot_queries'])
 
     def deny(*args, **kwargs):
         pytest.fail("prepared membership fetch must not acquire sources")
 
     monkeypatch.setattr(pro, "index_weight", deny)
     monkeypatch.setattr(pro, "trade_cal", deny)
+    # Previously published monthly-range provenance remains readable offline.
+    from dataflows.index_membership import validate_index_membership
+    legacy_metadata = deepcopy(dict(metadata))
+    legacy_metadata.pop('snapshot_query_contract')
+    for query in legacy_metadata['snapshot_queries']:
+        query.pop('index_code')
+        query.pop('trade_date')
+    validate_index_membership(frame, daily, legacy_metadata)
     restored = _flow(membership_root, offline=True).fetch(daily, prepared=prepared.reference)
     assert restored.ready, restored.error
     pd.testing.assert_frame_equal(restored.dataframe, frame)
+
+
+def test_daily_snapshot_uses_last_actual_session_of_complete_month(membership_root, sources):
+    pro = sources(events=[_event()], snapshots={'2019-12-31': _members(_A), '2020-01-30': _members(_B)})
+    pro.closed_days.add('20200131')
+    flow, request, prepared = _prepare(membership_root)
+    assert prepared.ready, prepared.items
+    result = flow.fetch(request, prepared=prepared.reference)
+    assert result.ready, result.error
+    assert [call['trade_date'] for call in pro.weight_calls] == ['20191231', '20200130']
+    assert pro.calendar_calls[0]['end_date'] == '20200131'
+    assert result.identity.metadata['snapshot_queries'][-1]['end_date'] == '20200131'
+
+
+@pytest.mark.parametrize('defect', ['wrong_date', 'missing_date', 'wrong_index', 'mixed_contract'])
+def test_new_daily_snapshot_metadata_requires_exact_query_identity(membership_root, sources, defect):
+    from dataflows.index_membership import validate_index_membership
+    from dataflows.errors import DataContractError
+    sources(events=[_event()])
+    flow, request, prepared = _prepare(membership_root)
+    assert prepared.ready, prepared.items
+    result = flow.fetch(request, prepared=prepared.reference)
+    metadata = deepcopy(dict(result.identity.metadata))
+    query = metadata['snapshot_queries'][0]
+    if defect == 'wrong_date':
+        query['trade_date'] = '20191230'
+    elif defect == 'missing_date':
+        query.pop('trade_date')
+    elif defect == 'wrong_index':
+        query['index_code'] = '000300.SH'
+    else:
+        query.pop('trade_date')
+        query.pop('index_code')
+    with pytest.raises(DataContractError):
+        validate_index_membership(result.dataframe, request, metadata)
 
 
 @pytest.mark.parametrize("weight", ["missing", None, "invalid", float("inf")])
@@ -282,13 +331,15 @@ def test_missing_calendar_date_is_incomplete(membership_root, sources):
     assert item.status is DataStatus.INCOMPLETE and prepared.reference is None
 
 
-@pytest.mark.parametrize("members", [_members(_A)[:-1], [*_STABLE, "bad-code"]])
-def test_invalid_snapshot_never_publishes_ready(membership_root, sources, members):
+@pytest.mark.parametrize("members,status", [(_members(_A)[:-1], DataStatus.INCOMPLETE),
+                                          ([*_STABLE, "bad-code"], DataStatus.FAILED)])
+def test_invalid_snapshot_never_publishes_ready(membership_root, sources, members, status):
     sources(events=[_event()], snapshots={"2019-12-31": members, "2020-01-31": _members(_B)})
     _, _, prepared = _prepare(membership_root)
     item, = prepared.items
-    assert item.status is DataStatus.FAILED and prepared.reference is None
-    assert item.error.code == "DATA_CONTRACT_MISMATCH"
+    assert item.status is status and prepared.reference is None
+    if status is DataStatus.FAILED:
+        assert item.error.code == "DATA_CONTRACT_MISMATCH"
 
 
 def test_patch_contradicting_a_source_anchor_is_incomplete(membership_root, sources):
