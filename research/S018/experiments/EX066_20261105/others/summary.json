@@ -1,0 +1,164 @@
+{
+  "status": "COMPLETE",
+  "groups": {
+    "MAIN": {
+      "planned_windows": 8,
+      "selected_windows": 5,
+      "no_eligible": 3,
+      "insufficient": 0,
+      "center_selected_windows": 0,
+      "center_eligible_windows": 4,
+      "observations": 5,
+      "passed": 0,
+      "failed": 5,
+      "unknown": 0,
+      "primary_min": 3.292605097654655,
+      "primary_median": 6.629922098758183,
+      "primary_max": 14.724252248585382,
+      "excess_min": -10.249200855407949,
+      "excess_median": -1.5265928203675116,
+      "positive_excess": 2,
+      "known_excess": 5
+    },
+    "LONG": {
+      "planned_windows": 4,
+      "selected_windows": 4,
+      "no_eligible": 0,
+      "insufficient": 0,
+      "center_selected_windows": 0,
+      "center_eligible_windows": 3,
+      "observations": 7,
+      "passed": 0,
+      "failed": 7,
+      "unknown": 0,
+      "primary_min": 5.29542945078018,
+      "primary_median": 12.17948908273078,
+      "primary_max": 13.939717049639231,
+      "excess_min": -11.01248180380503,
+      "excess_median": -10.846208068337626,
+      "positive_excess": 1,
+      "known_excess": 7
+    }
+  },
+  "candidate_selection_counts": [
+    {
+      "type": "SelectionCandidateSummary",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S018-C8011",
+        "content_sha256": "eb55c172078615e59230e04d848dbc7eea026d4767603352cd3617e5b6b69643"
+      },
+      "selected_windows": 1,
+      "planned_windows": 12,
+      "decided_windows": 12
+    },
+    {
+      "type": "SelectionCandidateSummary",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S018-C8100",
+        "content_sha256": "f3e6d74aec60fbf46a0db1798b5b0b85c166ff232298b978a446e86dceece10a"
+      },
+      "selected_windows": 1,
+      "planned_windows": 12,
+      "decided_windows": 12
+    },
+    {
+      "type": "SelectionCandidateSummary",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S018-C8220",
+        "content_sha256": "38bfe0987323e2e64e5cdbaf7dba579d3ed09f0125f2dfd460e8d5c3650836e9"
+      },
+      "selected_windows": 1,
+      "planned_windows": 12,
+      "decided_windows": 12
+    },
+    {
+      "type": "SelectionCandidateSummary",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S018-C8424",
+        "content_sha256": "426ad8717f78a66864ab2d80c58bc2a3d4b386848d1661f71e720cb50725e21b"
+      },
+      "selected_windows": 2,
+      "planned_windows": 12,
+      "decided_windows": 12
+    },
+    {
+      "type": "SelectionCandidateSummary",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S018-C8501",
+        "content_sha256": "6ff8c4813d45f55bdd98accbf6487a2619d027302168b463d1e1f50d85495116"
+      },
+      "selected_windows": 2,
+      "planned_windows": 12,
+      "decided_windows": 12
+    },
+    {
+      "type": "SelectionCandidateSummary",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S018-C8728",
+        "content_sha256": "80a8b68dcd4512309cf59cb2f85d28037a7709de7ab2e5cf67ca315cff0a5cc1"
+      },
+      "selected_windows": 1,
+      "planned_windows": 12,
+      "decided_windows": 12
+    },
+    {
+      "type": "SelectionCandidateSummary",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S018-C9166",
+        "content_sha256": "6914b65f18f2ae42bb96b6cf2fc9385419b4c8936b8cac07740d82f343d52a62"
+      },
+      "selected_windows": 1,
+      "planned_windows": 12,
+      "decided_windows": 12
+    },
+    {
+      "type": "SelectionCandidateSummary",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S018-C9170",
+        "content_sha256": "daec274574155ed56ef9ea4de07490ecabb83cb161fe83a9584c3cfab29573b1"
+      },
+      "selected_windows": 1,
+      "planned_windows": 12,
+      "decided_windows": 12
+    },
+    {
+      "type": "SelectionCandidateSummary",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S018-C9174",
+        "content_sha256": "ef42dfab20a212998ebe9833e596145df6139e8fc6d390a327f635bf5af8bd0a"
+      },
+      "selected_windows": 1,
+      "planned_windows": 12,
+      "decided_windows": 12
+    },
+    {
+      "type": "SelectionCandidateSummary",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S018-C9178",
+        "content_sha256": "54497dbd1c1803dc6d0fbf2c5b771d72308cb4240fc057740a5ab71d6e100b9b"
+      },
+      "selected_windows": 1,
+      "planned_windows": 12,
+      "decided_windows": 12
+    }
+  ],
+  "limitations": [
+    "Fixed stage-three configurations built using the already-seen full development pool; retrospective only.",
+    "Overlapping windows are dependent; no independent validation or selection-bias probability.",
+    "Original Calmar gate has no positive-return branch when benchmark Calmar is negative.",
+    "MAIN uses 252 selection /252 observation sessions; LONG uses 504/252; step63, complete windows only.",
+    "Five original self-checks and original accounts remain unchanged; no new strategy replay.",
+    "RETROSPECTIVE_FIXED_CANDIDATES_NOT_INDEPENDENT_SEARCH_VALIDATION",
+    "OVERLAPPING_WINDOWS_ARE_NOT_INDEPENDENT_SAMPLES"
+  ]
+}
