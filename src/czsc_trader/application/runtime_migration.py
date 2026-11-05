@@ -595,7 +595,8 @@ def _upgrade_materials(candidate, stored):
                 "content_sha256": content_identity.content_sha256,
                 "source_sha256": spec.implementation_sha256}
     manifest = package_manifest(version, canonical_sha256(identity),
-                                {name: sha256(data).hexdigest() for name, data in files.items()})
+                                {name: sha256(data).hexdigest() for name, data in files.items()},
+                                runtime_candidate_id=candidate.candidate_id)
     files["release_manifest.json"] = _upgrade_json(manifest)
     return version, manifest, files, identity
 

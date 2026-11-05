@@ -75,6 +75,12 @@ schema 8 将历史记录归入 `futu-cn-default`，保留旧订单 ID。新渠�
 根存储不提供跨币种资金合计。控制台仍绑定原 CN 账户，本轮不增加 US 控制台。
 调度按各自日历生成稳定任务 ID，以有界工作池执行；每个账户串行、各渠道独立退避。
 
+同版本升级的 schema 2 包通过经 SRT 认证的 `runtime_candidate_id` 加载当前候选；历史
+`source_candidate` 只表示原冻结来源，不用于构造运行键。schema 1 包按原协议读取。
+隔离检验中，显式订单腿到期后正常返回 `NO_ORDER` 的语义保持不变；若本次提交确实将尚待提交的
+intent 转为 `EXPIRED`，记录该状态转换并计入过期能力覆盖。过去已经过期的 intent、拒单或未知
+提交状态不能提供这项覆盖，保存事实复核也核对转换及订单时间窗。
+
 已部署且精确发布身份具备 `PAPER_READY / LIVE_READY` 的原生 V4，可创建正式模拟账户。
 V4 可声明 `DatasetObservationInput` 观察表，使用 `EquityInputBinding.observation_bindings`
 保存完整 DFLS 请求与内容指纹。成分权重、资金流、宏观及指数数据保持表格复合主键，不伪造 OHLCV；

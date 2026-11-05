@@ -24,11 +24,15 @@ def candidate_binding_spec(candidate, install_files=None):
                               definition.observation.sha256)
 
 
-def package_manifest(version, provenance_sha256, file_hashes):
+def package_manifest(version, provenance_sha256, file_hashes, *, runtime_candidate_id=None):
     manifest = {'schema_version': 1, 'strategy_version_id': version.release_id,
         'strategy_version_hash': version.release_hash,
         'source_candidate_id': f'{version.strategy_id}-{version.source_candidate}',
         'candidate_package_hash': provenance_sha256, 'runtime_root': 'src/strategy_runtime',
         'runtime_binding': 'runtime_binding.json', 'files': dict(file_hashes)}
+    if runtime_candidate_id is not None:
+        from strategy_manager import CandidateKey
+        CandidateKey(version.strategy_id, runtime_candidate_id)
+        manifest.update(schema_version=2, runtime_candidate_id=runtime_candidate_id)
     manifest['package_hash'] = canonical_sha256(manifest)
     return manifest

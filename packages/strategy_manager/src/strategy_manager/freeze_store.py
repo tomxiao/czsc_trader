@@ -114,12 +114,18 @@ def _package(root, expected_version, expected_hash):
         "files",
         "package_hash",
     }
+    schema = manifest.get('schema_version')
+    if schema == 2:
+        expected_fields.add('runtime_candidate_id')
     if (
         set(manifest) != expected_fields
         or type(manifest["schema_version"]) is not int
-        or manifest["schema_version"] != 1
+        or schema not in (1, 2)
     ):
         raise ValueError("freeze package manifest fields differ")
+    if schema == 2:
+        from .candidates import CandidateKey
+        CandidateKey(expected_version.strategy_id, manifest['runtime_candidate_id'])
     if (
         manifest["source_candidate_id"]
         != f"{expected_version.strategy_id}-{expected_version.source_candidate}"

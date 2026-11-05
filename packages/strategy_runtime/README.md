@@ -1,5 +1,14 @@
 # 策略运行时（Strategy Runtime，SRT）
 
+## 冻结来源与当前运行候选
+
+新同版本升级包的 `release_manifest.json` 使用 schema 2，显式记录严格 `C####` 格式的
+`runtime_candidate_id`；该字段进入 `package_hash`。版本元数据的 `source_candidate` 与 manifest
+的 `source_candidate_id` 仍保留原历史来源，可包含 `S002-C001` 等旧标识，不能拿它构造当前候选。
+`VerifiedReleasePackage` 与 `StrategyDeployment` 返回认证后的运行候选 ID，PTE 依此加载原生 V4。
+旧 schema 1 的字段集、来源解释和包字节不变；普通首次冻结仍采用 schema 1。缺字段、非法运行 ID
+或指纹不一致明确拒绝，不替换历史来源，不放宽候选键格式。
+
 ## V4 数据表观察与规划上下文
 
 `EquityStrategyDefinition.observation_inputs` 声明 `DatasetObservationInput`，用于现有 DFLS 周线、

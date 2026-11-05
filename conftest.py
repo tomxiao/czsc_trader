@@ -92,7 +92,7 @@ def loaded_release(registered_release, frozen_seed_root):
     release = StrategyRelease.from_mapping(registered_release.to_dict())
     if release.payload['runtime'].get('kind') == 'ACCOUNT_REPLAY':
         from strategy_runtime.equity_definition import EquityStrategyCandidate, EquityStrategyDefinition
-        actual = EquityStrategyCandidate(registered_release.strategy_id, registered_release.source_candidate,
+        actual = EquityStrategyCandidate(registered_release.strategy_id, deployment.runtime_candidate_id,
             EquityStrategyDefinition.from_dict(dict(release.payload['equity_definition'])), deployment.source_root)
     else:
         actual = runtime.describe(release)

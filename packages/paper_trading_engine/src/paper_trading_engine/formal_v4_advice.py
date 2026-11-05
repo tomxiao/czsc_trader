@@ -83,7 +83,7 @@ class FormalV4AdviceClient:
             raise ValueError('formal V4 deployment differs from native release')
         identity = _strategy_identity(self.repo_root, release)
         definition = EquityStrategyDefinition.from_dict(dict(release.payload['equity_definition']))
-        candidate = EquityStrategyCandidate(strategy_id, raw['source_candidate'], definition, deployment.source_root)
+        candidate = EquityStrategyCandidate(strategy_id, deployment.runtime_candidate_id, definition, deployment.source_root)
         if definition.contract_version != 4:
             raise ValueError('formal V4 requires the account contract')
         return release, candidate, identity

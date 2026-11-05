@@ -841,6 +841,10 @@ CN/US 均可通过 `auxiliary_inputs` 声明 `analysis_price="HFQ"` 的后复权
 按来源 `AvailableDate` 执行可见性检查；供应商后复权不自动等于分红再投资总回报，
 含息方式、因子基准及历史修订限制仍由来源说明与研究证据解释。
 
+同版本原地升级保留旧 `source_candidate` 历史字段，新 manifest schema 2 另存当前严格候选键
+`runtime_candidate_id` 并计入包指纹，认证与正式 PTE 使用该运行键。schema 1 旧包保持原读取协议，
+普通首次冻结不改 schema；升级不会修改原研究来源或历史参数以迁就运行加载。
+
 V4 的非行情及周线观察通过 `observation_inputs: tuple[DatasetObservationInput, ...]` 声明，
 使用既有 DFLS 产品，不将指数伪装成股票，也不将成分权重或资金流拼成 OHLCV。
 `EquityInputBinding.observation_bindings` 保存完整请求和内容身份，原行情 `request_bindings` 格式保持。

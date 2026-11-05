@@ -63,6 +63,7 @@ class StrategyDeployment:
     source_root: Path
     binding: RuntimeBinding
     receipt_hash: str
+    runtime_candidate_id: str
 
     @property
     def install_files(self) -> tuple[str, ...]:
@@ -76,6 +77,7 @@ class VerifiedReleasePackage:
     package_sha256: str
     runtime_binding: RuntimeBinding
     source_root: Path
+    runtime_candidate_id: str
 
 
 def validate_release_package(strategy_root: Path, release_id: str) -> VerifiedReleasePackage:
@@ -96,8 +98,18 @@ def validate_release_package(strategy_root: Path, release_id: str) -> VerifiedRe
         "source_candidate_id", "candidate_package_hash", "runtime_root",
         "runtime_binding", "files", "package_hash",
     }
-    if set(manifest) != expected_manifest or type(manifest["schema_version"]) is not int or manifest["schema_version"] != 1:
+    schema = manifest.get('schema_version')
+    if schema == 2:
+        expected_manifest.add('runtime_candidate_id')
+    if set(manifest) != expected_manifest or type(schema) is not int or schema not in (1, 2):
         raise RuntimeCompatibilityError("strategy release package manifest is invalid")
+    runtime_candidate_id = manifest['runtime_candidate_id'] if schema == 2 else frozen['source_candidate']
+    if schema == 2:
+        from strategy_manager import CandidateKey, ValidationError
+        try:
+            CandidateKey(family, runtime_candidate_id)
+        except (ValueError, TypeError, ValidationError) as exc:
+            raise RuntimeCompatibilityError('strategy runtime candidate is invalid') from exc
     manifest_identity = dict(manifest)
     package_hash = manifest_identity.pop("package_hash")
     if package_hash != canonical_sha256(manifest_identity):
@@ -107,6 +119,8 @@ def validate_release_package(strategy_root: Path, release_id: str) -> VerifiedRe
         raise RuntimeCompatibilityError("strategy release package differs from frozen version")
     if type(manifest["source_candidate_id"]) is not str or not manifest["source_candidate_id"]:
         raise RuntimeCompatibilityError("strategy release source candidate is invalid")
+    if schema == 2 and manifest['source_candidate_id'] != f'{family}-{frozen["source_candidate"]}':
+        raise RuntimeCompatibilityError('strategy release historical candidate differs from frozen version')
     # Manifest schema 1 predates freeze plans: imported releases explicitly use
     # null for this optional provenance field. Its exact value remains covered
     # by package_hash; a newly inspected package always supplies its plan hash.
@@ -164,7 +178,7 @@ def validate_release_package(strategy_root: Path, release_id: str) -> VerifiedRe
         expected_version = 4 if runtime_kind == "ACCOUNT_REPLAY" else 2
         if definition.contract_version != expected_version or descriptor.get("contract_version") != expected_version:
             raise RuntimeCompatibilityError('equity runtime kind differs from its definition contract')
-        candidate = EquityStrategyCandidate(family, str(frozen["source_candidate"]), definition, source_root)
+        candidate = EquityStrategyCandidate(family, runtime_candidate_id, definition, source_root)
         candidate.verify()
         if canonical_sha256(candidate.payload) != canonical_sha256(dict(release.payload)):
             raise RuntimeCompatibilityError('equity runtime payload differs from its definition')
@@ -176,7 +190,7 @@ def validate_release_package(strategy_root: Path, release_id: str) -> VerifiedRe
         digest = implementation_sha256(binding.spec.source_files, source_root=source_root)
     if digest != binding.spec.implementation_sha256:
         raise RuntimeCompatibilityError("strategy source closure hash differs")
-    return VerifiedReleasePackage(release, str(package_hash), binding, source_root)
+    return VerifiedReleasePackage(release, str(package_hash), binding, source_root, runtime_candidate_id)
 
 
 def load_strategy_deployment(strategy_root: Path, release_id: str) -> StrategyDeployment:
@@ -201,7 +215,7 @@ def load_strategy_deployment(strategy_root: Path, release_id: str) -> StrategyDe
             or receipt["release_package"] != f"{family}/releases/{version}"):
         raise RuntimeCompatibilityError("strategy deployment differs from its release package")
     return StrategyDeployment(root, release_id, package.release.release_hash, package.package_sha256,
-                              package_root, package.source_root, package.runtime_binding, receipt_hash)
+                              package_root, package.source_root, package.runtime_binding, receipt_hash, package.runtime_candidate_id)
 
 
 def load_inspection_deployment(strategy_root: Path, release_id: str, permit: InspectionRuntimePermit) -> StrategyDeployment:
@@ -219,7 +233,7 @@ def load_inspection_deployment(strategy_root: Path, release_id: str, permit: Ins
     return StrategyDeployment(root, release_id, package.release.release_hash, package.package_sha256,
                               root / family / "releases" / version, package.source_root,
                               package.runtime_binding, canonical_sha256({"inspection_run": permit.run_id,
-                              "package": permit.package_sha256, "protocol": permit.protocol_sha256}))
+                              "package": permit.package_sha256, "protocol": permit.protocol_sha256}), package.runtime_candidate_id)
 
 
 def deployment_inventory(strategy_root: Path) -> dict[str, str]:

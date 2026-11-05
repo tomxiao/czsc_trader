@@ -84,12 +84,38 @@ def _with_seed(candidate):
     return replace(candidate, definition=replace(candidate.definition, observation_inputs=(observation,)))
 
 
+def _legacy_source_identity(context, request, stored):
+    """An authenticated schema-1 import with historical, non-CandidateKey provenance."""
+    from strategy_manager import canonical_sha256
+    stored = replace(stored, source_candidate='S002-C001')
+    stored = replace(stored, release_hash=canonical_sha256(stored.release_payload()))
+    package = context.strategy_root / 'S900/releases/v1'
+    binding = json.loads((package / 'runtime_binding.json').read_bytes())
+    binding['release_hash'] = stored.release_hash
+    (package / 'runtime_binding.json').write_bytes(json.dumps(binding, sort_keys=True).encode())
+    manifest = json.loads((package / 'release_manifest.json').read_bytes())
+    manifest.update(strategy_version_hash=stored.release_hash, source_candidate_id='S900-S002-C001')
+    manifest['files']['runtime_binding.json'] = sha256((package / 'runtime_binding.json').read_bytes()).hexdigest()
+    manifest.pop('package_hash')
+    manifest['package_hash'] = canonical_sha256(manifest)
+    (package / 'release_manifest.json').write_bytes(json.dumps(manifest, sort_keys=True).encode())
+    (context.strategy_root / 'S900/versions/v1.json').write_bytes(json.dumps(stored.to_dict(), sort_keys=True).encode())
+    path = context.strategy_root / 'deployments/S900-v1.json'
+    deployment = json.loads(path.read_bytes())
+    deployment.update(strategy_version_hash=stored.release_hash, package_hash=manifest['package_hash'])
+    deployment.pop('receipt_hash')
+    deployment['receipt_hash'] = canonical_sha256(deployment)
+    path.write_bytes(json.dumps(deployment, sort_keys=True).encode())
+    return replace(request, original=f.FrozenVersionReference('S900', 'v1', stored.release_hash, manifest['package_hash'])), stored
+
+
 @pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
 def test_native_upgrade_preserves_history_and_resets_qualification(upgrade, market):
     """Both market contracts cross the same legacy/native and native/native transaction."""
     from test_equity_adjusted_observations import setup_adjusted
     from strategy_runtime import EquityStrategyCandidate, equity_source_hash, load_strategy_deployment
     context, request, original_version = upgrade
+    request, original_version = _legacy_source_identity(context, request, original_version)
     fixture = context.root / '.tmp/native-fixture'
     fixture.mkdir()
     _, native_request, _, _, _ = setup_adjusted(fixture, market)
@@ -105,10 +131,17 @@ def test_native_upgrade_preserves_history_and_resets_qualification(upgrade, mark
     assert m.apply_frozen_runtime_upgrade(context, prepared) == receipt
     installed = load_strategy_deployment(context.strategy_root, 'S900-v1')
     assert installed.release_hash == prepared.migrated.release_hash
+    assert installed.runtime_candidate_id == candidate.candidate_id
+    manifest, _, _ = validate_release_package(context, 'S900-v1')
+    assert manifest['schema_version'] == 2
+    assert manifest['runtime_candidate_id'] == 'C9877'
+    assert manifest['source_candidate_id'] == 'S900-S002-C001'
     assert installed.binding.spec.source_files == ('strategy.py',)
     assert set(installed.install_files) == {'strategy.py', 'assets/seed.csv'}
     assert (installed.source_root / 'assets/seed.csv').read_bytes() == (candidate.source_root / 'assets/seed.csv').read_bytes()
     current = StrategyRegistry(context.strategy_root).get_version('S900', 'v1')
+    from strategy_manager.freeze_store import _package
+    assert _package(context.strategy_root / 'S900/releases/v1', current, manifest['package_hash']) == manifest['package_hash']
     for field in ('source_experiment', 'source_candidate', 'selection_data_cutoff', 'forward_start', 'parent_version'):
         assert getattr(current, field) == getattr(original_version, field)
     assert current.strategy_payload['runtime']['kind'] == 'ACCOUNT_REPLAY'
@@ -119,6 +152,36 @@ def test_native_upgrade_preserves_history_and_resets_qualification(upgrade, mark
     from strategy_runtime import StrategyRelease
     with pytest.raises(AdviceClientError, match='not approved'):
         _strategy_identity(context.root, StrategyRelease.from_mapping(current.to_dict()))
+    # Qualification is an independent boundary; grant only this isolated fixture.
+    lifecycle = json.loads((context.strategy_root / 'S900/lifecycle.jsonl').read_text().splitlines()[-1])
+    lifecycle.update(event_id='EVT-synthetic-native-paper', release_hash=current.release_hash,
+                     from_state='RESEARCH', to_state='PAPER_READY')
+    with (context.strategy_root / 'S900/lifecycle.jsonl').open('a') as stream:
+        stream.write(json.dumps(lifecycle) + '\n')
+    from paper_trading_engine.formal_v4_advice import FormalV4AdviceClient
+    store = SimpleNamespace(virtual_account=lambda _: {'strategy_id': 'S900', 'strategy_version': 'v1',
+        'release_hash': current.release_hash}, equity_account_rules=lambda _: SimpleNamespace(
+        instrument=candidate.instrument, execution=candidate.definition.execution_spec))
+    client = FormalV4AdviceClient(repo_root=context.root, store=store, dataflows=None, data_dir=context.root / '.tmp/pte')
+    _, loaded_release, loaded = client._account_release('native')
+    assert loaded.candidate_id == 'C9877'
+    assert loaded.content_identity == candidate.content_identity
+    assert loaded_release.release_hash == current.release_hash
+    from strategy_runtime.deployment import validate_release_package as authenticate
+    from strategy_manager import canonical_sha256
+    path = context.strategy_root / 'S900/releases/v1/release_manifest.json'
+    original_manifest_bytes = path.read_bytes()
+    for changed, error in (({'runtime_candidate_id': 'S002-C001'}, 'runtime candidate'),
+                           ({'runtime_candidate_id': 'C1111'}, 'package hash'),
+                           ({'schema_version': 1}, 'manifest')):
+        modified = {**manifest, **changed}
+        if changed.get('runtime_candidate_id') == 'S002-C001':
+            modified.pop('package_hash')
+            modified['package_hash'] = canonical_sha256(modified)
+        path.write_bytes(json.dumps(modified).encode())
+        with pytest.raises(RuntimeCompatibilityError, match=error):
+            authenticate(context.strategy_root, 'S900-v1')
+    path.write_bytes(original_manifest_bytes)
     source = candidate.source_root / 'strategy.py'
     source.write_bytes(source.read_bytes() + b'\n# native revision\n')
     revised = EquityStrategyCandidate('S900', 'C9878', replace(candidate.definition,

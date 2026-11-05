@@ -152,3 +152,54 @@ def test_native_dual_market_inspection_freezes_exact_v4_package(tmp_path, market
     assert restored.initial_account == request.candidate.definition.initial_account
     assert restored.content_identity == request.candidate.definition.content_identity
     assert json.loads((package.source_root.parent.parent/'runtime_binding.json').read_text())['observation_sha256']
+
+
+@pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
+def test_explicit_leg_expiry_keeps_no_order_and_records_only_new_transition(tmp_path, market):
+    from copy import deepcopy
+    from test_v4_pte import replace_strategy
+    from paper_trading_engine.equity_inspection import verify_equity_inspection_facts
+    context, request, products, _, _ = setup_adjusted(tmp_path, market)
+    quantity = 900 if market is MarketId.CN else 989
+    request = replace_strategy(request, f'''from datetime import timedelta
+from strategy_runtime import AccountDecision, AccountStepResult, StateRecord, ReplayOrder, ReplayLeg
+from strategy_runtime.contracts import OrderSide, OrderType
+def step(ctx,state):
+    start = ctx.point.execution_interval.start
+    legs = () if ctx.portfolio.quantity else (ReplayLeg(0,
+        ReplayOrder(OrderSide.BUY, {quantity}, OrderType.LIMIT, 10.10),
+        'OPEN', start, start+timedelta(minutes=5)),)
+    return AccountStepResult(AccountDecision.from_facts(1, 'explicit entry', facts={{'quantity':{quantity}}}, next_watch='next', legs=legs), cycle_values=StateRecord())
+''')
+    with ResearchExecutionSession(context, experiment=request.experiment) as execution:
+        request = context.evaluation.prepare(request, execution=execution).request
+    replay = EquityInspectionReplay(f.InspectionCoordinate('explicit', 'standard'), request.input_binding,
+        request.requests(context.execution_spec), request.window, request.initial_cash, request.fee_rate)
+    inspection, _ = native_inspection_request(tmp_path, context, request, products, replay)
+    scenarios = []
+    for scenario in inspection.protocol.pte.scenarios:
+        if scenario.case_id == 'EXPIRED':
+            decision = replace(scenario.steps[1], expected='NO_ORDER')
+            scenario = replace(scenario, steps=(scenario.steps[0], decision),
+                               expected_cash=Decimal(str(request.initial_cash)))
+        scenarios.append(scenario)
+    inspection = replace(inspection, protocol=replace(inspection.protocol,
+        pte=replace(inspection.protocol.pte, scenarios=tuple(scenarios))))
+    report = inspect_candidate(context.repository, inspection, control=InspectionControl(max_workers=1, timeout_seconds=90))
+    assert report.status is f.InspectionStatus.PASS, '\n'.join(x.case_id + ': ' + x.summary
+        for goal in (report.behavior_equivalence, report.pte_runtime) for x in goal.cases if x.status is not f.InspectionStatus.PASS)
+    facts = json.loads(report.pte_runtime.evidence[0].resolve(tmp_path).read_text())
+    expiry = next(x for x in facts['scenarios'] if x['case_id'] == 'EXPIRED')['facts']
+    first = expiry['observed'][1]
+    assert first['outcome'] == 'NO_ORDER'
+    assert first['expired_intents']
+    assert verify_equity_inspection_facts(facts, inspection.protocol.pte.to_dict())
+    for status in ('EXPIRED', 'REJECTED', 'SUBMISSION_UNCERTAIN'):
+        changed = deepcopy(facts)
+        observation = next(x for x in changed['scenarios'] if x['case_id'] == 'EXPIRED')['facts']['observed'][1]
+        observation['submission_intents_before'][first['expired_intents'][0]] = status
+        with pytest.raises(ValueError, match='not a new submit-time transition'):
+            verify_equity_inspection_facts(changed, inspection.protocol.pte.to_dict())
+    for name in ('REJECTED', 'UNKNOWN'):
+        recorded = next(x for x in facts['scenarios'] if x['case_id'] == name)['facts']
+        assert 'EXPIRED' not in recorded['coverage']

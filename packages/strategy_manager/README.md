@@ -1,5 +1,9 @@
 # 策略管理器（SM）
 
+同版本升级包支持 manifest schema 2：`runtime_candidate_id` 是当前严格 `C####` 候选键，
+纳入包指纹；`source_candidate_id` 与版本的 `source_candidate` 保留历史研究来源。事务验证器
+分别验证 schema 1 / 2 的精确字段集，schema 1 原契约与首次冻结行为保持。
+
 SM提供研究登记、冻结发布及生命周期所需的强类型契约和存储能力；研究证据与运行发布分别保存。
 研究员从[公共导出](src/strategy_manager/__init__.py)导入契约，经[TDR业务API](../../src/czsc_trader/README.md)
 执行登记、决定留痕和冻结；SM存储API供平台实现使用。

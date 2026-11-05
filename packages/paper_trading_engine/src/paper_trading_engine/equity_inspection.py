@@ -217,12 +217,20 @@ def inspect_equity_release(*, candidate, dataflows, binding, requests, initial_c
                         observed.append({"kind": "RECONCILE", "status": "BLOCKED"})
                 elif type(step) is EquityPteDecision:
                     now, channel.outcome = step.at, step.outcome
+                    expired_intents = []
                     prepared = prepare_equity_decision(dataflows, candidate, binding, requests, step.interval, fee_rate=fee_rate)
                     try:
                         AccountEngine(store, EquityAdviceClient(store), now=lambda: now).refresh_account("equity", prepared=prepared)
+                        before_submission = {row['intent_id']: row['status'] for row in store.account_intents('equity')}
                         ids = execution.submit_pending("equity")
                         orders.extend(ids)
                         actual = "SUBMITTED" if ids else "NO_ORDER"
+                        from .order_windows import planned_bounds
+                        for row in store.account_intents('equity'):
+                            bounds = planned_bounds(row['payload'], row['valid_session'])
+                            if (before_submission.get(row['intent_id']) == 'PENDING_SUBMIT'
+                                    and row['status'] == 'EXPIRED' and bounds is not None and now >= bounds[1]):
+                                expired_intents.append(row['intent_id'])
                     except BrokerOrderRejectedError:
                         actual = "REJECTED"
                     except BrokerSubmissionUncertainError:
@@ -236,7 +244,12 @@ def inspect_equity_release(*, candidate, dataflows, binding, requests, initial_c
                     if actual != step.expected:
                         raise ValueError(f"expected {step.expected}, observed {actual}")
                     local_coverage.add(actual)
-                    observed.append({"kind": "DECISION", "outcome": actual, "interval": step.interval.to_dict() if hasattr(step.interval, "to_dict") else {"start":step.interval.start.isoformat(),"end":step.interval.end.isoformat()}})
+                    extra = {}
+                    if expired_intents:
+                        local_coverage.add('EXPIRED')
+                        extra = {'expired_intents': expired_intents,
+                                 'submission_intents_before': before_submission}
+                    observed.append({"kind": "DECISION", "outcome": actual, "interval": step.interval.to_dict() if hasattr(step.interval, "to_dict") else {"start":step.interval.start.isoformat(),"end":step.interval.end.isoformat()}, **extra})
                 elif type(step) is EquityPteReport:
                     report = EquityOrderReport(orders[step.order_index], step.cumulative_quantity, step.average_price, step.at, step.status, step.settlement_at)
                     before = _facts(store)
@@ -347,6 +360,7 @@ def verify_equity_inspection_facts(outcome: dict, protocol: dict):
             if quantity and abs(value-Decimal(str(order["average_fill_price"]))*quantity)>Decimal('.0000001'):
                 raise ValueError("saved order cumulative value differs from fills")
         observed, coverage, report_keys = facts["observed"], set(), set()
+        expired_seen = set()
         if len(observed) != len(spec.steps):
             raise ValueError("saved equity step inventory differs")
         for step, actual in zip(spec.steps, observed):
@@ -354,6 +368,22 @@ def verify_equity_inspection_facts(outcome: dict, protocol: dict):
                 if actual.get("kind") != "DECISION" or actual.get("outcome") != step.expected:
                     raise ValueError("saved equity submission outcome differs")
                 coverage.add(step.expected)
+                if 'expired_intents' in actual or 'submission_intents_before' in actual:
+                    from .order_windows import planned_bounds
+                    expired = actual.get('expired_intents')
+                    before = actual.get('submission_intents_before')
+                    if (step.expected not in ('NO_ORDER', 'SUBMITTED') or type(expired) is not list
+                            or not expired or len(set(expired)) != len(expired) or type(before) is not dict):
+                        raise ValueError('saved expiry transition is invalid')
+                    intents = {row['intent_id']: row for row in facts['intents']}
+                    for intent_id in expired:
+                        row = intents.get(intent_id)
+                        bounds = None if row is None else planned_bounds(row['payload'], row['valid_session'])
+                        if (intent_id in expired_seen or before.get(intent_id) != 'PENDING_SUBMIT'
+                                or row is None or row['status'] != 'EXPIRED' or bounds is None or step.at < bounds[1]):
+                            raise ValueError('saved expiry is not a new submit-time transition')
+                        expired_seen.add(intent_id)
+                    coverage.add('EXPIRED')
             elif type(step) is EquityPteReport:
                 order_id = actual.get("channel_order_id")
                 if order_id not in {o["channel_order_id"] for o in facts["orders"]} or actual != {"kind":"REPORT", "channel_order_id":order_id, **step.to_dict()}:
