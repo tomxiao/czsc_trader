@@ -19,6 +19,7 @@ from zoneinfo import ZoneInfo
 from .audit import AuditRecorder
 from .channel import channel_profile
 from .chart_market_data import AccountChartDataError, CHART_UPDATE_TIME
+from .file_publication import replace_published_file
 from .forward_chart import ChartObservation, FORWARD_CHART_CONTRACT_VERSION, render_forward_chart_html
 from .trading_window import SHANGHAI
 
@@ -480,7 +481,7 @@ class AccountChartService:
         temporary = path.with_name(f".{path.name}.{uuid4().hex}.tmp")
         try:
             temporary.write_text(content, encoding="utf-8", newline="\n")
-            os.replace(temporary, path)
+            replace_published_file(temporary, path)
         finally:
             temporary.unlink(missing_ok=True)
 

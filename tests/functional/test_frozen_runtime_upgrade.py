@@ -110,7 +110,7 @@ def _legacy_source_identity(context, request, stored):
 
 
 @pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
-def test_native_upgrade_preserves_history_and_resets_qualification(upgrade, market):
+def test_native_upgrade_preserves_history_and_resets_qualification(upgrade, market, monkeypatch):
     """Both market contracts cross the same legacy/native and native/native transaction."""
     from test_equity_adjusted_observations import setup_adjusted
     from strategy_runtime import EquityStrategyCandidate, equity_source_hash, load_strategy_deployment
@@ -189,7 +189,23 @@ def test_native_upgrade_preserves_history_and_resets_qualification(upgrade, mark
     next_request = replace(request, original=prepared.migrated, candidate=revised,
                            output_directory=context.root / '.tmp/prepared-native')
     next_prepared = m.prepare_frozen_runtime_upgrade(context, next_request)
+    publishing = next_prepared.plan_path.parent / "publishing_release"
+    original_replace = m.os.replace
+    attempts = []
+
+    def deny_first_publication(source, target):
+        if source == publishing:
+            attempts.append(source)
+            if len(attempts) == 1:
+                error = PermissionError("synthetic Windows release directory conflict")
+                error.winerror = 5
+                raise error
+        return original_replace(source, target)
+
+    monkeypatch.setattr(m.os, "replace", deny_first_publication)
+    monkeypatch.setattr(m, "_FILE_REPLACE_DELAYS", (0.025, 0.050, 0.100, 0.200))
     next_receipt = m.apply_frozen_runtime_upgrade(context, next_prepared)
+    assert len(attempts) >= 2
     assert next_receipt.original == prepared.migrated
     assert m.apply_frozen_runtime_upgrade(context, next_prepared) == next_receipt
     assert load_strategy_deployment(context.strategy_root, 'S900-v1').release_hash == next_prepared.migrated.release_hash

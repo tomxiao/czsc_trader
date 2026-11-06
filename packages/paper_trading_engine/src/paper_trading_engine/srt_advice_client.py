@@ -6,7 +6,6 @@ from dataclasses import dataclass, replace
 from datetime import date, datetime, time, timedelta, timezone
 from decimal import Decimal
 import json
-import logging
 import os
 from pathlib import Path
 import re
@@ -43,32 +42,13 @@ from strategy_manager import Qualification, StrategyRegistry
 from .audit import AuditRecorder
 from .contracts import AdviceContractError, AdviceDecision
 from .errors import AdviceClientError
+from .file_publication import replace_published_file
 from .account_binding import AccountStrategyBinding
 
 
 _BEIJING = timezone(timedelta(hours=8), "Asia/Shanghai")
 _ACCOUNT_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
 _PREPARED_STORAGE_REVISION = 3
-_LOGGER = logging.getLogger(__name__)
-_FILE_REPLACE_DELAYS = (0.025, 0.050, 0.100, 0.200) if os.name == "nt" else ()
-
-
-def _replace_current_index(source: Path, target: Path) -> None:
-    """Bound Windows access-conflict retries while keeping the old index intact."""
-    for attempt in range(len(_FILE_REPLACE_DELAYS) + 1):
-        try:
-            os.replace(source, target)
-        except OSError as error:
-            if getattr(error, "winerror", None) not in (5, 32) or attempt == len(_FILE_REPLACE_DELAYS):
-                if attempt:
-                    _LOGGER.error("File replacement failed after %d attempts: %s -> %s (winerror=%s)",
-                                  attempt + 1, source, target, getattr(error, "winerror", None))
-                raise
-            clock.sleep(_FILE_REPLACE_DELAYS[attempt])
-        else:
-            if attempt:
-                _LOGGER.warning("File replacement recovered after %d retries: %s -> %s", attempt, source, target)
-            return
 
 
 def _require_supported_feedback(definition: RuntimeDefinition) -> None:
@@ -585,7 +565,7 @@ class SrtAdviceClient:
                 json.dumps(index, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
                 encoding="utf-8", newline="\n",
             )
-            _replace_current_index(temporary, root / "current.json")
+            replace_published_file(temporary, root / "current.json")
         finally:
             temporary.unlink(missing_ok=True)
             try:

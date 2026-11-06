@@ -441,21 +441,21 @@ def _upgrade_json(value):
             + "\n").encode("utf-8")
 
 
-def _replace_upgrade_file(source: Path, target: Path) -> None:
-    """Bound Windows access-conflict retries without changing atomic publication."""
+def _replace_upgrade_path(source: Path, target: Path) -> None:
+    """Bound Windows access-conflict retries for upgrade files and directories."""
     for attempt in range(len(_FILE_REPLACE_DELAYS) + 1):
         try:
             os.replace(source, target)
         except OSError as error:
             if getattr(error, "winerror", None) not in (5, 32) or attempt == len(_FILE_REPLACE_DELAYS):
                 if attempt:
-                    _LOGGER.error("File replacement failed after %d attempts: %s -> %s (winerror=%s)",
+                    _LOGGER.error("Upgrade replacement failed after %d attempts: %s -> %s (winerror=%s)",
                                   attempt + 1, source, target, getattr(error, "winerror", None))
                 raise
             clock.sleep(_FILE_REPLACE_DELAYS[attempt])
         else:
             if attempt:
-                _LOGGER.warning("File replacement recovered after %d retries: %s -> %s", attempt, source, target)
+                _LOGGER.warning("Upgrade replacement recovered after %d retries: %s -> %s", attempt, source, target)
             return
 
 
@@ -466,7 +466,7 @@ def _upgrade_write(path: Path, data: bytes, scratch: Path) -> None:
             stream.write(data)
             stream.flush()
             os.fsync(stream.fileno())
-        _replace_upgrade_file(temporary, path)
+        _replace_upgrade_path(temporary, path)
     finally:
         temporary.unlink(missing_ok=True)
 
@@ -812,9 +812,9 @@ def apply_frozen_runtime_upgrade(
         shutil.copytree(stage / family / "releases" / number, next_package)
         displaced = installed = False
         try:
-            os.replace(package, backup)
+            _replace_upgrade_path(package, backup)
             displaced = True
-            os.replace(next_package, package)
+            _replace_upgrade_path(next_package, package)
             installed = True
             _upgrade_write(version_path, staged_version.read_bytes(), plan_path.parent)
             if before_deployment is not None:
@@ -841,9 +841,9 @@ def apply_frozen_runtime_upgrade(
             try:
                 receipt_path.unlink(missing_ok=True)
                 if installed:
-                    os.replace(package, plan_path.parent / "failed_release")
+                    _replace_upgrade_path(package, plan_path.parent / "failed_release")
                 if displaced:
-                    os.replace(backup, package)
+                    _replace_upgrade_path(backup, package)
                 if version_path.read_bytes() != before_version:
                     _upgrade_write(version_path, before_version, plan_path.parent)
                 if before_deployment is not None and deployment_path.read_bytes() != before_deployment:

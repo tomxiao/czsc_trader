@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from czsc_trader.application import runtime_migration
-from paper_trading_engine import srt_advice_client
+from paper_trading_engine import file_publication, srt_advice_client
 
 
 @pytest.fixture(params=["upgrade", "account-index"])
@@ -25,7 +25,7 @@ def publication(request, tmp_path):
     index = {"revision": "new"}
     expected_index = dict(index, index_sha256=srt_advice_client.canonical_sha256(index))
     expected = (json.dumps(expected_index, ensure_ascii=False, indent=2, sort_keys=True) + "\n").encode()
-    return (srt_advice_client, root / "current.json", root / ".tmp", expected,
+    return (file_publication, root / "current.json", root / ".tmp", expected,
             lambda: srt_advice_client.SrtAdviceClient._write_index(root, index))
 
 

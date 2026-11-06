@@ -970,7 +970,8 @@ def test_cached_chart_background_checks_are_quiet_and_manual_refresh_is_visible(
     store.close()
 
 
-def test_account_chart_runs_market_fetch_and_render_on_dedicated_worker(new_store, tmp_path):
+def test_account_chart_runs_market_fetch_and_render_on_dedicated_worker(new_store, tmp_path, monkeypatch):
+    from paper_trading_engine import file_publication
     from paper_trading_engine.account_chart import AccountChartService
 
     store = new_store(tmp_path / "chart-thread.db")
@@ -1006,6 +1007,19 @@ def test_account_chart_runs_market_fetch_and_render_on_dedicated_worker(new_stor
     release = Event()
     worker_ids = []
     source_refreshes = []
+    original_replace = os.replace
+    denied = Event()
+
+    def replace_with_metadata_contention(source, target):
+        if target.name == "observation.meta.json" and target.is_file() and not denied.is_set():
+            denied.set()
+            error = PermissionError("synthetic Windows chart metadata conflict")
+            error.winerror = 5
+            raise error
+        return original_replace(source, target)
+
+    monkeypatch.setattr(os, "replace", replace_with_metadata_contention)
+    monkeypatch.setattr(file_publication, "_FILE_REPLACE_DELAYS", (0.025, 0.050, 0.100, 0.200))
     frame = pd.DataFrame(
         [
             {"dt": "2026-09-02", "open": 1, "high": 1.1, "low": 0.9, "close": 1},
@@ -1055,6 +1069,7 @@ def test_account_chart_runs_market_fetch_and_render_on_dedicated_worker(new_stor
             "failures": store.query_audit_events(event_type="ACCOUNT_CHART_GENERATION_FAILED"),
         }
         assert source_refreshes == [False, True]
+        assert denied.is_set()
         assert {name for name, _thread_id in worker_ids} == {"dfls", "render"}
         assert all(thread_id != caller for _name, thread_id in worker_ids)
         assert len({thread_id for name, thread_id in worker_ids if name == "render"}) == 1
