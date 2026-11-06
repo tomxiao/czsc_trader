@@ -1,0 +1,525 @@
+{
+  "schema": "compact_summary",
+  "schema_version": 1,
+  "summary_of": "comparison",
+  "full_evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S001",
+      "experiment_id": "EX004_20261106"
+    },
+    "evidence_id": "011ec2f98d003cd318664104d8f1d8b249a8a27d9a48a83ef86dd62e777f0dd4.json",
+    "sha256": "011ec2f98d003cd318664104d8f1d8b249a8a27d9a48a83ef86dd62e777f0dd4",
+    "media_type": "application/json",
+    "name": "completed-week-comparison",
+    "schema": null,
+    "schema_version": null
+  },
+  "full_evidence_repository_path": "research/S001/assets/evidence/EX004_20261106/011ec2f98d003cd318664104d8f1d8b249a8a27d9a48a83ef86dd62e777f0dd4.json",
+  "full_content_sha256": "011ec2f98d003cd318664104d8f1d8b249a8a27d9a48a83ef86dd62e777f0dd4",
+  "note": "Readable summary; original complete content, including nested market-data metadata, remains immutable in full_evidence.",
+  "observation_window": [
+    "2026-09-03",
+    "2026-11-05"
+  ],
+  "execution_window": [
+    "2026-09-04",
+    "2026-11-05"
+  ],
+  "initial_cash": 100000,
+  "fee_per_side": 0.0005,
+  "scope": "Retained canonical input counterfactual and separately extracted actual PTE ledger; no production mutation",
+  "versions": {
+    "v1": {
+      "native_identity": {
+        "candidate": {
+          "candidate_id": "C9903",
+          "strategy_id": "S001"
+        },
+        "content_sha256": "1fcabbd12ba21a0aa89f0bb4f9c86dbf29edba5d85f05bf5cb40058895eb7812",
+        "environment_sha256": "2b72839267d86ef72da6e9dc8f915ba42bd9c2015aee85d4f716ea9751e58d96",
+        "input_sha256": "2fa963e34b6ae7d8e1dd5842d5b25f66edfc1ca5f54304632bdc19504efe4058",
+        "protocol_sha256": "5f7f8883eecc87809d3d4736282945efef947dce0d0fb2f384a66af9eefadead"
+      },
+      "complete_control_reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S001",
+          "experiment_id": "EX003_20261106"
+        },
+        "evidence_id": "b73249cc93f769c0afeb66e61317c2a9a567d62de339af3fe471393c8d8535e5.json",
+        "sha256": "b73249cc93f769c0afeb66e61317c2a9a567d62de339af3fe471393c8d8535e5",
+        "media_type": "application/json",
+        "name": "pure-math-complete",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "partial_control_reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S001",
+          "experiment_id": "EX003_20261106"
+        },
+        "evidence_id": "e1bcbf8571e17e12a0c19884ae0cd6d265698c17eb6dae160ad2cbf9a0f9de2f.json",
+        "sha256": "e1bcbf8571e17e12a0c19884ae0cd6d265698c17eb6dae160ad2cbf9a0f9de2f",
+        "media_type": "application/json",
+        "name": "pure-math-partial",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "native_vs_old_formula_complete": {
+        "account_daily": {
+          "status": "EXACT",
+          "rows": 39,
+          "fields": [
+            "session",
+            "cash",
+            "quantity",
+            "close",
+            "equity",
+            "receivable"
+          ]
+        },
+        "fills": {
+          "status": "EXACT",
+          "rows": 2,
+          "fields": [
+            "side",
+            "quantity",
+            "price",
+            "fees",
+            "interval_start",
+            "interval_end"
+          ]
+        },
+        "orders": {
+          "status": "EXACT",
+          "rows": 2,
+          "fields": [
+            "side",
+            "quantity",
+            "limit_price",
+            "order_type",
+            "status",
+            "reason",
+            "valid_start",
+            "valid_end"
+          ]
+        },
+        "trades": {
+          "status": "EXACT",
+          "rows": 1,
+          "fields": [
+            "entry_at",
+            "exit_at",
+            "cost",
+            "income",
+            "net_pnl",
+            "net_return",
+            "status"
+          ]
+        },
+        "metrics": "EXACT"
+      },
+      "old_formula_partial_vs_complete": {
+        "account_daily": {
+          "status": "EXACT",
+          "rows": 39,
+          "fields": [
+            "session",
+            "cash",
+            "quantity",
+            "close",
+            "equity",
+            "receivable"
+          ]
+        },
+        "fills": {
+          "status": "EXACT",
+          "rows": 2,
+          "fields": [
+            "side",
+            "quantity",
+            "price",
+            "fees",
+            "interval_start",
+            "interval_end"
+          ]
+        },
+        "orders": {
+          "status": "EXACT",
+          "rows": 2,
+          "fields": [
+            "side",
+            "quantity",
+            "limit_price",
+            "order_type",
+            "status",
+            "reason",
+            "valid_start",
+            "valid_end"
+          ]
+        },
+        "trades": {
+          "status": "EXACT",
+          "rows": 1,
+          "fields": [
+            "entry_at",
+            "exit_at",
+            "cost",
+            "income",
+            "net_pnl",
+            "net_return",
+            "status"
+          ]
+        },
+        "metrics": "EXACT"
+      },
+      "controlled_metrics": {
+        "annualized_return": -0.2074676039160055,
+        "bar_max_drawdown": 0.0685824824667266,
+        "closed_cycles": 1,
+        "daily_max_drawdown": 0.0685824824667266,
+        "fees": 97.47495,
+        "observations": 39,
+        "rolling_60_closed_cycle_counts": [],
+        "rolling_60_closed_cycle_median": null,
+        "sessions": 39,
+        "total_return": -0.03534574949999991
+      },
+      "controlled_final_equity": 96465.42505,
+      "actual_final_equity": 96887.2537,
+      "actual_total_return": -0.031127463,
+      "actual_total_costs": 97.7463,
+      "actual_minus_controlled_equity": 421.82864999999583,
+      "actual_vs_controlled_fills": [
+        {
+          "date": "2026-09-17",
+          "side": "BUY",
+          "quantity": 60300,
+          "controlled_price": 1.645,
+          "actual_price": 1.646,
+          "controlled_fee": 49.59675,
+          "actual_fee": 49.6269,
+          "actual_execution_time": "2026-09-17T09:30:08.260943+08:00"
+        },
+        {
+          "date": "2026-09-29",
+          "side": "SELL",
+          "quantity": 60300,
+          "controlled_price": 1.588,
+          "actual_price": 1.596,
+          "controlled_fee": 47.8782,
+          "actual_fee": 48.1194,
+          "actual_execution_time": "2026-09-29T09:30:14.950201+08:00"
+        }
+      ],
+      "actual_ledger_reconciliation": "EXACT_CURRENT_CASH_FROZEN_QUANTITY",
+      "conclusion": "No weekly-policy effect in this window; actual difference is execution and recorded-cost difference, not a signal change.",
+      "cash_difference_identity": {
+        "actual_minus_controlled_gross": 422.10000000000707,
+        "actual_minus_controlled_cost": 0.2713499999999982
+      }
+    },
+    "v2": {
+      "native_identity": {
+        "candidate": {
+          "candidate_id": "C9904",
+          "strategy_id": "S001"
+        },
+        "content_sha256": "7a17b817788e0faeb78e90a300fb8890626624953400a944dd258567bbfac7b0",
+        "environment_sha256": "2b72839267d86ef72da6e9dc8f915ba42bd9c2015aee85d4f716ea9751e58d96",
+        "input_sha256": "2fa963e34b6ae7d8e1dd5842d5b25f66edfc1ca5f54304632bdc19504efe4058",
+        "protocol_sha256": "6571eed83679867eaa696416c386bd7a9b38331a55d014144e5bbad4994015e5"
+      },
+      "complete_control_reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S001",
+          "experiment_id": "EX004_20261106"
+        },
+        "evidence_id": "9cefb94d903c9e771f664864b5fd292825b2a58d0bd6a90f57cd32984631cd33.json",
+        "sha256": "9cefb94d903c9e771f664864b5fd292825b2a58d0bd6a90f57cd32984631cd33",
+        "media_type": "application/json",
+        "name": "pure-math-complete",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "partial_control_reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S001",
+          "experiment_id": "EX004_20261106"
+        },
+        "evidence_id": "de0b205d96c680cbaae5b07bfb06aed93c418521d35ebb30e5cefdd4690dec30.json",
+        "sha256": "de0b205d96c680cbaae5b07bfb06aed93c418521d35ebb30e5cefdd4690dec30",
+        "media_type": "application/json",
+        "name": "pure-math-partial",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "native_vs_old_formula_complete": {
+        "account_daily": {
+          "status": "EXACT",
+          "rows": 39,
+          "fields": [
+            "session",
+            "cash",
+            "quantity",
+            "close",
+            "equity",
+            "receivable"
+          ]
+        },
+        "fills": {
+          "status": "EXACT",
+          "rows": 4,
+          "fields": [
+            "side",
+            "quantity",
+            "price",
+            "fees",
+            "interval_start",
+            "interval_end"
+          ]
+        },
+        "orders": {
+          "status": "EXACT",
+          "rows": 4,
+          "fields": [
+            "side",
+            "quantity",
+            "limit_price",
+            "order_type",
+            "status",
+            "reason",
+            "valid_start",
+            "valid_end"
+          ]
+        },
+        "trades": {
+          "status": "EXACT",
+          "rows": 2,
+          "fields": [
+            "entry_at",
+            "exit_at",
+            "cost",
+            "income",
+            "net_pnl",
+            "net_return",
+            "status"
+          ]
+        },
+        "metrics": "EXACT"
+      },
+      "old_formula_partial_vs_complete": {
+        "account_daily": {
+          "status": "EXACT",
+          "rows": 39,
+          "fields": [
+            "session",
+            "cash",
+            "quantity",
+            "close",
+            "equity",
+            "receivable"
+          ]
+        },
+        "fills": {
+          "status": "EXACT",
+          "rows": 4,
+          "fields": [
+            "side",
+            "quantity",
+            "price",
+            "fees",
+            "interval_start",
+            "interval_end"
+          ]
+        },
+        "orders": {
+          "status": "EXACT",
+          "rows": 4,
+          "fields": [
+            "side",
+            "quantity",
+            "limit_price",
+            "order_type",
+            "status",
+            "reason",
+            "valid_start",
+            "valid_end"
+          ]
+        },
+        "trades": {
+          "status": "EXACT",
+          "rows": 2,
+          "fields": [
+            "entry_at",
+            "exit_at",
+            "cost",
+            "income",
+            "net_pnl",
+            "net_return",
+            "status"
+          ]
+        },
+        "metrics": "EXACT"
+      },
+      "controlled_metrics": {
+        "annualized_return": -0.3824617520826634,
+        "bar_max_drawdown": 0.07188297250000009,
+        "closed_cycles": 2,
+        "daily_max_drawdown": 0.07188297250000009,
+        "fees": 191.79725,
+        "observations": 39,
+        "rolling_60_closed_cycle_counts": [],
+        "rolling_60_closed_cycle_median": null,
+        "sessions": 39,
+        "total_return": -0.07188297250000009
+      },
+      "controlled_final_equity": 92811.70275,
+      "actual_final_equity": 93113.044,
+      "actual_total_return": -0.06886956,
+      "actual_total_costs": 296.456,
+      "actual_minus_controlled_equity": 301.3412499999977,
+      "actual_vs_controlled_fills": [
+        {
+          "date": "2026-09-08",
+          "side": "BUY",
+          "quantity": 60500,
+          "controlled_price": 1.651,
+          "actual_price": 1.651,
+          "controlled_fee": 49.94275,
+          "actual_fee": 49.9428,
+          "actual_execution_time": "2026-09-08T09:30:11.430803+08:00"
+        },
+        {
+          "date": "2026-09-11",
+          "side": "SELL",
+          "quantity": 60500,
+          "controlled_price": 1.59,
+          "actual_price": 1.5899999999999999,
+          "controlled_fee": 48.0975,
+          "actual_fee": 48.0975,
+          "actual_execution_time": "2026-09-11T14:23:38.805795+08:00"
+        },
+        {
+          "date": "2026-09-17",
+          "side": "BUY",
+          "quantity": 58000,
+          "controlled_price": 1.645,
+          "actual_price": 1.646,
+          "controlled_fee": 47.705,
+          "actual_fee": 47.734,
+          "actual_execution_time": "2026-09-17T09:30:08.144736+08:00"
+        },
+        {
+          "date": "2026-09-29",
+          "side": "SELL",
+          "quantity": 58000,
+          "controlled_price": 1.588,
+          "actual_price": 1.596,
+          "controlled_fee": 46.052,
+          "actual_fee": 46.284,
+          "actual_execution_time": "2026-09-29T09:30:14.842129+08:00"
+        }
+      ],
+      "actual_ledger_reconciliation": "EXACT_CURRENT_CASH_FROZEN_QUANTITY",
+      "conclusion": "No weekly-policy effect in this window; actual difference is execution and recorded-cost difference, not a signal change.",
+      "cash_difference_identity": {
+        "actual_minus_controlled_gross": 405.99999999999335,
+        "actual_minus_controlled_cost": 104.65875000000003
+      }
+    }
+  },
+  "limitations": [
+    "S001-v2 first exit was rejected for an out-of-limit price, operator confirmed absent broker order, then a replacement sell filled on Sep11 14:23 Shanghai. This execution-path effect is separate from weekly-signal logic.",
+    "S001-v2 broker-fee reconciliation deducted 104.3977 on Sep11; fill-level modeled fees alone do not explain final cash.",
+    "S001-v2 holding snapshots Sep8-Sep10 use HFQ closes matching production adjusted cache, while Sep17 onward matches RAW where crosscheck data exists. As-recorded drawdown is not a uniform-RAW reconstruction.",
+    "Both accounts had historical release rebindings, pauses and data/decision failures. An ideal replay versus actual PTE difference cannot all be attributed to weekly construction.",
+    "Stored decisions include invalidated and superseded history. Use actual fills and ledger for executed performance, and explicit decision status/release lineage when comparing signals.",
+    "This extraction does not query credentials or broker services. Broker/order/decision identifiers in CSVs are pseudonymized; account ids are retained only as strategy/version labels.",
+    "Canonical retained input prefixes do not reproduce every historical provider snapshot.",
+    "No inference of all-history equivalence from this observation window.",
+    "Actual recorded drawdown is omitted because early v2 daily valuations used adjusted marks.",
+    "Model fills use daily BAR_RANGE; actual fills have broker timestamps and prices.",
+    "Historical source bindings must be replaced with supported continuous sources before future production deployment."
+  ],
+  "inputs": {
+    "pte_actual.json": {
+      "sha256": "f9bfdcd1c8299b9e24d50a2b039a2167b6dd63214141b216acd13da7948063f2"
+    },
+    "inputs\\input_identity.json": {
+      "sha256": "d5f498b944b7c3917230050979caeb1c7a44505928de4c5bce854559b3d01cc8"
+    },
+    "signals\\summary.json": {
+      "sha256": "7881cc7911d80735405944e86c16a4f938aba29f9f1046acf1121d2426b44e74"
+    }
+  },
+  "signal_results": {
+    "v1": {
+      "signals": 41,
+      "settled_signals": 40,
+      "score_differences": 0,
+      "target_differences": 0,
+      "settled_target_differences": 0,
+      "target_changes": [],
+      "unsettled": [
+        {
+          "version": "v1",
+          "signal_day": "2026-11-05",
+          "execution_day": "2026-11-06",
+          "settled_execution_window": false,
+          "current_week_complete": false,
+          "new_last_week_date": "2026-10-30",
+          "old_last_week_date": "2026-11-05",
+          "old_weekly_factor": -1.0,
+          "new_weekly_factor": -1.0,
+          "old_score": 0.14200949525504628,
+          "new_score": 0.14200949525504628,
+          "score_difference": 0.0,
+          "old_regime": "trend",
+          "new_regime": "trend",
+          "old_target": 0.0,
+          "new_target": 0.0,
+          "target_changed": false
+        }
+      ]
+    },
+    "v2": {
+      "signals": 41,
+      "settled_signals": 40,
+      "score_differences": 0,
+      "target_differences": 0,
+      "settled_target_differences": 0,
+      "target_changes": [],
+      "unsettled": [
+        {
+          "version": "v2",
+          "signal_day": "2026-11-05",
+          "execution_day": "2026-11-06",
+          "settled_execution_window": false,
+          "current_week_complete": false,
+          "new_last_week_date": "2026-10-30",
+          "old_last_week_date": "2026-11-05",
+          "old_weekly_factor": -1.0,
+          "new_weekly_factor": -1.0,
+          "old_score": 0.14200949525504628,
+          "new_score": 0.14200949525504628,
+          "score_difference": 0.0,
+          "old_regime": "trend",
+          "new_regime": "trend",
+          "old_target": 0.0,
+          "new_target": 0.0,
+          "target_changed": false
+        }
+      ]
+    }
+  }
+}

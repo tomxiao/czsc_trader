@@ -17,24 +17,25 @@ from strategy_manager import CandidateKey, StrategyRegistry
 from strategy_manager.freeze_contracts import FrozenVersionReference, ResearchEvidenceOwner, ResearchEvidenceRef
 
 
-def apply_reviewed(root, *, family, candidate_id, experiment_id, comparison, technical):
+def apply_reviewed(root, *, family, candidate_id, experiment_id, comparison, technical, version_number='v1'):
     root = Path(root).resolve()
     repository = RepositoryContext.discover(root)
     context = create_research_context(repository, ResearchBatchRef(family))
     experiment = ExperimentRef(family, experiment_id)
     candidate = load_candidate(repository, CandidateKey(family, candidate_id))
     # RSCH's explicit review, separate from the platform publication transaction.
-    if family == 'S001':
-        raise ValueError('S001 upgrades are paused by the user')
     origin = technical['origin']
     if (any(origin['candidate'][key] != value for key, value in candidate.key.to_dict().items())
             or origin['content_sha256'] != candidate.content_identity.content_sha256):
         raise ValueError('reviewed technical report belongs to different candidate content')
     if any(technical[name]['status'] != 'PASS' for name in ('behavior_equivalence', 'pte_runtime')):
         raise ValueError('reviewed technical inspection has not passed')
-    manifest, _, _ = validate_release_package(repository, family + '-v1')
-    version = StrategyRegistry(repository.strategy_root).get_version(family, 'v1')
-    original = FrozenVersionReference(family, 'v1', version.release_hash, manifest['package_hash'])
+    inspected = ResearchEvidenceRef.from_dict(technical['release']['version_record'])
+    if json.loads(inspected.resolve(root).read_text(encoding='utf-8'))['version'] != version_number:
+        raise ValueError('technical inspection targets another version')
+    manifest, _, _ = validate_release_package(repository, family + '-' + version_number)
+    version = StrategyRegistry(repository.strategy_root).get_version(family, version_number)
+    original = FrozenVersionReference(family, version_number, version.release_hash, manifest['package_hash'])
     reviewed = {
         'candidate': candidate.key.to_dict(),
         'content_identity': asdict(candidate.content_identity),
@@ -56,6 +57,11 @@ def apply_reviewed(root, *, family, candidate_id, experiment_id, comparison, tec
         'content_identity': asdict(candidate.content_identity),
         'excluded': ['production writes', 'PTE account rebinding', 'qualification grants', 'merge', 'push', 'tag'],
     }
+    if family == 'S001':
+        authorization['user_instructions'].append('按设计口径修正实现，并推进原地升级到V4。然后对比策略在PTE前瞻观察区间内的差异')
+        authorization['interpretation'] = 'Restore the original completed-week-only signal policy and migrate both S001 versions locally; this intentionally corrects partial-week behavior, without changing financial parameters or production accounts.'
+    change_summary = ('按原设计剔除未完成周线并迁移原生V4；金融参数及周期执行规则保持不变。部分周行为变化及前瞻区间对照单独披露。'
+        if family == 'S001' else '原地迁移为原生V4；保留冻结参数、信号独立计时和周期补单规则。历史账户及PTE技术检验的范围和结论见所附材料。')
     def publish(name, value):
         content = (json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False) + '\n').encode('utf-8')
         ref = publish_evidence(context, MaterialEvidenceWrite(experiment, name, content, 'application/json', 'json'))
@@ -64,7 +70,7 @@ def apply_reviewed(root, *, family, candidate_id, experiment_id, comparison, tec
     evidence = publish('native-v4-upgrade-reviewed-verification', reviewed)
     prepared = prepare_frozen_runtime_upgrade(repository, FrozenRuntimeUpgradeRequest(
         original, candidate, confirmation,
-        '原地迁移为原生V4；保留冻结参数、信号独立计时和周期补单规则。历史账户及PTE技术检验的范围和结论见所附材料。',
+        change_summary,
         'RSCH', (evidence,),
         root / '.tmp/rsch-frozen-v4-upgrade' / family / ('prepared-' + candidate.content_identity.content_sha256[:12])))
     receipt = apply_frozen_runtime_upgrade(repository, prepared)
@@ -82,11 +88,12 @@ if __name__ == '__main__':
     parser.add_argument('family')
     parser.add_argument('candidate_id')
     parser.add_argument('experiment_id')
+    parser.add_argument('--version', default='v1', choices=('v1', 'v2'))
     parser.add_argument('--comparison', type=Path, required=True)
     parser.add_argument('--technical', type=Path, required=True)
     args = parser.parse_args()
     result = apply_reviewed(Path.cwd(), family=args.family, candidate_id=args.candidate_id,
-        experiment_id=args.experiment_id,
+        experiment_id=args.experiment_id, version_number=args.version,
         comparison=json.loads(args.comparison.read_text(encoding='utf-8')),
         technical=json.loads(args.technical.read_text(encoding='utf-8')))
     print(json.dumps(result, ensure_ascii=False, indent=2))

@@ -1,0 +1,244 @@
+{
+  "prepared": {
+    "space_id": "23cdaf89-999a-44d5-89c4-1edaf831e2bd",
+    "preparation_id": "89054a49-c024-48c5-9bb0-d3add66f835b",
+    "manifest_sha256": "2fa963e34b6ae7d8e1dd5842d5b25f66edfc1ca5f54304632bdc19504efe4058"
+  },
+  "instrument": {
+    "market": "CN",
+    "asset_class": "ETF",
+    "symbol": "588080.SH"
+  },
+  "specification_hash": "a2ed87f8de524d946a832ce33dcb4e8c7cfa5c4291c184b691bdc841bab6d673",
+  "content_identities": [
+    [
+      "bars",
+      "c703dd07b55bff8e4de81739d0178fd3255e2653aa395793a4f608bb47eaed78"
+    ],
+    [
+      "sessions",
+      "ba2afa2cc11f56b76771fa43aedb4f13b12408ef038489ec84bcbc4569ce8124"
+    ],
+    [
+      "actions",
+      "023d0f1eef76e050db1c577630680174b07556a41862fe6a0f9d002a29b1ae57"
+    ],
+    [
+      "constraints",
+      "e1a38705052c1708890a31d4d29ada732cc8cb37722c4c0f447ab45a76114a40"
+    ]
+  ],
+  "warmup_bars": 1,
+  "request_bindings": [
+    [
+      "bars",
+      {
+        "instrument": {
+          "market": "CN",
+          "asset_class": "ETF",
+          "symbol": "588080.SH"
+        },
+        "source": {
+          "provider": "s001-audited-retained-raw",
+          "revision": "20261106-completed-week-v1"
+        },
+        "query": {
+          "product": "equity.bars",
+          "start": "2026-08-01",
+          "end": "2026-11-05",
+          "frequency": "daily",
+          "adjustment": "none",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "sessions",
+      {
+        "instrument": {
+          "market": "CN",
+          "asset_class": "ETF",
+          "symbol": "588080.SH"
+        },
+        "source": {
+          "provider": "s001-audited-retained-raw",
+          "revision": "20261106-completed-week-v1"
+        },
+        "query": {
+          "product": "equity.sessions",
+          "start": "2026-08-01",
+          "end": "2026-11-05",
+          "frequency": "daily",
+          "adjustment": "none",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "actions",
+      {
+        "instrument": {
+          "market": "CN",
+          "asset_class": "ETF",
+          "symbol": "588080.SH"
+        },
+        "source": {
+          "provider": "s001-audited-retained-raw",
+          "revision": "20261106-completed-week-v1"
+        },
+        "query": {
+          "product": "equity.actions",
+          "start": "2026-08-01",
+          "end": "2026-11-05",
+          "frequency": "daily",
+          "adjustment": "none",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "constraints",
+      {
+        "instrument": {
+          "market": "CN",
+          "asset_class": "ETF",
+          "symbol": "588080.SH"
+        },
+        "source": {
+          "provider": "s001-audited-retained-raw",
+          "revision": "20261106-completed-week-v1"
+        },
+        "query": {
+          "product": "equity.constraints",
+          "start": "2026-08-01",
+          "end": "2026-11-05",
+          "frequency": "daily",
+          "adjustment": "none",
+          "session": "REGULAR"
+        }
+      }
+    ]
+  ],
+  "observation_bindings": [
+    {
+      "input": {
+        "name": "adjusted_daily",
+        "dataset": "etf.ohlcv",
+        "symbol": "588080.SH",
+        "frequency": "daily",
+        "history_start": "2020-11-16",
+        "history_end": null,
+        "coverage": {
+          "maximum_start_lag_days": 7,
+          "minimum_observations": 60,
+          "minimum_sessions": 0,
+          "observations_through": null
+        },
+        "asset": null,
+        "calendar": "SSE",
+        "availability": {
+          "timezone": "Asia/Shanghai",
+          "available_time": "15:00",
+          "day_offset": 0
+        },
+        "max_staleness_days": null
+      },
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "588080.SH",
+        "start": "2020-11-16",
+        "end": "2026-11-05",
+        "required_cutoff": null,
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": 7,
+          "minimum_observations": 60,
+          "minimum_sessions": 0,
+          "observations_through": null
+        }
+      },
+      "content_sha256": "9be2614cae3aeb2a70fd3e7e2ca8cfd1cb9bc0ce029a5f4c2ddf21bd39df591d"
+    },
+    {
+      "input": {
+        "name": "adjusted_30m",
+        "dataset": "etf.ohlcv",
+        "symbol": "588080.SH",
+        "frequency": "30m",
+        "history_start": "2020-11-16",
+        "history_end": null,
+        "coverage": {
+          "maximum_start_lag_days": 7,
+          "minimum_observations": 500,
+          "minimum_sessions": 0,
+          "observations_through": null
+        },
+        "asset": null,
+        "calendar": "SSE",
+        "availability": {
+          "timezone": "Asia/Shanghai",
+          "available_time": "15:00",
+          "day_offset": 0
+        },
+        "max_staleness_days": null
+      },
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "588080.SH",
+        "start": "2020-11-16",
+        "end": "2026-11-05",
+        "required_cutoff": null,
+        "frequency": "30m",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": 7,
+          "minimum_observations": 500,
+          "minimum_sessions": 0,
+          "observations_through": null
+        }
+      },
+      "content_sha256": "cc67e76a53e1b82fb3cd5594b8d1b8bef816724a523c73820aebb8bb292e4290"
+    },
+    {
+      "input": {
+        "name": "adjusted_weekly",
+        "dataset": "etf.ohlcv",
+        "symbol": "588080.SH",
+        "frequency": "weekly",
+        "history_start": "2020-11-16",
+        "history_end": null,
+        "coverage": {
+          "maximum_start_lag_days": 7,
+          "minimum_observations": 10,
+          "minimum_sessions": 0,
+          "observations_through": null
+        },
+        "asset": null,
+        "calendar": "SSE",
+        "availability": {
+          "timezone": "Asia/Shanghai",
+          "available_time": "15:00",
+          "day_offset": 0
+        },
+        "max_staleness_days": null
+      },
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "588080.SH",
+        "start": "2020-11-16",
+        "end": "2026-10-30",
+        "required_cutoff": null,
+        "frequency": "weekly",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": 7,
+          "minimum_observations": 10,
+          "minimum_sessions": 0,
+          "observations_through": null
+        }
+      },
+      "content_sha256": "d5e06d9657e28ee37b2c5e08ab0b4defc05d1f70fa3cfec676343ff1b00f852b"
+    }
+  ]
+}

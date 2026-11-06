@@ -1,0 +1,476 @@
+{
+  "schema_version": 1,
+  "scope": "RSCH production read-only evidence extraction; no strategy, experiment, account run or production mutation",
+  "extracted_started_utc": "2026-11-06T02:32:30.544573+00:00",
+  "extracted_finished_utc": "2026-11-06T02:32:33.051071+00:00",
+  "database": {
+    "uri_mode": "ro",
+    "query_only": true,
+    "single_read_transaction": true,
+    "data_version_at_snapshot": 2,
+    "physical_files_before": [
+      {
+        "path": "D:\\CZSC-PTE\\shared\\state\\runtime.db",
+        "bytes": 117608448,
+        "sha256": "0b5945f590f153aa5fa14c18986237625adf436749aac79e174cd6e709daa541",
+        "mtime_ns": 1793932254337699400
+      },
+      {
+        "path": "D:\\CZSC-PTE\\shared\\state\\runtime.db-wal",
+        "bytes": 4280712,
+        "sha256": "4a834ac0e9eba55cc7912418bf9c8fa8536c4d010b80677aeab2e80660ba6369",
+        "mtime_ns": 1793932347358832400
+      }
+    ],
+    "physical_files_after": [
+      {
+        "path": "D:\\CZSC-PTE\\shared\\state\\runtime.db",
+        "bytes": 117608448,
+        "sha256": "0b5945f590f153aa5fa14c18986237625adf436749aac79e174cd6e709daa541",
+        "mtime_ns": 1793932254337699400
+      },
+      {
+        "path": "D:\\CZSC-PTE\\shared\\state\\runtime.db-wal",
+        "bytes": 4280712,
+        "sha256": "30dce52ef07a77e64ed428a5b059d1b3fadc43b5636f14cfd70754ca125452bd",
+        "mtime_ns": 1793932351962334200
+      }
+    ],
+    "note": "Physical file hashes describe observed files, not an SQLite logical-snapshot hash; CSV hashes identify the selected read-transaction outputs."
+  },
+  "production_active_release": {
+    "schema_version": 1,
+    "release_id": "v0.6.21",
+    "manifest_sha256": "26ad78467c5f9b767ae8ab8457e5b3d897db8ff9019ad88ad8b6f7b84f463c0b",
+    "previous_release_id": "v0.6.20",
+    "activated_at": "2026-10-26T09:07:45.060205+00:00"
+  },
+  "active_release_file": {
+    "path": "D:\\CZSC-PTE\\shared\\config\\active-release.json",
+    "bytes": 232,
+    "sha256": "f0fb1ac5ed4a3fef22eed49920e87e014b118aa975516e491174e63dd06bb440",
+    "mtime_ns": 1793005665060205600
+  },
+  "price_crosscheck_files": [
+    {
+      "path": "D:\\CZSC-PTE\\shared\\data\\588080_daily_2026.csv",
+      "bytes": 16709,
+      "sha256": "cb95a37a4d37527e9be52a64e8b04311aeb0d9ce6b56b523896cf97f345b00b9",
+      "mtime_ns": 1789817211754319900,
+      "role": "HFQ",
+      "first": "2026-01-05",
+      "last": "2026-09-18"
+    },
+    {
+      "path": "D:\\CZSC-PTE\\shared\\data\\588080_execution_daily_2026.csv",
+      "bytes": 10736,
+      "sha256": "b5a48c3345168bd02ca88d8c94405e1ebb7196b53337274543ffa56503e5e8e7",
+      "mtime_ns": 1789817211779052200,
+      "role": "RAW",
+      "first": "2026-01-05",
+      "last": "2026-09-18"
+    }
+  ],
+  "queries": [
+    {
+      "sql": "SELECT account_id,strategy_id,strategy_version,initial_cash,cash,frozen_cash,total_assets,quantity,average_cost,realized_pnl,observation_start,last_settlement_session,created_at,updated_at,run_state,health,release_hash,selection_data_cutoff FROM virtual_accounts WHERE account_id=?",
+      "parameters": [
+        "s001-v1"
+      ]
+    },
+    {
+      "sql": "SELECT decision_id,signal_date,valid_session,generated_at,legacy_status,superseded_by,payload FROM decisions WHERE account_id=? ORDER BY signal_date,generated_at,decision_id",
+      "parameters": [
+        "s001-v1"
+      ]
+    },
+    {
+      "sql": "SELECT fill_id,order_id,decision_id,side,quantity,price,fee,realized_pnl,occurred_at FROM fills WHERE account_id=? ORDER BY occurred_at,fill_id",
+      "parameters": [
+        "s001-v1"
+      ]
+    },
+    {
+      "sql": "SELECT entry_type,order_id,fill_id,cash_delta,frozen_cash_delta,quantity_delta,fee,balance_after,quantity_after,occurred_at FROM account_ledger WHERE account_id=? ORDER BY occurred_at,ledger_entry_id",
+      "parameters": [
+        "s001-v1"
+      ]
+    },
+    {
+      "sql": "SELECT channel_order_id,intent_id,decision_id,cumulative_filled_quantity,created_at,updated_at,payload FROM orders WHERE account_id=? ORDER BY created_at,channel_order_id",
+      "parameters": [
+        "s001-v1"
+      ]
+    },
+    {
+      "sql": "SELECT intent_id,decision_id,order_sequence,side,quantity,limit_price,valid_session,status,attention_required,attention_reason,resolved_at,resolution_note,created_at,updated_at,payload FROM intents WHERE account_id=? ORDER BY created_at,intent_id",
+      "parameters": [
+        "s001-v1"
+      ]
+    },
+    {
+      "sql": "SELECT session,created_at,payload FROM account_snapshots WHERE account_id=? ORDER BY session",
+      "parameters": [
+        "s001-v1"
+      ]
+    },
+    {
+      "sql": "SELECT id,created_at,occurred_at,event_type,severity,outcome,payload FROM events WHERE account_id=? OR (json_valid(payload) AND json_extract(payload,'$.account_id')=?) OR (event_type IN ('SCHEDULER_OPERATION_FAILED','SCHEDULER_OPERATION_RECOVERED') AND payload LIKE ?) ORDER BY id",
+      "parameters": [
+        "s001-v1",
+        "s001-v1",
+        "%s001-v1%"
+      ]
+    },
+    {
+      "sql": "SELECT account_id,strategy_id,strategy_version,initial_cash,cash,frozen_cash,total_assets,quantity,average_cost,realized_pnl,observation_start,last_settlement_session,created_at,updated_at,run_state,health,release_hash,selection_data_cutoff FROM virtual_accounts WHERE account_id=?",
+      "parameters": [
+        "s001-v2"
+      ]
+    },
+    {
+      "sql": "SELECT decision_id,signal_date,valid_session,generated_at,legacy_status,superseded_by,payload FROM decisions WHERE account_id=? ORDER BY signal_date,generated_at,decision_id",
+      "parameters": [
+        "s001-v2"
+      ]
+    },
+    {
+      "sql": "SELECT fill_id,order_id,decision_id,side,quantity,price,fee,realized_pnl,occurred_at FROM fills WHERE account_id=? ORDER BY occurred_at,fill_id",
+      "parameters": [
+        "s001-v2"
+      ]
+    },
+    {
+      "sql": "SELECT entry_type,order_id,fill_id,cash_delta,frozen_cash_delta,quantity_delta,fee,balance_after,quantity_after,occurred_at FROM account_ledger WHERE account_id=? ORDER BY occurred_at,ledger_entry_id",
+      "parameters": [
+        "s001-v2"
+      ]
+    },
+    {
+      "sql": "SELECT channel_order_id,intent_id,decision_id,cumulative_filled_quantity,created_at,updated_at,payload FROM orders WHERE account_id=? ORDER BY created_at,channel_order_id",
+      "parameters": [
+        "s001-v2"
+      ]
+    },
+    {
+      "sql": "SELECT intent_id,decision_id,order_sequence,side,quantity,limit_price,valid_session,status,attention_required,attention_reason,resolved_at,resolution_note,created_at,updated_at,payload FROM intents WHERE account_id=? ORDER BY created_at,intent_id",
+      "parameters": [
+        "s001-v2"
+      ]
+    },
+    {
+      "sql": "SELECT session,created_at,payload FROM account_snapshots WHERE account_id=? ORDER BY session",
+      "parameters": [
+        "s001-v2"
+      ]
+    },
+    {
+      "sql": "SELECT id,created_at,occurred_at,event_type,severity,outcome,payload FROM events WHERE account_id=? OR (json_valid(payload) AND json_extract(payload,'$.account_id')=?) OR (event_type IN ('SCHEDULER_OPERATION_FAILED','SCHEDULER_OPERATION_RECOVERED') AND payload LIKE ?) ORDER BY id",
+      "parameters": [
+        "s001-v2",
+        "s001-v2",
+        "%s001-v2%"
+      ]
+    }
+  ],
+  "accounts": {
+    "s001-v1": {
+      "current_account": {
+        "account_id": "s001-v1",
+        "strategy_id": "S001",
+        "strategy_version": "v1",
+        "initial_cash": "100000.0000",
+        "cash": "96887.2537",
+        "frozen_cash": "0.0000",
+        "total_assets": "96887.2537",
+        "quantity": 0,
+        "average_cost": "0E-12",
+        "realized_pnl": "-3112.7463",
+        "observation_start": "2026-09-03",
+        "last_settlement_session": "2026-11-05",
+        "created_at": "2026-09-02T17:54:38.745081+00:00",
+        "updated_at": "2026-11-05T12:30:47.574145+00:00",
+        "run_state": "RUNNING",
+        "health": "OK",
+        "release_hash": "57d7f97f1fa8a7d5dafdf1562d83f772664aaedff95d12a4f95b391be4b0d4d6",
+        "selection_data_cutoff": "2026-08-28"
+      },
+      "created_at_shanghai": "2026-09-03T01:54:38.745081+08:00",
+      "production_frozen_metadata": {
+        "release_id": "S001-v1",
+        "release_hash": "57d7f97f1fa8a7d5dafdf1562d83f772664aaedff95d12a4f95b391be4b0d4d6",
+        "selection_data_cutoff": "2026-08-28",
+        "forward_start": "2026-09-03",
+        "source_candidate": "143"
+      },
+      "frozen_metadata_file": {
+        "path": "D:\\CZSC-PTE\\releases\\v0.6.21\\strategies\\S001\\versions\\v1.json",
+        "bytes": 4889,
+        "sha256": "e7fec3729eb59471dccc9387cf2d1faa340f0d7ef082659a42d0d73a4bb9f1d6",
+        "mtime_ns": 1793004310000000000
+      },
+      "boundaries": {
+        "snapshot_first": "2026-09-03",
+        "snapshot_last": "2026-11-05",
+        "first_signal": "2026-09-03",
+        "last_signal": "2026-11-05",
+        "first_valid_session": "2026-09-04",
+        "last_valid_session": "2026-11-06",
+        "first_decision_generated_at": "2026-09-04T03:45:09.578140+00:00",
+        "first_fill_shanghai": "2026-09-17T09:30:08.260943+08:00",
+        "last_fill_shanghai": "2026-09-29T09:30:14.950201+08:00"
+      },
+      "counts": {
+        "daily_snapshots": 40,
+        "decisions_including_historical_invalidated": 47,
+        "unique_signal_dates": 40,
+        "fills": 2,
+        "orders": 2,
+        "intents": 2,
+        "ledger": 3
+      },
+      "modeled_fee_rates": [
+        "0.0005"
+      ],
+      "actual_fill_fees": "97.7463",
+      "broker_fee_reconciliation": "0",
+      "total_recorded_costs": "97.7463",
+      "total_return_to_last_settlement": "-0.031127463",
+      "max_drawdown_as_recorded_not_uniform_price_basis": "-0.0640819580670949616972436906",
+      "ledger_reconciliation": "EXACT_CURRENT_CASH_FROZEN_QUANTITY",
+      "event_type_counts": {
+        "LEGACY_EVENT": 1,
+        "DECISION_GENERATED": 48,
+        "ACCOUNT_CHANNEL_BOUND": 1,
+        "ACCOUNT_STRATEGY_BOUND": 3,
+        "EXTERNAL_CALL_SUCCEEDED": 13,
+        "ACCOUNT_STRATEGY_NAME_UPDATED": 1,
+        "SIGNAL_TRIGGERED": 2,
+        "ORDER_INTENT_CREATED": 2,
+        "ORDER_SUBMITTED": 2,
+        "ORDER_FILLED": 2,
+        "SIGNAL_CLEARED": 2,
+        "ACCOUNT_DECISION_DRIVE_FAILED": 5,
+        "DECISION_SUPERSEDED": 4,
+        "ACCOUNT_DECISION_DRIVEN": 10,
+        "ACCOUNT_CHART_GENERATION_FAILED": 12,
+        "MARKET_DATA_PREPARED": 39,
+        "DECISION_GENERATION_FAILED": 3,
+        "ACCOUNT_CHART_RECOVERED": 9,
+        "DEPENDENCY_DEGRADED": 1,
+        "SCHEDULER_OPERATION_FAILED": 10,
+        "SCHEDULER_OPERATION_RECOVERED": 5,
+        "ACCOUNT_PAUSED": 3,
+        "ACCOUNT_RESUMED": 3
+      },
+      "decision_release_hashes": {
+        "ae422915ff736431d70e0381dd6514ee800d861060cc5568712b55c895ddfb62": 22,
+        "7e5faa0b8cf4f33dd8d4fea0f1d6f75dbcac6f5f05450a3a8b30a60987158617": 2,
+        "3dccd608cf8ee762a8f359d197aca93463183b50a4da5771ca3ca694063ab692": 9,
+        "8891c8787ffcc96ff12a69b11b787d41b612ca0b437b5cb5587990ea3267b98a": 4,
+        "57d7f97f1fa8a7d5dafdf1562d83f772664aaedff95d12a4f95b391be4b0d4d6": 10
+      },
+      "intent_terminal_states": {
+        "FILLED_ALL": 2
+      }
+    },
+    "s001-v2": {
+      "current_account": {
+        "account_id": "s001-v2",
+        "strategy_id": "S001",
+        "strategy_version": "v2",
+        "initial_cash": "100000.0000",
+        "cash": "93113.0440",
+        "frozen_cash": "0.0000",
+        "total_assets": "93113.0440",
+        "quantity": 0,
+        "average_cost": "0E-12",
+        "realized_pnl": "-6886.9560",
+        "observation_start": "2026-09-03",
+        "last_settlement_session": "2026-11-05",
+        "created_at": "2026-09-03T14:03:51.929486+00:00",
+        "updated_at": "2026-11-05T12:30:49.921387+00:00",
+        "run_state": "RUNNING",
+        "health": "OK",
+        "release_hash": "fc0c16b6fe91dce796278bfccae3e828a79efd08e765205ccec8b71c945a86e7",
+        "selection_data_cutoff": "2026-09-02"
+      },
+      "created_at_shanghai": "2026-09-03T22:03:51.929486+08:00",
+      "production_frozen_metadata": {
+        "release_id": "S001-v2",
+        "release_hash": "fc0c16b6fe91dce796278bfccae3e828a79efd08e765205ccec8b71c945a86e7",
+        "selection_data_cutoff": "2026-09-02",
+        "forward_start": "2026-09-03",
+        "source_candidate": "R1102"
+      },
+      "frozen_metadata_file": {
+        "path": "D:\\CZSC-PTE\\releases\\v0.6.21\\strategies\\S001\\versions\\v2.json",
+        "bytes": 4727,
+        "sha256": "cf9a570336522d916c9c1846d6c6bfeb6e3068a44630a10b0c97d4dbcb098505",
+        "mtime_ns": 1793004310000000000
+      },
+      "boundaries": {
+        "snapshot_first": "2026-09-03",
+        "snapshot_last": "2026-11-05",
+        "first_signal": "2026-09-03",
+        "last_signal": "2026-11-05",
+        "first_valid_session": "2026-09-04",
+        "last_valid_session": "2026-11-06",
+        "first_decision_generated_at": "2026-09-04T03:45:15.141982+00:00",
+        "first_fill_shanghai": "2026-09-08T09:30:11.430803+08:00",
+        "last_fill_shanghai": "2026-09-29T09:30:14.842129+08:00"
+      },
+      "counts": {
+        "daily_snapshots": 40,
+        "decisions_including_historical_invalidated": 47,
+        "unique_signal_dates": 40,
+        "fills": 4,
+        "orders": 4,
+        "intents": 5,
+        "ledger": 7
+      },
+      "modeled_fee_rates": [
+        "0.0005"
+      ],
+      "actual_fill_fees": "192.0583",
+      "broker_fee_reconciliation": "104.3977",
+      "total_recorded_costs": "296.4560",
+      "total_return_to_last_settlement": "-0.06886956",
+      "max_drawdown_as_recorded_not_uniform_price_basis": "-0.06898672",
+      "ledger_reconciliation": "EXACT_CURRENT_CASH_FROZEN_QUANTITY",
+      "event_type_counts": {
+        "LEGACY_EVENT": 1,
+        "DECISION_GENERATED": 49,
+        "ACCOUNT_CHANNEL_BOUND": 1,
+        "ACCOUNT_STRATEGY_BOUND": 3,
+        "EXTERNAL_CALL_SUCCEEDED": 15,
+        "SIGNAL_TRIGGERED": 4,
+        "ORDER_INTENT_CREATED": 5,
+        "ORDER_SUBMITTED": 4,
+        "ORDER_FILLED": 4,
+        "EXTERNAL_CALL_FAILED": 1,
+        "ORDER_SUBMISSION_FAILED": 1,
+        "CHANNEL_RECONCILIATION_FAILED": 12,
+        "ORDER_REJECTED": 1,
+        "ACCOUNT_CHART_GENERATION_FAILED": 18,
+        "ACCOUNT_CHART_RECOVERED": 14,
+        "ACCOUNT_RECONCILIATION_RECOVERED": 1,
+        "BROKER_FEE_RECONCILED": 1,
+        "SIGNAL_CLEARED": 3,
+        "ACCOUNT_STRATEGY_NAME_UPDATED": 1,
+        "ACCOUNT_DECISION_DRIVE_FAILED": 4,
+        "DECISION_SUPERSEDED": 4,
+        "ACCOUNT_DECISION_DRIVEN": 10,
+        "MARKET_DATA_PREPARED": 39,
+        "DECISION_GENERATION_FAILED": 3,
+        "DEPENDENCY_DEGRADED": 1,
+        "SCHEDULER_OPERATION_FAILED": 15,
+        "SCHEDULER_OPERATION_RECOVERED": 5,
+        "ACCOUNT_PAUSED": 3,
+        "ACCOUNT_RESUMED": 3
+      },
+      "decision_release_hashes": {
+        "146490c8a4ee75f307d3d59453efaebc8fea671c726c023c96449706c40b944e": 22,
+        "bde403362e33318c887f83ef0903f4beb91e1792163be338c568a34517202f37": 2,
+        "2c4a339ca5dec89c03491e5fd15fc8560d7aa0424f8af2be1fcdf9b93b51a2da": 9,
+        "c70502e8d6e203004052a6d8d423fb316de854688e80d6aea10ff32ad6aa00b1": 4,
+        "fc0c16b6fe91dce796278bfccae3e828a79efd08e765205ccec8b71c945a86e7": 10
+      },
+      "intent_terminal_states": {
+        "FILLED_ALL": 4,
+        "REJECTED": 1
+      }
+    }
+  },
+  "artifacts": [
+    {
+      "path": "s001-v1_decisions.csv",
+      "rows": 47,
+      "sha256": "3ea7c52efdb56c8bf633c6a0310dc0cd72ab7343f3db76b847e46ed4edb00eb0"
+    },
+    {
+      "path": "s001-v1_fills.csv",
+      "rows": 2,
+      "sha256": "35cf0be5203f03c420f978f9e76a46725498d9ac9bdf4176ae528b968a88cfcd"
+    },
+    {
+      "path": "s001-v1_ledger.csv",
+      "rows": 3,
+      "sha256": "0edf357d9b60a18008e00ba73e59317434e2feb1e12466508680a3b8e25a38eb"
+    },
+    {
+      "path": "s001-v1_orders.csv",
+      "rows": 2,
+      "sha256": "939a90c3b5e001d9ef02380caa52447803e430d03dba563290350df8cf75d9e8"
+    },
+    {
+      "path": "s001-v1_intents.csv",
+      "rows": 2,
+      "sha256": "6a4f8b78455bca9b882c04beeabebb4493e6f9411392f50981c2ec2da2c8c1d7"
+    },
+    {
+      "path": "s001-v1_daily_snapshots.csv",
+      "rows": 40,
+      "sha256": "06eef24b746a5cb1308be5f152b7bd7464cad9c7090891ae493aec57f5e3284c"
+    },
+    {
+      "path": "s001-v1_exception_events.csv",
+      "rows": 46,
+      "sha256": "e62bf6e88a3cc0df598afca491ec4ea26304bafb7c24d1101ee03be4ad6a7fa9"
+    },
+    {
+      "path": "s001-v2_decisions.csv",
+      "rows": 47,
+      "sha256": "4a8ab806f9ffb801fe65ec273fdf7fac4b1d87806a52097022851e0597b0ad91"
+    },
+    {
+      "path": "s001-v2_fills.csv",
+      "rows": 4,
+      "sha256": "f073e91bb02824f8e5ada8b8121adb603eb8a011c5934b76972ec2403cc64697"
+    },
+    {
+      "path": "s001-v2_ledger.csv",
+      "rows": 7,
+      "sha256": "86b2d7756f02af57d2774929d23e3871b6ff2522b69bafce9b6e4dd9ea82de7f"
+    },
+    {
+      "path": "s001-v2_orders.csv",
+      "rows": 4,
+      "sha256": "706ba0af911a562e7bd8d86e793e3b202dc06f6f66016b231fe181ed9c902bcc"
+    },
+    {
+      "path": "s001-v2_intents.csv",
+      "rows": 5,
+      "sha256": "636312904daa149df30760d15c60ca640e4926e678a3cc9658f1987a353ae0a0"
+    },
+    {
+      "path": "s001-v2_daily_snapshots.csv",
+      "rows": 40,
+      "sha256": "bb62bcd55966ffb92ffbecfe7e8961f77127d87a1e39627d5c853949cbc95c2d"
+    },
+    {
+      "path": "s001-v2_exception_events.csv",
+      "rows": 72,
+      "sha256": "bd3ed58ffc71e85146f69127158706c4d67695d0d8fc6caaa5d3d4555105c57a"
+    }
+  ],
+  "recommended_comparison_window": {
+    "timezone": "Asia/Shanghai",
+    "performance_baseline_date": "2026-09-03",
+    "initial_cash": "100000.0000",
+    "initial_quantity": 0,
+    "first_decision_signal_date": "2026-09-03",
+    "first_executable_session": "2026-09-04",
+    "last_completed_valuation_session": "2026-11-05",
+    "exclude_unsettled_valid_session": "2026-11-06",
+    "note": "Use the actual recorded observation baseline, not frozen forward_start or first fill; permitting a Sep3 open trade using Sep2 signals introduces an additional startup difference."
+  },
+  "interpretation_limits": [
+    "S001-v2 first exit was rejected for an out-of-limit price, operator confirmed absent broker order, then a replacement sell filled on Sep11 14:23 Shanghai. This execution-path effect is separate from weekly-signal logic.",
+    "S001-v2 broker-fee reconciliation deducted 104.3977 on Sep11; fill-level modeled fees alone do not explain final cash.",
+    "S001-v2 holding snapshots Sep8-Sep10 use HFQ closes matching production adjusted cache, while Sep17 onward matches RAW where crosscheck data exists. As-recorded drawdown is not a uniform-RAW reconstruction.",
+    "Both accounts had historical release rebindings, pauses and data/decision failures. An ideal replay versus actual PTE difference cannot all be attributed to weekly construction.",
+    "Stored decisions include invalidated and superseded history. Use actual fills and ledger for executed performance, and explicit decision status/release lineage when comparing signals.",
+    "This extraction does not query credentials or broker services. Broker/order/decision identifiers in CSVs are pseudonymized; account ids are retained only as strategy/version labels."
+  ]
+}

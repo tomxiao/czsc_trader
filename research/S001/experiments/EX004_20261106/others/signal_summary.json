@@ -1,0 +1,223 @@
+{
+  "schema": "compact_summary",
+  "schema_version": 1,
+  "summary_of": "signal_summary",
+  "full_evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S001",
+      "experiment_id": "EX004_20261106"
+    },
+    "evidence_id": "7881cc7911d80735405944e86c16a4f938aba29f9f1046acf1121d2426b44e74.json",
+    "sha256": "7881cc7911d80735405944e86c16a4f938aba29f9f1046acf1121d2426b44e74",
+    "media_type": "application/json",
+    "name": "completed-week-signal_summary",
+    "schema": null,
+    "schema_version": null
+  },
+  "full_evidence_repository_path": "research/S001/assets/evidence/EX004_20261106/7881cc7911d80735405944e86c16a4f938aba29f9f1046acf1121d2426b44e74.json",
+  "full_content_sha256": "7881cc7911d80735405944e86c16a4f938aba29f9f1046acf1121d2426b44e74",
+  "note": "Readable summary; original complete content, including nested market-data metadata, remains immutable in full_evidence.",
+  "limits": [
+    "This is a controlled reconstruction from the 2026-11-05 retained canonical dataset, not a replay of every archived daily provider snapshot.",
+    "Partial tail bars are aggregated from available adjusted daily OHLCV; publication revisions and vendor per-day snapshots require separate production-decision reconciliation.",
+    "Native step checks use an empty account with sufficient cash to isolate signal agreement; root owns full account execution and production comparison."
+  ],
+  "method": "Each signal date independently recomputes canonical history scores and _positions; no stitched daily-tail scores.",
+  "math_source_sha256": {
+    "research\\S001\\runtime_upgrade_v4\\signal_math.py": "ef67eac8678008c5100728fe68613b1abb92b298af988f96099728c7fdff344a",
+    "strategies\\S001\\releases\\v1\\src\\strategy_runtime\\strategies\\s001_common.py": "a8aedcba422ae534d3fecaceb08ac8d598ebaeef03557605f31a332f8954eb23",
+    "strategies/S001/releases/v1/src/strategy_runtime/strategies/s001_common.py": "a8aedcba422ae534d3fecaceb08ac8d598ebaeef03557605f31a332f8954eb23",
+    "strategies/S001/releases/v2/src/strategy_runtime/strategies/s001_common.py": "a8aedcba422ae534d3fecaceb08ac8d598ebaeef03557605f31a332f8954eb23"
+  },
+  "source_math_ast_equal": [
+    "_factor_frame",
+    "_score",
+    "_regimes",
+    "_positions",
+    "_calculate_s001_scores",
+    "calculate_s001_history"
+  ],
+  "prefix_factor_cache_checks": [
+    {
+      "signal_day": "2026-09-02",
+      "frequency": "30m",
+      "rows": 10764,
+      "status": "PASS"
+    },
+    {
+      "signal_day": "2026-09-02",
+      "frequency": "daily",
+      "rows": 1378,
+      "status": "PASS"
+    },
+    {
+      "signal_day": "2026-09-30",
+      "frequency": "30m",
+      "rows": 10916,
+      "status": "PASS"
+    },
+    {
+      "signal_day": "2026-09-30",
+      "frequency": "daily",
+      "rows": 1397,
+      "status": "PASS"
+    },
+    {
+      "signal_day": "2026-11-05",
+      "frequency": "30m",
+      "rows": 11084,
+      "status": "PASS"
+    },
+    {
+      "signal_day": "2026-11-05",
+      "frequency": "daily",
+      "rows": 1418,
+      "status": "PASS"
+    }
+  ],
+  "files_sha256": {
+    "calendar.parquet": "60edcb8695a900a20beaf215b2b236504d8ee3599eec555eb3e85c0df7bd8cad",
+    "daily.parquet": "212dadb6ca532cfbe137ab398a51a0f7986238195086b69115454e36077f5e2f",
+    "input_identity.json": "d5f498b944b7c3917230050979caeb1c7a44505928de4c5bce854559b3d01cc8",
+    "m30.parquet": "e404499c080ed1cd110485073b90f62b181957c80a1e1daa2944b141be835084",
+    "raw_daily.parquet": "dec3e5080b4d90d8a324a303495c0d3ba98a43ce63d0d192bab39fd979f3c2af",
+    "weekly.parquet": "8a8991f8d5b8e1e233ba7eab61c576e4101ef1c7e22e7a5c007ea1990da4f7fd"
+  },
+  "candidates": {
+    "v1": {
+      "candidate": "C9903",
+      "content_sha256": "1fcabbd12ba21a0aa89f0bb4f9c86dbf29edba5d85f05bf5cb40058895eb7812"
+    },
+    "v2": {
+      "candidate": "C9904",
+      "content_sha256": "7a17b817788e0faeb78e90a300fb8890626624953400a944dd258567bbfac7b0"
+    }
+  },
+  "results": {
+    "v1": {
+      "signals": 41,
+      "settled_signals": 40,
+      "score_differences": 0,
+      "target_differences": 0,
+      "settled_target_differences": 0,
+      "target_changes": [],
+      "unsettled": [
+        {
+          "version": "v1",
+          "signal_day": "2026-11-05",
+          "execution_day": "2026-11-06",
+          "settled_execution_window": false,
+          "current_week_complete": false,
+          "new_last_week_date": "2026-10-30",
+          "old_last_week_date": "2026-11-05",
+          "old_weekly_factor": -1.0,
+          "new_weekly_factor": -1.0,
+          "old_score": 0.14200949525504628,
+          "new_score": 0.14200949525504628,
+          "score_difference": 0.0,
+          "old_regime": "trend",
+          "new_regime": "trend",
+          "old_target": 0.0,
+          "new_target": 0.0,
+          "target_changed": false
+        }
+      ]
+    },
+    "v2": {
+      "signals": 41,
+      "settled_signals": 40,
+      "score_differences": 0,
+      "target_differences": 0,
+      "settled_target_differences": 0,
+      "target_changes": [],
+      "unsettled": [
+        {
+          "version": "v2",
+          "signal_day": "2026-11-05",
+          "execution_day": "2026-11-06",
+          "settled_execution_window": false,
+          "current_week_complete": false,
+          "new_last_week_date": "2026-10-30",
+          "old_last_week_date": "2026-11-05",
+          "old_weekly_factor": -1.0,
+          "new_weekly_factor": -1.0,
+          "old_score": 0.14200949525504628,
+          "new_score": 0.14200949525504628,
+          "score_difference": 0.0,
+          "old_regime": "trend",
+          "new_regime": "trend",
+          "old_target": 0.0,
+          "new_target": 0.0,
+          "target_changed": false
+        }
+      ]
+    }
+  },
+  "all_math_ast_equal": {
+    "v1": [
+      "_INTRADAY_CONFIG",
+      "_DAILY_CONFIG",
+      "_WEEKLY_CONFIG",
+      "_FALLBACK_WEIGHTS",
+      "_object",
+      "_ohlcv",
+      "_config_label",
+      "_signals",
+      "_primary",
+      "_signal_score",
+      "_backward_align",
+      "_factor_frame",
+      "_score",
+      "_regimes",
+      "_positions",
+      "_calculate_s001_scores",
+      "calculate_s001_history"
+    ],
+    "v2": [
+      "_INTRADAY_CONFIG",
+      "_DAILY_CONFIG",
+      "_WEEKLY_CONFIG",
+      "_FALLBACK_WEIGHTS",
+      "_object",
+      "_ohlcv",
+      "_config_label",
+      "_signals",
+      "_primary",
+      "_signal_score",
+      "_backward_align",
+      "_factor_frame",
+      "_score",
+      "_regimes",
+      "_positions",
+      "_calculate_s001_scores",
+      "calculate_s001_history"
+    ]
+  },
+  "csv_sha256": {
+    "v1-complete.csv": "898c73a5cc2edd044395af3f04f7fb0ad1eb2a80dacbfa0d4e2cd8d9246fa321",
+    "v1-partial.csv": "898c73a5cc2edd044395af3f04f7fb0ad1eb2a80dacbfa0d4e2cd8d9246fa321",
+    "v2-complete.csv": "9d40a80977abd54ce71cc306401ea013e92b49ba8ddee54d8eba34785d6596c1",
+    "v2-partial.csv": "9d40a80977abd54ce71cc306401ea013e92b49ba8ddee54d8eba34785d6596c1"
+  },
+  "comparison_script_sha256": "ac5e98fb460362cd01d74f95a2bae9a6c914b6b7d7129cf6d30bbe1958706da3",
+  "native_step_checks": {
+    "count": 82,
+    "all_pass": true
+  },
+  "input_identity_full_evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S001",
+      "experiment_id": "EX004_20261106"
+    },
+    "evidence_id": "d5f498b944b7c3917230050979caeb1c7a44505928de4c5bce854559b3d01cc8.json",
+    "sha256": "d5f498b944b7c3917230050979caeb1c7a44505928de4c5bce854559b3d01cc8",
+    "media_type": "application/json",
+    "name": "completed-week-input_identity",
+    "schema": null,
+    "schema_version": null
+  }
+}

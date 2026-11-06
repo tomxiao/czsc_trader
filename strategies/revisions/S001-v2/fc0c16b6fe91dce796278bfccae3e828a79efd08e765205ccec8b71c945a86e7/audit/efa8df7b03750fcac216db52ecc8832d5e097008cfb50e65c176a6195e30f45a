@@ -1,0 +1,36 @@
+{
+  "recorded_at": "2026-11-06T02:41:48.653936+00:00",
+  "actor": "RSCH",
+  "user_instructions": [
+    "已冻结策略实现统一原地升级，适配当前PTE版本，并做等价性验证",
+    "沿用 codex/dev-pte-multichannel-refactor",
+    "继续",
+    "按设计口径修正实现，并推进原地升级到V4。然后对比策略在PTE前瞻观察区间内的差异"
+  ],
+  "interpretation": "Restore the original completed-week-only signal policy and migrate both S001 versions locally; this intentionally corrects partial-week behavior, without changing financial parameters or production accounts.",
+  "original": {
+    "type": "FrozenVersionReference",
+    "strategy_id": "S001",
+    "version": "v2",
+    "release_hash": "fc0c16b6fe91dce796278bfccae3e828a79efd08e765205ccec8b71c945a86e7",
+    "package_hash": "856bf1634fc0ad0c6d7708b62f21dc61bcba8bba19797e31e1109dda13a625c7"
+  },
+  "candidate": {
+    "strategy_id": "S001",
+    "candidate_id": "C9904"
+  },
+  "content_identity": {
+    "content_sha256": "7a17b817788e0faeb78e90a300fb8890626624953400a944dd258567bbfac7b0",
+    "source_sha256": "2273120d9ea6e0b97ec5225e4112066dcbe29b81cb43d0e86a19ed445d7627f0",
+    "dependency_sha256": "0e99ed359cb79ade1958afbc335e785f2b3cd7541c9bc9f7abce3f2bd95e2ea2",
+    "schema_version": 2
+  },
+  "excluded": [
+    "production writes",
+    "PTE account rebinding",
+    "qualification grants",
+    "merge",
+    "push",
+    "tag"
+  ]
+}
