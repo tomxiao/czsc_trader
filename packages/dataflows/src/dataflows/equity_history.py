@@ -1,7 +1,7 @@
 """Versioned, source-attested RAW equity facts for either market.
 
 The host supplies independent calendars, economic events and dated trading
-rules. This adapter never reconstructs events from adjusted prices or guesses
+facts. This adapter never reconstructs events from adjusted prices or guesses
 market rules. Provider completeness is an explicit source declaration, not a
 claim inferred from an empty API response.
 """
@@ -15,7 +15,7 @@ import pandas as pd
 from .contract import EquityDataRequest, ProviderBinding
 from .equity_contracts import (BarFrequency, EquityProduct, EquityQuery, InstrumentId,
     PriceAdjustment, ProviderKey, SourceRef, TradingSession)
-from .equity_data import equity_metadata, validate_equity_frame
+from .equity_data import equity_metadata, session_record, validate_equity_frame
 from .errors import DataContractError, IncompleteDataError
 
 
@@ -42,18 +42,19 @@ class EquitySourceCoverage:
 class EquityFrequencyFacts:
     frequency: BarFrequency
     bars: pd.DataFrame
-    constraints: pd.DataFrame
+    trading_facts: pd.DataFrame
 
     def __post_init__(self):
         if type(self.frequency) is not BarFrequency:
             raise TypeError('frequency facts require BarFrequency')
-        if any(type(frame) is not pd.DataFrame or frame.empty for frame in (self.bars, self.constraints)):
-            raise TypeError('frequency facts require nonempty bars and constraints')
+        if any(type(frame) is not pd.DataFrame or frame.empty for frame in (self.bars, self.trading_facts)):
+            raise TypeError('frequency facts require nonempty bars and trading_facts')
 
 
 def versioned_equity_bindings(*, instrument: InstrumentId, source: SourceRef,
         coverage: EquitySourceCoverage, sessions: tuple[TradingSession, ...],
-        frequencies: tuple[EquityFrequencyFacts, ...], actions: pd.DataFrame):
+        frequencies: tuple[EquityFrequencyFacts, ...], actions: pd.DataFrame,
+        following_session: TradingSession | None = None):
     """Admit complete facts once; serve detached, exact-range RAW selections.
 
     ``coverage.evidence`` identifies the upstream verification or source receipt.
@@ -80,10 +81,14 @@ def versioned_equity_bindings(*, instrument: InstrumentId, source: SourceRef,
             or not coverage.start <= session.session_date <= coverage.end for session in sessions)
             or tuple(s.session_date for s in sessions) != tuple(sorted({s.session_date for s in sessions}))):
         raise DataContractError('source calendar differs from market or declared coverage')
+    if following_session is not None and (type(following_session) is not TradingSession
+            or following_session.timezone != instrument.timezone
+            or following_session.session_date <= coverage.end):
+        raise DataContractError('following trading session must be after the attested coverage')
     # The installed provider owns private numeric containers. Later caller
     # mutation, or mutation of a fetched view, cannot change source facts.
     saved = {item.frequency: (pd.DataFrame(item.bars, copy=True),
-                             pd.DataFrame(item.constraints, copy=True)) for item in frequencies}
+                             pd.DataFrame(item.trading_facts, copy=True)) for item in frequencies}
     action_frame = pd.DataFrame(actions, copy=True)
     if coverage.no_actions_verified and not (len(action_frame) == 1 and action_frame.Kind.iloc[0] == 'NONE'):
         raise DataContractError('no-action attestation conflicts with supplied economic events')
@@ -94,8 +99,7 @@ def versioned_equity_bindings(*, instrument: InstrumentId, source: SourceRef,
         raise DataContractError('economic events exceed their attested source coverage')
     source_receipt = {'coverage_evidence': coverage.evidence,
         'coverage_evidence_sha256': sha256(coverage.evidence.encode()).hexdigest(),
-        'action_history_complete': True, 'economic_price_basis': 'RAW',
-        'constraint_contract': 'DATED_EQUITY_RULES_V1'}
+        'action_history_complete': True, 'economic_price_basis': 'RAW'}
     if any({'BarStatus', 'ExecutionBlocked'}.intersection(frame.columns) for frame, _ in saved.values()):
         if any(not {'BarStatus', 'ExecutionBlocked'}.issubset(frame) for frame, _ in saved.values()):
             raise DataContractError('explicit observation facts must be supplied for every frequency')
@@ -115,9 +119,9 @@ def versioned_equity_bindings(*, instrument: InstrumentId, source: SourceRef,
         'SessionDate': [s.session_date.isoformat() for s in sessions]})
     # Validate the complete source before publishing any binding. No successful
     # selection can hide an invalid event, trading rule or omitted source bar.
-    for frequency, (bars, constraints) in saved.items():
+    for frequency, (bars, trading_facts) in saved.items():
         for product, frame in ((EquityProduct.BARS, bars),
-                (EquityProduct.CONSTRAINTS, constraints), (EquityProduct.SESSIONS, session_frame),
+                (EquityProduct.TRADING_FACTS, trading_facts), (EquityProduct.SESSIONS, session_frame),
                 (EquityProduct.ACTIONS, action_frame)):
             request = request_for(product, frequency, coverage.start, coverage.end)
             validate_equity_frame(frame, request, metadata(request, sessions))
@@ -125,8 +129,8 @@ def versioned_equity_bindings(*, instrument: InstrumentId, source: SourceRef,
     action_days = tuple(event_days.dt.tz_convert(instrument.timezone).dt.date)
     row_days = {frequency: (
         tuple(pd.to_datetime(bars.BarStart).dt.tz_convert(instrument.timezone).dt.date),
-        tuple(pd.to_datetime(constraints.Date).dt.tz_convert(instrument.timezone).dt.date))
-        for frequency, (bars, constraints) in saved.items()}
+        tuple(pd.to_datetime(trading_facts.Date).dt.tz_convert(instrument.timezone).dt.date))
+        for frequency, (bars, trading_facts) in saved.items()}
 
     def select(frame, dates, start, end):
         return frame.iloc[bisect_left(dates, start):bisect_right(dates, end)]
@@ -146,6 +150,11 @@ def versioned_equity_bindings(*, instrument: InstrumentId, source: SourceRef,
         if not selected_sessions:
             raise IncompleteDataError('requested interval contains no declared trading sessions')
         meta = metadata(request, selected_sessions)
+        if query.product is EquityProduct.TRADING_FACTS:
+            next_index = bisect_right(days, query.end)
+            next_session = sessions[next_index] if next_index < len(sessions) else following_session
+            if next_session is not None:
+                meta['following_session'] = session_record(next_session)
         if query.product is EquityProduct.SESSIONS:
             selected = select(session_frame, days, query.start, query.end)
         elif query.product is EquityProduct.ACTIONS:
@@ -160,8 +169,8 @@ def versioned_equity_bindings(*, instrument: InstrumentId, source: SourceRef,
                     'Kind': 'NONE', 'Ratio': 1., 'CashPerShare': 0., 'PayAt': None}])
                 meta['no_actions_verified'] = True
         else:
-            bars, constraints = saved[query.frequency]
-            original = bars if query.product is EquityProduct.BARS else constraints
+            bars, trading_facts = saved[query.frequency]
+            original = bars if query.product is EquityProduct.BARS else trading_facts
             indexed_days = row_days[query.frequency][0 if query.product is EquityProduct.BARS else 1]
             selected = select(original, indexed_days, query.start, query.end)
         selected = pd.DataFrame(selected, copy=True).reset_index(drop=True)

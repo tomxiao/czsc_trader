@@ -108,7 +108,7 @@ V4 可声明 `DatasetObservationInput` 观察表，使用 `EquityInputBinding.ob
 
 正式与隔离运行复用 SRT 决策、执行反馈、公司行动及订单回报入账核心。策略按声明的分析价格计算，
 成交使用未复权价格。公司行动按可得时间入账，事件事实变化明确报错；不自动重建已经错过的交易历史。
-日线 `DAILY_FORWARD_V1` 输入配方只取已完成交易日的价格及当前可得日历、约束和公司行动，
+日线 `DAILY_FORWARD_V2` 输入配方只取已完成交易日的价格及当前可得日历、动态交易事实和数量变动事件，
 每个执行区间保存固定绑定，重试及重启复用。自动 M30 准备需要 DFLS 尚未提供的部分交易时段产品，当前明确拒绝；
 显式绑定已准备数据的 M30 技术检验保持支持。
 
@@ -135,19 +135,23 @@ V4 可声明 `DatasetObservationInput` 观察表，使用 `EquityInputBinding.ob
 
 ### 正式 V4 数据源配置与重绑
 
-在宿主 `--config-root` 下放置 `equity-sources.json`，按市场和 `SourceRef(provider, revision)` 精确注册 V4 来源。示例名称须替换成目标配方声明的来源身份。
+在宿主 `--config-root` 下用 `equity-sources.json` 注册行情、交易日历及动态数据。下方域名和来源名称仅用于展示配置结构。账户配方中的角色和 `SourceRef(provider, revision)` 必须对应实际注册项。
 
 ```json
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "sources": [
-    {"market": "CN", "adapter": "TUSHARE_CN", "provider": "cn-feed", "revision": "v1", "evidence_manifest": "equity-facts/cn.json"},
-    {"market": "US", "adapter": "FUTU_US", "provider": "us-feed", "revision": "v1", "evidence_manifest": "equity-facts/us.json"}
+    {"market": "CN", "adapter": "TUSHARE_CN", "provider": "cn-feed", "revision": "v1"},
+    {"market": "US", "adapter": "FUTU_US", "provider": "us-feed", "revision": "v1"},
+    {"market": "CN", "adapter": "DYNAMIC_FACTS", "provider": "cn-facts", "revision": "v1", "endpoint": "https://cn.example.test/equity", "calendar_source": {"provider": "cn-feed", "revision": "v1"}},
+    {"market": "US", "adapter": "DYNAMIC_FACTS", "provider": "us-facts", "revision": "v1", "endpoint": "https://us.example.test/equity", "calendar_source": {"provider": "us-feed", "revision": "v1"}}
   ]
 }
 ```
 
-经济事实清单位于 `--data-dir` 内，格式见 [DFLS 说明](../dataflows/README.md)。仅需价格和日历的辅助来源可以省略清单。账户主交易来源须覆盖请求的约束及公司行动区间。富途报价连接在首次取数时建立，同一宿主共享，退出时关闭。仅凭研究用交易规则或除息日无法接入正式账户。
+`DYNAMIC_FACTS` 在 DFLS 内部按请求查询可交易状态、价格上下限及数量变动事件。宿主的报价连接在首次取数时建立，同一宿主共享并在退出时关闭。MRS 规则随平台制品分发，独立于 DFLS 配置。接口和覆盖要求见 [DFLS](../dataflows/README.md) 和 [MRS](../market_rules/README.md)。
+
+账户重绑时用新版输入配方显式绑定 `trading_facts`。生产来源缺失或请求不完整会导致数据准备失败。发布前需要逐市场核实真实动态来源及其覆盖范围。
 
 离线维护使用 `update_account_bindings(runtime_root, target_release_id, updates)`。原 `AccountBindingUpdate` 继续服务旧账户合同。原生 V4 请求使用 `V4AccountBindingUpdate`，显式携带当前与目标发布身份、渠道、账户事实指纹、生效区间、目标规则、`FormalV4Inputs` 和状态处理方式。用 `account_binding_facts_sha256` 取得已暂停账户的事实指纹。
 

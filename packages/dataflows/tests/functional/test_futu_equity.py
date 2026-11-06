@@ -9,20 +9,16 @@ from dataflows import (AssetClass, EquityDataRequest, EquityProduct, EquityQuery
                        Dataflows, DataSpace, ProviderConfig, PreparePolicy, ProviderBinding, PriceAdjustment,
                        BarFrequency)
 from dataflows.equity_data import validate_equity_frame
-from dataflows.errors import DataContractError, IncompleteDataError
+from dataflows.errors import IncompleteDataError
 
 
 class Quotes:
     def __init__(self):
         self.calls = []
-        self.action = pd.DataFrame()
         self.repeat = False
 
     def request_trading_days(self, **kwargs):
         return 0, [{"time": "2026-11-27", "trade_date_type": "MORNING"}]
-
-    def get_rehab(self, code):
-        return 0, self.action
 
     def request_history_kline(self, code, **kwargs):
         assert kwargs["autype"] in {"None", "qfq", "hfq"}  # SDK values are case-sensitive.
@@ -54,30 +50,6 @@ def test_quote_adapter_half_day_timezone_and_adjustment_request(adjustment, auty
     assert frame.Date.iloc[-1].hour == 18  # 13:00 local half-day close.
     assert quotes.calls[0]["autype"] == autype and quotes.calls[0]["session"] == "RTH"
     assert metadata["adjustment"] == adjustment.value
-
-
-@pytest.mark.parametrize('vendor_ratio,account_ratio', [(5., .2), (.2, 5.)])
-def test_quote_adapter_split_ratio_and_unsupported_cash_dividend(vendor_ratio, account_ratio):
-    quotes = Quotes()
-    quotes.action = pd.DataFrame([{"ex_div_date": "2026-11-27", "split_ratio": vendor_ratio, "per_cash_div": 0.}])
-    req = request(EquityProduct.ACTIONS)
-    fetch = futu_equity_bindings(source=req.parameters.source, quote_context=quotes)[req.parameters.provider_key].fetch
-    frame, metadata = fetch(req)
-    validate_equity_frame(frame, req, metadata)
-    assert frame.Ratio.iloc[0] == account_ratio  # Futu old/new -> account new/old.
-    quotes.action.loc[0, "per_cash_div"] = .2
-    with pytest.raises(DataContractError, match="payment evidence"):
-        fetch(req)
-
-
-@pytest.mark.parametrize('ratio', [0., -1., float('nan'), float('inf')])
-def test_quote_adapter_rejects_invalid_split_ratio(ratio):
-    quotes = Quotes()
-    quotes.action = pd.DataFrame([{'ex_div_date':'2026-11-27','split_ratio':ratio,'per_cash_div':0.}])
-    req = request(EquityProduct.ACTIONS)
-    fetch = futu_equity_bindings(source=req.parameters.source, quote_context=quotes)[req.parameters.provider_key].fetch
-    with pytest.raises(DataContractError, match='invalid source split ratio'):
-        fetch(req)
 
 
 def test_repeated_page_key_is_a_failure():
@@ -118,13 +90,13 @@ def gap_flows(tmp_path, quotes, policy):
                      providers=ProviderConfig(bindings={}, equity_bindings=bindings))
 
 
-def test_explicit_gap_policy_prepares_and_pins_all_four_products(tmp_path):
+def test_explicit_gap_policy_prepares_and_pins_observations(tmp_path):
     block = TimeInterval(datetime(2026, 11, 27, 16, 5, tzinfo=timezone.utc),
                          datetime(2026, 11, 27, 16, 10, tzinfo=timezone.utc))
-    policy = UsEquityBarPolicy(1, .01, (block,))
+    policy = UsEquityBarPolicy((block,))
     quotes = GappedQuotes()
     flows = gap_flows(tmp_path, quotes, policy)
-    requests = tuple(request(p) for p in EquityProduct)
+    requests = tuple(request(p) for p in (EquityProduct.BARS, EquityProduct.SESSIONS))
     prepared = flows.prepare(requests, policy=PreparePolicy.REUSE)
     assert prepared.ready, [i.error for i in prepared.items]
     fetched = flows.fetch(requests[0], prepared=prepared.reference)
@@ -135,10 +107,7 @@ def test_explicit_gap_policy_prepares_and_pins_all_four_products(tmp_path):
     assert bars.loc[1, ["Open", "High", "Low", "Close", "Volume", "Amount"]].isna().all()
     assert bars.AvailableDate.iloc[1] == bars.Date.iloc[1]
     assert list(bars.ExecutionBlocked) == [False, False, False, True, False, False, False]
-    constraints = flows.fetch(requests[3], prepared=prepared.reference)
-    assert constraints.ready and constraints.dataframe.Tradable.all()
-    assert constraints.dataframe.AvailableDate.equals(constraints.dataframe.Date)
-    assert constraints.identity.metadata["tradability_basis"] == "RESEARCH_ASSUMPTION_NOT_HISTORICAL_HALT_EVIDENCE"
+    assert "equity.trading_facts" not in flows.datasets and "equity.actions" not in flows.datasets
     # Reloaded, pinned content retains missing values and its content identity.
     reloaded = gap_flows(tmp_path, GappedQuotes("request_failure"), policy).fetch(requests[0], prepared=prepared.reference)
     assert reloaded.ready and reloaded.identity.content_sha256 == fetched.identity.content_sha256
@@ -149,24 +118,24 @@ def test_explicit_gap_policy_prepares_and_pins_all_four_products(tmp_path):
 def test_research_gap_policy_does_not_mask_source_failures(tmp_path, defect):
     quotes = GappedQuotes(defect)
     quotes.repeat = defect == "pagination"
-    result = gap_flows(tmp_path, quotes, UsEquityBarPolicy(1, .01)).prepare(
+    result = gap_flows(tmp_path, quotes, UsEquityBarPolicy()).prepare(
         (request(EquityProduct.BARS),), policy=PreparePolicy.REFRESH)
     assert not result.ready and result.reference is None
 
 
 def test_default_adapter_remains_strict_and_does_not_bind_constraints(tmp_path):
     flows = gap_flows(tmp_path, GappedQuotes(), None)
-    assert "equity.constraints" not in flows.datasets
+    assert "equity.trading_facts" not in flows.datasets and "equity.actions" not in flows.datasets
     result = flows.prepare((request(EquityProduct.BARS),), policy=PreparePolicy.REUSE)
     assert not result.ready and result.items[0].error.code == "INCOMPLETE_DATA"
 
 
 @pytest.mark.parametrize("defect", ["missing_policy", "incomplete_download", "fake_missing_price", "wrong_zero",
-                                   "wrong_block", "unknown_status", "cn_market", "wrong_constraints"])
+                                   "wrong_block", "unknown_status", "cn_market"])
 def test_gap_declarations_are_validated_at_publication(tmp_path, defect):
-    req = request(EquityProduct.CONSTRAINTS if defect == "wrong_constraints" else EquityProduct.BARS)
+    req = request(EquityProduct.BARS)
     binding = futu_equity_bindings(source=req.parameters.source, quote_context=GappedQuotes(),
-                                  research_policy=UsEquityBarPolicy(1, .01))[req.parameters.provider_key]
+                                  research_policy=UsEquityBarPolicy())[req.parameters.provider_key]
     frame, metadata = binding.fetch(req)
     if defect == "missing_policy":
         del metadata["research_bar_policy"]
@@ -182,15 +151,14 @@ def test_gap_declarations_are_validated_at_publication(tmp_path, defect):
         frame.loc[0, "BarStatus"] = "HALTED"
     elif defect == "cn_market":
         req = EquityDataRequest(InstrumentId(MarketId.CN, AssetClass.STOCK, "600000.SH"), req.parameters.source, req.parameters.query)
-    else:
-        frame.loc[1, "Tradable"] = False
     flows = Dataflows(base_dir=tmp_path, space=DataSpace(Path("assets")), providers=ProviderConfig(bindings={},
         equity_bindings={req.parameters.provider_key: ProviderBinding("futu", "test-v1", lambda _: (frame, metadata))}))
     prepared = flows.prepare((req,), policy=PreparePolicy.REFRESH)
     assert not prepared.ready and prepared.reference is None
 
 
-@pytest.mark.parametrize("step,tick", [(True, .01), (0, .01), (1, True), (1, float("nan")), (1, 0.)])
-def test_research_policy_rejects_invalid_order_rules(step, tick):
-    with pytest.raises(ValueError):
-        UsEquityBarPolicy(step, tick)
+def test_research_policy_rejects_overlapping_observation_gaps():
+    block = TimeInterval(datetime(2026, 11, 27, 16, 5, tzinfo=timezone.utc),
+                         datetime(2026, 11, 27, 16, 10, tzinfo=timezone.utc))
+    with pytest.raises(ValueError, match="nonoverlapping"):
+        UsEquityBarPolicy((block, block))

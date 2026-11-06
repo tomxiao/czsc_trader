@@ -76,7 +76,7 @@ def test_auxiliary_definition_binding_roundtrip_and_legacy_identity(tmp_path):
     auxbinding = EquityAuxiliaryBinding(item, 'b' * 64, 'c' * 64)
     binding = EquityInputBinding(PreparedDataRef(uuid4(), uuid4(), 'a' * 64), definition.instrument,
         definition.execution_spec.fingerprint, tuple((p, 'd' * 64) for p in
-        ('bars', 'sessions', 'actions', 'constraints')), 1, (auxbinding,))
+        ('bars', 'sessions', 'actions', 'trading_facts')), 1, (auxbinding,))
     assert EquityInputBinding.from_dict(json.loads(json.dumps(binding.to_dict()))) == binding
     requests = item.requests(date(2025, 1, 1), date(2025, 1, 2))
     assert [binding.request_key(r) for r in requests] == ['auxiliary:market:bars', 'auxiliary:market:sessions']

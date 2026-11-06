@@ -326,7 +326,9 @@ class PortfolioHistoricalExecutor(_EquityAccount):
             raise ValueError('explicit dated sell remainder policy is required')
         policy = constraint['PriceLimitPolicy']
         bounds = (constraint.get('PriceLimitLower'), constraint.get('PriceLimitUpper'))
-        if policy == 'DATED_LIMITS':
+        if policy == 'DATED_LIMITS' and not constraint['Tradable'] and all(pd.isna(value) for value in bounds):
+            limits = None
+        elif policy == 'DATED_LIMITS':
             local_start = start.astimezone(_SESSION_ZONES[self.spec.market_id])
             limits = SessionPriceLimits(local_start.date(), float(bounds[0]), float(bounds[1]), self.spec.price_tick)
         elif policy == 'EXPLICIT_UNBOUNDED' and all(pd.isna(value) for value in bounds):

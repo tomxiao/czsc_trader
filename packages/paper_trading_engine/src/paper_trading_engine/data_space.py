@@ -13,6 +13,7 @@ from dataflows import Dataflows, DataSpace, EquityProduct, MarketId, ProviderCon
 class EquityAdapter(StrEnum):
     TUSHARE_CN = 'TUSHARE_CN'
     FUTU_US = 'FUTU_US'
+    DYNAMIC_FACTS = 'DYNAMIC_FACTS'
 
 
 @dataclass(frozen=True, slots=True)
@@ -20,42 +21,41 @@ class EquitySourceConfig:
     market: MarketId
     source: SourceRef
     adapter: EquityAdapter
-    evidence_manifest: Path | None
+    endpoint: str | None = None
+    calendar_source: SourceRef | None = None
 
 
-def _source_config(config_root: Path, data_dir: Path) -> tuple[EquitySourceConfig, ...]:
+def _source_config(config_root: Path) -> tuple[EquitySourceConfig, ...]:
     path = config_root / 'equity-sources.json'
     if not path.exists():
         return ()
     value = json.loads(path.read_text(encoding='utf-8'))
     if (type(value) is not dict or set(value) != {'schema_version', 'sources'}
-            or type(value['schema_version']) is not int or value['schema_version'] != 1
+            or type(value['schema_version']) is not int or value['schema_version'] != 2
             or type(value['sources']) is not list):
         raise ValueError('invalid PTE equity source configuration')
     sources = []
     identities = set()
     for row in value['sources']:
         required = {'market', 'provider', 'revision', 'adapter'}
-        if type(row) is not dict or not required <= row.keys() <= required | {'evidence_manifest'}:
+        if type(row) is not dict or not required <= row.keys():
             raise ValueError('invalid PTE equity source entry')
         market = MarketId(row['market'])
         adapter = EquityAdapter(row['adapter'])
-        if (market is MarketId.CN) != (adapter is EquityAdapter.TUSHARE_CN):
-            raise ValueError('PTE equity adapter differs from its declared market')
         source = SourceRef(row['provider'], row['revision'])
         if (market, source) in identities:
             raise ValueError('duplicate PTE equity source identity')
         identities.add((market, source))
-        manifest = None
-        if 'evidence_manifest' in row:
-            raw = row['evidence_manifest']
-            if type(raw) is not str or not raw:
-                raise ValueError('PTE equity evidence manifest must be a relative file path')
-            relative = Path(raw)
-            manifest = (data_dir / relative).resolve()
-            if relative.anchor or '..' in relative.parts or not manifest.is_relative_to(data_dir.resolve()):
-                raise ValueError('PTE equity evidence manifest must stay under the data directory')
-        sources.append(EquitySourceConfig(market, source, adapter, manifest))
+        if adapter is EquityAdapter.DYNAMIC_FACTS:
+            from dataflows.equity_dynamic import validate_facts_endpoint
+            if set(row) != required | {'endpoint', 'calendar_source'}:
+                raise ValueError('dynamic facts require an endpoint and an independent calendar source')
+            validate_facts_endpoint(row['endpoint'])
+            sources.append(EquitySourceConfig(market, source, adapter, row['endpoint'], SourceRef(**row['calendar_source'])))
+        else:
+            if set(row) != required or (market is MarketId.CN) != (adapter is EquityAdapter.TUSHARE_CN):
+                raise ValueError('PTE equity adapter differs from its market or fields')
+            sources.append(EquitySourceConfig(market, source, adapter))
     return tuple(sources)
 
 
@@ -101,21 +101,26 @@ def create_dataflows(*, data_dir: Path, space: DataSpace, config_root: Path,
     env_file = config_root / '.env'
     equity = {}
     quotes = _FutuQuotes(opend_host, opend_port, resources)
-    for item in _source_config(config_root, data_dir):
+    sources = _source_config(config_root)
+    for item in sources:
         if item.adapter is EquityAdapter.TUSHARE_CN:
             from dataflows.tushare_equity import tushare_equity_bindings
             bindings = tushare_equity_bindings(source=item.source, env_file=env_file)
-        else:
+        elif item.adapter is EquityAdapter.FUTU_US:
             from dataflows.futu_equity import futu_equity_bindings
             bindings = futu_equity_bindings(source=item.source, quote_context=quotes)
-        # Formal execution facts come from declared evidence, never research assumptions.
-        equity.update((key, binding) for key, binding in bindings.items()
-                      if key.product in {EquityProduct.BARS, EquityProduct.SESSIONS})
-        if item.evidence_manifest is not None:
-            from dataflows.equity_evidence import equity_evidence_bindings
-            equity.update(equity_evidence_bindings(source=item.source, market=item.market,
-                manifest_path=item.evidence_manifest,
-                session_binding=bindings[ProviderKey(EquityProduct.SESSIONS, item.market, item.source)]))
+        else:
+            continue
+        equity.update(bindings)
+    for item in sources:
+        if item.adapter is not EquityAdapter.DYNAMIC_FACTS:
+            continue
+        from dataflows.equity_dynamic import dynamic_equity_bindings
+        calendar = equity.get(ProviderKey(EquityProduct.SESSIONS, item.market, item.calendar_source))
+        if calendar is None:
+            raise ValueError('dynamic equity facts calendar source is not registered')
+        equity.update(dynamic_equity_bindings(source=item.source, market=item.market, endpoint=item.endpoint,
+            calendar_source=item.calendar_source, calendar_binding=calendar))
     return Dataflows(
         base_dir=data_dir,
         space=space,

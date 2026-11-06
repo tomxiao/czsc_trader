@@ -42,7 +42,7 @@ def diagnose_equity_evidence(repository, request, *, execution=None):
             return {k: r[k] for k in ("instrument", "specification", "initial_cash", "fee_rate", "window", "benchmark",
                                        "drawdown_basis", "concentration_basis")} | {
                 "income_policy": r.get("income_policy"),
-                "data": {key: value["data"][key] for key in ("bars", "sessions", "actions", "constraints")},
+                "data": {key: value["data"][key] for key in ("bars", "sessions", "actions", "trading_facts", "constraints")},
                 "execution_data": {k: v for k, v in value["data"].items() if k.startswith("execution:")}}
         if len(loaded) == 2 and comparable(loaded[0][0]) != comparable(loaded[1][0]):
             return fail(AccountDiagnosisStatus.INCOMPARABLE, "equity market, data, execution, cost or window differs")

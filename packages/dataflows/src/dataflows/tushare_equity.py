@@ -45,7 +45,7 @@ def tushare_equity_bindings(*, source: SourceRef,
     """CN RAW/HFQ D1/M30 and calendar products; no inferred events or rules.
 
     Publication-time limitations of the upstream adapters remain explicit. The
-    host must separately bind dated constraints and complete economic events.
+    host must separately bind trading facts and verified mechanical actions.
     """
     return _bindings(source=source, env_file=env_file, raw=True)
 

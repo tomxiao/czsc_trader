@@ -61,7 +61,7 @@ class UsEquitySpec:
 class AccountPolicy:
     currency: str
     cash_availability: CashAvailabilityPolicy
-    # Settled-only accounts require provider-declared settlement times per bar.
+    # Settled-only accounts apply the settlement time resolved for each execution interval.
     allow_short: bool = False
     allow_negative_cash: bool = False
 

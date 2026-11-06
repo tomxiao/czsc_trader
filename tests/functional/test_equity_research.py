@@ -57,13 +57,14 @@ def test_settled_only_sale_cannot_fund_same_day_reentry(tmp_path):
 
 def test_audit_rejects_tampered_account(tmp_path):
     context, request, products, _ = setup_equity(tmp_path)
-    run = replay_payload(context, request)["runs"]["candidate"]
+    payload = replay_payload(context, request)
+    run = payload["runs"]["candidate"]
     run["account_points"][3]["cash"] += 1
     facts = json.loads(products[EquityProduct.BARS].to_json(orient="records", date_format="iso"))
     with pytest.raises(ValueError, match="cash"):
         audit_equity_account(initial_cash=request.initial_cash, specification=asdict(context.execution_spec), bars=facts,
                              action_facts=json.loads(products[EquityProduct.ACTIONS].to_json(orient="records", date_format="iso")),
-                             constraints=json.loads(products[EquityProduct.CONSTRAINTS].to_json(orient="records", date_format="iso")),
+                             constraints=payload["audit_inputs"]["constraints"],
                              fee_rate=request.fee_rate,account_contract=4,decision_contract="FORMAL_V4",
                              **{key: run[key] for key in ("decisions", "orders", "fills", "actions", "account_points", "trades")})
 
@@ -133,11 +134,11 @@ def test_positive_latency_delays_which_bar_is_observable(tmp_path):
 def test_execution_requires_current_trading_constraints_and_volume(tmp_path, defect):
     context, request, products, _ = setup_equity(tmp_path)
     if defect == "missing_constraint":
-        products[EquityProduct.CONSTRAINTS] = products[EquityProduct.CONSTRAINTS].drop(index=3)
+        products[EquityProduct.TRADING_FACTS] = products[EquityProduct.TRADING_FACTS].drop(index=3)
         with pytest.raises(ValueError, match="every execution interval"):
             replay_payload(context, request)
     elif defect == "late_constraint":
-        rules = products[EquityProduct.CONSTRAINTS]
+        rules = products[EquityProduct.TRADING_FACTS]
         rules.loc[3, "AvailableDate"] += pd.Timedelta(seconds=1)
         with pytest.raises(ValueError, match="unavailable"):
             replay_payload(context, request)

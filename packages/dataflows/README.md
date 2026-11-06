@@ -1,69 +1,18 @@
 # 金融数据流（Dataflows，DFLS）研究员使用手册
 
-## V4 连续行情与经济事实供数
+## V4 行情与动态数据
 
-`tushare_equity_bindings(source=..., env_file=...)` 提供 CN 股票/ETF 的 RAW、HFQ 日线与 30 分钟线，
-以及独立交易日历。复用既有 Tushare 规范化、单位、复权和质量契约，不从 HFQ 倒推 RAW。
-原 `tushare_equity_observation_bindings` 仍只接受 HFQ；新入口不接受 QFQ，不包含隐式交易规则或公司行动。
-既有行情可用时间的限制保留在元数据中：收盘时间/17点复权计划时间不等于逐日供应商发布时刻已验证。
+`tushare_equity_bindings(source=..., env_file=...)` 提供 A 股股票和 ETF 的未复权、后复权日线与 30 分钟线，以及独立交易日历。`futu_equity_bindings` 提供美股常规时段的行情及交易日历。行情继续沿用既有质量契约和供应商发布时间的限制。
 
-US 继续使用 `futu_equity_bindings` 的 RAW/HFQ 行情与独立 RTH 日历。Futu `split_ratio` 是旧股/新股，
-适配器取倒数转换成账户需要的新股/旧股，拆股与合股均如此。现金分红仍必须另有支付日，
-不能从 `get_rehab` 的除息日猜派息日；正式运行不可把 `research_policy` 的研究约束当作真实交易规则。
-来源：[Futu复权字段](https://openapi.futunn.com/futu-api-doc/quote/get-rehab.html)。
+`dynamic_equity_bindings(source=..., market=..., endpoint=..., calendar_source=..., calendar_binding=...)`
+按市场和来源身份接入动态数据。它返回两个独立产品：
 
-`equity_evidence_bindings(source=..., market=..., manifest_path=..., session_binding=...)` 为 CN/US
-装配经数据责任方核验的 ACTIONS、CONSTRAINTS 文件。复用同源独立 `SESSIONS` binding，不抓取替代来源，
-不外推覆盖区间，不生成缺失的限价、停牌或卖出可用日。返回值可与行情 binding 合并到
-`ProviderConfig.equity_bindings`。PTE 宿主配置及生命周期见 [PTE模块](../paper_trading_engine/README.md)。
+- `equity.trading_facts` 每个执行区间一行，包含 `Date`、`AvailableDate`、`Tradable`、`PriceLimitLower`、`PriceLimitUpper`。上下限成对出现或成对为空。A 股下一个实际交易日来自独立日历。
+- `equity.actions` 提供影响账户实际持有数量的拆股、合股及份额折算，行字段为 `Date`、`AvailableDate`、`EventId`、`Kind`、`Ratio`、`CashPerShare`、`PayAt`。动态适配器仅接收 `Kind=SPLIT`，比例为调整后数量除以调整前数量，`CashPerShare=0`，`PayAt=null`。生产现金差额由 PTE 按富途账本对账。
 
-清单字段如下；示意路径和哈希须替换成实际核验文件，示例不是市场事实：
+端点通过 HTTPS（隔离测试允许回环 HTTP）接收 `market/symbol/asset_class/product/start/end/frequency/session`。响应包含 `source`（`provider/revision`）、`selection`（与请求参数一致）、`coverage`（`start/end/complete/receipt`）及 `rows`。时间戳包含明确时区，数据必须覆盖请求区间。`rows=[]` 只有在行动覆盖已明确核实且 `complete=true` 时才表示没有行动。缺行、覆盖不足、来源不符和未及时可得均明确失败。数据责任方负责核实并维护 `receipt` 所指的来源记录，DFLS 校验响应契约和请求身份。
 
-```json
-{
-  "schema_version": 1,
-  "source": {"provider": "reviewed-economic-source", "revision": "v1"},
-  "market": "CN",
-  "instruments": [{
-    "instrument": {"market": "CN", "asset_class": "ETF", "symbol": "588080.SH"},
-    "actions": {
-      "start": "2026-11-05", "end": "2026-11-05", "complete": true,
-      "data": {"path": "actions.json", "sha256": "<actual SHA256>"},
-      "evidence": {"path": "actions-receipt.json", "sha256": "<actual SHA256>"}
-    },
-    "constraints": {
-      "daily": {
-        "start": "2026-11-05", "end": "2026-11-05",
-        "data": {"path": "rules-daily.json", "sha256": "<actual SHA256>"},
-        "evidence": {"path": "rules-receipt.json", "sha256": "<actual SHA256>"}
-      }
-    }
-  }]
-}
-```
-
-数据文件为 JSON 行对象数组；`Date`、`AvailableDate`、`PayAt`、`BuySellableAt`、`SettlementAt`
-均使用明确时区。约束必须提供每个请求执行区间的数量单位、价格步长、可交易状态、限价政策/上下限、
-卖出可用时点、结算时点和零股处置政策；日线与 30 分钟覆盖分别声明，不能按需猜测缺失频率。
-动作使用 `SPLIT` 或 `CASH_DIVIDEND`，包含稳定事件编号、数量比例/现金金额与真实支付时点。
-完整来源核验后确实无事件时，数据为 `[]` 且 `complete=true`；由适配器为请求子区间表达 `NONE`。
-非空事件不得预先混入人为 `NONE` 行。
-
-所有路径相对清单目录，禁止越界；文件字节须符合 SHA256。清单每次请求重新读取，新增核验范围可显式扩展；
-旧 `PreparedDataRef` 仍读取原不可变资产。声明覆盖不足、缺规则、缺支付日、哈希不符均失败。
-文件校验只证明输入合同与字节身份，不替代数据责任方对源事实及完整覆盖的核验。
-`SourceRef` 是版本化来源合同；更换取源、价格或可用时间语义必须使用新 revision，不能用同名别名偷换。
-
-ETF 限价必须复用已有 `fetch_security_price_limits` / `SECURITY_PRICE_LIMITS` 产品，内部调用
-`etf_limit`；不能用 `stk_limit` 的空返回判断 ETF 缺限价。2026-11-06 实测 588080.SH、
-510500.SH、159326.SZ 的11月5—6日均取得两条有效上下限，身份与交易日历核验通过。
-该来源仍明确标注盘前更新时间为供应商计划、历史逐条发布时间未验证；限价产品不单独证明停牌状态、
-买入卖出可用性或结算规则，不能冒充完整 V4 CONSTRAINTS。`fund_div` 可返回基金分红记录，
-但不单独证明拆分事件覆盖；完整无行动记录也不能延伸到其声明区间以外。
-这套文件入口支持已确认区间，并不宣称持续维护生产经济事实已自动完成。
-同轮只读报价验证中，MU/SOXX 的 2026-11-05 RAW/HFQ 日线与日历均取得一条并通过产品校验；
-MU 快照取得每手1股、价格步长0.01、未停牌与来源更新时间。快照只证明取得时的供应商状态，
-未外推成历史逐日或下一交易日规则；行情元数据的历史发布时刻未验证标志保持不变。
+A 股 ETF 的上下限可通过现有 `SECURITY_PRICE_LIMITS`（Tushare `etf_limit`）取得。该产品仅证明限价字段，完整的动态产品还要求可交易状态。MRS 独立提供交易单位、价格步长、零股、可卖与结算模型。PTE、TDR 和技术检验共享 SRT 的组装入口。参见 [MRS](../market_rules/README.md) 和 [PTE](../paper_trading_engine/README.md)。
 
 ## 指数月末权重快照
 
@@ -446,35 +395,25 @@ A股`Date/BarStart`转换为带时区的实际收盘/开盘时刻，`AvailableDa
 
 供应商后复权计算定义由来源约定，HFQ并不自动等于分红再投资总收益指数；
 可用时间约束也不能证明供应商从未修订历史值。研究层负责选择来源和解释这些限制。
-原版本化RAW事实源契约保持不变；工程适配器测试不代替真实标的准备及研究验收。
+版本化 RAW 事实源在 `EquityFrequencyFacts.trading_facts` 中接收动态交易事实。
 
-正式美股研究准备须一次明确行情、会话、公司行动、交易约束四个 `SourceRef`，并由
+正式美股研究准备须一次明确行情、会话、公司行动、动态交易事实四个 `SourceRef`，并由
 `ProviderConfig(equity_bindings=...)` 提供精确 `ProviderKey` 映射。各来源声明同一独立交易日历；
 准备结果冻结来源修订、完整覆盖及内容身份，TDR 将其保存为 `EquityInputBinding`。
 后续并行评价只读准备资产，worker 不连接数据供应商；来源、范围或内容变化须重新准备。
 
-`futu_equity_bindings` 默认仅提供行情、会话及公司行动，不提供历史交易约束，
-也不将缺少支付信息的现金分红转换成完整权益事实。
-宿主需显式绑定有凭据的约束及行动来源；已核实无公司行动仍须提交 `NONE` 及核实元数据。
-缺绑定、缺覆盖、时间不一致或缺支付信息均明确失败，不填默认值、不换源、不缩短窗口。
+`futu_equity_bindings` 提供行情和会话。宿主需显式绑定有凭据的动态交易事实和行动来源。
+已核实无公司行动仍须有覆盖声明。缺绑定、缺覆盖、时间不一致均明确失败。
 准备前应记录每类来源的标的、可覆盖窗口、修订和可用时间依据；供应商权限或覆盖未经实际验证时，
 研究数据就绪状态仍为未验证。合成测试和适配器存在不能替代首个获准标的的真实 `prepare`。
 
 ### 美股行情缺口的显式研究约定
 
 获准采用“行情缺失按不可交易处理”时，调用方显式传入
-`futu_equity_bindings(..., research_policy=UsEquityBarPolicy(quantity_step=1, price_tick=0.01))`。
-`UsEquityBarPolicy` 使用正整数股数步长、正有限报价步长，以及可选的
-`unavailable_intervals: tuple[TimeInterval, ...]`。区间必须按时序排列且不重叠；
-调用方负责保存已核实事件的来源，并将适用规则与期间固定在研究方案中。
-这些数值是明确选择的研究执行规则，不由当前快照反推多年历史制度。
-政策变化必须使用新的 `SourceRef.revision` 并重新准备；准备引用仍指向原有政策和资产。
-
-该模式仅适用于 US，新增第四个产品 `equity.constraints` 的绑定。
-其 `Tradable=True` 表示常规交易会话的研究资格约定，元数据标记
-`SESSION_ELIGIBILITY_RESEARCH_ASSUMPTION`，不宣称已取得历史停复牌完整记录。
-约束在执行区间开始时生效；区间结束后才知道的行情缺失、零成交量等事实不会倒填为开始时已知的约束。
-结算日期仍需独立证据；本政策不生成 `SettlementAt`，不适用于没有结算来源的 `SETTLED_ONLY` 账户。
+`futu_equity_bindings(..., research_policy=UsEquityBarPolicy(unavailable_intervals=...))`。
+区间必须按时序排列且不重叠。调用方负责保存已核实事件的来源，将期间固定在研究方案中。
+约定变化时使用新的 `SourceRef.revision` 重新准备。行情缺口和零成交量按区间结束时的观察处理，
+区间开始时的可交易状态由独立的动态交易事实提供。
 
 仅在独立交易日历、全部分页成功结束且原始记录合法后，行情才对齐完整会话网格：
 

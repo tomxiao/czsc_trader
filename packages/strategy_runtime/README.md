@@ -212,6 +212,10 @@ binding 覆盖上述身份，替换输入后不能承接旧状态。
 
 ### 准备、辅助上下文与执行
 
+PTE、TDR 和技术检验在准备执行时共用 `strategy_runtime.equity_rules.execution_constraints`。
+该入口将 [MRS](../market_rules/README.md) 的固定规则与 DFLS 的交易日历和动态交易事实合并，
+校验冻结合同的交易单位和价格步长，生成下方 `constraints` 参数及规则版本、内容指纹。
+
 ```python
 prepared = PreparedReplay.from_frames(
     bars, constraints, graph, latency_seconds=0,

@@ -77,6 +77,9 @@ def replay_account(candidate, flows, replay):
     execution = replay.input_binding.execution_input
     if candidate.definition.execution_input != (None if execution is None else execution.input):
         raise ValueError('technical replay execution input contract differs')
+    from strategy_runtime.equity_rules import execution_constraints
+    products["constraints"], identities["constraints"] = execution_constraints(
+        candidate.definition, products, {k: v["metadata"] for k, v in identities.items()})
     if candidate.definition.contract_version == 4:
         return _replay_account_v4(candidate, replay, products, identities)
     from trading_execution_engine.frozen_equity import _FrozenEquityExecutor

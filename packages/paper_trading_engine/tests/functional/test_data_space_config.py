@@ -53,10 +53,14 @@ def test_host_injects_space_and_credentials_location_without_reading_credentials
 
 
 def test_host_assembles_both_markets_and_shares_quote_lifetime(tmp_path, monkeypatch):
-    (tmp_path / 'equity-sources.json').write_text(json.dumps({'schema_version': 1, 'sources': [
+    (tmp_path / 'equity-sources.json').write_text(json.dumps({'schema_version': 2, 'sources': [
         {'market': 'CN', 'adapter': 'TUSHARE_CN', 'provider': 'cn-data', 'revision': 'v1'},
         {'market': 'US', 'adapter': 'FUTU_US', 'provider': 'us-data', 'revision': 'v1'},
         {'market': 'US', 'adapter': 'FUTU_US', 'provider': 'us-aux', 'revision': 'v2'},
+        {'market': 'CN', 'adapter': 'DYNAMIC_FACTS', 'provider': 'cn-facts', 'revision': 'v2',
+         'endpoint': 'https://feed.example.test/cn', 'calendar_source': {'provider': 'cn-data', 'revision': 'v1'}},
+        {'market': 'US', 'adapter': 'DYNAMIC_FACTS', 'provider': 'us-facts', 'revision': 'v2',
+         'endpoint': 'https://feed.example.test/us', 'calendar_source': {'provider': 'us-data', 'revision': 'v1'}},
     ]}), encoding='utf-8')
     opened = []
     closed = []
@@ -83,6 +87,11 @@ def test_host_assembles_both_markets_and_shares_quote_lifetime(tmp_path, monkeyp
         assert not opened
         assert ProviderKey(EquityProduct.BARS, MarketId.CN, SourceRef('cn-data', 'v1')) in providers
         assert ProviderKey(EquityProduct.BARS, MarketId.CN, SourceRef('cn-data', 'v2')) not in providers
+        for market, name in ((MarketId.CN, 'cn-facts'), (MarketId.US, 'us-facts')):
+            source = SourceRef(name, 'v2')
+            for product in (EquityProduct.ACTIONS, EquityProduct.TRADING_FACTS):
+                assert ProviderKey(product, market, source) in providers
+            assert ProviderKey(EquityProduct.BARS, market, source) not in providers
         for source in (SourceRef('us-data', 'v1'), SourceRef('us-aux', 'v2')):
             day = datetime(2026, 11, 5).date()
             request = EquityDataRequest(InstrumentId(MarketId.US, AssetClass.STOCK, 'MU'), source,
@@ -94,10 +103,10 @@ def test_host_assembles_both_markets_and_shares_quote_lifetime(tmp_path, monkeyp
     assert closed == opened
 
 
-def test_host_rejects_evidence_outside_data_root(tmp_path):
-    (tmp_path / 'equity-sources.json').write_text(json.dumps({'schema_version': 1, 'sources': [
+def test_host_rejects_retired_file_configuration(tmp_path):
+    (tmp_path / 'equity-sources.json').write_text(json.dumps({'schema_version': 2, 'sources': [
         {'market': 'CN', 'adapter': 'TUSHARE_CN', 'provider': 'cn-data', 'revision': 'v1',
          'evidence_manifest': '../elsewhere.json'},
     ]}), encoding='utf-8')
-    with pytest.raises(ValueError, match='stay under'):
+    with pytest.raises(ValueError, match='market or fields'):
         data_space.create_dataflows(data_dir=tmp_path / 'data', space=DataSpace(Path('market')), config_root=tmp_path)

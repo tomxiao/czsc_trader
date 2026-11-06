@@ -422,8 +422,8 @@ class EquityInputBinding:
         import re
         if not re.fullmatch("[a-f0-9]{64}", self.specification_hash):
             raise ValueError("invalid execution fingerprint")
-        if {k for k, _ in self.content_identities} != {"bars", "sessions", "actions", "constraints"} or len(self.content_identities) != 4:
-            raise ValueError("equity binding requires all four product identities")
+        if {k for k, _ in self.content_identities} != {"bars", "sessions", "actions", "trading_facts"} or len(self.content_identities) != 4:
+            raise ValueError("equity binding requires bars, sessions, actions and trading facts")
         if any(not re.fullmatch("[a-f0-9]{64}", v) for _, v in self.content_identities):
             raise ValueError("invalid data content fingerprint")
         if type(self.request_bindings) is not tuple or any(type(item) is not tuple or len(item) != 2

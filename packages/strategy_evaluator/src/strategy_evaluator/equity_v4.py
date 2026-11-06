@@ -397,19 +397,19 @@ def audit_account_v4(
                 raise ValueError("v4 source OHLC bounds are invalid")
             if "BarStatus" in bar and ((bar["Volume"] == 0) != (status == "ZERO_VOLUME")):
                 raise ValueError("v4 volume and source observation status differ")
+        bounds_absent = all(rule[name] is None for name in ("PriceLimitLower", "PriceLimitUpper"))
         if rule["PriceLimitPolicy"] == "DATED_LIMITS":
-            low, high = float(rule["PriceLimitLower"]), float(rule["PriceLimitUpper"])
-            if not 0 < low < high or not all(math.isfinite(v) for v in (low, high)):
-                raise ValueError("v4 invalid dated price limits")
-            tolerance = max(abs(low), abs(high)) * 1e-10
-            if status != "MISSING" and any(
-                not low - tolerance <= bar[name] <= high + tolerance
-                for name in ("Open", "High", "Low", "Close")
-            ):
-                raise ValueError("v4 source prices exceed dated price limits")
-        elif rule["PriceLimitPolicy"] != "EXPLICIT_UNBOUNDED" or any(
-            rule[name] is not None for name in ("PriceLimitLower", "PriceLimitUpper")
-        ):
+            if not (bounds_absent and not rule["Tradable"]):
+                low, high = float(rule["PriceLimitLower"]), float(rule["PriceLimitUpper"])
+                if not 0 < low < high or not all(math.isfinite(v) for v in (low, high)):
+                    raise ValueError("v4 invalid dated price limits")
+                tolerance = max(abs(low), abs(high)) * 1e-10
+                if status != "MISSING" and any(
+                    not low - tolerance <= bar[name] <= high + tolerance
+                    for name in ("Open", "High", "Low", "Close")
+                ):
+                    raise ValueError("v4 source prices exceed dated price limits")
+        elif rule["PriceLimitPolicy"] != "EXPLICIT_UNBOUNDED" or not bounds_absent:
             raise ValueError("v4 price limits lack an explicit source policy")
         while (
             event_index < len(source_events) and _time(source_events[event_index]["Date"]) <= start

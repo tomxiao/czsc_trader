@@ -61,9 +61,9 @@ def validate_equity_frame(frame, request, metadata):
     if "research_bar_policy" in metadata:
         raw = metadata["research_bar_policy"]
         try:
-            if p.instrument.market is not MarketId.US or raw["kind"] != "MISSING_UNTRADABLE_RESEARCH_V1":
+            if p.instrument.market is not MarketId.US or raw["kind"] != "OBSERVATION_GAPS_V2":
                 raise ValueError("unsupported market or policy")
-            policy = UsEquityBarPolicy(raw["quantity_step"], raw["price_tick"], tuple(
+            policy = UsEquityBarPolicy(tuple(
                 TimeInterval(datetime.fromisoformat(i["start"]), datetime.fromisoformat(i["end"]))
                 for i in raw["unavailable_intervals"]))
         except (KeyError, TypeError, ValueError) as exc:
@@ -150,41 +150,25 @@ def validate_equity_frame(frame, request, metadata):
                     raise DataContractError("cash dividend requires a valid payment time and amount")
         if "NONE" in set(frame.Kind) and (len(frame) != 1 or not metadata.get("no_actions_verified")):
             raise DataContractError("empty action history requires explicit source verification")
-    elif p.query.product is EquityProduct.CONSTRAINTS:
-        if not {"QuantityStep", "PriceTick", "Tradable"}.issubset(frame):
-            raise DataContractError("trading constraint fields missing")
-        for row in frame.itertuples():
-            if type(row.QuantityStep) is not int or row.QuantityStep <= 0 or not math.isfinite(float(row.PriceTick)) or row.PriceTick <= 0 or type(row.Tradable) is not bool:
-                raise DataContractError("invalid dated trading constraints")
+    elif p.query.product is EquityProduct.TRADING_FACTS:
+        columns = {"Date", "AvailableDate", "Tradable", "PriceLimitLower", "PriceLimitUpper"}
+        if set(frame) != columns:
+            raise DataContractError("trading facts require dated tradability and price bounds only")
         expected = tuple(bar.start for session in sessions for bar in session.bars(p.query.frequency))
         if tuple(dates) != tuple(pd.Timestamp(stamp) for stamp in expected):
-            raise IncompleteDataError("trading constraints must cover every execution interval")
+            raise IncompleteDataError("trading facts must cover every execution interval")
         if (available > dates).any():
-            raise DataContractError("trading constraints unavailable at their effective interval")
-        dated_rules = {'PriceLimitPolicy', 'PriceLimitLower', 'PriceLimitUpper', 'BuySellableAt', 'SellRemainderPolicy'}
-        if metadata.get('constraint_contract') == 'DATED_EQUITY_RULES_V1' or dated_rules.intersection(frame.columns):
-            if not (dated_rules | {'SettlementAt'}).issubset(frame):
-                raise DataContractError('dated equity rules require price limits, buy sellability and settlement facts')
-            for row in frame.itertuples():
-                if row.SellRemainderPolicy not in {'STRICT_STEP', 'FULL_LIQUIDATION'}:
-                    raise DataContractError('unsupported explicit sell remainder policy')
-                if row.PriceLimitPolicy == 'DATED_LIMITS':
-                    limits = (row.PriceLimitLower, row.PriceLimitUpper)
-                    if (any(type(value) not in (int, float) or not math.isfinite(value) or value <= 0 for value in limits)
-                            or limits[0] >= limits[1]):
-                        raise DataContractError('dated price limits require finite positive lower < upper')
-                elif row.PriceLimitPolicy == 'EXPLICIT_UNBOUNDED':
-                    if not pd.isna(row.PriceLimitLower) or not pd.isna(row.PriceLimitUpper):
-                        raise DataContractError('unbounded price policy cannot declare price limits')
-                else:
-                    raise DataContractError('unsupported dated price-limit policy')
-            for column in ('BuySellableAt', 'SettlementAt'):
-                times = _timestamps(frame, column)
-                if (times < dates).any():
-                    raise DataContractError(f'{column} cannot precede its execution interval')
-        if policy is not None:
-            if (metadata.get("available_at") != "SESSION_ELIGIBILITY_RESEARCH_ASSUMPTION"
-                    or metadata.get("tradability_basis") != "RESEARCH_ASSUMPTION_NOT_HISTORICAL_HALT_EVIDENCE"
-                    or not frame.QuantityStep.eq(policy.quantity_step).all()
-                    or not frame.PriceTick.eq(policy.price_tick).all() or not frame.Tradable.all()):
-                raise DataContractError("research constraints differ from declared session eligibility policy")
+            raise DataContractError("trading facts unavailable at their effective interval")
+        for row in frame.itertuples():
+            if type(row.Tradable) is not bool:
+                raise DataContractError("trading facts require explicit tradability")
+            low, high = row.PriceLimitLower, row.PriceLimitUpper
+            if pd.isna(low) and pd.isna(high):
+                continue
+            if (any(type(v) not in (int, float) or not math.isfinite(v) or v <= 0 for v in (low, high))
+                    or low >= high):
+                raise DataContractError("invalid paired bounds in trading facts")
+        if "following_session" in metadata:
+            following, = sessions_from_metadata({"sessions": [metadata["following_session"]]})
+            if following.session_date <= sessions[-1].session_date or following.timezone != p.instrument.timezone:
+                raise DataContractError("following session differs from the trading facts calendar")

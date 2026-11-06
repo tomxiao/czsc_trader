@@ -24,8 +24,8 @@ from test_equity_inspection_roundtrip import seed_registered_frozen_candidate
 
 
 def native_fixture(tmp_path, market, computation=StrategyComputation.STATEFUL_STEP, *, initial_state=False,
-                   dividend=False):
-    context, request, products, _, _ = setup_adjusted(tmp_path, market, computation)
+                   dividend=False, etf=False):
+    context, request, products, _, _ = setup_adjusted(tmp_path, market, computation, etf=etf)
     if dividend:
         bars = products[EquityProduct.BARS]
         stamp = bars.BarStart.iloc[-2]

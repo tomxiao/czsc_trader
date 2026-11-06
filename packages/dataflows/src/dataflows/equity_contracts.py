@@ -5,7 +5,6 @@ These value types have no provider, storage or execution dependencies.
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from enum import StrEnum
-import math
 import re
 from zoneinfo import ZoneInfo
 
@@ -24,7 +23,7 @@ class EquityProduct(StrEnum):
     BARS = "equity.bars"
     SESSIONS = "equity.sessions"
     ACTIONS = "equity.actions"
-    CONSTRAINTS = "equity.constraints"
+    TRADING_FACTS = "equity.trading_facts"
 
 
 class BarFrequency(StrEnum):
@@ -113,15 +112,9 @@ class UsEquityBarPolicy:
     Known unavailable intervals are execution facts. Their overlap blocks a bar's
     fills but must not be exposed as information known at that bar's start.
     """
-    quantity_step: int
-    price_tick: float
     unavailable_intervals: tuple[TimeInterval, ...] = ()
 
     def __post_init__(self):
-        if type(self.quantity_step) is not int or self.quantity_step <= 0:
-            raise ValueError("quantity step must be a positive integer")
-        if type(self.price_tick) not in (int, float) or not math.isfinite(self.price_tick) or self.price_tick <= 0:
-            raise ValueError("price tick must be positive and finite")
         if type(self.unavailable_intervals) is not tuple or any(type(i) is not TimeInterval for i in self.unavailable_intervals):
             raise TypeError("unavailable intervals require a tuple of TimeInterval")
         if any(right.start < left.end for left, right in zip(self.unavailable_intervals, self.unavailable_intervals[1:])):

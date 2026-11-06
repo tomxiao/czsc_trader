@@ -13,7 +13,7 @@ from urllib.request import Request, urlopen
 import pytest
 import pandas as pd
 from dataflows import MarketId, EquityProduct, TimeInterval, ProviderBinding
-from dataflows.equity_data import equity_metadata, sessions_from_metadata
+from dataflows.equity_data import equity_metadata, session_record, sessions_from_metadata
 from strategy_manager import PaperTradingApproval, StrategyRegistry
 from czsc_trader.application import deploy_strategy
 from paper_trading_engine.account_engine import AccountEngine
@@ -89,9 +89,13 @@ def formal_v4(tmp_path, request):
                 start = products[EquityProduct.BARS].iloc[0].BarStart
                 frame = pd.DataFrame([dict(Date=start, AvailableDate=start, EventId='none', Kind='NONE',
                                           Ratio=1., CashPerShare=0., PayAt=None)])
-            sessions = tuple(s for s in sessions_from_metadata(metadata)
-                             if p.query.start <= s.session_date <= p.query.end)
+            calendar = sessions_from_metadata(metadata)
+            following = next((session_record(s) for s in calendar if s.session_date > p.query.end),
+                             metadata.get('following_session'))
+            sessions = tuple(s for s in calendar if p.query.start <= s.session_date <= p.query.end)
             metadata = equity_metadata(request, sessions, availability_basis='SYNTHETIC_BAR_CLOSE')
+            if p.query.product is EquityProduct.TRADING_FACTS and following is not None:
+                metadata['following_session'] = following
             metadata['no_actions_verified'] = True
             return frame, metadata
         return ProviderBinding(binding.name, binding.revision, fetch)

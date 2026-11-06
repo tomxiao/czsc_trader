@@ -47,8 +47,8 @@ def _read(content):
 def primary_input_digest(value):
     """Canonical primary identity from already decoded V4 input content."""
     primary = {"schema": value["schema"],
-        "products": {key: value["products"][key] for key in ("bars", "sessions", "actions", "constraints")},
-        "data": {key: value["data"][key] for key in ("bars", "sessions", "actions", "constraints")}}
+        "products": {key: value["products"][key] for key in ("bars", "sessions", "actions", "trading_facts", "constraints")},
+        "data": {key: value["data"][key] for key in ("bars", "sessions", "actions", "trading_facts", "constraints")}}
     return sha256(_bytes(primary)).hexdigest()
 
 
@@ -196,7 +196,7 @@ def prepare_equity(access, request, *, execution):
                     raise ValueError("equity preparation failed: " + "; ".join(str(x.error) for x in data.items if not x.ready))
                 request = replace(request, prepared=data.reference)
             products, identities = _fetch_products(access, request)
-            artifact = EquityArtifact("equity_input", _bytes({"schema": "equity-input/v1",
+            artifact = EquityArtifact("equity_input", _bytes({"schema": "equity-input/v2",
                 "products": {key: _records(frame) for key, frame in products.items()}, "data": identities}))
             snapshot = EquityInputSnapshot(artifact)
             state.products[snapshot.sha256] = products
@@ -525,7 +525,7 @@ def validate_result_structure(payload, artifacts=()):
 
 def decoded_equity_runs(payload, inputs, candidate, benchmark, *, primary_sha256):
     """Validate V4 dependency identities without re-decoding or account replay."""
-    if inputs.get("schema") != "equity-input/v1" or inputs["data"] != payload["data"]:
+    if inputs.get("schema") != "equity-input/v2" or inputs["data"] != payload["data"]:
         raise ValueError("equity input identity differs")
     runs = {}
     for name, key in (("candidate", "candidate_ref"), ("buy_hold", "benchmark_ref")):

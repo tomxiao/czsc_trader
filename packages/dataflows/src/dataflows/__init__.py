@@ -50,14 +50,12 @@ from .equity_contracts import (
 from .futu_equity import futu_equity_bindings
 from .tushare_equity import tushare_equity_observation_bindings, tushare_equity_bindings
 from .equity_history import EquitySourceCoverage, EquityFrequencyFacts, versioned_equity_bindings
-from .equity_evidence import equity_evidence_bindings
 
 __all__ = [
     "EquitySourceCoverage", "EquityFrequencyFacts", "versioned_equity_bindings",
     "futu_equity_bindings",
     "tushare_equity_observation_bindings",
     "tushare_equity_bindings",
-    "equity_evidence_bindings",
     "EquityDataRequest", "InstrumentId", "MarketId", "AssetClass", "SourceRef",
     "ProviderKey", "EquityProduct", "EquityQuery", "BarFrequency", "PriceAdjustment",
     "EquitySession", "TimeInterval", "TradingSession", "UsEquityBarPolicy",

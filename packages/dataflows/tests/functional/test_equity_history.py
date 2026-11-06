@@ -1,6 +1,6 @@
 """Attested RAW source admission, market parity and exact calendar slicing."""
 from dataclasses import replace
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -33,13 +33,8 @@ def facts(market):
             'AvailableDate': [b.end for b in grid], 'Open': 10., 'High': 11., 'Low': 9.,
             'Close': 10., 'Volume': 1000., 'Amount': 10000.})
         rules = pd.DataFrame({'Date': starts, 'AvailableDate': starts,
-            'QuantityStep': 100 if market is MarketId.CN else 1, 'PriceTick': .01, 'Tradable': True,
-            'PriceLimitPolicy': 'DATED_LIMITS' if market is MarketId.CN else 'EXPLICIT_UNBOUNDED',
-            'PriceLimitLower': 5. if market is MarketId.CN else None,
-            'PriceLimitUpper': 15. if market is MarketId.CN else None,
-            'SellRemainderPolicy': 'STRICT_STEP',
-            'BuySellableAt': [s + timedelta(days=1) if market is MarketId.CN else s for s in starts],
-            'SettlementAt': starts})
+            'Tradable': True, 'PriceLimitLower': 5. if market is MarketId.CN else None,
+            'PriceLimitUpper': 15. if market is MarketId.CN else None})
         versions.append(EquityFrequencyFacts(frequency, bars, rules))
     stamp = sessions[1].segments[0].start
     actions = pd.DataFrame([{'Date': stamp, 'AvailableDate': stamp, 'EventId': 'cash-1',
@@ -70,9 +65,9 @@ def test_both_markets_publish_pinned_raw_facts_with_exact_source_rules(tmp_path,
     assert len(rows.dataframe) == (3 if frequency is BarFrequency.DAILY else 24 if market is MarketId.CN else 39)
     assert rows.identity.metadata['economic_price_basis'] == 'RAW'
     assert rows.identity.metadata['action_history_complete'] is True
-    rules = flows.fetch(request(source, EquityProduct.CONSTRAINTS, frequency), prepared=prepared.reference)
+    rules = flows.fetch(request(source, EquityProduct.TRADING_FACTS, frequency), prepared=prepared.reference)
     assert rules.ready, rules.error
-    assert set(rules.dataframe.PriceLimitPolicy) == ({'DATED_LIMITS'} if market is MarketId.CN else {'EXPLICIT_UNBOUNDED'})
+    assert rules.dataframe.PriceLimitLower.notna().all() if market is MarketId.CN else rules.dataframe.PriceLimitLower.isna().all()
 
 
 def test_provider_owns_admitted_values_and_derives_empty_subrange_from_complete_history():
@@ -102,7 +97,7 @@ def test_explicit_source_gap_and_resumption_do_not_invent_prices(tmp_path, marke
         item.bars.loc[missing, 'BarStatus'] = 'MISSING'
         item.bars.loc[missing, 'ExecutionBlocked'] = True
         item.bars.loc[missing, ['Open', 'High', 'Low', 'Close', 'Volume', 'Amount']] = float('nan')
-        item.constraints.loc[missing, 'Tradable'] = False
+        item.trading_facts.loc[missing, 'Tradable'] = False
     bindings = versioned_equity_bindings(**source)
     flows = Dataflows(base_dir=tmp_path, space=DataSpace(Path('assets')),
         providers=ProviderConfig(bindings={}, equity_bindings=bindings))
@@ -153,7 +148,7 @@ def test_source_selection_uses_admitted_indexes_without_reparsing_or_revalidatin
 
 
 @pytest.mark.parametrize('defect', ['partial-actions', 'unverified-none', 'event-outside', 'missing-pay',
-    'missing-grid', 'missing-rules', 'limit-policy', 'limit-bounds', 'unbounded-limits', 'sell-before', 'settle-before'])
+    'missing-grid', 'missing-facts', 'static-field', 'limit-bounds', 'unpaired-limits', 'late-fact'])
 def test_source_admission_rejects_missing_or_inconsistent_facts(defect):
     source = facts(MarketId.CN)
     if defect == 'partial-actions':
@@ -170,19 +165,17 @@ def test_source_admission_rejects_missing_or_inconsistent_facts(defect):
         item = source['frequencies'][0]
         source['frequencies'] = (replace(item, bars=item.bars.iloc[:-1]), source['frequencies'][1])
     else:
-        frame = source['frequencies'][0].constraints
-        if defect == 'missing-rules':
-            frame.drop(columns=['BuySellableAt'], inplace=True)
-        elif defect == 'limit-policy':
-            frame.loc[0, 'PriceLimitPolicy'] = 'GUESS_FROM_MARKET'
+        frame = source['frequencies'][0].trading_facts
+        if defect == 'missing-facts':
+            frame.drop(columns=['Tradable'], inplace=True)
+        elif defect == 'static-field':
+            frame['QuantityStep'] = 100
         elif defect == 'limit-bounds':
             frame.loc[0, 'PriceLimitLower'] = 100.
-        elif defect == 'unbounded-limits':
-            frame.loc[0, 'PriceLimitPolicy'] = 'EXPLICIT_UNBOUNDED'
-        elif defect == 'sell-before':
-            frame.loc[0, 'BuySellableAt'] = frame.Date.iloc[0] - pd.Timedelta(seconds=1)
+        elif defect == 'unpaired-limits':
+            frame.loc[0, 'PriceLimitLower'] = None
         else:
-            frame.loc[0, 'SettlementAt'] = frame.Date.iloc[0] - pd.Timedelta(seconds=1)
+            frame.loc[0, 'AvailableDate'] = frame.Date.iloc[0] + pd.Timedelta(seconds=1)
     with pytest.raises((DataContractError, IncompleteDataError)):
         versioned_equity_bindings(**source)
 

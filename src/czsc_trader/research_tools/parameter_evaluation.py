@@ -290,7 +290,7 @@ def _verify_equity_inputs(request, dataflows, *, execution=None):
         _require_prepared(state, request)
         data = json.loads(request.snapshot.artifact.content)["data"]
         if dict(request.request.input_binding.expected_identities) != {
-                name: value["content_sha256"] for name, value in data.items()}:
+                name: value["content_sha256"] for name, value in data.items() if name != "constraints"}:
             raise ValueError("account parameter input binding differs from its authenticated snapshot")
         return
     raise TypeError("equity parameter inputs require session-owned PreparedAccountEvaluation")

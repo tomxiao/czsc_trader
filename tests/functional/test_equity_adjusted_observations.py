@@ -10,7 +10,7 @@ import pytest
 from dataflows import (AssetClass, BarFrequency, EquityProduct, InstrumentId, MarketId,
     PriceAdjustment, ProviderBinding, ProviderConfig, ProviderKey, SourceRef, TimeInterval,
     TradingSession)
-from dataflows.equity_data import equity_metadata
+from dataflows.equity_data import equity_metadata, session_record
 from strategy_runtime import (AccountPolicy, CashAvailabilityPolicy, CnEquitySpec, UsEquitySpec,
     EquityAuxiliaryInput, EquityInputBinding, EquityStrategyCandidate, EquityStrategyDefinition,
     ExecutionResources, ResearchExecutionSpec, StrategyComputation, equity_source_hash)
@@ -26,11 +26,12 @@ from czsc_trader.research_tools import (EquityEvaluationRequest, EquitySources, 
 from czsc_trader.research_tools.equity_replay import materialize_equity
 
 
-def setup_adjusted(tmp_path, market, computation=StrategyComputation.STATEFUL_STEP):
+def setup_adjusted(tmp_path, market, computation=StrategyComputation.STATEFUL_STEP, *, etf=False):
     """Use real market clocks/rules, with synthetic prices and independent sessions."""
     cn = market is MarketId.CN
-    instrument = InstrumentId(market, AssetClass.STOCK, "600722.SH" if cn else "MU")
-    sector = InstrumentId(market, AssetClass.ETF, "510500.SH" if cn else "SOXX")
+    instrument = (InstrumentId(market, AssetClass.ETF, "510500.SH" if cn else "QQQ") if etf
+                  else InstrumentId(market, AssetClass.STOCK, "600722.SH" if cn else "MU"))
+    sector = InstrumentId(market, AssetClass.ETF, ("159326.SZ" if etf else "510500.SH") if cn else "SOXX")
     source = SourceRef("adjusted-fixture", "v1")
     zone = ZoneInfo(instrument.timezone)
     sessions = []
@@ -46,7 +47,7 @@ def setup_adjusted(tmp_path, market, computation=StrategyComputation.STATEFUL_ST
     quantity_step = 100 if cn else 1
     spec = ResearchExecutionSpec(CnEquitySpec() if cn else UsEquitySpec(), BarFrequency.DAILY,
         AccountPolicy("CNY" if cn else "USD", CashAvailabilityPolicy.IMMEDIATE_RESEARCH),
-        quantity_step, .01, .01, 0.)
+        quantity_step, .001 if cn and etf else .01, .01, 0.)
     bars = pd.DataFrame({"Date": [b.end for b in grid], "BarStart": [b.start for b in grid],
         "AvailableDate": [b.end for b in grid], "Open": 10., "High": 10.2, "Low": 9.8,
         "Close": 10., "Volume": 10000., "Amount": 100000.})
@@ -61,13 +62,9 @@ def setup_adjusted(tmp_path, market, computation=StrategyComputation.STATEFUL_ST
         EquityProduct.ACTIONS: pd.DataFrame([{"Date": grid[0].start,
             "AvailableDate": grid[0].start, "EventId": "none", "Kind": "NONE", "Ratio": 1.,
             "CashPerShare": 0., "PayAt": None}]),
-        EquityProduct.CONSTRAINTS: pd.DataFrame({"Date": [b.start for b in grid],
-            "AvailableDate": [b.start for b in grid], "QuantityStep": quantity_step,
-            "PriceTick": .01, "Tradable": True,
-            "PriceLimitPolicy": "DATED_LIMITS" if cn else "EXPLICIT_UNBOUNDED",
-            "PriceLimitLower": 9. if cn else None, "PriceLimitUpper": 11. if cn else None,
-            "BuySellableAt": [b.start + timedelta(days=1) if cn else b.start for b in grid],
-            "SellRemainderPolicy": "FULL_LIQUIDATION", "SettlementAt": [b.end for b in grid]})}
+        EquityProduct.TRADING_FACTS: pd.DataFrame({"Date": [b.start for b in grid],
+            "AvailableDate": [b.start for b in grid], "Tradable": True,
+            "PriceLimitLower": 9. if cn else None, "PriceLimitUpper": 11. if cn else None})}
     calls = []
 
     def fetch(request):
@@ -77,6 +74,11 @@ def setup_adjusted(tmp_path, market, computation=StrategyComputation.STATEFUL_ST
         if p.query.product is EquityProduct.BARS and p.query.adjustment is PriceAdjustment.BACKWARD:
             data = adjusted if p.instrument == instrument else sector_bars
         metadata = equity_metadata(request, sessions, availability_basis="SYNTHETIC_BAR_CLOSE")
+        if cn and p.query.product is EquityProduct.TRADING_FACTS:
+            delta = timedelta(days=1)
+            following = TradingSession(sessions[-1].session_date + delta, str(zone),
+                tuple(TimeInterval(part.start + delta, part.end + delta) for part in sessions[-1].segments))
+            metadata["following_session"] = session_record(following)
         metadata["no_actions_verified"] = True
         return data.copy(deep=True), metadata
 

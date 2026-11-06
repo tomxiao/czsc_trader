@@ -20,7 +20,7 @@ def gap_context(tmp_path, *, formal=True, missing=(2, 3, 25), zero=(4,), blocked
     for index in zero:
         bars.loc[index, ['Open', 'High', 'Low', 'Close']] = 20.
         bars.loc[index, ['Volume', 'Amount']] = 0.
-    policy = UsEquityBarPolicy(1, .01, tuple(TimeInterval(
+    policy = UsEquityBarPolicy(tuple(TimeInterval(
         bars.BarStart.iloc[i] + pd.Timedelta(minutes=5), bars.BarStart.iloc[i] + pd.Timedelta(minutes=10))
         for i in blocked))
 
@@ -28,11 +28,6 @@ def gap_context(tmp_path, *, formal=True, missing=(2, 3, 25), zero=(4,), blocked
         def request_trading_days(self, **kwargs):
             return 0, [{'time': '2026-10-01', 'trade_date_type': 'WHOLE'},
                        {'time': '2026-10-02', 'trade_date_type': 'WHOLE'}]
-
-        def get_rehab(self, code):
-            # Futu reports old shares divided by new shares. Here one becomes two.
-            return 0, (pd.DataFrame([{'ex_div_date': '2026-10-02', 'split_ratio': .5, 'per_cash_div': 0.}])
-                       if split else pd.DataFrame())
 
         def request_history_kline(self, code, **kwargs):
             raw = bars.drop(index=list(missing)).rename(columns={
@@ -44,17 +39,30 @@ def gap_context(tmp_path, *, formal=True, missing=(2, 3, 25), zero=(4,), blocked
 
     bindings = futu_equity_bindings(source=request.sources.bars, quote_context=Quotes(), research_policy=policy)
     from dataflows import ProviderKey
-    key = ProviderKey(EquityProduct.CONSTRAINTS,request.candidate.instrument.market,request.sources.constraints)
-    original = bindings[key]
-    def explicit_rules(query):
-        frame, metadata = original.fetch(query)
-        frame['PriceLimitPolicy']='EXPLICIT_UNBOUNDED'
-        frame['PriceLimitLower']=frame['PriceLimitUpper']=None
-        frame['BuySellableAt']=frame.Date
-        frame['SettlementAt']=frame.Date+pd.Timedelta(minutes=30)
-        frame['SellRemainderPolicy']='FULL_LIQUIDATION'
-        return frame,metadata
-    bindings[key]=replace(original,fetch=explicit_rules)
+    key = ProviderKey(EquityProduct.TRADING_FACTS,request.candidate.instrument.market,request.sources.trading_facts)
+    from dataflows import ProviderBinding
+
+    def dynamic_facts(query):
+        from dataflows.equity_data import equity_metadata, sessions_from_metadata
+        from dataflows import EquityDataRequest
+        calendar_query = replace(query.parameters.query, product=EquityProduct.SESSIONS)
+        req = EquityDataRequest(query.parameters.instrument, query.parameters.source, calendar_query)
+        _, evidence = bindings[req.parameters.provider_key].fetch(req)
+        sessions = sessions_from_metadata(evidence)
+        metadata = equity_metadata(query, sessions, availability_basis="FIXTURE_MARKET_STATUS")
+        product = query.parameters.query.product
+        frame = products[product].copy()
+        if product is EquityProduct.ACTIONS:
+            metadata["no_actions_verified"] = not split
+            if split:
+                stamp = sessions[1].segments[0].start
+                frame = pd.DataFrame([dict(Date=stamp, AvailableDate=stamp, EventId="fixture-split",
+                    Kind="SPLIT", Ratio=2., CashPerShare=0., PayAt=None)])
+        return frame, metadata
+
+    bindings[key] = ProviderBinding(request.sources.trading_facts.provider,
+                                    request.sources.trading_facts.revision, dynamic_facts)
+    bindings[replace(key, product=EquityProduct.ACTIONS)] = bindings[key]
     context = create_research_context(context.repository, context.batch,
         providers=ProviderConfig(bindings={}, equity_bindings=bindings),
         execution_spec=context.execution_spec)

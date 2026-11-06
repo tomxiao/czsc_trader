@@ -11,7 +11,7 @@ from zoneinfo import ZoneInfo
 import pandas as pd
 from dataflows import (AssetClass, BarFrequency, EquityProduct, EquityDataRequest, EquityQuery, InstrumentId, MarketId,
     ProviderBinding, ProviderConfig, ProviderKey, SourceRef, TimeInterval, TradingSession)
-from dataflows.equity_data import equity_metadata
+from dataflows.equity_data import equity_metadata, session_record
 from strategy_runtime import (AccountPolicy, CashAvailabilityPolicy,
     ExecutionResources, ResearchExecutionSpec, UsEquitySpec, StrategyComputation)
 from strategy_runtime.equity_definition import (EquityAuxiliaryInput, EquityStrategyCandidate,
@@ -96,16 +96,11 @@ def setup_equity(tmp_path, decide=alternate, *, cash_policy=CashAvailabilityPoli
     bars = pd.DataFrame({"Date": [b.end for b in grid], "BarStart": [b.start for b in grid],
                          "AvailableDate": [b.end for b in grid], "Open": 10., "High": 10.2,
                          "Low": 9.8, "Close": 10., "Volume": 100., "Amount": 1000.})
-    constraints = pd.DataFrame({"Date": [b.start for b in grid], "AvailableDate": [b.start for b in grid],
-                                "QuantityStep": 1, "PriceTick": .01, "Tradable": True,
-                                "PriceLimitPolicy": 'EXPLICIT_UNBOUNDED',
-                                "PriceLimitLower": None, "PriceLimitUpper": None,
-                                "BuySellableAt": [b.start for b in grid],
-                                "SellRemainderPolicy": 'FULL_LIQUIDATION',
-                                "SettlementAt": [grid[-1].end for _ in grid]})
+    trading_facts = pd.DataFrame({"Date": [b.start for b in grid], "AvailableDate": [b.start for b in grid],
+                                  "Tradable": True, "PriceLimitLower": None, "PriceLimitUpper": None})
     actions = pd.DataFrame([{"Date": grid[0].start, "AvailableDate": grid[0].start, "EventId": "none",
                              "Kind": "NONE", "Ratio": 1., "CashPerShare": 0., "PayAt": None}])
-    products = {EquityProduct.BARS: bars, EquityProduct.CONSTRAINTS: constraints, EquityProduct.ACTIONS: actions,
+    products = {EquityProduct.BARS: bars, EquityProduct.TRADING_FACTS: trading_facts, EquityProduct.ACTIONS: actions,
                 EquityProduct.SESSIONS: pd.DataFrame({"Date": [s.segments[0].start for s in sessions],
                 "AvailableDate": [s.segments[0].start for s in sessions],
                 "SessionDate": [s.session_date.isoformat() for s in sessions]})}
@@ -114,6 +109,10 @@ def setup_equity(tmp_path, decide=alternate, *, cash_policy=CashAvailabilityPoli
     def fetch(request):
         calls.append(request)
         metadata = equity_metadata(request, sessions, availability_basis="FIXTURE_BAR_CLOSE")
+        if request.parameters.query.product is EquityProduct.TRADING_FACTS:
+            next_day = date(2026, 10, 5)
+            metadata["following_session"] = session_record(TradingSession(next_day, str(zone), (TimeInterval(
+                datetime(2026, 10, 5, 9, 30, tzinfo=zone), datetime(2026, 10, 5, 16, tzinfo=zone)),)))
         metadata["no_actions_verified"] = True
         return products[request.parameters.query.product].copy(deep=True), metadata
 
@@ -158,7 +157,7 @@ def setup_auxiliary(tmp_path, *, auxiliary_days=(1, 2), max_age_seconds=86400, s
         for day in (1, 2))
     grid = tuple(bar for session in sessions for bar in session.bars(old_context.execution_spec.decision_clock))
     products[EquityProduct.BARS] = products[EquityProduct.BARS].loc[lambda rows: rows.Date.isin([bar.end for bar in grid])].copy()
-    products[EquityProduct.CONSTRAINTS] = products[EquityProduct.CONSTRAINTS].loc[lambda rows: rows.Date.isin([bar.start for bar in grid])].copy()
+    products[EquityProduct.TRADING_FACTS] = products[EquityProduct.TRADING_FACTS].loc[lambda rows: rows.Date.isin([bar.start for bar in grid])].copy()
     old = replace(old, window=TimeInterval(old.window.start, grid[-1].end))
     source = old.sources.bars if same_source else SourceRef("auxiliary-fixture", "v1")
     auxiliary = EquityAuxiliaryInput("market", InstrumentId(MarketId.US, AssetClass.ETF, "SPY"),
@@ -175,6 +174,10 @@ def setup_auxiliary(tmp_path, *, auxiliary_days=(1, 2), max_age_seconds=86400, s
         data = products["auxiliary"] if is_auxiliary else products
         calendar = tuple(s for s in sessions if s.session_date.day in auxiliary_days) if is_auxiliary else sessions
         metadata = equity_metadata(request, calendar, availability_basis="FIXTURE_BAR_CLOSE")
+        if request.parameters.query.product is EquityProduct.TRADING_FACTS:
+            next_day = date(2026, 10, 5)
+            metadata["following_session"] = session_record(TradingSession(next_day, str(zone), (TimeInterval(
+                datetime(2026, 10, 5, 9, 30, tzinfo=zone), datetime(2026, 10, 5, 16, tzinfo=zone)),)))
         metadata["no_actions_verified"] = True
         return data[request.parameters.query.product].copy(deep=True), metadata
 

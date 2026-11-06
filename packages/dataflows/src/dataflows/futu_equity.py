@@ -13,11 +13,7 @@ from .errors import DataContractError, IncompleteDataError, SourceRequestError
 
 def futu_equity_bindings(*, source: SourceRef, quote_context, maximum_pages: int = 100,
                          research_policy: UsEquityBarPolicy | None = None):
-    """Bind exact quote products without creating a broker/trade connection.
-
-    Cash dividends require an independently enriched action product containing
-    payment dates; get_rehab alone must never invent that information.
-    """
+    """Bind exact price bars and sessions without a broker connection."""
     if type(source) is not SourceRef or type(maximum_pages) is not int or maximum_pages < 1:
         raise TypeError("explicit source and positive maximum_pages required")
     if research_policy is not None and type(research_policy) is not UsEquityBarPolicy:
@@ -27,6 +23,8 @@ def futu_equity_bindings(*, source: SourceRef, quote_context, maximum_pages: int
         p = request.parameters
         if p.instrument.market is not MarketId.US or p.source != source:
             raise DataContractError("MARKET_CONTRACT_MISMATCH")
+        if p.query.product not in (EquityProduct.BARS, EquityProduct.SESSIONS):
+            raise DataContractError("Futu quote adapter provides only bars and sessions")
         start, end = p.query.start.isoformat(), p.query.end.isoformat()
         ret, days = quote_context.request_trading_days(market="US", start=start, end=end)
         if ret != 0:
@@ -49,53 +47,15 @@ def futu_equity_bindings(*, source: SourceRef, quote_context, maximum_pages: int
         metadata["publication_time_verified"] = False
         if research_policy is not None:
             metadata["research_bar_policy"] = {
-                "kind": "MISSING_UNTRADABLE_RESEARCH_V1",
-                "quantity_step": research_policy.quantity_step, "price_tick": research_policy.price_tick,
+                "kind": "OBSERVATION_GAPS_V2",
                 "unavailable_intervals": [{"start": i.start.isoformat(), "end": i.end.isoformat()}
                                           for i in research_policy.unavailable_intervals],
             }
-        if p.query.product is EquityProduct.CONSTRAINTS and research_policy is not None:
-            stamps = [bar.start for s in sessions for bar in s.bars(p.query.frequency)]
-            metadata["available_at"] = "SESSION_ELIGIBILITY_RESEARCH_ASSUMPTION"
-            metadata["tradability_basis"] = "RESEARCH_ASSUMPTION_NOT_HISTORICAL_HALT_EVIDENCE"
-            return pd.DataFrame({"Date": stamps, "AvailableDate": stamps,
-                                 "QuantityStep": research_policy.quantity_step,
-                                 "PriceTick": research_policy.price_tick, "Tradable": True}), metadata
         if p.query.product is EquityProduct.SESSIONS:
             return pd.DataFrame({"Date": [s.segments[0].start for s in sessions],
                                  "AvailableDate": [s.segments[0].start for s in sessions],
                                  "SessionDate": [s.session_date.isoformat() for s in sessions]}), metadata
         code = "US." + p.instrument.symbol
-        if p.query.product is EquityProduct.ACTIONS:
-            ret, actions = quote_context.get_rehab(code)
-            if ret != 0:
-                raise SourceRequestError("Futu corporate actions failed", result=ret)
-            rows = []
-            for action in actions.to_dict("records"):
-                day = date.fromisoformat(str(action["ex_div_date"])[:10])
-                if not p.query.start <= day <= p.query.end:
-                    continue
-                unsupported = ("per_cash_div", "special_dividend", "per_share_div_ratio",
-                               "per_share_trans_ratio", "allotment_ratio", "stk_spo_ratio", "spin_off_ratio")
-                if any(pd.notna(action.get(k)) and action.get(k, 0) != 0 for k in unsupported):
-                    raise DataContractError("CORPORATE_ACTION_UNSUPPORTED: enriched event/payment evidence required")
-                ratio = float(action["split_ratio"])
-                if not pd.notna(ratio) or ratio <= 0 or ratio == float('inf'):
-                    raise DataContractError("invalid source split ratio")
-                stamp = pd.Timestamp(datetime.combine(day, time(9, 30), zone)).tz_convert("UTC")
-                rows.append({"Date": stamp, "AvailableDate": stamp,
-                             "EventId": f"{code}:{day}:split", "Kind": "SPLIT",
-                             # Futu reports old/new shares; the account contract
-                             # multiplies holdings by new/old shares.
-                             "Ratio": 1. / ratio, "CashPerShare": 0., "PayAt": None})
-            if not rows:
-                stamp = sessions[0].segments[0].start
-                rows = [{"Date": stamp, "AvailableDate": stamp, "EventId": "no-actions",
-                         "Kind": "NONE", "Ratio": 1., "CashPerShare": 0., "PayAt": None}]
-                metadata["no_actions_verified"] = True
-            return pd.DataFrame(rows).sort_values(["Date", "EventId"]).reset_index(drop=True), metadata
-        if p.query.product is not EquityProduct.BARS:
-            raise DataContractError("unsupported Futu equity product")
         pages, key, keys, receipts = [], None, set(), []
         autype = {PriceAdjustment.NONE: "None", PriceAdjustment.FORWARD: "qfq", PriceAdjustment.BACKWARD: "hfq"}[p.query.adjustment]
         for index in range(maximum_pages):
@@ -153,8 +113,6 @@ def futu_equity_bindings(*, source: SourceRef, quote_context, maximum_pages: int
             result = result.reset_index()
         return result.sort_values("Date").reset_index(drop=True), metadata
 
-    products = (EquityProduct.BARS, EquityProduct.SESSIONS, EquityProduct.ACTIONS)
-    if research_policy is not None:
-        products += (EquityProduct.CONSTRAINTS,)
+    products = (EquityProduct.BARS, EquityProduct.SESSIONS)
     return {ProviderKey(product, MarketId.US, source): ProviderBinding(source.provider, source.revision, fetch)
             for product in products}

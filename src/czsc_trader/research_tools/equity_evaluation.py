@@ -30,10 +30,10 @@ class EquitySources:
     bars: SourceRef
     sessions: SourceRef
     actions: SourceRef
-    constraints: SourceRef
+    trading_facts: SourceRef
 
     def __post_init__(self):
-        if any(type(value) is not SourceRef for value in (self.bars, self.sessions, self.actions, self.constraints)):
+        if any(type(value) is not SourceRef for value in (self.bars, self.sessions, self.actions, self.trading_facts)):
             raise TypeError("each equity product requires an explicit versioned source")
 
 
@@ -266,6 +266,9 @@ def _fetch_products(access, request):
         if group in calendars and calendars[group] != declared:
             raise ValueError(f"independent equity products disagree on the trading calendar: {group}")
         calendars[group] = declared
+    from strategy_runtime.equity_rules import execution_constraints
+    products["constraints"], identities["constraints"] = execution_constraints(
+        request.candidate.definition, products, {k: v["metadata"] for k, v in identities.items()})
     return products, identities
 
 

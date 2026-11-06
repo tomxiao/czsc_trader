@@ -16,8 +16,8 @@ from czsc_trader.research_tools.equity_replay import (
 
 
 def _fixture(root, candidate="C0001", experiment="EX001_20261105", mutate=None):
-    inputs = {"schema": "equity-input/v1", "data": {k: [] for k in ("bars", "sessions", "actions", "constraints")},
-        "products": {k: [] for k in ("bars", "sessions", "actions", "constraints")}}
+    inputs = {"schema": "equity-input/v2", "data": {k: [] for k in ("bars", "sessions", "actions", "trading_facts", "constraints")},
+        "products": {k: [] for k in ("bars", "sessions", "actions", "trading_facts", "constraints")}}
     inputs_art = EquityArtifact("equity_input", _bytes(inputs))
     request = dict(schema="equity-research/v4", candidate_definition={"contract_version": 4},
         content_sha256="a" * 64, instrument="US.TEST", window="window", history_start="start", initial_cash=100.,

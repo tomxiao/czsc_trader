@@ -116,11 +116,14 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
     history = bars.loc[(bars.Date <= interval.start) & (bars.AvailableDate + delay <= interval.start)].copy(deep=True)
     if len(history) < candidate.warmup_bars:
         raise ValueError("insufficient causal equity warmup")
-    constraints = products["constraints"]
+    from strategy_runtime.equity_rules import execution_constraints
+    constraints, _ = execution_constraints(candidate.definition, products, metadata)
     known = constraints.loc[(constraints.Date == interval.start) & (constraints.AvailableDate <= interval.start)]
-    if len(known) != 1 or not bool(known.iloc[0].Tradable):
-        raise ValueError("no known tradable equity constraint for this decision")
+    if len(known) != 1:
+        raise ValueError("no current trading facts for this decision")
     last = known.iloc[-1]
+    if not bool(last.Tradable):
+        raise ValueError("current trading facts mark this interval untradable")
     if int(last.QuantityStep) != candidate.definition.execution_spec.quantity_step or float(last.PriceTick) != candidate.definition.execution_spec.price_tick:
         raise ValueError("prepared equity trading units differ from account rules")
     scale = 1.
@@ -171,7 +174,8 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
             observation_tables=observations,
             sessions=products['sessions'], trading_sessions=sessions_from_metadata(metadata['sessions']),
             frequency=candidate.definition.execution_spec.decision_clock, timezone=candidate.instrument.timezone)
-        v4_constraint = {"SellRemainderPolicy": str(last.SellRemainderPolicy),
+        v4_constraint = {"MarketRuleVersion": str(last.MarketRuleVersion),
+            "MarketRuleHash": str(last.MarketRuleHash), "SellRemainderPolicy": str(last.SellRemainderPolicy),
             "PriceLimitPolicy": str(last.PriceLimitPolicy),
             "PriceLimitLower": None if pd.isna(last.PriceLimitLower) else float(last.PriceLimitLower),
             "PriceLimitUpper": None if pd.isna(last.PriceLimitUpper) else float(last.PriceLimitUpper)}

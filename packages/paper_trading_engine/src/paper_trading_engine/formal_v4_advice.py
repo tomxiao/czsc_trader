@@ -50,7 +50,7 @@ class FormalV4Inputs:
                 + tuple(item.request for item in self.binding.observation_bindings if item.request is not None))
 
     def to_dict(self):
-        return dict(schema_version=1, release_hash=self.release_hash,
+        return dict(schema_version=2, release_hash=self.release_hash,
                     binding=self.binding.to_dict(), fee_rate=self.fee_rate)
 
     def validate_candidate(self, release_hash: str, candidate: EquityStrategyCandidate) -> None:
@@ -69,8 +69,8 @@ class FormalV4Inputs:
     @classmethod
     def from_dict(cls, value):
         if (type(value) is not dict or set(value) != {'schema_version', 'release_hash', 'binding', 'fee_rate'}
-                or type(value['schema_version']) is not int or value['schema_version'] != 1):
-            raise ValueError('unsupported formal V4 input contract')
+                or type(value['schema_version']) is not int or value['schema_version'] != 2):
+            raise ValueError('unsupported formal V4 input contract; migrate the account data recipe')
         return cls(value['release_hash'], EquityInputBinding.from_dict(value['binding']), value['fee_rate'])
 
 
@@ -162,7 +162,7 @@ class FormalV4AdviceClient:
             temporary.replace(path)
             if forward:
                 recipe_path = path.with_suffix('.recipe.json')
-                temporary.write_text(json.dumps({'schema_version': 1, 'kind': 'DAILY_FORWARD_V1',
+                temporary.write_text(json.dumps({'schema_version': 2, 'kind': 'DAILY_FORWARD_V2',
                                                  'inputs': value}, sort_keys=True), encoding='utf-8')
                 temporary.replace(recipe_path)
         return identity
@@ -188,7 +188,7 @@ class FormalV4AdviceClient:
             return None
         value = json.loads(path.read_text(encoding='utf-8'))
         if (set(value) != {'schema_version', 'kind', 'inputs'} or type(value['schema_version']) is not int
-                or value['schema_version'] != 1 or value['kind'] != 'DAILY_FORWARD_V1'):
+                or value['schema_version'] != 2 or value['kind'] != 'DAILY_FORWARD_V2'):
             raise ValueError('unsupported V4 forward recipe')
         return FormalV4Inputs.from_dict(value['inputs'])
 

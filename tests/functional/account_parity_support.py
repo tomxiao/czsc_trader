@@ -44,6 +44,9 @@ def setup_account(root, market, frequency, computation=StrategyComputation.STATE
         TimeInterval(datetime(2026,10,day,a,b,tzinfo=zone),datetime(2026,10,day,c,d,tzinfo=zone))
         for a,b,c,d in (((9,30,11,30),(13,0,15,0)) if market is MarketId.CN else ((9,30,16,0),))))
         for day in (26,27,28,29,30))
+    next_day = timedelta(days=3)
+    following = TradingSession(sessions[-1].session_date + next_day, instrument.timezone,
+        tuple(TimeInterval(part.start + next_day, part.end + next_day) for part in sessions[-1].segments))
     source = SourceRef('synthetic-account-parity','v1')
     versions = []
     for freq in BarFrequency:
@@ -64,11 +67,9 @@ def setup_account(root, market, frequency, computation=StrategyComputation.STATE
                 raise ValueError('unknown synthetic gap kind')
             bars.loc[missing,['Open','High','Low','Close','Volume','Amount']] = float('nan')
             bars.loc[missing,'BarStatus'] = 'MISSING'
-        rules = pd.DataFrame({'Date':starts,'AvailableDate':starts,'QuantityStep':spec.quantity_step,
-            'PriceTick':.01,'Tradable':True,'SellRemainderPolicy':'FULL_LIQUIDATION','PriceLimitPolicy':'DATED_LIMITS' if market is MarketId.CN else 'EXPLICIT_UNBOUNDED',
-            'PriceLimitLower':1. if market is MarketId.CN else None,'PriceLimitUpper':20. if market is MarketId.CN else None,
-            'BuySellableAt':[stamp+timedelta(days=1) if market is MarketId.CN else stamp for stamp in starts],
-            'SettlementAt':ends})
+        rules = pd.DataFrame({'Date':starts,'AvailableDate':starts,'Tradable':True,
+            'PriceLimitLower':1. if market is MarketId.CN else None,
+            'PriceLimitUpper':20. if market is MarketId.CN else None})
         versions.append(EquityFrequencyFacts(freq,bars,rules))
     stamp = sessions[2].segments[0].start
     actions = pd.DataFrame(([{'Date':stamp,'AvailableDate':stamp,'EventId':'split','Kind':'SPLIT',
@@ -80,7 +81,7 @@ def setup_account(root, market, frequency, computation=StrategyComputation.STATE
     coverage = EquitySourceCoverage(sessions[0].session_date,sessions[-1].session_date,
         'Synthetic complete source receipt, not real security-history admission.',True,not events)
     bindings = versioned_equity_bindings(instrument=instrument,source=source,coverage=coverage,
-        sessions=sessions,frequencies=tuple(versions),actions=actions)
+        sessions=sessions,frequencies=tuple(versions),actions=actions,following_session=following)
     context = create_research_context(repository,batch,providers=ProviderConfig(bindings={},equity_bindings=bindings),execution_spec=spec)
     from strategy_runtime import ExecutionResources
     context.evaluation.resources=ExecutionResources(1,1)

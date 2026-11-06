@@ -46,6 +46,7 @@ from .watchdog import health_payload_is_healthy
 
 
 PTE_LOCAL_PROJECTS = (
+    "packages/market_rules",
     "packages/dataflows",
     "packages/strategy_manager",
     "packages/strategy_runtime",
@@ -54,6 +55,7 @@ PTE_LOCAL_PROJECTS = (
     "packages/paper_trading_engine",
 )
 PTE_RESOLUTION_DISTRIBUTIONS = (
+    "czsc-market-rules",
     "paper-trading-engine",
     "czsc-strategy-runtime",
     "czsc-strategy-chart",
@@ -445,7 +447,7 @@ def _verify_installed_environment(
         "chart_assets=get_chart_assets()\n"
         "assert chart_assets.css and chart_assets.javascript, 'shared chart assets missing'\n"
         "expected=('paper-trading-engine','czsc-trader-research','czsc-strategy-runtime',"
-        "'czsc-strategy-manager','czsc-dataflows','czsc-strategy-chart')\n"
+        "'czsc-strategy-manager','czsc-dataflows','czsc-strategy-chart','czsc-market-rules')\n"
         "forbidden=('vectorbt','optuna','tsfresh','czsc-strategy-evaluator',"
         "'czsc-factor-signal-catalog','czsc-strategy-template-catalog',"
         "'czsc-trading-execution-engine')\n"

@@ -17,17 +17,7 @@ from test_v4_inspection_roundtrip import native_fixture
 
 
 def native_account(tmp_path, market, computation=StrategyComputation.STATEFUL_STEP, *, etf=False, intraday=False):
-    context, request, products, _ = native_fixture(tmp_path, market, computation)
-    if etf:
-        from dataclasses import replace
-        from dataflows import InstrumentId, AssetClass
-        from czsc_trader.research_tools import ResearchExecutionSession
-        instrument = InstrumentId(market, AssetClass.ETF, '510500.SH' if market is MarketId.CN else 'SOXX')
-        candidate = replace(request.candidate, definition=replace(request.candidate.definition,
-            instrument=instrument, auxiliary_inputs=()))
-        request = replace(request, candidate=candidate, prepared=None, input_binding=None, audit_inputs_sha256=None)
-        with ResearchExecutionSession(context, experiment=request.experiment) as execution:
-            request = context.evaluation.prepare(request, execution=execution).request
+    context, request, products, _ = native_fixture(tmp_path, market, computation, etf=etf)
     if intraday:
         context, request, products = intraday_inputs(context, request, products)
     workspace = tmp_path / '.tmp/strategy-inspection/native-pte'
@@ -240,7 +230,7 @@ def intraday_inputs(context, request, products):
     from dataclasses import replace
     from zoneinfo import ZoneInfo
     from dataflows import BarFrequency, ProviderBinding, ProviderConfig, ProviderKey, TradingSession
-    from dataflows.equity_data import equity_metadata
+    from dataflows.equity_data import equity_metadata, session_record
     from czsc_trader.application.research_governance_service import create_research_context
     from czsc_trader.research_tools import ResearchExecutionSession, EvaluationBenchmark, EquityBuyHold
     cn = request.candidate.instrument.market is MarketId.CN
@@ -254,13 +244,16 @@ def intraday_inputs(context, request, products):
     grid = [bar for session in sessions for bar in session.bars(BarFrequency.M30)]
     bars = products[EquityProduct.BARS].iloc[[0]*len(grid)].copy().reset_index(drop=True)
     bars['BarStart'], bars['Date'], bars['AvailableDate'] = [b.start for b in grid], [b.end for b in grid], [b.end for b in grid]
-    constraints = products[EquityProduct.CONSTRAINTS].iloc[[0]*len(grid)].copy().reset_index(drop=True)
+    constraints = products[EquityProduct.TRADING_FACTS].iloc[[0]*len(grid)].copy().reset_index(drop=True)
     constraints['Date'], constraints['AvailableDate'] = [b.start for b in grid], [b.start for b in grid]
-    constraints['BuySellableAt'] = [b.start.astimezone(ZoneInfo(request.candidate.instrument.timezone)).replace(hour=9,minute=30)+timedelta(days=1) if cn else b.start for b in grid]
-    constraints['SettlementAt'] = [b.end for b in grid]
-    products = {**products, EquityProduct.BARS:bars, EquityProduct.CONSTRAINTS:constraints}
+    products = {**products, EquityProduct.BARS:bars, EquityProduct.TRADING_FACTS:constraints}
     def fetch(query):
         metadata = equity_metadata(query, tuple(sessions), availability_basis='FIXTURE_BAR_CLOSE')
+        if cn and query.parameters.query.product is EquityProduct.TRADING_FACTS:
+            delta = timedelta(days=3 if sessions[-1].session_date.weekday() == 4 else 1)
+            following = TradingSession(sessions[-1].session_date + delta, sessions[-1].timezone,
+                tuple(TimeInterval(part.start + delta, part.end + delta) for part in sessions[-1].segments))
+            metadata['following_session'] = session_record(following)
         metadata['no_actions_verified'] = True
         return products[query.parameters.query.product].copy(deep=True), metadata
     source = request.sources.bars

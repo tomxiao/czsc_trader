@@ -978,23 +978,25 @@ CN/US个股权益研究统一采用V4；既有A股日期模型仅服务其明确
 | `equity.bars` | `Date/BarStart/AvailableDate/Open/High/Low/Close/Volume/Amount` | 完整独立日历网格、OHLC 范围、非负量额、可用时间不早于结束时间 |
 | `equity.sessions` | `Date/AvailableDate/SessionDate` 及交易段元数据 | 唯一顺序交易日、市场时区、请求覆盖 |
 | `equity.actions` | `Date/AvailableDate/EventId/Kind/Ratio/CashPerShare/PayAt` | 唯一事件、正拆股比例、现金分红金额及支付时点 |
-| `equity.constraints` | `Date/AvailableDate/QuantityStep/PriceTick/Tradable` | 逐执行区间完整覆盖、当时可得；不沿用上一段过期约束 |
+| `equity.trading_facts` | `Date/AvailableDate/Tradable/PriceLimitLower/PriceLimitUpper` | 每个执行区间完整覆盖，区间起点已可得 |
 
-`Date` 对行情表示区间结束，对约束表示对应执行区间开始，对公司行动表示生效时间。
-现金交收模式还要求卖出区间具有 `SettlementAt`。约束来源由宿主显式提供并固定修订；
-不能把最新快照、统一一美分假设或自建工作日日历伪装成已核实的历史事实。
-约束中的数量步长和价位必须与执行合同相同，遇到制度切换明确拒绝，另行划分合同。
+`EquitySources.trading_facts` 声明上述动态产品的来源。TDR 在执行准备中调用 SRT 组装层，独立读取
+[MRS](../../packages/market_rules/README.md) 的固定规则，与 DFLS 交易日历及动态事实合并。输入证据
+保存原始动态产品和派生约束的身份，派生约束包含适用的 MRS 规则版本和指纹。
+
+`Date` 对行情表示区间结束，对交易事实表示区间开始，对公司行动表示生效时间。
+卖出区间的 `SettlementAt` 按 MRS 的结算模型及交易日历推导。动态事实由宿主明确指定来源和修订。
+MRS 的数量步长和价位必须与执行合同一致。制度切换导致不一致时，需另行划分合同。
 
 无公司行动也必须有来源核实记录：一条 `Kind=NONE` 和 `no_actions_verified=true`。
 默认缺行情、缺约束、日历冲突、来源修订不符、无合法准备引用等均失败，不补齐、不换源。
-执行始终使用未复权价，公司行动另行记账；不把复权价格当作可成交报价。
+执行始终使用未复权价。拆股及份额折算更新持有数量，TDR 回放忽略现金派息等非交易收入。
 
-`futu_equity_bindings(source=..., quote_context=...)` 仅绑定 US 的行情、日历和公司行动。
+`futu_equity_bindings(source=..., quote_context=...)` 绑定美股行情和日历。
 宿主管理行情连接生命周期，适配器不打开交易连接，不提交券商订单。
 历史 K 线使用 RTH 和分页；美东本地时间转换成 UTC，支持正常交易日、半日和夏令时。
 适配器记录 `BAR_CLOSE_RESEARCH_ASSUMPTION`，它是研究中的行情可用时间假设，不是历史发布延迟实测。
-对 `get_rehab` 的现金分红及复杂行动明确拒绝，因为该产品不足以提供所需支付凭据；
-可由宿主绑定具有明确支付日期的独立行动来源。拆股比例遵循已安装 SDK 的新股数/旧股数定义。
+持有数量变动事件由独立的动态来源提供，拆股比例为调整后数量除以调整前数量。
 接口时区及分页依据见 [Futu 历史 K 线文档](https://openapi.futunn.com/futu-api-doc/quote/request-history-kline.html)。
 
 宿主可显式传入 `UsEquityBarPolicy(quantity_step=1, price_tick=0.01, unavailable_intervals=())`

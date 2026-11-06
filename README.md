@@ -27,6 +27,7 @@ CZSC Trader 面向量化策略研究与模拟交易，连接受控数据、策�
 | 模块 | 职责 |
 | --- | --- |
 | [DFLS](packages/dataflows/README.md) | 取数、数据校验与资产身份 |
+| [MRS](packages/market_rules/README.md) | 按市场和标的解析固定执行规则 |
 | [FSC](packages/factor_signal_catalog/README.md) | 因子、信号定义及复用计算 |
 | [STC](packages/strategy_template_catalog/README.md) | 策略结构模板与实例化 |
 | [SM](packages/strategy_manager/README.md) | 研究身份、候选、发布记录及生命周期 |
