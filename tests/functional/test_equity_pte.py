@@ -213,12 +213,15 @@ def test_equity_events_settled_sale_and_market_rules(tmp_path):
         'FILLED_ALL',start+timedelta(hours=3)))
     assert Decimal(store.virtual_account('us')['cash']) == Decimal('19.02')
     assert Decimal(store.virtual_account('us')['receivable']) == Decimal('988.82')
-    assert store.settle_equity_receivables('us',at=start+timedelta(hours=2)) == 1
-    assert store.settle_equity_receivables('us',at=start+timedelta(hours=2)) == 0
+    assert store.settle_equity_receivables('us',at=start+timedelta(hours=2),trade_only=True) == 0
     path = store.path
     store.close()
     store = PaperStore(path,inspection_permit=permit)
+    assert store.settle_equity_receivables('us',at=start+timedelta(hours=3),trade_only=True) == 1
+    assert Decimal(store.virtual_account('us')['receivable']) == Decimal('9.8')
+    assert Decimal(store.virtual_account('us')['cash']) == Decimal('998.04')
     assert store.settle_equity_receivables('us',at=start+timedelta(hours=3)) == 1
+    assert store.settle_equity_receivables('us',at=start+timedelta(hours=3)) == 0
     assert Decimal(store.virtual_account('us')['cash']) == Decimal('1007.84')
     assert not store.account_invariant_violations()
     with pytest.raises(ValueError,match='mix market'):

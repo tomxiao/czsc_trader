@@ -966,6 +966,7 @@ def _verify_native_account(client, account_id: str) -> str:
     from strategy_runtime.equity import equity_hash
 
     account, release, candidate = client._account_release(account_id)
+    client.store.require_no_pending_dividend(account_id)
     definition = candidate.definition
     if (account["symbol"] != candidate.instrument.symbol
             or account["asset_type"] != candidate.instrument.asset_class.value.lower()

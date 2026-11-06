@@ -163,6 +163,23 @@ def test_unattributed_futu_cash_blocks_reconciliation_and_submission(new_store, 
     store.close()
 
 
+def test_cn_channel_cash_adjustment_does_not_increase_allocatable_capital(new_store, tmp_path):
+    store = new_store(tmp_path / "cash-adjustment.db")
+    store.create_channel_reconciliation_account()
+    broker = FakeBroker()
+    execution = ChannelExecution(store, broker)
+    execution.refresh_orders()
+    capital = store.capital_pool_balance()
+    broker.value = replace(broker.value, account=replace(broker.value.account, cash=1_000_012.34))
+    execution.refresh_orders()
+    execution.refresh_orders()
+    assert float(store.channel_reconciliation_account()["cash"]) == pytest.approx(12.34)
+    assert store.capital_pool_balance() == capital
+    assert store.account_invariant_violations() == []
+    event, = store.query_audit_events(event_type="CHANNEL_CASH_ADJUSTMENT_RECONCILED")
+    assert event["details"]["origin"] == "UNCLASSIFIED"
+
+
 def test_ft_pte03_estimated_fees_reconcile_to_futu_cash_exactly_once(new_store, tmp_path):
     store = new_store(tmp_path / "fee-reconciliation.db")
     store.create_virtual_account(

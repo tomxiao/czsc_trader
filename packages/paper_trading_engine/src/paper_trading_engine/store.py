@@ -5,6 +5,7 @@ from __future__ import annotations
 from contextlib import contextmanager, nullcontext
 from dataclasses import replace
 from datetime import date, datetime, timezone
+from decimal import Decimal
 import hashlib
 import json
 from pathlib import Path
@@ -3554,20 +3555,32 @@ class PaperStore(ChannelAccountStore, EquityEventStore):
         self, *, adjustment, reference: str, occurred_at: str, event: AuditEvent,
     ) -> dict[str, Any]:
         """Book a verified aggregate Futu fee variance only to the system account."""
-        from decimal import Decimal
+        return self._apply_channel_cash_entry(adjustment, reference, occurred_at, event,
+            entry_type="CHANNEL_FEE_VARIANCE")
 
+    def apply_channel_cash_adjustment(
+        self, *, adjustment: Decimal, reference: str, occurred_at: str, event: AuditEvent,
+    ) -> dict[str, Any]:
+        """Book a positive channel cash residual with unclassified origin."""
+        if type(adjustment) is not Decimal or not adjustment.is_finite() or adjustment <= 0:
+            raise ValueError("channel cash adjustment requires a positive finite Decimal")
+        return self._apply_channel_cash_entry(adjustment, reference, occurred_at, event,
+            entry_type="CHANNEL_CASH_ADJUSTMENT")
+
+    def _apply_channel_cash_entry(self, adjustment, reference, occurred_at, event, *, entry_type):
         amount = Decimal(str(adjustment)).quantize(Decimal("0.0001"))
         if not amount.is_finite() or amount == 0:
-            raise ValueError("channel fee variance must be finite and non-zero")
-        if event.event_type != "CHANNEL_FEE_VARIANCE_RECONCILED":
-            raise ValueError("channel fee variance audit event is invalid")
-        account = self.channel_reconciliation_account(self.execution_channel_id)
-        if account is None:
-            raise ValueError("channel reconciliation account has not been initialized")
-        if event.account_id != account["account_id"]:
-            raise ValueError("channel fee variance audit account does not match")
-        ledger_id = str(uuid5(NAMESPACE_URL, f"pte-channel-fee-variance:{self.channel_account_id or DEFAULT_CHANNEL_ACCOUNT}:{reference}"))
+            raise ValueError("channel cash entry must be finite and non-zero")
+        if event.event_type != f"{entry_type}_RECONCILED":
+            raise ValueError("channel cash entry audit event is invalid")
+        identity = entry_type.lower().replace("_", "-")
+        ledger_id = str(uuid5(NAMESPACE_URL, f"pte-{identity}:{self.channel_account_id or DEFAULT_CHANNEL_ACCOUNT}:{reference}"))
         with self._lock, self._write_context(False):
+            account = self.channel_reconciliation_account(self.execution_channel_id)
+            if account is None:
+                raise ValueError("channel reconciliation account has not been initialized")
+            if event.account_id != account["account_id"]:
+                raise ValueError("channel cash entry audit account does not match")
             existing = self._connection.execute(
                 "SELECT 1 FROM account_ledger WHERE ledger_entry_id=?", (ledger_id,)
             ).fetchone()
@@ -3583,8 +3596,9 @@ class PaperStore(ChannelAccountStore, EquityEventStore):
                 "INSERT INTO account_ledger(ledger_entry_id,account_id,entry_type,order_id,fill_id,"
                 "cash_delta,frozen_cash_delta,quantity_delta,fee,balance_after,quantity_after,occurred_at) "
                 "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
-                (ledger_id, account["account_id"], "CHANNEL_FEE_VARIANCE", None, None,
-                 str(amount), "0.0000", 0, str(-amount), str(cash), 0, occurred_at),
+                (ledger_id, account["account_id"], entry_type, None, None, str(amount),
+                 "0.0000", 0, str(-amount) if entry_type == "CHANNEL_FEE_VARIANCE" else "0.0000",
+                 str(cash), 0, occurred_at),
             )
             self._insert_audit_event(event)
         return {"applied": True, "ledger_entry_id": ledger_id, "account": self.virtual_account(account["account_id"])}

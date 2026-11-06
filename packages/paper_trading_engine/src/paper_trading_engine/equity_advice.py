@@ -138,19 +138,14 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
                   'source': asdict(action_request.parameters.source), 'schema_version': 1}
         records = []
         for row in actions.itertuples():
-            if row.Kind == 'NONE' or row.Date > interval.start or row.AvailableDate > interval.start:
-                continue
-            if actions_from is not None and row.Date < actions_from:
-                if row.Kind == 'CASH_DIVIDEND' and row.CashPerShare > 0 and row.PayAt >= actions_from:
-                    raise ValueError('pre-cutover dividend has unresolved payment at the V4 action boundary')
+            if (row.Kind != 'SPLIT' or row.Date > interval.start or row.AvailableDate > interval.start
+                    or (actions_from is not None and row.Date < actions_from)):
                 continue
             def stamp(value):
                 return value.to_pydatetime() if hasattr(value, 'to_pydatetime') else value
             facts = dict(event_id=str(row.EventId), kind=str(row.Kind),
                 effective_at=stamp(row.Date), available_at=stamp(row.AvailableDate),
-                ratio=Decimal(str(row.Ratio)) if row.Kind == 'SPLIT' else None,
-                cash_per_share=Decimal(str(row.CashPerShare)) if row.Kind == 'CASH_DIVIDEND' else None,
-                pay_at=stamp(row.PayAt) if row.Kind == 'CASH_DIVIDEND' else None)
+                ratio=Decimal(str(row.Ratio)), cash_per_share=None, pay_at=None)
             encoded = {key: value.isoformat() if isinstance(value, datetime) else str(value)
                        if isinstance(value, Decimal) else value for key, value in facts.items()}
             records.append(PreparedEquityAction(**facts, source_sha256=canonical_sha256({**source, 'event': encoded})))
@@ -327,7 +322,9 @@ class EquityAdviceClient:
         for event_id, source_hash in prepared.required_actions:
             if events.get(event_id,{}).get("definition",{}).get("source_sha256") != source_hash:
                 raise ValueError("prepared equity action must be applied before decision")
-        if any(e.get("kind") == "RECEIVABLE" and not e["paid"] and datetime.fromisoformat(e["pay_at"]) <= prepared.interval.start for e in events.values()):
+        if any(e.get("kind") == "RECEIVABLE" and not e["paid"]
+               and (not prepared.live_interval or e.get("recognized_kind") != "CASH_DIVIDEND")
+               and datetime.fromisoformat(e["pay_at"]) <= prepared.interval.start for e in events.values()):
             raise ValueError("due equity payments must be settled before decision")
         if (rules is None or rules.execution != candidate.definition.execution_spec or rules.instrument != candidate.instrument
                 or strategy_id != candidate.strategy_id or symbol != candidate.instrument.symbol or asset != candidate.instrument.asset_class.value.lower()):

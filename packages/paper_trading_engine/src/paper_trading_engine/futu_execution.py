@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import asdict, dataclass
 from datetime import datetime, time, timedelta, timezone
 from decimal import Decimal
@@ -436,21 +437,123 @@ class ChannelExecution:
                 raise
             self.store.update_account_intent_status(intent["intent_id"], IntentControlState.CANCELLING_ALL)
 
-    def _reconcile_broker_fees(self) -> None:
-        """Reconcile verified aggregate Futu fees without altering strategy PnL."""
+    def _channel_book_cash(self, accounts):
+        return self.store.capital_pool_balance().unallocated_cash + sum(
+            (Decimal(row["cash"]) for row in accounts), Decimal("0")
+        )
+
+    def _save_cash_checkpoint(self, fill_rowid, broker_cash, observed_at):
+        self.store.set_setting("futu_cash_reconciliation_checkpoint", json.dumps({
+            "schema": "futu_cash_reconciliation.v1",
+            "fill_rowid": fill_rowid,
+            "broker_cash": str(broker_cash),
+            "reconciled_at": observed_at.isoformat(),
+        }))
+        self.store.set_setting("futu_cash_reconciliation_status", "OK")
+
+    def _in_cash_window(self, order, checkpoint_at):
+        timestamp = order.updated_at or order.created_at
+        if checkpoint_at is None or not timestamp:
+            return True
+        point = datetime.fromisoformat(timestamp)
+        if point.utcoffset() is None:
+            point = point.replace(tzinfo=self.zone)
+        # Broker reports can have whole-second precision.
+        return point >= checkpoint_at.replace(microsecond=0)
+
+    def _cash_adjustment_orders_match(self, checkpoint_at, observed_at, fills):
+        history = getattr(self.broker, "historical_order_snapshot", None)
+        if history is None or checkpoint_at > observed_at:
+            return False
+        start = checkpoint_at.astimezone(self.zone).date().isoformat()
+        end = observed_at.astimezone(self.zone).date().isoformat()
+        required = {str(fill["order_id"]) for fill in fills}
+        confirmed = set()
+        for order in (*self._orders, *history(start, end)):
+            if order.status not in TERMINAL_ORDER_STATUSES:
+                return False
+            if not order.cumulative_filled_quantity and order.status != "FILL_CANCELLED":
+                continue
+            if order.channel_order_id not in required and not self._in_cash_window(order, checkpoint_at):
+                continue
+            try:
+                recorded = self.store.account_order(order.channel_order_id)
+                intent = self.store.account_intent(recorded["intent_id"])
+                self._validate_order(intent, order)
+            except (KeyError, ValueError):
+                return False
+            quantity = order.cumulative_filled_quantity
+            notional = order.cumulative_notional
+            if notional is None:
+                notional = Decimal(str(order.average_fill_price)) * quantity
+            recorded_notional = Decimal(str(recorded["average_fill_price"])) * quantity
+            if (recorded["status"] != order.status or recorded["cumulative_filled_quantity"] != quantity
+                    or abs(recorded_notional - notional) > Decimal("0.0001")):
+                return False
+            confirmed.add(order.channel_order_id)
+        return required <= confirmed
+
+    def _reconcile_cash_adjustment(self, *, snapshot, accounts, fills, latest_rowid, raw_checkpoint,
+                                   checkpoint, broker_cash, difference, observed_at):
+        value = checkpoint.get("reconciled_at")
+        if (not value or Decimal(str(snapshot.account.frozen_cash)) != 0
+                or any(Decimal(row["receivable"]) != 0 for row in accounts)
+                or not self._cash_adjustment_orders_match(datetime.fromisoformat(value), observed_at, fills)):
+            self.store.set_setting("futu_cash_reconciliation_status", "UNATTRIBUTED")
+            return
+        with self.store.atomic_decision_update():
+            current = [row for row in self.store.virtual_accounts() if row.get("run_state") != "RETIRED"]
+            book_cash = self._channel_book_cash(current)
+            book_positions = Counter()
+            for row in current:
+                if row["quantity"]:
+                    book_positions[row["symbol"].upper()] += row["quantity"]
+            broker_positions = Counter()
+            for position in snapshot.positions:
+                if position.quantity:
+                    broker_positions[position.symbol.upper()] += position.quantity
+            if (self._snapshot is not snapshot
+                    or self.store.get_setting("futu_cash_reconciliation_checkpoint") != raw_checkpoint
+                    or self.store.unresolved_account_intents()
+                    or any(Decimal(row["frozen_cash"]) or Decimal(row["receivable"]) for row in current)
+                    or self.store.account_fills_after_rowid(latest_rowid)
+                    or self.store.account_invariant_violations()
+                    or book_positions != broker_positions
+                    or (broker_cash - book_cash).quantize(Decimal("0.0001")) != difference):
+                self.store.set_setting("futu_cash_reconciliation_status", "UNATTRIBUTED")
+                return
+            account = self.store.channel_reconciliation_account(self.channel_id)
+            if account is None:
+                self.store.set_setting("futu_cash_reconciliation_status", "AMBIGUOUS")
+                return
+            reference = f"futu-cash:{value}:{checkpoint['fill_rowid']}:{latest_rowid}:{broker_cash}"
+            event = self.audit.build(
+                "CHANNEL_CASH_ADJUSTMENT_RECONCILED", source="futu_execution",
+                account_id=account["account_id"], channel=self.channel_id, correlation_id=reference,
+                details={"adjustment": str(difference), "currency": self.profile.currency,
+                         "origin": "UNCLASSIFIED", "broker_cash": str(broker_cash),
+                         "book_cash_before": str(book_cash),
+                         "checkpoint_at": value, "fill_rowid": latest_rowid},
+            )
+            result = self.store.apply_channel_cash_adjustment(
+                adjustment=difference, reference=reference, occurred_at=observed_at.isoformat(), event=event,
+            )
+            if not result["applied"]:
+                raise ChannelReconciliationError("channel cash adjustment already exists for the open checkpoint")
+            self._save_cash_checkpoint(latest_rowid, broker_cash, observed_at)
+
+    def _reconcile_cash(self) -> None:
+        """Reconcile channel cash after the order and position checks."""
         if self._snapshot is None:
             return
+        snapshot = self._snapshot
         accounts = [row for row in self.store.virtual_accounts() if row.get("run_state") != "RETIRED"]
         if self.store.unresolved_account_intents() or any(
             Decimal(row["frozen_cash"]) != 0 for row in accounts
         ):
             return
-        pool = self.store.capital_pool_balance()
-        capital_pool = pool.registered_capital
-        logical_cash = pool.unallocated_cash + sum(
-            (Decimal(row["cash"]) for row in accounts), Decimal("0")
-        )
-        broker_cash = Decimal(str(self._snapshot.account.cash)).quantize(Decimal("0.0001"))
+        logical_cash = self._channel_book_cash(accounts)
+        broker_cash = Decimal(str(snapshot.account.cash)).quantize(Decimal("0.0001"))
         difference = (broker_cash - logical_cash).quantize(Decimal("0.0001"))
 
         raw_checkpoint = self.store.get_setting("futu_cash_reconciliation_checkpoint")
@@ -458,16 +561,16 @@ class ChannelExecution:
         fill_rowid = int(checkpoint.get("fill_rowid", 0))
         fills = self.store.account_fills_after_rowid(fill_rowid)
         latest_rowid = fills[-1]["fill_rowid"] if fills else fill_rowid
+        observed_at = self.now().astimezone(timezone.utc)
         if abs(difference) <= Decimal("0.01"):
-            self.store.set_setting(
-                "futu_cash_reconciliation_checkpoint",
-                json.dumps({
-                    "schema": "futu_cash_reconciliation.v1",
-                    "fill_rowid": latest_rowid, "broker_cash": str(broker_cash),
-                    "reconciled_at": datetime.now(timezone.utc).isoformat(),
-                }),
+            self._save_cash_checkpoint(latest_rowid, broker_cash, observed_at)
+            return
+        if difference > 0:
+            self._reconcile_cash_adjustment(
+                snapshot=snapshot, accounts=accounts, fills=fills, latest_rowid=latest_rowid,
+                raw_checkpoint=raw_checkpoint, checkpoint=checkpoint, broker_cash=broker_cash,
+                difference=difference, observed_at=observed_at,
             )
-            self.store.set_setting("futu_cash_reconciliation_status", "OK")
             return
         if not fills:
             self.store.set_setting("futu_cash_reconciliation_status", "UNATTRIBUTED")
@@ -497,7 +600,8 @@ class ChannelExecution:
         )
         broker_order_count = len({str(fill["order_id"]) for fill in fills})
         modeled_fee = sum((Decimal(fill["fee"]) for fill in fills), Decimal("0"))
-        previous_broker_cash = Decimal(str(checkpoint.get("broker_cash", capital_pool)))
+        previous_broker_cash = (Decimal(str(checkpoint["broker_cash"])) if "broker_cash" in checkpoint
+                                else self.store.capital_pool_balance().registered_capital)
         gross_cash_change = sum(
             (
                 Decimal(str(fill["price"])) * int(fill["quantity"])
@@ -552,15 +656,7 @@ class ChannelExecution:
         except ValueError:
             self.store.set_setting("futu_cash_reconciliation_status", "OUT_OF_RANGE")
             return
-        self.store.set_setting(
-            "futu_cash_reconciliation_checkpoint",
-            json.dumps({
-                "schema": "futu_cash_reconciliation.v1",
-                "fill_rowid": latest_rowid, "broker_cash": str(broker_cash),
-                "reconciled_at": datetime.now(timezone.utc).isoformat(),
-            }),
-        )
-        self.store.set_setting("futu_cash_reconciliation_status", "OK")
+        self._save_cash_checkpoint(latest_rowid, broker_cash, observed_at)
 
     def _require_cash_reconciliation(self) -> None:
         status = self.store.get_setting("futu_cash_reconciliation_status")
@@ -626,13 +722,18 @@ class ChannelExecution:
             self.store.expire_unsubmitted_decisions(moment)
             self._expire_unsubmitted_intents(moment)
         previous_reconciliation = self.store.get_setting("channel_reconciliation_status")
+        raw_checkpoint = self.store.get_setting("futu_cash_reconciliation_checkpoint")
+        checkpoint_at = json.loads(raw_checkpoint).get("reconciled_at") if raw_checkpoint else None
+        checkpoint_at = datetime.fromisoformat(checkpoint_at) if checkpoint_at else None
         orders = self._order_snapshot()
         seen_intents: set[str] = set()
         touched_accounts: set[str] = set()
         for order in orders:
             intent = self._owned_intent(order.remark)
             if intent is None:
-                if order.status not in TERMINAL_ORDER_STATUSES:
+                if (order.status not in TERMINAL_ORDER_STATUSES
+                        or ((order.cumulative_filled_quantity or order.status == "FILL_CANCELLED")
+                            and self._in_cash_window(order, checkpoint_at))):
                     self._block_reconciliation(
                         "unowned_order", f"Futu订单无法归属虚拟账户: {order.channel_order_id}",
                         order_id=order.channel_order_id, details={"remark": order.remark},
@@ -773,7 +874,7 @@ class ChannelExecution:
                         f"Futu持仓与虚拟账户分账不一致({symbol}): "
                         f"{broker_quantity}!={logical_quantity}"
                     )
-        self._reconcile_broker_fees()
+        self._reconcile_cash()
         self._require_cash_reconciliation()
         violations = self.store.account_invariant_violations()
         if violations:

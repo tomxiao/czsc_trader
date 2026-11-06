@@ -6,6 +6,19 @@ from uuid import NAMESPACE_URL, uuid5
 
 
 class EquityEventStore:
+    def require_no_pending_dividend(self, account_id: str) -> None:
+        """Block cutover while the legacy strategy ledger has dividend receivables."""
+        self.virtual_account(account_id)
+        with self._lock:
+            rows = self._connection.execute(
+                "SELECT payload FROM equity_account_events WHERE account_id=?", (account_id,),
+            ).fetchall()
+        for row in rows:
+            event = json.loads(row["payload"])
+            if (event.get("recognized_kind") == "CASH_DIVIDEND" and not event["paid"]
+                    and Decimal(event["amount"]) != 0):
+                raise ValueError(f"{account_id}: unsettled legacy dividend requires ledger reconciliation")
+
     def apply_equity_event(self, account_id, *, event_id, kind, effective_at, available_at,
                            source_sha256, ratio=None, cash_per_share=None, pay_at=None):
         import re
@@ -81,7 +94,7 @@ class EquityEventStore:
                              income_delta=amount if kind == "CASH_DIVIDEND" else Decimal(0))
             return True
 
-    def settle_equity_receivables(self, account_id, *, at):
+    def settle_equity_receivables(self, account_id, *, at, trade_only: bool = False):
         if type(at) is not datetime or at.utcoffset() is None:
             raise ValueError("settlement requires aware timestamp")
         with self._lock, self._write_context(False):
@@ -95,6 +108,8 @@ class EquityEventStore:
             for row in rows:
                 event = json.loads(row["payload"])
                 if event.get("kind") != "RECEIVABLE" or event["paid"] or datetime.fromisoformat(event["pay_at"]) > at:
+                    continue
+                if trade_only and event.get("recognized_kind") == "CASH_DIVIDEND":
                     continue
                 amount = Decimal(event["amount"])
                 if amount > receivable:

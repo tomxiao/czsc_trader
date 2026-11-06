@@ -165,20 +165,29 @@ def test_formal_v4_forward_decision_uses_historical_prices_and_exact_deployment(
     assert max(next_prepared.v4_replay._data.ends) == interval.end
     reopened.apply_account_events('formal', next_prepared)
     assert store.virtual_account('formal')['quantity'] == 2 * intent['quantity']
-    assert Decimal(store.virtual_account('formal')['receivable']) == Decimal('.2') * intent['quantity']
+    assert Decimal(store.virtual_account('formal')['receivable']) == 0
     after_actions = store.virtual_account('formal')
     reopened.apply_account_events('formal', next_prepared)
     assert store.virtual_account('formal') == after_actions
     payment_interval = TimeInterval(next_interval.start + timedelta(days=1), next_interval.end + timedelta(days=1))
     payment_prepared = reopened.prepare_interval('formal', payment_interval, observed_at=payment_interval.start)
     assert payment_prepared.binding.expected_identities['actions'] != next_prepared.binding.expected_identities['actions']
-    assert payment_prepared.required_actions[:2] == next_prepared.required_actions
+    assert payment_prepared.required_actions == next_prepared.required_actions
     reopened.apply_account_events('formal', payment_prepared)
     after_payment = store.virtual_account('formal')
     assert Decimal(after_payment['receivable']) == 0
-    assert Decimal(after_payment['cash']) == Decimal(after_actions['cash']) + Decimal('.2') * intent['quantity']
+    assert after_payment['cash'] == after_actions['cash']
     reopened.apply_account_events('formal', payment_prepared)
     assert store.virtual_account('formal') == after_payment
+    # A carried dividend from the old ledger must be resolved before cutover.
+    store.apply_equity_event('formal', event_id='legacy-receivable', kind='CASH_DIVIDEND',
+        effective_at=payment_interval.start, available_at=payment_interval.start,
+        source_sha256='c' * 64, cash_per_share=Decimal('.1'),
+        pay_at=payment_interval.start + timedelta(days=1))
+    legacy_account = store.virtual_account('formal')
+    with pytest.raises(ValueError, match='unsettled legacy dividend'):
+        reopened.apply_account_events('formal', payment_prepared)
+    assert store.virtual_account('formal') == legacy_account
     archive = reopened._interval_path('formal', store.virtual_account('formal')['release_hash'], interval)
     archive.unlink()
     with pytest.raises(ValueError, match='input record is missing'):
@@ -376,7 +385,7 @@ def test_formal_v4_maintenance_prepares_data_without_adopting_interval(formal_v4
     assert not store.account_intents('formal')
 
 
-def test_legacy_cutover_blocks_dividend_payment_crossing_the_boundary(formal_v4):
+def test_legacy_cutover_ignores_unbooked_dividend_payment_crossing_the_boundary(formal_v4):
     client, store, _, interval, _, _ = formal_v4
     recipe = client.inputs('formal')
     payment_interval = TimeInterval(interval.start + timedelta(days=2), interval.end + timedelta(days=2))
@@ -384,7 +393,8 @@ def test_legacy_cutover_blocks_dividend_payment_crossing_the_boundary(formal_v4)
               'effective_interval': {'start': payment_interval.start.isoformat(), 'end': payment_interval.end.isoformat()},
               'legacy_actions_before': payment_interval.start.isoformat()}
     with patch.object(store, 'v4_runtime_binding', return_value=record):
-        with pytest.raises(ValueError, match='pre-cutover dividend has unresolved payment'):
-            client.prepare_interval('formal', payment_interval, observed_at=payment_interval.start)
+        prepared = client.prepare_interval('formal', payment_interval, observed_at=payment_interval.start)
+        assert not prepared.live_actions and not prepared.required_actions
+        client.apply_account_events('formal', prepared)
     assert not store.account_intents('formal')
     assert Decimal(store.virtual_account('formal')['receivable']) == 0

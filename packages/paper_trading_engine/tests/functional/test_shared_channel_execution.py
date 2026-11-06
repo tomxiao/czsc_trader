@@ -177,6 +177,54 @@ def test_us_cash_difference_without_policy_remains_blocked(live_us):
     assert store.get_setting('futu_cash_reconciliation_status') == 'UNATTRIBUTED'
 
 
+def test_us_cash_adjustment_after_fill_is_atomic_and_idempotent(live_us, monkeypatch):
+    _, store, broker, engine, _ = live_us
+    engine.submit_pending()
+    broker.fill(2, '99', fee='1.99')
+    broker.cash += Decimal('5.00')
+    checkpoint = store.get_setting('futu_cash_reconciliation_checkpoint')
+    set_setting = store.set_setting
+
+    def fail_checkpoint(key, value):
+        if key == 'futu_cash_reconciliation_checkpoint':
+            raise RuntimeError('checkpoint write failed')
+        set_setting(key, value)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(store, 'set_setting', fail_checkpoint)
+        with pytest.raises(RuntimeError, match='checkpoint write failed'):
+            engine.refresh_orders()
+    assert store.get_setting('futu_cash_reconciliation_checkpoint') == checkpoint
+    assert Decimal(store.channel_reconciliation_account()['cash']) == 0
+    assert not store.query_audit_events(event_type='CHANNEL_CASH_ADJUSTMENT_RECONCILED')
+
+    engine.refresh_orders()
+    engine.refresh_orders()
+    assert Decimal(store.virtual_account('strategy')['cash']) == Decimal('801.9010')
+    assert Decimal(store.channel_reconciliation_account()['cash']) == Decimal('3.1090')
+    event, = store.query_audit_events(event_type='CHANNEL_CASH_ADJUSTMENT_RECONCILED')
+    assert event['details']['origin'] == 'UNCLASSIFIED'
+    assert not store.query_audit_events(event_type='CHANNEL_FEE_VARIANCE_RECONCILED')
+    assert store.account_invariant_violations() == []
+    assert store.get_setting('futu_cash_reconciliation_status') == 'OK'
+
+
+def test_us_cash_adjustment_checks_terminal_fills_missing_from_current_orders(live_us, monkeypatch):
+    _, store, broker, engine, _ = live_us
+    engine.submit_pending()
+    broker.fill(2, '99')
+    engine.now = lambda: datetime.fromisoformat(FILL_TIME).replace(microsecond=500000)
+    engine.refresh_orders()
+    unknown = BrokerOrder('43', 'MU', 'SELL', 1, 100, 'FILLED_ALL', 1, 100, 'unknown',
+        updated_at=FILL_TIME, channel_account_id=broker.channel_account_id)
+    monkeypatch.setattr(broker, 'historical_order_snapshot', lambda start, end: (*broker.orders, unknown))
+    broker.cash += Decimal('100')
+    with pytest.raises(ChannelReconciliationError, match='UNATTRIBUTED'):
+        engine.refresh_orders()
+    assert Decimal(store.channel_reconciliation_account()['cash']) == 0
+    assert store.get_setting('channel_reconciliation_status') == 'BLOCKED'
+
+
 def test_us_missing_interval_blocks_before_submission(live_us, monkeypatch):
     _, store, broker, engine, _ = live_us
     original = store.account_decision

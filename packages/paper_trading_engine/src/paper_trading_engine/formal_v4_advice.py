@@ -372,11 +372,14 @@ class FormalV4AdviceClient:
             account_id, release.release_hash, prepared.interval).read_text(encoding='utf-8')))
         if inputs.binding != prepared.binding or inputs.fee_rate != prepared.fee_rate:
             raise ValueError('formal account events differ from archived interval inputs')
-        for action in prepared.live_actions:
-            if action.effective_at > prepared.interval.start or action.available_at > prepared.interval.start:
-                raise ValueError('formal account event is unavailable at the decision')
-            self.store.apply_equity_event(account_id, **asdict(action))
-        self.store.settle_equity_receivables(account_id, at=prepared.interval.start)
+        with self.store.atomic_decision_update():
+            self.store.require_no_pending_dividend(account_id)
+            for action in prepared.live_actions:
+                if (action.kind != 'SPLIT' or action.effective_at > prepared.interval.start
+                        or action.available_at > prepared.interval.start):
+                    raise ValueError('formal account event is unavailable at the decision')
+                self.store.apply_equity_event(account_id, **asdict(action))
+            self.store.settle_equity_receivables(account_id, at=prepared.interval.start, trade_only=True)
 
 
 class FormalV4ScheduleProvider:
