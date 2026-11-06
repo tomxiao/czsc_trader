@@ -440,10 +440,10 @@ def _verify_installed_environment(
         "import importlib.metadata as m,json,sys\n"
         "from pathlib import Path\n"
         "import paper_trading_engine.cli\n"
+        "from paper_trading_engine.release_cli import _verify_strategy_snapshot\n"
         "from strategy_chart import get_chart_assets\n"
         "chart_assets=get_chart_assets()\n"
         "assert chart_assets.css and chart_assets.javascript, 'shared chart assets missing'\n"
-        "from strategy_runtime import StrategyRelease,StrategyRuntime,deployment_inventory\n"
         "expected=('paper-trading-engine','czsc-trader-research','czsc-strategy-runtime',"
         "'czsc-strategy-manager','czsc-dataflows','czsc-strategy-chart')\n"
         "forbidden=('vectorbt','optuna','tsfresh','czsc-strategy-evaluator',"
@@ -461,13 +461,7 @@ def _verify_installed_environment(
         "    present.append(name)\n"
         "assert not editable, f'editable PTE packages: {editable}'\n"
         "assert not present, f'RSCH-only packages installed in PTE: {present}'\n"
-        "root=Path(sys.argv[1]); strategies=root/'strategies'\n"
-        "inventory=deployment_inventory(strategies)\n"
-        "runtime=StrategyRuntime(strategies)\n"
-        "for reference in inventory:\n"
-        "    family,version=reference.split('-',1)\n"
-        "    payload=json.loads((strategies/family/'versions'/f'{version}.json').read_text(encoding='utf-8'))\n"
-        "    runtime.describe(StrategyRelease.from_mapping(payload))\n"
+        "_verify_strategy_snapshot(Path(sys.argv[1])/'strategies')\n"
     )
     _run(
         [str(_python_in(release_root / ".venv")), "-c", script, str(release_root)],
