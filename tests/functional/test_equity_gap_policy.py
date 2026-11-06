@@ -30,7 +30,8 @@ def gap_context(tmp_path, *, formal=True, missing=(2, 3, 25), zero=(4,), blocked
                        {'time': '2026-10-02', 'trade_date_type': 'WHOLE'}]
 
         def get_rehab(self, code):
-            return 0, (pd.DataFrame([{'ex_div_date': '2026-10-02', 'split_ratio': 2., 'per_cash_div': 0.}])
+            # Futu reports old shares divided by new shares. Here one becomes two.
+            return 0, (pd.DataFrame([{'ex_div_date': '2026-10-02', 'split_ratio': .5, 'per_cash_div': 0.}])
                        if split else pd.DataFrame())
 
         def request_history_kline(self, code, **kwargs):

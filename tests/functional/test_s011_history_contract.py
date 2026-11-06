@@ -1,8 +1,8 @@
 """S011 warmup admission through real runtime/DFLS contracts, with synthetic prices.
 
 The exchange closure fixture deliberately includes Chinese New Year. Coverage
-is measured in trading sessions, not weekdays. All checks use the installed
-S011-v1 release; no signal calculator or feature function is mocked.
+is measured in trading sessions, not weekdays. All checks use the archived
+S011-v1 SRT package; no signal calculator or feature function is mocked.
 """
 
 from dataclasses import replace
@@ -23,6 +23,11 @@ from strategy_runtime import (
 
 
 ROOT = Path(__file__).resolve().parents[2]
+STRATEGY_ROOT = (
+    ROOT / "strategies/revisions/S011-v1"
+    / "eb8a23d56de5c13079f125fd3ac09b520aaf8925c71e729709189c3f99a7b7d9"
+    / "strategies"
+)
 pytestmark = pytest.mark.release_acceptance
 CLOCKS = ("10:00", "10:30", "11:00", "11:30", "13:30", "14:00", "14:30", "15:00")
 CN_CLOSED = pd.DatetimeIndex(["2025-01-01", *pd.date_range("2025-01-28", "2025-02-04")])
@@ -37,7 +42,7 @@ def _sessions(start, end, closed=CN_CLOSED):
 
 @pytest.fixture(scope="module")
 def release():
-    raw = json.loads((ROOT / "strategies/S011/versions/v1.json").read_text(encoding="utf-8"))
+    raw = json.loads((STRATEGY_ROOT / "S011/versions/v1.json").read_text(encoding="utf-8"))
     installed = StrategyRelease.from_mapping(raw)
     assert installed.release_id == "S011-v1"
     return installed
@@ -98,7 +103,7 @@ def _flows(root, *, defect=None):
 
 
 def _instance(source, flows, root):
-    return StrategyRuntime(ROOT / "strategies", dataflows=flows).create(StrategyInit(source, WINDOW, root / "runtime"))
+    return StrategyRuntime(STRATEGY_ROOT, dataflows=flows).create(StrategyInit(source, WINDOW, root / "runtime"))
 
 
 def _plan(instance, flows):
