@@ -160,8 +160,11 @@ def prepare_frozen_runtime_migration(
         raise ValueError("migration must use a new candidate identity")
     manifest, binding, source = validate_release_package(context, request.reference)
     release = prospective_release(stored)
-    if release.payload["runtime"]["contract_version"] == 2:
+    contract_version = release.payload["runtime"]["contract_version"]
+    if contract_version == 2:
         raise ValueError("frozen version already implements contract version 2; retain its committed migration evidence")
+    if contract_version != 1:
+        raise ValueError(f"frozen contract version {contract_version} is unsupported by the V1-to-V2 migration")
     relative, class_name = _SUPPORTED[request.reference]
     transformed = _rewrite((source / relative).read_text(encoding="utf-8"), request.reference, class_name)
     protected = {name: sha256((source / name).read_bytes()).hexdigest() for name in binding["source_files"]}

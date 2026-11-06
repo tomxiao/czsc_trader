@@ -16,11 +16,12 @@ from test_candidate_freeze import (
 
 
 @pytest.mark.release_acceptance
-def test_real_frozen_versions_expose_installed_fees_only_after_deployment(loaded_release):
+def test_real_frozen_versions_expose_installed_identity_only_after_deployment(loaded_release):
     from czsc_trader.application import strategy_info
     from czsc_trader.application.errors import ValidationError
+    from strategy_runtime.equity_definition import EquityStrategyCandidate
 
-    registered_release, _, definition, _ = loaded_release
+    registered_release, deployment, definition, _ = loaded_release
     context = RepositoryContext.discover(Path(__file__).resolve().parents[2])
     if not (context.strategy_root / "deployments" / f"{registered_release.release_id}.json").exists():
         with pytest.raises(ValidationError, match="cannot read strategy deployment file") as failed:
@@ -28,14 +29,19 @@ def test_real_frozen_versions_expose_installed_fees_only_after_deployment(loaded
         assert failed.value.code == "strategy_info_failed"
         assert failed.value.context["strategy_version_id"] == registered_release.release_id
         return
-    policy = definition.execution
-    expected_fee = (policy.settings["capital"]["fee_rate"]
-                    if policy.policy_type == "FROZEN_RULE" else policy.settings["one_way_cost"])
-    assert 0 <= expected_fee < 1
     result = strategy_info(context, registered_release.release_id)
     assert result.status == "PASS"
     assert result.result["strategy_version_id"] == registered_release.release_id
-    assert result.result["fee_rate"] == expected_fee
+    assert result.result["strategy_version_hash"] == registered_release.release_hash
+    if isinstance(definition, EquityStrategyCandidate):
+        assert result.result["fee_rate"] is None
+        assert result.result["runtime_hash"] == deployment.binding.spec.implementation_sha256
+    else:
+        policy = definition.execution
+        expected_fee = (policy.settings["capital"]["fee_rate"]
+                        if policy.policy_type == "FROZEN_RULE" else policy.settings["one_way_cost"])
+        assert 0 <= expected_fee < 1
+        assert result.result["fee_rate"] == expected_fee
 
 
 @pytest.fixture

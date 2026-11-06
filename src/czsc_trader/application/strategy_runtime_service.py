@@ -152,18 +152,24 @@ def _installed_identity(context: RepositoryContext, reference: str) -> dict[str,
         or binding.release_hash != release.release_hash
     ):
         raise ValueError("SRT binding differs from frozen strategy version")
-    definition = StrategyRuntime(context.strategy_root).describe(release)
     candidate = stored.source_candidate
     if candidate is not None:
         candidate = str(candidate)
     if candidate is not None and not candidate.startswith(f"{strategy_id}-"):
         candidate = f"{strategy_id}-{candidate}"
-    execution = definition.execution
-    fee_rate = (
-        execution.settings.get("capital", {}).get("fee_rate")
-        if execution.policy_type == "FROZEN_RULE"
-        else execution.settings.get("one_way_cost")
-    )
+    if release.payload.get("runtime", {}).get("kind") == "ACCOUNT_REPLAY":
+        # Native V4 fees belong to the execution account, outside the frozen package.
+        fee_rate = None
+        runtime_hash = binding.spec.implementation_sha256
+    else:
+        definition = StrategyRuntime(context.strategy_root).describe(release)
+        execution = definition.execution
+        fee_rate = (
+            execution.settings.get("capital", {}).get("fee_rate")
+            if execution.policy_type == "FROZEN_RULE"
+            else execution.settings.get("one_way_cost")
+        )
+        runtime_hash = definition.runtime_sha256
     return {
         "strategy_id": strategy_id,
         "name": family.name,
@@ -174,7 +180,7 @@ def _installed_identity(context: RepositoryContext, reference: str) -> dict[str,
         "qualification": registry.current_qualification(strategy_id, version).value,
         "selection_data_cutoff": stored.selection_data_cutoff,
         "fee_rate": fee_rate,
-        "runtime_hash": definition.runtime_sha256,
+        "runtime_hash": runtime_hash,
         "implementation_hash": binding.spec.implementation_sha256,
         "observation_sha256": binding.spec.observation_sha256,
         "deployment_state": "SRT_DEPLOYED",

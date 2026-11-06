@@ -26,7 +26,17 @@ from strategy_runtime.contracts import signal_identity_for, plan_identity_for
 from test_observation_contract import observed_plan
 
 ROOT = Path(__file__).resolve().parents[4] / "strategies"
+LEGACY_RELEASE_HASHES = {
+    "S001-v1": "57d7f97f1fa8a7d5dafdf1562d83f772664aaedff95d12a4f95b391be4b0d4d6",
+    "S001-v2": "fc0c16b6fe91dce796278bfccae3e828a79efd08e765205ccec8b71c945a86e7",
+    "S002-v1": "c1ac2df0f3bcef58dfa289a28201bfb2953c84fa00b12f133dba43cbf4daceb8",
+    "S007-v1": "6d1d5dd533dd02a1117b4a703e37d690a7ed711fc78d229b452bd1f9bf2dbeaa",
+}
 pytestmark = pytest.mark.release_acceptance
+
+
+def archived_legacy_root(release_id):
+    return ROOT / "revisions" / release_id / LEGACY_RELEASE_HASHES[release_id] / "strategies"
 
 
 
@@ -39,7 +49,7 @@ def test_real_package_behavior_is_independent_of_candidate_or_release_identity(l
         assert candidate.content_identity == release.content_identity
         from strategy_runtime import canonical_sha256
         assert canonical_sha256(candidate.payload) == canonical_sha256(record.strategy_payload)
-        assert candidate.candidate_id != release.candidate_id == record.source_candidate
+        assert candidate.candidate_id != release.candidate_id == deployment.runtime_candidate_id
         assert candidate.definition.contract_version == 4
         assert record.schema_version == 5
         assert record.release_hash == deployment.release_hash
@@ -65,8 +75,9 @@ def test_real_package_behavior_is_independent_of_candidate_or_release_identity(l
 @pytest.mark.parametrize("release_id", ("S001-v1", "S001-v2", "S002-v1"))
 def test_real_rebindable_package_uses_parameter_factory(release_id):
     family, version = release_id.split("-")
-    record = StrategyRegistry(ROOT).get_version(family, version)
-    runtime = StrategyRuntime(strategy_root=ROOT)
+    archived = archived_legacy_root(release_id)
+    record = StrategyRegistry(archived).get_version(family, version)
+    runtime = StrategyRuntime(strategy_root=archived)
     release = StrategyRelease.from_mapping(record.to_dict())
     original = runtime.describe(release)
     rebound = runtime.describe(release, symbol="510500.SH")
@@ -77,7 +88,8 @@ def test_real_rebindable_package_uses_parameter_factory(release_id):
 
 
 def test_s007_declares_segmented_requests_for_the_full_2026_backtest_window(tmp_path):
-    record = StrategyRegistry(ROOT).get_version('S007', 'v1')
+    archived = archived_legacy_root("S007-v1")
+    record = StrategyRegistry(archived).get_version('S007', 'v1')
 
     def calendar(request):
         dates = pd.date_range(request.start, request.end)
@@ -87,7 +99,7 @@ def test_s007_declares_segmented_requests_for_the_full_2026_backtest_window(tmp_
     flows = Dataflows(base_dir=tmp_path, space=DataSpace(Path('assets')), providers=ProviderConfig({
         Dataset.TRADING_CALENDAR: ProviderBinding('fixture', '1', calendar),
     }))
-    strategy = StrategyRuntime(ROOT, dataflows=flows).create(StrategyInit(
+    strategy = StrategyRuntime(archived, dataflows=flows).create(StrategyInit(
         StrategyRelease.from_mapping(record.to_dict()),
         TradableWindow(date(2026, 1, 5), date(2026, 9, 30)), tmp_path / 'context',
     ))
