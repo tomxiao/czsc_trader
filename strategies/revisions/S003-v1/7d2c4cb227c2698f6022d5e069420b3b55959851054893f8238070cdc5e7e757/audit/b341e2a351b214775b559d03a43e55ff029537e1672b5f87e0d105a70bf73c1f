@@ -1,0 +1,248 @@
+{
+  "family": "S003",
+  "scope": {
+    "user_reply": "同意",
+    "scope": "source comparison and same-version review preparation",
+    "application_authorized": false,
+    "status": "PREPARATION_ONLY",
+    "note": "Application requires a separate decision tied to the exact new release and package identity."
+  },
+  "candidate": {
+    "strategy_id": "S003",
+    "candidate_id": "C9971"
+  },
+  "new_definition": {
+    "runtime_kind": "ACCOUNT_REPLAY",
+    "instrument": {
+      "market": "CN",
+      "asset_class": "ETF",
+      "symbol": "510500.SH"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "CN_EQUITY_V1"
+      },
+      "decision_clock": "daily",
+      "account": {
+        "currency": "CNY",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 100,
+      "price_tick": 0.001,
+      "buy_premium": 0.1,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 1,
+    "entrypoint": "strategy:step",
+    "source_files": [
+      "signals.py",
+      "strategy.py"
+    ],
+    "source_sha256": "268ae85c19a171279321f84e85e12763c7e3c25ac80c6d11217c408074e00c10",
+    "parameters_json": "{\"candidate_source\":{\"candidate_hash\":\"1d6736f816d652c59d43dd22491c567e65100eaddfa3d20575531ca5a124f741\",\"candidate_id\":\"S003-C001\",\"definition\":\"experiments/S003/20260911_S003_EX53/candidate_payload.json\",\"runtime_contract\":\"experiments/S003/20260911_S003_EX56/candidate_payload.json\"},\"rule\":{\"data_source\":{\"format\":\"S003_CONSTITUENT_MONEYFLOW_SEED_V1\",\"package\":\"strategy_runtime\",\"path\":\"resources/s003_v1_seed.csv.gz\",\"sha256\":\"6a60c143617fcf6597ccd475782849763cb413e4cf47b7c45199f720c988d86c\"},\"execution\":{\"core_fraction\":0.5,\"entry_checkpoint\":\"OPEN\",\"event_fraction\":0.5,\"exit_checkpoint\":\"11:30_CLOSE\",\"lot_size\":100,\"maximum_events_per_day\":1,\"one_way_cost\":0.00012,\"t_plus_one_inventory_rotation\":true},\"feature\":{\"comparison\":\"GREATER_THAN_OR_EQUAL\",\"minimum_observed_weight_ratio\":0.95,\"threshold_excludes_current_session\":true,\"threshold_lookback_sessions\":60,\"threshold_quantile\":0.8},\"symbol\":\"510500.SH\"},\"strategy_kind\":\"constituent_moneyflow_intraday_overlay\",\"symbol\":\"510500.SH\"}",
+    "dependencies": [
+      {
+        "name": "numpy",
+        "version": "2.5.2"
+      },
+      {
+        "name": "pandas",
+        "version": "3.0.5"
+      }
+    ],
+    "contract_version": 4,
+    "parameter_schema_json": "{\"candidate_source\":{\"type\":\"object\"},\"rule\":{\"type\":\"object\"},\"strategy_kind\":{\"type\":\"string\"},\"symbol\":{\"type\":\"string\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "feature_graph": {
+      "nodes": [],
+      "outputs": [],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [
+        {
+          "key": "core_quantity",
+          "value_type": "int",
+          "nullable": false
+        }
+      ],
+      "cycle_fields": []
+    },
+    "computation": "STATEFUL_STEP",
+    "execution_input": {
+      "instrument": {
+        "market": "CN",
+        "asset_class": "ETF",
+        "symbol": "510500.SH"
+      },
+      "source": {
+        "provider": "tushare-cn-market",
+        "revision": "v1"
+      },
+      "frequency": "30m"
+    },
+    "initial_account": {
+      "values": [
+        [
+          "core_quantity",
+          0
+        ]
+      ]
+    },
+    "observation_inputs": [
+      {
+        "name": "constituent_moneyflow_seed",
+        "dataset": "strategy.feature_evidence",
+        "symbol": "S003-v1",
+        "frequency": "daily",
+        "history_start": "2021-01-04",
+        "history_end": "2026-09-08",
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 1,
+          "minimum_sessions": 0,
+          "observations_through": null
+        },
+        "asset": {
+          "relative_path": "seed.csv",
+          "sha256": "d00c512c15c557c01212533a2f98bdf0a7e49f94cdee5c8eb3637e98b717178f"
+        },
+        "calendar": "SSE",
+        "availability": {
+          "timezone": "Asia/Shanghai",
+          "available_time": "15:00",
+          "day_offset": 0
+        },
+        "max_staleness_days": null
+      },
+      {
+        "name": "incremental_constituent_weights",
+        "dataset": "index.constituent_weight",
+        "symbol": "000905.SH",
+        "frequency": "snapshot",
+        "history_start": "2025-09-04",
+        "history_end": null,
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 1,
+          "minimum_sessions": 0,
+          "observations_through": null
+        },
+        "asset": null,
+        "calendar": "SSE",
+        "availability": {
+          "timezone": "Asia/Shanghai",
+          "available_time": "15:00",
+          "day_offset": 0
+        },
+        "max_staleness_days": null,
+        "required_from": "2026-09-09"
+      },
+      {
+        "name": "incremental_constituent_moneyflow",
+        "dataset": "stock.moneyflow",
+        "symbol": null,
+        "frequency": "daily",
+        "history_start": "2026-09-09",
+        "history_end": null,
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 1,
+          "minimum_sessions": 0,
+          "observations_through": null
+        },
+        "asset": null,
+        "calendar": "SSE",
+        "availability": {
+          "timezone": "Asia/Shanghai",
+          "available_time": "15:00",
+          "day_offset": 0
+        },
+        "max_staleness_days": null,
+        "required_from": "2026-09-09"
+      }
+    ],
+    "planning_context": true
+  },
+  "old_release_hash": "7d2c4cb227c2698f6022d5e069420b3b55959851054893f8238070cdc5e7e757",
+  "source_sha256": "268ae85c19a171279321f84e85e12763c7e3c25ac80c6d11217c408074e00c10",
+  "results": [
+    {
+      "status": "PASS",
+      "scenario": "STANDARD",
+      "window": {
+        "end": "2026-11-05T07:00:00+00:00",
+        "start": "2026-09-10T01:30:00+00:00"
+      },
+      "old_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S003",
+          "experiment_id": "EX004_20261106"
+        },
+        "evidence_id": "7d46e89141b229ea257d56c3eddac544e266538593def47560e210dc8ca46d5b.json",
+        "sha256": "7d46e89141b229ea257d56c3eddac544e266538593def47560e210dc8ca46d5b",
+        "media_type": "application/json",
+        "name": "migration-standard",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "new_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S003",
+          "experiment_id": "EX005_20261106"
+        },
+        "evidence_id": "86dc8a331c6edfbecbb410ad27e02854f91c759e6df4a729b2dfb834a98931fa.json",
+        "sha256": "86dc8a331c6edfbecbb410ad27e02854f91c759e6df4a729b2dfb834a98931fa",
+        "media_type": "application/json",
+        "name": "continuous-source-STANDARD",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "counts": {
+        "decisions": 35,
+        "orders": 17,
+        "fills": 17,
+        "account_daily": 35,
+        "trades": 0
+      },
+      "maximum_numeric_difference": 0.0,
+      "differences": 0,
+      "example_differences": [],
+      "source_product_identities": {
+        "execution:bars": {
+          "before": "fab0d45dc3d9b6c11f79f7fae2d3e3ac7c67e02736a5713677419d7225b051f5",
+          "after": "a80e863774ce012e8269e6cf0a0ef9005678b1e5ac8b82ff90cf62e215efe553"
+        },
+        "execution:sessions": {
+          "before": "e0fc876700884e437ec1a1745113a0fa00380aefb9a73a6e3851c6a6b3d75c30",
+          "after": "e0fc876700884e437ec1a1745113a0fa00380aefb9a73a6e3851c6a6b3d75c30"
+        }
+      }
+    }
+  ],
+  "ignored_generated_fields": [
+    "cycle_id",
+    "decision_id",
+    "fill_id",
+    "implementation",
+    "opening_signal_identity",
+    "order_id",
+    "owner",
+    "plan_identity"
+  ],
+  "absolute_numeric_tolerance": 1e-08
+}

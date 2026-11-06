@@ -1,0 +1,279 @@
+{
+  "family": "S015",
+  "scope": {
+    "user_reply": "同意",
+    "scope": "source comparison and same-version review preparation",
+    "application_authorized": false,
+    "status": "PREPARATION_ONLY",
+    "note": "Application requires a separate decision tied to the exact new release and package identity."
+  },
+  "candidate": {
+    "strategy_id": "S015",
+    "candidate_id": "C9971"
+  },
+  "new_definition": {
+    "runtime_kind": "ACCOUNT_REPLAY",
+    "instrument": {
+      "market": "CN",
+      "asset_class": "ETF",
+      "symbol": "159326.SZ"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "CN_EQUITY_V1"
+      },
+      "decision_clock": "daily",
+      "account": {
+        "currency": "CNY",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 100,
+      "price_tick": 0.001,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 75,
+    "entrypoint": "strategy:step",
+    "source_files": [
+      "cycle_planner.py",
+      "signal_math.py",
+      "strategy.py"
+    ],
+    "source_sha256": "f82c2a979fcd18032a71534649c653341ac15cd00b5fd79e318cd6ef65bc87eb",
+    "parameters_json": "{\"allocation\":1.0,\"center_kind\":\"median\",\"lookback\":3,\"minimum_repair_space\":0.0017298986606429072}",
+    "dependencies": [
+      {
+        "name": "numpy",
+        "version": "2.5.2"
+      },
+      {
+        "name": "pandas",
+        "version": "3.0.5"
+      }
+    ],
+    "contract_version": 4,
+    "parameter_schema_json": "{\"allocation\":{\"type\":\"number\"},\"center_kind\":{\"type\":\"string\"},\"lookback\":{\"type\":\"integer\"},\"minimum_repair_space\":{\"type\":\"number\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "RAW",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "auxiliary_inputs": [
+      {
+        "name": "hfq",
+        "instrument": {
+          "market": "CN",
+          "asset_class": "ETF",
+          "symbol": "159326.SZ"
+        },
+        "source": {
+          "provider": "tushare-cn-market",
+          "revision": "v1"
+        },
+        "frequency": "daily",
+        "warmup_bars": 75,
+        "max_age_seconds": 1296000,
+        "analysis_price": "HFQ"
+      },
+      {
+        "name": "intraday",
+        "instrument": {
+          "market": "CN",
+          "asset_class": "ETF",
+          "symbol": "159326.SZ"
+        },
+        "source": {
+          "provider": "tushare-cn-market",
+          "revision": "v1"
+        },
+        "frequency": "30m",
+        "warmup_bars": 1,
+        "max_age_seconds": 1296000,
+        "analysis_price": "RAW"
+      }
+    ],
+    "feature_graph": {
+      "nodes": [],
+      "outputs": [],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [
+        {
+          "key": "locked_quantity",
+          "value_type": "int",
+          "nullable": false
+        },
+        {
+          "key": "had_position",
+          "value_type": "bool",
+          "nullable": false
+        }
+      ],
+      "cycle_fields": []
+    },
+    "computation": "STATEFUL_STEP",
+    "initial_account": {
+      "values": [
+        [
+          "locked_quantity",
+          -1
+        ],
+        [
+          "had_position",
+          false
+        ]
+      ]
+    },
+    "planning_context": true
+  },
+  "old_release_hash": "7a3af2d794da4f875e2123193f4590523eab54a9bfbe32611ba682f166aef884",
+  "source_sha256": "f82c2a979fcd18032a71534649c653341ac15cd00b5fd79e318cd6ef65bc87eb",
+  "results": [
+    {
+      "status": "PASS",
+      "scenario": "STANDARD",
+      "window": {
+        "end": "2026-10-21T07:00:00+00:00",
+        "start": "2025-01-02T01:30:00+00:00"
+      },
+      "old_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX094_20261106"
+        },
+        "evidence_id": "96bf7af6e8a1360d8145c962991de1f3749824daf58fbe2a12685233867e9a55.json",
+        "sha256": "96bf7af6e8a1360d8145c962991de1f3749824daf58fbe2a12685233867e9a55",
+        "media_type": "application/json",
+        "name": "migration-STANDARD",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "new_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX095_20261106"
+        },
+        "evidence_id": "f4c39dd239ea96c1bbaf570b170390dd6bd4de3e4112efa125d4d485c17659da.json",
+        "sha256": "f4c39dd239ea96c1bbaf570b170390dd6bd4de3e4112efa125d4d485c17659da",
+        "media_type": "application/json",
+        "name": "continuous-source-STANDARD",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "counts": {
+        "decisions": 434,
+        "orders": 109,
+        "fills": 108,
+        "account_daily": 434,
+        "trades": 54
+      },
+      "maximum_numeric_difference": 0.0,
+      "differences": 0,
+      "example_differences": [],
+      "source_product_identities": {
+        "auxiliary:hfq:bars": {
+          "before": "2f09a7e4542aa367d33c82902e030ec8c5871ff01716a56ea036f99be2e21f6b",
+          "after": "af0c85d71e5721bcc75553e16bd1b44bf95d8aa57a26ad1e1c06fa609cc5fdce"
+        },
+        "auxiliary:hfq:sessions": {
+          "before": "75c60a89aae73ed09aa65781aae5dfd6dceb6c84d9e4264e667fa10c637fcc80",
+          "after": "75c60a89aae73ed09aa65781aae5dfd6dceb6c84d9e4264e667fa10c637fcc80"
+        },
+        "auxiliary:intraday:bars": {
+          "before": "0f191e0ff166c7977c9740713981bcccc4b41592335c4227dc239a2a2f0817d1",
+          "after": "73a4f5e3a6ea96cca1123c0a56bb9c1dbd244c6aaa03fbb253d1adff27d0105f"
+        },
+        "auxiliary:intraday:sessions": {
+          "before": "75c60a89aae73ed09aa65781aae5dfd6dceb6c84d9e4264e667fa10c637fcc80",
+          "after": "75c60a89aae73ed09aa65781aae5dfd6dceb6c84d9e4264e667fa10c637fcc80"
+        }
+      }
+    },
+    {
+      "status": "PASS",
+      "scenario": "FEE_X2",
+      "window": {
+        "end": "2026-10-21T07:00:00+00:00",
+        "start": "2025-01-02T01:30:00+00:00"
+      },
+      "old_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX094_20261106"
+        },
+        "evidence_id": "b8d140078bbfe64d9f7d52d73949592e8926a01d3560755ba51edf333878904e.json",
+        "sha256": "b8d140078bbfe64d9f7d52d73949592e8926a01d3560755ba51edf333878904e",
+        "media_type": "application/json",
+        "name": "migration-FEE_X2",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "new_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S015",
+          "experiment_id": "EX095_20261106"
+        },
+        "evidence_id": "4970159c15e26c93d68d375b7ec510335bfff8eee93759a266545c599f2d9808.json",
+        "sha256": "4970159c15e26c93d68d375b7ec510335bfff8eee93759a266545c599f2d9808",
+        "media_type": "application/json",
+        "name": "continuous-source-FEE_X2",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "counts": {
+        "decisions": 434,
+        "orders": 109,
+        "fills": 108,
+        "account_daily": 434,
+        "trades": 54
+      },
+      "maximum_numeric_difference": 0.0,
+      "differences": 0,
+      "example_differences": [],
+      "source_product_identities": {
+        "auxiliary:hfq:bars": {
+          "before": "2f09a7e4542aa367d33c82902e030ec8c5871ff01716a56ea036f99be2e21f6b",
+          "after": "af0c85d71e5721bcc75553e16bd1b44bf95d8aa57a26ad1e1c06fa609cc5fdce"
+        },
+        "auxiliary:hfq:sessions": {
+          "before": "75c60a89aae73ed09aa65781aae5dfd6dceb6c84d9e4264e667fa10c637fcc80",
+          "after": "75c60a89aae73ed09aa65781aae5dfd6dceb6c84d9e4264e667fa10c637fcc80"
+        },
+        "auxiliary:intraday:bars": {
+          "before": "0f191e0ff166c7977c9740713981bcccc4b41592335c4227dc239a2a2f0817d1",
+          "after": "73a4f5e3a6ea96cca1123c0a56bb9c1dbd244c6aaa03fbb253d1adff27d0105f"
+        },
+        "auxiliary:intraday:sessions": {
+          "before": "75c60a89aae73ed09aa65781aae5dfd6dceb6c84d9e4264e667fa10c637fcc80",
+          "after": "75c60a89aae73ed09aa65781aae5dfd6dceb6c84d9e4264e667fa10c637fcc80"
+        }
+      }
+    }
+  ],
+  "ignored_generated_fields": [
+    "cycle_id",
+    "decision_id",
+    "fill_id",
+    "implementation",
+    "opening_signal_identity",
+    "order_id",
+    "owner",
+    "plan_identity"
+  ],
+  "absolute_numeric_tolerance": 1e-08
+}
