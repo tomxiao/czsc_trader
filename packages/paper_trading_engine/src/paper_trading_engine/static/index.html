@@ -8,16 +8,20 @@
 <body>
   <header class="system-bar">
     <a class="brand" href="/accounts/" aria-label="PTE首页"><span>PTE</span><strong>模拟交易控制台</strong></a>
-    <nav aria-label="一级导航"><a data-nav="account" href="/accounts/">虚拟账户</a><a data-nav="channel" href="/channels/futu-simulate-cn">Futu模拟盘CN</a><a data-nav="audit" href="/audit-events">审计事件</a><a data-nav="comparison" href="/comparison">账户比较</a></nav>
+    <div class="market-switch" role="group" aria-label="全局市场">
+      <button type="button" data-market="CN" aria-pressed="true">A 股</button>
+      <button type="button" data-market="US" aria-pressed="false">美股</button>
+    </div>
     <span id="releaseVersion" class="release-version" aria-label="当前PTE版本">版本加载中</span>
     <button id="systemStatus" class="system-status" type="button" aria-live="polite" aria-haspopup="dialog">系统状态加载中</button>
+    <nav aria-label="一级导航"><a data-nav="account" href="/accounts/">虚拟账户</a><a data-nav="channel" href="/channels">模拟渠道</a><a data-nav="audit" href="/audit-events">审计事件</a><a data-nav="comparison" href="/comparison">账户比较</a></nav>
   </header>
   <div id="pollWarning" class="alert" role="status" hidden></div>
   <div id="routeLoading" class="route-loading" role="status" hidden></div>
   <div id="uiUpdateNotice" class="ui-update-notice" role="status" hidden>控制台界面已更新，当前页面仍使用旧版。<button id="reloadConsole" class="button" type="button">刷新页面</button></div>
   <main id="app" aria-live="polite"><div class="loading">正在加载控制台…</div></main>
   <dialog id="systemEventsDialog" class="events-dialog" aria-labelledby="systemEventsTitle">
-    <div class="events-head"><div><div class="eyebrow">PTE 运行审计</div><h2 id="systemEventsTitle">系统事件</h2></div><button id="closeSystemEvents" class="button" type="button">关闭</button></div>
+    <div class="events-head"><h2 id="systemEventsTitle">运行状态与告警</h2><button id="closeSystemEvents" class="button" type="button" autofocus>关闭</button></div>
     <div id="systemEventsContent" class="events-content"><div class="loading">正在加载系统事件…</div></div>
   </dialog>
   <div id="toast" class="toast" role="status"></div>

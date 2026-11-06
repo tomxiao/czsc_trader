@@ -72,7 +72,7 @@ CN 使用 CNY、上海时间和百股步长；US 使用 USD、纽约时间和整
 
 schema 8 将历史记录归入 `futu-cn-default`，保留旧订单 ID。新渠道订单 ID 带渠道账户前缀，
 向富途发送查询及撤单时还原原始 ID。现金、冻结、平账、设置、审计和监控失败均按渠道账户隔离；
-根存储不提供跨币种资金合计。控制台仍绑定原 CN 账户，本轮不增加 US 控制台。
+根存储不提供跨币种资金合计。控制台顶部市场开关统一切换虚拟账户、模拟渠道、审计事件、账户比较和活动告警。
 调度按各自日历生成稳定任务 ID，以有界工作池执行；每个账户串行、各渠道独立退避。
 
 同版本升级的 schema 2 包通过经 SRT 认证的 `runtime_candidate_id` 加载当前候选；历史
@@ -168,8 +168,10 @@ V4 可声明 `DatasetObservationInput` 观察表，使用 `EquityInputBinding.ob
 | `GET /api/virtual-accounts/{account_id}/snapshot` | 实际渠道归属、发布哈希、决策（含 V4 解释和订单腿）、订单、成交及仓位 |
 | `GET /api/audit-events?channel_account_id=…&account_id=…` | 按渠道账户隔离的事件，可继续按 `event_type`、`decision_id` 筛选 |
 
-`channel_account_id` 是注册的渠道账户 ID，例如 `futu-cn-default`，与渠道类型 `futu_simulate_cn` 不同。旧控制台继续使用原 A 股视图。
-已移除聚合 `GET /api/status` 和无渠道限定的 `POST /api/{pause,resume,cancel-token,cancel}`。查询使用上表或 `GET /api/system/status`；旧 A 股渠道操作使用 `/api/channels/futu-simulate-cn/{操作}`。
+`channel_account_id` 是注册的渠道账户 ID，例如 `futu-cn-default`，与渠道类型 `futu_simulate_cn` 不同。
+控制台通过 `GET /api/channel-accounts?market=CN|US` 发现当前市场的渠道账户；账户列表、比较、系统状态和审计也接受 `market`。
+渠道暂停、恢复、获取撤单令牌和撤单分别使用 `POST /api/channel-accounts/{channel_account_id}/{pause,resume,cancel-token,cancel}`，订单和策略账户按注册归属核验。
+已移除聚合 `GET /api/status` 和无渠道限定的 `POST /api/{pause,resume,cancel-token,cancel}`。旧 A 股渠道 URL 继续供现有运维调用使用。
 运行、维护及技术检验统一使用 `ChannelExecution`，历史导入名 `FutuExecution` 已移除。
 
 现有 `POST /api/virtual-accounts/{account_id}/decision` 接受 JSON `{}`。对 V4，它通过账户所属渠道复用正式日历、区间数据准备、公司行动和决策采纳逻辑。账户须健康且暂停，当前时点须处于该绑定允许的执行区间。返回 `DECISION_COMPLETED` 或 `DECISION_REUSED`，附发布哈希、区间、数据身份和决策 ID。它保存正式决策、账户状态及审计，暂停门槛阻止创建新订单意图。重复调用复用当前区间已采纳的决策，已有旧合同的手工驱动语义继续适用。运行冲突或无有效区间时返回 HTTP 409。

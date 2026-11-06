@@ -1713,7 +1713,7 @@ class PaperStore(ChannelAccountStore, EquityEventStore):
     def query_audit_events(
         self, *, category=None, event_type=None, severity=None, outcome=None,
         account_id=None, strategy_id=None, channel=None, decision_id=None, order_id=None,
-        correlation_id=None, before_id=None, limit=50,
+        correlation_id=None, before_id=None, limit=50, market=None,
     ) -> list[dict[str, Any]]:
         self._check_owned("account", account_id)
         limit = int(limit)
@@ -1729,6 +1729,9 @@ class PaperStore(ChannelAccountStore, EquityEventStore):
         if self.channel_account_id is not None:
             clauses.append("channel_account_id=?")
             values.append(self.channel_account_id)
+        if market is not None:
+            clauses.append("channel_account_id IN (SELECT channel_account_id FROM channel_accounts WHERE market=?)")
+            values.append(market)
         for column, value in filters.items():
             if value is not None:
                 clauses.append(f"{column}=?")
@@ -1747,7 +1750,7 @@ class PaperStore(ChannelAccountStore, EquityEventStore):
     def audit_event_counts(
         self, *, event_type=None, severity=None, outcome=None, account_id=None,
         strategy_id=None, channel=None, decision_id=None, order_id=None,
-        correlation_id=None,
+        correlation_id=None, market=None,
     ) -> dict[str, int]:
         """Count every matching event by category, independent of page size."""
         self._check_owned("account", account_id)
@@ -1761,6 +1764,9 @@ class PaperStore(ChannelAccountStore, EquityEventStore):
         if self.channel_account_id is not None:
             clauses.append("channel_account_id=?")
             values.append(self.channel_account_id)
+        if market is not None:
+            clauses.append("channel_account_id IN (SELECT channel_account_id FROM channel_accounts WHERE market=?)")
+            values.append(market)
         for column, value in filters.items():
             if value is not None:
                 clauses.append(f"{column}=?")

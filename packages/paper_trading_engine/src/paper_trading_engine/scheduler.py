@@ -282,7 +282,7 @@ class RuntimeScheduler:
             return
         local_now = now.astimezone(SHANGHAI)
         if (self.account_chart is not None
-                and local_now.time().replace(tzinfo=None) >= CHART_UPDATE_TIME
+                and (self.schedule_provider is not None or local_now.time().replace(tzinfo=None) >= CHART_UPDATE_TIME)
                 and self._due(self._last_chart_check, now, self.data_prepare_interval)):
             self._guard("account_charts", now, lambda: self.account_chart.refresh_daily(now))
             self._last_chart_check = now

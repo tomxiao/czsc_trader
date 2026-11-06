@@ -18,6 +18,7 @@ from uuid import uuid4
 
 from .web_api import PteWebApi, ResourceNotFound
 from .account_retirement import AccountRetirementRequest
+from .channel_accounts import DEFAULT_CHANNEL_ACCOUNT
 
 
 class Operations(Protocol):
@@ -121,9 +122,14 @@ def create_server(
                 if path == "/api/health":
                     self._json(200, {**api.health(), "instance_id": runtime_instance_id})
                 elif path == "/api/system/status":
-                    self._json(200, {**api.system_status(), "instance_id": runtime_instance_id})
+                    market = parse_qs(parsed.query).get("market", [None])[-1]
+                    status = api.system_status() if market is None else api.system_status(market)
+                    self._json(200, {**status, "instance_id": runtime_instance_id})
+                elif path == "/api/channel-accounts":
+                    self._json(200, api.channel_accounts(parse_qs(parsed.query).get("market", [None])[-1]))
                 elif path == "/api/virtual-accounts":
-                    self._json(200, api.virtual_accounts())
+                    market = parse_qs(parsed.query).get("market", [None])[-1]
+                    self._json(200, api.virtual_accounts() if market is None else api.virtual_accounts(market))
                 elif path.startswith("/api/virtual-accounts/") and path.endswith("/snapshot"):
                     account_id = unquote(path[len("/api/virtual-accounts/"):-len("/snapshot")].strip("/"))
                     self._json(200, api.virtual_account_snapshot(account_id))
@@ -139,14 +145,16 @@ def create_server(
                     channel_account_id = unquote(path[len("/api/channel-accounts/"):-len("/snapshot")])
                     self._json(200, api.channel_account_snapshot(channel_account_id))
                 elif path == "/api/comparison":
-                    self._json(200, api.comparison(parse_qs(parsed.query).get("account_id", [])))
+                    query = parse_qs(parsed.query)
+                    ids, market = query.get("account_id", []), query.get("market", [None])[-1]
+                    self._json(200, api.comparison(ids) if market is None else api.comparison(ids, market))
                 elif path == "/api/audit-events":
                     query = parse_qs(parsed.query, keep_blank_values=True)
                     filters = {key: values[-1] for key, values in query.items()}
                     self._json(200, api.audit_events(filters))
                 elif path.startswith("/static/"):
                     self._resource(path.removeprefix("/static/"))
-                elif path in {"/", "/comparison", "/audit-events", "/channels/futu-simulate-cn"} or path.startswith("/accounts/"):
+                elif path in {"/", "/comparison", "/audit-events", "/channels", "/channels/futu-simulate-cn"} or path.startswith("/accounts/"):
                     self._resource("index.html")
                 else:
                     self._json(404, {"error": "not found"})
@@ -164,6 +172,7 @@ def create_server(
                 path = urlparse(self.path).path
                 parts = path.strip("/").split("/")
                 response_status = 200
+                driver = operations if multichannel_runtime is None else multichannel_runtime
                 if path == "/api/system/restart":
                     supplied = self.headers.get("X-PTE-Control-Token", "")
                     if control_token is None or not secrets.compare_digest(supplied, control_token):
@@ -195,6 +204,29 @@ def create_server(
                     result = operations.confirm_cancel(
                         str(body["account_id"]), str(body["channel_order_id"]), str(body["token"])
                     )
+                elif parts[:2] == ["api", "channel-accounts"] and len(parts) == 4:
+                    channel_account_id, action = unquote(parts[2]), parts[3]
+                    if multichannel_runtime is None and channel_account_id == DEFAULT_CHANNEL_ACCOUNT:
+                        channel = operations
+                    else:
+                        channel = api._channel_services(channel_account_id).execution
+                    if action in {"pause", "resume"} and not body:
+                        (channel.pause if action == "pause" else channel.resume)()
+                        result = api.channel_account_snapshot(channel_account_id)
+                    elif action in {"cancel-token", "cancel"}:
+                        fields = {"account_id", "channel_order_id"}
+                        if action == "cancel":
+                            fields.add("token")
+                        if set(body) != fields or any(type(body[key]) is not str or not body[key] for key in fields):
+                            raise ValueError("invalid channel cancellation request")
+                        args = body["account_id"], body["channel_order_id"]
+                        result = ({"token": channel.issue_cancel_token(*args)} if action == "cancel-token"
+                                  else channel.confirm_cancel(*args, body["token"]))
+                    elif action in {"pause", "resume"}:
+                        raise ValueError("channel pause/resume request body must be empty")
+                    else:
+                        self._json(404, {"error": "not found"})
+                        return
                 elif (
                     parts[:2] == ["api", "virtual-accounts"]
                     and len(parts) == 5
@@ -210,12 +242,11 @@ def create_server(
                     if parts[3] == "decision":
                         if body:
                             raise ValueError("decision request body must be empty")
-                        driver = operations if multichannel_runtime is None else multichannel_runtime
                         result = driver.drive_virtual_account_decision(account_id)
                     elif parts[3] == "pause":
-                        result = operations.pause_virtual(account_id)
+                        result = driver.pause_virtual(account_id)
                     elif parts[3] == "resume":
-                        result = operations.resume_virtual(account_id)
+                        result = driver.resume_virtual(account_id)
                     elif parts[3] == "retire":
                         supplied = self.headers.get("X-PTE-Control-Token", "")
                         if control_token is None or not secrets.compare_digest(supplied, control_token):
@@ -223,7 +254,7 @@ def create_server(
                             return
                         if set(body) != {"expected_release_hash", "actor", "reason"}:
                             raise ValueError("retirement requires expected_release_hash, actor and reason")
-                        result = asdict(operations.retire_account(AccountRetirementRequest(
+                        result = asdict(driver.retire_account(AccountRetirementRequest(
                             account_id, body["expected_release_hash"], body["actor"], body["reason"],
                         )))
                     else:
@@ -243,7 +274,7 @@ def create_server(
                         return
                     account_id = unquote(parts[2])
                     intent_id = unquote(parts[4])
-                    result = operations.repair_account_ledger(account_id, intent_id)
+                    result = driver.repair_account_ledger(account_id, intent_id)
                 elif (
                     parts[:2] == ["api", "virtual-accounts"]
                     and len(parts) == 6
@@ -252,7 +283,7 @@ def create_server(
                 ):
                     account_id = unquote(parts[2])
                     intent_id = unquote(parts[4])
-                    operations.acknowledge_execution_gap(
+                    driver.acknowledge_execution_gap(
                         account_id, intent_id, str(body.get("resolution_note") or ""),
                     )
                     result = api.virtual_account_snapshot(account_id)

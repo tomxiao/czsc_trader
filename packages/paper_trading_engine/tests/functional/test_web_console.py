@@ -296,7 +296,8 @@ def test_ft_pte05_console_resources_interventions_events_and_restart(new_store, 
         with pytest.raises(HTTPError) as obsolete_asset:
             urlopen(base + "/static/plotly.min.js", timeout=3)
         assert obsolete_asset.value.code == 404
-        assert html.index("Futu模拟盘CN") < html.index("审计事件") < html.index("账户比较")
+        assert html.index('aria-label="全局市场"') < html.index('aria-label="一级导航"')
+        assert html.index("模拟渠道") < html.index("审计事件") < html.index("账户比较")
         with urlopen(base + "/audit-events", timeout=3) as response:
             assert response.status == 200
         assert request_json(base + "/api/system/status")[1]["instance_id"] == "old"

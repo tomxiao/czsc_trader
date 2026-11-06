@@ -158,3 +158,54 @@ main{padding:14px}
 .route-error{position:sticky;top:100px}
 .ui-update-notice{position:fixed;top:80px;right:24px;z-index:25;max-width:calc(100vw - 48px);padding:10px 14px;border:1px solid var(--amber);border-radius:8px;background:var(--panel);color:var(--amber);font-size:13px;box-shadow:0 4px 20px #0008}
 .ui-update-notice .button{margin-left:12px;padding:5px 10px}
+
+/* Keep the global market in the banner and the application width stable. */
+:root{--bg:#10151d;--panel:#151c27;--line:#2a3546;--text:#e8edf6;--muted:#a4b2c6;--blue:#9bb4ff;--banner-offset:106px}
+body{background:var(--bg)}
+.system-bar{height:auto;grid-template-columns:minmax(0,1fr) auto minmax(75px,1fr) auto;grid-template-areas:"brand market release status" "nav nav nav nav";gap:0 12px;padding:8px max(16px,calc((100% - 1500px)/2));background:#151c27}
+.system-bar .brand{grid-area:brand}
+.system-bar .brand strong{font-size:15px}
+.system-bar .release-version{grid-area:release;justify-self:end}
+.system-bar .system-status{grid-area:status;justify-self:end;min-inline-size:158px;text-align:center}
+.system-bar nav{grid-area:nav;margin-top:6px;flex-wrap:wrap;gap:12px;overflow:visible}
+.system-bar nav a{border-radius:0;border-bottom:2px solid transparent;padding:7px 4px}
+.system-bar nav a.active{background:transparent;color:var(--blue);border-bottom-color:var(--blue)}
+.market-switch{grid-area:market;display:flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:8px;padding:3px;background:var(--bg)}
+.market-switch button{border:0;border-radius:5px;padding:4px 12px;min-width:53px;white-space:nowrap;color:var(--muted);background:transparent;font:inherit;cursor:pointer}
+.market-switch button[aria-pressed="true"]{background:#263556;color:var(--blue);font-weight:650}
+main{padding:16px}
+.panel,.sidebar{background:var(--panel);box-shadow:none;border-radius:9px}
+.account-layout{grid-template-columns:185px minmax(0,1fr)}
+.account-layout .sidebar{top:var(--banner-offset);height:calc(100dvh - var(--banner-offset) - 18px);scrollbar-gutter:stable}
+.account-heading h1 .badge{vertical-align:middle;margin-left:7px}
+.primary-metrics,.channel-core-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+.primary-metrics .metric,.channel-core-metrics .metric{border:0;border-radius:0;background:transparent}
+.primary-metrics .metric+.metric,.channel-core-metrics .metric+.metric{border-left:1px solid var(--line)}
+.primary-metrics .metric strong,.channel-core-metrics .metric strong{font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.decision-summary{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.decision-summary .button{white-space:nowrap}
+.reconciliation-summary{padding:10px 14px}
+[data-channel-section]+[data-channel-section]{margin-top:22px}
+.table-wrap{scrollbar-gutter:stable}
+.chart-frame-host iframe{overflow:auto}
+.account-chart .chart-message{height:28px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.account-chart .chart-message[hidden]{display:block;visibility:hidden}
+.route-loading,.ui-update-notice,.route-error{top:var(--banner-offset)}
+@media(max-width:900px){
+  .account-layout{grid-template-columns:1fr}
+  .account-layout .sidebar{height:auto}
+  .system-bar{grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"brand release status" "market market market" "nav nav nav";row-gap:4px}
+  .market-switch{justify-self:start}
+  :root{--banner-offset:145px}
+}
+@media(max-width:480px){
+  .system-bar{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"brand status" "market market" "nav nav";padding-inline:9px}
+  .system-bar .release-version{display:none}
+  .system-bar .brand strong{font-size:13px}
+  .system-bar .system-status{min-inline-size:128px;padding-inline:7px;font-size:12px}
+  .system-bar nav{gap:7px}
+  main{padding:8px}
+  .decision-summary{align-items:flex-start}
+  .channel-core-metrics .metric{padding:8px}
+  .channel-core-metrics .metric strong{font-size:14px}
+}

@@ -4,6 +4,7 @@ export function parseRoute(pathname) {
   const account = pathname.match(/^\/accounts\/([^/]+)$/);
   if (account) return {page: 'account', accountId: decodeURIComponent(account[1])};
   if (pathname === '/channels/futu-simulate-cn') return {page: 'channel', channel: 'futu_simulate_cn'};
+  if (pathname === '/channels') return {page: 'channel'};
   if (pathname === '/comparison') return {page: 'comparison'};
   if (pathname === '/audit-events') return {page: 'audit'};
   return {page: 'account', accountId: null};
@@ -37,6 +38,8 @@ export const auditScopeLabel = (event,accounts=[]) => {
   if(accountLabel)return `虚拟账户 · ${accountLabel}`;
   if(event?.event_type==='DECISION_GENERATED'&&event?.channel==='futu_simulate_cn')return '历史记录 · 虚拟账户未记录';
   if(event?.channel==='futu_simulate_cn')return 'Futu模拟盘CN渠道';
+  if(event?.channel==='futu_US_sim_channel')return 'Futu 美股模拟渠道';
+  if(event?.category==='SYSTEM')return event.channel_account_id||'PTE 系统';
   return '历史记录 · 作用域未记录';
 };
 export const snapshotFingerprint = value => JSON.stringify(value,(key,item)=>key==='as_of'?undefined:item);
@@ -102,13 +105,30 @@ export function auditSummary(event){
   if(event?.event_type==='BROKER_FEE_RECONCILED')return `估算费用 ${money(detail.modeled_fee)}，Futu实际费用 ${money(detail.actual_fee)}，账务调整 ${money(detail.adjustment)}`;
   if(event?.event_type==='EXTERNAL_CALL_SUCCEEDED')return `${detail.service||'外部服务'} · ${detail.operation||'调用'}成功`;
   if(event?.event_type==='EXTERNAL_CALL_FAILED')return `${detail.service||'外部服务'} · ${detail.operation||'调用'}失败`;
-  return '详见“审计事件”页面';
+  if(typeof (detail.message||detail.error||detail.reason)==='string')return detail.message||detail.error||detail.reason;
+  return auditOutcomeLabel(event?.outcome);
 }
 const state = {accounts:[],loader:new ScopedLoader(),lastSuccess:null,renderedScope:null,fingerprint:null,system:null,systemFingerprint:null,chart:null,navigation:null};
+const marketLabels = {CN:'A 股',US:'美股'};
+const validMarket = value => value==='CN'||value==='US';
+const marketName = market => marketLabels[market] || 'A 股';
+const scoped = (path, market) => {
+  const [pathname,query='']=path.split('?');
+  const params=new URLSearchParams(query);
+  params.set('market',market);
+  return pathname+'?'+params.toString();
+};
+const requestedMarket = () => {
+  const explicit=new URLSearchParams(location.search).get('market');
+  if(validMarket(explicit))return explicit;
+  if(location.pathname==='/channels/futu-simulate-cn')return 'CN';
+  const saved=localStorage.getItem('pte.market');
+  return validMarket(saved)?saved:'CN';
+};
 
 async function getJson(url, options={}) {
   const response=await fetch(url,options);let payload={};
-  if(url==='/api/system/status'&&response.ok){
+  if(url.split('?')[0]==='/api/system/status'&&response.ok){
     const loaded=document.querySelector('meta[name="pte-ui-revision"]')?.content;
     const current=response.headers.get('X-PTE-UI-Revision');
     const notice=document.querySelector('#uiUpdateNotice');
@@ -121,15 +141,75 @@ function post(url,body={}){return getJson(url,{method:'POST',headers:{'Content-T
 function toast(message){const el=document.querySelector('#toast');el.textContent=message;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2200);}
 function setNav(page){document.querySelectorAll('[data-nav]').forEach(el=>el.classList.toggle('active',el.dataset.nav===page));}
 
-function renderEventDetails(payload){return `<details><summary>查看详情</summary><pre>${esc(JSON.stringify(payload||{},null,2))}</pre></details>`;}
-function renderSystemEvents(s){
-  const alerts=[...(s.alerts||[]).map(code=>({label:statusLabel(code),detail:{code}})),...(s.scheduler_failures||[]).map(item=>({label:'失败任务',detail:item}))];
-  const active=alerts.length?alerts.map(item=>`<div class="event active-event"><strong>${esc(item.label)}</strong>${renderEventDetails(item.detail)}</div>`).join(''):'<div class="empty">当前没有活动告警</div>';
-  const history=(s.events||[]).length?(s.events||[]).map(item=>`<div class="event"><div class="event-title"><strong>${esc(systemEventLabel(item.event_type))}</strong><time>${esc(formatBeijingTime(item.created_at))}</time></div>${renderEventDetails(item.payload)}</div>`).join(''):'<div class="empty">暂无系统事件</div>';
-  document.querySelector('#systemEventsContent').innerHTML=`<section><h3>活动告警</h3>${active}</section><section><h3>最近事件</h3>${history}</section>`;
+function detailFacts(fields){return `<dl class="detail-facts">${fields.filter(([,value])=>value!=null&&value!=='').map(([label,value])=>`<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>`;}
+function renderEventDetails(payload){return `<details class="raw-event"><summary>原始事件字段</summary><pre>${esc(JSON.stringify(payload||{},null,2))}</pre></details>`;}
+function eventTitle(event){
+  const detail=event.details||event.payload||{};
+  if(detail.termination_reason==='NORMAL_UNFILLED')return '限价买单到期，确认零成交';
+  if(event.event_type==='ORDER_SUBMISSION_FAILED'&&(event.outcome==='UNKNOWN'||detail.status==='SUBMISSION_UNCERTAIN'))return '订单提交结果未知';
+  if(event.event_type==='MARKET_DATA_PREPARED')return '策略数据已准备';
+  if(event.event_type==='DATA_PREPARATION_OBSERVATION_FAILED')return '策略数据准备未完成';
+  return auditEventLabel(event.event_type);
 }
-function openSystemEvents(){if(state.system)renderSystemEvents(state.system);const dialog=document.querySelector('#systemEventsDialog');if(dialog.showModal)dialog.showModal();else dialog.setAttribute('open','');}
-async function refreshSystem(){const version=document.querySelector('#releaseVersion');try{const s=await getJson('/api/system/status');const fingerprint=snapshotFingerprint(s);const changed=fingerprint!==state.systemFingerprint;state.system=s;state.systemFingerprint=fingerprint;const count=systemAlertCount(s);const release=releaseVersionLabel(s);version.textContent=release;version.classList.toggle('warning',release==='版本未知');const status=document.querySelector('#systemStatus');status.textContent=`PTE ${statusLabel(s.runtime)} · Futu模拟盘CN ${statusLabel(s.futu_connection)} · 全局告警 ${count} · 查看系统事件`;status.classList.toggle('warning',count>0);if(changed&&document.querySelector('#systemEventsDialog')?.open)renderSystemEvents(s);}catch(error){version.textContent='版本未知';version.classList.add('warning');document.querySelector('#systemStatus').textContent=`系统状态不可用 · ${error.message}`;}}
+function openDetail(title, content, trigger){
+  const dialog=document.querySelector('#systemEventsDialog');
+  document.querySelector('#systemEventsTitle').textContent=title;
+  document.querySelector('#systemEventsContent').innerHTML=content;
+  if(!dialog.open){
+    state.detailTrigger=trigger;
+    state.detailScroll=window.scrollY;
+    dialog.showModal();
+  }
+  document.querySelector('#systemEventsContent').scrollTop=0;
+  document.querySelector('#closeSystemEvents').focus({preventScroll:true});
+}
+function showAuditDetail(event,trigger){
+  const details=event.details||event.payload||{};
+  openDetail('事件详情',`<div class="detail-heading"><span class="event-severity" data-severity="${esc(event.severity)}">${esc(auditSeverityLabel(event.severity))}</span><h3>${esc(eventTitle(event))}</h3><p>${esc(auditSummary(event))}</p></div>`
+    +detailFacts([['状态',auditOutcomeLabel(event.outcome)],['影响对象',auditScopeLabel(event,state.accounts)],
+      ['时间（北京）',formatBeijingTime(event.occurred_at||event.created_at)],['原因',details.message||details.error||details.reason],
+      ['渠道账户',event.channel_account_id],['决策 ID',event.decision_id],['订单 ID',event.order_id],['事件 ID',event.event_id]])
+    +(event.correlation_id?`<button class="button secondary" data-detail-correlation="${esc(event.correlation_id)}">查看关联事件</button>`:'')
+    +renderEventDetails(event),trigger);
+  const link=document.querySelector('[data-detail-correlation]');
+  if(link)link.onclick=()=>{document.querySelector('#systemEventsDialog').close();navigate(`/audit-events?${auditQuery({correlation_id:event.correlation_id})}`);};
+}
+function eventRow(event){
+  const time=event.occurred_at||event.created_at;
+  return `<button type="button" class="audit-row" data-event-id="${esc(event.event_id||event.id)}"><time>${esc(formatBeijingTime(time))}</time><span class="audit-row-summary"><strong>${esc(eventTitle(event))}</strong><small>${esc(auditScopeLabel(event,state.accounts))} · ${esc(auditSummary(event))}</small></span><span class="event-severity" data-severity="${esc(event.severity)}">${esc(auditSeverityLabel(event.severity))}</span></button>`;
+}
+function bindEventRows(container, events){
+  const byId=new Map(events.map(event=>[String(event.event_id||event.id),event]));
+  container.querySelectorAll('[data-event-id]').forEach(button=>button.onclick=()=>showAuditDetail(byId.get(button.dataset.eventId),button));
+}
+function renderSystemEvents(s){
+  const alerts=[...(s.alerts||[]).map(item=>typeof item==='string'?{code:item}:item),...(s.scheduler_failures||[]).map(item=>({...item,code:'SCHEDULER_OPERATION_FAILED'}))];
+  const active=alerts.length?alerts.map(item=>`<div class="active-alert"><strong>${esc(statusLabel(item.code))}</strong>${detailFacts([['影响对象',item.account_id||item.channel_account_id||item.operation],['原因',item.message||item.error],['发生次数',item.failure_count],['最近发生',item.last_at&&formatBeijingTime(item.last_at)],['下次重试',item.next_retry&&formatBeijingTime(item.next_retry)],['关联意图',item.intent_id]])}${renderEventDetails(item)}</div>`).join(''):'<div class="empty">当前没有活动告警</div>';
+  const events=s.events||[];
+  openDetail(`${marketName(state.market)} · 运行状态与告警`,`<section><h3>活动告警</h3>${active}</section><section><h3>最近事件</h3>${events.length?events.map(eventRow).join(''):'<div class="empty">暂无系统事件</div>'}</section>`,document.querySelector('#systemStatus'));
+  bindEventRows(document.querySelector('#systemEventsContent'),events);
+}
+function openSystemEvents(){if(state.system)renderSystemEvents(state.system);else openDetail('运行状态与告警','<div class="empty">状态暂不可用</div>',document.querySelector('#systemStatus'));}
+async function refreshSystem(){
+  const market=requestedMarket(), version=document.querySelector('#releaseVersion');
+  const seq=(state.systemSequence||0)+1;state.systemSequence=seq;
+  try{
+    const s=await getJson(scoped('/api/system/status',market));
+    if(seq!==state.systemSequence||market!==requestedMarket())return;
+    state.system=s;
+    const count=systemAlertCount(s), release=releaseVersionLabel(s);
+    version.textContent=release;version.classList.toggle('warning',release==='版本未知');
+    const status=document.querySelector('#systemStatus');
+    status.textContent=`服务${s.watchdog_healthy?'正常':'异常'} · ${count?`${count} 条告警`:'无告警'}`;
+    status.setAttribute('aria-label',`${marketName(market)} · ${status.textContent}`);
+    status.classList.toggle('warning',count>0);
+  }catch(error){
+    if(seq!==state.systemSequence||market!==requestedMarket())return;
+    state.system=null;version.textContent='版本未知';version.classList.add('warning');
+    document.querySelector('#systemStatus').textContent='状态不可用';
+    document.querySelector('#systemStatus').title=error.message;
+  }
+}
 function metric(label,value){return `<div class="panel metric"><label>${label}</label><strong>${value}</strong></div>`;}
 function rowsTable(columns,rows){if(!rows?.length)return '<div class="empty">暂无记录</div>';return `<div class="table-wrap"><table><thead><tr>${columns.map(c=>`<th>${c[0]}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${columns.map(c=>{const title=c[2]?.(row);return `<td${title?` title="${esc(title)}"`:''}>${esc(c[1](row))}</td>`;}).join('')}</tr>`).join('')}</tbody></table></div>`;}
 function alerts(items){return (items||[]).map(item=>`<div class="alert">${esc(item.message||item)}</div>`).join('');}
@@ -141,7 +221,7 @@ export function sortVirtualAccounts(accounts){
 }
 const accountViews=new Map();
 function accountView(accountId){
-  if(!accountViews.has(accountId))accountViews.set(accountId,{tab:'chart',records:'intents',pages:{intents:1,orders:1,fills:1},accountDetails:false,decisionDetails:false});
+  if(!accountViews.has(accountId))accountViews.set(accountId,{tab:'chart',records:'intents',pages:{intents:1,orders:1,fills:1}});
   return accountViews.get(accountId);
 }
 export function recordPage(rows,page=1){
@@ -156,16 +236,18 @@ function accountRecords(kind,title,columns,rows,view){
 export function accountMarkup(snapshot,accountList=state.accounts,view={}){
   const a=snapshot.account,m=snapshot.metrics||{},d=snapshot.decision||{},scope=snapshot.scope,intents=snapshot.intents||[],orders=snapshot.orders||[],fills=snapshot.fills||[];
   const executionState=decisionExecutionLabel(d,intents);
+  const currency=scope.currency||'CNY';
+  const cash=value=>value==null?'—':`${money(value)} ${currency}`;
   const accounts=sortVirtualAccounts(accountList.filter(item=>item.run_state!=='RETIRED'));
   const gapActions=intents.filter(item=>item.attention_required).map(item=>`<div class="alert execution-gap"><strong>前瞻执行缺口</strong> · ${esc(item.attention_reason||statusLabel(item.status))}<button class="button secondary" type="button" data-ack-intent="${esc(item.intent_id)}">复核后确认</button></div>`).join('');
   const tab=view.tab||'chart',recordTab=view.records||'intents';
   return `<div class="layout account-layout" data-account-page data-account-id="${esc(scope.account_id)}">
     <aside class="sidebar" data-account-section="sidebar"><h2>虚拟账户</h2><label class="account-picker">切换账户<select id="accountPicker">${accounts.map(item=>`<option value="${esc(item.account_id)}" ${item.account_id===scope.account_id?'selected':''}>${esc(item.name||item.account_id)} · ${esc(accountOperatingStatus(item))}</option>`).join('')}</select></label><div class="account-cards">${accounts.map(item=>`<button class="account-card ${item.account_id===scope.account_id?'active':''}" data-account="${esc(item.account_id)}"><strong>${esc(item.name)}</strong><small>${esc(item.release_id)} · ${accountOperatingStatus(item)}</small><small>资产 ${money(item.total_assets)}</small></button>`).join('')}</div></aside>
     <div class="workspace">
-      <section class="panel hero account-hero" data-account-section="hero"><div class="account-heading"><h1>${esc(a.name)}</h1><div class="subtle">${esc(scope.release_id)} · ${esc(a.symbol)} · Futu · ${esc(accountOperatingStatus(a))}</div></div><div class="account-actions"><a class="button" data-account-audit href="/audit-events?${auditQuery({account_id:scope.account_id})}">审计事件</a><button id="accountSwitch" ${a.run_state==='RETIRED'?'disabled':''} class="switch ${a.run_state==='PAUSED'?'paused':''}" role="switch" aria-checked="${a.run_state==='RUNNING'}">${a.run_state==='RETIRED'?'已退出 · 资金已回收':a.run_state==='PAUSED'?'已暂停 · 点击恢复':'自动运行 · 点击暂停'}</button></div><details class="account-details" data-account-details="accountDetails" ${view.accountDetails?'open':''}><summary>账户详情</summary><div class="kv"><div><span>账户 ID / 策略</span>${esc(scope.account_id)} · ${esc(a.strategy_name_snapshot)}</div><div><span>内容身份 / 资格</span>${esc(scope.release_hash)} · ${esc(qualificationLabel(a.qualification_snapshot))}</div><div><span>选择截止 / 观察起点</span>${esc(a.selection_data_cutoff)} / ${esc(a.observation_start)}</div><div><span>账务更新 / 日终估值</span>${esc(formatBeijingTime(a.updated_at))} / ${esc(a.last_settlement_session)}</div></div></details></section>
+      <section class="panel hero account-hero" data-account-section="hero"><div class="account-heading"><div class="subtle">${marketName(scope.market)} · ${esc(scope.release_id)} · ${esc(a.symbol)} · Futu</div><h1>${esc(a.name)} <span class="badge">${esc(accountOperatingStatus(a))}</span></h1></div><div class="account-actions"><a class="button" data-account-audit href="/audit-events?${auditQuery({account_id:scope.account_id})}">审计事件</a><button type="button" id="accountDetails" class="button" aria-haspopup="dialog">账户详情</button><button id="accountSwitch" ${a.run_state==='RETIRED'?'disabled':''} class="switch ${a.run_state==='PAUSED'?'paused':''}" role="switch" aria-checked="${a.run_state==='RUNNING'}">${a.run_state==='RETIRED'?'已退出':a.run_state==='PAUSED'?'恢复账户':'暂停账户'}</button></div></section>
       <div data-account-section="alerts">${alerts(snapshot.alerts)}${gapActions}</div>
-      <div class="grid account-metrics" data-account-section="metrics">${metric(a.run_state==='RETIRED'?'已回收资金':'总资产',money(a.run_state==='RETIRED'?a.released_cash:a.total_assets))}${metric('当前累计收益',pct(m.current_total_return))}${metric('可用现金',money(a.cash))}${metric('冻结资金',money(a.frozen_cash))}${metric('持仓',formatQuantity(a.quantity))}</div>
-      <section class="panel account-decision" data-account-section="decision"><details data-account-details="decisionDetails" ${view.decisionDetails?'open':''}><summary><strong>最新决策 · ${esc(actionLabel(d.action))}</strong><span>目标 ${formatQuantity(d.target_quantity)}</span><span>有效交易日 ${esc(d.valid_session||'—')}</span><span>${esc(executionState)}</span><span class="subtle">详情</span></summary><div class="kv"><div><span>决策 ID</span>${esc(d.decision_id||'—')}</div><div><span>信号日期</span>${esc(d.signal_date||'—')}</div><div><span>执行参考价（不复权）</span>${formatPrice(d.execution_reference_price)}</div></div></details></section>
+      <div class="grid account-metrics primary-metrics" data-account-section="metrics">${metric(a.run_state==='RETIRED'?'已回收资金':'总资产',cash(a.run_state==='RETIRED'?a.released_cash:a.total_assets))}${metric('可用现金',cash(a.cash))}${metric('持仓',formatQuantity(a.quantity))}</div>
+      <section class="panel account-decision" data-account-section="decision"><div class="decision-summary"><div><span class="subtle">最近决策 · ${esc(d.valid_session||'—')}</span><div><strong>${esc(d.decision_id?actionLabel(d.action):'暂无决策')}</strong> <span>· 目标 ${formatQuantity(d.target_quantity)} · ${esc(executionState)}</span></div></div><button type="button" class="button secondary" id="decisionDetails" aria-haspopup="dialog">决策详情</button></div></section>
       <div class="account-tabs" role="tablist" aria-label="账户视图">${[['chart','前瞻观察'],['records','交易记录'],['performance','绩效']].map(([key,label])=>`<button type="button" role="tab" id="account-tab-${key}" aria-controls="account-panel-${key}" aria-selected="${tab===key}" tabindex="${tab===key?0:-1}" data-account-tab="${key}">${label}</button>`).join('')}</div>
       <section id="account-panel-chart" role="tabpanel" aria-labelledby="account-tab-chart" data-account-panel="chart" ${tab==='chart'?'':'hidden'} class="panel section account-chart" data-account-section="chart"><div class="section-head"><span class="subtle">选择截止 ${esc(a.selection_data_cutoff)} · 截止线左侧为行情背景</span><a id="expandAccountChart" class="button" target="_blank" rel="noopener" hidden>展开大图 ↗</a></div><div id="accountChartMessage" class="chart-message" hidden></div><div id="accountChartFrameHost" class="chart-frame-host"><div class="loading">正在加载前瞻观察图…</div></div></section>
       <div id="account-panel-records" role="tabpanel" aria-labelledby="account-tab-records" data-account-panel="records" ${tab==='records'?'':'hidden'}><div class="record-tabs" role="tablist" aria-label="交易记录类型">${[['intents','订单意图'],['orders','订单'],['fills','成交']].map(([key,label])=>`<button type="button" role="tab" id="record-tab-${key}" aria-controls="record-panel-${key}" aria-selected="${recordTab===key}" tabindex="${recordTab===key?0:-1}" data-record-tab="${key}">${label}</button>`).join('')}</div>
@@ -197,14 +279,12 @@ function replaceAccountSections(markup,accountId){
   return true;
 }
 function renderAccount(snapshot){
-  const previousHeight=document.querySelector('#accountChartFrameHost')?.getBoundingClientRect().height;
   const scope=snapshot.scope,a=snapshot.account;
   state.accountSnapshot=snapshot;
   const view=accountView(scope.account_id);
   for(const kind of ['intents','orders','fills'])view.pages[kind]=recordPage(snapshot[kind]||[],view.pages[kind]).page;
   const markup=accountMarkup(snapshot,state.accounts,accountView(scope.account_id));
   if(!replaceAccountSections(markup,scope.account_id)){
-    state.chartObserver?.disconnect();
     const sidebar=document.querySelector('.sidebar');
     const navigation=sidebar?{view:captureView(sidebar),top:sidebar.scrollTop}:null;
     document.querySelector('#app').innerHTML=markup;
@@ -213,7 +293,6 @@ function renderAccount(snapshot){
       restoreView(next,navigation.view);next.scrollTop=navigation.top;
       document.querySelector('#accountPicker').value=scope.account_id;
     }
-    if(previousHeight)document.querySelector('#accountChartFrameHost').style.height=`${previousHeight}px`;
   }
   bindAccountEvents(scope.account_id,a.run_state);
   applyAccountView(scope.account_id);
@@ -239,6 +318,7 @@ function applyAccountChart(status){
   const host=document.querySelector('#accountChartFrameHost'),message=document.querySelector('#accountChartMessage');
   if(!host||status?.scope?.account_id!==parseRoute(location.pathname).accountId)return;
   message.textContent=status.message||'';message.hidden=!status.message;
+  message.title=status.message||'';
   const expand=document.querySelector('#expandAccountChart');
   expand.hidden=!status.chart_url;
   if(status.chart_url)expand.href=status.chart_url;
@@ -253,19 +333,13 @@ function applyAccountChart(status){
   }
   const current={account_id:status.scope.account_id,fingerprint:status.fingerprint};
   if(chartShouldReload(state.chart,status)||!document.querySelector('#accountChartFrame')){
-    state.chartObserver?.disconnect();
-    host.innerHTML=`<iframe id="accountChartFrame" data-account-id="${esc(status.scope.account_id)}" title="${esc(status.scope.release_id)}前瞻观察图" src="${esc(status.chart_url)}" scrolling="no"></iframe>`;
+    host.innerHTML=`<iframe id="accountChartFrame" data-account-id="${esc(status.scope.account_id)}" title="${esc(status.scope.release_id)}前瞻观察图" src="${esc(status.chart_url)}"></iframe>`;
     const frame=document.querySelector('#accountChartFrame'),view=accountView(status.scope.account_id);
     frame.onload=()=>{
       if(!frame.isConnected)return;
       const doc=frame.contentDocument;
-      doc.querySelector(`[data-range="${view.chartRange||'all'}"]`)?.click();
-      doc.addEventListener('click',event=>{const range=event.target.closest('[data-range]');if(range)view.chartRange=range.dataset.range;});
-      state.chartObserver=new ResizeObserver(()=>{
-        const height=Math.ceil(doc.body.getBoundingClientRect().height);
-        if(height>0&&frame.isConnected)updateView(document.querySelector('#app'),()=>{host.style.height=`${height+2}px`;},{preserve:false});
-      });
-      state.chartObserver.observe(doc.body);
+      doc?.querySelector(`[data-range="${view.chartRange||'all'}"]`)?.click();
+      doc?.addEventListener('click',event=>{const range=event.target.closest('[data-range]');if(range)view.chartRange=range.dataset.range;});
     };
   }
   state.chart=current;
@@ -283,7 +357,26 @@ function bindAccountEvents(accountId,runState){
   document.querySelectorAll('[data-account]').forEach(el=>el.onclick=()=>navigate(`/accounts/${encodeURIComponent(el.dataset.account)}`));
   document.querySelector('#accountPicker').onchange=event=>navigate(`/accounts/${encodeURIComponent(event.target.value)}`);
   document.querySelector('[data-account-audit]').onclick=event=>{event.preventDefault();navigate(event.currentTarget.getAttribute('href'));};
-  document.querySelectorAll('[data-account-details]').forEach(el=>el.ontoggle=()=>{if(el.isConnected)view[el.dataset.accountDetails]=el.open;});
+  document.querySelector('#accountDetails').onclick=event=>{
+    const {account:a,scope,metrics}=state.accountSnapshot;
+    openDetail('账户详情',detailFacts([
+      ['账户',a.name],['账户 ID',scope.account_id],['渠道账户',scope.channel_account_id],
+      ['市场与币种',`${marketName(scope.market)} · ${scope.currency||'CNY'}`],['发布哈希',scope.release_hash],
+      ['资格',qualificationLabel(a.qualification_snapshot)],['选择截止',a.selection_data_cutoff],
+      ['观察起点',a.observation_start],['账务更新',formatBeijingTime(a.updated_at)],['日终估值',a.last_settlement_session],
+      ['冻结资金',`${money(a.frozen_cash)} ${scope.currency||'CNY'}`],['当前累计收益',pct(metrics?.current_total_return)],
+    ]),event.currentTarget);
+  };
+  document.querySelector('#decisionDetails').onclick=event=>{
+    const d=state.accountSnapshot.decision||{},currency=state.accountSnapshot.scope.currency||'CNY';
+    const explanation=d.strategy_output?.explanation;
+    openDetail('决策详情',detailFacts([
+      ['决策 ID',d.decision_id],['动作',d.decision_id?actionLabel(d.action):'暂无决策'],['状态',d.status&&statusLabel(d.status)],
+      ['目标仓位',formatQuantity(d.target_quantity)],['信号日期',d.signal_date],['有效交易日',d.valid_session],
+      ['执行参考价（不复权）',d.execution_reference_price==null?null:`${formatPrice(d.execution_reference_price)} ${currency}`],
+      ['判断',explanation?.judgment],['依据',explanation?.basis?.map(item=>item.text).join('；')],['后续观察',explanation?.next_watch],
+    ]),event.currentTarget);
+  };
   for(const [selector,key,attribute] of [['[data-account-tab]','tab','accountTab'],['[data-record-tab]','records','recordTab']]){
     const buttons=[...document.querySelectorAll(selector)];
     buttons.forEach((el,index)=>{
@@ -295,75 +388,150 @@ function bindAccountEvents(accountId,runState){
     });
   }
   document.querySelectorAll('[data-record-page]').forEach(el=>el.onclick=()=>updateView(document.querySelector('#app'),()=>{view.pages[el.dataset.recordKind]=Number(el.dataset.recordPage);renderAccount(state.accountSnapshot);}));
-  document.querySelector('#accountSwitch').onclick=async()=>{if(state.navigation)return;try{await post(`/api/virtual-accounts/${encodeURIComponent(accountId)}/${runState==='PAUSED'?'resume':'pause'}`);toast(runState==='PAUSED'?'账户已恢复':'账户已暂停');await loadRoute({showLoading:false});}catch(e){toast(e.message);}};
+  document.querySelector('#accountSwitch').onclick=async()=>{
+    if(state.navigation)return;
+    const resume=runState==='PAUSED', action=resume?'恢复':'暂停';
+    if(!confirm(`确认${action}${marketName(state.market)}账户 ${accountId}？`))return;
+    try{await post(`/api/virtual-accounts/${encodeURIComponent(accountId)}/${resume?'resume':'pause'}`);toast(`账户已${action}`);await loadRoute({showLoading:false});}
+    catch(error){toast(error.message);}
+  };
   document.querySelectorAll('[data-ack-intent]').forEach(el=>el.onclick=async()=>{if(state.navigation)return;const note=prompt('请填写执行缺口复核结论：');if(!note?.trim())return;try{await post(`/api/virtual-accounts/${encodeURIComponent(accountId)}/intents/${encodeURIComponent(el.dataset.ackIntent)}/acknowledge`,{resolution_note:note.trim()});toast('执行缺口已确认');await loadRoute({showLoading:false});}catch(e){toast(e.message);}});
 }
 
-export function channelMarkup(s,detailsOpen=false){
-  const cashAvailable=s.cash_difference!=null,cashOk=cashAvailable&&Math.abs(Number(s.cash_difference))<=.01;
-  const assetAvailable=s.asset_difference!=null,assetOk=assetAvailable&&Math.abs(Number(s.asset_difference))<=.01;
+export function channelMarkup(s){
+  const id=s.scope?.channel_account_id||'futu-cn-default',currency=s.currency||'CNY';
+  const cash=value=>value==null?'—':`${money(value)} ${currency}`;
+  const cashAvailable=s.cash_difference!=null, cashOk=cashAvailable&&Math.abs(Number(s.cash_difference))<=.01;
   const cashState=cashAvailable?(cashOk?'资金对账正常':'资金对账异常'):'资金数据不可用';
-  const assetState=assetAvailable?(assetOk?'估值一致':'估值口径不同'):'估值数据不可用';
-  return `<div class="workspace"><section class="panel hero"><div><div class="eyebrow">执行渠道 · FUTU 模拟盘 CN</div><h1>Futu 模拟盘 CN 渠道</h1><div class="subtle">底层模拟账户 · 对账 ${statusLabel(s.reconciliation_status)} · 最近对账 ${esc(formatBeijingTime(s.last_reconcile_at))}</div></div><button id="channelSwitch" class="switch ${s.paused?'paused':''}" role="switch" aria-checked="${!s.paused}">${s.paused?'渠道已暂停 · 点击恢复':'渠道自动运行 · 点击暂停'}</button></section>${alerts((s.alerts||[]).map(x=>({message:statusLabel(x)})))}<div class="grid channel-core-metrics">${metric('Futu总资产',money(s.account?.total_assets))}${metric('可用现金',money(s.account?.cash))}${metric('已分配额度',money(s.strategy_allocated_capital))}${metric('未分配额度',money(s.unallocated_capital))}</div><section class="panel reconciliation-summary"><details id="channelReconciliationDetails" class="reconciliation-details"${detailsOpen?' open':''}><summary class="reconciliation-bar"><div class="reconciliation-state ${cashOk?'ok':'warning'}"><strong>${cashState}</strong><span>现金差异 ${money(s.cash_difference)}</span></div><div class="reconciliation-state ${assetOk?'ok':'neutral'}"><strong>${assetState}</strong><span>Futu−PTE ${money(s.asset_difference)}</span></div><span class="reconciliation-trigger">查看明细</span></summary><div class="reconciliation-detail-grid"><div><span>Futu持仓市值</span><strong>${money(s.account?.market_value)}</strong></div><div><span>PTE账务现金</span><strong>${money(s.logical_cash)}</strong></div><div><span>PTE日终总资产</span><strong>${money(s.logical_total_assets)}</strong></div><div><span>Futu−PTE估值差异</span><strong>${money(s.asset_difference)}</strong></div><div><span>平账账户余额</span><strong>${money(s.reconciliation_account?.cash)}</strong></div></div><p>Futu按当前行情实时估值；PTE账务总资产按各虚拟账户最近日终数据估值。</p></details></section><section class="panel section"><div class="section-head"><h2>策略承载账户</h2><span class="badge">${(s.accounts||[]).length} 个账户</span></div>${rowsTable([['虚拟账户',r=>r.name],['账户ID',r=>r.account_id],['策略版本',r=>r.release_id],['交易标的',r=>r.symbol],['分配额度',r=>money(r.initial_cash)],['可用现金',r=>money(r.cash)],['冻结资金',r=>money(r.frozen_cash)],['持仓',r=>formatQuantity(r.quantity)],['状态',accountOperatingStatus]],s.accounts)}</section><section id="channelOrders" class="panel section"><div class="section-head"><h2>订单</h2><span class="badge">逐笔归属</span></div>${rowsTable([['时间',r=>formatBeijingTime(r.created_at)],['Futu订单',r=>r.channel_order_id],['虚拟账户',r=>channelOrderAccountLabel(r)],['决策ID',r=>r.decision_id||'历史未记录'],['方向',r=>sideLabel(r.side)],['数量',r=>formatQuantity(r.quantity)],['委托价',r=>orderPriceLabel(r)==='市价'?'市价':formatPrice(orderPriceLabel(r))],['状态',r=>statusLabel(r.status)],['操作',r=>['SUBMITTED','FILLED_PART'].includes(r.status)?'二次确认撤单':'—']],s.orders)}</section><section class="panel section"><div class="section-head"><h2>成交</h2><span class="badge">Futu回报</span></div>${rowsTable([['时间',r=>formatBeijingTime(r.occurred_at)],['虚拟账户',r=>channelOrderAccountLabel(r)],['成交ID',r=>displayFillId(r.fill_id),r=>r.fill_id],['Futu订单',r=>r.order_id],['方向',r=>sideLabel(r.side)],['数量',r=>formatQuantity(r.quantity)],['价格',r=>formatPrice(r.price)],['费用',r=>money(r.fee)]],s.fills)}</section></div>`;
+  const assetState=s.asset_difference==null?'估值数据不可用':Math.abs(Number(s.asset_difference))<=.01?'估值一致':'估值口径不同';
+  const accounts=s.strategy_accounts||s.accounts||[];
+  const orders=s.orders||[];
+  const rows=orders.map((order,index)=>`<tr><td>${esc(formatBeijingTime(order.created_at))}</td><td>${esc(order.channel_order_id)}</td><td>${esc(channelOrderAccountLabel(order))}</td><td>${esc(order.decision_id)}</td><td>${esc(sideLabel(order.side))}</td><td>${formatQuantity(order.quantity)}</td><td>${esc(orderPriceLabel(order)==='市价'?'市价':formatPrice(orderPriceLabel(order)))}</td><td>${esc(statusLabel(order.status))}</td><td>${['SUBMITTED','FILLED_PART'].includes(order.status)&&order.account_id?`<button type="button" class="button secondary" data-cancel-order="${index}">申请撤单</button>`:'—'}</td></tr>`).join('');
+  return `<section class="workspace" data-channel-section="${esc(id)}">
+    <section class="panel hero"><div><div class="eyebrow">Futu 模拟渠道 · ${esc(id)} · ${currency}</div><h1>${marketName(s.market)}模拟盘</h1><div class="subtle">${s.paused?'已暂停':'运行中'} · 对账 ${esc(statusLabel(s.reconciliation_status))} · 最近对账 ${esc(formatBeijingTime(s.last_reconcile_at))}</div></div><div class="account-actions"><button class="button secondary" data-reconciliation type="button" aria-haspopup="dialog">对账详情</button><button type="button" class="switch ${s.paused?'paused':''}" data-channel-switch role="switch" aria-checked="${!s.paused}">${s.paused?'恢复渠道':'暂停渠道'}</button></div></section>
+    ${alerts((s.alerts||[]).map(code=>({message:statusLabel(code)})))}
+    <div class="grid channel-core-metrics">${metric('券商现金',cash(s.broker_cash??s.account?.cash))}${metric('PTE 账务现金',cash(s.logical_cash))}${metric('现金差额',cash(s.cash_difference))}</div>
+    <div class="panel reconciliation-summary"><strong>${cashState}</strong><span class="subtle"> · ${assetState}</span></div>
+    <section class="panel section"><div class="section-head"><h2>策略账户</h2><span class="subtle">${accounts.length} 个账户</span></div>${rowsTable([['虚拟账户',r=>r.name],['账户 ID',r=>r.account_id],['策略版本',r=>r.release_id],['标的',r=>r.symbol],['分配额度',r=>cash(r.initial_cash)],['可用现金',r=>cash(r.cash)],['冻结资金',r=>cash(r.frozen_cash)],['持仓',r=>formatQuantity(r.quantity)],['状态',accountOperatingStatus]],accounts)}</section>
+    <section class="panel section"><div class="section-head"><h2>渠道持仓</h2></div>${rowsTable([['标的',r=>r.symbol],['持仓',r=>formatQuantity(r.quantity)],['可卖',r=>formatQuantity(r.sellable_quantity)]],s.positions)}</section>
+    <section class="panel section"><div class="section-head"><h2>订单</h2></div>${rows?'<div class="table-wrap"><table><thead><tr><th>时间</th><th>订单 ID</th><th>账户</th><th>决策 ID</th><th>方向</th><th>数量</th><th>委托价</th><th>状态</th><th>操作</th></tr></thead><tbody>'+rows+'</tbody></table></div>':'<div class="empty">暂无记录</div>'}</section>
+    <section class="panel section"><div class="section-head"><h2>成交</h2></div>${rowsTable([['时间',r=>formatBeijingTime(r.occurred_at)],['账户',channelOrderAccountLabel],['成交 ID',r=>displayFillId(r.fill_id),r=>r.fill_id],['订单 ID',r=>r.order_id],['方向',r=>sideLabel(r.side)],['数量',r=>formatQuantity(r.quantity)],['价格',r=>formatPrice(r.price)],['费用',r=>cash(r.fee)]],s.fills)}</section>
+  </section>`;
 }
-function renderChannel(s){const detailsOpen=document.querySelector('#channelReconciliationDetails')?.open||false;document.querySelector('#app').innerHTML=channelMarkup(s,detailsOpen);document.querySelector('#channelSwitch').onclick=async()=>{if(state.navigation)return;try{await post(`/api/channels/futu-simulate-cn/${s.paused?'resume':'pause'}`);toast(s.paused?'渠道已恢复':'渠道已暂停');await loadRoute({showLoading:false});}catch(e){toast(e.message);}};document.querySelectorAll('#channelOrders tbody tr').forEach((tr,i)=>{const o=s.orders?.[i];if(o&&['SUBMITTED','FILLED_PART'].includes(o.status))tr.onclick=()=>{if(!state.navigation)cancelOrder(o);};});}
-async function cancelOrder(order){if(!confirm(`确认申请撤销Futu订单？\n订单 ${order.channel_order_id}\n${sideLabel(order.side)} ${formatQuantity(order.quantity)}\n虚拟账户 ${channelOrderAccountLabel(order)}`))return;try{const body={account_id:order.account_id,channel_order_id:order.channel_order_id};const {token}=await post('/api/channels/futu-simulate-cn/cancel-token',body);if(!confirm('撤单令牌已签发，有效期2分钟。再次确认撤单。'))return;await post('/api/channels/futu-simulate-cn/cancel',{...body,token});toast('撤单请求已提交');await loadRoute({showLoading:false});}catch(e){toast(e.message);}}
+function renderChannel(s){
+  const snapshots=Array.isArray(s)?s:[s];
+  const app=document.querySelector('#app');
+  app.innerHTML=snapshots.length?snapshots.map(channelMarkup).join(''):`<section class="panel hero"><h1>${marketName(state.market)}模拟盘</h1><p>当前市场没有已配置的模拟渠道。</p></section>`;
+  app.querySelectorAll('[data-channel-section]').forEach((section,index)=>{
+    const snapshot=snapshots[index],id=section.dataset.channelSection,currency=snapshot.currency||'CNY';
+    const prefix='/api/channel-accounts/'+encodeURIComponent(id);
+    section.querySelector('[data-channel-switch]').onclick=async()=>{
+      if(state.navigation)return;
+      const action=snapshot.paused?'恢复':'暂停';
+      if(!confirm(`确认${action}${marketName(snapshot.market)}模拟渠道 ${id}？`))return;
+      try{await post(prefix+(snapshot.paused?'/resume':'/pause'));toast(`渠道已${action}`);await loadRoute({showLoading:false});}
+      catch(error){toast(error.message);}
+    };
+    section.querySelector('[data-reconciliation]').onclick=event=>openDetail('对账详情',detailFacts([
+      ['渠道账户',id],['币种',currency],['最近对账',formatBeijingTime(snapshot.last_reconcile_at)],
+      ['券商总资产',money(snapshot.account?.total_assets)],['券商持仓市值',money(snapshot.account?.market_value)],
+      ['PTE 日终总资产',money(snapshot.logical_total_assets)],['估值差额',money(snapshot.asset_difference)],
+      ['已分配额度',money(snapshot.strategy_allocated_capital)],['未分配额度',money(snapshot.unallocated_capital)],
+      ['平账账户余额',money(snapshot.reconciliation_account?.cash)],
+    ])+'<p class="subtle">券商按当前行情估值，PTE 账务总资产按最近日终数据估值。</p>',event.currentTarget);
+    section.querySelectorAll('[data-cancel-order]').forEach(button=>button.onclick=()=>{
+      if(!state.navigation)cancelOrder(snapshot.orders[Number(button.dataset.cancelOrder)],prefix,marketName(snapshot.market),id);
+    });
+  });
+}
+async function cancelOrder(order,prefix,market,channel){
+  const scope=`${market} · ${channel} · ${channelOrderAccountLabel(order)} · ${order.channel_order_id}`;
+  if(!confirm(`申请撤销订单？\n${scope}\n${sideLabel(order.side)} ${formatQuantity(order.quantity)}`))return;
+  try{
+    const body={account_id:order.account_id,channel_order_id:order.channel_order_id};
+    const {token}=await post(prefix+'/cancel-token',body);
+    if(!confirm(`撤单令牌已签发，有效期 2 分钟。再次确认撤单？\n${scope}`))return;
+    await post(prefix+'/cancel',{...body,token});
+    toast('撤单请求已提交');await loadRoute({showLoading:false});
+  }catch(error){toast(error.message);}
+}
 
 function renderComparison(s){document.querySelector('#app').innerHTML=`<section class="panel hero"><div><div class="eyebrow">只读评估</div><h1>虚拟账户比较</h1><div class="subtle">各账户按自身前瞻观察窗口统计，指标与账户详情页保持一致</div></div></section><section class="panel section"><div class="section-head"><h2>参与账户</h2><span class="badge">无交易干预</span></div><div class="comparison-select">${state.accounts.map(a=>`<label><input type="checkbox" value="${esc(a.account_id)}" ${s.accounts.some(x=>x.account_id===a.account_id)?'checked':''}> ${esc(a.name)} · ${esc(a.release_id)}</label>`).join('')}</div></section><section class="panel section"><div class="section-head"><h2>核心指标</h2><span class="badge">OPC优先级</span></div>${rowsTable([['账户',r=>r.account_id],['策略发布',r=>r.release_id],['观察窗口',r=>r.metrics.observation_start&&r.metrics.observation_end?`${r.metrics.observation_start} 至 ${r.metrics.observation_end}`:'尚无日终快照'],['交易日',r=>r.metrics.observation_count??0],['闭合交易',r=>r.metrics.closed_trades??0],['累计收益',r=>pct(r.metrics.total_return)],['最大回撤',r=>pct(r.metrics.maximum_drawdown)],['卡玛比率',r=>r.metrics.calmar_ratio==null?'不可用':Number(r.metrics.calmar_ratio).toFixed(3)],['盈亏比',r=>r.metrics.win_loss_ratio==null?'不可用':Number(r.metrics.win_loss_ratio).toFixed(3)]],s.accounts)}</section>`;document.querySelectorAll('.comparison-select input').forEach(el=>el.onchange=()=>{const ids=[...document.querySelectorAll('.comparison-select input:checked')].map(x=>x.value);navigate(`/comparison${ids.length?'?'+comparisonQuery(ids):''}`);});}
 
 function renderAudit(s){
   const selected=new URLSearchParams(location.search),categories=['STRATEGY','TRADING','SYSTEM','OTHER'];
-  const cards=categories.map(category=>`<button class="panel metric audit-category" data-category="${category}"><label>${auditCategoryLabel(category)}</label><strong>${s.category_counts?.[category]||0}</strong></button>`).join('');
-  const options=categories.map(category=>`<option value="${category}" ${selected.get('category')===category?'selected':''}>${auditCategoryLabel(category)}</option>`).join('');
-  const events=(s.events||[]).length?(s.events||[]).map(event=>`<article class="event audit-event" data-event-id="${esc(event.event_id)}"><div class="event-title"><div><span class="badge">${esc(auditCategoryLabel(event.category))}</span> <strong>${esc(auditEventLabel(event.event_type))}</strong></div><time>${esc(formatBeijingTime(event.occurred_at))}</time></div><div class="audit-scope"><span>归属</span><strong>${esc(auditScopeLabel(event,state.accounts))}</strong></div><div class="audit-meta"><span>级别 ${esc(auditSeverityLabel(event.severity))}</span><span>结果 ${esc(auditOutcomeLabel(event.outcome))}</span>${event.strategy_id?`<span>策略 ${esc(event.strategy_id)}${event.strategy_version?` · 版本 ${esc(event.strategy_version)}`:''}</span>`:''}${event.channel==='futu_simulate_cn'?'<span>执行渠道 Futu模拟盘CN渠道</span>':''}</div>${event.correlation_id?`<button class="link-button" data-correlation="${esc(event.correlation_id)}">关联 ${esc(event.correlation_id)}</button>`:''}${renderEventDetails(event.details)}</article>`).join(''):'<div class="empty">当前筛选条件下暂无事件</div>';
-  document.querySelector('#app').innerHTML=`<section class="panel hero"><div><div class="eyebrow">PTE · 只读审计账本</div><h1>运行事件</h1><div class="subtle">事件以 UTC 持久化，页面统一显示北京时间 · 最近同步 ${esc(formatBeijingTime(s.as_of))}</div></div></section><div class="grid audit-summary">${cards}</div><section class="panel section"><form id="auditFilters" class="audit-filters"><label>类别<select name="category"><option value="">全部类别</option>${options}</select></label><label>账户<input name="account_id" value="${esc(selected.get('account_id')||'')}" placeholder="账户ID"></label><label>策略<input name="strategy_id" value="${esc(selected.get('strategy_id')||'')}" placeholder="策略ID"></label><label>渠道<input name="channel" value="${esc(selected.get('channel')||'')}" placeholder="如 futu_simulate_cn"></label><label>关联ID<input name="correlation_id" value="${esc(selected.get('correlation_id')||'')}" placeholder="决策或发布链路"></label><button class="button" type="submit">筛选</button><button class="button secondary" id="clearAuditFilters" type="button">清空</button></form></section><section class="panel section"><div class="section-head"><h2>事件明细</h2><span class="badge">${(s.events||[]).length} 条</span></div><div class="audit-list">${events}</div>${s.next_before_id?'<button id="moreAudit" class="button secondary" type="button">下一页 · 更早事件</button>':''}</section>`;
-  document.querySelectorAll('[data-category]').forEach(el=>el.onclick=()=>{const params=new URLSearchParams(location.search);params.set('category',el.dataset.category);navigate(`/audit-events?${params}`);});
-  document.querySelectorAll('[data-correlation]').forEach(el=>el.onclick=()=>navigate(`/audit-events?${auditQuery({correlation_id:el.dataset.correlation})}`));
+  const options=categories.map(category=>`<option value="${category}" ${selected.get('category')===category?'selected':''}>${auditCategoryLabel(category)} · ${s.category_counts?.[category]||0}</option>`).join('');
+  const events=s.events||[], app=document.querySelector('#app');
+  app.innerHTML=`<section class="panel hero"><div><div class="eyebrow">${marketName(state.market)} · 北京时间</div><h1>审计事件</h1><div class="subtle">最近同步 ${esc(formatBeijingTime(s.as_of))}</div></div></section>
+    <section class="panel section"><form id="auditFilters" class="audit-filters"><label>类别<select name="category"><option value="">全部类别</option>${options}</select></label><label>账户<input name="account_id" value="${esc(selected.get('account_id')||'')}" placeholder="账户 ID"></label><label>策略<input name="strategy_id" value="${esc(selected.get('strategy_id')||'')}" placeholder="策略 ID"></label><label>渠道<input name="channel" value="${esc(selected.get('channel')||'')}" placeholder="渠道类型"></label><label>关联 ID<input name="correlation_id" value="${esc(selected.get('correlation_id')||'')}" placeholder="决策或发布链路"></label><button class="button" type="submit">筛选</button><button class="button secondary" id="clearAuditFilters" type="button">清空</button></form></section>
+    <section class="panel section"><div class="section-head"><h2>运行记录</h2><span class="subtle">${events.length} 条</span></div><div class="audit-list">${events.length?events.map(eventRow).join(''):'<div class="empty">当前筛选条件下暂无事件</div>'}</div>${s.next_before_id?'<button id="moreAudit" class="button secondary" type="button">下一页 · 更早事件</button>':''}</section>`;
+  bindEventRows(app,events);
   document.querySelector('#auditFilters').onsubmit=event=>{event.preventDefault();const query=auditQuery(Object.fromEntries(new FormData(event.currentTarget)));navigate(`/audit-events${query?'?'+query:''}`);};
   document.querySelector('#clearAuditFilters').onclick=()=>navigate('/audit-events');
-  const more=document.querySelector('#moreAudit');if(more)more.onclick=()=>{const params=new URLSearchParams(location.search);params.set('before_id',s.next_before_id);navigate(`/audit-events?${params}`,false,Math.max(0,document.querySelector('.audit-list').getBoundingClientRect().top+window.scrollY-110));};
+  const more=document.querySelector('#moreAudit');
+  if(more)more.onclick=()=>{const params=new URLSearchParams(location.search);params.set('before_id',s.next_before_id);navigate(`/audit-events?${params}`,false,Math.max(0,document.querySelector('.audit-list').getBoundingClientRect().top+window.scrollY-130));};
 }
 
-async function loadAccounts(options={}){return getJson('/api/virtual-accounts',options);}
+async function loadAccounts(market,options={}){return getJson(scoped('/api/virtual-accounts',market),options);}
 async function loadRoute({showLoading=true,forceRender=false}={}){
   const route=parseRoute(location.pathname);setNav(route.page);
-  let scope=route.page==='account'?route.accountId:`${route.page}${location.search}`;
+  const market=requestedMarket();
+  state.market=market;
+  document.querySelectorAll('[data-market]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.market===market)));
+  const scope=`${market}:${route.page==='account'?route.accountId:`${route.page}${location.search}`}`;
   const request=state.loader.begin(scope);
   try{
     if(showLoading)document.querySelector('#app').innerHTML='<div class="loading">正在加载当前作用域…</div>';
-    const accountIndex=await loadAccounts({signal:request.signal});
+    const accountIndex=await loadAccounts(market,{signal:request.signal});
     if(!state.loader.accept(request,scope))return;
     state.accounts=accountIndex.accounts||[];
     if(route.page==='account'){
-      const requested=route.accountId||localStorage.getItem('pte.lastAccountId');
-      const id=chooseAccountId(requested,state.accounts,accountIndex.default_account_id);
+      const storageKey=`pte.lastAccountId.${market}`;
+      const requested=route.accountId||localStorage.getItem(storageKey);
+      if(route.accountId&&!state.accounts.some(row=>row.account_id===route.accountId)&&!new URLSearchParams(location.search).has('market')){
+        const all=await getJson('/api/virtual-accounts',{signal:request.signal});
+        if(!state.loader.accept(request,scope))return;
+        const account=all.accounts?.find(row=>row.account_id===route.accountId);
+        if(validMarket(account?.market)&&account.market!==market){navigate(scoped(location.pathname,account.market),true,0);return;}
+      }
+      const id=route.accountId&&state.accounts.some(row=>row.account_id===route.accountId)?route.accountId:
+        route.accountId?null:chooseAccountId(requested,state.accounts,accountIndex.default_account_id);
       if(!id){
-        document.querySelector('#app').innerHTML='<section class="panel"><h1>虚拟账户</h1><p>暂无可展示的虚拟账户。</p></section>';
+        document.querySelector('#app').innerHTML=`<section class="panel hero"><div><h1>虚拟账户</h1><p>${route.accountId?'当前市场没有此账户。':'暂无可展示的虚拟账户。'}</p></div></section>`;
         document.querySelector('#pollWarning').hidden=true;
-        localStorage.removeItem('pte.lastAccountId');
-        if(route.accountId)history.replaceState({},'','/accounts/');
+        localStorage.removeItem(storageKey);
         state.renderedScope=null;state.fingerprint=null;state.chart=null;
         finishNavigation();
         return;
       }
       if(route.accountId!==id){navigate(`/accounts/${encodeURIComponent(id)}`,true);return;}
     }
-    scope=route.page==='account'?route.accountId:`${route.page}${location.search}`;
     let snapshot,chartPromise=null;
     if(route.page==='account'){
       chartPromise=getJson(`/api/virtual-accounts/${encodeURIComponent(route.accountId)}/chart`,{signal:request.signal}).catch(error=>({scope:{account_id:route.accountId},status:'UNAVAILABLE',chart_url:null,fingerprint:null,message:error.message}));
       snapshot=await getJson(`/api/virtual-accounts/${encodeURIComponent(route.accountId)}/snapshot`,{signal:request.signal});
     }
-    else if(route.page==='channel')snapshot=await getJson('/api/channels/futu-simulate-cn/snapshot',{signal:request.signal});
-    else if(route.page==='comparison'){const ids=new URLSearchParams(location.search).getAll('account_id');snapshot=await getJson(`/api/comparison${ids.length?'?'+comparisonQuery(ids):''}`,{signal:request.signal});}
-    else snapshot=await getJson(`/api/audit-events${location.search}`,{signal:request.signal});
+    else if(route.page==='channel'){
+      const index=await getJson(scoped('/api/channel-accounts',market),{signal:request.signal});
+      snapshot=await Promise.all(index.channels.map(async channel=>{
+        const value=await getJson(`/api/channel-accounts/${encodeURIComponent(channel.channel_account_id)}/snapshot`,{signal:request.signal});
+        if(value.market!==market||value.scope.channel_account_id!==channel.channel_account_id)throw new Error('服务端渠道作用域不一致');
+        return value;
+      }));
+    }
+    else if(route.page==='comparison'){
+      const ids=new URLSearchParams(location.search).getAll('account_id');
+      snapshot=await getJson(scoped(`/api/comparison${ids.length?'?'+comparisonQuery(ids):''}`,market),{signal:request.signal});
+    }
+    else snapshot=await getJson(scoped(`/api/audit-events${location.search}`,market),{signal:request.signal});
     if(!state.loader.accept(request,scope))return;
-    if(route.page==='account'&&snapshot.scope.account_id!==route.accountId)throw new Error('服务端账户作用域不一致');
+    if(!state.navigation&&document.querySelector('#systemEventsDialog')?.open)return;
+    if(route.page==='account'&&(snapshot.scope.account_id!==route.accountId||snapshot.scope.market!==market))throw new Error('服务端账户作用域不一致');
     const fingerprint=snapshotFingerprint({accounts:state.accounts,snapshot});
     if(forceRender||scope!==state.renderedScope||fingerprint!==state.fingerprint){
       const sameScope=scope===state.renderedScope;
       updateView(document.querySelector('#app'),()=>{
-      if(route.page==='account'){localStorage.setItem('pte.lastAccountId',route.accountId);renderAccount(snapshot);}
+      if(route.page==='account'){localStorage.setItem(`pte.lastAccountId.${market}`,route.accountId);renderAccount(snapshot);}
       else if(route.page==='channel')renderChannel(snapshot);else if(route.page==='comparison')renderComparison(snapshot);else renderAudit(snapshot);
       },{preserve:sameScope,y:state.navigation?.y??window.scrollY});
       state.renderedScope=scope;state.fingerprint=fingerprint;
@@ -405,30 +573,58 @@ function beginNavigation(y,followScroll=false){
   notice.textContent=`正在加载 ${route.page==='account'?(account?.name||route.accountId||'虚拟账户'):'页面'}…`;
   notice.hidden=false;
   document.querySelector('#app').setAttribute('aria-busy','true');
-  document.querySelectorAll('#accountSwitch,[data-ack-intent],#retryAccountChart,#channelSwitch').forEach(el=>{if(!el.disabled){el.dataset.navigationDisabled='';el.disabled=true;}});
+  document.querySelectorAll('#accountSwitch,[data-ack-intent],#retryAccountChart,[data-channel-switch],[data-cancel-order]').forEach(el=>{if(!el.disabled){el.dataset.navigationDisabled='';el.disabled=true;}});
 }
 function navigate(url,replace=false,targetY=null){
+  const market=new URLSearchParams(url.split('?')[1]).get('market');
+  if(!validMarket(market))url=scoped(url,requestedMarket());
   const current=`${location.pathname}${location.search}`;
   const samePage=parseRoute(url.split('?')[0]).page===parseRoute(location.pathname).page;
   const y=targetY??(samePage?window.scrollY:0);
   history.replaceState({...history.state,pteScroll:window.scrollY},'',current);
   if(url!==current)history[replace?'replaceState':'pushState']({pteScroll:y},'',url);
+  const changed=syncMarket();
   beginNavigation(y,samePage&&targetY==null);
-  loadRoute(navigationOptions(state.renderedScope));
+  loadRoute(changed?{showLoading:true}:navigationOptions(state.renderedScope));
+}
+function syncMarket(){
+  const market=requestedMarket();
+  localStorage.setItem('pte.market',market);
+  if(market===state.market)return false;
+  state.market=market;state.system=null;
+  const status=document.querySelector('#systemStatus');
+  status.textContent='状态加载中';status.classList.remove('warning');
+  refreshSystem();
+  return true;
+}
+function switchMarket(market){
+  if(market===requestedMarket())return;
+  const route=parseRoute(location.pathname),params=new URLSearchParams(location.search);
+  for(const key of ['account_id','strategy_id','channel','channel_account_id','correlation_id','decision_id','order_id','before_id'])params.delete(key);
+  params.set('market',market);
+  const path=route.page==='account'?'/accounts/':route.page==='channel'?'/channels':location.pathname;
+  navigate(`${path}?${params}`,false,0);
 }
 function boot(){
   history.scrollRestoration='manual';
   document.querySelector('#reloadConsole').onclick=()=>location.reload();
   document.querySelectorAll('a[href^="/"]').forEach(a=>a.onclick=e=>{e.preventDefault();navigate(a.getAttribute('href'));});
   document.querySelector('#systemStatus').onclick=openSystemEvents;
-  document.querySelector('#closeSystemEvents').onclick=()=>document.querySelector('#systemEventsDialog').close();
-  window.addEventListener('popstate',event=>{beginNavigation(event.state?.pteScroll??0);loadRoute(navigationOptions(state.renderedScope));});
+  const dialog=document.querySelector('#systemEventsDialog');
+  document.querySelector('#closeSystemEvents').onclick=()=>dialog.close();
+  dialog?.addEventListener('close',()=>{
+    window.scrollTo({top:state.detailScroll,left:window.scrollX,behavior:'instant'});
+    if(state.detailTrigger?.isConnected)state.detailTrigger.focus({preventScroll:true});
+    state.detailTrigger=null;
+  });
+  document.querySelectorAll('[data-market]').forEach(button=>button.onclick=()=>switchMarket(button.dataset.market));
+  window.addEventListener('popstate',event=>{const changed=syncMarket();beginNavigation(event.state?.pteScroll??0);loadRoute(changed?{showLoading:true}:navigationOptions(state.renderedScope));});
   window.addEventListener('scroll',()=>{
     if(state.navigation?.followScroll)state.navigation.y=window.scrollY;
     if(!state.navigation)history.replaceState({...history.state,pteScroll:window.scrollY},'');
   },{passive:true});
-  refreshSystem();loadRoute({showLoading:true,forceRender:true});
+  state.market=requestedMarket();refreshSystem();loadRoute({showLoading:true,forceRender:true});
   setInterval(refreshSystem,10000);
-  setInterval(()=>{if(!state.navigation)loadRoute({showLoading:false});},5000);
+  setInterval(()=>{if(!state.navigation&&!dialog?.open)loadRoute({showLoading:false});},5000);
 }
 if(typeof document!=='undefined')boot();

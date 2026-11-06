@@ -154,6 +154,7 @@ def render_forward_chart_html(value: object) -> str:
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>{title} · 前瞻观察</title>
+  <style>html{{scrollbar-gutter:stable}}</style>
   <link rel="stylesheet" href="/static/strategy-chart.css">
 </head>
 <body style="margin:0;background:#0d1117">

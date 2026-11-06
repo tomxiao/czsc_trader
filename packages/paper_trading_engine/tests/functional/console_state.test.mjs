@@ -231,7 +231,7 @@ test('account health and operating state stay consistent across account and chan
       assert.match(html,new RegExp(`<option[^>]*>测试账户 · ${label}</option>`));
       assert.match(html,new RegExp(`<small>— · ${label}</small>`));
     }
-    assert.match(html,new RegExp(`Futu · ${label}</div>`));
+    assert.match(html,new RegExp(`class="badge">${label}</span>`));
     assert.match(channelMarkup({accounts:[account]}),new RegExp(`<td>${label}</td>`));
   }
   for(const health of ['READY','UNKNOWN',null,undefined]){
@@ -267,7 +267,7 @@ test('retired account shows recovered cash and cannot be resumed', () => {
     metrics: {current_total_return:0.012504321},
   });
   assert.match(html, /id="accountSwitch" disabled/);
-  assert.match(html, /已退出 · 资金已回收/);
+  assert.match(html, /已退出/);
   assert.match(html, /已回收资金/);
   assert.doesNotMatch(html, /点击恢复/);
   assert.equal(accountOperatingStatus({run_state:'RETIRED',health:'OK'}), '已退出');
@@ -296,7 +296,7 @@ test('virtual account navigation excludes retired accounts and stale selections'
   assert.equal(accounts.length,3);
 });
 
-test('channel summary keeps four core metrics and moves reconciliation into details', () => {
+test('channel summary shows market currency and leaves reconciliation to its drawer', () => {
   const snapshot = {
     account:{cash:756290.717,total_assets:1002769.617,market_value:246478.9},
     logical_cash:756290.717,logical_total_assets:996212.117,
@@ -306,12 +306,13 @@ test('channel summary keeps four core metrics and moves reconciliation into deta
     accounts:[],orders:[],fills:[],alerts:[],paused:false,
   };
   const html = channelMarkup(snapshot);
-  assert.equal((html.match(/class="panel metric"/g)||[]).length,4);
+  assert.equal((html.match(/class="panel metric"/g)||[]).length,3);
   assert.match(html,/资金对账正常/);
   assert.match(html,/估值口径不同/);
-  assert.match(html,/<summary class="reconciliation-bar">/);
-  assert.match(html,/<span class="reconciliation-trigger">查看明细<\/span>/);
-  assert.match(channelMarkup(snapshot,true),/class="reconciliation-details" open/);
+  assert.match(html,/data-reconciliation[^>]*>对账详情/);
+  assert.doesNotMatch(html,/<details/);
+  assert.match(channelMarkup({...snapshot,market:'US',currency:'USD'}),/美股模拟盘/);
+  assert.match(channelMarkup({...snapshot,market:'US',currency:'USD'}),/756,290\.72 USD/);
 });
 
 
@@ -333,10 +334,11 @@ test('account view separates history and preserves explicit reading state', () =
     intents:[{attention_required:true,attention_reason:'REVIEW_REQUIRED',intent_id:'I1'}]};
   const html=accountMarkup(snapshot,[],{tab:'records',records:'orders',pages:{orders:2},accountDetails:true,decisionDetails:true});
   assert.match(html,/data-account-panel="chart" hidden/);
-  assert.match(html,/S003-v1 · 510500.SH · Futu/);
+  assert.match(html,/A 股 · S003-v1 · 510500.SH · Futu/);
   assert.match(html,/data-account-panel="records" >/);
-  assert.match(html,/data-account-details="accountDetails" open/);
-  assert.match(html,/data-account-details="decisionDetails" open/);
+  assert.match(html,/id="accountDetails" class="button" aria-haspopup="dialog"/);
+  assert.match(html,/id="decisionDetails" aria-haspopup="dialog"/);
+  assert.doesNotMatch(html,/<details/);
   assert.match(html,/第 2 \/ 3 页/);
   assert.match(html,/ORDER-10/);
   assert.doesNotMatch(html,/ORDER-20/);

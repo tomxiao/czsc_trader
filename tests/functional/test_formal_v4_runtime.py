@@ -289,6 +289,23 @@ def test_online_v4_decision_and_execution_use_the_scoped_runtime(formal_v4, monk
         report = verify(server.server_port, plan, drive_dev=True)
         assert report['status'] == 'PASS', report
         assert not store.account_intents('formal') and not broker.submissions
+        def read_json(path, body=None):
+            request = Request(base + path, None if body is None else json.dumps(body).encode(),
+                              {'Content-Type': 'application/json'})
+            with urlopen(request, timeout=5) as response:
+                return json.load(response)
+
+        other_market = 'US' if market == 'CN' else 'CN'
+        assert [row['account_id'] for row in read_json(f'/api/virtual-accounts?market={market}')['accounts']] == ['formal']
+        assert read_json(f'/api/virtual-accounts?market={other_market}')['accounts'] == []
+        assert [row['account_id'] for row in read_json(f'/api/comparison?market={market}')['accounts']] == ['formal']
+        assert read_json(f'/api/comparison?market={other_market}')['accounts'] == []
+        assert 'formal-channel' in {row['channel_account_id'] for row in read_json(f'/api/channel-accounts?market={market}')['channels']}
+        assert not any(row.get('account_id') == 'formal' for row in read_json(f'/api/audit-events?market={other_market}')['events'])
+        assert read_json(f'/api/system/status?market={market}')['scope']['market'] == market
+        assert read_json('/api/virtual-accounts/formal/chart')['scope']['account_id'] == 'formal'
+        assert read_json('/api/channel-accounts/formal-channel/pause', {})['paused'] is True
+        assert read_json('/api/channel-accounts/formal-channel/resume', {})['paused'] is False
         decision_id = store.virtual_account('formal')['last_decision_id']
         assert decision_id
         report = verify(server.server_port, plan, drive_dev=True)
@@ -298,7 +315,7 @@ def test_online_v4_decision_and_execution_use_the_scoped_runtime(formal_v4, monk
         assert verify(server.server_port, plan)['status'] == 'PASS'
         assert store.virtual_account('formal')['last_decision_id'] == decision_id
 
-        store.set_virtual_paused('formal', False)
+        assert read_json('/api/virtual-accounts/formal/resume', {})['account']['run_state'] == 'RUNNING'
         request = Request(base + '/api/virtual-accounts/formal/decision', b'{}',
                           {'Content-Type': 'application/json'})
         with pytest.raises(HTTPError) as rejected:
@@ -330,7 +347,7 @@ def test_online_v4_decision_and_execution_use_the_scoped_runtime(formal_v4, monk
         output = client.repo_root / 'online-result.json'
         assert main(['--port', str(server.server_port), '--plan', str(plan_path), '--json-output', str(output)]) == 0
         assert json.loads(output.read_bytes())['status'] == 'PASS'
-        store.set_virtual_paused('formal', True)
+        assert read_json('/api/virtual-accounts/formal/pause', {})['account']['run_state'] == 'PAUSED'
         now = interval.end
         with pytest.raises(HTTPError, match='409') as closed:
             urlopen(request, timeout=5)
@@ -340,6 +357,7 @@ def test_online_v4_decision_and_execution_use_the_scoped_runtime(formal_v4, monk
         server.shutdown()
         worker.join()
         server.server_close()
+        runtime.account_chart.close()
 
 
 def test_formal_v4_maintenance_prepares_data_without_adopting_interval(formal_v4):

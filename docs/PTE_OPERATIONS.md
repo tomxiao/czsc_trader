@@ -64,9 +64,13 @@ $RuntimeArgs = @(
 & $Pte account resume @RuntimeArgs --account-id s002-v1
 ```
 
-服务运行期间，账户暂停和恢复使用控制台，或向`/api/virtual-accounts/{account_id}/pause`、
+服务运行期间，在控制台顶部选择 A 股或美股。虚拟账户、模拟渠道、审计、比较和活动告警使用同一市场范围；切换市场保留当前页签。
+账户暂停和恢复使用控制台，或向`/api/virtual-accounts/{account_id}/pause`、
 `/resume`发送`Content-Type: application/json`、正文`{}`的POST请求。在线创建渠道平账账户使用
 `pte control create-reconciliation`；控制令牌由CLI只读取得，实际变更由运行中的服务执行。
+
+渠道操作通过 `/api/channel-accounts/{channel_account_id}/` 下的暂停、恢复和两次撤单确认入口。确认时核对市场、渠道账户、虚拟账户及订单。侧栏展示事件影响对象、原因和关联身份，原始字段供排查。
+前瞻图由后台生成。V4 图表按账户已配置的行情来源读取后复权日线，并使用该市场实际交易日历和数据可用时点。美股提前收市按纽约本地时段核对。图表缺数据时，详情中会显示当前原因。
 
 需要立即驱动单个虚拟账户决策时，使用既有 Web 入口：
 
@@ -118,7 +122,7 @@ V4 双市场账户必须健康、暂停，且处于绑定允许的执行区间�
 
 ### Web API 在线验收
 
-运维脚本使用 `/api/health`、`/api/system/status` 和具体资源查询。旧聚合 `/api/status` 已移除；A 股渠道暂停、恢复与撤单使用 `/api/channels/futu-simulate-cn/` 下的现行路由。
+运维脚本使用 `/api/health`、`/api/system/status?market=CN|US` 和具体资源查询。旧聚合 `/api/status` 已移除。渠道控制使用 `/api/channel-accounts/{channel_account_id}/` 下的现行路由。
 
 1. 发布前在隔离 DEV 用待发布实现验证 A 股与美股闭环。固定时点和模拟回报用于核对决策、订单、成交和入账，确认重复回报不重复入账。真实供数和重绑事务按发布计划分别留证。
 2. 发布启动后、恢复账户前，在 PTE 宿主运行 `python -m paper_trading_engine.online_verify --port <端口> --plan <清单> --json-output <新报告>`。清单填写待验发布的版本、提交及制品清单哈希，以及本次要求的渠道与账户。工具默认只读，检查运行身份、调度心跳、渠道对账、账户状态和发布绑定。清单格式见 [PTE 模块说明](../packages/paper_trading_engine/README.md#web-api-在线验证)。

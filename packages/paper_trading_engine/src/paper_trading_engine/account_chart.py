@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from concurrent.futures import CancelledError, Executor, Future
-from datetime import date, datetime, timezone
+from datetime import date, datetime, time as wall_time, timezone
 import hashlib
 import json
 import os
@@ -14,8 +14,10 @@ from threading import Event, RLock, Thread
 import time
 from typing import Any, Callable
 from uuid import uuid4
+from zoneinfo import ZoneInfo
 
 from .audit import AuditRecorder
+from .channel import channel_profile
 from .chart_market_data import AccountChartDataError, CHART_UPDATE_TIME
 from .forward_chart import ChartObservation, FORWARD_CHART_CONTRACT_VERSION, render_forward_chart_html
 from .trading_window import SHANGHAI
@@ -24,7 +26,7 @@ from .trading_window import SHANGHAI
 ACCOUNT_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
 INPUT_LIMIT = 5 * 1024 * 1024
 OUTPUT_LIMIT = 20 * 1024 * 1024
-CACHE_RENDER_REVISION = "pte-forward-chart-v12"
+CACHE_RENDER_REVISION = "pte-forward-chart-v13"
 
 
 def _path_comparison_key(path: Path) -> str:
@@ -119,6 +121,7 @@ class AccountChartService:
         fetch_timeout_seconds: float = 35,
         shutdown_timeout_seconds: float = 2,
         audit: AuditRecorder | None = None,
+        audit_for_account=None,
         executor: Executor | None = None,
         renderer: Callable[[object], str] = render_forward_chart_html,
     ) -> None:
@@ -132,6 +135,7 @@ class AccountChartService:
         self.fetch_timeout_seconds = fetch_timeout_seconds
         self.shutdown_timeout_seconds = shutdown_timeout_seconds
         self.audit = audit or AuditRecorder(store)
+        self.audit_for_account = audit_for_account or (lambda _: self.audit)
         self.renderer = renderer
         self._executor = executor or _DaemonSingleWorker()
         self._owns_executor = executor is None
@@ -225,6 +229,7 @@ class AccountChartService:
             selection_data_cutoff=cutoff,
             context_sessions=self.context_sessions,
             refresh_source=refresh_source,
+            **({"account_id": str(account["account_id"])} if account.get("equity_rules_json") is not None else {}),
         )
         frame = frame.rename(
             columns={
@@ -254,10 +259,16 @@ class AccountChartService:
         return str(price_identity), selected
 
     @staticmethod
-    def _fact_date(row: dict[str, Any], fields: tuple[str, ...]) -> str | None:
+    def _fact_date(row: dict[str, Any], fields: tuple[str, ...], zone: ZoneInfo | None = None) -> str | None:
         for field in fields:
             if row.get(field) not in (None, ""):
-                return date.fromisoformat(str(row[field])[:10]).isoformat()
+                value = str(row[field])
+                if zone is not None and len(value) > 10:
+                    moment = datetime.fromisoformat(value)
+                    if moment.utcoffset() is None:
+                        raise ValueError("formal chart transaction time must include its time zone")
+                    return moment.astimezone(zone).date().isoformat()
+                return date.fromisoformat(value[:10]).isoformat()
         return None
 
     @staticmethod
@@ -386,6 +397,8 @@ class AccountChartService:
                 intent_rows, cutoff, ("valid_session", "session"),
             )
         ]
+        formal_zone = (ZoneInfo(channel_profile(account["channel_id"]).timezone)
+                       if account.get("equity_rules_json") is not None else None)
         fills = [
             {
                 "account_id": row.get("account_id"),
@@ -393,14 +406,14 @@ class AccountChartService:
                 "decision_id": row.get("decision_id"),
                 "channel_order_id": row.get("order_id"),
                 "occurred_at": row.get("occurred_at"),
+                **({"session": session} if formal_zone is not None else {}),
                 "side": row.get("side"),
                 "quantity": row.get("quantity"),
                 "price": row.get("price"),
                 "fee": row.get("fee"),
             }
-            for row in self._after_cutoff(
-                fill_rows, cutoff, ("occurred_at", "session"),
-            )
+            for row in fill_rows
+            if (session := self._fact_date(row, ("occurred_at", "session"), formal_zone)) is not None and session > cutoff
         ]
         snapshots = [
             {
@@ -496,7 +509,7 @@ class AccountChartService:
                 if self._closing.is_set():
                     return
                 try:
-                    self.audit.record(
+                    self.audit_for_account(account).record(
                         "ACCOUNT_CHART_GENERATION_FAILED", source="account_chart",
                         outcome="FAILURE", actor_type="ENGINE",
                         account_id=account["account_id"],
@@ -511,17 +524,24 @@ class AccountChartService:
     def _refresh(
         self, account: dict[str, Any], refresh_source: bool = False,
         scheduled_session: date | None = None,
+        scheduled_at: datetime | None = None,
     ) -> None:
         account_id = str(account["account_id"])
         meta_path = self._meta_path(account_id)
         old_meta = self._load_meta(meta_path)
         try:
-            if scheduled_session is not None and not self.market_data.is_trading_day(
-                symbol=str(account["symbol"]), session=scheduled_session,
-            ):
-                old_meta["last_daily_check"] = scheduled_session.isoformat()
-                self._atomic_write(meta_path, json.dumps(old_meta, ensure_ascii=False))
-                return
+            if scheduled_session is not None:
+                if account.get("equity_rules_json") is not None:
+                    ready = self.market_data.scheduled_session_ready(account_id, scheduled_at)
+                    if ready is False:
+                        return
+                    trading_day = ready is True
+                else:
+                    trading_day = self.market_data.is_trading_day(symbol=str(account["symbol"]), session=scheduled_session)
+                if not trading_day:
+                    old_meta["last_daily_check"] = scheduled_session.isoformat()
+                    self._atomic_write(meta_path, json.dumps(old_meta, ensure_ascii=False))
+                    return
             request, has_forward = self._request(account, refresh_source=refresh_source)
             market_cutoff = str(request["market_data"]["as_of"])
             if scheduled_session is not None and market_cutoff != scheduled_session.isoformat():
@@ -570,7 +590,7 @@ class AccountChartService:
                 with self._store_guard:
                     if not self._closing.is_set():
                         try:
-                            self.audit.record(
+                            self.audit_for_account(account).record(
                                 "ACCOUNT_CHART_RECOVERED", source="account_chart",
                                 actor_type="ENGINE", account_id=account_id,
                                 strategy_id=account.get("strategy_id"),
@@ -695,12 +715,9 @@ class AccountChartService:
         return self.status(account_id, force=True)
 
     def refresh_daily(self, at: datetime) -> None:
-        """Enqueue independent chart updates at 20:30; retry until fully rendered."""
+        """Enqueue independent chart updates in the account's own market session."""
         if at.tzinfo is None:
             raise ValueError("account chart clock must be timezone-aware")
-        local = at.astimezone(SHANGHAI)
-        if local.time() < CHART_UPDATE_TIME:
-            return
         with self._store_guard:
             accounts = [dict(row) for row in self.store.strategy_virtual_accounts()
                         if row.get("run_state") != "RETIRED"]
@@ -709,6 +726,11 @@ class AccountChartService:
             if self._closing.is_set():
                 return
             for account in accounts:
+                profile = channel_profile(account["channel_id"]) if account.get("equity_rules_json") is not None else None
+                local = at.astimezone(ZoneInfo(profile.timezone) if profile else SHANGHAI)
+                earliest = wall_time(13) if profile and profile.market == "US" else CHART_UPDATE_TIME
+                if local.time() < earliest:
+                    continue
                 account_id = str(account["account_id"])
                 if self._load_meta(self._meta_path(account_id)).get("last_daily_check") == local.date().isoformat():
                     continue
@@ -723,7 +745,7 @@ class AccountChartService:
                 if last_submit is not None and now - last_submit < self.refresh_interval_seconds:
                     continue
                 self._jobs[account_id] = self._executor.submit(
-                    self._refresh, account, True, local.date(),
+                    self._refresh, account, True, local.date(), at,
                 )
                 self._last_daily_submit[account_id] = now
                 self._last_submit[account_id] = now

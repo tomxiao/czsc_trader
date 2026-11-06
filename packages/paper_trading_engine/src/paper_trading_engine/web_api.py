@@ -8,7 +8,8 @@ import json
 
 from .lifecycle import AccountHealth
 from .audit import AuditCategory, AuditOutcome, AuditSeverity, EVENT_CATALOG
-from .channel import FUTU_SIMULATE_CN_CHANNEL_ID, STRATEGY_ACCOUNT_TYPE
+from .channel import FUTU_SIMULATE_CN_CHANNEL_ID, STRATEGY_ACCOUNT_TYPE, channel_profile
+from .channel_accounts import DEFAULT_CHANNEL_ACCOUNT
 from .trading_window import SHANGHAI
 
 
@@ -63,8 +64,28 @@ class PteWebApi:
             raise ResourceNotFound(channel_account_id)
         return self.runtime.services[channel_account_id]
 
+    @staticmethod
+    def _validate_market(market: str | None) -> None:
+        if market not in (None, "CN", "US"):
+            raise ValueError("market must be CN or US")
+
+    @property
+    def _root_store(self):
+        return self.store if self.runtime is None else self.runtime.store
+
+    def channel_accounts(self, market: str | None = None) -> dict[str, object]:
+        self._validate_market(market)
+        rows = self._root_store.channel_accounts()
+        return {"channels": [{key: row[key] for key in ("channel_account_id", "channel_id", "market", "currency")}
+                             for row in rows if market is None or row["market"] == market]}
+
+    def _account_rows(self, market: str | None):
+        self._validate_market(market)
+        return [row for row in self._root_store.strategy_virtual_accounts()
+                if market is None or channel_profile(row["channel_id"]).market == market]
+
     def _account_chart_error(self, account_id: str) -> str | None:
-        chart = getattr(self.operations, "account_chart", None)
+        chart = getattr(self.runtime or self.operations, "account_chart", None)
         if chart is None or not hasattr(chart, "current_error"):
             return None
         return chart.current_error(account_id)
@@ -78,7 +99,9 @@ class PteWebApi:
             "release": dict(getattr(self.operations, "runtime_identity", {})),
         }
 
-    def system_status(self) -> dict[str, object]:
+    def system_status(self, market: str | None = None) -> dict[str, object]:
+        if market is not None:
+            return self._market_system_status(market)
         channel = self.channel_snapshot(FUTU_SIMULATE_CN_CHANNEL_ID)
         failures = channel.get("scheduler_failures", self.store.operation_failures())
         alerts = list(channel.get("alerts", []))
@@ -163,11 +186,41 @@ class PteWebApi:
             ],
         }
 
+    def _market_system_status(self, market: str) -> dict[str, object]:
+        channels = self.channel_accounts(market)["channels"]
+        accounts = self._account_rows(market)
+        root = self._root_store
+        channel_ids = {row["channel_account_id"] for row in channels}
+        active_accounts = {row["account_id"]: row for row in accounts if row["run_state"] != "RETIRED"}
+        alerts = []
+        for channel_id in sorted(channel_ids):
+            channel = self.channel_account_snapshot(channel_id, include_activity=False)
+            alerts.extend({"code": code, "channel_account_id": channel_id, "message": channel.get("connection_error")}
+                          for code in channel["alerts"])
+        for account_id, row in active_accounts.items():
+            chart_error = self._account_chart_error(account_id)
+            if row.get("last_error"):
+                alerts.append({"code": "VIRTUAL_ACCOUNT_BLOCKED", "account_id": account_id, "message": row["last_error"]})
+            if chart_error:
+                alerts.append({"code": "ACCOUNT_CHART_UNAVAILABLE", "account_id": account_id, "message": chart_error})
+        for intent in root.unresolved_account_intents():
+            if intent["account_id"] in active_accounts:
+                alerts.append({"code": "ORDER_SUBMISSION_UNRESOLVED", "account_id": intent["account_id"],
+                               "intent_id": intent["intent_id"]})
+        health = self.health()
+        if not health["watchdog_healthy"]:
+            alerts.append({"code": "SCHEDULER_STALLED"})
+        failures = [row for row in root.operation_failures()
+                    if ":" not in row["operation"] or row["operation"].partition(":")[2] in active_accounts.keys() | channel_ids]
+        return {"scope": {"system": "pte", "market": market}, "as_of": _now(), **health,
+                "alerts": alerts, "scheduler_failures": failures,
+                "events": root.query_audit_events(category=AuditCategory.SYSTEM, market=market, limit=50)}
+
     def audit_events(self, filters: dict[str, str]) -> dict[str, object]:
         allowed = {
             "category", "event_type", "severity", "outcome", "account_id",
             "strategy_id", "channel", "decision_id", "order_id", "correlation_id",
-            "before_id", "limit", "channel_account_id",
+            "before_id", "limit", "channel_account_id", "market",
         }
         unknown = sorted(set(filters) - allowed)
         if unknown:
@@ -189,7 +242,11 @@ class PteWebApi:
             raise ValueError(f"invalid audit event_type: {event_type}")
         query = dict(filters)
         channel_account_id = query.pop("channel_account_id", None)
-        store = self.store if channel_account_id is None else self._channel_services(channel_account_id).store
+        market = query.get("market")
+        self._validate_market(market)
+        store = self._root_store if market is not None else self.store
+        if channel_account_id is not None:
+            store = self._channel_services(channel_account_id).store
         for name in ("before_id", "limit"):
             if name in query:
                 try:
@@ -213,12 +270,12 @@ class PteWebApi:
             "next_before_id": events[-1]["id"] if len(events) == limit else None,
         }
 
-    def virtual_accounts(self) -> dict[str, object]:
+    def virtual_accounts(self, market: str | None = None) -> dict[str, object]:
         accounts = []
-        for row in self.store.strategy_virtual_accounts():
-            status = self.virtual.status(row["account_id"])
-            decision = status.get("last_decision") or {}
+        for row in self._account_rows(market):
+            decision = json.loads(row.get("last_decision_payload") or "{}")
             chart_error = self._account_chart_error(row["account_id"])
+            profile = channel_profile(row["channel_id"])
             accounts.append({
                 "account_id": row["account_id"], "name": row["name"],
                 "strategy_id": row["strategy_id"],
@@ -228,9 +285,10 @@ class PteWebApi:
                 "health": row["health"], "total_assets": row["total_assets"],
                 "quantity": row["quantity"], "latest_action": decision.get("action"),
                 "alert_count": int(bool(row.get("last_error"))) + int(bool(chart_error)),
+                "channel_account_id": row["channel_account_id"], "market": profile.market, "currency": profile.currency,
             })
         return {
-            "scope": {"resource": "virtual_accounts"}, "as_of": _now(),
+            "scope": {"resource": "virtual_accounts", **({"market": market} if market else {})}, "as_of": _now(),
             "default_account_id": accounts[0]["account_id"] if accounts else None,
             "accounts": accounts,
         }
@@ -257,6 +315,9 @@ class PteWebApi:
         except KeyError as exc:
             raise ResourceNotFound(account_id) from exc
         strategy_id = status.get("strategy_id")
+        if status.get("channel_id"):
+            profile = channel_profile(status["channel_id"])
+            channel_scope.update(market=profile.market, currency=profile.currency)
         version = status.get("strategy_version")
         release_id = f"{strategy_id}-{version}"
         account_keys = {
@@ -312,69 +373,53 @@ class PteWebApi:
             "events": events,
         }
 
-    def channel_account_snapshot(self, channel_account_id: str) -> dict[str, object]:
-        services = self._channel_services(channel_account_id)
-        store = services.store
-        status = services.execution.status()
-        pool = store.capital_pool_balance()
-        active = (row for row in store.virtual_accounts() if row.get("run_state") != "RETIRED")
-        logical_cash = pool.unallocated_cash + sum(
-            (Decimal(row["cash"]) + Decimal(row["frozen_cash"]) for row in active), Decimal(0),
-        )
-        broker = status.get("account") or {}
-        broker_cash = broker.get("cash")
-        difference = None if broker_cash is None else Decimal(str(broker_cash)) - logical_cash
-        status_fields = (
-            "environment", "market", "currency", "paused", "reconciliation_status",
-            "cash_reconciliation_status", "last_reconcile_at", "alerts", "scheduler_failures",
-        )
-        return {
-            "scope": {"channel_account_id": channel_account_id, "channel_id": store.execution_channel_id},
-            "as_of": _now(),
-            **{key: status.get(key) for key in status_fields},
-            "accounts": [row["account_id"] for row in store.strategy_virtual_accounts()],
-            "capital_pool": pool.registered_capital,
-            "unallocated_cash": pool.unallocated_cash,
-            "logical_cash": logical_cash,
-            "broker_cash": broker_cash,
-            "cash_difference": difference,
-            "reconciliation_account": store.channel_reconciliation_account(store.execution_channel_id),
-        }
+    def channel_account_snapshot(self, channel_account_id: str, *, include_activity=True) -> dict[str, object]:
+        if self.runtime is None and channel_account_id == DEFAULT_CHANNEL_ACCOUNT:
+            store, execution = self.store, self.channel
+        else:
+            services = self._channel_services(channel_account_id)
+            store, execution = services.store, services.execution
+        status = execution.status()
+        channel_id = store.execution_channel_id
+        profile = channel_profile(channel_id)
+        snapshot = self._channel_snapshot(store, status, channel_id, exact=True, include_activity=include_activity)
+        accounts = snapshot["accounts"]
+        return {**snapshot, "scope": {"channel_account_id": channel_account_id, "channel_id": channel_id},
+                "market": profile.market, "currency": profile.currency, "environment": status.get("environment"),
+                "cash_reconciliation_status": status.get("cash_reconciliation_status"),
+                "broker_cash": (status.get("account") or {}).get("cash"),
+                "accounts": [row["account_id"] for row in accounts], "strategy_accounts": accounts}
+
+    def _chart_service(self, account_id: str):
+        try:
+            account = self._root_store.virtual_account(account_id)
+        except KeyError as exc:
+            raise ResourceNotFound(account_id) from exc
+        chart = (self.runtime or self.operations).account_chart
+        if chart is None or account["account_type"] != STRATEGY_ACCOUNT_TYPE:
+            raise ResourceNotFound(account_id)
+        return chart
 
     def virtual_account_chart(self, account_id: str) -> dict[str, object]:
-        try:
-            self.store.virtual_account(account_id)
-        except KeyError as exc:
-            raise ResourceNotFound(account_id) from exc
-        if self.operations.account_chart is None:
-            raise ResourceNotFound(account_id)
-        return self.operations.account_chart.status(account_id)
+        return self._chart_service(account_id).status(account_id)
 
     def refresh_virtual_account_chart(self, account_id: str) -> dict[str, object]:
-        try:
-            self.store.virtual_account(account_id)
-        except KeyError as exc:
-            raise ResourceNotFound(account_id) from exc
-        if self.operations.account_chart is None:
-            raise ResourceNotFound(account_id)
-        return self.operations.account_chart.refresh(account_id)
+        return self._chart_service(account_id).refresh(account_id)
 
     def virtual_account_chart_path(
         self, account_id: str, fingerprint: str | None = None,
     ):
-        try:
-            self.store.virtual_account(account_id)
-        except KeyError as exc:
-            raise ResourceNotFound(account_id) from exc
-        if self.operations.account_chart is None:
-            raise ResourceNotFound(account_id)
-        return self.operations.account_chart.chart_path(account_id, fingerprint)
+        return self._chart_service(account_id).chart_path(account_id, fingerprint)
 
     def channel_snapshot(self, channel: str) -> dict[str, object]:
         if channel != FUTU_SIMULATE_CN_CHANNEL_ID:
             raise ResourceNotFound(channel)
-        status = self.channel.status()
-        events = self.store.query_audit_events(channel=FUTU_SIMULATE_CN_CHANNEL_ID, limit=200)
+        return self._channel_snapshot(self.store, self.channel.status(), channel)
+
+    @staticmethod
+    def _channel_snapshot(store, status, channel, *, exact=False, include_activity=True):
+        events = store.query_audit_events(channel=channel, limit=200) if not exact else []
+        rows = store.virtual_accounts()
         accounts = [
             {
                 "account_id": row["account_id"], "name": row["name"],
@@ -386,50 +431,52 @@ class PteWebApi:
                 "run_state": row["run_state"],
                 "health": row["health"], "last_error": row["last_error"],
             }
-            for row in self.store.virtual_accounts()
-            if row.get("channel_id") == FUTU_SIMULATE_CN_CHANNEL_ID
+            for row in rows
+            if row.get("channel_id") == channel
             and row.get("account_type", STRATEGY_ACCOUNT_TYPE) == STRATEGY_ACCOUNT_TYPE
         ]
         channel_accounts = [
-            row for row in self.store.virtual_accounts()
-            if row.get("channel_id") == FUTU_SIMULATE_CN_CHANNEL_ID
+            row for row in rows
+            if row.get("channel_id") == channel
             and row.get("run_state") != "RETIRED"
         ]
-        pool = self.store.capital_pool_balance()
-        capital_pool = float(pool.registered_capital)
-        allocated = float(pool.allocated_capital)
-        strategy_allocated = sum(float(row["initial_cash"]) for row in accounts if row["run_state"] != "RETIRED")
-        unallocated = float(pool.unallocated_cash)
+        pool = store.capital_pool_balance()
+        def number(value):
+            return Decimal(str(value)) if exact else float(value)
+        capital_pool = number(pool.registered_capital)
+        allocated = number(pool.allocated_capital)
+        strategy_allocated = sum(number(row["initial_cash"]) for row in accounts if row["run_state"] != "RETIRED")
+        unallocated = number(pool.unallocated_cash)
         # PTE reserves cash before a future-session order reaches Futu.  The
         # reservation changes the virtual account's available cash, but the
         # money is still present in the shared broker account.  Include both
         # available and internally frozen cash when reconciling with Futu.
         logical_cash = unallocated + sum(
-            float(row["cash"]) + float(row["frozen_cash"]) for row in channel_accounts
+            number(row["cash"]) + number(row["frozen_cash"]) for row in channel_accounts
         )
         logical_total_assets = unallocated + sum(
-            float(row["total_assets"]) for row in channel_accounts
+            number(row["total_assets"]) for row in channel_accounts
         )
         broker_account = status.get("account") or {}
         broker_cash = broker_account.get("cash")
         broker_total_assets = broker_account.get("total_assets")
         cash_difference = (
-            float(broker_cash) - logical_cash if broker_cash is not None else None
+            number(broker_cash) - logical_cash if broker_cash is not None else None
         )
         asset_difference = (
-            float(broker_total_assets) - logical_total_assets
+            number(broker_total_assets) - logical_total_assets
             if broker_total_assets is not None else None
         )
         alerts = list(status.get("alerts", []))
-        if cash_difference is not None and abs(cash_difference) > 0.01:
+        if cash_difference is not None and abs(cash_difference) > number("0.01"):
             alerts.append("CHANNEL_CASH_MISMATCH")
         return {
-            "scope": {"channel": FUTU_SIMULATE_CN_CHANNEL_ID, "account_type": "broker_simulation"},
+            "scope": {"channel": channel, "account_type": "broker_simulation"},
             "as_of": _now(),
             "account": status.get("account"), "actual_quantity": status.get("actual_quantity"),
             "accounts": accounts,
             "capital_pool": capital_pool,
-            "recovered_pnl": float(pool.recovered_pnl),
+            "recovered_pnl": number(pool.recovered_pnl),
             "allocated_capital": allocated,
             "strategy_allocated_capital": strategy_allocated,
             "unallocated_capital": unallocated,
@@ -437,31 +484,32 @@ class PteWebApi:
             "logical_total_assets": logical_total_assets,
             "cash_difference": cash_difference,
             "asset_difference": asset_difference,
-            "last_reconcile_at": status.get("last_reconcile_at") or self.store.get_setting("last_reconcile_at"),
-            "orders": status.get("orders", []), "fills": self.store.account_fills(),
+            "last_reconcile_at": status.get("last_reconcile_at") or store.get_setting("last_reconcile_at"),
+            "positions": status.get("positions", []),
+            "orders": status.get("orders", []) if include_activity else [],
+            "fills": store.account_fills() if include_activity else [],
             "paused": status.get("paused"),
             "reconciliation_status": status.get("reconciliation_status"),
-            "reconciliation_account": self.store.channel_reconciliation_account(
-                FUTU_SIMULATE_CN_CHANNEL_ID
-            ),
-            "connection_error": status.get("channel_error"), "alerts": list(dict.fromkeys(alerts)),
+            "reconciliation_account": store.channel_reconciliation_account(channel),
+            "connection_error": status.get("channel_error") or status.get("last_error"), "alerts": list(dict.fromkeys(alerts)),
             "scheduler_failures": status.get("scheduler_failures", []), "events": events,
         }
 
-    def comparison(self, account_ids: list[str]) -> dict[str, object]:
-        known = {row["account_id"] for row in self.store.strategy_virtual_accounts()}
+    def comparison(self, account_ids: list[str], market: str | None = None) -> dict[str, object]:
+        known = {row["account_id"]: row for row in self._account_rows(market)}
         selected = list(dict.fromkeys(account_ids)) if account_ids else sorted(known)
         missing = next((item for item in selected if item not in known), None)
         if missing:
             raise ResourceNotFound(missing)
-        statuses = [self.virtual.status(account_id) for account_id in selected]
         accounts = []
-        for status in statuses:
-            accounts.append({"account_id": status["account_id"], "name": status["name"],
-                             "release_id": f'{status["strategy_id"]}-{status["strategy_version"]}',
-                             "metrics": status["metrics"]})
+        for account_id in selected:
+            row = known[account_id]
+            service = self.virtual if self.runtime is None else self._channel_services(row["channel_account_id"]).accounts
+            accounts.append({"account_id": account_id, "name": row["name"],
+                             "release_id": f'{row["strategy_id"]}-{row["strategy_version"]}',
+                             "metrics": service.metrics(account_id)})
         return {
-            "scope": {"resource": "comparison"}, "as_of": _now(),
+            "scope": {"resource": "comparison", **({"market": market} if market else {})}, "as_of": _now(),
             "metric_basis": "ACCOUNT_OBSERVATION_WINDOW",
             "priority_metrics": ["maximum_drawdown", "calmar_ratio", "win_loss_ratio", "total_return"],
             "accounts": accounts,

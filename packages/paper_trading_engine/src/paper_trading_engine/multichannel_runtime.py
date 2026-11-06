@@ -148,6 +148,44 @@ class MultiChannelRuntime:
             account_id, datetime.now(timezone.utc),
         )
 
+    def _services_for_account(self, account_id: str) -> ChannelServices:
+        return self.services[self.store.virtual_account(account_id)['channel_account_id']]
+
+    def _set_virtual_paused(self, account_id: str, paused: bool):
+        services = self._services_for_account(account_id)
+        store = services.store
+        if not paused and store.equity_account_rules(account_id) is not None:
+            services.formal._account_release(account_id)
+            services.formal.inputs(account_id)
+        with services.accounts._decision_lock, store.atomic_decision_update():
+            account = store.set_virtual_paused(account_id, paused)
+            services.accounts.audit.record(
+                'ACCOUNT_PAUSED' if paused else 'ACCOUNT_RESUMED', source='web.control',
+                actor_type='OPERATOR', account_id=account_id, strategy_id=account['strategy_id'],
+                strategy_version=account['strategy_version'], release_hash=account['release_hash'],
+                channel=store.execution_channel_id,
+            )
+            return account
+
+    def pause_virtual(self, account_id: str):
+        return self._set_virtual_paused(account_id, True)
+
+    def resume_virtual(self, account_id: str):
+        return self._set_virtual_paused(account_id, False)
+
+    def acknowledge_execution_gap(self, account_id: str, intent_id: str, resolution_note: str):
+        return self._services_for_account(account_id).execution.acknowledge_execution_gap(
+            account_id, intent_id, resolution_note,
+        )
+
+    def repair_account_ledger(self, account_id: str, intent_id: str):
+        return self._services_for_account(account_id).execution.repair_account_ledger(account_id, intent_id)
+
+    def retire_account(self, request):
+        services = self._services_for_account(request.account_id)
+        with services.accounts._decision_lock:
+            return services.execution.retire_account(request)
+
     def begin_shutdown(self):
         for services in self.services.values():
             services.accounts.begin_shutdown()
@@ -155,6 +193,8 @@ class MultiChannelRuntime:
 
     def close(self):
         try:
+            if self.account_chart is not None:
+                self.account_chart.close()
             for services in self.services.values():
                 services.execution.close()
         finally:
@@ -206,14 +246,26 @@ def build_multichannel_runtime(args, store, dataflows, *, gateway_factory=FutuGa
             cycle = AccountStrategyCycle(accounts, AccountDataPreparer(advice=legacy), scoped, audit=audit)
             services_by_id[identity] = ChannelServices(scoped, accounts, execution, cycle, formal)
             if identity == DEFAULT_CHANNEL_ACCOUNT:
-                from .account_chart import AccountChartService
-                from .chart_market_data import AccountChartMarketData
-                chart = AccountChartService(scoped, market_data=AccountChartMarketData(dataflows=dataflows),
-                                           cache_dir=args.database.parent / 'charts')
                 console = PteCoordinator(accounts, execution, strategy_cycle=cycle, audit=audit,
-                                         account_chart=chart, runtime_identity=args.runtime_identity)
+                                         runtime_identity=args.runtime_identity)
         if console is None:
             raise ValueError('legacy console scope is missing')
+        from .account_chart import AccountChartService
+        from .chart_market_data import AccountChartMarketData
+
+        def formal_inputs(account_id):
+            account = store.virtual_account(account_id)
+            formal = services_by_id[account['channel_account_id']].formal
+            inputs = formal.recipe(account_id) or formal.inputs(account_id)
+            if inputs.release_hash != account['release_hash']:
+                raise ValueError('chart input binding differs from the account release')
+            return inputs
+
+        console.account_chart = AccountChartService(
+            store, market_data=AccountChartMarketData(dataflows=dataflows, formal_inputs=formal_inputs),
+            cache_dir=args.database.parent / 'charts',
+            audit_for_account=lambda account: services_by_id[account['channel_account_id']].accounts.audit,
+        )
         return MultiChannelRuntime(store, services_by_id, console_view=console,
             runtime_identity=args.runtime_identity, preparation_time=getattr(args, 'data_prepare_time', '20:30'))
     except BaseException:
