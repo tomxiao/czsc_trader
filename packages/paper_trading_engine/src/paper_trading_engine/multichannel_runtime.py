@@ -89,6 +89,7 @@ class MultiChannelRuntime:
         self.schedule_provider = RuntimeScheduleProvider(self, preparation_time=preparation_time)
         self.channel_operations = services
         self.startup_timings = {}
+        self.market_data_resources = None
 
     def _all(self, operation):
         results, errors = {}, {}
@@ -148,7 +149,11 @@ class MultiChannelRuntime:
             for services in self.services.values():
                 services.execution.close()
         finally:
-            self.store.close()
+            try:
+                self.store.close()
+            finally:
+                if self.market_data_resources is not None:
+                    self.market_data_resources.close()
 
 
 def build_multichannel_runtime(args, store, dataflows, *, gateway_factory=FutuGateway):

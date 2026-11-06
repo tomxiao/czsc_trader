@@ -118,13 +118,14 @@ def native_inspection_request(tmp_path, context, request, products, replay):
     return inspection, source
 
 
-def freeze_native_inspection(repository, inspection, source):
+def freeze_native_inspection(repository, inspection, source, *, version='v1'):
     """Run the real inspection and commit once; callers own lifecycle assertions."""
     report = inspect_candidate(repository, inspection, control=InspectionControl(max_workers=1, timeout_seconds=90))
     assert report.status is f.InspectionStatus.PASS, [(x.case_id,x.summary) for g in (report.behavior_equivalence,report.pte_runtime) for x in g.cases]
-    approval = record_research_decision(repository, f.ResearchDecision('native-freeze', 'S999', f.DecisionAction.APPROVE,
-        f.FreezeSubject(report.origin.candidate, report.origin.content_sha256, report.reference, report.plan.sha256, 'v1'), source, 'approve exact synthetic package'))
-    operation = f.FreezeCandidateRequest(f.FreezeRequestId('S999','native-fixture'), report.reference, approval)
+    suffix = '' if version == 'v1' else '-' + version
+    approval = record_research_decision(repository, f.ResearchDecision('native-freeze' + suffix, 'S999', f.DecisionAction.APPROVE,
+        f.FreezeSubject(report.origin.candidate, report.origin.content_sha256, report.reference, report.plan.sha256, version), source, 'approve exact synthetic package'))
+    operation = f.FreezeCandidateRequest(f.FreezeRequestId('S999','native-fixture' + suffix), report.reference, approval)
     receipt = freeze_candidate(repository, operation)
     assert receipt.status is f.FreezeStatus.COMMITTED
     return report, operation, receipt

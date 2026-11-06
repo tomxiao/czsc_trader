@@ -56,8 +56,12 @@ class PreparedEquityAction:
                 if isinstance(value, Decimal) else value for key, value in asdict(self).items()}
 
 
-def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *, fee_rate, live=False):
+def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *, fee_rate, live=False,
+                            actions_from=None):
     """Read pinned products and authenticate their identities before a normal PTE decision."""
+    if actions_from is not None and (not live or type(actions_from) is not datetime
+            or actions_from.utcoffset() is None or actions_from > interval.start):
+        raise ValueError('equity action boundary must be aware and no later than the live interval')
     import pandas as pd
     from strategy_runtime.dataset_observations import PreparedObservationTable, InactiveObservationTable
     if type(binding) is not EquityInputBinding or type(candidate) is not EquityStrategyCandidate:
@@ -135,6 +139,10 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
         records = []
         for row in actions.itertuples():
             if row.Kind == 'NONE' or row.Date > interval.start or row.AvailableDate > interval.start:
+                continue
+            if actions_from is not None and row.Date < actions_from:
+                if row.Kind == 'CASH_DIVIDEND' and row.CashPerShare > 0 and row.PayAt >= actions_from:
+                    raise ValueError('pre-cutover dividend has unresolved payment at the V4 action boundary')
                 continue
             def stamp(value):
                 return value.to_pydatetime() if hasattr(value, 'to_pydatetime') else value

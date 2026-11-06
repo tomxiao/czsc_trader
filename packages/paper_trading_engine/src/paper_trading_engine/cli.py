@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Callable, Sequence
+from contextlib import ExitStack
+from datetime import datetime
 from decimal import Decimal
 import json
 from pathlib import Path
@@ -118,7 +120,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     channel = actions.add_parser("channel")
     channel_actions = channel.add_subparsers(dest="channel_action", required=True)
-    for operation in ("list", "status", "register", "create-v4", "bind-inputs", "bind-recipe", "pause", "resume", "pause-account", "resume-account"):
+    for operation in ("list", "status", "register", "create-v4", "bind-inputs", "bind-recipe", "pause", "resume", "pause-account", "resume-account", "prepare-data"):
         leaf = channel_actions.add_parser(operation)
         _common(leaf)
         leaf.set_defaults(definition=None)
@@ -126,8 +128,12 @@ def build_parser() -> argparse.ArgumentParser:
             leaf.add_argument("--channel-account-id", required=True)
         if operation in {"register", "create-v4", "bind-inputs", "bind-recipe"}:
             leaf.add_argument("--definition", required=True, type=Path)
-        if operation in {"pause-account", "resume-account"}:
+        if operation in {"pause-account", "resume-account", "prepare-data"}:
             leaf.add_argument("--account-id", required=True)
+        if operation == "prepare-data":
+            leaf.add_argument("--interval-start", required=True, type=datetime.fromisoformat)
+            leaf.add_argument("--interval-end", required=True, type=datetime.fromisoformat)
+            leaf.add_argument("--as-of", required=True, type=datetime.fromisoformat)
     account = actions.add_parser("account")
     account_actions = account.add_subparsers(dest="account_action", required=True)
     for name in ("list", "pause", "resume"):
@@ -206,6 +212,17 @@ def _parse_runtime_arguments(runtime_root: Path) -> argparse.Namespace:
 
 
 def build_engine(args: argparse.Namespace):
+    resources = ExitStack()
+    try:
+        engine = _build_engine(args, resources)
+    except BaseException:
+        resources.close()
+        raise
+    engine.market_data_resources = resources
+    return engine
+
+
+def _build_engine(args: argparse.Namespace, resources: ExitStack):
     startup_timings: dict[str, float] = {}
     stage_started = time.perf_counter()
     if getattr(args, "action", None) == "serve":
@@ -216,9 +233,14 @@ def build_engine(args: argparse.Namespace):
     stage_started = time.perf_counter()
     store = PaperStore(args.database)
     audit = AuditRecorder(store)
-    dataflows = create_dataflows(
-        data_dir=args.data_dir, space=args.data_space, config_root=args.config_root,
-    )
+    try:
+        dataflows = create_dataflows(
+            data_dir=args.data_dir, space=args.data_space, config_root=args.config_root,
+            opend_host=args.opend_host, opend_port=args.opend_port, resources=resources,
+        )
+    except BaseException:
+        store.close()
+        raise
     if any(row["config_json"] is not None for row in store.channel_accounts()):
         from .multichannel_runtime import build_multichannel_runtime
         try:
@@ -711,8 +733,10 @@ def main(
         if args.action == "channel":
             from .channel_cli import run_channel_command
             result = run_channel_command(args)
-            _write({"status": "PASS", "command": f"pte.channel.{args.channel_action}", "result": result})
-            return 0
+            succeeded = args.channel_action != 'prepare-data' or result['status'] == 'READY'
+            _write({"status": "PASS" if succeeded else "FAIL",
+                    "command": f"pte.channel.{args.channel_action}", "result": result})
+            return 0 if succeeded else 1
         if args.action == "performance":
             from .performance_export import export_performance
 

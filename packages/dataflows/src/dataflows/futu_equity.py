@@ -80,12 +80,14 @@ def futu_equity_bindings(*, source: SourceRef, quote_context, maximum_pages: int
                 if any(pd.notna(action.get(k)) and action.get(k, 0) != 0 for k in unsupported):
                     raise DataContractError("CORPORATE_ACTION_UNSUPPORTED: enriched event/payment evidence required")
                 ratio = float(action["split_ratio"])
-                if ratio <= 0:
+                if not pd.notna(ratio) or ratio <= 0 or ratio == float('inf'):
                     raise DataContractError("invalid source split ratio")
                 stamp = pd.Timestamp(datetime.combine(day, time(9, 30), zone)).tz_convert("UTC")
                 rows.append({"Date": stamp, "AvailableDate": stamp,
                              "EventId": f"{code}:{day}:split", "Kind": "SPLIT",
-                             "Ratio": ratio, "CashPerShare": 0., "PayAt": None})
+                             # Futu reports old/new shares; the account contract
+                             # multiplies holdings by new/old shares.
+                             "Ratio": 1. / ratio, "CashPerShare": 0., "PayAt": None})
             if not rows:
                 stamp = sessions[0].segments[0].start
                 rows = [{"Date": stamp, "AvailableDate": stamp, "EventId": "no-actions",

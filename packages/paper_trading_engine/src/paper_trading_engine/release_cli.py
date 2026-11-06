@@ -214,17 +214,26 @@ def _verify_strategy_runtime_wheel_boundary(artifacts: Path) -> None:
 
 
 def _verify_strategy_snapshot(strategy_root: Path) -> dict[str, str]:
+    from strategy_runtime.deployment import validate_release_package
+
+    # Deployment authentication already verifies the native definition, entry
+    # point, frozen resources and source closure. It does not grant eligibility.
     inventory = deployment_inventory(strategy_root)
     runtime = StrategyRuntime(strategy_root)
-    for reference in inventory:
-        family, version = reference.split("-", 1)
-        path = strategy_root / family / "versions" / f"{version}.json"
+    for path in sorted(strategy_root.glob("S*/versions/v*.json")):
+        reference = f"{path.parent.parent.name}-{path.stem}"
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
             raise RuntimeError(f"cannot read deployed strategy version: {reference}") from exc
         release = StrategyRelease.from_mapping(payload)
-        runtime.describe(release)
+        if release.payload.get("runtime", {}).get("kind") == "ACCOUNT_REPLAY":
+            # A frozen strategy may be included before deployment, e.g. a new
+            # US account. Authenticate it without manufacturing a receipt.
+            if reference not in inventory:
+                validate_release_package(strategy_root, reference)
+        elif reference in inventory:
+            runtime.describe(release)
     return inventory
 
 
@@ -957,6 +966,117 @@ def _require_database_compatibility(release, database: Path) -> int:
     return database_schema
 
 
+def _verify_native_account(client, account_id: str) -> str:
+    """Check a persisted V4 binding without fetching or preparing inputs."""
+    from .equity_account_state import load_document, validate_document, position_from_dict
+    from strategy_runtime.equity import equity_hash
+
+    account, release, candidate = client._account_release(account_id)
+    definition = candidate.definition
+    if (account["symbol"] != candidate.instrument.symbol
+            or account["asset_type"] != candidate.instrument.asset_class.value.lower()
+            or account["qualification_snapshot"] not in {"PAPER_READY", "LIVE_READY"}
+            or client.store._scope_market != candidate.instrument.market.value
+            or client.store._scope_currency != definition.execution_spec.account.currency):
+        raise RuntimeError(f"{account_id}: V4 account instrument or qualification differs")
+    inputs = client.inputs(account_id)
+    recipe = client.recipe(account_id)
+    for value in (inputs,) if recipe is None else (inputs, recipe):
+        try:
+            value.validate_candidate(release.release_hash, candidate)
+        except (TypeError, ValueError) as exc:
+            raise RuntimeError(f"{account_id}: V4 inputs differ from the qualified account: {exc}") from exc
+        if value.fee_rate != inputs.fee_rate:
+            raise RuntimeError(f"{account_id}: V4 inputs differ from the qualified account fee")
+    document = load_document(account, definition)
+    state = validate_document(document)
+    definition.state_schema.validate_record(state.account, scope="account")
+    if state.cycle is not None:
+        definition.state_schema.validate_record(state.cycle.values, scope="cycle")
+    active = position_from_dict(document["active"])
+    if (bool(account["quantity"]) != (active is not None)
+            or (active is not None and active.quantity != account["quantity"])):
+        raise RuntimeError(f"{account_id}: V4 state differs from confirmed holdings")
+    expected = equity_hash({"owner": account_id + ":" + release.release_hash,
+        "implementation": candidate.implementation_hash,
+        "specification": definition.execution_spec.fingerprint, "fee_rate": inputs.fee_rate})
+    if state.binding not in (None, expected) or (state.revision > 0 and state.binding is None):
+        raise RuntimeError(f"{account_id}: V4 state binding differs from the qualified account")
+    return release.release_id
+
+
+def _verify_runtime_configuration(root: Path, data: Path, database: Path, config: Path) -> dict[str, object]:
+    """Selected-release implementation of the read-only maintenance preflight."""
+    from dotenv import dotenv_values
+    from .runtime_config import PteRuntimeConfig
+    from .srt_advice_client import SrtAdviceClient
+    from .formal_v4_advice import FormalV4AdviceClient
+    from .store import PaperStore
+
+    PteRuntimeConfig.load(config / "pte.json")
+    if not database.is_file():
+        raise RuntimeError("PTE release verification found no runtime database")
+    if not data.is_dir():
+        raise RuntimeError("PTE release verification found no shared data directory")
+    if not (config / ".env").is_file():
+        raise RuntimeError("PTE runtime configuration is missing")
+    if not str(dotenv_values(config / ".env").get("TUSHARE_TOKEN") or "").strip():
+        raise RuntimeError("PTE release verification found no TUSHARE_TOKEN")
+    schema = _database_schema_version(database)
+    store = PaperStore.open_readonly(database) if schema == RUNTIME_DATABASE_SCHEMA_VERSION else None
+    connection = (store._connection if store is not None else
+                  sqlite3.connect(database.resolve().as_uri() + "?mode=ro", uri=True))
+    try:
+        if store is None:
+            connection.row_factory = sqlite3.Row
+            connection.execute("PRAGMA query_only=ON")
+            connection.execute("BEGIN")
+        health_values = {"OK", "BLOCKED"} if schema >= 5 else {"READY", "OK", "BLOCKED"}
+        for row in connection.execute("SELECT account_id,health FROM virtual_accounts"):
+            if row["health"] not in health_values:
+                raise RuntimeError(f"{row['account_id']}: invalid account health {row['health']!r}")
+        state_column = "run_state" if schema >= 4 else "status"
+        rows = connection.execute(
+            f"SELECT * FROM virtual_accounts WHERE account_type='STRATEGY' AND {state_column}<>'RETIRED'"
+        ).fetchall()
+        legacy = SrtAdviceClient(repo_root=root, data_dir=data)
+        formal = {}
+        validated = []
+        for raw in rows:
+            account = dict(raw)
+            identity_path = root / "strategies" / account["strategy_id"] / "versions" / (account["strategy_version"] + ".json")
+            frozen = json.loads(identity_path.read_text(encoding="utf-8"))
+            release = StrategyRelease.from_mapping(frozen)
+            account_id = account["account_id"]
+            if release.release_hash != account["release_hash"]:
+                raise RuntimeError(f"{account_id}: account release hash differs from frozen strategy")
+            if release.payload.get("runtime", {}).get("kind") == "ACCOUNT_REPLAY":
+                if store is None or account.get("equity_rules_json") is None:
+                    raise RuntimeError(f"{account_id}: native V4 requires explicit account migration")
+                channel = account["channel_account_id"]
+                if channel not in formal:
+                    formal[channel] = FormalV4AdviceClient(repo_root=root, store=store.scope(channel),
+                        dataflows=None, data_dir=data)
+                validated.append(_verify_native_account(formal[channel], account_id))
+                # The immutable version, not a reconstructed runtime, owns the cutoff.
+                cutoff = frozen["selection_data_cutoff"]
+            else:
+                if account.get("equity_rules_json") is not None:
+                    raise RuntimeError(f"{account_id}: legacy release cannot own V4 account rules")
+                identity = legacy.validate_account_binding(strategy_id=account["strategy_id"],
+                    strategy_version=account["strategy_version"], symbol=account["symbol"], asset=account["asset_type"])
+                validated.append(identity.release_id)
+                cutoff = identity.selection_data_cutoff.isoformat()
+            if cutoff != account["selection_data_cutoff"]:
+                raise RuntimeError(f"{account_id}: selection cutoff differs from frozen strategy")
+        return {"accounts": len(rows), "releases": sorted(set(validated))}
+    finally:
+        if store is not None:
+            store.close()
+        else:
+            connection.close()
+
+
 def verify_release_configuration(
     runtime_root: Path,
     release_id: str,
@@ -971,38 +1091,10 @@ def verify_release_configuration(
     config_dir = shared / "config"
     _require_database_compatibility(release, database)
     script = (
-        "import json,sqlite3,sys\n"
+        "import json,sys\n"
         "from pathlib import Path\n"
-        "from dotenv import dotenv_values\n"
-        "from paper_trading_engine.runtime_config import PteRuntimeConfig\n"
-        "from paper_trading_engine.srt_advice_client import SrtAdviceClient\n"
-        "root=Path(sys.argv[1]); data=Path(sys.argv[2]); database=Path(sys.argv[3]); config=Path(sys.argv[4])\n"
-        "PteRuntimeConfig.load(config/'pte.json')\n"
-        "def require(condition,message):\n"
-        "    if not condition: raise RuntimeError(message)\n"
-        "require(database.is_file(),'PTE release verification found no runtime database')\n"
-        "require(data.is_dir(),'PTE release verification found no shared data directory')\n"
-        "env_file=config/'.env'\n"
-        "require(env_file.is_file(),'PTE release verification found no runtime configuration')\n"
-        "require(str(dotenv_values(env_file).get('TUSHARE_TOKEN') or '').strip(),'PTE release verification found no TUSHARE_TOKEN')\n"
-        "connection=sqlite3.connect(f'file:{database.resolve().as_posix()}?mode=ro',uri=True)\n"
-        "try:\n"
-        "    schema=int(connection.execute(\"SELECT value FROM settings WHERE key='runtime_database_schema_version'\").fetchone()[0])\n"
-        "    state_column='run_state' if schema>=4 else 'status'\n"
-        "    health_values={'OK','BLOCKED'} if schema>=5 else {'READY','OK','BLOCKED'}\n"
-        "    for account_id,health in connection.execute('SELECT account_id,health FROM virtual_accounts'):\n"
-        "        require(health in health_values,f'{account_id}: invalid account health {health!r}')\n"
-        "    rows=connection.execute(f\"SELECT account_id,strategy_id,strategy_version,release_hash,symbol,asset_type,selection_data_cutoff FROM virtual_accounts WHERE account_type='STRATEGY' AND {state_column}<>'RETIRED'\").fetchall()\n"
-        "finally:\n"
-        "    connection.close()\n"
-        "client=SrtAdviceClient(repo_root=root,data_dir=data)\n"
-        "validated=[]\n"
-        "for account_id,strategy_id,version,release_hash,symbol,asset,cutoff in rows:\n"
-        "    identity=client.validate_account_binding(strategy_id=strategy_id,strategy_version=version,symbol=symbol,asset=asset)\n"
-        "    require(identity.release_hash==release_hash,f'{account_id}: account release hash differs from frozen strategy')\n"
-        "    require(identity.selection_data_cutoff.isoformat()==cutoff,f'{account_id}: selection cutoff differs from frozen strategy')\n"
-        "    validated.append(identity.release_id)\n"
-        "print(json.dumps({'accounts':len(rows),'releases':sorted(set(validated))}))\n"
+        "from paper_trading_engine.release_cli import _verify_runtime_configuration\n"
+        "print(json.dumps(_verify_runtime_configuration(*(Path(p) for p in sys.argv[1:]))))\n"
     )
     completed = _run(
         [

@@ -56,16 +56,27 @@ def test_quote_adapter_half_day_timezone_and_adjustment_request(adjustment, auty
     assert metadata["adjustment"] == adjustment.value
 
 
-def test_quote_adapter_split_ratio_and_unsupported_cash_dividend():
+@pytest.mark.parametrize('vendor_ratio,account_ratio', [(5., .2), (.2, 5.)])
+def test_quote_adapter_split_ratio_and_unsupported_cash_dividend(vendor_ratio, account_ratio):
     quotes = Quotes()
-    quotes.action = pd.DataFrame([{"ex_div_date": "2026-11-27", "split_ratio": 5., "per_cash_div": 0.}])
+    quotes.action = pd.DataFrame([{"ex_div_date": "2026-11-27", "split_ratio": vendor_ratio, "per_cash_div": 0.}])
     req = request(EquityProduct.ACTIONS)
     fetch = futu_equity_bindings(source=req.parameters.source, quote_context=quotes)[req.parameters.provider_key].fetch
     frame, metadata = fetch(req)
     validate_equity_frame(frame, req, metadata)
-    assert frame.Ratio.iloc[0] == 5.  # SDK contract: one old share becomes five.
+    assert frame.Ratio.iloc[0] == account_ratio  # Futu old/new -> account new/old.
     quotes.action.loc[0, "per_cash_div"] = .2
     with pytest.raises(DataContractError, match="payment evidence"):
+        fetch(req)
+
+
+@pytest.mark.parametrize('ratio', [0., -1., float('nan'), float('inf')])
+def test_quote_adapter_rejects_invalid_split_ratio(ratio):
+    quotes = Quotes()
+    quotes.action = pd.DataFrame([{'ex_div_date':'2026-11-27','split_ratio':ratio,'per_cash_div':0.}])
+    req = request(EquityProduct.ACTIONS)
+    fetch = futu_equity_bindings(source=req.parameters.source, quote_context=quotes)[req.parameters.provider_key].fetch
+    with pytest.raises(DataContractError, match='invalid source split ratio'):
         fetch(req)
 
 

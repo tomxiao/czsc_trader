@@ -1009,6 +1009,49 @@ class PaperStore(ChannelAccountStore, EquityEventStore):
         with self._lock:
             return self._setting(key)
 
+    def v4_runtime_binding(self, account_id: str) -> dict[str, Any] | None:
+        """Read the active V4 input and cutover record for this account."""
+        self._check_owned("account", account_id)
+        with self._lock:
+            row = self._connection.execute(
+                "SELECT value FROM settings WHERE key=?", (f"v4_runtime_binding:{account_id}",),
+            ).fetchone()
+        return None if row is None else json.loads(row[0])
+
+    def _save_v4_runtime_binding(self, account_id: str, value: dict[str, Any]) -> None:
+        self._check_owned("account", account_id)
+        if not self._connection.in_transaction:
+            raise RuntimeError("V4 runtime binding requires the account transaction")
+        inputs = value["inputs"]
+        archive = f"v4_input_record:{canonical_sha256(inputs)}"
+        encoded = json.dumps(inputs, sort_keys=True, allow_nan=False)
+        self._connection.execute("INSERT OR IGNORE INTO settings(key,value) VALUES(?,?)", (archive, encoded))
+        if self._connection.execute("SELECT value FROM settings WHERE key=?", (archive,)).fetchone()[0] != encoded:
+            raise ValueError("immutable V4 input record differs from its identity")
+        self._connection.execute(
+            "INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+            (f"v4_runtime_binding:{account_id}", json.dumps(value, sort_keys=True, allow_nan=False)),
+        )
+
+    def replace_v4_runtime_inputs(self, account_id: str, inputs_dict: dict, *, forward: bool) -> None:
+        """Replace a rebound account's inputs while preserving the cutover watermark."""
+        from .formal_v4_advice import FormalV4Inputs
+
+        inputs = FormalV4Inputs.from_dict(inputs_dict)
+        if type(forward) is not bool:
+            raise TypeError("V4 runtime inputs require an explicit forward flag")
+        with self.atomic_decision_update():
+            value = self.v4_runtime_binding(account_id)
+            account = self.virtual_account(account_id)
+            rules = self.equity_account_rules(account_id)
+            if (value is None or rules is None or inputs.release_hash != account["release_hash"]
+                    or inputs.binding.instrument != rules.instrument
+                    or inputs.binding.specification_hash != rules.execution.fingerprint):
+                raise ValueError("V4 replacement inputs differ from the active account binding")
+            if value["inputs"]["fee_rate"] != inputs.fee_rate:
+                raise ValueError("input replacement cannot change the account model fee")
+            self._save_v4_runtime_binding(account_id, {**value, "inputs": inputs.to_dict(), "forward": forward})
+
     def is_paused(self) -> bool:
         with self._lock:
             return self._setting("paused") == "1"
@@ -2584,6 +2627,12 @@ class PaperStore(ChannelAccountStore, EquityEventStore):
             account = self.virtual_account(account_id)
             if account["run_state"] == RunState.RETIRED or account["account_type"] != STRATEGY_ACCOUNT_TYPE:
                 raise ValueError("inactive account cannot save decisions")
+            runtime_binding = self.v4_runtime_binding(account_id)
+            if runtime_binding is not None:
+                boundary = datetime.fromisoformat(runtime_binding["effective_interval"]["start"])
+                if (rules is None or payload.get("contract_version") != "advice.equity.v4"
+                        or interval.start < boundary):
+                    raise ValueError("decision precedes the V4 account cutover or uses another contract")
             identity = payload["strategy"]
             if (identity.get("strategy_id"), identity.get("version"), identity.get("release_hash"), payload.get("symbol")) != (
                 account["strategy_id"], account["strategy_version"], account["release_hash"], account["symbol"],

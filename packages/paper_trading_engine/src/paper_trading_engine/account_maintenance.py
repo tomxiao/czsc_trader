@@ -12,7 +12,9 @@ from uuid import uuid4
 from dataflows import DataSpace
 from strategy_runtime import EntryCycleState
 
-from .account_binding import AccountBindingUpdate, AccountBindingUpdateResult, AccountBindingUpdateStatus
+from .account_binding import (
+    AccountBindingUpdate, AccountBindingUpdateResult, AccountBindingUpdateStatus, V4AccountBindingUpdate,
+)
 from .account_engine import AccountEngine
 from .broker import TERMINAL_INTENT_STATUSES, TERMINAL_ORDER_STATUSES
 from .channel import STRATEGY_ACCOUNT_TYPE, require_futu_simulate_cn
@@ -50,16 +52,24 @@ def _restore_current_indexes(snapshots: dict[Path, bytes | None]) -> None:
 
 
 def update_account_bindings(
-    runtime_root: Path, target_release_id: str, updates: tuple[AccountBindingUpdate, ...],
+    runtime_root: Path, target_release_id: str,
+    updates: tuple[AccountBindingUpdate | V4AccountBindingUpdate, ...],
 ) -> AccountBindingUpdateResult:
     """Prepare every replacement before atomically switching paused accounts."""
     if type(updates) is not tuple or not updates:
         raise ValueError("account binding updates must be a nonempty tuple")
-    if any(type(update) is not AccountBindingUpdate for update in updates):
-        raise TypeError("account binding updates require AccountBindingUpdate values")
+    request_type = type(updates[0])
+    if request_type not in (AccountBindingUpdate, V4AccountBindingUpdate) or any(
+        type(update) is not request_type for update in updates
+    ):
+        raise TypeError("account binding batch requires one typed binding contract")
     account_ids = tuple(update.account_id for update in updates)
     if len(set(account_ids)) != len(account_ids):
         raise ValueError("account binding updates contain duplicate accounts")
+    if request_type is V4AccountBindingUpdate:
+        from .v4_account_maintenance import update_v4_account_bindings
+
+        return update_v4_account_bindings(runtime_root, target_release_id, updates, load_release=load_release)
     release = load_release(runtime_root, target_release_id)
     shared = release.runtime_root / "shared"
     database = shared / "state" / "runtime.db"
@@ -87,6 +97,8 @@ def update_account_bindings(
                     raise ValueError(f"unknown account: {account_id}") from exc
                 if account["account_type"] != STRATEGY_ACCOUNT_TYPE or account["run_state"] != RunState.PAUSED:
                     raise ValueError(f"{account_id}: binding update requires a paused strategy account")
+                if account["equity_rules_json"] is not None:
+                    raise ValueError(f"{account_id}: native equity account requires a V4 binding update")
                 require_futu_simulate_cn(account["channel_id"])
                 intents = store.account_intents(account_id)
                 orders = store.account_orders(account_id)

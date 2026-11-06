@@ -137,3 +137,22 @@ def test_cn_observation_bridge_enforces_grid_availability_and_adjustment(monkeyp
     monkeypatch.setattr(tushare_equity, "fetch_stock_ohlcv", mutated)
     prepared = flows.prepare(requests, policy=PreparePolicy.REFRESH)
     assert not prepared.ready and prepared.reference is None
+
+
+@pytest.mark.parametrize('asset_class', list(AssetClass))
+@pytest.mark.parametrize('frequency', list(BarFrequency))
+def test_cn_explicit_raw_binding_preserves_unadjusted_prices(monkeypatch, tmp_path, asset_class, frequency):
+    _, requests, _, _ = setup(monkeypatch,tmp_path,asset_class,frequency)
+    p=requests[0].parameters
+    req=EquityDataRequest(p.instrument,p.source,EquityQuery(EquityProduct.BARS,
+        p.query.start,p.query.end,frequency,PriceAdjustment.NONE))
+    bindings=tushare_equity.tushare_equity_bindings(source=p.source)
+    flows=Dataflows(base_dir=tmp_path,space=DataSpace(Path('raw')),
+        providers=ProviderConfig(bindings={},equity_bindings=bindings))
+    result=flows.prepare((req,),policy=PreparePolicy.REUSE)
+    assert result.ready,[item.error for item in result.items]
+    output=flows.fetch(req,prepared=result.reference)
+    assert output.dataframe.Close.eq(4.).all()
+    assert output.dataframe.Volume.sum()==800.
+    assert output.identity.metadata['adjustment']=='none'
+    assert output.identity.metadata['publication_time_verified'] is False

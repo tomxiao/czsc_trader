@@ -127,10 +127,35 @@ V4 可声明 `DatasetObservationInput` 观察表，使用 `EquityInputBinding.ob
 
 - `create-v4 --definition`：字段为 `account_id/name/strategy_id/strategy_version/release_hash/symbol/asset/fee_rate/initial_cash`，新账户暂停。
 - `bind-inputs --definition` 固定输入，或 `bind-recipe --definition` 注册连续日线准备；字段为 `account_id/release_hash/fee_rate/binding`，其中 `binding` 使用 `EquityInputBinding.to_dict()`。
+- `prepare-data --account-id --interval-start --interval-end --as-of` 以带时区的时间戳准备当前 V4 配方的 DFLS 数据。按实际 `as_of` 和执行区间起点中较早的时点选择历史价格与观察输入。结果包含准备引用及逐请求状态，账户库以只读方式打开。准备引用可用于数据审计，正式执行区间仍由调度器独立采纳。
 - `pause-account / resume-account --account-id` 仅改变指定策略账户运行状态；启用要求冻结绑定、已注册输入和现有账户健康检查通过。
 - `pause / resume` 仅改变渠道状态；恢复必须先完成富途对账。渠道恢复不连带启用策略账户。
 
 注册、输入绑定及代码交付均不等于生产部署或账户生效；既有冻结包升级和生产切换按单独批准的维护方案执行。
+
+### 正式 V4 数据源配置与重绑
+
+在宿主 `--config-root` 下放置 `equity-sources.json`，按市场和 `SourceRef(provider, revision)` 精确注册 V4 来源。示例名称须替换成目标配方声明的来源身份。
+
+```json
+{
+  "schema_version": 1,
+  "sources": [
+    {"market": "CN", "adapter": "TUSHARE_CN", "provider": "cn-feed", "revision": "v1", "evidence_manifest": "equity-facts/cn.json"},
+    {"market": "US", "adapter": "FUTU_US", "provider": "us-feed", "revision": "v1", "evidence_manifest": "equity-facts/us.json"}
+  ]
+}
+```
+
+经济事实清单位于 `--data-dir` 内，格式见 [DFLS 说明](../dataflows/README.md)。仅需价格和日历的辅助来源可以省略清单。账户主交易来源须覆盖请求的约束及公司行动区间。富途报价连接在首次取数时建立，同一宿主共享，退出时关闭。仅凭研究用交易规则或除息日无法接入正式账户。
+
+离线维护使用 `update_account_bindings(runtime_root, target_release_id, updates)`。原 `AccountBindingUpdate` 继续服务旧账户合同。原生 V4 请求使用 `V4AccountBindingUpdate`，显式携带当前与目标发布身份、渠道、账户事实指纹、生效区间、目标规则、`FormalV4Inputs` 和状态处理方式。用 `account_binding_facts_sha256` 取得已暂停账户的事实指纹。
+
+- 首次迁入 V4 使用 `V4StateMigration`。已确认的仓位周期取自真实成交及账本，策略私有字段和证据由调用者提供。迁移边界前已结清的公司行动随原账本保留，跨边界待支付的股息需要先核对。
+- 已运行 V4 账户可以重绑同版本的新哈希或同策略族的后继版本。兼容状态使用 `V4StateContinuation`，字段变更使用显式 `V4StateMigration`。两者均核对旧发布身份，延续确认周期、预算及公司行动游标。
+- 所有目标账户及生效配方在一个 SQLite 事务中切换，返回 `COMMITTED`。相同计划重试返回 `ALREADY_APPLIED`。配方由同一数据库记录持久化，运行、重启和发布预检读取同一身份。历史区间和原已采纳决策保留用于追溯，调度从新绑定的生效区间开始。
+
+发布构建认证旧合同与原生 V4 冻结包，包括尚未部署的 V4 冻结包。只读发布预检验证各市场非退休账户的精确发布资格、执行规则、输入配方与已确认持仓状态。行情与规则准备由正常调度或显式维护准备完成。
 
 ## 正常限价未成交与执行异常（A 股渠道）
 

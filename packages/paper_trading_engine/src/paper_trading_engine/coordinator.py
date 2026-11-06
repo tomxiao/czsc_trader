@@ -148,6 +148,7 @@ class PteCoordinator:
         self.strategy_cycle = strategy_cycle
         self.startup_timings = dict(startup_timings or {})
         self.runtime_identity = dict(runtime_identity or {"mode": "DEV"})
+        self.market_data_resources = None
 
     @property
     def virtual(self): return self.accounts
@@ -338,6 +339,10 @@ class PteCoordinator:
         self.execution.begin_shutdown()
 
     def close(self):
-        if self.account_chart is not None:
-            self.account_chart.close()
-        self.execution.close()
+        try:
+            if self.account_chart is not None:
+                self.account_chart.close()
+            self.execution.close()
+        finally:
+            if self.market_data_resources is not None:
+                self.market_data_resources.close()

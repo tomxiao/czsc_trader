@@ -1,6 +1,6 @@
 """Native frozen V4 admission and forward decisions on isolated CN/US fixtures."""
 from datetime import timedelta
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from decimal import Decimal
 from zoneinfo import ZoneInfo
 from unittest.mock import patch
@@ -23,7 +23,7 @@ from test_equity_adjusted_observations import setup_adjusted
 
 @pytest.fixture(params=[MarketId.CN, MarketId.US])
 def formal_v4(tmp_path, request):
-    market = request.param
+    market, successor = request.param if isinstance(request.param, tuple) else (request.param, False)
     def action_fixture(*args, **kwargs):
         result = setup_adjusted(*args, **kwargs)
         products = result[2]
@@ -53,6 +53,14 @@ def formal_v4(tmp_path, request):
         client.load_release('S999', 'v1')
     registry.approve_paper_trading(PaperTradingApproval('S999', 'v1', version.release_hash,
         'DEV', 'synthetic isolated fixture approval'))
+    if successor:
+        next_inspection = replace(inspection, target=replace(inspection.target,
+            version='v2', parent_version='v1', change_summary='native V4 successor fixture'))
+        freeze_native_inspection(context.repository, next_inspection, source, version='v2')
+        assert deploy_strategy(repository, 'S999-v2').status == 'PASS'
+        target = registry.get_version('S999', 'v2')
+        registry.approve_paper_trading(PaperTradingApproval('S999', 'v2', target.release_hash,
+            'DEV', 'synthetic successor approval'))
     release, candidate, _ = client.load_release('S999', 'v1')
     binding = client.validate_account_binding(strategy_id='S999', strategy_version='v1',
         symbol=candidate.instrument.symbol, asset='stock', fee_rate=evaluation.fee_rate)
@@ -184,3 +192,33 @@ def test_formal_v4_forward_decision_uses_historical_prices_and_exact_deployment(
 def test_formal_input_contract_rejects_unknown_fields():
     with pytest.raises(ValueError, match='unsupported'):
         FormalV4Inputs.from_dict({'schema_version': 1, 'extra': True})
+
+
+def test_formal_v4_maintenance_prepares_data_without_adopting_interval(formal_v4):
+    client, store, _, interval, _, _ = formal_v4
+    client.register_recipe('formal', client.inputs('formal'))
+    account = store.virtual_account('formal')
+    archive = client._interval_path('formal', account['release_hash'], interval)
+    result = client.prepare_data('formal', interval, as_of=interval.end + timedelta(hours=1))
+    assert result.ready and result.reference is not None
+    prices = [item.request for item in result.items if getattr(item.request.parameters, 'query', None)
+              and item.request.parameters.query.product is EquityProduct.BARS]
+    assert prices and all(request.parameters.query.end < interval.start.astimezone(
+        ZoneInfo(request.parameters.instrument.timezone)).date() for request in prices)
+    assert not archive.exists()
+    assert store.virtual_account('formal') == account
+    assert not store.account_intents('formal')
+
+
+def test_legacy_cutover_blocks_dividend_payment_crossing_the_boundary(formal_v4):
+    client, store, _, interval, _, _ = formal_v4
+    recipe = client.inputs('formal')
+    payment_interval = TimeInterval(interval.start + timedelta(days=2), interval.end + timedelta(days=2))
+    record = {'inputs': recipe.to_dict(), 'forward': True,
+              'effective_interval': {'start': payment_interval.start.isoformat(), 'end': payment_interval.end.isoformat()},
+              'legacy_actions_before': payment_interval.start.isoformat()}
+    with patch.object(store, 'v4_runtime_binding', return_value=record):
+        with pytest.raises(ValueError, match='pre-cutover dividend has unresolved payment'):
+            client.prepare_interval('formal', payment_interval, observed_at=payment_interval.start)
+    assert not store.account_intents('formal')
+    assert Decimal(store.virtual_account('formal')['receivable']) == 0

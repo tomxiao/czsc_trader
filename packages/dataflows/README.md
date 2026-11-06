@@ -1,5 +1,70 @@
 # 金融数据流（Dataflows，DFLS）研究员使用手册
 
+## V4 连续行情与经济事实供数
+
+`tushare_equity_bindings(source=..., env_file=...)` 提供 CN 股票/ETF 的 RAW、HFQ 日线与 30 分钟线，
+以及独立交易日历。复用既有 Tushare 规范化、单位、复权和质量契约，不从 HFQ 倒推 RAW。
+原 `tushare_equity_observation_bindings` 仍只接受 HFQ；新入口不接受 QFQ，不包含隐式交易规则或公司行动。
+既有行情可用时间的限制保留在元数据中：收盘时间/17点复权计划时间不等于逐日供应商发布时刻已验证。
+
+US 继续使用 `futu_equity_bindings` 的 RAW/HFQ 行情与独立 RTH 日历。Futu `split_ratio` 是旧股/新股，
+适配器取倒数转换成账户需要的新股/旧股，拆股与合股均如此。现金分红仍必须另有支付日，
+不能从 `get_rehab` 的除息日猜派息日；正式运行不可把 `research_policy` 的研究约束当作真实交易规则。
+来源：[Futu复权字段](https://openapi.futunn.com/futu-api-doc/quote/get-rehab.html)。
+
+`equity_evidence_bindings(source=..., market=..., manifest_path=..., session_binding=...)` 为 CN/US
+装配经数据责任方核验的 ACTIONS、CONSTRAINTS 文件。复用同源独立 `SESSIONS` binding，不抓取替代来源，
+不外推覆盖区间，不生成缺失的限价、停牌或卖出可用日。返回值可与行情 binding 合并到
+`ProviderConfig.equity_bindings`。PTE 宿主配置及生命周期见 [PTE模块](../paper_trading_engine/README.md)。
+
+清单字段如下；示意路径和哈希须替换成实际核验文件，示例不是市场事实：
+
+```json
+{
+  "schema_version": 1,
+  "source": {"provider": "reviewed-economic-source", "revision": "v1"},
+  "market": "CN",
+  "instruments": [{
+    "instrument": {"market": "CN", "asset_class": "ETF", "symbol": "588080.SH"},
+    "actions": {
+      "start": "2026-11-05", "end": "2026-11-05", "complete": true,
+      "data": {"path": "actions.json", "sha256": "<actual SHA256>"},
+      "evidence": {"path": "actions-receipt.json", "sha256": "<actual SHA256>"}
+    },
+    "constraints": {
+      "daily": {
+        "start": "2026-11-05", "end": "2026-11-05",
+        "data": {"path": "rules-daily.json", "sha256": "<actual SHA256>"},
+        "evidence": {"path": "rules-receipt.json", "sha256": "<actual SHA256>"}
+      }
+    }
+  }]
+}
+```
+
+数据文件为 JSON 行对象数组；`Date`、`AvailableDate`、`PayAt`、`BuySellableAt`、`SettlementAt`
+均使用明确时区。约束必须提供每个请求执行区间的数量单位、价格步长、可交易状态、限价政策/上下限、
+卖出可用时点、结算时点和零股处置政策；日线与 30 分钟覆盖分别声明，不能按需猜测缺失频率。
+动作使用 `SPLIT` 或 `CASH_DIVIDEND`，包含稳定事件编号、数量比例/现金金额与真实支付时点。
+完整来源核验后确实无事件时，数据为 `[]` 且 `complete=true`；由适配器为请求子区间表达 `NONE`。
+非空事件不得预先混入人为 `NONE` 行。
+
+所有路径相对清单目录，禁止越界；文件字节须符合 SHA256。清单每次请求重新读取，新增核验范围可显式扩展；
+旧 `PreparedDataRef` 仍读取原不可变资产。声明覆盖不足、缺规则、缺支付日、哈希不符均失败。
+文件校验只证明输入合同与字节身份，不替代数据责任方对源事实及完整覆盖的核验。
+`SourceRef` 是版本化来源合同；更换取源、价格或可用时间语义必须使用新 revision，不能用同名别名偷换。
+
+ETF 限价必须复用已有 `fetch_security_price_limits` / `SECURITY_PRICE_LIMITS` 产品，内部调用
+`etf_limit`；不能用 `stk_limit` 的空返回判断 ETF 缺限价。2026-11-06 实测 588080.SH、
+510500.SH、159326.SZ 的11月5—6日均取得两条有效上下限，身份与交易日历核验通过。
+该来源仍明确标注盘前更新时间为供应商计划、历史逐条发布时间未验证；限价产品不单独证明停牌状态、
+买入卖出可用性或结算规则，不能冒充完整 V4 CONSTRAINTS。`fund_div` 可返回基金分红记录，
+但不单独证明拆分事件覆盖；完整无行动记录也不能延伸到其声明区间以外。
+这套文件入口支持已确认区间，并不宣称持续维护生产经济事实已自动完成。
+同轮只读报价验证中，MU/SOXX 的 2026-11-05 RAW/HFQ 日线与日历均取得一条并通过产品校验；
+MU 快照取得每手1股、价格步长0.01、未停牌与来源更新时间。快照只证明取得时的供应商状态，
+未外推成历史逐日或下一交易日规则；行情元数据的历史发布时刻未验证标志保持不变。
+
 ## 指数月末权重快照
 
 `INDEX_CONSTITUENT_WEIGHT` 保持 `symbol/start/end` 区间契约和 `Date/ConstituentSymbol/Weight` 输出。

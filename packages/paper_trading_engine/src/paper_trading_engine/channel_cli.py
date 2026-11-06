@@ -1,5 +1,7 @@
 """Maintenance CLI for explicit channel registration and native V4 accounts."""
+from contextlib import ExitStack
 from dataclasses import asdict
+from datetime import datetime, timezone
 from decimal import Decimal
 import json
 
@@ -9,7 +11,33 @@ from .runtime_lock import RuntimeDatabaseLock
 from .store import PaperStore
 
 
+def _prepare_data(args):
+    from dataflows import TimeInterval
+    from .data_space import create_dataflows
+    from .formal_v4_advice import FormalV4AdviceClient
+
+    if args.as_of.utcoffset() is None or args.as_of > datetime.now(timezone.utc):
+        raise ValueError('prepare-data requires an aware as-of timestamp no later than now')
+    interval = TimeInterval(args.interval_start, args.interval_end)
+    with ExitStack() as resources:
+        root = PaperStore.open_readonly(args.database)
+        resources.callback(root.close)
+        store = root.scope(args.channel_account_id)
+        flows = create_dataflows(data_dir=args.data_dir, space=args.data_space, config_root=args.config_root,
+            opend_host=args.opend_host, opend_port=args.opend_port, resources=resources)
+        client = FormalV4AdviceClient(repo_root=args.repo_root, store=store, dataflows=flows, data_dir=args.data_dir)
+        result = client.prepare_data(args.account_id, interval, as_of=args.as_of)
+        return {'account_id': args.account_id, 'status': result.status, 'as_of': args.as_of.isoformat(),
+                'prepared': None if result.reference is None else asdict(result.reference),
+                'items': [{'dataset': item.request.dataset, 'symbol': item.request.symbol,
+                           'start': item.request.start, 'end': item.request.end, 'status': item.status,
+                           'sha256': None if item.identity is None else item.identity.content_sha256,
+                           'error': None if item.error is None else item.error.message} for item in result.items]}
+
+
 def run_channel_command(args):
+    if args.channel_action == 'prepare-data':
+        return _prepare_data(args)
     if args.channel_action in {'list', 'status'}:
         store = PaperStore.open_readonly(args.database)
         try:
@@ -57,10 +85,8 @@ def run_channel_command(args):
                 AuditRecorder(scoped).record('ACCOUNT_PAUSED', source='cli.channel', actor_type='OPERATOR',
                     account_id=args.account_id, channel=scoped.execution_channel_id)
             return account
-        from .data_space import create_dataflows
         from .formal_v4_advice import FormalV4AdviceClient
-        flows = create_dataflows(data_dir=args.data_dir, space=args.data_space, config_root=args.config_root)
-        client = FormalV4AdviceClient(repo_root=args.repo_root, store=scoped, dataflows=flows, data_dir=args.data_dir)
+        client = FormalV4AdviceClient(repo_root=args.repo_root, store=scoped, dataflows=None, data_dir=args.data_dir)
         if args.channel_action == 'resume-account':
             from .audit import AuditRecorder
             client._account_release(args.account_id)

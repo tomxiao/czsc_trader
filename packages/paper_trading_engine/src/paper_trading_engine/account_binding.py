@@ -5,10 +5,17 @@ from datetime import date
 from enum import StrEnum
 import math
 import re
+from typing import TYPE_CHECKING
 
 from strategy_manager import Qualification
-from dataflows import InstrumentId, MarketId, AssetClass
+from dataflows import InstrumentId, MarketId, AssetClass, TimeInterval
+from strategy_runtime.equity_replay import StateRecord
 from strategy_runtime.inspection import InspectionRuntimePermit
+
+from .equity_contracts import EquityAccountRules
+
+if TYPE_CHECKING:
+    from .formal_v4_advice import FormalV4Inputs
 
 
 @dataclass(frozen=True, slots=True)
@@ -88,8 +95,77 @@ class AccountBindingUpdate:
             raise ValueError("account binding update requires a different target hash")
 
 
+@dataclass(frozen=True, slots=True)
+class V4StateContinuation:
+    """Attest to private-state compatibility between exact frozen versions."""
+
+    source_runtime_release_id: str
+    evidence: str
+
+    def __post_init__(self) -> None:
+        for value in (self.source_runtime_release_id, self.evidence):
+            if type(value) is not str or not value.strip():
+                raise ValueError("state continuation requires source runtime and review evidence")
+
+
+@dataclass(frozen=True, slots=True)
+class V4StateMigration:
+    """Reviewed strategy fields. Platform-owned ledger facts are derived separately."""
+
+    account_values: StateRecord
+    evidence: str
+    cycle_values: StateRecord | None = None
+    pending_cycle_values: StateRecord | None = None
+    source_runtime_release_id: str | None = None
+
+    def __post_init__(self) -> None:
+        if type(self.evidence) is not str or not self.evidence.strip():
+            raise ValueError("state migration requires review evidence")
+        if self.source_runtime_release_id is not None and (
+            type(self.source_runtime_release_id) is not str or not self.source_runtime_release_id.strip()
+        ):
+            raise ValueError("invalid source runtime release id")
+        if type(self.account_values) is not StateRecord or any(
+            item is not None and type(item) is not StateRecord
+            for item in (self.cycle_values, self.pending_cycle_values)
+        ):
+            raise TypeError("state migration requires typed private-state records")
+
+
+@dataclass(frozen=True, slots=True)
+class V4AccountBindingUpdate:
+    binding: AccountBindingUpdate
+    channel_account_id: str
+    expected_facts_sha256: str
+    effective_interval: TimeInterval
+    rules: EquityAccountRules
+    inputs: 'FormalV4Inputs'
+    state: V4StateContinuation | V4StateMigration
+
+    def __post_init__(self) -> None:
+        from .formal_v4_advice import FormalV4Inputs
+
+        if type(self.binding) is not AccountBindingUpdate or type(self.inputs) is not FormalV4Inputs:
+            raise TypeError("V4 account update requires typed binding and input contracts")
+        if self.inputs.release_hash != self.binding.target_release_hash:
+            raise ValueError("V4 inputs must belong to the target release")
+        if type(self.channel_account_id) is not str or not self.channel_account_id.strip():
+            raise ValueError("V4 account update requires channel account identity")
+        if type(self.expected_facts_sha256) is not str or not re.fullmatch(r"[0-9a-f]{64}", self.expected_facts_sha256):
+            raise ValueError("V4 account update requires the account facts SHA-256")
+        if type(self.rules) is not EquityAccountRules or type(self.effective_interval) is not TimeInterval:
+            raise TypeError("V4 account update requires typed account rules and cutover interval")
+        if type(self.state) not in (V4StateContinuation, V4StateMigration):
+            raise TypeError("V4 account update requires an explicit state treatment")
+
+    @property
+    def account_id(self) -> str:
+        return self.binding.account_id
+
+
 class AccountBindingUpdateStatus(StrEnum):
     COMMITTED = "COMMITTED"
+    ALREADY_APPLIED = "ALREADY_APPLIED"
 
 
 @dataclass(frozen=True, slots=True)
