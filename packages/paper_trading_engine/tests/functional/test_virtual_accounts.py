@@ -14,7 +14,7 @@ import pandas as pd
 import pytest
 
 from paper_trading_engine import AccountHealth, AccountRetirementRequest
-from paper_trading_engine.futu_execution import FutuExecution
+from paper_trading_engine.futu_execution import ChannelExecution
 from paper_trading_engine.store import PaperStore
 from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine import cli as pte_cli
@@ -107,7 +107,7 @@ def test_invalid_persisted_health_cannot_resume_decide_or_submit(
     store = new_store(tmp_path / "invalid-account-health.db", seed=health_intent_database)
     (intent,) = store.account_intents("one")
     broker = FakeBroker()
-    execution = FutuExecution(
+    execution = ChannelExecution(
         store, broker, now=lambda: datetime.fromisoformat("2026-09-04T10:00:00+08:00"),
     )
     execution.refresh_orders()
@@ -347,7 +347,7 @@ def test_startup_reads_existing_bindings_without_default_account_writes(
             # Retired accounts must not require their obsolete strategy to load.
             create_account(store, "retired", "v1", "a")
             store.set_virtual_paused("retired", True)
-            FutuExecution(store, broker).retire_account(
+            ChannelExecution(store, broker).retire_account(
                 AccountRetirementRequest("retired", "a" * 64, "test", "obsolete binding"),
             )
             before = store.virtual_accounts()

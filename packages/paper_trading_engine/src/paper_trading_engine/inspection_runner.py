@@ -36,7 +36,7 @@ from .account_data_preparer import AccountDataPreparer
 from .account_engine import AccountEngine
 from .account_strategy_cycle import AccountStrategyCycle
 from .broker import BrokerSubmissionUncertainError, TERMINAL_INTENT_STATUSES
-from .futu_execution import FutuExecution, OrderSubmissionBatchError
+from .futu_execution import ChannelExecution, OrderSubmissionBatchError
 from .srt_advice_client import SrtAdviceClient
 from .store import PaperStore
 
@@ -210,7 +210,7 @@ def _run_scenario(request, scenario, directory, *, restart=True, fault=None):
             session_resolver=lambda signal_date: next((x.trading_date for x in scenario.decisions
                                                       if x.binding.plan.available_through == signal_date), None))
         accounts = AccountEngine(store, advice, now=lambda: clock[0])
-        execution = FutuExecution(store, broker, now=lambda: clock[0])
+        execution = ChannelExecution(store, broker, now=lambda: clock[0])
         cycle = AccountStrategyCycle(accounts, AccountDataPreparer(advice=advice), store)
 
     def close_components():

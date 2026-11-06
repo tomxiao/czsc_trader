@@ -1,10 +1,14 @@
 """Native frozen V4 admission and forward decisions on isolated CN/US fixtures."""
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from dataclasses import asdict, replace
 from decimal import Decimal
 from zoneinfo import ZoneInfo
 from unittest.mock import patch
 import json
+from threading import Thread
+from types import SimpleNamespace
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
 
 import pytest
 import pandas as pd
@@ -192,6 +196,150 @@ def test_formal_v4_forward_decision_uses_historical_prices_and_exact_deployment(
 def test_formal_input_contract_rejects_unknown_fields():
     with pytest.raises(ValueError, match='unsupported'):
         FormalV4Inputs.from_dict({'schema_version': 1, 'extra': True})
+
+
+def test_online_v4_decision_and_execution_use_the_scoped_runtime(formal_v4, monkeypatch):
+    from paper_trading_engine.broker import BrokerAccount, BrokerOrder, BrokerPosition, BrokerSnapshot
+    from paper_trading_engine.multichannel_runtime import build_multichannel_runtime
+    from paper_trading_engine.online_verify import main, verify
+    from paper_trading_engine.web import create_server
+
+    client, store, root, interval, candidate, evaluation = formal_v4
+    client.register_recipe('formal', client.inputs('formal'))
+    store.set_virtual_paused('formal', True)
+    market = candidate.instrument.market.value
+    currency = 'CNY' if market == 'CN' else 'USD'
+    target = 900 if market == 'CN' else 989
+    capital = 1_000_000
+    now = interval.start
+
+    class Clock(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return now.astimezone(tz)
+
+    class Broker:
+        channel_id = store.execution_channel_id
+        channel_account_id = 'formal-channel'
+        order = None
+        cash = capital
+        quantity = 0
+        submissions = 0
+
+        def account_snapshot(self):
+            positions = (BrokerPosition(candidate.instrument.symbol, self.quantity, self.quantity),) if self.quantity else ()
+            account = BrokerAccount('SIMULATE', market, self.cash, self.cash + self.quantity * 10,
+                                    0., currency=currency, channel_account_id=self.channel_account_id)
+            return BrokerSnapshot(account, positions, self.order_snapshot())
+
+        def order_snapshot(self):
+            return () if self.order is None else (self.order,)
+
+        def historical_order_snapshot(self, start, end):
+            return self.order_snapshot()
+
+        def place_order(self, intent):
+            self.submissions += 1
+            self.order = BrokerOrder('42', intent.symbol, intent.side, intent.quantity, intent.limit_price,
+                                     'SUBMITTED', 0, 0., intent.intent_id, updated_at=interval.start.isoformat(),
+                                     channel_account_id=self.channel_account_id, session=intent.session)
+            return self.order
+
+        def close(self):
+            pass
+
+    broker = Broker()
+
+    def gateway_factory(*, config, **kwargs):
+        if config is None:
+            raise ConnectionError('other channel unavailable')
+        return broker
+
+    identity = {'mode': 'DEV', 'repo_root': str(client.repo_root)}
+    args = SimpleNamespace(repo_root=client.repo_root, data_dir=client.data_dir,
+                           database=client.repo_root / 'formal.db', symbol=candidate.instrument.symbol,
+                           asset='stock', opend_host='127.0.0.1', opend_port=11111, runtime_identity=identity)
+    runtime = build_multichannel_runtime(args, root, client.dataflows, gateway_factory=gateway_factory)
+    monkeypatch.setattr('paper_trading_engine.multichannel_runtime.datetime', Clock)
+    execution = runtime.services['formal-channel'].execution
+    execution._delegate.now = lambda: interval.start
+    execution.refresh()
+    root.set_setting('scheduler_heartbeat_at', datetime.now(timezone.utc).isoformat())
+    server = create_server(runtime.console_view, port=0, multichannel_runtime=runtime)
+    worker = Thread(target=server.serve_forever, daemon=True)
+    worker.start()
+    base = f'http://127.0.0.1:{server.server_port}'
+    account = store.virtual_account('formal')
+    expected = {
+        'channel_account_id': 'formal-channel', 'release_hash': account['release_hash'], 'run_state': 'PAUSED',
+        'decision': {'interval': {'start': interval.start.isoformat(), 'end': interval.end.isoformat()},
+                     'action': 'BUY', 'target_quantity': target, 'fresh': True, 'judgment': 'hold'},
+        'quantity': 0, 'orders': 0, 'fills': 0,
+    }
+    plan = {'release': identity, 'channels': {'formal-channel': {
+        'channel_id': store.execution_channel_id, 'market': market, 'currency': currency,
+    }}, 'accounts': {'formal': expected}}
+    try:
+        with urlopen(base + '/api/channels/futu-simulate-cn/snapshot', timeout=5) as response:
+            assert json.load(response)['scope']['channel'] == FUTU_SIMULATE_CN_CHANNEL_ID
+        blocked = verify(server.server_port, {**plan, 'accounts': {'formal': {
+            **expected, 'decision': {k: v for k, v in expected['decision'].items() if k != 'fresh'},
+        }}})
+        assert blocked['status'] == 'BLOCKED', blocked
+        report = verify(server.server_port, plan, drive_dev=True)
+        assert report['status'] == 'PASS', report
+        assert not store.account_intents('formal') and not broker.submissions
+        decision_id = store.virtual_account('formal')['last_decision_id']
+        assert decision_id
+        report = verify(server.server_port, plan, drive_dev=True)
+        assert report['status'] == 'FAIL'
+        assert [c['evidence']['status'] for c in report['checks'] if c['status'] == 'FAIL'] == ['DECISION_REUSED']
+        expected['decision'].pop('fresh')
+        assert verify(server.server_port, plan)['status'] == 'PASS'
+        assert store.virtual_account('formal')['last_decision_id'] == decision_id
+
+        store.set_virtual_paused('formal', False)
+        request = Request(base + '/api/virtual-accounts/formal/decision', b'{}',
+                          {'Content-Type': 'application/json'})
+        with pytest.raises(HTTPError) as rejected:
+            urlopen(request, timeout=5)
+        assert rejected.value.code == 409
+
+        store.set_paused(False)
+        task = runtime.schedule_provider.due_decision(store.virtual_account('formal'), interval.start)
+        runtime.schedule_provider.run_scheduled('formal', task, interval.start)
+        execution.submit_pending()
+        assert broker.submissions == 1 and broker.order.quantity == target
+        broker.quantity = target
+        broker.cash = capital - target * 10 * (1 + evaluation.fee_rate)
+        broker.order = replace(broker.order, status='FILLED_ALL', cumulative_filled_quantity=target,
+                               average_fill_price=10., updated_at=(interval.start + timedelta(seconds=1)).isoformat())
+        execution.refresh()
+        execution.refresh()
+        expected.update(run_state='RUNNING', quantity=target, orders=1, fills=1)
+        report = verify(server.server_port, plan)
+        assert report['status'] == 'PASS', report
+        assert broker.submissions == 1
+        with urlopen(base + '/api/channel-accounts/formal-channel/snapshot', timeout=5) as response:
+            assert abs(Decimal(json.load(response)['cash_difference'])) < Decimal('.01')
+        with urlopen(base + '/api/audit-events?channel_account_id=futu-cn-default', timeout=5) as response:
+            assert not any(event['account_id'] == 'formal' for event in json.load(response)['events'])
+
+        plan_path = client.repo_root / 'online-plan.json'
+        plan_path.write_text(json.dumps(plan), encoding='utf-8')
+        output = client.repo_root / 'online-result.json'
+        assert main(['--port', str(server.server_port), '--plan', str(plan_path), '--json-output', str(output)]) == 0
+        assert json.loads(output.read_bytes())['status'] == 'PASS'
+        store.set_virtual_paused('formal', True)
+        now = interval.end
+        with pytest.raises(HTTPError, match='409') as closed:
+            urlopen(request, timeout=5)
+        assert 'no executable V4 interval' in json.load(closed.value)['error']
+        assert store.virtual_account('formal')['last_decision_id'] == decision_id
+    finally:
+        server.shutdown()
+        worker.join()
+        server.server_close()
 
 
 def test_formal_v4_maintenance_prepares_data_without_adopting_interval(formal_v4):

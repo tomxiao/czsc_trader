@@ -157,6 +157,56 @@ V4 可声明 `DatasetObservationInput` 观察表，使用 `EquityInputBinding.ob
 
 发布构建认证旧合同与原生 V4 冻结包，包括尚未部署的 V4 冻结包。只读发布预检验证各市场非退休账户的精确发布资格、执行规则、输入配方与已确认持仓状态。行情与规则准备由正常调度或显式维护准备完成。
 
+### Web API 在线验证
+
+在线验证连接正在运行的 PTE，通过 HTTP 检查发布身份、调度心跳、指定渠道账户的对账状态，以及策略账户绑定和决策。双市场服务提供以下查询：
+
+| 路由 | 验证事实 |
+| --- | --- |
+| `GET /api/health` | 发布标识、Git 提交、制品清单哈希、实例和调度心跳 |
+| `GET /api/channel-accounts/{channel_account_id}/snapshot` | 指定渠道账户的市场、币种、策略账户 ID、资金、平账账户、对账和失败状态 |
+| `GET /api/virtual-accounts/{account_id}/snapshot` | 实际渠道归属、发布哈希、决策（含 V4 解释和订单腿）、订单、成交及仓位 |
+| `GET /api/audit-events?channel_account_id=…&account_id=…` | 按渠道账户隔离的事件，可继续按 `event_type`、`decision_id` 筛选 |
+
+`channel_account_id` 是注册的渠道账户 ID，例如 `futu-cn-default`，与渠道类型 `futu_simulate_cn` 不同。旧控制台继续使用原 A 股视图。
+已移除聚合 `GET /api/status` 和无渠道限定的 `POST /api/{pause,resume,cancel-token,cancel}`。查询使用上表或 `GET /api/system/status`；旧 A 股渠道操作使用 `/api/channels/futu-simulate-cn/{操作}`。
+运行、维护及技术检验统一使用 `ChannelExecution`，历史导入名 `FutuExecution` 已移除。
+
+现有 `POST /api/virtual-accounts/{account_id}/decision` 接受 JSON `{}`。对 V4，它通过账户所属渠道复用正式日历、区间数据准备、公司行动和决策采纳逻辑。账户须健康且暂停，当前时点须处于该绑定允许的执行区间。返回 `DECISION_COMPLETED` 或 `DECISION_REUSED`，附发布哈希、区间、数据身份和决策 ID。它保存正式决策、账户状态及审计，暂停门槛阻止创建新订单意图。重复调用复用当前区间已采纳的决策，已有旧合同的手工驱动语义继续适用。运行冲突或无有效区间时返回 HTTP 409。
+
+在 PTE 所在宿主用该版本的 Python 执行：
+
+```powershell
+python -m paper_trading_engine.online_verify --port 8080 --plan .tmp/pte-verify-plan.json --json-output .tmp/pte-verify-result.json
+```
+
+工具默认只发 GET，连接限定为 `127.0.0.1`。下面是单渠道清单示例，执行前填写真实身份与预期；同一清单可增加另一个市场的渠道账户及策略账户。
+
+```json
+{
+  "release": {
+    "mode": "PTE",
+    "release_id": "v0.0.0",
+    "git_commit": "0000000000000000000000000000000000000000",
+    "manifest_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "channels": {
+    "futu-cn-default": {"channel_id": "futu_simulate_cn", "market": "CN", "currency": "CNY"}
+  },
+  "accounts": {
+    "example-cn": {
+      "channel_account_id": "futu-cn-default",
+      "release_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "run_state": "PAUSED"
+    }
+  }
+}
+```
+
+如需验收指定的 V4 决策，增加 `decision`，包含带时区的 `interval.start/end`、预期 `action` 和 `target_quantity`，可用 `case_key`、`judgment` 核对决策分支与解释。工具关联数据准备与决策生成事件；缺少对应周期或审计证据时返回 `BLOCKED`。可选的 `quantity`、`orders`、`fills` 分别核对当前持仓及账户累计订单、成交笔数。
+
+仅隔离 DEV 可以显式加 `--drive-dev`。此时 `release` 使用 `{"mode":"DEV","repo_root":"<隔离工作目录绝对路径>"}`，所有目标账户须暂停并提供预期决策。设 `decision.fresh=true` 要求本次实际生成，复用视为不达标。固定时点的双市场闭环使用聚焦测试中的受控时钟和模拟渠道。工具报告逐项 `PASS`、`FAIL`、`BLOCKED`，退出码分别为 0、1、2，输出路径须是新文件。生产恢复顺序见 [PTE 发布与运维](../../docs/PTE_OPERATIONS.md#web-api-在线验收)。
+
 ## 正常限价未成交与执行异常（A 股渠道）
 
 限价买单因计划时窗结束而撤单，且渠道明确回报`CANCELLED_ALL`、累计成交与账本均为零、

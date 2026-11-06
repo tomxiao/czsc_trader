@@ -16,7 +16,7 @@ from paper_trading_engine.audit import AuditRecorder
 from paper_trading_engine.broker import TERMINAL_INTENT_STATUSES
 from paper_trading_engine.coordinator import PteCoordinator
 from paper_trading_engine.contracts import AdviceDecision, OrderSpec, PlanLegSpec
-from paper_trading_engine.futu_execution import FutuExecution
+from paper_trading_engine.futu_execution import ChannelExecution
 from paper_trading_engine.scheduler import RuntimeScheduler
 from paper_trading_engine.store import PaperStore
 from paper_trading_engine.lifecycle import IntentControlState
@@ -369,10 +369,10 @@ def test_ft_pte02_account_decision_futu_order_fill_restart_and_idempotence(new_s
         store, advice, now=lambda: datetime(2026, 9, 8, 6, 35, tzinfo=timezone.utc),
     )
     broker = FakeBroker()
-    FutuExecution(store, broker).refresh_orders()
-    execution = FutuExecution(store, broker, symbol="588080.SH", today=lambda: date(2026, 9, 2))
+    ChannelExecution(store, broker).refresh_orders()
+    execution = ChannelExecution(store, broker, symbol="588080.SH", today=lambda: date(2026, 9, 2))
 
-    FutuExecution(store, FakeBroker()).refresh_orders()
+    ChannelExecution(store, FakeBroker()).refresh_orders()
     accounts.refresh_account("s001-v1", prepared=preparation(advice.value))
     accounts.refresh_account("s001-v1", prepared=preparation(advice.value))
     assert len(store.account_decisions("s001-v1")) == 1
@@ -456,7 +456,7 @@ def test_ft_pte02_account_decision_futu_order_fill_restart_and_idempotence(new_s
     assert store.query_audit_events(event_type="ORDER_FILLED") == []
     store.close()
     store = PaperStore(tmp_path / "runtime.db")
-    execution = FutuExecution(store, broker, today=lambda: date(2026, 9, 2))
+    execution = ChannelExecution(store, broker, today=lambda: date(2026, 9, 2))
     next_accounts = AccountEngine(store, next_advice)
     execution.refresh_orders()
     execution.refresh_orders()
@@ -491,7 +491,7 @@ def test_fill_and_daily_snapshot_preserve_an_unrelated_account_block(new_store, 
     )
     store.set_virtual_paused("s001-v1", False)
     broker = FakeBroker()
-    execution = FutuExecution(store, broker, today=lambda: date(2026, 9, 2))
+    execution = ChannelExecution(store, broker, today=lambda: date(2026, 9, 2))
     execution.refresh_orders()
     advice = FakeAdvice(decision(OrderSpec("BUY", 1000, "LIMIT", 1.68, "DAY")))
     accounts = AccountEngine(store, advice)
@@ -568,7 +568,7 @@ def test_ft_pte10_intraday_plan_waits_for_fill_and_recovers_after_restart(new_st
     )
     store.set_virtual_paused("s003-v1", False)
     broker = FakeBroker()
-    FutuExecution(store, broker).refresh_orders()
+    ChannelExecution(store, broker).refresh_orders()
     strategy = {
         "strategy_id": "S003", "name": "成分资金流宽度早盘延续",
         "version": "v1", "release_id": "S003-v1",
@@ -579,7 +579,7 @@ def test_ft_pte10_intraday_plan_waits_for_fill_and_recovers_after_restart(new_st
         "s003-v1", prepared=preparation(setup)
     )
     assert store.virtual_account("s003-v1")["cycle_target"] is None
-    setup_execution = FutuExecution(
+    setup_execution = ChannelExecution(
         store, broker, now=lambda: datetime(2026, 9, 2, 1, 30, 5, tzinfo=timezone.utc),
     )
     setup_execution.refresh_account()
@@ -637,7 +637,7 @@ def test_ft_pte10_intraday_plan_waits_for_fill_and_recovers_after_restart(new_st
     intents = store.account_intents("s003-v1")[-2:]
     assert [row["status"] for row in intents] == ["PENDING_SUBMIT", "WAITING_DEPENDENCY"]
 
-    open_execution = FutuExecution(
+    open_execution = ChannelExecution(
         store, broker, now=lambda: datetime(2026, 9, 3, 1, 30, 5, tzinfo=timezone.utc),
     )
     open_execution.refresh_account()
@@ -658,7 +658,7 @@ def test_ft_pte10_intraday_plan_waits_for_fill_and_recovers_after_restart(new_st
     )
     store.close()
     store = PaperStore(tmp_path / "runtime.db")
-    restarted = FutuExecution(
+    restarted = ChannelExecution(
         store, broker, now=lambda: datetime(2026, 9, 3, 3, 29, 5, tzinfo=timezone.utc),
     )
     restarted.refresh()
@@ -696,7 +696,7 @@ def test_ft_pte11_intraday_plan_skips_exit_when_entry_normally_unfilled(new_stor
     )
     store.set_virtual_paused("s003-v1", False)
     broker = FakeBroker()
-    FutuExecution(store, broker).refresh_orders()
+    ChannelExecution(store, broker).refresh_orders()
     strategy = {
         "strategy_id": "S003", "name": "成分资金流宽度早盘延续",
         "version": "v1", "release_id": "S003-v1",
@@ -707,7 +707,7 @@ def test_ft_pte11_intraday_plan_skips_exit_when_entry_normally_unfilled(new_stor
         "s003-v1", prepared=preparation(setup)
     )
     assert store.virtual_account("s003-v1")["cycle_target"] is None
-    setup_execution = FutuExecution(
+    setup_execution = ChannelExecution(
         store, broker, now=lambda: datetime(2026, 9, 2, 1, 30, 5, tzinfo=timezone.utc),
     )
     setup_execution.refresh_account()
@@ -753,7 +753,7 @@ def test_ft_pte11_intraday_plan_skips_exit_when_entry_normally_unfilled(new_stor
     plan_intents = store.account_intents("s003-v1")[-2:]
     entry, exit_leg = plan_intents
 
-    previous_evening = FutuExecution(
+    previous_evening = ChannelExecution(
         store, broker, now=lambda: datetime(2026, 9, 2, 12, 51, tzinfo=timezone.utc),
     )
     previous_evening.refresh_account()
@@ -761,14 +761,14 @@ def test_ft_pte11_intraday_plan_skips_exit_when_entry_normally_unfilled(new_stor
     assert store.account_intent(entry["intent_id"])["status"] == "PENDING_SUBMIT"
     assert store.virtual_account("s003-v1")["health"] != "BLOCKED"
 
-    open_execution = FutuExecution(
+    open_execution = ChannelExecution(
         store, broker, now=lambda: datetime(2026, 9, 3, 1, 30, 5, tzinfo=timezone.utc),
     )
     open_execution.refresh_account()
     open_execution.submit_pending(reconcile=False)
     assert [row.side for row in broker.placed] == ["BUY", "BUY"]
 
-    after_deadline = FutuExecution(
+    after_deadline = ChannelExecution(
         store, broker, now=lambda: datetime(2026, 9, 3, 1, 36, tzinfo=timezone.utc),
     )
     after_deadline.refresh_orders()
@@ -785,7 +785,7 @@ def test_ft_pte11_intraday_plan_skips_exit_when_entry_normally_unfilled(new_stor
         ),
     )
     after_deadline.refresh_orders()
-    noon_execution = FutuExecution(
+    noon_execution = ChannelExecution(
         store, broker, now=lambda: datetime(2026, 9, 3, 3, 29, tzinfo=timezone.utc),
     )
     noon_execution.submit_pending(reconcile=False)

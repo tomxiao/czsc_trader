@@ -12,7 +12,7 @@ import json
 import math
 from pathlib import Path
 import re
-from threading import RLock
+from threading import Lock, RLock
 from zoneinfo import ZoneInfo
 
 from dataflows import BarFrequency, Dataflows, DataRequest, EquityDataRequest, TimeInterval, EquityProduct, PreparePolicy, PrepareResult
@@ -87,6 +87,11 @@ class FormalV4AdviceClient:
         self.data_dir = Path(data_dir).resolve()
         self._lock = RLock()
         self._calendars = {}
+        self._decision_cycles = {}
+
+    def decision_cycle_lock(self, account_id: str):
+        with self._lock:
+            return self._decision_cycles.setdefault(account_id, Lock())
 
     def _path(self, account_id):
         if type(account_id) is not str or re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]*', account_id) is None:
@@ -411,17 +416,65 @@ class FormalV4ScheduleProvider:
         return None
 
     def run_scheduled(self, account_id: str, task: ScheduledDecision, observed_at: datetime) -> None:
+        with self.client.decision_cycle_lock(account_id):
+            self._adopt(account_id, task, observed_at, source='formal_v4', actor='SCHEDULER')
+
+    def drive_decision(self, account_id: str, observed_at: datetime) -> dict[str, object]:
+        with self.client.decision_cycle_lock(account_id):
+            account = self.client.store.virtual_account(account_id)
+            if account['run_state'] != 'PAUSED':
+                raise RuntimeError('manual V4 validation requires a paused strategy account')
+            if account['health'] != 'OK':
+                raise RuntimeError('manual V4 validation requires a healthy strategy account')
+            task = self.due_decision(account, observed_at)
+            if task is None:
+                raise RuntimeError('no executable V4 interval for the current account binding')
+            previous = json.loads(account['last_decision_payload'] or '{}')
+            interval = {'start': task.interval.start.isoformat(), 'end': task.interval.end.isoformat()}
+            reused = (previous.get('equity_execution_interval') == interval
+                      and previous.get('strategy', {}).get('release_hash') == account['release_hash'])
+            decision = previous if reused else self._adopt(
+                account_id, task, observed_at, source='web.control', actor='OPERATOR',
+            )
+            result = {
+                'status': 'DECISION_REUSED' if reused else 'DECISION_COMPLETED',
+                'account_id': account_id,
+                'channel_account_id': account['channel_account_id'],
+                'release_hash': account['release_hash'],
+                'execution_interval': interval,
+                'prepared_data_identity': decision['prepared_data_identity'],
+                'reused_decision': reused,
+                **{key: decision[key] for key in (
+                    'decision_id', 'signal_date', 'valid_session', 'action',
+                    'target_quantity', 'execution_reference_price',
+                )},
+            }
+            self.accounts.audit.record(
+                'ACCOUNT_DECISION_DRIVEN', source='web.control', actor_type='OPERATOR',
+                account_id=account_id, strategy_id=account['strategy_id'],
+                strategy_version=account['strategy_version'], release_hash=account['release_hash'],
+                symbol=account['symbol'], decision_id=result['decision_id'], details=result,
+            )
+            return result
+
+    def _adopt(self, account_id, task, observed_at, *, source, actor):
         prepared = self.client.prepare_interval(account_id, task.interval, observed_at=observed_at)
         self.client.apply_account_events(account_id, prepared)
         from .audit import AuditRecorder
-        AuditRecorder(self.client.store).record('MARKET_DATA_PREPARED', source='formal_v4',
-            actor_type='SCHEDULER', account_id=account_id, correlation_id=task.task_id,
+        AuditRecorder(self.client.store).record('MARKET_DATA_PREPARED', source=source,
+            actor_type=actor, account_id=account_id, correlation_id=task.task_id,
             details={'prepared_data_reference': prepared.data_reference,
                      'data_identity': prepared.data_identity,
                      'interval': {'start': task.interval.start.isoformat(), 'end': task.interval.end.isoformat()}})
-        self.accounts.refresh_account(account_id, prepared=prepared)
+        if actor == 'OPERATOR':
+            self.accounts.refresh_account(account_id, prepared=prepared, require_paused=True)
+        else:
+            self.accounts.refresh_account(account_id, prepared=prepared)
         account = self.client.store.virtual_account(account_id)
         adopted = json.loads(account['last_decision_payload']) if account['last_decision_payload'] else {}
         expected = {'start': task.interval.start.isoformat(), 'end': task.interval.end.isoformat()}
-        if adopted.get('equity_execution_interval') != expected:
+        if (adopted.get('equity_execution_interval') != expected
+                or adopted.get('strategy', {}).get('release_hash') != account['release_hash']
+                or adopted.get('prepared_data_identity') != prepared.data_identity):
             raise RuntimeError('scheduled V4 decision was not adopted; retry after active order reconciliation')
+        return adopted

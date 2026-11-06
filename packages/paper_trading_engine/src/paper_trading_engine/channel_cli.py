@@ -124,7 +124,7 @@ def run_channel_command(args):
                 expected_release_hash=value['release_hash'], fee_rate=value['fee_rate'])}
         if args.channel_action == 'resume':
             from .futu_gateway import FutuGateway
-            from .futu_execution import FutuExecution, FeeReconciliationPolicy
+            from .futu_execution import ChannelExecution, FeeReconciliationPolicy
             raw = next(r for r in store.channel_accounts() if r['channel_account_id'] == scoped.channel_account_id)
             if raw['config_json'] is None:
                 raise ValueError('channel resume requires an explicit registered external account')
@@ -132,7 +132,7 @@ def run_channel_command(args):
             policy = FeeReconciliationPolicy(**{k: Decimal(v) for k,v in json.loads(scoped.get_setting('fee_reconciliation_policy')).items()})
             gateway = FutuGateway(config=config, host=args.opend_host, port=args.opend_port)
             try:
-                return FutuExecution(scoped, gateway, config=config, fee_policy=policy).resume()
+                return ChannelExecution(scoped, gateway, config=config, fee_policy=policy).resume()
             finally:
                 gateway.close()
         raise ValueError('unsupported channel maintenance operation')

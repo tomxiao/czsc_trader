@@ -33,7 +33,7 @@ from .account_strategy_cycle import AccountStrategyCycle
 from .account_engine import AccountEngine
 from .account_chart import AccountChartService
 from .chart_market_data import AccountChartMarketData
-from .futu_execution import FutuExecution
+from .futu_execution import ChannelExecution
 from .futu_gateway import FutuGateway
 from .channel import FUTU_SIMULATE_CN_CHANNEL_ID
 from .store import PaperStore, backup_runtime_database
@@ -270,7 +270,7 @@ def _build_engine(args: argparse.Namespace, resources: ExitStack):
 
     def connect_execution():
         gateway = FutuGateway(host=args.opend_host, port=args.opend_port, audit=audit)
-        return FutuExecution(store, gateway, audit=audit)
+        return ChannelExecution(store, gateway, audit=audit)
 
     stage_started = time.perf_counter()
     try:
@@ -802,6 +802,7 @@ def main(
         server = create_server(
             getattr(engine, "console_view", engine), host=args.host, port=args.port, control_token=control_token,
             restart_callback=graceful_restart, instance_id=instance_id,
+            multichannel_runtime=engine if hasattr(engine, "console_view") else None,
         )
         web_server_ms = round((time.perf_counter() - stage_started) * 1000, 1)
         server_holder["server"] = server

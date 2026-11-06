@@ -21,14 +21,16 @@ from .account_retirement import AccountRetirementRequest
 
 
 class Operations(Protocol):
-    def status(self) -> dict[str, object]: ...
+    def drive_virtual_account_decision(self, account_id: str) -> dict[str, object]: ...
 
 
 def create_server(
     operations: Operations, *, host: str = "127.0.0.1", port: int = 8080,
     control_token: str | None = None, restart_callback=None, instance_id: str | None = None,
+    multichannel_runtime=None,
 ):
-    api = operations if hasattr(operations, "system_status") else PteWebApi(operations)
+    api = (operations if hasattr(operations, "system_status")
+           else PteWebApi(operations, multichannel_runtime=multichannel_runtime))
     static_root = files("paper_trading_engine").joinpath("static")
     runtime_instance_id = instance_id or uuid4().hex
     # Bind the loaded document to its assets, independently of the release label.
@@ -116,21 +118,8 @@ def create_server(
             parsed = urlparse(self.path)
             path = parsed.path
             try:
-                if path == "/api/status":
-                    self._json(200, operations.status())
-                elif path == "/api/health":
-                    health = (
-                        api.health()
-                        if hasattr(api, "health")
-                        else {
-                            key: value
-                            for key, value in api.system_status().items()
-                            if key in {
-                                "runtime", "watchdog_healthy", "scheduler_heartbeat_at",
-                            }
-                        }
-                    )
-                    self._json(200, {**health, "instance_id": runtime_instance_id})
+                if path == "/api/health":
+                    self._json(200, {**api.health(), "instance_id": runtime_instance_id})
                 elif path == "/api/system/status":
                     self._json(200, {**api.system_status(), "instance_id": runtime_instance_id})
                 elif path == "/api/virtual-accounts":
@@ -146,6 +135,9 @@ def create_server(
                     self._chart(account_id, parse_qs(parsed.query, keep_blank_values=True))
                 elif path == "/api/channels/futu-simulate-cn/snapshot":
                     self._json(200, api.channel_snapshot("futu_simulate_cn"))
+                elif path.startswith("/api/channel-accounts/") and path.endswith("/snapshot"):
+                    channel_account_id = unquote(path[len("/api/channel-accounts/"):-len("/snapshot")])
+                    self._json(200, api.channel_account_snapshot(channel_account_id))
                 elif path == "/api/comparison":
                     self._json(200, api.comparison(parse_qs(parsed.query).get("account_id", [])))
                 elif path == "/api/audit-events":
@@ -189,19 +181,17 @@ def create_server(
                         self._json(403, {"error": "invalid PTE control token"})
                         return
                     result = operations.store.create_channel_reconciliation_account()
-                elif path in {"/api/pause", "/api/channels/futu-simulate-cn/pause"}:
-                    result = operations.pause()
-                    if path.startswith("/api/channels/"):
-                        result = api.channel_snapshot("futu_simulate_cn")
-                elif path in {"/api/resume", "/api/channels/futu-simulate-cn/resume"}:
-                    result = operations.resume()
-                    if path.startswith("/api/channels/"):
-                        result = api.channel_snapshot("futu_simulate_cn")
-                elif path in {"/api/cancel-token", "/api/channels/futu-simulate-cn/cancel-token"}:
+                elif path == "/api/channels/futu-simulate-cn/pause":
+                    operations.pause()
+                    result = api.channel_snapshot("futu_simulate_cn")
+                elif path == "/api/channels/futu-simulate-cn/resume":
+                    operations.resume()
+                    result = api.channel_snapshot("futu_simulate_cn")
+                elif path == "/api/channels/futu-simulate-cn/cancel-token":
                     result = {"token": operations.issue_cancel_token(
                         str(body["account_id"]), str(body["channel_order_id"])
                     )}
-                elif path in {"/api/cancel", "/api/channels/futu-simulate-cn/cancel"}:
+                elif path == "/api/channels/futu-simulate-cn/cancel":
                     result = operations.confirm_cancel(
                         str(body["account_id"]), str(body["channel_order_id"]), str(body["token"])
                     )
@@ -220,7 +210,8 @@ def create_server(
                     if parts[3] == "decision":
                         if body:
                             raise ValueError("decision request body must be empty")
-                        result = operations.drive_virtual_account_decision(account_id)
+                        driver = operations if multichannel_runtime is None else multichannel_runtime
+                        result = driver.drive_virtual_account_decision(account_id)
                     elif parts[3] == "pause":
                         result = operations.pause_virtual(account_id)
                     elif parts[3] == "resume":

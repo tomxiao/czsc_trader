@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from decimal import Decimal
 import json
 
 from .lifecycle import AccountHealth
@@ -50,11 +51,17 @@ def _is_stale(value: str | None, *, seconds: float) -> bool:
 
 
 class PteWebApi:
-    def __init__(self, operations) -> None:
+    def __init__(self, operations, *, multichannel_runtime=None) -> None:
         self.operations = operations
         self.store = operations.store
         self.virtual = operations.virtual
         self.channel = operations.channel
+        self.runtime = multichannel_runtime
+
+    def _channel_services(self, channel_account_id: str):
+        if self.runtime is None or channel_account_id not in self.runtime.services:
+            raise ResourceNotFound(channel_account_id)
+        return self.runtime.services[channel_account_id]
 
     def _account_chart_error(self, account_id: str) -> str | None:
         chart = getattr(self.operations, "account_chart", None)
@@ -160,7 +167,7 @@ class PteWebApi:
         allowed = {
             "category", "event_type", "severity", "outcome", "account_id",
             "strategy_id", "channel", "decision_id", "order_id", "correlation_id",
-            "before_id", "limit",
+            "before_id", "limit", "channel_account_id",
         }
         unknown = sorted(set(filters) - allowed)
         if unknown:
@@ -181,13 +188,15 @@ class PteWebApi:
         if event_type and event_type not in EVENT_CATALOG:
             raise ValueError(f"invalid audit event_type: {event_type}")
         query = dict(filters)
+        channel_account_id = query.pop("channel_account_id", None)
+        store = self.store if channel_account_id is None else self._channel_services(channel_account_id).store
         for name in ("before_id", "limit"):
             if name in query:
                 try:
                     query[name] = int(query[name])
                 except ValueError as exc:
                     raise ValueError(f"audit event {name} must be an integer") from exc
-        events = self.store.query_audit_events(**query)
+        events = store.query_audit_events(**query)
         count_query = {
             key: value for key, value in query.items()
             if key not in {"category", "before_id", "limit"}
@@ -200,7 +209,7 @@ class PteWebApi:
             }},
             "as_of": _now(),
             "events": events,
-            "category_counts": self.store.audit_event_counts(**count_query),
+            "category_counts": store.audit_event_counts(**count_query),
             "next_before_id": events[-1]["id"] if len(events) == limit else None,
         }
 
@@ -228,11 +237,23 @@ class PteWebApi:
 
     def virtual_account_snapshot(self, account_id: str) -> dict[str, object]:
         try:
-            if account_id not in {
-                row["account_id"] for row in self.store.strategy_virtual_accounts()
-            }:
-                raise ResourceNotFound(account_id)
-            status = self.virtual.status(account_id)
+            store, accounts = self.store, self.virtual
+            if self.runtime is None:
+                if account_id not in {row["account_id"] for row in store.strategy_virtual_accounts()}:
+                    raise ResourceNotFound(account_id)
+                channel_scope = {}
+            else:
+                account = self.runtime.store.virtual_account(account_id)
+                if account["account_type"] != STRATEGY_ACCOUNT_TYPE:
+                    raise ResourceNotFound(account_id)
+                channel_account_id = account["channel_account_id"]
+                services = self._channel_services(channel_account_id)
+                store, accounts = services.store, services.accounts
+                channel_scope = {
+                    "channel_account_id": channel_account_id,
+                    "decision_contract": "V4" if account["equity_rules_json"] is not None else "LEGACY",
+                }
+            status = accounts.status(account_id)
         except KeyError as exc:
             raise ResourceNotFound(account_id) from exc
         strategy_id = status.get("strategy_id")
@@ -246,7 +267,7 @@ class PteWebApi:
             "last_error", "channel_id", "created_at", "updated_at",
             "selection_data_cutoff", "released_cash",
         }
-        events = self.store.query_audit_events(account_id=account_id, limit=200)
+        events = store.query_audit_events(account_id=account_id, limit=200)
         chart_error = self._account_chart_error(account_id)
         metrics = dict(status.get("metrics", {}))
         initial_cash = float(status["initial_cash"])
@@ -261,7 +282,7 @@ class PteWebApi:
             account_alerts.append({"code": "ACCOUNT_CHART_UNAVAILABLE", "message": chart_error})
         decision = status.get("last_decision")
         if decision:
-            row = self.store.account_decision(account_id, decision["decision_id"])
+            row = store.account_decision(account_id, decision["decision_id"])
             decision = {
                 **decision,
                 **{key: row[key] for key in (
@@ -270,7 +291,8 @@ class PteWebApi:
             }
         return {
             "scope": {"account_id": account_id, "strategy_id": strategy_id,
-                      "release_id": release_id, "release_hash": status.get("release_hash")},
+                      "release_id": release_id, "release_hash": status.get("release_hash"),
+                      **channel_scope},
             "as_of": _now(),
             "account": {key: status.get(key) for key in account_keys},
             "decision": decision,
@@ -279,7 +301,7 @@ class PteWebApi:
                 time_field="created_at", id_field="channel_order_id",
             ),
             "intents": _descending_transaction_rows(
-                self.store.account_intents(account_id), time_field="created_at", id_field="intent_id",
+                store.account_intents(account_id), time_field="created_at", id_field="intent_id",
             ),
             "fills": _descending_transaction_rows(
                 [row for row in status.get("fills", []) if row.get("account_id") == account_id],
@@ -288,6 +310,35 @@ class PteWebApi:
             "metrics": metrics,
             "alerts": account_alerts,
             "events": events,
+        }
+
+    def channel_account_snapshot(self, channel_account_id: str) -> dict[str, object]:
+        services = self._channel_services(channel_account_id)
+        store = services.store
+        status = services.execution.status()
+        pool = store.capital_pool_balance()
+        active = (row for row in store.virtual_accounts() if row.get("run_state") != "RETIRED")
+        logical_cash = pool.unallocated_cash + sum(
+            (Decimal(row["cash"]) + Decimal(row["frozen_cash"]) for row in active), Decimal(0),
+        )
+        broker = status.get("account") or {}
+        broker_cash = broker.get("cash")
+        difference = None if broker_cash is None else Decimal(str(broker_cash)) - logical_cash
+        status_fields = (
+            "environment", "market", "currency", "paused", "reconciliation_status",
+            "cash_reconciliation_status", "last_reconcile_at", "alerts", "scheduler_failures",
+        )
+        return {
+            "scope": {"channel_account_id": channel_account_id, "channel_id": store.execution_channel_id},
+            "as_of": _now(),
+            **{key: status.get(key) for key in status_fields},
+            "accounts": [row["account_id"] for row in store.strategy_virtual_accounts()],
+            "capital_pool": pool.registered_capital,
+            "unallocated_cash": pool.unallocated_cash,
+            "logical_cash": logical_cash,
+            "broker_cash": broker_cash,
+            "cash_difference": difference,
+            "reconciliation_account": store.channel_reconciliation_account(store.execution_channel_id),
         }
 
     def virtual_account_chart(self, account_id: str) -> dict[str, object]:

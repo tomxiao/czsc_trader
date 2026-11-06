@@ -11,7 +11,7 @@ import pytest
 from paper_trading_engine import AccountHealth
 from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine.contracts import OrderSpec, PlanLegSpec
-from paper_trading_engine.futu_execution import FutuExecution
+from paper_trading_engine.futu_execution import ChannelExecution
 from paper_trading_engine.store import PaperStore
 from strategy_runtime import CycleTarget, EntryCyclePhase, EntryCyclePlanStatus, EntryCycleState, canonical_sha256
 from pte_support import FakeAdvice, FakeBroker, broker_snapshot, decision, preparation
@@ -35,7 +35,7 @@ def _submitted(new_store, path, *, signal_cash=False):
     store.set_virtual_paused(ACCOUNT, False)
     broker = FakeBroker()
     clock = [_at("2026-09-02T09:30:05")]
-    execution = FutuExecution(store, broker, now=lambda: clock[0])
+    execution = ChannelExecution(store, broker, now=lambda: clock[0])
     execution.refresh_orders()
     value = decision(OrderSpec("BUY", 1000, "LIMIT", 1.68, "DAY"))
     if signal_cash:
@@ -101,7 +101,7 @@ def test_day_order_normal_unfilled_survives_restart_and_retries_only_next_sessio
     # A successful cancel request is not a terminal report and cannot release cash.
     store.close()
     store = PaperStore(path)
-    execution = FutuExecution(store, broker, now=lambda: clock[0])
+    execution = ChannelExecution(store, broker, now=lambda: clock[0])
     _cancel_report(broker)
     execution.refresh_orders()
     execution.refresh_orders()
@@ -120,7 +120,7 @@ def test_day_order_normal_unfilled_survives_restart_and_retries_only_next_sessio
     store.close()
 
     store = PaperStore(path)
-    execution = FutuExecution(store, broker, now=lambda: clock[0])
+    execution = ChannelExecution(store, broker, now=lambda: clock[0])
     engine = AccountEngine(store, advice)
     execution.refresh_orders()
     engine.refresh_account(ACCOUNT, prepared=preparation(advice.value))

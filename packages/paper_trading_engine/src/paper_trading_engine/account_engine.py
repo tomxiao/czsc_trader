@@ -204,9 +204,9 @@ class AccountEngine:
             source_decision_id=source_id,
         )
 
-    def refresh_account(self, account_id: str, *, prepared):
+    def refresh_account(self, account_id: str, *, prepared, require_paused: bool = False):
         with self._decision_lock:
-            return self._refresh_account(account_id, prepared=prepared)
+            return self._refresh_account(account_id, prepared=prepared, require_paused=require_paused)
 
     def drive_account_decision(self, account_id: str, *, prepared):
         """Evaluate one account and supersede only local, unsubmitted prior work."""
@@ -216,9 +216,11 @@ class AccountEngine:
             )
 
     def _refresh_account(
-        self, account_id: str, *, prepared, operator_drive: bool = False
+        self, account_id: str, *, prepared, operator_drive: bool = False, require_paused: bool = False
     ):
         account = self.store.virtual_account(account_id)
+        if require_paused and account["run_state"] != "PAUSED":
+            raise AccountDecisionBlockedError("manual V4 validation requires a paused strategy account")
         if self._draining:
             raise AccountDecisionBlockedError("PTE正在停止，禁止生成新的账户决策")
         if account["run_state"] == "RETIRED":
@@ -341,6 +343,8 @@ class AccountEngine:
         # Re-read the account after the potentially long-running strategy call.
         # Store-level intent creation performs the same gate inside its transaction.
         execution_account = self.store.virtual_account(account_id)
+        if require_paused and execution_account["run_state"] != "PAUSED":
+            raise AccountDecisionBlockedError("account resumed during manual V4 validation")
         if execution_account["run_state"] == "RETIRED":
             raise AccountDecisionBlockedError(
                 f"虚拟账户状态不允许执行决策: {execution_account['run_state']}"

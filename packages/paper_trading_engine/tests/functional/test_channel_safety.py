@@ -21,7 +21,7 @@ from paper_trading_engine.broker import (
 )
 from paper_trading_engine.futu_execution import (
     ChannelReconciliationError,
-    FutuExecution,
+    ChannelExecution,
     OrderSubmissionBatchError,
 )
 from paper_trading_engine.futu_gateway import FutuGateway, FutuGatewayError
@@ -114,14 +114,14 @@ def test_blocked_pending_intent_expires_and_releases_reserved_cash(new_store, tm
                         valid_session="2026-09-02", orders=[{"side": "BUY", "quantity": 1000,
                         "order_type": "LIMIT", "limit_price": float("1.680"), "time_in_force": "DAY"}])
     store.set_virtual_paused("s001-v1", False)
-    FutuExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
+    ChannelExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     intent = store.create_account_intent(
         account_id="s001-v1", decision_id="DEC-EXPIRED", order_sequence=0,
         symbol="588080.SH", side="BUY", quantity=1000,
         limit_price="1.680", valid_session="2026-09-02",
     )
     store.set_virtual_health("s001-v1", AccountHealth.BLOCKED, "等待对账")
-    execution = FutuExecution(
+    execution = ChannelExecution(
         store, FakeBroker(),
         now=lambda: datetime.fromisoformat("2026-09-03T10:00:00+08:00"),
     )
@@ -144,12 +144,12 @@ def test_unattributed_futu_cash_blocks_reconciliation_and_submission(new_store, 
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-01",
     )
     store.set_virtual_paused("s001-v1", False)
-    FutuExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
+    ChannelExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     broker = FakeBroker()
     broker.value = BrokerSnapshot(
         BrokerAccount("SIMULATE", "CN", 999_900, 999_900, 0), (), (),
     )
-    execution = FutuExecution(store, broker)
+    execution = ChannelExecution(store, broker)
     with pytest.raises(ChannelReconciliationError, match="UNATTRIBUTED"):
         execution.refresh_orders()
     assert store.get_setting("futu_cash_reconciliation_status") == "UNATTRIBUTED"
@@ -172,7 +172,7 @@ def test_ft_pte03_estimated_fees_reconcile_to_futu_cash_exactly_once(new_store, 
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-02",
     )
     store.set_virtual_paused("s001-v2", False)
-    FutuExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
+    ChannelExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     store.create_channel_reconciliation_account()
     adopt_test_decision(store, account_id="s001-v2", decision_id="DEC-BUY",
                         valid_session="2026-09-04", orders=[{"side": "BUY", "quantity": 1000,
@@ -183,7 +183,7 @@ def test_ft_pte03_estimated_fees_reconcile_to_futu_cash_exactly_once(new_store, 
         limit_price="1.680", valid_session="2026-09-04", fee_rate="0.0005",
     )
     broker = FakeBroker()
-    execution = FutuExecution(
+    execution = ChannelExecution(
         store, broker, now=lambda: datetime.fromisoformat("2026-09-04T10:00:00+08:00"),
     )
     execution.submit_pending()
@@ -269,7 +269,7 @@ def test_ft_pte03_accepts_fixed_futu_fees_for_a_small_order(new_store, tmp_path)
         symbol="510500.SH",
     )
     store.set_virtual_paused("s003-v1", False)
-    FutuExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
+    ChannelExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     store.create_channel_reconciliation_account()
     adopt_test_decision(store, account_id="s003-v1", decision_id="DEC-SMALL-BUY",
                         valid_session="2026-09-21", orders=[{"side": "BUY", "quantity": 400,
@@ -280,7 +280,7 @@ def test_ft_pte03_accepts_fixed_futu_fees_for_a_small_order(new_store, tmp_path)
         limit_price="8.613", valid_session="2026-09-21", fee_rate="0.00012",
     )
     broker = FakeBroker()
-    execution = FutuExecution(
+    execution = ChannelExecution(
         store, broker, now=lambda: datetime.fromisoformat("2026-09-21T09:30:00+08:00"),
     )
     execution.submit_pending()
@@ -317,7 +317,7 @@ def test_ft_pte03_blocks_implausible_small_order_cash_charge(new_store, tmp_path
         symbol="510500.SH",
     )
     store.set_virtual_paused("s003-v1", False)
-    FutuExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
+    ChannelExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     store.create_channel_reconciliation_account()
     adopt_test_decision(store, account_id="s003-v1", decision_id="DEC-IMPLAUSIBLE-FEE",
                         valid_session="2026-09-21", orders=[{"side": "BUY", "quantity": 400,
@@ -328,7 +328,7 @@ def test_ft_pte03_blocks_implausible_small_order_cash_charge(new_store, tmp_path
         limit_price="8.613", valid_session="2026-09-21", fee_rate="0.00012",
     )
     broker = FakeBroker()
-    execution = FutuExecution(
+    execution = ChannelExecution(
         store, broker, now=lambda: datetime.fromisoformat("2026-09-21T09:30:00+08:00"),
     )
     execution.submit_pending()
@@ -362,7 +362,7 @@ def test_ft_pte03_rejects_undefined_execution_channel_and_protects_system_accoun
     broker = FakeBroker()
     broker.channel_id = "futu"
     with pytest.raises(PaperTradingSafetyError, match="futu_simulate_cn"):
-        FutuExecution(store, broker).refresh_account()
+        ChannelExecution(store, broker).refresh_account()
 
 
 def test_ft_pte03_multiple_accounts_share_only_safe_futu_channel(new_store, tmp_path):
@@ -380,7 +380,7 @@ def test_ft_pte03_multiple_accounts_share_only_safe_futu_channel(new_store, tmp_
             symbol=symbol,
         )
         store.set_virtual_paused(account_id, False)
-        FutuExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
+        ChannelExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     adopt_test_decision(store, account_id="s001-v2", decision_id="DEC-2",
                         valid_session="2026-09-04", orders=[{"side": "BUY", "quantity": 1000,
                         "order_type": "LIMIT", "limit_price": float("1.680"), "time_in_force": "DAY"}])
@@ -400,7 +400,7 @@ def test_ft_pte03_multiple_accounts_share_only_safe_futu_channel(new_store, tmp_
     assert first_intent["intent_id"].startswith("PTE-")
     assert len(first_intent["intent_id"]) <= 24
     broker = FakeBroker()
-    execution = FutuExecution(store, broker, symbol="588080.SH", today=lambda: date(2026, 9, 4))
+    execution = ChannelExecution(store, broker, symbol="588080.SH", today=lambda: date(2026, 9, 4))
     execution.refresh_account()
     execution.submit_pending()
     submitted = broker.value.orders
@@ -501,7 +501,7 @@ def test_ft_pte03_failed_or_cancelled_buy_releases_reserved_cash(new_store, tmp_
                         valid_session="2026-09-04", orders=[{"side": "BUY", "quantity": 1000,
                         "order_type": "LIMIT", "limit_price": float("1.680"), "time_in_force": "DAY"}])
     store.set_virtual_paused("s001-v1", False)
-    FutuExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
+    ChannelExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     intent = store.create_account_intent(
         account_id="s001-v1", decision_id="DEC-FAIL", order_sequence=0,
         symbol="588080.SH", side="BUY", quantity=1000,
@@ -554,14 +554,14 @@ def test_ft_pte03_channel_and_account_pause_block_pending_submission(new_store, 
                         valid_session="2026-09-04", orders=[{"side": "BUY", "quantity": 1000,
                         "order_type": "LIMIT", "limit_price": float("1.680"), "time_in_force": "DAY"}])
     store.set_virtual_paused("s001-v1", False)
-    FutuExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
+    ChannelExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     store.create_account_intent(
         account_id="s001-v1", decision_id="DEC-PAUSE", order_sequence=0,
         symbol="588080.SH", side="BUY", quantity=1000,
         limit_price="1.680", valid_session="2026-09-04",
     )
     broker = FakeBroker()
-    execution = FutuExecution(store, broker, symbol="588080.SH", today=lambda: date(2026, 9, 4))
+    execution = ChannelExecution(store, broker, symbol="588080.SH", today=lambda: date(2026, 9, 4))
     execution.refresh_account()
     execution.pause()
     execution.submit_pending()
@@ -593,14 +593,14 @@ def test_ft_pte03_uncertain_submission_recovers_remote_order_once(new_store, tmp
                         valid_session="2026-09-04", orders=[{"side": "BUY", "quantity": 1000,
                         "order_type": "LIMIT", "limit_price": float("1.680"), "time_in_force": "DAY"}])
     store.set_virtual_paused("s001-v1", False)
-    FutuExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
+    ChannelExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     intent = store.create_account_intent(
         account_id="s001-v1", decision_id="DEC-UNCERTAIN", order_sequence=0,
         symbol="588080.SH", side="BUY", quantity=1000,
         limit_price="1.680", valid_session="2026-09-04",
     )
     broker = FailingBroker()
-    execution = FutuExecution(store, broker, today=lambda: date(2026, 9, 4))
+    execution = ChannelExecution(store, broker, today=lambda: date(2026, 9, 4))
     if failure == "local_binding":
         original_insert = store._insert_audit_event
 
@@ -625,7 +625,7 @@ def test_ft_pte03_uncertain_submission_recovers_remote_order_once(new_store, tmp
     assert store.account_orders("s001-v1") == []
     store.close()
     store = PaperStore(tmp_path / "uncertain.db")
-    execution = FutuExecution(store, broker, today=lambda: date(2026, 9, 4))
+    execution = ChannelExecution(store, broker, today=lambda: date(2026, 9, 4))
     execution.refresh_orders()
     assert store.account_intent(intent["intent_id"])["status"] == "SUBMITTED"
     assert store.virtual_account("s001-v1")["frozen_cash"] == account["frozen_cash"]
@@ -663,14 +663,14 @@ def test_ft_pte03_explicit_rejection_releases_cash_and_duplicate_submit_is_atomi
                         valid_session="2026-09-04", orders=[{"side": "BUY", "quantity": 1000,
                         "order_type": "LIMIT", "limit_price": float("1.680"), "time_in_force": "DAY"}])
     store.set_virtual_paused("s001-v1", False)
-    FutuExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
+    ChannelExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     rejected = store.create_account_intent(
         account_id="s001-v1", decision_id="DEC-REJECT", order_sequence=0,
         symbol="588080.SH", side="BUY", quantity=1000,
         limit_price="1.680", valid_session="2026-09-04",
     )
     broker = RejectingBroker()
-    execution = FutuExecution(
+    execution = ChannelExecution(
         store, broker, now=lambda: datetime.fromisoformat("2026-09-04T10:00:00+08:00")
     )
     with pytest.raises(OrderSubmissionBatchError, match="BrokerOrderRejectedError"):
@@ -694,11 +694,11 @@ def test_ft_pte03_explicit_rejection_releases_cash_and_duplicate_submit_is_atomi
         limit_price="1.680", valid_session="2026-09-04",
     )
     safe_broker = FakeBroker()
-    first = FutuExecution(
+    first = ChannelExecution(
         store, safe_broker, now=lambda: datetime.fromisoformat("2026-09-04T10:00:00+08:00")
     )
     other_store = PaperStore(tmp_path / "reject.db")
-    second_runner = FutuExecution(
+    second_runner = ChannelExecution(
         other_store, safe_broker, now=lambda: datetime.fromisoformat("2026-09-04T10:00:00+08:00")
     )
     first.refresh_account()
@@ -769,7 +769,7 @@ def test_acknowledging_execution_gap_preserves_unrelated_health_block(new_store,
         store, account_id="s001-v1", decision_id="DEC-REJECT", valid_session="2026-09-04",
         orders=[{"side": "BUY", "quantity": 1000, "order_type": "LIMIT", "limit_price": 1.68}],
     )
-    FutuExecution(
+    ChannelExecution(
         store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00"),
     ).refresh_orders()
     intent = store.create_account_intent(
@@ -778,7 +778,7 @@ def test_acknowledging_execution_gap_preserves_unrelated_health_block(new_store,
         limit_price="1.680", valid_session="2026-09-04",
     )
     broker = RejectingBroker()
-    execution = FutuExecution(
+    execution = ChannelExecution(
         store, broker, now=lambda: datetime.fromisoformat("2026-09-04T10:00:00+08:00"),
     )
     with pytest.raises(OrderSubmissionBatchError):
@@ -811,14 +811,14 @@ def test_ft_pte03_incomplete_and_unknown_orders_never_silently_recover(new_store
                         valid_session="2026-09-02", orders=[{"side": "BUY", "quantity": 1000,
                         "order_type": "LIMIT", "limit_price": float("1.680"), "time_in_force": "DAY"}])
     partial_store.set_virtual_paused("s001-v1", False)
-    FutuExecution(partial_store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
+    ChannelExecution(partial_store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     partial = partial_store.create_account_intent(
         account_id="s001-v1", decision_id="DEC-PARTIAL", order_sequence=0,
         symbol="588080.SH", side="BUY", quantity=1000,
         limit_price="1.680", valid_session="2026-09-02",
     )
     partial_broker = FakeBroker()
-    partial_execution = FutuExecution(
+    partial_execution = ChannelExecution(
         partial_store, partial_broker, today=lambda: date(2026, 9, 2),
     )
     partial_execution.submit_pending()
@@ -873,14 +873,14 @@ def test_ft_pte03_incomplete_and_unknown_orders_never_silently_recover(new_store
                         valid_session="2026-09-02", orders=[{"side": "BUY", "quantity": 1000,
                         "order_type": "LIMIT", "limit_price": float("1.680"), "time_in_force": "DAY"}])
     timeout_store.set_virtual_paused("s001-v1", False)
-    FutuExecution(timeout_store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
+    ChannelExecution(timeout_store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     timeout = timeout_store.create_account_intent(
         account_id="s001-v1", decision_id="DEC-TIMEOUT", order_sequence=0,
         symbol="588080.SH", side="BUY", quantity=1000,
         limit_price="1.680", valid_session="2026-09-02",
     )
     timeout_broker = FakeBroker()
-    timeout_execution = FutuExecution(
+    timeout_execution = ChannelExecution(
         timeout_store, timeout_broker, today=lambda: date(2026, 9, 2),
     )
     timeout_execution.submit_pending()
@@ -923,7 +923,7 @@ def test_ft_pte03_rejected_decision_remains_blocked_until_operator_review(new_st
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-01",
     )
     store.set_virtual_paused("s001-v1", False)
-    FutuExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
+    ChannelExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     advice = FakeAdvice(decision(OrderSpec("BUY", 1000, "LIMIT", 1.68, "DAY")))
     accounts = AccountEngine(
         store, advice,
@@ -931,7 +931,7 @@ def test_ft_pte03_rejected_decision_remains_blocked_until_operator_review(new_st
     )
     prepared = preparation(advice.value)
     accounts.refresh_account("s001-v1", prepared=prepared)
-    execution = FutuExecution(
+    execution = ChannelExecution(
         store, RejectingBroker(), now=lambda: datetime.fromisoformat("2026-09-02T10:00:00+08:00"),
     )
     with pytest.raises(OrderSubmissionBatchError, match="BrokerOrderRejectedError"):
@@ -956,7 +956,7 @@ def test_ft_pte03_missing_broker_order_and_overfill_block_without_mutating_ledge
                         valid_session="2026-09-04", orders=[{"side": "BUY", "quantity": 1000,
                         "order_type": "LIMIT", "limit_price": float("1.680"), "time_in_force": "DAY"}])
     store.set_virtual_paused("s001-v1", False)
-    FutuExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
+    ChannelExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     intent = store.create_account_intent(
         account_id="s001-v1", decision_id="DEC-MISSING", order_sequence=0,
         symbol="588080.SH", side="BUY", quantity=1000,
@@ -980,7 +980,7 @@ def test_ft_pte03_missing_broker_order_and_overfill_block_without_mutating_ledge
     assert account_after["quantity"] == 0
     assert store.account_fills("s001-v1") == []
 
-    execution = FutuExecution(
+    execution = ChannelExecution(
         store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-04T10:00:00+08:00")
     )
     with pytest.raises(ChannelReconciliationError, match="不存在"):
@@ -999,7 +999,7 @@ def test_ft_pte03_opend_can_reconnect_without_restarting_pte(new_store, tmp_path
         attempts += 1
         if attempts == 1:
             raise ConnectionError("OpenD unavailable")
-        return FutuExecution(store, FakeBroker())
+        return ChannelExecution(store, FakeBroker())
 
     execution = ReconnectableExecution(store, "588080.SH", factory)
     with pytest.raises(ConnectionError, match="OpenD unavailable"):
@@ -1012,7 +1012,7 @@ def test_ft_pte03_opend_can_reconnect_without_restarting_pte(new_store, tmp_path
     execution.close()
 
     recovered_store = new_store(tmp_path / "reconnect-established.db")
-    replacement = FutuExecution(recovered_store, FakeBroker())
+    replacement = ChannelExecution(recovered_store, FakeBroker())
 
     class BrokenBroker:
         def __init__(self): self.closed = False

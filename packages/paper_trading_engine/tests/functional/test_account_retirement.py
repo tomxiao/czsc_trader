@@ -12,7 +12,7 @@ import pytest
 
 from paper_trading_engine import AccountRetirementRequest, AccountRetirementStatus
 from paper_trading_engine.cli import main as pte_main
-from paper_trading_engine.futu_execution import FutuExecution, ChannelReconciliationError
+from paper_trading_engine.futu_execution import ChannelExecution, ChannelReconciliationError
 from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine.web import create_server
 from paper_trading_engine.web_api import PteWebApi
@@ -33,7 +33,7 @@ def create(store, account_id="one", capital=100000):
 def setup(new_store, retirement_database, tmp_path):
     store = new_store(tmp_path / "runtime.db", seed=retirement_database)
     broker = FakeBroker()
-    execution = FutuExecution(store, broker)
+    execution = ChannelExecution(store, broker)
     request = AccountRetirementRequest("one", "a" * 64, "test", "stop this account")
     yield store, broker, execution, request
     store.close()

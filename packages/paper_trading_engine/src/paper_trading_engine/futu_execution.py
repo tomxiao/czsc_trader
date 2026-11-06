@@ -1146,7 +1146,3 @@ class ChannelExecution:
         if close is not None:
             close()
         self.store.close()
-
-
-# Historical import remains the same implementation, not a second execution path.
-FutuExecution = ChannelExecution

@@ -17,7 +17,7 @@ from .channel_accounts import DEFAULT_CHANNEL_ACCOUNT
 from .coordinator import PteCoordinator, ReconnectableExecution
 from .equity_advice import PreparedEquityDecision
 from .formal_v4_advice import FormalV4AdviceClient, FormalV4ScheduleProvider
-from .futu_execution import FutuExecution
+from .futu_execution import ChannelExecution
 from .futu_gateway import FutuGateway, FutuGatewayError
 from .srt_advice_client import SrtAdviceClient
 from .trading_window import ScheduledDecision
@@ -139,6 +139,15 @@ class MultiChannelRuntime:
         return {'scope': 'MULTICHANNEL', 'runtime': self.runtime_identity,
                 'channels': {key: value.execution.status() for key, value in self.services.items()}}
 
+    def drive_virtual_account_decision(self, account_id: str):
+        account = self.store.virtual_account(account_id)
+        if account['equity_rules_json'] is None:
+            return self.console_view.drive_virtual_account_decision(account_id)
+        services = self.services[account['channel_account_id']]
+        return FormalV4ScheduleProvider(services.formal, services.accounts).drive_decision(
+            account_id, datetime.now(timezone.utc),
+        )
+
     def begin_shutdown(self):
         for services in self.services.values():
             services.accounts.begin_shutdown()
@@ -185,7 +194,7 @@ def build_multichannel_runtime(args, store, dataflows, *, gateway_factory=FutuGa
             def connect(scoped=scoped, config=config, audit=audit, fee_policy=fee_policy):
                 gateway = gateway_factory(config=config, host=args.opend_host, port=args.opend_port, audit=audit)
                 try:
-                    return FutuExecution(scoped, gateway, config=config, audit=audit, fee_policy=fee_policy)
+                    return ChannelExecution(scoped, gateway, config=config, audit=audit, fee_policy=fee_policy)
                 except BaseException:
                     gateway.close()
                     raise

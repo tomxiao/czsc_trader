@@ -175,7 +175,8 @@ class FakeEngine:
             from paper_trading_engine.web_api import ResourceNotFound
             raise ResourceNotFound(account_id)
         return self.chart_file
-    def channel_snapshot(self, channel): return {"scope": {"channel": channel}, "orders": []}
+    def channel_snapshot(self, channel):
+        return {"scope": {"channel": channel}, "orders": [], "paused": self.paused}
     def comparison(self, account_ids): return {"accounts": [{"account_id": x} for x in account_ids]}
     def audit_events(self, filters):
         self.audit_filters.append(filters)
@@ -347,11 +348,21 @@ def test_ft_pte05_console_resources_interventions_events_and_restart(new_store, 
             with pytest.raises(HTTPError) as invalid:
                 request_json(base + "/api/audit-events?" + query)
             assert invalid.value.code == 400
-        assert request_json(base + "/api/pause", "POST", {})[1]["paused"] is True
-        assert request_json(base + "/api/resume", "POST", {})[1]["paused"] is False
-        token = request_json(base + "/api/cancel-token", "POST", {"account_id": "alpha", "channel_order_id": "1"})[1]["token"]
-        request_json(base + "/api/cancel", "POST", {"account_id": "alpha", "channel_order_id": "1", "token": token})
+        channel = base + "/api/channels/futu-simulate-cn"
+        assert request_json(channel + "/pause", "POST", {})[1]["paused"] is True
+        assert request_json(channel + "/resume", "POST", {})[1]["paused"] is False
+        order = {"account_id": "alpha", "channel_order_id": "1"}
+        token = request_json(channel + "/cancel-token", "POST", order)[1]["token"]
+        request_json(channel + "/cancel", "POST", {**order, "token": token})
         assert engine.cancelled == ["1"]
+        for route, method, body in (
+            ("status", "GET", None), ("pause", "POST", {}), ("resume", "POST", {}),
+            ("cancel-token", "POST", order), ("cancel", "POST", {**order, "token": token}),
+        ):
+            with pytest.raises(HTTPError) as obsolete:
+                request_json(base + "/api/" + route, method, body)
+            assert obsolete.value.code == 404
+        assert engine.paused is False and engine.cancelled == ["1"]
         request_json(
             base + "/api/virtual-accounts/alpha/intents/PTE-1/acknowledge",
             "POST", {"resolution_note": "已人工确认"},

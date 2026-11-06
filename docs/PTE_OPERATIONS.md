@@ -68,7 +68,7 @@ $RuntimeArgs = @(
 `/resume`发送`Content-Type: application/json`、正文`{}`的POST请求。在线创建渠道平账账户使用
 `pte control create-reconciliation`；控制令牌由CLI只读取得，实际变更由运行中的服务执行。
 
-需要立即驱动单个虚拟账户决策时，在控制台调用：
+需要立即驱动单个虚拟账户决策时，使用既有 Web 入口：
 
 ```http
 POST /api/virtual-accounts/{account_id}/decision
@@ -77,9 +77,10 @@ Content-Type: application/json
 {}
 ```
 
-该接口无需控制令牌，返回`DECISION_COMPLETED`、`DECISION_REUSED`、
+旧合同账户返回`DECISION_COMPLETED`、`DECISION_REUSED`、
 `DECISION_SUPERSEDED`或`DECISION_AND_INTENTS_SUPERSEDED`。只有尚未提交渠道且没有
 `channel_order_id`的订单意图可以随旧决策失效；已有渠道订单或结果未知时返回冲突。
+V4 双市场账户必须健康、暂停，且处于绑定允许的执行区间。调用会写入正式决策、账户状态及审计，需取得生产操作授权。结果可通过账户快照和事件核对，`DECISION_REUSED` 表示已有决策被复用。
 
 “正常未成交”表示限价买单已按执行时窗结束且确认零成交，不需要人工解除阻塞；
 同日再次驱动相同计划返回`DECISION_REUSED`，下一交易日按新的策略决策执行。核验时关联
@@ -114,6 +115,17 @@ Content-Type: application/json
 重启验收要求健康接口返回HTTP 200、`runtime=RUNNING`、`watchdog_healthy=true`，并确认
 `instance_id`已改变；版本切换验收还须确认目标`release_id`。超时或健康条件未满足时明确失败。
 进程健康与账户、渠道业务告警分别核对；重复发布同一活动版本的身份查询不替代健康验收。
+
+### Web API 在线验收
+
+运维脚本使用 `/api/health`、`/api/system/status` 和具体资源查询。旧聚合 `/api/status` 已移除；A 股渠道暂停、恢复与撤单使用 `/api/channels/futu-simulate-cn/` 下的现行路由。
+
+1. 发布前在隔离 DEV 用待发布实现验证 A 股与美股闭环。固定时点和模拟回报用于核对决策、订单、成交和入账，确认重复回报不重复入账。真实供数和重绑事务按发布计划分别留证。
+2. 发布启动后、恢复账户前，在 PTE 宿主运行 `python -m paper_trading_engine.online_verify --port <端口> --plan <清单> --json-output <新报告>`。清单填写待验发布的版本、提交及制品清单哈希，以及本次要求的渠道与账户。工具默认只读，检查运行身份、调度心跳、渠道对账、账户状态和发布绑定。清单格式见 [PTE 模块说明](../packages/paper_trading_engine/README.md#web-api-在线验证)。
+3. 若发布窗口内有有效执行区间且数据已齐备，可经单独授权对指定暂停账户调用 `POST .../decision`，检查实际采用的发布哈希、决策及数据身份。当前无到期周期时保留 `BLOCKED`，按获准计划在首个真实周期复验。既有决策复用与本次新增分别记录。
+4. 账户按批准顺序恢复。首个真实周期按清单追加决策预期，核对数据准备、决策采纳、订单成交及对账。若本周期预期不交易，明确校验仓位和订单预期。归档 JSON 报告，并记录各渠道的验收结论。
+
+### WDG 服务管理
 
 首次发布完成后，管理员PowerShell从已发布的轻量宿主安装WDG。普通PTE版本和策略发布继续
 复用该宿主；只有WDG依赖或服务配置变化时重新执行`install-config`。
@@ -201,8 +213,7 @@ PTE按模型费用记录策略账户。经核实的Futu实际费用与模型费�
 渠道平账账户，不混入策略绩效；未知费用和订单结果不得推断入账。
 日调度与Web请求不等待前瞻图的独立后台构建，图表缓存不能代替账户和渠道事实。
 
-PTE当前只实现Futu中国市场模拟交易渠道，控制台只监听localhost，WDG服务名为
-`CZSC-PTE-Watchdog`。实际活动版本、服务健康及渠道状态必须只读核对。
-未复权正式账本尚未建模ETF现金分红、份额拆分等公司行动；此类非交易变动发生时，
-保持渠道差异告警并人工归属，禁止按交易费用自动调账。
-长期经济绩效使用后复权研究口径，待公司行动契约完成后再与PTE账本完整对齐。
+当前代码支持 Futu A 股和美股模拟渠道，Web 服务只监听 localhost，WDG 服务名为
+`CZSC-PTE-Watchdog`。实际部署版本和已接通的渠道以运行宿主的只读核对为准。
+V4 按可用的正式公司行动事实入账。旧合同或事实不足的账户遇到无法解释的非交易变动时，
+保留渠道差异告警并人工核对，费用差额仅按已确认的归因规则记录。
