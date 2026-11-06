@@ -75,7 +75,7 @@ def test_missing_bar_fails_instead_of_forward_filling(tmp_path):
         replay_payload(context, request)
 
 
-def test_split_and_dividend_preserve_entitlements_and_pay_later(tmp_path):
+def test_split_changes_quantity_but_dividend_does_not_fund_replay(tmp_path):
     context, request, products, _ = setup_equity(tmp_path, decide=hold)
     bars = products[EquityProduct.BARS]
     stamp = bars.BarStart.iloc[13]
@@ -85,13 +85,18 @@ def test_split_and_dividend_preserve_entitlements_and_pay_later(tmp_path):
         {"Date": stamp, "AvailableDate": stamp, "EventId": "1-split", "Kind": "SPLIT", "Ratio": 2., "CashPerShare": 0., "PayAt": None},
         {"Date": stamp, "AvailableDate": stamp, "EventId": "2-dividend", "Kind": "CASH_DIVIDEND", "Ratio": 1., "CashPerShare": .1, "PayAt": pay},
     ])
-    run = replay_payload(context, request)["runs"]["candidate"]
-    assert run["account_points"][11]["quantity"] == 98
-    assert run["account_points"][12]["quantity"] == 196
-    assert run["account_points"][12]["receivable"] == pytest.approx(19.6)
-    assert run["account_points"][-1]["receivable"] == 0
-    assert run["account_points"][-1]["equity"] == pytest.approx(1018.62)
-    assert [row["kind"] for row in run["actions"]] == ["SPLIT", "CASH_DIVIDEND", "DIVIDEND_PAYMENT"]
+    with account_research(context, request) as (_, result, payload, _):
+        assert payload["request"]["income_policy"] == "EXCLUDE_NON_TRADING_INCOME"
+        assert payload["benchmark_identity"]["income_policy"] == payload["request"]["income_policy"]
+        assert [row["Kind"] for row in payload["audit_inputs"]["action_facts"]] == ["SPLIT"]
+        source = json.loads(next(item.content for item in result.artifacts if item.kind == "equity_input"))
+        assert [row["Kind"] for row in source["products"]["actions"]] == ["SPLIT", "CASH_DIVIDEND"]
+        for run in payload["runs"].values():
+            assert run["account_points"][11]["quantity"] == 98
+            assert run["account_points"][12]["quantity"] == 196
+            assert all(row["receivable"] == 0 for row in run["account_points"])
+            assert run["account_points"][-1]["equity"] == pytest.approx(999.02)
+            assert [row["kind"] for row in run["actions"]] == ["SPLIT"]
 
 
 def test_future_bar_changes_do_not_change_prior_decisions(tmp_path):
@@ -144,7 +149,7 @@ def test_execution_requires_current_trading_constraints_and_volume(tmp_path, def
         assert run["metrics"]["total_return"] == 0
 
 
-def test_payment_in_session_gap_precedes_next_day_split(tmp_path):
+def test_dividend_payment_in_session_gap_does_not_change_replay_cash(tmp_path):
     context, request, products, _ = setup_equity(tmp_path, decide=hold)
     bars = products[EquityProduct.BARS]
     ex, split = bars.BarStart.iloc[4], bars.BarStart.iloc[13]
@@ -155,8 +160,8 @@ def test_payment_in_session_gap_precedes_next_day_split(tmp_path):
         {"Date": split, "AvailableDate": split, "EventId": "split", "Kind": "SPLIT", "Ratio": 2., "CashPerShare": 0., "PayAt": None},
     ])
     run = replay_payload(context, request)["runs"]["candidate"]
-    assert [row["kind"] for row in run["actions"]] == ["CASH_DIVIDEND", "DIVIDEND_PAYMENT", "SPLIT"]
-    assert run["account_points"][-1]["equity"] == pytest.approx(1008.82)
+    assert [row["kind"] for row in run["actions"]] == ["SPLIT"]
+    assert run["account_points"][-1]["equity"] == pytest.approx(999.02)
 
 
 def test_publication_rejects_truncated_account_even_with_intact_request_hash(tmp_path):

@@ -87,7 +87,7 @@ def test_formal_equity_diagnosis_retains_intraday_cycles_and_continuous_slice(tm
         assert sliced.pnl_breakdown[0].daily[0].opening_equity == full.pnl_breakdown[0].daily[0].closing_equity
 
 
-def test_equity_diagnosis_reconciles_split_dividend_and_payment(tmp_path):
+def test_equity_diagnosis_reconciles_split_when_source_also_has_dividend(tmp_path):
     import pandas as pd
     from dataflows import EquityProduct
     from datetime import date
@@ -117,7 +117,7 @@ def test_equity_diagnosis_reconciles_split_dividend_and_payment(tmp_path):
             EvaluationWindow("events", date(2026,10,1), date(2026,10,2))))
         assert diagnosis.status == "COMPUTED", diagnosis.issues
         assert all(abs(row.residual) < 1e-7 for row in diagnosis.pnl_breakdown[0].daily)
-        assert payload["runs"]["candidate"]["account_points"][-1]["equity"] == pytest.approx(1018.62)
+        assert payload["runs"]["candidate"]["account_points"][-1]["equity"] == pytest.approx(999.02)
 
 
 def test_formal_benchmark_applies_opening_split_before_integer_share_budget(tmp_path):

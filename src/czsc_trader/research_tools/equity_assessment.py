@@ -66,13 +66,16 @@ def build_equity_assessment_payload(payload):
             point = ParameterEvaluationBinding.from_dict(lineage["parameter_binding"]).point
     version = f"equity-assessment-v4:{facts.drawdown_basis}:{facts.concentration_basis}"
     benchmark = request["benchmark"]
-    context = canonical_sha256({
+    comparison = {
         "instrument": instrument, "specification": request["specification"],
         "data": header["data"], "sessions": [row.session for row in account],
         "window": request["window"], "history_start": request["history_start"],
         "initial_cash": request["initial_cash"], "benchmark": request["benchmark_sha256"],
         "frequency_window_days": request["frequency_window_days"], "metric_version": version,
-    })
+    }
+    if "income_policy" in request:
+        comparison["income_policy"] = request["income_policy"]
+    context = canonical_sha256(comparison)
     behavior = canonical_sha256({name: run[name] for name in ("fills", "actions", "account_points", "trades")})
     return (AssessmentEvidence(
         AssessmentCandidate(f"{key.strategy_id}-{key.candidate_id}", content),

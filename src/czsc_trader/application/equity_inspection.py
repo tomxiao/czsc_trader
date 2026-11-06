@@ -15,6 +15,7 @@ from strategy_runtime import EquityStrategyCandidate, EquityStrategyDefinition, 
 from strategy_runtime.inspection import InspectionRuntimePermit, InspectionStage
 from strategy_runtime.deployment import validate_release_package
 from strategy_manager import StrategyRegistry, freeze_contracts as f
+from ..research_tools.equity_evaluation import TRADING_INCOME_POLICY, replay_actions, replay_action_facts
 from ._inspection_candidate import _load_inspection_candidate
 from .inspection_execution import Controller, Interrupted, equivalence_jobs, goal
 from .inspection_contracts import InspectionPublicationError
@@ -32,7 +33,8 @@ def replay_identity(replay, runtime_kind='US_EQUITY'):
     return {'runtime_kind': runtime_kind, 'coordinate': replay.coordinate.to_dict(),
         'input_binding': _json(replay.input_binding.to_dict()),
         'window': _json(asdict(replay.window)), 'initial_cash': replay.initial_cash,
-        'one_way_cost': replay.one_way_cost, 'baseline': None if replay.baseline is None else replay.baseline.to_dict()}
+        'one_way_cost': replay.one_way_cost, 'income_policy': TRADING_INCOME_POLICY,
+        'baseline': None if replay.baseline is None else replay.baseline.to_dict()}
 
 
 def _products(flows, replay):
@@ -81,7 +83,7 @@ def replay_account(candidate, flows, replay):
     from strategy_evaluator.frozen_equity import _audit_frozen_equity_account
     specification = candidate.definition.execution_spec
     executor = _FrozenEquityExecutor(specification=specification, initial_cash=replay.initial_cash,
-                                        fee_rate=replay.one_way_cost, actions=products['actions'])
+                                        fee_rate=replay.one_way_cost, actions=replay_actions(products['actions']))
     account = StrategyRuntime(execution_spec=specification).create(candidate).run_window(
         products['bars'], products['constraints'], executor, start=replay.window.start,
         end=replay.window.end, fee_rate=replay.one_way_cost,
@@ -93,7 +95,8 @@ def replay_account(candidate, flows, replay):
         ('account_points','account_points'), ('account_daily','account_daily'), ('trades','trades'))}
     source = {name: _records(frame) for name, frame in products.items()}
     audit = _audit_frozen_equity_account(initial_cash=replay.initial_cash, specification=asdict(specification),
-        bars=source['bars'], action_facts=source['actions'], constraints=source['constraints'],
+        bars=source['bars'], action_facts=replay_action_facts(source['actions'], TRADING_INCOME_POLICY),
+        constraints=source['constraints'],
         fee_rate=replay.one_way_cost, decision_contract="FORMAL_V2",
         **{k: facts[k] for k in ('decisions','orders','fills','actions','account_points','trades')})
     return _json({'facts': facts, 'metrics': asdict(audit), 'source': source, 'data': identities,
@@ -124,7 +127,7 @@ def _replay_account_v4(candidate, replay, products, identities):
                              ', '.join(point.isoformat() for point in checked.differing_points))
         batch_consistency = {'status': 'PASS', 'checked_points': checked.checked_points}
     executor = PortfolioHistoricalExecutor(specification=spec, initial_cash=replay.initial_cash,
-        fee_rate=replay.one_way_cost, actions=products['actions'], price_basis='RAW',
+        fee_rate=replay.one_way_cost, actions=replay_actions(products['actions']), price_basis='RAW',
         execution_bars=None if definition.execution_input is None else products['execution:bars'])
     outcome = run_replay(prepared, candidate, executor, start=replay.window.start, end=replay.window.end,
         fee_rate=replay.one_way_cost,
@@ -197,6 +200,8 @@ def _pte_job(candidate, flows, replay, permit, protocol, controller):
 
 def _baseline_matches(payload, replay, account, content_hash, candidate_key):
     from ..research_tools.equity_assessment import build_equity_assessment_payload
+    if payload['request'].get('income_policy') != account['input'].get('income_policy'):
+        raise ValueError('baseline income policy differs from technical replay')
     evidence = build_equity_assessment_payload(payload)
     if replay.baseline.evaluation_ids and set(replay.baseline.evaluation_ids) != {x.evaluation_id for x in evidence}:
         raise ValueError('baseline evaluation coordinates differ')
@@ -376,7 +381,8 @@ def validate_pass_facts(root, report, normalized, protocol):
         else:
             from strategy_evaluator.frozen_equity import _audit_frozen_equity_account
             audit = _audit_frozen_equity_account(initial_cash=replay['initial_cash'], specification=asdict(definition.execution_spec),
-                bars=source['bars'], action_facts=source['actions'], constraints=source['constraints'],
+                bars=source['bars'], action_facts=replay_action_facts(source['actions'], replay.get('income_policy')),
+                constraints=source['constraints'],
                 fee_rate=replay['one_way_cost'], decision_contract="FORMAL_V2",
                 **{k: ledger[k] for k in ('decisions','orders','fills','actions','account_points','trades')})
             if _json(asdict(audit)) != left['metrics']:

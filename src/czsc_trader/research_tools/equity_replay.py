@@ -22,7 +22,8 @@ from strategy_runtime.equity_definition import EquityAuxiliaryBinding, EquityInp
 from strategy_evaluator.equity_metrics import summarize_equity_ledger
 
 from .equity_evaluation import (EquityArtifact, EquityEvaluationRequest, EquityEvaluationResult,
-    _audit_inputs, _data_quality, _fetch_products, _json_value, _records, _runtime_inputs)
+    _audit_inputs, _data_quality, _fetch_products, _json_value, _records, _runtime_inputs,
+    replay_actions, replay_action_facts)
 from .execution import ExecutionPhase, ResearchExecutionSession
 from .account_preparation import PreparedAccountEvaluation, BenchmarkRunIdentity
 
@@ -240,7 +241,7 @@ def prepare_equity(access, request, *, execution):
             "window": asdict(request.window), "history_start": request.history_start.isoformat(),
             "initial_cash": request.initial_cash, "fee_rate": request.fee_rate,
             "engine_sources": contract["engine_sources"], "python_version": contract["python_version"],
-            "pandas_version": contract["pandas_version"]}))
+            "pandas_version": contract["pandas_version"], "income_policy": contract["income_policy"]}))
         value = PreparedAccountEvaluation(request, snapshot, benchmark, state.token, _bytes(contract))
         state.prepared[id(value)] = value
         from .parameter_evaluation import validate_parameter_request
@@ -308,7 +309,7 @@ def _compute_account(replay, candidate, request, actions, owner, execution_bars,
     from strategy_runtime.equity_replay import run_replay
     from trading_execution_engine.portfolio import PortfolioHistoricalExecutor
     executor = PortfolioHistoricalExecutor(specification=candidate.definition.execution_spec,
-        initial_cash=request.initial_cash, fee_rate=request.fee_rate, actions=actions,
+        initial_cash=request.initial_cash, fee_rate=request.fee_rate, actions=replay_actions(actions),
         price_basis="RAW", execution_bars=execution_bars)
     outcome = run_replay(replay, candidate, executor, start=request.window.start,
         end=request.window.end, fee_rate=request.fee_rate, owner=owner)
@@ -544,6 +545,7 @@ def decoded_equity_runs(payload, inputs, candidate, benchmark, *, primary_sha256
             if (contract["input_snapshot_sha256"] != primary_sha256
                     or any(contract[name] != request[name] for name in
                         ("instrument", "window", "history_start", "initial_cash", "fee_rate", "engine_sources", "python_version", "pandas_version"))
+                    or contract.get("income_policy") != request.get("income_policy")
                     or contract["definition"]["warmup_bars"] != request["warmup_bars"]
                     or contract["definition"]["execution_spec"] != request["specification"]):
                 raise ValueError("equity benchmark economic identity differs from evaluation")
@@ -580,7 +582,8 @@ class MaterializedEquity:
             primary_sha256=primary_input_digest(inputs))
         request = payload["request"]
         products = inputs["products"]
-        payload.update(runs=runs, audit_inputs={"bars": products["bars"], "action_facts": products["actions"],
+        payload.update(runs=runs, audit_inputs={"bars": products["bars"],
+            "action_facts": replay_action_facts(products["actions"], request.get("income_policy")),
             "constraints": products["constraints"], "specification": request["specification"],
             "initial_cash": request["initial_cash"], "fee_rate": request["fee_rate"]})
         definition = request["candidate_definition"]

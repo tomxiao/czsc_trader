@@ -5,6 +5,7 @@ from decimal import Decimal
 from hashlib import sha256
 import json
 
+import pandas as pd
 import pytest
 from dataflows import MarketId, EquityProduct, TimeInterval
 from strategy_runtime import InspectionControl, StrategyComputation
@@ -22,8 +23,16 @@ from test_equity_adjusted_observations import setup_adjusted
 from test_equity_inspection_roundtrip import seed_registered_frozen_candidate
 
 
-def native_fixture(tmp_path, market, computation=StrategyComputation.STATEFUL_STEP, *, initial_state=False):
+def native_fixture(tmp_path, market, computation=StrategyComputation.STATEFUL_STEP, *, initial_state=False,
+                   dividend=False):
     context, request, products, _, _ = setup_adjusted(tmp_path, market, computation)
+    if dividend:
+        bars = products[EquityProduct.BARS]
+        stamp = bars.BarStart.iloc[-2]
+        products[EquityProduct.ACTIONS] = pd.DataFrame([{
+            'Date': stamp, 'AvailableDate': stamp, 'EventId': 'dividend', 'Kind': 'CASH_DIVIDEND',
+            'Ratio': 1., 'CashPerShare': .1, 'PayAt': bars.BarStart.iloc[-1],
+        }])
     if initial_state:
         from strategy_runtime import equity_source_hash, StateRecord
         from strategy_runtime.equity_replay import StrategyStateSchema, StateField, StateValueType
@@ -73,12 +82,15 @@ def native_protocol(context, request, products):
 @pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
 @pytest.mark.parametrize('computation', [StrategyComputation.STATEFUL_STEP, StrategyComputation.BATCH_HISTORY])
 def test_native_technical_replay_preserves_adjusted_inputs_raw_fills_and_state(tmp_path, market, computation, monkeypatch):
-    context, request, _, replay = native_fixture(tmp_path, market, computation)
+    context, request, _, replay = native_fixture(tmp_path, market, computation, dividend=True)
     def forbidden(*args, **kwargs):
         raise AssertionError('native replay must not run the retired V2 accounting audit')
     monkeypatch.setattr('strategy_evaluator.frozen_equity._audit_frozen_equity_account', forbidden)
     facts = replay_account(request.candidate, context.data, replay)
     assert facts['input']['runtime_kind'] == 'ACCOUNT_REPLAY'
+    assert facts['input']['income_policy'] == 'EXCLUDE_NON_TRADING_INCOME'
+    assert [row['Kind'] for row in facts['source']['actions']] == ['CASH_DIVIDEND']
+    assert not {'CASH_DIVIDEND', 'DIVIDEND_PAYMENT'} & {row['kind'] for row in facts['facts']['actions']}
     assert facts['definition']['contract_version'] == 4
     assert facts['final_state']['revision'] == 3
     assert facts['facts']['fills'] and all(x['price'] < 11 for x in facts['facts']['fills'])

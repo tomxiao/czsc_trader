@@ -160,7 +160,8 @@ class EquityEvaluationRequest:
                 "sources": asdict(self.sources), "initial_cash": self.initial_cash, "fee_rate": self.fee_rate,
                 "engine_sources": engine_sources, "python_version": platform.python_version(),
                 "pandas_version": pd.__version__,
-                "data_manifest": self.prepared.manifest_sha256 if self.prepared is not None else None}
+                "data_manifest": self.prepared.manifest_sha256 if self.prepared is not None else None,
+                "income_policy": TRADING_INCOME_POLICY}
         identity = self.candidate.content_identity
         contract.update(candidate_identity=asdict(identity), content_sha256=identity.content_sha256,
                         candidate_definition=self.candidate.definition.to_dict(),
@@ -268,8 +269,25 @@ def _fetch_products(access, request):
     return products, identities
 
 
+TRADING_INCOME_POLICY = "EXCLUDE_NON_TRADING_INCOME"
+
+
+def replay_actions(frame):
+    """Keep quantity adjustments and exclude cash dividends from TDR accounts."""
+    return frame.loc[frame["Kind"].ne("CASH_DIVIDEND")]
+
+
+def replay_action_facts(records, income_policy):
+    """Project the original source facts using the accounting rule in the evidence."""
+    if income_policy is None:
+        return records  # Older evidence used the full corporate action ledger.
+    if income_policy != TRADING_INCOME_POLICY:
+        raise ValueError("unsupported equity replay income policy")
+    return [row for row in records if row["Kind"] != "CASH_DIVIDEND"]
+
+
 def _audit_inputs(request, specification, products):
-    inputs = {"bars": _records(products["bars"]), "action_facts": _records(products["actions"]),
+    inputs = {"bars": _records(products["bars"]), "action_facts": _records(replay_actions(products["actions"])),
               "constraints": _records(products["constraints"]), "specification": asdict(specification),
               "initial_cash": request.initial_cash, "fee_rate": request.fee_rate}
     definition = request.candidate.definition

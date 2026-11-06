@@ -247,10 +247,14 @@ def test_stage_three_raw_actions_and_independent_multi_fill_diagnosis(tmp_path, 
         outcome, = context.evaluation.evaluate_many((prepared,), execution=execution)
         assert outcome.result is not None, outcome.error
         facts, = build_assessment_evidence(prepared, outcome.result, execution=execution)
-        ledger = _retained_ledger(outcome.result, benchmark=True)
-        assert ledger['account_contract'] == 4
-        assert {row['kind'] for row in ledger['actions']} >= {'SPLIT', 'CASH_DIVIDEND', 'DIVIDEND_PAYMENT'}
         from strategy_evaluator.equity import audit_equity_account
+        for benchmark in (False, True):
+            ledger = _retained_ledger(outcome.result, benchmark=benchmark)
+            assert ledger['account_contract'] == 4
+            assert {row['Kind'] for row in ledger['action_facts']} == {'SPLIT'}
+            assert not {'CASH_DIVIDEND', 'DIVIDEND_PAYMENT'} & {row['kind'] for row in ledger['actions']}
+            audit_equity_account(**ledger, decision_contract='FORMAL_V4')
+        assert 'SPLIT' in {row['kind'] for row in ledger['actions']}
         # Independent fact audit must reject an altered, otherwise well-formed ledger.
         damaged = dict(ledger, account_points=[dict(row) for row in ledger['account_points']])
         damaged['account_points'][-1]['cash'] += 1
