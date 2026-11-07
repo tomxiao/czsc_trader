@@ -31,8 +31,29 @@ CZSC Trader 面向量化策略研究与模拟交易，连接受控数据、策�
 | [SE](packages/strategy_evaluator/README.md) | 确定性数值评价、自检及账本比较 |
 | [SRT](packages/strategy_runtime/README.md) | 共享数据准备、策略计算、决策提案与观察快照 |
 | [EC](packages/execution_channels/README.md) | 共享市场规则与订单规划；CN/US 模拟盘及历史盘执行与账户 |
-| [PTE](packages/paper_trading_engine/README.md) | 模拟交易、账户审计与前瞻观察 |
+| [PTE](packages/paper_trading_engine/README.md) | 模拟盘调度、发布绑定、策略编排、Web运维与前瞻观察；调用EC执行和管理渠道账户 |
 | [SC](packages/strategy_chart/README.md) | 回测与前瞻共享图表，展示观察快照和执行事实 |
+
+## 模块协作与依赖
+
+TDR和PTE是两类宿主：TDR组织研究与历史评价，PTE组织模拟盘运行。两者共用SRT的数据准备与策略计算，
+以及EC的静态市场规则与订单规划；交易执行和账户处理由EC内的CN模拟盘、US模拟盘、历史回放盘分别承担。
+
+| 调用方 | 直接使用的项目模块 |
+| --- | --- |
+| TDR | DFLS、SRT、EC、SE、SM、SC；技术检验另调用PTE隔离能力 |
+| PTE | DFLS、SRT、EC、SM、SC |
+| SRT | DFLS；候选键及发布身份检查局部使用SM |
+| DFLS、EC、SE、SM、SC | 均不依赖其他项目模块 |
+
+DFLS是策略数据资产的统一来源；EC内部`market_rules`拥有静态交易规则。SRT返回策略提案与观察，
+宿主把提案及动态执行事实显式投影到EC类型，由EC规划订单、确认成交并更新渠道账户。
+SRT与EC互不依赖，EC不访问DFLS；账户反馈通过宿主交回策略计算。TDR将账户事实交给SE评价，
+TDR和PTE分别向SC提供同一展示契约。契约由各业务模块拥有，不设通用公共契约子包。
+
+富途模拟盘以渠道确认的成交、现金及持仓为准；历史盘按显式模型回放，不计现金派息等非交易所得。
+静态规则与策略逻辑共用，渠道成交和账户事实分别处理。完整约束见[DEV模块边界](docs/DEV_AGENT.md#module-boundaries)。
+独立MRS、TXE、FSC、STC及其旧接口已退役，历史研究原件保留，重跑前迁移调用。
 
 ## 研究资料与运行发布
 
