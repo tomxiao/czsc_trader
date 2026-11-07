@@ -5,7 +5,6 @@ import json
 import shutil
 
 import pytest
-from factor_signal_catalog import CatalogStatus, FactorDefinition
 from czsc_trader.application import assemble_delivery, validate_delivery, publish_evidence
 from czsc_trader.research_tools import delivery as d
 from czsc_trader.research_tools.context import ExperimentRef
@@ -104,28 +103,17 @@ def test_component_delivery_retains_claims_without_judging_the_research(context)
     assert validate_delivery(context.repository, receipt.reference).status is d.ValidationStatus.FAIL
 
 
-def test_component_uses_selected_definition_snapshot_independently_of_current_catalog(context):
-    factor = FactorDefinition(
-        factor_id="F-RESEARCH", name="Selected definition", description="Researcher-owned interpretation",
-        information_family="PRICE", tags=("daily",), inputs=("daily.close",),
-        provider="research", implementation="researcher.component", formula="close",
-        availability="After close", causality="Completed bars", parameters={},
-        status=CatalogStatus.DISCOVERED, version=1,
-    )
-    evidence = attachment(context, "selected-factor-definition", factor.to_dict())
-    reference = d.CatalogDefinitionRef(d.CatalogDefinitionKind.FACTOR, factor.factor_id,
-                                       factor.version, factor.definition_sha256, evidence)
+def test_component_rejects_retired_catalog_reference(context):
+    reference = d.ExperimentDefinitionRef(attachment(context), "researcher_component")
     component = d.ComponentEntry("component", reference, "环境", "收益", "20日", "对照组",
                                  "决策前", "复权", "开发池", "研究员的判断", ())
-    value = content(d.ComponentPanel((component,), "定义身份可核验，研究结论由研究员负责"))
-    definition = d.DeliveryDefinition(context.batch, d.DeliveryStage.COMPONENTS, 1)
-    assert not (context.repository.root / "catalog").exists()
-    receipt = assemble_delivery(context.repository, definition, value).receipt
-    assert validate_delivery(context.repository, receipt.reference).status is d.ValidationStatus.PASS
-    wrong = replace(component, definition=replace(reference, version=2))
-    with pytest.raises(d.DeliveryValidationError, match="definition identity"):
-        assemble_delivery(context.repository, replace(definition, revision=2),
-                          replace(value, payload=d.ComponentPanel((wrong,), "错误的引用身份"))).receipt
+    document = component.to_dict()
+    document["definition"] = {
+        "type": "CatalogDefinitionRef", "kind": "FACTOR", "catalog_id": "F-RESEARCH",
+        "version": 1, "definition_sha256": "0" * 64, "evidence": reference.evidence.to_dict(),
+    }
+    with pytest.raises(ValueError, match="fields differ"):
+        d.ComponentEntry.from_dict(document)
 
 
 def test_missing_report_evidence_blocks_publication(context):

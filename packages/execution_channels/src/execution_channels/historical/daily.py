@@ -30,7 +30,7 @@ def execute_target_positions(
     """Execute long-only target fractions at each session open.
 
     The caller decides when a signal becomes executable and passes the already
-    shifted ``execution_target``.  TXE owns fills, fees, cash and equity.
+    shifted ``execution_target``.  EC owns fills, fees, cash and equity.
     """
 
     # Copy values once, without deep-copying attached evidence metadata.

@@ -1,4 +1,4 @@
-"""Produce immutable SRT/TXE facts for the SE-owned provisional-champion audit."""
+"""Produce immutable SRT/EC facts for the SE-owned provisional-champion audit."""
 
 from __future__ import annotations
 

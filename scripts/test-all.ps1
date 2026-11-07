@@ -203,8 +203,6 @@ try {
                     Arguments = @(
                         '-m', 'pytest', '-c', 'pyproject.toml', '-q',
                         '--durations=5', '--release-acceptance',
-                        'packages\factor_signal_catalog\tests',
-                        'packages\strategy_template_catalog\tests',
                         'packages\strategy_manager\tests',
                         'packages\strategy_evaluator\tests',
                         'packages\strategy_runtime\tests',
@@ -327,7 +325,7 @@ foreach ($Result in $Results) {
 Write-Host '===== RUFF ====='
 $RuffTimer = [System.Diagnostics.Stopwatch]::StartNew()
 & $Python -m ruff check `
-    src tests packages\factor_signal_catalog packages\strategy_template_catalog `
+    src tests `
     packages\strategy_manager `
     packages\strategy_evaluator packages\dataflows `
     packages\strategy_runtime packages\strategy_chart packages\execution_channels `

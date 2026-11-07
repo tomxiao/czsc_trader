@@ -14,7 +14,6 @@ from typing import Callable
 from threadpoolctl import threadpool_limits
 from strategy_runtime.resources import ExecutionResources
 
-from factor_signal_catalog import FactorDefinition, SignalDefinition
 from strategy_evaluator import (
     AssessmentEvidence, CandidatePerformanceAssessmentRequest,
     ParameterNeighborhoodBinding, project_parameter_performance,
@@ -323,14 +322,6 @@ def _validate_content(definition, content, root, context, *, account_cache=None)
                 _account_document(root, value, account_cache)
             else:
                 _read_evidence(root, value)
-        elif isinstance(value, d.CatalogDefinitionRef):
-            cls = FactorDefinition if value.kind is d.CatalogDefinitionKind.FACTOR else SignalDefinition
-            catalog = cls.from_dict(_read_json(_resolve(root, value.evidence.path)))
-            identifier = catalog.factor_id if isinstance(catalog, FactorDefinition) else catalog.signal_id
-            if (identifier, catalog.version, catalog.definition_sha256) != (
-                value.catalog_id, value.version, value.definition_sha256,
-            ):
-                _fail("COMPONENT_DEFINITION", value.catalog_id, "selected definition identity differs")
         elif isinstance(value, d.CandidateIdentityRef):
             if value.key.strategy_id != definition.strategy_id:
                 _fail("CANDIDATE_FAMILY", value.key.candidate_id, "candidate family differs")

@@ -1,4 +1,4 @@
-"""Isolated, cancellable candidate/frozen replay using the normal SRT/TXE path."""
+"""Isolated, cancellable candidate/frozen replay using the normal SRT/EC path."""
 from dataclasses import replace
 from hashlib import sha256
 import json

@@ -4,7 +4,7 @@ CZSC Trader 面向量化策略研究与模拟交易，连接受控数据、策�
 研究员（RSCH）负责发现收益机会、检验机制、组织搜索和解释结论；用户负责研究目标、阶段推进、候选选择及冻结批准。
 平台负责公共契约、数据与账户计算正确性、证据身份和原子发布。
 
-项目由 TDR 主应用和九个独立 Python 子包组成。研究统一使用批次上下文，独立取数、候选评价、回测和技术检验
+项目由 TDR 主应用和七个独立 Python 子包组成。研究统一使用批次上下文，独立取数、候选评价、回测和技术检验
 共用该批次的 DFLS 数据空间。计算结果通过显式接口留存，阶段交付只保存结论与选定证据；实验工作材料允许继续修正。
 首次冻结、同版本发布包升级、SRT 部署、PTE 账户和生产写入分别遵循相应授权边界。
 
@@ -27,8 +27,6 @@ CZSC Trader 面向量化策略研究与模拟交易，连接受控数据、策�
 | 模块 | 职责 |
 | --- | --- |
 | [DFLS](packages/dataflows/README.md) | 取数、数据校验与资产身份 |
-| [FSC](packages/factor_signal_catalog/README.md) | 因子、信号定义及复用计算 |
-| [STC](packages/strategy_template_catalog/README.md) | 策略结构模板与实例化 |
 | [SM](packages/strategy_manager/README.md) | 研究身份、候选、发布记录及生命周期 |
 | [SE](packages/strategy_evaluator/README.md) | 确定性数值评价、自检及账本比较 |
 | [SRT](packages/strategy_runtime/README.md) | 共享数据准备、策略计算、决策提案与观察快照 |

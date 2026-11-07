@@ -3,16 +3,16 @@
 SE按显式协议提供指标、协议校验、比较、帕累托分层、PBO、DSR、Bootstrap、参数邻域、压力及账本审计计算。先阅读[公共导出](src/strategy_evaluator/__init__.py)，再沿导入核对契约与测试。
 
 `strategy_evaluator.equity.audit_equity_account` 独立审计区间成交、整数股持仓、分红应收款和交收，
-输出交易日指标及区间采样回撤；不导入 SRT/TXE。其研究证据与正式阶段交付的边界见
+输出交易日指标及区间采样回撤；不导入 SRT/EC。其研究证据与正式阶段交付的边界见
 [TDR美股研究接口](../../src/czsc_trader/README.md#us-equity-research)。
 
 账户会计分解使用`diagnose_account_replays`纯计算入口，输入为认证后的`ReplayEvidence`、评价身份、诊断起止日期及可选对照；返回`AccountDiagnosisCalculation`。它不读取文件、不执行策略，也不寻找分类或解释金融机制。RSCH使用TDR的`diagnose_accounts`完成正式证据认证及人群覆盖适配；金额、单位、首版支持范围及发布示例见[TDR账户诊断](../../src/czsc_trader/README.md#账户损益与路径诊断)。账本差异等价性仍使用`compare_ledgers`，不被路径诊断替代。
 
-研究员通过TDR受管评价API取得SRT/TXE账户事实，再组合SE公共函数。SE不获取行情、不加载策略、不写治理状态。旧资格裁定、冻结健康政策、自动冻结建议及对应报告入口已删除。
+研究员通过TDR受管评价API取得SRT/EC账户事实，再组合SE公共函数。SE不获取行情、不加载策略、不写治理状态。旧资格裁定、冻结健康政策、自动冻结建议及对应报告入口已删除。
 
 `audit_replay`对`signal_cash_fraction / entry_cycle`额外执行`ENTRY_CYCLE_ALLOCATION`检查，独立核对信号比例、
 开仓现金预算、整手目标、周期内不变性、后续补买数量与剩余预算、成交含费累计和退出后的状态释放。
-检查消费正式决策/账户账本中的周期事实，不调用SRT规划器或TXE执行器；外层哈希重新计算也不能使不一致周期事实通过。
+检查消费正式决策/账户账本中的周期事实，不调用SRT规划器或EC执行器；外层哈希重新计算也不能使不一致周期事实通过。
 动态周期的历史回放限定LIMIT买入，按照配置费用核对成交不超过剩余预算；这与PTE保存渠道实际异常费用事实的通路分别处理。
 当前`diagnose_account_replays`的全仓/现金分解不支持动态周期分配，明确返回`UNSUPPORTED`，不将其解释成固定100%资金策略。
 
@@ -399,7 +399,7 @@ TDR的`build_assessment_evidence`将当前V4账户观测适配为`AssessmentEvid
 保留初始资金、执行规格、逐柱净值及周期损益；原始行情、订单和完整账户材料独立保存在TDR账户产物中。
 紧凑观测用于既有收益、回撤、时间、集中度及统计区间计算，不作为独立审计输入。
 现有冻结V2技术复验所需数值审计位于内部冻结适配，不作为公开研究API或V4失败兜底。
-默认评估从TXE账本计算指标，类型构造、读取和指标投影不触发独立账户复算。
+默认评估从EC账本计算指标，类型构造、读取和指标投影不触发独立账户复算。
 成交、权益事件、应收与到账、周期损益和账户恒等式的独立审计由已有显式审计入口按需执行。
 `strategy_evaluator.equity_metrics.summarize_equity_ledger`返回`EquityAccountMetrics`，从已记录净值、
 成交费用及结束周期汇总收益、回撤和60交易日频率，不推导成交价格或重演现金持仓。
@@ -426,7 +426,7 @@ TDR的`build_assessment_evidence`将当前V4账户观测适配为`AssessmentEvid
 ### 跨市场V4独立账本审计与诊断
 
 V4账本使用严格整数 `account_contract=4`，由 `audit_equity_account(...,
-decision_contract="FORMAL_V4")`路由至独立纯事实审计。审计不导入SRT规划器或TXE执行器，
+decision_contract="FORMAL_V4")`路由至独立纯事实审计。审计不导入SRT规划器或EC执行器，
 自行复算比例目标、显式订单、依赖结果、预算、成交量、价格限制、可卖数量、费用及账户恒等式。
 原生依赖条件使用 `FILLED_ALL`；审计从全量成交事实判定该条件，历史订单账本仍用 `FILLED`，
 不把撤销、过期、未知或部分成交解释为依赖完成，也不改写已保存的历史证据。
@@ -483,7 +483,7 @@ Calmar比较通过`DeclaredPointSetComparisonContract(construction_sha256, sourc
 ## 基准整手审计
 
 `BenchmarkEvidence`必须显式填写正整数`lot_size`，拒绝布尔值及浮点数；该字段进入序列化结果
-和证据哈希。基准审计独立复算整手取整、现金、持仓、费用及净值，不调用TXE重放作为审计答案。
+和证据哈希。基准审计独立复算整手取整、现金、持仓、费用及净值，不调用EC重放作为审计答案。
 BuyHold及MA5/MA20的基准证据必须携带实际现金与持仓数量，不能只提供仓位比例收益。
 历史证据保持原样；新证据按当前合同生成，不补写旧档案。
 

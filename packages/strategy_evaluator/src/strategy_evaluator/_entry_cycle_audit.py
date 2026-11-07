@@ -1,6 +1,6 @@
 """Independent arithmetic audit of signal-owned cycle allocation facts.
 
-This module consumes retained facts only; it never imports SRT or TXE.
+This module consumes retained facts only; it never imports SRT or EC.
 """
 from decimal import Decimal, InvalidOperation, ROUND_FLOOR
 import json

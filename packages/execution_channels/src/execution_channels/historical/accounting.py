@@ -129,5 +129,5 @@ def post_split(balances: AccountBalances, ratio: float) -> AccountBalances:
 
 
 def _settle_confirmed_receivable(cash, receivable, amount):
-    """Private dated-event path; ordering and duplicate prevention belong to TXE."""
+    """Private dated-event path; ordering and duplicate prevention belong to EC."""
     return cash + amount, receivable - amount

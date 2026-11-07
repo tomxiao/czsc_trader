@@ -21,8 +21,6 @@ from .delivery import (
     BenchmarkRequirement,
     MandateItem,
     ResearchMandate,
-    CatalogDefinitionKind,
-    CatalogDefinitionRef,
     ExperimentDefinitionRef,
     ComponentTestStatus,
     ComponentTestResult,
@@ -57,7 +55,6 @@ from .delivery import (
     DeliveryReceipt,
     DeliveryValidationError,
     DeliveryConflictError,
-    ComponentDefinitionRef,
     StageContent,
 )
 
@@ -175,8 +172,6 @@ __all__ = [
     'BenchmarkRequirement',
     'MandateItem',
     'ResearchMandate',
-    'CatalogDefinitionKind',
-    'CatalogDefinitionRef',
     'ExperimentDefinitionRef',
     'ComponentTestStatus',
     'ComponentTestResult',
@@ -208,7 +203,6 @@ __all__ = [
     'DeliveryReceipt',
     'DeliveryValidationError',
     'DeliveryConflictError',
-    'ComponentDefinitionRef',
     'StageContent',
     'ResearchBatchRef',
     'ExperimentRef',

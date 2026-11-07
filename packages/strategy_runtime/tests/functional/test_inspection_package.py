@@ -124,4 +124,8 @@ def test_environment_identifies_executing_code_not_test_repository(tmp_path):
     second = collect_inspection_environment(tmp_path / "isolated")
     assert first == second
     assert any(x.path == "strategy_runtime/inspection.py" for x in first.platform_files)
+    assert any(x.path.startswith("execution_channels/") for x in first.platform_files)
+    assert not {x.path.split("/")[0] for x in first.platform_files} & {
+        "factor_signal_catalog", "strategy_template_catalog", "trading_execution_engine", "market_rules",
+    }
     assert first.platform_build_sha256

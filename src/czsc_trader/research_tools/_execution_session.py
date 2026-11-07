@@ -28,7 +28,7 @@ def implementation_identity():
     from strategy_runtime import canonical_sha256
     packages = {}
     for name in ("czsc_trader", "strategy_runtime", "strategy_evaluator", "execution_channels", "dataflows",
-                 "strategy_manager", "factor_signal_catalog", "strategy_template_catalog"):
+                 "strategy_manager"):
         module = importlib.import_module(name)
         root = Path(module.__file__).parent
         packages[name] = {p.relative_to(root).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()

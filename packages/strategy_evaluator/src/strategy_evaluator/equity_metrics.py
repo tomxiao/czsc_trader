@@ -1,4 +1,4 @@
-"""Summarize TXE observations without re-executing orders or accounting events."""
+"""Summarize EC observations without re-executing orders or accounting events."""
 
 from dataclasses import dataclass
 from datetime import datetime

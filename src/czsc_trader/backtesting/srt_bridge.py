@@ -1,4 +1,4 @@
-"""TDR bridge from candidate/frozen SRT strategies to TXE historical execution."""
+"""TDR bridge from candidate/frozen SRT strategies to EC historical execution."""
 
 from __future__ import annotations
 
@@ -422,7 +422,7 @@ def build_srt_signal_replay(
             target = float(row["target_position"])
             capital_mode = dict(definition.execution.settings.get("capital", {})).get("mode")
             if target not in (0.0, 1.0) and capital_mode != "target_equity_fraction":
-                raise RuntimeContractError("TXE target replay requires binary positions; fractional targets are unsupported")
+                raise RuntimeContractError("EC target replay requires binary positions; fractional targets are unsupported")
             if target in (0.0, 1.0):
                 target = int(target)
             record: dict[str, object] = {
@@ -492,7 +492,7 @@ def replay_srt_account(
     fee_rate_override: float | None = None,
     dataflows: Dataflows | None = None,
 ) -> BacktestResult:
-    """Route SRT decisions directly through TXE, then wrap facts for reporting."""
+    """Route SRT decisions directly through EC, then wrap facts for reporting."""
 
     definition = strategy.definition
     effective_policy = definition.execution

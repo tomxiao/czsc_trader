@@ -1,4 +1,4 @@
-"""Translate a fixed BuyHold target into public SRT plans and TXE ledgers."""
+"""Translate a fixed BuyHold target into public SRT plans and EC ledgers."""
 
 from datetime import datetime, time
 from decimal import Decimal

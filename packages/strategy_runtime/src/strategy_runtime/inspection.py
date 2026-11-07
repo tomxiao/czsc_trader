@@ -137,8 +137,7 @@ def collect_inspection_environment(repository_root: Path) -> InspectionEnvironme
     # Data/research roots do not identify the executing installation. Inspect the
     # import resolver's actual module locations without importing host packages.
     modules = ("czsc_trader", "dataflows", "strategy_manager", "strategy_runtime",
-               "strategy_evaluator", "execution_channels", "paper_trading_engine",
-               "factor_signal_catalog", "strategy_template_catalog")
+               "strategy_evaluator", "execution_channels", "paper_trading_engine")
     identities = []
     for name in modules:
         spec = importlib.util.find_spec(name)

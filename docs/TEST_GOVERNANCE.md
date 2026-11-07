@@ -1,7 +1,7 @@
 # 测试用例治理
 
 本文规定CZSC Trader仓库的测试用例如何创建、收敛、执行和周期性审查。目标是在保护
-TDR、DFLS、FSC、STC、SM、SE、SRT、TXE、PTE和WDG关键业务能力的同时，控制TDD带来的
+TDR、DFLS、SM、SE、SRT、EC、SC、PTE和WDG关键业务能力的同时，控制TDD带来的
 用例数量、回归耗时和维护成本。
 
 这是一份面向个人量化团队（OPC）的操作规范。判断标准是业务风险和维护价值，不追求用例
@@ -90,11 +90,10 @@ TDR、DFLS、FSC、STC、SM、SE、SRT、TXE、PTE和WDG关键业务能力的同
 - TDR：`tests/functional/`；
 - SM：`packages/strategy_manager/tests/functional/`；
 - SE：`packages/strategy_evaluator/tests/functional/`；
-- FSC：`packages/factor_signal_catalog/tests/functional/`；
-- STC：`packages/strategy_template_catalog/tests/functional/`；
 - DFLS：`packages/dataflows/tests/functional/`；TDR与SRT保留各自调用DFLS的集成场景；
 - SRT：`packages/strategy_runtime/tests/functional/`；
-- TXE：`packages/trading_execution_engine/tests/functional/`；
+- EC：`packages/execution_channels/tests/functional/`；
+- SC：`packages/strategy_chart/tests/functional/`；
 - PTE：`packages/paper_trading_engine/tests/functional/`。
 
 每个场景应尽量从模块公开入口发起，并在一次流程中验证输入、主要状态转换、输出和关键
@@ -102,7 +101,7 @@ TDR、DFLS、FSC、STC、SM、SE、SRT、TXE、PTE和WDG关键业务能力的同
 
 ### 2.3 跨模块端到端用例
 
-端到端用例只保留少量关键调用链，例如TDR候选注册、交付、检验和冻结链路、SRT与TXE回放，以及PTE消费SRT决策并写入虚拟账户审计。
+端到端用例只保留少量关键调用链，例如TDR候选注册、交付、检验和冻结链路、SRT与EC回放，以及PTE消费SRT决策并写入虚拟账户审计。
 它用于发现契约断裂，不重复模块内部已经覆盖的所有边界条件。
 
 涉及真实行情、Futu或Windows服务的在线检查属于交付验证，不进入默认自动回归套件。
@@ -200,7 +199,7 @@ TDR、DFLS、FSC、STC、SM、SE、SRT、TXE、PTE和WDG关键业务能力的同
 美股阶段四和检验往返文件分别与对应的A股场景同组，避免集中到剩余文件发现通道。
 第一组选择明确文件，第二组通过目录发现其余文件并排除已分组文件，新增TDR或PTE文件仍自动发现。
 `TDR_RUNTIME`独立覆盖指定的候选运行、SRT桥接、批量评价、输入绑定和证据执行等文件；这些文件从其他TDR组排除。
-`DFLS`独立运行，并串行执行独立的PTE控制层测试进程。FSC、STC、SM、SE、SRT、SC、TXE七个子包
+`DFLS`独立运行，并串行执行独立的PTE控制层测试进程。SM、SE、SRT、SC、EC五个子包
 与指定的TDR参数评价、账户诊断和冻结迁移测试在`PACKAGES`中复用一个解释器；
 各目录夹具仍按其作用域隔离。完整入口共执行十三个Pytest步骤，具体文件选择以脚本及选择清单为准。
 控制台Node测试仅在`PTE_2`执行一次。
@@ -219,16 +218,15 @@ TDR、DFLS、FSC、STC、SM、SE、SRT、TXE、PTE和WDG关键业务能力的同
 .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\dataflows\tests -q
 .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\strategy_manager\tests -q
 .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\strategy_evaluator\tests -q
-.\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\factor_signal_catalog\tests -q
-.\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\strategy_template_catalog\tests -q
 .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\strategy_runtime\tests -q
-.\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\trading_execution_engine\tests -q
+.\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\execution_channels\tests -q
+.\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\strategy_chart\tests -q
 .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\paper_trading_engine\tests -q
 node --test-isolation=none --test packages\paper_trading_engine\tests\functional\console_state.test.mjs
 .\.venv\Scripts\python.exe -m ruff check `
-  src tests packages\factor_signal_catalog packages\strategy_template_catalog `
+  src tests packages\strategy_chart `
   packages\strategy_manager packages\strategy_evaluator `
-  packages\dataflows packages\strategy_runtime packages\trading_execution_engine `
+  packages\dataflows packages\strategy_runtime packages\execution_channels `
   packages\paper_trading_engine\src packages\paper_trading_engine\tests
 ```
 
@@ -261,9 +259,8 @@ node --test-isolation=none --test packages\paper_trading_engine\tests\functional
 ```powershell
 rg -n "TEMP-TDD" tests packages -g "*.py" -g "*.mjs"
 .\.venv\Scripts\python.exe -m pytest -c pyproject.toml tests packages\strategy_manager\tests `
-  packages\dataflows\tests packages\strategy_evaluator\tests packages\factor_signal_catalog\tests `
-  packages\strategy_template_catalog\tests `
-  packages\strategy_runtime\tests packages\trading_execution_engine\tests `
+  packages\dataflows\tests packages\strategy_evaluator\tests `
+  packages\strategy_runtime\tests packages\execution_channels\tests `
   packages\strategy_chart\tests `
   packages\paper_trading_engine\tests `
   --release-acceptance --collect-only -q
@@ -271,10 +268,9 @@ Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml tests -
 Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\dataflows\tests -q }
 Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\strategy_manager\tests -q }
 Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\strategy_evaluator\tests -q }
-Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\factor_signal_catalog\tests -q }
-Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\strategy_template_catalog\tests -q }
 Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\strategy_runtime\tests -q }
-Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\trading_execution_engine\tests -q }
+Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\execution_channels\tests -q }
+Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\strategy_chart\tests -q }
 Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\paper_trading_engine\tests -q }
 ```
 
@@ -294,7 +290,7 @@ Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml package
 - 删除该用例后，哪个主场景继续保护其业务风险？
 - 失败信息能否直接指向模块、契约或状态转换？
 
-审查范围包括TDR、DFLS、FSC、STC、SM、SE、SRT、TXE和PTE（含WDG）。一次可以只治理一个
+审查范围包括TDR、DFLS、SM、SE、SRT、EC、SC和PTE（含WDG）。一次可以只治理一个
 模块，完成验证和记录后再进入下一模块，避免大规模删除导致覆盖范围难以复核。
 
 ## 8. 治理记录模板
@@ -303,7 +299,7 @@ Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml package
 
 ```text
 日期：YYYY-MM-DD
-范围：TDR / DFLS / FSC / STC / SM / SE / SRT / TXE / PTE
+范围：TDR / DFLS / SM / SE / SRT / EC / SC / PTE
 触发原因：月度检查 / 耗时增长 / 重构前 / 其他
 
 治理前：测试文件__个，测试项__个，完整耗时__秒
@@ -337,7 +333,7 @@ Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml package
 重大版本验收采用三层证据，日常小改按风险运行受影响范围：
 
 - **离线功能回归**：根目录`tests/functional/`覆盖TDR公开API、实验评价、证据漂移、统一回测与失败语义；
-  各包`tests/functional/`覆盖模块契约、候选与冻结SRT、TXE账本、PTE发布代次和服务配置。
+  各包`tests/functional/`覆盖模块契约、候选与冻结SRT、EC账本、PTE发布代次和服务配置。
 - **证据与交付完整性**：针对明确的`DeliveryReference`调用公开API `validate_delivery`，核验当前
   修订、前驱引用、选定证据、报告字节及必要决定／检验材料的身份和哈希。`INTEGRITY`与
   默认`FULL`的复算边界按TDR说明分别报告，不扫描或封存整个实验工作区，不自动重跑研究过程。
@@ -347,7 +343,7 @@ Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml package
 
 验收以结果文件、业务状态和账本断言为准，不能只看进程退出码。合成夹具通过只证明软件流程，
 不形成真实策略研究证据。真实数据和本机实验制品不随Git分发，缺失时明确报告未验收范围。
-执行器发生语义变更时，应为当前支持的SRT/TXE链路增加有明确承接位置的迁移测试；仓库不再
+执行器发生语义变更时，应为当前支持的SRT/EC链路增加有明确承接位置的迁移测试；仓库不再
 保留独立人工验收脚本。任何PTE部署或运行状态变更需要独立授权。
 
 ## 11. 治理与验收记录

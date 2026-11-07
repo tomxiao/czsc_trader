@@ -1,6 +1,6 @@
 """Session-owned V4 equity preparation, event replay and immutable evidence.
 
-TXE produces account facts once; SE summarizes observations. Readers validate
+EC produces account facts once; SE summarizes observations. Readers validate
 content and reference integrity without independently replaying accounting.
 """
 from __future__ import annotations

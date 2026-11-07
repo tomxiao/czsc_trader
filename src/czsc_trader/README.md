@@ -30,10 +30,9 @@ A股、美股的新账户研究统一使用显式会话内的V4接口，详细�
 | 自检与比较 | `build_assessment_evidence`；SE `assess_candidates/compare_candidates` | 数值事实适配、自检和比较 |
 | 技术检验与冻结 | `inspect_candidate`、`record_research_decision`、`freeze_candidate`、`get_freeze_result` | 真实用户决定、技术检验、批准与事务状态 |
 | 同版本发布包升级 | `prepare_frozen_runtime_upgrade`、`apply_frozen_runtime_upgrade` | 精确新旧身份、审计材料、归档及提交；独立于研究检验 |
-| 目录与模板 | `validate_catalog/list_catalog/show_catalog`、`validate_templates/list_templates/show_template/instantiate_template` | FSC/STC 公开内容与绑定校验 |
 | 运行发布 | `list_installed_strategies`、`strategy_info`、`deploy_strategy`、`validate_release_package` | 发布查询和单独获准的部署操作 |
 
-项目复用因子计算由 [FSC](../../packages/factor_signal_catalog/README.md) 提供，策略编写使用
+策略编写使用
 [SRT](../../packages/strategy_runtime/README.md) 公共契约。第三方研究库由研究员组织，见
 [RSCH 的使用原则](../../research/RSCH_AGENT.md#62-研究工具使用原则)。
 
@@ -489,7 +488,7 @@ RSCH 应用普通材料显式保存完整参数、源码文件及依赖，并直
 | 阶段 | 交付内容 | 主要校验 |
 | --- | --- | --- |
 | `MANDATE` | `ResearchMandate` | 目标、约束、基准及明确确认依据 |
-| `COMPONENTS` | `ComponentPanel` | 组件定义、测试结论、边界及证据；引用 FSC 定义时核对所提交定义快照的身份 |
+| `COMPONENTS` | `ComponentPanel` | 组件定义、测试结论、边界及证据；定义仅使用 `ExperimentDefinitionRef` 引用实验材料 |
 | `PROTOTYPES` | `PrototypePanel` | 阶段二原型、组件职责与对照、定义及账户身份、精确来源引用；不要求候选登记 |
 | `CANDIDATES` | `CandidateSet` | 候选内容及真实账户证据；handoff 对象须已登记且来源完整 |
 | `ASSESSMENT` | `CandidateAssessmentDelivery` | 精确交接范围、已确认目标／窗口／基准、保存事实，以及 SE 自检和比较重算 |
@@ -498,7 +497,7 @@ RSCH 应用普通材料显式保存完整参数、源码文件及依赖，并直
 `FactValue` 的数值和不可用状态分别表达；`Explanation` 区分事实、假设、统计证据和研究判断。
 `SearchSummary` 保存方法、范围、评价次数、独立配置数、选择依据、局限和必要证据，不要求完整 trial 历史。
 组件测试仍需协议及结果证据，包含影响结论的负面结果；协议可共享，材料可来自同批次多个实验，
-实验划分由 RSCH 决定。FSC 定义引用不依赖当前可变目录，提交的定义快照须与声明身份一致。
+实验划分由 RSCH 决定。组件定义通过 `ExperimentDefinitionRef(evidence, entrypoint)` 引用实验材料，交付保存选定材料快照并核验引用身份和内容哈希；不再提供目录定义引用。
 研究方法与用户要求由 RSCH 保证，平台校验产物契约。
 
 ### 策略原型交付
@@ -555,7 +554,7 @@ def publish_prototype_without_account(
     )
 ```
 
-定义和关联材料随交付浅快照保存；后续验证不依赖可变实验工作目录。通过`get_research_overview`定位最新原型交付，再按精确交付引用读取面板，使用`validate_delivery`核验具体交付；概览不返回完整原型面板。既有`COMPONENTS`、`CANDIDATES`保持原格式与语义，新交付显式引用既有证据即可，不自动迁移或改变历史研究资格。
+定义和关联材料随交付浅快照保存；后续验证不依赖可变实验工作目录。通过`get_research_overview`定位最新原型交付，再按精确交付引用读取面板，使用`validate_delivery`核验具体交付；概览不返回完整原型面板。新`COMPONENTS`交付仅接受实验组件定义引用，`CANDIDATES`契约保持不变。历史目录定义交付保留原件供查阅，不自动迁移或改变历史研究资格。
 
 ### 候选交付与公共存储规则
 

@@ -1,4 +1,4 @@
-"""Ledger facts produced by TXE, independent of research and report objects."""
+"""Ledger facts produced by EC, independent of research and report objects."""
 
 from dataclasses import dataclass
 

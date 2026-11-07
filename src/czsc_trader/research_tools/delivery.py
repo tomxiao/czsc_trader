@@ -222,26 +222,6 @@ class ResearchMandate(_Record):
         )
 
 
-class CatalogDefinitionKind(StrEnum):
-    FACTOR = "FACTOR"
-    SIGNAL = "SIGNAL"
-
-
-@dataclass(frozen=True, slots=True)
-class CatalogDefinitionRef(_Record):
-    kind: CatalogDefinitionKind
-    catalog_id: str
-    version: int
-    definition_sha256: str
-    evidence: EvidenceRef
-
-    def _validate(self):
-        _text(self.catalog_id, "catalog_id")
-        _hash(self.definition_sha256)
-        if self.version < 1:
-            raise ValueError("catalog version must be positive")
-
-
 @dataclass(frozen=True, slots=True)
 class ExperimentDefinitionRef(_Record):
     evidence: EvidenceRef
@@ -249,9 +229,6 @@ class ExperimentDefinitionRef(_Record):
 
     def _validate(self):
         _text(self.entrypoint, "entrypoint")
-
-
-ComponentDefinitionRef = CatalogDefinitionRef | ExperimentDefinitionRef
 
 
 class ComponentTestStatus(StrEnum):
@@ -284,7 +261,7 @@ class ComponentTestResult(_Record):
 @dataclass(frozen=True, slots=True)
 class ComponentEntry(_Record):
     component_id: str
-    definition: ComponentDefinitionRef
+    definition: ExperimentDefinitionRef
     role: str
     label: str
     horizon: str
@@ -775,4 +752,4 @@ __all__ = [
     name
     for name, value in globals().copy().items()
     if isinstance(value, type) and value.__module__ == __name__ and not name.startswith("_")
-] + ["ComponentDefinitionRef", "StageContent"]
+] + ["StageContent"]

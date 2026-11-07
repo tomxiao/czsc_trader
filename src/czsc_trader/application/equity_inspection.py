@@ -95,7 +95,7 @@ def replay_account(candidate, flows, replay):
 
 
 def _replay_account_v4(candidate, replay, products, identities):
-    """Explicit technical replay uses the same authoritative V4 runtime and TXE."""
+    """Explicit technical replay uses the same authoritative V4 runtime and EC."""
     from strategy_runtime.data_preparation import prepare_observations
     from .account_replay import run_replay
     from .ec_boundary import execution_spec

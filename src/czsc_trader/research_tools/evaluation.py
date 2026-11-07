@@ -139,7 +139,7 @@ class EvaluationIdentity:
 
 @dataclass(frozen=True)
 class EvaluationRun:
-    """SRT and TXE facts plus the SE observation for one evaluation coordinate."""
+    """SRT and EC facts plus the SE observation for one evaluation coordinate."""
 
     candidate_id: str
     window_id: str
