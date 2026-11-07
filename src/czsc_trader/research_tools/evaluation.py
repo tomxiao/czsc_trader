@@ -22,7 +22,7 @@ from strategy_runtime import (
 )
 from strategy_manager import CandidateKey, CandidateDerivation, CandidateDerivationKind
 from .parameter_evaluation import ParameterEvaluationBinding
-from trading_execution_engine import ExecutionResult, MarketExecutionRules
+from execution_channels.historical import ExecutionResult, MarketExecutionRules
 
 from ..backtesting.execution_data import (
     BacktestExecutionData,

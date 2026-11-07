@@ -11,16 +11,16 @@ from dataflows import TimeInterval
 from .account_engine import AccountEngine
 from .account_data_preparer import AccountDataPreparer
 from .account_strategy_cycle import AccountStrategyCycle
-from .audit import AuditRecorder
-from .channel import ChannelAccountConfig
-from .channel_accounts import DEFAULT_CHANNEL_ACCOUNT
+from execution_channels.futu.audit import AuditRecorder
+from execution_channels.futu.channel import ChannelAccountConfig
+from execution_channels.futu.channel_accounts import DEFAULT_CHANNEL_ACCOUNT
 from .coordinator import PteCoordinator, ReconnectableExecution
 from .equity_advice import PreparedEquityDecision
 from .formal_v4_advice import FormalV4AdviceClient, FormalV4ScheduleProvider
-from .futu_execution import ChannelExecution
-from .futu_gateway import FutuGateway, FutuGatewayError
+from execution_channels.futu.futu_execution import ChannelExecution
+from execution_channels.futu.futu_gateway import FutuGateway, FutuGatewayError
 from .srt_advice_client import SrtAdviceClient
-from .trading_window import ScheduledDecision
+from .scheduling_contracts import ScheduledDecision
 
 
 class ChannelBatchError(RuntimeError):
@@ -228,7 +228,7 @@ def build_multichannel_runtime(args, store, dataflows, *, gateway_factory=FutuGa
                     if binding.release_hash != account['release_hash']:
                         raise ValueError('stored account release differs from deployed release')
             config = None if registration['config_json'] is None else ChannelAccountConfig(**json.loads(registration['config_json']))
-            from .futu_execution import FeeReconciliationPolicy
+            from execution_channels.futu.futu_execution import FeeReconciliationPolicy
             policy_json = scoped.get_setting("fee_reconciliation_policy")
             fee_policy = None if policy_json is None else FeeReconciliationPolicy(**{k: Decimal(str(v)) for k,v in json.loads(policy_json).items()})
             def connect(scoped=scoped, config=config, audit=audit, fee_policy=fee_policy):

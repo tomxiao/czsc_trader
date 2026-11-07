@@ -4,7 +4,7 @@ from __future__ import annotations
 from dataclasses import replace
 from decimal import Decimal, ROUND_HALF_EVEN
 
-from .broker import (BrokerAccount, BrokerOrder, BrokerPosition, BrokerSnapshot,
+from execution_channels.futu.broker import (BrokerAccount, BrokerOrder, BrokerPosition, BrokerSnapshot,
                      BrokerOrderRejectedError, BrokerSubmissionUncertainError,
                      TERMINAL_ORDER_STATUSES)
 from .inspection_contracts import (PteOrderUpdate,

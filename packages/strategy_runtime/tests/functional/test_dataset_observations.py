@@ -10,7 +10,7 @@ import pytest
 from dataflows import (DataIdentity, Dataset, MarketId, BarFrequency, TimeInterval,
                       DataCoverageRequirement)
 from strategy_runtime import (DatasetObservationInput, DatasetObservationBinding,
-    FrozenDataAsset, ObservationAvailability, PreparedObservationTable, PreparedReplay,
+    FrozenDataAsset, ObservationAvailability, PreparedObservationTable, PreparedObservations,
     EquityStrategyDefinition, AccountDecisionEngine, AccountStrategyState,
     StrategyComputation, ReplayPoint, ExecutionPrecision, PositionFeedback,
     equity_source_hash)
@@ -191,23 +191,28 @@ def step(ctx, state):
     frame = pd.DataFrame({'Date': [stamp, stamp], 'AvailableDate': [stamp, stamp],
                           'ConstituentSymbol': ['A', 'B'], 'Weight': [1., 2.]})
     table = PreparedObservationTable.from_frame(frame, identity(), declaration=declaration)
-    p = PreparedReplay.from_frames(bars, constraints, c.definition.feature_graph,
+    p = PreparedObservations.from_frames(bars, c.definition.feature_graph,
         sessions=session_frame, trading_sessions=sessions, frequency=BarFrequency.DAILY,
         timezone=c.instrument.timezone, observation_tables={'index': table})
     assert p.with_graph(c.definition.feature_graph)._observations == p._observations
     interval = TimeInterval(p._data.starts[1], p._data.ends[1])
     point = ReplayPoint(stamp, interval.start, interval.start, interval.end,
         sessions[1].session_date.isoformat(), ExecutionPrecision.BAR_INTERVAL)
-    portfolio = executor.snapshot_at(stamp, interval.start)
-    account = executor.account_snapshot(point, c.instrument)
-    proposal = AccountDecisionEngine(c, p).plan(interval, portfolio, account,
+    from czsc_trader.application.ec_boundary import execution_instrument, strategy_portfolio, strategy_snapshot
+    from execution_channels.serialization import from_record, to_record
+    from execution_channels.contracts import ReplayPoint as ExecutionReplayPoint
+    portfolio = strategy_portfolio(executor.snapshot_at(stamp, interval.start))
+    account = strategy_snapshot(executor.account_snapshot(
+        from_record(ExecutionReplayPoint, to_record(point)), execution_instrument(c.instrument)), c.instrument)
+    proposal = AccountDecisionEngine(c, p).propose(interval, portfolio, account,
         AccountStrategyState(), PositionFeedback(), owner='fixture', fee_rate=fee)
-    assert not proposal.plan.orders
+    assert proposal.proposal.decision.target == 0.
+    assert not proposal.proposal.decision.orders
     with pytest.raises(ValueError, match='STATEFUL_STEP'):
         replace(c.definition, computation=StrategyComputation.BATCH_HISTORY)
     # Two constituents on one date are one observation, not two warmup days.
     strict = replace(c, definition=replace(c.definition, observation_inputs=(
         replace(declaration, coverage=DataCoverageRequirement(minimum_observations=2, minimum_sessions=2)),)))
     with pytest.raises(ValueError, match='WARMUP_INSUFFICIENT'):
-        AccountDecisionEngine(strict, p).plan(interval, portfolio, account,
+        AccountDecisionEngine(strict, p).propose(interval, portfolio, account,
             AccountStrategyState(), PositionFeedback(), owner='fixture', fee_rate=fee)

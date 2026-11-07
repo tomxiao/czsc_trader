@@ -12,7 +12,7 @@ from strategy_runtime import (
     ExecutionPriceBasis, RuntimeContractError, StrategyCandidate, StrategyRuntime,
     implementation_identity,
 )
-from trading_execution_engine import MarketExecutionRules, SuspensionInformation
+from execution_channels.historical import MarketExecutionRules, SuspensionInformation
 
 from czsc_trader.application import RepositoryContext
 from czsc_trader.backtesting.execution_data import _prepare_backtest_execution_data

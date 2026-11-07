@@ -6,7 +6,7 @@ from hashlib import sha256
 from types import SimpleNamespace
 
 from paper_trading_engine.contracts import AdviceDecision, OrderSpec
-from paper_trading_engine.broker import (
+from execution_channels.futu.broker import (
     BrokerAccount,
     BrokerOrder,
     BrokerSnapshot,
@@ -113,7 +113,7 @@ def decision(order: OrderSpec | None = None) -> AdviceDecision:
 
 
 def broker_snapshot(*, orders=(), quantity=0, symbol="588080.SH") -> BrokerSnapshot:
-    from paper_trading_engine.broker import BrokerPosition
+    from execution_channels.futu.broker import BrokerPosition
 
     positions = () if quantity == 0 else (BrokerPosition(symbol, quantity),)
     cash = 1_000_000.0

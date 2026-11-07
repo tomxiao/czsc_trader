@@ -9,7 +9,7 @@ from urllib.request import Request, urlopen
 import pytest
 
 from paper_trading_engine.web import create_server
-from paper_trading_engine.audit import AuditRecorder
+from execution_channels.futu.audit import AuditRecorder
 from paper_trading_engine.web_api import PteWebApi
 from pte_support import adopt_test_decision
 

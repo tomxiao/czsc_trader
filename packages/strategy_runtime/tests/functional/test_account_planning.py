@@ -10,9 +10,12 @@ import pytest
 from dataflows import BarFrequency, MarketId, TimeInterval
 from strategy_runtime import (AccountDecisionEngine, AccountStrategyState, CycleState,
     ExecutionPrecision, PositionFeedback, ReplayPoint, StateRecord, StrategyComputation,
-    PreparedReplay, RecognizedAccountEvent, RecognizedEventKind)
-from strategy_runtime.equity_replay import run_replay
-from trading_execution_engine import PortfolioHistoricalExecutor
+    PreparedObservations, RecognizedAccountEvent, RecognizedEventKind)
+from czsc_trader.application.account_replay import run_replay
+from czsc_trader.application.ec_boundary import (execution_spec, execution_instrument, execution_plan, strategy_portfolio, strategy_snapshot, strategy_feedback, strategy_budget, strategy_events)
+from execution_channels.serialization import from_record, to_record
+from execution_channels.contracts import ReplayPoint as ExecutionPoint
+from execution_channels.historical import PortfolioHistoricalExecutor
 from test_account_v4 import setup
 
 
@@ -20,11 +23,11 @@ from test_account_v4 import setup
 @pytest.mark.parametrize('frequency', [BarFrequency.DAILY, BarFrequency.M30])
 @pytest.mark.parametrize('computation', [StrategyComputation.BATCH_HISTORY, StrategyComputation.STATEFUL_STEP])
 def test_independent_single_steps_match_research_with_state_restart(tmp_path, market, frequency, computation):
-    candidate, prepared, baseline, bars, _, _, _ = setup(tmp_path, market, frequency, computation)
-    expected = run_replay(prepared, candidate, baseline,
+    candidate, prepared, baseline, bars, constraints, _, _ = setup(tmp_path, market, frequency, computation)
+    expected = run_replay(prepared, candidate, baseline, constraints=constraints,
         start=bars.BarStart.iloc[1].to_pydatetime(), end=bars.Date.iloc[-1].to_pydatetime(),
         fee_rate=.001).execution_result
-    executor = PortfolioHistoricalExecutor(specification=candidate.definition.execution_spec,
+    executor = PortfolioHistoricalExecutor(specification=execution_spec(candidate.definition.execution_spec),
         initial_cash=100000., fee_rate=.001, actions=baseline.actions.drop(columns=['_priority']), price_basis='RAW')
     state = AccountStrategyState()
     for index in range(1, len(bars)):
@@ -35,15 +38,14 @@ def test_independent_single_steps_match_research_with_state_restart(tmp_path, ma
         point = ReplayPoint(prepared._data.ends[index-1], start, start, end,
                             start.astimezone(ZoneInfo(candidate.instrument.timezone)).date().isoformat(), ExecutionPrecision.BAR_INTERVAL)
         with executor.transaction():
-            portfolio = executor.snapshot_at(point.observed_through, start)
-            account = executor.account_snapshot(point, candidate.instrument)
+            portfolio = strategy_portfolio(executor.snapshot_at(point.observed_through, start))
+            account = strategy_snapshot(executor.account_snapshot(from_record(ExecutionPoint, to_record(point)), execution_instrument(candidate.instrument)), candidate.instrument)
             events, cursor = executor.recognized_events_since(state.event_cursor, start)
-            result = engine.plan(TimeInterval(start, end), portfolio, account, state,
-                executor.position_feedback, owner='durable-account', fee_rate=.001,
-                budget=executor.cycle_budget, events=events, next_event_cursor=cursor)
+            result = engine.propose(TimeInterval(start, end), portfolio, account, state,
+                strategy_feedback(executor.position_feedback), owner='durable-account', fee_rate=.001,
+                budget=strategy_budget(executor.cycle_budget), events=strategy_events(events), next_event_cursor=cursor)
             prior = state.to_dict()
-            after = executor.execute_account_plan(result.plan, prepared._data.rows[index],
-                                                  constraint=prepared._data.constraints[index])
+            after = executor.execute_account_plan(execution_plan(result, account, candidate.definition.execution_spec, owner="durable-account", implementation=candidate.implementation_hash, fee_rate=.001, sell_remainder_policy=constraints.iloc[index].SellRemainderPolicy), prepared._data.rows[index], constraint=constraints.iloc[index].to_dict())
             assert state.to_dict() == prior  # Planning and execution never mutate caller-owned strategy state.
             cycle = None if not after.quantity else CycleState(executor.cycle, after.cycle_entry, result.proposal.cycle_values)
             state = AccountStrategyState(after.revision, result.proposal.account, cycle,
@@ -57,7 +59,7 @@ def test_independent_single_steps_match_research_with_state_restart(tmp_path, ma
 def test_binding_survives_new_prepared_history_but_rejects_other_account(tmp_path):
     c, p, e, bars, constraints, sessions, session_frame = setup(
         tmp_path, MarketId.US, BarFrequency.DAILY, StrategyComputation.STATEFUL_STEP)
-    shorter = PreparedReplay.from_frames(bars.iloc[:3], constraints.iloc[:3], c.definition.feature_graph,
+    shorter = PreparedObservations.from_frames(bars.iloc[:3], c.definition.feature_graph,
         frequency=BarFrequency.DAILY, timezone=c.instrument.timezone,
         sessions=session_frame.iloc[:3], trading_sessions=sessions[:3])
     first, second = AccountDecisionEngine(c, shorter), AccountDecisionEngine(c, p)
@@ -66,11 +68,11 @@ def test_binding_survives_new_prepared_history_but_rejects_other_account(tmp_pat
     interval = TimeInterval(p._data.starts[1], p._data.ends[1])
     point = ReplayPoint(p._data.ends[0], interval.start, interval.start, interval.end,
                         sessions[1].session_date.isoformat(), ExecutionPrecision.BAR_INTERVAL)
-    portfolio = e.snapshot_at(point.observed_through, point.decision_at)
-    account = e.account_snapshot(point, c.instrument)
+    portfolio = strategy_portfolio(e.snapshot_at(point.observed_through, point.decision_at))
+    account = strategy_snapshot(e.account_snapshot(from_record(ExecutionPoint, to_record(point)), execution_instrument(c.instrument)), c.instrument)
     state = AccountStrategyState(binding=first.state_binding('another-account', .001))
     with pytest.raises(ValueError, match='another account'):
-        second.plan(interval, portfolio, account, state, PositionFeedback(), owner='account', fee_rate=.001)
+        second.propose(interval, portfolio, account, state, PositionFeedback(), owner='account', fee_rate=.001)
 
 
 def test_future_event_and_backward_observation_are_rejected(tmp_path):
@@ -79,17 +81,17 @@ def test_future_event_and_backward_observation_are_rejected(tmp_path):
     interval = TimeInterval(p._data.starts[2], p._data.ends[2])
     point = ReplayPoint(p._data.ends[1], interval.start, interval.start, interval.end,
                         sessions[2].session_date.isoformat(), ExecutionPrecision.BAR_INTERVAL)
-    portfolio = e.snapshot_at(point.observed_through, point.decision_at)
-    account = e.account_snapshot(point, c.instrument)
+    portfolio = strategy_portfolio(e.snapshot_at(point.observed_through, point.decision_at))
+    account = strategy_snapshot(e.account_snapshot(from_record(ExecutionPoint, to_record(point)), execution_instrument(c.instrument)), c.instrument)
     event = RecognizedAccountEvent('future', RecognizedEventKind.CASH_DIVIDEND,
                                   interval.end, 0, 0, 1., 0.)
     with pytest.raises(ValueError, match='future facts'):
-        engine.plan(interval, portfolio, account, AccountStrategyState(), PositionFeedback(),
+        engine.propose(interval, portfolio, account, AccountStrategyState(), PositionFeedback(),
                     owner='account', fee_rate=.001, events=(event,))
     with pytest.raises(ValueError, match='causal time order'):
         engine.observation(TimeInterval(p._data.starts[1], p._data.ends[1]))
     with pytest.raises(ValueError, match='cursor'):
-        AccountDecisionEngine(c, p).plan(interval, portfolio, account,
+        AccountDecisionEngine(c, p).propose(interval, portfolio, account,
             AccountStrategyState(event_cursor=2), PositionFeedback(), owner='account',
             fee_rate=.001, next_event_cursor=1)
 
@@ -108,7 +110,7 @@ def test_state_round_trip_preserves_types_and_rejects_missing_cursor():
 @pytest.mark.parametrize('cross_observation', [False, True])
 def test_explicit_batch_inspection_detects_cross_observation_dependency(tmp_path, cross_observation):
     from strategy_runtime import check_account_batch_consistency, equity_source_hash
-    c, p, _, bars, _, _, _ = setup(tmp_path, MarketId.US, BarFrequency.M30, StrategyComputation.BATCH_HISTORY)
+    c, p, _, bars, constraints, _, _ = setup(tmp_path, MarketId.US, BarFrequency.M30, StrategyComputation.BATCH_HISTORY)
     if cross_observation:
         (tmp_path / 'strategy.py').write_text('''from strategy_runtime import AccountDecision
 def calculate(ctx):

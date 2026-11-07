@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from threading import Lock, RLock
 
-from .audit import AuditRecorder
+from execution_channels.futu.audit import AuditRecorder
 
 
 class AccountStrategyCycle:

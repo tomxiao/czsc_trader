@@ -7,10 +7,12 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import pytest
+from czsc_trader.application.ec_boundary import session_execution_plan
+from execution_channels.serialization import from_record, to_record
+from execution_channels.session_contracts import PortfolioSnapshot as ChannelPortfolio, ExecutionState as ChannelState
 from dataflows import PreparePolicy
 
 from strategy_runtime import (
-    ExecutionPolicy,
     ExecutionState,
     PortfolioSnapshot,
     RuntimeContractError,
@@ -21,7 +23,9 @@ from strategy_runtime import (
     TradingPoint,
     implementation_sha256,
 )
-from strategy_runtime.execution_planner import build_execution_plan
+from execution_channels.planning.session import build_execution_plan
+from execution_channels.policy import ExecutionPolicy
+from execution_channels.errors import RuntimeContractError as ChannelContractError
 from test_public_runtime import _flows
 
 
@@ -121,7 +125,7 @@ def test_frozen_rule_rejects_fractional_target_positions() -> None:
         },
     )
 
-    with pytest.raises(RuntimeContractError, match="binary target position"):
+    with pytest.raises(ChannelContractError, match="binary target position"):
         build_execution_plan(
             deployment_settings={},
             available_cash=10000.0,
@@ -158,11 +162,8 @@ def test_intraday_overlay_capital_terms_are_explicit_for_each_plan_mode(
     def plan(trading_date, signal_date, quantity, cycle_quantity):
         now = datetime.combine(signal_date, datetime.min.time().replace(hour=20),
                                tzinfo=ZoneInfo("Asia/Shanghai"))
-        return strategy.plan_at(
-            point=TradingPoint(trading_date, now),
-            portfolio=PortfolioSnapshot("overlay", "588080.SH", Decimal("50000"),
-                                        Decimal("100000"), quantity, 1, now),
-            state=ExecutionState(1, now, cycle_quantity))
+        return session_execution_plan(strategy.propose_at(point=TradingPoint(trading_date, now)), from_record(ChannelPortfolio, to_record(PortfolioSnapshot("overlay", "588080.SH", Decimal("50000"),
+                                        Decimal("100000"), quantity, 1, now))), from_record(ChannelState, to_record(ExecutionState(1, now, cycle_quantity))))
 
     setup = plan(date(2026, 9, 2), date(2026, 9, 1), 0, None)
     assert (setup.plan_mode, setup.capital_mode, setup.allocation_fraction) == (

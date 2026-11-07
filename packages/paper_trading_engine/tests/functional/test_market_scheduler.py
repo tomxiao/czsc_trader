@@ -7,7 +7,7 @@ import pytest
 
 from dataflows import TimeInterval
 from paper_trading_engine.scheduler import RuntimeScheduler
-from paper_trading_engine.trading_window import ScheduledDecision
+from paper_trading_engine.scheduling_contracts import ScheduledDecision
 from test_scheduler import Engine, Store, _account
 
 

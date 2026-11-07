@@ -194,13 +194,13 @@ def test_pte_prepares_then_uses_one_account_strategy_instance(pte_frozen, tmp_pa
     monkeypatch.setattr(client.dataflows, "prepare", lambda *_a, **_k: pytest.fail(
         "decision must not prepare new inputs"))
 
-    continuous_original_plan = prepared.instance.plan_at
+    continuous_original_plan = prepared.instance.propose_at
 
     def continuous_plan(**kwargs):
         assert kwargs["history_mode"] is SignalHistoryMode.CONTINUOUS
         return continuous_original_plan(**kwargs)
 
-    monkeypatch.setattr(prepared.instance, "plan_at", continuous_plan)
+    monkeypatch.setattr(prepared.instance, "propose_at", continuous_plan)
 
     decision = client.get_decision(
         0,
@@ -243,14 +243,14 @@ def test_pte_prepares_then_uses_one_account_strategy_instance(pte_frozen, tmp_pa
     # Inject a unit-contract fault at the genuine SRT output boundary.
     from strategy_runtime import ExecutionPriceBasis, ExecutionPricing
     from paper_trading_engine.srt_advice_client import AdviceClientError
-    original_plan = prepared.instance.plan_at
+    original_plan = prepared.instance.propose_at
     def wrong_units(**kwargs):
         plan = original_plan(**kwargs)
         return replace(plan, references=replace(plan.references,
             pricing=ExecutionPricing(ExecutionPriceBasis.HFQ_RESEARCH, date(2026, 9, 1), .3),
             execution_basis="NORMALIZED_HFQ_CLOSE"))
-    monkeypatch.setattr(prepared.instance, "plan_at", wrong_units)
-    with pytest.raises(AdviceClientError, match="unadjusted prices and real shares"):
+    monkeypatch.setattr(prepared.instance, "propose_at", wrong_units)
+    with pytest.raises(AdviceClientError, match="price and quantity units|unadjusted prices and real shares"):
         _decision(client, prepared)
 
 
@@ -545,14 +545,15 @@ def test_pte_observation_failure_is_explicit_and_does_not_change_execution(prepa
     result = _decision(client, prepared)
     assert result.observation["status"] == "READY"
     assert StrategyObservation.from_dict(result.observation).plan_identity == result.plan_identity
-    original_plan = prepared.instance.plan_at
+    original_plan = prepared.instance.propose_at
 
     def missing_observation_evidence(**kwargs):
-        return replace(original_plan(**kwargs), evidence={})
+        proposal = original_plan(**kwargs)
+        return replace(proposal, signal=replace(proposal.signal, evidence={}))
 
     # Only the observation evidence is removed after actual SRT planning.
     with monkeypatch.context() as faults:
-        faults.setattr(prepared.instance, "plan_at", missing_observation_evidence)
+        faults.setattr(prepared.instance, "propose_at", missing_observation_evidence)
         unavailable = _decision(client, prepared)
     assert unavailable.observation["status"] == "UNAVAILABLE"
     assert unavailable.plan_identity == result.plan_identity
@@ -577,25 +578,22 @@ def test_pte_transports_equity_mode_and_rejects_mismatched_scope(prepared_accoun
     """The SRT boundary supplies a typed plan; PTE must retain its capital contract."""
     from copy import deepcopy
     from paper_trading_engine.contracts import AdviceContractError, AdviceDecision
-    from strategy_runtime.contracts import plan_identity_for, signal_identity_for
+    from strategy_runtime.contracts import signal_identity_for
 
     client, prepared = prepared_account
-    original_plan = prepared.instance.plan_at
+    original_plan = prepared.instance.propose_at
 
     def equity_plan(**kwargs):
-        plan = original_plan(**kwargs)
-        signal_identity = signal_identity_for(
-            strategy=plan.strategy, signal_date=plan.signal_date, target_position=.5,
-            input_identities=plan.input_identities, price_identities=plan.price_identities,
-        )
-        plan_identity = plan_identity_for(
-            signal_identity=signal_identity, actual_quantity=plan.actual_quantity,
-            target_quantity=plan.target_quantity, cycle_target_quantity=plan.cycle_target_quantity,
-            plan_mode=plan.plan_mode, capital_mode="target_equity_fraction",
-            allocation_fraction=plan.allocation_fraction, orders=plan.orders, legs=plan.legs,
-        )
-        return replace(plan, capital_mode="target_equity_fraction", target_position=.5,
-                       signal_identity=signal_identity, plan_identity=plan_identity)
+        proposal = original_plan(**kwargs)
+        signal = replace(proposal.signal, target_position=.5)
+        identity = signal_identity_for(strategy=proposal.strategy, signal_date=proposal.signal_date,
+            target_position=.5, input_identities=proposal.input_identities,
+            price_identities=proposal.price_identities)
+        settings = dict(proposal.execution_policy.settings)
+        settings["capital"] = {**dict(settings["capital"]), "mode": "target_equity_fraction", "target_scope": "decision",
+                               "allocation_fraction": 1.}
+        return replace(proposal, signal=signal, signal_identity=identity,
+            execution_policy=replace(proposal.execution_policy, settings=settings))
 
     transport = []
     original_parse = AdviceDecision.from_cli_payload
@@ -604,7 +602,7 @@ def test_pte_transports_equity_mode_and_rejects_mismatched_scope(prepared_accoun
         transport.append(deepcopy(value))
         return original_parse(value)
 
-    monkeypatch.setattr(prepared.instance, "plan_at", equity_plan)
+    monkeypatch.setattr(prepared.instance, "propose_at", equity_plan)
     monkeypatch.setattr(AdviceDecision, "from_cli_payload", capture_payload)
     decision = _decision(client, prepared)
     assert decision.capital_mode == "target_equity_fraction"
@@ -632,49 +630,32 @@ def cycle_transport(prepared_account, monkeypatch):
     from copy import deepcopy
     from decimal import Decimal
     from paper_trading_engine.contracts import AdviceDecision
-    from strategy_runtime import CycleTarget, EntryCycleState, EntryCyclePhase, EntryCyclePlanStatus
-    from strategy_runtime.contracts import plan_identity_for, signal_identity_for
+    from strategy_runtime import CycleTarget
+    from strategy_runtime.contracts import signal_identity_for
 
     client, prepared = prepared_account
-    original_plan = prepared.instance.plan_at
+    original_plan = prepared.instance.propose_at
     captured = []
     parser = AdviceDecision.from_cli_payload
 
     def cycle_plan(**kwargs):
-        original = original_plan(**kwargs)
+        proposal = original_plan(**kwargs)
         target = CycleTarget(True, Decimal("0.5"))
-        signal = signal_identity_for(
-            strategy=original.strategy, signal_date=original.signal_date, target_position=1.,
-            input_identities=original.input_identities, price_identities=original.price_identities, cycle_target=target,
-        )
-        quantity = original.target_quantity // 200 * 100
-        order = replace(original.orders[0], quantity=quantity)
-        state = EntryCycleState(
-            canonical_sha256({"account": "s900-v1", "opening_signal": signal}), signal,
-            Decimal("0.5"), original.available_cash / 2, quantity, Decimal(0), EntryCyclePhase.ACTIVE,
-        )
-        cycle_fields = dict(cycle_target=target, entry_cycle_before=None, entry_cycle_after=state,
-                            cycle_status=EntryCyclePlanStatus.OPEN)
-        identity = plan_identity_for(
-            signal_identity=signal, actual_quantity=0, target_quantity=quantity, cycle_target_quantity=quantity,
-            plan_mode="NONE", capital_mode="signal_cash_fraction", allocation_fraction=Decimal("0.5"),
-            orders=(order,), legs=(), **cycle_fields,
-            available_cash=original.available_cash, fee_rate=original.fee_rate,
-        )
-        cost = order.limit_price * quantity * (1 + original.fee_rate)
-        return replace(
-            original, signal_identity=signal, plan_identity=identity,
-            target_quantity=quantity, cycle_target_quantity=quantity, target_position=1.,
-            capital_mode="signal_cash_fraction", allocation_fraction=Decimal("0.5"),
-            orders=(order,), estimated_order_cost=cost, unallocated_cash=original.available_cash - cost,
-            evidence={}, **cycle_fields,
-        )
+        signal = replace(proposal.signal, target_position=1., cycle_target=target, evidence={})
+        identity = signal_identity_for(strategy=proposal.strategy, signal_date=proposal.signal_date,
+            target_position=1., input_identities=proposal.input_identities,
+            price_identities=proposal.price_identities, cycle_target=target)
+        settings = dict(proposal.execution_policy.settings)
+        settings["capital"] = {**dict(settings["capital"]), "mode": "signal_cash_fraction", "target_scope": "entry_cycle"}
+        settings["capital"].pop("allocation_fraction", None)
+        return replace(proposal, signal=signal, signal_identity=identity,
+            execution_policy=replace(proposal.execution_policy, settings=settings))
 
     def capture(value):
         captured.append(deepcopy(value))
         return parser(value)
 
-    monkeypatch.setattr(prepared.instance, "plan_at", cycle_plan)
+    monkeypatch.setattr(prepared.instance, "propose_at", cycle_plan)
     monkeypatch.setattr(AdviceDecision, "from_cli_payload", capture)
     value = _decision(client, prepared)
     return value, captured[0], parser

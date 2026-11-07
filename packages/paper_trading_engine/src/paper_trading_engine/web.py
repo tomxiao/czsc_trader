@@ -17,8 +17,8 @@ from uuid import uuid4
 
 
 from .web_api import PteWebApi, ResourceNotFound
-from .account_retirement import AccountRetirementRequest
-from .channel_accounts import DEFAULT_CHANNEL_ACCOUNT
+from execution_channels.futu.account_retirement import AccountRetirementRequest
+from execution_channels.futu.channel_accounts import DEFAULT_CHANNEL_ACCOUNT
 
 
 class Operations(Protocol):

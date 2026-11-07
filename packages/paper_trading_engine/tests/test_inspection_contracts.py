@@ -12,6 +12,7 @@ from uuid import uuid4
 import pytest
 from dataflows import DataRequest, Dataset, PreparedDataRef
 from strategy_runtime import StrategyIdentity, StrategyInputPlan, StrategyInputBinding, TradableWindow
+from paper_trading_engine.ec_boundary import execution_permit
 from strategy_runtime.inspection import InspectionRuntimePermit, InspectionControl, collect_inspection_environment
 from paper_trading_engine.inspection import (
     PteDecisionInput, PteOrderKey, PteSubmissionResult, SubmissionOutcome,
@@ -22,9 +23,9 @@ from paper_trading_engine.inspection import (
     PteReleaseInspectionRequest, PteInspectionStatus,
 )
 from paper_trading_engine.inspection_broker import RecordedFillBroker
-from paper_trading_engine.broker import OrderIntent, BrokerSubmissionUncertainError
-from paper_trading_engine.lifecycle import AccountHealth
-from paper_trading_engine.store import PaperStore
+from execution_channels.futu.broker import OrderIntent, BrokerSubmissionUncertainError
+from execution_channels.futu.lifecycle import AccountHealth
+from execution_channels.futu.store import PaperStore
 
 
 TZ = timezone(timedelta(hours=8))
@@ -129,7 +130,7 @@ def test_technical_database_rejects_normal_open_and_foreign_permit():
     root = Path(__file__).resolve().parents[3] / ".tmp" / ("pte-contract-" + uuid4().hex) / ".tmp/strategy-inspection/isolated-test"
     permit = InspectionRuntimePermit("isolated-test", "S900-v1", "a"*64, "b"*64, "c"*64, root/"repository", root)
     path = root / "runtime.db"
-    store = PaperStore(path, inspection_permit=permit)
+    store = PaperStore(path, inspection_permit=execution_permit(permit))
     store.create_virtual_account("account", "test", "S900-v1", "a"*64, "1000", strategy_id="S900",
         strategy_name_snapshot="Synthetic", strategy_version="v1", release_hash="a"*64,
         qualification_snapshot="INSPECTION", selection_data_cutoff="2026-09-01")
@@ -141,7 +142,7 @@ def test_technical_database_rejects_normal_open_and_foreign_permit():
     with pytest.raises(ValueError, match="enable checks"):
         store.set_virtual_paused("account", False)
     store.close()
-    reopened = PaperStore(path, inspection_permit=permit)
+    reopened = PaperStore(path, inspection_permit=execution_permit(permit))
     assert reopened.virtual_account("account")["cash"] == "1000.0000"
     reopened.close()
     with pytest.raises(ValueError, match="rejects an inspection"):

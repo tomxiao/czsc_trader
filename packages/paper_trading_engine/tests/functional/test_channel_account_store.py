@@ -6,15 +6,15 @@ import pytest
 
 from dataflows import AssetClass, BarFrequency, InstrumentId, MarketId
 from strategy_runtime import AccountPolicy, CashAvailabilityPolicy, ResearchExecutionSpec, UsEquitySpec
-from paper_trading_engine.audit import AuditRecorder
-from paper_trading_engine.channel import (
+from execution_channels.futu.audit import AuditRecorder
+from execution_channels.futu.channel import (
     ChannelAccountConfig, FUTU_SIMULATE_CN_CHANNEL_ID, FUTU_US_SIM_CHANNEL_ID,
     TradingSession,
 )
-from paper_trading_engine.channel_accounts import DEFAULT_CHANNEL_ACCOUNT
-from paper_trading_engine.equity_contracts import EquityAccountRules
-from paper_trading_engine.lifecycle import AccountHealth
-from paper_trading_engine.store import PaperStore
+from execution_channels.futu.channel_accounts import DEFAULT_CHANNEL_ACCOUNT
+from execution_channels.futu.equity_contracts import EquityAccountRules
+from execution_channels.futu.lifecycle import AccountHealth
+from execution_channels.futu.store import PaperStore
 
 
 def _config(name="us-primary", *, broker=42, channel=FUTU_US_SIM_CHANNEL_ID):
@@ -275,8 +275,8 @@ def test_schema7_migration_preserves_legacy_balances_and_events(tmp_path):
 def test_us_broker_id_collision_preserves_order_fill_and_cancel_ownership(partitions):
     from dataclasses import asdict
     from pte_support import decision
-    from paper_trading_engine.broker import BrokerOrder, OrderIntent, PaperTradingSafetyError
-    from paper_trading_engine.scoped_broker import ScopedBroker
+    from execution_channels.futu.broker import BrokerOrder, OrderIntent, PaperTradingSafetyError
+    from execution_channels.futu.scoped_broker import ScopedBroker
 
     root, _, first = partitions
     second_config = _config("us-secondary", broker=43)

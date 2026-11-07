@@ -13,7 +13,7 @@ import pytest
 
 from strategy_runtime.equity_features import (BarField, FeatureGraph, HistoryView, Lag,
     Mean, NotReady, RawField, ReadyValue, SameLocalSlotMedian, TrueRange)
-from strategy_runtime.equity_replay import PreparedReplay, _FeatureEvaluator, _Visibility
+from strategy_runtime.equity_replay import PreparedObservations, _FeatureEvaluator, _Visibility
 
 
 def observations(starts, closes=None):
@@ -25,47 +25,29 @@ def observations(starts, closes=None):
 
 
 def prepare(frame, graph):
-    constraints = pd.DataFrame({'Date': frame.BarStart, 'AvailableDate': frame.BarStart,
-                                'QuantityStep': 1, 'PriceTick': .01, 'Tradable': True})
-    return PreparedReplay.from_frames(frame, constraints, graph)
+    return PreparedObservations.from_frames(frame, graph)
 
 
-@pytest.mark.parametrize('zone,expected_identity', [
-    ('UTC', 'ad4a9a1db5cc9a1ad4ce29ced77fbafc3a3de086fa32d44c65d88096cd477340'),
-    ('America/New_York', 'e4b974f9cbad01b09549a088b0847e4b27bca0812146e6cc6bf17704ccaaee5f'),
-])
-@pytest.mark.parametrize('text_constraints', [False, True])
-def test_bulk_datetime_preparation_preserves_established_identity(zone, expected_identity, text_constraints):
+@pytest.mark.parametrize('zone', ['UTC', 'America/New_York'])
+def test_observation_datetime_identity_is_stable_and_input_is_immutable(zone):
     stamps = pd.date_range('2024-11-01 09:30:00.000000123', periods=3, freq='30min', tz=zone)
     bars = observations(stamps)
     bars['BarStatus'], bars['ExecutionBlocked'] = 'OBSERVED', False
     bars.index = [7, 7, 9]
-    constraints = pd.DataFrame({'Date': stamps, 'AvailableDate': stamps, 'QuantityStep': 1,
-        'PriceTick': .01, 'Tradable': True, 'SettlementAt': stamps + pd.Timedelta(days=3)},
-        index=bars.index)
-    if text_constraints:
-        for name in ('Date', 'AvailableDate', 'SettlementAt'):
-            constraints[name] = constraints[name].map(lambda value: value.isoformat())
-    original_bars, original_constraints = bars.copy(deep=True), constraints.copy(deep=True)
+    original = bars.copy(deep=True)
     with warnings.catch_warnings():
         warnings.filterwarnings('ignore', message='Discarding nonzero nanoseconds.*', category=UserWarning)
-        value = PreparedReplay.from_frames(bars, constraints, FeatureGraph())
-    assert value.identity == expected_identity
+        value = PreparedObservations.from_frames(bars, FeatureGraph())
+        repeated = PreparedObservations.from_frames(bars.copy(deep=True), FeatureGraph())
+    assert value.identity == repeated.identity
     assert type(value._data.rows[0]['Date']) is datetime
-    assert type(value._data.constraints[0]['SettlementAt']) is datetime
-    pd.testing.assert_frame_equal(bars, original_bars)
-    pd.testing.assert_frame_equal(constraints, original_constraints)
-
-
-@pytest.mark.parametrize('column', ['Date', 'AvailableDate', 'SettlementAt'])
-def test_bulk_constraint_conversion_rejects_nat(column):
-    bars = observations(pd.date_range('2024-11-01 14:30', periods=3, freq='30min', tz='UTC'))
-    constraints = pd.DataFrame({'Date': bars.BarStart, 'AvailableDate': bars.BarStart,
-        'QuantityStep': 1, 'PriceTick': .01, 'Tradable': True,
-        'SettlementAt': bars.BarStart + pd.Timedelta(days=3)}).copy(deep=True)
-    constraints.loc[1, column] = pd.NaT
-    with pytest.raises(ValueError, match='constraint times must be aware and finite'):
-        PreparedReplay.from_frames(bars, constraints, FeatureGraph())
+    assert not hasattr(value._data, 'constraints')
+    pd.testing.assert_frame_equal(bars, original)
+    changed = bars.copy(deep=True)
+    changed.loc[9, 'Close'] += .01
+    with warnings.catch_warnings():
+        warnings.filterwarnings('ignore', message='Discarding nonzero nanoseconds.*', category=UserWarning)
+        assert PreparedObservations.from_frames(changed, FeatureGraph()).identity != value.identity
 
 
 def test_graph_types_cycles_roundtrip_and_numeric_order():

@@ -10,7 +10,7 @@ from paper_trading_engine.inspection import (
     PteInspectionScenario, PteOrderKey, PteOrderUpdate, PteRepeatedOrderReport,
     PteSubmissionResult, SubmissionOutcome,
 )
-from paper_trading_engine.lifecycle import AccountHealth
+from execution_channels.futu.lifecycle import AccountHealth
 from strategy_runtime import PlannedOrder, OrderSide, OrderType
 
 

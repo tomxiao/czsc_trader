@@ -441,11 +441,35 @@ def unavailable_observation(message: str, *, contract_version: str = OBSERVATION
     return ObservationUnavailable(message, contract_version)
 
 
+@dataclass(frozen=True, slots=True)
+class _ProposalObservationFacts:
+    strategy: StrategyIdentity
+    symbol: str
+    signal_identity: str
+    plan_identity: str
+    signal_date: date
+    trading_date: date
+    action: str
+    target_position: float
+    evidence: object
+
+
+def observe_strategy_proposal(definition, proposal, *, plan_identity: str, action: str):
+    """Render strategy evidence with the host's adopted execution identity."""
+    from .session_proposal import SessionProposal
+    if type(proposal) is not SessionProposal:
+        raise TypeError("observation requires SessionProposal")
+    facts = _ProposalObservationFacts(proposal.strategy, proposal.strategy.symbol,
+        proposal.signal_identity, plan_identity, proposal.signal_date, proposal.point.trading_date,
+        action, proposal.signal.target_position, proposal.signal.evidence)
+    return observe_execution_plan(definition, facts)
+
+
 def _validate_observation_plan(definition, plan):
     from .models import RuntimeDefinition
     from .contracts import ExecutionPlan
 
-    _require(isinstance(definition, RuntimeDefinition) and isinstance(plan, ExecutionPlan),
+    _require(isinstance(definition, RuntimeDefinition) and isinstance(plan, (ExecutionPlan, _ProposalObservationFacts)),
              "observation requires a runtime definition and execution plan")
     _require(plan.strategy.strategy_id == definition.strategy_family_id
              and plan.strategy.runtime_sha256 == definition.runtime_sha256

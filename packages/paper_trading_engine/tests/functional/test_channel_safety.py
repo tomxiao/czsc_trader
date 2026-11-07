@@ -7,10 +7,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from paper_trading_engine import AccountHealth
-from paper_trading_engine.audit import AuditRecorder
+from execution_channels.futu.lifecycle import AccountHealth
+from execution_channels.futu.audit import AuditRecorder
 from paper_trading_engine.account_engine import AccountDecisionBlockedError, AccountEngine
-from paper_trading_engine.broker import (
+from execution_channels.futu.broker import (
     BrokerAccount,
     BrokerOrder,
     BrokerOrderRejectedError,
@@ -19,14 +19,14 @@ from paper_trading_engine.broker import (
     OrderIntent,
     PaperTradingSafetyError,
 )
-from paper_trading_engine.futu_execution import (
+from execution_channels.futu.futu_execution import (
     ChannelReconciliationError,
     ChannelExecution,
     OrderSubmissionBatchError,
 )
-from paper_trading_engine.futu_gateway import FutuGateway, FutuGatewayError
+from execution_channels.futu.futu_gateway import FutuGateway, FutuGatewayError
 from paper_trading_engine.coordinator import PteCoordinator, ReconnectableExecution
-from paper_trading_engine.store import PaperStore
+from execution_channels.futu.store import PaperStore
 from paper_trading_engine.contracts import OrderSpec
 from pte_support import FakeAdvice, FakeBroker, broker_snapshot, decision, preparation, adopt_test_decision, claim_test_intent
 

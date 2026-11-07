@@ -11,26 +11,26 @@ from types import SimpleNamespace
 import pandas as pd
 import pytest
 
-from dataflows import AssetClass, BarFrequency, InstrumentId, MarketId
-from strategy_runtime import (
-    AccountPolicy,
-    CashAvailabilityPolicy,
-    ResearchExecutionSpec,
-    CnEquitySpec,
-    UsEquitySpec,
-)
-from strategy_runtime.account_strategy import AccountDecision, SellRemainderPolicy
-from strategy_runtime.account_replay import plan_account_decision
-from strategy_runtime.contracts import OrderSide, OrderType
-from strategy_runtime.entry_cycle import EntryCyclePhase
-from strategy_runtime.replay_contracts import (
-    ReplayOrder,
-    ReplayLeg,
-    ReplayPoint,
-    ExecutionPrecision,
-    CycleBudget,
-)
-from trading_execution_engine import PortfolioHistoricalExecutor
+from execution_channels.instruments import AssetClass
+from execution_channels.instruments import BarFrequency
+from execution_channels.instruments import InstrumentId
+from execution_channels.instruments import MarketId
+from execution_channels.policy import AccountPolicy
+from execution_channels.policy import CashAvailabilityPolicy
+from execution_channels.policy import ResearchExecutionSpec
+from execution_channels.policy import CnEquitySpec
+from execution_channels.policy import UsEquitySpec
+from execution_channels.contracts import SellRemainderPolicy
+from execution_channels.planning import plan_account_decision
+from execution_channels.session_contracts import OrderSide
+from execution_channels.session_contracts import OrderType
+from execution_channels.entry_cycle import EntryCyclePhase
+from execution_channels.contracts import ReplayOrder
+from execution_channels.contracts import ReplayLeg
+from execution_channels.contracts import ReplayPoint
+from execution_channels.contracts import ExecutionPrecision
+from execution_channels.contracts import CycleBudget
+from execution_channels.historical import PortfolioHistoricalExecutor
 from strategy_evaluator.equity import audit_equity_account
 from strategy_evaluator.equity_assessment import (
     canonical_ledger,
@@ -200,7 +200,7 @@ def ledger(market=MarketId.US, *, variant="scaling"):
             ExecutionPrecision.BAR_INTERVAL,
         )
         account = executor.account_snapshot(point, instrument)
-        decision = AccountDecision.from_facts(
+        decision = _intent(
             target,
             "synthetic independent audit fixture",
             facts={"target": target},
@@ -578,3 +578,8 @@ def test_assessment_rejects_legacy_cn_or_mismatched_candidate_benchmark_contract
 def test_current_audit_rejects_retired_or_unlabelled_decision_contract(base_ledger, decision_contract):
     with pytest.raises(ValueError, match='FORMAL_V4'):
         audit_equity_account(**base_ledger, account_contract=4, decision_contract=decision_contract)
+
+
+def _intent(target, reason, *, facts, next_watch, **kwargs):
+    from execution_channels.planning.intent import TradeIntent, DecisionExplanation
+    return TradeIntent(target, DecisionExplanation({'reason':reason,'facts':facts,'next_watch':next_watch}), **kwargs)

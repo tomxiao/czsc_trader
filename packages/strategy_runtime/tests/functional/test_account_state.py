@@ -11,9 +11,11 @@ from dataflows import AssetClass, BarFrequency, InstrumentId, MarketId, SourceRe
 from strategy_runtime import (AccountPolicy, CashAvailabilityPolicy, EquityStrategyCandidate, EquityAuxiliaryInput,
     EquityStrategyDefinition, EquityPortfolio, ResearchExecutionSpec, StrategyRuntime, UsEquitySpec, StrategyComputation, equity_source_hash)
 from strategy_runtime.equity_features import BarField, FeatureGraph, RawField
-from strategy_runtime.equity_replay import (PreparedReplay, ReplayFailure, StateField, StateRecord,
-    StateValueType, StrategyStateSchema, run_replay)
-from trading_execution_engine import PortfolioHistoricalExecutor
+from strategy_runtime.equity_replay import (PreparedObservations, ReplayFailure, StateField, StateRecord,
+    StateValueType, StrategyStateSchema)
+from execution_channels.historical import PortfolioHistoricalExecutor
+from czsc_trader.application.account_replay import run_replay
+from czsc_trader.application.ec_boundary import execution_spec
 
 
 SOURCE = '''from strategy_runtime import AccountDecision, AccountStepResult
@@ -58,7 +60,7 @@ def inputs(value, count=7):
         'PriceLimitLower':None,'PriceLimitUpper':None,'BuySellableAt':starts})
     actions = pd.DataFrame([{'Date': starts[0], 'AvailableDate': starts[0],
         'EventId': 'none', 'Kind': 'NONE', 'Ratio': 1., 'CashPerShare': 0., 'PayAt': None}])
-    executor = PortfolioHistoricalExecutor(specification=value.definition.execution_spec,
+    executor = PortfolioHistoricalExecutor(specification=execution_spec(value.definition.execution_spec),
         initial_cash=1000., fee_rate=.001, actions=actions, price_basis='RAW')
     return bars, constraints, executor
 
@@ -71,7 +73,7 @@ def prepare(value, bars, constraints, **kwargs):
     parameters = dict(frequency=value.definition.execution_spec.decision_clock, timezone=value.instrument.timezone,
         sessions=session_frame,trading_sessions=(session,))
     parameters.update(kwargs)
-    return PreparedReplay.from_frames(bars,constraints,value.definition.feature_graph,**parameters)
+    return PreparedObservations.from_frames(bars,value.definition.feature_graph,**parameters)
 
 
 def test_actual_fill_starts_cycle_expired_buy_does_not_sell_latch_survives(tmp_path):
@@ -81,7 +83,7 @@ def test_actual_fill_starts_cycle_expired_buy_does_not_sell_latch_survives(tmp_p
     bars.loc[2, ['Open', 'High', 'Low', 'Close']] = [10., 11., 7., 8.]
     bars.loc[3, 'ExecutionBlocked'] = True
     prepared = prepare(value, bars, constraints)
-    outcome = run_replay(prepared, value, executor, start=bars.BarStart.iloc[1].to_pydatetime(),
+    outcome = run_replay(prepared, value, executor, constraints=constraints, start=bars.BarStart.iloc[1].to_pydatetime(),
         end=bars.Date.iloc[-1].to_pydatetime(), fee_rate=.001)
     result = outcome.execution_result
     assert result.orders.iloc[0].status == 'EXPIRED'
@@ -113,7 +115,7 @@ def test_transaction_rejects_post_execute_revision_and_restores_all_account_stat
 
     monkeypatch.setattr(executor, 'execute_account_plan', incorrect_revision)
     with pytest.raises(ReplayFailure, match='advance revision once') as failed:
-        run_replay(prepared, value, executor, start=bars.BarStart.iloc[1].to_pydatetime(),
+        run_replay(prepared, value, executor, constraints=constraints, start=bars.BarStart.iloc[1].to_pydatetime(),
             end=bars.Date.iloc[-1].to_pydatetime(), fee_rate=.001)
     assert executor.cash == 1000. and executor.quantity == executor.revision == 0
     assert not executor.completed and all(not rows for rows in executor.rows.values())
@@ -121,7 +123,7 @@ def test_transaction_rejects_post_execute_revision_and_restores_all_account_stat
     assert failed.value.committed_state.revision == 0
     assert isinstance(failed.value.cause, ValueError)
     monkeypatch.setattr(executor, 'execute_account_plan', execute)
-    result = run_replay(prepared, value, executor, start=bars.BarStart.iloc[1].to_pydatetime(),
+    result = run_replay(prepared, value, executor, constraints=constraints, start=bars.BarStart.iloc[1].to_pydatetime(),
         end=bars.Date.iloc[-1].to_pydatetime(), fee_rate=.001)
     assert result.state.cycle is not None
 
@@ -150,12 +152,12 @@ def test_owner_is_explicit_and_future_suffix_does_not_change_earlier_tables(tmp_
     bars, constraints, executor = inputs(value)
     end = bars.Date.iloc[3].to_pydatetime()
     prepared = prepare(value, bars, constraints)
-    first = run_replay(prepared, value, executor, start=bars.BarStart.iloc[1].to_pydatetime(),
+    first = run_replay(prepared, value, executor, constraints=constraints, start=bars.BarStart.iloc[1].to_pydatetime(),
                        end=end, fee_rate=.001, owner='benchmark:independent')
     altered, _, second_executor = inputs(value)
     altered.loc[4:, ['Open', 'High', 'Low', 'Close', 'Volume', 'Amount']] *= 5
     second = run_replay(prepare(value, altered, constraints),
-        value, second_executor, start=bars.BarStart.iloc[1].to_pydatetime(), end=end,
+        value, second_executor, constraints=constraints, start=bars.BarStart.iloc[1].to_pydatetime(), end=end,
         fee_rate=.001, owner='benchmark:independent')
     for name in ('decisions', 'orders', 'fills', 'corporate_action_entries', 'account_points', 'account_daily', 'trades'):
         pd.testing.assert_frame_equal(getattr(first.execution_result, name), getattr(second.execution_result, name), check_exact=True)
@@ -163,7 +165,7 @@ def test_owner_is_explicit_and_future_suffix_does_not_change_earlier_tables(tmp_
         second.state.revision, second.state.account, second.state.cycle)
     assert first.state.binding != second.state.binding  # Distinct prepared-data ownership.
     _, _, third_executor = inputs(value)
-    third = run_replay(prepared, value, third_executor, start=bars.BarStart.iloc[1].to_pydatetime(),
+    third = run_replay(prepared, value, third_executor, constraints=constraints, start=bars.BarStart.iloc[1].to_pydatetime(),
                       end=end, fee_rate=.001, owner='benchmark:another')
     assert first.execution_result.decisions.decision_id.iloc[0] != third.execution_result.decisions.decision_id.iloc[0]
 
@@ -173,17 +175,18 @@ def test_invalid_latency_and_unsupported_market_contracts_reject(tmp_path):
     bars, constraints, executor = inputs(value)
     prepared = prepare(value, bars, constraints, latency_seconds=1)
     with pytest.raises(ValueError, match='visibility'):
-        run_replay(prepared, value, executor, start=datetime(2024, 3, 1, 15, tzinfo=timezone.utc),
+        run_replay(prepared, value, executor, constraints=constraints, start=datetime(2024, 3, 1, 15, tzinfo=timezone.utc),
                    end=bars.Date.iloc[-1].to_pydatetime(), fee_rate=.001)
 
 
-def test_account_replay_rejects_stateless_production_advice(tmp_path):
+def test_account_replay_rejects_stateless_v2_proposal_for_v4(tmp_path):
     value = candidate(tmp_path)
     bars, _, _ = inputs(value)
     instance = StrategyRuntime(execution_spec=value.definition.execution_spec).create(value)
     interval = TimeInterval(bars.BarStart.iloc[1].to_pydatetime(), bars.Date.iloc[1].to_pydatetime())
-    with pytest.raises(ValueError, match='historical research only'):
-        instance.plan(bars.iloc[:1], interval, EquityPortfolio(1000., 0, 0., 0), fee_rate=.001)
+    assert not hasattr(instance, 'plan')
+    with pytest.raises(ValueError, match='AccountDecisionEngine.propose'):
+        instance.propose(bars.iloc[:1], interval, EquityPortfolio(1000., 0, 0., 0))
 
 
 def with_context(value, bars, *, max_age=1800.):
@@ -211,7 +214,7 @@ def test_auxiliary_and_session_asof_views_and_late_availability(tmp_path):
     prepared = prepare(value, bars, constraints,
         auxiliary_histories={'market': auxiliary}, sessions=sessions, trading_sessions=calendar)
     restored = pickle.loads(pickle.dumps(prepared))
-    result = run_replay(restored, value, executor, start=bars.BarStart.iloc[1].to_pydatetime(),
+    result = run_replay(restored, value, executor, constraints=constraints, start=bars.BarStart.iloc[1].to_pydatetime(),
         end=bars.Date.iloc[-1].to_pydatetime(), fee_rate=.001).execution_result
     facts = [{item['key']: item['text'] for item in value['basis']} for value in result.decisions.explanation]
     assert [item['aux_rows'] for item in facts[:4]] == ['1', '1', '2', '4']
@@ -227,7 +230,7 @@ def test_auxiliary_staleness_and_unavailable_session_reject_without_executing(tm
     prepared = prepare(value, bars, constraints,
         auxiliary_histories={'market': auxiliary}, sessions=sessions, trading_sessions=calendar)
     with pytest.raises(ReplayFailure, match='STALE') as failed:
-        run_replay(prepared, value, executor, start=bars.BarStart.iloc[1].to_pydatetime(),
+        run_replay(prepared, value, executor, constraints=constraints, start=bars.BarStart.iloc[1].to_pydatetime(),
             end=bars.Date.iloc[-1].to_pydatetime(), fee_rate=.001)
     assert failed.value.committed_state.revision == executor.revision == 1
     assert len(executor.rows['decisions']) == 1
@@ -236,7 +239,7 @@ def test_auxiliary_staleness_and_unavailable_session_reject_without_executing(tm
     prepared = prepare(value, bars, constraints,
         auxiliary_histories={'market': bars}, sessions=sessions, trading_sessions=calendar)
     with pytest.raises(ReplayFailure, match='session calendar is not yet available'):
-        run_replay(prepared, value, executor, start=bars.BarStart.iloc[1].to_pydatetime(),
+        run_replay(prepared, value, executor, constraints=constraints, start=bars.BarStart.iloc[1].to_pydatetime(),
             end=bars.Date.iloc[-1].to_pydatetime(), fee_rate=.001)
     assert executor.revision == 0 and executor.quantity == 0
 
@@ -255,7 +258,7 @@ def test_failure_exposes_exact_committed_state_and_same_binding_retry(tmp_path, 
 
     monkeypatch.setattr(executor, 'execute_account_plan', fail_third)
     with pytest.raises(ReplayFailure, match='synthetic failure') as failed:
-        run_replay(prepared, value, executor, start=bars.BarStart.iloc[1].to_pydatetime(),
+        run_replay(prepared, value, executor, constraints=constraints, start=bars.BarStart.iloc[1].to_pydatetime(),
             end=bars.Date.iloc[-1].to_pydatetime(), fee_rate=.001)
     assert failed.value.committed_state.revision == executor.revision == 2
     monkeypatch.setattr(executor, 'execute_account_plan', execute)
@@ -263,13 +266,24 @@ def test_failure_exposes_exact_committed_state_and_same_binding_retry(tmp_path, 
     changed.loc[0, 'Volume'] *= 2
     other_data = prepare(value, changed, constraints)
     with pytest.raises(ValueError, match='another account'):
-        run_replay(other_data, value, executor, start=failed.value.next_execution_start,
+        run_replay(other_data, value, executor, constraints=constraints, start=failed.value.next_execution_start,
             end=bars.Date.iloc[-1].to_pydatetime(), fee_rate=.001,
             initial_state=failed.value.committed_state)
-    outcome = run_replay(prepared, value, executor, start=failed.value.next_execution_start,
+    changed_constraints = constraints.copy(deep=True)
+    changed_constraints.loc[changed_constraints.Date == failed.value.next_execution_start, 'Tradable'] = False
+    with pytest.raises(ValueError, match='another account'):
+        run_replay(prepared, value, executor, constraints=changed_constraints,
+            start=failed.value.next_execution_start, end=bars.Date.iloc[-1].to_pydatetime(), fee_rate=.001,
+            initial_state=failed.value.committed_state)
+    assert executor.revision == 2
+    equivalent_constraints = constraints.iloc[::-1].copy(deep=True)
+    for field in ('Date','AvailableDate','BuySellableAt','SettlementAt'):
+        if field in equivalent_constraints:
+            equivalent_constraints[field] = equivalent_constraints[field].map(lambda stamp: stamp.isoformat())
+    outcome = run_replay(prepared, value, executor, constraints=equivalent_constraints, start=failed.value.next_execution_start,
         end=bars.Date.iloc[-1].to_pydatetime(), fee_rate=.001, initial_state=failed.value.committed_state)
     _, _, untouched = inputs(value)
-    serial = run_replay(prepared, value, untouched, start=bars.BarStart.iloc[1].to_pydatetime(),
+    serial = run_replay(prepared, value, untouched, constraints=constraints, start=bars.BarStart.iloc[1].to_pydatetime(),
         end=bars.Date.iloc[-1].to_pydatetime(), fee_rate=.001)
     assert outcome.state == serial.state
     pd.testing.assert_frame_equal(outcome.execution_result.decisions, serial.execution_result.decisions, check_exact=True)

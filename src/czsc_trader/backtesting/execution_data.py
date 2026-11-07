@@ -13,7 +13,7 @@ from dataflows import (DataError, DataRequest, DataStatus, Dataflows, Dataset,
                        PreparePolicy, PreparedDataRef, DataResult)
 from strategy_runtime import (canonical_sha256, StrategyInputBinding,
                               ExecutionPriceBasis, ExecutionPricing)
-from trading_execution_engine import MarketExecutionRules, SessionPriceLimits, SuspensionInformation
+from execution_channels.historical import MarketExecutionRules, SessionPriceLimits, SuspensionInformation
 
 
 class MarketSecurity(StrEnum):

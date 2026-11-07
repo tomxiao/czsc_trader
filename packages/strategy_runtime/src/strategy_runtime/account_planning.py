@@ -6,31 +6,36 @@ Prepared market inputs never form part of a durable account's state binding.
 from contextlib import nullcontext
 from dataclasses import dataclass
 from datetime import datetime
-from collections.abc import Mapping
 
 from dataflows import BarFrequency, TimeInterval
 
-from .account_replay import plan_account_decision
 from .account_strategy import (AccountDecision, AccountStepContext, AccountStepResult,
     AccountStrategyState, BatchAccountContext, BatchObservation, PositionFeedback,
-    SellRemainderPolicy, AccountPlanningContext)
+    AccountPlanningContext)
 from .contracts import OrderSide
 from .equity import DecisionPoint, EquityPortfolio, equity_hash
 from .equity_definition import EquityStrategyCandidate
-from .equity_replay import PreparedReplay, StateRecord, _FeatureEvaluator, _Visibility
-from .replay_contracts import (AccountExecutionPlan, AccountSnapshot, ExecutionPrecision,
+from .equity_replay import PreparedObservations, StateRecord, _FeatureEvaluator, _Visibility
+from .replay_contracts import (AccountSnapshot, ExecutionPrecision,
     ReplayPoint, StrategyComputation)
 
 
 @dataclass(frozen=True, slots=True)
 class AccountDecisionProposal:
     proposal: AccountStepResult
-    plan: AccountExecutionPlan
+    point: ReplayPoint
+    reference_price: float
     next_event_cursor: int
+    suppressed: bool = False
 
     def __post_init__(self):
-        if type(self.proposal) is not AccountStepResult or type(self.plan) is not AccountExecutionPlan:
-            raise TypeError('account proposal requires typed state and execution plan')
+        if type(self.proposal) is not AccountStepResult or type(self.point) is not ReplayPoint:
+            raise TypeError('account proposal requires typed strategy state and decision point')
+        import math
+        if type(self.reference_price) is not float or not math.isfinite(self.reference_price) or self.reference_price <= 0:
+            raise ValueError('strategy proposal requires a finite positive reference price')
+        if type(self.suppressed) is not bool:
+            raise TypeError('strategy proposal suppression requires bool')
         if type(self.next_event_cursor) is not int or self.next_event_cursor < 0:
             raise ValueError('account proposal requires a nonnegative event cursor')
 
@@ -99,8 +104,8 @@ class AccountDecisionEngine:
     accepting implementations that depend on a sequence of batch observations.
     """
 
-    def __init__(self, candidate, prepared, *, live_constraint=None):
-        if type(candidate) is not EquityStrategyCandidate or type(prepared) is not PreparedReplay:
+    def __init__(self, candidate, prepared):
+        if type(candidate) is not EquityStrategyCandidate or type(prepared) is not PreparedObservations:
             raise TypeError('account planning requires typed candidate and prepared inputs')
         definition, spec = candidate.definition, candidate.definition.execution_spec
         if definition.contract_version != 4 or spec.decision_clock not in (BarFrequency.DAILY, BarFrequency.M30):
@@ -122,19 +127,6 @@ class AccountDecisionEngine:
         self._intervals = dict(prepared._calendar_intervals)
         self._rows = dict(zip(zip(prepared._data.starts, prepared._data.ends), range(len(prepared._data.rows)), strict=True))
         self._observed_at = None
-        self._live_constraint = None
-        if live_constraint is not None:
-            if not isinstance(live_constraint, Mapping):
-                raise TypeError('live planning requires a dated constraint mapping')
-            value = dict(live_constraint)
-            if any(type(value.get(key)) is not datetime or value[key].utcoffset() is None
-                   for key in ('Date', 'AvailableDate')):
-                raise ValueError('live constraint timestamps must be aware')
-            if (value['AvailableDate'] > value['Date'] or value.get('Tradable') is not True
-                    or value.get('QuantityStep') != spec.quantity_step
-                    or value.get('PriceTick') != spec.price_tick):
-                raise ValueError('live constraint differs from available trading rules')
-            self._live_constraint = value
 
     def table_views(self, when):
         import pandas as pd
@@ -175,8 +167,7 @@ class AccountDecisionEngine:
         if type(interval) is not TimeInterval:
             raise TypeError('account observation requires TimeInterval')
         key = interval.start, interval.end
-        live = self._live_constraint is not None and self._live_constraint['Date'] == interval.start
-        if key not in self._intervals or (key not in self._rows and not live):
+        if key not in self._intervals:
             raise ValueError('execution interval absent from declared calendar or input grid')
         if self._observed_at is not None and interval.start < self._observed_at:
             raise ValueError('account observations must be requested in causal time order')
@@ -208,23 +199,16 @@ class AccountDecisionEngine:
         return (point, self._features.at(interval.start), visibility.history_view(interval.start),
                 views, session, available, not data.observed[visibility.latest_completed])
 
-    def plan(self, interval, portfolio, account, state, position, *, owner, fee_rate,
+    def propose(self, interval, portfolio, account, state, position, *, owner, fee_rate,
              budget=None, events=(), next_event_cursor=None, binding=None):
         observation = self.observation(interval)
-        if self._live_constraint is not None and self._live_constraint['Date'] == interval.start:
-            constraint = self._live_constraint
-        else:
-            constraint = self.prepared._data.constraints[self._rows[(interval.start, interval.end)]]
-        if constraint is None or constraint['AvailableDate'] > interval.start:
-            raise ValueError('trading constraint unavailable at decision')
-        return self._plan_observation(observation, portfolio, account, state, position,
+        return self._propose_observation(observation, portfolio, account, state, position,
             owner=owner, fee_rate=fee_rate, budget=budget, events=events,
-            next_event_cursor=next_event_cursor, binding=binding,
-            sell_remainder_policy=SellRemainderPolicy(constraint['SellRemainderPolicy']))
+            next_event_cursor=next_event_cursor, binding=binding)
 
-    def _plan_observation(self, observation, portfolio, account, state, position, *, owner,
-                          fee_rate, sell_remainder_policy, budget=None, events=(),
-                          next_event_cursor=None, binding=None, batch_decision=None):
+    def _propose_observation(self, observation, portfolio, account, state, position, *, owner,
+                          fee_rate, budget=None, events=(),
+                          next_event_cursor=None, binding=None):
         definition, spec = self.candidate.definition, self.candidate.definition.execution_spec
         default_binding = self.state_binding(owner, fee_rate)
         binding = default_binding if binding is None else binding
@@ -267,22 +251,14 @@ class AccountDecisionEngine:
             proposal = AccountStepResult(AccountDecision.from_facts(float(portfolio.quantity > 0),
                 'unobserved input', facts={'suppressed': True}, next_watch='next observed bar'),
                 state.account, state.cycle.values if state.cycle else None)
-            identity = equity_hash({'owner': owner, 'point': repr(replay_point),
-                                    'revision': portfolio.revision, 'suppressed': True})
-            plan = AccountExecutionPlan(identity, owner, replay_point, portfolio.revision, portfolio.quantity,
-                evidence={'signal_status': 'SUPPRESSED_UNOBSERVED_BAR', 'target': float(portfolio.quantity > 0),
-                          'sizing': 'EXPLICIT_ORDERS', 'planning_mode': 'EXPLICIT_ORDERS',
-                          'reference_price': reference, 'specification_hash': spec.fingerprint,
-                          'fee_rate': fee_rate})
-            return AccountDecisionProposal(proposal, plan, state.event_cursor)
+            return AccountDecisionProposal(proposal, replay_point, reference, state.event_cursor, True)
         from .equity_source_runtime import active_invocation
         scope = nullcontext() if active_invocation(self.candidate) is not None else self.candidate.bind_replay()
         with scope:
             if definition.computation is StrategyComputation.BATCH_HISTORY:
-                if batch_decision is None:
-                    batch_decision, = self.candidate.calculate_account_batch(BatchAccountContext((
-                        BatchObservation(point, features, history, views, context.session,
-                                         context.session_available_at, context.observations),), definition.parameters))
+                batch_decision, = self.candidate.calculate_account_batch(BatchAccountContext((
+                    BatchObservation(point, features, history, views, context.session,
+                                     context.session_available_at, context.observations),), definition.parameters))
                 proposal = AccountStepResult(batch_decision, state.account, StateRecord())
             else:
                 proposal = self.candidate.account_step(context, state)
@@ -290,7 +266,4 @@ class AccountDecisionEngine:
                 or any(order.side is OrderSide.BUY for order in proposal.decision.orders)
                 or any(leg.order.side is OrderSide.BUY for leg in proposal.decision.legs)) and proposal.cycle_values is None:
             raise ValueError('holding/entry requires typed cycle state')
-        plan = plan_account_decision(proposal.decision, replay_point, account, reference, spec,
-            owner=owner, implementation=self.candidate.implementation_hash, fee_rate=fee_rate,
-            sell_remainder_policy=sell_remainder_policy)
-        return AccountDecisionProposal(proposal, plan, cursor)
+        return AccountDecisionProposal(proposal, replay_point, reference, cursor)

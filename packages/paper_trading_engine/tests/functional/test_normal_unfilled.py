@@ -8,11 +8,11 @@ import sqlite3
 
 import pytest
 
-from paper_trading_engine import AccountHealth
+from execution_channels.futu.lifecycle import AccountHealth
 from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine.contracts import OrderSpec, PlanLegSpec
-from paper_trading_engine.futu_execution import ChannelExecution
-from paper_trading_engine.store import PaperStore
+from execution_channels.futu.futu_execution import ChannelExecution
+from execution_channels.futu.store import PaperStore
 from strategy_runtime import CycleTarget, EntryCyclePhase, EntryCyclePlanStatus, EntryCycleState, canonical_sha256
 from pte_support import FakeAdvice, FakeBroker, broker_snapshot, decision, preparation
 

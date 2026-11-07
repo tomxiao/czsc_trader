@@ -14,7 +14,7 @@ import pandas as pd
 from strategy_runtime import (
     canonical_sha256, StrategyInputBinding, ExecutionPricing,
 )
-from trading_execution_engine import MarketExecutionRules
+from execution_channels.historical import MarketExecutionRules
 
 from czsc_trader.backtesting.execution_data import BacktestExecutionData
 from czsc_trader.backtesting.srt_bridge import (

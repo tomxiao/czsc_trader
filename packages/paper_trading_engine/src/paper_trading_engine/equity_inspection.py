@@ -1,4 +1,6 @@
 """Recorded channel scenarios exercising normal durable CN/US account components."""
+from .ec_boundary import execution_rules, execution_permit
+
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
@@ -7,12 +9,12 @@ import json
 from dataflows import TimeInterval
 from strategy_runtime.inspection import InspectionEnvironment
 from .inspection_contracts import Record, _case_id, _money, _time
-from .equity_contracts import EquityAccountRules, EquityOrderReport, EQUITY_OFFLINE_CHANNEL_ID, equity_channel_id, EquityExecutionWindowError, EquityReconciliationError
+from execution_channels.futu.equity_contracts import EquityOrderReport, EQUITY_OFFLINE_CHANNEL_ID, equity_channel_id, EquityExecutionWindowError, EquityReconciliationError
 from .equity_advice import EquityAdviceClient, prepare_equity_decision
-from .equity_execution import EquityExecution
-from .broker import BrokerOrder, BrokerOrderRejectedError, BrokerSubmissionUncertainError
+from execution_channels.futu.equity_execution import EquityExecution
+from execution_channels.futu.broker import BrokerOrder, BrokerOrderRejectedError, BrokerSubmissionUncertainError
 from .account_engine import AccountEngine
-from .store import PaperStore
+from execution_channels.futu.store import PaperStore
 
 
 @dataclass(frozen=True)
@@ -179,7 +181,7 @@ def inspect_equity_release(*, candidate, dataflows, binding, requests, initial_c
         path = permit.validate_path(permit.workspace / "equity-pte" / scenario.case_id / "paper.db")
         if path.exists():
             raise ValueError("equity scenario database already exists")
-        store = PaperStore(path, inspection_permit=permit)
+        store = PaperStore(path, inspection_permit=execution_permit(permit))
         observed = []
         local_coverage = set()
         try:
@@ -190,10 +192,10 @@ def inspect_equity_release(*, candidate, dataflows, binding, requests, initial_c
                 initial_cash, symbol=candidate.instrument.symbol, asset_type=candidate.instrument.asset_class.value.lower(), strategy_id=candidate.strategy_id,
                 strategy_name_snapshot="Isolated equity inspection", strategy_version=permit.release_id.split("-")[1],
                 release_hash=permit.release_sha256, qualification_snapshot="INSPECTION", selection_data_cutoff=release_record["selection_data_cutoff"],
-                channel_id=equity_channel_id(candidate.instrument), equity_rules=EquityAccountRules(candidate.instrument, candidate.definition.execution_spec))
+                channel_id=equity_channel_id(execution_rules(candidate.instrument, candidate.definition.execution_spec).instrument), equity_rules=execution_rules(candidate.instrument, candidate.definition.execution_spec))
             store.set_virtual_paused("equity", False)
             channel = _RecordedChannel()
-            channel.channel_id = equity_channel_id(candidate.instrument)
+            channel.channel_id = equity_channel_id(execution_rules(candidate.instrument, candidate.definition.execution_spec).instrument)
             orders, reports = [], set()
             now = None
             for step in scenario.steps:
@@ -201,7 +203,7 @@ def inspect_equity_release(*, candidate, dataflows, binding, requests, initial_c
                 if type(step) is EquityPteRestart:
                     before = _facts(store)
                     store.close()
-                    store = PaperStore(path, inspection_permit=permit)
+                    store = PaperStore(path, inspection_permit=execution_permit(permit))
                     if _facts(store) != before:
                         raise ValueError("reopened equity account differs from durable state")
                     local_coverage.add("RESTART")
@@ -225,7 +227,7 @@ def inspect_equity_release(*, candidate, dataflows, binding, requests, initial_c
                         ids = execution.submit_pending("equity")
                         orders.extend(ids)
                         actual = "SUBMITTED" if ids else "NO_ORDER"
-                        from .order_windows import planned_bounds
+                        from execution_channels.futu.order_windows import planned_bounds
                         for row in store.account_intents('equity'):
                             bounds = planned_bounds(row['payload'], row['valid_session'])
                             if (before_submission.get(row['intent_id']) == 'PENDING_SUBMIT'
@@ -369,7 +371,7 @@ def verify_equity_inspection_facts(outcome: dict, protocol: dict):
                     raise ValueError("saved equity submission outcome differs")
                 coverage.add(step.expected)
                 if 'expired_intents' in actual or 'submission_intents_before' in actual:
-                    from .order_windows import planned_bounds
+                    from execution_channels.futu.order_windows import planned_bounds
                     expired = actual.get('expired_intents')
                     before = actual.get('submission_intents_before')
                     if (step.expected not in ('NO_ORDER', 'SUBMITTED') or type(expired) is not list

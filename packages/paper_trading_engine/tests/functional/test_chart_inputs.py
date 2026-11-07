@@ -17,7 +17,7 @@ from dataflows.ohlcv_quality import bind_quality_frame, build_quality_evidence, 
 
 from paper_trading_engine.chart_market_data import AccountChartMarketData
 from paper_trading_engine.account_chart import AccountChartService
-from paper_trading_engine.trading_window import SHANGHAI
+from execution_channels.futu.trading_window import SHANGHAI
 
 
 def test_chart_market_data_refreshes_completed_sessions_and_preserves_bound_assets(tmp_path) -> None:

@@ -11,9 +11,9 @@ from paper_trading_engine.account_data_preparer import (
     AccountDataPreparer,
 )
 from paper_trading_engine.account_strategy_cycle import AccountStrategyCycle
-from paper_trading_engine.audit import AuditRecorder
+from execution_channels.futu.audit import AuditRecorder
 from paper_trading_engine.scheduler import RuntimeScheduler
-from paper_trading_engine.trading_window import SHANGHAI
+from execution_channels.futu.trading_window import SHANGHAI
 
 
 class Engine:

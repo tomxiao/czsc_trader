@@ -1,6 +1,8 @@
 """Bounded isolated workers exercising normal PTE decision, order and ledger code."""
 from __future__ import annotations
 
+from .ec_boundary import execution_permit
+
 from collections import deque
 from dataclasses import replace
 from datetime import datetime, timedelta
@@ -30,15 +32,15 @@ from .inspection_contracts import (
     PteInspectionStatus, PteScenarioResult, PteArtifact, CoverageRequirement,
     PteCoverageResult, encode,
 )
-from .lifecycle import AccountHealth
+from execution_channels.futu.lifecycle import AccountHealth
 from .inspection_broker import RecordedFillBroker, money
 from .account_data_preparer import AccountDataPreparer
 from .account_engine import AccountEngine
 from .account_strategy_cycle import AccountStrategyCycle
-from .broker import BrokerSubmissionUncertainError, TERMINAL_INTENT_STATUSES
-from .futu_execution import ChannelExecution, OrderSubmissionBatchError
+from execution_channels.futu.broker import BrokerSubmissionUncertainError, TERMINAL_INTENT_STATUSES
+from execution_channels.futu.futu_execution import ChannelExecution, OrderSubmissionBatchError
 from .srt_advice_client import SrtAdviceClient
-from .store import PaperStore
+from execution_channels.futu.store import PaperStore
 
 _PROGRESS_INTERVAL_SECONDS = 25
 
@@ -203,7 +205,7 @@ def _run_scenario(request, scenario, directory, *, restart=True, fault=None):
 
     def open_components():
         nonlocal store, execution, accounts, advice, cycle
-        store = PaperStore(directory / "runtime.db", inspection_permit=permit)
+        store = PaperStore(directory / "runtime.db", inspection_permit=execution_permit(permit))
         advice = SrtAdviceClient(repo_root=request.isolated_repository, data_dir=directory / "account-data",
             dataflows=current_flow, now=lambda: clock[0], inspection_permit=permit,
             inspection_bindings=(current_binding,),

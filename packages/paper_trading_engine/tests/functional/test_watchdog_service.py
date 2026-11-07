@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from paper_trading_engine.audit import AuditRecorder
+from execution_channels.futu.audit import AuditRecorder
 from paper_trading_engine.cli import PortUnavailableError, probe_port
 from paper_trading_engine.service_config import ServiceConfig
 from paper_trading_engine.runtime_release import (
@@ -18,7 +18,7 @@ from paper_trading_engine.runtime_release import (
     rollback_release,
     tree_sha256,
 )
-from paper_trading_engine.store import (
+from execution_channels.futu.store import (
     RUNTIME_DATABASE_COMPATIBLE_VERSIONS,
     RUNTIME_DATABASE_SCHEMA_VERSION,
     PaperStore,

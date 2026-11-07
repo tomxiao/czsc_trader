@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from paper_trading_engine.audit import AuditContractError, AuditEvent, AuditRecorder
+from execution_channels.futu.audit import AuditContractError, AuditEvent, AuditRecorder
 from paper_trading_engine.performance_export import (
     _canonical_sha256, calculate_metrics, export_performance,
 )

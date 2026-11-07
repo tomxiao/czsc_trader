@@ -57,13 +57,15 @@ class PreparedEquityAction:
 
 
 def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *, fee_rate, live=False,
-                            actions_from=None):
+                            actions_from=None, execution_context=None):
     """Read pinned products and authenticate their identities before a normal PTE decision."""
     if actions_from is not None and (not live or type(actions_from) is not datetime
             or actions_from.utcoffset() is None or actions_from > interval.start):
         raise ValueError('equity action boundary must be aware and no later than the live interval')
     import pandas as pd
-    from strategy_runtime.dataset_observations import PreparedObservationTable, InactiveObservationTable
+    from strategy_runtime.data_preparation import (
+        CalendarCoverage, causal_history, fetch_prepared_products, prepare_observations,
+    )
     if type(binding) is not EquityInputBinding or type(candidate) is not EquityStrategyCandidate:
         raise TypeError("equity preparation requires typed candidate and binding")
     if (binding.instrument != candidate.instrument or binding.specification_hash != candidate.execution_spec_hash
@@ -72,75 +74,55 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
             or tuple(x.input for x in binding.observation_bindings) != candidate.definition.observation_inputs):
         raise ValueError("equity preparation differs from candidate contract")
     identities = binding.expected_identities
-    products = {}
-    calendars = {}
-    metadata = {}
-    observations = {item.input.name: InactiveObservationTable(item) for item in binding.observation_bindings
-                    if item.inactive_through is not None}
-    for name, request in binding.bind_requests(requests):
-        fetched = dataflows.fetch(request, prepared=binding.prepared)
-        if not fetched.ready or name in products or fetched.identity.content_sha256 != identities.get(name):
-            raise ValueError("equity preparation product identity differs")
-        metadata[name] = fetched.identity.metadata
-        products[name] = fetched.dataframe
-        if name.startswith('observation:'):
-            declaration = next(item for item in candidate.definition.observation_inputs if item.data_key() == name)
-            observations[declaration.name] = PreparedObservationTable.from_frame(
-                fetched.dataframe, fetched.identity, declaration=declaration)
-            continue
-        role = name.rsplit(':', 1)[0] if ':' in name else 'primary'
-        calendar = fetched.identity.metadata["sessions"]
-        if live:
-            # Forward prices end at the last completed session; dated constraints
-            # and calendars may include today's uncompleted execution session.
-            observed_calendar = {row['session_date']: row for row in calendar}
-            previous_calendar = calendars.setdefault(role, {})
-            if any(previous_calendar[day] != observed_calendar[day]
-                   for day in previous_calendar.keys() & observed_calendar.keys()):
-                raise ValueError('equity preparation calendars differ')
-            previous_calendar.update(observed_calendar)
-        else:
-            if role in calendars and calendars[role] != calendar:
-                raise ValueError("equity preparation calendars differ")
-            calendars[role] = calendar
-        metadata[name] = fetched.identity.metadata
-        products[name] = fetched.dataframe
-    if set(products) != set(identities):
-        raise ValueError("equity preparation lacks required products")
+    fetched = fetch_prepared_products(dataflows, binding.bind_requests(requests),
+        prepared=binding.prepared, expected_identities=identities,
+        calendar_coverage=(CalendarCoverage.OVERLAPPING_SESSIONS if live else CalendarCoverage.EXACT))
+    products, metadata = fetched.products, fetched.metadata
     bars = products["bars"]
     if live and candidate.definition.contract_version != 4:
         raise ValueError('live interval preparation requires native V4')
     if not live and len(bars.loc[(bars.BarStart == interval.start) & (bars.Date == interval.end)]) != 1:
         raise ValueError("decision interval absent from prepared market calendar")
-    delay = pd.Timedelta(seconds=candidate.definition.execution_spec.data_latency_seconds)
-    history = bars.loc[(bars.Date <= interval.start) & (bars.AvailableDate + delay <= interval.start)].copy(deep=True)
-    if len(history) < candidate.warmup_bars:
-        raise ValueError("insufficient causal equity warmup")
-    from strategy_runtime.equity_rules import execution_constraints
-    constraints, _ = execution_constraints(candidate.definition, products, metadata)
-    known = constraints.loc[(constraints.Date == interval.start) & (constraints.AvailableDate <= interval.start)]
-    if len(known) != 1:
-        raise ValueError("no current trading facts for this decision")
-    last = known.iloc[-1]
-    if not bool(last.Tradable):
-        raise ValueError("current trading facts mark this interval untradable")
+    history = causal_history(bars, interval.start,
+        latency_seconds=candidate.definition.execution_spec.data_latency_seconds,
+        minimum_observations=candidate.warmup_bars)
+    if live:
+        from types import SimpleNamespace
+        from strategy_runtime.equity_definition import InputBindingScope
+        if binding.scope is not InputBindingScope.OBSERVATION:
+            raise ValueError('live decisions require an explicitly migrated observation binding')
+        if not isinstance(execution_context, Mapping) or execution_context.get('Date') != interval.start:
+            raise ValueError('live decision requires the host-resolved execution context')
+        if execution_context.get('PriceLimitPolicy') not in {'CHANNEL_CHECKED', 'EXPLICIT_UNBOUNDED'}:
+            raise ValueError('live execution context requires an explicit channel price-limit policy')
+        last = SimpleNamespace(**execution_context)
+    else:
+        from .execution_inputs import execution_constraints
+        constraints, _ = execution_constraints(candidate.definition, products, metadata)
+        known = constraints.loc[(constraints.Date == interval.start) & (constraints.AvailableDate <= interval.start)]
+        if len(known) != 1:
+            raise ValueError("no current trading facts for this decision")
+        last = known.iloc[-1]
+        if not bool(last.Tradable):
+            raise ValueError("current trading facts mark this interval untradable")
     if int(last.QuantityStep) != candidate.definition.execution_spec.quantity_step or float(last.PriceTick) != candidate.definition.execution_spec.price_tick:
         raise ValueError("prepared equity trading units differ from account rules")
     scale = 1.
-    actions = products["actions"]
-    for row in actions.itertuples():
+    actions = products.get("actions")
+    action_rows = () if actions is None else tuple(actions.itertuples())
+    for row in action_rows:
         if row.Kind == "SPLIT" and history.Date.iloc[-1] <= row.Date <= interval.start and row.AvailableDate <= interval.start:
             scale /= float(row.Ratio)
-    required = tuple((str(row.EventId), identities["actions"]) for row in actions.itertuples()
+    required = tuple((str(row.EventId), identities["actions"]) for row in action_rows
                      if row.Kind != "NONE" and row.Date <= interval.start and row.AvailableDate <= interval.start)
     live_actions = ()
-    if live:
+    if live and action_rows:
         from strategy_runtime import canonical_sha256
         action_request = next(request for role, request in binding.bind_requests(requests) if role == 'actions')
         source = {'instrument': asdict(action_request.parameters.instrument),
                   'source': asdict(action_request.parameters.source), 'schema_version': 1}
         records = []
-        for row in actions.itertuples():
+        for row in action_rows:
             if (row.Kind != 'SPLIT' or row.Date > interval.start or row.AvailableDate > interval.start
                     or (actions_from is not None and row.Date < actions_from)):
                 continue
@@ -157,7 +139,8 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
     auxiliary = {}
     for item in candidate.definition.auxiliary_inputs:
         frame = products[item.data_key(EquityProduct.BARS)]
-        auxiliary[item.name] = frame.loc[(frame.Date <= interval.start) & (frame.AvailableDate + delay <= interval.start)].copy(deep=True)
+        auxiliary[item.name] = causal_history(frame, interval.start,
+            latency_seconds=candidate.definition.execution_spec.data_latency_seconds)
     sessions, trading_sessions = None, ()
     if candidate.definition.session_context:
         frame = products['sessions']
@@ -167,13 +150,8 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
                                  if s.session_date.isoformat() in known_days)
     replay, unlock, v4_constraint = None, None, None
     if candidate.definition.contract_version == 4:
-        from strategy_runtime import PreparedReplay
-        replay = PreparedReplay.from_frames(history if live else bars, constraints, candidate.definition.feature_graph,
-            latency_seconds=candidate.definition.execution_spec.data_latency_seconds,
-            auxiliary_histories={item.name: products[item.data_key(EquityProduct.BARS)] for item in candidate.definition.auxiliary_inputs},
-            observation_tables=observations,
-            sessions=products['sessions'], trading_sessions=sessions_from_metadata(metadata['sessions']),
-            frequency=candidate.definition.execution_spec.decision_clock, timezone=candidate.instrument.timezone)
+        replay = prepare_observations(candidate.definition, products, fetched.identities,
+            bindings=binding.observation_bindings, as_of=interval.start if live else None)
         v4_constraint = {"MarketRuleVersion": str(last.MarketRuleVersion),
             "MarketRuleHash": str(last.MarketRuleHash), "SellRemainderPolicy": str(last.SellRemainderPolicy),
             "PriceLimitPolicy": str(last.PriceLimitPolicy),
@@ -181,7 +159,7 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
             "PriceLimitUpper": None if pd.isna(last.PriceLimitUpper) else float(last.PriceLimitUpper)}
         if live:
             v4_constraint.update(Date=interval.start.isoformat(),
-                AvailableDate=last.AvailableDate.isoformat(), Tradable=bool(last.Tradable),
+                AvailableDate=last.AvailableDate.isoformat(),
                 QuantityStep=int(last.QuantityStep), PriceTick=float(last.PriceTick))
         unlock = last.BuySellableAt.to_pydatetime() if hasattr(last.BuySellableAt, 'to_pydatetime') else last.BuySellableAt
         if type(unlock) is not datetime or unlock.utcoffset() is None or unlock < interval.start:
@@ -330,7 +308,8 @@ class EquityAdviceClient:
                and (not prepared.live_interval or e.get("recognized_kind") != "CASH_DIVIDEND")
                and datetime.fromisoformat(e["pay_at"]) <= prepared.interval.start for e in events.values()):
             raise ValueError("due equity payments must be settled before decision")
-        if (rules is None or rules.execution != candidate.definition.execution_spec or rules.instrument != candidate.instrument
+        from .ec_boundary import execution_rules
+        if (rules is None or rules.to_dict() != execution_rules(candidate.instrument, candidate.definition.execution_spec).to_dict()
                 or strategy_id != candidate.strategy_id or symbol != candidate.instrument.symbol or asset != candidate.instrument.asset_class.value.lower()):
             raise ValueError("equity candidate differs from account market binding")
         if candidate.definition.contract_version == 4:
@@ -348,11 +327,18 @@ class EquityAdviceClient:
         portfolio = EquityPortfolio(available_cash, actual_quantity, float(account["receivable"]),
                                     portfolio_revision, cycle_entry=opened, cycle_cost=cost,
                                     feedback_source="CONFIRMED_EXECUTION", reference_price_scale=prepared.reference_price_scale)
-        runtime = StrategyRuntime(execution_spec=rules.execution)
+        runtime = StrategyRuntime(execution_spec=candidate.definition.execution_spec)
         instance = runtime.create(candidate)
-        plan = instance.plan(prepared.history, prepared.interval, portfolio, fee_rate=prepared.fee_rate,
-                             auxiliary_histories=prepared.auxiliary_histories, sessions=prepared.sessions,
-                             trading_sessions=prepared.trading_sessions)
+        intent = instance.propose(prepared.history, prepared.interval, portfolio,
+            auxiliary_histories=prepared.auxiliary_histories, sessions=prepared.sessions,
+            trading_sessions=prepared.trading_sessions)
+        from execution_channels.serialization import from_record, to_record
+        from execution_channels.contracts import EquityPortfolio as ExecutionPortfolio
+        from execution_channels.planning.frozen_equity import FrozenEquityIntent, plan_frozen_equity
+        plan = plan_frozen_equity(from_record(FrozenEquityIntent, to_record(intent)),
+            from_record(ExecutionPortfolio, to_record(portfolio)), rules.execution,
+            owner=candidate.candidate_id, implementation=candidate.implementation_hash,
+            fee_rate=prepared.fee_rate)
         target = actual_quantity + (plan.quantity if plan.side == "BUY" else -plan.quantity if plan.side == "SELL" else 0)
         price = plan.limit_price if plan.limit_price is not None else plan.reference_price
         orders = (() if not plan.quantity else (OrderSpec(plan.side, plan.quantity,

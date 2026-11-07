@@ -329,7 +329,7 @@ def test_account_parameter_plan_uses_owned_preparation_without_refetch(tmp_path,
 @pytest.mark.parametrize("mutation", ["delete", "replace"])
 def test_account_loaded_account_finishes_and_publishes_after_source_change(tmp_path, monkeypatch, mutation):
     from strategy_runtime.resources import ExecutionResources
-    from trading_execution_engine.portfolio import PortfolioHistoricalExecutor
+    from execution_channels.historical.portfolio import PortfolioHistoricalExecutor
     from czsc_trader.application import publish_evidence
     from czsc_trader.research_tools import EvaluationEvidenceWrite, build_assessment_evidence
 

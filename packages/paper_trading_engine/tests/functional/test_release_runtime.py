@@ -134,7 +134,7 @@ class FakeReleaseRunner:
                 name = "futu_api-10.10.7008-py3-none-any.whl"
             else:
                 prefixes = (
-                    "czsc_market_rules", "czsc_dataflows", "czsc_strategy_manager", "czsc_strategy_runtime",
+                    "czsc_execution_channels", "czsc_dataflows", "czsc_strategy_manager", "czsc_strategy_runtime",
                     "czsc_strategy_chart",
                     "czsc_trader_research", "paper_trading_engine",
                 )

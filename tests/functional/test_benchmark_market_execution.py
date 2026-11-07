@@ -10,7 +10,7 @@ from czsc_trader.backtesting.benchmark_contracts import EvaluationBenchmark, Lim
 from czsc_trader.backtesting.benchmarks import replay_benchmarks, replay_buyhold, valuation_prices
 from czsc_trader.backtesting.execution_data import BacktestExecutionData
 from czsc_trader.backtesting.signal_replay import SignalReplay
-from trading_execution_engine import MarketExecutionRules, SessionPriceLimits, execute_target_positions
+from execution_channels.historical import MarketExecutionRules, SessionPriceLimits, execute_target_positions
 
 
 def _inputs(tmp_path, symbol):

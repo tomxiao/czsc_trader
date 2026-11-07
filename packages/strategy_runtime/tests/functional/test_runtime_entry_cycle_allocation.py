@@ -9,13 +9,17 @@ import pytest
 
 from dataflows import PreparePolicy
 from strategy_runtime import (
-    CycleTarget, EntryCycleState, EntryCyclePhase, EntryCyclePlanStatus,
-    ExecutionPolicy, RuntimeContractError, StrategyInit, StrategyRuntime,
+    StrategyInit, StrategyRuntime,
     TradableWindow, implementation_sha256,
 )
-from strategy_runtime.execution_planner import build_execution_plan
-from strategy_runtime.contracts import StrategyIdentity, signal_identity_for
-from trading_execution_engine import HistoricalExecutor
+from execution_channels.planning.session import build_execution_plan
+from execution_channels.session_contracts import StrategyIdentity, signal_identity_for
+from execution_channels.historical import HistoricalExecutor
+from execution_channels.policy import ExecutionPolicy
+from execution_channels.errors import RuntimeContractError
+from execution_channels.entry_cycle import CycleTarget, EntryCycleState, EntryCyclePhase, EntryCyclePlanStatus
+from czsc_trader.application.session_replay import replay_sessions
+from czsc_trader.backtesting.observation import ObservationExecutor
 from test_public_runtime import _flows
 
 
@@ -143,7 +147,7 @@ def test_real_runtime_replays_two_distinct_allocations_without_daily_rebalancing
         evaluation_start=dates[1], evaluation_end=dates[-1], initial_cash=100000.,
         execution_policy=ExecutionPolicy("FROZEN_RULE", SETTINGS), order_types=("LIMIT", "MARKET"),
     )
-    result = strategy.run_window(executor=executor)
+    result = replay_sessions(strategy, ObservationExecutor(strategy.definition, executor))
     assert result.fills.side.tolist() == ["BUY", "SELL", "BUY"]
     first, _, second = list(result.fills.itertuples())
     assert first.quantity * first.price + first.fees <= 50000
@@ -164,6 +168,6 @@ def test_runtime_rejects_mismatched_cycle_decision_and_capital_mode(tmp_path, ru
     descriptor = dict(runtime_candidate.payload["runtime"])
     descriptor["source_sha256"] = implementation_sha256(tuple(descriptor["source_files"]), source_root=runtime_candidate.source_root)
     candidate = replace(runtime_candidate, payload={**runtime_candidate.payload, "runtime": descriptor})
-    with pytest.raises(RuntimeContractError, match="declared together"):
+    with pytest.raises(__import__("strategy_runtime").RuntimeContractError, match="declared together"):
         StrategyRuntime(dataflows=_flows(tmp_path)).create(StrategyInit(
             candidate, TradableWindow(date(2026, 8, 28), date(2026, 9, 3)), tmp_path/"context"))

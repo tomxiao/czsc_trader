@@ -6,7 +6,11 @@ import pytest
 from dataflows import PreparePolicy
 from strategy_runtime import (implementation_sha256, StrategyInit, StrategyRuntime,
                               TradableWindow, RuntimeContractError)
-from trading_execution_engine import HistoricalExecutor
+from execution_channels.historical import HistoricalExecutor
+from execution_channels.policy import ExecutionPolicy
+from execution_channels.serialization import from_record, to_record
+from czsc_trader.application.session_replay import replay_sessions
+from czsc_trader.backtesting.observation import ObservationExecutor
 from public_backtest_support import request_for_prices
 
 
@@ -21,9 +25,9 @@ def _evaluate(context, request):
         symbol=strategy.identity.symbol, execution_daily=prices,
         execution_intraday=pd.DataFrame(columns=['dt','open','high','low','close']),
         evaluation_start=pd.Timestamp(window.start), evaluation_end=pd.Timestamp(window.end),
-        initial_cash=request.initial_cash, execution_policy=strategy.definition.execution,
+        initial_cash=request.initial_cash, execution_policy=from_record(ExecutionPolicy, to_record(strategy.definition.execution)),
         order_types=strategy.definition.capabilities.order_types)
-    return history, strategy.run_window(executor=executor)
+    return history, replay_sessions(strategy, ObservationExecutor(strategy.definition, executor))
 
 
 def _history_request(candidate_payload, tmp_path, monkeypatch, *, invalid_target=False):

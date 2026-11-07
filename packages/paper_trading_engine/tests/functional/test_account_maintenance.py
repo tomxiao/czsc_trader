@@ -13,7 +13,7 @@ from paper_trading_engine import (
     update_account_bindings,
 )
 from paper_trading_engine.runtime_lock import RuntimeAlreadyOwnedError, RuntimeDatabaseLock
-from paper_trading_engine.store import PaperStore, RUNTIME_DATABASE_SCHEMA_VERSION
+from execution_channels.futu.store import PaperStore, RUNTIME_DATABASE_SCHEMA_VERSION
 from paper_trading_engine.runtime_config import PteRuntimeConfig
 from paper_trading_engine.contracts import OrderSpec
 from strategy_manager import Qualification

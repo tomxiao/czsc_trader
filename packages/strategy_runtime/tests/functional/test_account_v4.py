@@ -11,8 +11,10 @@ from strategy_runtime import (AccountPolicy, CashAvailabilityPolicy, CnEquitySpe
     ResearchExecutionSpec, EquityStrategyCandidate, EquityStrategyDefinition, equity_source_hash,
     StrategyComputation)
 from strategy_runtime.equity_features import FeatureGraph, RawField, BarField
-from strategy_runtime.equity_replay import PreparedReplay, StrategyStateSchema, run_replay
-from trading_execution_engine import PortfolioHistoricalExecutor
+from strategy_runtime.equity_replay import PreparedObservations, StrategyStateSchema
+from execution_channels.historical import PortfolioHistoricalExecutor
+from czsc_trader.application.account_replay import run_replay
+from czsc_trader.application.ec_boundary import execution_spec
 
 
 STEP = """from strategy_runtime import AccountDecision, AccountStepResult
@@ -48,8 +50,8 @@ def setup(root, market, frequency, computation):
         'SellRemainderPolicy':'STRICT_STEP','PriceLimitPolicy':'EXPLICIT_UNBOUNDED','PriceLimitLower':None,'PriceLimitUpper':None,'BuySellableAt':starts})
     actions=pd.DataFrame([{'Date':starts[0],'AvailableDate':starts[0],'EventId':'none','Kind':'NONE','Ratio':1.,'CashPerShare':0.,'PayAt':None}])
     session_frame=pd.DataFrame({'Date':[s.segments[0].start for s in sessions], 'AvailableDate':[s.segments[0].start for s in sessions], 'SessionDate':[s.session_date.isoformat() for s in sessions]})
-    prepared=PreparedReplay.from_frames(bars,constraints,definition.feature_graph,frequency=frequency,timezone=instrument.timezone,sessions=session_frame,trading_sessions=sessions)
-    executor=PortfolioHistoricalExecutor(specification=spec,initial_cash=100000.,fee_rate=.001,actions=actions,price_basis='RAW')
+    prepared=PreparedObservations.from_frames(bars,definition.feature_graph,frequency=frequency,timezone=instrument.timezone,sessions=session_frame,trading_sessions=sessions)
+    executor=PortfolioHistoricalExecutor(specification=execution_spec(spec),initial_cash=100000.,fee_rate=.001,actions=actions,price_basis='RAW')
     return candidate,prepared,executor,bars,constraints,sessions,session_frame
 
 
@@ -57,8 +59,8 @@ def setup(root, market, frequency, computation):
 @pytest.mark.parametrize('frequency',[BarFrequency.DAILY,BarFrequency.M30])
 @pytest.mark.parametrize('computation',[StrategyComputation.BATCH_HISTORY,StrategyComputation.STATEFUL_STEP])
 def test_v4_computation_and_clock_are_market_independent(tmp_path,market,frequency,computation):
-    candidate,prepared,executor,bars,_,_,_=setup(tmp_path,market,frequency,computation)
-    outcome=run_replay(prepared,candidate,executor,start=bars.BarStart.iloc[1].to_pydatetime(),end=bars.Date.iloc[-1].to_pydatetime(),fee_rate=.001)
+    candidate,prepared,executor,bars,constraints,_,_=setup(tmp_path,market,frequency,computation)
+    outcome=run_replay(prepared,candidate,executor,constraints=constraints, start=bars.BarStart.iloc[1].to_pydatetime(),end=bars.Date.iloc[-1].to_pydatetime(),fee_rate=.001)
     account=outcome.execution_result
     assert outcome.statistics.module_loads==1
     assert outcome.statistics.source_checks==0
@@ -72,8 +74,8 @@ def test_v4_computation_and_clock_are_market_independent(tmp_path,market,frequen
 def test_equivalent_rules_produce_same_numeric_accounts(tmp_path,computation):
     outputs=[]
     for market in (MarketId.CN,MarketId.US):
-        c,p,e,b,_,_,_=setup(tmp_path/market.value,market,BarFrequency.M30,computation)
-        outputs.append(run_replay(p,c,e,start=b.BarStart.iloc[1].to_pydatetime(),end=b.Date.iloc[-1].to_pydatetime(),fee_rate=.001).execution_result)
+        c,p,e,b,constraints,_,_=setup(tmp_path/market.value,market,BarFrequency.M30,computation)
+        outputs.append(run_replay(p,c,e,constraints=constraints, start=b.BarStart.iloc[1].to_pydatetime(),end=b.Date.iloc[-1].to_pydatetime(),fee_rate=.001).execution_result)
     for field in ('cash','quantity','equity'):
         assert outputs[0].account_points[field].tolist()==outputs[1].account_points[field].tolist()
     for field in ('side','quantity','price','fees'):
@@ -88,10 +90,10 @@ def test_account_replay_requires_real_clock_and_rejects_retired_definition(tmp_p
     assert not hasattr(equity_replay, 'StepContext') and not hasattr(equity_replay, 'StepResult')
     c,p,_,bars,constraints,_,_=setup(tmp_path,MarketId.CN,BarFrequency.DAILY,StrategyComputation.STATEFUL_STEP)
     with pytest.raises(ValueError,match='calendar|session'):
-        run_replay(PreparedReplay.from_frames(bars,constraints,p.graph,frequency=BarFrequency.DAILY,timezone=c.instrument.timezone),c,
-            PortfolioHistoricalExecutor(specification=c.definition.execution_spec,initial_cash=100000.,fee_rate=.001,
+        run_replay(PreparedObservations.from_frames(bars,p.graph,frequency=BarFrequency.DAILY,timezone=c.instrument.timezone),c,
+            PortfolioHistoricalExecutor(specification=execution_spec(c.definition.execution_spec),initial_cash=100000.,fee_rate=.001,
                 actions=pd.DataFrame([{'Date':bars.BarStart.iloc[0],'AvailableDate':bars.BarStart.iloc[0],'EventId':'none','Kind':'NONE','Ratio':1.,'CashPerShare':0.,'PayAt':None}]),price_basis='RAW'),
-            start=bars.BarStart.iloc[1].to_pydatetime(),end=bars.Date.iloc[-1].to_pydatetime(),fee_rate=.001)
+            constraints=constraints, start=bars.BarStart.iloc[1].to_pydatetime(),end=bars.Date.iloc[-1].to_pydatetime(),fee_rate=.001)
     with pytest.raises(ValueError,match='unsupported equity definition'):
         replace(c.definition,contract_version=3,computation=None)
 
@@ -121,10 +123,10 @@ def step(ctx,state):
 
 @pytest.mark.parametrize('market',[MarketId.CN,MarketId.US])
 def test_explicit_orders_retain_position_cycle_feedback(tmp_path,market):
-    c,p,e,b,_,_,_=setup(tmp_path,market,BarFrequency.M30,StrategyComputation.STATEFUL_STEP)
+    c,p,e,b,constraints,_,_=setup(tmp_path,market,BarFrequency.M30,StrategyComputation.STATEFUL_STEP)
     (tmp_path/'strategy.py').write_text(EXPLICIT,encoding='utf-8')
     c=replace(c,definition=replace(c.definition,source_sha256=equity_source_hash(tmp_path,('strategy.py',))))
-    result=run_replay(p,c,e,start=b.BarStart.iloc[1].to_pydatetime(),end=b.Date.iloc[-1].to_pydatetime(),fee_rate=.001)
+    result=run_replay(p,c,e,constraints=constraints, start=b.BarStart.iloc[1].to_pydatetime(),end=b.Date.iloc[-1].to_pydatetime(),fee_rate=.001)
     fills=result.execution_result.fills
     assert fills.side.tolist()==['BUY','BUY','SELL','SELL']
     assert fills.quantity.tolist()==[100,100,100,100]
@@ -141,23 +143,23 @@ def test_explicit_orders_retain_position_cycle_feedback(tmp_path,market):
 def test_future_suffix_does_not_change_prefix_accounts(tmp_path,computation):
     c,p,e,b,r,sessions,frame=setup(tmp_path/'first',MarketId.US,BarFrequency.M30,computation)
     end=b.Date.iloc[-1].to_pydatetime()
-    first=run_replay(p,c,e,start=b.BarStart.iloc[1].to_pydatetime(),end=end,fee_rate=.001).execution_result
+    first=run_replay(p,c,e,constraints=r, start=b.BarStart.iloc[1].to_pydatetime(),end=end,fee_rate=.001).execution_result
     altered=b.copy()
     altered.loc[8:,['Open','High','Low','Close']]*=10
-    current=PreparedReplay.from_frames(altered,r,c.definition.feature_graph,frequency=BarFrequency.M30,
+    current=PreparedObservations.from_frames(altered,c.definition.feature_graph,frequency=BarFrequency.M30,
         timezone=c.instrument.timezone,sessions=frame,trading_sessions=sessions)
     actions=e.actions.drop(columns=['_priority'])
-    second=run_replay(current,c,PortfolioHistoricalExecutor(specification=c.definition.execution_spec,initial_cash=100000.,
-        fee_rate=.001,actions=actions,price_basis='RAW'),start=b.BarStart.iloc[1].to_pydatetime(),end=end,fee_rate=.001).execution_result
+    second=run_replay(current,c,PortfolioHistoricalExecutor(specification=execution_spec(c.definition.execution_spec),initial_cash=100000.,
+        fee_rate=.001,actions=actions,price_basis='RAW'),constraints=r, start=b.BarStart.iloc[1].to_pydatetime(),end=end,fee_rate=.001).execution_result
     for key in ('cash','quantity','equity'):
         assert first.account_points[key].iloc[:7].tolist()==second.account_points[key].iloc[:7].tolist()
     assert first.decisions.explanation.iloc[:7].tolist()==second.decisions.explanation.iloc[:7].tolist()
 
 
 def test_v4_rejects_mismatched_prepared_frequency(tmp_path):
-    c,p,e,b,_,_,_=setup(tmp_path,MarketId.US,BarFrequency.M30,StrategyComputation.STATEFUL_STEP)
+    c,p,e,b,constraints,_,_=setup(tmp_path,MarketId.US,BarFrequency.M30,StrategyComputation.STATEFUL_STEP)
     with pytest.raises(ValueError,match='decision clock'):
-        run_replay(replace(p,frequency=BarFrequency.DAILY),c,e,start=b.BarStart.iloc[1].to_pydatetime(),end=b.Date.iloc[-1].to_pydatetime(),fee_rate=.001)
+        run_replay(replace(p,frequency=BarFrequency.DAILY),c,e,constraints=constraints, start=b.BarStart.iloc[1].to_pydatetime(),end=b.Date.iloc[-1].to_pydatetime(),fee_rate=.001)
 
 
 def test_execution_quote_role_is_typed_and_not_an_auxiliary_alias(tmp_path):
@@ -214,13 +216,13 @@ def test_calendar_breaks_and_dst_drive_actual_clock_without_filling_closed_time(
     rules['Date'],rules['AvailableDate'],rules['BuySellableAt']=starts,starts,starts
     calendar=pd.DataFrame({'Date':[s.segments[0].start for s in sessions], 'AvailableDate':[s.segments[0].start for s in sessions],
         'SessionDate':[s.session_date.isoformat() for s in sessions]})
-    prepared=PreparedReplay.from_frames(bars,rules,c.definition.feature_graph,frequency=BarFrequency.M30,
+    prepared=PreparedObservations.from_frames(bars,c.definition.feature_graph,frequency=BarFrequency.M30,
         timezone=c.instrument.timezone,sessions=calendar,trading_sessions=sessions)
     # Reset the synthetic NONE timestamp to this independently declared history.
     actions=e.actions.drop(columns=['_priority']).copy()
     actions.loc[0,'Date']=actions.loc[0,'AvailableDate']=starts[0]
-    account=run_replay(prepared,c,PortfolioHistoricalExecutor(specification=c.definition.execution_spec,initial_cash=100000.,fee_rate=.001,
-        actions=actions,price_basis='RAW'),start=starts[1].to_pydatetime(),end=ends[-1].to_pydatetime(),fee_rate=.001).execution_result
+    account=run_replay(prepared,c,PortfolioHistoricalExecutor(specification=execution_spec(c.definition.execution_spec),initial_cash=100000.,fee_rate=.001,
+        actions=actions,price_basis='RAW'),constraints=rules, start=starts[1].to_pydatetime(),end=ends[-1].to_pydatetime(),fee_rate=.001).execution_result
     assert len(account.account_points)==len(periods)-1
     assert account.account_daily.session.tolist()==[day.isoformat() for day in days]
     if market is MarketId.CN:
@@ -253,9 +255,9 @@ def calculate(ctx):
     c=replace(c,definition=definition)
     observed=b.copy()
     observed.loc[:,['Open','High','Low','Close']]=[500.,501.,499.,500.]
-    prepared=PreparedReplay.from_frames(b,r,definition.feature_graph,frequency=BarFrequency.DAILY,timezone=c.instrument.timezone,
+    prepared=PreparedObservations.from_frames(b,definition.feature_graph,frequency=BarFrequency.DAILY,timezone=c.instrument.timezone,
         sessions=frame,trading_sessions=sessions,auxiliary_histories={'sector':observed})
-    result=run_replay(prepared,c,e,start=b.BarStart.iloc[1].to_pydatetime(),end=b.Date.iloc[-1].to_pydatetime(),fee_rate=.001)
+    result=run_replay(prepared,c,e,constraints=r, start=b.BarStart.iloc[1].to_pydatetime(),end=b.Date.iloc[-1].to_pydatetime(),fee_rate=.001)
     for explanation in result.execution_result.decisions.explanation:
         facts={row['key']:row['text'] for row in explanation['basis']}
         assert facts['sector']=='500.0'
@@ -305,10 +307,10 @@ def test_recognized_split_adjusts_explicit_state_once_and_preserves_end_payment(
         {'Date':first_split,'AvailableDate':first_split,'EventId':'split-one','Kind':'SPLIT','Ratio':2.,'CashPerShare':0.,'PayAt':None},
         {'Date':dividend,'AvailableDate':dividend,'EventId':'dividend','Kind':'CASH_DIVIDEND','Ratio':1.,'CashPerShare':.1,'PayAt':pay},
         {'Date':future_split,'AvailableDate':future_split,'EventId':'split-future','Kind':'SPLIT','Ratio':2.,'CashPerShare':0.,'PayAt':None}])
-    prepared=PreparedReplay.from_frames(b,r,definition.feature_graph,frequency=BarFrequency.M30,timezone=c.instrument.timezone,
+    prepared=PreparedObservations.from_frames(b,definition.feature_graph,frequency=BarFrequency.M30,timezone=c.instrument.timezone,
         sessions=frame,trading_sessions=sessions)
-    executor=PortfolioHistoricalExecutor(specification=definition.execution_spec,initial_cash=100000.,fee_rate=.001,actions=actions,price_basis='RAW')
-    result=run_replay(prepared,c,executor,start=b.BarStart.iloc[1].to_pydatetime(),end=b.Date.iloc[7].to_pydatetime(),fee_rate=.001)
+    executor=PortfolioHistoricalExecutor(specification=execution_spec(definition.execution_spec),initial_cash=100000.,fee_rate=.001,actions=actions,price_basis='RAW')
+    result=run_replay(prepared,c,executor,constraints=r, start=b.BarStart.iloc[1].to_pydatetime(),end=b.Date.iloc[7].to_pydatetime(),fee_rate=.001)
     assert result.state.account.get('stop')==5.
     assert result.state.account.get('splits')==1
     assert result.state.account.get('payments')==1

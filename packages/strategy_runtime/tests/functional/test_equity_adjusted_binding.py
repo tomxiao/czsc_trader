@@ -65,6 +65,26 @@ def test_binding_rejects_role_or_fingerprint_substitution():
             if key == 'bars' else p) for key, p in binding.request_bindings))
 
 
+@pytest.mark.parametrize('market', (MarketId.CN, MarketId.US))
+def test_live_observation_projection_is_explicit_and_preserves_historical_binding(market):
+    from strategy_runtime.equity_definition import InputBindingScope
+    binding, _ = binding_fixture(market)
+    before = binding.to_dict()
+    projected = binding.for_observations()
+    assert projected.scope is InputBindingScope.OBSERVATION
+    assert dict(projected.content_identities) == {'bars': 'c' * 64, 'sessions': 'c' * 64, 'actions': 'c' * 64}
+    assert projected.execution_input is None
+    assert {query.query.product for _, query in projected.request_bindings} == {
+        EquityProduct.BARS, EquityProduct.SESSIONS, EquityProduct.ACTIONS}
+    assert projected.auxiliary_inputs == binding.auxiliary_inputs
+    assert EquityInputBinding.from_dict(json.loads(json.dumps(projected.to_dict()))) == projected
+    assert binding.to_dict() == before and 'scope' not in before
+    with pytest.raises(ValueError, match='declared input scope'):
+        replace(projected, content_identities=binding.content_identities)
+    with pytest.raises(TypeError, match='explicit scope'):
+        replace(projected, scope='OBSERVATION')
+
+
 def test_hfq_requires_v4_and_primary_stays_raw(tmp_path):
     from strategy_runtime import StrategyComputation
     from strategy_runtime.equity_features import FeatureGraph

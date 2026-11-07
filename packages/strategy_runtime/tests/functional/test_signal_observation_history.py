@@ -6,13 +6,17 @@ import json
 from zoneinfo import ZoneInfo
 
 import pytest
+from czsc_trader.application.ec_boundary import session_execution_plan
+from execution_channels.serialization import from_record, to_record
+from execution_channels.session_contracts import PortfolioSnapshot as ChannelPortfolio, ExecutionState as ChannelState
 from dataflows import PreparePolicy
 
 from strategy_runtime import (
     ExecutionState, PortfolioSnapshot, RuntimeContractError, SignalHistoryMode,
     StrategyCandidate, StrategyInit, StrategyRuntime, TradableWindow, TradingPoint,
-    implementation_sha256, materialize_observation,
+    implementation_sha256,
 )
+from strategy_runtime.observation import observe_strategy_proposal, ObservationUnavailable
 from test_public_runtime import _flows
 
 
@@ -62,11 +66,14 @@ def ready_instance(tmp_path, candidate):
 
 def plan(instance, mode):
     now = datetime(2026, 9, 2, 22, tzinfo=ZoneInfo("Asia/Shanghai"))
-    return instance.plan_at(
-        point=TradingPoint(date(2026, 9, 3), now),
-        portfolio=PortfolioSnapshot("fixture", "588080.SH", Decimal("100000"), Decimal("100000"), 0, 0, now),
-        state=ExecutionState(0, now), history_mode=mode,
-    )
+    return session_execution_plan(instance.propose_at(point=TradingPoint(date(2026, 9, 3), now), history_mode=mode), from_record(ChannelPortfolio, to_record(PortfolioSnapshot("fixture", "588080.SH", Decimal("100000"), Decimal("100000"), 0, 0, now))), from_record(ChannelState, to_record(ExecutionState(0, now))))
+
+
+def observe(instance, mode, result):
+    point = TradingPoint(result.trading_date, result.generated_at)
+    proposal = instance.propose_at(point=point, history_mode=mode)
+    return observe_strategy_proposal(instance.definition, proposal,
+        plan_identity=result.plan_identity, action=result.action)
 
 
 def test_observation_history_mutations_are_isolated_from_trading_and_prepared_inputs(tmp_path, runtime_candidate):
@@ -81,7 +88,7 @@ return pd.DataFrame({"obs_signal": signal}, index=history.index)''')
         assert result.target_position == 1.0 and result.target_quantity > 0
         assert history["target_position"].eq(1).all()
         assert history["fixture_signal"].eq(1).all() and history["obs_signal"].eq(1).all()
-        observation = materialize_observation(instance.definition, result)
+        observation = observe(instance, mode, result)
         assert observation.signal_panel.series[0].value == 1.0
         assert observation.series[0].value == 1.0
         assert result.evidence["action"] == "BUY"
@@ -105,8 +112,9 @@ def test_observation_history_cannot_change_contract_fields_or_session_alignment(
     assert result.evidence["action"] == "BUY"
     assert match in result.evidence["_observation_error"]
     assert not any(name.startswith("obs_") for name in result.evidence)
-    with pytest.raises(RuntimeContractError, match="signal panel calculation unavailable"):
-        materialize_observation(instance.definition, result)
+    observation = observe(instance, SignalHistoryMode.CONTINUOUS, result)
+    assert isinstance(observation, ObservationUnavailable)
+    assert 'signal panel calculation unavailable' in observation.message
 
 
 def test_invalid_trading_history_still_blocks_planning_before_observation_is_run(tmp_path, runtime_candidate):

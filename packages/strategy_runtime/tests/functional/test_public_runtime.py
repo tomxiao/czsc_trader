@@ -12,6 +12,9 @@ from types import SimpleNamespace
 
 import pandas as pd
 import pytest
+from czsc_trader.application.ec_boundary import session_execution_plan
+from execution_channels.serialization import from_record, to_record
+from execution_channels.session_contracts import PortfolioSnapshot as ChannelPortfolio, ExecutionState as ChannelState
 from dataflows import Dataflows, Dataset, DataSpace, ProviderConfig, ProviderBinding, PreparePolicy, canonical_frame_sha256
 from dataflows.ohlcv_quality import bind_quality_frame, build_quality_evidence, verify_daily_sessions
 from strategy_runtime import (
@@ -136,9 +139,7 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
     )
     calculated_at = datetime(2026, 9, 2, 22, 14, tzinfo=ZONE)
     with pytest.raises(RuntimeContractError, match="call prepare_data"):
-        strategy.plan_at(
-            point=TradingPoint(trading_date, calculated_at),
-            portfolio=PortfolioSnapshot(
+        session_execution_plan(strategy.propose_at(point=TradingPoint(trading_date, calculated_at)), from_record(ChannelPortfolio, to_record(PortfolioSnapshot(
                 "s002-v1",
                 "588080.SH",
                 Decimal("50000"),
@@ -146,14 +147,10 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
                 5900,
                 7,
                 calculated_at,
-            ),
-            state=ExecutionState(3, calculated_at, 5900),
-        )
+            ))), from_record(ChannelState, to_record(ExecutionState(3, calculated_at, 5900))))
 
     prepared = strategy.prepare_data(policy=PreparePolicy.REUSE)
-    plan = strategy.plan_at(
-        point=TradingPoint(trading_date, calculated_at),
-        portfolio=PortfolioSnapshot(
+    plan = session_execution_plan(strategy.propose_at(point=TradingPoint(trading_date, calculated_at)), from_record(ChannelPortfolio, to_record(PortfolioSnapshot(
             "s002-v1",
             "588080.SH",
             Decimal("50000"),
@@ -161,19 +158,13 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
             5900,
             7,
             calculated_at,
-        ),
-        state=ExecutionState(3, calculated_at, 5900),
-    )
+        ))), from_record(ChannelState, to_record(ExecutionState(3, calculated_at, 5900))))
 
     assert prepared.strategy.reference_id == "S900-C0001"
     assert len(prepared.data_identity) == 64
     for mode in SignalHistoryMode:
         history = strategy.inspect_signals(history_mode=mode)
-        explicit = strategy.plan_at(
-            point=TradingPoint(trading_date, calculated_at),
-            portfolio=PortfolioSnapshot("s002-v1", "588080.SH", Decimal("50000"), Decimal("100000"), 5900, 7, calculated_at),
-            state=ExecutionState(3, calculated_at, 5900), history_mode=mode,
-        )
+        explicit = session_execution_plan(strategy.propose_at(point=TradingPoint(trading_date, calculated_at), history_mode=mode), from_record(ChannelPortfolio, to_record(PortfolioSnapshot("s002-v1", "588080.SH", Decimal("50000"), Decimal("100000"), 5900, 7, calculated_at))), from_record(ChannelState, to_record(ExecutionState(3, calculated_at, 5900))))
         assert explicit.target_position == history.loc[pd.Timestamp(explicit.signal_date), "target_position"]
         if mode is SignalHistoryMode.CONTINUOUS:
             assert explicit.plan_identity == plan.plan_identity
@@ -209,18 +200,12 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
         exported_prices.loc[exported_prices.dt.eq(pd.Timestamp(plan.signal_date)), "close"].iloc[0]
     ))
     exported_prices.loc[:, "close"] = 99.0
-    repeated = strategy.plan_at(
-        point=TradingPoint(trading_date, calculated_at),
-        portfolio=PortfolioSnapshot("s002-v1", "588080.SH", Decimal("50000"), Decimal("100000"), 5900, 7, calculated_at),
-        state=ExecutionState(3, calculated_at, 5900),
-    )
+    repeated = session_execution_plan(strategy.propose_at(point=TradingPoint(trading_date, calculated_at)), from_record(ChannelPortfolio, to_record(PortfolioSnapshot("s002-v1", "588080.SH", Decimal("50000"), Decimal("100000"), 5900, 7, calculated_at))), from_record(ChannelState, to_record(ExecutionState(3, calculated_at, 5900))))
     assert repeated == plan
 
     before_close = datetime(2026, 9, 2, 14, 59, tzinfo=ZONE)
     with pytest.raises(RuntimeContractError, match="precedes the signal-session close"):
-        strategy.plan_at(
-            point=TradingPoint(trading_date, before_close),
-            portfolio=PortfolioSnapshot(
+        session_execution_plan(strategy.propose_at(point=TradingPoint(trading_date, before_close)), from_record(ChannelPortfolio, to_record(PortfolioSnapshot(
                 "s002-v1",
                 "588080.SH",
                 Decimal("50000"),
@@ -228,9 +213,7 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
                 5900,
                 7,
                 before_close,
-            ),
-            state=ExecutionState(3, before_close, 5900),
-        )
+            ))), from_record(ChannelState, to_record(ExecutionState(3, before_close, 5900))))
 
     # Replay is bound explicitly and cannot contact a supplier.
     offline = Dataflows(base_dir=tmp_path, space=DataSpace(Path("assets")), providers=ProviderConfig({}))

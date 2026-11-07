@@ -6,11 +6,10 @@ from datetime import datetime, UTC
 from decimal import Decimal
 from enum import StrEnum
 import math
-from typing import Protocol, runtime_checkable
 
 from dataflows import InstrumentId
 
-from .contracts import OrderSide, OrderType, WindowExecutor, ExecutionPlan, ExecutionOutcome
+from .contracts import OrderSide, OrderType
 from .entry_cycle import EntryCyclePhase
 
 
@@ -215,9 +214,3 @@ class AccountExecutionPlan:
                 raise TypeError("plan cycle facts require CycleBudget")
         if self.capital_mode != "signal_cash_fraction" and any(x is not None for x in (self.cycle_before, self.cycle_after)):
             raise ValueError("cycle budgets require signal_cash_fraction mode")
-
-
-@runtime_checkable
-class AccountPlanExecutor(WindowExecutor, Protocol):
-    """The session model accepts neutral facts plus its explicit native model."""
-    def execute_plan(self, plan: AccountExecutionPlan, model_plan: ExecutionPlan) -> ExecutionOutcome: ...

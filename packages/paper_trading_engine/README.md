@@ -4,9 +4,26 @@
 账户、服务、Futu渠道和生产发布的操作属于独立授权的DEV/运维任务，见
 [DEV Agent](../../docs/DEV_AGENT.md)及[PTE运维手册](../../docs/PTE_OPERATIONS.md)。
 
+## 与执行渠道 EC 的边界
+
+PTE 负责调度、发布绑定、Web 运维和策略计算编排；SRT 返回策略提议，PTE 通过
+`ec_boundary` 将明确的记录投影为 EC 自有类型，再调用 EC 的统一订单规划。
+`execution_channels.futu` 统一承担 A 股、美股模拟渠道的富途适配、累计成交归并、
+账户账本、资金预占、订单生命周期、对账及相关执行审计。原 PTE 对应实现文件已移除，
+调用方应引用 EC 的业务模块。旧模块路径及原包级执行类型导出均已删除，不保留转发或兼容别名。
+
+决策采纳由 EC `AccountAdoption.adopt(DecisionAdoption)` 完成：同一事务内保存决策与
+账户状态、估值快照及订单意图。PTE 在调用前仍持有账户版本检查和替换决策事务，
+保证计算期间账户变化会阻止采纳。富途累计回报及真实余额仍是模拟渠道的执行依据；
+EC 不导入 DFLS 或 SRT，也不自行查询数据。PTE 的 `ScheduledDecision` 留在
+`scheduling_contracts`，用于宿主日历调度，不是 EC 的交易执行合同。
+
+隔离检验使用宿主许可投影得到的 EC `InspectionAccountPermit`，保留发布哈希、协议哈希和
+隔离目录约束。正式账户与隔离账户继续使用同一账本及成交处理逻辑。
+
 ## 资金模式与代码兼容
 
-PTE按SRT计划中的目标份额和订单执行，不重新计算策略目标比例。原有`full_available_cash`、
+SRT 计算策略目标，EC 规划目标份额和订单，PTE 编排执行。原有`full_available_cash`、
 `available_cash_fraction`继续使用`target_scope=entry_cycle`；新增`target_equity_fraction`须使用
 `target_scope=decision`且`allocation_fraction=1`，用于[SRT多档位目标仓位](../strategy_runtime/README.md#执行计划)。
 资金模式与作用范围不匹配时明确拒绝；部分减仓不结束仍有持仓的周期。
@@ -20,7 +37,7 @@ PTE按SRT计划中的目标份额和订单执行，不重新计算策略目标�
 ### 信号决定投入比例、按开仓周期锁定
 
 `signal_cash_fraction / entry_cycle`使用`advice.v6`。策略通过`CycleTarget`给出本次可用现金投入比例；
-SRT产生无副作用的计划，PTE在采纳决策的同一事务中保存`EntryCycleState`：周期身份、开仓信号身份、
+SRT 产生策略提案，EC 在采纳决策的同一事务中保存`EntryCycleState`：周期身份、开仓信号身份、
 投入比例、含买入费用的现金预算、目标份额、累计实际买入成本和`ACTIVE / EXITING`状态。
 `cycle_target`、`entry_cycle_before`、`entry_cycle_after`、`cycle_status`均为显式传输字段；
 `identity_facts`保留原始Decimal字符串价格、分配比例、可用现金和费用率，以及信号目标与价格身份，接收端结合可执行订单
@@ -101,12 +118,12 @@ V4 可声明 `DatasetObservationInput` 观察表，使用 `EquityInputBinding.ob
 
 原生 V4 的显式 `ReplayLeg` 支持基于已持有库存的日内依赖执行。每条腿保留带时区的提交子时间窗，
 后续腿只有在声明的前序腿确认全部成交后才可提交；部分成交、未知或失败不能视为依赖完成。
-该条件在SRT、历史TXE及PTE统一写为 `FILLED_ALL`。前腿撤销、失败或提交窗过期不会激活后腿；
+该条件在SRT、历史 EC及PTE统一写为 `FILLED_ALL`。前腿撤销、失败或提交窗过期不会激活后腿；
 部分成交或未获明确回报继续保留未解决状态，重启也不能将其解释为全部成交。
 计划采纳时提前预留全部买腿所需现金，不依赖未来卖出收入。重启及重复回报继续沿用既有意图、
 成交和周期预算记录，依赖执行不改变冻结策略的核心持仓数量及信号计时规则。
 
-正式与隔离运行复用 SRT 决策、执行反馈、公司行动及订单回报入账核心。策略按声明的分析价格计算，
+正式与隔离运行复用 SRT 决策和 EC 的执行反馈、公司行动及订单回报入账核心。策略按声明的分析价格计算，
 成交使用未复权价格。公司行动按可得时间入账，事件事实变化明确报错；不自动重建已经错过的交易历史。
 日线 `DAILY_FORWARD_V2` 输入配方只取已完成交易日的价格及当前可得日历、动态交易事实和数量变动事件，
 每个执行区间保存固定绑定，重试及重启复用。自动 M30 准备需要 DFLS 尚未提供的部分交易时段产品，当前明确拒绝；
@@ -149,7 +166,7 @@ V4 可声明 `DatasetObservationInput` 观察表，使用 `EquityInputBinding.ob
 }
 ```
 
-`DYNAMIC_FACTS` 在 DFLS 内部按请求查询可交易状态、价格上下限及数量变动事件。宿主的报价连接在首次取数时建立，同一宿主共享并在退出时关闭。MRS 规则随平台制品分发，独立于 DFLS 配置。接口和覆盖要求见 [DFLS](../dataflows/README.md) 和 [MRS](../market_rules/README.md)。
+`DYNAMIC_FACTS` 在 DFLS 内部按请求查询可交易状态、价格上下限及数量变动事件。宿主的报价连接在首次取数时建立，同一宿主共享并在退出时关闭。固定市场规则随 EC 平台制品分发，独立于 DFLS 配置。接口和覆盖要求见 [DFLS](../dataflows/README.md) 和 [EC 市场规则](../execution_channels/README.md)。
 
 账户重绑时用新版输入配方显式绑定 `trading_facts`。生产来源缺失或请求不完整会导致数据准备失败。发布前需要逐市场核实真实动态来源及其覆盖范围。
 

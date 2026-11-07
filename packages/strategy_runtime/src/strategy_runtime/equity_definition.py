@@ -1,6 +1,7 @@
 """Portable, explicitly versioned equity strategy source and decision contracts."""
 from dataclasses import asdict, dataclass, replace, field
 from datetime import date, datetime
+from enum import StrEnum
 import math
 from pathlib import Path, PurePosixPath
 from hashlib import sha256
@@ -264,6 +265,11 @@ class EquityAuxiliaryBinding:
         return cls(EquityAuxiliaryInput.from_dict(value['input']), value['bars_sha256'], value['sessions_sha256'])
 
 
+class InputBindingScope(StrEnum):
+    OBSERVATION = 'OBSERVATION'
+    EXECUTION = 'EXECUTION'
+
+
 @dataclass(frozen=True)
 class EquityInputBinding:
     prepared: PreparedDataRef
@@ -275,9 +281,14 @@ class EquityInputBinding:
     execution_input: ExecutionInputBinding | None = None
     request_bindings: tuple[tuple[str, EquityParameters], ...] = ()
     observation_bindings: tuple[DatasetObservationBinding, ...] = ()
+    scope: InputBindingScope = InputBindingScope.EXECUTION
 
     def to_dict(self):
         result = asdict(self)
+        if self.scope is InputBindingScope.EXECUTION:
+            result.pop('scope')
+        else:
+            result['scope'] = self.scope.value
         if self.observation_bindings:
             result['observation_bindings'] = [item.to_dict() for item in self.observation_bindings]
         else:
@@ -295,6 +306,18 @@ class EquityInputBinding:
                 parameters['query']['start'] = parameters['query']['start'].isoformat()
                 parameters['query']['end'] = parameters['query']['end'].isoformat()
         return result
+
+    def for_observations(self):
+        """Explicitly project a research selection into strategy-only inputs."""
+        if not self.request_bindings:
+            raise ValueError('observation projection requires explicit source bindings')
+        primary = {'bars', 'sessions', 'actions'}
+        keep = primary | {item.input.data_key(product) for item in self.auxiliary_inputs
+                          for product in (EquityProduct.BARS, EquityProduct.SESSIONS)}
+        return replace(self, scope=InputBindingScope.OBSERVATION,
+            content_identities=tuple((role, value) for role, value in self.content_identities if role in primary),
+            request_bindings=tuple((role, query) for role, query in self.request_bindings if role in keep),
+            execution_input=None)
 
     @property
     def expected_identities(self):
@@ -363,6 +386,7 @@ class EquityInputBinding:
     def from_dict(cls, value):
         from uuid import UUID
         value = dict(value)
+        value['scope'] = InputBindingScope(value.get('scope', InputBindingScope.EXECUTION))
         prepared = dict(value['prepared'])
         prepared['space_id'] = UUID(prepared['space_id'])
         prepared['preparation_id'] = UUID(prepared['preparation_id'])
@@ -393,6 +417,10 @@ class EquityInputBinding:
         return cls(**value)
 
     def __post_init__(self):
+        if type(self.scope) is not InputBindingScope:
+            raise TypeError('input binding requires an explicit scope')
+        if self.scope is InputBindingScope.OBSERVATION and self.execution_input is not None:
+            raise ValueError('strategy observations cannot bind execution-only quotations')
         if type(self.observation_bindings) is not tuple or any(type(x) is not DatasetObservationBinding for x in self.observation_bindings):
             raise TypeError('observation bindings require typed entries')
         if len({x.input.name for x in self.observation_bindings}) != len(self.observation_bindings):
@@ -422,8 +450,10 @@ class EquityInputBinding:
         import re
         if not re.fullmatch("[a-f0-9]{64}", self.specification_hash):
             raise ValueError("invalid execution fingerprint")
-        if {k for k, _ in self.content_identities} != {"bars", "sessions", "actions", "trading_facts"} or len(self.content_identities) != 4:
-            raise ValueError("equity binding requires bars, sessions, actions and trading facts")
+        required = ({'bars', 'sessions', 'actions'} if self.scope is InputBindingScope.OBSERVATION else
+                    {'bars', 'sessions', 'actions', 'trading_facts'})
+        if {k for k, _ in self.content_identities} != required or len(self.content_identities) != len(required):
+            raise ValueError("equity binding products differ from the declared input scope")
         if any(not re.fullmatch("[a-f0-9]{64}", v) for _, v in self.content_identities):
             raise ValueError("invalid data content fingerprint")
         if type(self.request_bindings) is not tuple or any(type(item) is not tuple or len(item) != 2

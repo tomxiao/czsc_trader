@@ -20,7 +20,11 @@ from strategy_runtime import (
     StrategyCandidate, StrategyInit, StrategyRelease, StrategyRuntime, TradableWindow,
     canonical_sha256, implementation_sha256,
 )
-from trading_execution_engine import HistoricalExecutor
+from execution_channels.historical import HistoricalExecutor
+from execution_channels.serialization import from_record, to_record
+from execution_channels.policy import ExecutionPolicy as ChannelPolicy
+from czsc_trader.application.session_replay import replay_sessions
+from czsc_trader.backtesting.observation import ObservationExecutor
 
 
 @pytest.fixture
@@ -91,8 +95,8 @@ def execute(candidate, root, *, source_root=None, runtime_binding=None, market=N
     executor = HistoricalExecutor(strategy_reference=strategy.definition.release_id, symbol=strategy.identity.symbol,
         execution_daily=daily, execution_intraday=pd.DataFrame(columns=["dt", "open", "high", "low", "close"]),
         evaluation_start=pd.Timestamp("2026-09-15"), evaluation_end=pd.Timestamp("2026-09-18"), initial_cash=100_000,
-        execution_policy=strategy.definition.execution, order_types=strategy.definition.capabilities.order_types)
-    return strategy, strategy.inspect_signals(), strategy.run_window(executor=executor)
+        execution_policy=from_record(ChannelPolicy, to_record(strategy.definition.execution)), order_types=strategy.definition.capabilities.order_types)
+    return strategy, strategy.inspect_signals(), replay_sessions(strategy, ObservationExecutor(strategy.definition, executor))
 
 
 def test_reference_symbols_do_not_change_tradable_identity(candidate, tmp_path):

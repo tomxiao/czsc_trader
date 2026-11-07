@@ -17,10 +17,10 @@ from dataflows.equity_data import equity_metadata, session_record, sessions_from
 from strategy_manager import PaperTradingApproval, StrategyRegistry
 from czsc_trader.application import deploy_strategy
 from paper_trading_engine.account_engine import AccountEngine
-from paper_trading_engine.channel import ChannelAccountConfig, FUTU_SIMULATE_CN_CHANNEL_ID, FUTU_US_SIM_CHANNEL_ID
-from paper_trading_engine.equity_contracts import EquityAccountRules
+from execution_channels.futu.channel import ChannelAccountConfig, FUTU_SIMULATE_CN_CHANNEL_ID, FUTU_US_SIM_CHANNEL_ID
+from paper_trading_engine.ec_boundary import execution_rules
 from paper_trading_engine.formal_v4_advice import FormalV4AdviceClient, FormalV4ScheduleProvider, FormalV4Inputs
-from paper_trading_engine.store import PaperStore
+from execution_channels.futu.store import PaperStore
 from test_v4_inspection_roundtrip import native_fixture, native_inspection_request, freeze_native_inspection
 from test_equity_adjusted_observations import setup_adjusted
 
@@ -73,7 +73,7 @@ def formal_v4(tmp_path, request):
         symbol=candidate.instrument.symbol, asset_type='stock', strategy_id='S999',
         strategy_name_snapshot='native', strategy_version='v1', release_hash=release.release_hash,
         qualification_snapshot='PAPER_READY', selection_data_cutoff='2026-10-12', channel_id=channel,
-        equity_rules=EquityAccountRules(candidate.instrument, candidate.definition.execution_spec))
+        equity_rules=execution_rules(candidate.instrument, candidate.definition.execution_spec))
     store.set_virtual_paused('formal', False)
     client.register_inputs('formal', evaluation.input_binding,
         expected_release_hash=release.release_hash, fee_rate=evaluation.fee_rate)
@@ -83,13 +83,24 @@ def formal_v4(tmp_path, request):
         def fetch(request):
             frame, metadata = binding.fetch(request)
             p = request.parameters
+            calendar = sessions_from_metadata(metadata)
+            # Explicit extra synthetic session for online T+1 sellability; no price row is added.
+            if p.query.product is EquityProduct.SESSIONS and p.query.end > calendar[-1].session_date:
+                from dataflows import TradingSession
+                last = calendar[-1]
+                following_session = TradingSession(last.session_date + timedelta(days=1), last.timezone,
+                    tuple(TimeInterval(part.start + timedelta(days=1), part.end + timedelta(days=1))
+                          for part in last.segments))
+                calendar = (*calendar, following_session)
+                opening = following_session.segments[0].start
+                frame = pd.concat([frame, pd.DataFrame([{'Date': opening, 'AvailableDate': opening,
+                    'SessionDate': following_session.session_date.isoformat()}])], ignore_index=True)
             days = frame.Date.dt.tz_convert(ZoneInfo(p.instrument.timezone)).dt.date
             frame = frame.loc[(days >= p.query.start) & (days <= p.query.end)].copy()
             if p.query.product is EquityProduct.ACTIONS and frame.empty:
                 start = products[EquityProduct.BARS].iloc[0].BarStart
                 frame = pd.DataFrame([dict(Date=start, AvailableDate=start, EventId='none', Kind='NONE',
                                           Ratio=1., CashPerShare=0., PayAt=None)])
-            calendar = sessions_from_metadata(metadata)
             following = next((session_record(s) for s in calendar if s.session_date > p.query.end),
                              metadata.get('following_session'))
             sessions = tuple(s for s in calendar if p.query.start <= s.session_date <= p.query.end)
@@ -116,17 +127,17 @@ def test_formal_v4_forward_decision_uses_historical_prices_and_exact_deployment(
     assert interval.start not in prepared.v4_replay._data.starts
     assert prepared.candidate.source_root.is_relative_to(client.repo_root / 'strategies')
     assert prepared.candidate.definition == candidate.definition
-    # DAILY recipes forward independently pinned history/calendars/constraints.
+    # Forward strategy observations use history and calendars; execution rules belong to EC.
     assert prepared.binding.prepared != evaluation.input_binding.prepared
     assert max(prepared.v4_replay._data.ends) < interval.start
     assert prepared.binding.expected_identities != evaluation.input_binding.expected_identities
     from strategy_runtime.account_planning import AccountDecisionEngine
-    with pytest.raises(ValueError, match='absent from declared calendar or input grid'):
-        AccountDecisionEngine(candidate, prepared.v4_replay).observation(interval)
-    unavailable = dict(prepared.v4_constraint, Date=interval.start,
-                       AvailableDate=interval.start + timedelta(seconds=1))
-    with pytest.raises(ValueError, match='available trading rules'):
-        AccountDecisionEngine(candidate, prepared.v4_replay, live_constraint=unavailable)
+    point = AccountDecisionEngine(candidate, prepared.v4_replay).observation(interval)[0]
+    assert point.observed_through < interval.start
+    assert not hasattr(prepared.v4_replay._data, 'constraints')
+    with pytest.raises(ValueError, match='absent from declared calendar'):
+        AccountDecisionEngine(candidate, prepared.v4_replay).observation(
+            TimeInterval(interval.start + timedelta(days=30), interval.end + timedelta(days=30)))
     engine = AccountEngine(store, client, now=lambda: interval.start)
     provider = FormalV4ScheduleProvider(client, engine)
     task = provider.due_decision(store.virtual_account('formal'), interval.start)
@@ -138,8 +149,8 @@ def test_formal_v4_forward_decision_uses_historical_prices_and_exact_deployment(
     provider.run_scheduled('formal', task, interval.start + timedelta(seconds=1))
     assert json.loads(store.virtual_account('formal')['account_v4_json']) == document
     # An independent cumulative channel fill enters the same shared store path.
-    from paper_trading_engine.broker import BrokerOrder
-    from paper_trading_engine.order_reports import apply_order_report
+    from execution_channels.futu.broker import BrokerOrder
+    from execution_channels.futu.order_reports import apply_order_report
     intent, = store.account_intents('formal')
     store.set_setting('channel_reconciliation_status', 'OK')
     store.set_setting('futu_cash_reconciliation_status', 'OK')
@@ -212,7 +223,7 @@ def test_formal_input_contract_rejects_unknown_fields():
 
 
 def test_online_v4_decision_and_execution_use_the_scoped_runtime(formal_v4, monkeypatch):
-    from paper_trading_engine.broker import BrokerAccount, BrokerOrder, BrokerPosition, BrokerSnapshot
+    from execution_channels.futu.broker import BrokerAccount, BrokerOrder, BrokerPosition, BrokerSnapshot
     from paper_trading_engine.multichannel_runtime import build_multichannel_runtime
     from paper_trading_engine.online_verify import main, verify
     from paper_trading_engine.web import create_server

@@ -20,7 +20,6 @@ _PLATFORM_MODULES = (
     "calculation",
     "contracts",
     "errors",
-    "execution_rules",
     "implementation_identity",
     "models",
     "observation",

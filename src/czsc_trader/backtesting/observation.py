@@ -11,7 +11,6 @@ from strategy_runtime import (
     ObservationUnavailable,
     StrategyIdentity,
     RuntimeDefinition,
-    WindowExecutor,
     StrategyObservation,
     ExecutionCapabilities,
     TradingPoint,
@@ -20,6 +19,7 @@ from strategy_runtime import (
     ExecutionPlan,
     ExecutionOutcome,
 )
+from execution_channels.session_contracts import WindowExecutor
 
 
 @dataclass(frozen=True)
@@ -99,6 +99,16 @@ class ObservationExecutor:
             )
         return observation
 
+    def observe_proposal(self, proposal, plan):
+        from strategy_runtime.observation import observe_strategy_proposal
+        observation = observe_strategy_proposal(self.definition, proposal,
+            plan_identity=plan.plan_identity, action=plan.action)
+        if isinstance(observation, ObservationUnavailable):
+            observation = UnavailablePlanObservation(proposal.strategy,
+                self.definition.observation.sha256, plan.signal_identity, plan.plan_identity,
+                plan.signal_date, plan.trading_date, plan.action, plan.target_position, observation)
+        self.observations.append(observation)
+
     def execute(self, plan: ExecutionPlan) -> ExecutionOutcome:
         observation = self._observation(plan)
         result = self.executor.execute(plan)
@@ -106,11 +116,8 @@ class ObservationExecutor:
         return result
 
     def execute_plan(self, plan: AccountExecutionPlan, native: ExecutionPlan) -> ExecutionOutcome:
-        """Observe the native explanation while the shared kernel executes facts."""
-        observation = self._observation(native)
-        result = self.executor.execute_plan(plan, native)
-        self.observations.append(observation)
-        return result
+        """Execute an EC plan after the host has captured its strategy observation."""
+        return self.executor.execute_plan(plan, native)
 
     def finish(self) -> object:
         return self.executor.finish()

@@ -5,11 +5,9 @@ from decimal import Decimal
 from zoneinfo import ZoneInfo
 
 import pandas as pd
-from strategy_runtime import (
+from execution_channels.session_contracts import (
     ExecutionCapabilities,
     ExecutionPlan,
-    ExecutionPolicy,
-    ExecutionPriceBasis,
     OrderSide,
     OrderType,
     PlannedOrder,
@@ -17,12 +15,16 @@ from strategy_runtime import (
     StrategyIdentity,
     TradingPoint,
 )
-from strategy_runtime.contracts import plan_identity_for, signal_identity_for
-from strategy_runtime.execution_planner import build_execution_plan
-from trading_execution_engine import HistoricalExecutor
+from execution_channels.session_contracts import plan_identity_for, signal_identity_for
+from execution_channels.planning.session import build_execution_plan
+from execution_channels.historical import HistoricalExecutor
+from execution_channels.policy import ExecutionPolicy
+from execution_channels.pricing import ExecutionPricing, ExecutionPriceBasis
+from execution_channels.serialization import from_record, to_record
 
 
 def replay_limit_buyhold(signals, data, initial_cash, benchmark, fee_rate):
+    pricing = from_record(ExecutionPricing, to_record(data.pricing))
     rule = benchmark.execution
     policy = ExecutionPolicy(
         "FROZEN_RULE",
@@ -55,7 +57,7 @@ def replay_limit_buyhold(signals, data, initial_cash, benchmark, fee_rate):
         initial_cash=initial_cash,
         execution_policy=policy,
         order_types=("LIMIT",),
-        pricing=data.pricing,
+        pricing=pricing,
         market_rules=data.market_rules,
     )
     adjusted = pd.DataFrame(data.adjusted_daily, copy=False)
@@ -70,7 +72,7 @@ def replay_limit_buyhold(signals, data, initial_cash, benchmark, fee_rate):
     ]
     adjusted_close = dict(zip(adjusted.index, adjusted["close"].to_numpy(), strict=True))
     execution_close = dict(zip(prices.index, prices["close"].to_numpy(), strict=True))
-    if data.pricing.basis is ExecutionPriceBasis.HFQ_RESEARCH:
+    if pricing.basis is ExecutionPriceBasis.HFQ_RESEARCH:
         raw_prices = data.raw_execution_daily.set_index("dt")
         scales = (prices["close"] / raw_prices["close"]).to_dict()
     else:
@@ -90,8 +92,8 @@ def replay_limit_buyhold(signals, data, initial_cash, benchmark, fee_rate):
             Decimal(str(adjusted_close[signal_day])),
             Decimal(str(execution_close[signal_day])),
             "ADJUSTED_CLOSE",
-            "UNADJUSTED_CLOSE" if data.pricing.basis is ExecutionPriceBasis.UNADJUSTED else "NORMALIZED_HFQ_CLOSE",
-            pricing=data.pricing,
+            "UNADJUSTED_CLOSE" if pricing.basis is ExecutionPriceBasis.UNADJUSTED else "NORMALIZED_HFQ_CLOSE",
+            pricing=pricing,
             price_scale=Decimal(str(scales[signal_day])),
         )
         raw = build_execution_plan(

@@ -8,14 +8,15 @@ import sys
 
 import pandas as pd
 import pytest
-from strategy_runtime import ReplayFailure, equity_source_hash, run_replay
+from strategy_runtime import ReplayFailure, equity_source_hash
+from czsc_trader.application.account_replay import run_replay
 from test_account_state import SOURCE, candidate, inputs, prepare
 
 
 def replay(value, bars, constraints, executor):
     prepared = prepare(value, bars, constraints)
     return run_replay(prepared, value, executor,
-        start=bars.BarStart.iloc[1].to_pydatetime(), end=bars.Date.iloc[-1].to_pydatetime(), fee_rate=.001)
+        constraints=constraints, start=bars.BarStart.iloc[1].to_pydatetime(), end=bars.Date.iloc[-1].to_pydatetime(), fee_rate=.001)
 
 
 def set_source(value, source, files=('strategy.py',)):

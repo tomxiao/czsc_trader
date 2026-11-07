@@ -18,11 +18,11 @@ from paper_trading_engine import (
 )
 from paper_trading_engine import account_maintenance
 from paper_trading_engine.account_engine import AccountEngine
-from paper_trading_engine.broker import BrokerOrder
-from paper_trading_engine.equity_contracts import EquityAccountRules
+from execution_channels.futu.broker import BrokerOrder
+from paper_trading_engine.ec_boundary import execution_rules
 from paper_trading_engine.formal_v4_advice import FormalV4AdviceClient, FormalV4Inputs, FormalV4ScheduleProvider
-from paper_trading_engine.order_reports import apply_order_report
-from paper_trading_engine.store import PaperStore, RUNTIME_DATABASE_SCHEMA_VERSION
+from execution_channels.futu.order_reports import apply_order_report
+from execution_channels.futu.store import PaperStore, RUNTIME_DATABASE_SCHEMA_VERSION
 from strategy_manager import PaperTradingApproval, StrategyRegistry, freeze_contracts as f
 from strategy_runtime import StateRecord, equity_source_hash
 from test_formal_v4_runtime import formal_v4 as formal_v4
@@ -115,7 +115,7 @@ def test_rebind_active_v4_and_block_historical_execution(formal_v4, tmp_path, mo
         effective = TimeInterval(opens, opens.replace(hour=15 if candidate.instrument.market.value == 'CN' else 16, minute=0))
         request = V4AccountBindingUpdate(AccountBindingUpdate('formal', source_hash, new_hash, 'v1'),
             'formal-channel', account_binding_facts_sha256(scoped, 'formal'), effective,
-            EquityAccountRules(candidate.instrument, candidate.definition.execution_spec),
+            execution_rules(candidate.instrument, candidate.definition.execution_spec),
             FormalV4Inputs(new_hash, evaluation.input_binding, evaluation.fee_rate),
             V4StateContinuation('source', 'reviewed fixture state'))
         untouched = list(database._connection.iterdump())
@@ -145,8 +145,9 @@ def test_rebind_active_v4_and_block_historical_execution(formal_v4, tmp_path, mo
         assert target_state['last_interval'] == source_state['last_interval']
         assert target_state['state']['account']['values'] == ([['mapped', 42]] if change_schema else [])
         reopened = FormalV4AdviceClient(repo_root=client.repo_root, store=scoped, dataflows=client.dataflows, data_dir=data)
-        assert reopened.recipe('formal') == request.inputs
-        assert reopened.inputs('formal') == request.inputs
+        live_inputs = replace(request.inputs, binding=request.inputs.binding.for_observations())
+        assert reopened.recipe('formal') == live_inputs
+        assert reopened.inputs('formal') == live_inputs
         assert reopened._path('formal').read_bytes() == (client.data_dir / 'v4-inputs/formal.json').read_bytes()
         with pytest.raises(ValueError, match='cutover'):
             reopened.prepare_interval('formal', interval, observed_at=interval.start)
@@ -172,7 +173,7 @@ def test_rebind_to_qualified_successor_version(formal_v4, tmp_path, monkeypatch)
         cutover = TimeInterval(opens, opens.replace(hour=15 if candidate.instrument.market is MarketId.CN else 16, minute=0))
         request = V4AccountBindingUpdate(AccountBindingUpdate('formal', before['release_hash'], target.release_hash, 'v2'),
             'formal-channel', account_binding_facts_sha256(scoped, 'formal'), cutover,
-            EquityAccountRules(candidate.instrument, candidate.definition.execution_spec),
+            execution_rules(candidate.instrument, candidate.definition.execution_spec),
             FormalV4Inputs(target.release_hash, evaluation.input_binding, evaluation.fee_rate),
             V4StateContinuation('source', 'reviewed successor compatibility'))
         assert update_account_bindings(runtime, 'target', (request,)).status is AccountBindingUpdateStatus.COMMITTED
@@ -208,7 +209,7 @@ def test_legacy_migration_reconciles_positions_and_rolls_back_batch(formal_v4, t
         effective = TimeInterval(opens, opens.replace(hour=15, minute=0))
         updates = tuple(V4AccountBindingUpdate(AccountBindingUpdate(name, old_hash, target_hash, 'v1'),
             'formal-channel', account_binding_facts_sha256(scoped, name), effective,
-            EquityAccountRules(candidate.instrument, candidate.definition.execution_spec),
+            execution_rules(candidate.instrument, candidate.definition.execution_spec),
             FormalV4Inputs(target_hash, evaluation.input_binding, evaluation.fee_rate),
             V4StateMigration(StateRecord(), 'reviewed fixture migration', StateRecord() if name == 'formal' else None))
             for name in ('formal', 'flat'))

@@ -1,14 +1,15 @@
 """Maintenance CLI for explicit channel registration and native V4 accounts."""
+from .ec_boundary import execution_rules
+
 from contextlib import ExitStack
 from dataclasses import asdict
 from datetime import datetime, timezone
 from decimal import Decimal
 import json
 
-from .channel import ChannelAccountConfig
-from .equity_contracts import EquityAccountRules
+from execution_channels.futu.channel import ChannelAccountConfig
 from .runtime_lock import RuntimeDatabaseLock
-from .store import PaperStore
+from execution_channels.futu.store import PaperStore
 
 
 def _prepare_data(args):
@@ -63,7 +64,7 @@ def run_channel_command(args):
             if type(value) is not dict or set(value) != {'account', 'capital', 'fee_policy'}:
                 raise ValueError('channel definition requires account, capital and fee_policy')
             config = ChannelAccountConfig(**value['account'])
-            from .futu_execution import FeeReconciliationPolicy
+            from execution_channels.futu.futu_execution import FeeReconciliationPolicy
             policy = FeeReconciliationPolicy(**{k: Decimal(str(v)) for k, v in value['fee_policy'].items()})
             with store.atomic_decision_update():
                 scoped = store.register_channel_account(config, capital=Decimal(value['capital']))
@@ -79,7 +80,7 @@ def run_channel_command(args):
             scoped.set_paused(True)
             return {'channel_account_id': scoped.channel_account_id, 'paused': True}
         if args.channel_action == 'pause-account':
-            from .audit import AuditRecorder
+            from execution_channels.futu.audit import AuditRecorder
             with scoped.atomic_decision_update():
                 account = scoped.set_virtual_paused(args.account_id, True)
                 AuditRecorder(scoped).record('ACCOUNT_PAUSED', source='cli.channel', actor_type='OPERATOR',
@@ -88,7 +89,7 @@ def run_channel_command(args):
         from .formal_v4_advice import FormalV4AdviceClient
         client = FormalV4AdviceClient(repo_root=args.repo_root, store=scoped, dataflows=None, data_dir=args.data_dir)
         if args.channel_action == 'resume-account':
-            from .audit import AuditRecorder
+            from execution_channels.futu.audit import AuditRecorder
             client._account_release(args.account_id)
             client.inputs(args.account_id)
             with scoped.atomic_decision_update():
@@ -110,7 +111,7 @@ def run_channel_command(args):
                 strategy_id=binding.strategy_id, strategy_name_snapshot=binding.name, strategy_version=binding.version,
                 release_hash=binding.release_hash, qualification_snapshot=binding.qualification.value,
                 selection_data_cutoff=binding.selection_data_cutoff.isoformat(),
-                equity_rules=EquityAccountRules(candidate.instrument, candidate.definition.execution_spec))
+                equity_rules=execution_rules(candidate.instrument, candidate.definition.execution_spec))
             return account
         if args.channel_action in {'bind-inputs', 'bind-recipe'}:
             from strategy_runtime import EquityInputBinding
@@ -123,8 +124,8 @@ def run_channel_command(args):
             return {'input_identity': client.register_inputs(value['account_id'], EquityInputBinding.from_dict(value['binding']),
                 expected_release_hash=value['release_hash'], fee_rate=value['fee_rate'])}
         if args.channel_action == 'resume':
-            from .futu_gateway import FutuGateway
-            from .futu_execution import ChannelExecution, FeeReconciliationPolicy
+            from execution_channels.futu.futu_gateway import FutuGateway
+            from execution_channels.futu.futu_execution import ChannelExecution, FeeReconciliationPolicy
             raw = next(r for r in store.channel_accounts() if r['channel_account_id'] == scoped.channel_account_id)
             if raw['config_json'] is None:
                 raise ValueError('channel resume requires an explicit registered external account')

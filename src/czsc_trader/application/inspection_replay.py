@@ -9,7 +9,11 @@ import pandas as pd
 from dataflows import Dataflows, ProviderConfig
 from strategy_runtime import StrategyRuntime, StrategyInit, StrategyInputBinding, ExecutionPolicy
 from strategy_evaluator import compare_ledgers, LedgerComparisonRequest, LedgerComparisonMode, LedgerComparisonStatus
-from trading_execution_engine import HistoricalExecutor
+from execution_channels.serialization import from_record, to_record
+from execution_channels.policy import ExecutionPolicy as ChannelPolicy
+from execution_channels.pricing import ExecutionPricing as ChannelPricing
+from czsc_trader.application.session_replay import replay_sessions
+from execution_channels.historical import HistoricalExecutor
 from ..backtesting.observation import ObservationExecutor, UnavailablePlanObservation
 from ..backtesting.models import StrategyIdentity, StrategySnapshot
 from ..backtesting.result import BacktestResult
@@ -42,11 +46,11 @@ def _run(runtime, strategy, replay, root, source_root=None, binding=None):
         execution_daily=data.execution_daily, execution_intraday=data.execution_intraday,
         execution_five_minute=data.execution_five_minute,
         evaluation_start=pd.Timestamp(window.start), evaluation_end=pd.Timestamp(window.end),
-        initial_cash=replay.initial_cash, execution_policy=policy,
+        initial_cash=replay.initial_cash, execution_policy=from_record(ChannelPolicy, to_record(policy)),
         order_types=definition.capabilities.order_types, checkpoints=definition.capabilities.checkpoints,
-        pricing=data.pricing, market_rules=data.market_rules)
+        pricing=from_record(ChannelPricing, to_record(data.pricing)), market_rules=data.market_rules)
     executor = ObservationExecutor(instance.definition, channel)
-    ledger = instance.run_window(executor=executor)
+    ledger = replay_sessions(instance, executor)
     # Runtime isolation keeps valid trading plans executable. Technical delivery
     # acceptance must nevertheless reject display failures, even if both copies
     # of the implementation would fail identically.

@@ -235,7 +235,7 @@ print(backtest.manifest["audit"]["status"], backtest.metrics)
 
 `run_backtest(research, strategy, request) -> BacktestEvaluation` 仅接受已认证的冻结`StrategyVersion`，
 返回账户、基准、指标与审计，不自动保存 CSV、报告或图表。`lot_size` 必填正整数，并须与策略执行合同一致。
-该冻结回测是显式技术检查，输入价格、时间、成交及费用通过SRT/TXE计算，包含SE账户审计；完整回测包含BuyHold、MA5/MA20基准。普通候选回测旁路已删除，候选研究须使用V4会话。
+该冻结回测是显式技术检查，输入价格、时间、成交及费用通过SRT/EC计算，包含SE账户审计；完整回测包含BuyHold、MA5/MA20基准。普通候选回测旁路已删除，候选研究须使用V4会话。
 回测 manifest 为 schema 5，研究指标语义版本为 `candidate-srt-txe-v4-explicit-benchmark`。
 
 基准估值与图表投影使用独立的数值容器，避免在 pandas 派生操作中反复深复制行情的质量元数据。
@@ -247,12 +247,12 @@ print(backtest.manifest["audit"]["status"], backtest.metrics)
 普通`FROZEN_RULE`目标仓位策略采用`DAILY_RANGE_V3`日范围成交模型，含普通限价单；该路径不请求分钟成交数据，
 也不按成交量约束成交数量。当前声明`11:30_CLOSE`检查点的日内执行策略请求5分钟DFLS不复权产品；
 仅声明`OPEN`检查点不增加分钟需求。
-数据已准备不表示某个账户执行路径实际消费了该频率。具体成交与时点精度见[TXE](../../packages/trading_execution_engine/README.md)。
+数据已准备不表示某个账户执行路径实际消费了该频率。具体成交与时点精度见[EC](../../packages/execution_channels/README.md)。
 SRT独立规划策略预热，完整回测的MA5/MA20基准另需20个先前交易日。
 缺少必需频率、日期或截止日时失败，不静默缩窗。
 
 多档位策略须显式声明`FROZEN_RULE`资金模式`target_equity_fraction`、作用范围`decision`及
-`allocation_fraction=1`。TDR评价保留小数目标，由SRT按实际账户权益计算份额、TXE执行及记账；
+`allocation_fraction=1`。TDR评价保留小数目标，由 EC 按实际账户权益计算份额、执行及记账；
 原`entry_cycle`资金模式仍仅接受0/1目标。计算规则见[SRT执行计划](../../packages/strategy_runtime/README.md#执行计划)。
 公开账户归因诊断的全仓/现金、单周期单次买入等限制不因新增仓位能力而扩大。
 
@@ -683,7 +683,7 @@ StrategyVersion和运行发布合同不变，不更改已冻结策略、SM状态
 
 先构造最终schema 5版本及manifest 1发布包，再用同一包做两目标检验。`FreezePlan` schema 2不含研究历史闭包；manifest的既有`candidate_package_hash`字段绑定plan哈希。冻结直接提交报告保存的同一版本与发布字节，既有冻结事务请求ID、幂等性和状态保持。
 
-目标A通过正常SRT/TXE路径运行候选及发布实现，比较信号、决策、订单、成交、账户、交易与观察事实。只归一化纯运行身份；离散数量、状态、时点严格一致，明确金融浮点字段才适用容差。目标B使用正常PTE业务组件和独立的离线成交渠道；检查进入／持有／退出、无成交或部分成交、重复决定／回报、重启后与连续运行一致，以及适用故障。多档持仓调整按能力声明验证。测试许可、数据库及部署回执受隔离路径和包身份约束，普通PTE入口拒绝技术检验数据库。
+目标A通过正常SRT/EC路径运行候选及发布实现，比较信号、决策、订单、成交、账户、交易与观察事实。只归一化纯运行身份；离散数量、状态、时点严格一致，明确金融浮点字段才适用容差。目标B使用正常PTE业务组件和独立的离线成交渠道；检查进入／持有／退出、无成交或部分成交、重复决定／回报、重启后与连续运行一致，以及适用故障。多档持仓调整按能力声明验证。测试许可、数据库及部署回执受隔离路径和包身份约束，普通PTE入口拒绝技术检验数据库。
 
 检验提供PREPARE、EQUIVALENCE、PTE、PERSIST、FINALIZE进度；长回放和PTE场景使用可终止子进程。取消或总超时先停止并等待worker退出，再保存已完成事实和未完成原因。回调错误明确失败。发布失败抛`InspectionPublicationError(phase, partial_evidence, report_reference, message)`，不得把未发布结果当作已交付。
 EQUIVALENCE按独立回放并行，PTE按普通场景及故障场景并行，两阶段顺序执行并使用同一`max_workers`上限。
@@ -779,7 +779,7 @@ assert receipt.status.value == "COMMITTED"
 不依赖当前策略代码重算历史文案。没有解释的历史观察明确标注；基准策略只展示其已有事实。
 成交使用实际费用字段，只有交易日的成交明确保留日期精度，不补造时刻或PTE订单。
 
-回测观察错误隔离使用SRT的`observe_execution_plan`：先严格校验发布和计划身份，再隔离展示错误；
+回测观察错误隔离使用 SRT 的 `observe_strategy_proposal`：以策略提案及 EC 计划身份关联观察，再隔离展示错误；
 不可用记录携带已校验计划身份和日期，不能附带部分信号。账户计算可继续，图表如实显示原因。
 其持久化使用`tdr_plan_observation.v1`计划信封，内含原始SRT不可用观察，避免把计划身份字段
 混入SRT的不可用观察合同；检查点恢复仍执行同样的类型及身份校验。
@@ -875,7 +875,7 @@ V4 的非行情及周线观察通过 `observation_inputs: tuple[DatasetObservati
 
 V4要求显式逐区间价格限制、可卖时点及余股清仓规则，延迟交收须有结算时间。
 来源准入见[DFLS](../../packages/dataflows/README.md#cnus版本化raw事实源)，执行语义见
-[TXE](../../packages/trading_execution_engine/README.md#跨市场raw账户-v4)。不能用一个供应商样本或复权因子
+[EC](../../packages/execution_channels/README.md)。不能用一个供应商样本或复权因子
 证明多年完整经济事件；现有A股数据集不自动变成RAW事件源。缺少历史凭据时应报告数据尚未就绪。
 
 V4结果为 `equity-research/v4`，发布引用为 `EvidenceRef(schema="equity_research", schema_version=4)`，
@@ -894,7 +894,7 @@ V4结果为 `equity-research/v4`，发布引用为 `EvidenceRef(schema="equity_r
 回放、收尾及发布不重新读取策略源码。修改源码后开始的新账户独立装载当时的声明文件。
 
 会话按完整来源选择复用不可变输入，同经济合同的买持基准只回放一次；候选辅助数据和执行专用报价
-不污染基准。独立账户不共享可变状态。TXE产生唯一账户账本，SE从观察值、成交及已结束交易周期
+不污染基准。独立账户不共享可变状态。EC 产生唯一账户账本，SE从观察值、成交及已结束交易周期
 汇总指标。回放、事实构造、发布、冷读、检查点恢复和阶段四交付均不隐式独立重演成交或现金持仓。
 类型、范围、时序、引用身份和证据完整性检查仍执行；计算成功不表示已经执行独立审计。
 保留原始数据引用、参数、执行条件、实现版本、账本与指标关联，支持按需复核；本次不新增独立审计模块。
@@ -926,25 +926,28 @@ V1回调、V2/V3研究计算及证据读取认证链已删除，不提供别名�
 
 ```mermaid
 flowchart TD
-    TDR[TDR 批次上下文与统一业务入口] --> A[既有日期模型请求]
-    TDR --> U[显式权益研究请求 V4]
-    U --> D[DFLS 市场日历与来源精确绑定]
-    A --> S[SRT 策略计算与共用回放生命周期]
-    U --> S
-    D --> S
-    S --> X[TXE 日期/区间/真实检查点模型]
-    X --> F[共用成交及账户记账核心]
-    F --> E[SE 观察值指标与确定性评价]
-    E --> R[共享不可变证据发布与 EvidenceRef]
+    H[PTE / TDR 宿主编排] --> S[SRT 共享数据准备与策略计算]
+    S --> D[DFLS 动态数据资产]
+    S --> P[策略提案]
+    H --> X[EC 市场规则与订单规划]
+    P --> H
+    X --> CN[CN 模拟渠道]
+    X --> US[US 模拟渠道]
+    X --> R[历史回放渠道]
+    R --> E[SE 独立数值评价]
 ```
 
-| 模块 | 隔离责任 | 复用责任 |
-| --- | --- | --- |
-| TDR | 上下文固定执行合同；拒绝异市场候选及混合请求 | 批次、实验、显式准备及批量评价、publish_evidence；两市场统一V4，run_backtest只接受冻结版本 |
-| DFLS | `InstrumentId`、市场日历、产品、来源及修订精确匹配 | `Dataflows`、`PreparedDataRef`、持久化与不可变内容身份 |
-| SRT | `ResearchExecutionSpec`、有时区的决策边界、整数股单位 | 策略规划及共用回放生命周期；V4两市场支持相同计算方式 |
-| TXE | 日期／区间／检查点模型消费各自事实；V4逐区间市场规则显式输入 | `resolve_fill`与同一经济记账核心；不按市场复制现金、持仓、应收计算 |
-| SE | 按账户版本和市场时区独立核对成交及账户事实 | 数值计算职责；不导入 TXE、不调用成交执行器证明自身正确 |
+| 模块 | 职责与边界 |
+| --- | --- |
+| PTE / TDR | 选择渠道、编排周期、显式投影 SRT 与 EC 领域类型；PTE 管调度、监控和 Web，TDR 管实验与证据 |
+| DFLS | 唯一动态数据资产入口，提供行情、交易日历、动态交易事实与份额事件 |
+| SRT | `fetch_prepared_products`、`prepare_observations` 及策略 `propose`；不依赖 EC，不规划订单或执行账户 |
+| EC | 自有强类型合同、`market_rules`、共享订单规划；三个渠道分别实现成交、账户和状态推进；不依赖 DFLS、SRT 或宿主 |
+| SE | 独立核对观察值、成交和账户事实，不调用 EC 执行器复算来证明自身正确 |
+
+TDR 的 `application.account_replay` 连接 SRT 的提案与 EC 的历史渠道；日线冻结入口使用
+`application.session_replay`。旧 `strategy_runtime.run_replay`、`StrategyInstance.plan_at/run_window`
+和独立 TXE/MRS 包已删除；旧研究证据保持原件，使用新平台重新执行须迁移调用入口。
 
 旧候选及账户数据仅供内部历史技术检查读取；新研究不提供`StrategyCandidate/EvaluationRequest`兼容计算路径。
 A股、美股新研究请求均须显式绑定执行合同；未指定execution_spec的历史上下文仅用于对应的冻结回测和技术检查。
@@ -981,12 +984,12 @@ CN/US个股权益研究统一采用V4；既有A股日期模型仅服务其明确
 | `equity.trading_facts` | `Date/AvailableDate/Tradable/PriceLimitLower/PriceLimitUpper` | 每个执行区间完整覆盖，区间起点已可得 |
 
 `EquitySources.trading_facts` 声明上述动态产品的来源。TDR 在执行准备中调用 SRT 组装层，独立读取
-[MRS](../../packages/market_rules/README.md) 的固定规则，与 DFLS 交易日历及动态事实合并。输入证据
-保存原始动态产品和派生约束的身份，派生约束包含适用的 MRS 规则版本和指纹。
+[EC 市场规则](../../packages/execution_channels/README.md) 的固定规则，与 DFLS 交易日历及动态事实合并。输入证据
+保存原始动态产品和派生约束的身份，派生约束包含适用的 EC 市场规则版本和指纹。
 
 `Date` 对行情表示区间结束，对交易事实表示区间开始，对公司行动表示生效时间。
-卖出区间的 `SettlementAt` 按 MRS 的结算模型及交易日历推导。动态事实由宿主明确指定来源和修订。
-MRS 的数量步长和价位必须与执行合同一致。制度切换导致不一致时，需另行划分合同。
+卖出区间的 `SettlementAt` 按 EC 市场规则的结算模型及交易日历推导。动态事实由宿主明确指定来源和修订。
+EC 市场规则的数量步长和价位必须与执行合同一致。制度切换导致不一致时，需另行划分合同。
 
 无公司行动也必须有来源核实记录：一条 `Kind=NONE` 和 `no_actions_verified=true`。
 默认缺行情、缺约束、日历冲突、来源修订不符、无合法准备引用等均失败，不补齐、不换源。
@@ -1083,7 +1086,7 @@ with ResearchExecutionSession(context, experiment=experiment,
 ### 10.6 可审计事实、指标及证据
 
 仅接纳 `equity-research/v4`与 `EvidenceRef(schema="equity_research", schema_version=4)`。
-请求绑定TDR/SRT/TXE/SE实际计算实现身份和运行环境；默认指标汇总消费序列化观察值，不装载策略，
+请求绑定TDR/SRT/EC/SE实际计算实现身份和运行环境；默认指标汇总消费序列化观察值，不装载策略，
 不再次推导成交和会计事件。SE既有显式审计能力保留，未被调用时不声称审计通过。
 `register_candidate/load_candidate`、`assemble_delivery/validate_delivery`及 `diagnose_accounts`
 沿当前V4契约处理候选、原型、评估和损益事实；交付复核不依赖原实验可变目录。

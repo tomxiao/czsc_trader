@@ -17,8 +17,6 @@ from uuid import uuid4
 from strategy_runtime import (
     DataPreparationResult,
     DecisionFeedback,
-    ExecutionPlan,
-    ExecutionPriceBasis,
     ExecutionPricing,
     ExecutionState,
     EntryCycleState,
@@ -32,18 +30,21 @@ from strategy_runtime import (
     TradingPoint,
     canonical_sha256,
     load_strategy_deployment,
-    observe_execution_plan,
     RuntimeDefinition,
     SignalHistoryMode,
 )
 from dataflows import Dataflows, DataRequest, Dataset, PreparePolicy, EvidenceParameters
 from strategy_manager import Qualification, StrategyRegistry
 
-from .audit import AuditRecorder
+from execution_channels.futu.audit import AuditRecorder
 from .contracts import AdviceContractError, AdviceDecision
 from .errors import AdviceClientError
 from .file_publication import replace_published_file
 from .account_binding import AccountStrategyBinding
+from .ec_boundary import session_execution_plan
+from execution_channels.session_contracts import ExecutionPlan
+from execution_channels.pricing import ExecutionPriceBasis
+from strategy_runtime.observation import observe_strategy_proposal
 
 
 _BEIJING = timezone(timedelta(hours=8), "Asia/Shanghai")
@@ -145,6 +146,7 @@ def _decision_from_plan(
     identity: dict[str, str],
     definition: RuntimeDefinition,
     inspection_permit=None,
+    *, proposal,
 ) -> AdviceDecision:
     if (plan.references.pricing.basis is not ExecutionPriceBasis.UNADJUSTED
             or plan.references.execution_basis != "UNADJUSTED_CLOSE"):
@@ -164,7 +166,8 @@ def _decision_from_plan(
         for leg in plan.legs
     ]
     source_decision_id = f"SRT-{plan.signal_date:%Y%m%d}-{plan.signal_identity[:12].upper()}"
-    observation = observe_execution_plan(definition, plan).to_dict()
+    observation = observe_strategy_proposal(definition, proposal,
+        plan_identity=plan.plan_identity, action=plan.action).to_dict()
     payload = {
         "contract_version": "advice.v6" if plan.capital_mode == "signal_cash_fraction" else (
             "advice.v5" if plan.plan_mode != "NONE" or legs else "advice.v4"
@@ -711,7 +714,7 @@ class SrtAdviceClient:
             correlation_id=f"srt:{scope.get('symbol')}",
             details={
                 "service": "strategy_runtime",
-                "operation": "plan_at",
+                "operation": "propose_and_plan",
                 "duration_ms": round((clock.perf_counter() - started) * 1000, 3),
                 "error_type": type(error).__name__,
                 "error": str(error),
@@ -776,10 +779,10 @@ class SrtAdviceClient:
                 if generated_at.tzinfo is None
                 else generated_at.astimezone(_BEIJING)
             )
-            plan = strategy.plan_at(
-                history_mode=SignalHistoryMode.CONTINUOUS,
-                point=TradingPoint(trading_date, generated_at),
-                portfolio=PortfolioSnapshot(
+            proposal = strategy.propose_at(history_mode=SignalHistoryMode.CONTINUOUS,
+                point=TradingPoint(trading_date, generated_at))
+            plan = session_execution_plan(proposal,
+                PortfolioSnapshot(
                     account_id,
                     selected_symbol,
                     Decimal(str(available_cash)),
@@ -788,12 +791,12 @@ class SrtAdviceClient:
                     portfolio_revision,
                     generated_at,
                 ),
-                state=ExecutionState(
+                ExecutionState(
                     state_revision, generated_at, cycle_target_quantity, entry_cycle=entry_cycle,
                 ),
             )
             decision = _decision_from_plan(
-                plan, identity, prepared.instance.definition, self.inspection_permit
+                plan, identity, prepared.instance.definition, self.inspection_permit, proposal=proposal
             )
         except Exception as exc:
             self._audit_call(started, error=exc, **scope)

@@ -38,26 +38,11 @@ def replay_identity(replay, runtime_kind='US_EQUITY'):
 
 
 def _products(flows, replay):
-    from strategy_runtime.observation_preparation import observation_identity
-    expected = replay.input_binding.expected_identities
-    products, identities, calendars = {}, {}, {}
-    for name, query in replay.input_binding.bind_requests(replay.requests):
-        result = flows.fetch(query, prepared=replay.input_binding.prepared)
-        if name in products or not result.ready or result.identity.content_sha256 != expected[name]:
-            raise ValueError('inspection prepared input identity differs')
-        products[name] = result.dataframe
-        identities[name] = {'content_sha256': result.identity.content_sha256, 'metadata': dict(result.identity.metadata)}
-        if name.startswith('observation:'):
-            identities[name]['observation_identity'] = observation_identity(result.identity)
-            continue
-        role = name.rsplit(':', 1)[0] if ':' in name else 'primary'
-        calendar = result.identity.metadata['sessions']
-        if role in calendars and calendars[role] != calendar:
-            raise ValueError('inspection input calendars differ')
-        calendars[role] = calendar
-    if set(products) != set(expected):
-        raise ValueError('inspection product coverage differs')
-    return products, identities
+    from strategy_runtime.data_preparation import fetch_prepared_products
+    result = fetch_prepared_products(flows, replay.input_binding.bind_requests(replay.requests),
+        prepared=replay.input_binding.prepared,
+        expected_identities=replay.input_binding.expected_identities)
+    return result.products, result.identities
 
 
 def _records(frame):
@@ -77,17 +62,19 @@ def replay_account(candidate, flows, replay):
     execution = replay.input_binding.execution_input
     if candidate.definition.execution_input != (None if execution is None else execution.input):
         raise ValueError('technical replay execution input contract differs')
-    from strategy_runtime.equity_rules import execution_constraints
+    from .execution_inputs import execution_constraints
     products["constraints"], identities["constraints"] = execution_constraints(
         candidate.definition, products, {k: v["metadata"] for k, v in identities.items()})
     if candidate.definition.contract_version == 4:
         return _replay_account_v4(candidate, replay, products, identities)
-    from trading_execution_engine.frozen_equity import _FrozenEquityExecutor
+    from execution_channels.historical.frozen_equity import _FrozenEquityExecutor
     from strategy_evaluator.frozen_equity import _audit_frozen_equity_account
+    from .ec_boundary import execution_spec
+    from .frozen_equity_replay import run_frozen_equity
     specification = candidate.definition.execution_spec
-    executor = _FrozenEquityExecutor(specification=specification, initial_cash=replay.initial_cash,
+    executor = _FrozenEquityExecutor(specification=execution_spec(specification), initial_cash=replay.initial_cash,
                                         fee_rate=replay.one_way_cost, actions=replay_actions(products['actions']))
-    account = StrategyRuntime(execution_spec=specification).create(candidate).run_window(
+    account = run_frozen_equity(StrategyRuntime(execution_spec=specification).create(candidate),
         products['bars'], products['constraints'], executor, start=replay.window.start,
         end=replay.window.end, fee_rate=replay.one_way_cost,
         auxiliary_histories={x.name: products[x.data_key(EquityProduct.BARS)] for x in candidate.definition.auxiliary_inputs},
@@ -109,18 +96,14 @@ def replay_account(candidate, flows, replay):
 
 def _replay_account_v4(candidate, replay, products, identities):
     """Explicit technical replay uses the same authoritative V4 runtime and TXE."""
-    from strategy_runtime.equity_replay import PreparedReplay, run_replay
-    from trading_execution_engine import PortfolioHistoricalExecutor
-    from strategy_runtime.observation_preparation import prepare_observation_tables
+    from strategy_runtime.data_preparation import prepare_observations
+    from .account_replay import run_replay
+    from .ec_boundary import execution_spec
+    from execution_channels.historical import PortfolioHistoricalExecutor
     definition = candidate.definition
     spec = definition.execution_spec
-    prepared = PreparedReplay.from_frames(products['bars'], products['constraints'], definition.feature_graph,
-        latency_seconds=spec.data_latency_seconds, frequency=spec.decision_clock,
-        timezone=candidate.instrument.timezone, sessions=products['sessions'],
-        trading_sessions=sessions_from_metadata(identities['sessions']['metadata']),
-        auxiliary_histories={item.name: products[item.data_key(EquityProduct.BARS)] for item in definition.auxiliary_inputs},
-        observation_tables=prepare_observation_tables(definition.observation_inputs, products, identities,
-            bindings=replay.input_binding.observation_bindings))
+    prepared = prepare_observations(definition, products, identities,
+        bindings=replay.input_binding.observation_bindings)
     from strategy_runtime import StrategyComputation, check_account_batch_consistency
     batch_consistency = {'status': 'NOT_APPLICABLE'}
     if definition.computation is StrategyComputation.BATCH_HISTORY:
@@ -129,11 +112,11 @@ def _replay_account_v4(candidate, replay, products, identities):
             raise ValueError('batch decisions differ between historical and online contexts at: ' +
                              ', '.join(point.isoformat() for point in checked.differing_points))
         batch_consistency = {'status': 'PASS', 'checked_points': checked.checked_points}
-    executor = PortfolioHistoricalExecutor(specification=spec, initial_cash=replay.initial_cash,
+    executor = PortfolioHistoricalExecutor(specification=execution_spec(spec), initial_cash=replay.initial_cash,
         fee_rate=replay.one_way_cost, actions=replay_actions(products['actions']), price_basis='RAW',
         execution_bars=None if definition.execution_input is None else products['execution:bars'])
     outcome = run_replay(prepared, candidate, executor, start=replay.window.start, end=replay.window.end,
-        fee_rate=replay.one_way_cost,
+        fee_rate=replay.one_way_cost, constraints=products['constraints'],
         owner=f'candidate:{candidate.strategy_id}:{candidate.candidate_id}:{candidate.content_identity.content_sha256}')
     account = outcome.execution_result
     facts = {name: _records(getattr(account, attr)) for name, attr in (

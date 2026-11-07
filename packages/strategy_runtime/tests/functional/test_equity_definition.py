@@ -43,11 +43,11 @@ def test_formal_equity_portable_identity_and_stateless_decisions(tmp_path):
     end = datetime(2026, 10, 1, 14, tzinfo=timezone.utc)
     history = pd.DataFrame({'Date': [end], 'AvailableDate': [end], 'Close': [10.]})
     interval = TimeInterval(end, end + timedelta(minutes=30))
-    first = instance.plan(history, interval, EquityPortfolio(1000., 0, 0., 0), fee_rate=.001)
-    second = instance.plan(history, interval, EquityPortfolio(1000., 0, 0., 0), fee_rate=.001)
+    first = instance.propose(history, interval, EquityPortfolio(1000., 0, 0., 0))
+    second = instance.propose(history, interval, EquityPortfolio(1000., 0, 0., 0))
     assert first == second and first.target == 1
     assert first.explanation['basis'][1] == {'key': 'threshold', 'text': '10'}
-    assert runtime.create(changed).plan(history, interval, EquityPortfolio(1000., 0, 0., 0), fee_rate=.001).target == 0
+    assert runtime.create(changed).propose(history, interval, EquityPortfolio(1000., 0, 0., 0)).target == 0
     (original.source_root / 'rules.py').write_text('THRESHOLD = 11\n', encoding='utf-8')
     with pytest.raises(ValueError, match='closure changed'):
         original.verify()
@@ -58,8 +58,8 @@ def test_formal_equity_rejects_undeclared_import_and_future_history(tmp_path):
     future = datetime(2026, 10, 1, 15, tzinfo=timezone.utc)
     history = pd.DataFrame({'Date': [future], 'AvailableDate': [future], 'Close': [10.]})
     with pytest.raises(ValueError, match='CAUSAL_TIME'):
-        StrategyRuntime(execution_spec=value.definition.execution_spec).create(value).plan(history,
-            TimeInterval(future - timedelta(minutes=30), future), EquityPortfolio(1000., 0, 0., 0), fee_rate=.001)
+        StrategyRuntime(execution_spec=value.definition.execution_spec).create(value).propose(history,
+            TimeInterval(future - timedelta(minutes=30), future), EquityPortfolio(1000., 0, 0., 0))
     (tmp_path / 'rules.py').write_text('import unlisted_dependency\n', encoding='utf-8')
     with pytest.raises(ValueError, match='undeclared equity dependency'):
         replace(value, definition=replace(value.definition,
@@ -93,7 +93,7 @@ def test_initial_state_frozen_containers_preserve_identity_and_strict_values(tmp
 
 
 def test_formal_decision_observes_split_before_planning(tmp_path):
-    from trading_execution_engine.frozen_equity import _FrozenEquityExecutor
+    from execution_channels.historical.frozen_equity import _FrozenEquityExecutor
     value = candidate(tmp_path)
     value = replace(value, definition=replace(value.definition, parameters_json='{"threshold":1}'))
     start = datetime(2026, 10, 1, 14, tzinfo=timezone.utc)
@@ -106,9 +106,11 @@ def test_formal_decision_observes_split_before_planning(tmp_path):
                                 'PriceTick': .01, 'Tradable': True})
     actions = pd.DataFrame([{'Date': starts[2], 'AvailableDate': starts[2], 'EventId': 'split',
                              'Kind': 'SPLIT', 'Ratio': 2., 'CashPerShare': 0., 'PayAt': None}])
-    executor = _FrozenEquityExecutor(specification=value.definition.execution_spec,
+    from czsc_trader.application.ec_boundary import execution_spec
+    from czsc_trader.application.frozen_equity_replay import run_frozen_equity
+    executor = _FrozenEquityExecutor(specification=execution_spec(value.definition.execution_spec),
                                          initial_cash=1000., fee_rate=.001, actions=actions)
-    result = StrategyRuntime(execution_spec=value.definition.execution_spec).create(value).run_window(
+    result = run_frozen_equity(StrategyRuntime(execution_spec=value.definition.execution_spec).create(value),
         bars, constraints, executor, start=starts[1], end=ends[-1], fee_rate=.001)
     assert result.account_points.iloc[-1].quantity == 196
     assert result.decisions.iloc[-1].reference_price == 5.
@@ -185,14 +187,14 @@ def test_closed_cycle_mode_requires_capability_and_preserves_old_input_contract(
         value.decide(context)
     runtime = StrategyRuntime(execution_spec=value.definition.execution_spec)
     with pytest.raises(ValueError, match='CLOSED_CYCLE_FEEDBACK_UNAVAILABLE'):
-        runtime.create(value).plan(history, point.execution_interval, unavailable, fee_rate=.001)
+        runtime.create(value).propose(history, point.execution_interval, unavailable)
     empty = replace(unavailable, closed_cycle_feedback=EquityClosedCycleFeedback())
     assert value.decide(replace(context, portfolio=empty)).reason == 'empty'
     full = replace(unavailable, closed_cycle_feedback=EquityClosedCycleFeedback(closed))
     assert value.decide(replace(context, portfolio=full)).reason == 'cycle-1'
     assert old.decide(replace(context, portfolio=full)).reason == 'unavailable'
     assert market.decide(replace(context, portfolio=full)).reason == 'market'
-    assert runtime.create(value).plan(history, point.execution_interval, full, fee_rate=.001).explanation['judgment'] == 'cycle-1'
+    assert runtime.create(value).propose(history, point.execution_interval, full).explanation['judgment'] == 'cycle-1'
 
 
 @pytest.mark.parametrize('violation', ['exit-in-future', 'observation-in-future', 'overlapping-current-cycle'])

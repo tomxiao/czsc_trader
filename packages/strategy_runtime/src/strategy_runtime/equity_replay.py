@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 from enum import StrEnum
 import math
 from statistics import median
-from time import perf_counter
 from types import MappingProxyType
 from typing import Generic, TypeVar
 
@@ -215,7 +214,6 @@ def _frame_records(frame, time_columns):
 class _ReplayData:
     rows: tuple
     columns: tuple[str, ...]
-    constraints: tuple
     starts: tuple[datetime, ...]
     ends: tuple[datetime, ...]
     ready_at: tuple[datetime, ...]
@@ -228,7 +226,7 @@ class _ReplayData:
 
 
 @dataclass(frozen=True, slots=True)
-class PreparedReplay:
+class PreparedObservations:
     _data: _ReplayData
     graph: FeatureGraph
     _auxiliary: tuple = ()
@@ -239,7 +237,7 @@ class PreparedReplay:
     _observations: tuple = ()
 
     @classmethod
-    def from_frames(cls, bars, constraints, graph, *, latency_seconds=0,
+    def from_frames(cls, bars, graph, *, latency_seconds=0,
                     auxiliary_histories=None, sessions=None, trading_sessions=(),
                     frequency=BarFrequency.M30, timezone="America/New_York", observation_tables=None):
         if type(graph) is not FeatureGraph or type(latency_seconds) is not int or latency_seconds < 0:
@@ -278,28 +276,13 @@ class PreparedReplay:
             if any(not isinstance(value, (str, int, float, bool, datetime, type(None))) for value in record.values()):
                 raise TypeError('replay rows require immutable scalar observations')
             rows.append(_Row(record))
-        constraint_map = {}
-        if not {'Date', 'AvailableDate', 'QuantityStep', 'PriceTick', 'Tradable'}.issubset(constraints.columns):
-            raise ValueError('replay requires dated trading constraints')
-        for record in _frame_records(constraints, ('Date', 'AvailableDate', 'SettlementAt')):
-            for key in ('Date', 'AvailableDate', 'SettlementAt'):
-                if key in record and record[key] is not None:
-                    stamp = record[key] if type(record[key]) is datetime else pd.Timestamp(record[key])
-                    if pd.isna(stamp) or stamp.tzinfo is None:
-                        raise ValueError('constraint times must be aware and finite')
-                    record[key] = stamp if type(stamp) is datetime else stamp.to_pydatetime()
-            if record['Date'] in constraint_map:
-                raise ValueError('duplicate trading constraint')
-            constraint_map[record['Date']] = _Row(record)
         local = bars.BarStart.dt.tz_convert(timezone)
         starts, ends = tuple(row['BarStart'] for row in rows), tuple(row['Date'] for row in rows)
         ready = tuple(max(row['Date'], row['AvailableDate'] + timedelta(seconds=latency_seconds)) for row in rows)
-        dated = tuple(constraint_map.get(stamp) for stamp in starts)
         identity = equity_hash({'bars': [{key: None if type(value) is float and math.isnan(value) else value
                                         for key, value in row.items()} for row in rows],
-                                'constraints': [dict(row) if row is not None else None for row in dated],
                                 'latency_seconds': latency_seconds})
-        data = _ReplayData(tuple(rows), tuple(bars.columns), dated, starts, ends, ready,
+        data = _ReplayData(tuple(rows), tuple(bars.columns), starts, ends, ready,
             tuple(row.get('BarStatus', 'OBSERVED') == 'OBSERVED' for row in rows),
             tuple(local.dt.date), tuple(local.dt.hour * 60 + local.dt.minute),
             tuple(sorted(range(len(rows)), key=lambda i: (ready[i], i))), latency_seconds, identity)
@@ -317,8 +300,7 @@ class PreparedReplay:
                 if 'BarStart' not in frame:
                     raise ValueError('account auxiliary preparation requires explicit BarStart')
                 frame = frame if 'Amount' in frame else frame.assign(Amount=0.)
-                empty = pd.DataFrame(columns=('Date', 'AvailableDate', 'QuantityStep', 'PriceTick', 'Tradable'))
-                auxiliary_data = cls.from_frames(frame, empty, FeatureGraph(), latency_seconds=latency_seconds)._data
+                auxiliary_data = cls.from_frames(frame, FeatureGraph(), latency_seconds=latency_seconds)._data
                 auxiliary.append((name, replace(auxiliary_data, columns=original_columns)))
         calendars, intervals = [], []
         if sessions is not None or trading_sessions:
@@ -373,7 +355,7 @@ class PreparedReplay:
     def with_graph(self, graph):
         if type(graph) is not FeatureGraph:
             raise TypeError('replay requires FeatureGraph')
-        return PreparedReplay(self._data, graph, self._auxiliary, self._sessions,
+        return PreparedObservations(self._data, graph, self._auxiliary, self._sessions,
                               self._calendar_intervals, self.identity, self.frequency, self._observations)
 
 
@@ -622,18 +604,3 @@ class ReplayFailure(RuntimeError):
         self.next_execution_start = next_execution_start
         self.cause = cause
         super().__init__(f'replay failed at {next_execution_start.isoformat()}: {cause}')
-
-
-def run_replay(prepared, candidate, executor, *, start, end, fee_rate, initial_state=None, owner=None):
-    """Load the strategy once and execute one independent account in memory."""
-    from dataclasses import replace
-    from .account_replay import run_account_v4
-    if candidate.definition.contract_version != 4:
-        raise ValueError('account replay requires contract_version=4')
-    started = perf_counter()
-    with candidate.bind_replay() as source_scope:
-        outcome = run_account_v4(prepared, candidate, executor, start=start, end=end,
-                              fee_rate=fee_rate, initial_state=initial_state, owner=owner)
-    return replace(outcome, statistics=replace(outcome.statistics, replay_seconds=perf_counter() - started,
-        source_checks=source_scope.checks, source_bytes_read=source_scope.bytes_read,
-        module_loads=source_scope.loads))

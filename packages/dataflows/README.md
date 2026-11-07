@@ -12,7 +12,7 @@
 
 端点通过 HTTPS（隔离测试允许回环 HTTP）接收 `market/symbol/asset_class/product/start/end/frequency/session`。响应包含 `source`（`provider/revision`）、`selection`（与请求参数一致）、`coverage`（`start/end/complete/receipt`）及 `rows`。时间戳包含明确时区，数据必须覆盖请求区间。`rows=[]` 只有在行动覆盖已明确核实且 `complete=true` 时才表示没有行动。缺行、覆盖不足、来源不符和未及时可得均明确失败。数据责任方负责核实并维护 `receipt` 所指的来源记录，DFLS 校验响应契约和请求身份。
 
-A 股 ETF 的上下限可通过现有 `SECURITY_PRICE_LIMITS`（Tushare `etf_limit`）取得。该产品仅证明限价字段，完整的动态产品还要求可交易状态。MRS 独立提供交易单位、价格步长、零股、可卖与结算模型。PTE、TDR 和技术检验共享 SRT 的组装入口。参见 [MRS](../market_rules/README.md) 和 [PTE](../paper_trading_engine/README.md)。
+A 股 ETF 的上下限可通过现有 `SECURITY_PRICE_LIMITS`（Tushare `etf_limit`）取得。该产品仅证明限价字段，完整的动态产品还要求可交易状态。EC 内部 market_rules 提供交易单位、价格步长、零股、可卖与结算模型。PTE、TDR 和技术检验在宿主层显式投影 DFLS 动态事实，调用 EC 约束组装器；SRT 不组装执行规则。参见 [EC 市场规则](../execution_channels/README.md) 和 [PTE](../paper_trading_engine/README.md)。
 
 ## 指数月末权重快照
 
@@ -361,7 +361,7 @@ frequencies=..., actions=...)`为两市场的V4账户提供精确来源绑定。
 - RAW行情、真实生效及可用时间的公司行动；现金股息须有支付时间，核实无行动须有显式NONE及相应凭据。
 
 只接纳已声明频率，不用日线重采样补30分钟，也不从复权因子推测拆股或分红。
-逐区间规则还须提供价格限制、可卖时间及余股清仓政策，字段见[TXE V4](../trading_execution_engine/README.md#跨市场raw账户-v4)。
+逐区间执行约束合并动态价格限制与静态可卖时间、余股清仓政策，字段见[EC](../execution_channels/README.md)。
 完整事实在安装绑定时校验并复制；请求按本地交易日索引切片，返回独立数值容器，不在每次请求重扫全历史。
 已认证完整行动源的无事件子窗口可以生成带明确凭据的NONE；未经核验的空接口响应不能据此声明历史无事件。
 
@@ -427,7 +427,7 @@ A股`Date/BarStart`转换为带时区的实际收盘/开盘时刻，`AvailableDa
 状态行保留 `Date/BarStart/AvailableDate`；`AvailableDate` 不早于区间结束。
 元数据保存 `research_bar_policy`、已知阻断区间、`download_complete` 及逐页回执。
 首尾缺失也明确标记；整个窗口无原始行情、未结束的分页、下载错误、重复或越界时间戳、
-非法 OHLC 和未知日历均失败，不转换为“无法交易”。准备后 SRT/TXE 负责因果信号抑制、
+非法 OHLC 和未知日历均失败，不转换为“无法交易”。准备后 SRT/EC 负责因果信号抑制、
 无成交及陈旧估值报告；DFLS 不为缺失行情生成价格。
 该约定不能识别仍有行情的半小时内所有短暂停牌，也不证明供应商历史数据完整。
 未传入政策时保持原有严格行情网格契约，原 A 股接口不采用此约定。

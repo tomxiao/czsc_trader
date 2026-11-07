@@ -39,7 +39,7 @@ S003 的严格前日快照、SPX 对齐及既有填充规则仍由策略表达�
 绑定只记录声明和 `inactive_through`，没有伪造的请求、内容哈希或 DataIdentity。跨越激活日准备时从
 `history_start` 读取预热历史，但在早期决策视图中仍保持 INACTIVE；策略自行选择种子与增量分支。
 
-`PreparedReplay.from_frames(..., observation_tables={alias: prepared_table})` 接入相同回放内核；
+`PreparedObservations.from_frames(..., observation_tables={alias: prepared_table})` 接入相同观察内核；
 状态策略读 `AccountStepContext.observations`，批量策略读每个 `BatchObservation.observations`。
 准备阶段构建时间索引，视图复用不可变行；相同决策时点复用视图。
 
@@ -54,19 +54,17 @@ S003 的严格前日快照、SPX 对齐及既有填充规则仍由策略表达�
 用于保持含费周期目标和补单规则；实际成交费用仍由执行报告记账。
 未声明时 `ctx.planning is None`。新增字段为空或关闭时不序列化，已有 S018 定义和内容身份不变。
 
-## 共用账户回放内核
+## 历史模型与账户宿主
 
-`replay_kernel.run_account_replay(points, driver)` 是批量历史策略和显式状态策略共用的逐步运行器。
-每步依次执行事务边界、账户快照、决策、执行和状态提交；只有全部步骤成功才调用账户收尾。
-驱动器表达计算及成交模型差异，不拥有另一套完整账户循环。日期模型通过
-`AccountPlanExecutor.execute_plan(neutral, model_plan)`接收计划及模型事实，V4权益账户直接消费
-`AccountExecutionPlan`；SRT不导入TXE。
+原生V4由TDR应用层连接SRT观察/策略提议与EC历史渠道；账户快照、订单规划、成交和状态归并
+均由EC负责。旧 `replay_kernel` 及执行协议入口已删除。TDR 宿主分别组织账户区间与交易日循环，
+通过 EC 历史渠道推进执行；PTE 宿主调度模拟渠道。SRT 不导入 EC，也不驱动账户执行。
 
 `replay_contracts` 的 `ReplayPoint`、`AccountSnapshot`、`ReplayOrder`、`ReplayLeg`、
 `CycleBudget` 和 `AccountExecutionPlan` 使用有时区的因果时间、整数数量、显式可用资金和执行腿依赖。
 这些类型不固定市场、100股单位或跨交易日执行；具体合法数量、价格和交易时点仍由执行规则认证。
 `ExecutionPrecision` 区分交易日范围、K线区间和检查点，不能把范围成交解释成精确时刻。
-旧冻结计划通过 `replay_adapters` 投影原有事实，不重新计算仓位、价格或Decimal周期预算。
+冻结日线提案由宿主投影到 EC `planning.session`，规划结果通过 EC `planning.projection` 交给历史渠道。
 交易日模型的零点到次日零点区间是日期级容器，不是声明盘中实际成交时刻。
 
 `StrategyInstance.prepare_data(..., persist=False)` 明确选择内存研究准备，完成相同输入认证，
@@ -79,7 +77,7 @@ S003 的严格前日快照、SPX 对齐及既有填充规则仍由策略表达�
 依赖真实成交反馈的 `StatefulStep` 则保持每账户独立装载一次、逐步提交状态。
 
 事务边界由明确执行模型声明：单个模拟区间执行及策略状态原子提交；已确认的依赖腿成交
-不会因为后腿失败而撤回。共同内核不改变这两类失败语义。循环内不进行数据获取、文件发布或源码装载。
+不会因为后腿失败而撤回。各渠道明确实现这两类失败语义。循环内不进行数据获取、文件发布或源码装载。
 
 
 ## 跨市场账户研究 V4
@@ -115,7 +113,7 @@ V4的 `feedback_mode`固定为 `CONFIRMED_EXECUTION`；旧V2闭合周期模式�
 显式 `ReplayOrder`数量与目标比例分别留证；`ReplayLeg`声明真实检查点、提交区间及前腿所需结果。
 原生依赖条件统一为 `FILLED_ALL`，只表示前腿全部确认成交；`FILLED`账本状态、部分成交、撤销、
 过期及未知均不能作为依赖条件传入。历史研究模型和PTE分别以实际执行事实判定完整成交。
-周期预算以Decimal保留，不能中途重写已锁定预算；可卖数量、整手、余股清仓及价格限制由TXE逐步执行。
+周期预算以Decimal保留，不能中途重写已锁定预算；可卖数量、整手、余股清仓及价格限制由EC逐步执行。
 
 日线策略若需开盘、11:30等盘中检查点，声明
 `execution_input=ExecutionInput(instrument, source, BarFrequency.M30)`。
@@ -127,14 +125,14 @@ V4研究回放沿用一次装载、不可变可见历史、内存复用和完整
 
 ## 可见特征与显式状态
 
-V4研究通过完整回放事务执行；正式PTE通过共用的 `AccountDecisionEngine` 生成无副作用计划，
-再与真实账户决策、成交和状态按事务提交。旧独立 `plan(...)` 不接纳V4研究定义。
-在线观察使用 `live_constraint` 显式传入在决策时点已知的逐区间交易约束；该区间必须存在于独立
-交易日历，历史OHLCV只包含已完成且已可用的观察，不要求或伪造当前未完成区间的行情。
+TDR与PTE通过共用的 `AccountDecisionEngine.propose(...)` 生成无副作用的策略意图及状态提议，
+由应用层投影到EC的订单规划器，再由具体渠道执行并提交账户状态。SRT不导入EC或市场规则。
+在线观察显式选择前向日历模式；该区间必须存在于独立交易日历，历史OHLCV只包含已完成且已可用的观察，
+不要求或伪造当前未完成区间的行情。当前交易规则由宿主提供给EC，不进入SRT观察准备。
 默认研究路径仍要求执行区间存在于完整行情网格。PTE日线前向准备按每个新区间保存精确输入绑定，
 重启复用原绑定；自动M30前向准备尚不支持，须先具备DFLS部分会话产品。
 特征类型位于 `equity_features`，准备及可见性基础位于 `equity_replay`，
-决策／状态上下文位于 `account_strategy`，共用生命周期驱动位于 `account_replay`。
+决策／状态上下文位于 `account_strategy`，历史渠道生命周期位于EC，宿主编排位于TDR应用层。
 旧V1回调与V3回放循环、类型及计划投影已删除；已有V2冻结运行独立按其合同加载。
 
 ```python
@@ -202,7 +200,7 @@ entry_at 与策略 values。首次真实买入后才激活 cycle；买单未成�
 已有持仓的卖单未成交时，仍保留提议中的止损锁存等观察状态；实际全部卖出后才清除 cycle。
 空仓准备买入和已有持仓均要求显式 `cycle_values`，即使 schema 为空也传入 `StateRecord()`。
 
-每个执行区间以 TXE `transaction()` 包含决策前事件应用、step、执行、实际成交归并及状态提交。
+每个历史执行区间由EC事务包含决策前事件应用、step、执行、实际成交归并及状态提交。
 失败时撤回本区间账户、账本、幂等键与状态；成功的前序区间保持已提交。
 `ReplayFailure` 通过 `committed_state`、`next_execution_start` 和 `cause` 显式交接失败位置，
 不自动重试、不返回伪成功；KeyboardInterrupt/SystemExit 保持取消语义。
@@ -212,26 +210,33 @@ binding 覆盖上述身份，替换输入后不能承接旧状态。
 
 ### 准备、辅助上下文与执行
 
-PTE、TDR 和技术检验在准备执行时共用 `strategy_runtime.equity_rules.execution_constraints`。
-该入口将 [MRS](../market_rules/README.md) 的固定规则与 DFLS 的交易日历和动态交易事实合并，
-校验冻结合同的交易单位和价格步长，生成下方 `constraints` 参数及规则版本、内容指纹。
+PTE、TDR和技术检验通过 `data_preparation.fetch_prepared_products` 读取同一DFLS准备引用，
+逐角色校验身份并复用相同物理请求；`prepare_observations` 统一构建主行情、辅助行情、日历和数据表观察。
+观察准备不读取交易规则、不生成执行约束，也不依赖EC。宿主将DFLS动态交易事实和日历投影后，
+交给 [EC](../execution_channels/README.md) 内的市场规则模块生成历史执行约束；在线动态可交易性由渠道核定。
+
+`EquityInputBinding.scope` 显式区分历史执行所需的 `EXECUTION` 与策略观察 `OBSERVATION`。
+历史绑定序列化保持原有字节结构；新在线登记及重绑调用 `for_observations()` 生成独立绑定，
+保留主/辅助行情、日历与观察数据表，以及交给账户宿主处理的动态公司行动，
+不依赖历史交易事实或执行专用报价。公司行动只用于拆股/份额折算和参考价换算，不进入策略观察准备；
+在线现金派息以渠道账户对账为准。行动查询截至当前日，保留原始起点覆盖停机期间漏处理的事件。
+未迁移的历史配方不能直接用于前向准备。`forward_requests` 按各数据产品的实际可用时点展开范围，
+日历可包含已声明的未来会话，行情只能包含已完成会话；不以假行情填补未来。
 
 ```python
-prepared = PreparedReplay.from_frames(
-    bars, constraints, graph, latency_seconds=0,
+prepared = PreparedObservations.from_frames(
+    bars, graph, latency_seconds=0,
     frequency=definition.execution_spec.decision_clock, timezone=definition.instrument.timezone,
     auxiliary_histories=auxiliary_frames, sessions=session_frame,
     trading_sessions=certified_calendar,
 )
-outcome = run_replay(
-    prepared, candidate, executor, start=start, end=end, fee_rate=0.001,
-    initial_state=None, owner=None,
-)
+# 由宿主分别传入观察和EC执行数据；SRT没有run_replay执行入口。
 ```
 
-准备阶段认证时间和 OHLCV、构建可见性及本地槽位索引，并固定原始数据、交易约束和延迟的摘要。
+准备阶段认证时间和 OHLCV、构建可见性及本地槽位索引，并固定原始观察数据和延迟的摘要。
+执行约束由EC及宿主单独绑定，新的观察身份不与旧回放身份混用；旧研究证据保持原样。
 已确认为带时区 datetime 类型的列批量转为 Python datetime；字符串及其他时间输入保留原解析路径，
-时间精度处理、无效时间拒绝和准备数据身份不变。这些是内部计算优化，不改变数据合同或晚到语义。
+时间精度处理和无效时间拒绝保持原规则，不改变晚到语义。
 身份 JSON 对原生 `datetime` 且 `tzinfo is UTC` 的值直接使用 `isoformat()`；其余类型沿用原转换，规范字节、非有限值拒绝及 Timestamp 亚微秒处理不变。
 `prepared.with_graph(graph)` 共享这些不可变输入，不能改变候选声明的特征图。
 辅助行情仍需显式声明；`ctx.auxiliary_histories[name]` 提供完整可见 HistoryView，保留最新柱状态、
@@ -249,20 +254,20 @@ V4 准备结果在 `EquityInputBinding.request_bindings` 固定逻辑角色和�
 旧 RAW 定义和无显式请求绑定的历史序列化保持兼容；V2 不接受 HFQ 辅助观察。
 session 上下文通过认证日历的精确执行区间索引选择，并核验日历可见时间。
 
-`ReplayOutcome` 返回原 TXE `execution_result`、最终 `state` 和 `statistics`。
-统计包含 `feature_seconds`（特征图初始化/因果列生成、主特征及辅助/session上下文）、`replay_seconds`（含启动源码装载、策略、TXE及结果表构造）、
+TDR宿主的 `ReplayOutcome` 返回EC的 `execution_result`、最终 `state` 和 `statistics`。
+统计包含 `feature_seconds`（特征图初始化/因果列生成、主特征及辅助/session上下文）、`replay_seconds`（含启动源码装载、策略、EC及结果表构造）、
 执行区间 `rows` 和实际调用 step 的 `decisions`；准备耗时应由调用方另行计时。
 `source_checks` 为 0，回放不逐步重读或检查源码；`source_bytes_read` 记录本账户作用域启动时
 实际读取的声明源码字节数，不表示物理磁盘 I/O 次数或磁盘吞吐。
 `module_loads` 记录账户作用域的入口模块装载次数，默认且正常完整回放为 1；相对导入的辅助模块不另计次数。
-缺失/零量完成柱引起的抑制区间不调用 step，仍由公共 TXE 执行 WAIT 并记录账户状态。
+缺失/零量完成柱引起的抑制区间不调用 step，仍由EC执行WAIT并记录账户状态。
 
 owner 默认候选编号；共享基准必须传独立基准身份，不能把研究候选编号加入其计划与账本身份。
 每个账户启动时读取全部声明源码，固定内存快照，只装载一次入口模块并在整个账户回放中复用。
 回放运行器不重复调用候选 verify，也不进行源码身份或元数据检查；身份认证保留在 TDR 准备、候选构造和登记等原有边界。
 后续相对导入同样从启动快照装载；启动后修改或删除磁盘源码不改变本次回放，下一账户启动时读取当时的声明文件。
 同一账户的模块全局变量跨 step 保留，不同账户使用独立命名空间；成功、装载失败或 step 异常退出均清理命名空间及导入器。
-模块全局变量不属于 TXE 事务或 `StrategyState` 检查点。需要成交归并、失败回滚或中途恢复的策略状态仍必须通过显式状态字段表达。
+模块全局变量不属于EC事务或 `StrategyState` 检查点。需要成交归并、失败回滚或中途恢复的策略状态仍必须通过显式状态字段表达。
 `EquityDecision.from_facts` 对完全相同的普通字符串键与文本复用不可变依据对象，缓存最多 4096 项；
 事实仍逐次转为原始字符串，保持输入顺序、完整强类型解释及原有校验。字符串子类沿用直接构造，不引入额外哈希或相等比较。
 复杂度由可见事件索引、声明窗口、显式历史导出和状态大小共同决定；有限窗口不会自动使任意 Python 策略达到固定耗时。
@@ -274,7 +279,7 @@ SRT 是研究、回测、模拟交易及未来实盘共用的策略计算锚点�
 `StrategyInstance`。实例推导数据需求、认证主调方绑定的数据并执行策略计算，输出与渠道无关的执行计划。
 
 SRT 不管理策略生命周期，不评价策略优劣，也不记录成交和账户账本。SM 管理策略身份与治理，
-SE 负责数值评估，TXE 和 PTE 分别负责历史执行与模拟交易执行。
+SE负责数值评估；EC承载历史回放、CN模拟、US模拟三个执行及账户渠道，PTE负责编排在线生命周期。
 
 RSCH通过显式源码绑定构造`StrategyCandidate`并复用同一实现进行研究评价。正式研究运行通过
 TDR/REX受管入口；候选登记、首次检验冻结及同版本发布包升级见[TDR说明](../../src/czsc_trader/README.md)。
@@ -293,10 +298,9 @@ TDR/REX受管入口；候选登记、首次检验冻结及同版本发布包升�
 - `StrategyInstance.plan_inputs(calendar)`：基于已准备日历返回强类型`StrategyInputPlan`；
 - `StrategyInstance.prepare_data(binding=...)`：只读并认证`StrategyInputBinding`指定的输入；
 - `StrategyInstance.prepare_data(policy=...)`：按显式`PreparePolicy`完成日历和输入准备；
-- `StrategyInstance.plan_at(...)`：结合调用方提供的资金、持仓和执行状态，生成单个交易日的
-  `ExecutionPlan`；
-- `StrategyInstance.run_window(executor=...)`：在交易窗口内连续计算，并把计划回调给调用方提供的
-  `WindowExecutor`；
+- `StrategyInstance.propose_at(point=..., history_mode=...)`：输出 `SessionProposal`，包含策略信号、
+  价格参考、输入身份和冻结执行政策，不接收账户快照、不计算委托；
+- `StrategyInstance.decision_points()`：返回准备窗口内的日历决策时点，供宿主逐点驱动；
 - `inspect_signals()`、`inspect_price_history()`：测试和诊断使用的只读接口。
 
 `StrategyRuntime`是实例工厂，不持有运行中的策略状态。准备数据时必须通过关键字参数`dataflows`
@@ -518,8 +522,8 @@ SRT工作目录只追加可校验的绑定及计算上下文，不另存原始�
 
 | 模式 | 计算语义 | 默认入口 |
 | --- | --- | --- |
-| `CONTINUOUS` | 调用`calculate_history`，使用完整计算范围，延续预热阶段状态 | `plan_at(..., history_mode=SignalHistoryMode.CONTINUOUS)` |
-| `WINDOW` | 调用`calculate_window_history`，按窗口信号日期计算 | `inspect_signals(history_mode=SignalHistoryMode.WINDOW)`；`run_window`固定使用此模式 |
+| `CONTINUOUS` | 调用`calculate_history`，使用完整计算范围，延续预热阶段状态 | `propose_at(..., history_mode=SignalHistoryMode.CONTINUOUS)` |
+| `WINDOW` | 调用`calculate_window_history`，按窗口信号日期计算 | `inspect_signals(history_mode=SignalHistoryMode.WINDOW)`；历史宿主显式使用此模式 |
 
 策略可覆盖`calculate_window_history`定义窗口初始化行为；基类实现将窗口信号日期传给`calculate_history`。
 比较逐日计划与窗口回放时，调用方必须显式对齐历史模式。两类历史分别缓存，诊断接口返回副本。
@@ -530,18 +534,14 @@ SRT工作目录只追加可校验的绑定及计算上下文，不另存原始�
 
 ## 执行计划
 
-`plan_at(...)` 接收调用方权威的 `PortfolioSnapshot`、`ExecutionState` 和 `TradingPoint`，输出
-`ExecutionPlan`。计划包括：
+`propose_at(...)` 只计算目标及信号证据。PTE/TDR 将 `SessionProposal` 的显式字段与权威
+账户快照分别投影到 EC，调用 `execution_channels.planning.session.plan_session_decision`。
+订单数量、委托类型、委托价、资金预占及执行生命周期属于 EC。SRT 不导入 EC。
+旧 `plan_at`、`run_window` 和本地执行规划入口已删除。
 
-- 策略、信号、计划和输入数据身份；
-- 实际数量、目标数量和周期目标数量；
-- 资金模式、分配比例、费用和未分配现金；
-- 普通订单，或带时点和成交依赖的多环节计划；
-- 所需订单类型及检查点能力。
-
-SRT 计算目标仓位、订单数量、委托类型、委托价和生效时点。执行宿主只负责校验自身能力并执行
-计划。`TradingPoint.trading_date`必须为`date`，`calculation_time`必须是带时区的`datetime`。
-`ExecutionCapabilities.order_types`必须是由`OrderType`枚举组成的元组。
+`TradingPoint.trading_date`必须为`date`，`calculation_time`必须是带时区的`datetime`。
+EC 的计划保留策略、信号、计划和输入身份、目标数量、费用、资金模式及订单依赖等业务事实。
+以下说明为策略声明与 EC 消费之间的业务语义，不表示 SRT 执行这些规则。
 
 `FROZEN_RULE`的目标仓位与资金模式须配套声明：
 
@@ -585,7 +585,7 @@ capital = {
 SRT将其校验为公开强类型`CycleTarget(active, entry_fraction)`。比例不能从观察/诊断字段推断。
 固定比例对照也通过该列明确输出常数，从而在同一资金契约下比较。
 
-`plan_at(point, portfolio, state)`仍为纯计算。首份开仓计划被执行宿主采纳后，
+EC 订单规划为纯计算。首份开仓计划被渠道账户采纳后，
 `ExecutionState.entry_cycle`保存`EntryCycleState`：周期及开仓信号身份、分配比例、
 含买入费用的现金预算、目标份额、实际累计买入成本及`ACTIVE/EXITING`阶段。
 其数量与`cycle_target_quantity`一致；新模式不能从旧目标数量或已有持仓猜测预算。
@@ -604,7 +604,7 @@ SRT将其校验为公开强类型`CycleTarget(active, entry_fraction)`。比例�
 
 信号身份包含当日`CycleTarget`，计划身份包含前后周期事实、状态、实际可用现金和费用率。相同比例的不同周期、
 相同目标但不同预算的计划不可混用。新模式字段缺失、旧状态混入或预算/份额越界明确失败。
-`validate_entry_cycle_plan_facts(...)`是SRT计划与PTE接收/采纳共用的纯校验入口，
+EC `session_contracts.validate_entry_cycle_plan_facts(...)`用于计划与账户采纳的纯校验，
 显式接收类型化目标、前后周期、状态、仓位/目标数量、比例/现金/费用、信号身份及订单。
 它验证唯一合法阶段转移、开仓/补买数量、预算及订单方向，不修改账户，也不代替宿主核验
 账户归属、状态版本和未终结委托。`CYCLE_TARGET`与`signal_cash_fraction`必须双向配套声明。
@@ -616,11 +616,9 @@ SRT将其校验为公开强类型`CycleTarget(active, entry_fraction)`。比例�
 `plan_identity`必须对应当前计划。`SETTLED`表示执行已完成并对账，可以包含未成交订单；
 成交情况仍由订单与成交明细表达。
 
-`run_window(...)` 面向 TDR 等连续执行场景。调用方注册 `WindowExecutor`，由 SRT 逐交易日获取
-账户快照、生成计划并回调执行器。PTE 使用 `plan_at(...)`，以自己的事务和券商回报管理单日执行。
-
-`run_window`在首次读取账户快照前校验执行器的订单类型及检查点能力，并保留逐计划检查。
-执行器返回非`ExecutionOutcome`、错误计划身份或非`SETTLED`状态时立即失败，不生成成功窗口结果。
+历史宿主按 `decision_points()` 顺序取得账户快照，调用 `propose_at(..., history_mode=WINDOW)`，
+再交给 EC 规划并执行。PTE 使用 `CONTINUOUS` 信号历史与同一 EC 规划路径，
+由自身调度事务驱动，渠道按实际富途回报记账。能力不匹配、错误计划身份或非完成结果必须明确失败。
 
 ## 身份与冻结版本
 
@@ -716,5 +714,5 @@ DFLS 的 `UsEquityBarPolicy` 在美股行情上标记 `BarStatus`。运行窗口
 当前执行区间的行情缺口或已知中断只交给执行器判断成交，不能据此提前撤销区间开始时的决策。
 因此缺口首段可能存在有效下单尝试，但最终未成交；平台保留该尝试及失败原因。
 未显式启用政策的严格数据路径及原 A 股运行路径不变。
-直接调用 `plan` 时也过滤历史缺失、零量行；最新观察无效则明确拒绝生成信号。
-窗口中的自动等待由 `run_window` 负责，调用方不能把缺失行情直接交给策略。
+直接调用 `propose` 时也过滤历史缺失、零量行；最新观察无效则明确拒绝生成信号。
+窗口中的自动等待由执行宿主负责，调用方不能把缺失行情直接交给策略。

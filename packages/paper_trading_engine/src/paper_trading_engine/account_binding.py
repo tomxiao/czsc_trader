@@ -12,7 +12,7 @@ from dataflows import InstrumentId, MarketId, AssetClass, TimeInterval
 from strategy_runtime.equity_replay import StateRecord
 from strategy_runtime.inspection import InspectionRuntimePermit
 
-from .equity_contracts import EquityAccountRules
+from execution_channels.futu.equity_contracts import EquityAccountRules
 
 if TYPE_CHECKING:
     from .formal_v4_advice import FormalV4Inputs

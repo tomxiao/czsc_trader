@@ -3,11 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, time, timedelta
-from decimal import Decimal
+from datetime import datetime, time
 import math
 from pathlib import Path
-from types import MappingProxyType
 from zoneinfo import ZoneInfo
 
 import pandas as pd
@@ -15,26 +13,14 @@ from dataflows import Dataflows, Dataset, DataRequest, DataResult, PreparePolicy
 
 from .contracts import (
     DataPreparationResult,
-    ExecutionCapabilities,
-    ExecutionOutcome,
-    ExecutionOutcomeStatus,
-    ExecutionPlan,
-    ExecutionState,
     SignalHistoryMode,
-    OrderSide,
-    OrderType,
-    PlanLeg,
-    PlannedOrder,
-    PortfolioSnapshot,
     StrategyIdentity,
     TradingPoint,
     TradableWindow,
-    plan_identity_for,
     signal_identity_for,
 )
 from .data import PreparedStrategyData
-from .errors import RuntimeCompatibilityError, RuntimeContractError, RuntimeExecutionError
-from .execution_planner import build_execution_plan
+from .errors import RuntimeContractError
 from .models import ExecutionPolicy, ExecutionPricingData, RuntimeDefinition
 from .pricing import ExecutionPricing
 from .preparation import PreparedInputs, prepare_inputs, acquire_binding, calendar_request, plan_inputs
@@ -43,7 +29,7 @@ from .prepared_store import save_prepared_inputs
 from .signals import StrategySignal
 from .entry_cycle import CycleTarget
 from .calculation import HistoryCalculationContext
-from .replay_contracts import AccountPlanExecutor
+from .session_proposal import SessionProposal
 
 
 _SHANGHAI = ZoneInfo("Asia/Shanghai")
@@ -53,49 +39,6 @@ _SHANGHAI = ZoneInfo("Asia/Shanghai")
 class _PreparedBatchAlgorithm:
     """Facts consumed by account replay; no mutable implementation is shared."""
     definition: RuntimeDefinition
-
-
-def _planned_order(value: dict[str, object]) -> PlannedOrder:
-    order_type = OrderType(str(value["order_type"]).upper())
-    raw_price = value.get("limit_price")
-    return PlannedOrder(
-        side=OrderSide(str(value["side"]).upper()),
-        quantity=int(value["quantity"]),
-        order_type=order_type,
-        limit_price=None if raw_price is None else Decimal(str(raw_price)),
-    )
-
-
-def _parse_time(value: object, name: str) -> time:
-    try:
-        return time.fromisoformat(str(value))
-    except ValueError as exc:
-        raise RuntimeContractError(f"{name} must use ISO local time") from exc
-
-
-def _capital_terms(
-    *, raw: dict[str, object], execution_policy: ExecutionPolicy
-) -> tuple[str, Decimal]:
-    """Map one policy-specific planner result to the public plan capital terms."""
-
-    policy_type = str(execution_policy.policy_type)
-    if policy_type == "FROZEN_RULE":
-        capital_rule = dict(raw["capital_rule"])
-        return (
-            str(capital_rule["mode"]),
-            Decimal(str(capital_rule["allocation_fraction"])),
-        )
-    if policy_type == "INTRADAY_OVERLAY":
-        plan_mode = str(raw.get("plan_mode", "NONE"))
-        if plan_mode == "CORE_SETUP":
-            return (
-                "available_cash_fraction",
-                Decimal(str(execution_policy.settings["core_fraction"])),
-            )
-        if plan_mode in {"NONE", "CORE_EVENT_INTRADAY_ROTATION"}:
-            return "full_available_cash", Decimal("1")
-        raise RuntimeContractError(f"unsupported intraday overlay plan mode: {plan_mode}")
-    raise RuntimeContractError(f"unsupported execution policy: {policy_type}")
 
 
 class StrategyInstance:
@@ -450,7 +393,7 @@ class StrategyInstance:
     def inspect_signals(
         self, *, history_mode: SignalHistoryMode = SignalHistoryMode.WINDOW,
     ) -> pd.DataFrame:
-        """Return defensive history; default WINDOW matches run_window initialization."""
+        """Return defensive history; default WINDOW uses window initialization."""
 
         data = self._prepared()
         history, _ = self._history(data, history_mode)
@@ -461,224 +404,34 @@ class StrategyInstance:
 
         return self._prepared().adjusted_daily
 
-    def plan_at(
+    def decision_points(self) -> tuple[TradingPoint, ...]:
+        """Return the prepared window's calendar-resolved decision times."""
+        data = self._prepared()
+        return tuple(TradingPoint(day, datetime.combine(data.signal_date_for(day),
+            time(20, 31), tzinfo=_SHANGHAI)) for day in data.trading_dates())
+
+    def propose_at(
         self,
         *,
         point: TradingPoint,
-        portfolio: PortfolioSnapshot,
-        state: ExecutionState,
         history_mode: SignalHistoryMode = SignalHistoryMode.CONTINUOUS,
-    ) -> ExecutionPlan:
-        """Plan with continuous warmup state, or explicitly match WINDOW replay history."""
-
-        return self._plan_at(
-            point=point,
-            portfolio=portfolio,
-            state=state,
-            history_mode=history_mode,
-        )
-
-    def _plan_at(
-        self,
-        *,
-        point: TradingPoint,
-        portfolio: PortfolioSnapshot,
-        state: ExecutionState,
-        history_mode: SignalHistoryMode,
-    ) -> ExecutionPlan:
+    ) -> SessionProposal:
+        """Calculate one signal and its observed references; never size orders."""
+        if type(point) is not TradingPoint:
+            raise TypeError("strategy proposal requires TradingPoint")
         data = self._prepared()
         if not self._tradable_window.contains(point.trading_date):
             raise RuntimeContractError("trading point is outside the strategy window")
-        if portfolio.symbol != self._identity.symbol:
-            raise RuntimeContractError("portfolio symbol differs from strategy")
-        if portfolio.pricing != self._pricing_contract:
-            raise RuntimeContractError("portfolio price and quantity units differ from strategy")
-        if portfolio.as_of > point.calculation_time or state.as_of > point.calculation_time:
-            raise RuntimeContractError("planning state is newer than calculation time")
-
         signal_date = data.signal_date_for(point.trading_date)
-        signal_available_at = datetime.combine(
-            signal_date, time(15, 0), tzinfo=_SHANGHAI,
-        )
+        signal_available_at = datetime.combine(signal_date, time(15), tzinfo=_SHANGHAI)
         if point.calculation_time.astimezone(_SHANGHAI) < signal_available_at:
-            raise RuntimeContractError(
-                "calculation time precedes the signal-session close"
-            )
+            raise RuntimeContractError("calculation time precedes the signal-session close")
         signal = self._calculate_signal(data, point, history_mode)
         if signal.evidence.get("signal_date") != signal_date.isoformat():
             raise RuntimeContractError("strategy signal evidence refers to another date")
         references = data.price_reference(signal_date, point.trading_date)
-        signal_identity = signal_identity_for(
-            strategy=self._identity, signal_date=signal_date,
+        identity = signal_identity_for(strategy=self._identity, signal_date=signal_date,
             target_position=signal.target_position, input_identities=data.input_identities,
             price_identities=data.price_identities, cycle_target=signal.cycle_target)
-        if signal.cycle_target is None and state.entry_cycle is not None:
-            raise RuntimeContractError("entry allocation state cannot be consumed by another capital mode")
-        raw = dict(
-            build_execution_plan(
-                deployment_settings={"cycle_target_quantity": state.cycle_target_quantity},
-                available_cash=(portfolio.available_cash if signal.cycle_target is not None
-                                else float(portfolio.available_cash)),
-                position_quantity=portfolio.position_quantity,
-                target_position=signal.target_position,
-                policy=self._execution_policy,
-                signal_reference_price=float(references.signal_price),
-                execution_reference_price=float(references.execution_price),
-                price_scale=float(references.price_scale),
-                unadjusted_reference_price=float(references.execution_price / references.price_scale),
-                cycle_target=signal.cycle_target, entry_cycle=state.entry_cycle,
-                opening_signal_identity=signal_identity, account_id=portfolio.account_id,
-            )
-        )
-        orders = tuple(_planned_order(value) for value in raw.get("orders", ()))
-        legs = tuple(
-            PlanLeg(
-                sequence=int(value["sequence"]),
-                role=str(value["role"]),
-                checkpoint=str(value["checkpoint"]),
-                submit_after=_parse_time(value["submit_after"], "submit_after"),
-                submit_before=_parse_time(value["submit_before"], "submit_before"),
-                dependency_sequence=(
-                    None
-                    if value.get("dependency_sequence") is None
-                    else int(value["dependency_sequence"])
-                ),
-                dependency_required_status=(
-                    None
-                    if value.get("dependency_required_status") is None
-                    else str(value["dependency_required_status"])
-                ),
-                order=_planned_order(dict(value["order"])),
-            )
-            for value in raw.get("plan_legs", ())
-        )
-        required_orders = tuple(
-            sorted(
-                {order.order_type for order in orders} | {leg.order.order_type for leg in legs},
-                key=lambda value: value.value,
-            )
-        )
-        required_checkpoints = tuple(sorted({leg.checkpoint for leg in legs}))
-        cycle_target = int(raw["cycle_target_quantity"])
-        target_quantity = int(raw["target_quantity"])
-        plan_mode = str(raw.get("plan_mode", "NONE"))
-        capital_mode, allocation_fraction = _capital_terms(
-            raw=raw,
-            execution_policy=self._execution_policy,
-        )
-        cycle_facts = {name: raw.get(name) for name in (
-            "cycle_target", "entry_cycle_before", "entry_cycle_after", "cycle_status")}
-        plan_identity = plan_identity_for(
-            signal_identity=signal_identity,
-            actual_quantity=portfolio.position_quantity,
-            target_quantity=target_quantity,
-            cycle_target_quantity=cycle_target,
-            plan_mode=plan_mode,
-            capital_mode=capital_mode,
-            allocation_fraction=allocation_fraction,
-            orders=orders,
-            legs=legs,
-            **cycle_facts,
-            available_cash=portfolio.available_cash, fee_rate=Decimal(str(raw["fee_rate"])),
-        )
-        return ExecutionPlan(
-            strategy=self._identity,
-            signal_identity=signal_identity,
-            plan_identity=plan_identity,
-            symbol=self._identity.symbol,
-            signal_date=signal_date,
-            trading_date=point.trading_date,
-            generated_at=point.calculation_time,
-            expected_portfolio_revision=portfolio.revision,
-            expected_state_revision=state.revision,
-            actual_quantity=portfolio.position_quantity,
-            target_quantity=target_quantity,
-            cycle_target_quantity=cycle_target,
-            target_position=signal.target_position,
-            action=str(raw["action"]),
-            plan_mode=plan_mode,
-            capital_mode=capital_mode,
-            allocation_fraction=allocation_fraction,
-            orders=orders,
-            legs=legs,
-            available_cash=portfolio.available_cash,
-            fee_rate=Decimal(str(raw["fee_rate"])),
-            estimated_order_cost=Decimal(str(raw["estimated_order_cost"])),
-            unallocated_cash=Decimal(str(raw["unallocated_cash"])),
-            references=references,
-            required_capabilities=ExecutionCapabilities(
-                required_orders,
-                required_checkpoints,
-            ),
-            input_identities=data.input_identities,
-            price_identities=data.price_identities,
-            evidence=MappingProxyType(dict(signal.evidence)),
-            **cycle_facts,
-        )
-
-    def run_window(self, *, executor: AccountPlanExecutor):
-        """Replay WINDOW history and finish only after every plan is SETTLED."""
-        data = self._prepared()
-        capabilities = executor.capabilities
-        if not isinstance(capabilities, ExecutionCapabilities):
-            raise RuntimeContractError("executor capabilities must be ExecutionCapabilities")
-        missing_orders = set(self.definition.capabilities.order_types) - {
-            item.value for item in capabilities.order_types
-        }
-        missing_checkpoints = set(self.definition.capabilities.checkpoints) - set(capabilities.checkpoints)
-        if missing_orders or missing_checkpoints:
-            raise RuntimeCompatibilityError(
-                "window executor lacks required capabilities before execution: "
-                f"order_types={sorted(missing_orders)}, checkpoints={sorted(missing_checkpoints)}"
-            )
-        from contextlib import nullcontext
-        from .replay_kernel import run_account_replay
-        from .replay_contracts import ReplayPoint, ExecutionPrecision
-        from .replay_adapters import project_window_plan
-        instance = self
-
-        class BatchHistoryDriver:
-            def transaction(self, point):
-                # Execution legs may already be confirmed when a later leg fails.
-                return nullcontext()
-
-            def snapshot(self, point):
-                return executor.snapshot(point)
-
-            def decide(self, point, before):
-                portfolio, state = before
-                return instance._plan_at(point=point, portfolio=portfolio, state=state,
-                                         history_mode=SignalHistoryMode.WINDOW)
-
-            def execute(self, point, plan):
-                missing_orders = set(plan.required_capabilities.order_types) - set(executor.capabilities.order_types)
-                missing_checkpoints = set(plan.required_capabilities.checkpoints) - set(executor.capabilities.checkpoints)
-                if missing_orders or missing_checkpoints:
-                    raise RuntimeCompatibilityError(
-                        "window executor lacks required capabilities: "
-                        f"order_types={sorted(value.value for value in missing_orders)}, "
-                        f"checkpoints={sorted(missing_checkpoints)}")
-                envelope_start = datetime.combine(plan.trading_date, time.min, tzinfo=_SHANGHAI)
-                replay_point = ReplayPoint(
-                    datetime.combine(plan.signal_date, time(15), tzinfo=_SHANGHAI),
-                    plan.generated_at, envelope_start, envelope_start + timedelta(days=1),
-                    plan.trading_date.isoformat(), ExecutionPrecision.SESSION)
-                return executor.execute_plan(project_window_plan(plan, replay_point), plan)
-
-            def commit(self, point, before, plan, outcome):
-                if not isinstance(outcome, ExecutionOutcome):
-                    raise RuntimeContractError("executor must return ExecutionOutcome")
-                if outcome.plan_identity != plan.plan_identity:
-                    raise RuntimeContractError("executor outcome refers to another plan")
-                if outcome.status is not ExecutionOutcomeStatus.SETTLED:
-                    raise RuntimeExecutionError(f"window executor did not settle the plan: {plan.plan_identity}")
-
-            def failure(self, point, error):
-                return error
-
-            def finish(self):
-                return executor.finish()
-
-        points = (TradingPoint(day, datetime.combine(data.signal_date_for(day), time(20, 31), tzinfo=_SHANGHAI))
-                  for day in data.trading_dates())
-        return run_account_replay(points, BatchHistoryDriver())
+        return SessionProposal(self._identity, point, signal_date, signal, references,
+            data.input_identities, data.price_identities, self._execution_policy, identity)

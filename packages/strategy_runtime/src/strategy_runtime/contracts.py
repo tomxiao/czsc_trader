@@ -9,7 +9,7 @@ from enum import StrEnum
 import math
 import re
 from types import MappingProxyType
-from typing import Mapping, Protocol, TypeAlias, runtime_checkable
+from typing import Mapping, TypeAlias
 
 from .errors import RuntimeContractError
 from .models import canonical_sha256
@@ -641,15 +641,3 @@ class ExecutionOutcome:
             raise RuntimeContractError("execution status must be ExecutionOutcomeStatus")
         if not isinstance(self.portfolio, PortfolioSnapshot) or not isinstance(self.state, ExecutionState):
             raise RuntimeContractError("execution outcome requires typed portfolio and state")
-
-
-@runtime_checkable
-class WindowExecutor(Protocol):
-    @property
-    def capabilities(self) -> ExecutionCapabilities: ...
-
-    def snapshot(self, point: TradingPoint) -> tuple[PortfolioSnapshot, ExecutionState]: ...
-
-    def execute(self, plan: ExecutionPlan) -> ExecutionOutcome: ...
-
-    def finish(self) -> object: ...

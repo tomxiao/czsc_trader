@@ -15,7 +15,11 @@ from strategy_runtime import (
     StrategyRuntime,
     TradableWindow,
 )
-from trading_execution_engine import HistoricalExecutor
+from execution_channels.historical import HistoricalExecutor
+from execution_channels.serialization import from_record, to_record
+from execution_channels.policy import ExecutionPolicy as ChannelPolicy
+from czsc_trader.application.session_replay import replay_sessions
+from czsc_trader.backtesting.observation import ObservationExecutor
 
 
 def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, space=None, hfq_factors=None, price_limits=None, asset_type="etf", suspended_dates=()):
@@ -227,11 +231,11 @@ def _execute(
         evaluation_start=sessions[1],
         evaluation_end=sessions[-1],
         initial_cash=100_000,
-        execution_policy=strategy.definition.execution,
+        execution_policy=from_record(ChannelPolicy, to_record(strategy.definition.execution)),
         order_types=strategy.definition.capabilities.order_types,
     )
     history = strategy.inspect_signals()
-    return history, strategy.run_window(executor=channel)
+    return history, replay_sessions(strategy, ObservationExecutor(strategy.definition, channel))
 
 
 

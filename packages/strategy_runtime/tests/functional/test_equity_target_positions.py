@@ -7,10 +7,14 @@ import pandas as pd
 import pytest
 
 from dataflows import PreparePolicy
-from strategy_runtime import (ExecutionPolicy, RuntimeContractError, StrategyInit,
+from strategy_runtime import (StrategyInit,
                               StrategyRuntime, TradableWindow, implementation_sha256)
-from strategy_runtime.execution_planner import build_execution_plan
-from trading_execution_engine import HistoricalExecutor
+from execution_channels.planning.session import build_execution_plan
+from execution_channels.historical import HistoricalExecutor
+from execution_channels.policy import ExecutionPolicy
+from execution_channels.errors import RuntimeContractError
+from czsc_trader.application.session_replay import replay_sessions
+from czsc_trader.backtesting.observation import ObservationExecutor
 from test_public_runtime import _flows
 
 
@@ -115,7 +119,7 @@ def test_real_runtime_and_account_keep_fractional_targets_and_one_cycle_until_fl
         evaluation_start=dates[1], evaluation_end=dates[-1], initial_cash=100000.,
         execution_policy=ExecutionPolicy("FROZEN_RULE", SETTINGS), order_types=("LIMIT", "MARKET"),
     )
-    result = strategy.run_window(executor=executor)
+    result = replay_sessions(strategy, ObservationExecutor(strategy.definition, executor))
     assert result.account_daily.target_position.tolist() == [.5, 1., .25, exit_target, .5]
     assert result.fills.side.tolist() == (["BUY"] if not first_order_misses else []) + ["BUY", "SELL", "SELL", "BUY"]
     assert result.orders.status.tolist().count("UNFILLED") == int(first_order_misses)

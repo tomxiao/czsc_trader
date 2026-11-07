@@ -43,7 +43,7 @@ DEV负责将已确认需求实现为准确、高效、易维护的平台能力�
 ### 资料入口
 
 - 项目与模块导航：[根README](../README.md)；[TDR](../src/czsc_trader/README.md)；[SE](../packages/strategy_evaluator/README.md)。
-- 数据与执行：[DFLS](../packages/dataflows/README.md)；[SRT](../packages/strategy_runtime/README.md)；[TXE](../packages/trading_execution_engine/README.md)。
+- 数据与执行：[DFLS](../packages/dataflows/README.md)；[SRT](../packages/strategy_runtime/README.md)；[EC](../packages/execution_channels/README.md)。
 - 研究与验证：[RSCH工作指南](../research/RSCH_AGENT.md)；[测试治理](TEST_GOVERNANCE.md)。
 - 生产操作：[PTE运维手册](PTE_OPERATIONS.md)。
 

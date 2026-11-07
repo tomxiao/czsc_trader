@@ -165,11 +165,11 @@ def test_direct_planning_rejects_latest_gap_and_filters_old_gaps(tmp_path):
     bars = context.data.fetch(query, prepared=prepared.prepared).dataframe
     instance = context.runtime.create(request.candidate)
     with pytest.raises(ValueError, match='latest equity observation is unavailable'):
-        instance.plan(bars.iloc[:3], TimeInterval(bars.BarStart.iloc[3], bars.Date.iloc[3]),
-                      EquityPortfolio(1000., 0, 0., 0), fee_rate=.001)
-    plan = instance.plan(bars.iloc[:4], TimeInterval(bars.BarStart.iloc[4], bars.Date.iloc[4]),
-                         EquityPortfolio(1000., 0, 0., 0), fee_rate=.001)
-    assert plan.side == 'BUY' and plan.reference_price == 10.
+        instance.propose(bars.iloc[:3], TimeInterval(bars.BarStart.iloc[3], bars.Date.iloc[3]),
+                      EquityPortfolio(1000., 0, 0., 0))
+    plan = instance.propose(bars.iloc[:4], TimeInterval(bars.BarStart.iloc[4], bars.Date.iloc[4]),
+                         EquityPortfolio(1000., 0, 0., 0))
+    assert plan.target == 1 and plan.reference_price == 10.
 
 
 def test_first_execution_gap_flat_benchmark_passes_assessment(tmp_path):

@@ -9,7 +9,7 @@ import sqlite3
 import pytest
 
 from paper_trading_engine.contracts import OrderSpec
-from paper_trading_engine.store import PaperStore
+from execution_channels.futu.store import PaperStore
 from strategy_runtime import CycleTarget, EntryCycleState, EntryCyclePhase, EntryCyclePlanStatus, canonical_sha256
 from pte_support import decision, claim_test_intent, adopt_test_decision
 

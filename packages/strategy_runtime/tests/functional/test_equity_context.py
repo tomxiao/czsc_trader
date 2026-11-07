@@ -110,8 +110,8 @@ def test_public_plan_context_causal_slice_halfday_and_isolation(tmp_path):
     assert context.auxiliary_histories['market'].Close.iloc[-1] == 11.
     assert data[1].Close.tolist() == [10., 11., 10.]
     instance = StrategyRuntime(execution_spec=value.definition.execution_spec).create(value)
-    result = instance.plan(data[0], data[2].execution_interval, EquityPortfolio(1000., 0, 0., 0),
-        fee_rate=.001, auxiliary_histories={'market': data[1]}, sessions=data[3], trading_sessions=data[4])
+    result = instance.propose(data[0], data[2].execution_interval, EquityPortfolio(1000., 0, 0., 0),
+        auxiliary_histories={'market': data[1]}, sessions=data[3], trading_sessions=data[4])
     assert result.target == 1
 
 

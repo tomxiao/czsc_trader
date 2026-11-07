@@ -28,14 +28,17 @@ from strategy_manager import StrategyRegistry
 from strategy_manager.freeze_contracts import FrozenVersionReference
 from czsc_trader.application.runtime_migration import _migration_original
 from strategy_runtime import (
-    DecisionFeedback, ExecutionCapabilities, ExecutionPlan, ExecutionState, HistoryCalculationContext,
-    OrderSide, OrderType, ParameterSet, PlanLeg, PlannedOrder, PortfolioSnapshot,
-    PriceReference, RuntimeBinding, SignalHistoryMode, StrategyIdentity,
-    StrategyImplementationV2, StrategyRuntime, TradableWindow, TradingPoint,
+    DecisionFeedback, HistoryCalculationContext, ParameterSet,
+    RuntimeBinding, SignalHistoryMode,
+    StrategyImplementationV2, StrategyRuntime, TradableWindow,
 )
-from strategy_runtime.contracts import plan_identity_for, signal_identity_for
-from strategy_runtime.execution_planner import build_execution_plan
-from trading_execution_engine import HistoricalExecutor
+from execution_channels.session_contracts import (ExecutionCapabilities, ExecutionPlan, ExecutionState,
+    OrderSide, OrderType, PlanLeg, PlannedOrder, PortfolioSnapshot, PriceReference, StrategyIdentity,
+    TradingPoint, plan_identity_for, signal_identity_for)
+from execution_channels.planning.session import build_execution_plan
+from execution_channels.serialization import from_record, to_record
+from execution_channels.policy import ExecutionPolicy as ChannelPolicy
+from execution_channels.historical import HistoricalExecutor
 
 
 pytestmark = pytest.mark.release_acceptance
@@ -225,7 +228,7 @@ def _raw_plan(definition, target, portfolio, state):
     return build_execution_plan(
         deployment_settings={"cycle_target_quantity": state.cycle_target_quantity},
         available_cash=float(portfolio.available_cash), position_quantity=portfolio.position_quantity,
-        target_position=float(target), policy=definition.execution,
+        target_position=float(target), policy=from_record(ChannelPolicy, to_record(definition.execution)),
         signal_reference_price=10., execution_reference_price=10.,
     )
 
@@ -289,7 +292,7 @@ def _execute_kernel(definition, history):
         strategy_reference=definition.release_id, symbol=definition.tradable_symbol,
         execution_daily=daily, execution_intraday=intraday,
         evaluation_start=trading[0], evaluation_end=trading[-1], initial_cash=100_000.,
-        execution_policy=definition.execution, order_types=definition.capabilities.order_types,
+        execution_policy=from_record(ChannelPolicy, to_record(definition.execution)), order_types=definition.capabilities.order_types,
         checkpoints=definition.capabilities.checkpoints, execution_five_minute=five_minute,
     )
     for signal, execution in zip(signals, trading, strict=True):
@@ -359,7 +362,7 @@ def test_existing_nonzero_account_cash_and_cycle_are_preserved_by_migrated_plann
         for target in (0., 1.):
             if old.execution.policy_type == "INTRADAY_OVERLAY" and quantity != cycle:
                 # An incomplete core is an explicit error in the actual old and new policy.
-                from strategy_runtime import RuntimeContractError
+                from execution_channels.errors import RuntimeContractError
                 for definition in (old, new):
                     with pytest.raises(RuntimeContractError, match="differs from core quantity"):
                         _raw_plan(definition, target, portfolio, state)

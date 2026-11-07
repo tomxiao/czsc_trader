@@ -3,12 +3,12 @@
 from threading import RLock
 
 from .account_engine import AccountRefreshBatchError
-from .audit import AuditRecorder
-from .account_retirement import AccountRetirementRequest, AccountRetirementResult
-from .futu_gateway import FutuGatewayError
-from .channel import FUTU_SIMULATE_CN_CHANNEL_ID
-from .lifecycle import AccountHealth
-from .trading_window import shanghai_now
+from execution_channels.futu.audit import AuditRecorder
+from execution_channels.futu.account_retirement import AccountRetirementRequest, AccountRetirementResult
+from execution_channels.futu.futu_gateway import FutuGatewayError
+from execution_channels.futu.channel import FUTU_SIMULATE_CN_CHANNEL_ID
+from execution_channels.futu.lifecycle import AccountHealth
+from execution_channels.futu.trading_window import shanghai_now
 
 
 class UnavailableExecution:

@@ -19,7 +19,7 @@ def test_auxiliary_preparation_evaluation_and_publication(tmp_path):
         published, = publish_evidence_many(context, (EvaluationEvidenceWrite(request.experiment, "auxiliary", prepared, result),), execution=execution)
         assert published.reference.schema_version == 4
     assert len(calls) == 6
-    assert "strategy_runtime.account_replay" in payload["request"]["engine_sources"]
+    assert "czsc_trader.application.account_replay" in payload["request"]["engine_sources"]
     from czsc_trader.research_tools.equity_replay import build_equity_assessment
     assert build_equity_assessment(result)
 

@@ -1,7 +1,7 @@
 """Explicit equity research contracts and causal bar decision planning."""
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime, timedelta
-from decimal import Decimal, ROUND_FLOOR
+from decimal import Decimal
 from enum import StrEnum
 from functools import lru_cache
 from hashlib import sha256
@@ -241,6 +241,23 @@ class EquityPlan:
         _positive(self.reference_price, "reference price")
 
 
+@dataclass(frozen=True, slots=True)
+class EquityIntent:
+    """Strategy target and observed reference, without executable quantities."""
+    point: DecisionPoint
+    target: float
+    reference_price: float
+    explanation: dict | None
+    suppressed: bool = False
+
+    def __post_init__(self):
+        if type(self.point) is not DecisionPoint or type(self.target) not in (int,float) or self.target not in (0,1):
+            raise ValueError('invalid equity target proposal')
+        _positive(self.reference_price,'reference')
+        if type(self.suppressed) is not bool:
+            raise TypeError('suppressed must be boolean')
+
+
 class EquityStrategyInstance:
     def __init__(self, candidate: "EquityStrategyCandidate", specification: ResearchExecutionSpec):
         from .equity_definition import EquityStrategyCandidate
@@ -251,63 +268,10 @@ class EquityStrategyInstance:
             raise ValueError("MARKET_CONTRACT_MISMATCH: candidate execution identity")
         self.candidate, self.specification = candidate, specification
 
-    def run_window(self, bars, constraints, executor, *, start, end, fee_rate,
-                   auxiliary_histories=None, sessions=None, trading_sessions=()):
-        """Plan at bar boundaries with only completed, published observations."""
+    def propose(self, history: pd.DataFrame, interval: TimeInterval, portfolio: EquityPortfolio,
+             *, auxiliary_histories=None, sessions=None, trading_sessions=()) -> EquityIntent:
         if self.candidate.definition.contract_version == 4:
-            from .equity_replay import PreparedReplay, run_replay
-            prepared = PreparedReplay.from_frames(bars, constraints, self.candidate.definition.feature_graph,
-                latency_seconds=self.specification.data_latency_seconds,
-                auxiliary_histories=auxiliary_histories, sessions=sessions, trading_sessions=trading_sessions, frequency=self.specification.decision_clock, timezone=self.candidate.instrument.timezone)
-            return run_replay(prepared, self.candidate, executor, start=start, end=end, fee_rate=fee_rate).execution_result
-        self.candidate.verify()
-        starts = pd.to_datetime(bars.BarStart)
-        ends = pd.to_datetime(bars.Date)
-        available = pd.to_datetime(bars.AvailableDate) + pd.Timedelta(seconds=self.specification.data_latency_seconds)
-        dated_constraints = {pd.Timestamp(row.Date): row for _, row in constraints.iterrows()}
-        if not ends.is_monotonic_increasing or ends.duplicated().any():
-            raise ValueError("bars must be unique and ordered")
-        for index in range(len(bars)):
-            bar = bars.iloc[index]
-            if starts.iloc[index] < start or ends.iloc[index] > end:
-                continue
-            completed = bars.loc[(ends <= starts.iloc[index]) & (available <= starts.iloc[index])]
-            explicit_gaps = "BarStatus" in bars
-            history = completed.loc[completed.BarStatus.eq("OBSERVED")] if explicit_gaps else completed
-            if len(history) < self.candidate.warmup_bars:
-                raise ValueError("insufficient causal warmup at window start")
-            constraint = dated_constraints.get(starts.iloc[index])
-            if constraint is None or pd.Timestamp(constraint.AvailableDate) > starts.iloc[index]:
-                raise ValueError("no dated trading constraints available at execution start")
-            portfolio = executor.snapshot_at(history.Date.iloc[-1], starts.iloc[index])
-            interval = TimeInterval(starts.iloc[index].to_pydatetime(), ends.iloc[index].to_pydatetime())
-            if explicit_gaps and completed.BarStatus.iloc[-1] != "OBSERVED":
-                # The missing observation is already complete and available. The
-                # current execution bar is deliberately not inspected here.
-                point = DecisionPoint(history.Date.iloc[-1].to_pydatetime(), interval.start, interval)
-                reference = float(history.Close.iloc[-1]) * portfolio.reference_price_scale
-                target = float(portfolio.quantity > 0)
-                payload = {"candidate": self.candidate.candidate_id,
-                           "implementation": self.candidate.implementation_hash,
-                           "specification": self.specification.fingerprint, "point": asdict(point),
-                           "revision": portfolio.revision, "reference": reference, "target": target,
-                           "signal_status": "SUPPRESSED_UNOBSERVED_BAR"}
-                plan = EquityPlan(equity_hash(payload), point, target, 0, "WAIT", None,
-                                  portfolio.revision, reference, self.specification.fingerprint,
-                                  signal_status="SUPPRESSED_UNOBSERVED_BAR")
-            else:
-                # Execution-only annotations are not features or synthetic prices.
-                plan = self.plan(history.drop(columns=["BarStatus", "ExecutionBlocked"], errors="ignore"),
-                                 interval, portfolio, fee_rate=fee_rate,
-                                 auxiliary_histories=auxiliary_histories, sessions=sessions,
-                                 trading_sessions=trading_sessions)
-            executor.execute(plan, bar, constraint=constraint)
-        return executor.finish()
-
-    def plan(self, history: pd.DataFrame, interval: TimeInterval, portfolio: EquityPortfolio,
-             *, fee_rate: float, auxiliary_histories=None, sessions=None, trading_sessions=()) -> EquityPlan:
-        if self.candidate.definition.contract_version == 4:
-            raise ValueError('account replay is historical research only; use its complete run_window state transaction')
+            raise ValueError('V4 strategy requires AccountDecisionEngine.propose')
         if "BarStatus" in history:
             if not history.BarStatus.isin(("OBSERVED", "MISSING", "ZERO_VOLUME")).all():
                 raise ValueError("unknown equity history status")
@@ -322,8 +286,6 @@ class EquityStrategyInstance:
         observed = pd.Timestamp(last.Date).to_pydatetime()
         decision = max(pd.Timestamp(available.max()).to_pydatetime(), observed) + timedelta(seconds=self.specification.data_latency_seconds)
         point = DecisionPoint(observed, decision, interval)
-        if type(fee_rate) not in (int, float) or not math.isfinite(fee_rate) or not 0 <= fee_rate < 1:
-            raise ValueError("invalid fee rate")
         from .equity_definition import EquityDecisionContext
         point = DecisionPoint(observed, interval.start, interval)
         feedback = portfolio if self.candidate.definition.feedback_mode != 'MARKET_INTENT' else None
@@ -340,24 +302,4 @@ class EquityStrategyInstance:
             raise ValueError("equity candidate must return a finite binary long-only target")
         reference = float(last.Close) * portfolio.reference_price_scale
         _positive(reference, "reference")
-        side, quantity, limit = "HOLD", 0, None
-        if target == 1 and portfolio.quantity == 0:
-            tick = Decimal(str(self.specification.price_tick))
-            limit = float((Decimal(str(reference)) * (1 + Decimal(str(self.specification.buy_premium)))
-                           / tick).to_integral_value(rounding=ROUND_FLOOR) * tick)
-            _positive(limit, "limit")
-            step = self.specification.quantity_step
-            quantity = int(Decimal(str(portfolio.cash)) / (Decimal(str(limit)) * (1 + Decimal(str(fee_rate))) * step)) * step
-            side = "BUY" if quantity else "WAIT"
-        elif target == 0 and portfolio.quantity:
-            side, quantity = "SELL", portfolio.quantity
-        payload = {"candidate": self.candidate.candidate_id,
-                   "implementation": self.candidate.implementation_hash,
-                   "specification": self.specification.fingerprint,
-                   "point": asdict(point), "target": target, "quantity": quantity,
-                   "side": side, "limit": limit, "revision": portfolio.revision,
-                   "reference": reference, "fee_rate": fee_rate}
-        if explanation is not None:
-            payload["explanation"] = explanation
-        return EquityPlan(equity_hash(payload), point, float(target), quantity, side, limit,
-                          portfolio.revision, reference, self.specification.fingerprint, explanation)
+        return EquityIntent(point, target, reference, explanation)

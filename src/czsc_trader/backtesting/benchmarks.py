@@ -10,7 +10,7 @@ import pandas as pd
 
 from czsc_trader.moving_average import moving_average_signals
 from czsc_trader.strategy_metrics import closed_trade_ledger, strategy_comparison_metrics
-from trading_execution_engine import ExecutionResult, execute_target_positions
+from execution_channels.historical import ExecutionResult, execute_target_positions
 
 from .benchmark_contracts import EvaluationBenchmark, LimitBuyHold, NextOpenBuyHold
 

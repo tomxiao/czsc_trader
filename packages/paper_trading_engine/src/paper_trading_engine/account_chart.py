@@ -16,12 +16,12 @@ from typing import Any, Callable
 from uuid import uuid4
 from zoneinfo import ZoneInfo
 
-from .audit import AuditRecorder
-from .channel import channel_profile
+from execution_channels.futu.audit import AuditRecorder
+from execution_channels.futu.channel import channel_profile
 from .chart_market_data import AccountChartDataError, CHART_UPDATE_TIME
 from .file_publication import replace_published_file
 from .forward_chart import ChartObservation, FORWARD_CHART_CONTRACT_VERSION, render_forward_chart_html
-from .trading_window import SHANGHAI
+from execution_channels.futu.trading_window import SHANGHAI
 
 
 ACCOUNT_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")

@@ -26,7 +26,11 @@ from strategy_runtime import (
     canonical_sha256,
 )
 
-from trading_execution_engine import HistoricalExecutor, SuspensionInformation
+from execution_channels.serialization import from_record, to_record
+from execution_channels.policy import ExecutionPolicy as ChannelPolicy
+from execution_channels.pricing import ExecutionPricing as ChannelPricing
+from czsc_trader.application.session_replay import replay_sessions
+from execution_channels.historical import HistoricalExecutor, SuspensionInformation
 from .execution_data import BacktestExecutionData, _require_execution_frequencies
 from .models import StrategySnapshot
 from .result import BacktestResult
@@ -516,15 +520,15 @@ def replay_srt_account(
         evaluation_start=signals.evaluation_start,
         evaluation_end=signals.evaluation_end,
         initial_cash=initial_cash,
-        execution_policy=effective_policy,
+        execution_policy=from_record(ChannelPolicy, to_record(effective_policy)),
         order_types=definition.capabilities.order_types,
         checkpoints=definition.capabilities.checkpoints,
-        pricing=execution_data.pricing,
+        pricing=from_record(ChannelPricing, to_record(execution_data.pricing)),
         market_rules=execution_data.market_rules,
     )
     from .observation import ObservationExecutor
     observed = ObservationExecutor(strategy.definition, channel)
-    ledger = strategy.run_window(executor=observed)
+    ledger = replay_sessions(strategy, observed)
     return BacktestResult(
         identity=signals.snapshot.identity,
         decisions=ledger.decisions,

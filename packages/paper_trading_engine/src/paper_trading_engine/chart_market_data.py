@@ -13,7 +13,7 @@ from dataflows import (
 from dataflows.equity_data import sessions_from_metadata
 import pandas as pd
 
-from .trading_window import SHANGHAI, shanghai_now
+from execution_channels.futu.trading_window import SHANGHAI, shanghai_now
 
 
 CHART_UPDATE_TIME = time(20, 30)

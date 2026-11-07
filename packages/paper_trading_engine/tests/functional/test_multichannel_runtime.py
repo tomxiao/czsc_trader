@@ -4,11 +4,11 @@ from types import SimpleNamespace
 
 import pytest
 
-from paper_trading_engine.channel import ChannelAccountConfig, FUTU_US_SIM_CHANNEL_ID
-from paper_trading_engine.channel_accounts import DEFAULT_CHANNEL_ACCOUNT
+from execution_channels.futu.channel import ChannelAccountConfig, FUTU_US_SIM_CHANNEL_ID
+from execution_channels.futu.channel_accounts import DEFAULT_CHANNEL_ACCOUNT
 from paper_trading_engine.cli import main
 from paper_trading_engine.multichannel_runtime import build_multichannel_runtime, MultiChannelRuntime, ChannelBatchError
-from paper_trading_engine.store import PaperStore
+from execution_channels.futu.store import PaperStore
 
 
 def test_cli_register_and_read_scoped_status_without_broker(tmp_path, capsys):

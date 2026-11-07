@@ -1,9 +1,8 @@
 """Strategy Runtime (SRT) public contracts."""
 from .replay_contracts import (
     ReplayPoint, AccountSnapshot, ReplayOrder, ReplayLeg, CycleBudget,
-    AccountExecutionPlan, AccountPlanExecutor, StrategyComputation, ExecutionPrecision,
+    AccountExecutionPlan, StrategyComputation, ExecutionPrecision,
 )
-from .replay_kernel import ReplayDriver, run_account_replay
 from .equity import (AccountPolicy, CashAvailabilityPolicy, CnEquitySpec, UsEquitySpec,
                      ResearchExecutionSpec, ExecutionModel, DecisionPoint, EquityPortfolio,
                      EquityClosedCycle, EquityClosedCycleFeedback,
@@ -57,7 +56,6 @@ from .contracts import (
     SignalHistoryMode,
     TradableWindow,
     TradingPoint,
-    WindowExecutor,
     validate_entry_cycle_plan_facts,
 )
 from .errors import (
@@ -91,13 +89,13 @@ from .models import (
 from .implementation_identity import implementation_sha256
 from .runtime import StrategyInit, StrategyRuntime
 from .strategy import StrategyInstance
+from .session_proposal import SessionProposal
 
 __version__ = "0.1.0"
 
 from .account_strategy import (AccountDecision, AccountStepResult, AccountStepContext,
     PositionCycle, PositionFeedback, BatchObservation, BatchAccountContext, SellRemainderPolicy,
     AccountStrategyState, RecognizedAccountEvent, RecognizedEventKind)
-from .account_replay import plan_account_decision
 from .account_planning import (AccountDecisionEngine, AccountDecisionProposal,
     AccountBatchConsistency, check_account_batch_consistency)
 from .equity_definition import ExecutionInput, ExecutionInputBinding
@@ -176,13 +174,12 @@ __all__ = [
     "StrategyInit",
     "StrategyImplementation",
     "StrategyImplementationV2",
-    "StrategyInstance",
+    "StrategyInstance", "SessionProposal",
     "StrategyRelease",
     "StrategyRuntime",
     "StrategyRuntimeError",
     "TradableWindow",
     "TradingPoint",
-    "WindowExecutor",
     "canonical_sha256",
     "align_input_history",
     "deployment_inventory",
@@ -194,32 +191,31 @@ __all__ = [
 
 from .equity_definition import (
     EquityStrategyCandidate, EquityStrategyDefinition, EquityDecision, EquityDecisionContext,
-    EquityInputBinding, EquityAuxiliaryInput, EquityAuxiliaryBinding, equity_source_hash, execution_spec_from_dict,
+    EquityInputBinding, InputBindingScope, EquityAuxiliaryInput, EquityAuxiliaryBinding, equity_source_hash, execution_spec_from_dict,
 )
 from .equity_context import build_equity_decision_context
 from .equity_features import (BarField, RawField, Lag, TrueRange, Mean, SameLocalSlotMedian,
     FeatureGraph, ReadyValue, NotReady, FeatureView, HistoryView)
 from .equity_replay import (StateValueType, StateField, StateRecord, StrategyStateSchema,
-    CycleState, StrategyState, PreparedReplay, ReplayOutcome,
-    ReplayStatistics, ReplayFailure, run_replay)
+    CycleState, StrategyState, PreparedObservations, ReplayOutcome,
+    ReplayStatistics, ReplayFailure)
 from .dataset_observations import (DatasetObservationInput, DatasetObservationBinding,
     FrozenDataAsset, ObservationAvailability, PreparedObservationTable, TableHistoryView, TableObservationStatus)
 from .account_strategy import AccountPlanningContext
 
 __all__ += ["EquityStrategyCandidate", "EquityStrategyDefinition", "EquityDecision", "EquityDecisionContext",
-            "EquityInputBinding", "EquityAuxiliaryInput", "EquityAuxiliaryBinding", "equity_source_hash", "execution_spec_from_dict",
+            "EquityInputBinding", "InputBindingScope", "EquityAuxiliaryInput", "EquityAuxiliaryBinding", "equity_source_hash", "execution_spec_from_dict",
             "build_equity_decision_context"]
 __all__ += ['BarField', 'RawField', 'Lag', 'TrueRange', 'Mean', 'SameLocalSlotMedian',
     'FeatureGraph', 'ReadyValue', 'NotReady', 'FeatureView', 'HistoryView',
     'StateValueType', 'StateField', 'StateRecord', 'StrategyStateSchema', 'CycleState',
-    'StrategyState', 'PreparedReplay', 'ReplayOutcome',
-    'ReplayStatistics', 'ReplayFailure', 'run_replay']
+    'StrategyState', 'PreparedObservations', 'ReplayOutcome',
+    'ReplayStatistics', 'ReplayFailure']
 __all__ += ['ReplayPoint', 'AccountSnapshot', 'ReplayOrder', 'ReplayLeg', 'CycleBudget',
-    'AccountExecutionPlan', 'AccountPlanExecutor', 'StrategyComputation', 'ExecutionPrecision',
-    'ReplayDriver', 'run_account_replay']
+    'AccountExecutionPlan', 'StrategyComputation', 'ExecutionPrecision']
 
 __all__ += ['AccountDecision', 'AccountStepResult', 'AccountStepContext', 'PositionCycle',
-    'PositionFeedback', 'BatchObservation', 'BatchAccountContext', 'SellRemainderPolicy', 'plan_account_decision',
+    'PositionFeedback', 'BatchObservation', 'BatchAccountContext', 'SellRemainderPolicy',
     'AccountStrategyState', 'RecognizedAccountEvent', 'RecognizedEventKind',
     'AccountDecisionEngine', 'AccountDecisionProposal',
     'AccountBatchConsistency', 'check_account_batch_consistency']

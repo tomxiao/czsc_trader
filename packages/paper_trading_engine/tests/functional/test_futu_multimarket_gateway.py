@@ -5,11 +5,11 @@ from types import SimpleNamespace
 
 import pytest
 
-from paper_trading_engine.broker import OrderIntent, PaperTradingSafetyError
-from paper_trading_engine.channel import (
+from execution_channels.futu.broker import OrderIntent, PaperTradingSafetyError
+from execution_channels.futu.channel import (
     ChannelAccountConfig, FUTU_SIMULATE_CN_CHANNEL_ID, FUTU_US_SIM_CHANNEL_ID,
 )
-from paper_trading_engine.futu_gateway import FutuGateway, FutuGatewayError
+from execution_channels.futu.futu_gateway import FutuGateway, FutuGatewayError
 
 
 def sdk():

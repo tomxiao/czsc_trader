@@ -14,7 +14,7 @@ from uuid import UUID
 from dataflows import DataSpaceBinding, PreparedDataRef
 from strategy_runtime import PlannedOrder, StrategyInputBinding
 from strategy_runtime.inspection import InspectionEnvironment
-from .lifecycle import AccountHealth
+from execution_channels.futu.lifecycle import AccountHealth
 
 
 def _id(value):
@@ -507,4 +507,3 @@ class PteInspectionOutcome(Record):
     scenarios: tuple[PteScenarioResult, ...]
     coverage: tuple[PteCoverageResult, ...]
     artifacts: tuple[PteArtifact, ...]
-

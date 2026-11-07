@@ -6,9 +6,9 @@ import pytest
 from dataflows import MarketId
 from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine.equity_advice import EquityAdviceClient
-from paper_trading_engine.equity_contracts import EquityOrderReport
-from paper_trading_engine.equity_execution import EquityExecution
-from paper_trading_engine.store import PaperStore
+from execution_channels.futu.equity_contracts import EquityOrderReport
+from execution_channels.futu.equity_execution import EquityExecution
+from execution_channels.futu.store import PaperStore
 from test_v4_pte import native_account, prepared_at, replace_strategy
 
 
@@ -115,7 +115,7 @@ def test_unsubmitted_entry_expiry_cannot_activate_dependent_exit(tmp_path, marke
 
 def test_aware_leg_windows_preserve_utc_and_exclude_deadline():
     from datetime import datetime
-    from paper_trading_engine.order_windows import within_planned_window
+    from execution_channels.futu.order_windows import within_planned_window
     payload = {'submit_after':'2026-11-05T09:30:00-05:00', 'submit_before':'2026-11-05T09:35:00-05:00'}
     assert within_planned_window(payload, '2026-11-05', datetime.fromisoformat('2026-11-05T14:30:00+00:00'))
     assert not within_planned_window(payload, '2026-11-05', datetime.fromisoformat('2026-11-05T14:35:00+00:00'))

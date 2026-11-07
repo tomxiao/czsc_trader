@@ -17,9 +17,11 @@ sys.dont_write_bytecode=True
 import pandas as pd
 from dataflows import AssetClass, BarFrequency, InstrumentId, MarketId, TimeInterval, TradingSession
 from strategy_runtime import (AccountPolicy, CashAvailabilityPolicy, CnEquitySpec, UsEquitySpec,
-    EquityStrategyCandidate, EquityStrategyDefinition, FeatureGraph, PreparedReplay,
-    ResearchExecutionSpec, StrategyComputation, StrategyStateSchema, equity_source_hash, run_replay)
-from trading_execution_engine import PortfolioHistoricalExecutor
+    EquityStrategyCandidate, EquityStrategyDefinition, FeatureGraph, PreparedObservations,
+    ResearchExecutionSpec, StrategyComputation, StrategyStateSchema, equity_source_hash)
+from execution_channels.historical import PortfolioHistoricalExecutor
+from czsc_trader.application.account_replay import run_replay
+from czsc_trader.application.ec_boundary import execution_spec
 
 SOURCE='''from strategy_runtime import AccountDecision, AccountStepResult, StateRecord
 def step(ctx,state):
@@ -70,14 +72,14 @@ def run_benchmark(*,rows,repeats,market,output):
         feature_graph=FeatureGraph((),()),state_schema=StrategyStateSchema())
     candidate=EquityStrategyCandidate('S999','C0001',definition,source)
     started=perf_counter()
-    prepared=PreparedReplay.from_frames(bars,rules,definition.feature_graph,frequency=BarFrequency.M30,
+    prepared=PreparedObservations.from_frames(bars,definition.feature_graph,frequency=BarFrequency.M30,
         timezone=instrument.timezone,sessions=calendar,trading_sessions=tuple(sessions))
     prepare_seconds=perf_counter()-started
     runs,expected=[],None
     for repeat in range(repeats):
         started=perf_counter()
-        executor=PortfolioHistoricalExecutor(specification=spec,initial_cash=100000.,fee_rate=.001,actions=actions,price_basis='RAW')
-        outcome=run_replay(prepared,candidate,executor,start=grid[1].start,end=grid[rows].end,fee_rate=.001)
+        executor=PortfolioHistoricalExecutor(specification=execution_spec(spec),initial_cash=100000.,fee_rate=.001,actions=actions,price_basis='RAW')
+        outcome=run_replay(prepared,candidate,executor,constraints=rules, start=grid[1].start,end=grid[rows].end,fee_rate=.001)
         elapsed=perf_counter()-started
         hashes={name:sha256(getattr(outcome.execution_result,name).to_json(orient='records',date_format='iso',date_unit='us').encode()).hexdigest()
             for name in ('decisions','orders','fills','corporate_action_entries','account_points','account_daily','trades')}

@@ -5,7 +5,7 @@ import sqlite3
 
 import pytest
 
-from paper_trading_engine.lifecycle_migration import LifecycleMigrationError, migrate_lifecycle
+from execution_channels.futu.lifecycle_migration import LifecycleMigrationError, migrate_lifecycle
 
 
 NOW = "2026-10-08T23:30:00+08:00"

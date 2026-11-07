@@ -8,10 +8,12 @@ from dataflows import MarketId, EquityProduct, TimeInterval
 from strategy_runtime import StrategyComputation
 from strategy_runtime.inspection import InspectionRuntimePermit
 from paper_trading_engine.account_engine import AccountEngine
-from paper_trading_engine.store import PaperStore
-from paper_trading_engine.equity_contracts import EquityAccountRules, EquityOrderReport, equity_channel_id
+from execution_channels.futu.store import PaperStore
+from paper_trading_engine.ec_boundary import execution_rules, execution_permit
+from execution_channels.futu.equity_contracts import EquityAccountRules, EquityOrderReport, equity_channel_id
 from paper_trading_engine.equity_advice import EquityAdviceClient, prepare_equity_decision
-from paper_trading_engine.equity_execution import EquityExecution
+from execution_channels.futu.equity_execution import EquityExecution
+from czsc_trader.application.ec_boundary import execution_instrument
 from test_equity_pte import RecordedChannel
 from test_v4_inspection_roundtrip import native_fixture
 
@@ -24,13 +26,13 @@ def native_account(tmp_path, market, computation=StrategyComputation.STATEFUL_ST
     isolated = workspace / 'repository'
     isolated.mkdir(parents=True)
     permit = InspectionRuntimePermit('native-pte', 'S999-v1', 'a'*64, 'b'*64, 'c'*64, isolated, workspace)
-    store = PaperStore(workspace / 'paper.db', inspection_permit=permit)
-    channel_id = equity_channel_id(request.candidate.instrument)
+    store = PaperStore(workspace / 'paper.db', inspection_permit=execution_permit(permit))
+    channel_id = equity_channel_id(execution_instrument(request.candidate.instrument))
     store.create_virtual_account('native', 'native', 'v1', 'a'*64, request.initial_cash,
         symbol=request.candidate.instrument.symbol, asset_type=request.candidate.instrument.asset_class.value.lower(),
         strategy_id='S999', strategy_name_snapshot='native', strategy_version='v1', release_hash='a'*64,
         qualification_snapshot='INSPECTION', selection_data_cutoff='2026-10-12', channel_id=channel_id,
-        equity_rules=EquityAccountRules(request.candidate.instrument, context.execution_spec))
+        equity_rules=execution_rules(request.candidate.instrument, context.execution_spec))
     store.set_virtual_paused('native', False)
     channel = RecordedChannel()
     channel.channel_id = channel_id
@@ -82,7 +84,7 @@ def test_native_state_fills_duplicate_restart_and_next_decision(tmp_path, market
     assert store.virtual_account('native')['account_v4_json'] == state
     path = store.path
     store.close()
-    store = PaperStore(path, inspection_permit=permit)
+    store = PaperStore(path, inspection_permit=execution_permit(permit))
     assert store.virtual_account('native')['account_v4_json'] == state
     execution = EquityExecution(store, channel, now=lambda: prepared.interval.start)
     execution.apply_report(EquityOrderReport(order, quantity, Decimal('10'),
@@ -127,7 +129,7 @@ def step(ctx,state):
 
 @pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
 def test_native_budget_split_events_payment_and_flat_exit(tmp_path, market):
-    from paper_trading_engine.equity_account_state import recognized_events
+    from execution_channels.futu.equity_account_state import recognized_events
     context, request, products, store, _, channel = native_account(tmp_path, market)
     request = replace_strategy(request, BUDGET_STRATEGY)
     prepared = prepared_at(context, request, products)
@@ -331,7 +333,7 @@ def test_legacy_v2_prepared_hash_uses_unchanged_input_contract(tmp_path):
 
 @pytest.mark.parametrize('market',[MarketId.CN,MarketId.US])
 def test_rejected_flat_entry_releases_pending_budget_without_creating_cycle(tmp_path,market):
-    from paper_trading_engine.broker import BrokerOrderRejectedError
+    from execution_channels.futu.broker import BrokerOrderRejectedError
     context,request,products,store,_,channel=native_account(tmp_path,market)
     request=replace_strategy(request,BUDGET_STRATEGY)
     prepared=prepared_at(context,request,products)

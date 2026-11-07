@@ -5,21 +5,21 @@ from time import monotonic, sleep
 from types import SimpleNamespace
 import pytest
 
-from paper_trading_engine import AccountHealth
+from execution_channels.futu.lifecycle import AccountHealth
 from paper_trading_engine.account_engine import (
     AccountDecisionBlockedError,
     AccountEngine,
     ActiveOrderPendingError,
 )
 from paper_trading_engine.account_strategy_cycle import AccountStrategyCycle
-from paper_trading_engine.audit import AuditRecorder
-from paper_trading_engine.broker import TERMINAL_INTENT_STATUSES
+from execution_channels.futu.audit import AuditRecorder
+from execution_channels.futu.broker import TERMINAL_INTENT_STATUSES
 from paper_trading_engine.coordinator import PteCoordinator
 from paper_trading_engine.contracts import AdviceDecision, OrderSpec, PlanLegSpec
-from paper_trading_engine.futu_execution import ChannelExecution
+from execution_channels.futu.futu_execution import ChannelExecution
 from paper_trading_engine.scheduler import RuntimeScheduler
-from paper_trading_engine.store import PaperStore
-from paper_trading_engine.lifecycle import IntentControlState
+from execution_channels.futu.store import PaperStore
+from execution_channels.futu.lifecycle import IntentControlState
 from pte_support import FakeAdvice, FakeBroker, broker_snapshot, decision, preparation, adopt_test_decision, claim_test_intent
 
 

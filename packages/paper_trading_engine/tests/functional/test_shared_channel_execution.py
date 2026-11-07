@@ -5,14 +5,14 @@ from decimal import Decimal
 
 import pytest
 
-from dataflows import AssetClass, BarFrequency, InstrumentId, MarketId
-from strategy_runtime import AccountPolicy, CashAvailabilityPolicy, ResearchExecutionSpec, UsEquitySpec
-from paper_trading_engine.broker import (BrokerAccount, BrokerOrder, BrokerPosition,
+from execution_channels.instruments import AssetClass, BarFrequency, InstrumentId, MarketId
+from execution_channels.policy import AccountPolicy, CashAvailabilityPolicy, ResearchExecutionSpec, UsEquitySpec
+from execution_channels.futu.broker import (BrokerAccount, BrokerOrder, BrokerPosition,
     BrokerSnapshot, BrokerSubmissionUncertainError)
-from paper_trading_engine.channel import ChannelAccountConfig, FUTU_US_SIM_CHANNEL_ID
-from paper_trading_engine.equity_contracts import EquityAccountRules
-from paper_trading_engine.futu_execution import ChannelExecution, ChannelReconciliationError, FeeReconciliationPolicy
-from paper_trading_engine.store import PaperStore
+from execution_channels.futu.channel import ChannelAccountConfig, FUTU_US_SIM_CHANNEL_ID
+from execution_channels.futu.equity_contracts import EquityAccountRules
+from execution_channels.futu.futu_execution import ChannelExecution, ChannelReconciliationError, FeeReconciliationPolicy
+from execution_channels.futu.store import PaperStore
 from pte_support import decision
 
 

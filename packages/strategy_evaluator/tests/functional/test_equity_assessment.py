@@ -15,13 +15,22 @@ def ledger(days=12):
     import json
     from dataclasses import asdict
     import pandas as pd
-    from dataflows import AssetClass, InstrumentId, MarketId, BarFrequency
-    from strategy_runtime import (ResearchExecutionSpec, UsEquitySpec, AccountPolicy,
-        CashAvailabilityPolicy, AccountDecision, SellRemainderPolicy)
-    from strategy_runtime.account_replay import plan_account_decision
-    from strategy_runtime.replay_contracts import ReplayPoint, ExecutionPrecision, ReplayOrder
-    from strategy_runtime.contracts import OrderSide, OrderType
-    from trading_execution_engine import PortfolioHistoricalExecutor
+    from execution_channels.instruments import AssetClass
+    from execution_channels.instruments import InstrumentId
+    from execution_channels.instruments import MarketId
+    from execution_channels.instruments import BarFrequency
+    from execution_channels.policy import ResearchExecutionSpec
+    from execution_channels.policy import UsEquitySpec
+    from execution_channels.policy import AccountPolicy
+    from execution_channels.policy import CashAvailabilityPolicy
+    from execution_channels.contracts import SellRemainderPolicy
+    from execution_channels.planning import plan_account_decision
+    from execution_channels.contracts import ReplayPoint
+    from execution_channels.contracts import ExecutionPrecision
+    from execution_channels.contracts import ReplayOrder
+    from execution_channels.session_contracts import OrderSide
+    from execution_channels.session_contracts import OrderType
+    from execution_channels.historical import PortfolioHistoricalExecutor
     spec=ResearchExecutionSpec(UsEquitySpec(),BarFrequency.M30,
         AccountPolicy('USD',CashAvailabilityPolicy.IMMEDIATE_RESEARCH),10,.01,.01,0.)
     instrument=InstrumentId(MarketId.US,AssetClass.STOCK,'TEST')
@@ -48,7 +57,7 @@ def ledger(days=12):
             point=ReplayPoint(bars[-1]['Date'],start,start,end,start.date().isoformat(),ExecutionPrecision.BAR_INTERVAL)
             account=executor.account_snapshot(point,instrument)
             orders=(ReplayOrder(OrderSide.BUY,10,OrderType.LIMIT,10.1),) if part==0 else (ReplayOrder(OrderSide.SELL,20,OrderType.MARKET),) if part==2 else ()
-            decision=AccountDecision.from_facts(1. if part<2 else 0.,'explicit synthetic cycle',facts={'part':part},next_watch='next bar',orders=orders,capital_mode='full_available_cash')
+            decision=_intent(1. if part<2 else 0.,'explicit synthetic cycle',facts={'part':part},next_watch='next bar',orders=orders,capital_mode='full_available_cash')
             reference=[10.,4.,5.,6.][part]
             proposal=plan_account_decision(decision,point,account,reference,spec,owner='candidate:fixture',
                 implementation='1'*64,fee_rate=0.,sell_remainder_policy=SellRemainderPolicy.FULL_LIQUIDATION)
@@ -177,3 +186,8 @@ def test_observation_summary_rejects_invalid_input_contract(mutation):
         raw["trades"].append(raw["trades"][0])
     with pytest.raises(ValueError):
         summarize_equity_ledger(raw)
+
+
+def _intent(target, reason, *, facts, next_watch, **kwargs):
+    from execution_channels.planning.intent import TradeIntent, DecisionExplanation
+    return TradeIntent(target, DecisionExplanation({'reason':reason,'facts':facts,'next_watch':next_watch}), **kwargs)

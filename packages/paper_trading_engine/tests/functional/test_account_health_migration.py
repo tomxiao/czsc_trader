@@ -7,15 +7,15 @@ import sys
 
 import pytest
 
-from paper_trading_engine.account_health_migration import (
+from execution_channels.futu.account_health_migration import (
     AccountHealthMigrationError,
     HEALTH_RECEIPT_KEY,
     HEALTH_SCHEMA_KEY,
     migrate_account_health,
 )
 from paper_trading_engine.release_cli import verify_release_configuration
-from paper_trading_engine.lifecycle import AccountHealth
-from paper_trading_engine.store import PaperStore, RUNTIME_DATABASE_SCHEMA_VERSION
+from execution_channels.futu.lifecycle import AccountHealth
+from execution_channels.futu.store import PaperStore, RUNTIME_DATABASE_SCHEMA_VERSION
 from test_release_runtime import release_verification_runtime  # noqa: F401
 
 

@@ -37,7 +37,7 @@ def pte_frozen(current_frozen):
 @pytest.fixture(scope="session")
 def empty_paper_database(frozen_seed_root):
     """Build the current schema once using the real disk-backed store."""
-    from paper_trading_engine.store import PaperStore
+    from execution_channels.futu.store import PaperStore
 
     path = frozen_seed_root / "empty-paper.db"
     store = PaperStore(path)
@@ -48,7 +48,7 @@ def empty_paper_database(frozen_seed_root):
 @pytest.fixture
 def new_store(empty_paper_database):
     """Create a private database; retain normal WAL, commits and reopen behavior."""
-    from paper_trading_engine.store import PaperStore
+    from execution_channels.futu.store import PaperStore
 
     def create(path, *, seed=None):
         path.parent.mkdir(parents=True, exist_ok=True)

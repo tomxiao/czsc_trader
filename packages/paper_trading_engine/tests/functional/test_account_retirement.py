@@ -10,13 +10,13 @@ from urllib.request import Request, urlopen
 
 import pytest
 
-from paper_trading_engine import AccountRetirementRequest, AccountRetirementStatus
+from execution_channels.futu.account_retirement import AccountRetirementRequest, AccountRetirementStatus
 from paper_trading_engine.cli import main as pte_main
-from paper_trading_engine.futu_execution import ChannelExecution, ChannelReconciliationError
+from execution_channels.futu.futu_execution import ChannelExecution, ChannelReconciliationError
 from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine.web import create_server
 from paper_trading_engine.web_api import PteWebApi
-from paper_trading_engine.store import PaperStore
+from execution_channels.futu.store import PaperStore
 from pte_support import FakeBroker, decision, adopt_test_decision
 
 

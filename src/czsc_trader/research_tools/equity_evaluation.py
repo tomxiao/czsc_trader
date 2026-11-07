@@ -16,9 +16,8 @@ from dataflows import (DataRequest, EquityDataRequest, EquityProduct, EquityQuer
 from strategy_runtime.equity import equity_hash
 from strategy_runtime.runtime import StrategyRuntime
 from strategy_runtime.equity_definition import EquityStrategyCandidate, EquityInputBinding
-from dataflows.equity_data import sessions_from_metadata
-from trading_execution_engine.portfolio import PortfolioHistoricalExecutor
-from trading_execution_engine.fills import resolve_fill
+from execution_channels.historical.portfolio import PortfolioHistoricalExecutor
+from execution_channels.historical.fills import resolve_fill
 from strategy_evaluator.equity_metrics import summarize_equity_ledger
 
 from .context import ExperimentRef
@@ -131,20 +130,30 @@ class EquityEvaluationRequest:
 
     def identity(self, specification):
         from strategy_runtime import (equity_features, equity_replay as srt_replay, equity_buy_hold_v4,
-            equity_source_runtime, replay_kernel, replay_contracts, account_strategy, account_replay,
+            equity_source_runtime, replay_contracts, account_strategy,
             dataset_observations, observation_preparation, account_planning)
         from strategy_evaluator import equity_assessment as se_assessment
+        from czsc_trader.application import account_replay, ec_boundary, execution_inputs
         from . import equity_replay, equity_assessment, parameter_evaluation, account_preparation
-        from trading_execution_engine import accounting, portfolio
-        from trading_execution_engine import equity as account_ledger
+        from execution_channels.historical import accounting, portfolio
+        from execution_channels.historical import equity as account_ledger
+        from execution_channels.historical import channel
+        from execution_channels import contracts, policy, state, serialization, entry_cycle, identity, instruments, session_contracts
+        from execution_channels import planning, market_rules
+        from execution_channels.planning import intent
+        from execution_channels.market_rules import constraints as rule_constraints
+        from execution_channels.historical import market, input_facts
+        from strategy_runtime import data_preparation
         engine_sources = {item.__module__: sha256(Path(inspect.getsourcefile(item)).read_bytes()).hexdigest()
             for item in (EquityEvaluationRequest, EquityStrategyCandidate, StrategyRuntime,
                 PortfolioHistoricalExecutor, resolve_fill, summarize_equity_ledger)}
         for module in (equity_features, srt_replay, equity_buy_hold_v4, equity_source_runtime,
-                replay_kernel, replay_contracts, account_strategy, account_replay, dataset_observations,
+                replay_contracts, account_strategy, account_replay, dataset_observations,
                 observation_preparation, account_planning, se_assessment,
                 equity_replay, equity_assessment, parameter_evaluation, account_preparation, accounting,
-                portfolio, account_ledger):
+                portfolio, account_ledger, channel, contracts, policy, state, serialization,
+                entry_cycle, planning, intent, market_rules, rule_constraints,
+                ec_boundary, execution_inputs, data_preparation, identity, instruments, session_contracts, market, input_facts):
             engine_sources[module.__name__] = sha256(Path(module.__file__).read_bytes()).hexdigest()
         return self._identity_with_sources(specification, engine_sources)
 
@@ -243,30 +252,11 @@ class EquityEvaluationResult:
 
 
 def _fetch_products(access, request):
-    from strategy_runtime.observation_preparation import request_selection, observation_identity
-    products, identities, calendars = {}, {}, {}
-    fetched = {}
-    for name, query in request.request_items(access.execution_spec):
-        selection = request_selection(query)
-        if selection not in fetched:
-            fetched[selection] = access.data.fetch(query, prepared=request.prepared)
-        result = fetched[selection]
-        if not result.ready:
-            raise ValueError(f"pinned equity product unavailable ({name}): {result.error}")
-        products[name] = result.dataframe
-        identities[name] = {"content_sha256": result.identity.content_sha256,
-                            "metadata": dict(result.identity.metadata)}
-        if name.startswith('observation:'):
-            identities[name]['observation_identity'] = observation_identity(result.identity)
-            continue
-        # Each observation instrument owns its calendar. A daily auxiliary may
-        # have a different set of sessions from the traded instrument.
-        group = name.rsplit(":", 1)[0] if name.startswith(("auxiliary:", "execution:")) else "primary"
-        declared = result.identity.metadata["sessions"]
-        if group in calendars and calendars[group] != declared:
-            raise ValueError(f"independent equity products disagree on the trading calendar: {group}")
-        calendars[group] = declared
-    from strategy_runtime.equity_rules import execution_constraints
+    from strategy_runtime.data_preparation import fetch_prepared_products
+    prepared = fetch_prepared_products(access.data, request.request_items(access.execution_spec),
+                                      prepared=request.prepared)
+    products, identities = prepared.products, prepared.identities
+    from czsc_trader.application.execution_inputs import execution_constraints
     products["constraints"], identities["constraints"] = execution_constraints(
         request.candidate.definition, products, {k: v["metadata"] for k, v in identities.items()})
     return products, identities
@@ -312,20 +302,6 @@ def _audit_inputs(request, specification, products):
     if decision_inputs:
         inputs["decision_inputs"] = decision_inputs
     return inputs
-
-
-def _runtime_inputs(definition, products, identities, *, observation_bindings=()):
-    from strategy_runtime.observation_preparation import prepare_observation_tables
-    kwargs = {}
-    if definition.auxiliary_inputs:
-        kwargs["auxiliary_histories"] = {item.name: products[item.data_key(EquityProduct.BARS)]
-                                         for item in definition.auxiliary_inputs}
-    kwargs["sessions"] = products["sessions"]
-    kwargs["trading_sessions"] = sessions_from_metadata(identities["sessions"]["metadata"])
-    if definition.observation_inputs:
-        kwargs['observation_tables'] = prepare_observation_tables(definition.observation_inputs, products, identities,
-                                                                bindings=observation_bindings)
-    return kwargs
 
 
 def _records(frame):

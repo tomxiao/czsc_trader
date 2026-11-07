@@ -83,7 +83,7 @@ def test_native_release_preflight_uses_qualified_inputs_and_never_prepares(forma
     guard = (
         "from dataflows import Dataflows\n"
         "from paper_trading_engine.formal_v4_advice import FormalV4AdviceClient\n"
-        "from paper_trading_engine.futu_gateway import FutuGateway\n"
+        "from execution_channels.futu.futu_gateway import FutuGateway\n"
         "def forbidden(*args,**kwargs): raise AssertionError('preflight must remain read-only and offline')\n"
         "Dataflows.__init__=forbidden\n"
         "FormalV4AdviceClient.prepare_interval=forbidden\n"
@@ -107,7 +107,7 @@ def test_native_release_preflight_uses_qualified_inputs_and_never_prepares(forma
         raise AssertionError("preflight must remain read-only and offline")
     monkeypatch.setattr("dataflows.Dataflows.__init__", forbidden)
     monkeypatch.setattr("paper_trading_engine.formal_v4_advice.FormalV4AdviceClient.prepare_interval", forbidden)
-    monkeypatch.setattr("paper_trading_engine.futu_gateway.FutuGateway.__init__", forbidden)
+    monkeypatch.setattr("execution_channels.futu.futu_gateway.FutuGateway.__init__", forbidden)
     input_path = data / "v4-inputs/formal.json"
     original = input_path.read_bytes()
     malformed = json.loads(original)

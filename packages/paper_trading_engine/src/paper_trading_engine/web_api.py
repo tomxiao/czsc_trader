@@ -6,11 +6,11 @@ from datetime import datetime, timezone
 from decimal import Decimal
 import json
 
-from .lifecycle import AccountHealth
-from .audit import AuditCategory, AuditOutcome, AuditSeverity, EVENT_CATALOG
-from .channel import FUTU_SIMULATE_CN_CHANNEL_ID, STRATEGY_ACCOUNT_TYPE, channel_profile
-from .channel_accounts import DEFAULT_CHANNEL_ACCOUNT
-from .trading_window import SHANGHAI
+from execution_channels.futu.lifecycle import AccountHealth
+from execution_channels.futu.audit import AuditCategory, AuditOutcome, AuditSeverity, EVENT_CATALOG
+from execution_channels.futu.channel import FUTU_SIMULATE_CN_CHANNEL_ID, STRATEGY_ACCOUNT_TYPE, channel_profile
+from execution_channels.futu.channel_accounts import DEFAULT_CHANNEL_ACCOUNT
+from execution_channels.futu.trading_window import SHANGHAI
 
 
 class ResourceNotFound(KeyError):

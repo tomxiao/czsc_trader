@@ -7,16 +7,21 @@ from decimal import Decimal
 
 import pandas as pd
 import pytest
+from czsc_trader.application.ec_boundary import session_execution_plan
+from execution_channels.serialization import from_record, to_record
+from execution_channels.session_contracts import PortfolioSnapshot as ChannelPortfolio, ExecutionState as ChannelState
+from czsc_trader.application.session_replay import replay_sessions
+from execution_channels.session_contracts import (ExecutionCapabilities as ChannelCapabilities,
+    ExecutionOutcome as ChannelOutcome, ExecutionOutcomeStatus as ChannelOutcomeStatus,
+    OrderType as ChannelOrderType)
 from strategy_runtime import (
     ExecutionCapabilities,
     ExecutionOutcome,
-    ExecutionOutcomeStatus,
     ExecutionPolicy,
     ExecutionState,
     ImplementationRef,
     PortfolioSnapshot,
     PriceReference,
-    OrderType,
     ObservationDefinition,
     RuntimeCompatibilityError,
     RuntimeContractError,
@@ -76,12 +81,8 @@ def _plan(instance, mode):
     instance._prepared_data.input_identities = {"fixture": "c" * 64}
     instance._prepared_data.price_identities = {"fixture": "d" * 64}
     now = datetime(2026, 1, 5, 22, tzinfo=timezone.utc)
-    return instance.plan_at(
-        point=TradingPoint(date(2026, 1, 6), now),
-        portfolio=PortfolioSnapshot("fixture", "588080.SH", Decimal("10000"),
-                                    Decimal("10000"), 0, 0, now),
-        state=ExecutionState(0, now), history_mode=mode,
-    )
+    return session_execution_plan(instance.propose_at(point=TradingPoint(date(2026, 1, 6), now), history_mode=mode), from_record(ChannelPortfolio, to_record(PortfolioSnapshot("fixture", "588080.SH", Decimal("10000"),
+                                    Decimal("10000"), 0, 0, now))), from_record(ChannelState, to_record(ExecutionState(0, now))))
 
 
 @pytest.mark.parametrize("value", [float("nan"), float("inf"), -1, 2, "bad"])
@@ -158,12 +159,12 @@ def test_signal_missing_date_preserves_contract_error():
 def test_missing_executor_capability_fails_before_snapshot_or_execute():
     instance, _, _ = _instance(pd.DataFrame())
     executor = SimpleNamespace(
-        capabilities=ExecutionCapabilities(()),
+        capabilities=ChannelCapabilities(()),
         snapshot=lambda point: pytest.fail("must fail before snapshot"),
         execute=lambda plan: pytest.fail("must fail before execution"),
     )
-    with pytest.raises(RuntimeCompatibilityError, match="before execution"):
-        instance.run_window(executor=executor)
+    with pytest.raises(RuntimeCompatibilityError, match="lacks required capabilities"):
+        replay_sessions(instance, executor)
 
 
 def test_failed_execution_outcome_does_not_finish_window(monkeypatch):
@@ -171,18 +172,20 @@ def test_failed_execution_outcome_does_not_finish_window(monkeypatch):
         index=pd.to_datetime(["2026-01-02", "2026-01-05"])))
     plan = replace(_plan(instance, SignalHistoryMode.WINDOW),
         generated_at=datetime(2026, 1, 5, 20, 31, tzinfo=ZoneInfo("Asia/Shanghai")))
-    monkeypatch.setattr(instance, "_plan_at", lambda **kwargs: plan)
+    monkeypatch.setattr("czsc_trader.application.session_replay.session_execution_plan", lambda *args: plan)
     now = datetime.now(timezone.utc)
     portfolio = PortfolioSnapshot("test", "588080.SH", Decimal(100), Decimal(100), 0, 0, now)
     state = ExecutionState(0, now)
     executor = SimpleNamespace(
-        capabilities=ExecutionCapabilities((OrderType.LIMIT,)),
+        capabilities=ChannelCapabilities((ChannelOrderType.LIMIT,)),
         snapshot=lambda point: (None, None),
-        execute_plan=lambda neutral, plan: ExecutionOutcome(plan.plan_identity, portfolio, state, ExecutionOutcomeStatus.FAILED),
+        observe_proposal=lambda proposal, plan: None,
+        execute_plan=lambda neutral, plan: ChannelOutcome(plan.plan_identity,
+            from_record(ChannelPortfolio, to_record(portfolio)), from_record(ChannelState, to_record(state)), ChannelOutcomeStatus.FAILED),
         finish=lambda: pytest.fail("failed execution must not finish successfully"),
     )
     with pytest.raises(RuntimeExecutionError, match="did not settle"):
-        instance.run_window(executor=executor)
+        replay_sessions(instance, executor)
 
 
 def test_execution_status_and_calendar_contracts_are_strict():

@@ -22,7 +22,7 @@ from strategy_runtime.equity_definition import EquityAuxiliaryBinding, EquityInp
 from strategy_evaluator.equity_metrics import summarize_equity_ledger
 
 from .equity_evaluation import (EquityArtifact, EquityEvaluationRequest, EquityEvaluationResult,
-    _audit_inputs, _data_quality, _fetch_products, _json_value, _records, _runtime_inputs,
+    _audit_inputs, _data_quality, _fetch_products, _json_value, _records,
     replay_actions, replay_action_facts)
 from .execution import ExecutionPhase, ResearchExecutionSession
 from .account_preparation import PreparedAccountEvaluation, BenchmarkRunIdentity
@@ -268,7 +268,7 @@ def _require_prepared(state, value):
 
 
 def _replay(state, prepared, *, benchmark=False):
-    from strategy_runtime.equity_replay import PreparedReplay
+    from strategy_runtime.data_preparation import prepare_observations
     candidate = _benchmark_candidate(prepared.request) if benchmark else prepared.candidate
     graph = candidate.definition.feature_graph
     context_key = equity_hash({"auxiliary": [asdict(x) for x in candidate.definition.auxiliary_inputs],
@@ -280,11 +280,9 @@ def _replay(state, prepared, *, benchmark=False):
         products = state.products[prepared.snapshot.sha256]
         base = next((value for k, value in state.replays.items() if k[0] == key[0] and k[2:] == key[2:]), None)
         identities = _read(prepared.snapshot.data_content)
-        state.replays[key] = (base.with_graph(graph) if base is not None else PreparedReplay.from_frames(
-            products["bars"], products["constraints"], graph, latency_seconds=key[2],
-            frequency=candidate.definition.execution_spec.decision_clock, timezone=candidate.instrument.timezone,
-            **_runtime_inputs(candidate.definition, products, identities,
-                observation_bindings=prepared.request.input_binding.observation_bindings)))
+        state.replays[key] = (base.with_graph(graph) if base is not None else prepare_observations(
+            candidate.definition, products, identities,
+            bindings=prepared.request.input_binding.observation_bindings))
     return candidate, state.replays[key]
 
 
@@ -302,17 +300,19 @@ class _AccountOutputContext:
     owner_content: bytes
     bars: tuple
     execution_bars: tuple | None
+    constraints: tuple
 
 
 def _compute_account(replay, candidate, request, actions, owner, execution_bars, output):
     """Execute the authoritative account once; publication stays caller-owned."""
-    from strategy_runtime.equity_replay import run_replay
-    from trading_execution_engine.portfolio import PortfolioHistoricalExecutor
-    executor = PortfolioHistoricalExecutor(specification=candidate.definition.execution_spec,
+    from czsc_trader.application.account_replay import run_replay
+    from czsc_trader.application.ec_boundary import execution_spec
+    from execution_channels.historical.portfolio import PortfolioHistoricalExecutor
+    executor = PortfolioHistoricalExecutor(specification=execution_spec(candidate.definition.execution_spec),
         initial_cash=request.initial_cash, fee_rate=request.fee_rate, actions=replay_actions(actions),
         price_basis="RAW", execution_bars=execution_bars)
     outcome = run_replay(replay, candidate, executor, start=request.window.start,
-        end=request.window.end, fee_rate=request.fee_rate, owner=owner)
+        end=request.window.end, fee_rate=request.fee_rate, owner=owner, constraints=output.constraints)
     account = outcome.execution_result
     run = {"decisions": _records(account.decisions), "orders": _records(account.orders),
         "fills": _records(account.fills), "actions": _records(account.corporate_action_entries),
@@ -359,7 +359,8 @@ def _account_output_context(state, prepared, *, benchmark):
               "content_sha256": prepared.candidate.content_identity.content_sha256})
     return _AccountOutputContext(_primary_input_sha256(prepared.snapshot) if benchmark else digest,
         _bytes(owner), tuple(products["bars"]), tuple(products["execution:bars"])
-        if not benchmark and prepared.candidate.definition.execution_input is not None else None)
+        if not benchmark and prepared.candidate.definition.execution_input is not None else None,
+        tuple(state.products[digest]['constraints'].to_dict('records')))
 
 
 def _result(prepared, candidate, benchmark):
@@ -419,12 +420,14 @@ def evaluate_many_equity(access, requests, *, execution):
                 contract = _ReplayAccountRequest(prepared.request.window, prepared.request.initial_cash, prepared.request.fee_rate)
                 quotes = None
                 if candidate.definition.execution_input is not None:
-                    from trading_execution_engine import PreparedExecutionQuotes
+                    from execution_channels.historical import PreparedExecutionQuotes
+                    from execution_channels.instruments import MarketId as ExecutionMarket
                     key_quote = (prepared.request.input_binding.execution_input.bars_sha256, candidate.instrument.market)
                     if key_quote not in state.execution_quotes:
                         with execution.executor.measure(ExecutionPhase.PREPARE):
                             state.execution_quotes[key_quote] = PreparedExecutionQuotes.from_frame(
-                                state.products[prepared.snapshot.sha256]['execution:bars'], candidate.instrument.market)
+                                state.products[prepared.snapshot.sha256]['execution:bars'],
+                                ExecutionMarket(candidate.instrument.market.value))
                     quotes = state.execution_quotes[key_quote]
                 output = _account_output_context(state, prepared, benchmark=benchmark)
                 tasks.append((key, (replay, candidate, contract, state.products[prepared.snapshot.sha256]["actions"], owner, quotes, output)))

@@ -1,5 +1,7 @@
 """Offline V4 rebinding of durable accounts and their confirmed positions."""
 
+from .ec_boundary import initial_account_record, execution_rules
+
 from collections import Counter
 from dataclasses import asdict, replace
 from datetime import date, datetime, timedelta
@@ -17,14 +19,14 @@ from strategy_runtime.equity_replay import CycleState, StateRecord
 from strategy_runtime.replay_contracts import CycleBudget
 
 from .account_binding import AccountBindingUpdateResult, AccountBindingUpdateStatus, AccountStrategyBinding, V4StateContinuation
-from .broker import TERMINAL_INTENT_STATUSES, TERMINAL_ORDER_STATUSES
-from .channel import STRATEGY_ACCOUNT_TYPE, channel_profile
-from .equity_account_state import (budget_to_dict, load_document, position_from_dict,
+from execution_channels.futu.broker import TERMINAL_INTENT_STATUSES, TERMINAL_ORDER_STATUSES
+from execution_channels.futu.channel import STRATEGY_ACCOUNT_TYPE, channel_profile
+from execution_channels.futu.equity_account_state import (budget_to_dict, load_document, position_from_dict,
                                    position_to_dict, save_document, validate_document)
 from .formal_v4_advice import FormalV4AdviceClient
-from .lifecycle import DecisionState, RunState
+from execution_channels.futu.lifecycle import DecisionState, RunState
 from .runtime_lock import RuntimeDatabaseLock
-from .store import PaperStore, RUNTIME_DATABASE_SCHEMA_VERSION, _utc_now
+from execution_channels.futu.store import PaperStore, RUNTIME_DATABASE_SCHEMA_VERSION, _utc_now
 
 
 def _facts(store, account_id):
@@ -201,8 +203,9 @@ def _v4_document(store, facts, update, candidate, runtime_root, load_release, da
     old_inputs.validate_candidate(old_release.release_hash, old_candidate)
     if old_inputs.fee_rate != update.inputs.fee_rate:
         raise ValueError("V4 rebinding cannot change the model fee or use inputs for another release")
-    document = load_document(account, old_candidate.definition)
-    old_state = validate_document(document)
+    document = load_document(account, initial_account_record(old_candidate.definition))
+    validate_document(document)
+    old_state = AccountStrategyState.from_dict(document["state"])
     old_binding = _state_binding(update.account_id, old_release.release_hash, old_candidate, old_inputs.fee_rate)
     if old_state.binding != old_binding and (old_state.revision or old_state.binding is not None):
         raise ValueError("current V4 state binding differs from the source release")
@@ -246,14 +249,16 @@ def _prepare(store, facts, update, release, runtime_root, load_release, data_dir
     _validate_execution(facts, decisions)
     client = FormalV4AdviceClient(repo_root=release.release_root, store=store, dataflows=None, data_dir=data_dir)
     target, candidate, identity = client.load_release(account["strategy_id"], update.binding.target_version)
-    if (target.release_hash != update.binding.target_release_hash or candidate.instrument != update.rules.instrument
-            or update.rules.execution != candidate.definition.execution_spec or candidate.instrument.symbol != account["symbol"]
+    if (target.release_hash != update.binding.target_release_hash or execution_rules(candidate.instrument, candidate.definition.execution_spec).instrument != update.rules.instrument
+            or update.rules.execution != execution_rules(candidate.instrument, candidate.definition.execution_spec).execution or candidate.instrument.symbol != account["symbol"]
             or candidate.instrument.asset_class.value.lower() != account["asset_type"]):
         raise ValueError("target qualified release differs from the V4 binding request")
     definition = candidate.definition
     if definition.execution_spec.decision_clock is not BarFrequency.DAILY:
         raise ValueError("V4 forward recipe requires a daily frozen execution clock")
     update.inputs.validate_candidate(target.release_hash, candidate)
+    # Validate the explicit live projection before any account mutation.
+    replace(update.inputs, binding=update.inputs.binding.for_observations()).validate_candidate(target.release_hash, candidate)
     version = StrategyRegistry(release.release_root / "strategies").get_version(account["strategy_id"], target.version)
     binding = AccountStrategyBinding(version.strategy_id, version.version, target.release_hash, identity["name"],
         Qualification(identity["qualification"]), date.fromisoformat(version.selection_data_cutoff),
@@ -263,7 +268,8 @@ def _prepare(store, facts, update, release, runtime_root, load_release, data_dir
     document = (_v4_document(store, facts, update, candidate, runtime_root, load_release, data_dir)
                 if account["equity_rules_json"] else _legacy_document(facts, update.state, update))
     _validate_cutover(facts, version, update, document)
-    state = validate_document(document)
+    validate_document(document)
+    state = AccountStrategyState.from_dict(document["state"])
     definition.state_schema.validate_record(state.account, scope="account")
     if state.cycle is not None:
         definition.state_schema.validate_record(state.cycle.values, scope="cycle")
@@ -296,7 +302,8 @@ def _apply(store, update, prepared, plan_sha256):
     if changed != 1:
         raise ValueError("account binding changed concurrently")
     save_document(store, account_id, document)
-    record = {"inputs": update.inputs.to_dict(), "forward": True,
+    live_inputs = replace(update.inputs, binding=update.inputs.binding.for_observations())
+    record = {"inputs": live_inputs.to_dict(), "forward": True,
               "effective_interval": _interval_dict(update.effective_interval), "plan_sha256": plan_sha256,
               "legacy_actions_before": legacy_actions_before}
     store._save_v4_runtime_binding(account_id, record)

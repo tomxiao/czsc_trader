@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import argparse
+from .ec_boundary import initial_account_record
+
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import json
@@ -38,7 +40,7 @@ from .runtime_release import (
     service_host_runtime_dependencies,
     tree_sha256,
 )
-from .store import (
+from execution_channels.futu.store import (
     RUNTIME_DATABASE_COMPATIBLE_VERSIONS,
     RUNTIME_DATABASE_SCHEMA_VERSION,
 )
@@ -46,7 +48,7 @@ from .watchdog import health_payload_is_healthy
 
 
 PTE_LOCAL_PROJECTS = (
-    "packages/market_rules",
+    "packages/execution_channels",
     "packages/dataflows",
     "packages/strategy_manager",
     "packages/strategy_runtime",
@@ -55,7 +57,7 @@ PTE_LOCAL_PROJECTS = (
     "packages/paper_trading_engine",
 )
 PTE_RESOLUTION_DISTRIBUTIONS = (
-    "czsc-market-rules",
+    "czsc-execution-channels",
     "paper-trading-engine",
     "czsc-strategy-runtime",
     "czsc-strategy-chart",
@@ -447,7 +449,7 @@ def _verify_installed_environment(
         "chart_assets=get_chart_assets()\n"
         "assert chart_assets.css and chart_assets.javascript, 'shared chart assets missing'\n"
         "expected=('paper-trading-engine','czsc-trader-research','czsc-strategy-runtime',"
-        "'czsc-strategy-manager','czsc-dataflows','czsc-strategy-chart','czsc-market-rules')\n"
+        "'czsc-strategy-manager','czsc-dataflows','czsc-strategy-chart','czsc-execution-channels')\n"
         "forbidden=('vectorbt','optuna','tsfresh','czsc-strategy-evaluator',"
         "'czsc-factor-signal-catalog','czsc-strategy-template-catalog',"
         "'czsc-trading-execution-engine')\n"
@@ -964,7 +966,7 @@ def _require_database_compatibility(release, database: Path) -> int:
 
 def _verify_native_account(client, account_id: str) -> str:
     """Check a persisted V4 binding without fetching or preparing inputs."""
-    from .equity_account_state import load_document, validate_document, position_from_dict
+    from execution_channels.futu.equity_account_state import load_document, validate_document, position_from_dict
     from strategy_runtime.equity import equity_hash
 
     account, release, candidate = client._account_release(account_id)
@@ -985,8 +987,10 @@ def _verify_native_account(client, account_id: str) -> str:
             raise RuntimeError(f"{account_id}: V4 inputs differ from the qualified account: {exc}") from exc
         if value.fee_rate != inputs.fee_rate:
             raise RuntimeError(f"{account_id}: V4 inputs differ from the qualified account fee")
-    document = load_document(account, definition)
-    state = validate_document(document)
+    document = load_document(account, initial_account_record(definition))
+    validate_document(document)
+    from strategy_runtime import AccountStrategyState
+    state = AccountStrategyState.from_dict(document["state"])
     definition.state_schema.validate_record(state.account, scope="account")
     if state.cycle is not None:
         definition.state_schema.validate_record(state.cycle.values, scope="cycle")
@@ -1008,7 +1012,7 @@ def _verify_runtime_configuration(root: Path, data: Path, database: Path, config
     from .runtime_config import PteRuntimeConfig
     from .srt_advice_client import SrtAdviceClient
     from .formal_v4_advice import FormalV4AdviceClient
-    from .store import PaperStore
+    from execution_channels.futu.store import PaperStore
 
     PteRuntimeConfig.load(config / "pte.json")
     if not database.is_file():

@@ -13,9 +13,10 @@ from types import SimpleNamespace
 import pandas as pd
 import pytest
 
-from paper_trading_engine import AccountHealth, AccountRetirementRequest
-from paper_trading_engine.futu_execution import ChannelExecution
-from paper_trading_engine.store import PaperStore
+from execution_channels.futu.lifecycle import AccountHealth
+from execution_channels.futu.account_retirement import AccountRetirementRequest
+from execution_channels.futu.futu_execution import ChannelExecution
+from execution_channels.futu.store import PaperStore
 from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine import cli as pte_cli
 from paper_trading_engine.web_api import PteWebApi
@@ -793,7 +794,7 @@ def test_daily_chart_update_retries_then_persists_success_and_skips_closed_days(
     from paper_trading_engine import account_chart
     from paper_trading_engine.account_chart import AccountChartService
     from paper_trading_engine.chart_market_data import AccountChartDataError
-    from paper_trading_engine.trading_window import SHANGHAI
+    from execution_channels.futu.trading_window import SHANGHAI
 
     store = new_store(tmp_path / "daily-charts.db")
     create_account(store, "s001-v1", "v1", "a")

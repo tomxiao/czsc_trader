@@ -23,25 +23,25 @@ from uuid import uuid4
 from dotenv import load_dotenv
 from dataflows import DataSpace
 
-from .audit import AuditRecorder
+from execution_channels.futu.audit import AuditRecorder
 from .srt_advice_client import SrtAdviceClient
 from .data_space import create_dataflows
 from .account_binding import AccountStrategyBinding
-from .account_retirement import AccountRetirementRequest
+from execution_channels.futu.account_retirement import AccountRetirementRequest
 from .account_data_preparer import AccountDataPreparer
 from .account_strategy_cycle import AccountStrategyCycle
 from .account_engine import AccountEngine
 from .account_chart import AccountChartService
 from .chart_market_data import AccountChartMarketData
-from .futu_execution import ChannelExecution
-from .futu_gateway import FutuGateway
-from .channel import FUTU_SIMULATE_CN_CHANNEL_ID
-from .store import PaperStore, backup_runtime_database
+from execution_channels.futu.futu_execution import ChannelExecution
+from execution_channels.futu.futu_gateway import FutuGateway
+from execution_channels.futu.channel import FUTU_SIMULATE_CN_CHANNEL_ID
+from execution_channels.futu.store import PaperStore, backup_runtime_database
 from .scheduler import RuntimeScheduler
 from .web import create_server
 from .coordinator import PteCoordinator, ReconnectableExecution
 from .runtime_lock import RuntimeDatabaseLock
-from .trading_window import shanghai_now
+from execution_channels.futu.trading_window import shanghai_now
 from .runtime_config import PteRuntimeConfig
 from .runtime_release import load_manifest_identity, resolve_active_release
 from .watchdog import health_payload_is_healthy
@@ -658,7 +658,7 @@ def _run_account_command(args: argparse.Namespace) -> dict[str, object] | list[d
 
 def _run_writable_account_command(args: argparse.Namespace) -> dict[str, object]:
     root_store = PaperStore(args.database)
-    from .channel_accounts import DEFAULT_CHANNEL_ACCOUNT
+    from execution_channels.futu.channel_accounts import DEFAULT_CHANNEL_ACCOUNT
     store = root_store.scope(DEFAULT_CHANNEL_ACCOUNT)
     try:
         if args.account_action in {"pause", "resume"}:
