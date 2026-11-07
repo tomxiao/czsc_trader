@@ -156,7 +156,7 @@ def test_technical_database_rejects_normal_open_and_foreign_permit():
     with pytest.raises(ValueError, match="rejects an inspection"):
         PaperStore.open_readonly(copied)
     with pytest.raises(ValueError, match="another permit"):
-        PaperStore(path, inspection_permit=replace(permit, protocol_sha256="d"*64))
+        PaperStore(path, inspection_permit=execution_permit(replace(permit, protocol_sha256="d"*64)))
 
 
 @pytest.mark.parametrize("stop", ["cancel", "invalid_cancel", "cancel_exception", "timeout", "progress"])

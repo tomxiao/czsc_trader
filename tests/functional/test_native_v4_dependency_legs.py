@@ -6,6 +6,7 @@ import pytest
 from dataflows import MarketId
 from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine.equity_advice import EquityAdviceClient
+from paper_trading_engine.ec_boundary import execution_permit
 from execution_channels.futu.equity_contracts import EquityOrderReport
 from execution_channels.futu.equity_execution import EquityExecution
 from execution_channels.futu.store import PaperStore
@@ -68,7 +69,7 @@ def test_native_rotation_waits_for_full_entry_and_survives_restart(tmp_path, mar
     # Unknown means the submitted order has no conclusive channel report.
     path = store.path
     store.close()
-    store = PaperStore(path, inspection_permit=permit)
+    store = PaperStore(path, inspection_permit=execution_permit(permit))
     before_intents = store.account_intents('native')
     AccountEngine(store, EquityAdviceClient(store), now=lambda:clock+timedelta(minutes=10)).refresh_account('native', prepared=next_day)
     assert store.account_intents('native') == before_intents

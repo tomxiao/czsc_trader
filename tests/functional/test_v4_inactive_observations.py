@@ -1,6 +1,6 @@
 """Explicit seed-only periods never fabricate or fetch inactive dynamic inputs."""
 from dataclasses import replace
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from types import MappingProxyType, SimpleNamespace
 from unittest.mock import patch
 from zoneinfo import ZoneInfo
@@ -122,15 +122,20 @@ def test_active_missing_data_is_an_error(tmp_path, market):
 def test_forward_recipe_transitions_from_inactive_binding_to_actual_request(tmp_path,market,missing):
     context, request, products, calls = fixture(tmp_path,market,missing=missing)
     # Prepare a seed-only recipe ending before the dynamic source starts.
-    from dataflows.equity_data import equity_metadata, sessions_from_metadata
+    from dataflows.equity_data import equity_metadata, sessions_from_metadata, session_record
     def ranged(binding):
         def fetch(query):
             frame,metadata=binding.fetch(query)
             p=query.parameters
             days=frame.Date.dt.tz_convert(p.instrument.timezone).dt.date
             frame=frame.loc[(days>=p.query.start)&(days<=p.query.end)].copy()
-            sessions=tuple(s for s in sessions_from_metadata(metadata) if p.query.start<=s.session_date<=p.query.end)
+            source_sessions=sessions_from_metadata(metadata)
+            sessions=tuple(s for s in source_sessions if p.query.start<=s.session_date<=p.query.end)
+            following=next((s for s in source_sessions if s.session_date>p.query.end),None)
+            following_record=session_record(following) if following is not None else metadata.get('following_session')
             metadata=equity_metadata(query,sessions,availability_basis='SYNTHETIC_BAR_CLOSE')
+            if p.query.product is EquityProduct.TRADING_FACTS and following_record is not None:
+                metadata['following_session']=following_record
             metadata['no_actions_verified']=True
             return frame,metadata
         return ProviderBinding(binding.name,binding.revision,fetch)
@@ -140,7 +145,7 @@ def test_forward_recipe_transitions_from_inactive_binding_to_actual_request(tmp_
     with ResearchExecutionSession(context,experiment=request.experiment) as session:
         request=context.evaluation.prepare(replace(request,window=seed_window),execution=session).request
     assert not calls
-    recipe=FormalV4Inputs('a'*64,request.input_binding,request.fee_rate)
+    recipe=FormalV4Inputs('a'*64,request.input_binding.for_observations(),request.fee_rate)
     client=FormalV4AdviceClient(repo_root=tmp_path,store=SimpleNamespace(virtual_account=lambda account:{'last_decision_payload':None}),dataflows=context.data,data_dir=tmp_path/'forward')
     first=client._forward_inputs('fixture',recipe,seed_window,candidate=request.candidate)
     assert first.binding.observation_bindings[0].request is None
@@ -161,7 +166,21 @@ def test_forward_recipe_transitions_from_inactive_binding_to_actual_request(tmp_
     assert binding.request.end == '2026-10-14'
     assert binding.content_sha256 and binding.inactive_through is None
     assert len(calls) == 1
-    online=prepare_equity_decision(context.data,request.candidate,active.binding,active.requests,later,fee_rate=request.fee_rate,live=True)
+    from paper_trading_engine.execution_inputs import resolve_live_context
+    calendar_request=next(query for role,query in active.binding.bind_requests(active.requests) if role=='sessions')
+    calendar=context.data.fetch(calendar_request,prepared=active.binding.prepared)
+    assert calendar.ready
+    sessions=sessions_from_metadata(calendar.identity.metadata)
+    # The synthetic calendar ends on Thursday; Friday is explicitly known for
+    # the host's T+1 availability calculation, without adding a future price bar.
+    tail=sessions[-1]
+    assert tail.session_date == date(2026,10,15)
+    next_session=replace(tail,session_date=date(2026,10,16),segments=tuple(
+        TimeInterval(part.start+timedelta(days=1),part.end+timedelta(days=1)) for part in tail.segments))
+    calendar_metadata={**calendar.identity.metadata,'sessions':[session_record(s) for s in (*sessions,next_session)]}
+    execution_context=resolve_live_context(request.candidate,later,calendar.dataframe,calendar_metadata)
+    online=prepare_equity_decision(context.data,request.candidate,active.binding,active.requests,later,
+        fee_rate=request.fee_rate,live=True,execution_context=execution_context)
     from strategy_runtime.account_planning import AccountDecisionEngine
     view=AccountDecisionEngine(request.candidate,online.v4_replay).table_views(later.start)['increment']
     assert view.status is TableObservationStatus.ACTIVE and len(view) == 4

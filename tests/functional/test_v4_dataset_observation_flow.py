@@ -125,7 +125,7 @@ def test_forward_tables_pin_intervals_and_keep_seed_bounds(tmp_path, market):
     client = FormalV4AdviceClient(repo_root=tmp_path, store=SimpleNamespace(
         virtual_account=lambda account: {'last_decision_payload': None}),
         dataflows=context.data, data_dir=tmp_path / 'forward')
-    recipe = FormalV4Inputs('a' * 64, request.input_binding, request.fee_rate)
+    recipe = FormalV4Inputs('a' * 64, request.input_binding.for_observations(), request.fee_rate)
     row = products[EquityProduct.BARS].iloc[1]
     interval = TimeInterval(row.BarStart.to_pydatetime(), row.Date.to_pydatetime())
     value = client._forward_inputs('fixture', recipe, interval, candidate=request.candidate)

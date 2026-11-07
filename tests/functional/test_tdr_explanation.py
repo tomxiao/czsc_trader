@@ -75,12 +75,12 @@ def test_recorded_explanation_and_failure_survive_backtest(current_frozen, monke
     repository, version = frozen_observation_revision(current_frozen, _author_explanation)
     context = research_context(repository, execution_flows(repository.root))
     if failure:
-        import czsc_trader.backtesting.observation as recorder
-        original = recorder.observe_execution_plan
-        def unavailable(definition, plan):
-            original(definition, plan)  # preserve real identity validation
+        from strategy_runtime import observation as recorder
+        original = recorder.observe_strategy_proposal
+        def unavailable(definition, proposal, *, plan_identity, action):
+            original(definition, proposal, plan_identity=plan_identity, action=action)
             return ObservationUnavailable('Injected observation-only failure', 'strategy_observation.v4')
-        monkeypatch.setattr(recorder, 'observe_execution_plan', unavailable)
+        monkeypatch.setattr(recorder, 'observe_strategy_proposal', unavailable)
     result = run_backtest(context, version, BacktestRequest(
         '588080.SH', 'etf', date(2026,9,15), date(2026,9,21), 100000, 100))
     assert result.manifest['audit']['status'] == 'PASS'

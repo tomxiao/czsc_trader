@@ -94,21 +94,21 @@ def test_technical_replay_rejects_identically_unavailable_observations(inspectio
     from strategy_runtime import ObservationUnavailable
     from czsc_trader.application._inspection_candidate import _load_inspection_candidate
     from czsc_trader.application.inspection_replay import _run
-    from czsc_trader.backtesting import observation as observation_module
+    from strategy_runtime import observation as observation_module
 
     context, request, _ = inspection
     candidate = _load_inspection_candidate(context, request.candidate)
-    original = observation_module.observe_execution_plan
+    original = observation_module.observe_strategy_proposal
     calls = []
 
-    def fail_display(definition, plan):
-        # Validate the real runtime plan before injecting a display-only fault.
-        observed = original(definition, plan)
+    def fail_display(definition, proposal, *, plan_identity, action):
+        # Validate the current proposal/plan identity before a display-only fault.
+        observed = original(definition, proposal, plan_identity=plan_identity, action=action)
         assert observed.to_dict()["status"] == "READY"
-        calls.append(plan.plan_identity)
+        calls.append(plan_identity)
         return ObservationUnavailable("identical display failure", version)
 
-    monkeypatch.setattr(observation_module, "observe_execution_plan", fail_display)
+    monkeypatch.setattr(observation_module, "observe_strategy_proposal", fail_display)
     for side in ("candidate", "release"):
         with pytest.raises(ValueError, match="technical inspection observation unavailable.*identical display failure"):
             _run(request.research.runtime, candidate, request.replays[0],

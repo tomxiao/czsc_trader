@@ -4,8 +4,8 @@ from decimal import Decimal
 
 import pytest
 
-from dataflows import AssetClass, BarFrequency, InstrumentId, MarketId
-from strategy_runtime import AccountPolicy, CashAvailabilityPolicy, ResearchExecutionSpec, UsEquitySpec
+from execution_channels.instruments import AssetClass, BarFrequency, InstrumentId, MarketId
+from execution_channels.policy import AccountPolicy, CashAvailabilityPolicy, ResearchExecutionSpec, UsEquitySpec
 from execution_channels.futu.audit import AuditRecorder
 from execution_channels.futu.channel import (
     ChannelAccountConfig, FUTU_SIMULATE_CN_CHANNEL_ID, FUTU_US_SIM_CHANNEL_ID,
