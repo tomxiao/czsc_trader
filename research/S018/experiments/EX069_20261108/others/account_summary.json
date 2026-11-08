@@ -1,0 +1,373 @@
+{
+  "account_reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S018",
+      "experiment_id": "EX069_20261108"
+    },
+    "evidence_id": "3007b4f4511b8f87a34e42b539c165ed123e241b51ce33b0f31531b39b595f99.json",
+    "sha256": "3007b4f4511b8f87a34e42b539c165ed123e241b51ce33b0f31531b39b595f99",
+    "media_type": "application/json",
+    "name": "target-weight-account",
+    "schema": "equity_research",
+    "schema_version": 4
+  },
+  "candidate": "C9396",
+  "price_basis": "HFQ",
+  "quantity_basis": "SIMULATED_INTEGER_UNITS",
+  "runs": {
+    "candidate": {
+      "annualized_return": 0.45301726068595616,
+      "max_drawdown": 0.09052298734253228,
+      "calmar": 5.004444439861142,
+      "total_return": 3.1573664455098056,
+      "closed_cycles": 95,
+      "rolling_60_closed_cycle_median": 6.0,
+      "at_least_3_coverage": 1.0,
+      "rolling_windows": 902,
+      "decisions": 961,
+      "orders": 444,
+      "fills": 418,
+      "planning_status_counts": {
+        "NO_CHANGE": 516,
+        "READY": 412,
+        "CONSTRAINED": 32,
+        "BLOCKED": 1
+      },
+      "blocked_decisions": [
+        {
+          "date": "2025-02-10T14:30:00.000000Z",
+          "target": 1.0,
+          "order_quantity": 0,
+          "result": {
+            "desired_quantity": 681,
+            "planned_quantity": 680,
+            "reasons": [
+              "INSUFFICIENT_CASH"
+            ],
+            "status": "BLOCKED"
+          }
+        }
+      ],
+      "original_failure_day": [
+        {
+          "decision_at": "2025-02-10T14:30:00.000000Z",
+          "decision_id": "9ad39fc2c0e381cde18b9b92fd30af7a64fcc1ee31e4f12a3645bcb5b1d2d1ea",
+          "execution_end": "2025-02-10T21:00:00.000000Z",
+          "execution_start": "2025-02-10T14:30:00.000000Z",
+          "explanation": {
+            "basis": [
+              {
+                "key": "anchor",
+                "text": "182.97"
+              },
+              {
+                "key": "sector_anchor",
+                "text": "676.18648"
+              },
+              {
+                "key": "observed_signal",
+                "text": "False"
+              },
+              {
+                "key": "common_group",
+                "text": "True"
+              },
+              {
+                "key": "entry_allocation",
+                "text": "1.0"
+              },
+              {
+                "key": "current_group_allocation",
+                "text": "1.0"
+              },
+              {
+                "key": "confirmation",
+                "text": "True"
+              },
+              {
+                "key": "initial_fraction",
+                "text": "0.5"
+              },
+              {
+                "key": "held_sessions",
+                "text": "4"
+              },
+              {
+                "key": "exit_signal",
+                "text": "False"
+              },
+              {
+                "key": "promoted",
+                "text": "True"
+              },
+              {
+                "key": "exiting",
+                "text": "False"
+              },
+              {
+                "key": "target_weight",
+                "text": "1.0"
+              }
+            ],
+            "case_key": "long",
+            "explanation": "hold",
+            "judgment": "hold",
+            "next_watch": "next completed daily bar",
+            "state_key": "target"
+          },
+          "limit_price": null,
+          "observed_through": "2025-02-07T21:00:00.000000Z",
+          "plan": {
+            "capital_mode": "target_equity_fraction",
+            "cycle_after": null,
+            "cycle_before": null,
+            "evidence": {
+              "desired_quantity": 681,
+              "execution_policy": {
+                "policy_type": "TARGET_POSITION",
+                "settings": {
+                  "capital_mode": "target_equity_fraction"
+                }
+              },
+              "explanation": {
+                "basis": [
+                  {
+                    "key": "anchor",
+                    "text": "182.97"
+                  },
+                  {
+                    "key": "sector_anchor",
+                    "text": "676.18648"
+                  },
+                  {
+                    "key": "observed_signal",
+                    "text": "False"
+                  },
+                  {
+                    "key": "common_group",
+                    "text": "True"
+                  },
+                  {
+                    "key": "entry_allocation",
+                    "text": "1.0"
+                  },
+                  {
+                    "key": "current_group_allocation",
+                    "text": "1.0"
+                  },
+                  {
+                    "key": "confirmation",
+                    "text": "True"
+                  },
+                  {
+                    "key": "initial_fraction",
+                    "text": "0.5"
+                  },
+                  {
+                    "key": "held_sessions",
+                    "text": "4"
+                  },
+                  {
+                    "key": "exit_signal",
+                    "text": "False"
+                  },
+                  {
+                    "key": "promoted",
+                    "text": "True"
+                  },
+                  {
+                    "key": "exiting",
+                    "text": "False"
+                  },
+                  {
+                    "key": "target_weight",
+                    "text": "1.0"
+                  }
+                ],
+                "case_key": "long",
+                "explanation": "hold",
+                "judgment": "hold",
+                "next_watch": "next completed daily bar",
+                "state_key": "target"
+              },
+              "fee_rate": 0.001,
+              "implementation": "94bbd13ea036128a0ce31c183b34da8fedfa742cb686132c85c0edb437bfd23b",
+              "locked_quantity": null,
+              "planning_mode": "TARGET_FRACTION",
+              "planning_result": {
+                "desired_quantity": 681,
+                "planned_quantity": 680,
+                "reasons": [
+                  "INSUFFICIENT_CASH"
+                ],
+                "status": "BLOCKED"
+              },
+              "reference_price": 187.73,
+              "sizing": "TARGET_FRACTION",
+              "specification_hash": "3d7aca6e0affd8be4c639cedb070ab621ad1b30ec24aa5966530fdc73be9a8bf",
+              "target": 1.0
+            },
+            "expected_revision": 527,
+            "legs": [],
+            "orders": [],
+            "owner": "candidate:S018:C9396:94bbd13ea036128a0ce31c183b34da8fedfa742cb686132c85c0edb437bfd23b",
+            "plan_identity": "9ad39fc2c0e381cde18b9b92fd30af7a64fcc1ee31e4f12a3645bcb5b1d2d1ea",
+            "point": {
+              "decision_at": "2025-02-10T14:30:00+00:00",
+              "execution_end": "2025-02-10T21:00:00+00:00",
+              "execution_start": "2025-02-10T14:30:00+00:00",
+              "observed_through": "2025-02-07T21:00:00+00:00",
+              "precision": "BAR_INTERVAL",
+              "session_id": "2025-02-10"
+            },
+            "target_quantity": 680
+          },
+          "portfolio_revision": 527,
+          "quantity": 0,
+          "reference_price": 187.73,
+          "side": "HOLD",
+          "signal_status": "EVALUATED",
+          "target": 1.0,
+          "target_quantity": 680
+        }
+      ],
+      "last_account_point": {
+        "account_revision": 960,
+        "bar_status": "OBSERVED",
+        "cash": 415736.6445509806,
+        "close": 1774.43,
+        "cycle_id": null,
+        "decision_id": "e1e484ea4400da7409a33e71cde513ea1264b77dd787b31020c04b7b410fcc74",
+        "equity": 415736.6445509806,
+        "execution_blocked": false,
+        "quantity": 0,
+        "receivable": 0.0,
+        "session": "2026-10-30",
+        "time": "2026-10-30T20:00:00.000000Z",
+        "valuation_price_at": "2026-10-30T20:00:00.000000Z",
+        "valuation_stale": false
+      }
+    },
+    "buy_hold": {
+      "annualized_return": 1.1124013592052315,
+      "max_drawdown": 0.5705204580658572,
+      "calmar": 1.94980099920768,
+      "total_return": 16.3193811424,
+      "closed_cycles": 0,
+      "rolling_60_closed_cycle_median": 0.0,
+      "at_least_3_coverage": 0.0,
+      "rolling_windows": 902,
+      "decisions": 961,
+      "orders": 1,
+      "fills": 1,
+      "planning_status_counts": {
+        "CONSTRAINED": 1,
+        "NO_CHANGE": 960
+      },
+      "blocked_decisions": [],
+      "original_failure_day": [
+        {
+          "decision_at": "2025-02-10T14:30:00.000000Z",
+          "decision_id": "868a9de893a4251738056acc504da9ff08c6bdab046a3ffb1c3d49c561801186",
+          "execution_end": "2025-02-10T21:00:00.000000Z",
+          "execution_start": "2025-02-10T14:30:00.000000Z",
+          "explanation": {
+            "basis": [
+              {
+                "key": "target",
+                "text": "1.0"
+              }
+            ],
+            "case_key": "long",
+            "explanation": "buy and hold",
+            "judgment": "buy and hold",
+            "next_watch": "next completed decision",
+            "state_key": "target"
+          },
+          "limit_price": null,
+          "observed_through": "2025-02-07T21:00:00.000000Z",
+          "plan": {
+            "capital_mode": "full_available_cash",
+            "cycle_after": null,
+            "cycle_before": null,
+            "evidence": {
+              "desired_quantity": 976,
+              "execution_policy": {
+                "policy_type": "TARGET_POSITION",
+                "settings": {
+                  "capital_mode": "full_available_cash"
+                }
+              },
+              "explanation": {
+                "basis": [
+                  {
+                    "key": "target",
+                    "text": "1.0"
+                  }
+                ],
+                "case_key": "long",
+                "explanation": "buy and hold",
+                "judgment": "buy and hold",
+                "next_watch": "next completed decision",
+                "state_key": "target"
+              },
+              "fee_rate": 0.001,
+              "implementation": "0678fe32a7d554c21c2a81258a47128453af84f75bab68289494ff8abacc4ebb",
+              "locked_quantity": null,
+              "planning_mode": "TARGET_FRACTION",
+              "planning_result": {
+                "desired_quantity": 976,
+                "planned_quantity": 976,
+                "reasons": [],
+                "status": "NO_CHANGE"
+              },
+              "reference_price": 187.73,
+              "sizing": "TARGET_FRACTION",
+              "specification_hash": "3d7aca6e0affd8be4c639cedb070ab621ad1b30ec24aa5966530fdc73be9a8bf",
+              "target": 1.0
+            },
+            "expected_revision": 527,
+            "legs": [],
+            "orders": [],
+            "owner": "benchmark:195817d57477a406b5bd1ea643fbefa7f87ac5b5372432ba2c3e9f85ad25ac33",
+            "plan_identity": "868a9de893a4251738056acc504da9ff08c6bdab046a3ffb1c3d49c561801186",
+            "point": {
+              "decision_at": "2025-02-10T14:30:00+00:00",
+              "execution_end": "2025-02-10T21:00:00+00:00",
+              "execution_start": "2025-02-10T14:30:00+00:00",
+              "observed_through": "2025-02-07T21:00:00+00:00",
+              "precision": "BAR_INTERVAL",
+              "session_id": "2025-02-10"
+            },
+            "target_quantity": 976
+          },
+          "portfolio_revision": 527,
+          "quantity": 0,
+          "reference_price": 187.73,
+          "side": "HOLD",
+          "signal_status": "EVALUATED",
+          "target": 1.0,
+          "target_quantity": 976
+        }
+      ],
+      "last_account_point": {
+        "account_revision": 960,
+        "bar_status": "OBSERVED",
+        "cash": 94.43424,
+        "close": 1774.43,
+        "cycle_id": "d516fb3841a79a0b54c67ddc0b2c816588c16bb9db008d41fd4b4860f32ee1bb:0",
+        "decision_id": "56a490fea87f2da0fed4daf733782263d3d76311f5e88dff79f52942c988ee60",
+        "equity": 1731938.1142400003,
+        "execution_blocked": false,
+        "quantity": 976,
+        "receivable": 0.0,
+        "session": "2026-10-30",
+        "time": "2026-10-30T20:00:00.000000Z",
+        "valuation_price_at": "2026-10-30T20:00:00.000000Z",
+        "valuation_stale": false
+      }
+    }
+  }
+}

@@ -1,0 +1,162 @@
+{
+  "prepared": {
+    "space_id": "4d977aa7-57e2-4961-9f16-d90e63decaac",
+    "preparation_id": "c626bbed-e60b-4f67-be03-59e81528758d",
+    "manifest_sha256": "06242c4f8936b4cac111f3eeee73669472467d39ef98dd90a9da763f88e472e1"
+  },
+  "instrument": {
+    "market": "US",
+    "asset_class": "STOCK",
+    "symbol": "MU"
+  },
+  "specification_hash": "3d7aca6e0affd8be4c639cedb070ab621ad1b30ec24aa5966530fdc73be9a8bf",
+  "content_identities": [
+    [
+      "bars",
+      "764b9eb72c649f4567746cae302c50dc0800f7c695d598a7cb4a877bcab9d4ad"
+    ],
+    [
+      "sessions",
+      "4455664424475f1a136651bcdf5e6a41b5f0fe8d3d10a9826e701110785f546a"
+    ],
+    [
+      "trading_facts",
+      "3efb72ff3f4e11b3c2f1fff3e91dbdd9b49b17c9cd40f9efc87def653c706111"
+    ]
+  ],
+  "warmup_bars": 63,
+  "auxiliary_inputs": [
+    {
+      "input": {
+        "name": "soxx_hfq",
+        "instrument": {
+          "market": "US",
+          "asset_class": "ETF",
+          "symbol": "SOXX"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s018-hfq-target-repack-20261108-v1"
+        },
+        "frequency": "daily",
+        "warmup_bars": 63,
+        "max_age_seconds": 604800,
+        "analysis_price": "HFQ"
+      },
+      "bars_sha256": "ec58fd321d91873c8169016990273a00831277b0a26e506e966b7f2c3fbd9149",
+      "sessions_sha256": "4455664424475f1a136651bcdf5e6a41b5f0fe8d3d10a9826e701110785f546a"
+    }
+  ],
+  "request_bindings": [
+    [
+      "bars",
+      {
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s018-hfq-target-repack-20261108-v1"
+        },
+        "query": {
+          "product": "equity.bars",
+          "start": "2022-01-03",
+          "end": "2026-10-30",
+          "frequency": "daily",
+          "adjustment": "hfq",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "sessions",
+      {
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s018-hfq-target-repack-20261108-v1"
+        },
+        "query": {
+          "product": "equity.sessions",
+          "start": "2022-01-03",
+          "end": "2026-10-30",
+          "frequency": "daily",
+          "adjustment": "none",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "trading_facts",
+      {
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s018-hfq-target-repack-20261108-v1"
+        },
+        "query": {
+          "product": "equity.trading_facts",
+          "start": "2022-01-03",
+          "end": "2026-10-30",
+          "frequency": "daily",
+          "adjustment": "hfq",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "auxiliary:soxx_hfq:bars",
+      {
+        "instrument": {
+          "market": "US",
+          "asset_class": "ETF",
+          "symbol": "SOXX"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s018-hfq-target-repack-20261108-v1"
+        },
+        "query": {
+          "product": "equity.bars",
+          "start": "2022-01-03",
+          "end": "2026-10-30",
+          "frequency": "daily",
+          "adjustment": "hfq",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "auxiliary:soxx_hfq:sessions",
+      {
+        "instrument": {
+          "market": "US",
+          "asset_class": "ETF",
+          "symbol": "SOXX"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s018-hfq-target-repack-20261108-v1"
+        },
+        "query": {
+          "product": "equity.sessions",
+          "start": "2022-01-03",
+          "end": "2026-10-30",
+          "frequency": "daily",
+          "adjustment": "none",
+          "session": "REGULAR"
+        }
+      }
+    ]
+  ]
+}

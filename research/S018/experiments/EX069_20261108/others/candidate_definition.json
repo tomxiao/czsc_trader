@@ -1,0 +1,112 @@
+{
+  "runtime_kind": "ACCOUNT_REPLAY",
+  "instrument": {
+    "market": "US",
+    "asset_class": "STOCK",
+    "symbol": "MU"
+  },
+  "execution_spec": {
+    "market": {
+      "rule_version": "US_EQUITY_V1"
+    },
+    "decision_clock": "daily",
+    "account": {
+      "currency": "USD",
+      "cash_availability": "IMMEDIATE_RESEARCH",
+      "allow_short": false,
+      "allow_negative_cash": false
+    },
+    "quantity_step": 1,
+    "price_tick": 0.01,
+    "buy_premium": 0.01,
+    "slippage_bp": 0.0,
+    "execution": "BAR_RANGE_V1",
+    "inclusive_touch": false,
+    "data_latency_seconds": 0
+  },
+  "warmup_bars": 63,
+  "entrypoint": "strategy:step",
+  "source_files": [
+    "strategy.py"
+  ],
+  "source_sha256": "bd4b5f1a93e23bf8cb06457a201cb06fe9d0df34d7df4f1d574491c83e84aef9",
+  "parameters_json": "{\"add_mode\":\"repair_both\",\"add_mu_margin\":0.01,\"add_sector_margin\":0.0,\"beta_window\":40,\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":3,\"entry_days\":2,\"exit_margin\":0.005,\"initial_fraction\":0.5,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+  "dependencies": [
+    {
+      "name": "numpy",
+      "version": "2.5.2"
+    },
+    {
+      "name": "pandas",
+      "version": "3.0.5"
+    }
+  ],
+  "contract_version": 4,
+  "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"add_mu_margin\":{\"type\":\"number\"},\"add_sector_margin\":{\"type\":\"number\"},\"beta_window\":{\"type\":\"integer\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"entry_days\":{\"type\":\"integer\"},\"exit_margin\":{\"type\":\"number\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+  "feedback_mode": "CONFIRMED_EXECUTION",
+  "analysis_price": "HFQ",
+  "explanation_cases": [
+    "flat",
+    "long"
+  ],
+  "auxiliary_inputs": [
+    {
+      "name": "soxx_hfq",
+      "instrument": {
+        "market": "US",
+        "asset_class": "ETF",
+        "symbol": "SOXX"
+      },
+      "source": {
+        "provider": "futu",
+        "revision": "s018-hfq-target-repack-20261108-v1"
+      },
+      "frequency": "daily",
+      "warmup_bars": 63,
+      "max_age_seconds": 604800,
+      "analysis_price": "HFQ"
+    }
+  ],
+  "feature_graph": {
+    "nodes": [],
+    "outputs": [],
+    "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+  },
+  "state_schema": {
+    "account_fields": [],
+    "cycle_fields": [
+      {
+        "key": "anchor",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "sector_anchor",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "allocation",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "promoted",
+        "value_type": "bool",
+        "nullable": false
+      },
+      {
+        "key": "exiting",
+        "value_type": "bool",
+        "nullable": false
+      }
+    ]
+  },
+  "computation": "STATEFUL_STEP",
+  "execution_policy": {
+    "policy_type": "TARGET_POSITION",
+    "settings": {
+      "capital_mode": "target_equity_fraction"
+    }
+  }
+}

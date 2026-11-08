@@ -1,0 +1,33 @@
+{
+  "status": "PASS",
+  "platform_commit": "235253559",
+  "scope": "FOCUSED_ONLY_NOT_REPOSITORY_REGRESSION",
+  "platform_unique_cases": 123,
+  "platform_groups": [
+    {"name": "EC HFQ and best effort planning", "passed": 43},
+    {"name": "EC effects and CN/US PaperStore integration", "passed": 18},
+    {"name": "PTE runtime and TDR account replay", "passed": 13, "deselected": 2, "exclusion": "Frozen package release acceptance is outside this task"},
+    {"name": "Historical boundary and CN/US V4 inspection roundtrip", "passed": 49}
+  ],
+  "candidate_unique_cases": 29,
+  "candidate_test_file": "src/test_equivalence.py",
+  "candidate_execution": [
+    {"passed": 28, "failed": 1, "reason": "Updated assertion mistakenly referenced plan.instructions instead of plan.orders"},
+    {"passed": 1, "deselected": 28, "scope": "Only repaired insufficient_remaining_cash case rerun"}
+  ],
+  "candidate_coverage": [
+    "Same financial predicates and threshold boundaries",
+    "Promotion independent of buy fill count; sticky promotion and exit",
+    "Same confirmed input produces equal TDR/PTE plans",
+    "Pending unfilled entry, duplicate adoption and restart",
+    "Insufficient incremental cash returns blocked plan without changing target",
+    "Future or misaligned auxiliary input rejected"
+  ],
+  "real_signal_evidence": "others/signal_evidence_reference.json",
+  "real_signal_points": 961,
+  "real_signal_differences": 0,
+  "limits": [
+    "No claim of old fixed cash budget and new current equity target economic equivalence",
+    "No production or live broker writes; no frozen version modification"
+  ]
+}
