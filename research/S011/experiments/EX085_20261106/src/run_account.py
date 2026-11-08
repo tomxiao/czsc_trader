@@ -1,7 +1,7 @@
 """Run a native V4 S011 account on retained exact-cutoff data."""
 from pathlib import Path
 from datetime import date
-import importlib.util,json,sys,shutil
+import importlib.util,json,sys
 from hashlib import sha256
 from copy import deepcopy
 import pandas as pd
@@ -43,7 +43,7 @@ else:
  exp=create_experiment(context,ExperimentRequest('冻结S011-v1原生V4迁移等价性验证','固定信号计时、周期数量锁及原研究截止；核对原生V4和当前冻结账户的逐笔成交及逐日权益。',date(2026,11,6)))
  planfile.write_text(json.dumps(exp.to_dict(),ensure_ascii=False,indent=2),encoding='utf-8')
 home=exp.resolve(ROOT);(home/'src'/'run_account.py').write_text(Path(__file__).read_text(encoding='utf-8'),encoding='utf-8')
-source_root=ROOT/'research/S011/runtime_upgrade_v4';shutil.copyfile(ROOT/'research/shared/runtime_upgrade_v4/cycle_planner.py',source_root/'cycle_planner.py')
+source_root=ROOT/'research/S011/runtime_upgrade_v4'
 module_spec=importlib.util.spec_from_file_location('s011_upgrade_builder',source_root/'candidate.py');module=importlib.util.module_from_spec(module_spec);module_spec.loader.exec_module(module)
 params=json.loads((ROOT/'.tmp/rsch-frozen-v4-upgrade/S011-v1-definition.json').read_text(encoding='utf-8'))['parameters']['values']
 candidate=module.build_candidate(params,observation_source=SourceRef('s011-retained-tushare-observations','ex087-v1'))

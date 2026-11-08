@@ -4,7 +4,6 @@ from datetime import date
 import importlib.util,json,sys
 from dataclasses import replace
 from hashlib import sha256
-import shutil
 import pandas as pd
 from czsc_trader.application import create_experiment,ExperimentRequest
 from czsc_trader.research_tools import EvidenceRef
@@ -29,7 +28,6 @@ else:
 home=exp.resolve(ROOT)
 (home/'src'/'run_accounts.py').write_text(Path(__file__).read_text(encoding='utf-8'),encoding='utf-8')
 source_root=ROOT/'research/S015/runtime_upgrade_v4'
-shutil.copyfile(ROOT/'research/shared/runtime_upgrade_v4/cycle_planner.py',source_root/'cycle_planner.py')
 module_spec=importlib.util.spec_from_file_location('s015_upgrade_builder',source_root/'candidate.py');module=importlib.util.module_from_spec(module_spec);module_spec.loader.exec_module(module)
 params=json.loads((ROOT/'.tmp/rsch-frozen-v4-upgrade/S015-v1-definition.json').read_text(encoding='utf-8'))['parameters']['values']
 candidate=module.build_candidate(params,observation_source=SourceRef('s015-saved-tushare-observations','ex087-v1'))

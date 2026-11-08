@@ -7,6 +7,7 @@ research/
   RSCH_AGENT.md                       # 研究员工作指南
   guides/                            # A股、美股等市场补充指南
   registrations/                     # 研究族、立项凭据及候选登记
+  history/                           # 已结束的跨批次迁移记录，仅供历史查阅
 
   <批次>/
     batch.json                       # 批次身份
@@ -36,6 +37,8 @@ research/
 ```
 
 各批次从对应的`HANDOFF.md`接续；历史批次的实际布局以其交接记录和引用为准。
+
+跨批次迁移的旧评估和交付见[历史资料索引](history/README.md)，不作为当前研究状态或执行入口。
 
 研究方法与职责见[RSCH指南](RSCH_AGENT.md)，市场差异见[A股补充](guides/CN_RESEARCH.md)和
 [美股补充](guides/US_RESEARCH.md)，平台接口及证据契约见[TDR说明](../src/czsc_trader/README.md)。
