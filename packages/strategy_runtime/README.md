@@ -108,7 +108,7 @@ V4的 `feedback_mode`固定为 `CONFIRMED_EXECUTION`；旧V2闭合周期模式�
 
 资金模式属于冻结 `execution_policy`，不属于策略决策。`TARGET_POSITION` 的 `capital_mode`
 支持 `target_equity_fraction` 和 `full_available_cash`；`FROZEN_RULE` 的 `signal_cash_fraction`
-将首次正目标作为资金比例，EC锁定预算到退出。EC不从解释中读取交易参数，无法买入最低单位时明确阻断。
+将首次正目标作为资金比例，EC锁定预算到退出。EC不从解释中读取交易参数；无法买入最低单位时返回委托受阻结果，保留策略目标并继续账户处理，不能伪装成策略无入场意图。
 订单、依赖腿和 `FILLED_ALL` 条件由EC生成并按确认成交处理。
 
 日线策略若需开盘、11:30等盘中检查点，声明

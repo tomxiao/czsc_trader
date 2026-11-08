@@ -114,6 +114,7 @@ def _target_plan(
         desired = int((equity * Decimal(str(target_position)) / (reference * lot))
                       .to_integral_value(rounding=ROUND_FLOOR)) * lot
     orders: list[dict[str, object]] = []
+    blocked_reason = None
     if (equity_target and desired >= actual) or (not equity_target and target_position):
         requested = _round_tick(
             execution_reference_price * (1 + float(entry["limit_parameter"])),
@@ -133,9 +134,11 @@ def _target_plan(
         price = min(requested, upper_guard)
         allocation = Decimal(str(capital.get("allocation_fraction", 1.0)))
         unit_cost = Decimal(str(price)) * (1 + Decimal(str(capital["fee_rate"])))
-        affordable = actual + int(
+        affordable = actual + (int(
             (cash * allocation / (unit_cost * lot)).to_integral_value(rounding=ROUND_FLOOR)
-        ) * lot
+        ) * lot if unit_cost > 0 else 0)
+        if unit_cost <= 0:
+            blocked_reason = 'BELOW_PRICE_TICK'
         previous_cycle = request.deployment_settings.get("cycle_target_quantity")
         cycle_target = desired if equity_target else (affordable if previous_cycle is None else int(previous_cycle))
         target = min(cycle_target, affordable)
@@ -162,6 +165,9 @@ def _target_plan(
         previous_cycle = request.deployment_settings.get("cycle_target_quantity")
         cycle_target = desired if equity_target else (0 if not actual else int(previous_cycle or actual))
         side = "SELL"
+        if price <= 0:
+            blocked_reason = 'BELOW_PRICE_TICK'
+            target, delta, action = actual, 0, 'HOLD' if actual else 'WAIT'
     remaining = abs(delta)
     maximum = int(instrument["maximum_order_quantity"])
     while remaining:
@@ -189,6 +195,7 @@ def _target_plan(
     )
     return {
         "contract_version": "advice.v4",
+        "planning_blocked_reason": blocked_reason,
         "actual_quantity": actual,
         "cycle_target_quantity": cycle_target,
         "target_quantity": target,
@@ -297,12 +304,13 @@ def _intraday_overlay_plan(
     cycle_target = int(previous_cycle or 0)
     reserve = Decimal("0")
     legs: list[dict[str, object]] = []
+    blocked_reason = None
     if previous_cycle is None:
         if actual:
             raise RuntimeContractError("intraday overlay core identity is missing")
         target = affordable(cash * Decimal(str(settings["core_fraction"])))
         if target <= 0:
-            raise RuntimeContractError("intraday overlay cannot afford one core lot")
+            blocked_reason = 'INSUFFICIENT_CASH'
         cycle_target = target
         action = "BUY"
         plan_mode = "CORE_SETUP"
@@ -323,7 +331,7 @@ def _intraday_overlay_plan(
         if request.target_position > 0:
             event_quantity = min(int(previous_cycle), affordable(cash))
             if event_quantity <= 0:
-                raise RuntimeContractError("intraday overlay cannot afford one event lot")
+                blocked_reason = 'INSUFFICIENT_CASH'
             action = "ROTATE"
             plan_mode = "CORE_EVENT_INTRADAY_ROTATION"
             reserve = buy_limit * event_quantity * (1 + fee)
@@ -349,8 +357,12 @@ def _intraday_overlay_plan(
                     "order": {"side": "SELL", "quantity": event_quantity, "order_type": "MARKET", "limit_price": request.execution_reference_price, "time_in_force": "DAY"},
                 },
             ]
+    if blocked_reason:
+        legs, reserve = [], Decimal(0)
+        target, action = actual, 'HOLD' if actual else 'WAIT'
     return {
         "contract_version": "advice.v5",
+        "planning_blocked_reason": blocked_reason,
         "actual_quantity": actual,
         "cycle_target_quantity": cycle_target,
         "target_quantity": target,

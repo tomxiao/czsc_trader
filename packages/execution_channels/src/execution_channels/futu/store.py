@@ -30,6 +30,7 @@ from .lifecycle import (AccountHealth, RunState, DecisionState, IntentControlSta
                         validate_transition, planned_orders, execution_state)
 
 from .equity_events import EquityEventStore
+from .execution_effects import ExecutionEffectStore
 from .channel_accounts import ChannelAccountStore, DEFAULT_CHANNEL_ACCOUNT
 from .account_retirement import (
     AccountRetirementRequest, AccountRetirementResult, AccountRetirementStatus, CapitalPoolBalance,
@@ -179,7 +180,7 @@ def backup_runtime_database(path: Path, *, retention: int = 1) -> Path | None:
 
 
 
-class PaperStore(ChannelAccountStore, EquityEventStore):
+class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore):
     @classmethod
     def open_readonly(cls, path: Path) -> "PaperStore":
         """Read a consistent current-schema snapshot without creating or migrating it."""

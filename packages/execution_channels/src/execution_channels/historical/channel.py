@@ -5,6 +5,7 @@ Adoption records intent/state; advance confirms modeled execution separately.
 """
 from dataclasses import dataclass
 from datetime import datetime
+from decimal import Decimal
 from enum import StrEnum
 from bisect import bisect_right
 
@@ -13,6 +14,7 @@ import pandas as pd
 from ..contracts import (AccountExecutionPlan, AccountSnapshot, EquityPortfolio,
                          PositionFeedback, RecognizedAccountEvent, CycleBudget)
 from ..instruments import InstrumentId
+from ..execution_effects import DecisionExecutionEffect, OrderExecutionEffect, decision_execution_effect
 from ..state import AccountStrategyState, CycleState, StateRecord
 from .portfolio import PortfolioHistoricalExecutor
 from .input_facts import normalize_constraint_times
@@ -168,6 +170,30 @@ class HistoricalReplayChannel:
             self._pending_before_state = None
         self._clock = to
         return HistoricalAdvance(to, completed)
+
+    def decision_execution_effect(self, plan_identity: str, *, valuation_price: Decimal | float,
+                                  at: datetime) -> DecisionExecutionEffect:
+        """Read current confirmed account/decision facts at the channel clock."""
+        if self._clock != at or self._failed:
+            raise ValueError('historical execution effect requires its current unfailed clock')
+        proposal = self._adopted[plan_identity]
+        plan = proposal.plan
+        evidence = plan.evidence
+        orders = [x for x in self.executor.rows['orders'] if x['decision_id'] == plan_identity]
+        effects = []
+        if plan_identity not in self.executor.completed:
+            instructions = tuple(x.order for x in plan.legs) if plan.legs else plan.orders
+            effects = [OrderExecutionEffect(f'{plan_identity}:{i}', order.side.value, order.quantity,
+                0, 'PENDING', True) for i, order in enumerate(instructions)]
+        else:
+            for row in orders:
+                filled = row['quantity'] if row['status'] == 'FILLED' else 0
+                effects.append(OrderExecutionEffect(row['order_id'], row['side'], row['quantity'], filled,
+                    row['status'], False, reason=None if filled else row['reason']))
+        return decision_execution_effect(decision_id=plan_identity, at=at,
+            target_weight=evidence['target'], planning_result=evidence['planning_result'],
+            actual_quantity=self.executor.quantity, cash=self.executor.cash, available_cash=self.executor.cash,
+            receivable=self.executor.receivable, valuation_price=valuation_price, orders=tuple(effects))
 
     def snapshot(self, account_id: str, *, at: datetime,
                  observed_through: datetime | None = None) -> HistoricalSnapshot:

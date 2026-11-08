@@ -41,6 +41,22 @@ EC 拥有交易规则、订单规划与渠道账户。输入为宿主已经准�
 应用负责 `serialization.to_record/from_record` 的类型投影。字段类型、未知字段、
 价格与数量边界在执行域校验；投影不重新计算策略。
 
+EC对合法目标采用尽力执行语义。`AccountExecutionPlan.planning_result` 返回强类型
+`PlanningResult`：`READY`表示生成计划，`CONSTRAINED`表示仅部分要求可规划，`BLOCKED`
+表示本次没有合法可执行委托，`NO_CHANGE`表示无需调整，`SUPPRESSED`表示观察不足而暂停规划。
+目标比例及期望数量保留，可执行计划数量另列；原因区分可用现金不足、低于最小单位、
+低于价格单位、可卖量不足及依赖不可执行。READY不是成交成功，NO_CHANGE也不保证精确仓位比例。
+首次进场或后续增仓买不起最低单位时，委托受阻但账户继续推进；不缩放价格、不修改目标或交易单位。
+无可执行入场不建立虚构的持仓或预算周期。非法合同、账户不一致及数据损坏仍明确异常。
+
+确认后的实际效果由 `HistoricalReplayChannel.decision_execution_effect` 和
+`PaperStore.decision_execution_effect` 查询；后者由CN、US模拟渠道共用。
+调用方传入决策身份、明确估值价格和查询时点，接口只读取现有账本，不拉取行情或触发交易。
+`DecisionExecutionEffect` 返回目标、实际数量/资金/仓位偏差，以及每笔订单的确认成交量、
+在途状态和原因。`WAITING/PARTIAL/COMPLETED/NOT_EXECUTED/UNKNOWN`描述执行进度；
+`terminal`独立标识是否仍有未决订单。COMPLETED仅表示本次订单完成或无需订单，不能当作100%达到目标。
+市值及偏差采用调用方明确给定的估值价格，不冒称实时市价。查询要求当前规划证据，旧决策不猜测目标语义。
+
 冻结日频实现由 `planning.session.plan_session_decision` 处理，输入为 `SessionProposal`
 及渠道账户、状态快照；历史股票二元目标由 `planning.frozen_equity.plan_frozen_equity`
 处理。历史与在线调用同一个规划实现，不在宿主重复资金和数量算法。
@@ -75,7 +91,7 @@ EC 不导入或回调 SRT。旧 TXE 的历史实现已迁至本包，不保留�
 `TARGET_POSITION` 支持目标权益比例和持仓后不追加的全现金模式；`FROZEN_RULE` 复用冻结规则；
 `INTRADAY_OVERLAY` 复用核心仓位和依赖腿。EC负责报价、费用预算、取整、股数和资金。
 `signal_cash_fraction` 的首次正目标本身是开仓资金比例，预算锁定到退出；历史快照暴露
-`budget` 和 `locked_quantity` 供下一次规划使用。无法买入最低单位以 `INSUFFICIENT_LOT` 阻断。
+`budget` 和 `locked_quantity` 供下一次规划使用。无法买入最低单位返回明确的规划受阻结果，保留目标并继续账户处理。
 
 `PortfolioHistoricalExecutor(price_basis="HFQ")` 拒绝 RAW 和公司行动参数。
 报价、成交、估值及账户使用 HFQ 和整数模拟单位，不缩放行情、不降低手数、不使用小数股。

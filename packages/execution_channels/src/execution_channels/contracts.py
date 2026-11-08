@@ -179,6 +179,12 @@ class AccountExecutionPlan:
     cycle_after: CycleBudget | None = None
     evidence: object = field(default_factory=dict)
 
+    @property
+    def planning_result(self):
+        """Feasibility from the shared planner, never a claim about actual fills."""
+        from .planning.result import PlanningResult
+        return PlanningResult.from_dict(self.evidence['planning_result'])
+
     def __post_init__(self):
         from .identity import freeze as _freeze
         from collections.abc import Mapping

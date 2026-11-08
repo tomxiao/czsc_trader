@@ -139,7 +139,7 @@ class EquityEvaluationRequest:
         from execution_channels.historical import channel
         from execution_channels import contracts, policy, state, serialization, entry_cycle, identity, instruments, session_contracts
         from execution_channels import planning, market_rules
-        from execution_channels.planning import intent, session_rules
+        from execution_channels.planning import intent, session_rules, result as planning_result
         from execution_channels.market_rules import constraints as rule_constraints
         from execution_channels.historical import market, input_facts
         from strategy_runtime import data_preparation
@@ -151,7 +151,7 @@ class EquityEvaluationRequest:
                 observation_preparation, account_planning, se_assessment,
                 equity_replay, equity_assessment, parameter_evaluation, account_preparation, accounting,
                 portfolio, account_ledger, channel, contracts, policy, state, serialization,
-                entry_cycle, planning, intent, session_rules, market_rules, rule_constraints,
+                entry_cycle, planning, intent, session_rules, planning_result, market_rules, rule_constraints,
                 ec_boundary, execution_inputs, data_preparation, identity, instruments, session_contracts, market, input_facts):
             engine_sources[module.__name__] = sha256(Path(module.__file__).read_bytes()).hexdigest()
         return self._identity_with_sources(specification, engine_sources)

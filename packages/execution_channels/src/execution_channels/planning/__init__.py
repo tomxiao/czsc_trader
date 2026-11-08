@@ -10,16 +10,14 @@ from ..entry_cycle import EntryCyclePhase
 from ..session_contracts import OrderSide, OrderType
 from ..policy import ResearchExecutionSpec, ExecutionPolicy
 from ..identity import equity_hash, _thaw_json
-from ..errors import RuntimeContractError
 from .intent import TradeIntent
 from .session_rules import ExecutionRuleInput, build_frozen_execution_plan
+from .result import PlanningResult, PlanningStatus, PlanningConstraint
 
 
-def _order(record, sellable):
+def _order(record):
     side, kind = OrderSide(record['side']), OrderType(record['order_type'])
     quantity = int(record['quantity'])
-    if side is OrderSide.SELL and quantity > sellable:
-        raise RuntimeContractError('INSUFFICIENT_SELLABLE_QUANTITY: frozen sell rule is blocked')
     return ReplayOrder(side, quantity, kind, float(record['limit_price']) if kind is OrderType.LIMIT else None)
 
 
@@ -60,6 +58,7 @@ def plan_account_decision(decision, point, account, reference, spec, *, owner,
     mode, desired = 'target_equity_fraction', account.quantity
     lock = locked_quantity
     planning_mode = 'TARGET_FRACTION'
+    reasons = []
     if suppressed:
         mode = 'signal_cash_fraction' if cycle_budget is not None else mode
         planning_mode = 'EXPLICIT_ORDERS'
@@ -75,18 +74,26 @@ def plan_account_decision(decision, point, account, reference, spec, *, owner,
         if mode == 'full_available_cash' and account.quantity and decision.target:
             desired = account.quantity
         if decision.target > 0 and not account.quantity and desired == 0:
-            raise RuntimeContractError('INSUFFICIENT_LOT: target allocation cannot buy one execution unit')
+            reasons.append(PlanningConstraint.BELOW_MINIMUM_UNIT)
         if desired > account.quantity:
             price = (Decimal(str(reference)) * (1+Decimal(str(spec.buy_premium))) / tick).to_integral_value(rounding=ROUND_FLOOR) * tick
-            affordable = max(0, int(Decimal(str(account.available_cash)) / (price * (1+Decimal(str(fee_rate)))) / step) * step)
+            if price <= 0:
+                reasons.append(PlanningConstraint.BELOW_PRICE_TICK)
+            affordable = (max(0, int(Decimal(str(account.available_cash)) / (price * (1+Decimal(str(fee_rate)))) / step) * step)
+                          if price > 0 else 0)
             amount = min(desired-account.quantity, affordable) // step * step
-            if not amount:
-                raise RuntimeContractError('INSUFFICIENT_LOT: cash cannot buy one execution unit including fees')
-            orders = (ReplayOrder(OrderSide.BUY, amount, OrderType.LIMIT, float(price)),)
+            if price > 0 and amount < desired-account.quantity:
+                reasons.append(PlanningConstraint.INSUFFICIENT_CASH)
+            if amount:
+                orders = (ReplayOrder(OrderSide.BUY, amount, OrderType.LIMIT, float(price)),)
         elif desired < account.quantity:
             amount = min(account.quantity-desired, account.sellable_quantity)
             if amount < account.quantity or sell_remainder_policy is SellRemainderPolicy.STRICT_STEP:
                 amount = amount // step * step
+            if account.sellable_quantity < account.quantity-desired:
+                reasons.append(PlanningConstraint.INSUFFICIENT_SELLABLE_QUANTITY)
+            if not amount and not reasons:
+                reasons.append(PlanningConstraint.BELOW_MINIMUM_UNIT)
             if amount:
                 orders = (ReplayOrder(OrderSide.SELL, amount, OrderType.MARKET),)
     elif kind in {'FROZEN_RULE', 'INTRADAY_OVERLAY'}:
@@ -125,32 +132,64 @@ def plan_account_decision(decision, point, account, reference, spec, *, owner,
         raw = build_frozen_execution_plan(request)
         lock = int(raw['cycle_target_quantity']) or None
         desired = int(raw['target_quantity'])
+        if kind == 'FROZEN_RULE':
+            desired = int(raw['cycle_target_quantity']) if target else 0
+        if raw.get('planning_blocked_reason'):
+            reasons.append(PlanningConstraint(raw['planning_blocked_reason']))
         if mode == 'signal_cash_fraction' and before is None and target:
-            if not lock:
-                raise RuntimeContractError('INSUFFICIENT_LOT: cycle allocation cannot buy one execution unit')
-            after = CycleBudget(equity_hash({'owner':owner,'point':repr(point)}), lock,
-                Decimal(str(decision.target)), cash, Decimal(0), EntryCyclePhase.ACTIVE)
+            if lock:
+                after = CycleBudget(equity_hash({'owner':owner,'point':repr(point)}), lock,
+                    Decimal(str(decision.target)), cash, Decimal(0), EntryCyclePhase.ACTIVE)
         if target > 0 and not account.quantity and not raw.get('orders') and not raw.get('plan_legs'):
-            raise RuntimeContractError('INSUFFICIENT_LOT: frozen execution allocation cannot buy one unit')
-        orders = tuple(_order(row, account.sellable_quantity) for row in raw.get('orders',()))
+            reasons.append(PlanningConstraint.BELOW_MINIMUM_UNIT)
+        if kind == 'FROZEN_RULE' and int(raw['target_quantity']) < desired:
+            reasons.append(PlanningConstraint.INSUFFICIENT_CASH)
+        sellable = account.sellable_quantity
+        selected = []
+        for row in raw.get('orders',()):
+            order = _order(row)
+            if order.side is OrderSide.SELL:
+                amount = min(order.quantity, sellable)
+                if amount < account.quantity or sell_remainder_policy is SellRemainderPolicy.STRICT_STEP:
+                    amount = amount // spec.quantity_step * spec.quantity_step
+                if amount < order.quantity:
+                    reasons.append(PlanningConstraint.INSUFFICIENT_SELLABLE_QUANTITY)
+                if not amount:
+                    continue
+                sellable -= amount
+                order = replace(order, quantity=amount)
+            selected.append(order)
+        orders = tuple(selected)
         if raw.get('plan_legs'):
             zone = ZoneInfo('Asia/Shanghai' if spec.market_id.value == 'CN' else 'America/New_York')
             session = point.execution_start.astimezone(zone).date()
-            legs = tuple(ReplayLeg(int(row['sequence']), _order(row['order'], account.sellable_quantity),
+            legs = tuple(ReplayLeg(int(row['sequence']), _order(row['order']),
                 row['checkpoint'], datetime.combine(session,time.fromisoformat(row['submit_after']),zone),
                 datetime.combine(session,time.fromisoformat(row['submit_before']),zone)+timedelta(microseconds=1),
                 row.get('dependency_sequence'),row.get('dependency_required_status')) for row in raw['plan_legs'])
             planning_mode = 'DEPENDENCY_LEGS'
+            if sum(leg.order.quantity for leg in legs if leg.order.side is OrderSide.SELL) > account.sellable_quantity:
+                # Do not buy a rotation leg whose required exit lacks confirmed inventory.
+                legs = ()
+                reasons.extend((PlanningConstraint.INSUFFICIENT_SELLABLE_QUANTITY,
+                                PlanningConstraint.DEPENDENCY_UNAVAILABLE))
     else:
         raise ValueError('unsupported execution policy: '+kind)
     instructions = orders if orders else tuple(leg.order for leg in legs)
     target_quantity = account.quantity + sum(order.quantity * (1 if order.side is OrderSide.BUY else -1) for order in instructions)
     if target_quantity < 0:
         raise ValueError('orders exceed confirmed holdings')
+    reasons = tuple(dict.fromkeys(reasons))
+    status = (PlanningStatus.SUPPRESSED if suppressed else
+              PlanningStatus.CONSTRAINED if reasons and instructions else
+              PlanningStatus.BLOCKED if reasons else
+              PlanningStatus.READY if instructions else PlanningStatus.NO_CHANGE)
+    planning_result = PlanningResult(status,reasons,desired,target_quantity)
     evidence = {'planning_mode':planning_mode, 'sizing':'TARGET_FRACTION' if planning_mode=='TARGET_FRACTION' else 'EXPLICIT_ORDERS',
         'desired_quantity':desired, 'target':float(decision.target), 'explanation':decision.explanation.to_dict(),
         'reference_price':reference, 'implementation':implementation, 'fee_rate':fee_rate,
         'specification_hash':spec.fingerprint, 'locked_quantity':lock,
+        'planning_result':planning_result.to_dict(),
         'execution_policy':{'policy_type':kind,'settings':_thaw_json(execution_policy.settings)}}
     if suppressed:
         evidence['signal_status'] = 'SUPPRESSED_UNOBSERVED_BAR'

@@ -874,8 +874,8 @@ V4 必须显式声明 `execution_policy`。`TARGET_POSITION` 声明仓位资金�
 策略 `AccountDecision` 不再接受订单、依赖腿、资金模式或预算修改，`AccountDecisionProposal` 不再携带报价。
 原 `planning_context` 和价格换算系数已删除；执行状态锁由 EC 维护。
 
-历史回放保留既定数量步长、价位、费用和结算规则。资金不能购买一个合法整数单位时明确返回
-`INSUFFICIENT_LOT`，不改变规则或归一化价格。HFQ 数量为研究模拟单位，不要求逐笔复现模拟盘。
+历史回放保留既定数量步长、价位、费用和结算规则。资金不能购买一个合法整数单位时，EC明确返回
+无单受阻的规划结果并继续账户推进，不改变目标、规则或归一化价格。HFQ数量为研究模拟单位，不要求逐笔复现模拟盘。
 历史价格限制也须为 HFQ；细报价与主报价的 `price_basis_id` 必须一致。真实模拟盘的接单限制由渠道检查。
 平台不判断除权除息事件，接受 T 日参考价在 T+1 日不合适的业务限制；成交与账户以渠道实际事实为准。
 来源能力见 [DFLS](../../packages/dataflows/README.md)，订单与账户规则见 [EC](../../packages/execution_channels/README.md)。

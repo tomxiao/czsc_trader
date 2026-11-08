@@ -21,6 +21,13 @@ EC 不导入 DFLS 或 SRT，也不自行查询数据。PTE 的 `ScheduledDecisio
 隔离检验使用宿主许可投影得到的 EC `InspectionAccountPermit`，保留发布哈希、协议哈希和
 隔离目录约束。正式账户与隔离账户继续使用同一账本及成交处理逻辑。
 
+V4决策在 `strategy_output.execution_plan` 留存原目标与EC规划结果。资金不足或可卖量不足
+可以形成受约束计划或无单受阻计划，仍采纳决策并保存金融状态；HOLD/WAIT或零订单不代表目标已达成。
+`PaperStore.decision_execution_effect(account_id, decision_id, valuation_price=..., at=...)`
+从确认账本返回执行进度、实际仓位、资金和目标偏差，CN与US模拟渠道共用该入口。
+已提交、部分成交、订单完成和结果未知分别呈现；需要人工或券商核实的未知订单保持未决，不自动重发。
+查询只返回当前确认账户，不能用过去的at伪装历史快照；估值价格由调用方明确提供。
+
 ## 资金模式与代码兼容
 
 SRT 计算策略目标，EC 规划目标份额和订单，PTE 编排执行。原有`full_available_cash`、

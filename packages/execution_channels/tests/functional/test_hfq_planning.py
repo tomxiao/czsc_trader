@@ -6,11 +6,11 @@ from decimal import Decimal
 import pytest
 from execution_channels.contracts import AccountSnapshot, SellRemainderPolicy
 from execution_channels.entry_cycle import EntryCyclePhase
-from execution_channels.errors import RuntimeContractError
 from execution_channels.historical import PortfolioHistoricalExecutor
 from execution_channels.instruments import MarketId
 from execution_channels.planning import plan_account_decision
 from execution_channels.planning.intent import TradeIntent, DecisionExplanation
+from execution_channels.planning.result import PlanningStatus, PlanningConstraint
 from execution_channels.policy import ExecutionPolicy, CashAvailabilityPolicy
 from test_historical_boundary import fixture
 from test_portfolio_parity import setup, facts, plan, order
@@ -52,8 +52,11 @@ def test_intent_cannot_supply_orders_and_cannot_change_execution_with_explanatio
 def test_unaffordable_hfq_units_block_without_rescaling_or_relaxing_lots(market,kind):
     _,spec,_,_,_=fixture(market)
     policy=ExecutionPolicy('TARGET_POSITION',{}) if kind=='TARGET_POSITION' else frozen(spec)
-    with pytest.raises(RuntimeContractError,match='INSUFFICIENT_LOT'):
-        planned(market,reference=100000.,policy=policy)
+    result=planned(market,reference=100000.,policy=policy)
+    assert result.orders==() and result.legs==() and result.target_quantity==0
+    assert result.evidence['target']==1.
+    assert result.planning_result.status is PlanningStatus.BLOCKED
+    assert PlanningConstraint.BELOW_MINIMUM_UNIT in result.planning_result.reasons
     with pytest.raises(ValueError,match='HFQ'):
         PortfolioHistoricalExecutor(specification=spec,initial_cash=10000.,fee_rate=.001,price_basis='RAW')
     with pytest.raises(TypeError):
