@@ -353,7 +353,10 @@ class FutuGateway:
     def place_order(self, intent: OrderIntent) -> BrokerOrder:
         code_symbol = self._broker_symbol(intent.symbol)
         step = self.profile.quantity_step
-        if type(intent.quantity) is not int or intent.quantity <= 0 or intent.quantity % step:
+        if type(intent.full_liquidation) is not bool or (intent.full_liquidation and intent.side != 'SELL'):
+            raise PaperTradingSafetyError('full liquidation requires an explicit SELL intent')
+        if (type(intent.quantity) is not int or intent.quantity <= 0
+                or (intent.quantity % step and not intent.full_liquidation)):
             raise PaperTradingSafetyError(f"order quantity must use positive {step}-share lots")
         if self.config is not None:
             if intent.channel_account_id != self.channel_account_id:

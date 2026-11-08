@@ -31,6 +31,7 @@ from .lifecycle import (AccountHealth, RunState, DecisionState, IntentControlSta
 
 from .equity_events import EquityEventStore
 from .execution_effects import ExecutionEffectStore
+from .retirement_store import RetirementStore, RETIREMENT_CONTRACT
 from .channel_accounts import ChannelAccountStore, DEFAULT_CHANNEL_ACCOUNT
 from .account_retirement import (
     AccountRetirementRequest, AccountRetirementResult, AccountRetirementStatus, CapitalPoolBalance,
@@ -52,8 +53,8 @@ from .channel import (
 
 
 DEFAULT_FUTU_CAPITAL_POOL = "1000000.0000"
-RUNTIME_DATABASE_SCHEMA_VERSION = 8
-RUNTIME_DATABASE_COMPATIBLE_VERSIONS = (1, 2, 3, 4, 5, 6, 7, 8)
+RUNTIME_DATABASE_SCHEMA_VERSION = 9
+RUNTIME_DATABASE_COMPATIBLE_VERSIONS = (1, 2, 3, 4, 5, 6, 7, 8, 9)
 
 
 def _utc_now() -> str:
@@ -180,7 +181,7 @@ def backup_runtime_database(path: Path, *, retention: int = 1) -> Path | None:
 
 
 
-class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore):
+class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, RetirementStore):
     @classmethod
     def open_readonly(cls, path: Path) -> "PaperStore":
         """Read a consistent current-schema snapshot without creating or migrating it."""
@@ -252,7 +253,7 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore):
         stored_schema = self._connection.execute(
             "SELECT value FROM settings WHERE key='runtime_database_schema_version'"
         ).fetchone()
-        if stored_schema is not None and int(stored_schema[0]) in {3, 4, 5, 6, 7, 8}:
+        if stored_schema is not None and int(stored_schema[0]) in {3, 4, 5, 6, 7, 8, 9}:
             self._initialize_lifecycle()
             return
         self._connection.executescript(
@@ -268,6 +269,15 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore):
                 initial_cash TEXT NOT NULL,
                 released_cash TEXT NOT NULL,
                 retired_at TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS account_retirement_requests (
+                account_id TEXT PRIMARY KEY,
+                request_id TEXT NOT NULL UNIQUE,
+                request TEXT NOT NULL,
+                status TEXT NOT NULL,
+                reason TEXT NOT NULL,
+                session TEXT,
+                updated_at TEXT NOT NULL
             );
             CREATE TABLE IF NOT EXISTS events (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -589,6 +599,8 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore):
             self._connection.execute("BEGIN IMMEDIATE")
             now = _utc_now()
             migrate_lifecycle(self._connection, now)
+            from .retirement_store import migrate_retirement
+            migrate_retirement(self._connection)
             migrate_account_health(self._connection, now)
             self._initialize_channel_accounts()
             self._connection.execute("DROP INDEX IF EXISTS uq_decisions_active_signal_date")
@@ -1213,6 +1225,10 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore):
         if type(quantity) is not int or quantity <= 0:
             raise ValueError(f"intent quantity must use positive {step}-share lots")
         if quantity % step:
+            if (side == 'SELL' and decision_id is not None
+                    and self.retirement_execution_allowed(account_id, decision_id)
+                    and quantity == self.virtual_account(account_id)['quantity']):
+                return
             if rules is not None and side == "SELL" and decision_id is not None:
                 payload = self.account_decision(account_id, decision_id)["payload"]
                 if (payload.get("contract_version") == "advice.equity.v4"
@@ -1486,13 +1502,11 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore):
 
         with self.atomic_decision_update():
             account = self.virtual_account(request.account_id)
-            if account["account_type"] != STRATEGY_ACCOUNT_TYPE or account["run_state"] != RunState.PAUSED:
-                raise ValueError("retirement requires a paused strategy account")
+            if account["account_type"] != STRATEGY_ACCOUNT_TYPE or account["run_state"] != RunState.RETIRING:
+                raise ValueError("retirement requires an active retirement request")
             if account["release_hash"] != request.expected_release_hash:
                 raise ValueError("retirement release hash differs from account")
-            if account["run_state"] != RunState.PAUSED:
-                raise ValueError("pause the account before retirement")
-            if account["quantity"] != 0 or Decimal(account["frozen_cash"]) != 0:
+            if account["quantity"] != 0 or Decimal(account["frozen_cash"]) != 0 or Decimal(account['receivable']) != 0:
                 raise ValueError("retirement requires no position or frozen cash")
             if AccountHealth(account["health"]) != AccountHealth.OK:
                 raise ValueError("blocked account cannot retire")
@@ -1536,6 +1550,7 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore):
                 release_hash=request.expected_release_hash,
                 details={"released_cash": str(cash), "reason": request.reason, "actor": request.actor},
             ))
+            self.set_retirement_progress(request.account_id, AccountRetirementStatus.RETIRED)
             remaining = self._connection.execute(
                 "SELECT COUNT(*) FROM virtual_accounts WHERE strategy_id=? AND strategy_version=? "
                 "AND run_state<>'RETIRED'",
@@ -1562,8 +1577,8 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore):
             account = self.virtual_account(account_id)
             if account["account_type"] != STRATEGY_ACCOUNT_TYPE:
                 raise ValueError("system reconciliation account has no strategy lifecycle")
-            if account["run_state"] == RunState.RETIRED:
-                raise ValueError("retired account cannot be paused or resumed")
+            if account["run_state"] in (RunState.RETIRED, RunState.RETIRING):
+                raise ValueError("retired or retiring account cannot be paused or resumed")
             qualified = account["qualification_snapshot"] in {"PAPER_READY", "LIVE_READY"}
             if self._inspection_permit is not None:
                 permit = self._inspection_permit
@@ -1894,7 +1909,7 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore):
             if account["account_type"] != STRATEGY_ACCOUNT_TYPE:
                 raise ValueError("channel reconciliation account cannot create order intents")
             self._require_execution_portfolio(account_id, decision_id, creating=True)
-            if account["run_state"] != "RUNNING":
+            if account["run_state"] != "RUNNING" and not self.retirement_execution_allowed(account_id, decision_id):
                 raise ValueError("virtual account status does not allow order intents")
             if AccountHealth(account["health"]) != AccountHealth.OK:
                 raise ValueError("blocked virtual account cannot create order intents")
@@ -2428,7 +2443,8 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore):
                                     *, moment=None, submitting=False):
         account = self.virtual_account(account_id)
         self._require_account_channel(account["channel_id"])
-        if account["account_type"] != STRATEGY_ACCOUNT_TYPE or account["run_state"] != RunState.RUNNING:
+        if account["account_type"] != STRATEGY_ACCOUNT_TYPE or (account["run_state"] != RunState.RUNNING
+                and not self.retirement_execution_allowed(account_id, decision_id)):
             raise ValueError("only a running strategy account may execute a decision")
         if AccountHealth(account["health"]) != AccountHealth.OK:
             raise ValueError("blocked virtual account cannot execute decisions")
@@ -2605,6 +2621,9 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore):
         self, account_id: str, payload: dict[str, object], *, _in_transaction: bool = False,
     ) -> dict[str, Any]:
         self._check_owned("account", account_id)
+        if (self.virtual_account(account_id)['run_state'] == RunState.RETIRING
+                or payload.get('contract_version') == RETIREMENT_CONTRACT):
+            raise ValueError('retirement cannot accept or impersonate a strategy decision')
         decision_id = str(payload["decision_id"])
         if not any(key in payload for key in ("plan_legs", "orders", "order")):
             raise ValueError("decision requires explicit immutable order-plan evidence")
@@ -2632,7 +2651,7 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore):
             cycle_target = None
         with self._lock, self._write_context(_in_transaction):
             account = self.virtual_account(account_id)
-            if account["run_state"] == RunState.RETIRED or account["account_type"] != STRATEGY_ACCOUNT_TYPE:
+            if account["run_state"] in (RunState.RETIRING, RunState.RETIRED) or account["account_type"] != STRATEGY_ACCOUNT_TYPE:
                 raise ValueError("inactive account cannot save decisions")
             runtime_binding = self.v4_runtime_binding(account_id)
             if runtime_binding is not None:
@@ -3080,6 +3099,15 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore):
             (order['channel_order_id'],)).fetchone()[0]
         if int(confirmed) != filled:
             return None
+        if status in {'CANCELLED_ALL', 'CANCELLED_PART'} and not report.get('last_error'):
+            requests = self.query_audit_events(event_type='CANCEL_REQUESTED', account_id=intent['account_id'],
+                decision_id=intent['decision_id'], order_id=order['channel_order_id'], limit=1)
+            if (requests and requests[0]['source'] == 'account_retirement'
+                    and requests[0]['details'].get('reason') == 'ACCOUNT_RETIREMENT'
+                    and self.retirement_request(intent['account_id']) is not None
+                    and ((status == 'CANCELLED_ALL' and filled == 0)
+                         or (status == 'CANCELLED_PART' and 0 < filled < int(intent['quantity'])))):
+                return IntentTerminationReason.ACCOUNT_RETIREMENT
         if status in {'SUBMIT_FAILED', 'FAILED'} and filled == 0:
             return IntentTerminationReason.ORDER_REJECTED
         if (status not in {'CANCELLED_ALL', 'CANCELLED_PART'}
@@ -3181,6 +3209,9 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore):
                     ),
                 )
             attention = status in ATTENTION_REQUIRED_INTENT_STATUSES and termination_reason is None
+            if (self.is_retirement_decision(intent['account_id'], intent['decision_id'])
+                    and status in {'REJECTED', 'SUBMISSION_FAILED', 'SUBMIT_FAILED', 'FAILED', 'DISABLED', 'DELETED'}):
+                attention = True
             reason = (attention_reason or status) if attention else None
             self._connection.execute(
                 "UPDATE intents SET status=?,attention_required=?,attention_reason=?,"
@@ -3414,7 +3445,8 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore):
                 cycle = EntryCycleState.from_dict(json.loads(cycle_json))
                 adopted = self.account_decision(order["account_id"], order["decision_id"])["payload"]
                 owned = adopted.get("entry_cycle_after")
-                if owned is None or owned["cycle_id"] != cycle.cycle_id:
+                if (not self.is_retirement_decision(order['account_id'], order['decision_id'])
+                        and (owned is None or owned["cycle_id"] != cycle.cycle_id)):
                     raise ValueError("fill belongs to another entry cycle")
                 if intent["side"] == "BUY":
                     cycle = replace(cycle, buy_cost_including_fees=cycle.buy_cost_including_fees + incremental_value + fee)

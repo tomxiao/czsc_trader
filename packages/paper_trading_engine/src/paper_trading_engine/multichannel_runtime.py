@@ -35,6 +35,9 @@ class AccountAdviceRouter:
         client = self.formal if type(kwargs['prepared']) is PreparedEquityDecision else self.legacy
         return client.get_decision(*args, **kwargs)
 
+    def validate_account_binding(self, **kwargs):
+        return self.legacy.validate_account_binding(**kwargs)
+
 
 @dataclass
 class ChannelServices:
@@ -43,11 +46,14 @@ class ChannelServices:
     execution: object
     cycle: AccountStrategyCycle
     formal: FormalV4AdviceClient
+    retirement_calendar: object | None = None
 
     def refresh_account(self):
         return self.execution.refresh_account()
 
     def refresh_orders(self):
+        if self.retirement_calendar is not None:
+            self.retirement_calendar.prepare(self.execution)
         self.execution.refresh_orders()
         return self.execution.submit_pending(reconcile=False)
 
@@ -123,7 +129,7 @@ class MultiChannelRuntime:
         now = datetime.now(timezone.utc)
         failures = {}
         for account in self.store.strategy_virtual_accounts():
-            if account['run_state'] == 'RETIRED':
+            if account['run_state'] in {'RETIRING', 'RETIRED'}:
                 continue
             try:
                 task = self.schedule_provider.due_decision(account, now)
@@ -141,6 +147,8 @@ class MultiChannelRuntime:
 
     def drive_virtual_account_decision(self, account_id: str):
         account = self.store.virtual_account(account_id)
+        if account['run_state'] in {'RETIRING', 'RETIRED'}:
+            raise ValueError('inactive account cannot drive a strategy decision')
         if account['equity_rules_json'] is None:
             return self.console_view.drive_virtual_account_decision(account_id)
         services = self.services[account['channel_account_id']]
@@ -154,9 +162,18 @@ class MultiChannelRuntime:
     def _set_virtual_paused(self, account_id: str, paused: bool):
         services = self._services_for_account(account_id)
         store = services.store
+        if store.virtual_account(account_id)['run_state'] in {'RETIRING', 'RETIRED'}:
+            raise ValueError('inactive account cannot pause or resume')
         if not paused and store.equity_account_rules(account_id) is not None:
             services.formal._account_release(account_id)
             services.formal.inputs(account_id)
+        elif not paused:
+            account = store.virtual_account(account_id)
+            binding = services.accounts.advice.validate_account_binding(
+                strategy_id=account['strategy_id'], strategy_version=account['strategy_version'],
+                symbol=account['symbol'], asset=account['asset_type'])
+            if binding.release_hash != account['release_hash']:
+                raise ValueError('stored account release differs from deployed release')
         with services.accounts._decision_lock, store.atomic_decision_update():
             account = store.set_virtual_paused(account_id, paused)
             services.accounts.audit.record(
@@ -218,7 +235,7 @@ def build_multichannel_runtime(args, store, dataflows, *, gateway_factory=FutuGa
             formal = FormalV4AdviceClient(repo_root=args.repo_root, store=scoped,
                                          dataflows=dataflows, data_dir=args.data_dir)
             for account in scoped.strategy_virtual_accounts():
-                if account['run_state'] == 'RETIRED':
+                if account['run_state'] in {'PAUSED', 'RETIRING', 'RETIRED'}:
                     continue
                 if account['equity_rules_json'] is not None:
                     formal._account_release(account['account_id'])
@@ -244,7 +261,9 @@ def build_multichannel_runtime(args, store, dataflows, *, gateway_factory=FutuGa
                 execution = ReconnectableExecution(scoped, args.symbol, connect, error=exc)
             accounts = AccountEngine(scoped, AccountAdviceRouter(legacy, formal), audit=audit)
             cycle = AccountStrategyCycle(accounts, AccountDataPreparer(advice=legacy), scoped, audit=audit)
-            services_by_id[identity] = ChannelServices(scoped, accounts, execution, cycle, formal)
+            from .retirement_calendar import RetirementCalendar
+            services_by_id[identity] = ChannelServices(scoped, accounts, execution, cycle, formal,
+                RetirementCalendar(scoped, dataflows, args.config_root))
             if identity == DEFAULT_CHANNEL_ACCOUNT:
                 console = PteCoordinator(accounts, execution, strategy_cycle=cycle, audit=audit,
                                          runtime_identity=args.runtime_identity)

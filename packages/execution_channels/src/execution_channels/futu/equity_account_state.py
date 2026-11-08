@@ -139,7 +139,9 @@ def adopt_v4_decision(store, account, payload):
 
 def record_v4_fill(store, account_id, decision_id, fill_id, side, increment, value, fee, quantity, occurred_at):
     payload = store.account_decision(account_id, decision_id)["payload"]
-    if payload.get("contract_version") != "advice.equity.v4":
+    retirement = (store.is_retirement_decision(account_id, decision_id)
+                  and store.virtual_account(account_id).get('account_v4_json') is not None)
+    if payload.get("contract_version") != "advice.equity.v4" and not retirement:
         return
     document = load_document(store.virtual_account(account_id))
     state = validate_document(document)

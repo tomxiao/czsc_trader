@@ -257,6 +257,7 @@ def create_server(
                         result = asdict(driver.retire_account(AccountRetirementRequest(
                             account_id, body["expected_release_hash"], body["actor"], body["reason"],
                         )))
+                        response_status = 200 if result["status"] == "RETIRED" else 202
                     else:
                         self._json(404, {"error": "not found"})
                         return

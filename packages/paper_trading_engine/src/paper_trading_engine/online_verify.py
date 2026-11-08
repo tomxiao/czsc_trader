@@ -66,7 +66,7 @@ def _validate(plan, drive_dev):
         _identity(entry['release_hash'], 64)
         if entry['channel_account_id'] not in plan['channels']:
             raise ValueError('account channel is outside the declared scope')
-        if entry['run_state'] not in ('PAUSED', 'RUNNING', 'RETIRED'):
+        if entry['run_state'] not in ('PAUSED', 'RUNNING', 'RETIRING', 'RETIRED'):
             raise ValueError('invalid account run state')
         if drive_dev and ('decision' not in entry or entry['run_state'] != 'PAUSED'):
             raise ValueError('--drive-dev requires paused V4 accounts and explicit decision expectations')

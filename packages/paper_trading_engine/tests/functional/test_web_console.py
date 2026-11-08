@@ -67,6 +67,7 @@ def test_account_snapshot_scopes_and_orders_transactions_without_mutating_source
     original = deepcopy(rows)
     store = SimpleNamespace(
         strategy_virtual_accounts=lambda: [{"account_id": "alpha"}],
+        retirement_status=lambda _: None,
         query_audit_events=lambda **filters: [],
         account_intents=lambda account_id: [
             row for row in rows["intents"] if row["account_id"] == account_id

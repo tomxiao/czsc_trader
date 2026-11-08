@@ -154,6 +154,8 @@ class FormalV4AdviceClient:
 
     def _account_release(self, account_id):
         account = self.store.virtual_account(account_id)
+        if account['run_state'] in {'RETIRING', 'RETIRED'}:
+            raise ValueError('inactive account cannot load a strategy for execution')
         release, candidate, _ = self.load_release(account['strategy_id'], account['strategy_version'])
         rules = self.store.equity_account_rules(account_id)
         from .ec_boundary import execution_rules

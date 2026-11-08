@@ -58,7 +58,7 @@ def test_cli_rejects_changed_fee_policy_atomically(tmp_path, capsys):
 def test_runtime_keeps_console_on_original_cn_scope(tmp_path):
     store = PaperStore(tmp_path/'db')
     store.register_channel_account(ChannelAccountConfig('us-test',FUTU_US_SIM_CHANNEL_ID,123),capital=Decimal('1000'))
-    args = SimpleNamespace(repo_root=tmp_path, data_dir=tmp_path/'data', asset='etf',
+    args = SimpleNamespace(repo_root=tmp_path, config_root=tmp_path, data_dir=tmp_path/'data', asset='etf',
         symbol='588080.SH', opend_host='127.0.0.1',opend_port=11111,database=tmp_path/'db',runtime_identity={'mode':'DEV'})
     attempts = []
     def unavailable(**kwargs):
@@ -94,7 +94,7 @@ def test_runtime_batch_reports_failure_after_attempting_other_channels():
 
 def test_runtime_rejects_configuration_error_instead_of_reporting_unavailable(tmp_path):
     store = PaperStore(tmp_path/'db')
-    args = SimpleNamespace(repo_root=tmp_path, data_dir=tmp_path/'data', asset='etf',
+    args = SimpleNamespace(repo_root=tmp_path, config_root=tmp_path, data_dir=tmp_path/'data', asset='etf',
         symbol='588080.SH', opend_host='127.0.0.1',opend_port=11111,database=tmp_path/'db',runtime_identity={})
     def invalid(**kwargs):
         raise ValueError('invalid explicit configuration')

@@ -248,7 +248,7 @@ def migrate_lifecycle(connection: sqlite3.Connection, now: str) -> None:
     connection.execute("DROP INDEX IF EXISTS uq_decisions_active_signal_date")
     connection.execute("ALTER TABLE virtual_accounts RENAME COLUMN status TO legacy_status")
     connection.execute("ALTER TABLE virtual_accounts RENAME COLUMN paused TO legacy_paused")
-    connection.execute("ALTER TABLE virtual_accounts ADD COLUMN run_state TEXT CHECK(run_state IS NULL OR run_state IN ('PAUSED','RUNNING','RETIRED'))")
+    connection.execute("ALTER TABLE virtual_accounts ADD COLUMN run_state TEXT CHECK(run_state IS NULL OR run_state IN ('PAUSED','RUNNING','RETIRING','RETIRED'))")
     connection.execute("ALTER TABLE decisions RENAME COLUMN status TO legacy_status")
     connection.execute("""CREATE TABLE decision_state_events (
         account_id TEXT NOT NULL, decision_id TEXT NOT NULL, sequence INTEGER NOT NULL CHECK(sequence>=1),

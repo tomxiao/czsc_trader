@@ -135,6 +135,18 @@ def test_us_does_not_guess_cash_or_currency(field, value):
         adapter.account_snapshot()
 
 
+def test_cn_market_liquidation_accepts_confirmed_whole_odd_lot_only():
+    adapter, trade = gateway('CN')
+    order = replace(intent('CN'), side='SELL', quantity=105, order_type='MARKET', limit_price=0.)
+    with pytest.raises(PaperTradingSafetyError, match='lots'):
+        adapter.place_order(order)
+    adapter.place_order(replace(order, full_liquidation=True))
+    args = next(args for name, args in trade.calls if name == 'place')
+    assert args['qty'] == 105 and args['order_type'] == 'MARKET'
+    with pytest.raises(PaperTradingSafetyError, match='SELL'):
+        adapter.place_order(replace(order, side='BUY', full_liquidation=True))
+
+
 @pytest.mark.parametrize("position", [
     dict(code="US.MU", qty=1), dict(code="US.MU", qty=1, can_sell_qty=2),
     dict(code="US.MU", qty=.5, can_sell_qty=.5),

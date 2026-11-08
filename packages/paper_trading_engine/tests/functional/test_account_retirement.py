@@ -12,7 +12,7 @@ import pytest
 
 from execution_channels.futu.account_retirement import AccountRetirementRequest, AccountRetirementStatus
 from paper_trading_engine.cli import main as pte_main
-from execution_channels.futu.futu_execution import ChannelExecution, ChannelReconciliationError
+from execution_channels.futu.futu_execution import ChannelExecution
 from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine.web import create_server
 from paper_trading_engine.web_api import PteWebApi
@@ -82,8 +82,7 @@ def test_retirement_returns_actual_cash_preserves_history_and_reallocates(setup,
     assert json.loads(before) == row["payload"] and row["status"] == "COMPLETED"
     assert store.capital_pool_balance().unallocated_cash == Decimal("1000000") + pnl
     assert store.capital_pool_balance().recovered_pnl == pnl
-    with pytest.raises(ValueError, match="paused"):
-        execution.retire_account(request)
+    assert execution.retire_account(request) == result
     with pytest.raises(ValueError, match="retired"):
         store.set_virtual_paused("one", False)
     with pytest.raises(ValueError, match="inactive"):
@@ -103,7 +102,7 @@ def test_retirement_returns_actual_cash_preserves_history_and_reallocates(setup,
     assert Decimal(snapshot["account"]["released_cash"]) == cash
 
 
-@pytest.mark.parametrize("failure", ["position", "frozen", "not_paused", "wrong_hash", "pending", "attention", "cash", "disconnected"])
+@pytest.mark.parametrize("failure", ["position", "frozen", "wrong_hash", "attention", "cash", "disconnected"])
 def test_retirement_rejects_unsafe_state_without_releasing_capital(setup, failure, monkeypatch):
     store, broker, execution, request = setup
     if failure == "position":
@@ -130,9 +129,14 @@ def test_retirement_rejects_unsafe_state_without_releasing_capital(setup, failur
         broker.value = replace(broker.value, account=replace(broker.value.account, cash=999000))
     else:
         monkeypatch.setattr(broker, "order_snapshot", lambda: (_ for _ in ()).throw(RuntimeError("unavailable")))
-    with pytest.raises((ValueError, RuntimeError, ChannelReconciliationError)):
-        execution.retire_account(request)
-    assert store.virtual_account("one")["run_state"] == ("RUNNING" if failure == "not_paused" else "PAUSED")
+    if failure == 'wrong_hash':
+        with pytest.raises(ValueError, match='release hash'):
+            execution.retire_account(request)
+        assert store.virtual_account('one')['run_state'] == 'PAUSED'
+    else:
+        result = execution.retire_account(request)
+        assert result.status is AccountRetirementStatus.BLOCKED
+        assert store.virtual_account('one')['run_state'] == 'RETIRING'
     assert store._connection.execute("SELECT COUNT(*) FROM account_retirements").fetchone()[0] == 0
     assert store.capital_pool_balance().recovered_pnl == 0
     assert not broker.placed
@@ -147,9 +151,9 @@ def test_failed_retirement_transaction_rolls_back_and_shared_strategy_stays_in_u
             raise RuntimeError("audit unavailable")
         return original(event)
     monkeypatch.setattr(store, "_insert_audit_event", fail)
-    with pytest.raises(RuntimeError, match="audit unavailable"):
-        execution.retire_account(request)
-    assert store.virtual_account("one")["run_state"] == "PAUSED"
+    result = execution.retire_account(request)
+    assert result.status is AccountRetirementStatus.BLOCKED and 'audit unavailable' in result.reason
+    assert store.virtual_account("one")["run_state"] == "RETIRING"
     assert store._connection.execute("SELECT COUNT(*) FROM account_retirements").fetchone()[0] == 0
     monkeypatch.setattr(store, "_insert_audit_event", original)
     for method in ("_cancel_expired_planned_orders", "_expire_unsubmitted_intents"):
@@ -157,6 +161,23 @@ def test_failed_retirement_transaction_rolls_back_and_shared_strategy_stays_in_u
     assert execution.retire_account(request).remaining_strategy_accounts == 1
     assert store.virtual_account("two")["run_state"] == "PAUSED"
     assert broker.cancelled == broker.placed == []
+
+
+@pytest.mark.parametrize('with_pending', [False, True])
+def test_running_account_retires_and_unsent_buy_is_drained(setup, with_pending):
+    store, broker, execution, request = setup
+    store.set_virtual_paused('one', False)
+    if with_pending:
+        adopt_test_decision(store, account_id='one', decision_id='d', valid_session='2099-01-01',
+            orders=[{'side': 'BUY', 'quantity': 100, 'order_type': 'LIMIT', 'limit_price': 1.0}])
+        store.create_account_intent(account_id='one', decision_id='d', order_sequence=0,
+            symbol='588080.SH', side='BUY', quantity=100, limit_price='1', valid_session='2099-01-01')
+    result = execution.retire_account(request)
+    assert result.status is AccountRetirementStatus.RETIRED
+    assert result.released_cash == Decimal('100000')
+    assert not broker.placed
+    if with_pending:
+        assert store.account_intents('one')[0]['status'] == 'SUPERSEDED'
 
 
 @pytest.mark.parametrize("field,value", [("account_id", "../one"), ("expected_release_hash", "old"),

@@ -721,7 +721,7 @@ class AccountChartService:
             raise ValueError("account chart clock must be timezone-aware")
         with self._store_guard:
             accounts = [dict(row) for row in self.store.strategy_virtual_accounts()
-                        if row.get("run_state") != "RETIRED"]
+                        if row.get("run_state") not in {"RETIRING", "RETIRED"}]
         now = time.monotonic()
         with self._guard:
             if self._closing.is_set():

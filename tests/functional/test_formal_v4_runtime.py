@@ -257,7 +257,7 @@ def test_online_v4_decision_and_execution_use_the_scoped_runtime(formal_v4, monk
         return broker
 
     identity = {'mode': 'DEV', 'repo_root': str(client.repo_root)}
-    args = SimpleNamespace(repo_root=client.repo_root, data_dir=client.data_dir,
+    args = SimpleNamespace(repo_root=client.repo_root, data_dir=client.data_dir, config_root=client.repo_root,
                            database=client.repo_root / 'formal.db', symbol=candidate.instrument.symbol,
                            asset='stock', opend_host='127.0.0.1', opend_port=11111, runtime_identity=identity)
     runtime = build_multichannel_runtime(args, root, client.dataflows, gateway_factory=gateway_factory)

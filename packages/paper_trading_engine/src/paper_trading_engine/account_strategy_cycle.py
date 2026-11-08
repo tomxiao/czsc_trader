@@ -29,6 +29,8 @@ class AccountStrategyCycle:
         return self.prepared_data.latest_completed_signal_date(at)
 
     def run_latest(self, account_id: str, *, observed_at: datetime):
+        if self.store.virtual_account(account_id)["run_state"] in {"RETIRING", "RETIRED"}:
+            raise ValueError("inactive account cannot prepare strategy data")
         signal_date = self.latest_completed_signal_date(observed_at)
         return self.run(
             account_id,
@@ -62,7 +64,7 @@ class AccountStrategyCycle:
         operator_drive: bool,
     ):
         account = self.store.virtual_account(account_id)
-        if account["run_state"] == "RETIRED":
+        if account["run_state"] in {"RETIRING", "RETIRED"}:
             raise ValueError("inactive account cannot prepare strategy data")
         cutoff = signal_date.isoformat()
         error_key = f"data_preparation_error:{account_id}"

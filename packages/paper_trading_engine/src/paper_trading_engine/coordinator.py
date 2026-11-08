@@ -44,6 +44,8 @@ class UnavailableExecution:
         raise RuntimeError("channel is unavailable")
     def retire_account(self, request: AccountRetirementRequest) -> AccountRetirementResult:
         raise RuntimeError("channel is unavailable")
+    def set_retirement_session(self, account_id, session):
+        raise RuntimeError("channel is unavailable")
     def begin_shutdown(self): return None
     def close(self): self.store.close()
 
@@ -119,6 +121,8 @@ class ReconnectableExecution:
         return self._call("repair_account_ledger", account_id, intent_id)
     def retire_account(self, request: AccountRetirementRequest) -> AccountRetirementResult:
         return self._call("retire_account", request)
+    def set_retirement_session(self, account_id, session):
+        return self._call("set_retirement_session", account_id, session)
     def begin_shutdown(self):
         if self._delegate is not None:
             self._delegate.begin_shutdown()
@@ -140,12 +144,14 @@ class PteCoordinator:
         account_chart=None,
         startup_timings: dict[str, float] | None = None,
         runtime_identity: dict[str, object] | None = None,
+        retirement_calendar=None,
     ) -> None:
         self.accounts, self.execution = accounts, execution
         self.store = accounts.store
         self.audit = audit or AuditRecorder(self.store)
         self.account_chart = account_chart
         self.strategy_cycle = strategy_cycle
+        self.retirement_calendar = retirement_calendar
         self.startup_timings = dict(startup_timings or {})
         self.runtime_identity = dict(runtime_identity or {"mode": "DEV"})
         self.market_data_resources = None
@@ -170,7 +176,7 @@ class PteCoordinator:
         signal_date = self.strategy_cycle.latest_completed_signal_date(observed_at)
         failures = []
         for account in self.store.strategy_virtual_accounts():
-            if account.get("run_state") == "RETIRED":
+            if account.get("run_state") in {"RETIRING", "RETIRED"}:
                 continue
             try:
                 self.strategy_cycle.run(
@@ -227,6 +233,8 @@ class PteCoordinator:
     def refresh_account(self): return self.execution.refresh_account()
 
     def refresh_orders(self):
+        if self.retirement_calendar is not None:
+            self.retirement_calendar.prepare(self.execution)
         self.execution.refresh_orders()
         return self.execution.submit_pending(reconcile=False)
 
@@ -321,6 +329,15 @@ class PteCoordinator:
         return self.execution.repair_account_ledger(account_id, intent_id)
 
     def _set_virtual_paused(self, account_id, paused):
+        account = self.store.virtual_account(account_id)
+        if account['run_state'] in {'RETIRING', 'RETIRED'}:
+            raise ValueError('inactive account cannot pause or resume')
+        if not paused:
+            binding = self.accounts.advice.validate_account_binding(
+                strategy_id=account['strategy_id'], strategy_version=account['strategy_version'],
+                symbol=account['symbol'], asset=account['asset_type'])
+            if binding.release_hash != account['release_hash']:
+                raise ValueError('stored account release differs from deployed release')
         account = self.store.set_virtual_paused(account_id, paused)
         self.audit.record(
             "ACCOUNT_PAUSED" if paused else "ACCOUNT_RESUMED", source="web.control",

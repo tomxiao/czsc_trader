@@ -14,6 +14,7 @@ class AccountHealth(StrEnum):
 class RunState(StrEnum):
     PAUSED = "PAUSED"
     RUNNING = "RUNNING"
+    RETIRING = "RETIRING"
     RETIRED = "RETIRED"
 
 

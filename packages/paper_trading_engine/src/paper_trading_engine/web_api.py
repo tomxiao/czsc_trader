@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import asdict
 from datetime import datetime, timezone
 from decimal import Decimal
 import json
@@ -379,7 +380,9 @@ class PteWebApi:
             }
             decision['execution_effect'] = _decision_execution_effect(
                 store, account_id, row['payload'], datetime.fromisoformat(as_of))
+        retirement = store.retirement_status(account_id)
         return {
+            "retirement": None if retirement is None else asdict(retirement),
             "scope": {"account_id": account_id, "strategy_id": strategy_id,
                       "release_id": release_id, "release_hash": status.get("release_hash"),
                       **channel_scope},

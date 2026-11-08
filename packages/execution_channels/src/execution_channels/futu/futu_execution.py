@@ -11,7 +11,7 @@ import math
 import secrets
 
 from .audit import AuditRecorder
-from .account_retirement import AccountRetirementRequest, AccountRetirementResult
+from .retirement_execution import RetirementExecution
 from .broker import (
     BrokerOrderRejectedError,
     IntentTerminationReason,
@@ -65,7 +65,7 @@ class _ExecutionConstrainedError(RuntimeError):
     """Confirmed channel capacity prevents this attempt before broker submission."""
 
 
-class ChannelExecution:
+class ChannelExecution(RetirementExecution):
     def __init__(
         self, store, broker, *, symbol: str | None = None, today=None, now=None, audit=None,
         config: ChannelAccountConfig | None = None, fee_policy=None,
@@ -167,7 +167,12 @@ class ChannelExecution:
         if order.cumulative_notional is not None and order.cumulative_filled_quantity:
             payload['average_fill_price'] = str(order.cumulative_notional / order.cumulative_filled_quantity)
         occurred_at = (order.updated_at if self.config is not None else '') or self.store.get_setting('clock_override') or self.now().isoformat()
-        return apply_order_report(self.store, payload, occurred_at=occurred_at)
+        intent = self._owned_intent(order.remark)
+        settlement_at = None
+        if intent is not None and self.store.is_retirement_decision(intent['account_id'], intent['decision_id']):
+            decision = self.store.account_decision(intent['account_id'], intent['decision_id'])['payload']
+            settlement_at = decision.get('settlement_at')
+        return apply_order_report(self.store, payload, occurred_at=occurred_at, settlement_at=settlement_at)
 
     def _bind_report(self, intent, order, event):
         with self.store.atomic_decision_update():
@@ -717,7 +722,10 @@ class ChannelExecution:
             raise ValueError("sell average fill price is below limit")
 
     def refresh_orders(self):
-        return self._refresh_orders(expire_orders=True)
+        self._settle_retiring_accounts()
+        self._refresh_orders(expire_orders=True)
+        self._advance_retirements()
+        return self.status()
 
     def _refresh_orders(self, *, expire_orders: bool):
         self._require_broker()
@@ -913,15 +921,16 @@ class ChannelExecution:
             self._recover_transient_account_health(account_id)
         return self.status()
 
-    def submit_pending(self, *, reconcile: bool = True):
+    def submit_pending(self, *, reconcile: bool = True, retirement_account_id: str | None = None):
         self._require_broker()
         if self._draining:
             return self.status()
         moment = self.now()
         if moment.tzinfo is None:
             raise ValueError("submission clock must be timezone-aware")
-        self.store.expire_unsubmitted_decisions(moment)
-        self._expire_unsubmitted_intents(moment)
+        if retirement_account_id is None:
+            self.store.expire_unsubmitted_decisions(moment)
+            self._expire_unsubmitted_intents(moment)
         if reconcile:
             self.refresh_orders()
         elif self._snapshot is None:
@@ -939,17 +948,20 @@ class ChannelExecution:
                     raise PaperTradingSafetyError('configured broker requires explicit sellable holdings')
                 self._sellable_remaining[position.symbol] = position.sellable_quantity
         session = moment.astimezone(self.zone).date().isoformat()
-        self._activate_dependency_intents(moment)
+        if retirement_account_id is None:
+            self._activate_dependency_intents(moment)
         deterministic_failures: list[tuple[str, Exception]] = []
         for row in self.store.pending_account_intents():
             account = self.store.virtual_account(row["account_id"])
+            retirement = self.store.retirement_execution_allowed(row['account_id'], row['decision_id'])
+            if retirement_account_id is not None and (row['account_id'] != retirement_account_id or not retirement):
+                continue
             local_clock = moment.astimezone(self.zone).time().replace(tzinfo=None)
             submit_after = self._planned_clock(row, "submit_after")
             if row["valid_session"] > session:
                 continue
             if (
-                account["run_state"] == "PAUSED"
-                or account["run_state"] != "RUNNING"
+                (account["run_state"] != "RUNNING" and not retirement)
                 or account["health"] != AccountHealth.OK
             ):
                 continue
@@ -968,6 +980,7 @@ class ChannelExecution:
                 account_id=row["account_id"],
                 session="RTH" if self.config is None else self.config.session,
                 channel_account_id="" if self.config is None else self.config.channel_account_id,
+                full_liquidation=retirement and int(row['quantity']) == account['quantity'],
             )
             try:
                 self._require_inventory(intent)
@@ -1101,7 +1114,7 @@ class ChannelExecution:
                 "source": "operator.reconciliation", "actor_type": "OPERATOR",
                 "account_id": account_id, "strategy_id": account.get("strategy_id"),
                 "strategy_version": account.get("strategy_version"),
-                "release_hash": account.get("release_hash"), "channel": FUTU_SIMULATE_CN_CHANNEL_ID,
+                "release_hash": account.get("release_hash"), "channel": self.channel_id,
                 "decision_id": intent["decision_id"],
             }
             details = {
@@ -1151,31 +1164,6 @@ class ChannelExecution:
         self.refresh_orders()
         self.submit_pending(reconcile=False)
         return self.status()
-
-    def retire_account(self, request: AccountRetirementRequest) -> AccountRetirementResult:
-        """Reconcile live channel facts, then return an idle account's cash atomically."""
-        if type(request) is not AccountRetirementRequest:
-            raise TypeError("retirement requires AccountRetirementRequest")
-        if self._draining:
-            raise RuntimeError("PTE is stopping; account retirement is unavailable")
-        with self.store._lock:
-            account = self.store.virtual_account(request.account_id)
-            if account["run_state"] != "PAUSED":
-                raise ValueError("retirement requires a paused running account")
-            if account["release_hash"] != request.expected_release_hash:
-                raise ValueError("retirement release hash differs from account")
-            if account["quantity"] or Decimal(account["frozen_cash"]) != 0:
-                raise ValueError("retirement requires no position or frozen cash")
-            # Reconcile only. Retirement must never submit or liquidate orders.
-            self._refresh_orders(expire_orders=False)
-            accounts = [row for row in self.store.virtual_accounts() if row["run_state"] != "RETIRED"]
-            expected_cash = self.store.capital_pool_balance().unallocated_cash + sum(
-                (Decimal(row["cash"]) + Decimal(row["frozen_cash"]) for row in accounts), Decimal("0"),
-            )
-            actual_cash = Decimal(str(self._snapshot.account.cash))
-            if not actual_cash.is_finite() or abs(actual_cash - expected_cash) > Decimal("0.01"):
-                raise ChannelReconciliationError("cash reconciliation differs before retirement")
-            return self.store._retire_account(request)
 
     def status(self):
         account = None if self._snapshot is None else asdict(self._snapshot.account)

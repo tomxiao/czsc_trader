@@ -21,6 +21,24 @@ EC 不导入 DFLS 或 SRT，也不自行查询数据。PTE 的 `ScheduledDecisio
 隔离检验使用宿主许可投影得到的 EC `InspectionAccountPermit`，保留发布哈希、协议哈希和
 隔离目录约束。正式账户与隔离账户继续使用同一账本及成交处理逻辑。
 
+策略账户退役复用 `POST /api/virtual-accounts/{account_id}/retire`，以控制令牌、
+当前发布哈希、操作者和原因受理。账户进入 `RETIRING` 后停止策略加载、数据准备、
+新决策和恢复操作，EC 继续处理撤单、成交回报、对账、市价清仓及资金回笼。
+退役不要求旧策略通过当前 SRT 合同，也不生成策略目标仓位决策。
+已暂停账户在平台启动时延迟策略加载，恢复或手动决策仍完整校验；旧合同策略上线前应先
+经授权暂停。正常运行账户仍须通过启动校验。
+尚在处理返回 HTTP 202，完成返回 HTTP 200；账户快照的 `retirement` 字段展示
+`DRAINING`、`WAITING_MARKET`、`WAITING_SELLABLE`、`LIQUIDATING`、
+`WAITING_SETTLEMENT`、`BLOCKED`、`RETIRED` 及剩余股数、已回笼资金和原因。
+只有 `RETIRED` 表示清仓、结算和回笼均已完成；请求受理不保证即时成交。
+
+`retirement_calendar` 独立准备 DFLS 交易日历，再投影为 EC `RetirementSession`；
+不加载冻结策略。V4 使用已登记运行绑定的日历源与费率；旧账户使用环境中该市场
+唯一的正式日历源及最后持久决策中明确保存的费率。A 股午休分段、美股提前收市和
+下一结算交易日均取日历事实；资料缺失明确阻断清仓，不推测交易日，也不影响其他账户对账。
+空仓账户的退役无需行情或日历。未决订单、实际可卖量及实际成交由 EC 和富途处理，
+资金回到所属渠道资本池，历史记录保留。操作方法见[PTE 运维手册](../../docs/PTE_OPERATIONS.md)。
+
 V4决策在 `strategy_output.execution_plan` 留存原目标与EC规划结果。资金不足或可卖量不足
 可以形成受约束计划或无单受阻计划，仍采纳决策并保存金融状态；HOLD/WAIT或零订单不代表目标已达成。
 `PaperStore.decision_execution_effect(account_id, decision_id, valuation_price=..., at=...)`

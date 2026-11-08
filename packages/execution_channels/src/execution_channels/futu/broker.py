@@ -43,6 +43,7 @@ class IntentTerminationReason(StrEnum):
     EXECUTION_CONSTRAINED = "EXECUTION_CONSTRAINED"
     EXECUTION_EXPIRED = "EXECUTION_EXPIRED"
     DEPENDENCY_NOT_TRIGGERED = "DEPENDENCY_NOT_TRIGGERED"
+    ACCOUNT_RETIREMENT = "ACCOUNT_RETIREMENT"
 
 
 class PaperTradingSafetyError(RuntimeError):
@@ -110,6 +111,7 @@ class OrderIntent:
     account_id: str | None = None
     session: str = "RTH"
     channel_account_id: str = ""
+    full_liquidation: bool = False
 
 
 @dataclass(frozen=True)

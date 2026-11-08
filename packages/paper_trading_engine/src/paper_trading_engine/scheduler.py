@@ -305,7 +305,7 @@ class RuntimeScheduler:
         for account in accounts:
             if len(self._account_workers) >= self.max_account_workers:
                 break
-            if account.get("run_state") == "RETIRED":
+            if account.get("run_state") in {"RETIRING", "RETIRED"}:
                 continue
             account_id = str(account["account_id"])
             if account_id in self._account_workers:

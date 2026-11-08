@@ -27,7 +27,7 @@ from execution_channels.futu.audit import AuditRecorder
 from .srt_advice_client import SrtAdviceClient
 from .data_space import create_dataflows
 from .account_binding import AccountStrategyBinding
-from execution_channels.futu.account_retirement import AccountRetirementRequest
+from execution_channels.futu.account_retirement import AccountRetirementRequest, AccountRetirementStatus
 from .account_data_preparer import AccountDataPreparer
 from .account_strategy_cycle import AccountStrategyCycle
 from .account_engine import AccountEngine
@@ -318,6 +318,7 @@ def _build_engine(args: argparse.Namespace, resources: ExitStack):
         store,
         audit=audit,
     )
+    from .retirement_calendar import RetirementCalendar
     return PteCoordinator(
         account_engine,
         execution,
@@ -326,6 +327,7 @@ def _build_engine(args: argparse.Namespace, resources: ExitStack):
         strategy_cycle=strategy_cycle,
         startup_timings=startup_timings,
         runtime_identity=args.runtime_identity,
+        retirement_calendar=RetirementCalendar(store, dataflows, args.config_root),
     )
 
 
@@ -336,7 +338,7 @@ def _strategy_deployments(
     bindings = {}
     deployments = {}
     for account in accounts:
-        if account.get("run_state") == "RETIRED":
+        if account.get("run_state") in {"PAUSED", "RETIRING", "RETIRED"}:
             continue
         key = (
             account["strategy_id"], account["strategy_version"],
@@ -429,7 +431,7 @@ def _backfill_selection_cutoffs(
     deployments: dict[str, AccountStrategyBinding],
 ) -> None:
     for account in store.strategy_virtual_accounts():
-        if account.get("run_state") == "RETIRED":
+        if account.get("run_state") in {"PAUSED", "RETIRING", "RETIRED"}:
             continue
         if account.get("selection_data_cutoff"):
             continue
@@ -472,7 +474,7 @@ def _synchronize_strategy_names(
     deployments: dict[str, AccountStrategyBinding],
 ) -> None:
     for account in store.strategy_virtual_accounts():
-        if account.get("run_state") == "RETIRED":
+        if account.get("run_state") in {"PAUSED", "RETIRING", "RETIRED"}:
             continue
         try:
             identity = deployments.get(str(account["account_id"]))
@@ -619,8 +621,9 @@ def _retire_running_account(args: argparse.Namespace) -> dict[str, object]:
         "Content-Type": "application/json", "X-PTE-Control-Token": row[0],
     })
     _, result = _read_json(url, request=request)
-    if result.get("status") != "RETIRED" or result.get("account_id") != retirement.account_id:
-        raise RuntimeError("PTE account retirement did not complete")
+    if (result.get("status") not in {status.value for status in AccountRetirementStatus}
+            or result.get("account_id") != retirement.account_id):
+        raise RuntimeError("invalid PTE account retirement response")
     return result
 
 
@@ -767,8 +770,11 @@ def main(
                 result = _retire_running_account(args)
             else:
                 result = _repair_running_ledger(args)
+            status = "PASS"
+            if args.control_action == "retire-account" and result["status"] != "RETIRED":
+                status = "BLOCKED" if result["status"] == "BLOCKED" else "ACCEPTED"
             _write({
-                "status": "PASS", "command": f"pte.control.{args.control_action}",
+                "status": status, "command": f"pte.control.{args.control_action}",
                 "result": result,
             })
             return 0
