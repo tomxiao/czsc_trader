@@ -3,6 +3,7 @@
 No order sizing, market rule or account arithmetic belongs in this module.
 """
 from dataclasses import asdict
+import json
 
 from dataflows import TimeInterval
 from strategy_runtime.account_strategy import PositionCycle, RecognizedAccountEvent, RecognizedEventKind
@@ -104,3 +105,14 @@ def strategy_account_snapshot(account, document, rules, at, available_cash, inst
     fields = to_record(value)
     fields["instrument"] = instrument
     return StrategySnapshot(**fields)
+
+
+def account_input_identity(inputs):
+    """Project a PTE-validated recipe; EC does not parse the host schema."""
+    from execution_channels.futu.input_identity import AccountInputIdentity
+    from execution_channels.instruments import InstrumentId
+
+    return AccountInputIdentity(inputs.release_hash,
+        from_record(InstrumentId, to_record(inputs.binding.instrument)),
+        inputs.binding.specification_hash, inputs.fee_rate,
+        json.dumps(inputs.to_dict(), sort_keys=True, allow_nan=False).encode())

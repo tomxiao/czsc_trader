@@ -333,8 +333,9 @@ def test_legacy_same_session_cutover_cancels_locally_then_drives_new_release(
             assert document['state']['event_cursor'] == database._connection.execute(
                 "SELECT MAX(rowid) FROM account_ledger WHERE account_id='formal'").fetchone()[0]
         assert update_account_bindings(runtime, 'target', (request,)).status is AccountBindingUpdateStatus.ALREADY_APPLIED
-        # The same service used by the online decision API creates a new identity.
+        # Update the rebound recipe before driving the same service as the Web API.
         reopened = FormalV4AdviceClient(repo_root=client.repo_root, store=scoped, dataflows=client.dataflows, data_dir=data)
+        _check_rebound_input_update(reopened, scoped, monkeypatch)
         scoped.set_virtual_paused('formal', False)
         from dataflows import EquityProduct, ProviderBinding, TradingSession
         from dataflows.equity_data import session_record
@@ -434,3 +435,83 @@ def test_legacy_budget_retirement_preserves_strategy_state_and_compatible_budget
         with pytest.raises(ValueError, match='explicit mapping'):
             _retire_unused_legacy_budget(nonempty, policy)
         assert nonempty == unchanged
+
+
+def _check_rebound_input_update(client, store, monkeypatch):
+    """Exercise registration after real rebinding, without another expensive fixture."""
+    from dataflows import EquityDataRequest, PreparePolicy
+    from paper_trading_engine.ec_boundary import account_input_identity
+    from paper_trading_engine.execution_reference import ExecutionReferenceBinding
+
+    original = client.inputs('formal')
+    record = store.v4_runtime_binding('formal')
+    account = store.virtual_account('formal')
+    raw = original.execution_reference
+    session = dict(original.binding.request_bindings)['sessions']
+    prepared = client.dataflows.prepare((raw.request,
+        EquityDataRequest(session.instrument, session.source, session.query)), policy=PreparePolicy.REUSE)
+    assert prepared.ready
+    updated = replace(original, execution_reference=ExecutionReferenceBinding(
+        raw.parameters, prepared.reference, raw.content_sha256))
+    assert updated.to_dict() != original.to_dict()
+    expected = account_input_identity(original)
+    projected = account_input_identity(updated)
+    untouched = list(store._connection.iterdump())
+
+    malformed = updated.to_dict()
+    malformed.pop('execution_reference')
+    with pytest.raises(ValueError, match='formal V4 input contract'):
+        client.register_recipe('formal', FormalV4Inputs.from_dict(malformed))
+    for invalid in (replace(updated, release_hash='0'*64),
+                    replace(updated, binding=replace(updated.binding, specification_hash='0'*64)),
+                    replace(updated, fee_rate=updated.fee_rate + .001)):
+        with pytest.raises(ValueError):
+            client.register_recipe('formal', invalid)
+        assert list(store._connection.iterdump()) == untouched
+    for invalid, prior in ((updated.to_dict(), expected),
+                           (replace(projected, release_hash='0'*64), expected),
+                           (replace(projected, instrument=replace(projected.instrument, symbol='600001.SH' if projected.instrument.market.value == 'CN' else 'OTHER')), expected),
+                           (replace(projected, specification_hash='0'*64), expected),
+                           (projected, replace(expected, document=b'{}'))):
+        with pytest.raises((ValueError, TypeError)):
+            store.replace_v4_runtime_inputs('formal', invalid, expected_inputs=prior, forward=True)
+        assert list(store._connection.iterdump()) == untouched
+    for invalid in (b'[]', b'invalid-json', b'{"value":NaN}'):
+        with pytest.raises(ValueError):
+            replace(projected, document=invalid)
+    # EC accepts an opaque host object without knowing its schema or field names.
+    assert replace(projected, document=b'{"host_revision":99}').to_dict() == {'host_revision': 99}
+
+    save = store._save_v4_runtime_binding
+    def fail_after_save(*args):
+        save(*args)
+        raise RuntimeError('injected recipe write failure')
+    with monkeypatch.context() as patch:
+        patch.setattr(store, '_save_v4_runtime_binding', fail_after_save)
+        with pytest.raises(RuntimeError, match='recipe write failure'):
+            client.register_recipe('formal', updated)
+    assert list(store._connection.iterdump()) == untouched
+
+    client.register_inputs('formal', updated.binding, expected_release_hash=updated.release_hash,
+        fee_rate=updated.fee_rate, execution_reference=updated.execution_reference)
+    assert client.recipe('formal') is None
+    client.register_recipe('formal', updated)
+    current = store.v4_runtime_binding('formal')
+    assert current['inputs'] == projected.to_dict() and current['forward'] is True
+    assert current['effective_interval'] == record['effective_interval']
+    assert current['plan_sha256'] == record['plan_sha256']
+    assert store.virtual_account('formal') == account
+    with pytest.raises(ValueError, match='expected snapshot'):
+        store.replace_v4_runtime_inputs('formal', projected, expected_inputs=expected, forward=True)
+    assert store.v4_runtime_binding('formal') == current
+    for value in (original, updated):
+        from strategy_runtime import canonical_sha256
+        key = 'v4_input_record:' + canonical_sha256(value.to_dict())
+        assert json.loads(store._connection.execute('SELECT value FROM settings WHERE key=?', (key,)).fetchone()[0]) == account_input_identity(value).to_dict()
+    readonly = PaperStore.open_readonly(store.path)
+    try:
+        reader = FormalV4AdviceClient(repo_root=client.repo_root, store=readonly.scope('formal-channel'),
+            dataflows=None, data_dir=client.data_dir)
+        assert reader.inputs('formal') == updated and reader.recipe('formal') == updated
+    finally:
+        readonly.close()

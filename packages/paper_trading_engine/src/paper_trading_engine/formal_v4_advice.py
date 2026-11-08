@@ -178,8 +178,13 @@ class FormalV4AdviceClient:
         value = inputs.to_dict()
         payload = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(',', ':'))
         identity = canonical_sha256(value)
-        if self.store.v4_runtime_binding(account_id) is not None:
-            self.store.replace_v4_runtime_inputs(account_id, value, forward=forward)
+        stored = self.store.v4_runtime_binding(account_id)
+        if stored is not None:
+            from .ec_boundary import account_input_identity
+            previous = FormalV4Inputs.from_dict(stored["inputs"])
+            previous.validate_candidate(release.release_hash, candidate)
+            self.store.replace_v4_runtime_inputs(account_id, account_input_identity(inputs),
+                expected_inputs=account_input_identity(previous), forward=forward)
             return identity
         with self._lock:
             path.parent.mkdir(parents=True, exist_ok=True)

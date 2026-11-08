@@ -8,7 +8,7 @@ import json
 import math
 import re
 
-from ..instruments import InstrumentId, MarketId, AssetClass
+from ..instruments import InstrumentId
 
 
 @dataclass(frozen=True, slots=True)
@@ -29,17 +29,10 @@ class AccountInputIdentity:
             raise ValueError('account input identity requires a finite model fee')
         if type(self.document) is not bytes:
             raise TypeError('account input document requires immutable bytes')
-
-    @classmethod
-    def from_dict(cls, value):
-        if (type(value) is not dict or set(value) != {'schema_version', 'release_hash', 'binding', 'fee_rate'}
-                or value['schema_version'] != 2 or type(value['binding']) is not dict):
-            raise ValueError('unsupported account input document')
-        binding = value['binding']
-        raw = dict(binding['instrument'])
-        raw['market'], raw['asset_class'] = MarketId(raw['market']), AssetClass(raw['asset_class'])
-        return cls(value['release_hash'], InstrumentId(**raw), binding['specification_hash'], value['fee_rate'],
-                   json.dumps(value, sort_keys=True, allow_nan=False).encode())
+        document = json.loads(self.document)
+        if type(document) is not dict:
+            raise ValueError('account input document requires a JSON object')
+        json.dumps(document, allow_nan=False)
 
     def to_dict(self):
         return json.loads(self.document)

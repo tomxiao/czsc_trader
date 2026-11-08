@@ -3,6 +3,12 @@
 EC 拥有交易规则、订单规划与渠道账户。输入为宿主已经准备的执行事实和策略意图；
 不依赖 DFLS、SRT、PTE，也不负责数据查询、策略计算或调度。
 
+账户输入更新使用 `PaperStore.replace_v4_runtime_inputs(account_id, inputs, expected_inputs=..., forward=...)`。
+新旧输入均为 `futu.input_identity.AccountInputIdentity`，由宿主在完整校验配方后显式投影；
+其不可变 JSON 文档由 EC 原样持久化，EC 不解释宿主 schema、数据角色或 RAW 引用。
+EC 核对发布、标的、执行规范、模型费率及当前旧文档快照，在同一事务内保存新输入和历史记录，
+保留生效区间与账户状态。过期快照、身份不符或持久化失败均不产生部分更新。
+
 ## 富途 A 股、美股模拟渠道
 
 `futu.channel.ChannelAccountConfig` 明确绑定市场、币种、模拟账户与交易时段。

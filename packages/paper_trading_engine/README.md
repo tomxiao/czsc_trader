@@ -177,10 +177,16 @@ EC V4 账户文档使用 schema 2，`locked_quantity` 与周期预算由 EC 持�
 其余命令均显式传入 `--channel-account-id`，并沿用公共 `--database / --data-dir / --repo-root`：
 
 - `create-v4 --definition`：字段为 `account_id/name/strategy_id/strategy_version/release_hash/symbol/asset/fee_rate/initial_cash`，新账户暂停。
-- `bind-inputs --definition` 固定输入，或 `bind-recipe --definition` 注册连续日线准备；字段为 `account_id/release_hash/fee_rate/binding`，其中 `binding` 使用 `EquityInputBinding.to_dict()`。
+- `bind-inputs --definition` 固定输入，或 `bind-recipe --definition` 注册连续日线准备；字段为 `account_id/release_hash/fee_rate/binding/execution_reference`，其中 `binding` 使用 `EquityInputBinding.to_dict()`，`execution_reference` 为独立 RAW 行情引用。
 - `prepare-data --account-id --interval-start --interval-end --as-of` 以带时区的时间戳准备当前 V4 配方的 DFLS 数据。按实际 `as_of` 和执行区间起点中较早的时点选择历史价格与观察输入。结果包含准备引用及逐请求状态，账户库以只读方式打开。准备引用可用于数据审计，正式执行区间仍由调度器独立采纳。
 - `pause-account / resume-account --account-id` 仅改变指定策略账户运行状态；启用要求冻结绑定、已注册输入和现有账户健康检查通过。
 - `pause / resume` 仅改变渠道状态；恢复必须先完成富途对账。渠道恢复不连带启用策略账户。
+
+已重绑账户可以通过同一 `bind-inputs`／`bind-recipe` 入口更新配方。PTE 校验完整的
+`FormalV4Inputs`（schema 3），在 `ec_boundary.account_input_identity` 中将新旧配方投影为
+EC 的 `AccountInputIdentity`；EC 不解析 PTE 配方字段或版本。更新要求当前发布、标的、
+执行规则和模型费率不变，并在事务内比较旧配方快照，防止并发覆盖。失败不改变原绑定，
+成功保留重绑生效时间、历史输入记录和账户账本。无需迁移现有数据库；旧配方仍明确拒绝。
 
 注册、输入绑定及代码交付均不等于生产部署或账户生效；既有冻结包升级和生产切换按单独批准的维护方案执行。
 

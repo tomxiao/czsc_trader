@@ -32,6 +32,7 @@ from .lifecycle import (AccountHealth, RunState, DecisionState, IntentControlSta
 from .equity_events import EquityEventStore
 from .execution_effects import ExecutionEffectStore
 from .retirement_store import RetirementStore, RETIREMENT_CONTRACT
+from .input_identity import AccountInputIdentity
 from .channel_accounts import ChannelAccountStore, DEFAULT_CHANNEL_ACCOUNT
 from .account_retirement import (
     AccountRetirementRequest, AccountRetirementResult, AccountRetirementStatus, CapitalPoolBalance,
@@ -1046,11 +1047,13 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
             (f"v4_runtime_binding:{account_id}", json.dumps(value, sort_keys=True, allow_nan=False)),
         )
 
-    def replace_v4_runtime_inputs(self, account_id: str, inputs_dict: dict, *, forward: bool) -> None:
+    def replace_v4_runtime_inputs(
+        self, account_id: str, inputs: "AccountInputIdentity", *,
+        expected_inputs: "AccountInputIdentity", forward: bool,
+    ) -> None:
         """Replace a rebound account's inputs while preserving the cutover watermark."""
-        from .input_identity import AccountInputIdentity
-
-        inputs = AccountInputIdentity.from_dict(inputs_dict)
+        if type(inputs) is not AccountInputIdentity or type(expected_inputs) is not AccountInputIdentity:
+            raise TypeError("V4 runtime inputs require typed account input identities")
         if type(forward) is not bool:
             raise TypeError("V4 runtime inputs require an explicit forward flag")
         with self.atomic_decision_update():
@@ -1061,7 +1064,11 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
                     or inputs.instrument != rules.instrument
                     or inputs.specification_hash != rules.execution.fingerprint):
                 raise ValueError("V4 replacement inputs differ from the active account binding")
-            if value["inputs"]["fee_rate"] != inputs.fee_rate:
+            if (value["inputs"] != expected_inputs.to_dict()
+                    or (expected_inputs.release_hash, expected_inputs.instrument, expected_inputs.specification_hash)
+                    != (inputs.release_hash, inputs.instrument, inputs.specification_hash)):
+                raise ValueError("current account inputs differ from the expected snapshot")
+            if expected_inputs.fee_rate != inputs.fee_rate:
                 raise ValueError("input replacement cannot change the account model fee")
             self._save_v4_runtime_binding(account_id, {**value, "inputs": inputs.to_dict(), "forward": forward})
 
