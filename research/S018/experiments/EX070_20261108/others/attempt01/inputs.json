@@ -1,0 +1,444 @@
+{
+  "candidate_content": "94bbd13ea036128a0ce31c183b34da8fedfa742cb686132c85c0edb437bfd23b",
+  "data_provenance": {
+    "schema_version": 1,
+    "source": {
+      "provider": "futu",
+      "revision": "s018-hfq-target-repack-20261108-v1"
+    },
+    "scope": {
+      "start": "2022-01-03",
+      "end": "2026-10-30"
+    },
+    "operation": "RETAINED_DFLS_PRICES_REVALIDATED_NO_NUMERICAL_ADJUSTMENT",
+    "original_preparation_receipts": [
+      {
+        "path": "research/S018/experiments/EX049_20261104/others/data_preparation.json",
+        "file_sha256": "75a980800d9690798c69ec56614c1242a6601e88c27287bcaa96a607388b5cb9",
+        "reference": {
+          "space_id": "4d977aa7-57e2-4961-9f16-d90e63decaac",
+          "preparation_id": "c1d9b0be-2d3f-40f0-af85-22d8af7fc593",
+          "manifest_sha256": "4710e56c14a6c28d8df6b015b087cbf133f644a815ca006b9f4ec714c3b34f88"
+        }
+      },
+      {
+        "path": "research/S018/experiments/EX001_20261104/others/daily_preparation.json",
+        "file_sha256": "67f6a33d3cfab56ee85a658e95da600198cd906a6ba090a0b633072e5a8a06f1",
+        "reference": {
+          "space_id": "4d977aa7-57e2-4961-9f16-d90e63decaac",
+          "preparation_id": "3104caa7-ad5f-45e1-8f66-0c06e52bbb1d",
+          "manifest_sha256": "3b36a541b608e72973f913895a78196c69c7ad81cdd20b73f598942a1ce07381"
+        }
+      }
+    ],
+    "inputs": [
+      {
+        "symbol": "MU",
+        "product": "equity.bars",
+        "adjustment": "hfq",
+        "source": {
+          "provider": "futu",
+          "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+        },
+        "prepared": {
+          "space_id": "4d977aa7-57e2-4961-9f16-d90e63decaac",
+          "preparation_id": "c1d9b0be-2d3f-40f0-af85-22d8af7fc593",
+          "manifest_sha256": "4710e56c14a6c28d8df6b015b087cbf133f644a815ca006b9f4ec714c3b34f88"
+        },
+        "content_sha256": "764b9eb72c649f4567746cae302c50dc0800f7c695d598a7cb4a877bcab9d4ad",
+        "rows": 1212,
+        "available_at": "BAR_CLOSE_RESEARCH_ASSUMPTION",
+        "publication_time_verified": false,
+        "original_research_bar_policy": null,
+        "download_receipts": [
+          {
+            "page": 0,
+            "rows": 1000,
+            "result": 0,
+            "more_pages": true
+          },
+          {
+            "page": 1,
+            "rows": 212,
+            "result": 0,
+            "more_pages": false
+          }
+        ]
+      },
+      {
+        "symbol": "MU",
+        "product": "equity.sessions",
+        "adjustment": "none",
+        "source": {
+          "provider": "futu",
+          "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+        },
+        "prepared": {
+          "space_id": "4d977aa7-57e2-4961-9f16-d90e63decaac",
+          "preparation_id": "c1d9b0be-2d3f-40f0-af85-22d8af7fc593",
+          "manifest_sha256": "4710e56c14a6c28d8df6b015b087cbf133f644a815ca006b9f4ec714c3b34f88"
+        },
+        "content_sha256": "4455664424475f1a136651bcdf5e6a41b5f0fe8d3d10a9826e701110785f546a",
+        "rows": 1212,
+        "available_at": "BAR_CLOSE_RESEARCH_ASSUMPTION",
+        "publication_time_verified": false,
+        "original_research_bar_policy": {
+          "kind": "MISSING_UNTRADABLE_RESEARCH_V1",
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "unavailable_intervals": []
+        },
+        "download_receipts": []
+      },
+      {
+        "symbol": "SOXX",
+        "product": "equity.bars",
+        "adjustment": "hfq",
+        "source": {
+          "provider": "futu",
+          "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+        },
+        "prepared": {
+          "space_id": "4d977aa7-57e2-4961-9f16-d90e63decaac",
+          "preparation_id": "c1d9b0be-2d3f-40f0-af85-22d8af7fc593",
+          "manifest_sha256": "4710e56c14a6c28d8df6b015b087cbf133f644a815ca006b9f4ec714c3b34f88"
+        },
+        "content_sha256": "ec58fd321d91873c8169016990273a00831277b0a26e506e966b7f2c3fbd9149",
+        "rows": 1212,
+        "available_at": "BAR_CLOSE_RESEARCH_ASSUMPTION",
+        "publication_time_verified": false,
+        "original_research_bar_policy": null,
+        "download_receipts": [
+          {
+            "page": 0,
+            "rows": 1000,
+            "result": 0,
+            "more_pages": true
+          },
+          {
+            "page": 1,
+            "rows": 212,
+            "result": 0,
+            "more_pages": false
+          }
+        ]
+      },
+      {
+        "symbol": "SOXX",
+        "product": "equity.sessions",
+        "adjustment": "none",
+        "source": {
+          "provider": "futu",
+          "revision": "s018-mu-soxx-hfq-research-20261104-v1"
+        },
+        "prepared": {
+          "space_id": "4d977aa7-57e2-4961-9f16-d90e63decaac",
+          "preparation_id": "c1d9b0be-2d3f-40f0-af85-22d8af7fc593",
+          "manifest_sha256": "4710e56c14a6c28d8df6b015b087cbf133f644a815ca006b9f4ec714c3b34f88"
+        },
+        "content_sha256": "4455664424475f1a136651bcdf5e6a41b5f0fe8d3d10a9826e701110785f546a",
+        "rows": 1212,
+        "available_at": "BAR_CLOSE_RESEARCH_ASSUMPTION",
+        "publication_time_verified": false,
+        "original_research_bar_policy": {
+          "kind": "MISSING_UNTRADABLE_RESEARCH_V1",
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "unavailable_intervals": []
+        },
+        "download_receipts": []
+      },
+      {
+        "symbol": "MU",
+        "product": "equity.bars",
+        "adjustment": "none",
+        "source": {
+          "provider": "futu",
+          "revision": "s018-mu-daily-20261104"
+        },
+        "prepared": {
+          "space_id": "4d977aa7-57e2-4961-9f16-d90e63decaac",
+          "preparation_id": "3104caa7-ad5f-45e1-8f66-0c06e52bbb1d",
+          "manifest_sha256": "3b36a541b608e72973f913895a78196c69c7ad81cdd20b73f598942a1ce07381"
+        },
+        "content_sha256": "0b0b1c85c4a38e3c32b8a208dd432da7e9f66e5bb85701e350b61d8ffa2fcbd4",
+        "rows": 1212,
+        "available_at": "BAR_CLOSE_RESEARCH_ASSUMPTION",
+        "publication_time_verified": false,
+        "original_research_bar_policy": {
+          "kind": "MISSING_UNTRADABLE_RESEARCH_V1",
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "unavailable_intervals": []
+        },
+        "download_receipts": [
+          {
+            "page": 0,
+            "rows": 1000,
+            "result": 0,
+            "more_pages": true
+          },
+          {
+            "page": 1,
+            "rows": 212,
+            "result": 0,
+            "more_pages": false
+          }
+        ]
+      },
+      {
+        "symbol": "MU",
+        "product": "equity.sessions",
+        "adjustment": "none",
+        "source": {
+          "provider": "futu",
+          "revision": "s018-mu-daily-20261104"
+        },
+        "prepared": {
+          "space_id": "4d977aa7-57e2-4961-9f16-d90e63decaac",
+          "preparation_id": "3104caa7-ad5f-45e1-8f66-0c06e52bbb1d",
+          "manifest_sha256": "3b36a541b608e72973f913895a78196c69c7ad81cdd20b73f598942a1ce07381"
+        },
+        "content_sha256": "4455664424475f1a136651bcdf5e6a41b5f0fe8d3d10a9826e701110785f546a",
+        "rows": 1212,
+        "available_at": "BAR_CLOSE_RESEARCH_ASSUMPTION",
+        "publication_time_verified": false,
+        "original_research_bar_policy": {
+          "kind": "MISSING_UNTRADABLE_RESEARCH_V1",
+          "quantity_step": 1,
+          "price_tick": 0.01,
+          "unavailable_intervals": []
+        },
+        "download_receipts": []
+      }
+    ],
+    "dynamic_facts": {
+      "kind": "EXPLICIT_RESTATEMENT_OF_EXISTING_RESEARCH_ASSUMPTIONS",
+      "source_path": "research/S018/experiments/EX001_20261104/src/check_daily_readiness.py",
+      "source_sha256": "1862c21470192d6e74c1cca7d495a261a137c0e127df3edf2ea16abb6a9537c8",
+      "original_futu_adapter_commit": "57f925496",
+      "original_futu_adapter_path": "packages/dataflows/src/dataflows/futu_equity.py",
+      "tradable": true,
+      "price_limit_lower": null,
+      "price_limit_upper": null,
+      "availability": "SESSION_ELIGIBILITY_RESEARCH_ASSUMPTION",
+      "historical_halt_coverage_verified": false,
+      "old_constraints_product_read": false
+    },
+    "limitations": [
+      "No live supplier download or independent historical halt verification.",
+      "Old prices retain BAR_CLOSE_RESEARCH_ASSUMPTION availability.",
+      "PROVIDER_ADJUSTED identifies the original Futu HFQ acquisition; this run only revalidates metadata.",
+      "Old equity.constraints cannot be requested by current public DFLS; its documented assumptions are restated, not claimed as migrated source rows.",
+      "No following session outside the retained coverage is invented."
+    ]
+  },
+  "binding": {
+    "prepared": {
+      "space_id": "4d977aa7-57e2-4961-9f16-d90e63decaac",
+      "preparation_id": "c626bbed-e60b-4f67-be03-59e81528758d",
+      "manifest_sha256": "06242c4f8936b4cac111f3eeee73669472467d39ef98dd90a9da763f88e472e1"
+    },
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "MU"
+    },
+    "specification_hash": "3d7aca6e0affd8be4c639cedb070ab621ad1b30ec24aa5966530fdc73be9a8bf",
+    "content_identities": [
+      [
+        "bars",
+        "764b9eb72c649f4567746cae302c50dc0800f7c695d598a7cb4a877bcab9d4ad"
+      ],
+      [
+        "sessions",
+        "4455664424475f1a136651bcdf5e6a41b5f0fe8d3d10a9826e701110785f546a"
+      ],
+      [
+        "trading_facts",
+        "3efb72ff3f4e11b3c2f1fff3e91dbdd9b49b17c9cd40f9efc87def653c706111"
+      ]
+    ],
+    "warmup_bars": 63,
+    "auxiliary_inputs": [
+      {
+        "input": {
+          "name": "soxx_hfq",
+          "instrument": {
+            "market": "US",
+            "asset_class": "ETF",
+            "symbol": "SOXX"
+          },
+          "source": {
+            "provider": "futu",
+            "revision": "s018-hfq-target-repack-20261108-v1"
+          },
+          "frequency": "daily",
+          "warmup_bars": 63,
+          "max_age_seconds": 604800,
+          "analysis_price": "HFQ"
+        },
+        "bars_sha256": "ec58fd321d91873c8169016990273a00831277b0a26e506e966b7f2c3fbd9149",
+        "sessions_sha256": "4455664424475f1a136651bcdf5e6a41b5f0fe8d3d10a9826e701110785f546a"
+      }
+    ],
+    "request_bindings": [
+      [
+        "bars",
+        {
+          "instrument": {
+            "market": "US",
+            "asset_class": "STOCK",
+            "symbol": "MU"
+          },
+          "source": {
+            "provider": "futu",
+            "revision": "s018-hfq-target-repack-20261108-v1"
+          },
+          "query": {
+            "product": "equity.bars",
+            "start": "2022-01-03",
+            "end": "2026-10-30",
+            "frequency": "daily",
+            "adjustment": "hfq",
+            "session": "REGULAR"
+          }
+        }
+      ],
+      [
+        "sessions",
+        {
+          "instrument": {
+            "market": "US",
+            "asset_class": "STOCK",
+            "symbol": "MU"
+          },
+          "source": {
+            "provider": "futu",
+            "revision": "s018-hfq-target-repack-20261108-v1"
+          },
+          "query": {
+            "product": "equity.sessions",
+            "start": "2022-01-03",
+            "end": "2026-10-30",
+            "frequency": "daily",
+            "adjustment": "none",
+            "session": "REGULAR"
+          }
+        }
+      ],
+      [
+        "trading_facts",
+        {
+          "instrument": {
+            "market": "US",
+            "asset_class": "STOCK",
+            "symbol": "MU"
+          },
+          "source": {
+            "provider": "futu",
+            "revision": "s018-hfq-target-repack-20261108-v1"
+          },
+          "query": {
+            "product": "equity.trading_facts",
+            "start": "2022-01-03",
+            "end": "2026-10-30",
+            "frequency": "daily",
+            "adjustment": "hfq",
+            "session": "REGULAR"
+          }
+        }
+      ],
+      [
+        "auxiliary:soxx_hfq:bars",
+        {
+          "instrument": {
+            "market": "US",
+            "asset_class": "ETF",
+            "symbol": "SOXX"
+          },
+          "source": {
+            "provider": "futu",
+            "revision": "s018-hfq-target-repack-20261108-v1"
+          },
+          "query": {
+            "product": "equity.bars",
+            "start": "2022-01-03",
+            "end": "2026-10-30",
+            "frequency": "daily",
+            "adjustment": "hfq",
+            "session": "REGULAR"
+          }
+        }
+      ],
+      [
+        "auxiliary:soxx_hfq:sessions",
+        {
+          "instrument": {
+            "market": "US",
+            "asset_class": "ETF",
+            "symbol": "SOXX"
+          },
+          "source": {
+            "provider": "futu",
+            "revision": "s018-hfq-target-repack-20261108-v1"
+          },
+          "query": {
+            "product": "equity.sessions",
+            "start": "2022-01-03",
+            "end": "2026-10-30",
+            "frequency": "daily",
+            "adjustment": "none",
+            "session": "REGULAR"
+          }
+        }
+      ]
+    ]
+  },
+  "execution_reference": {
+    "parameters": {
+      "instrument": {
+        "market": "US",
+        "asset_class": "STOCK",
+        "symbol": "MU"
+      },
+      "source": {
+        "provider": "futu",
+        "revision": "s018-hfq-target-repack-20261108-v1"
+      },
+      "query": {
+        "product": "equity.bars",
+        "start": "2022-01-03",
+        "end": "2026-10-30",
+        "frequency": "daily",
+        "adjustment": "none",
+        "session": "REGULAR"
+      }
+    },
+    "prepared": {
+      "space_id": "4d977aa7-57e2-4961-9f16-d90e63decaac",
+      "preparation_id": "949c898a-5945-4e67-88c1-f6736bae37cc",
+      "manifest_sha256": "fc83605e8d82804893994aebb8030708ec22b47bcac877aaa96c31b29ccfc79b"
+    },
+    "content_sha256": "0b0b1c85c4a38e3c32b8a208dd432da7e9f66e5bb85701e350b61d8ffa2fcbd4"
+  },
+  "selection": {
+    "type": "DecisionReference",
+    "decision_id": "c9396-current-runtime-inspection",
+    "evidence": {
+      "type": "ResearchEvidenceRef",
+      "owner": {
+        "type": "ResearchEvidenceOwner",
+        "strategy_id": "S018",
+        "experiment_id": null
+      },
+      "path": "decisions/c9396-current-runtime-inspection.json",
+      "sha256": "b7586fabf77f38fcc541654bf7db765a548f632ea271b8b810ecdbe9cff1314f"
+    }
+  },
+  "target": {
+    "version": "v1",
+    "parent": null
+  },
+  "note": "Ordinary candidate package preview; not the exact historical-metadata-preserving upgrade package."
+}
