@@ -1,0 +1,2501 @@
+{
+  "binding": {
+    "prepared": {
+      "space_id": "23cdaf89-999a-44d5-89c4-1edaf831e2bd",
+      "preparation_id": "9509e539-5180-4b3a-a84c-aea44a30ff3d",
+      "manifest_sha256": "10ed5f7d40025c4b4007e2ee7fea84788a8c41359c7f07e171e105bd9f9839f0"
+    },
+    "instrument": {
+      "market": "CN",
+      "asset_class": "ETF",
+      "symbol": "588080.SH"
+    },
+    "specification_hash": "a2ed87f8de524d946a832ce33dcb4e8c7cfa5c4291c184b691bdc841bab6d673",
+    "content_identities": [
+      [
+        "bars",
+        "675e6e1f11d35fa9dabede328939d4138372d83009fe86a78adb34b6e3fdcb8a"
+      ],
+      [
+        "sessions",
+        "36dbfba6e6e5a5a043475a6cab93ce17fbff523b341ff1ab76c20aca63305513"
+      ],
+      [
+        "trading_facts",
+        "4d9be4593bbbcc6330ae4d2c28e0b77d5b12cd1faa1b0f2de3f8085a5c4f1498"
+      ]
+    ],
+    "warmup_bars": 1,
+    "request_bindings": [
+      [
+        "bars",
+        {
+          "instrument": {
+            "market": "CN",
+            "asset_class": "ETF",
+            "symbol": "588080.SH"
+          },
+          "source": {
+            "provider": "tushare",
+            "revision": "s001-current-target-retained-20261108-v1"
+          },
+          "query": {
+            "product": "equity.bars",
+            "start": "2026-08-01",
+            "end": "2026-11-04",
+            "frequency": "daily",
+            "adjustment": "hfq",
+            "session": "REGULAR"
+          }
+        }
+      ],
+      [
+        "sessions",
+        {
+          "instrument": {
+            "market": "CN",
+            "asset_class": "ETF",
+            "symbol": "588080.SH"
+          },
+          "source": {
+            "provider": "tushare",
+            "revision": "s001-current-target-retained-20261108-v1"
+          },
+          "query": {
+            "product": "equity.sessions",
+            "start": "2026-08-01",
+            "end": "2026-11-04",
+            "frequency": "daily",
+            "adjustment": "none",
+            "session": "REGULAR"
+          }
+        }
+      ],
+      [
+        "trading_facts",
+        {
+          "instrument": {
+            "market": "CN",
+            "asset_class": "ETF",
+            "symbol": "588080.SH"
+          },
+          "source": {
+            "provider": "tushare",
+            "revision": "s001-current-target-retained-20261108-v1"
+          },
+          "query": {
+            "product": "equity.trading_facts",
+            "start": "2026-08-01",
+            "end": "2026-11-04",
+            "frequency": "daily",
+            "adjustment": "hfq",
+            "session": "REGULAR"
+          }
+        }
+      ]
+    ],
+    "observation_bindings": [
+      {
+        "input": {
+          "name": "adjusted_daily",
+          "dataset": "etf.ohlcv",
+          "symbol": "588080.SH",
+          "frequency": "daily",
+          "history_start": "2020-11-16",
+          "history_end": null,
+          "coverage": {
+            "maximum_start_lag_days": 7,
+            "minimum_observations": 60,
+            "minimum_sessions": 0,
+            "observations_through": null
+          },
+          "asset": null,
+          "calendar": "SSE",
+          "availability": {
+            "timezone": "Asia/Shanghai",
+            "available_time": "15:00",
+            "day_offset": 0
+          },
+          "max_staleness_days": null
+        },
+        "request": {
+          "dataset": "etf.ohlcv",
+          "symbol": "588080.SH",
+          "start": "2020-11-16",
+          "end": "2026-11-04",
+          "required_cutoff": null,
+          "frequency": "daily",
+          "parameters": {},
+          "coverage": {
+            "maximum_start_lag_days": 7,
+            "minimum_observations": 60,
+            "minimum_sessions": 0,
+            "observations_through": null
+          }
+        },
+        "content_sha256": "5c3d725b9e47cb00e1344e231c5d3da6d6235744a067004144dd0a14df8164ed"
+      },
+      {
+        "input": {
+          "name": "adjusted_30m",
+          "dataset": "etf.ohlcv",
+          "symbol": "588080.SH",
+          "frequency": "30m",
+          "history_start": "2020-11-16",
+          "history_end": null,
+          "coverage": {
+            "maximum_start_lag_days": 7,
+            "minimum_observations": 500,
+            "minimum_sessions": 0,
+            "observations_through": null
+          },
+          "asset": null,
+          "calendar": "SSE",
+          "availability": {
+            "timezone": "Asia/Shanghai",
+            "available_time": "15:00",
+            "day_offset": 0
+          },
+          "max_staleness_days": null
+        },
+        "request": {
+          "dataset": "etf.ohlcv",
+          "symbol": "588080.SH",
+          "start": "2020-11-16",
+          "end": "2026-11-04",
+          "required_cutoff": null,
+          "frequency": "30m",
+          "parameters": {},
+          "coverage": {
+            "maximum_start_lag_days": 7,
+            "minimum_observations": 500,
+            "minimum_sessions": 0,
+            "observations_through": null
+          }
+        },
+        "content_sha256": "b236927fb705a8ee1abbe424f75d302606688f54d0c70cb0d8dcb10a3ae1335e"
+      },
+      {
+        "input": {
+          "name": "adjusted_weekly",
+          "dataset": "etf.ohlcv",
+          "symbol": "588080.SH",
+          "frequency": "weekly",
+          "history_start": "2020-11-16",
+          "history_end": null,
+          "coverage": {
+            "maximum_start_lag_days": 7,
+            "minimum_observations": 10,
+            "minimum_sessions": 0,
+            "observations_through": null
+          },
+          "asset": null,
+          "calendar": "SSE",
+          "availability": {
+            "timezone": "Asia/Shanghai",
+            "available_time": "15:00",
+            "day_offset": 0
+          },
+          "max_staleness_days": null
+        },
+        "request": {
+          "dataset": "etf.ohlcv",
+          "symbol": "588080.SH",
+          "start": "2020-11-16",
+          "end": "2026-10-30",
+          "required_cutoff": null,
+          "frequency": "weekly",
+          "parameters": {},
+          "coverage": {
+            "maximum_start_lag_days": 7,
+            "minimum_observations": 10,
+            "minimum_sessions": 0,
+            "observations_through": null
+          }
+        },
+        "content_sha256": "59bc3c52fb4f2e17121090be581c90969ad64345f1bd1fd8d232251caa853aeb"
+      }
+    ]
+  },
+  "raw": {
+    "parameters": {
+      "instrument": {
+        "market": "CN",
+        "asset_class": "ETF",
+        "symbol": "588080.SH"
+      },
+      "source": {
+        "provider": "tushare",
+        "revision": "s001-current-target-retained-20261108-v1"
+      },
+      "query": {
+        "product": "equity.bars",
+        "start": "2026-08-01",
+        "end": "2026-11-04",
+        "frequency": "daily",
+        "adjustment": "none",
+        "session": "REGULAR"
+      }
+    },
+    "prepared": {
+      "space_id": "23cdaf89-999a-44d5-89c4-1edaf831e2bd",
+      "preparation_id": "d33593e8-ca5e-42cf-a77f-71f3b86a6114",
+      "manifest_sha256": "850f793f3310cf3f3daf1b8feb29f613e9b5f59210e86c4a6c8301b8352e4384"
+    },
+    "content_sha256": "b7bdd351b053b5f07e2a0f2fff1dc477c4242cbcb9282d4160b8406712eb8eef"
+  },
+  "provenance": {
+    "observation": {
+      "signal_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S001",
+          "experiment_id": "EX004_20261106"
+        },
+        "evidence_id": "7881cc7911d80735405944e86c16a4f938aba29f9f1046acf1121d2426b44e74.json",
+        "sha256": "7881cc7911d80735405944e86c16a4f938aba29f9f1046acf1121d2426b44e74",
+        "media_type": "application/json",
+        "name": "completed-week-signal_summary",
+        "schema": null,
+        "schema_version": null
+      },
+      "input_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S001",
+          "experiment_id": "EX004_20261106"
+        },
+        "evidence_id": "d5f498b944b7c3917230050979caeb1c7a44505928de4c5bce854559b3d01cc8.json",
+        "sha256": "d5f498b944b7c3917230050979caeb1c7a44505928de4c5bce854559b3d01cc8",
+        "media_type": "application/json",
+        "name": "completed-week-input_identity",
+        "schema": null,
+        "schema_version": null
+      },
+      "files_sha256": {
+        "calendar.parquet": "60edcb8695a900a20beaf215b2b236504d8ee3599eec555eb3e85c0df7bd8cad",
+        "daily.parquet": "212dadb6ca532cfbe137ab398a51a0f7986238195086b69115454e36077f5e2f",
+        "input_identity.json": "d5f498b944b7c3917230050979caeb1c7a44505928de4c5bce854559b3d01cc8",
+        "m30.parquet": "e404499c080ed1cd110485073b90f62b181957c80a1e1daa2944b141be835084",
+        "raw_daily.parquet": "dec3e5080b4d90d8a324a303495c0d3ba98a43ce63d0d192bab39fd979f3c2af",
+        "weekly.parquet": "8a8991f8d5b8e1e233ba7eab61c576e4101ef1c7e22e7a5c007ea1990da4f7fd"
+      },
+      "prepared_ref": {
+        "space_id": "24cbe481-cf81-4f10-a774-b7fd164cace8",
+        "preparation_id": "18bab10e-de24-4e81-9de7-f81714a9246b",
+        "manifest_sha256": "8b83f4d4ef59b19afc88710e4f4c981e639d1ed92ea2b48b8301b66afa9942da"
+      },
+      "inputs": {
+        "m30": {
+          "rows": 11584,
+          "parquet_sha256": "e404499c080ed1cd110485073b90f62b181957c80a1e1daa2944b141be835084",
+          "content_sha256": "cc67e76a53e1b82fb3cd5594b8d1b8bef816724a523c73820aebb8bb292e4290",
+          "asset_id": "e77356362b3ebf3bb0e51e435fef637bb954fb9cba14d4a9fe023826442d1579"
+        },
+        "daily": {
+          "rows": 1448,
+          "parquet_sha256": "212dadb6ca532cfbe137ab398a51a0f7986238195086b69115454e36077f5e2f",
+          "content_sha256": "9be2614cae3aeb2a70fd3e7e2ca8cfd1cb9bc0ce029a5f4c2ddf21bd39df591d",
+          "asset_id": "c30e32dd4ff7f56ffca02bbe5eaa909844af8df3161aa42589b6d693e88ff3b0"
+        },
+        "weekly": {
+          "rows": 306,
+          "parquet_sha256": "8a8991f8d5b8e1e233ba7eab61c576e4101ef1c7e22e7a5c007ea1990da4f7fd",
+          "content_sha256": "e0f0ed779ac6337521ec8ef0c59b293c707d57d73274ca08d519b74de6cf85a3",
+          "asset_id": "08782799187e80a9590fa1a275044e8804f8642485fb964e9e5da0737cc07ede"
+        },
+        "raw_daily": {
+          "rows": 1448,
+          "parquet_sha256": "dec3e5080b4d90d8a324a303495c0d3ba98a43ce63d0d192bab39fd979f3c2af",
+          "content_sha256": "9984a025e78dfc5b1abd1653bdce662332b1b319485db38439cd3cf610551ff0",
+          "asset_id": "62de1287b4f0a3e1b29cc187b888fcb91723ef311e3a809819494a5f906dbaa7"
+        },
+        "calendar": {
+          "rows": 2202,
+          "parquet_sha256": "60edcb8695a900a20beaf215b2b236504d8ee3599eec555eb3e85c0df7bd8cad",
+          "content_sha256": "2e20e8d125d6bb5a50f12e820653cc4848bbd46f67e0f27a504e68f4be0795cf",
+          "asset_id": "852f9c980f7221bccc19ca91cbebb8b62d86652101aee4e2879d9c3afff7b7ae"
+        }
+      },
+      "note": "Full original metadata remains in the hash-bound input_evidence; not duplicated here."
+    },
+    "execution": {
+      "raw_daily": {
+        "ready": true,
+        "status": "READY",
+        "error": "None",
+        "rows": 63,
+        "reference": {
+          "space_id": "f7b75cd7-67f7-4e4d-b483-2434baaa9e39",
+          "preparation_id": "9c0d88ec-f7c3-4ad1-94bb-2b86df045a67",
+          "manifest_sha256": "298a25c164e4f7454c19ece6d1ef6cafa7aad6a4d642bc70209a9e158ef5ca79"
+        },
+        "identity": {
+          "dataset": "etf.unadjusted_daily",
+          "source": "tushare",
+          "symbol": "588080.SH",
+          "data_start": "2026-08-03T00:00:00",
+          "data_cutoff": "2026-11-05T00:00:00",
+          "content_sha256": "cdc3f2968ec28a7ae94d4f549fa47cc7bd39f8d021040e1624cbcdc9e2fcf199",
+          "metadata": {
+            "vendor": "tushare",
+            "market": "a_share",
+            "vendor_symbol": "588080.SH",
+            "period": "daily",
+            "asset_type": "etf",
+            "adjustment": "none",
+            "validation": {
+              "status": "PASS",
+              "findings": [],
+              "row_count": 63
+            },
+            "daily_session_coverage": {
+              "source": "trade_cal",
+              "exchange": "SSE",
+              "start_date": "2026-08-01",
+              "end_date": "2026-11-05",
+              "listing_date": "2020-11-16",
+              "listing_source": "fund_basic",
+              "verified_sessions": 63,
+              "expected_dates": [
+                "2026-08-03",
+                "2026-08-04",
+                "2026-08-05",
+                "2026-08-06",
+                "2026-08-07",
+                "2026-08-10",
+                "2026-08-11",
+                "2026-08-12",
+                "2026-08-13",
+                "2026-08-14",
+                "2026-08-17",
+                "2026-08-18",
+                "2026-08-19",
+                "2026-08-20",
+                "2026-08-21",
+                "2026-08-24",
+                "2026-08-25",
+                "2026-08-26",
+                "2026-08-27",
+                "2026-08-28",
+                "2026-08-31",
+                "2026-09-01",
+                "2026-09-02",
+                "2026-09-03",
+                "2026-09-04",
+                "2026-09-07",
+                "2026-09-08",
+                "2026-09-09",
+                "2026-09-10",
+                "2026-09-11",
+                "2026-09-14",
+                "2026-09-15",
+                "2026-09-16",
+                "2026-09-17",
+                "2026-09-18",
+                "2026-09-21",
+                "2026-09-22",
+                "2026-09-23",
+                "2026-09-24",
+                "2026-09-28",
+                "2026-09-29",
+                "2026-09-30",
+                "2026-10-08",
+                "2026-10-09",
+                "2026-10-12",
+                "2026-10-13",
+                "2026-10-14",
+                "2026-10-15",
+                "2026-10-16",
+                "2026-10-19",
+                "2026-10-20",
+                "2026-10-21",
+                "2026-10-22",
+                "2026-10-23",
+                "2026-10-26",
+                "2026-10-27",
+                "2026-10-28",
+                "2026-10-29",
+                "2026-10-30",
+                "2026-11-02",
+                "2026-11-03",
+                "2026-11-04",
+                "2026-11-05"
+              ],
+              "calendar": [
+                {
+                  "Date": "2026-08-01",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-08-02",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-08-03",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-04",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-05",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-06",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-07",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-08",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-08-09",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-08-10",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-11",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-12",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-13",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-14",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-15",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-08-16",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-08-17",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-18",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-19",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-20",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-21",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-22",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-08-23",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-08-24",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-25",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-26",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-27",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-28",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-29",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-08-30",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-08-31",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-01",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-02",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-03",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-04",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-05",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-09-06",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-09-07",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-08",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-09",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-10",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-11",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-12",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-09-13",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-09-14",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-15",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-16",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-17",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-18",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-19",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-09-20",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-09-21",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-22",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-23",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-24",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-25",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-09-26",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-09-27",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-09-28",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-29",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-30",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-01",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-02",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-03",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-04",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-05",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-06",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-07",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-08",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-09",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-10",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-11",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-12",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-13",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-14",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-15",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-16",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-17",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-18",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-19",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-20",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-21",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-22",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-23",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-24",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-25",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-26",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-27",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-28",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-29",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-30",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-31",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-11-01",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-11-02",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-11-03",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-11-04",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-11-05",
+                  "is_open": 1
+                }
+              ],
+              "calendar_sha256": "9225511c315cf97366b5d41c53b9ef76033b551d6b7f9bb56e023746bf3c676b",
+              "suspended_dates": [],
+              "suspension_evidence": []
+            },
+            "ohlcv_quality_evidence": {
+              "version": 1,
+              "frequency": "daily",
+              "reference_daily_sha256": "b0295bc22ebd8f3d83efafa3a00545f54f86dd58a3cbcb0dff3a371ff4edf200",
+              "price_tolerance": 0.005,
+              "volume_relative_tolerance": 1e-05,
+              "amount_relative_tolerance": 1e-05,
+              "sessions": {
+                "2026-08-03": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.641,
+                    "High": 1.658,
+                    "Low": 1.586,
+                    "Close": 1.586,
+                    "Volume": 1630559466.0,
+                    "Amount": 2622605038.0
+                  },
+                  "daily_vwap": 1.6084080910177612,
+                  "daily_low": 1.586,
+                  "daily_high": 1.658
+                },
+                "2026-08-04": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.6,
+                    "High": 1.669,
+                    "Low": 1.592,
+                    "Close": 1.655,
+                    "Volume": 1603075557.0,
+                    "Amount": 2619247625.0
+                  },
+                  "daily_vwap": 1.6338890662781156,
+                  "daily_low": 1.592,
+                  "daily_high": 1.669
+                },
+                "2026-08-05": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.649,
+                    "High": 1.754,
+                    "Low": 1.648,
+                    "Close": 1.731,
+                    "Volume": 1653118944.0,
+                    "Amount": 2834841061.0
+                  },
+                  "daily_vwap": 1.714843974953565,
+                  "daily_low": 1.648,
+                  "daily_high": 1.754
+                },
+                "2026-08-06": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.695,
+                    "High": 1.766,
+                    "Low": 1.688,
+                    "Close": 1.739,
+                    "Volume": 1025511333.0,
+                    "Amount": 1773384088.0
+                  },
+                  "daily_vwap": 1.729268152319873,
+                  "daily_low": 1.688,
+                  "daily_high": 1.766
+                },
+                "2026-08-07": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.73,
+                    "High": 1.788,
+                    "Low": 1.724,
+                    "Close": 1.783,
+                    "Volume": 1176641312.0,
+                    "Amount": 2075530440.0
+                  },
+                  "daily_vwap": 1.763944898783224,
+                  "daily_low": 1.724,
+                  "daily_high": 1.788
+                },
+                "2026-08-10": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.786,
+                    "High": 1.796,
+                    "Low": 1.744,
+                    "Close": 1.777,
+                    "Volume": 843204684.0,
+                    "Amount": 1488124860.0
+                  },
+                  "daily_vwap": 1.7648441573410425,
+                  "daily_low": 1.744,
+                  "daily_high": 1.796
+                },
+                "2026-08-11": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.753,
+                    "High": 1.793,
+                    "Low": 1.738,
+                    "Close": 1.751,
+                    "Volume": 785014154.0,
+                    "Amount": 1385190771.0
+                  },
+                  "daily_vwap": 1.7645424148619873,
+                  "daily_low": 1.738,
+                  "daily_high": 1.793
+                },
+                "2026-08-12": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.756,
+                    "High": 1.788,
+                    "Low": 1.748,
+                    "Close": 1.777,
+                    "Volume": 724767520.0,
+                    "Amount": 1284886834.0
+                  },
+                  "daily_vwap": 1.7728261801798182,
+                  "daily_low": 1.748,
+                  "daily_high": 1.788
+                },
+                "2026-08-13": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.797,
+                    "High": 1.824,
+                    "Low": 1.754,
+                    "Close": 1.758,
+                    "Volume": 925924377.0,
+                    "Amount": 1668078560.0
+                  },
+                  "daily_vwap": 1.8015278584678627,
+                  "daily_low": 1.754,
+                  "daily_high": 1.824
+                },
+                "2026-08-14": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.772,
+                    "High": 1.78,
+                    "Low": 1.73,
+                    "Close": 1.758,
+                    "Volume": 711099002.0,
+                    "Amount": 1247809640.0
+                  },
+                  "daily_vwap": 1.7547621871082306,
+                  "daily_low": 1.73,
+                  "daily_high": 1.78
+                },
+                "2026-08-17": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.758,
+                    "High": 1.83,
+                    "Low": 1.757,
+                    "Close": 1.83,
+                    "Volume": 921083310.0,
+                    "Amount": 1657304151.0
+                  },
+                  "daily_vwap": 1.799298861467808,
+                  "daily_low": 1.757,
+                  "daily_high": 1.83
+                },
+                "2026-08-18": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.829,
+                    "High": 1.841,
+                    "Low": 1.795,
+                    "Close": 1.832,
+                    "Volume": 974660814.0,
+                    "Amount": 1774971909.0
+                  },
+                  "daily_vwap": 1.8211175452058341,
+                  "daily_low": 1.795,
+                  "daily_high": 1.841
+                },
+                "2026-08-19": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.793,
+                    "High": 1.795,
+                    "Low": 1.693,
+                    "Close": 1.707,
+                    "Volume": 1597571089.0,
+                    "Amount": 2774409617.0
+                  },
+                  "daily_vwap": 1.7366423541982363,
+                  "daily_low": 1.693,
+                  "daily_high": 1.795
+                },
+                "2026-08-20": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.72,
+                    "High": 1.734,
+                    "Low": 1.676,
+                    "Close": 1.692,
+                    "Volume": 1064397290.0,
+                    "Amount": 1814924885.0
+                  },
+                  "daily_vwap": 1.7051197913140121,
+                  "daily_low": 1.676,
+                  "daily_high": 1.734
+                },
+                "2026-08-21": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.688,
+                    "High": 1.715,
+                    "Low": 1.678,
+                    "Close": 1.692,
+                    "Volume": 818261363.0,
+                    "Amount": 1385876797.0
+                  },
+                  "daily_vwap": 1.6936847560771362,
+                  "daily_low": 1.678,
+                  "daily_high": 1.715
+                },
+                "2026-08-24": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.693,
+                    "High": 1.693,
+                    "Low": 1.612,
+                    "Close": 1.641,
+                    "Volume": 1075880893.0,
+                    "Amount": 1770766720.0
+                  },
+                  "daily_vwap": 1.6458761667031483,
+                  "daily_low": 1.612,
+                  "daily_high": 1.693
+                },
+                "2026-08-25": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.614,
+                    "High": 1.661,
+                    "Low": 1.602,
+                    "Close": 1.643,
+                    "Volume": 824230920.0,
+                    "Amount": 1345504372.0
+                  },
+                  "daily_vwap": 1.6324361769878761,
+                  "daily_low": 1.602,
+                  "daily_high": 1.661
+                },
+                "2026-08-26": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.644,
+                    "High": 1.682,
+                    "Low": 1.636,
+                    "Close": 1.671,
+                    "Volume": 899515342.0,
+                    "Amount": 1494703718.0
+                  },
+                  "daily_vwap": 1.6616767365819982,
+                  "daily_low": 1.636,
+                  "daily_high": 1.682
+                },
+                "2026-08-27": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.679,
+                    "High": 1.737,
+                    "Low": 1.674,
+                    "Close": 1.732,
+                    "Volume": 1015489724.0,
+                    "Amount": 1735278919.0
+                  },
+                  "daily_vwap": 1.708809924894917,
+                  "daily_low": 1.674,
+                  "daily_high": 1.737
+                },
+                "2026-08-28": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.73,
+                    "High": 1.752,
+                    "Low": 1.7,
+                    "Close": 1.703,
+                    "Volume": 631105817.0,
+                    "Amount": 1089773662.0
+                  },
+                  "daily_vwap": 1.7267685269964799,
+                  "daily_low": 1.7,
+                  "daily_high": 1.752
+                },
+                "2026-08-31": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.665,
+                    "High": 1.724,
+                    "Low": 1.659,
+                    "Close": 1.72,
+                    "Volume": 872492636.9999999,
+                    "Amount": 1467138530.0
+                  },
+                  "daily_vwap": 1.68154832233845,
+                  "daily_low": 1.659,
+                  "daily_high": 1.724
+                },
+                "2026-09-01": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.719,
+                    "High": 1.723,
+                    "Low": 1.686,
+                    "Close": 1.688,
+                    "Volume": 685316646.0,
+                    "Amount": 1162626934.0
+                  },
+                  "daily_vwap": 1.696481386795324,
+                  "daily_low": 1.686,
+                  "daily_high": 1.723
+                },
+                "2026-09-02": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.661,
+                    "High": 1.675,
+                    "Low": 1.645,
+                    "Close": 1.657,
+                    "Volume": 756265748.0,
+                    "Amount": 1254556246.0
+                  },
+                  "daily_vwap": 1.6588828058361305,
+                  "daily_low": 1.645,
+                  "daily_high": 1.675
+                },
+                "2026-09-03": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.669,
+                    "High": 1.674,
+                    "Low": 1.635,
+                    "Close": 1.648,
+                    "Volume": 731736981.0,
+                    "Amount": 1209786807.0
+                  },
+                  "daily_vwap": 1.65330827662515,
+                  "daily_low": 1.635,
+                  "daily_high": 1.674
+                },
+                "2026-09-04": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.662,
+                    "High": 1.676,
+                    "Low": 1.604,
+                    "Close": 1.618,
+                    "Volume": 1044799634.0,
+                    "Amount": 1713125584.0
+                  },
+                  "daily_vwap": 1.6396690123649105,
+                  "daily_low": 1.604,
+                  "daily_high": 1.676
+                },
+                "2026-09-07": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.629,
+                    "High": 1.665,
+                    "Low": 1.616,
+                    "Close": 1.652,
+                    "Volume": 833005221.0,
+                    "Amount": 1366078409.0
+                  },
+                  "daily_vwap": 1.6399397921660805,
+                  "daily_low": 1.616,
+                  "daily_high": 1.665
+                },
+                "2026-09-08": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.651,
+                    "High": 1.664,
+                    "Low": 1.623,
+                    "Close": 1.63,
+                    "Volume": 844800178.9999999,
+                    "Amount": 1386899002.0
+                  },
+                  "daily_vwap": 1.6416888117160309,
+                  "daily_low": 1.623,
+                  "daily_high": 1.664
+                },
+                "2026-09-09": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.639,
+                    "High": 1.647,
+                    "Low": 1.611,
+                    "Close": 1.619,
+                    "Volume": 647657804.0,
+                    "Amount": 1053622879.0
+                  },
+                  "daily_vwap": 1.6268203247034447,
+                  "daily_low": 1.611,
+                  "daily_high": 1.647
+                },
+                "2026-09-10": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.605,
+                    "High": 1.627,
+                    "Low": 1.6,
+                    "Close": 1.609,
+                    "Volume": 542499525.0,
+                    "Amount": 873872370.0
+                  },
+                  "daily_vwap": 1.6108260555619842,
+                  "daily_low": 1.6,
+                  "daily_high": 1.627
+                },
+                "2026-09-11": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.59,
+                    "High": 1.599,
+                    "Low": 1.554,
+                    "Close": 1.593,
+                    "Volume": 1330311743.0,
+                    "Amount": 2097698472.0
+                  },
+                  "daily_vwap": 1.5768472939053053,
+                  "daily_low": 1.554,
+                  "daily_high": 1.599
+                },
+                "2026-09-14": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.57,
+                    "High": 1.58,
+                    "Low": 1.554,
+                    "Close": 1.566,
+                    "Volume": 803427336.0,
+                    "Amount": 1258105078.0
+                  },
+                  "daily_vwap": 1.5659226685809455,
+                  "daily_low": 1.554,
+                  "daily_high": 1.58
+                },
+                "2026-09-15": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.556,
+                    "High": 1.616,
+                    "Low": 1.556,
+                    "Close": 1.589,
+                    "Volume": 1060757105.0000001,
+                    "Amount": 1685567447.0
+                  },
+                  "daily_vwap": 1.589023009183615,
+                  "daily_low": 1.556,
+                  "daily_high": 1.616
+                },
+                "2026-09-16": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.586,
+                    "High": 1.661,
+                    "Low": 1.586,
+                    "Close": 1.656,
+                    "Volume": 1206164264.0,
+                    "Amount": 1969305443.0
+                  },
+                  "daily_vwap": 1.632700869837742,
+                  "daily_low": 1.586,
+                  "daily_high": 1.661
+                },
+                "2026-09-17": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.645,
+                    "High": 1.67,
+                    "Low": 1.636,
+                    "Close": 1.645,
+                    "Volume": 803308100.0,
+                    "Amount": 1327483924.0
+                  },
+                  "daily_vwap": 1.6525215219415814,
+                  "daily_low": 1.636,
+                  "daily_high": 1.67
+                },
+                "2026-09-18": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.668,
+                    "High": 1.71,
+                    "Low": 1.668,
+                    "Close": 1.693,
+                    "Volume": 1168419132.0,
+                    "Amount": 1972953183.0
+                  },
+                  "daily_vwap": 1.6885663106379192,
+                  "daily_low": 1.668,
+                  "daily_high": 1.71
+                },
+                "2026-09-21": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.71,
+                    "High": 1.719,
+                    "Low": 1.682,
+                    "Close": 1.696,
+                    "Volume": 835047389.0,
+                    "Amount": 1418126399.0
+                  },
+                  "daily_vwap": 1.6982585870943907,
+                  "daily_low": 1.682,
+                  "daily_high": 1.719
+                },
+                "2026-09-22": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.737,
+                    "High": 1.747,
+                    "Low": 1.696,
+                    "Close": 1.705,
+                    "Volume": 1048164027.9999999,
+                    "Amount": 1811138518.0
+                  },
+                  "daily_vwap": 1.7279151636751269,
+                  "daily_low": 1.696,
+                  "daily_high": 1.747
+                },
+                "2026-09-23": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.708,
+                    "High": 1.718,
+                    "Low": 1.696,
+                    "Close": 1.7,
+                    "Volume": 739310143.0,
+                    "Amount": 1260608113.0
+                  },
+                  "daily_vwap": 1.7051140511675626,
+                  "daily_low": 1.696,
+                  "daily_high": 1.718
+                },
+                "2026-09-24": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.69,
+                    "High": 1.693,
+                    "Low": 1.661,
+                    "Close": 1.662,
+                    "Volume": 679302180.0,
+                    "Amount": 1139762366.0
+                  },
+                  "daily_vwap": 1.6778429387640121,
+                  "daily_low": 1.661,
+                  "daily_high": 1.693
+                },
+                "2026-09-28": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.65,
+                    "High": 1.653,
+                    "Low": 1.587,
+                    "Close": 1.595,
+                    "Volume": 1070729039.0,
+                    "Amount": 1722303589.0
+                  },
+                  "daily_vwap": 1.6085335563594443,
+                  "daily_low": 1.587,
+                  "daily_high": 1.653
+                },
+                "2026-09-29": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.588,
+                    "High": 1.616,
+                    "Low": 1.587,
+                    "Close": 1.61,
+                    "Volume": 761975686.0,
+                    "Amount": 1219861987.0
+                  },
+                  "daily_vwap": 1.6009198317123206,
+                  "daily_low": 1.587,
+                  "daily_high": 1.616
+                },
+                "2026-09-30": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.616,
+                    "High": 1.621,
+                    "Low": 1.565,
+                    "Close": 1.569,
+                    "Volume": 1050371580.0000001,
+                    "Amount": 1662179078.0
+                  },
+                  "daily_vwap": 1.5824676806278402,
+                  "daily_low": 1.565,
+                  "daily_high": 1.621
+                },
+                "2026-10-08": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.565,
+                    "High": 1.566,
+                    "Low": 1.481,
+                    "Close": 1.491,
+                    "Volume": 1310376860.0,
+                    "Amount": 1987147854.0
+                  },
+                  "daily_vwap": 1.5164705014708517,
+                  "daily_low": 1.481,
+                  "daily_high": 1.566
+                },
+                "2026-10-09": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.475,
+                    "High": 1.504,
+                    "Low": 1.424,
+                    "Close": 1.494,
+                    "Volume": 1773862939.0,
+                    "Amount": 2593860087.0
+                  },
+                  "daily_vwap": 1.462266351008081,
+                  "daily_low": 1.424,
+                  "daily_high": 1.504
+                },
+                "2026-10-12": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.48,
+                    "High": 1.509,
+                    "Low": 1.46,
+                    "Close": 1.461,
+                    "Volume": 886143608.0,
+                    "Amount": 1309644173.0
+                  },
+                  "daily_vwap": 1.4779141452657185,
+                  "daily_low": 1.46,
+                  "daily_high": 1.509
+                },
+                "2026-10-13": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.428,
+                    "High": 1.483,
+                    "Low": 1.409,
+                    "Close": 1.461,
+                    "Volume": 1300820812.0,
+                    "Amount": 1877869837.0
+                  },
+                  "daily_vwap": 1.4436037766898828,
+                  "daily_low": 1.409,
+                  "daily_high": 1.483
+                },
+                "2026-10-14": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.45,
+                    "High": 1.465,
+                    "Low": 1.411,
+                    "Close": 1.414,
+                    "Volume": 879517157.0,
+                    "Amount": 1264360190.0
+                  },
+                  "daily_vwap": 1.4375617120565165,
+                  "daily_low": 1.411,
+                  "daily_high": 1.465
+                },
+                "2026-10-15": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.368,
+                    "High": 1.401,
+                    "Low": 1.361,
+                    "Close": 1.394,
+                    "Volume": 1885796945.0,
+                    "Amount": 2595842780.0
+                  },
+                  "daily_vwap": 1.37652295327056,
+                  "daily_low": 1.361,
+                  "daily_high": 1.401
+                },
+                "2026-10-16": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.41,
+                    "High": 1.425,
+                    "Low": 1.374,
+                    "Close": 1.39,
+                    "Volume": 1369412943.0,
+                    "Amount": 1919274496.0
+                  },
+                  "daily_vwap": 1.4015308572996306,
+                  "daily_low": 1.374,
+                  "daily_high": 1.425
+                },
+                "2026-10-19": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.379,
+                    "High": 1.39,
+                    "Low": 1.356,
+                    "Close": 1.362,
+                    "Volume": 1442710250.0,
+                    "Amount": 1977456620.0
+                  },
+                  "daily_vwap": 1.3706540311888684,
+                  "daily_low": 1.356,
+                  "daily_high": 1.39
+                },
+                "2026-10-20": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.356,
+                    "High": 1.389,
+                    "Low": 1.342,
+                    "Close": 1.375,
+                    "Volume": 1300358382.0,
+                    "Amount": 1774964638.0
+                  },
+                  "daily_vwap": 1.3649811179515279,
+                  "daily_low": 1.342,
+                  "daily_high": 1.389
+                },
+                "2026-10-21": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.391,
+                    "High": 1.404,
+                    "Low": 1.368,
+                    "Close": 1.378,
+                    "Volume": 1145063204.0,
+                    "Amount": 1587271240.0
+                  },
+                  "daily_vwap": 1.3861865742041608,
+                  "daily_low": 1.368,
+                  "daily_high": 1.404
+                },
+                "2026-10-22": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.378,
+                    "High": 1.384,
+                    "Low": 1.335,
+                    "Close": 1.34,
+                    "Volume": 1603326068.0,
+                    "Amount": 2171370821.0
+                  },
+                  "daily_vwap": 1.3542914721698394,
+                  "daily_low": 1.335,
+                  "daily_high": 1.384
+                },
+                "2026-10-23": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.32,
+                    "High": 1.388,
+                    "Low": 1.289,
+                    "Close": 1.379,
+                    "Volume": 2150676717.0,
+                    "Amount": 2859743453.0
+                  },
+                  "daily_vwap": 1.3296947097605094,
+                  "daily_low": 1.289,
+                  "daily_high": 1.388
+                },
+                "2026-10-26": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.366,
+                    "High": 1.369,
+                    "Low": 1.339,
+                    "Close": 1.341,
+                    "Volume": 1409888839.0,
+                    "Amount": 1904105878.0
+                  },
+                  "daily_vwap": 1.3505361737245443,
+                  "daily_low": 1.339,
+                  "daily_high": 1.369
+                },
+                "2026-10-27": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.356,
+                    "High": 1.362,
+                    "Low": 1.28,
+                    "Close": 1.282,
+                    "Volume": 1499085461.0,
+                    "Amount": 1981653705.0
+                  },
+                  "daily_vwap": 1.32190842787448,
+                  "daily_low": 1.28,
+                  "daily_high": 1.362
+                },
+                "2026-10-28": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.308,
+                    "High": 1.329,
+                    "Low": 1.289,
+                    "Close": 1.313,
+                    "Volume": 1568125727.0,
+                    "Amount": 2051324219.0
+                  },
+                  "daily_vwap": 1.3081375961635504,
+                  "daily_low": 1.289,
+                  "daily_high": 1.329
+                },
+                "2026-10-29": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.3,
+                    "High": 1.302,
+                    "Low": 1.251,
+                    "Close": 1.252,
+                    "Volume": 1620493398.0,
+                    "Amount": 2056356102.0
+                  },
+                  "daily_vwap": 1.2689691328196329,
+                  "daily_low": 1.251,
+                  "daily_high": 1.302
+                },
+                "2026-10-30": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.215,
+                    "High": 1.25,
+                    "Low": 1.189,
+                    "Close": 1.191,
+                    "Volume": 1856199664.0,
+                    "Amount": 2259534263.0
+                  },
+                  "daily_vwap": 1.2172905247331194,
+                  "daily_low": 1.189,
+                  "daily_high": 1.25
+                },
+                "2026-11-02": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.205,
+                    "High": 1.24,
+                    "Low": 1.185,
+                    "Close": 1.222,
+                    "Volume": 2149474571.0,
+                    "Amount": 2602165400.0
+                  },
+                  "daily_vwap": 1.2106053428626489,
+                  "daily_low": 1.185,
+                  "daily_high": 1.24
+                },
+                "2026-11-03": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.209,
+                    "High": 1.213,
+                    "Low": 1.161,
+                    "Close": 1.178,
+                    "Volume": 2119614317.0000002,
+                    "Amount": 2518504351.0
+                  },
+                  "daily_vwap": 1.1881899130425622,
+                  "daily_low": 1.161,
+                  "daily_high": 1.213
+                },
+                "2026-11-04": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.18,
+                    "High": 1.309,
+                    "Low": 1.176,
+                    "Close": 1.302,
+                    "Volume": 3263403602.0,
+                    "Amount": 4037114018.0
+                  },
+                  "daily_vwap": 1.2370869528751596,
+                  "daily_low": 1.176,
+                  "daily_high": 1.309
+                },
+                "2026-11-05": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 1.263,
+                    "High": 1.362,
+                    "Low": 1.258,
+                    "Close": 1.317,
+                    "Volume": 3525770134.0000005,
+                    "Amount": 4659967250.0
+                  },
+                  "daily_vwap": 1.321687765479268,
+                  "daily_low": 1.258,
+                  "daily_high": 1.362
+                }
+              },
+              "market": "a_share",
+              "observation_sha256": {
+                "2026-08-03T00:00:00": "c8312f3e2459f82896128ebecd922ff3574d1810230e35486292be9eb1bbd899",
+                "2026-08-04T00:00:00": "3720c8b6d97b775625a7a704482165b8efdefa9164abf91777c2b8cdc9e46b9b",
+                "2026-08-05T00:00:00": "df70e6cd0887ead5a267a2236c736b854ad437118e4791ddb271de4f528f5fc1",
+                "2026-08-06T00:00:00": "c3dffeca03cc7429b1b1749012593b69944ec6413510fe1e387ab13b7c096300",
+                "2026-08-07T00:00:00": "bd21f31979a9e3d015aed702e461d6d2b23d5c1176a3adbeb3009f5cfe3b1d18",
+                "2026-08-10T00:00:00": "f9cf3a6a761b42c96b21c500d5afd4ebadc43a13c334f35c0baf78bfe8fa7cf3",
+                "2026-08-11T00:00:00": "8158f58b17f72d4100370d8394d9e4d4b2428b4d4d9387eda391414f04824828",
+                "2026-08-12T00:00:00": "0876f1ede77d93d82e6219603898a51db771c44a604c22c46f8d24e7c22f6b05",
+                "2026-08-13T00:00:00": "19e96269f9fe56955cd658049e0aad43af1a0bd23acc6d6aecbd73c53fb80b88",
+                "2026-08-14T00:00:00": "2c20f1882a632cf730dc8a6a8816698c169d69702b14d1f611acb0d6433c7d19",
+                "2026-08-17T00:00:00": "8cd6be5f38f7271c63a8cd12c9907f7237ff1a21dfc1c2e9fd810cd774dd35f5",
+                "2026-08-18T00:00:00": "5c9ba61b07c9a05261832722d8ce8f4093a3ba3d326da2427fd3d9dd7481a4c7",
+                "2026-08-19T00:00:00": "0bb8562600d51f7c0ba3a4a8a8ed982f0818bafdbf2232e9450320da3aee61e9",
+                "2026-08-20T00:00:00": "cb4ce77f7ec618b9818f77f630787c980068e9566961c044be838960266cabcd",
+                "2026-08-21T00:00:00": "6209594c1c343648c46873423c43d99e3fdc8d0da31e99597f2b73f86a6a176b",
+                "2026-08-24T00:00:00": "1fa9b583e98b5202edae89a06e95ad5da0d7837f365926c4ffac36308b6ada40",
+                "2026-08-25T00:00:00": "20e7a217c6569309a6b6259c10bf48b6bdfb2a9c304d5f9441d3445d6d62fd76",
+                "2026-08-26T00:00:00": "49aacc73500733cc943977813f0bbcfb0af05638cc5e186517076f5cefb07ff5",
+                "2026-08-27T00:00:00": "30761f44c03cc291c5e12a11a993673a1d13241e420bd2b9d3973c4c3606e299",
+                "2026-08-28T00:00:00": "97838f421e082e247e64cffb9053e9756a99cd0b10fc79fdede9ac5c051b1806",
+                "2026-08-31T00:00:00": "c49f30fc577d4b9ac86a0651bbba3645fa412f6711a2aee0cb1ac587e582c6c2",
+                "2026-09-01T00:00:00": "52a0ec2333e3f86d7aadee5f3e8ab8773226b10446dbef1c8debac9dddc37041",
+                "2026-09-02T00:00:00": "5df194b3f15f022f29af6c89a2495272248ae1bc1656f8cea0b338c5787d5055",
+                "2026-09-03T00:00:00": "c1c8d8ec5541f8d8b15e8fb6e83f521abd802cf0dcac5b7271fa200ed799fc14",
+                "2026-09-04T00:00:00": "6f5efb1aed7e95c9ba9fac5515bf772067e55924ce660ec3ab0500ebcef8e321",
+                "2026-09-07T00:00:00": "aabaea7fac393c9bf12a9d3c66b7fba8b78e51dbd8008e18c88238d9681bfab9",
+                "2026-09-08T00:00:00": "4c09fa751de7f472bfcfd137d8e1667c387d9bec9336f7a30a405d0895951a9f",
+                "2026-09-09T00:00:00": "9a92cdab9eae694ff4781378f5627a9a5887ca416b52c0d75afeca88cf23d5e9",
+                "2026-09-10T00:00:00": "b142622e404c080492437841f429de0bfb97590c5b52e09fa3ce304811be0215",
+                "2026-09-11T00:00:00": "faff82b6b7355a015c16c252446963a72a281138657088727def261a7addac7c",
+                "2026-09-14T00:00:00": "bcf5ed32bc07ed7e86880afbb5e96ee123b32bdc64a26443ab1c9937b7354a79",
+                "2026-09-15T00:00:00": "fccd873b32304bba038e15a4fbb08a8d4e42dfe07db8dfa5f24fbb9712c0d69c",
+                "2026-09-16T00:00:00": "911620ea969176b825c343e7826efac7f14279e06524dc0daf1a4b0f6a62eb15",
+                "2026-09-17T00:00:00": "b61d48c258ca4d2a192a6e65e545748e88930cae8fab7a76ad2d7304d9d79428",
+                "2026-09-18T00:00:00": "2a79c85ceed67d3a62fdea8d04a8b17428264722e0e6539a17e733abfc428ec8",
+                "2026-09-21T00:00:00": "c4927f0055603fc10d7d34ceaa791e87294818dfa3511d482eb29634a114c0f9",
+                "2026-09-22T00:00:00": "910c44b6c5ac2ff75c9d9fcd87ca80113de87db2dfe16c169391beb6b866ea92",
+                "2026-09-23T00:00:00": "4f860afab4b9bd2236d0e2e25e802d7596f20dd8113ca2d4e75014f691a86791",
+                "2026-09-24T00:00:00": "bd81429e40f305743d94ac8dd438a5d20aec792106ca5f14d1e2feff9e009ceb",
+                "2026-09-28T00:00:00": "3f87d09e358b87dd5009c4a70b9666be3051d67c7a5fca6e27253035c549517e",
+                "2026-09-29T00:00:00": "05129e908b16611d48640bcab77b871a1ad7dcad37cb784e91957e7d2f37b59e",
+                "2026-09-30T00:00:00": "e9040cd9aa26aa078c8a0ae8f2eef05f08e3466d9163b0943d715f457d9fa0d6",
+                "2026-10-08T00:00:00": "d7ae8c91ec518844d51c757225cfd1217b510d04bbcba28c85856df83f2905cb",
+                "2026-10-09T00:00:00": "69f360843539acaabe88843979360ac72cc66f77efb07e0f4c68fa9e505ef7ab",
+                "2026-10-12T00:00:00": "91f115e2880c87a53f35ba2f4e2a4a1594da7c40ea915d537af9374c9df840c6",
+                "2026-10-13T00:00:00": "c30010c0bfbd6344f057edd80e38f2cdb7ed2668a508a97269a518c7cf0e4866",
+                "2026-10-14T00:00:00": "d9aab0b5b8aa0f12925a8306125bce30504c41146a0eba9c4586faf99faa55f7",
+                "2026-10-15T00:00:00": "090f2516b49526301cb05dbff4618c0c6a31273c6b6afada9d91134b3583d4df",
+                "2026-10-16T00:00:00": "80ac31ba8ddee8253d15af87fea42ce767c987cf57ef66cc4b9fa2a9a6deaeaf",
+                "2026-10-19T00:00:00": "2f3ea02138fd9130a3817a06243eb542d4db95e6962b9612cc60aa9809b2c6db",
+                "2026-10-20T00:00:00": "e9a2d3a5e19af3cf22842d83800c5d975eea0b3f9ec18edc9cc7ab97fa88c722",
+                "2026-10-21T00:00:00": "11a3bbe39c1ad324df9968ed8df49f991a7953c85d81055f45686a867eabd033",
+                "2026-10-22T00:00:00": "b6768bcbad9bd9ffe4e82b07d38e990cc8a01f559ca8f65642e934439de19f79",
+                "2026-10-23T00:00:00": "485b241fa390b3028d23ceb63cd43f94254c7768f9af28199c1077401edb85c1",
+                "2026-10-26T00:00:00": "2c9bea2dc211c94fa9fea5d68f7afb21b71dc681d8e5a2e3c93154d5f22c096d",
+                "2026-10-27T00:00:00": "b8418294680f150f6d88ff7beedef812807d1051175746aa31cbf904ae3b4833",
+                "2026-10-28T00:00:00": "60e71340586a8054a21edeee3e64ecde7d37ae9b5ea7ec124ac2ebc48f47e25b",
+                "2026-10-29T00:00:00": "ea57008d140c43145f3bbde803ecf45d15b605e5667c40a0af2ce25c3410283d",
+                "2026-10-30T00:00:00": "43d88df5e6b16cdc190b220217c9c5a306d93677bc7d0f2fd5a7c3e0d99217ff",
+                "2026-11-02T00:00:00": "6d07df56879703a0851205e37b02879bec7611f14a0b599ba1d8a9fe6935ea13",
+                "2026-11-03T00:00:00": "510d2761e025db4a396d6c9a77c847fe280d7e57bbd998234b1b96af7f34d918",
+                "2026-11-04T00:00:00": "f07000b13b693957f53f2d8d4c97b6710e34faebb968b033e228dd89a97fe651",
+                "2026-11-05T00:00:00": "531fcca64bd461a001dc4de264a0c4c404d459f5f9ff51d249bdc2282f60423a"
+              },
+              "publication_adjustment": "none"
+            },
+            "reference_daily_sha256": "b0295bc22ebd8f3d83efafa3a00545f54f86dd58a3cbcb0dff3a371ff4edf200",
+            "source_time_field": "Date",
+            "availability_time_field": "Date",
+            "source_calendar": "SOURCE_NATIVE",
+            "available_at": "SOURCE_PERIOD_CLOSE",
+            "request_range_policy": "EXACT",
+            "provider_binding": "etf.unadjusted_daily",
+            "provider_revision": "ce3335f534f59bdc524c6d87551af85f2fec65878fbb354090bfbd34674062af",
+            "dfls_revision": "ce3335f534f59bdc524c6d87551af85f2fec65878fbb354090bfbd34674062af",
+            "data_contract_version": 1,
+            "ohlcv_quality": {
+              "version": 1,
+              "total_sessions": 63,
+              "daily": {
+                "complete_sessions": 63,
+                "accurate_sessions": 63,
+                "completeness": 1.0,
+                "accuracy": 1.0,
+                "minimum_accuracy": 0.99,
+                "incomplete_dates": [],
+                "inaccurate_dates": []
+              }
+            }
+          }
+        }
+      },
+      "limits": {
+        "ready": true,
+        "status": "READY",
+        "error": "None",
+        "rows": 63,
+        "reference": {
+          "space_id": "f7b75cd7-67f7-4e4d-b483-2434baaa9e39",
+          "preparation_id": "df4b828a-dec8-4fe0-bd55-33a7c7e6e319",
+          "manifest_sha256": "59bef5db39062b506a968d1bcd4c869117bc2cdac43d4bbaa8692c08cb6bb4c8"
+        },
+        "identity": {
+          "dataset": "security.price_limits",
+          "source": "tushare",
+          "symbol": "588080.SH",
+          "data_start": "2026-08-03T00:00:00",
+          "data_cutoff": "2026-11-05T00:00:00",
+          "content_sha256": "08ef638efe9311223f811ec7f9deb13ee1e51f6a7fd6557e4da5974008ba5b2d",
+          "metadata": {
+            "vendor": "tushare",
+            "vendor_symbol": "588080.SH",
+            "vendor_interface": "etf_limit",
+            "asset_type": "etf",
+            "adjustment": "none",
+            "frequency": "daily",
+            "source_calendar": "SSE",
+            "source_time_field": "Date",
+            "availability_time_field": "Date",
+            "available_at": "same-session pre-open source schedule; historical publication unverified",
+            "source_disclosure_schedule": "trading day approximately 08:40",
+            "availability_basis": "VENDOR_PREOPEN_SCHEDULE_ASSUMPTION",
+            "source_publication_timestamp_verified": false,
+            "historical_revision_history_verified": false,
+            "unsupported_scenarios": [
+              "no-price-limit sessions",
+              "missing boundaries",
+              "non-SH/SZ markets"
+            ],
+            "daily_session_coverage": {
+              "source": "trade_cal",
+              "exchange": "SSE",
+              "start_date": "2026-08-01",
+              "end_date": "2026-11-05",
+              "listing_date": "2020-11-16",
+              "listing_source": "fund_basic",
+              "verified_sessions": 63,
+              "expected_dates": [
+                "2026-08-03",
+                "2026-08-04",
+                "2026-08-05",
+                "2026-08-06",
+                "2026-08-07",
+                "2026-08-10",
+                "2026-08-11",
+                "2026-08-12",
+                "2026-08-13",
+                "2026-08-14",
+                "2026-08-17",
+                "2026-08-18",
+                "2026-08-19",
+                "2026-08-20",
+                "2026-08-21",
+                "2026-08-24",
+                "2026-08-25",
+                "2026-08-26",
+                "2026-08-27",
+                "2026-08-28",
+                "2026-08-31",
+                "2026-09-01",
+                "2026-09-02",
+                "2026-09-03",
+                "2026-09-04",
+                "2026-09-07",
+                "2026-09-08",
+                "2026-09-09",
+                "2026-09-10",
+                "2026-09-11",
+                "2026-09-14",
+                "2026-09-15",
+                "2026-09-16",
+                "2026-09-17",
+                "2026-09-18",
+                "2026-09-21",
+                "2026-09-22",
+                "2026-09-23",
+                "2026-09-24",
+                "2026-09-28",
+                "2026-09-29",
+                "2026-09-30",
+                "2026-10-08",
+                "2026-10-09",
+                "2026-10-12",
+                "2026-10-13",
+                "2026-10-14",
+                "2026-10-15",
+                "2026-10-16",
+                "2026-10-19",
+                "2026-10-20",
+                "2026-10-21",
+                "2026-10-22",
+                "2026-10-23",
+                "2026-10-26",
+                "2026-10-27",
+                "2026-10-28",
+                "2026-10-29",
+                "2026-10-30",
+                "2026-11-02",
+                "2026-11-03",
+                "2026-11-04",
+                "2026-11-05"
+              ],
+              "calendar": [
+                {
+                  "Date": "2026-08-01",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-08-02",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-08-03",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-04",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-05",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-06",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-07",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-08",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-08-09",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-08-10",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-11",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-12",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-13",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-14",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-15",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-08-16",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-08-17",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-18",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-19",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-20",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-21",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-22",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-08-23",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-08-24",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-25",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-26",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-27",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-28",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-08-29",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-08-30",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-08-31",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-01",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-02",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-03",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-04",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-05",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-09-06",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-09-07",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-08",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-09",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-10",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-11",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-12",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-09-13",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-09-14",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-15",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-16",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-17",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-18",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-19",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-09-20",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-09-21",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-22",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-23",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-24",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-25",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-09-26",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-09-27",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-09-28",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-29",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-09-30",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-01",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-02",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-03",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-04",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-05",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-06",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-07",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-08",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-09",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-10",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-11",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-12",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-13",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-14",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-15",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-16",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-17",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-18",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-19",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-20",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-21",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-22",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-23",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-24",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-25",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-10-26",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-27",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-28",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-29",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-30",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-10-31",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-11-01",
+                  "is_open": 0
+                },
+                {
+                  "Date": "2026-11-02",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-11-03",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-11-04",
+                  "is_open": 1
+                },
+                {
+                  "Date": "2026-11-05",
+                  "is_open": 1
+                }
+              ],
+              "calendar_sha256": "9225511c315cf97366b5d41c53b9ef76033b551d6b7f9bb56e023746bf3c676b",
+              "suspended_dates": [],
+              "suspension_evidence": []
+            },
+            "source_documentation": "https://tushare.pro/document/2?doc_id=491",
+            "source_migration": "ETF data migrated from stk_limit to etf_limit on 2026-09-07",
+            "request_range_policy": "EXACT",
+            "provider_binding": "security.price_limits",
+            "provider_revision": "ce3335f534f59bdc524c6d87551af85f2fec65878fbb354090bfbd34674062af",
+            "dfls_revision": "ce3335f534f59bdc524c6d87551af85f2fec65878fbb354090bfbd34674062af",
+            "data_contract_version": 1
+          }
+        }
+      },
+      "calendar": {
+        "ready": true,
+        "status": "READY",
+        "error": "None",
+        "rows": 98,
+        "reference": {
+          "space_id": "f7b75cd7-67f7-4e4d-b483-2434baaa9e39",
+          "preparation_id": "8418810b-9d24-4f1e-875e-784694cb6358",
+          "manifest_sha256": "b8e2009635ad04a72d99ff6ee92b98062c39c95bcf9104361b0048a4d60883fb"
+        },
+        "identity": {
+          "dataset": "calendar.trading_sessions",
+          "source": "tushare",
+          "symbol": "SSE",
+          "data_start": "2026-08-01T00:00:00",
+          "data_cutoff": "2026-11-06T00:00:00",
+          "content_sha256": "9db9dec5366fa6a73552bb8607b2c15645c8b80e547da2e905e083fc0328284f",
+          "metadata": {
+            "vendor": "tushare",
+            "exchange": "SSE",
+            "frequency": "daily",
+            "primary_key": [
+              "Date"
+            ],
+            "source_time_field": "Date",
+            "availability_time_field": "Date",
+            "source_calendar": "SSE",
+            "available_at": "SOURCE_PERIOD_CLOSE",
+            "request_range_policy": "EXACT",
+            "provider_binding": "calendar.trading_sessions",
+            "provider_revision": "ce3335f534f59bdc524c6d87551af85f2fec65878fbb354090bfbd34674062af",
+            "dfls_revision": "ce3335f534f59bdc524c6d87551af85f2fec65878fbb354090bfbd34674062af",
+            "data_contract_version": 1
+          }
+        }
+      }
+    },
+    "source": {
+      "provider": "tushare",
+      "revision": "s001-current-target-retained-20261108-v1"
+    },
+    "scope": {
+      "first": "2026-08-01",
+      "last": "2026-11-05"
+    },
+    "hfq_acquisition_method": "DFLS_ADJUSTED",
+    "operation": "RETAINED_TUSHARE_HFQ_AND_RAW_REVALIDATION",
+    "bounds_conversion": "Actual Tushare etf_limit RAW bounds multiplied by same-session retained HFQ/RAW close ratio",
+    "weekly_rule": "Only bars dated on the calendar-confirmed last trading day of their week",
+    "limitations": [
+      "No supplier refresh",
+      "Historical publication time follows original supplier schedule assumption",
+      "No independent new halt or corporate-action investigation"
+    ]
+  }
+}

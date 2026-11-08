@@ -1,0 +1,199 @@
+{
+  "reference": "S001-v2",
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S001",
+    "experiment_id": "EX006_20261108"
+  },
+  "candidate": {
+    "strategy_id": "S001",
+    "candidate_id": "C9991"
+  },
+  "content": "96ee06fc8c2f61988fd17af07fbff3ba436ff68151ca042e12cf9d1d1861c892",
+  "original": {
+    "type": "FrozenVersionReference",
+    "strategy_id": "S001",
+    "version": "v2",
+    "release_hash": "a8e5059f8e81eb322ca288d239bab5812e87f31a9d12014fc157211b36e6c7cd",
+    "package_hash": "64ae326ca7c35949bfdf048138fd288b694095239aa3d091b1e183640ff62d0c"
+  },
+  "authorization": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S001",
+      "experiment_id": "EX006_20261108"
+    },
+    "evidence_id": "8ecec6135862b5d2a51048e36c562178525198ba0a289482b071482de3ca35e8.json",
+    "sha256": "8ecec6135862b5d2a51048e36c562178525198ba0a289482b071482de3ca35e8",
+    "media_type": "application/json",
+    "name": "upgrade-authorization",
+    "schema": null,
+    "schema_version": null
+  },
+  "signal_evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S001",
+      "experiment_id": "EX006_20261108"
+    },
+    "evidence_id": "3bcf2e5d5e5b4c0f13bee5ae2cd1a0482c443af2f71f2f7abc13fed9d8ffb215.json",
+    "sha256": "3bcf2e5d5e5b4c0f13bee5ae2cd1a0482c443af2f71f2f7abc13fed9d8ffb215",
+    "media_type": "application/json",
+    "name": "financial-signal-verification",
+    "schema": null,
+    "schema_version": null
+  },
+  "verification": {
+    "status": "PASS",
+    "reference": "S001-v2",
+    "candidate": {
+      "strategy_id": "S001",
+      "candidate_id": "C9991"
+    },
+    "content": "96ee06fc8c2f61988fd17af07fbff3ba436ff68151ca042e12cf9d1d1861c892",
+    "candidate_package_exact": true,
+    "counts": {
+      "decisions": 41,
+      "orders": 6,
+      "fills": 5,
+      "account_entries": 0,
+      "account_points": 41,
+      "account_daily": 41,
+      "trades": 2
+    },
+    "window": {
+      "start": "2026-09-01T01:30:00+00:00",
+      "end": "2026-11-04T07:00:00+00:00"
+    },
+    "history_start": "2026-08-01",
+    "fee_rate": 0.0005,
+    "pte_status": "PASS",
+    "pte_scenarios": 6,
+    "pte_coverage": {
+      "observed": [
+        "COMPLETED",
+        "DUPLICATE",
+        "EXPIRED",
+        "PARTIAL",
+        "RECONCILIATION_BLOCKED",
+        "REJECTED",
+        "RESTART",
+        "SUBMITTED",
+        "UNKNOWN"
+      ],
+      "missing": []
+    },
+    "original": {
+      "type": "FrozenVersionReference",
+      "strategy_id": "S001",
+      "version": "v2",
+      "release_hash": "a8e5059f8e81eb322ca288d239bab5812e87f31a9d12014fc157211b36e6c7cd",
+      "package_hash": "64ae326ca7c35949bfdf048138fd288b694095239aa3d091b1e183640ff62d0c"
+    },
+    "migrated": {
+      "type": "FrozenVersionReference",
+      "strategy_id": "S001",
+      "version": "v2",
+      "release_hash": "bb05817a8d4aa68ba134a8b69a058bca29dc7866a3f7dca6ea561aed1f39f001",
+      "package_hash": "7aa0ddca0a4cb2a1fc270cec5fae713d4120740e36b78f905171dfa0063bf885"
+    },
+    "limits": [
+      "No economic equivalence of old entry-cash lock and current-equity rebalancing.",
+      "Migration technical window, not new research selection or phase-four validation.",
+      "Recorded isolated broker, no live order or prod change."
+    ],
+    "files": {
+      "candidate-replay.json": "680c8a2b1243d2a6d2d43c5021f593b3f2ddcc2e4e6285f34ba731e48f77d401",
+      "input.json": "2bfede368deec0270f0ec8c8831d5e5e5f11c3289f31e4c32a14860a031a6391",
+      "pte-probe.json": "af5d05d1e6935015fe21901e90dbf41222b72092da54fbe7eb28ed8211af00f9",
+      "pte-protocol.json": "9f3c09540d2bd4231266b53b480b157a5a4b20cc7427e8d74516d313dd4e3311",
+      "pte.json": "14653bc0c0cf6b6a27ff10127c5836ce5353ecfe31d6441e90beef0e0f7046e5"
+    }
+  },
+  "verification_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S001",
+      "experiment_id": "EX006_20261108"
+    },
+    "evidence_id": "d4c81276e97ce487c38ad58b6ed87b7d75ecaa350ca34d743cb12c9dd808a8ad.json",
+    "sha256": "d4c81276e97ce487c38ad58b6ed87b7d75ecaa350ca34d743cb12c9dd808a8ad",
+    "media_type": "application/json",
+    "name": "upgrade-technical-summary",
+    "schema": null,
+    "schema_version": null
+  },
+  "output": "research/S001/experiments/EX006_20261108/others/attempt-ed0e76a11f",
+  "prepared": {
+    "plan_path": ".tmp/deployed-contract-upgrade/S001-v2/attempt-ed0e76a11f/final/upgrade_plan.json",
+    "plan_sha256": "376a89d02669e00156382fcf74596adb076e06da1ed3f3406c6207c683eccceb",
+    "original": {
+      "type": "FrozenVersionReference",
+      "strategy_id": "S001",
+      "version": "v2",
+      "release_hash": "a8e5059f8e81eb322ca288d239bab5812e87f31a9d12014fc157211b36e6c7cd",
+      "package_hash": "64ae326ca7c35949bfdf048138fd288b694095239aa3d091b1e183640ff62d0c"
+    },
+    "migrated": {
+      "type": "FrozenVersionReference",
+      "strategy_id": "S001",
+      "version": "v2",
+      "release_hash": "bb05817a8d4aa68ba134a8b69a058bca29dc7866a3f7dca6ea561aed1f39f001",
+      "package_hash": "7aa0ddca0a4cb2a1fc270cec5fae713d4120740e36b78f905171dfa0063bf885"
+    }
+  },
+  "result": {
+    "status": "COMMITTED",
+    "original": {
+      "type": "FrozenVersionReference",
+      "strategy_id": "S001",
+      "version": "v2",
+      "release_hash": "a8e5059f8e81eb322ca288d239bab5812e87f31a9d12014fc157211b36e6c7cd",
+      "package_hash": "64ae326ca7c35949bfdf048138fd288b694095239aa3d091b1e183640ff62d0c"
+    },
+    "migrated": {
+      "type": "FrozenVersionReference",
+      "strategy_id": "S001",
+      "version": "v2",
+      "release_hash": "bb05817a8d4aa68ba134a8b69a058bca29dc7866a3f7dca6ea561aed1f39f001",
+      "package_hash": "7aa0ddca0a4cb2a1fc270cec5fae713d4120740e36b78f905171dfa0063bf885"
+    },
+    "receipt": "strategies/revisions/S001-v2/a8e5059f8e81eb322ca288d239bab5812e87f31a9d12014fc157211b36e6c7cd/upgrade_receipt.json",
+    "history_preserved": true,
+    "idempotent": true,
+    "qualification": "RESEARCH",
+    "production_writes": 0
+  },
+  "result_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S001",
+      "experiment_id": "EX006_20261108"
+    },
+    "evidence_id": "28590a6f6655836add1902acf869a473b46b8a8d90ad573173c9cbd22d6af2aa.json",
+    "sha256": "28590a6f6655836add1902acf869a473b46b8a8d90ad573173c9cbd22d6af2aa",
+    "media_type": "application/json",
+    "name": "same-version-upgrade-result",
+    "schema": null,
+    "schema_version": null
+  },
+  "report": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S001",
+      "experiment_id": "EX006_20261108"
+    },
+    "evidence_id": "91616ad17e649de56bbd9f7e54e293d47a1ce6c4141f5d6dd74ba51faa83a230.json",
+    "sha256": "91616ad17e649de56bbd9f7e54e293d47a1ce6c4141f5d6dd74ba51faa83a230",
+    "media_type": "application/json",
+    "name": "experiment-report",
+    "schema": "experiment_report",
+    "schema_version": 1
+  },
+  "validation": "PASS"
+}

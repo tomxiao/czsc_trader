@@ -1,9 +1,7 @@
-"""Native V4 execution of both frozen S001 weight sets."""
+"""S001 completed-week financial signals expressed only as equity target weights."""
 import pandas as pd
-from strategy_runtime import AccountStepResult
-from strategy_runtime.equity_replay import StateRecord
+from strategy_runtime import AccountDecision, AccountStepResult, StateRecord
 from .signal_math import calculate_s001_history
-from .cycle_planner import plan_cycle
 
 
 def local_frame(view, *, daily=False):
@@ -29,16 +27,14 @@ def step(ctx, state):
     history = signal_history(ctx.observations, rule)
     row = history.iloc[-1]
     day = history.index[-1]
-    raw_day = pd.Timestamp(ctx.history.last()['Date']).tz_convert('Asia/Shanghai').normalize().tz_localize(None)
-    if day != raw_day:
-        raise ValueError('S001 signal and execution reference sessions differ')
+    observation_day = pd.Timestamp(ctx.history.last()['Date']).tz_convert('Asia/Shanghai').normalize().tz_localize(None)
+    if day != observation_day:
+        raise ValueError('S001 signal and primary observation sessions differ')
     target = float(row.target_position)
-    decision, locked = plan_cycle(ctx, signal_target=target, execution=rule['execution'],
-        locked_quantity=state.account.get('locked_quantity'), had_position=state.account.get('had_position'),
-        reason='持有信号' if target else '空仓信号',
+    decision = AccountDecision.from_facts(target, '持有信号' if target else '空仓信号',
         facts={'signal_day': day.date().isoformat(), 'factor_score': float(row.factor_score),
                'regime': str(row.regime), 'entry_threshold': float(rule['entry_threshold']),
-               'exit_threshold': float(rule['exit_threshold']),
-               'signal_history_start': '2020-11-16'})
-    return AccountStepResult(decision, StateRecord((('locked_quantity', locked),
-        ('had_position', bool(ctx.account.quantity)))), StateRecord())
+               'exit_threshold': float(rule['exit_threshold']), 'signal_history_start': '2020-11-16',
+               'signal_target': target},
+        next_watch='下一交易日收盘更新已完成周期信号与目标仓位')
+    return AccountStepResult(decision, cycle_values=StateRecord())

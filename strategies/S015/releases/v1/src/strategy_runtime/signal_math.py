@@ -18,9 +18,9 @@ def validate_parameters(parameters):
         raise ValueError("minimum repair price-ratio space outside [0,.05]")
     return p
 
-def causal_features(market, execution, intraday, lookback=3, center_kind="median"):
+def causal_features(market, intraday, lookback=3, center_kind="median"):
     frames = []
-    for name, frame in (("market", market), ("execution", execution), ("intraday", intraday)):
+    for name, frame in (("market", market), ("intraday", intraday)):
         f = frame[["Date", "Open", "High", "Low", "Close"]].copy()
         f.attrs = {}
         f["Date"] = pd.to_datetime(f.Date)
@@ -30,10 +30,9 @@ def causal_features(market, execution, intraday, lookback=3, center_kind="median
         if not np.isfinite(z).all() or (z <= 0).any():
             raise ValueError("positive finite prices required")
         frames.append(f)
-    adj, raw, bars = frames
+    adj, bars = frames
     if (
-        not adj.Date.equals(raw.Date)
-        or len(adj) < 75
+        len(adj) < 75
         or adj.Date.iloc[0] != pd.Timestamp("2024-09-09")
         or adj.Date.iloc[74] != pd.Timestamp("2024-12-31")
     ):
@@ -52,7 +51,7 @@ def causal_features(market, execution, intraday, lookback=3, center_kind="median
             center = float(np.mean(np.log(b.Close.to_numpy(float))))
         else:
             raise ValueError("unknown center definition")
-        centers.append(center + float(np.log(adj.Close.iloc[pos + 75] / raw.Close.iloc[pos + 75])))
+        centers.append(center)
     logc = np.log(adj.Close.to_numpy(float))
     idx = pd.DatetimeIndex(dev.Date)
     m = pd.Series(centers, index=idx, dtype=float)
