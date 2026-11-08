@@ -87,7 +87,8 @@ def execution_admission(plan, snapshot, document, proposal, *, state_binding,
         None if proposal.cycle_values is None else ExecutionStateRecord.from_dict(proposal.cycle_values.to_dict()),
         state_binding, next_event_cursor)
     context = from_record(V4ExecutionContext, {
-        "interval": to_record(prepared.interval), "buy_sellable_at": prepared.buy_sellable_at,
+        "interval": to_record(prepared.interval), "as_of": prepared.as_of,
+        "buy_sellable_at": prepared.buy_sellable_at,
         "v4_constraint": {key: prepared.v4_constraint[key] for key in
             ("SellRemainderPolicy", "PriceLimitPolicy", "PriceLimitLower", "PriceLimitUpper")},
         "data_identity": prepared.data_identity,

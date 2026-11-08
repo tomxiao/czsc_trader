@@ -291,7 +291,7 @@ class FormalV4AdviceClient:
         raw_request = EquityDataRequest(raw.instrument, raw.source, raw.query)
         return requests + (raw_request,), items, observations, ends
 
-    def _forward_inputs(self, account_id, recipe, interval, *, candidate=None):
+    def _forward_inputs(self, account_id, recipe, interval, *, cutoff, candidate=None):
         path = self._interval_path(account_id, recipe.release_hash, interval)
         with self._lock:
             existing = self._existing_interval(account_id, path, interval)
@@ -300,7 +300,7 @@ class FormalV4AdviceClient:
             if candidate is None:
                 _, _, candidate = self._account_release(account_id)
             requests, items, observation_items, observation_ends = self._forward_requests(
-                recipe, interval, candidate, cutoff=interval.start)
+                recipe, interval, candidate, cutoff=cutoff)
             from strategy_runtime.observation_preparation import request_selection
             from strategy_runtime.dataset_observations import DatasetObservationBinding
             result = self.dataflows.prepare(requests, policy=PreparePolicy.REUSE)
@@ -322,13 +322,13 @@ class FormalV4AdviceClient:
             raw_binding = ExecutionReferenceBinding(raw_request.parameters, result.reference,
                 identities[request_selection(raw_request)])
             value = FormalV4Inputs(recipe.release_hash, binding, recipe.fee_rate, raw_binding)
-            self._save_interval(path, value)
             return value
 
     def prepare_data(self, account_id: str, interval: TimeInterval, *, as_of: datetime) -> PrepareResult:
         """Prepare DFLS inputs only, without pinning a live interval or evaluating a strategy."""
         if type(interval) is not TimeInterval or type(as_of) is not datetime or as_of.utcoffset() is None:
             raise TypeError('V4 data preparation requires an interval and aware as_of')
+        self._require_running(account_id)
         _, release, candidate = self._account_release(account_id)
         recipe = self.recipe(account_id)
         if recipe is None or recipe.release_hash != release.release_hash:
@@ -336,23 +336,31 @@ class FormalV4AdviceClient:
         recipe.validate_candidate(release.release_hash, candidate)
         with self._lock:
             try:
+                self._validate_decision_time(account_id, interval, as_of, allow_expired=True)
                 requests, _, _, _ = self._forward_requests(recipe, interval, candidate,
                                                            cutoff=min(as_of, interval.start))
             except _CalendarPreparationError as exc:
                 return exc.result
-            return self.dataflows.prepare(requests, policy=PreparePolicy.REUSE)
+            result = self.dataflows.prepare(requests, policy=PreparePolicy.REUSE)
+            self._require_running(account_id)
+            return result
 
     def prepare_interval(self, account_id: str, interval: TimeInterval, *,
                          observed_at: datetime) -> PreparedEquityDecision:
         if type(interval) is not TimeInterval or type(observed_at) is not datetime or observed_at.utcoffset() is None:
             raise TypeError('formal V4 preparation requires an interval and aware observation time')
-        if not interval.start <= observed_at < interval.end:
+        self._require_running(account_id)
+        if observed_at >= interval.end:
             raise ValueError('formal V4 interval is not currently executable')
         if not self._interval_allowed(account_id, interval):
             raise ValueError('formal V4 interval precedes the account binding cutover')
         _, release, candidate = self._account_release(account_id)
+        task = self._validate_decision_time(account_id, interval, observed_at)
+        cutoff = min(observed_at, interval.start)
         recipe = self.recipe(account_id)
-        inputs = self._pinned_inputs(account_id, interval) if recipe is None else self._forward_inputs(account_id, recipe, interval, candidate=candidate)
+        inputs = self._pinned_inputs(account_id, interval) if recipe is None else self._forward_inputs(
+            account_id, recipe, interval, cutoff=cutoff, candidate=candidate)
+        self._require_running(account_id)
         if inputs.release_hash != release.release_hash:
             raise ValueError('formal V4 prepared inputs belong to another release')
         from .execution_inputs import resolve_live_context
@@ -362,11 +370,71 @@ class FormalV4AdviceClient:
         if not calendar.ready:
             raise ValueError('live execution calendar is unavailable')
         context = resolve_live_context(candidate, interval, calendar.dataframe, calendar.identity.metadata)
-        return prepare_equity_decision(self.dataflows, candidate, inputs.binding, inputs.strategy_requests,
+        prepared = prepare_equity_decision(self.dataflows, candidate, inputs.binding, inputs.strategy_requests,
                                        interval, fee_rate=inputs.fee_rate, live=True,
                                        execution_reference=inputs.execution_reference.fetch(self.dataflows, interval,
-                                           latency_seconds=candidate.definition.execution_spec.data_latency_seconds),
-                                       execution_context=context)
+                                           latency_seconds=candidate.definition.execution_spec.data_latency_seconds,
+                                           as_of=cutoff),
+                                       execution_context=context, as_of=cutoff)
+        if (candidate.definition.execution_spec.decision_clock.value == BarFrequency.DAILY.value
+                and prepared.history.Date.iloc[-1] != task.decision_at - timedelta(hours=5)):
+            raise ValueError('daily decision requires complete preceding trading-session data')
+        if recipe is not None:
+            path = self._interval_path(account_id, inputs.release_hash, interval)
+            with self._lock:
+                existing = self._existing_interval(account_id, path, interval)
+                if existing is None:
+                    self._save_interval(path, inputs)
+                elif existing != inputs:
+                    raise ValueError('concurrent interval preparation differs from pinned inputs')
+        return prepared
+
+    def _require_running(self, account_id):
+        if self.store.virtual_account(account_id)['run_state'] != 'RUNNING':
+            raise RuntimeError('data preparation and decisions require a RUNNING strategy account')
+
+    def _schedule_tasks(self, account, observed_at, *, inputs=None):
+        recipe = self.recipe(account['account_id']) if inputs is None else None
+        inputs = (self.inputs(account['account_id']) if recipe is None else recipe) if inputs is None else inputs
+        rules = self.store.equity_account_rules(account['account_id'])
+        if rules is None or inputs.release_hash != account['release_hash']:
+            raise ValueError('V4 schedule input identity differs from account')
+        if recipe is None:
+            request = next(request for role, request in inputs.binding.bind_requests(inputs.strategy_requests) if role == 'sessions')
+            fetched = self.dataflows.fetch(request, prepared=inputs.binding.prepared)
+        else:
+            fetched = self._calendar_products(recipe, observed_at)['sessions']
+        if not fetched.ready or (recipe is None and fetched.identity.content_sha256 != inputs.binding.expected_identities['sessions']):
+            raise ValueError('V4 schedule calendar is unavailable or changed')
+        availability = {str(row.SessionDate): row.AvailableDate for row in fetched.dataframe.itertuples()}
+        sessions = sessions_from_metadata(fetched.identity.metadata)
+        daily = rules.execution.decision_clock.value == BarFrequency.DAILY.value
+        for index, session in enumerate(sessions):
+            if daily and index == 0:
+                continue  # A preceding trading session is required, not a guessed calendar day.
+            periods = ((TimeInterval(session.segments[0].start, session.segments[-1].end),)
+                       if daily else session.bars(BarFrequency(rules.execution.decision_clock.value)))
+            for interval in periods:
+                # The independently fetched calendar describes future sessions.
+                # Its row availability is a research observation convention, not
+                # the publication time of the advance exchange calendar.
+                if (availability[session.session_date.isoformat()] > interval.start
+                        or not self._interval_allowed(account['account_id'], interval)):
+                    continue
+                decision_at = sessions[index - 1].segments[-1].end + timedelta(hours=5) if daily else interval.start
+                task_id = canonical_sha256({'account_id': account['account_id'], 'release_hash': account['release_hash'],
+                                            'start': interval.start.isoformat(), 'end': interval.end.isoformat()})
+                yield ScheduledDecision(task_id, interval, decision_at)
+
+    def _validate_decision_time(self, account_id, interval, observed_at, *, allow_expired=False):
+        account = self.store.virtual_account(account_id)
+        path = self._interval_path(account_id, account['release_hash'], interval)
+        inputs = self._existing_interval(account_id, path, interval)
+        task = next((task for task in self._schedule_tasks(account, observed_at, inputs=inputs)
+                     if task.interval == interval), None)
+        if task is None or observed_at < task.decision_at or (not allow_expired and observed_at >= interval.end):
+            raise ValueError('decision preparation is not eligible: requires preceding market close plus 5 hours for DAILY')
+        return task
 
     def get_decision(self, *args, **kwargs):
         _, release, candidate = self._account_release(kwargs['account_id'])
@@ -392,43 +460,21 @@ class FormalV4ScheduleProvider:
     def due_decision(self, account: dict, observed_at: datetime) -> ScheduledDecision | None:
         if type(observed_at) is not datetime or observed_at.utcoffset() is None:
             raise TypeError('V4 schedule requires an aware observation time')
-        recipe = self.client.recipe(account['account_id'])
-        inputs = self.client.inputs(account['account_id']) if recipe is None else recipe
-        rules = self.client.store.equity_account_rules(account['account_id'])
-        if rules is None or inputs.release_hash != account['release_hash']:
-            raise ValueError('V4 schedule input identity differs from account')
-        if recipe is None:
-            request = next(request for role, request in inputs.binding.bind_requests(inputs.strategy_requests) if role == 'sessions')
-            fetched = self.client.dataflows.fetch(request, prepared=inputs.binding.prepared)
-        else:
-            fetched = self.client._calendar_products(recipe, observed_at)['sessions']
-        if not fetched.ready or (recipe is None and fetched.identity.content_sha256 != inputs.binding.expected_identities['sessions']):
-            raise ValueError('V4 schedule calendar is unavailable or changed')
-        availability = {str(row.SessionDate): row.AvailableDate for row in fetched.dataframe.itertuples()}
-        for session in sessions_from_metadata(fetched.identity.metadata):
-            if availability[session.session_date.isoformat()] > observed_at:
-                continue
-            periods = ((TimeInterval(session.segments[0].start, session.segments[-1].end),)
-                       if rules.execution.decision_clock.value == BarFrequency.DAILY.value
-                       else session.bars(BarFrequency(rules.execution.decision_clock.value)))
-            for interval in periods:
-                if (interval.start <= observed_at < interval.end
-                        and availability[session.session_date.isoformat()] <= interval.start
-                        and self.client._interval_allowed(account['account_id'], interval)):
-                    task_id = canonical_sha256({'account_id': account['account_id'], 'release_hash': account['release_hash'],
-                                                'start': interval.start.isoformat(), 'end': interval.end.isoformat()})
-                    return ScheduledDecision(task_id, interval, interval.start)
-        return None
+        if account['run_state'] != 'RUNNING':
+            return None
+        return next((task for task in self.client._schedule_tasks(account, observed_at)
+                     if task.decision_at <= observed_at < task.submit_before), None)
 
     def run_scheduled(self, account_id: str, task: ScheduledDecision, observed_at: datetime) -> None:
         with self.client.decision_cycle_lock(account_id):
+            if self.client.store.virtual_account(account_id)['run_state'] != 'RUNNING':
+                return
             self._adopt(account_id, task, observed_at, source='formal_v4', actor='SCHEDULER')
 
     def drive_decision(self, account_id: str, observed_at: datetime) -> dict[str, object]:
         with self.client.decision_cycle_lock(account_id):
             account = self.client.store.virtual_account(account_id)
-            if account['run_state'] != 'PAUSED':
-                raise RuntimeError('manual V4 validation requires a paused strategy account')
+            self.client._require_running(account_id)
             if account['health'] != 'OK':
                 raise RuntimeError('manual V4 validation requires a healthy strategy account')
             task = self.due_decision(account, observed_at)
@@ -464,17 +510,15 @@ class FormalV4ScheduleProvider:
 
     def _adopt(self, account_id, task, observed_at, *, source, actor):
         prepared = self.client.prepare_interval(account_id, task.interval, observed_at=observed_at)
-        self.client.store.settle_equity_receivables(account_id, at=prepared.interval.start)
+        self.client._require_running(account_id)
+        self.client.store.settle_equity_receivables(account_id, at=observed_at)
         from execution_channels.futu.audit import AuditRecorder
         AuditRecorder(self.client.store).record('MARKET_DATA_PREPARED', source=source,
             actor_type=actor, account_id=account_id, correlation_id=task.task_id,
             details={'prepared_data_reference': prepared.data_reference,
                      'data_identity': prepared.data_identity,
                      'interval': {'start': task.interval.start.isoformat(), 'end': task.interval.end.isoformat()}})
-        if actor == 'OPERATOR':
-            self.accounts.refresh_account(account_id, prepared=prepared, require_paused=True)
-        else:
-            self.accounts.refresh_account(account_id, prepared=prepared)
+        self.accounts.refresh_account(account_id, prepared=prepared)
         account = self.client.store.virtual_account(account_id)
         adopted = json.loads(account['last_decision_payload']) if account['last_decision_payload'] else {}
         expected = {'start': task.interval.start.isoformat(), 'end': task.interval.end.isoformat()}

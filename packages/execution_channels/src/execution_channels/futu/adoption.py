@@ -109,6 +109,8 @@ class AccountAdoption:
         decision = _Decision.from_payload(payload)
         previous_action = request.previous_action
         account = self.store.virtual_account(account_id)
+        if account['run_state'] != 'RUNNING':
+            raise RuntimeError('strategy decision adoption requires a RUNNING account')
         execution_account = account
         self.store.save_account_decision(account_id, payload)
         valued_account = self.store.virtual_account(account_id)

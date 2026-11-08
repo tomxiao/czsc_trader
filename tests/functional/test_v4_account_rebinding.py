@@ -149,8 +149,12 @@ def test_rebind_active_v4_and_block_historical_execution(formal_v4, tmp_path, mo
         assert reopened.recipe('formal') == live_inputs
         assert reopened.inputs('formal') == live_inputs
         assert reopened._path('formal').read_bytes() == (client.data_dir / 'v4-inputs/formal.json').read_bytes()
+        with pytest.raises(RuntimeError, match='RUNNING'):
+            reopened.prepare_interval('formal', interval, observed_at=interval.start)
+        scoped.set_virtual_paused('formal', False)
         with pytest.raises(ValueError, match='cutover'):
             reopened.prepare_interval('formal', interval, observed_at=interval.start)
+        scoped.set_virtual_paused('formal', True)
         committed = list(database._connection.iterdump())
         assert update_account_bindings(runtime, 'target', (request,)).status is AccountBindingUpdateStatus.ALREADY_APPLIED
         assert list(database._connection.iterdump()) == committed

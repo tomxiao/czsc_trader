@@ -7,7 +7,9 @@ import pytest
 from execution_channels.futu.channel import ChannelAccountConfig, FUTU_US_SIM_CHANNEL_ID
 from execution_channels.futu.channel_accounts import DEFAULT_CHANNEL_ACCOUNT
 from paper_trading_engine.cli import main
-from paper_trading_engine.multichannel_runtime import build_multichannel_runtime, MultiChannelRuntime, ChannelBatchError
+from paper_trading_engine.multichannel_runtime import (
+    build_multichannel_runtime, MultiChannelRuntime, ChannelBatchError, RuntimeScheduleProvider,
+)
 from execution_channels.futu.store import PaperStore
 
 
@@ -90,6 +92,22 @@ def test_runtime_batch_reports_failure_after_attempting_other_channels():
     with pytest.raises(ChannelBatchError,match='unavailable'):
         runtime.refresh_account()
     assert calls == ['cn','us']
+
+
+def test_paused_accounts_are_excluded_before_loading_services():
+    account = {'account_id': 'paused', 'run_state': 'PAUSED'}
+    store = SimpleNamespace(virtual_account=lambda _: account, strategy_virtual_accounts=lambda: [account])
+    runtime = object.__new__(MultiChannelRuntime)
+    runtime.store, runtime.services = store, {}
+    provider = RuntimeScheduleProvider(runtime, preparation_time='20:30')
+    assert provider.due_decision(account, None) is None
+    with pytest.raises(ValueError, match='running account'):
+        provider.run_scheduled('paused', None, None)
+    with pytest.raises(RuntimeError, match='running account'):
+        runtime.drive_virtual_account_decision('paused')
+    runtime.schedule_provider = SimpleNamespace(due_decision=lambda *_: pytest.fail('paused account scheduled'))
+    runtime.runtime_identity = {}
+    assert runtime.refresh()['channels'] == {}
 
 
 def test_runtime_rejects_configuration_error_instead_of_reporting_unavailable(tmp_path):

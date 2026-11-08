@@ -58,15 +58,18 @@ class ExecutionReferenceBinding:
         return cls(EquityParameters(InstrumentId(**instrument), SourceRef(**p['source']), EquityQuery(**query)),
                    PreparedDataRef(**prepared), value['content_sha256'])
 
-    def fetch(self, dataflows, interval, *, latency_seconds):
+    def fetch(self, dataflows, interval, *, latency_seconds, as_of=None):
+        point = interval.start if as_of is None else as_of
+        if type(point) is not datetime or point.utcoffset() is None or point > interval.start:
+            raise ValueError('execution reference cutoff must be aware and no later than execution start')
         result = dataflows.fetch(self.request, prepared=self.prepared)
         if not result.ready or result.identity.content_sha256 != self.content_sha256:
             raise ValueError('execution RAW publication is unavailable or changed')
         if type(latency_seconds) is not int or latency_seconds < 0:
             raise ValueError('execution reference latency must be a nonnegative integer')
         frame = result.dataframe
-        cutoff = interval.start - timedelta(seconds=latency_seconds)
-        history = frame.loc[(frame.Date <= cutoff) & (frame.AvailableDate <= interval.start)]
+        cutoff = point - timedelta(seconds=latency_seconds)
+        history = frame.loc[(frame.Date <= cutoff) & (frame.AvailableDate + timedelta(seconds=latency_seconds) <= point)]
         if history.empty:
             raise ValueError('no completed RAW execution reference is available at the decision')
         if not history.Date.is_monotonic_increasing or history.Date.duplicated().any():

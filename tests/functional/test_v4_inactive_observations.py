@@ -150,20 +150,21 @@ def test_forward_recipe_transitions_from_inactive_binding_to_actual_request(tmp_
     recipe=FormalV4Inputs('a'*64,request.input_binding.for_observations(),request.fee_rate,
         prepare_raw_reference(context, request))
     client=FormalV4AdviceClient(repo_root=tmp_path,store=SimpleNamespace(virtual_account=lambda account:{'last_decision_payload':None}),dataflows=context.data,data_dir=tmp_path/'forward')
-    first=client._forward_inputs('fixture',recipe,seed_window,candidate=request.candidate)
+    first=client._forward_inputs('fixture',recipe,seed_window,cutoff=seed_window.start,candidate=request.candidate)
+    client._save_interval(client._interval_path('fixture', recipe.release_hash, seed_window), first)
     assert first.binding.observation_bindings[0].request is None
     assert not calls
     with patch.object(context.data,'prepare',side_effect=AssertionError('pinned interval must be reused')):
-        assert client._forward_inputs('fixture',recipe,seed_window,candidate=request.candidate) == first
+        assert client._forward_inputs('fixture',recipe,seed_window,cutoff=seed_window.start,candidate=request.candidate) == first
     row=products[EquityProduct.BARS].iloc[-1]
     later=TimeInterval(row.BarStart.to_pydatetime(),row.Date.to_pydatetime())
     if missing:
         with pytest.raises(ValueError, match='preparation is incomplete'):
-            client._forward_inputs('fixture',recipe,later,candidate=request.candidate)
+            client._forward_inputs('fixture',recipe,later,cutoff=later.start,candidate=request.candidate)
         assert len(calls) == 1
         assert not client._interval_path('fixture', recipe.release_hash, later).exists()
         return
-    active=client._forward_inputs('fixture',recipe,later,candidate=request.candidate)
+    active=client._forward_inputs('fixture',recipe,later,cutoff=later.start,candidate=request.candidate)
     binding,=active.binding.observation_bindings
     assert binding.request.start == '2026-10-11'
     assert binding.request.end == '2026-10-14'

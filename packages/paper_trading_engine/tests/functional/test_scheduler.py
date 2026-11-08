@@ -213,6 +213,36 @@ def test_operator_cycle_derives_date_prepares_then_drives_decision():
     assert store.values["last_account_decision_date:s007-v1"] == "2026-09-18"
 
 
+@pytest.mark.parametrize("pause_during_prepare", [False, True])
+@pytest.mark.parametrize("operator_drive", [False, True])
+def test_strategy_cycle_stops_at_pause_boundary(pause_during_prepare, operator_drive):
+    store, engine = Store(), Engine()
+    account = _account(run_state="RUNNING" if pause_during_prepare else "PAUSED")
+    store.accounts = [account]
+    calls = []
+
+    def prepare(*args, **kwargs):
+        calls.append("prepare")
+        account["run_state"] = "PAUSED"
+        return _prepared()
+
+    cycle = AccountStrategyCycle(engine, SimpleNamespace(prepare=prepare), store)
+    with pytest.raises(ValueError, match="running account"):
+        cycle.run("s007-v1", signal_date=date(2026, 9, 18),
+                  observed_at=datetime(2026, 9, 18, 20, 30, tzinfo=SHANGHAI), operator_drive=operator_drive)
+    assert calls == (["prepare"] if pause_during_prepare else [])
+    assert engine.calls == []
+    assert store.get_setting("last_account_decision_date:s007-v1") is None
+
+
+def test_paused_manual_cycle_does_not_even_resolve_data_date():
+    store = Store()
+    store.accounts = [_account(run_state="PAUSED")]
+    cycle = AccountStrategyCycle(None, None, store)
+    with pytest.raises(ValueError, match="running account"):
+        cycle.run_latest("s007-v1", observed_at=datetime(2026, 9, 18, 20, 30, tzinfo=SHANGHAI))
+
+
 def test_scheduler_prepares_then_decides_each_account_after_2030():
     store, engine, advice = Store(), Engine(), Advice()
     store.accounts = [_account(), _account("s003-v1", strategy_id="S003")]
@@ -341,7 +371,7 @@ def test_hung_account_preparation_does_not_block_other_accounts():
     _wait_until(lambda: ("decision", "s007-v1") in engine.calls)
 
 
-def test_slow_preparation_does_not_stop_order_reconciliation():
+def test_slow_preparation_does_not_stop_order_reconciliation(monkeypatch):
     entered, release, stopped = Event(), Event(), Event()
     reconciled = Event()
 
@@ -372,6 +402,9 @@ def test_slow_preparation_does_not_stop_order_reconciliation():
         account_interval=0.02,
         preparation_time="00:00",
     )
+    tick_daily = scheduler.tick_daily
+    monkeypatch.setattr(scheduler, "tick_daily", lambda _: tick_daily(
+        datetime(2026, 9, 18, 20, 30, tzinfo=SHANGHAI)))
     worker = Thread(target=scheduler.run, args=(stopped,))
     worker.start()
     try:

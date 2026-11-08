@@ -243,6 +243,8 @@ class PteCoordinator:
         account = None
         try:
             account = self.store.virtual_account(account_id)
+            if account['run_state'] != 'RUNNING':
+                raise RuntimeError('only a running account can drive a strategy decision')
             drive = self.strategy_cycle.run_latest(
                 account_id, observed_at=shanghai_now()
             )

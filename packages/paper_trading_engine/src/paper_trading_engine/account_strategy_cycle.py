@@ -31,6 +31,8 @@ class AccountStrategyCycle:
     def run_latest(self, account_id: str, *, observed_at: datetime):
         if self.store.virtual_account(account_id)["run_state"] in {"RETIRING", "RETIRED"}:
             raise ValueError("inactive account cannot prepare strategy data")
+        if self.store.virtual_account(account_id)["run_state"] != "RUNNING":
+            raise ValueError("only a running account can prepare strategy data")
         signal_date = self.latest_completed_signal_date(observed_at)
         return self.run(
             account_id,
@@ -66,6 +68,8 @@ class AccountStrategyCycle:
         account = self.store.virtual_account(account_id)
         if account["run_state"] in {"RETIRING", "RETIRED"}:
             raise ValueError("inactive account cannot prepare strategy data")
+        if account["run_state"] != "RUNNING":
+            raise ValueError("only a running account can prepare strategy data")
         cutoff = signal_date.isoformat()
         error_key = f"data_preparation_error:{account_id}"
         try:
@@ -105,6 +109,8 @@ class AccountStrategyCycle:
                     "prepared_data_reference": dict(prepared.data_reference),
                 },
             )
+        if self.store.virtual_account(account_id)["run_state"] != "RUNNING":
+            raise ValueError("only a running account can execute a strategy decision")
         decision = (
             self.accounts.drive_account_decision(account_id, prepared=prepared)
             if operator_drive

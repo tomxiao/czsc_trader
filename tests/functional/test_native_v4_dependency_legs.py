@@ -2,8 +2,8 @@
 
 Orders belong to EC; the strategy contract is deliberately not used to inject legs.
 """
-from dataclasses import asdict
-from datetime import timedelta
+from dataclasses import asdict, replace
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 import json
 
@@ -51,7 +51,7 @@ def adopt_execution_plan(store, prepared, *, rotation=False):
     binding = equity_hash({'owner': owner, 'implementation': prepared.candidate.implementation_hash,
         'specification': rules.execution.fingerprint, 'fee_rate': prepared.fee_rate})
     proposal = V4AccountProposal(state.account, StateRecord(), binding, state.event_cursor)
-    context = V4ExecutionContext(TimeInterval(start, end), prepared.buy_sellable_at,
+    context = V4ExecutionContext(TimeInterval(start, end), prepared.as_of, prepared.buy_sellable_at,
         prepared.v4_constraint, prepared.data_identity, prepared.fee_rate)
     effects = prepare_v4_adoption(plan, snapshot, document, proposal, context, rules)
     orders = tuple(OrderSpec(**asdict(order)) for order in effects.orders)
@@ -158,8 +158,69 @@ def test_unsubmitted_entry_expiry_cannot_activate_dependent_exit(tmp_path, marke
     store.close()
 
 
+@pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
+def test_overnight_adoption_preserves_locks_until_actual_unlock_time(tmp_path, market):
+    context, request, products, store, _, channel = native_account(tmp_path, market)
+    try:
+        first = prepared_at(context, request, products)
+        adopt_execution_plan(store, first)
+        execution = EquityExecution(store, channel, now=lambda: first.interval.start)
+        execution.reconcile(cash=Decimal(str(request.initial_cash)), quantity=0, account_id='native')
+        order, = execution.submit_pending('native')
+        execution.apply_report(EquityOrderReport(order, 200, Decimal('10'),
+            first.interval.start + timedelta(minutes=1), 'FILLED_ALL'))
+        gate = first.interval.end + timedelta(hours=5)
+        following = replace(prepared_at(context, request, products, 1), as_of=gate)
+        before = load_document(store.virtual_account('native'))
+        expected_locks = [lock for lock in before['buy_locks'] if datetime.fromisoformat(lock['at']) > gate]
+        # Next-session planning may use tomorrow's sellability, but must not
+        # advance the durable account's lock state when adopted tonight.
+        adopt_execution_plan(store, following, rotation=True)
+        account = store.virtual_account('native')
+        after = load_document(account)
+        assert after['buy_locks'] == expected_locks
+        assert bool(expected_locks) is (market is MarketId.CN)
+        rules = store.equity_account_rules('native')
+        current = decision_snapshot(account, after, rules, gate, Decimal(account['cash']))
+        tomorrow = decision_snapshot(account, after, rules, following.interval.start, Decimal(account['cash']))
+        assert current.sellable_quantity == (0 if market is MarketId.CN else 200)
+        assert tomorrow.sellable_quantity == 200
+        execution = EquityExecution(store, channel, now=lambda: gate)
+        assert execution.submit_pending('native') == ()
+        assert store.virtual_account('native')['quantity'] == 200
+    finally:
+        store.close()
+
+
+def test_v4_adoption_requires_explicit_nonfuture_observation_time():
+    start = datetime(2026, 11, 5, 14, 30, tzinfo=timezone.utc)
+    interval = TimeInterval(start, start + timedelta(hours=6))
+    for invalid in (None, start.replace(tzinfo=None)):
+        with pytest.raises(TypeError, match='aware observation time'):
+            V4ExecutionContext(interval, invalid, start, {}, 'a' * 64, .001)
+    with pytest.raises(ValueError, match='must not follow execution start'):
+        V4ExecutionContext(interval, start + timedelta(seconds=1), start, {}, 'a' * 64, .001)
+
+
+@pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
+def test_paused_account_cannot_adopt_previously_prepared_decision(tmp_path, market):
+    context, request, products, store, _, _ = native_account(tmp_path, market)
+    try:
+        prepared = prepared_at(context, request, products)
+        store.set_virtual_paused('native', True)
+        before = store.virtual_account('native')
+        with pytest.raises(RuntimeError, match='adoption requires a RUNNING account'):
+            adopt_execution_plan(store, prepared)
+        assert store.virtual_account('native') == before
+        assert not store.account_decisions('native')
+        assert not store.account_intents('native')
+        assert not store.account_snapshots('native')
+        assert not store.query_audit_events(event_type='DECISION_GENERATED', account_id='native')
+    finally:
+        store.close()
+
+
 def test_aware_leg_windows_preserve_utc_and_exclude_deadline():
-    from datetime import datetime
     from execution_channels.futu.order_windows import within_planned_window
     payload = {'submit_after':'2026-11-05T09:30:00-05:00', 'submit_before':'2026-11-05T09:35:00-05:00'}
     assert within_planned_window(payload, '2026-11-05', datetime.fromisoformat('2026-11-05T14:30:00+00:00'))

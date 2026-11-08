@@ -25,7 +25,7 @@ EC 不导入 DFLS 或 SRT，也不自行查询数据。PTE 的 `ScheduledDecisio
 当前发布哈希、操作者和原因受理。账户进入 `RETIRING` 后停止策略加载、数据准备、
 新决策和恢复操作，EC 继续处理撤单、成交回报、对账、市价清仓及资金回笼。
 退役不要求旧策略通过当前 SRT 合同，也不生成策略目标仓位决策。
-已暂停账户在平台启动时延迟策略加载，恢复或手动决策仍完整校验；旧合同策略上线前应先
+已暂停账户在平台启动时延迟策略加载，同时停止自动和人工数据准备、决策；恢复后完整校验。旧合同策略上线前应先
 经授权暂停。正常运行账户仍须通过启动校验。
 尚在处理返回 HTTP 202，完成返回 HTTP 200；账户快照的 `retirement` 字段展示
 `DRAINING`、`WAITING_MARKET`、`WAITING_SELLABLE`、`LIQUIDATING`、
@@ -238,7 +238,7 @@ EC V4 账户文档使用 schema 2，`locked_quantity` 与周期预算由 EC 持�
 已移除聚合 `GET /api/status` 和无渠道限定的 `POST /api/{pause,resume,cancel-token,cancel}`。旧 A 股渠道 URL 继续供现有运维调用使用。
 运行、维护及技术检验统一使用 `ChannelExecution`，历史导入名 `FutuExecution` 已移除。
 
-现有 `POST /api/virtual-accounts/{account_id}/decision` 接受 JSON `{}`。对 V4，它通过账户所属渠道复用正式日历、区间数据准备、卖出款交收和决策采纳逻辑。账户须健康且暂停，当前时点须处于该绑定允许的执行区间。返回 `DECISION_COMPLETED` 或 `DECISION_REUSED`，附发布哈希、区间、数据身份和决策 ID。它保存正式决策、账户状态及审计，暂停门槛阻止创建新订单意图。重复调用复用当前区间已采纳的决策，已有旧合同的手工驱动语义继续适用。运行冲突或无有效区间时返回 HTTP 409。
+现有 `POST /api/virtual-accounts/{account_id}/decision` 接受 JSON `{}`。对 V4，它通过账户所属渠道复用正式日历、区间数据准备和决策采纳逻辑。账户须健康且处于 `RUNNING`；暂停账户禁止人工和自动数据准备、决策。日线决策在 T 交易日实际收盘满 5 小时后才允许准备完整 T 日数据，执行区间仍为下一个交易日，按所属市场日历处理周末、节假日、夏令时及提前收盘。人工驱动遵守同一时间门槛。返回 `DECISION_COMPLETED` 或 `DECISION_REUSED`，附发布哈希、区间、数据身份和决策 ID。它保存正式决策、账户状态及审计，并可产生待提交订单意图；需要阻止渠道提交时使用渠道暂停。重复调用复用当前区间已采纳的决策。运行冲突或无有效区间时返回 HTTP 409。旧 CN 调度配置不得早于 20:00，配置更晚时仍按配置执行；渠道订单轮询和账户对账不因策略账户暂停而停止。
 
 在 PTE 所在宿主用该版本的 Python 执行：
 
@@ -271,7 +271,7 @@ python -m paper_trading_engine.online_verify --port 8080 --plan .tmp/pte-verify-
 
 如需验收指定的 V4 决策，增加 `decision`，包含带时区的 `interval.start/end`、预期 `action` 和 `target_quantity`，可用 `case_key`、`judgment` 核对决策分支与解释。工具关联数据准备与决策生成事件；缺少对应周期或审计证据时返回 `BLOCKED`。可选的 `quantity`、`orders`、`fills` 分别核对当前持仓及账户累计订单、成交笔数。
 
-仅隔离 DEV 可以显式加 `--drive-dev`。此时 `release` 使用 `{"mode":"DEV","repo_root":"<隔离工作目录绝对路径>"}`，所有目标账户须暂停并提供预期决策。设 `decision.fresh=true` 要求本次实际生成，复用视为不达标。固定时点的双市场闭环使用聚焦测试中的受控时钟和模拟渠道。工具报告逐项 `PASS`、`FAIL`、`BLOCKED`，退出码分别为 0、1、2，输出路径须是新文件。生产恢复顺序见 [PTE 发布与运维](../../docs/PTE_OPERATIONS.md#web-api-在线验收)。
+仅隔离 DEV 可以显式加 `--drive-dev`。此时 `release` 使用 `{"mode":"DEV","repo_root":"<隔离工作目录绝对路径>"}`，所有目标账户须为 `RUNNING` 并提供预期决策；需要仅验证决策时暂停对应渠道以阻止订单提交。设 `decision.fresh=true` 要求本次实际生成，复用视为不达标。固定时点的双市场闭环使用聚焦测试中的受控时钟和模拟渠道。工具报告逐项 `PASS`、`FAIL`、`BLOCKED`，退出码分别为 0、1、2，输出路径须是新文件。生产恢复顺序见 [PTE 发布与运维](../../docs/PTE_OPERATIONS.md#web-api-在线验收)。
 
 ## 尽力执行与账户异常（A 股、美股渠道）
 

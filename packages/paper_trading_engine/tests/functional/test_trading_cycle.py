@@ -197,15 +197,23 @@ def test_initial_commit_rolls_back_and_pause_does_not_change_decision_content(ne
 
     monkeypatch.setattr(store, "create_account_immediate_intents", original)
     store.set_virtual_paused("s001-v1", True)
-    accounts.refresh_account("s001-v1", prepared=preparation(advice.value))
-    observed = store.account_decisions("s001-v1")[0]
-    assert "execution_disposition" not in observed["payload"]
-    assert observed["status"] == "PENDING" and store.account_intents("s001-v1") == []
+    before = store.virtual_account("s001-v1")
+    previous_calls = len(advice.calls)
+    for drive in (accounts.refresh_account, accounts.drive_account_decision):
+        with pytest.raises(AccountDecisionBlockedError, match="paused"):
+            drive("s001-v1", prepared=preparation(advice.value))
+    assert store.virtual_account("s001-v1") == before
+    assert len(advice.calls) == previous_calls
+    assert store.account_decisions("s001-v1") == []
+    assert store.account_snapshots("s001-v1") == []
+    assert store.account_intents("s001-v1") == []
+    assert store.query_audit_events(event_type="DECISION_GENERATED") == []
     store.set_virtual_paused("s001-v1", False)
     accounts.drive_account_decision("s001-v1", prepared=preparation(advice.value))
-    adopted = store.account_decision("s001-v1", observed["decision_id"])
-    assert adopted["payload"] == observed["payload"]
-    assert adopted["generated_at"] == observed["generated_at"]
+    adopted = store.account_decisions("s001-v1")[0]
+    assert "execution_disposition" not in adopted["payload"]
+    assert adopted["payload"]["target_quantity"] == advice.value.target_quantity
+    assert len(advice.calls) == previous_calls + 1
     assert len(store.account_intents("s001-v1")) == 1
     store.close()
 
@@ -887,6 +895,11 @@ def test_operator_can_drive_one_account_decision_with_explicit_result_and_audit(
     assert len(failed) == 1
     assert failed[0]["outcome"] == "FAILURE"
     assert failed[0]["details"]["error_type"] == "AccountDecisionBlockedError"
+    store.set_virtual_paused("s001-v1", True)
+    previous_calls = len(advice.calls)
+    with pytest.raises(RuntimeError, match="running account"):
+        coordinator.drive_virtual_account_decision("s001-v1")
+    assert len(advice.calls) == previous_calls
     store.close()
 
 

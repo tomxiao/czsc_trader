@@ -86,7 +86,9 @@ class RuntimeScheduler:
             self.order_interval, self.account_interval, self.data_prepare_interval,
         )):
             raise ValueError("scheduler intervals must be positive and finite")
-        self.preparation_time = time.fromisoformat(preparation_time)
+        # Legacy CN daily sessions close at 15:00; configuration cannot remove
+        # the five-hour data completion window. Calendar providers own V4 times.
+        self.preparation_time = max(time.fromisoformat(preparation_time), time(20))
         self.audit = audit or (
             AuditRecorder(store) if hasattr(store, "append_audit_event") else None
         )
@@ -242,6 +244,8 @@ class RuntimeScheduler:
     def _account_cycle(
         self, account_id: str, signal_date, now: datetime
     ) -> None:
+        if self.store.virtual_account(account_id)["run_state"] != "RUNNING":
+            return
         self._guard(
             f"account_strategy_cycle:{account_id}",
             now,
@@ -254,7 +258,10 @@ class RuntimeScheduler:
         account_id = str(account["account_id"])
 
         def perform():
-            task = self.schedule_provider.due_decision(account, now)
+            current = self.store.virtual_account(account_id)
+            if current["run_state"] != "RUNNING":
+                return
+            task = self.schedule_provider.due_decision(current, now)
             if task is None:
                 return
             if type(task) is not ScheduledDecision:
@@ -267,7 +274,11 @@ class RuntimeScheduler:
             previous = self.store.get_setting(f"last_account_schedule_at:{account_id}")
             if previous is not None and task.decision_at < _utc(datetime.fromisoformat(previous)):
                 raise ValueError("scheduled decision cannot move backwards")
+            if self.store.virtual_account(account_id)["run_state"] != "RUNNING":
+                return
             self.schedule_provider.run_scheduled(account_id, task, now)
+            if self.store.virtual_account(account_id)["run_state"] != "RUNNING":
+                return
             self.store.set_setting(key, task.task_id)
             self.store.set_setting(f"last_account_schedule_at:{account_id}", _utc(task.decision_at).isoformat())
 
@@ -305,7 +316,7 @@ class RuntimeScheduler:
         for account in accounts:
             if len(self._account_workers) >= self.max_account_workers:
                 break
-            if account.get("run_state") in {"RETIRING", "RETIRED"}:
+            if account["run_state"] != "RUNNING":
                 continue
             account_id = str(account["account_id"])
             if account_id in self._account_workers:

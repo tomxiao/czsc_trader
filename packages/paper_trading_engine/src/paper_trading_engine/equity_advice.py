@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *, fee_rate, live=False,
-                            execution_reference, execution_context=None):
+                            execution_reference, execution_context=None, as_of=None):
     """Read pinned products and authenticate their identities before a normal PTE decision."""
     import pandas as pd
     from strategy_runtime.data_preparation import (
@@ -26,6 +26,9 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
     )
     if type(binding) is not EquityInputBinding or type(candidate) is not EquityStrategyCandidate:
         raise TypeError("equity preparation requires typed candidate and binding")
+    cutoff = interval.start if as_of is None else as_of
+    if type(cutoff) is not datetime or cutoff.utcoffset() is None or cutoff > interval.start:
+        raise ValueError('equity observation cutoff must be aware and no later than execution start')
     if candidate.definition.contract_version != 4:
         raise ValueError('PTE equity runtime requires V4; migrate the frozen strategy and account explicitly')
     if (binding.instrument != candidate.instrument or binding.specification_hash != candidate.execution_spec_hash
@@ -43,7 +46,7 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
         raise ValueError('live interval preparation requires native V4')
     if not live and len(bars.loc[(bars.BarStart == interval.start) & (bars.Date == interval.end)]) != 1:
         raise ValueError("decision interval absent from prepared market calendar")
-    history = causal_history(bars, interval.start,
+    history = causal_history(bars, cutoff,
         latency_seconds=candidate.definition.execution_spec.data_latency_seconds,
         minimum_observations=candidate.warmup_bars)
     if live:
@@ -65,19 +68,39 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
     auxiliary = {}
     for item in candidate.definition.auxiliary_inputs:
         frame = products[item.data_key(EquityProduct.BARS)]
-        auxiliary[item.name] = causal_history(frame, interval.start,
+        auxiliary[item.name] = causal_history(frame, cutoff,
             latency_seconds=candidate.definition.execution_spec.data_latency_seconds)
     sessions, trading_sessions = None, ()
     if candidate.definition.session_context:
         frame = products['sessions']
-        sessions = frame.loc[(frame.Date <= interval.start) & (frame.AvailableDate <= interval.start)].copy(deep=True)
+        sessions = frame.loc[(frame.Date <= cutoff) & (frame.AvailableDate <= cutoff)].copy(deep=True)
         known_days = set(sessions.SessionDate)
         trading_sessions = tuple(s for s in sessions_from_metadata(metadata['sessions'])
                                  if s.session_date.isoformat() in known_days)
     replay, unlock, v4_constraint = None, None, None
     if candidate.definition.contract_version == 4:
-        replay = prepare_observations(candidate.definition, products, fetched.identities,
-            bindings=binding.observation_bindings, as_of=interval.start if live else None)
+        visible_products = products
+        if live:
+            # SRT's logical decision point remains the execution interval start.
+            # Cap every market observation at the actual preparation time so
+            # next-morning availability cannot leak into an overnight decision.
+            visible_products = dict(products, bars=history)
+            for item in candidate.definition.auxiliary_inputs:
+                visible_products[item.data_key(EquityProduct.BARS)] = auxiliary[item.name]
+            from strategy_runtime.observation_preparation import prepare_observation_tables
+            from strategy_runtime.dataset_observations import InactiveObservationTable
+            tables = prepare_observation_tables(candidate.definition.observation_inputs,
+                products, fetched.identities, bindings=binding.observation_bindings)
+            for item in candidate.definition.observation_inputs:
+                table = tables[item.name]
+                if type(table) is InactiveObservationTable:
+                    continue
+                frame = table.view(cutoff).to_frame()
+                if frame.empty:
+                    raise ValueError('OBSERVATION_WARMUP_INSUFFICIENT: ' + item.name)
+                visible_products[item.data_key()] = frame
+        replay = prepare_observations(candidate.definition, visible_products, fetched.identities,
+            bindings=binding.observation_bindings, as_of=cutoff if live else None)
         v4_constraint = {"MarketRuleVersion": str(last.MarketRuleVersion),
             "MarketRuleHash": str(last.MarketRuleHash), "SellRemainderPolicy": str(last.SellRemainderPolicy),
             "PriceLimitPolicy": str(last.PriceLimitPolicy),
@@ -92,7 +115,7 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
             raise ValueError('V4 prepared constraint lacks a valid BuySellableAt')
     return PreparedEquityDecision(candidate, binding, history, interval, fee_rate, execution_reference,
                                   auxiliary, sessions, trading_sessions, v4_replay=replay, buy_sellable_at=unlock,
-                                  v4_constraint=v4_constraint, live_interval=live)
+                                  v4_constraint=v4_constraint, live_interval=live, as_of=cutoff)
 
 
 @dataclass(frozen=True)
@@ -110,15 +133,20 @@ class PreparedEquityDecision:
     v4_replay: object = None
     buy_sellable_at: datetime | None = None
     live_interval: bool = False
+    as_of: datetime | None = None
     history_sha256: str = field(init=False)
     decision_inputs_sha256: str = field(init=False)
 
     def __post_init__(self):
+        if self.as_of is None:
+            object.__setattr__(self, 'as_of', self.interval.start)
+        if type(self.as_of) is not datetime or self.as_of.utcoffset() is None or self.as_of > self.interval.start:
+            raise ValueError('equity observation cutoff must be aware and no later than execution start')
         if type(self.live_interval) is not bool:
             raise TypeError('prepared live interval mode must be boolean')
         if type(self.execution_reference) is not PreparedExecutionReference:
             raise TypeError('prepared decision requires a separate RAW execution reference')
-        if self.execution_reference.observed_through > self.interval.start:
+        if self.execution_reference.observed_through > self.as_of:
             raise ValueError('execution reference is later than the decision')
         if type(self.candidate) is not EquityStrategyCandidate or type(self.binding) is not EquityInputBinding or type(self.interval) is not TimeInterval:
             raise TypeError("prepared equity decision requires typed candidate/input/interval")
@@ -127,7 +155,7 @@ class PreparedEquityDecision:
             raise ValueError("prepared equity history is empty")
         ends = pd.to_datetime(self.history.Date)
         available = pd.to_datetime(self.history.AvailableDate)
-        if ends.dt.tz is None or available.dt.tz is None or ends.max() > self.interval.start or available.max() > self.interval.start:
+        if ends.dt.tz is None or available.dt.tz is None or ends.max() > self.as_of or available.max() > self.as_of:
             raise ValueError("prepared equity decision contains future information")
         if self.execution_reference.observed_through != ends.iloc[-1]:
             raise ValueError('HFQ signal and RAW execution reference must share the completed observation time')
@@ -140,7 +168,7 @@ class PreparedEquityDecision:
             if not isinstance(frame, pd.DataFrame) or frame.empty:
                 raise ValueError('prepared auxiliary history is empty')
             ends, available = pd.to_datetime(frame.Date), pd.to_datetime(frame.AvailableDate)
-            if ends.dt.tz is None or available.dt.tz is None or ends.max() > self.interval.start or available.max() > self.interval.start:
+            if ends.dt.tz is None or available.dt.tz is None or ends.max() > self.as_of or available.max() > self.as_of:
                 raise ValueError('prepared auxiliary history contains future information')
         object.__setattr__(self, 'auxiliary_histories', MappingProxyType(
             {key: frame.copy(deep=True) for key, frame in self.auxiliary_histories.items()}))
@@ -162,6 +190,7 @@ class PreparedEquityDecision:
     def _decision_inputs_hash(self):
         from strategy_runtime import canonical_sha256
         value = {
+            'as_of': self.as_of.isoformat(),
             'execution_reference': self.execution_reference.to_dict(),
             'auxiliary': {key: frame.to_json(date_format='iso', date_unit='us') for key, frame in self.auxiliary_histories.items()},
             'sessions': None if self.sessions is None else self.sessions.to_json(date_format='iso', date_unit='us'),
@@ -224,7 +253,7 @@ class EquityAdviceClient:
         import json
         events = {row["event_id"]:json.loads(row["payload"]) for row in self.store._connection.execute(
             "SELECT event_id,payload FROM equity_account_events WHERE account_id=?",(account_id,))}
-        point = prepared.interval.start
+        point = prepared.as_of
         if any(datetime.fromisoformat(fill["occurred_at"]) > point for fill in self.store.account_fills(account_id)):
             raise ValueError("confirmed equity fill is later than the requested decision point")
         if any(datetime.fromisoformat(row["occurred_at"]) > point for row in self.store._connection.execute(
@@ -239,7 +268,7 @@ class EquityAdviceClient:
                 raise ValueError("confirmed equity payment is later than the requested decision point")
         if any(e.get("kind") == "RECEIVABLE" and not e["paid"]
                and (not prepared.live_interval or e.get("recognized_kind") != "CASH_DIVIDEND")
-               and datetime.fromisoformat(e["pay_at"]) <= prepared.interval.start for e in events.values()):
+               and datetime.fromisoformat(e["pay_at"]) <= point for e in events.values()):
             raise ValueError("due equity payments must be settled before decision")
         from .ec_boundary import execution_rules
         if (rules is None or rules.to_dict() != execution_rules(candidate.instrument, candidate.definition.execution_spec).to_dict()

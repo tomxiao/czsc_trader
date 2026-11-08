@@ -1,12 +1,14 @@
 """Bounded scheduling across explicit CN/US calendars; never contacts a broker."""
 from datetime import datetime, timedelta, timezone
 from threading import Event, Lock
+from types import SimpleNamespace
 from zoneinfo import ZoneInfo
 
 import pytest
 
 from dataflows import TimeInterval
 from paper_trading_engine.scheduler import RuntimeScheduler
+from paper_trading_engine.multichannel_runtime import RuntimeScheduleProvider
 from paper_trading_engine.scheduling_contracts import ScheduledDecision
 from test_scheduler import Engine, Store, _account
 
@@ -43,6 +45,94 @@ def _join(scheduler):
     for worker in tuple(scheduler._account_workers.values()):
         worker.join(2)
         assert not worker.is_alive()
+
+
+@pytest.mark.parametrize("scheduled", [False, True])
+def test_paused_accounts_stop_strategy_work_but_keep_channel_polling(scheduled):
+    store = Store()
+    store.accounts = [_account("cn", run_state="PAUSED"),
+                      _account("us", run_state="PAUSED", channel_id="futu_US_sim_channel")]
+    provider = Provider({key: _task() for key in ("cn", "us")})
+    calls = []
+    scheduler = RuntimeScheduler(Engine(), SimpleNamespace(run=lambda *args, **kwargs: calls.append(args)),
+                                 store, schedule_provider=provider if scheduled else None)
+    now = _task().decision_at
+    scheduler.tick_daily(now)
+    _join(scheduler)
+    scheduler.tick_fast(now)
+    assert provider.calls == calls == []
+    assert scheduler._account_workers == {}
+    assert scheduler.engine.calls == ["account", "orders"]
+    assert not store.failures
+
+
+def test_pause_while_resolving_schedule_does_not_execute_or_mark_task_complete():
+    store = Store()
+    account = _account("us")
+    store.accounts = [account]
+    entered, release = Event(), Event()
+    task = _task()
+
+    class SlowProvider(Provider):
+        def due_decision(self, account, observed_at):
+            entered.set()
+            assert release.wait(3)
+            return task
+
+    provider = SlowProvider({"us": task})
+    scheduler = _runtime(store, provider)
+    scheduler.tick_daily(task.decision_at)
+    try:
+        assert entered.wait(1)
+        account["run_state"] = "PAUSED"
+    finally:
+        release.set()
+    _join(scheduler)
+    assert provider.calls == []
+    assert store.get_setting("last_account_schedule_task:us") is None
+    account["run_state"] = "RUNNING"
+    scheduler.tick_daily(task.decision_at + timedelta(seconds=5))
+    _join(scheduler)
+    assert len(provider.calls) == 1
+
+
+def test_pause_during_cycle_does_not_mark_unfinished_task_complete():
+    store = Store()
+    account = _account("us")
+    store.accounts = [account]
+    task = _task()
+
+    class PausingProvider(Provider):
+        def run_scheduled(self, account_id, task, observed_at):
+            account["run_state"] = "PAUSED"
+
+    scheduler = _runtime(store, PausingProvider({"us": task}))
+    scheduler.tick_daily(task.decision_at)
+    _join(scheduler)
+    assert store.get_setting("last_account_schedule_task:us") is None
+
+
+@pytest.mark.parametrize("configured,eligible_hour,eligible_minute", [("00:00", 20, 0), ("21:30", 21, 30)])
+def test_legacy_cn_configuration_cannot_prepare_before_close_plus_five_hours(
+        configured, eligible_hour, eligible_minute):
+    store = Store()
+    account = _account("cn", equity_rules_json=None, channel_account_id="cn-channel")
+    store.accounts = [account]
+    calls = []
+    cycle = SimpleNamespace(run=lambda *args, **kwargs: calls.append(args))
+    runtime = SimpleNamespace(services={"cn-channel": SimpleNamespace(cycle=cycle)}, store=store)
+    provider = RuntimeScheduleProvider(runtime, preparation_time=configured)
+    eligible = datetime(2026, 11, 5, eligible_hour, eligible_minute, tzinfo=CN)
+    assert provider.due_decision(account, eligible - timedelta(seconds=1)) is None
+    task = provider.due_decision(account, eligible)
+    assert task.decision_at == eligible
+    scheduler = RuntimeScheduler(Engine(), cycle, store, preparation_time=configured)
+    scheduler.tick_daily(eligible - timedelta(seconds=1))
+    _join(scheduler)
+    assert calls == []
+    scheduler.tick_daily(eligible)
+    _join(scheduler)
+    assert len(calls) == 1
 
 
 @pytest.mark.parametrize("month,day,expected_utc_hour", [(10, 30, 13), (11, 2, 14)])

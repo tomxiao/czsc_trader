@@ -61,9 +61,11 @@ class ChannelServices:
 class RuntimeScheduleProvider:
     def __init__(self, runtime, *, preparation_time):
         self.runtime = runtime
-        self.preparation_time = time.fromisoformat(preparation_time)
+        self.preparation_time = max(time.fromisoformat(preparation_time), time(20))
 
     def due_decision(self, account, observed_at):
+        if account['run_state'] != 'RUNNING':
+            return None
         services = self.runtime.services[account['channel_account_id']]
         if account['equity_rules_json'] is not None:
             return FormalV4ScheduleProvider(services.formal, services.accounts).due_decision(account, observed_at)
@@ -78,6 +80,8 @@ class RuntimeScheduleProvider:
 
     def run_scheduled(self, account_id, task, observed_at):
         account = self.runtime.store.virtual_account(account_id)
+        if account['run_state'] != 'RUNNING':
+            raise ValueError('only a running account can execute a scheduled decision')
         services = self.runtime.services[account['channel_account_id']]
         if account['equity_rules_json'] is not None:
             return FormalV4ScheduleProvider(services.formal, services.accounts).run_scheduled(account_id, task, observed_at)
@@ -129,7 +133,7 @@ class MultiChannelRuntime:
         now = datetime.now(timezone.utc)
         failures = {}
         for account in self.store.strategy_virtual_accounts():
-            if account['run_state'] in {'RETIRING', 'RETIRED'}:
+            if account['run_state'] != 'RUNNING':
                 continue
             try:
                 task = self.schedule_provider.due_decision(account, now)
@@ -149,6 +153,8 @@ class MultiChannelRuntime:
         account = self.store.virtual_account(account_id)
         if account['run_state'] in {'RETIRING', 'RETIRED'}:
             raise ValueError('inactive account cannot drive a strategy decision')
+        if account['run_state'] != 'RUNNING':
+            raise RuntimeError('only a running account can drive a strategy decision')
         if account['equity_rules_json'] is None:
             return self.console_view.drive_virtual_account_decision(account_id)
         services = self.services[account['channel_account_id']]

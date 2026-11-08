@@ -135,14 +135,15 @@ def test_forward_tables_pin_intervals_and_keep_seed_bounds(tmp_path, market):
         prepare_raw_reference(context, request))
     row = products[EquityProduct.BARS].iloc[1]
     interval = TimeInterval(row.BarStart.to_pydatetime(), row.Date.to_pydatetime())
-    value = client._forward_inputs('fixture', recipe, interval, candidate=request.candidate)
+    value = client._forward_inputs('fixture', recipe, interval, cutoff=interval.start, candidate=request.candidate)
+    client._save_interval(client._interval_path('fixture', recipe.release_hash, interval), value)
     queries = {x.input.name: x.request for x in value.binding.observation_bindings}
     assert queries['seed'].start == queries['seed'].end == '2026-10-12'
     assert queries['rate'].end == ('2026-10-12' if market is MarketId.CN else '2026-10-13')
     with patch.object(context.data, 'prepare', side_effect=AssertionError('must reuse pinned interval')):
-        assert client._forward_inputs('fixture', recipe, interval, candidate=request.candidate) == value
+        assert client._forward_inputs('fixture', recipe, interval, cutoff=interval.start, candidate=request.candidate) == value
     next_interval = TimeInterval(interval.start + timedelta(days=1), interval.end + timedelta(days=1))
-    following = client._forward_inputs('fixture', recipe, next_interval, candidate=request.candidate)
+    following = client._forward_inputs('fixture', recipe, next_interval, cutoff=next_interval.start, candidate=request.candidate)
     next_queries = {x.input.name: x.request for x in following.binding.observation_bindings}
     assert next_queries['seed'] == queries['seed']
     assert next_queries['rate'].end > queries['rate'].end

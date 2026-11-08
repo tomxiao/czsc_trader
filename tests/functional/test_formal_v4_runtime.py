@@ -207,6 +207,75 @@ def test_formal_v4_forward_decision_uses_historical_prices_and_exact_deployment(
         path.write_bytes(original)
 
 
+def test_daily_decision_prepares_after_close_and_waits_for_next_session(formal_v4):
+    client, store, _, interval, candidate, _ = formal_v4
+    client.register_recipe('formal', client.inputs('formal'))
+    calendar = client._calendar_products(client.recipe('formal'), interval.start)['sessions']
+    sessions = sessions_from_metadata(calendar.identity.metadata)
+    previous = max((s for s in sessions if s.segments[-1].end < interval.start),
+                   key=lambda s: s.session_date)
+    gate = previous.segments[-1].end + timedelta(hours=5)
+    client._calendar_products(client.recipe('formal'), gate)
+    engine = AccountEngine(store, client, now=lambda: gate)
+    provider = FormalV4ScheduleProvider(client, engine)
+    account = store.virtual_account('formal')
+    with patch.object(client.dataflows, 'prepare', side_effect=AssertionError('prices before close gate')):
+        assert provider.due_decision(account, gate - timedelta(seconds=1)) is None
+        with pytest.raises(ValueError, match='close plus 5 hours'):
+            client.prepare_interval('formal', interval, observed_at=gate - timedelta(seconds=1))
+        with pytest.raises(ValueError, match='close plus 5 hours'):
+            client.prepare_data('formal', interval, as_of=gate - timedelta(seconds=1))
+    task = provider.due_decision(account, gate)
+    assert task.decision_at == gate and task.interval == interval
+    provider.run_scheduled('formal', task, gate)
+    decision = json.loads(store.virtual_account('formal')['last_decision_payload'])
+    assert decision['signal_date'] == previous.session_date.isoformat()
+    assert decision['valid_session'] == interval.start.astimezone(ZoneInfo(candidate.instrument.timezone)).date().isoformat()
+    intents = store.account_intents('formal')
+    assert intents and all(row['status'] == 'PENDING_SUBMIT' for row in intents)
+    assert all(datetime.fromisoformat(leg['submit_after']) == interval.start for leg in decision['plan_legs'])
+    assert task.submit_after > gate
+    # Restart reuses the successful interval without replacing its publications.
+    reopened = FormalV4AdviceClient(repo_root=client.repo_root, store=store,
+                                   dataflows=client.dataflows, data_dir=client.data_dir)
+    with patch.object(client.dataflows, 'prepare', side_effect=AssertionError('must reuse prepared interval')):
+        prepared = reopened.prepare_interval('formal', interval, observed_at=gate + timedelta(seconds=1))
+    store.set_virtual_paused('formal', True)
+    with patch.object(client.dataflows, 'prepare', side_effect=AssertionError('paused must not prepare')):
+        assert provider.due_decision(store.virtual_account('formal'), gate) is None
+        for operation in (
+            lambda: client.prepare_interval('formal', interval, observed_at=gate),
+            lambda: client.prepare_data('formal', interval, as_of=gate),
+            lambda: provider.drive_decision('formal', gate),
+            lambda: engine.refresh_account('formal', prepared=prepared),
+            lambda: engine.drive_account_decision('formal', prepared=prepared),
+        ):
+            with pytest.raises(RuntimeError, match='RUNNING|paused'):
+                operation()
+
+
+def test_daily_incomplete_latest_session_does_not_pin_stale_decision(formal_v4):
+    client, store, _, interval, _, _ = formal_v4
+    client.register_recipe('formal', client.inputs('formal'))
+    task = FormalV4ScheduleProvider(client, None).due_decision(store.virtual_account('formal'), interval.start)
+    def delayed(binding):
+        def fetch(request):
+            frame, metadata = binding.fetch(request)
+            if request.parameters.query.product is EquityProduct.BARS:
+                frame = frame.copy()
+                frame.loc[frame.Date == task.decision_at - timedelta(hours=5), 'AvailableDate'] = interval.start
+            return frame, metadata
+        return ProviderBinding(binding.name, binding.revision, fetch)
+    client.dataflows._equity_providers = {key: delayed(value)
+        for key, value in client.dataflows._equity_providers.items()}
+    with pytest.raises(ValueError, match='complete preceding trading-session|no completed RAW execution reference'):
+        client.prepare_interval('formal', interval, observed_at=task.decision_at)
+    archive = client._interval_path('formal', store.virtual_account('formal')['release_hash'], interval)
+    assert not archive.exists() and not store.account_intents('formal')
+    assert client.prepare_interval('formal', interval, observed_at=interval.start).available_through == (
+        task.decision_at - timedelta(hours=5)).astimezone(ZoneInfo(client.inputs('formal').binding.instrument.timezone)).date()
+
+
 def test_formal_input_contract_rejects_unknown_fields():
     with pytest.raises(ValueError, match='unsupported'):
         FormalV4Inputs.from_dict({'schema_version': 1, 'extra': True})
@@ -220,12 +289,14 @@ def test_online_v4_decision_and_execution_use_the_scoped_runtime(formal_v4, monk
 
     client, store, root, interval, candidate, evaluation = formal_v4
     client.register_recipe('formal', client.inputs('formal'))
-    store.set_virtual_paused('formal', True)
     market = candidate.instrument.market.value
     currency = 'CNY' if market == 'CN' else 'USD'
     target = 900 if market == 'CN' else 989
     capital = 1_000_000
-    now = interval.start
+    calendar = client._calendar_products(client.recipe('formal'), interval.start)['sessions']
+    prior_close = max(s.segments[-1].end for s in sessions_from_metadata(calendar.identity.metadata)
+                      if s.segments[-1].end < interval.start)
+    now = prior_close + timedelta(hours=5)
 
     class Clock(datetime):
         @classmethod
@@ -276,7 +347,7 @@ def test_online_v4_decision_and_execution_use_the_scoped_runtime(formal_v4, monk
     runtime = build_multichannel_runtime(args, root, client.dataflows, gateway_factory=gateway_factory)
     monkeypatch.setattr('paper_trading_engine.multichannel_runtime.datetime', Clock)
     execution = runtime.services['formal-channel'].execution
-    execution._delegate.now = lambda: interval.start
+    execution._delegate.now = lambda: now
     execution.refresh()
     root.set_setting('scheduler_heartbeat_at', datetime.now(timezone.utc).isoformat())
     server = create_server(runtime.console_view, port=0, multichannel_runtime=runtime)
@@ -285,7 +356,7 @@ def test_online_v4_decision_and_execution_use_the_scoped_runtime(formal_v4, monk
     base = f'http://127.0.0.1:{server.server_port}'
     account = store.virtual_account('formal')
     expected = {
-        'channel_account_id': 'formal-channel', 'release_hash': account['release_hash'], 'run_state': 'PAUSED',
+        'channel_account_id': 'formal-channel', 'release_hash': account['release_hash'], 'run_state': 'RUNNING',
         'decision': {'interval': {'start': interval.start.isoformat(), 'end': interval.end.isoformat()},
                      'action': 'BUY', 'target_quantity': target, 'fresh': True, 'judgment': 'hold'},
         'quantity': 0, 'orders': 0, 'fills': 0,
@@ -302,7 +373,7 @@ def test_online_v4_decision_and_execution_use_the_scoped_runtime(formal_v4, monk
         assert blocked['status'] == 'BLOCKED', blocked
         report = verify(server.server_port, plan, drive_dev=True)
         assert report['status'] == 'PASS', report
-        assert not store.account_intents('formal') and not broker.submissions
+        assert store.account_intents('formal') and not broker.submissions
         def read_json(path, body=None):
             request = Request(base + path, None if body is None else json.dumps(body).encode(),
                               {'Content-Type': 'application/json'})
@@ -329,14 +400,18 @@ def test_online_v4_decision_and_execution_use_the_scoped_runtime(formal_v4, monk
         assert verify(server.server_port, plan)['status'] == 'PASS'
         assert store.virtual_account('formal')['last_decision_id'] == decision_id
 
-        assert read_json('/api/virtual-accounts/formal/resume', {})['account']['run_state'] == 'RUNNING'
+        assert read_json('/api/virtual-accounts/formal/pause', {})['account']['run_state'] == 'PAUSED'
         request = Request(base + '/api/virtual-accounts/formal/decision', b'{}',
                           {'Content-Type': 'application/json'})
         with pytest.raises(HTTPError) as rejected:
             urlopen(request, timeout=5)
         assert rejected.value.code == 409
+        assert read_json('/api/virtual-accounts/formal/resume', {})['account']['run_state'] == 'RUNNING'
 
         store.set_paused(False)
+        execution.submit_pending()
+        assert broker.submissions == 0  # Overnight decisions cannot submit before T+1 opens.
+        now = interval.start
         task = runtime.schedule_provider.due_decision(store.virtual_account('formal'), interval.start)
         runtime.schedule_provider.run_scheduled('formal', task, interval.start)
         execution.submit_pending()
@@ -361,7 +436,6 @@ def test_online_v4_decision_and_execution_use_the_scoped_runtime(formal_v4, monk
         output = client.repo_root / 'online-result.json'
         assert main(['--port', str(server.server_port), '--plan', str(plan_path), '--json-output', str(output)]) == 0
         assert json.loads(output.read_bytes())['status'] == 'PASS'
-        assert read_json('/api/virtual-accounts/formal/pause', {})['account']['run_state'] == 'PAUSED'
         now = interval.end
         with pytest.raises(HTTPError, match='409') as closed:
             urlopen(request, timeout=5)

@@ -30,6 +30,7 @@ class V4AccountProposal:
 @dataclass(frozen=True, slots=True)
 class V4ExecutionContext:
     interval: TimeInterval
+    as_of: datetime
     buy_sellable_at: datetime
     v4_constraint: Mapping[str, object]
     data_identity: str
@@ -38,6 +39,10 @@ class V4ExecutionContext:
     def __post_init__(self):
         if type(self.interval) is not TimeInterval or type(self.buy_sellable_at) is not datetime or self.buy_sellable_at.utcoffset() is None:
             raise TypeError("V4 execution context requires explicit aware interval and sellability")
+        if type(self.as_of) is not datetime or self.as_of.utcoffset() is None:
+            raise TypeError("V4 execution context requires an aware observation time")
+        if self.as_of > self.interval.start:
+            raise ValueError("V4 observation time must not follow execution start")
         if not 0 <= self.fee_rate < 1:
             raise ValueError("V4 execution fee must be between zero and one")
         object.__setattr__(self, "v4_constraint", MappingProxyType(dict(self.v4_constraint)))
@@ -134,7 +139,7 @@ def prepare_v4_adoption(plan: AccountExecutionPlan, snapshot: AccountSnapshot, d
         "locked_quantity": plan.evidence["locked_quantity"],
         "pending_cycle": None if proposal.cycle_values is None else proposal.cycle_values.to_dict(),
         "budget": budget_to_dict(plan.cycle_after if plan.cycle_after is not None else prior_budget), "last_interval": interval, "last_inputs": prepared.data_identity,
-        "buy_locks": [lock for lock in document["buy_locks"] if datetime.fromisoformat(lock["at"]) > prepared.interval.start]}
+        "buy_locks": [lock for lock in document["buy_locks"] if datetime.fromisoformat(lock["at"]) > prepared.as_of]}
     validate_document(after)
     reference = float(plan.evidence["reference_price"])
     exact_estimate = sum((Decimal(str(order.limit_price))*order.quantity*(1+Decimal(str(prepared.fee_rate)))
