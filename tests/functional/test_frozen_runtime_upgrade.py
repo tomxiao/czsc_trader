@@ -109,6 +109,123 @@ def _legacy_source_identity(context, request, stored):
     return replace(request, original=f.FrozenVersionReference('S900', 'v1', stored.release_hash, manifest['package_hash'])), stored
 
 
+@pytest.fixture(params=[MarketId.CN, MarketId.US], ids=['CN', 'US'])
+def obsolete_v4(upgrade, request):
+    """Authentic frozen bytes from before execution_policy became mandatory."""
+    from strategy_manager import canonical_sha256
+    from strategy_runtime.deployment import validate_release_integrity
+    from test_equity_adjusted_observations import setup_adjusted
+
+    context, change, _ = upgrade
+    fixture = context.root / '.tmp/obsolete-v4-fixture'
+    fixture.mkdir()
+    _, native, _, _, _ = setup_adjusted(fixture, request.param)
+    candidate = replace(native.candidate, strategy_id='S900', candidate_id='C9877')
+    initial = m.prepare_frozen_runtime_upgrade(context, replace(change, candidate=candidate))
+    m.apply_frozen_runtime_upgrade(context, initial)
+
+    # Recreate a historical package by signing its old raw definition. Parsing
+    # that definition with today's contract would defeat the regression case.
+    package = context.strategy_root / 'S900/releases/v1'
+    version_path = context.strategy_root / 'S900/versions/v1.json'
+    frozen = json.loads(version_path.read_bytes())
+    definition = frozen['strategy_payload']['equity_definition']
+    definition.pop('execution_policy')
+    frozen.pop('release_hash')
+    frozen['release_hash'] = canonical_sha256(frozen)
+    version_path.write_bytes(m._upgrade_json(frozen))
+    binding_path = package / 'runtime_binding.json'
+    binding = json.loads(binding_path.read_bytes())
+    binding.update(release_hash=frozen['release_hash'], observation_sha256=canonical_sha256(
+        {'contract': 'equity-account-v4', 'definition': definition}))
+    binding_path.write_bytes(m._upgrade_json(binding))
+    manifest_path = package / 'release_manifest.json'
+    manifest = json.loads(manifest_path.read_bytes())
+    manifest['strategy_version_hash'] = frozen['release_hash']
+    manifest['files']['runtime_binding.json'] = sha256(binding_path.read_bytes()).hexdigest()
+    manifest.pop('package_hash')
+    manifest['package_hash'] = canonical_sha256(manifest)
+    manifest_path.write_bytes(m._upgrade_json(manifest))
+    deployment_path = context.strategy_root / 'deployments/S900-v1.json'
+    deployment = json.loads(deployment_path.read_bytes())
+    deployment.update(strategy_version_hash=frozen['release_hash'], package_hash=manifest['package_hash'])
+    deployment.pop('receipt_hash')
+    deployment['receipt_hash'] = canonical_sha256(deployment)
+    deployment_path.write_bytes(m._upgrade_json(deployment))
+    original = f.FrozenVersionReference('S900', 'v1', frozen['release_hash'], manifest['package_hash'])
+    assert validate_release_integrity(context.strategy_root, 'S900-v1').package_sha256 == original.package_hash
+    with pytest.raises(TypeError, match='explicit execution policy'):
+        validate_release_package(context, 'S900-v1')
+    return context, replace(change, original=original, candidate=candidate,
+                            output_directory=context.root / '.tmp/upgrade-obsolete'), frozen
+
+
+def test_obsolete_contract_upgrades_without_loading_old_runtime(obsolete_v4):
+    from strategy_runtime import load_strategy_deployment
+
+    context, request, old = obsolete_v4
+    before = _bytes(context.strategy_root)
+    prepared = m.prepare_frozen_runtime_upgrade(context, request)
+    assert _bytes(context.strategy_root) == before
+    receipt = m.apply_frozen_runtime_upgrade(context, prepared)
+    after = _bytes(context.strategy_root)
+    assert m.apply_frozen_runtime_upgrade(context, prepared) == receipt
+    assert _bytes(context.strategy_root) == after
+    original, _, _, source = m._migration_original(context, request.original)
+    assert original.to_dict() == old
+    assert source.is_relative_to(receipt.archive_path)
+    installed = load_strategy_deployment(context.strategy_root, 'S900-v1')
+    assert installed.release_hash == prepared.migrated.release_hash
+    current = StrategyRegistry(context.strategy_root).get_version('S900', 'v1').to_dict()
+    for field in old.keys() - {'release_hash', 'strategy_payload'}:
+        assert current[field] == old[field]
+    assert current['strategy_payload']['equity_definition']['execution_policy']
+    assert prepared.migrated != request.original
+
+
+def test_obsolete_contract_rollback_restores_bytes_without_loading_old_runtime(obsolete_v4, monkeypatch):
+    from strategy_runtime.deployment import validate_release_integrity
+
+    context, request, _ = obsolete_v4
+    prepared = m.prepare_frozen_runtime_upgrade(context, request)
+    before = _bytes(context.strategy_root)
+    write = m._upgrade_write
+    failed = False
+
+    def fail_deployment_once(path, data, scratch):
+        nonlocal failed
+        if path.parent.name == 'deployments' and not failed:
+            failed = True
+            raise OSError('injected obsolete-package upgrade failure')
+        return write(path, data, scratch)
+
+    monkeypatch.setattr(m, '_upgrade_write', fail_deployment_once)
+    with pytest.raises(RuntimeError, match='original content restored'):
+        m.apply_frozen_runtime_upgrade(context, prepared)
+    assert failed
+    assert all((context.strategy_root / name).read_bytes() == data for name, data in before.items())
+    assert validate_release_integrity(context.strategy_root, 'S900-v1').package_sha256 == request.original.package_hash
+    with pytest.raises(TypeError, match='explicit execution policy'):
+        validate_release_package(context, 'S900-v1')
+    archive = context.strategy_root / 'revisions/S900-v1' / request.original.release_hash
+    assert json.loads((archive / 'rollback.json').read_bytes())['status'] == 'ROLLED_BACK'
+    assert not (archive / 'upgrade_receipt.json').exists()
+
+
+@pytest.mark.parametrize('side', ['old-package', 'new-candidate'])
+def test_obsolete_contract_upgrade_still_rejects_changed_sources(obsolete_v4, side):
+    context, request, _ = obsolete_v4
+    source = (context.strategy_root / 'S900/releases/v1/src/strategy_runtime' if side == 'old-package'
+              else request.candidate.source_root)
+    entry = source / 'strategy.py'
+    entry.write_bytes(entry.read_bytes() + b'\n# unreviewed change\n')
+    before = _bytes(context.strategy_root)
+    with pytest.raises((RuntimeCompatibilityError, ValueError), match='package file differs|source closure changed'):
+        m.prepare_frozen_runtime_upgrade(context, request)
+    assert _bytes(context.strategy_root) == before
+    assert not request.output_directory.exists()
+
+
 @pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
 def test_native_upgrade_preserves_history_and_resets_qualification(upgrade, market, monkeypatch):
     """Both market contracts cross the same legacy/native and native/native transaction."""
@@ -122,7 +239,8 @@ def test_native_upgrade_preserves_history_and_resets_qualification(upgrade, mark
     candidate = _with_seed(replace(native_request.candidate, strategy_id='S900', candidate_id='C9877'))
     if market is MarketId.US:
         legacy_equity = replace(candidate, definition=replace(candidate.definition, contract_version=2,
-            feature_graph=None, state_schema=None, computation=None, auxiliary_inputs=(), observation_inputs=()))
+            feature_graph=None, state_schema=None, computation=None, auxiliary_inputs=(), observation_inputs=(),
+            execution_policy=None, analysis_price='RAW'))
         with pytest.raises(ValueError, match='native account contract 4'):
             replace(request, candidate=legacy_equity)
     request = replace(request, candidate=candidate)

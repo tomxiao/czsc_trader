@@ -483,6 +483,30 @@ def _upgrade_files(root):
     return result
 
 
+def _upgrade_original_package(context: RepositoryContext, reference: str):
+    """Authenticate historical content and its optional receipt, never its runtime."""
+    from strategy_runtime.deployment import validate_release_integrity
+    from .strategy_runtime_service import _deployment_receipt
+
+    verified = validate_release_integrity(context.strategy_root, reference)
+    family, number = reference.rsplit("-", 1)
+    package = context.strategy_root / family / "releases" / number
+    receipt_path = context.strategy_root / "deployments" / f"{reference}.json"
+    if any(path.is_symlink() or path.is_junction() for path in (receipt_path.parent, receipt_path)):
+        raise ValueError("runtime upgrade paths must not contain links")
+    receipt = _deployment_receipt(context.strategy_root, reference)
+    if receipt is not None:
+        expected = {"schema_version": 1, "strategy_version_id": reference,
+                    "strategy_version_hash": verified.release.release_hash,
+                    "release_package": f"{family}/releases/{number}",
+                    "package_hash": verified.package_sha256}
+        expected["receipt_hash"] = canonical_sha256(expected)
+        if receipt != expected:
+            raise ValueError("runtime upgrade installed receipt differs from the frozen source")
+    return (json.loads((package / "release_manifest.json").read_bytes()),
+            verified.runtime_binding.to_dict(), verified.source_root)
+
+
 def _validated_upgrade_archive(context, original, *, plan_sha256=None):
     """Resolve only the explicit committed content-addressed historical revision."""
     reference = f"{original.strategy_id}-{original.version}"
@@ -520,7 +544,7 @@ def _validated_upgrade_archive(context, original, *, plan_sha256=None):
         raise ValueError("runtime upgrade archived file identities differ")
     archived_context = replace(context, strategy_root=archive / "strategies")
     stored = StrategyRegistry(archived_context.strategy_root).get_version(original.strategy_id, original.version)
-    manifest, binding, source = validate_release_package(archived_context, reference)
+    manifest, binding, source = _upgrade_original_package(archived_context, reference)
     if (stored.release_hash != original.release_hash or manifest["package_hash"] != original.package_hash
             or sha256((archived_context.strategy_root / original.strategy_id / "versions" /
                        f"{original.version}.json").read_bytes()).hexdigest() != plan["original_version_sha256"]):
@@ -535,7 +559,7 @@ def _migration_original(context, original):
     reference = f"{original.strategy_id}-{original.version}"
     stored = StrategyRegistry(context.strategy_root).get_version(original.strategy_id, original.version)
     if stored.release_hash == original.release_hash:
-        manifest, binding, source = validate_release_package(context, reference)
+        manifest, binding, source = _upgrade_original_package(context, reference)
     else:
         archive = context.strategy_root / "revisions" / reference / original.release_hash
         if not (archive / "upgrade_receipt.json").is_file():
@@ -561,7 +585,7 @@ def _upgrade_inputs(context, request):
     _upgrade_files(candidate.source_root)
     StrategyRuntime().describe(candidate)
     reference = f"{request.original.strategy_id}-{request.original.version}"
-    manifest, binding, source = validate_release_package(context, reference)
+    manifest, binding, source = _upgrade_original_package(context, reference)
     if (manifest["strategy_version_hash"], manifest["package_hash"]) != (request.original.release_hash, request.original.package_hash):
         raise ValueError("runtime upgrade requires current original frozen CAS identity")
     registry = StrategyRegistry(context.strategy_root)
@@ -652,10 +676,6 @@ def prepare_frozen_runtime_upgrade(
     deployment_path = context.strategy_root / "deployments" / f"{reference}.json"
     old_deployment = None
     if deployment_path.exists():
-        from strategy_runtime import load_strategy_deployment
-        deployment = load_strategy_deployment(context.strategy_root, reference)
-        if deployment.release_hash != request.original.release_hash or deployment.package_hash != request.original.package_hash:
-            raise ValueError("runtime upgrade installed receipt differs from the frozen source")
         old_deployment = deployment_path.read_bytes()
         value = json.loads(old_deployment)
         value.update(strategy_version_hash=version.release_hash, package_hash=new_manifest["package_hash"])
@@ -848,7 +868,7 @@ def apply_frozen_runtime_upgrade(
                     _upgrade_write(version_path, before_version, plan_path.parent)
                 if before_deployment is not None and deployment_path.read_bytes() != before_deployment:
                     _upgrade_write(deployment_path, before_deployment, plan_path.parent)
-                validate_release_package(context, reference)
+                _upgrade_original_package(context, reference)
                 (archive / "rollback.json").write_bytes(_upgrade_json({"status": "ROLLED_BACK", "error": str(error)}))
             except BaseException as rollback_error:
                 raise RuntimeError(f"runtime upgrade failed; rollback incomplete: {rollback_error}") from error

@@ -71,8 +71,8 @@ class StrategyDeployment:
 
 
 @dataclass(frozen=True, slots=True)
-class VerifiedReleasePackage:
-    """A complete version/package/binding authenticated without deployment approval."""
+class ReleasePackageIntegrity:
+    """Authenticated frozen bytes; does not assert current runtime compatibility."""
     release: StrategyRelease
     package_sha256: str
     runtime_binding: RuntimeBinding
@@ -80,8 +80,13 @@ class VerifiedReleasePackage:
     runtime_candidate_id: str
 
 
-def validate_release_package(strategy_root: Path, release_id: str) -> VerifiedReleasePackage:
-    """Authenticate the same immutable bytes for deployment and technical inspection."""
+@dataclass(frozen=True, slots=True)
+class VerifiedReleasePackage(ReleasePackageIntegrity):
+    """A package also validated against the current runtime contract."""
+
+
+def validate_release_integrity(strategy_root: Path, release_id: str) -> ReleasePackageIntegrity:
+    """Verify frozen identity and file closure without loading a strategy definition."""
     if type(release_id) is not str or re.fullmatch(r"S[0-9]{3}-v[1-9][0-9]*", release_id) is None:
         raise RuntimeCompatibilityError("invalid release identity")
     root = _safe_path(strategy_root)
@@ -170,27 +175,35 @@ def validate_release_package(strategy_root: Path, release_id: str) -> VerifiedRe
     if any(not source_root.joinpath(*_safe_relative(name, "install_files").parts).is_file() for name in binding.spec.install_files):
         raise RuntimeCompatibilityError("strategy install files are missing")
     from .implementation_identity import implementation_sha256
+    if implementation_sha256(binding.spec.source_files, source_root=source_root) != binding.spec.implementation_sha256:
+        raise RuntimeCompatibilityError("strategy source closure hash differs")
+    return ReleasePackageIntegrity(release, str(package_hash), binding, source_root, runtime_candidate_id)
+
+
+def validate_release_package(strategy_root: Path, release_id: str) -> VerifiedReleasePackage:
+    """Validate immutable bytes and the current contract for execution/inspection."""
+    package = validate_release_integrity(strategy_root, release_id)
+    release, binding, source_root = package.release, package.runtime_binding, package.source_root
+    runtime_candidate_id = package.runtime_candidate_id
+    runtime_kind = release.payload.get("runtime", {}).get("kind")
+    descriptor = release.payload["runtime"]
+    equity = runtime_kind in {"US_EQUITY", "ACCOUNT_REPLAY"}
     if equity:
-        from .equity_definition import EquityStrategyCandidate, EquityStrategyDefinition, equity_source_hash
+        from .equity_definition import EquityStrategyCandidate, EquityStrategyDefinition
         definition = EquityStrategyDefinition.from_dict(dict(release.payload["equity_definition"]))
         if not {asset.relative_path for asset in definition.frozen_assets}.issubset(binding.spec.install_files):
             raise RuntimeCompatibilityError('strategy install files omit frozen data resources')
         expected_version = 4 if runtime_kind == "ACCOUNT_REPLAY" else 2
         if definition.contract_version != expected_version or descriptor.get("contract_version") != expected_version:
             raise RuntimeCompatibilityError('equity runtime kind differs from its definition contract')
-        candidate = EquityStrategyCandidate(family, runtime_candidate_id, definition, source_root)
+        candidate = EquityStrategyCandidate(release.strategy_family_id, runtime_candidate_id, definition, source_root)
         candidate.verify()
         if canonical_sha256(candidate.payload) != canonical_sha256(dict(release.payload)):
             raise RuntimeCompatibilityError('equity runtime payload differs from its definition')
-        digest = equity_source_hash(source_root, binding.spec.source_files)
         contract = "equity-account-v4" if expected_version == 4 else "equity-decision-v2"
         if canonical_sha256({"contract": contract, "definition": definition.to_dict()}) != binding.spec.observation_sha256:
             raise RuntimeCompatibilityError("equity runtime binding differs from decision definition")
-    else:
-        digest = implementation_sha256(binding.spec.source_files, source_root=source_root)
-    if digest != binding.spec.implementation_sha256:
-        raise RuntimeCompatibilityError("strategy source closure hash differs")
-    return VerifiedReleasePackage(release, str(package_hash), binding, source_root, runtime_candidate_id)
+    return VerifiedReleasePackage(release, package.package_sha256, binding, source_root, runtime_candidate_id)
 
 
 def load_strategy_deployment(strategy_root: Path, release_id: str) -> StrategyDeployment:
