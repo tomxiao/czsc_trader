@@ -46,13 +46,17 @@ def test_missing_required_output_cannot_claim_pass(report, field):
     assert replace(report, **{field: None}).status is InspectionStatus.INCOMPLETE
 
 
-def test_not_run_and_failed_goals_are_distinct(report):
+@pytest.mark.parametrize("field, reason", [
+    ("behavior_equivalence", InspectionReason.BEHAVIOR_DIFFERENCE),
+    ("pte_runtime", InspectionReason.PTE_FAILURE),
+])
+def test_not_run_and_failed_goals_are_distinct(report, field, reason):
     absent = InspectionGoalResult(InspectionStatus.NOT_RUN, (), ())
-    assert replace(report, pte_runtime=absent).status is InspectionStatus.INCOMPLETE
-    case = InspectionCaseResult("pte", InspectionStatus.FAIL, InspectionReason.PTE_FAILURE,
-                                "restart comparison differed", (report.request,))
+    assert replace(report, **{field: absent}).status is InspectionStatus.INCOMPLETE
+    case = InspectionCaseResult(field, InspectionStatus.FAIL, reason,
+                                "goal comparison differed", (report.request,))
     failed = InspectionGoalResult(InspectionStatus.FAIL, (case,), (report.request,))
-    assert replace(report, pte_runtime=failed).status is InspectionStatus.FAIL
+    assert replace(report, **{field: failed}).status is InspectionStatus.FAIL
     with pytest.raises(ValueError, match="failed case"):
         InspectionGoalResult(InspectionStatus.INCOMPLETE, (case,), ())
     with pytest.raises(ValueError, match="passing goal"):

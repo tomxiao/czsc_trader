@@ -20,11 +20,12 @@ from strategy_runtime.equity_replay import StrategyStateSchema
 from czsc_trader.application import publish_evidence_many
 from czsc_trader.application.context import RepositoryContext
 from czsc_trader.application.equity_evidence_io import materialize_equity_document
-from czsc_trader.application.research_governance_service import (create_research_batch,
-    create_research_context, create_experiment, ResearchBatchRequest, ExperimentRequest)
+from czsc_trader.application.research_governance_service import (
+    create_research_context, ResearchBatchRequest, ExperimentRequest)
 from czsc_trader.research_tools import (EquityEvaluationRequest, EquitySources, EquityBuyHold,
     EvaluationBenchmark, EvaluationEvidenceWrite, ResearchExecutionSession)
 from czsc_trader.research_tools.equity_replay import materialize_equity
+from research_scaffold_support import seeded_research_context
 
 
 def setup_adjusted(tmp_path, market, computation=StrategyComputation.STATEFUL_STEP, *, etf=False,
@@ -89,17 +90,23 @@ def setup_adjusted(tmp_path, market, computation=StrategyComputation.STATEFUL_ST
     repository = RepositoryContext(tmp_path, tmp_path / "research", tmp_path / "research/registrations",
                                    tmp_path / "strategies")
     from czsc_trader.research_tools import ResearchBatchRef
-    batch = (ResearchBatchRef('S999') if existing_experiment is not None else
-        create_research_batch(repository, ResearchBatchRequest("S999", "Adjusted fixture",
-            str(instrument), {"goal": "adjusted observations with raw execution"}), actor="DEV",
-            reason="isolated dual-market contract test"))
     bindings = {ProviderKey(product, market, source): ProviderBinding(source.provider, source.revision, fetch)
                 for product in EquityProduct}
-    context = create_research_context(repository, batch,
-        providers=ProviderConfig(bindings={}, equity_bindings=bindings), execution_spec=spec)
+    providers = ProviderConfig(bindings={}, equity_bindings=bindings)
+    if existing_experiment is not None:
+        # native_fixture already cloned a prepared data space; never replace it
+        # with the empty scaffold or discard its authenticated publications.
+        context = create_research_context(repository, ResearchBatchRef('S999'),
+            providers=providers, execution_spec=spec)
+        experiment = existing_experiment
+    else:
+        context, experiment = seeded_research_context(repository,
+            ResearchBatchRequest("S999", "Adjusted fixture", str(instrument),
+                                 {"goal": "adjusted observations with raw execution"}),
+            ExperimentRequest("Adjusted fixture", "Do research prices remain independent of execution prices?",
+                              date(2026, 10, 16)),
+            actor="DEV", reason="isolated dual-market contract test", providers=providers, execution_spec=spec)
     context.evaluation.resources = ExecutionResources(max_workers=1, native_threads_per_worker=1)
-    experiment = existing_experiment or create_experiment(context, ExperimentRequest("Adjusted fixture",
-        "Do research prices remain independent of execution prices?", date(2026, 10, 16)))
     root = tmp_path / "fixture-source"
     root.mkdir(exist_ok=existing_experiment is not None)
     (root / "strategy.py").write_text(
@@ -231,6 +238,7 @@ def test_hfq_limits_cannot_mix_adjustment_bases(basis):
 
 
 def test_research_identity_pins_shared_execution_rules(tmp_path):
-    context, request, _, _, _ = setup_adjusted(tmp_path, MarketId.US)
-    identity = request.identity(context.execution_spec)
+    from account_contract_support import account_contract_request
+    request = account_contract_request(tmp_path)
+    identity = request.identity(request.candidate.definition.execution_spec)
     assert 'execution_channels.planning.session_rules' in identity['engine_sources']

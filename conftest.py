@@ -17,7 +17,7 @@ _RUN_ID = os.environ.get("CZSC_PYTEST_RUN_ID") or uuid4().hex
 _PYTEST_RUN = _REPOSITORY_ROOT / ".tmp" / "pytest" / f"run-{_RUN_ID}"
 _SHARED_CACHE = os.environ.get("CZSC_TEST_BYTECODE_ROOT")
 _PYTHON_CACHE_ROOT = (Path(_SHARED_CACHE).resolve() if _SHARED_CACHE else
-                      _REPOSITORY_ROOT / ".tmp" / "pycache" / f"run-{_RUN_ID}")
+                      _REPOSITORY_ROOT / ".tmp" / "pycache" / "regression")
 if not _PYTHON_CACHE_ROOT.is_relative_to(_REPOSITORY_ROOT / '.tmp/pycache'):
     raise pytest.UsageError('test bytecode must stay under the repository .tmp/pycache')
 
@@ -29,8 +29,8 @@ if Path(sys.prefix).resolve() != _EXPECTED_VENV:
     )
 
 # The root conftest itself is compiled before this assignment. All modules loaded
-# afterwards are redirected. Standalone runs own their cache; the regression
-# runner removes its shared cache after every child process has completed.
+# afterwards are redirected. Stable source bytecode is reused; generated test
+# source cache entries are removed with their owning workspace.
 sys.pycache_prefix = str(_PYTHON_CACHE_ROOT)
 
 
@@ -147,5 +147,7 @@ def pytest_sessionfinish() -> None:
 
     shutil.rmtree(_PYTEST_RUN, ignore_errors=True)
     if not _SHARED_CACHE:
-        shutil.rmtree(_PYTHON_CACHE_ROOT, ignore_errors=True)
+        temporary_bytecode = _PYTHON_CACHE_ROOT / _PYTEST_RUN.relative_to(_PYTEST_RUN.anchor)
+        assert temporary_bytecode.resolve().is_relative_to(_PYTHON_CACHE_ROOT.resolve())
+        shutil.rmtree(temporary_bytecode, ignore_errors=True)
     shutil.rmtree(_REPOSITORY_ROOT / "__pycache__", ignore_errors=True)

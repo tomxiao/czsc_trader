@@ -30,8 +30,8 @@ from paper_trading_engine.contracts import OrderSpec
 from pte_support import FakeAdvice, FakeBroker, broker_snapshot, decision, preparation, adopt_test_decision, claim_test_intent
 
 
-def test_manual_refresh_propagates_channel_failure(new_store, tmp_path):
-    store = new_store(tmp_path / "manual-refresh.db")
+def test_manual_refresh_propagates_channel_failure(memory_store):
+    store = memory_store()
 
     class Accounts:
         def __init__(self):
@@ -61,8 +61,8 @@ def test_manual_refresh_propagates_channel_failure(new_store, tmp_path):
     store.close()
 
 
-def test_startup_only_allows_explicit_unavailable_channel_degradation(new_store, tmp_path):
-    store = new_store(tmp_path / "startup-degradation.db")
+def test_startup_only_allows_explicit_unavailable_channel_degradation(memory_store):
+    store = memory_store()
 
     class Accounts:
         def __init__(self):
@@ -101,8 +101,8 @@ def test_startup_only_allows_explicit_unavailable_channel_degradation(new_store,
     store.close()
 
 
-def test_blocked_pending_intent_expires_and_releases_reserved_cash(new_store, tmp_path):
-    store = new_store(tmp_path / "blocked-expiry.db")
+def test_blocked_pending_intent_expires_and_releases_reserved_cash(memory_store):
+    store = memory_store()
     store.create_virtual_account(
         "s001-v1", "S001-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S001", strategy_name_snapshot="综合基线策略",
@@ -137,8 +137,8 @@ def test_blocked_pending_intent_expires_and_releases_reserved_cash(new_store, tm
     store.close()
 
 
-def test_unattributed_futu_cash_blocks_reconciliation_and_submission(new_store, tmp_path):
-    store = new_store(tmp_path / "cash-gate.db")
+def test_unattributed_futu_cash_blocks_reconciliation_and_submission(memory_store):
+    store = memory_store()
     store.create_virtual_account(
         "s001-v1", "S001-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S001", strategy_name_snapshot="综合基线策略",
@@ -165,8 +165,8 @@ def test_unattributed_futu_cash_blocks_reconciliation_and_submission(new_store, 
     store.close()
 
 
-def test_cn_channel_cash_adjustment_does_not_increase_allocatable_capital(new_store, tmp_path):
-    store = new_store(tmp_path / "cash-adjustment.db")
+def test_cn_channel_cash_adjustment_does_not_increase_allocatable_capital(memory_store):
+    store = memory_store()
     store.create_channel_reconciliation_account()
     broker = FakeBroker()
     execution = ChannelExecution(store, broker)
@@ -278,8 +278,8 @@ def test_ft_pte03_estimated_fees_reconcile_to_futu_cash_exactly_once(new_store, 
     reopened.close()
 
 
-def test_ft_pte03_accepts_fixed_futu_fees_for_a_small_order(new_store, tmp_path):
-    store = new_store(tmp_path / "small-order-fees.db")
+def test_ft_pte03_accepts_fixed_futu_fees_for_a_small_order(memory_store):
+    store = memory_store()
     store.create_virtual_account(
         "s003-v1", "S003-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S003", strategy_name_snapshot="成分资金流宽度早盘延续",
@@ -326,8 +326,8 @@ def test_ft_pte03_accepts_fixed_futu_fees_for_a_small_order(new_store, tmp_path)
     store.close()
 
 
-def test_ft_pte03_blocks_implausible_small_order_cash_charge(new_store, tmp_path):
-    store = new_store(tmp_path / "implausible-small-order-fees.db")
+def test_ft_pte03_blocks_implausible_small_order_cash_charge(memory_store):
+    store = memory_store()
     store.create_virtual_account(
         "s003-v1", "S003-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S003", strategy_name_snapshot="成分资金流宽度早盘延续",
@@ -369,8 +369,8 @@ def test_ft_pte03_blocks_implausible_small_order_cash_charge(new_store, tmp_path
     store.close()
 
 
-def test_ft_pte03_rejects_undefined_execution_channel_and_protects_system_account(new_store, tmp_path):
-    store = new_store(tmp_path / "strict-channel.db")
+def test_ft_pte03_rejects_undefined_execution_channel_and_protects_system_account(memory_store):
+    store = memory_store()
     reconciliation = store.create_channel_reconciliation_account()
     with pytest.raises(ValueError, match="running strategy account"):
         store.create_account_intent(
@@ -384,8 +384,8 @@ def test_ft_pte03_rejects_undefined_execution_channel_and_protects_system_accoun
         ChannelExecution(store, broker).refresh_account()
 
 
-def test_ft_pte03_multiple_accounts_share_only_safe_futu_channel(new_store, tmp_path):
-    store = new_store(tmp_path / "shared-futu.db")
+def test_ft_pte03_multiple_accounts_share_only_safe_futu_channel(memory_store):
+    store = memory_store()
     for account_id, strategy, version, marker, symbol in (
         ("s001-v1", "S001", "v1", "a", "588080.SH"),
         ("s001-v2", "S001", "v2", "b", "588080.SH"),
@@ -484,7 +484,7 @@ def test_ft_pte03_multiple_accounts_share_only_safe_futu_channel(new_store, tmp_
         ModifyOrderOp=SimpleNamespace(CANCEL="CANCEL"),
         SysConfig=SimpleNamespace(enable_console_log=lambda enabled: None),
     )
-    audit_store = new_store(tmp_path / "gateway.db")
+    audit_store = memory_store()
     trade = TradeContext()
     gateway = FutuGateway(
         symbol="588080.SH", sdk=sdk, trade_context=trade,
@@ -508,8 +508,8 @@ def test_ft_pte03_multiple_accounts_share_only_safe_futu_channel(new_store, tmp_
     audit_store.close()
 
 
-def test_ft_pte03_failed_or_cancelled_buy_releases_reserved_cash(new_store, tmp_path):
-    store = new_store(tmp_path / "release-cash.db")
+def test_ft_pte03_failed_or_cancelled_buy_releases_reserved_cash(memory_store):
+    store = memory_store()
     store.create_virtual_account(
         "s001-v1", "S001-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S001", strategy_name_snapshot="综合基线策略",
@@ -561,8 +561,8 @@ def test_ft_pte03_failed_or_cancelled_buy_releases_reserved_cash(new_store, tmp_
     store.close()
 
 
-def test_ft_pte03_channel_and_account_pause_block_pending_submission(new_store, tmp_path):
-    store = new_store(tmp_path / "pause.db")
+def test_ft_pte03_channel_and_account_pause_block_pending_submission(memory_store):
+    store = memory_store()
     store.create_virtual_account(
         "s001-v1", "S001-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S001", strategy_name_snapshot="综合基线策略",
@@ -770,14 +770,14 @@ def test_ft_pte03_explicit_rejection_releases_cash_and_duplicate_submit_is_atomi
     reopened.close()
 
 
-def test_confirmed_rejection_preserves_unrelated_health_block(new_store, tmp_path):
+def test_confirmed_rejection_preserves_unrelated_health_block(memory_store):
     class RejectingBroker(FakeBroker):
         def place_order(self, intent):
             self.placed.append(intent)
             store.set_virtual_health("s001-v1", AccountHealth.BLOCKED, "人工资金复核未完成")
             raise BrokerOrderRejectedError("报单价格不在涨跌停区间")
 
-    store = new_store(tmp_path / "unrelated-health-block.db")
+    store = memory_store()
     store.create_virtual_account(
         "s001-v1", "S001-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S001", strategy_name_snapshot="综合基线策略",
@@ -815,8 +815,8 @@ def test_confirmed_rejection_preserves_unrelated_health_block(new_store, tmp_pat
     store.close()
 
 
-def test_ft_pte03_incomplete_and_unknown_orders_never_silently_recover(new_store, tmp_path):
-    partial_store = new_store(tmp_path / "partial-cancel.db")
+def test_ft_pte03_incomplete_and_unknown_orders_never_silently_recover(memory_store):
+    partial_store = memory_store()
     partial_store.create_virtual_account(
         "s001-v1", "S001-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S001", strategy_name_snapshot="综合基线策略",
@@ -878,7 +878,7 @@ def test_ft_pte03_incomplete_and_unknown_orders_never_silently_recover(new_store
     assert partial_store.account_invariant_violations() == []
     partial_store.close()
 
-    timeout_store = new_store(tmp_path / "timeout.db")
+    timeout_store = memory_store()
     timeout_store.create_virtual_account(
         "s001-v1", "S001-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S001", strategy_name_snapshot="综合基线策略",
@@ -925,13 +925,13 @@ def test_ft_pte03_incomplete_and_unknown_orders_never_silently_recover(new_store
     timeout_store.close()
 
 
-def test_ft_pte03_rejected_decision_is_reused_without_automatic_resubmission(new_store, tmp_path):
+def test_ft_pte03_rejected_decision_is_reused_without_automatic_resubmission(memory_store):
     class RejectingBroker(FakeBroker):
         def place_order(self, intent):
             self.placed.append(intent)
             raise BrokerOrderRejectedError("模拟拒单")
 
-    store = new_store(tmp_path / "persistent-rejection.db")
+    store = memory_store()
     store.create_virtual_account(
         "s001-v1", "S001-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S001", strategy_name_snapshot="综合基线策略",
@@ -960,8 +960,8 @@ def test_ft_pte03_rejected_decision_is_reused_without_automatic_resubmission(new
     store.close()
 
 
-def test_ft_pte03_missing_broker_order_and_overfill_block_without_mutating_ledger(new_store, tmp_path):
-    store = new_store(tmp_path / "reconcile.db")
+def test_ft_pte03_missing_broker_order_and_overfill_block_without_mutating_ledger(memory_store):
+    store = memory_store()
     store.create_virtual_account(
         "s001-v1", "S001-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S001", strategy_name_snapshot="综合基线策略",
@@ -1006,8 +1006,8 @@ def test_ft_pte03_missing_broker_order_and_overfill_block_without_mutating_ledge
     store.close()
 
 
-def test_ft_pte03_opend_can_reconnect_without_restarting_pte(new_store, tmp_path):
-    store = new_store(tmp_path / "reconnect.db")
+def test_ft_pte03_opend_can_reconnect_without_restarting_pte(memory_store):
+    store = memory_store()
     attempts = 0
 
     def factory():
@@ -1027,7 +1027,7 @@ def test_ft_pte03_opend_can_reconnect_without_restarting_pte(new_store, tmp_path
     assert attempts == 2
     execution.close()
 
-    recovered_store = new_store(tmp_path / "reconnect-established.db")
+    recovered_store = memory_store()
     replacement = ChannelExecution(recovered_store, FakeBroker())
 
     class BrokenBroker:

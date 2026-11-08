@@ -21,7 +21,9 @@ from czsc_trader.research_tools import ResearchExecutionSession
 from paper_trading_engine.equity_inspection import (EquityPteDecision, EquityPteReport,
     EquityPteRestart, EquityPteReconcile, EquityPteScenario, EquityPteInspectionProtocol)
 from test_equity_adjusted_observations import setup_adjusted
-from test_equity_inspection_roundtrip import seed_registered_frozen_candidate
+from test_equity_inspection_roundtrip import (
+    assert_cancelled_inspection_cannot_freeze, assert_frozen_us_delivery, seed_registered_frozen_candidate,
+)
 
 
 _PREPARED_SEEDS = {}
@@ -195,6 +197,8 @@ def test_native_dual_market_inspection_freezes_exact_v4_package(tmp_path, market
     assert rejected.status is f.InspectionStatus.FAIL and rejected.release is None
     assert 'protocol differs' in rejected.behavior_equivalence.cases[0].summary
     assert validate_inspection(tmp_path, rejected.reference) == rejected
+    if market is MarketId.US:
+        assert_cancelled_inspection_cannot_freeze(repository, inspection)
     report, operation, receipt = freeze_native_inspection(repository, inspection, source)
     assert validate_inspection(tmp_path, report.reference) == report
     assert get_freeze_result(repository, operation.request_id) == receipt == freeze_candidate(repository, operation)
@@ -207,6 +211,8 @@ def test_native_dual_market_inspection_freezes_exact_v4_package(tmp_path, market
     assert restored.initial_account == request.candidate.definition.initial_account
     assert restored.content_identity == request.candidate.definition.content_identity
     assert json.loads((package.source_root.parent.parent/'runtime_binding.json').read_text())['observation_sha256']
+    if market is MarketId.US:
+        assert_frozen_us_delivery(context, request, report, operation, receipt, inspection.selection)
 
 
 def test_strategy_cannot_supply_execution_orders_or_legs():

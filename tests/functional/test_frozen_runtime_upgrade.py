@@ -109,8 +109,7 @@ def _legacy_source_identity(context, request, stored):
     return replace(request, original=f.FrozenVersionReference('S900', 'v1', stored.release_hash, manifest['package_hash'])), stored
 
 
-@pytest.fixture(params=[MarketId.CN, MarketId.US], ids=['CN', 'US'])
-def obsolete_v4(upgrade, request):
+def _build_obsolete_v4(upgrade, market):
     """Authentic frozen bytes from before execution_policy became mandatory."""
     from strategy_manager import canonical_sha256
     from strategy_runtime.deployment import validate_release_integrity
@@ -119,7 +118,7 @@ def obsolete_v4(upgrade, request):
     context, change, _ = upgrade
     fixture = context.root / '.tmp/obsolete-v4-fixture'
     fixture.mkdir()
-    _, native, _, _, _ = setup_adjusted(fixture, request.param)
+    _, native, _, _, _ = setup_adjusted(fixture, market)
     candidate = replace(native.candidate, strategy_id='S900', candidate_id='C9877')
     initial = m.prepare_frozen_runtime_upgrade(context, replace(change, candidate=candidate))
     m.apply_frozen_runtime_upgrade(context, initial)
@@ -158,6 +157,33 @@ def obsolete_v4(upgrade, request):
         validate_release_package(context, 'S900-v1')
     return context, replace(change, original=original, candidate=candidate,
                             output_directory=context.root / '.tmp/upgrade-obsolete'), frozen
+
+
+@pytest.fixture(scope='module')
+def obsolete_v4_seeds():
+    return {}
+
+
+@pytest.fixture(params=[MarketId.CN, MarketId.US], ids=['CN', 'US'])
+def obsolete_v4(request, tmp_path, frozen_seed_root, obsolete_v4_seeds):
+    """Each market builds its historical package once; each fault gets private bytes.
+
+    The setup upgrade is not the operation under test. Every consumer still
+    calls the real preparation/apply/rollback path against its own old package.
+    """
+    market = request.param
+    if market not in obsolete_v4_seeds:
+        context, change, frozen = _build_obsolete_v4(request.getfixturevalue('upgrade'), market)
+        seed = frozen_seed_root / f'obsolete-v4-{market.value}'
+        shutil.copytree(context.root, seed)
+        obsolete_v4_seeds[market] = (seed, context.root, change, frozen)
+    seed, original_root, change, frozen = obsolete_v4_seeds[market]
+    root = tmp_path / 'obsolete-upgrade-repo'
+    shutil.copytree(seed, root)
+    candidate = replace(change.candidate, source_root=root / change.candidate.source_root.relative_to(original_root))
+    change = replace(change, candidate=candidate,
+                     output_directory=root / change.output_directory.relative_to(original_root))
+    return RepositoryContext.discover(root), change, json.loads(json.dumps(frozen))
 
 
 def test_obsolete_contract_upgrades_without_loading_old_runtime(obsolete_v4):

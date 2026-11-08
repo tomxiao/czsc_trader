@@ -32,11 +32,23 @@ def create(store, account_id="one", capital=100000):
 @pytest.fixture
 def setup(new_store, retirement_database, tmp_path):
     store = new_store(tmp_path / "runtime.db", seed=retirement_database)
+    yield _retirement_context(store)
+    store.close()
+
+
+@pytest.fixture
+def memory_setup(memory_store):
+    """Single-connection capital and lifecycle rules need no disk publication."""
+    store = memory_store()
+    create(store)
+    return _retirement_context(store)
+
+
+def _retirement_context(store):
     broker = FakeBroker()
     execution = ChannelExecution(store, broker)
     request = AccountRetirementRequest("one", "a" * 64, "test", "stop this account")
-    yield store, broker, execution, request
-    store.close()
+    return store, broker, execution, request
 
 
 @pytest.fixture(scope="module")
@@ -52,8 +64,8 @@ def retirement_database(empty_paper_database, frozen_seed_root):
 
 
 @pytest.mark.parametrize("pnl", [Decimal("0"), Decimal("1250.4321"), Decimal("-2100.5678"), Decimal("-100000")])
-def test_retirement_returns_actual_cash_preserves_history_and_reallocates(setup, pnl):
-    store, broker, execution, request = setup
+def test_retirement_returns_actual_cash_preserves_history_and_reallocates(memory_setup, pnl):
+    store, broker, execution, request = memory_setup
     cash = Decimal("100000") + pnl
     with store._connection as c:
         c.execute("UPDATE virtual_accounts SET cash=?,total_assets=?,realized_pnl=? WHERE account_id='one'",
@@ -103,8 +115,8 @@ def test_retirement_returns_actual_cash_preserves_history_and_reallocates(setup,
 
 
 @pytest.mark.parametrize("failure", ["position", "frozen", "wrong_hash", "attention", "cash", "disconnected"])
-def test_retirement_rejects_unsafe_state_without_releasing_capital(setup, failure, monkeypatch):
-    store, broker, execution, request = setup
+def test_retirement_rejects_unsafe_state_without_releasing_capital(memory_setup, failure, monkeypatch):
+    store, broker, execution, request = memory_setup
     if failure == "position":
         with store._connection:
             store._connection.execute("UPDATE virtual_accounts SET quantity=100 WHERE account_id='one'")
@@ -161,8 +173,8 @@ def test_failed_retirement_transaction_rolls_back_and_shared_strategy_stays_in_u
 
 
 @pytest.mark.parametrize('with_pending', [False, True])
-def test_running_account_retires_and_unsent_buy_is_drained(setup, with_pending):
-    store, broker, execution, request = setup
+def test_running_account_retires_and_unsent_buy_is_drained(memory_setup, with_pending):
+    store, broker, execution, request = memory_setup
     store.set_virtual_paused('one', False)
     if with_pending:
         adopt_test_decision(store, account_id='one', decision_id='d', valid_session='2099-01-01',

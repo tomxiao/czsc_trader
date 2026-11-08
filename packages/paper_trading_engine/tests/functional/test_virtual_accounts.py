@@ -3,7 +3,6 @@ from dataclasses import replace
 from datetime import date, datetime, timedelta
 import json
 import os
-import shutil
 from pathlib import Path
 import sqlite3
 from threading import Barrier, Event, get_ident
@@ -36,43 +35,8 @@ def create_account(store, account_id, version, marker):
     )
 
 
-@pytest.fixture(scope="module")
-def healthy_account_database(empty_paper_database, frozen_seed_root):
-    """One real account seed; health mutations always run on private DB copies."""
-    path = frozen_seed_root / "healthy-account.db"
-    shutil.copyfile(empty_paper_database, path)
-    store = PaperStore(path)
-    create_account(store, "one", "v1", "a")
-    store.close()
-    original = path.read_bytes()
-    yield path
-    assert path.read_bytes() == original
-
-
-@pytest.fixture(scope="module")
-def health_intent_database(healthy_account_database, frozen_seed_root):
-    """Persist one legal unsubmitted plan before testing corrupted health gates."""
-    path = frozen_seed_root / "health-intent.db"
-    shutil.copyfile(healthy_account_database, path)
-    store = PaperStore(path)
-    store.set_virtual_paused("one", False)
-    adopt_test_decision(
-        store, account_id="one", decision_id="DEC-HEALTH", valid_session="2026-09-04",
-        orders=[{"side": "BUY", "quantity": 1000, "order_type": "LIMIT", "limit_price": 1.68}],
-    )
-    store.create_account_intent(
-        account_id="one", decision_id="DEC-HEALTH", order_sequence=0,
-        symbol="588080.SH", side="BUY", quantity=1000,
-        limit_price="1.680", valid_session="2026-09-04",
-    )
-    store.close()
-    original = path.read_bytes()
-    yield path
-    assert path.read_bytes() == original
-
-
-def test_new_accounts_are_healthy_without_starting_strategy_execution(new_store, tmp_path):
-    store = new_store(tmp_path / "new-account-health.db")
+def test_new_accounts_are_healthy_without_starting_strategy_execution(memory_store):
+    store = memory_store()
     account = create_account(store, "one", "v1", "a")
     assert account["run_state"] == "PAUSED"
     assert account["health"] is AccountHealth.OK
@@ -87,9 +51,10 @@ def test_new_accounts_are_healthy_without_starting_strategy_execution(new_store,
 
 @pytest.mark.parametrize("invalid", ["OK", "BLOCKED", "READY", "UNKNOWN", None, False, 1])
 def test_health_updates_require_typed_values_without_side_effects(
-    new_store, healthy_account_database, tmp_path, invalid,
+    memory_store, invalid,
 ):
-    store = new_store(tmp_path / "typed-account-health.db", seed=healthy_account_database)
+    store = memory_store()
+    create_account(store, "one", "v1", "a")
     store.set_virtual_health("one", AccountHealth.BLOCKED, "人工复核未完成")
     before = store.virtual_account("one")
     with pytest.raises(TypeError, match="AccountHealth"):
@@ -103,9 +68,22 @@ def test_health_updates_require_typed_values_without_side_effects(
 @pytest.mark.parametrize("operation", ["read", "list", "resume", "decision", "claim", "submit"])
 @pytest.mark.parametrize("invalid_health", ["READY", "UNKNOWN"])
 def test_invalid_persisted_health_cannot_resume_decide_or_submit(
-    new_store, health_intent_database, tmp_path, operation, invalid_health,
+    memory_store, operation, invalid_health,
 ):
-    store = new_store(tmp_path / "invalid-account-health.db", seed=health_intent_database)
+    # Persist through real SQLite transactions; this tests rejection of stored
+    # values, while migration/restart tests below retain file-backed databases.
+    store = memory_store()
+    create_account(store, "one", "v1", "a")
+    store.set_virtual_paused("one", False)
+    adopt_test_decision(
+        store, account_id="one", decision_id="DEC-HEALTH", valid_session="2026-09-04",
+        orders=[{"side": "BUY", "quantity": 1000, "order_type": "LIMIT", "limit_price": 1.68}],
+    )
+    store.create_account_intent(
+        account_id="one", decision_id="DEC-HEALTH", order_sequence=0,
+        symbol="588080.SH", side="BUY", quantity=1000,
+        limit_price="1.680", valid_session="2026-09-04",
+    )
     (intent,) = store.account_intents("one")
     broker = FakeBroker()
     execution = ChannelExecution(
@@ -365,7 +343,7 @@ def test_startup_reads_existing_bindings_without_default_account_writes(
 
 
 @pytest.mark.skipif(os.name != "nt", reason="Windows extended-path regression")
-def test_account_chart_accepts_equivalent_windows_extended_path(new_store, tmp_path, monkeypatch):
+def test_account_chart_accepts_equivalent_windows_extended_path(memory_store, tmp_path, monkeypatch):
     from paper_trading_engine.account_chart import AccountChartService
 
     cache = tmp_path / "charts"
@@ -380,7 +358,7 @@ def test_account_chart_accepts_equivalent_windows_extended_path(new_store, tmp_p
         return original_resolve(path, *args, **kwargs)
 
     monkeypatch.setattr(Path, "resolve", resolve)
-    store = new_store(tmp_path / "chart.db")
+    store = memory_store()
     service = AccountChartService(store, market_data=None, cache_dir=cache)
     try:
         chart = service.chart_path("s001-v2", "a" * 64)
@@ -494,8 +472,8 @@ def test_startup_validates_each_account_binding_before_broker_connection(
         store.close()
 
 
-def test_ft_pte01_account_model_migration_and_independent_futu_ledgers(tmp_path):
-    store = PaperStore(tmp_path / "account-centric.db")
+def test_ft_pte01_account_model_migration_and_independent_futu_ledgers(memory_store):
+    store = memory_store()
     create_account(store, "s001-v1", "v1", "a")
     create_account(store, "s001-v2", "v2", "b")
     assert {row["channel_id"] for row in store.virtual_accounts()} == {"futu_simulate_cn"}
@@ -562,8 +540,8 @@ def test_ft_pte01_account_model_migration_and_independent_futu_ledgers(tmp_path)
     store.close()
 
 
-def test_strategy_name_sync_is_release_guarded_idempotent_and_audited(new_store, tmp_path):
-    store = new_store(tmp_path / "strategy-name.db")
+def test_strategy_name_sync_is_release_guarded_idempotent_and_audited(memory_store):
+    store = memory_store()
     create_account(store, "s001-v1", "v1", "a")
 
     assert store.synchronize_account_strategy_name(
@@ -588,8 +566,8 @@ def test_strategy_name_sync_is_release_guarded_idempotent_and_audited(new_store,
     store.close()
 
 
-def test_account_metrics_use_prior_snapshot_as_window_baseline(new_store, tmp_path):
-    store = new_store(tmp_path / "window-metrics.db")
+def test_account_metrics_use_prior_snapshot_as_window_baseline(memory_store):
+    store = memory_store()
     create_account(store, "s001-v2", "v2", "b")
     store.save_account_snapshot("s001-v2", "2026-09-09", {
         "quantity": 0, "total_assets": "102000.0000",
@@ -609,8 +587,8 @@ def test_account_metrics_use_prior_snapshot_as_window_baseline(new_store, tmp_pa
     store.close()
 
 
-def test_account_comparison_uses_each_accounts_observation_window(new_store, tmp_path):
-    store = new_store(tmp_path / "comparison-metrics.db")
+def test_account_comparison_uses_each_accounts_observation_window(memory_store):
+    store = memory_store()
     create_account(store, "s001-v1", "v1", "a")
     create_account(store, "s001-v2", "v2", "b")
     store.save_account_snapshot("s001-v1", "2026-09-03", {
@@ -639,11 +617,11 @@ def test_account_comparison_uses_each_accounts_observation_window(new_store, tmp
     store.close()
 
 
-def test_ft_pte03_account_chart_builds_bounded_scope_and_reuses_cache(new_store, tmp_path, monkeypatch):
+def test_ft_pte03_account_chart_builds_bounded_scope_and_reuses_cache(memory_store, tmp_path, monkeypatch):
     from paper_trading_engine import account_chart
     from paper_trading_engine.account_chart import AccountChartService
 
-    store = new_store(tmp_path / "chart.db")
+    store = memory_store()
     create_account(store, "s001-v2", "v2", "b")
     store.save_account_decision(
         "s001-v2",
@@ -916,7 +894,7 @@ def test_empty_legacy_database_migrates_with_audit(tmp_path):
 
 @pytest.mark.parametrize("has_forward", [True, False])
 def test_cached_chart_background_checks_are_quiet_and_manual_refresh_is_visible(
-    new_store, tmp_path, monkeypatch, has_forward,
+    memory_store, tmp_path, monkeypatch, has_forward,
 ):
     from paper_trading_engine.account_chart import AccountChartService
 
@@ -929,7 +907,7 @@ def test_cached_chart_background_checks_are_quiet_and_manual_refresh_is_visible(
             self.jobs.append(future)
             return future
 
-    store = new_store(tmp_path / "chart-progress.db")
+    store = memory_store()
     create_account(store, "s001-v2", "v2", "b")
     executor = QueuedExecutor()
     clock = [100.0]
@@ -974,11 +952,11 @@ def test_cached_chart_background_checks_are_quiet_and_manual_refresh_is_visible(
     store.close()
 
 
-def test_account_chart_runs_market_fetch_and_render_on_dedicated_worker(new_store, tmp_path, monkeypatch):
+def test_account_chart_runs_market_fetch_and_render_on_dedicated_worker(memory_store, tmp_path, monkeypatch):
     from paper_trading_engine import file_publication
     from paper_trading_engine.account_chart import AccountChartService
 
-    store = new_store(tmp_path / "chart-thread.db")
+    store = memory_store()
     create_account(store, "s001-v2", "v2", "b")
     store.save_account_decision(
         "s001-v2",
@@ -1213,12 +1191,12 @@ def test_account_chart_preserves_signal_history_across_strategy_packages(new_sto
     store.close()
 
 
-def test_account_chart_waits_for_first_observation_without_rejecting_legacy_decision(new_store,
+def test_account_chart_waits_for_first_observation_without_rejecting_legacy_decision(memory_store,
     tmp_path,
 ):
     from paper_trading_engine.account_chart import AccountChartService
 
-    store = new_store(tmp_path / "chart-legacy-decision.db")
+    store = memory_store()
     create_account(store, "s001-v2", "v2", "b")
     store.save_account_decision(
         "s001-v2",
@@ -1268,10 +1246,10 @@ def test_account_chart_waits_for_first_observation_without_rejecting_legacy_deci
     store.close()
 
 
-def test_account_chart_persists_unexpected_executor_failure(new_store, tmp_path):
+def test_account_chart_persists_unexpected_executor_failure(memory_store, tmp_path):
     from paper_trading_engine.account_chart import AccountChartService
 
-    store = new_store(tmp_path / "chart-executor-failure.db")
+    store = memory_store()
     create_account(store, "s001-v2", "v2", "b")
 
     class FailingExecutor:
@@ -1298,10 +1276,10 @@ def test_account_chart_persists_unexpected_executor_failure(new_store, tmp_path)
     store.close()
 
 
-def test_account_chart_dfls_timeout_is_reported(new_store, tmp_path):
+def test_account_chart_dfls_timeout_is_reported(memory_store, tmp_path):
     from paper_trading_engine.account_chart import AccountChartService
 
-    store = new_store(tmp_path / "chart-timeout.db")
+    store = memory_store()
     create_account(store, "s001-v2", "v2", "b")
     entered = Event()
     release = Event()
@@ -1333,10 +1311,10 @@ def test_account_chart_dfls_timeout_is_reported(new_store, tmp_path):
     store.close()
 
 
-def test_account_chart_close_does_not_wait_for_stuck_dfls(new_store, tmp_path):
+def test_account_chart_close_does_not_wait_for_stuck_dfls(memory_store, tmp_path):
     from paper_trading_engine.account_chart import AccountChartService
 
-    store = new_store(tmp_path / "chart-close.db")
+    store = memory_store()
     create_account(store, "s001-v2", "v2", "b")
     entered = Event()
     release = Event()

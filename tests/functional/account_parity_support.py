@@ -11,9 +11,9 @@ from strategy_runtime import (CnEquitySpec, UsEquitySpec, ResearchExecutionSpec,
     equity_source_hash, StrategyComputation, ExecutionPolicy)
 from strategy_runtime.equity_features import FeatureGraph
 from strategy_runtime.equity_replay import StrategyStateSchema
-from czsc_trader.application import (RepositoryContext, create_research_batch, create_research_context,
-    create_experiment, ResearchBatchRequest, ExperimentRequest)
+from czsc_trader.application import RepositoryContext, ResearchBatchRequest, ExperimentRequest
 from czsc_trader.research_tools import EquityEvaluationRequest, EquitySources, EvaluationBenchmark, EquityBuyHold
+from research_scaffold_support import seeded_research_context
 
 
 STEP = '''from strategy_runtime import AccountDecision, AccountStepResult
@@ -34,8 +34,6 @@ def calculate(ctx):
 def setup_account(root, market, frequency, computation=StrategyComputation.STATEFUL_STEP, *, gap_kind=None):
     repository = RepositoryContext(root, root/'research', root/'research/registrations', root/'strategies')
     instrument = InstrumentId(market, AssetClass.STOCK, '600000.SH' if market is MarketId.CN else 'TEST')
-    batch = create_research_batch(repository, ResearchBatchRequest('S999', 'Account parity fixture',
-        str(instrument.symbol), {'goal':'synthetic software acceptance'}), actor='DEV', reason='isolated fixture')
     spec = ResearchExecutionSpec(CnEquitySpec() if market is MarketId.CN else UsEquitySpec(), frequency,
         AccountPolicy(instrument.currency, CashAvailabilityPolicy.IMMEDIATE_RESEARCH),
         100 if market is MarketId.CN else 1, .01, .01, 0.)
@@ -73,10 +71,14 @@ def setup_account(root, market, frequency, computation=StrategyComputation.STATE
         'Synthetic complete HFQ source receipt, not real security-history admission.')
     bindings = versioned_equity_bindings(instrument=instrument,source=source,coverage=coverage,
         sessions=sessions,frequencies=tuple(versions),following_session=following)
-    context = create_research_context(repository,batch,providers=ProviderConfig(bindings={},equity_bindings=bindings),execution_spec=spec)
+    context, experiment = seeded_research_context(repository,
+        ResearchBatchRequest('S999', 'Account parity fixture', str(instrument.symbol),
+                             {'goal': 'synthetic software acceptance'}),
+        ExperimentRequest('Account parity', 'Software acceptance only', date(2026, 10, 30)),
+        actor='DEV', reason='isolated fixture',
+        providers=ProviderConfig(bindings={}, equity_bindings=bindings), execution_spec=spec)
     from strategy_runtime import ExecutionResources
     context.evaluation.resources=ExecutionResources(1,1)
-    experiment = create_experiment(context, ExperimentRequest('Account parity','Software acceptance only',date(2026,10,30)))
     source_root = experiment.resolve(root)/'src'
     source_root.mkdir(exist_ok=True)
     (source_root/'strategy.py').write_text(STEP if computation is StrategyComputation.STATEFUL_STEP else BATCH,encoding='utf-8')

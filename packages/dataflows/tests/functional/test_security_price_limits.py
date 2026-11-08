@@ -5,8 +5,9 @@ from copy import deepcopy
 import pandas as pd
 import pytest
 
-from dataflows import DataRequest, DataStatus, Dataset
+from dataflows import DataRequest, DataStatus, Dataset, PreparePolicy
 from dataflows import security_price_limits as limits
+from dataflows.errors import DataContractError, EmptyDataError, IncompleteDataError
 
 
 class LimitPro:
@@ -82,30 +83,31 @@ def test_publish_raw_security_price_limits(flow_factory, publish_data, monkeypat
     assert len(pro.calls) == 1 and pro.calls[0][0] == api
 
 
-@pytest.mark.parametrize("anomaly,status", [
-    ("empty", DataStatus.EMPTY), ("missing", DataStatus.INCOMPLETE),
-    ("calendar_gap", DataStatus.INCOMPLETE), ("duplicate", DataStatus.FAILED),
-    ("zero", DataStatus.FAILED), ("negative", DataStatus.FAILED),
-    ("nan", DataStatus.FAILED), ("infinite", DataStatus.FAILED),
-    ("reverse", DataStatus.FAILED), ("equal", DataStatus.FAILED),
-    ("wrong_symbol", DataStatus.FAILED), ("wrong_asset", DataStatus.FAILED),
-    ("wrong_exchange", DataStatus.FAILED), ("invalid_date", DataStatus.FAILED),
-    ("source_field", DataStatus.FAILED),
+@pytest.mark.parametrize("anomaly,error", [
+    ("empty", EmptyDataError), ("missing", IncompleteDataError),
+    ("calendar_gap", IncompleteDataError), ("duplicate", DataContractError),
+    ("zero", DataContractError), ("negative", DataContractError),
+    ("nan", DataContractError), ("infinite", DataContractError),
+    ("reverse", DataContractError), ("equal", DataContractError),
+    ("wrong_symbol", DataContractError), ("wrong_asset", DataContractError),
+    ("wrong_exchange", DataContractError), ("invalid_date", DataContractError),
+    ("source_field", DataContractError),
 ])
-def test_invalid_source_never_ready(flow_factory, publish_data, monkeypatch, anomaly, status):
+def test_invalid_source_rejected_by_real_adapter(monkeypatch, anomaly, error):
+    # Generic facade state mapping lives in test_contract; provider admission
+    # remains covered below without storing every invalid source variant.
     pro = LimitPro(anomaly=anomaly)
     monkeypatch.setattr(limits, "get_tushare_pro", lambda _: pro)
-    result = publish_data(flow_factory(), request())
-    assert result.status is status, result.error
-    assert result.dataframe.empty
+    with pytest.raises(error):
+        limits.fetch_security_price_limits(request())
     assert len(pro.calls) == 1  # No alternate source or silent retry.
 
 
 @pytest.mark.parametrize("symbol", ["AAPL", "00700.HK", "920001.BJ"])
-def test_unsupported_market_fails_before_source(flow_factory, publish_data, monkeypatch, symbol):
+def test_unsupported_market_fails_before_source(monkeypatch, symbol):
     monkeypatch.setattr(limits, "get_tushare_pro", lambda _: pytest.fail("must reject before provider"))
-    result = publish_data(flow_factory(), request(symbol))
-    assert result.status is DataStatus.FAILED
+    with pytest.raises(DataContractError, match="SH/SZ stock and ETF"):
+        limits.fetch_security_price_limits(request(symbol))
 
 
 def test_request_rejects_missing_symbol_frequency_and_timestamp():
@@ -118,7 +120,7 @@ def test_request_rejects_missing_symbol_frequency_and_timestamp():
 
 
 @pytest.mark.parametrize("tamper", ["session", "hash", "lineage"])
-def test_facade_revalidates_bound_provider(flow_factory, publish_data, monkeypatch, tamper):
+def test_facade_revalidates_bound_provider(flow_factory, monkeypatch, tamper):
     pro = LimitPro()
     monkeypatch.setattr(limits, "get_tushare_pro", lambda _: pro)
     frame, metadata = limits.fetch_security_price_limits(request())
@@ -130,8 +132,12 @@ def test_facade_revalidates_bound_provider(flow_factory, publish_data, monkeypat
     else:
         metadata["adjustment"] = "hfq"
     flows = flow_factory({Dataset.SECURITY_PRICE_LIMITS: lambda _: (frame, metadata)})
-    result = publish_data(flows, request())
-    assert result.status is (DataStatus.INCOMPLETE if tamper == "session" else DataStatus.FAILED)
+    prepared = flows.prepare((request(),), policy=PreparePolicy.REFRESH)
+    assert not prepared.ready and prepared.reference is None
+    item, = prepared.items
+    assert item.status is (DataStatus.INCOMPLETE if tamper == "session" else DataStatus.FAILED)
+    assert item.identity is None
+    assert item.error.code == ("INCOMPLETE_DATA" if tamper == "session" else "DATA_CONTRACT_MISMATCH")
 
 
 def test_large_range_is_deterministically_chunked(monkeypatch):

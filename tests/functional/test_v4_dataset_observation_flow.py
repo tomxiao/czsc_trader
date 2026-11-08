@@ -170,14 +170,20 @@ def test_moneyflow_resolves_open_dates_and_rejects_missing_calendar(tmp_path):
 
 
 def test_request_rejects_undeclared_observation_before_data_access(tmp_path):
-    from dataflows import DataRequest
-    context, request, _, _ = observation_fixture(tmp_path, MarketId.CN)
-    queries = tuple(query for name, query in request.request_items(context.execution_spec)
-                    if name.startswith('observation:'))
+    from dataflows import Dataflows, DataRequest
+    from account_contract_support import account_contract_request
+    request = account_contract_request(tmp_path, MarketId.CN)
+    declaration = DatasetObservationInput('weights', Dataset.INDEX_CONSTITUENT_WEIGHT, '000300.SH',
+        availability=ObservationAvailability('Asia/Shanghai', '16:00'))
+    candidate = replace(request.candidate, definition=replace(request.candidate.definition,
+        observation_inputs=(declaration,)))
+    request = replace(request, candidate=candidate)
+    query = declaration.request(request.history_start, request.window.end.date(), source_root=tmp_path)
     wrong = DataRequest(Dataset.GLOBAL_INDEX_DAILY, 'SPX', '2026-10-12', '2026-10-15', None)
-    with patch.object(context.data, 'prepare', side_effect=AssertionError('must reject before data access')):
+    with patch.object(Dataflows, 'prepare', side_effect=AssertionError('must reject before data access')):
+        assert replace(request, observation_requests=(query,)).observation_requests == (query,)
         with pytest.raises(ValueError, match='differs from declaration'):
-            replace(request, observation_requests=(wrong, *queries[1:]))
+            replace(request, observation_requests=(wrong,))
 
 
 @pytest.mark.parametrize('at,closed,expected', [

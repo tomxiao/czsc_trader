@@ -13,17 +13,16 @@ from execution_channels.policy import AccountPolicy, CashAvailabilityPolicy, CnE
 from execution_channels.state import AccountStrategyState, CycleState, StateRecord
 from execution_channels.futu.channel import ChannelAccountConfig, FUTU_SIMULATE_CN_CHANNEL_ID, FUTU_US_SIM_CHANNEL_ID
 from execution_channels.futu.equity_account_state import budget_to_dict, position_to_dict, recognized_events, save_document
-from execution_channels.futu.store import PaperStore
 from execution_channels.futu.equity_contracts import EquityAccountRules
 from execution_channels.futu.equity_events import allocate_quantities
 
 
 @pytest.fixture(params=list(MarketId))
-def holdings(tmp_path, request):
+def holdings(request, memory_store):
     market = request.param
     cn = market is MarketId.CN
     instrument = InstrumentId(market, AssetClass.ETF if cn else AssetClass.STOCK, '588080.SH' if cn else 'MU')
-    root = PaperStore(tmp_path / 'positions.db')
+    root = memory_store()
     config = ChannelAccountConfig('positions-' + market.value, FUTU_SIMULATE_CN_CHANNEL_ID if cn else FUTU_US_SIM_CHANNEL_ID, 77)
     store = root.register_channel_account(config, capital=Decimal('10000'))
     rules = EquityAccountRules(instrument, ResearchExecutionSpec(CnEquitySpec() if cn else UsEquitySpec(),

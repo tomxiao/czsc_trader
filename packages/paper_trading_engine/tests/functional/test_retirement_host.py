@@ -151,14 +151,13 @@ def test_account_snapshot_exposes_retirement_progress():
     assert snapshot['metrics']['current_total_return'] == pytest.approx(0.1)
 
 
-def test_paused_old_strategy_can_start_but_cannot_resume_without_validation(tmp_path, monkeypatch):
+def test_paused_old_strategy_can_start_but_cannot_resume_without_validation(tmp_path, monkeypatch, new_store):
     from paper_trading_engine.multichannel_runtime import build_multichannel_runtime
     from paper_trading_engine.srt_advice_client import SrtAdviceClient
-    from execution_channels.futu.store import PaperStore
     def reject(**kwargs):
         raise ValueError('old strategy contract')
     monkeypatch.setattr(SrtAdviceClient, 'validate_account_binding', lambda _, **kwargs: reject(**kwargs))
-    store = PaperStore(tmp_path / 'runtime.db')
+    store = new_store(tmp_path / 'runtime.db')
     store.create_virtual_account('old', 'old', 'S003-v1', 'a' * 64, 1000,
                                  strategy_id='S003', strategy_version='v1', release_hash='a' * 64,
                                  strategy_name_snapshot='old', qualification_snapshot='PAPER_READY',

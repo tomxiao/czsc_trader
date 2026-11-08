@@ -186,14 +186,14 @@ def test_daily_snapshot_uses_last_actual_session_of_complete_month(membership_ro
 
 
 @pytest.mark.parametrize('defect', ['wrong_date', 'missing_date', 'wrong_index', 'mixed_contract'])
-def test_new_daily_snapshot_metadata_requires_exact_query_identity(membership_root, sources, defect):
-    from dataflows.index_membership import validate_index_membership
+def test_new_daily_snapshot_metadata_requires_exact_query_identity(sources, defect):
+    from dataflows.index_membership import fetch_index_constituents_daily, validate_index_membership
     from dataflows.errors import DataContractError
     sources(events=[_event()])
-    flow, request, prepared = _prepare(membership_root)
-    assert prepared.ready, prepared.items
-    result = flow.fetch(request, prepared=prepared.reference)
-    metadata = deepcopy(dict(result.identity.metadata))
+    request = _request()
+    frame, metadata = fetch_index_constituents_daily(request)
+    validate_index_membership(frame, request, metadata)
+    metadata = deepcopy(dict(metadata))
     query = metadata['snapshot_queries'][0]
     if defect == 'wrong_date':
         query['trade_date'] = '20191230'
@@ -205,11 +205,11 @@ def test_new_daily_snapshot_metadata_requires_exact_query_identity(membership_ro
         query.pop('trade_date')
         query.pop('index_code')
     with pytest.raises(DataContractError):
-        validate_index_membership(result.dataframe, request, metadata)
+        validate_index_membership(frame, request, metadata)
 
 
 @pytest.mark.parametrize("weight", ["missing", None, "invalid", float("inf")])
-def test_daily_membership_neither_requires_nor_hashes_weights(membership_root, monkeypatch, sources, weight):
+def test_daily_membership_neither_requires_nor_hashes_weights(monkeypatch, sources, weight):
     from dataflows import index_membership
 
     pro = sources(events=[_event()])
@@ -226,14 +226,13 @@ def test_daily_membership_neither_requires_nor_hashes_weights(membership_root, m
         return raw
 
     monkeypatch.setattr(pro, "index_weight", snapshots)
-    flow, request, prepared = _prepare(membership_root, _request(end="2020-01-13"))
-    assert prepared.ready, prepared.items
-    result = flow.fetch(request, prepared=prepared.reference)
-    assert result.ready, result.error
-    assert set(result.dataframe.columns) == {"Date", "ConstituentSymbol", "AvailableDate", "SourceSnapshotDate"}
-    assert result.dataframe.Date.nunique() == 2
-    assert result.dataframe.groupby("Date").size().eq(500).all()
-    assert [query["sha256"] for query in result.identity.metadata["snapshot_queries"]] == [
+    request = _request(end="2020-01-13")
+    frame, metadata = index_membership.fetch_index_constituents_daily(request)
+    index_membership.validate_index_membership(frame, request, metadata)
+    assert set(frame.columns) == {"Date", "ConstituentSymbol", "AvailableDate", "SourceSnapshotDate"}
+    assert frame.Date.nunique() == 2
+    assert frame.groupby("Date").size().eq(500).all()
+    assert [query["sha256"] for query in metadata["snapshot_queries"]] == [
         index_membership._frame_hash(raw) for raw in raw_sources]
 
 

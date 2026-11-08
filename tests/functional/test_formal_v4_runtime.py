@@ -46,7 +46,9 @@ def formal_v4(tmp_path, request):
     shutil.copytree(seed, repository.strategy_root, dirs_exist_ok=True)
     registry = StrategyRegistry(repository.strategy_root)
     version = registry.get_version('S999', 'v1')
-    root = PaperStore(tmp_path / 'formal.db')
+    # Single-connection business flows use real SQLite without durability I/O.
+    # Rebinding consumers back up this source into their own disk-backed runtime.
+    root = PaperStore(Path(':memory:'))
     channel = FUTU_SIMULATE_CN_CHANNEL_ID if market is MarketId.CN else FUTU_US_SIM_CHANNEL_ID
     store = root.register_channel_account(ChannelAccountConfig('formal-channel', channel, 1234), capital=Decimal('1000000'))
     client = FormalV4AdviceClient(repo_root=tmp_path, store=store, dataflows=context.data, data_dir=tmp_path / 'runtime-data')
@@ -65,9 +67,13 @@ def formal_v4(tmp_path, request):
         qualification_snapshot='PAPER_READY', selection_data_cutoff='2026-10-12', channel_id=channel,
         equity_rules=execution_rules(candidate.instrument, candidate.definition.execution_spec))
     store.set_virtual_paused('formal', False)
+    reference = replay.execution_reference
+    assert isinstance(reference, ExecutionReferenceBinding)
+    primary = dict(evaluation.input_binding.request_bindings)['bars']
+    assert reference.parameters == replace(primary, query=replace(primary.query, adjustment=PriceAdjustment.NONE))
     client.register_inputs('formal', evaluation.input_binding,
         expected_release_hash=release.release_hash, fee_rate=evaluation.fee_rate,
-        execution_reference=raw_binding(context.data, evaluation.input_binding))
+        execution_reference=reference)
     # Real DFLS publications must obey each forward query's independent range.
     # The research fixture intentionally returned the whole fixed test window.
     def ranged(binding):

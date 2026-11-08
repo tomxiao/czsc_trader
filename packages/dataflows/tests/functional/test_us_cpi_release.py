@@ -3,7 +3,8 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from dataflows import DataRequest, DataStatus, Dataset
+from dataflows import DataRequest, DataStatus, Dataset, PreparePolicy
+from dataflows.errors import DataContractError, IncompleteDataError
 from dataflows.tushare_strategy_data import fetch_us_cpi_release
 
 
@@ -78,34 +79,43 @@ def test_us_cpi_release_splits_vendor_queries_by_year() -> None:
 
 
 @pytest.mark.parametrize(
-    ("rows", "calendar_gap", "expected_status"),
+    ("rows", "calendar_gap", "error"),
     [
-        ([_row("20240112", "20:30")], False, DataStatus.FAILED),
-        ([_row("20240112", "21:30", "")], False, DataStatus.FAILED),
-        ([_row("20240112", "21:30"), _row("20240112", "21:30")], False, DataStatus.FAILED),
-        ([_row("20240112", "21:30")], True, DataStatus.INCOMPLETE),
+        ([_row("20240112", "20:30")], False, DataContractError),
+        ([_row("20240112", "21:30"), _row("20240112", "21:30")], False, DataContractError),
+        ([_row("20240112", "21:30")], True, IncompleteDataError),
     ],
 )
-def test_us_cpi_release_fails_closed_on_source_or_calendar_errors(flow_factory, publish_data,
-    rows: list[dict[str, str]], calendar_gap: bool, expected_status: DataStatus
+def test_us_cpi_release_fails_closed_on_source_or_calendar_errors(
+    rows: list[dict[str, str]], calendar_gap: bool, error: type[Exception]
 ) -> None:
     pro = FakeCpiPro(rows, calendar_gap=calendar_gap)
+    # Public admission below covers failure states; the adapter owns this matrix.
+    with pytest.raises(error) as raised:
+        fetch_us_cpi_release("2024-01-12", "2024-01-12", pro=pro)
+    assert raised.value.code == ("INCOMPLETE_DATA" if calendar_gap else "DATA_CONTRACT_MISMATCH")
+
+
+def test_us_cpi_release_facade_rejects_missing_actual_value(flow_factory) -> None:
+    # The source adapter converts an empty actual to NaN. Numeric admission is
+    # owned by the public facade, so this boundary must include preparation.
+    pro = FakeCpiPro([_row("20240112", "21:30", "")])
     flow = flow_factory({
         Dataset.US_CPI_RELEASE.value: lambda _: fetch_us_cpi_release(
             "2024-01-12", "2024-01-12", pro=pro
         )
     })
+    prepared = flow.prepare((
+        DataRequest(Dataset.US_CPI_RELEASE, None, "2024-01-12", "2024-01-12", None),
+    ), policy=PreparePolicy.REFRESH)
+    assert not prepared.ready and prepared.reference is None
+    item, = prepared.items
+    assert item.status is DataStatus.FAILED and item.identity is None
+    assert item.error.code == "DATA_CONTRACT_MISMATCH"
+    assert item.error.context["field"] == "YoYPercent"
 
-    result = publish_data(flow, DataRequest(Dataset.US_CPI_RELEASE, None, "2024-01-12", "2024-01-12", None))
 
-    assert result.status is expected_status
-    assert result.dataframe.empty
-    assert result.identity is None
-    assert result.error is not None
-    assert result.error.code == ("INCOMPLETE_DATA" if calendar_gap else "DATA_CONTRACT_MISMATCH")
-
-
-def test_us_cpi_release_rejects_missing_monthly_history(flow_factory, publish_data) -> None:
+def test_us_cpi_release_rejects_missing_monthly_history(flow_factory) -> None:
     pro = FakeCpiPro([
         _row("20240112", "21:30"),
         _row("20240312", "20:30"),
@@ -116,12 +126,13 @@ def test_us_cpi_release_rejects_missing_monthly_history(flow_factory, publish_da
             "2024-01-12", "2024-03-12", pro=pro
         )
     })
-    result = publish_data(flow,
-        DataRequest(Dataset.US_CPI_RELEASE, None, "2024-01-12", "2024-03-12", None)
-    )
-
-    assert result.status is DataStatus.INCOMPLETE
-    assert result.identity is None
+    prepared = flow.prepare((
+        DataRequest(Dataset.US_CPI_RELEASE, None, "2024-01-12", "2024-03-12", None),
+    ), policy=PreparePolicy.REFRESH)
+    assert not prepared.ready and prepared.reference is None
+    item, = prepared.items
+    assert item.status is DataStatus.INCOMPLETE and item.identity is None
+    assert item.error.code == "INCOMPLETE_DATA"
 
 
 def test_us_cpi_release_facade_publishes_identity_and_excludes_forecast(flow_factory, publish_data, monkeypatch) -> None:
@@ -147,16 +158,17 @@ def test_us_cpi_release_facade_publishes_identity_and_excludes_forecast(flow_fac
     assert pro.eco_calls[0]["fields"] == "date,time,country,event,value"
 
 
-def test_us_cpi_release_facade_rejects_same_day_availability_from_any_provider(flow_factory, publish_data) -> None:
+def test_us_cpi_release_facade_rejects_same_day_availability_from_any_provider(flow_factory) -> None:
     pro = FakeCpiPro([_row("20240112", "21:30")])
     frame, metadata = fetch_us_cpi_release("2024-01-12", "2024-01-12", pro=pro)
     frame.loc[0, "AvailableDate"] = frame.loc[0, "Date"]
     flow = flow_factory({Dataset.US_CPI_RELEASE.value: lambda _: (frame, metadata)})
 
-    result = publish_data(flow,
-        DataRequest(Dataset.US_CPI_RELEASE, None, "2024-01-12", "2024-01-12", None)
-    )
-
-    assert result.status is DataStatus.FAILED
-    assert result.error is not None
-    assert result.error.code == "DATA_CONTRACT_MISMATCH"
+    prepared = flow.prepare((
+        DataRequest(Dataset.US_CPI_RELEASE, None, "2024-01-12", "2024-01-12", None),
+    ), policy=PreparePolicy.REFRESH)
+    assert not prepared.ready and prepared.reference is None
+    item, = prepared.items
+    assert item.status is DataStatus.FAILED and item.identity is None
+    assert item.error is not None
+    assert item.error.code == "DATA_CONTRACT_MISMATCH"

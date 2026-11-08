@@ -257,9 +257,10 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
         if stored_schema is not None and int(stored_schema[0]) in {3, 4, 5, 6, 7, 8, 9}:
             self._initialize_lifecycle()
             return
-        self._connection.executescript(
+        self._initialize_schema_script(
             """
             PRAGMA journal_mode=WAL;
+            BEGIN IMMEDIATE;
             CREATE TABLE IF NOT EXISTS settings (
                 key TEXT PRIMARY KEY,
                 value TEXT NOT NULL
@@ -435,6 +436,7 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             );
+            COMMIT;
             """
         )
         account_schema_migrated = self._migrate_account_execution_schema()
@@ -538,8 +540,9 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
                         release_hash=account.get("release_hash"), symbol=account.get("symbol"),
                         details={"migration": True},
                     ))
-        self._connection.executescript(
+        self._initialize_schema_script(
             """
+            BEGIN IMMEDIATE;
             CREATE UNIQUE INDEX IF NOT EXISTS idx_events_event_id ON events(event_id);
             CREATE INDEX IF NOT EXISTS idx_events_occurred_at ON events(occurred_at);
             CREATE INDEX IF NOT EXISTS idx_events_category_time ON events(category, occurred_at);
@@ -548,6 +551,7 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
                 ON events(strategy_id, strategy_version, occurred_at);
             CREATE INDEX IF NOT EXISTS idx_events_decision ON events(decision_id);
             CREATE INDEX IF NOT EXISTS idx_events_order ON events(order_id);
+            COMMIT;
             """
         )
         self._connection.execute(
@@ -592,6 +596,17 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
         )
         self._connection.commit()
         self._initialize_lifecycle()
+
+    def _initialize_schema_script(self, script: str) -> None:
+        """Batch initialization DDL; failed construction must release its writer."""
+        try:
+            self._connection.executescript(script)
+        except BaseException:
+            try:
+                self._connection.rollback()
+            finally:
+                self._connection.close()
+            raise
 
     def _initialize_lifecycle(self):
         from .lifecycle_migration import migrate_lifecycle

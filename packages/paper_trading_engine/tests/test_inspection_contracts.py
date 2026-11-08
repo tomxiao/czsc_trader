@@ -7,6 +7,7 @@ import shutil
 import json
 import subprocess
 import sys
+from types import SimpleNamespace
 from uuid import uuid4
 
 import pytest
@@ -187,7 +188,12 @@ root.mkdir(parents=True)
 (root / 'trace.jsonl').write_text('{}\\n', encoding='utf-8')
 print('controller fixture started', flush=True)
 if case.startswith('slow'):
-    time.sleep(30)
+    # Remain a live writer until the real controller terminates this process.
+    deadline = time.monotonic() + 15
+    while True:
+        if time.monotonic() >= deadline:
+            raise TimeoutError('controller did not stop the ready worker')
+        time.sleep(0.01)
 else:
     (root / 'result.json').write_text(json.dumps({'status':'PASS', 'code':'OK',
         'trace':[], 'capabilities':[]}), encoding='utf-8')
@@ -201,7 +207,13 @@ else:
     monkeypatch.setattr(runner.subprocess, "Popen", start_child)
     fired = []
     completed = [0]
+    elapsed = [0.0]
     marker = workspace / "scenarios/slow/restart/trace.jsonl"
+    if stop == "timeout":
+        # Replace only this module's clock reference. Real subprocess waits and
+        # sleeps keep their clocks; elapsed time advances after prerequisite facts.
+        monkeypatch.setattr(runner, "time", SimpleNamespace(
+            monotonic=lambda: elapsed[0], sleep=runner.time.sleep))
     def cancel():
         if marker.is_file() and completed[0] >= 1 and not fired:
             fired.append(True)
@@ -213,11 +225,13 @@ else:
         return False
     def progress(value):
         completed[0] = value.completed
+        if stop == "timeout" and value.completed >= 1 and marker.is_file():
+            elapsed[0] = 3.0
         if stop == "progress" and value.completed == 1 and marker.is_file():
             raise RuntimeError("progress observer failed")
     outcome = runner.inspect_release(request, control=InspectionControl(
         max_workers=3,
-        timeout_seconds=3 if stop == "timeout" else 10,
+        timeout_seconds=3 if stop == "timeout" else None,
         cancelled=cancel if stop in {"cancel", "invalid_cancel", "cancel_exception"} else None,
         on_progress=progress))
     expected = "CANCELLED" if stop == "cancel" else "RESOURCE_LIMIT" if stop == "timeout" else "EXECUTION_ERROR"
@@ -225,6 +239,9 @@ else:
     assert outcome.scenarios[0].case_id == "fast" and outcome.scenarios[0].status is PteInspectionStatus.PASS
     assert outcome.scenarios[-1].code == expected
     assert len(processes) == 3 and all(process.poll() is not None for process in processes)
+    assert all(process.returncode != 0 for process in processes[1:])
+    if stop == "timeout":
+        assert elapsed[0] == 3.0
     assert any(item.path == "scenarios/fast/restart/result.json" for item in outcome.artifacts)
     assert any(item.path == "scenarios/slow/restart/trace.jsonl" for item in outcome.artifacts)
     summary = json.loads((workspace / "pte-summary.json").read_text(encoding="utf-8"))
@@ -267,15 +284,28 @@ def concurrent_inspection(tmp_path, monkeypatch):
         "S900-v1", "a" * 64, "b" * 64, (), (), protocol)
     monkeypatch.setattr(runner, "_inputs", lambda *args: {})
     original_popen = subprocess.Popen
-    processes, behavior = [], {"failure": "none"}
+    processes, behavior = [], {"failure": "none", "barrier_size": 1, "hold": False}
     script = """
 import json, pathlib, sys, time
-case, target, mode, capabilities = sys.argv[1:]
+case, target, mode, capabilities, gate, participants, hold = sys.argv[1:]
 root = pathlib.Path(target)
 root.mkdir(parents=True)
-start = time.monotonic()
-time.sleep(0.8 if case == 'slow' else 0.2)
-(root / 'timing.json').write_text(json.dumps([start, time.monotonic()]))
+start = time.perf_counter_ns()
+deadline = time.monotonic() + 15
+barrier = pathlib.Path(gate)
+barrier.mkdir(exist_ok=True)
+(barrier / (case + '-' + root.name + '.ready')).write_text('ready')
+# No member can finish before all first-wave workers are demonstrably running.
+# Later variants pass the already-open barrier, preserving scheduler ordering.
+while len(list(barrier.glob('*.ready'))) < int(participants):
+    if time.monotonic() >= deadline:
+        raise TimeoutError('inspection workers did not reach the ready barrier')
+    time.sleep(0.01)
+while hold == 'True':
+    if time.monotonic() >= deadline:
+        raise TimeoutError('controller did not stop the held worker')
+    time.sleep(0.01)
+(root / 'timing.json').write_text(json.dumps([start, time.perf_counter_ns()]))
 (root / 'trace.jsonl').write_text('{}\\n')
 if case == 'fast' and mode == 'exit':
     sys.exit(7)
@@ -289,7 +319,8 @@ result = '{' if case == 'fast' and mode == 'json' else json.dumps({
         if command[-3] == "fast" and behavior["failure"] == "spawn":
             raise OSError("controlled launch failure")
         process = original_popen([sys.executable, "-c", script, command[-3], command[-2], behavior["failure"],
-            json.dumps([x.value for x in PteInspectionCapability])], **kwargs)
+            json.dumps([x.value for x in PteInspectionCapability]), str(workspace / 'worker-ready'),
+            str(behavior['barrier_size']), str(behavior['hold'])], **kwargs)
         processes.append(process)
         return process
     monkeypatch.setattr(runner.subprocess, "Popen", start_child)
@@ -298,7 +329,8 @@ result = '{' if case == 'fast' and mode == 'json' else json.dumps({
 
 @pytest.mark.parametrize("workers", [1, 2, 8])
 def test_inspection_parallelism_is_bounded_ordered_and_recovery_paths_are_sequential(concurrent_inspection, workers):
-    runner, request, processes, _ = concurrent_inspection
+    runner, request, processes, behavior = concurrent_inspection
+    behavior['barrier_size'] = min(workers, 3)
     progress = []
     result = runner.inspect_release(request, control=InspectionControl(max_workers=workers, on_progress=progress.append))
     assert result.status is PteInspectionStatus.PASS
@@ -344,7 +376,8 @@ def test_cancel_before_dispatch_reports_zero_workers(concurrent_inspection):
 
 
 def test_shutdown_attempts_every_worker_before_reporting_unconfirmed_exit(concurrent_inspection, monkeypatch):
-    runner, request, processes, _ = concurrent_inspection
+    runner, request, processes, behavior = concurrent_inspection
+    behavior['hold'] = True
     original_stop = runner._stop_worker
     stopped = []
     def unconfirmed(process):

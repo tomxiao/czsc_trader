@@ -12,6 +12,8 @@ from dataflows import (
     DataCoverageRequirement, DataRequest, DataStatus, Dataset, FinancialDisclosureParameters,
     FinancialReportKind, FinancialReportType, PreparePolicy, PrepareStatus, SourceRequestError,
 )
+from dataflows.errors import DataContractError
+from dataflows.financial_disclosures import fetch_company_financial_disclosures
 
 
 _NUMBERS = {
@@ -164,24 +166,23 @@ def test_explicit_statement_vintages_are_bounded_and_never_certified(report_type
     assert result.identity.metadata["version_selection"] == "ALL_OBSERVED_ROWS_NO_VINTAGE_SELECTION"
 
 
-@pytest.mark.parametrize(("mutation", "status", "code"), [
-    ({"ts_code": "000001.SZ"}, DataStatus.FAILED, "DATA_CONTRACT_MISMATCH"),
-    ({"report_type": "6"}, DataStatus.FAILED, "DATA_CONTRACT_MISMATCH"),
-    ({"ann_date": "20250230"}, DataStatus.FAILED, "DATA_CONTRACT_MISMATCH"),
-    ({"ann_date": None, "f_ann_date": None}, DataStatus.FAILED, "DATA_CONTRACT_MISMATCH"),
-    ({"ann_date": "20250301"}, DataStatus.FAILED, "DATA_CONTRACT_MISMATCH"),
-    ({"revenue": "100.25"}, DataStatus.FAILED, "DATA_CONTRACT_MISMATCH"),
-    ({"revenue": True}, DataStatus.FAILED, "DATA_CONTRACT_MISMATCH"),
-    ({"revenue": float("inf")}, DataStatus.FAILED, "DATA_CONTRACT_MISMATCH"),
-    ({"update_flag": None}, DataStatus.FAILED, "DATA_CONTRACT_MISMATCH"),
+@pytest.mark.parametrize("mutation", [
+    {"ts_code": "000001.SZ"},
+    {"report_type": "6"},
+    {"ann_date": "20250230"},
+    {"ann_date": None, "f_ann_date": None},
+    {"ann_date": "20250301"},
+    {"revenue": "100.25"},
+    {"revenue": True},
+    {"revenue": float("inf")},
+    {"update_flag": None},
 ])
-def test_invalid_financial_source_cannot_publish(mutation, status, code, monkeypatch, flow_factory):
+def test_invalid_financial_source_is_rejected_before_calendar(mutation):
+    # Public failure states are covered below; source-row validation needs no store.
     pro = FinancialPro([_row(**mutation)])
-    _bind(monkeypatch, pro)
-    prepared = flow_factory().prepare((_request(),), policy=PreparePolicy.REFRESH)
-    assert prepared.status is PrepareStatus.FAILED and prepared.reference is None
-    item, = prepared.items
-    assert item.status is status and item.error.code == code
+    with pytest.raises(DataContractError) as raised:
+        fetch_company_financial_disclosures(_request(), pro=pro)
+    assert raised.value.code == "DATA_CONTRACT_MISMATCH"
     assert len(pro.calls) == 1 and not pro.calendar_calls
 
 

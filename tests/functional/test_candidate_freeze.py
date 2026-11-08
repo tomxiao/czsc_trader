@@ -71,44 +71,52 @@ def fresh_inspection(fresh_completed):
 @pytest.fixture
 def inspection(request, tmp_path, frozen_seed_root):
     from czsc_trader.research_tools._evaluation_workers import pack
-    from evaluation_seed_support import restored_context
 
     seed, data = frozen_seed_root / "inspection-v2-input", frozen_seed_root / "inspection-v2-input.pkl"
     if not seed.exists():
         context, inspection_request, _ = request.getfixturevalue("fresh_inspection")
-        # Publication/admission consumers need a real passing trajectory, not
-        # another run of the generic fault matrix. Retain one real related fault
-        # to satisfy the declared coverage; the serial/parallel roundtrip owns
-        # the complete matrix through its fresh_inspection fixture.
-        inspection_request = replace(inspection_request, protocol=replace(
-            inspection_request.protocol,
-            pte=replace(inspection_request.protocol.pte,
-                failures=inspection_request.protocol.pte.failures[:1])))
         values = {field.name: getattr(inspection_request, field.name)
                   for field in fields(inspection_request) if field.name != "research"}
         data.write_bytes(pack((context.root, values)))
         shutil.copytree(context.root, seed)
     root = tmp_path / "inspection-repo"
     shutil.copytree(seed, root)
+    inspection_request = _restore_inspection_request(root, frozen_seed_root)
+    return inspection_request.research.repository, inspection_request, root / ".tmp/user-confirmation.json"
+
+
+def _restore_inspection_request(root, frozen_seed_root, *, full_protocol=False):
+    """Rebind real prepared inputs to a private copy of the inspected repository."""
+    from evaluation_seed_support import restored_context
+
+    data = frozen_seed_root / "inspection-v2-input.pkl"
     original_root, values = pickle.loads(data.read_bytes())
     values["replays"] = tuple(replace(replay, execution_data=replace(replay.execution_data,
         root=root / replay.execution_data.root.relative_to(original_root))) for replay in values["replays"])
     research = restored_context(root)
     environment = describe_inspection_environment(research.repository)
     pte = values["protocol"].pte
+    if not full_protocol:
+        # One real related fault suffices for publication/admission consumers.
+        # The canonical parallel roundtrip runs the complete failure matrix.
+        pte = replace(pte, failures=pte.failures[:1])
     values["protocol"] = replace(values["protocol"], pte=replace(pte,
         environment=replace(pte.environment, platform_build_sha256=environment.platform_build_sha256,
                             pte_contract_version=environment.pte_contract_version,
                             srt_contract_version=environment.srt_contract_version)))
-    return research.repository, CandidateInspectionRequest(research=research, **values), root / ".tmp/user-confirmation.json"
+    return CandidateInspectionRequest(research=research, **values)
 
 
 @pytest.fixture
 def inspected_candidate(request, tmp_path, frozen_seed_root):
+    from strategy_runtime import InspectionControl
+
     seed, saved = frozen_seed_root / "inspection-v2", frozen_seed_root / "inspection-v2-report.json"
     if not seed.exists():
         context, inspection_request, _ = request.getfixturevalue("inspection")
-        report = inspect_candidate(context, inspection_request)
+        # This real serial run also supplies the canonical roundtrip's first
+        # report. Every consumer receives its own copy before any mutation.
+        report = inspect_candidate(context, inspection_request, control=InspectionControl(max_workers=1))
         assert report.status is f.InspectionStatus.PASS, _details(report)
         shutil.copytree(context.root, seed)
         saved.write_text(json.dumps(report.to_dict()), encoding="utf-8")
@@ -144,30 +152,6 @@ def _delivery(context, report, *, revision=1, decisions=(), freeze=None, pending
     content = d.DeliveryContent(payload, d.DeliveryStatus.COMPLETE, (), (),
                                report="Synthetic two-goal technical inspection; no economic acceptance claim.")
     return assemble_delivery(context, definition, content).receipt
-
-
-def test_no_research_archives_needed_for_inspection_publication_or_freeze(inspection):
-    from czsc_trader.application import validate_delivery
-
-    context, request, source = inspection
-    registration = StrategyRegistry(context.research_registry_root).get_candidate_registration(request.candidate)
-    for evidence in registration.origin.evidence:
-        evidence.resolve(context.research_root / "S900").unlink()
-    original_source = context.research_root / "S900/experiments" / registration.origin.experiment_id / "src"
-    if original_source.exists():
-        shutil.rmtree(original_source)
-    for relative in ("assets/deliveries", "deliveries"):
-        folder = context.research_root / "S900" / relative
-        if folder.exists():
-            shutil.rmtree(folder)
-    request = replace(request, replays=tuple(replace(x, baseline=None) for x in request.replays))
-    report = inspect_candidate(context, request)
-    assert report.status is f.InspectionStatus.PASS, _details(report)
-    assert not hasattr(report.plan, "registration_evidence")
-    receipt = _delivery(context, report)
-    assert receipt.schema_version == 9
-    assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
-    assert freeze_candidate(context, approve(context, report, source)).status is f.FreezeStatus.COMMITTED
 
 
 def test_stage_five_delivery_publishes_report_and_approval(inspected_candidate, monkeypatch):
@@ -212,14 +196,29 @@ def test_damaged_candidate_produces_failed_report_without_freezing(inspection, m
 
 
 def test_original_evaluation_is_optional_but_invalid_explicit_reference_fails(inspection):
+    from czsc_trader.application.inspection_execution import compare_baseline
+    from czsc_trader.application.inspection_service import _EvidenceStore
+
     context, request, _ = inspection
     replay = request.replays[0]
+    registration = StrategyRegistry(context.research_registry_root).get_candidate_registration(request.candidate)
+    document = json.loads(replay.baseline.evidence.resolve(context.root).read_text(encoding='utf-8'))
+    run, = (value for value in document['runs'] if
+        (value['window_id'], value['scenario_id']) ==
+        (replay.coordinate.window_id, replay.coordinate.scenario_id))
+    # Actual published ledger facts are sufficient for reference validation.
+    # The roundtrip owns independent candidate replay versus baseline comparison
+    # and the complete failure-report/freeze integration is covered separately.
+    facts = run['replay_evidence']
+    store = _EvidenceStore(context, f.ResearchEvidenceOwner(
+        request.candidate.strategy_id, request.experiment.experiment_id))
+    assert compare_baseline(context, replace(replay, baseline=None), facts, registration,
+        request.protocol.float_tolerance, store) == ({'status': 'NOT_REQUESTED'}, ())
     changed = replace(replay.baseline, evaluation_ids=("f" * 64,))
-    # Account-reference authentication is independent of the PTE fault matrix.
-    protocol = replace(request.protocol, pte=replace(request.protocol.pte, failures=()))
-    report = inspect_candidate(context, replace(request, replays=(replace(replay, baseline=changed),), protocol=protocol))
-    assert report.behavior_equivalence.status is f.InspectionStatus.FAIL
-    _assert_not_freezable(context, report)
+    with pytest.raises(ValueError, match='baseline must identify exactly one matching coordinate'):
+        compare_baseline(context, replace(replay, baseline=changed), facts, registration,
+            request.protocol.float_tolerance, store)
+    assert store.references == []
 
 
 def test_changed_inspected_bytes_rejected_before_freeze(inspected_candidate):

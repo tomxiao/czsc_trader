@@ -12,7 +12,6 @@ from execution_channels.futu.broker import (BrokerAccount, BrokerOrder, BrokerPo
 from execution_channels.futu.channel import ChannelAccountConfig, FUTU_US_SIM_CHANNEL_ID, FUTU_SIMULATE_CN_CHANNEL_ID
 from execution_channels.futu.equity_contracts import EquityAccountRules
 from execution_channels.futu.futu_execution import ChannelExecution, ChannelReconciliationError, FeeReconciliationPolicy, OrderSubmissionBatchError
-from execution_channels.futu.store import PaperStore
 from pte_support import decision
 
 
@@ -75,9 +74,7 @@ class Broker:
         pass
 
 
-@pytest.fixture
-def live_us(tmp_path):
-    root = PaperStore(tmp_path / 'db')
+def _live_us(root):
     config = ChannelAccountConfig('us-test', FUTU_US_SIM_CHANNEL_ID, 77)
     store = root.register_channel_account(config, capital=Decimal('1000'))
     execution_spec = ResearchExecutionSpec(UsEquitySpec(), BarFrequency.M30,
@@ -104,14 +101,27 @@ def live_us(tmp_path):
     store.save_account_decision('strategy', payload)
     intent = store.create_account_intent(account_id='strategy', decision_id='buy', order_sequence=0,
         symbol='MU', side='BUY', quantity=2, limit_price=100, valid_session='2026-11-05')
+    return root, store, broker, engine, intent
+
+
+@pytest.fixture
+def live_us(memory_store):
+    # Single-connection business outcomes use the real SQL execution paths.
+    return _live_us(memory_store())
+
+
+@pytest.fixture
+def durable_us(new_store, tmp_path):
+    # Recovery and atomic persistence failures retain a normal file-backed DB.
+    root = new_store(tmp_path / 'db')
     try:
-        yield root, store, broker, engine, intent
+        yield _live_us(root)
     finally:
         root.close()
 
 
-def test_us_partial_repeat_and_restart_preserve_cumulative_notional(live_us):
-    _, store, broker, engine, _ = live_us
+def test_us_partial_repeat_and_restart_preserve_cumulative_notional(durable_us):
+    _, store, broker, engine, _ = durable_us
     # The same US session is supplied in Beijing time, without a Shanghai gate.
     engine.now = lambda: datetime.fromisoformat('2026-11-05T22:30:00+08:00')
     engine.submit_pending()
@@ -144,8 +154,8 @@ def test_us_unknown_submission_recovers_without_resubmit(live_us):
     assert len(store.account_orders('strategy')) == 1 and broker.submissions == 1
 
 
-def test_fill_report_and_release_rollback_together(live_us, monkeypatch):
-    _, store, broker, engine, _ = live_us
+def test_fill_report_and_release_rollback_together(durable_us, monkeypatch):
+    _, store, broker, engine, _ = durable_us
     engine.submit_pending()
     original = store.virtual_account('strategy')
     broker.fill(2, '99.1234')
@@ -183,8 +193,8 @@ def test_us_cash_difference_without_policy_remains_blocked(live_us):
     assert store.get_setting('futu_cash_reconciliation_status') == 'UNATTRIBUTED'
 
 
-def test_us_cash_adjustment_after_fill_is_atomic_and_idempotent(live_us, monkeypatch):
-    _, store, broker, engine, _ = live_us
+def test_us_cash_adjustment_after_fill_is_atomic_and_idempotent(durable_us, monkeypatch):
+    _, store, broker, engine, _ = durable_us
     engine.submit_pending()
     broker.fill(2, '99', fee='1.99')
     broker.cash += Decimal('5.00')
@@ -245,7 +255,7 @@ def test_us_missing_interval_blocks_before_submission(live_us, monkeypatch):
 
 
 @pytest.fixture(params=['CN', 'US'])
-def live_market(request, tmp_path):
+def live_market(request, memory_store):
     """Both production channel profiles use real stores, reservations and reconciliation."""
     market = request.param
     broker = Broker()
@@ -257,7 +267,7 @@ def live_market(request, tmp_path):
     broker.start = datetime.fromisoformat('2026-11-05T09:30:00' + ('+08:00' if market == 'CN' else '-05:00'))
     broker.fill_time = (broker.start + timedelta(minutes=1)).isoformat()
     step, price = (100, 1) if market == 'CN' else (1, 100)
-    root = PaperStore(tmp_path / 'db')
+    root = memory_store()
     config = ChannelAccountConfig(broker.channel_account_id, broker.channel_id, 77)
     store = root.register_channel_account(config, capital=Decimal('1000'))
     rules = EquityAccountRules(InstrumentId(MarketId(market), AssetClass.ETF if market == 'CN' else AssetClass.STOCK, broker.symbol),

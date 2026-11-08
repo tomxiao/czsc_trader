@@ -57,8 +57,8 @@ def test_cli_rejects_changed_fee_policy_atomically(tmp_path, capsys):
         store.close()
 
 
-def test_runtime_keeps_console_on_original_cn_scope(tmp_path):
-    store = PaperStore(tmp_path/'db')
+def test_runtime_keeps_console_on_original_cn_scope(tmp_path, new_store):
+    store = new_store(tmp_path/'db')
     store.register_channel_account(ChannelAccountConfig('us-test',FUTU_US_SIM_CHANNEL_ID,123),capital=Decimal('1000'))
     args = SimpleNamespace(repo_root=tmp_path, config_root=tmp_path, data_dir=tmp_path/'data', asset='etf',
         symbol='588080.SH', opend_host='127.0.0.1',opend_port=11111,database=tmp_path/'db',runtime_identity={'mode':'DEV'})
@@ -110,8 +110,8 @@ def test_paused_accounts_are_excluded_before_loading_services():
     assert runtime.refresh()['channels'] == {}
 
 
-def test_runtime_rejects_configuration_error_instead_of_reporting_unavailable(tmp_path):
-    store = PaperStore(tmp_path/'db')
+def test_runtime_rejects_configuration_error_instead_of_reporting_unavailable(tmp_path, new_store):
+    store = new_store(tmp_path/'db')
     args = SimpleNamespace(repo_root=tmp_path, config_root=tmp_path, data_dir=tmp_path/'data', asset='etf',
         symbol='588080.SH', opend_host='127.0.0.1',opend_port=11111,database=tmp_path/'db',runtime_identity={})
     def invalid(**kwargs):
@@ -123,9 +123,9 @@ def test_runtime_rejects_configuration_error_instead_of_reporting_unavailable(tm
         store.close()
 
 
-def test_old_account_cli_cannot_pause_foreign_channel_account(tmp_path, capsys):
+def test_old_account_cli_cannot_pause_foreign_channel_account(tmp_path, capsys, new_store):
     database = tmp_path/'db'
-    store = PaperStore(database)
+    store = new_store(database)
     config = ChannelAccountConfig('us-test', FUTU_US_SIM_CHANNEL_ID, 123)
     scoped = store.register_channel_account(config, capital=Decimal('1000'))
     account = scoped.create_channel_reconciliation_account()

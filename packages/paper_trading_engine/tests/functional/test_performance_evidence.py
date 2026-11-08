@@ -66,8 +66,8 @@ def test_performance_export_rejects_invalid_period_before_reading_store(tmp_path
     assert not (tmp_path / "absent.json").exists()
 
 
-def _export_window(new_store, tmp_path, count, flat, version):
-    store = new_store(tmp_path / "forward.db")
+def _export_window(memory_store, tmp_path, count, flat, version):
+    store = memory_store()
     store.create_virtual_account(
         "forward", "Synthetic forward", version.release_id, version.release_hash, "100000",
         strategy_id=version.strategy_id, strategy_name_snapshot="Synthetic",
@@ -120,16 +120,16 @@ def _export_window(new_store, tmp_path, count, flat, version):
 
 
 @pytest.mark.parametrize("count,flat", [(3, False), (20, True)])
-def test_exported_performance_window_boundaries(new_store, tmp_path, count, flat):
+def test_exported_performance_window_boundaries(memory_store, tmp_path, count, flat):
     version = SimpleNamespace(
         release_id="S900-v1", release_hash="a" * 64, strategy_id="S900", version="v1",
     )
-    _export_window(new_store, tmp_path, count, flat, version)
+    _export_window(memory_store, tmp_path, count, flat, version)
 
 
-def test_exported_performance_registers_with_sm_and_preserves_source(new_store, pte_frozen, tmp_path):
+def test_exported_performance_registers_with_sm_and_preserves_source(memory_store, pte_frozen, tmp_path):
     context, version = pte_frozen
-    result, output = _export_window(new_store, tmp_path, 20, False, version)
+    result, output = _export_window(memory_store, tmp_path, 20, False, version)
     evidence = result["evidence"]
 
     registry = StrategyRegistry(context.strategy_root)
@@ -154,7 +154,7 @@ def test_exported_performance_registers_with_sm_and_preserves_source(new_store, 
             PerformanceEvidence.from_dict({**evidence, "calmar_ratio": bad})
 
 
-def test_ft_pte07_performance_evidence_is_self_contained_and_release_bound(new_store, tmp_path):
+def test_ft_pte07_performance_evidence_is_self_contained_and_release_bound(memory_store, tmp_path):
     class CaptureStore:
         def __init__(self):
             self.events = []
@@ -186,7 +186,7 @@ def test_ft_pte07_performance_evidence_is_self_contained_and_release_bound(new_s
         capture.events[0].event_type = "CHANGED"
     assert isinstance(capture.events[0], AuditEvent)
 
-    store = new_store(tmp_path / "runtime.db")
+    store = memory_store()
     store.create_virtual_account(
         "s001-forward", "S001-v1模拟账户", "baseline", "a" * 64, 100_000,
         strategy_id="S001", strategy_name_snapshot="综合基线策略", strategy_version="v1",

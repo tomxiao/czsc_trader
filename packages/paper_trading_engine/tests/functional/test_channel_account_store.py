@@ -1,6 +1,7 @@
 """Channel-account partitions share storage, never balances or write authority."""
 from datetime import datetime, timezone
 from decimal import Decimal
+import sqlite3
 
 import pytest
 
@@ -14,7 +15,7 @@ from execution_channels.futu.channel import (
 from execution_channels.futu.channel_accounts import DEFAULT_CHANNEL_ACCOUNT
 from execution_channels.futu.equity_contracts import EquityAccountRules
 from execution_channels.futu.lifecycle import AccountHealth
-from execution_channels.futu.store import PaperStore
+from execution_channels.futu.store import PaperStore, RUNTIME_DATABASE_SCHEMA_VERSION
 
 
 def _config(name="us-primary", *, broker=42, channel=FUTU_US_SIM_CHANNEL_ID):
@@ -35,23 +36,87 @@ def _account(store, account_id, *, us=False, capital="1000"):
         equity_rules=_rules() if us else None)
 
 
-@pytest.fixture
-def partitions(tmp_path):
-    root = PaperStore(tmp_path / "partition.db")
+def _partition_accounts(root):
     root.register_channel_account(_config(DEFAULT_CHANNEL_ACCOUNT, broker=7,
         channel=FUTU_SIMULATE_CN_CHANNEL_ID), capital=Decimal("1000000"))
     us = root.register_channel_account(_config(), capital=Decimal("20000"))
     cn = root.scope(DEFAULT_CHANNEL_ACCOUNT)
     _account(cn, "cn-strategy")
     _account(us, "us-strategy", us=True, capital="2000")
+    return root, cn, us
+
+
+@pytest.mark.parametrize('denied_name,action,rolled_back_name', [
+    ('orders', sqlite3.SQLITE_CREATE_TABLE, 'events'),
+    ('idx_events_strategy_time', sqlite3.SQLITE_CREATE_INDEX, 'idx_events_event_id'),
+])
+def test_initial_schema_failure_releases_writer_and_retries_without_partial_ddl(
+    tmp_path, monkeypatch, denied_name, action, rolled_back_name,
+):
+    """A real SQLite authorization failure must roll back its initialization block."""
+    from execution_channels.futu import store as module
+
+    path = tmp_path / 'initialization.db'
+    original_connect = sqlite3.connect
+    failed_connections = []
+
+    def connect(*args, **kwargs):
+        connection = original_connect(*args, **kwargs)
+        failed_connections.append(connection)
+        connection.set_authorizer(lambda operation, name, *_:
+            sqlite3.SQLITE_DENY if operation == action and name == denied_name else sqlite3.SQLITE_OK)
+        return connection
+
+    with monkeypatch.context() as patch:
+        patch.setattr(module.sqlite3, 'connect', connect)
+        with pytest.raises(sqlite3.DatabaseError, match='not authorized'):
+            PaperStore(path)
+    assert len(failed_connections) == 1
+    with pytest.raises(sqlite3.ProgrammingError, match='closed'):
+        failed_connections[0].execute('SELECT 1')
+    probe = original_connect(path, timeout=0)
     try:
-        yield root, cn, us
+        assert probe.execute('SELECT name FROM sqlite_master WHERE name=?',
+                             (rolled_back_name,)).fetchone() is None
+        probe.execute('BEGIN IMMEDIATE')  # No abandoned write lock remains.
+        probe.rollback()
+    finally:
+        probe.close()
+
+    root = PaperStore(path)
+    try:
+        assert root.get_setting('runtime_database_schema_version') == str(RUNTIME_DATABASE_SCHEMA_VERSION)
+        assert root._connection.execute("PRAGMA quick_check").fetchone()[0] == 'ok'
+        assert root._connection.execute("SELECT name FROM sqlite_master WHERE name='idx_events_order'").fetchone()
+        _, cn, us = _partition_accounts(root)
+        accounts = {scope.channel_account_id: scope.virtual_accounts() for scope in (cn, us)}
+    finally:
+        root.close()
+    reopened = PaperStore(path)
+    try:
+        assert {key: reopened.scope(key).virtual_accounts() for key in accounts} == accounts
+    finally:
+        reopened.close()
+
+
+@pytest.fixture
+def partitions(memory_store):
+    # Ownership, currency and query boundaries need real SQL but no disk reopen.
+    return _partition_accounts(memory_store())
+
+
+@pytest.fixture
+def disk_partitions(tmp_path, new_store):
+    # Persistence and atomic rollback cases retain the ordinary file-backed DB.
+    root = new_store(tmp_path / "partition.db")
+    try:
+        yield _partition_accounts(root)
     finally:
         root.close()
 
 
-def test_partition_balances_settings_snapshots_and_reopen(partitions):
-    root, cn, us = partitions
+def test_partition_balances_settings_snapshots_and_reopen(disk_partitions):
+    root, cn, us = disk_partitions
     assert {a["account_id"] for a in root.virtual_accounts()} == {"cn-strategy", "us-strategy"}
     assert [a["account_id"] for a in cn.strategy_virtual_accounts()] == ["cn-strategy"]
     assert [a["account_id"] for a in us.strategy_virtual_accounts()] == ["us-strategy"]
@@ -110,8 +175,8 @@ def test_default_scope_cannot_address_another_scopes_settings(partitions):
     assert us.get_setting("isolation-marker") == "original"
 
 
-def test_cross_scope_registration_has_no_partial_write_in_outer_transaction(partitions):
-    root, cn, _ = partitions
+def test_cross_scope_registration_has_no_partial_write_in_outer_transaction(disk_partitions):
+    root, cn, _ = disk_partitions
     with root.atomic_decision_update():
         with pytest.raises(ValueError, match="cross channel|scope|another channel"):
             cn.register_channel_account(_config("foreign-new", broker=99), capital=Decimal("1000"))
@@ -164,8 +229,8 @@ def test_same_fee_reference_is_independent_and_idempotent_per_scope(partitions):
     assert not cn.account_invariant_violations() and not us.account_invariant_violations()
 
 
-def test_shared_connection_scope_writes_roll_back_together(partitions):
-    root, cn, us = partitions
+def test_shared_connection_scope_writes_roll_back_together(disk_partitions):
+    root, cn, us = disk_partitions
     class Rollback(Exception):
         pass
     with pytest.raises(Rollback):
@@ -219,10 +284,10 @@ def test_reconciliation_account_rejects_explicit_wrong_channel(partitions):
         us.channel_reconciliation_account(FUTU_SIMULATE_CN_CHANNEL_ID)
 
 
-def test_multiple_same_day_decisions_survive_reopen(tmp_path):
+def test_multiple_same_day_decisions_survive_reopen(tmp_path, new_store):
     from pte_support import adopt_test_decision
 
-    root = PaperStore(tmp_path / "multiple-decisions.db")
+    root = new_store(tmp_path / "multiple-decisions.db")
     _account(root, "legacy")
     for identity in ("first", "second"):
         adopt_test_decision(root, account_id="legacy", decision_id=identity,

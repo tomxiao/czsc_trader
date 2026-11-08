@@ -18,6 +18,8 @@ ROOT = Path(__file__).resolve().parents[1]
 TEST_ROOTS = ("tests",) + tuple(f"packages/{name}/tests" for name in (
     "dataflows", "strategy_manager", "strategy_evaluator", "strategy_runtime",
     "strategy_chart", "execution_channels", "paper_trading_engine"))
+INSPECTION_SEED_FILES = frozenset(f"tests/functional/test_candidate_{name}.py" for name in (
+    "freeze", "contract_admission", "inspection_roundtrip", "inspection_failure"))
 
 
 def discover_files(root=ROOT):
@@ -30,8 +32,10 @@ def measured_costs(files, history):
     """Use the latest available per-file result; new files still enter the plan."""
     keys = {name[:-3].replace("/", "."): name for name in files}
     costs = {}
-    for run in sorted(history.glob("run-*"), key=lambda p: p.stat().st_mtime, reverse=True)[:3]:
+    valid_runs = 0
+    for run in sorted(history.glob("run-*"), key=lambda p: p.stat().st_mtime, reverse=True):
         totals = Counter()
+        invalid = set()
         for report in run.glob("*.xml"):
             if report.stem.startswith("repair"):
                 continue
@@ -42,25 +46,43 @@ def measured_costs(files, history):
                     while key and key not in keys:
                         key = key.rpartition(".")[0]
                     if key:
-                        totals[keys[key]] += float(case.get("time", "0"))
+                        name = keys[key]
+                        totals[name] += float(case.get("time", "0"))
+                        if any(case.find(tag) is not None for tag in ('failure', 'error', 'skipped')):
+                            invalid.add(name)
             except (ET.ParseError, ValueError, OSError):
                 continue  # Old/incomplete telemetry is not a test result or admission gate.
+        for name in invalid:
+            totals.pop(name, None)
+        if not totals:
+            continue  # Empty/interrupted runs must not evict usable scheduling data.
+        valid_runs += 1
         for name, seconds in totals.items():
             costs.setdefault(name, max(seconds, .1))
-        if len(costs) == len(files):
+        if len(costs) == len(files) or valid_runs == 3:
             break
     return costs
 
 
 def partition(files, costs, workers):
-    lanes = [[] for _ in range(min(workers, len(files)))]
+    # These consumers share one real inspected seed within a pytest process.
+    # Group only discovered files; this is affinity, never a test allowlist.
+    inspection = tuple(sorted(name for name in files if name in INSPECTION_SEED_FILES))
+    jobs = [(name,) for name in files if name not in INSPECTION_SEED_FILES]
+    if inspection:
+        jobs.append(inspection)
+    lanes = [[] for _ in range(min(workers, len(jobs)))]
     loads = [0.] * len(lanes)
     # Whole files preserve module fixtures. New files get a nonzero initial cost.
-    for name in sorted(files, key=lambda p: (-costs.get(p, 5.), p)):
+    for job in sorted(jobs, key=lambda group: (-sum(costs.get(name, 5.) for name in group), group)):
         index = min(range(len(lanes)), key=lambda i: loads[i])
-        lanes[index].append(name)
-        loads[index] += costs.get(name, 5.)
-    return lanes
+        lanes[index].extend(job)
+        loads[index] += sum(costs.get(name, 5.) for name in job)
+    # Keep each directory subtree contiguous during pytest collection. In
+    # pytest 9.1, explicit parent-directory files can rebuild child Directory
+    # collectors; revisiting that child then loses its conftest fixture scope.
+    # Ordering does not change the cost-balanced lane membership.
+    return [sorted(lane) for lane in lanes]
 
 
 def check_coverage(run, names):
@@ -97,9 +119,12 @@ def run_all(workers):
     env = os.environ.copy()
     env.update({name: "1" for name in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS",
                                       "MKL_NUM_THREADS", "NUMEXPR_NUM_THREADS")})
-    cache = ROOT / '.tmp/pycache' / f'regression-{run_id}'
+    # Keep ordinary Python source-validated bytecode between runs. Per-test
+    # workspaces remain unique; their disposable bytecode is removed below.
+    cache = ROOT / '.tmp/pycache' / 'regression'
+    cache_reused = cache.exists()
     env.pop('PYTHONDONTWRITEBYTECODE', None)
-    env.update(TEMP=str(ROOT / ".tmp"), TMP=str(ROOT / ".tmp"),
+    env.update(TEMP=str(ROOT / ".tmp"), TMP=str(ROOT / ".tmp"), PYTHONUNBUFFERED="1",
                PYTHONPYCACHEPREFIX=str(cache), CZSC_TEST_BYTECODE_ROOT=str(cache))
     preflight = subprocess.run([sys.executable, str(ROOT / "scripts/test_preflight.py"), str(run)],
                               cwd=ROOT, env=env, capture_output=True, text=True)
@@ -159,13 +184,17 @@ def run_all(workers):
         with (run / f"{name}.log").open("w", encoding="utf-8") as log:
             result = subprocess.run(command, cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT)
         results.append(dict(lane=name, exit_code=result.returncode, seconds=round(time.monotonic()-started, 2)))
-    shutil.rmtree(cache)
+    temporary_bytecode = cache / ROOT.relative_to(ROOT.anchor) / '.tmp'
+    assert temporary_bytecode.resolve().is_relative_to(cache.resolve())
+    if temporary_bytecode.exists():
+        shutil.rmtree(temporary_bytecode)
     seconds = round(time.monotonic()-began, 2)
     passed = (not coverage_error and not coverage.get("failures") and not coverage.get('skipped')
               and all(r["exit_code"] == 0 for r in results))
     summary = dict(seconds=seconds, max_parallel=workers, files=len(files), coverage=coverage,
                    environment=dict(host=platform.node(), python=sys.version, logical_cpus=os.cpu_count(),
-                                    bytecode_cache='fresh run-local cache shared by child processes',
+                                    bytecode_cache='persistent Python source-validated cache; temporary sources pruned',
+                                    bytecode_cache_reused=cache_reused,
                                     native_threads=1),
                    coverage_error=coverage_error, results=results, functional_pass=passed, budget_pass=seconds <= 180)
     (run / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
@@ -179,6 +208,6 @@ def run_all(workers):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--max-parallel", type=int, choices=range(1, 13), default=8)
+    parser.add_argument("--max-parallel", type=int, choices=range(1, 13), default=2)
     args = parser.parse_args()
     raise SystemExit(run_all(args.max_parallel))

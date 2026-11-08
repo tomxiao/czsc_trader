@@ -15,6 +15,7 @@ from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine.equity_advice import EquityAdviceClient
 from paper_trading_engine.ec_boundary import execution_permit
 from test_v4_pte import native_account, prepared_at, replace_strategy
+from paper_store_support import new_paper_store
 
 
 @pytest.mark.parametrize('market',[MarketId.CN,MarketId.US])
@@ -142,7 +143,7 @@ def test_no_change_remains_completed_without_orders(tmp_path, market):
 def test_local_termination_requires_typed_unsubmitted_evidence(tmp_path, bound, status, reason, error):
     # This boundary owns intent termination, not data preparation or strategy
     # computation. The dual-market cases above retain that real integration.
-    store = PaperStore(tmp_path / 'termination.db')
+    store = new_paper_store(tmp_path / 'termination.db')
     try:
         store.set_setting('futu_capital_pool', '1000')
         store.create_virtual_account('native', 'termination', 'S999-v1', 'a' * 64, 1000,

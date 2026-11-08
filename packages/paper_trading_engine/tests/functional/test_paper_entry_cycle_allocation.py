@@ -153,8 +153,8 @@ def test_entry_cycle_adoption_rejects_stale_state_and_budget_tampering_atomicall
     store.close()
 
 
-def test_signal_allocation_cannot_adopt_a_legacy_cycle(new_store, tmp_path):
-    store = new_store(tmp_path / "legacy.db")
+def test_signal_allocation_cannot_adopt_a_legacy_cycle(memory_store):
+    store = memory_store()
     _account(store)
     adopt_test_decision(store, account_id="cycle", decision_id="legacy", valid_session="2026-09-02",
                         orders=[{"side": "BUY", "quantity": 1000, "order_type": "LIMIT", "limit_price": 4}])
@@ -185,8 +185,8 @@ def test_v5_database_adds_empty_cycle_state_without_reinterpreting_legacy_target
 
 
 @pytest.mark.parametrize("mutation", ["active_sell", "forced_exit", "foreign_cycle"])
-def test_entry_cycle_adoption_rejects_invalid_direction_phase_and_owner(new_store, tmp_path, mutation):
-    store = new_store(tmp_path / "semantic.db")
+def test_entry_cycle_adoption_rejects_invalid_direction_phase_and_owner(memory_store, mutation):
+    store = memory_store()
     _account(store)
     opening = _plan(store, "open", date(2026, 9, 2))
     if mutation == "foreign_cycle":

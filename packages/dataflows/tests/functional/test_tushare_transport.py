@@ -28,17 +28,35 @@ _HTTP_FAILURES = [
 ]
 
 
-# One native route carries the complete HTTP-code matrix. Every other native
-# route still exercises server failure, throttling and authorization failure;
-# 502/504 and 403 reuse the same transport branch as 503 and 401 respectively.
-# This preserves route-specific exception propagation without a Cartesian copy
-# of the common transport classifier. Every retained input remains a pytest node.
+@pytest.mark.parametrize("http_status,expected_status,code,retryable", _HTTP_FAILURES)
+def test_http_classifier_preserves_typed_failure_without_retry(
+    monkeypatch, http_status, expected_status, code, retryable,
+):
+    monkeypatch.setenv("TUSHARE_TOKEN", "private-test-token")
+    calls = []
+
+    def post(url, **kwargs):
+        calls.append((url, kwargs))
+        return response(http_status)
+
+    monkeypatch.setattr(tushare_common.requests, "post", post)
+    error_type = SourceNotReadyError if expected_status is DataStatus.WAITING_SOURCE else SourceRequestError
+    with pytest.raises(error_type) as raised:
+        tushare_common.get_tushare_pro().daily(ts_code="600722.SH")
+    error = raised.value
+    assert (error.code, error.retryable) == (code, retryable)
+    assert error.context == {"vendor": "tushare", "api": "daily", "http_status": http_status}
+    assert "private-test-token" not in str(error)
+    assert len(calls) == 1
+
+
+# The transport owns the code matrix; these cases retain each native route and
+# both public failure states without repeating classification through storage.
 @pytest.mark.parametrize("dataset,http_status,expected_status,code,retryable", [
-    (dataset, *failure)
-    for dataset in (Dataset.STOCK_UNADJUSTED_DAILY, Dataset.STOCK_OHLCV,
-                    Dataset.SECURITY_PRICE_LIMITS, Dataset.SECURITY_TRADING_STATUS)
-    for failure in _HTTP_FAILURES
-    if dataset is Dataset.STOCK_UNADJUSTED_DAILY or failure[0] in (503, 429, 401)
+    (Dataset.STOCK_UNADJUSTED_DAILY, *_HTTP_FAILURES[1]),
+    (Dataset.STOCK_OHLCV, *_HTTP_FAILURES[4]),
+    (Dataset.SECURITY_PRICE_LIMITS, *_HTTP_FAILURES[3]),
+    (Dataset.SECURITY_TRADING_STATUS, *_HTTP_FAILURES[1]),
 ])
 def test_http_failures_cross_native_preparation_without_empty_rows_or_retries(
     flow_factory, monkeypatch, http_status, expected_status, code, retryable, dataset,
@@ -56,6 +74,7 @@ def test_http_failures_cross_native_preparation_without_empty_rows_or_retries(
     assert not prepared.ready and prepared.reference is None
     item = prepared.items[0]
     assert item.status is expected_status
+    assert item.identity is None
     assert (item.error.code, item.error.retryable) == (code, retryable)
     assert item.error.context["http_status"] == http_status
     assert item.error.context["api"] == ("stk_limit" if dataset is Dataset.SECURITY_PRICE_LIMITS else "daily")

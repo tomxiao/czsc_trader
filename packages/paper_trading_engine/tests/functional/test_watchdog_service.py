@@ -564,8 +564,8 @@ def test_deployment_binding_failure_never_activates_incompatible_release(
     assert verified == (["v0.4.2", "v0.4.1"] if reject_rollback else ["v0.4.2"])
 
 
-def test_ft_pte06_business_health_exposes_stalled_scheduler(new_store, tmp_path):
-    store = new_store(tmp_path / "health.db")
+def test_ft_pte06_business_health_exposes_stalled_scheduler(memory_store):
+    store = memory_store()
     store.set_setting("scheduler_heartbeat_at", "2026-09-01T00:00:00+00:00")
 
     class Channel:
@@ -595,8 +595,8 @@ def test_ft_pte06_business_health_exposes_stalled_scheduler(new_store, tmp_path)
     store.close()
 
 
-def test_business_health_treats_missing_heartbeat_and_channel_alert_as_degraded(new_store, tmp_path):
-    store = new_store(tmp_path / "missing-heartbeat.db")
+def test_business_health_treats_missing_heartbeat_and_channel_alert_as_degraded(memory_store):
+    store = memory_store()
 
     class Channel:
         @staticmethod

@@ -17,6 +17,10 @@ from czsc_trader.application.ec_boundary import execution_instrument
 from test_equity_pte import RecordedChannel
 from test_v4_inspection_roundtrip import native_fixture
 from test_formal_v4_runtime import raw_binding
+from paper_store_support import new_paper_store
+
+
+_NATIVE_ACCOUNT_SEEDS = {}
 
 
 def native_account(tmp_path, market, computation=StrategyComputation.STATEFUL_STEP, *, etf=False, intraday=False):
@@ -27,14 +31,32 @@ def native_account(tmp_path, market, computation=StrategyComputation.STATEFUL_ST
     isolated = workspace / 'repository'
     isolated.mkdir(parents=True)
     permit = InspectionRuntimePermit('native-pte', 'S999-v1', 'a'*64, 'b'*64, 'c'*64, isolated, workspace)
-    store = PaperStore(workspace / 'paper.db', inspection_permit=execution_permit(permit))
     channel_id = equity_channel_id(execution_instrument(request.candidate.instrument))
-    store.create_virtual_account('native', 'native', 'v1', 'a'*64, request.initial_cash,
-        symbol=request.candidate.instrument.symbol, asset_type=request.candidate.instrument.asset_class.value.lower(),
-        strategy_id='S999', strategy_name_snapshot='native', strategy_version='v1', release_hash='a'*64,
-        qualification_snapshot='INSPECTION', selection_data_cutoff='2026-10-12', channel_id=channel_id,
-        equity_rules=execution_rules(request.candidate.instrument, context.execution_spec))
-    store.set_virtual_paused('native', False)
+    rules = execution_rules(request.candidate.instrument, context.execution_spec)
+    key = (market, computation, etf, intraday, request.initial_cash,
+           json.dumps(rules.to_dict(), sort_keys=True))
+    path = workspace / 'paper.db'
+    if key not in _NATIVE_ACCOUNT_SEEDS:
+        # Build a real empty-position account once per exact input contract.
+        # Checkpoint before retaining immutable bytes; consumers never share a
+        # live connection, WAL, account rows or broker state.
+        initial = new_paper_store(path, inspection_permit=execution_permit(permit))
+        try:
+            initial.create_virtual_account('native', 'native', 'v1', 'a'*64, request.initial_cash,
+                symbol=request.candidate.instrument.symbol,
+                asset_type=request.candidate.instrument.asset_class.value.lower(),
+                strategy_id='S999', strategy_name_snapshot='native', strategy_version='v1', release_hash='a'*64,
+                qualification_snapshot='INSPECTION', selection_data_cutoff='2026-10-12', channel_id=channel_id,
+                equity_rules=rules)
+            initial.set_virtual_paused('native', False)
+            assert initial._connection.execute('PRAGMA wal_checkpoint(TRUNCATE)').fetchone()[0] == 0
+        finally:
+            initial.close()
+        _NATIVE_ACCOUNT_SEEDS[key] = path.read_bytes()
+    else:
+        path.write_bytes(_NATIVE_ACCOUNT_SEEDS[key])
+    # Normal reopening validates this consumer's path/permit and stored identity.
+    store = PaperStore(path, inspection_permit=execution_permit(permit))
     channel = RecordedChannel()
     channel.channel_id = channel_id
     return context, request, products, store, permit, channel
@@ -171,12 +193,13 @@ def test_native_budget_is_owned_by_ec_until_confirmed_flat_exit(tmp_path, market
     store.close()
 
 
-@pytest.mark.parametrize('field', ['orders', 'legs', 'cycle_before', 'capital_mode'])
-def test_strategy_cannot_inject_execution_fields(tmp_path, field):
+def test_strategy_cannot_inject_execution_fields(tmp_path):
+    # The AccountDecision contract test covers every forbidden field. One real
+    # engine rejection owns the independent account/decision atomicity risk.
     context, request, products, store, _, _ = native_account(tmp_path, MarketId.CN)
     request = replace_strategy(request, "from strategy_runtime import AccountStepResult,AccountDecision,StateRecord\n"
         "def step(ctx,state):\n"
-        f"    return AccountStepResult(AccountDecision.from_facts(1,'invalid',facts={{'fixture':1}},next_watch='next',{field}=None),cycle_values=StateRecord())\n")
+        "    return AccountStepResult(AccountDecision.from_facts(1,'invalid',facts={'fixture':1},next_watch='next',orders=None),cycle_values=StateRecord())\n")
     prepared = prepared_at(context, request, products)
     before = store.virtual_account('native')
     with pytest.raises(TypeError, match='unexpected keyword'):

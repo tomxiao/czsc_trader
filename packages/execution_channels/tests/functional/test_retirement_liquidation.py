@@ -1,8 +1,10 @@
 """Retirement uses confirmed broker fills and the ordinary durable account ledger."""
 from dataclasses import replace
+from contextlib import closing
 from datetime import datetime, timedelta
 from decimal import Decimal
 import json
+from pathlib import Path
 import shutil
 import sqlite3
 from types import SimpleNamespace
@@ -136,7 +138,7 @@ def _build_holding_seed(path, config, symbol, quantity, price, at, interval, *, 
 def make_holding(tmp_path, holding_seeds):
     roots = []
 
-    def create(market, *, legacy=False, v4=False, settled_only=False):
+    def create(market, *, legacy=False, v4=False, settled_only=False, persistent=False):
         cn = market == 'CN'
         quantity, price = (200, Decimal('1')) if cn else (2, Decimal('100'))
         symbol = '510500.SH' if cn else 'MU'
@@ -153,8 +155,15 @@ def make_holding(tmp_path, holding_seeds):
                                 legacy=legacy, v4=v4, settled_only=settled_only)
             seeds[key] = path, path.read_bytes()
         database = tmp_path / f'{market}-{len(roots)}.db'
-        shutil.copyfile(seeds[key][0], database)
-        root = PaperStore(database)
+        if persistent:
+            shutil.copyfile(seeds[key][0], database)
+            root = PaperStore(database)
+        else:
+            # Business transitions use the real SQL ledger. Persistence is
+            # exercised explicitly by the restart and schema-migration cases.
+            root = PaperStore(Path(':memory:'))
+            with closing(sqlite3.connect(seeds[key][0])) as source:
+                source.backup(root._connection)
         roots.append(root)
         store = root.scope(config.channel_account_id)
         broker = RetirementBroker(config, symbol, quantity, price, clock)
@@ -166,6 +175,7 @@ def make_holding(tmp_path, holding_seeds):
             request=AccountRetirementRequest('strategy', 'b' * 64, 'operator', 'retire strategy'))
 
         def restart():
+            assert persistent, 'restart coverage requires a disk-backed fixture'
             case.root.close()
             reopened = PaperStore(database)
             roots.append(reopened)
@@ -275,7 +285,7 @@ def test_unsellable_position_waits_without_false_success_or_order(make_holding, 
 
 @pytest.mark.parametrize('market', ['CN', 'US'])
 def test_unknown_submit_is_recovered_after_restart_without_duplicate_sale(make_holding, market):
-    case = make_holding(market)
+    case = make_holding(market, persistent=True)
     case.engine.retire_account(case.request)
     case.store.set_retirement_session('strategy', RetirementSession(case.interval, FEE))
     case.broker.lose_response = True
@@ -438,7 +448,7 @@ def test_channel_read_failure_preserves_request_and_capital(make_holding, monkey
 
 
 def test_schema8_upgrade_preserves_rows_indexes_triggers_and_retirement_after_restart(make_holding):
-    case = make_holding('CN', legacy=True)
+    case = make_holding('CN', legacy=True, persistent=True)
     case.root.close()
     with sqlite3.connect(case.database) as connection:
         # Reconstruct the schema-8 CHECK constraint while retaining populated

@@ -24,8 +24,7 @@ def _at(value):
     return datetime.fromisoformat(value + "+08:00")
 
 
-def _submitted(new_store, path, *, signal_cash=False):
-    store = new_store(path)
+def _submitted(store, *, signal_cash=False):
     store.create_virtual_account(
         ACCOUNT, "零成交终结测试", "legacy", "a" * 64, 100_000,
         strategy_id="S001", strategy_name_snapshot="零成交终结测试",
@@ -88,7 +87,7 @@ def _cancel_report(broker, *, status="CANCELLED_ALL", quantity=0, error=""):
 
 def test_day_order_normal_unfilled_survives_restart_and_retries_only_next_session(new_store, tmp_path):
     path = tmp_path / "normal-day.db"
-    store, broker, clock, execution, advice, engine, intent = _submitted(new_store, path)
+    store, broker, clock, execution, advice, engine, intent = _submitted(new_store(path))
     decision_id = intent["decision_id"]
     clock[0] = _at("2026-09-02T14:59:59")
     execution.refresh_orders()
@@ -151,8 +150,8 @@ def test_day_order_normal_unfilled_survives_restart_and_retries_only_next_sessio
 
 
 @pytest.mark.parametrize("failure", ["no_source", "manual", "channel_error"])
-def test_zero_fill_exception_does_not_relax_other_terminal_safety(new_store, tmp_path, failure):
-    store, broker, clock, execution, _, _, intent = _submitted(new_store, tmp_path / "unsafe.db")
+def test_zero_fill_exception_does_not_relax_other_terminal_safety(memory_store, failure):
+    store, broker, clock, execution, _, _, intent = _submitted(memory_store())
     if failure != "no_source":
         _day_end(execution, clock)
     else:
@@ -176,7 +175,7 @@ def test_zero_fill_exception_does_not_relax_other_terminal_safety(new_store, tmp
 
 def test_normal_unfilled_keeps_entry_cycle_budget_and_target(new_store, tmp_path):
     path = tmp_path / "cycle.db"
-    store, broker, clock, execution, advice, _, _ = _submitted(new_store, path, signal_cash=True)
+    store, broker, clock, execution, advice, _, _ = _submitted(new_store(path), signal_cash=True)
     before = EntryCycleState.from_dict(json.loads(store.virtual_account(ACCOUNT)["entry_cycle_json"]))
     _day_end(execution, clock)
     _cancel_report(broker)
@@ -201,8 +200,8 @@ def test_normal_unfilled_keeps_entry_cycle_budget_and_target(new_store, tmp_path
     store.close()
 
 
-def test_uncertain_deadline_cancel_blocks_until_terminal_evidence(new_store, tmp_path, monkeypatch):
-    store, broker, clock, execution, _, _, intent = _submitted(new_store, tmp_path / "unknown.db")
+def test_uncertain_deadline_cancel_blocks_until_terminal_evidence(memory_store, monkeypatch):
+    store, broker, clock, execution, _, _, intent = _submitted(memory_store())
     frozen = store.virtual_account(ACCOUNT)["frozen_cash"]
 
     def lost_reply(order_id):
@@ -227,8 +226,8 @@ def test_uncertain_deadline_cancel_blocks_until_terminal_evidence(new_store, tmp
     store.close()
 
 
-def test_normal_unfilled_preserves_unrelated_block_and_pause(new_store, tmp_path):
-    store, broker, clock, execution, _, _, intent = _submitted(new_store, tmp_path / "other-block.db")
+def test_normal_unfilled_preserves_unrelated_block_and_pause(memory_store):
+    store, broker, clock, execution, _, _, intent = _submitted(memory_store())
     _day_end(execution, clock)
     store.set_virtual_health(ACCOUNT, AccountHealth.BLOCKED, "unrelated account review")
     store.set_virtual_paused(ACCOUNT, True)
@@ -243,8 +242,8 @@ def test_normal_unfilled_preserves_unrelated_block_and_pause(new_store, tmp_path
 
 
 @pytest.mark.parametrize("report_time", ["2026-09-03T09:36:05", "2026-09-04T09:30:05"])
-def test_normal_unfilled_entry_skips_dependent_exit_even_after_its_window(new_store, tmp_path, report_time):
-    store, broker, clock, execution, advice, engine, _ = _submitted(new_store, tmp_path / "dependency.db")
+def test_normal_unfilled_entry_skips_dependent_exit_even_after_its_window(memory_store, report_time):
+    store, broker, clock, execution, advice, engine, _ = _submitted(memory_store())
     # Seed a real core holding through the ordinary submitted-order fill path.
     first = replace(broker.value.orders[0], status="FILLED_ALL", cumulative_filled_quantity=1000, average_fill_price=1.60)
     broker.value = broker_snapshot(orders=(first,), quantity=1000)

@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [ValidateRange(1, 12)]
-    [int]$MaxParallel = 8
+    [int]$MaxParallel = 2
 )
 
 Set-StrictMode -Version Latest

@@ -116,23 +116,40 @@ def test_real_frozen_preparation_authenticates_new_identity_and_plain_import(pre
         assert metadata["market_intent_history"] == "CANONICAL_REPLAY"
 
 
-def _implementations(preparations, reference, monkeypatch):
+@pytest.fixture(scope="module")
+def authenticated_runtimes(preparations):
+    """Authenticate unchanged packages once; numerical cases still get fresh kernels."""
     context, results = preparations
-    strategy_id, version = reference.rsplit("-", 1)
-    stored = StrategyRegistry(context.strategy_root).get_version(strategy_id, version)
-    _, binding, source = validate_release_package(context, reference)
-    release = prospective_release(stored)
-    StrategyRuntime().describe(release, source_root=source, runtime_binding=RuntimeBinding.from_dict(binding))
-    monkeypatch.syspath_prepend(str(context.root.parent))
-    monkeypatch.syspath_prepend(str(results[reference].metadata_path.parent.parent))
-    monkeypatch.setattr("sys.dont_write_bytecode", True)
-    module_suffix = release.payload["runtime"]["module"].removeprefix("strategy_runtime.")
-    old_module = importlib.import_module(context.root.name + "." + ".".join(source.relative_to(context.root).parts) + "." + module_suffix)
-    new_module = importlib.import_module(results[reference].metadata_path.parent.name + ".strategy_runtime." + module_suffix)
-    factory_name = release.payload["runtime"]["qualname"]
-    old = getattr(old_module, factory_name).from_parameters(ParameterSet(release.payload["parameters"]))
-    new = getattr(new_module, factory_name).from_parameters(ParameterSet(results[reference].candidate.payload["parameters"]))
-    return old, new
+    runtime = StrategyRuntime()
+    authenticated = {}
+    with pytest.MonkeyPatch.context() as imports:
+        imports.syspath_prepend(str(context.root.parent))
+        imports.setattr("sys.dont_write_bytecode", True)
+        for reference in REFERENCES:
+            strategy_id, version = reference.rsplit("-", 1)
+            stored = StrategyRegistry(context.strategy_root).get_version(strategy_id, version)
+            _, binding, source = validate_release_package(context, reference)
+            release = prospective_release(stored)
+            definitions = (
+                runtime.describe(release, source_root=source, runtime_binding=RuntimeBinding.from_dict(binding)),
+                runtime.describe(results[reference].candidate),
+            )
+            imports.syspath_prepend(str(results[reference].metadata_path.parent.parent))
+            module_suffix = release.payload["runtime"]["module"].removeprefix("strategy_runtime.")
+            old_module = importlib.import_module(context.root.name + "." + ".".join(source.relative_to(context.root).parts) + "." + module_suffix)
+            new_module = importlib.import_module(results[reference].metadata_path.parent.name + ".strategy_runtime." + module_suffix)
+            factory_name = release.payload["runtime"]["qualname"]
+            authenticated[reference] = (
+                definitions,
+                ((getattr(old_module, factory_name), release.payload["parameters"]),
+                 (getattr(new_module, factory_name), results[reference].candidate.payload["parameters"])),
+            )
+        yield authenticated
+
+
+def _implementations(authenticated_runtimes, reference):
+    _, factories = authenticated_runtimes[reference]
+    return tuple(factory.from_parameters(ParameterSet(parameters)) for factory, parameters in factories)
 
 
 def _synthetic_features(reference, implementations, monkeypatch):
@@ -166,10 +183,14 @@ def _synthetic_features(reference, implementations, monkeypatch):
 
 
 @pytest.mark.parametrize("reference", REFERENCES)
-@pytest.mark.parametrize("mode", [SignalHistoryMode.CONTINUOUS, SignalHistoryMode.WINDOW])
-@pytest.mark.parametrize("window_length", [1, 12])
-def test_synthetic_kernel_equivalence_retains_market_intent_across_windows(preparations, reference, mode, window_length, monkeypatch):
-    old, new = _implementations(preparations, reference, monkeypatch)
+@pytest.mark.parametrize("mode,window_length", [
+    # CONTINUOUS always uses the complete calculation history, even for one signal.
+    (SignalHistoryMode.CONTINUOUS, 1),
+    (SignalHistoryMode.WINDOW, 1),
+    (SignalHistoryMode.WINDOW, 12),
+])
+def test_synthetic_kernel_equivalence_retains_market_intent_across_windows(authenticated_runtimes, reference, mode, window_length, monkeypatch):
+    old, new = _implementations(authenticated_runtimes, reference)
     inputs, calculation_dates = _synthetic_features(reference, (old, new), monkeypatch)
     signal_dates = calculation_dates[-window_length:]
     context = HistoryCalculationContext(mode, TradableWindow(
@@ -194,17 +215,9 @@ def test_migration_rejects_unsafe_or_reused_workspace_without_frozen_changes(pre
         prepare_frozen_runtime_migration(context, FrozenRuntimeMigrationRequest("S001-v1", "C9899", results["S001-v1"].metadata_path.parent))
 
 
-def _definitions(preparations, reference):
-    context, results = preparations
-    family, version = reference.rsplit("-", 1)
-    stored = StrategyRegistry(context.strategy_root).get_version(family, version)
-    _, binding, source = validate_release_package(context, reference)
-    runtime = StrategyRuntime()
-    return (
-        runtime.describe(prospective_release(stored), source_root=source,
-                         runtime_binding=RuntimeBinding.from_dict(binding)),
-        runtime.describe(results[reference].candidate),
-    )
+def _definitions(authenticated_runtimes, reference):
+    definitions, _ = authenticated_runtimes[reference]
+    return definitions
 
 
 def _raw_plan(definition, target, portfolio, state):
@@ -305,9 +318,9 @@ def _relational_ledger(result):
 
 @pytest.mark.parametrize("reference,mode", [(reference, mode) for reference in REFERENCES
     for mode in (SignalHistoryMode.CONTINUOUS, SignalHistoryMode.WINDOW)])
-def test_actual_policies_and_txe_economic_ledgers_remain_equivalent(preparations, reference, mode, monkeypatch):
-    old, new = _implementations(preparations, reference, monkeypatch)
-    definitions = _definitions(preparations, reference)
+def test_actual_policies_and_txe_economic_ledgers_remain_equivalent(authenticated_runtimes, reference, mode, monkeypatch):
+    old, new = _implementations(authenticated_runtimes, reference)
+    definitions = _definitions(authenticated_runtimes, reference)
     assert definitions[0].execution == definitions[1].execution
     assert definitions[0].capabilities == definitions[1].capabilities
     inputs, calculation_dates = _synthetic_features(reference, (old, new), monkeypatch)
@@ -335,8 +348,8 @@ def test_actual_policies_and_txe_economic_ledgers_remain_equivalent(preparations
 
 
 @pytest.mark.parametrize("reference", REFERENCES)
-def test_existing_nonzero_account_cash_and_cycle_are_preserved_by_migrated_planner(preparations, reference):
-    old, new = _definitions(preparations, reference)
+def test_existing_nonzero_account_cash_and_cycle_are_preserved_by_migrated_planner(authenticated_runtimes, reference):
+    old, new = _definitions(authenticated_runtimes, reference)
     generated = datetime(2026, 10, 16, 20, 30, tzinfo=ZoneInfo("Asia/Shanghai"))
     for cash, quantity, cycle in (("12345.67", 600, 600), ("99.50", 200, 600)):
         portfolio = PortfolioSnapshot("existing-account", old.tradable_symbol, Decimal(cash),

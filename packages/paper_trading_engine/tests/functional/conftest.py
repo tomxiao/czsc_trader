@@ -59,3 +59,24 @@ def new_store(empty_paper_database):
         return PaperStore(path)
 
     return create
+
+
+@pytest.fixture
+def memory_store():
+    """Real SQLite for single-connection business rules, without durability I/O.
+
+    Restart, migration, independent connections and publication tests use
+    new_store instead. This fixture does not patch storage or change commits.
+    """
+    from execution_channels.futu.store import PaperStore
+
+    stores = []
+
+    def create():
+        store = PaperStore(Path(':memory:'))
+        stores.append(store)
+        return store
+
+    yield create
+    for store in stores:
+        store.close()

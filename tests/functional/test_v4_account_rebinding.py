@@ -27,6 +27,7 @@ from execution_channels.futu.store import PaperStore, RUNTIME_DATABASE_SCHEMA_VE
 from strategy_manager import PaperTradingApproval, StrategyRegistry, freeze_contracts as f
 from strategy_runtime import StateRecord, equity_source_hash
 from test_formal_v4_runtime import formal_v4 as formal_v4
+from paper_store_support import new_paper_store
 
 
 def _fill_position(client, store, interval, candidate):
@@ -50,7 +51,7 @@ def _runtime(tmp_path, client, root, monkeypatch):
     # Use SQLite backup rather than file copy to preserve its transaction boundary.
     runtime = tmp_path / '.tmp/host'
     state = runtime / 'shared/state/runtime.db'
-    store = PaperStore(state)
+    store = new_paper_store(state)
     root._connection.backup(store._connection)
     data = runtime / 'shared/data'
     shutil.copytree(client.data_dir, data)

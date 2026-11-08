@@ -108,13 +108,27 @@ def test_frozen_binary_intent_uses_channel_sizing_and_suppression(market):
         plan_frozen_equity(intent, portfolio, spec, **{**arguments,'fee_rate':True})
 
 
-@pytest.mark.parametrize('field', ['Date','AvailableDate','BuySellableAt','SettlementAt'])
-@pytest.mark.parametrize('invalid', [pd.NaT, datetime(2026,1,5), '2026-01-05T09:30:00'])
-@pytest.mark.parametrize('bound_executor', [False, True])
-def test_channel_rejects_incomplete_execution_clocks_at_binding(field, invalid, bound_executor):
-    instrument, spec, _, row, rule = fixture(MarketId.US)
-    rule = {**rule, field:invalid}
+@pytest.mark.parametrize('field,invalid', [
+    pytest.param('Date', pd.NaT, id='missing-date'),
+    pytest.param('AvailableDate', pd.NaT, id='missing-available-date'),
+    pytest.param('BuySellableAt', pd.NaT, id='missing-sellable-at'),
+    pytest.param('SettlementAt', pd.NaT, id='missing-settlement-at'),
+    pytest.param('Date', datetime(2026,1,5), id='naive-datetime'),
+    pytest.param('Date', '2026-01-05T09:30:00', id='naive-string'),
+])
+def test_constraint_normalization_rejects_incomplete_execution_clocks(field, invalid):
+    from execution_channels.historical.input_facts import normalize_constraint_times
+    _, _, _, _, rule = fixture(MarketId.US)
     with pytest.raises(ValueError, match=field + ' requires'):
+        normalize_constraint_times({**rule, field:invalid})
+
+
+@pytest.mark.parametrize('bound_executor', [False, True])
+def test_channel_rejects_incomplete_execution_clocks_at_binding(bound_executor):
+    # The shared normalizer owns the invalid-value matrix; both bindings must call it.
+    instrument, spec, _, row, rule = fixture(MarketId.US)
+    rule = {**rule, 'Date':pd.NaT}
+    with pytest.raises(ValueError, match='Date requires'):
         if bound_executor:
             executor = PortfolioHistoricalExecutor(specification=spec,initial_cash=10000.,
                 fee_rate=.001,price_basis='HFQ')

@@ -170,6 +170,39 @@ def test_cli_calculation_and_output_failures_return_fail_without_partial_reports
     pytest.param({"actual_cutoff": True}, id="boolean-cutoff"),
     pytest.param({"actual_cutoff": "2026-09-21"}, id="complete-cutoff-with-other-incompleteness"),
 ])
+def test_execution_data_failure_classification_preserves_source_context(data_context):
+    from dataflows import DataError, DataResult, DataStatus
+    from czsc_trader.backtesting.execution_data import (
+        BacktestExecutionDataNotReadyError, BacktestExecutionDataPreparationError, _require_ready,
+    )
+
+    error = DataError('INCOMPLETE_DATA', 'injected incomplete daily observations',
+                      context=data_context)
+    result = DataResult(status=DataStatus.INCOMPLETE, error=error)
+    expected = (BacktestExecutionDataNotReadyError
+                if data_context == {'actual_cutoff': '2026-09-18'}
+                else BacktestExecutionDataPreparationError)
+    # This matrix owns classification of source facts. It does not need to
+    # initialize a database, prepare unrelated assets or authenticate a strategy.
+    with pytest.raises(expected) as caught:
+        _require_ready(result, 'adjusted_daily', pd.bdate_range('2026-09-15', '2026-09-21'),
+                       date(2026, 9, 21))
+    if expected is BacktestExecutionDataNotReadyError:
+        assert caught.value.requested_cutoff == date(2026, 9, 21)
+        assert caught.value.published_cutoff == date(2026, 9, 18)
+        assert caught.value.first_unpublished_session == date(2026, 9, 21)
+    else:
+        assert caught.value.error == error
+        assert caught.value.input_name == 'adjusted_daily'
+        assert 'injected incomplete daily observations' in str(caught.value)
+        if 'missing_dates' in data_context:
+            assert '2026-09-16' in str(caught.value)
+
+
+@pytest.mark.parametrize('data_context', [
+    pytest.param({'actual_cutoff': '2026-09-18'}, id='not-yet-published'),
+    pytest.param({'missing_dates': ['2026-09-16']}, id='internal-gap'),
+])
 def test_cli_preserves_execution_data_failures_without_partial_reports(
     data_context, current_frozen, monkeypatch, capsys,
 ):

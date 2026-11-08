@@ -26,6 +26,14 @@ def _publish_bytes(repository_root: Path, target: Path, data: bytes) -> None:
     target = managed_path(root, relative)
     if not relative.startswith("research/"):
         raise ValueError("research evidence must stay within the research directory")
+    try:
+        existing = target.read_bytes()
+    except FileNotFoundError:
+        pass
+    else:
+        if existing != data:
+            raise ValueError("published evidence cannot be overwritten")
+        return
     target.parent.mkdir(parents=True, exist_ok=True)
     temporary_root = managed_path(root, ".tmp/evidence-publication")
     temporary_root.mkdir(parents=True, exist_ok=True)

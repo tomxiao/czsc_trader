@@ -121,7 +121,7 @@ def _files(root):
 @pytest.mark.release_acceptance
 @pytest.mark.parametrize('reference', ['S002-v1', 'S003-v1'])
 @pytest.mark.parametrize('state', ['PAUSED', 'RETIRING', 'RUNNING'])
-def test_history_account_preflight_is_readonly_and_never_admits_running_strategy(tmp_path, release_snapshot, monkeypatch, reference, state):
+def test_history_account_preflight_is_readonly_and_never_admits_running_strategy(tmp_path, new_store, release_snapshot, monkeypatch, reference, state):
     from execution_channels.futu.store import PaperStore
 
     shutil.copytree(release_snapshot, tmp_path / 'strategies')
@@ -132,7 +132,7 @@ def test_history_account_preflight_is_readonly_and_never_admits_running_strategy
     family, version = reference.rsplit('-', 1)
     frozen = json.loads((tmp_path / 'strategies' / family / 'versions' / f'{version}.json').read_text(encoding='utf-8'))
     database = tmp_path / 'runtime.db'
-    store = PaperStore(database)
+    store = new_store(database)
     try:
         store.create_virtual_account('old', 'old', reference, frozen['release_hash'], 1000,
             strategy_id=family, strategy_version=version, release_hash=frozen['release_hash'],
@@ -164,7 +164,7 @@ def test_history_account_preflight_is_readonly_and_never_admits_running_strategy
 
 @pytest.mark.release_acceptance
 @pytest.mark.parametrize('case', ['valid', 'missing', 'snapshot', 'inventory', 'package', 'receipt', 'running'])
-def test_retained_source_preserves_exact_old_binding(tmp_path, release_snapshot, monkeypatch, case):
+def test_retained_source_preserves_exact_old_binding(tmp_path, new_store, release_snapshot, monkeypatch, case):
     from execution_channels.futu.store import PaperStore
     from paper_trading_engine.runtime_release import tree_sha256, file_sha256
     from strategy_runtime import canonical_sha256
@@ -220,7 +220,7 @@ def test_retained_source_preserves_exact_old_binding(tmp_path, release_snapshot,
     PteRuntimeConfig().save(config / 'pte.json')
     (config / '.env').write_text('TUSHARE_TOKEN=synthetic-offline-token\n', encoding='utf-8')
     database = tmp_path / 'shared/runtime.db'
-    with closing(PaperStore(database)) as store:
+    with closing(new_store(database)) as store:
         store.create_virtual_account('old', 'old', 'v1', frozen['release_hash'], 1000,
             strategy_id='S003', strategy_version='v1', release_hash=frozen['release_hash'],
             strategy_name_snapshot='history', qualification_snapshot='PAPER_READY',

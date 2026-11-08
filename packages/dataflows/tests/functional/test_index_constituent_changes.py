@@ -11,6 +11,7 @@ from dataflows import (
     Dataflows, DataRequest, DataSpace, DataStatus, Dataset, PreparePolicy, ProviderConfig,
 )
 from dataflows import index_constituent_changes
+from dataflows.errors import DataContractError
 
 
 def _request(**kwargs):
@@ -112,22 +113,30 @@ def test_event_request_rejects_daily_and_ambiguous_time_semantics(arguments):
         _request(**arguments)
 
 
-@pytest.mark.parametrize("defect", ["direction", "availability", "coverage", "source_hash", "missing_row"])
-def test_corrupt_event_or_provenance_never_publishes_ready(event_root, monkeypatch, defect):
+@pytest.mark.parametrize("defect", ["direction", "coverage", "source_hash", "missing_row"])
+def test_corrupt_event_or_provenance_rejected_by_validator(defect):
+    request = _request()
+    frame, metadata = index_constituent_changes.fetch_index_constituent_changes(request)
+    if defect == "direction":
+        frame.loc[0, "Change"] = "REMOVE"
+    elif defect == "coverage":
+        metadata["complete_membership_history"] = True
+    elif defect == "source_hash":
+        metadata["source_attachment_sha256"] = "0" * 64
+    else:
+        frame = frame.iloc[:-1].reset_index(drop=True)
+    with pytest.raises(DataContractError) as raised:
+        index_constituent_changes.validate_index_constituent_changes(frame, request, metadata)
+    assert raised.value.code == "DATA_CONTRACT_MISMATCH"
+
+
+def test_backdated_event_never_publishes_ready(event_root, monkeypatch):
+    # One actual facade path verifies that bound source output is revalidated.
     original = index_constituent_changes.fetch_index_constituent_changes
 
     def corrupt(request):
         frame, metadata = original(request)
-        if defect == "direction":
-            frame.loc[0, "Change"] = "REMOVE"
-        elif defect == "availability":
-            frame["AvailableDate"] = pd.Timestamp("2021-05-28")
-        elif defect == "coverage":
-            metadata["complete_membership_history"] = True
-        elif defect == "source_hash":
-            metadata["source_attachment_sha256"] = "0" * 64
-        else:
-            frame = frame.iloc[:-1].reset_index(drop=True)
+        frame["AvailableDate"] = pd.Timestamp("2021-05-28")
         return frame, metadata
 
     monkeypatch.setattr(index_constituent_changes, "fetch_index_constituent_changes", corrupt)

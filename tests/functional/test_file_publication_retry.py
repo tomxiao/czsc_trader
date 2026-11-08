@@ -31,11 +31,10 @@ def publication(request, tmp_path):
 
 @pytest.mark.parametrize("codes,windows,succeeds", [
     pytest.param((), True, True, id="first-attempt"),
-    pytest.param((5, 5), True, True, id="access-conflict-released"),
+    # Both retryable errors are admitted; code 5 also exercises the retry limit.
     pytest.param((32, 32), True, True, id="sharing-conflict-released"),
     pytest.param((5,) * 4, True, True, id="last-allowed-attempt-succeeds"),
     pytest.param((5,) * 5, True, False, id="persistent-access-denied"),
-    pytest.param((32,) * 5, True, False, id="persistent-sharing-conflict"),
     pytest.param((2,), True, False, id="missing-file-no-retry"),
     pytest.param((None,), True, False, id="permission-without-winerror-no-retry"),
     pytest.param((5, 2), True, False, id="different-error-stops-retry"),

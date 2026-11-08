@@ -1,7 +1,6 @@
 """Public TDR replay authenticates and applies stock/ETF session limits."""
 
 from dataclasses import replace
-import json
 from pathlib import Path
 
 import numpy as np
@@ -136,8 +135,7 @@ def test_prepared_limits_follow_pricing_units_and_binding_rejects_changed_contra
 
 
 def test_hfq_candidate_inspection_preserves_units_in_prospective_frozen_replay(managed_evaluation):
-    from czsc_trader.application import inspect_candidate
-    from strategy_manager.freeze_contracts import InspectionStatus
+    from inspection_replay_support import candidate_release_replay
     from test_assessment_delivery import fresh_completed
     from test_candidate_freeze import _build_inspection
 
@@ -147,10 +145,11 @@ def test_hfq_candidate_inspection_preserves_units_in_prospective_frozen_replay(m
     context, inspection_request, _ = _build_inspection(completed)
     pricing = completed[2].execution_data.pricing
     assert pricing.basis is ExecutionPriceBasis.HFQ_RESEARCH
-    report = inspect_candidate(context, inspection_request)
-    assert report.behavior_equivalence.status is InspectionStatus.PASS, report.behavior_equivalence
-    facts = json.loads(report.behavior_equivalence.cases[0].evidence[-1].resolve(context.root).read_bytes())
+    facts = candidate_release_replay(context, inspection_request)
+    assert facts["passed"] is True, facts
     for side in ("candidate", "release"):
         assert facts[side]["execution_spec"]["pricing"] == pricing.to_dict()
         assert facts[side]["execution_spec"]["market_rules"] == completed[2].execution_data.market_rules.to_dict()
+        assert facts[side]["orders"]
+        assert facts[side]["fills"]
     assert not context.strategy_root.exists()
