@@ -1,0 +1,187 @@
+{
+  "candidate": "S018-C9396",
+  "content_sha256": "94bbd13ea036128a0ce31c183b34da8fedfa742cb686132c85c0edb437bfd23b",
+  "report": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S018",
+      "experiment_id": "EX070_20261108"
+    },
+    "evidence_id": "d0985f1b2b4024606f1666309d7fbe2ba216a835629a121112757c9c853da049.json",
+    "sha256": "d0985f1b2b4024606f1666309d7fbe2ba216a835629a121112757c9c853da049",
+    "media_type": "application/json",
+    "name": "experiment-report",
+    "schema": "experiment_report",
+    "schema_version": 1
+  },
+  "report_publication_status": "PASS",
+  "inspection": {
+    "type": "ResearchEvidenceRef",
+    "owner": {
+      "type": "ResearchEvidenceOwner",
+      "strategy_id": "S018",
+      "experiment_id": "EX070_20261108"
+    },
+    "path": "inspection/f0d60735df172aac44e7836144cb5d54f6c524bf5abdfbcb6ca39f67d3bee3d8",
+    "sha256": "f0d60735df172aac44e7836144cb5d54f6c524bf5abdfbcb6ca39f67d3bee3d8"
+  },
+  "technical_summary": {
+    "status": "TECHNICAL_PASS_MIGRATION_PENDING",
+    "candidate_content": "94bbd13ea036128a0ce31c183b34da8fedfa742cb686132c85c0edb437bfd23b",
+    "behavior_counts": {
+      "account_daily": 961,
+      "account_entries": 0,
+      "account_points": 961,
+      "decisions": 961,
+      "fills": 418,
+      "orders": 444,
+      "trades": 95
+    },
+    "candidate_package_exactly_equal": true,
+    "runtime": {
+      "account_engine": "AccountEngine",
+      "admission": "INSPECTION",
+      "advice": "FormalV4AdviceClient",
+      "execution": "ChannelExecution",
+      "store": "PaperStore"
+    },
+    "pte_coverage": {
+      "missing": [],
+      "observed": [
+        "COMPLETED",
+        "DUPLICATE",
+        "EXPIRED",
+        "NO_ORDER",
+        "PARTIAL",
+        "RECONCILIATION_BLOCKED",
+        "REJECTED",
+        "RESTART",
+        "SUBMITTED",
+        "UNKNOWN"
+      ]
+    },
+    "scenarios": [
+      {
+        "id": "entry-partial-duplicate-restart",
+        "status": "PASS",
+        "decisions": 1,
+        "fills": 2,
+        "account_health": "OK"
+      },
+      {
+        "id": "rejected",
+        "status": "PASS",
+        "decisions": 1,
+        "fills": 0,
+        "account_health": "OK"
+      },
+      {
+        "id": "unknown",
+        "status": "PASS",
+        "decisions": 1,
+        "fills": 0,
+        "account_health": "BLOCKED"
+      },
+      {
+        "id": "expired",
+        "status": "PASS",
+        "decisions": 1,
+        "fills": 0,
+        "account_health": "OK"
+      },
+      {
+        "id": "reconciliation-blocked",
+        "status": "PASS",
+        "decisions": 0,
+        "fills": 0,
+        "account_health": "OK"
+      },
+      {
+        "id": "normal-partial-expiry",
+        "status": "PASS",
+        "decisions": 1,
+        "fills": 1,
+        "account_health": "OK"
+      },
+      {
+        "id": "normal-zero-fill-expiry",
+        "status": "PASS",
+        "decisions": 1,
+        "fills": 0,
+        "account_health": "OK"
+      },
+      {
+        "id": "retained-real-window-1",
+        "status": "PASS",
+        "decisions": 15,
+        "fills": 6,
+        "account_health": "OK"
+      },
+      {
+        "id": "retained-real-window-2",
+        "status": "PASS",
+        "decisions": 43,
+        "fills": 11,
+        "account_health": "OK"
+      }
+    ],
+    "measurements": {
+      "elapsed_seconds": 72.90599999999904,
+      "max_workers": 2,
+      "run_id": "inspection-907fbb04c37843588561d19f51f72c80",
+      "timeout_seconds": 900
+    },
+    "inspection_reference": {
+      "type": "ResearchEvidenceRef",
+      "owner": {
+        "type": "ResearchEvidenceOwner",
+        "strategy_id": "S018",
+        "experiment_id": "EX070_20261108"
+      },
+      "path": "inspection/f0d60735df172aac44e7836144cb5d54f6c524bf5abdfbcb6ca39f67d3bee3d8",
+      "sha256": "f0d60735df172aac44e7836144cb5d54f6c524bf5abdfbcb6ca39f67d3bee3d8"
+    },
+    "release_hash": "38af3e4ee3074a823c04ddc33ff6c09f32bdb7f4b9059855f45ce10b3c5b0f83",
+    "package_hash": "17f73c5f2b40e19a470367fbd3c496b3358d8105f87558bb8778f34a9c364a9b",
+    "plan_hash": "9c3219bc2d68d7c3641a789d4b14a1ac17c15904b29b93f6596c0521a02ac1ab",
+    "old_frozen_package_unchanged": true,
+    "migration_status": "NOT_APPLIED",
+    "old_package_readiness": {
+      "status": "NOT_LOADABLE_CURRENT_CONTRACT",
+      "error_type": "TypeError",
+      "message": "V4 requires an explicit execution policy",
+      "version_file_sha256": "bd08618c806de319df97c2b17be5b728c3315c873cddc041069c00f017a5cf75",
+      "read_only": true,
+      "known_issue": "Frozen implementation migration remains separate from DEV items 4,5,6"
+    },
+    "production_writes": 0,
+    "qualification_grant": false
+  },
+  "financial_predicate_points": 961,
+  "financial_predicate_differences": 0,
+  "isolated_pte_sessions": 58,
+  "platform_fix_commit": "c4ac86237",
+  "new_account_completed": true,
+  "account_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S018",
+      "experiment_id": "EX069_20261108"
+    },
+    "evidence_id": "3007b4f4511b8f87a34e42b539c165ed123e241b51ce33b0f31531b39b595f99.json",
+    "sha256": "3007b4f4511b8f87a34e42b539c165ed123e241b51ce33b0f31531b39b595f99",
+    "media_type": "application/json",
+    "name": "target-weight-account",
+    "schema": "equity_research",
+    "schema_version": 4
+  },
+  "limits": [
+    "No old/new economic equivalence claim",
+    "No inherited stage-four or stage-five acceptance",
+    "EX070 uses formal PTE components with recorded broker facts, not live trading",
+    "EX070 preview package and the history-preserving upgrade package have distinct release identities; runtime content equality is checked separately"
+  ],
+  "authorization_decision": "Proceed with expressly authorized same-version replacement; no additional economic search."
+}
