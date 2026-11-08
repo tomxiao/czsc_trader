@@ -1,6 +1,7 @@
 """CN and US PTE expose confirmed effects through the same EC query."""
-from datetime import timedelta
+from datetime import datetime, timedelta
 from decimal import Decimal
+from zoneinfo import ZoneInfo
 
 import pytest
 
@@ -139,15 +140,36 @@ def test_no_change_remains_completed_without_orders(tmp_path, market):
     (True, 'REJECTED', IntentTerminationReason.ORDER_REJECTED, ValueError),
 ])
 def test_local_termination_requires_typed_unsubmitted_evidence(tmp_path, bound, status, reason, error):
-    context, request, products, store, _, channel = native_account(tmp_path, MarketId.CN)
+    # This boundary owns intent termination, not data preparation or strategy
+    # computation. The dual-market cases above retain that real integration.
+    store = PaperStore(tmp_path / 'termination.db')
     try:
-        prepared = prepared_at(context, request, products)
-        at = prepared.interval.start
-        AccountEngine(store, EquityAdviceClient(store), now=lambda: at).refresh_account('native', prepared=prepared)
+        store.set_setting('futu_capital_pool', '1000')
+        store.create_virtual_account('native', 'termination', 'S999-v1', 'a' * 64, 1000,
+            strategy_id='S999', strategy_version='v1', release_hash='a' * 64,
+            strategy_name_snapshot='termination', qualification_snapshot='PAPER_READY',
+            selection_data_cutoff='2026-01-01')
+        store.set_virtual_paused('native', False)
+        store.save_account_decision('native', {
+            'contract_version': 'advice.v4', 'decision_id': 'buy', 'symbol': '588080.SH',
+            'strategy': {'strategy_id': 'S999', 'version': 'v1', 'release_hash': 'a' * 64},
+            'signal_date': '2026-11-03', 'valid_session': '2026-11-04',
+            'actual_quantity': 0, 'available_cash': 1000., 'action': 'BUY',
+            'target_quantity': 100, 'delta_quantity': 100, 'cycle_target_quantity': 100,
+            'orders': [{'side': 'BUY', 'quantity': 100, 'order_type': 'LIMIT', 'limit_price': 1.}],
+        })
+        intent = store.create_account_intent(account_id='native', decision_id='buy',
+            order_sequence=0, symbol='588080.SH', side='BUY', quantity=100,
+            limit_price=1., valid_session='2026-11-04')
         if bound:
-            execution = EquityExecution(store, channel, now=lambda: at)
-            execution.reconcile(cash=Decimal(str(request.initial_cash)), quantity=0, account_id='native')
-            execution.submit_pending('native')
+            store.set_setting('channel_reconciliation_status', 'OK')
+            store.set_setting('futu_cash_reconciliation_status', 'OK')
+            assert store.claim_account_intent(intent['intent_id'],
+                moment=datetime(2026, 11, 4, 9, 30, tzinfo=ZoneInfo('Asia/Shanghai')))
+            store.bind_channel_order(intent['intent_id'], 'broker-order', {
+                'symbol': '588080.SH', 'side': 'BUY', 'quantity': 100,
+                'remark': intent['intent_id'], 'status': 'SUBMITTED',
+            })
         intent, = store.account_intents('native')
         before = store.virtual_account('native')
         with pytest.raises(error):

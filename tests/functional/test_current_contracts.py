@@ -56,16 +56,20 @@ def freshly_frozen(inspected_candidate):
 
 
 @pytest.fixture
-def current_frozen(request, tmp_path, frozen_seed_root):
-    seed = frozen_seed_root / "strategies"
-    if not seed.exists():
-        context, _ = request.getfixturevalue("freshly_frozen")
-        shutil.copytree(context.strategy_root, seed)
+def current_frozen(tmp_path):
+    # Consumers test loading/reporting/maintenance, not the inspection that made
+    # this immutable synthetic package. Freeze tests still run the real pipeline.
+    seed = Path(__file__).parents[1] / "fixtures/published/legacy"
     root = tmp_path / "frozen-repo"
     (root / "src/czsc_trader").mkdir(parents=True)
     (root / "pyproject.toml").write_text("", encoding="utf-8")
     shutil.copytree(seed, root / "strategies")
     context = RepositoryContext.discover(root)
+    # Fresh freeze/deploy creates this coordination file before consumers take
+    # byte-for-byte publication snapshots. Recreate it through the real lock.
+    from strategy_manager.write_lock import RegistryWriteLock
+    with RegistryWriteLock(context.strategy_root).hold():
+        pass
     return context, StrategyRegistry(context.strategy_root).get_version("S900", "v1")
 
 

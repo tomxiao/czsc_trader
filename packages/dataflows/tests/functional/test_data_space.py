@@ -12,7 +12,7 @@ from uuid import uuid4
 import pandas as pd
 from pandas.testing import assert_frame_equal
 import pytest
-from conftest import ohlcv_fixture_metadata
+from ohlcv_test_support import ohlcv_fixture_metadata
 
 from dataflows import (
     DataCoverageRequirement, Dataflows, DataRequest, DataSpace, DataStatus,

@@ -384,6 +384,7 @@ def test_scheduler_prepares_current_account_data_then_runs_decision(new_store, p
         symbol="588080.SH",
         asset_type="etf",
     )
+    store.set_virtual_paused('s900-v1', False)
     client = SrtAdviceClient(
         repo_root=pte_frozen[0].root,
         data_dir=data_dir,
@@ -423,7 +424,12 @@ def test_scheduler_prepares_current_account_data_then_runs_decision(new_store, p
 
     monkeypatch.setattr(store, "set_setting", record_setting)
     scheduler.tick_daily(datetime(2026, 9, 2, 20, 30))
-    assert finished.wait(5), store.operation_failures()
+    # Completion is a functional condition, not a five-second disk-speed gate.
+    # Join before closing the database so cleanup cannot race the real worker.
+    worker = scheduler._account_workers['s900-v1']
+    worker.join(timeout=30)
+    assert not worker.is_alive(), 'account preparation worker did not finish'
+    assert finished.is_set(), store.operation_failures()
     assert store.get_setting("last_data_prepare_date:s900-v1") == "2026-09-02"
     assert store.operation_failures() == []
     assert preparation_calls == [{
@@ -443,8 +449,8 @@ def test_scheduler_prepares_current_account_data_then_runs_decision(new_store, p
 
 
 @pytest.fixture
-def minimum_depth_frozen(candidate_payload, tmp_path, monkeypatch):
-    """Author and actually inspect/freeze/deploy one independent depth-three seed."""
+def fresh_minimum_depth_frozen(candidate_payload, tmp_path, monkeypatch):
+    """Explicit regeneration path for the real synthetic depth-three package."""
     from czsc_trader.application import inspect_candidate, freeze_candidate, deploy_strategy
     from strategy_manager import PaperTradingApproval, StrategyRegistry
     from strategy_runtime import implementation_sha256
@@ -490,6 +496,21 @@ def minimum_depth_frozen(candidate_payload, tmp_path, monkeypatch):
         "S900", "v1", version.release_hash, "test", "synthetic depth-three approval",
     ))
     return context, version
+
+
+@pytest.fixture
+def minimum_depth_frozen(tmp_path):
+    """The consumer tests missing/repaired inputs, not the upstream freeze flow."""
+    from czsc_trader.application import RepositoryContext
+    from strategy_manager import StrategyRegistry
+
+    repository = tmp_path / 'depth-three-repository'
+    (repository / 'src/czsc_trader').mkdir(parents=True)
+    (repository / 'pyproject.toml').write_text('', encoding='utf-8')
+    seed = Path(__file__).resolve().parents[4] / 'tests/fixtures/published/depth-three'
+    shutil.copytree(seed, repository / 'strategies')
+    context = RepositoryContext.discover(repository)
+    return context, StrategyRegistry(context.strategy_root).get_version('S900', 'v1')
 
 
 def test_missing_input_sessions_recovers_then_restart_keeps_successful_binding(

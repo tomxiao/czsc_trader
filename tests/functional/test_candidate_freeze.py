@@ -76,6 +76,14 @@ def inspection(request, tmp_path, frozen_seed_root):
     seed, data = frozen_seed_root / "inspection-v2-input", frozen_seed_root / "inspection-v2-input.pkl"
     if not seed.exists():
         context, inspection_request, _ = request.getfixturevalue("fresh_inspection")
+        # Publication/admission consumers need a real passing trajectory, not
+        # another run of the generic fault matrix. Retain one real related fault
+        # to satisfy the declared coverage; the serial/parallel roundtrip owns
+        # the complete matrix through its fresh_inspection fixture.
+        inspection_request = replace(inspection_request, protocol=replace(
+            inspection_request.protocol,
+            pte=replace(inspection_request.protocol.pte,
+                failures=inspection_request.protocol.pte.failures[:1])))
         values = {field.name: getattr(inspection_request, field.name)
                   for field in fields(inspection_request) if field.name != "research"}
         data.write_bytes(pack((context.root, values)))

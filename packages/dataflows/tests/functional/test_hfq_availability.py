@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pandas as pd
 import pytest
-from conftest import ohlcv_fixture_metadata
+from ohlcv_test_support import ohlcv_fixture_metadata
 from dataflows.ohlcv_quality import bind_quality_frame
 
 from dataflows import DataRequest, DataStatus, Dataset

@@ -23,6 +23,23 @@ from test_watchdog_service import create_release
 ROOT = Path(__file__).resolve().parents[4]
 
 
+@pytest.fixture(scope='module')
+def release_snapshot(frozen_seed_root):
+    """Copy real current/history packages once, without unrelated upgrade archives.
+
+    The complete registered-tree acceptance below still checks the repository.
+    Snapshot corruption/preflight cases own private copies of every published
+    package and receipt; historical revision archives are not release inputs.
+    """
+    source = ROOT / 'strategies'
+    seed = frozen_seed_root / 'release-snapshot'
+    shutil.copytree(source, seed,
+        ignore=lambda directory, names: ('revisions',) if Path(directory) == source else ())
+    original = _files(seed)
+    yield seed
+    assert _files(seed) == original, 'release test changed its shared snapshot'
+
+
 @pytest.mark.release_acceptance
 def test_native_registered_snapshot_authenticates_without_changing_qualification():
     from strategy_manager import StrategyRegistry
@@ -45,9 +62,9 @@ def test_native_registered_snapshot_authenticates_without_changing_qualification
 
 
 @pytest.mark.release_acceptance
-def test_native_snapshot_includes_undeployed_packages_and_rejects_tampering(tmp_path):
+def test_native_snapshot_includes_undeployed_packages_and_rejects_tampering(tmp_path, release_snapshot):
     strategies = tmp_path / "snapshot"
-    shutil.copytree(ROOT / "strategies", strategies)
+    shutil.copytree(release_snapshot, strategies)
     # Deliberately withhold one deployment in the private copy. Build validation
     # still authenticates its frozen contents without manufacturing approval.
     withheld = sorted((strategies / "deployments").glob("S*-v*.json"))[-1]
@@ -64,12 +81,12 @@ def test_native_snapshot_includes_undeployed_packages_and_rejects_tampering(tmp_
 @pytest.mark.release_acceptance
 @pytest.mark.parametrize('reference', ['S002-v1', 'S003-v1'])
 @pytest.mark.parametrize('damage', ['source', 'receipt', 'package_binding', 'duplicate'])
-def test_retained_history_blocks_snapshot_corruption(tmp_path, reference, damage):
+def test_retained_history_blocks_snapshot_corruption(tmp_path, release_snapshot, reference, damage):
     """History is retained and authenticated, never ignored to admit a snapshot."""
     from strategy_runtime import canonical_sha256
 
     strategies = tmp_path / 'snapshot'
-    shutil.copytree(ROOT / 'strategies', strategies)
+    shutil.copytree(release_snapshot, strategies)
     path = strategies / 'deployments/history' / f'{reference}.json'
     if damage == 'source':
         family, version = reference.rsplit('-', 1)
@@ -104,10 +121,10 @@ def _files(root):
 @pytest.mark.release_acceptance
 @pytest.mark.parametrize('reference', ['S002-v1', 'S003-v1'])
 @pytest.mark.parametrize('state', ['PAUSED', 'RETIRING', 'RUNNING'])
-def test_history_account_preflight_is_readonly_and_never_admits_running_strategy(tmp_path, monkeypatch, reference, state):
+def test_history_account_preflight_is_readonly_and_never_admits_running_strategy(tmp_path, release_snapshot, monkeypatch, reference, state):
     from execution_channels.futu.store import PaperStore
 
-    shutil.copytree(ROOT / 'strategies', tmp_path / 'strategies')
+    shutil.copytree(release_snapshot, tmp_path / 'strategies')
     data, config = tmp_path / 'data', tmp_path / 'config'
     data.mkdir()
     PteRuntimeConfig(data_space=Path('market')).save(config / 'pte.json')
@@ -147,15 +164,15 @@ def test_history_account_preflight_is_readonly_and_never_admits_running_strategy
 
 @pytest.mark.release_acceptance
 @pytest.mark.parametrize('case', ['valid', 'missing', 'snapshot', 'inventory', 'package', 'receipt', 'running'])
-def test_retained_source_preserves_exact_old_binding(tmp_path, monkeypatch, case):
+def test_retained_source_preserves_exact_old_binding(tmp_path, release_snapshot, monkeypatch, case):
     from execution_channels.futu.store import PaperStore
     from paper_trading_engine.runtime_release import tree_sha256, file_sha256
     from strategy_runtime import canonical_sha256
 
     target = tmp_path / 'releases/v0.7.4'
-    shutil.copytree(ROOT / 'strategies', target / 'strategies')
+    shutil.copytree(release_snapshot, target / 'strategies')
     source = tmp_path / 'releases/v0.6.21'
-    shutil.copytree(ROOT / 'strategies/S003', source / 'strategies/S003')
+    shutil.copytree(release_snapshot / 'S003', source / 'strategies/S003')
     version_path = source / 'strategies/S003/versions/v1.json'
     frozen = json.loads(version_path.read_text(encoding='utf-8'))
     frozen['change_summary'] += ' (prior installed fixture)'
@@ -174,7 +191,7 @@ def test_retained_source_preserves_exact_old_binding(tmp_path, monkeypatch, case
     package.pop('package_hash')
     package['package_hash'] = canonical_sha256(package)
     package_path.write_text(json.dumps(package), encoding='utf-8')
-    receipt = json.loads((ROOT / 'strategies/deployments/history/S003-v1.json').read_text(encoding='utf-8'))
+    receipt = json.loads((release_snapshot / 'deployments/history/S003-v1.json').read_text(encoding='utf-8'))
     receipt['strategy_version_hash'], receipt['package_hash'] = frozen['release_hash'], package['package_hash']
     receipt.pop('receipt_hash')
     receipt['receipt_hash'] = canonical_sha256(receipt)

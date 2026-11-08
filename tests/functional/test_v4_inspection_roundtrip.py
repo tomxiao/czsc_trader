@@ -4,6 +4,8 @@ from datetime import date, timedelta
 from decimal import Decimal
 from hashlib import sha256
 import json
+import shutil
+from uuid import uuid4
 
 import pytest
 from dataflows import MarketId, EquityProduct, TimeInterval
@@ -22,9 +24,18 @@ from test_equity_adjusted_observations import setup_adjusted
 from test_equity_inspection_roundtrip import seed_registered_frozen_candidate
 
 
+_PREPARED_SEEDS = {}
+
+
 def native_fixture(tmp_path, market, computation=StrategyComputation.STATEFUL_STEP, *, initial_state=False,
                    etf=False):
-    context, request, products, _, _ = setup_adjusted(tmp_path, market, computation, etf=etf)
+    key = (market, computation, initial_state, etf)
+    saved = _PREPARED_SEEDS.get(key)
+    if saved is not None:
+        seed, prepared_request, reference = saved
+        shutil.copytree(seed, tmp_path, dirs_exist_ok=True)
+    context, request, products, _, _ = setup_adjusted(tmp_path, market, computation, etf=etf,
+        existing_experiment=None if saved is None else prepared_request.experiment)
     if initial_state:
         from strategy_runtime import equity_source_hash, StateRecord
         from strategy_runtime.equity_replay import StrategyStateSchema, StateField, StateValueType
@@ -37,9 +48,17 @@ def native_fixture(tmp_path, market, computation=StrategyComputation.STATEFUL_ST
         definition = replace(request.candidate.definition, initial_account=initial, state_schema=schema,
             source_sha256=equity_source_hash(source.parent, ('strategy.py',)))
         request = replace(request, candidate=replace(request.candidate, definition=definition))
-    with ResearchExecutionSession(context, experiment=request.experiment) as execution:
-        request = context.evaluation.prepare(request, execution=execution).request
-    reference = prepare_raw_reference(context, request)
+    if saved is None:
+        with ResearchExecutionSession(context, experiment=request.experiment) as execution:
+            request = context.evaluation.prepare(request, execution=execution).request
+        reference = prepare_raw_reference(context, request)
+        # A private immutable snapshot, created before any consumer can mutate it.
+        # All mutable providers/frames are reconstructed above for each consumer.
+        seed = tmp_path.parent / ('native-seed-' + uuid4().hex)
+        shutil.copytree(tmp_path, seed)
+        _PREPARED_SEEDS[key] = (seed, request, reference)
+    else:
+        request = replace(prepared_request, candidate=request.candidate)
     replay = EquityInspectionReplay(f.InspectionCoordinate('main', 'standard'), request.input_binding,
         request.requests(context.execution_spec), request.window, request.initial_cash, request.fee_rate,
         execution_reference=reference)

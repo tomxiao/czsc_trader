@@ -6,6 +6,7 @@ from zoneinfo import ZoneInfo
 from unittest.mock import patch
 import json
 import shutil
+from pathlib import Path
 from threading import Thread
 from types import SimpleNamespace
 from urllib.error import HTTPError
@@ -16,13 +17,12 @@ import pandas as pd
 from dataflows import MarketId, EquityProduct, TimeInterval, ProviderBinding, EquityDataRequest, PriceAdjustment, PreparePolicy
 from dataflows.equity_data import equity_metadata, session_record, sessions_from_metadata
 from strategy_manager import PaperTradingApproval, StrategyRegistry
-from czsc_trader.application import deploy_strategy
 from paper_trading_engine.account_engine import AccountEngine
 from execution_channels.futu.channel import ChannelAccountConfig, FUTU_SIMULATE_CN_CHANNEL_ID, FUTU_US_SIM_CHANNEL_ID
 from paper_trading_engine.ec_boundary import execution_rules
 from paper_trading_engine.formal_v4_advice import FormalV4AdviceClient, FormalV4ScheduleProvider, FormalV4Inputs
 from execution_channels.futu.store import PaperStore
-from test_v4_inspection_roundtrip import native_fixture, native_inspection_request, freeze_native_inspection
+from test_v4_inspection_roundtrip import native_fixture
 from paper_trading_engine.execution_reference import ExecutionReferenceBinding
 
 
@@ -36,29 +36,14 @@ def raw_binding(dataflows, binding):
 
 
 @pytest.fixture(params=[MarketId.CN, MarketId.US])
-def formal_v4(tmp_path, request, frozen_seed_root):
+def formal_v4(tmp_path, request):
     market, successor = request.param if isinstance(request.param, tuple) else (request.param, False)
     context, evaluation, products, replay = native_fixture(tmp_path, market)
     repository = context.repository
-    # Freeze once per immutable market/version shape, never once per forward case.
-    # Each consumer still prepares real DFLS inputs and gets a private package,
-    # registry, approval and WAL account database. Frozen bytes are not re-signed.
-    seed = frozen_seed_root / 'formal-releases' / f'{market.value}-{int(successor)}'
-    if not seed.exists():
-        inspection, source = native_inspection_request(tmp_path, context, evaluation, products, replay)
-        freeze_native_inspection(repository, inspection, source)
-        assert deploy_strategy(repository, 'S999-v1').status == 'PASS'
-        if successor:
-            next_inspection = replace(inspection, target=replace(inspection.target,
-                version='v2', parent_version='v1', change_summary='native V4 successor fixture'))
-            freeze_native_inspection(repository, next_inspection, source, version='v2')
-            assert deploy_strategy(repository, 'S999-v2').status == 'PASS'
-            target = StrategyRegistry(repository.strategy_root).get_version('S999', 'v2')
-            StrategyRegistry(repository.strategy_root).approve_paper_trading(PaperTradingApproval(
-                'S999', 'v2', target.release_hash, 'DEV', 'synthetic successor approval'))
-        shutil.copytree(repository.strategy_root, seed)
-    else:
-        shutil.copytree(seed, repository.strategy_root, dirs_exist_ok=True)
+    # Already inspected/frozen synthetic bytes; lifecycle tests own fresh creation.
+    # Every consumer gets independent registry, approval, inputs and account state.
+    seed = Path(__file__).parents[1] / 'fixtures/published' / f'{market.value}-{int(successor)}'
+    shutil.copytree(seed, repository.strategy_root, dirs_exist_ok=True)
     registry = StrategyRegistry(repository.strategy_root)
     version = registry.get_version('S999', 'v1')
     root = PaperStore(tmp_path / 'formal.db')
@@ -70,6 +55,7 @@ def formal_v4(tmp_path, request, frozen_seed_root):
     registry.approve_paper_trading(PaperTradingApproval('S999', 'v1', version.release_hash,
         'DEV', 'synthetic isolated fixture approval'))
     release, candidate, _ = client.load_release('S999', 'v1')
+    assert candidate.content_identity == evaluation.candidate.content_identity
     binding = client.validate_account_binding(strategy_id='S999', strategy_version='v1',
         symbol=candidate.instrument.symbol, asset='stock', fee_rate=evaluation.fee_rate)
     assert binding.instrument == candidate.instrument

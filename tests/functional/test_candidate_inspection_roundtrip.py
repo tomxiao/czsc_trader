@@ -25,9 +25,12 @@ def test_serial_parallel_inspections_preserve_reports_and_freeze_idempotently(fr
         observed.append(control.max_workers)
         return result
     monkeypatch.setattr(inspection_service, "inspect_release", checked_pte)
-    # A real repeat on the same repository covers both scheduling modes and
-    # immutable run identities without two additional standalone inspections.
-    first = inspect_candidate(context, request, control=InspectionControl(max_workers=1))
+    # Real serial trajectory with one related fault plus the parallel full matrix cover both
+    # scheduling modes and independent run identities without replaying every
+    # generic injected fault in both modes.
+    serial_request = replace(request, protocol=replace(request.protocol,
+        pte=replace(request.protocol.pte, failures=request.protocol.pte.failures[:1])))
+    first = inspect_candidate(context, serial_request, control=InspectionControl(max_workers=1))
     assert first.status is f.InspectionStatus.PASS, _details(first)
     retained = first.reference.resolve(context.root).read_bytes()
     report = inspect_candidate(context, request, control=InspectionControl(max_workers=2))
@@ -36,6 +39,9 @@ def test_serial_parallel_inspections_preserve_reports_and_freeze_idempotently(fr
     assert first.reference.resolve(context.root).read_bytes() == retained
     assert first.release.package_sha256 == report.release.package_sha256
     assert report.status is f.InspectionStatus.PASS, _details(report)
+    fault_cases = {'damaged_package', 'missing_input', 'future_input'}
+    assert fault_cases & {case.case_id for case in first.pte_runtime.cases} == {'damaged_package'}
+    assert fault_cases <= {case.case_id for case in report.pte_runtime.cases}
     assert report.behavior_equivalence.status is report.pte_runtime.status is f.InspectionStatus.PASS
     assert not context.strategy_root.exists()
     assert report.reference.resolve(context.root).is_file()

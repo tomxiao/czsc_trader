@@ -2,6 +2,7 @@
 from datetime import date
 from dataclasses import replace
 from copy import deepcopy
+import json
 import re
 import pandas as pd
 import pytest
@@ -121,6 +122,12 @@ def test_current_frozen_backtest_returns_audited_accounts_and_reuses_batch_data(
     assert len(result.result.observations) == len(result.result.decisions)
     assert all(item.strategy.release_hash == version.release_hash for item in result.result.observations)
     output = render_output(result, repository.root)
+    assert json.loads((output / 'metrics.json').read_text(encoding='utf-8')) == result.metrics
+    published = json.loads((output / 'manifest.json').read_text(encoding='utf-8'))
+    assert published['strategy']['kind'] == 'REGISTERED'
+    assert published['strategy']['reference'] == result.snapshot.identity.reference == version.release_id
+    assert published['strategy']['source_hash'] == result.snapshot.source_hash
+    assert published['audit'] == result.manifest['audit']
     payload = assert_public_charts(output)
     assert payload["market_data"]["bars"][0]["close"] == 2.
     assert payload["execution"]["fills"][0]["price"] == 1.

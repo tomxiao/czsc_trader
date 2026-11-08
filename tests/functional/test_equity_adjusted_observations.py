@@ -27,7 +27,8 @@ from czsc_trader.research_tools import (EquityEvaluationRequest, EquitySources, 
 from czsc_trader.research_tools.equity_replay import materialize_equity
 
 
-def setup_adjusted(tmp_path, market, computation=StrategyComputation.STATEFUL_STEP, *, etf=False):
+def setup_adjusted(tmp_path, market, computation=StrategyComputation.STATEFUL_STEP, *, etf=False,
+                   existing_experiment=None):
     """Use real market clocks/rules, with synthetic prices and independent sessions."""
     cn = market is MarketId.CN
     instrument = (InstrumentId(market, AssetClass.ETF, "510500.SH" if cn else "QQQ") if etf
@@ -87,18 +88,20 @@ def setup_adjusted(tmp_path, market, computation=StrategyComputation.STATEFUL_ST
 
     repository = RepositoryContext(tmp_path, tmp_path / "research", tmp_path / "research/registrations",
                                    tmp_path / "strategies")
-    batch = create_research_batch(repository, ResearchBatchRequest("S999", "Adjusted fixture",
-        str(instrument), {"goal": "adjusted observations with raw execution"}), actor="DEV",
-        reason="isolated dual-market contract test")
+    from czsc_trader.research_tools import ResearchBatchRef
+    batch = (ResearchBatchRef('S999') if existing_experiment is not None else
+        create_research_batch(repository, ResearchBatchRequest("S999", "Adjusted fixture",
+            str(instrument), {"goal": "adjusted observations with raw execution"}), actor="DEV",
+            reason="isolated dual-market contract test"))
     bindings = {ProviderKey(product, market, source): ProviderBinding(source.provider, source.revision, fetch)
                 for product in EquityProduct}
     context = create_research_context(repository, batch,
         providers=ProviderConfig(bindings={}, equity_bindings=bindings), execution_spec=spec)
     context.evaluation.resources = ExecutionResources(max_workers=1, native_threads_per_worker=1)
-    experiment = create_experiment(context, ExperimentRequest("Adjusted fixture",
+    experiment = existing_experiment or create_experiment(context, ExperimentRequest("Adjusted fixture",
         "Do research prices remain independent of execution prices?", date(2026, 10, 16)))
     root = tmp_path / "fixture-source"
-    root.mkdir()
+    root.mkdir(exist_ok=existing_experiment is not None)
     (root / "strategy.py").write_text(
         "from strategy_runtime import AccountDecision, AccountStepResult, StateRecord\n"
         "def decision(ctx):\n"
